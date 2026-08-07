@@ -1,6 +1,6 @@
 {
   "template": "tpl.5e.flex-basic",
-  "system": "sys.dnd5e",
+  "systemIds": ["sys.dnd5e"],
   "data": {},
   "kind": "character",
   "name": "Octavian Hoff",
@@ -9,7 +9,14 @@
     "userId": 100499308,
     "username": "wrighmat",
     "name": "Octavian Hoff",
+    "race": "Human",
+    "class": "Ranger",
     "level": 7,
+    "levels": {
+      "level_monk": 0,
+      "level_multiclass": 0
+    },
+    "inspiration": false,
     "classes": [
       {
         "name": "Ranger",
@@ -19,6 +26,30 @@
     ]
   },
   "proficiency": 3,
+  "alignment": {
+    "name": "Lawful Evil",
+    "shortName": "LE"
+  },
+  "initiative": {
+    "value": 3,
+    "advantage": true,
+    "disadvantage": false
+  },
+  "senses": {
+    "passives": {
+      "perception": 15,
+      "investigation": 11,
+      "insight": 18
+    },
+    "darkvision": 60
+  },
+  "speeds": {
+    "walk": 40,
+    "burrow": 0,
+    "climb": 40,
+    "fly": 0,
+    "swim": 40
+  },
   "conditions": [],
   "abilities": [
     {
@@ -77,7 +108,9 @@
       "friendlyName": "Strength",
       "shortName": "STR",
       "value": 3,
-      "proficiency": 1
+      "proficiency": 3,
+      "advantage": false,
+      "disadvantage": false
     },
     {
       "id": 2,
@@ -85,7 +118,9 @@
       "friendlyName": "Dexterity",
       "shortName": "DEX",
       "value": 6,
-      "proficiency": 1
+      "proficiency": 3,
+      "advantage": false,
+      "disadvantage": false
     },
     {
       "id": 3,
@@ -93,7 +128,9 @@
       "friendlyName": "Constitution",
       "shortName": "CON",
       "value": 2,
-      "proficiency": 0
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
     },
     {
       "id": 4,
@@ -101,7 +138,9 @@
       "friendlyName": "Intelligence",
       "shortName": "INT",
       "value": 1,
-      "proficiency": 0
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
     },
     {
       "id": 5,
@@ -109,7 +148,9 @@
       "friendlyName": "Wisdom",
       "shortName": "WIS",
       "value": 5,
-      "proficiency": 1
+      "proficiency": 3,
+      "advantage": false,
+      "disadvantage": false
     },
     {
       "id": 6,
@@ -117,7 +158,9 @@
       "friendlyName": "Charisma",
       "shortName": "CHA",
       "value": -1,
-      "proficiency": 0
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
     }
   ],
   "skills": [
@@ -128,7 +171,9 @@
       "stat": 1,
       "ability": "DEX",
       "value": 3,
-      "proficiency": 0
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
     },
     {
       "id": 11,
@@ -137,7 +182,9 @@
       "stat": 4,
       "ability": "WIS",
       "value": 5,
-      "proficiency": 1
+      "proficiency": 3,
+      "advantage": false,
+      "disadvantage": false
     },
     {
       "id": 6,
@@ -146,7 +193,9 @@
       "stat": 3,
       "ability": "INT",
       "value": 1,
-      "proficiency": 0
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
     },
     {
       "id": 2,
@@ -155,7 +204,9 @@
       "stat": 0,
       "ability": "STR",
       "value": 0,
-      "proficiency": 0
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
     },
     {
       "id": 16,
@@ -164,7 +215,9 @@
       "stat": 5,
       "ability": "CHA",
       "value": -1,
-      "proficiency": 0
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
     },
     {
       "id": 7,
@@ -173,7 +226,9 @@
       "stat": 3,
       "ability": "INT",
       "value": 1,
-      "proficiency": 0
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
     },
     {
       "id": 12,
@@ -182,7 +237,9 @@
       "stat": 4,
       "ability": "WIS",
       "value": 8,
-      "proficiency": 2
+      "proficiency": 4,
+      "advantage": false,
+      "disadvantage": false
     },
     {
       "id": 17,
@@ -191,7 +248,9 @@
       "stat": 5,
       "ability": "CHA",
       "value": -1,
-      "proficiency": 0
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
     },
     {
       "id": 8,
@@ -200,7 +259,9 @@
       "stat": 3,
       "ability": "INT",
       "value": 1,
-      "proficiency": 0
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
     },
     {
       "id": 13,
@@ -209,7 +270,9 @@
       "stat": 4,
       "ability": "WIS",
       "value": 2,
-      "proficiency": 0
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
     },
     {
       "id": 9,
@@ -218,7 +281,9 @@
       "stat": 3,
       "ability": "INT",
       "value": 4,
-      "proficiency": 1
+      "proficiency": 3,
+      "advantage": false,
+      "disadvantage": false
     },
     {
       "id": 14,
@@ -227,7 +292,9 @@
       "stat": 4,
       "ability": "WIS",
       "value": 5,
-      "proficiency": 1
+      "proficiency": 3,
+      "advantage": false,
+      "disadvantage": false
     },
     {
       "id": 18,
@@ -236,7 +303,9 @@
       "stat": 5,
       "ability": "CHA",
       "value": -1,
-      "proficiency": 0
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
     },
     {
       "id": 19,
@@ -245,7 +314,9 @@
       "stat": 5,
       "ability": "CHA",
       "value": -1,
-      "proficiency": 0
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
     },
     {
       "id": 10,
@@ -254,7 +325,9 @@
       "stat": 3,
       "ability": "INT",
       "value": 1,
-      "proficiency": 0
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
     },
     {
       "id": 4,
@@ -263,7 +336,9 @@
       "stat": 1,
       "ability": "DEX",
       "value": 3,
-      "proficiency": 0
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
     },
     {
       "id": 5,
@@ -272,7 +347,9 @@
       "stat": 1,
       "ability": "DEX",
       "value": 6,
-      "proficiency": 1
+      "proficiency": 3,
+      "advantage": false,
+      "disadvantage": false
     },
     {
       "id": 15,
@@ -281,7 +358,9 @@
       "stat": 4,
       "ability": "WIS",
       "value": 5,
-      "proficiency": 1
+      "proficiency": 3,
+      "advantage": false,
+      "disadvantage": false
     }
   ],
   "stats": {
@@ -304,665 +383,819 @@
       "name": "Light Crossbow of Warning",
       "quantity": 1,
       "weight": 5,
-      "notes": {
-        "allies": null,
-        "personalPossessions": null,
-        "otherHoldings": null,
-        "organizations": null,
-        "enemies": null,
-        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
-        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
-      }
+      "notes": "<p>As long as this weapon is within your reach and you are attuned to it, you and allies within 30 feet of you gain the following benefits.</p>\r\n<p><em><strong>Alarm.</strong></em> The weapon magically awakens each subject who is sleeping naturally when combat begins. This benefit doesn’t wake a subject from magically induced sleep.</p>\r\n<p><em><strong>Supernatural Readiness.</strong></em> Each subject has Advantage on its Initiative rolls.</p>",
+      "canAttune": true,
+      "isAttuned": true,
+      "canEquip": true,
+      "isEquipped": true
     },
     {
       "name": "Ring of X-ray Vision",
       "quantity": 1,
       "weight": 0,
-      "notes": {
-        "allies": null,
-        "personalPossessions": null,
-        "otherHoldings": null,
-        "organizations": null,
-        "enemies": null,
-        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
-        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
-      }
+      "notes": "<p>While wearing this ring, you can take a Magic action to gain X-ray vision with a range of 30 feet for 1 minute. To you, solid objects within that radius appear transparent and don’t prevent light from passing through them. The vision can penetrate 1 foot of stone, 1 inch of common metal, or up to 3 feet of wood or dirt. Thicker substances or a thin sheet of lead block the vision.</p>\r\n<p>Whenever you use the ring again before taking a Long Rest, you must succeed on a DC 15 Constitution saving throw or gain 1 Exhaustion level.</p>",
+      "canAttune": true,
+      "isAttuned": false,
+      "canEquip": true,
+      "isEquipped": false
     },
     {
       "name": "Ring of Fire Resistance",
       "quantity": 1,
       "weight": 0,
-      "notes": {
-        "allies": null,
-        "personalPossessions": null,
-        "otherHoldings": null,
-        "organizations": null,
-        "enemies": null,
-        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
-        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
-      }
+      "notes": "<p>You have resistance to fire damage while wearing this garnet ring.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": true,
+      "isEquipped": true
     },
     {
       "name": "Hide",
       "quantity": 1,
       "weight": 12,
-      "notes": {
-        "allies": null,
-        "personalPossessions": null,
-        "otherHoldings": null,
-        "organizations": null,
-        "enemies": null,
-        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
-        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
-      }
+      "notes": "<p>This crude armor consists of thick furs and pelts.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": true,
+      "isEquipped": true
     },
     {
       "name": "Dagger",
       "quantity": 1,
       "weight": 1,
-      "notes": {
-        "allies": null,
-        "personalPossessions": null,
-        "otherHoldings": null,
-        "organizations": null,
-        "enemies": null,
-        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
-        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
-      }
+      "notes": "<p>Proficiency with a Dagger allows you to add your proficiency bonus to the attack roll for any attack you make with it.</p>\r\n<div class=\"mastery-container\"><hr />\r\n<p>This weapon has the following mastery property. To use this property, you must have a feature that lets you use it.</p>\r\n<p><strong><em>Nick.</em></strong> When you make the extra attack of the Light property, you can make it as part of the Attack action instead of as a Bonus Action. You can make this extra attack only once per turn.</p>\r\n</div>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": true,
+      "isEquipped": false
     },
     {
       "name": "Dagger",
       "quantity": 1,
       "weight": 1,
-      "notes": {
-        "allies": null,
-        "personalPossessions": null,
-        "otherHoldings": null,
-        "organizations": null,
-        "enemies": null,
-        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
-        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
-      }
+      "notes": "<p>Proficiency with a Dagger allows you to add your proficiency bonus to the attack roll for any attack you make with it.</p>\r\n<div class=\"mastery-container\"><hr />\r\n<p>This weapon has the following mastery property. To use this property, you must have a feature that lets you use it.</p>\r\n<p><strong><em>Nick.</em></strong> When you make the extra attack of the Light property, you can make it as part of the Attack action instead of as a Bonus Action. You can make this extra attack only once per turn.</p>\r\n</div>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": true,
+      "isEquipped": true
     },
     {
       "name": "Sickle",
       "quantity": 1,
       "weight": 2,
-      "notes": {
-        "allies": null,
-        "personalPossessions": null,
-        "otherHoldings": null,
-        "organizations": null,
-        "enemies": null,
-        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
-        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
-      }
+      "notes": "<p>Proficiency with a Sickle allows you to add your proficiency bonus to the attack roll for any attack you make with it.</p>\r\n<div class=\"mastery-container\"><hr />\r\n<p>This weapon has the following mastery property. To use this property, you must have a feature that lets you use it.</p>\r\n<p><strong><em>Nick.</em></strong> When you make the extra attack of the Light property, you can make it as part of the Attack action instead of as a Bonus Action. You can make this extra attack only once per turn.</p>\r\n</div>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": true,
+      "isEquipped": false
     },
     {
       "name": "Crossbow, Light",
       "quantity": 1,
       "weight": 5,
-      "notes": {
-        "allies": null,
-        "personalPossessions": null,
-        "otherHoldings": null,
-        "organizations": null,
-        "enemies": null,
-        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
-        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
-      }
+      "notes": "<p>Proficiency with a Light Crossbow allows you to add your proficiency bonus to the attack roll for any attack you make with it.</p>\r\n<div class=\"mastery-container\"><hr />\r\n<p>This weapon has the following mastery property. To use this property, you must have a feature that lets you use it.</p>\r\n<p><em><strong>Slow.</strong></em> If you hit a creature with this weapon and deal damage to it, you can reduce its Speed by 10 feet until the start of your next turn. If the creature is hit more than once by weapons that have this property, the Speed reduction doesn’t exceed 10 feet.</p>\r\n</div>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": true,
+      "isEquipped": false
     },
     {
       "name": "Shortsword",
       "quantity": 1,
       "weight": 2,
-      "notes": {
-        "allies": null,
-        "personalPossessions": null,
-        "otherHoldings": null,
-        "organizations": null,
-        "enemies": null,
-        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
-        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
-      }
+      "notes": "<p>Proficiency with a Shortsword allows you to add your proficiency bonus to the attack roll for any attack you make with it.</p>\r\n<div class=\"mastery-container\"><hr />\r\n<p>This weapon has the following mastery property. To use this property, you must have a feature that lets you use it.</p>\r\n<p><strong><em>Vex.</em></strong> If you hit a creature with this weapon and deal damage to the creature, you have Advantage on your next attack roll against that creature before the end of your next turn.</p>\r\n</div>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": true,
+      "isEquipped": false
     },
     {
       "name": "Crossbow, Heavy",
       "quantity": 1,
       "weight": 18,
-      "notes": {
-        "allies": null,
-        "personalPossessions": null,
-        "otherHoldings": null,
-        "organizations": null,
-        "enemies": null,
-        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
-        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
-      }
+      "notes": "<p>Proficiency with a Heavy Crossbow allows you to add your proficiency bonus to the attack roll for any attack you make with it.</p>\r\n<div class=\"mastery-container\"><hr />\r\n<p>This weapon has the following mastery property. To use this property, you must have a feature that lets you use it.</p>\r\n<p><strong><em>Push.</em></strong> If you hit a creature with this weapon, you can push the creature up to 10 feet straight away from yourself if it is Large or smaller.</p>\r\n</div>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": true,
+      "isEquipped": true
     },
     {
       "name": "Crossbow Bolts",
       "quantity": 20,
-      "weight": 1.5,
-      "notes": {
-        "allies": null,
-        "personalPossessions": null,
-        "otherHoldings": null,
-        "organizations": null,
-        "enemies": null,
-        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
-        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
-      }
+      "weight": 30,
+      "notes": "<p>Crossbow bolts are&nbsp;used with&nbsp;a weapon that has the ammunition property to make a ranged attack. Each time you attack with the weapon, you expend one piece of ammunition. Drawing the ammunition from a quiver, case, or other container is part of the attack (you need a free hand to load a one-handed weapon). At the end of the battle, you can recover half your expended ammunition by taking a minute to search the battlefield.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": true,
+      "isEquipped": true
     },
     {
       "name": "Backpack",
       "quantity": 1,
       "weight": 5,
-      "notes": {
-        "allies": null,
-        "personalPossessions": null,
-        "otherHoldings": null,
-        "organizations": null,
-        "enemies": null,
-        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
-        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
-      }
+      "notes": "<p>A Backpack holds up to 30 pounds within 1 cubic foot. It can also serve as a saddlebag.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": true,
+      "isEquipped": false
     },
     {
       "name": "Iron Pot",
       "quantity": 1,
       "weight": 10,
-      "notes": {
-        "allies": null,
-        "personalPossessions": null,
-        "otherHoldings": null,
-        "organizations": null,
-        "enemies": null,
-        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
-        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
-      }
+      "notes": "<p>An Iron Pot holds up to 1 gallon.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
     },
     {
       "name": "Quiver",
       "quantity": 1,
       "weight": 1,
-      "notes": {
-        "allies": null,
-        "personalPossessions": null,
-        "otherHoldings": null,
-        "organizations": null,
-        "enemies": null,
-        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
-        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
-      }
+      "notes": "<p>A Quiver holds up to 20 Arrows.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": true,
+      "isEquipped": false
     },
     {
       "name": "Carpenter's Tools",
       "quantity": 1,
       "weight": 6,
-      "notes": {
-        "allies": null,
-        "personalPossessions": null,
-        "otherHoldings": null,
-        "organizations": null,
-        "enemies": null,
-        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
-        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
-      }
+      "notes": "<p><strong>Ability:</strong> Strength <br /><strong>Utilize:</strong> Seal or pry open a door or container (DC 20) <br /><strong>Craft:</strong> Club, Greatclub, Quarterstaff, Barrel, Chest, Ladder, Pole, Portable Ram, Torch</p>\r\n<hr />\r\n<p>If you have proficiency with a tool, add your Proficiency Bonus to any ability check you make that uses the tool. If you have proficiency in a skill that’s used with that check, you have Advantage on the check too.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
     },
     {
       "name": "Shovel",
       "quantity": 1,
       "weight": 5,
-      "notes": {
-        "allies": null,
-        "personalPossessions": null,
-        "otherHoldings": null,
-        "organizations": null,
-        "enemies": null,
-        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
-        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
-      }
+      "notes": "<p>Working for 1 hour, you can use a Shovel to dig a hole that is 5 feet on each side in soil or similar material.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
     },
     {
       "name": "Healer's Kit",
       "quantity": 1,
       "weight": 3,
-      "notes": {
-        "allies": null,
-        "personalPossessions": null,
-        "otherHoldings": null,
-        "organizations": null,
-        "enemies": null,
-        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
-        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
-      }
+      "notes": "<p>A Healer’s Kit has ten uses. As a Utilize action, you can expend one of its uses to stabilize an Unconscious creature that has 0 Hit Points without needing to make a Wisdom (Medicine) check.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
     },
     {
       "name": "Grappling Hook",
       "quantity": 1,
       "weight": 4,
-      "notes": {
-        "allies": null,
-        "personalPossessions": null,
-        "otherHoldings": null,
-        "organizations": null,
-        "enemies": null,
-        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
-        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
-      }
+      "notes": "<p>As a Utilize action, you can throw the Grappling Hook at a railing, a ledge, or another catch within 50 feet of yourself, and the hook catches on if you succeed on a DC 13 Dexterity (Acrobatics) check. If you tied a Rope to the hook, you can then climb it.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
     },
     {
       "name": "Sprig of Mistletoe",
       "quantity": 1,
       "weight": 0,
-      "notes": {
-        "allies": null,
-        "personalPossessions": null,
-        "otherHoldings": null,
-        "organizations": null,
-        "enemies": null,
-        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
-        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
-      }
+      "notes": "<p>A Sprig of Mistletoe is a Druidic Focus that is carved, tied with ribbon, or painted to channel primal magic. A Druid or Ranger can use this item as a Spellcasting Focus.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
     },
     {
       "name": "Potion of Healing (Greater)",
       "quantity": 1,
       "weight": 0.5,
-      "notes": {
-        "allies": null,
-        "personalPossessions": null,
-        "otherHoldings": null,
-        "organizations": null,
-        "enemies": null,
-        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
-        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
-      }
+      "notes": "<p>You regain 4d4 + 4 Hit Points when you drink this potion.</p>\r\n<p>Whatever its potency, the potion’s red liquid glimmers when agitated.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
     },
     {
       "name": "Potion of Healing (Greater)",
       "quantity": 1,
       "weight": 0.5,
-      "notes": {
-        "allies": null,
-        "personalPossessions": null,
-        "otherHoldings": null,
-        "organizations": null,
-        "enemies": null,
-        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
-        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
-      }
+      "notes": "<p>You regain 4d4 + 4 Hit Points when you drink this potion.</p>\r\n<p>Whatever its potency, the potion’s red liquid glimmers when agitated.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
     },
     {
       "name": "Soul Coin",
       "quantity": 1,
       "weight": 0,
-      "notes": {
-        "allies": null,
-        "personalPossessions": null,
-        "otherHoldings": null,
-        "organizations": null,
-        "enemies": null,
-        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
-        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
-      }
+      "notes": "<p>Soul coins are about 5 inches across and about an inch thick, minted from infernal iron. Each coin weighs one-third of a pound, and is inscribed with Infernal writing and a spell that magically binds a single soul to the coin. Because each soul coin has a unique soul trapped within it, each has a story. A creature might have been imprisoned as a result of defaulting on a deal, while another might be the victim of a night hag’s curse.</p>\r\n<p><em><strong>Carrying Soul Coins.</strong></em> To hold a soul coin is to feel the soul bound within it &mdash; overcome with rage or fraught with despair.</p>\r\n<p>An evil creature can carry as many soul coins as it wishes (up to its maximum weight allowance). A non-evil creature can carry a number of soul coins equal to or less than its Constitution modifier without penalty. A non-evil creature carrying a number of soul coins greater than its Constitution modifier has disadvantage on its attack rolls, ability checks, and saving throws.</p>\r\n<p><em><strong>Using a Soul Coin.</strong></em> A soul coin has 3 charges. A creature carrying the coin can use its action to expend 1 charge from a soul coin and use it to do one of the following:</p>\r\n<p><strong>Drain Life.</strong> You siphon away some of the soul’s essence and gain 1d10 temporary hit points.</p>\r\n<p><strong>Query.</strong> You telepathically ask the soul a question and receive a brief telepathic response, which you can understand. The soul knows only what it knew in life, but it must answer you truthfully and to the best of its ability. The answer is no more than a sentence or two and might be cryptic.</p>\r\n<p><em><strong>Freeing a Soul.</strong></em> Casting a spell that removes a curse on a soul coin frees the soul trapped within it, as does expending all of the coin’s charges. The coin itself rusts from within and is destroyed once the soul is released. A freed soul travels to the realm of the god it served or the outer plane most closely tied to its alignment (DM’s choice). The souls of lawful evil creatures released from soul coins typically emerge from the River Styx as lemure devils.</p>\r\n<p>A soul can also be freed by destroying the coin that contains it. A soul coin has AC 19, 1 hit point for each charge it has remaining, and immunity to all damage except that which is dealt by a hellfire weapon or an infernal war machine’s furnace (see \"<a href=\"https://www.dndbeyond.com/sources/bgdia/infernal-war-machines#SoulFuel\">Soul Fuel</a>\").</p>\r\n<p>Freeing a soul from a soul coin is considered a good act, even if the soul belongs to an evil creature.</p>\r\n<p><em><strong>Hellish Currency.</strong></em> Soul coins are a currency of the Nine Hells and are highly valued by devils. The coins are used among the infernal hierarchy to barter for favors, bribe the unwilling, and reward the faithful for services rendered.</p>\r\n<p>Soul coins are created by Mammon and his greater devils on Minauros, the third layer of the Nine Hells, in a vast chamber where the captured souls of evil mortals are bound into the coins. These coins are then distributed throughout the Nine Hells to be used for goods and services, infernal deals, dark bargains, and bribes.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": true,
+      "isEquipped": false
     },
     {
       "name": "Soul Coin",
       "quantity": 1,
       "weight": 0,
-      "notes": {
-        "allies": null,
-        "personalPossessions": null,
-        "otherHoldings": null,
-        "organizations": null,
-        "enemies": null,
-        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
-        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
-      }
+      "notes": "<p>Soul coins are about 5 inches across and about an inch thick, minted from infernal iron. Each coin weighs one-third of a pound, and is inscribed with Infernal writing and a spell that magically binds a single soul to the coin. Because each soul coin has a unique soul trapped within it, each has a story. A creature might have been imprisoned as a result of defaulting on a deal, while another might be the victim of a night hag’s curse.</p>\r\n<p><em><strong>Carrying Soul Coins.</strong></em> To hold a soul coin is to feel the soul bound within it &mdash; overcome with rage or fraught with despair.</p>\r\n<p>An evil creature can carry as many soul coins as it wishes (up to its maximum weight allowance). A non-evil creature can carry a number of soul coins equal to or less than its Constitution modifier without penalty. A non-evil creature carrying a number of soul coins greater than its Constitution modifier has disadvantage on its attack rolls, ability checks, and saving throws.</p>\r\n<p><em><strong>Using a Soul Coin.</strong></em> A soul coin has 3 charges. A creature carrying the coin can use its action to expend 1 charge from a soul coin and use it to do one of the following:</p>\r\n<p><strong>Drain Life.</strong> You siphon away some of the soul’s essence and gain 1d10 temporary hit points.</p>\r\n<p><strong>Query.</strong> You telepathically ask the soul a question and receive a brief telepathic response, which you can understand. The soul knows only what it knew in life, but it must answer you truthfully and to the best of its ability. The answer is no more than a sentence or two and might be cryptic.</p>\r\n<p><em><strong>Freeing a Soul.</strong></em> Casting a spell that removes a curse on a soul coin frees the soul trapped within it, as does expending all of the coin’s charges. The coin itself rusts from within and is destroyed once the soul is released. A freed soul travels to the realm of the god it served or the outer plane most closely tied to its alignment (DM’s choice). The souls of lawful evil creatures released from soul coins typically emerge from the River Styx as lemure devils.</p>\r\n<p>A soul can also be freed by destroying the coin that contains it. A soul coin has AC 19, 1 hit point for each charge it has remaining, and immunity to all damage except that which is dealt by a hellfire weapon or an infernal war machine’s furnace (see \"<a href=\"https://www.dndbeyond.com/sources/bgdia/infernal-war-machines#SoulFuel\">Soul Fuel</a>\").</p>\r\n<p>Freeing a soul from a soul coin is considered a good act, even if the soul belongs to an evil creature.</p>\r\n<p><em><strong>Hellish Currency.</strong></em> Soul coins are a currency of the Nine Hells and are highly valued by devils. The coins are used among the infernal hierarchy to barter for favors, bribe the unwilling, and reward the faithful for services rendered.</p>\r\n<p>Soul coins are created by Mammon and his greater devils on Minauros, the third layer of the Nine Hells, in a vast chamber where the captured souls of evil mortals are bound into the coins. These coins are then distributed throughout the Nine Hells to be used for goods and services, infernal deals, dark bargains, and bribes.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": true,
+      "isEquipped": false
     },
     {
       "name": "Soul Coin",
       "quantity": 1,
       "weight": 0,
-      "notes": {
-        "allies": null,
-        "personalPossessions": null,
-        "otherHoldings": null,
-        "organizations": null,
-        "enemies": null,
-        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
-        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
-      }
+      "notes": "<p>Soul coins are about 5 inches across and about an inch thick, minted from infernal iron. Each coin weighs one-third of a pound, and is inscribed with Infernal writing and a spell that magically binds a single soul to the coin. Because each soul coin has a unique soul trapped within it, each has a story. A creature might have been imprisoned as a result of defaulting on a deal, while another might be the victim of a night hag’s curse.</p>\r\n<p><em><strong>Carrying Soul Coins.</strong></em> To hold a soul coin is to feel the soul bound within it &mdash; overcome with rage or fraught with despair.</p>\r\n<p>An evil creature can carry as many soul coins as it wishes (up to its maximum weight allowance). A non-evil creature can carry a number of soul coins equal to or less than its Constitution modifier without penalty. A non-evil creature carrying a number of soul coins greater than its Constitution modifier has disadvantage on its attack rolls, ability checks, and saving throws.</p>\r\n<p><em><strong>Using a Soul Coin.</strong></em> A soul coin has 3 charges. A creature carrying the coin can use its action to expend 1 charge from a soul coin and use it to do one of the following:</p>\r\n<p><strong>Drain Life.</strong> You siphon away some of the soul’s essence and gain 1d10 temporary hit points.</p>\r\n<p><strong>Query.</strong> You telepathically ask the soul a question and receive a brief telepathic response, which you can understand. The soul knows only what it knew in life, but it must answer you truthfully and to the best of its ability. The answer is no more than a sentence or two and might be cryptic.</p>\r\n<p><em><strong>Freeing a Soul.</strong></em> Casting a spell that removes a curse on a soul coin frees the soul trapped within it, as does expending all of the coin’s charges. The coin itself rusts from within and is destroyed once the soul is released. A freed soul travels to the realm of the god it served or the outer plane most closely tied to its alignment (DM’s choice). The souls of lawful evil creatures released from soul coins typically emerge from the River Styx as lemure devils.</p>\r\n<p>A soul can also be freed by destroying the coin that contains it. A soul coin has AC 19, 1 hit point for each charge it has remaining, and immunity to all damage except that which is dealt by a hellfire weapon or an infernal war machine’s furnace (see \"<a href=\"https://www.dndbeyond.com/sources/bgdia/infernal-war-machines#SoulFuel\">Soul Fuel</a>\").</p>\r\n<p>Freeing a soul from a soul coin is considered a good act, even if the soul belongs to an evil creature.</p>\r\n<p><em><strong>Hellish Currency.</strong></em> Soul coins are a currency of the Nine Hells and are highly valued by devils. The coins are used among the infernal hierarchy to barter for favors, bribe the unwilling, and reward the faithful for services rendered.</p>\r\n<p>Soul coins are created by Mammon and his greater devils on Minauros, the third layer of the Nine Hells, in a vast chamber where the captured souls of evil mortals are bound into the coins. These coins are then distributed throughout the Nine Hells to be used for goods and services, infernal deals, dark bargains, and bribes.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": true,
+      "isEquipped": false
     },
     {
       "name": "Soul Coin",
       "quantity": 1,
       "weight": 0,
-      "notes": {
-        "allies": null,
-        "personalPossessions": null,
-        "otherHoldings": null,
-        "organizations": null,
-        "enemies": null,
-        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
-        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
-      }
+      "notes": "<p>Soul coins are about 5 inches across and about an inch thick, minted from infernal iron. Each coin weighs one-third of a pound, and is inscribed with Infernal writing and a spell that magically binds a single soul to the coin. Because each soul coin has a unique soul trapped within it, each has a story. A creature might have been imprisoned as a result of defaulting on a deal, while another might be the victim of a night hag’s curse.</p>\r\n<p><em><strong>Carrying Soul Coins.</strong></em> To hold a soul coin is to feel the soul bound within it &mdash; overcome with rage or fraught with despair.</p>\r\n<p>An evil creature can carry as many soul coins as it wishes (up to its maximum weight allowance). A non-evil creature can carry a number of soul coins equal to or less than its Constitution modifier without penalty. A non-evil creature carrying a number of soul coins greater than its Constitution modifier has disadvantage on its attack rolls, ability checks, and saving throws.</p>\r\n<p><em><strong>Using a Soul Coin.</strong></em> A soul coin has 3 charges. A creature carrying the coin can use its action to expend 1 charge from a soul coin and use it to do one of the following:</p>\r\n<p><strong>Drain Life.</strong> You siphon away some of the soul’s essence and gain 1d10 temporary hit points.</p>\r\n<p><strong>Query.</strong> You telepathically ask the soul a question and receive a brief telepathic response, which you can understand. The soul knows only what it knew in life, but it must answer you truthfully and to the best of its ability. The answer is no more than a sentence or two and might be cryptic.</p>\r\n<p><em><strong>Freeing a Soul.</strong></em> Casting a spell that removes a curse on a soul coin frees the soul trapped within it, as does expending all of the coin’s charges. The coin itself rusts from within and is destroyed once the soul is released. A freed soul travels to the realm of the god it served or the outer plane most closely tied to its alignment (DM’s choice). The souls of lawful evil creatures released from soul coins typically emerge from the River Styx as lemure devils.</p>\r\n<p>A soul can also be freed by destroying the coin that contains it. A soul coin has AC 19, 1 hit point for each charge it has remaining, and immunity to all damage except that which is dealt by a hellfire weapon or an infernal war machine’s furnace (see \"<a href=\"https://www.dndbeyond.com/sources/bgdia/infernal-war-machines#SoulFuel\">Soul Fuel</a>\").</p>\r\n<p>Freeing a soul from a soul coin is considered a good act, even if the soul belongs to an evil creature.</p>\r\n<p><em><strong>Hellish Currency.</strong></em> Soul coins are a currency of the Nine Hells and are highly valued by devils. The coins are used among the infernal hierarchy to barter for favors, bribe the unwilling, and reward the faithful for services rendered.</p>\r\n<p>Soul coins are created by Mammon and his greater devils on Minauros, the third layer of the Nine Hells, in a vast chamber where the captured souls of evil mortals are bound into the coins. These coins are then distributed throughout the Nine Hells to be used for goods and services, infernal deals, dark bargains, and bribes.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": true,
+      "isEquipped": false
     },
     {
       "name": "Soul Coin",
       "quantity": 1,
       "weight": 0,
-      "notes": {
-        "allies": null,
-        "personalPossessions": null,
-        "otherHoldings": null,
-        "organizations": null,
-        "enemies": null,
-        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
-        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
-      }
+      "notes": "<p>Soul coins are about 5 inches across and about an inch thick, minted from infernal iron. Each coin weighs one-third of a pound, and is inscribed with Infernal writing and a spell that magically binds a single soul to the coin. Because each soul coin has a unique soul trapped within it, each has a story. A creature might have been imprisoned as a result of defaulting on a deal, while another might be the victim of a night hag’s curse.</p>\r\n<p><em><strong>Carrying Soul Coins.</strong></em> To hold a soul coin is to feel the soul bound within it &mdash; overcome with rage or fraught with despair.</p>\r\n<p>An evil creature can carry as many soul coins as it wishes (up to its maximum weight allowance). A non-evil creature can carry a number of soul coins equal to or less than its Constitution modifier without penalty. A non-evil creature carrying a number of soul coins greater than its Constitution modifier has disadvantage on its attack rolls, ability checks, and saving throws.</p>\r\n<p><em><strong>Using a Soul Coin.</strong></em> A soul coin has 3 charges. A creature carrying the coin can use its action to expend 1 charge from a soul coin and use it to do one of the following:</p>\r\n<p><strong>Drain Life.</strong> You siphon away some of the soul’s essence and gain 1d10 temporary hit points.</p>\r\n<p><strong>Query.</strong> You telepathically ask the soul a question and receive a brief telepathic response, which you can understand. The soul knows only what it knew in life, but it must answer you truthfully and to the best of its ability. The answer is no more than a sentence or two and might be cryptic.</p>\r\n<p><em><strong>Freeing a Soul.</strong></em> Casting a spell that removes a curse on a soul coin frees the soul trapped within it, as does expending all of the coin’s charges. The coin itself rusts from within and is destroyed once the soul is released. A freed soul travels to the realm of the god it served or the outer plane most closely tied to its alignment (DM’s choice). The souls of lawful evil creatures released from soul coins typically emerge from the River Styx as lemure devils.</p>\r\n<p>A soul can also be freed by destroying the coin that contains it. A soul coin has AC 19, 1 hit point for each charge it has remaining, and immunity to all damage except that which is dealt by a hellfire weapon or an infernal war machine’s furnace (see \"<a href=\"https://www.dndbeyond.com/sources/bgdia/infernal-war-machines#SoulFuel\">Soul Fuel</a>\").</p>\r\n<p>Freeing a soul from a soul coin is considered a good act, even if the soul belongs to an evil creature.</p>\r\n<p><em><strong>Hellish Currency.</strong></em> Soul coins are a currency of the Nine Hells and are highly valued by devils. The coins are used among the infernal hierarchy to barter for favors, bribe the unwilling, and reward the faithful for services rendered.</p>\r\n<p>Soul coins are created by Mammon and his greater devils on Minauros, the third layer of the Nine Hells, in a vast chamber where the captured souls of evil mortals are bound into the coins. These coins are then distributed throughout the Nine Hells to be used for goods and services, infernal deals, dark bargains, and bribes.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": true,
+      "isEquipped": false
     },
     {
       "name": "Soul Coin",
       "quantity": 1,
       "weight": 0,
-      "notes": {
-        "allies": null,
-        "personalPossessions": null,
-        "otherHoldings": null,
-        "organizations": null,
-        "enemies": null,
-        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
-        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
-      }
+      "notes": "<p>Soul coins are about 5 inches across and about an inch thick, minted from infernal iron. Each coin weighs one-third of a pound, and is inscribed with Infernal writing and a spell that magically binds a single soul to the coin. Because each soul coin has a unique soul trapped within it, each has a story. A creature might have been imprisoned as a result of defaulting on a deal, while another might be the victim of a night hag’s curse.</p>\r\n<p><em><strong>Carrying Soul Coins.</strong></em> To hold a soul coin is to feel the soul bound within it &mdash; overcome with rage or fraught with despair.</p>\r\n<p>An evil creature can carry as many soul coins as it wishes (up to its maximum weight allowance). A non-evil creature can carry a number of soul coins equal to or less than its Constitution modifier without penalty. A non-evil creature carrying a number of soul coins greater than its Constitution modifier has disadvantage on its attack rolls, ability checks, and saving throws.</p>\r\n<p><em><strong>Using a Soul Coin.</strong></em> A soul coin has 3 charges. A creature carrying the coin can use its action to expend 1 charge from a soul coin and use it to do one of the following:</p>\r\n<p><strong>Drain Life.</strong> You siphon away some of the soul’s essence and gain 1d10 temporary hit points.</p>\r\n<p><strong>Query.</strong> You telepathically ask the soul a question and receive a brief telepathic response, which you can understand. The soul knows only what it knew in life, but it must answer you truthfully and to the best of its ability. The answer is no more than a sentence or two and might be cryptic.</p>\r\n<p><em><strong>Freeing a Soul.</strong></em> Casting a spell that removes a curse on a soul coin frees the soul trapped within it, as does expending all of the coin’s charges. The coin itself rusts from within and is destroyed once the soul is released. A freed soul travels to the realm of the god it served or the outer plane most closely tied to its alignment (DM’s choice). The souls of lawful evil creatures released from soul coins typically emerge from the River Styx as lemure devils.</p>\r\n<p>A soul can also be freed by destroying the coin that contains it. A soul coin has AC 19, 1 hit point for each charge it has remaining, and immunity to all damage except that which is dealt by a hellfire weapon or an infernal war machine’s furnace (see \"<a href=\"https://www.dndbeyond.com/sources/bgdia/infernal-war-machines#SoulFuel\">Soul Fuel</a>\").</p>\r\n<p>Freeing a soul from a soul coin is considered a good act, even if the soul belongs to an evil creature.</p>\r\n<p><em><strong>Hellish Currency.</strong></em> Soul coins are a currency of the Nine Hells and are highly valued by devils. The coins are used among the infernal hierarchy to barter for favors, bribe the unwilling, and reward the faithful for services rendered.</p>\r\n<p>Soul coins are created by Mammon and his greater devils on Minauros, the third layer of the Nine Hells, in a vast chamber where the captured souls of evil mortals are bound into the coins. These coins are then distributed throughout the Nine Hells to be used for goods and services, infernal deals, dark bargains, and bribes.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": true,
+      "isEquipped": false
     },
     {
       "name": "Soul Coin",
       "quantity": 1,
       "weight": 0,
-      "notes": {
-        "allies": null,
-        "personalPossessions": null,
-        "otherHoldings": null,
-        "organizations": null,
-        "enemies": null,
-        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
-        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
-      }
+      "notes": "<p>Soul coins are about 5 inches across and about an inch thick, minted from infernal iron. Each coin weighs one-third of a pound, and is inscribed with Infernal writing and a spell that magically binds a single soul to the coin. Because each soul coin has a unique soul trapped within it, each has a story. A creature might have been imprisoned as a result of defaulting on a deal, while another might be the victim of a night hag’s curse.</p>\r\n<p><em><strong>Carrying Soul Coins.</strong></em> To hold a soul coin is to feel the soul bound within it &mdash; overcome with rage or fraught with despair.</p>\r\n<p>An evil creature can carry as many soul coins as it wishes (up to its maximum weight allowance). A non-evil creature can carry a number of soul coins equal to or less than its Constitution modifier without penalty. A non-evil creature carrying a number of soul coins greater than its Constitution modifier has disadvantage on its attack rolls, ability checks, and saving throws.</p>\r\n<p><em><strong>Using a Soul Coin.</strong></em> A soul coin has 3 charges. A creature carrying the coin can use its action to expend 1 charge from a soul coin and use it to do one of the following:</p>\r\n<p><strong>Drain Life.</strong> You siphon away some of the soul’s essence and gain 1d10 temporary hit points.</p>\r\n<p><strong>Query.</strong> You telepathically ask the soul a question and receive a brief telepathic response, which you can understand. The soul knows only what it knew in life, but it must answer you truthfully and to the best of its ability. The answer is no more than a sentence or two and might be cryptic.</p>\r\n<p><em><strong>Freeing a Soul.</strong></em> Casting a spell that removes a curse on a soul coin frees the soul trapped within it, as does expending all of the coin’s charges. The coin itself rusts from within and is destroyed once the soul is released. A freed soul travels to the realm of the god it served or the outer plane most closely tied to its alignment (DM’s choice). The souls of lawful evil creatures released from soul coins typically emerge from the River Styx as lemure devils.</p>\r\n<p>A soul can also be freed by destroying the coin that contains it. A soul coin has AC 19, 1 hit point for each charge it has remaining, and immunity to all damage except that which is dealt by a hellfire weapon or an infernal war machine’s furnace (see \"<a href=\"https://www.dndbeyond.com/sources/bgdia/infernal-war-machines#SoulFuel\">Soul Fuel</a>\").</p>\r\n<p>Freeing a soul from a soul coin is considered a good act, even if the soul belongs to an evil creature.</p>\r\n<p><em><strong>Hellish Currency.</strong></em> Soul coins are a currency of the Nine Hells and are highly valued by devils. The coins are used among the infernal hierarchy to barter for favors, bribe the unwilling, and reward the faithful for services rendered.</p>\r\n<p>Soul coins are created by Mammon and his greater devils on Minauros, the third layer of the Nine Hells, in a vast chamber where the captured souls of evil mortals are bound into the coins. These coins are then distributed throughout the Nine Hells to be used for goods and services, infernal deals, dark bargains, and bribes.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": true,
+      "isEquipped": false
     },
     {
       "name": "Soul Coin",
       "quantity": 1,
       "weight": 0,
-      "notes": {
-        "allies": null,
-        "personalPossessions": null,
-        "otherHoldings": null,
-        "organizations": null,
-        "enemies": null,
-        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
-        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
-      }
+      "notes": "<p>Soul coins are about 5 inches across and about an inch thick, minted from infernal iron. Each coin weighs one-third of a pound, and is inscribed with Infernal writing and a spell that magically binds a single soul to the coin. Because each soul coin has a unique soul trapped within it, each has a story. A creature might have been imprisoned as a result of defaulting on a deal, while another might be the victim of a night hag’s curse.</p>\r\n<p><em><strong>Carrying Soul Coins.</strong></em> To hold a soul coin is to feel the soul bound within it &mdash; overcome with rage or fraught with despair.</p>\r\n<p>An evil creature can carry as many soul coins as it wishes (up to its maximum weight allowance). A non-evil creature can carry a number of soul coins equal to or less than its Constitution modifier without penalty. A non-evil creature carrying a number of soul coins greater than its Constitution modifier has disadvantage on its attack rolls, ability checks, and saving throws.</p>\r\n<p><em><strong>Using a Soul Coin.</strong></em> A soul coin has 3 charges. A creature carrying the coin can use its action to expend 1 charge from a soul coin and use it to do one of the following:</p>\r\n<p><strong>Drain Life.</strong> You siphon away some of the soul’s essence and gain 1d10 temporary hit points.</p>\r\n<p><strong>Query.</strong> You telepathically ask the soul a question and receive a brief telepathic response, which you can understand. The soul knows only what it knew in life, but it must answer you truthfully and to the best of its ability. The answer is no more than a sentence or two and might be cryptic.</p>\r\n<p><em><strong>Freeing a Soul.</strong></em> Casting a spell that removes a curse on a soul coin frees the soul trapped within it, as does expending all of the coin’s charges. The coin itself rusts from within and is destroyed once the soul is released. A freed soul travels to the realm of the god it served or the outer plane most closely tied to its alignment (DM’s choice). The souls of lawful evil creatures released from soul coins typically emerge from the River Styx as lemure devils.</p>\r\n<p>A soul can also be freed by destroying the coin that contains it. A soul coin has AC 19, 1 hit point for each charge it has remaining, and immunity to all damage except that which is dealt by a hellfire weapon or an infernal war machine’s furnace (see \"<a href=\"https://www.dndbeyond.com/sources/bgdia/infernal-war-machines#SoulFuel\">Soul Fuel</a>\").</p>\r\n<p>Freeing a soul from a soul coin is considered a good act, even if the soul belongs to an evil creature.</p>\r\n<p><em><strong>Hellish Currency.</strong></em> Soul coins are a currency of the Nine Hells and are highly valued by devils. The coins are used among the infernal hierarchy to barter for favors, bribe the unwilling, and reward the faithful for services rendered.</p>\r\n<p>Soul coins are created by Mammon and his greater devils on Minauros, the third layer of the Nine Hells, in a vast chamber where the captured souls of evil mortals are bound into the coins. These coins are then distributed throughout the Nine Hells to be used for goods and services, infernal deals, dark bargains, and bribes.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": true,
+      "isEquipped": false
     },
     {
       "name": "Soul Coin",
       "quantity": 1,
       "weight": 0,
-      "notes": {
-        "allies": null,
-        "personalPossessions": null,
-        "otherHoldings": null,
-        "organizations": null,
-        "enemies": null,
-        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
-        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
-      }
+      "notes": "<p>Soul coins are about 5 inches across and about an inch thick, minted from infernal iron. Each coin weighs one-third of a pound, and is inscribed with Infernal writing and a spell that magically binds a single soul to the coin. Because each soul coin has a unique soul trapped within it, each has a story. A creature might have been imprisoned as a result of defaulting on a deal, while another might be the victim of a night hag’s curse.</p>\r\n<p><em><strong>Carrying Soul Coins.</strong></em> To hold a soul coin is to feel the soul bound within it &mdash; overcome with rage or fraught with despair.</p>\r\n<p>An evil creature can carry as many soul coins as it wishes (up to its maximum weight allowance). A non-evil creature can carry a number of soul coins equal to or less than its Constitution modifier without penalty. A non-evil creature carrying a number of soul coins greater than its Constitution modifier has disadvantage on its attack rolls, ability checks, and saving throws.</p>\r\n<p><em><strong>Using a Soul Coin.</strong></em> A soul coin has 3 charges. A creature carrying the coin can use its action to expend 1 charge from a soul coin and use it to do one of the following:</p>\r\n<p><strong>Drain Life.</strong> You siphon away some of the soul’s essence and gain 1d10 temporary hit points.</p>\r\n<p><strong>Query.</strong> You telepathically ask the soul a question and receive a brief telepathic response, which you can understand. The soul knows only what it knew in life, but it must answer you truthfully and to the best of its ability. The answer is no more than a sentence or two and might be cryptic.</p>\r\n<p><em><strong>Freeing a Soul.</strong></em> Casting a spell that removes a curse on a soul coin frees the soul trapped within it, as does expending all of the coin’s charges. The coin itself rusts from within and is destroyed once the soul is released. A freed soul travels to the realm of the god it served or the outer plane most closely tied to its alignment (DM’s choice). The souls of lawful evil creatures released from soul coins typically emerge from the River Styx as lemure devils.</p>\r\n<p>A soul can also be freed by destroying the coin that contains it. A soul coin has AC 19, 1 hit point for each charge it has remaining, and immunity to all damage except that which is dealt by a hellfire weapon or an infernal war machine’s furnace (see \"<a href=\"https://www.dndbeyond.com/sources/bgdia/infernal-war-machines#SoulFuel\">Soul Fuel</a>\").</p>\r\n<p>Freeing a soul from a soul coin is considered a good act, even if the soul belongs to an evil creature.</p>\r\n<p><em><strong>Hellish Currency.</strong></em> Soul coins are a currency of the Nine Hells and are highly valued by devils. The coins are used among the infernal hierarchy to barter for favors, bribe the unwilling, and reward the faithful for services rendered.</p>\r\n<p>Soul coins are created by Mammon and his greater devils on Minauros, the third layer of the Nine Hells, in a vast chamber where the captured souls of evil mortals are bound into the coins. These coins are then distributed throughout the Nine Hells to be used for goods and services, infernal deals, dark bargains, and bribes.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": true,
+      "isEquipped": false
     },
     {
       "name": "Potion of Healing",
       "quantity": 2,
-      "weight": 0.5,
-      "notes": {
-        "allies": null,
-        "personalPossessions": null,
-        "otherHoldings": null,
-        "organizations": null,
-        "enemies": null,
-        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
-        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
-      }
+      "weight": 1,
+      "notes": "<p>This potion is a magic item. As a Bonus Action, you can drink it or administer it to another creature within 5 feet of yourself. The creature that drinks the magical red fluid in this vial regains 2d4 + 2 Hit Points.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
     },
     {
       "name": "Horseshoes of a Zephyr",
       "quantity": 1,
       "weight": 0,
-      "notes": {
-        "allies": null,
-        "personalPossessions": null,
-        "otherHoldings": null,
-        "organizations": null,
-        "enemies": null,
-        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
-        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
-      }
+      "notes": "<p>These horseshoes come in a set of four. As a Magic action, you can touch one of the horseshoes to the hoof of a horse or similar creature, whereupon the horseshoe affixes itself to the hoof. Removing a horseshoe also takes a Magic action.</p>\r\n<p>While all four shoes are affixed to the hooves of a horse or similar creature, they allow the creature to move normally while floating 4 inches above a surface. This effect means the creature can cross or stand above nonsolid or unstable surfaces, such as water or lava. The creature leaves no tracks and ignores Difficult Terrain. In addition, the creature can travel for up to 12 hours a day without gaining Exhaustion levels from extended travel.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": true,
+      "isEquipped": true
     },
     {
       "name": "Potion of Invisibility",
       "quantity": 2,
       "weight": 0,
-      "notes": {
-        "allies": null,
-        "personalPossessions": null,
-        "otherHoldings": null,
-        "organizations": null,
-        "enemies": null,
-        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
-        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
-      }
+      "notes": "<p>This potion’s container looks empty but feels as though it holds liquid. When you drink the potion, you have the Invisible condition for 1 hour. The effect ends early if you make an attack roll, deal damage, or cast a spell.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
     },
     {
       "name": "Potion of Speed",
       "quantity": 3,
       "weight": 0,
-      "notes": {
-        "allies": null,
-        "personalPossessions": null,
-        "otherHoldings": null,
-        "organizations": null,
-        "enemies": null,
-        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
-        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
-      }
+      "notes": "<p>When you drink this potion, you gain the effect of the Haste spell for 1 minute (no Concentration required) without suffering the wave of lethargy that typically occurs when the effect ends.</p>\r\n<p>This potion’s yellow fluid is streaked with black and swirls on its own.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
     },
     {
       "name": "Rope, Silk (50 feet)",
       "quantity": 1,
       "weight": 5,
-      "notes": {
-        "allies": null,
-        "personalPossessions": null,
-        "otherHoldings": null,
-        "organizations": null,
-        "enemies": null,
-        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
-        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
-      }
+      "notes": "<p>Rope,&nbsp;has 2 hit points and can be burst with a DC 17 Strength check.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
     },
     {
       "name": "Oil",
       "quantity": 2,
-      "weight": 1,
-      "notes": {
-        "allies": null,
-        "personalPossessions": null,
-        "otherHoldings": null,
-        "organizations": null,
-        "enemies": null,
-        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
-        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
-      }
+      "weight": 2,
+      "notes": "<p>You can douse a creature, object, or space with Oil or use it as fuel, as detailed below.</p>\r\n<p><strong><em>Dousing a Creature or an Object.</em></strong> When you take the Attack action, you can replace one of your attacks with throwing an Oil flask. Target one creature or object within 20 feet of yourself. The target must succeed on a Dexterity saving throw (DC 8 plus your Dexterity modifier and Proficiency Bonus) or be covered in oil. If the target takes Fire damage before the oil dries (after 1 minute), the target takes an extra 5 Fire damage from burning oil.</p>\r\n<p><strong><em>Dousing a Space.</em></strong> You can take the Utilize action to pour an Oil flask on level ground to cover a 5-foot-square area within 5 feet of yourself. If lit, the oil burns until the end of the turn 2 rounds from when the oil was lit (or 12 seconds) and deals 5 Fire damage to any creature that enters the area or ends its turn there. A creature can take this damage only once per turn.</p>\r\n<p><strong><em>Fuel.</em></strong> Oil serves as fuel for Lamps and Lanterns. Once lit, a flask of Oil burns for 6 hours in a Lamp or Lantern. That duration doesn’t need to be consecutive; you can extinguish the burning Oil (as a Utilize action) and rekindle it again until it has burned for a total of 6 hours.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
     },
     {
       "name": "Rations",
       "quantity": 10,
-      "weight": 2,
-      "notes": {
-        "allies": null,
-        "personalPossessions": null,
-        "otherHoldings": null,
-        "organizations": null,
-        "enemies": null,
-        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
-        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
-      }
+      "weight": 20,
+      "notes": "<p>Rations consist of travel-ready food, including jerky, dried fruit, hardtack, and nuts. See &ldquo;Malnutrition&rdquo; for the risks of not eating.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
     },
     {
       "name": "Rope",
       "quantity": 3,
-      "weight": 5,
-      "notes": {
-        "allies": null,
-        "personalPossessions": null,
-        "otherHoldings": null,
-        "organizations": null,
-        "enemies": null,
-        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
-        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
-      }
+      "weight": 15,
+      "notes": "<p>As a Utilize action, you can tie a knot with Rope if you succeed on a DC 10 Dexterity (Sleight of Hand) check. The Rope can be burst with a successful DC 20 Strength (Athletics) check.</p>\r\n<p>You can bind an unwilling creature with the Rope only if the creature has the Grappled, Incapacitated, or Restrained condition. If the creature’s legs are bound, the creature has the Restrained condition until it escapes. Escaping the Rope requires the creature to make a successful DC 15 Dexterity (Acrobatics) check as an action.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
     },
     {
       "name": "Bedroll",
       "quantity": 1,
       "weight": 7,
-      "notes": {
-        "allies": null,
-        "personalPossessions": null,
-        "otherHoldings": null,
-        "organizations": null,
-        "enemies": null,
-        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
-        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
-      }
+      "notes": "<p>A Bedroll sleeps one Small or Medium creature. While in a Bedroll, you automatically succeed on saving throws against extreme cold (see the <em>Dungeon Master’s Guide</em>).</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
     },
     {
       "name": "Tinderbox",
       "quantity": 1,
       "weight": 1,
-      "notes": {
-        "allies": null,
-        "personalPossessions": null,
-        "otherHoldings": null,
-        "organizations": null,
-        "enemies": null,
-        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
-        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
-      }
+      "notes": "<p>A Tinderbox is a small container holding flint, fire steel, and tinder (usually dry cloth soaked in light oil) used to kindle a fire. Using it to light a Candle, Lamp, Lantern, or Torch&mdash;or anything else with exposed fuel&mdash;takes a Bonus Action. Lighting any other fire takes 1 minute.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
     },
     {
       "name": "Torch",
       "quantity": 10,
-      "weight": 1,
-      "notes": {
-        "allies": null,
-        "personalPossessions": null,
-        "otherHoldings": null,
-        "organizations": null,
-        "enemies": null,
-        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
-        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
-      }
+      "weight": 10,
+      "notes": "<p>A Torch burns for 1 hour, casting Bright Light in a 20-foot radius and Dim Light for an additional 20 feet. When you take the Attack action, you can attack with the Torch, using it as a Simple Melee weapon. On a hit, the target takes 1 Fire damage.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
     },
     {
       "name": "Waterskin",
       "quantity": 1,
       "weight": 5,
-      "notes": {
-        "allies": null,
-        "personalPossessions": null,
-        "otherHoldings": null,
-        "organizations": null,
-        "enemies": null,
-        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
-        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
-      }
+      "notes": "<p>A Waterskin holds up to 4 pints. If you don’t drink sufficient water, you risk dehydration.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
     },
     {
       "name": "Alchemist's Fire",
       "quantity": 1,
       "weight": 1,
-      "notes": {
-        "allies": null,
-        "personalPossessions": null,
-        "otherHoldings": null,
-        "organizations": null,
-        "enemies": null,
-        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
-        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
-      }
+      "notes": "<p>When you take the Attack action, you can replace one of your attacks with throwing a flask of Alchemist’s Fire. Target one creature or object you can see within 20 feet of yourself. The target must succeed on a Dexterity saving throw (DC 8 plus your Dexterity modifier and Proficiency Bonus) or take 1d4 Fire damage and start burning.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
     },
     {
       "name": "Holy Water",
       "quantity": 1,
       "weight": 1,
-      "notes": {
-        "allies": null,
-        "personalPossessions": null,
-        "otherHoldings": null,
-        "organizations": null,
-        "enemies": null,
-        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
-        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
-      }
+      "notes": "<p>When you take the Attack action, you can replace one of your attacks with throwing a flask of Holy Water. Target one creature you can see within 20 feet of yourself. The target must succeed on a Dexterity saving throw (DC 8 plus your Dexterity modifier and Proficiency Bonus) or take 2d8 Radiant damage if it is a Fiend or an Undead.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
     },
     {
       "name": "Wyvern Poison",
       "quantity": 4,
       "weight": 0,
-      "notes": {
-        "allies": null,
-        "personalPossessions": null,
-        "otherHoldings": null,
-        "organizations": null,
-        "enemies": null,
-        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
-        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
-      }
+      "notes": "<p><em>Injury Poison</em></p>\r\n<p>A creature subjected to Wyvern Poison makes a DC 14 Constitution saving throw, taking 24 (7d6) Poison damage on a failed save or half as much damage on a successful one.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
     },
     {
       "name": "Crossbow Bolts, +1",
       "quantity": 50,
       "weight": 0,
-      "notes": {
-        "allies": null,
-        "personalPossessions": null,
-        "otherHoldings": null,
-        "organizations": null,
-        "enemies": null,
-        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
-        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
-      }
+      "notes": "<p>You have a +1 bonus to attack and damage rolls made with this piece of magic ammunition. Once it hits a target, the ammunition is no longer magical.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": true,
+      "isEquipped": false
     },
     {
       "name": "Book",
       "quantity": 1,
       "weight": 5,
-      "notes": {
-        "allies": null,
-        "personalPossessions": null,
-        "otherHoldings": null,
-        "organizations": null,
-        "enemies": null,
-        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
-        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
-      }
+      "notes": "<p>A Book contains fiction or nonfiction. If you consult an accurate nonfiction Book about its topic, you gain a +5 bonus to Intelligence (Arcana, History, Nature, or Religion) checks you make about that topic.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
     }
   ],
   "background": {
     "name": "Farmer",
     "description": "<p><strong>Ability Scores:</strong>&nbsp;Strength, Constitution, Wisdom<br /><strong>Feat:</strong>&nbsp;Tough<br /><strong>Skill Proficiencies:</strong> Animal Handling and Nature<br /><strong>Tool Proficiency:</strong>&nbsp;Carpenter's Tools<br /><strong>Equipment:</strong> <em>Choose A or B:</em> (A) Sickle, Carpenter's Tools, Healer's Kit, Iron Pot, Shovel, Traveler's Clothes, 30 GP; or (B) 50 GP</p>\r\n<p>You grew up close to the land. Years tending animals and cultivating the earth rewarded you with patience and good health. You have a keen appreciation for nature’s bounty alongside a healthy respect for nature’s wrath.</p>",
     "feature": "Feat: Tough"
+  },
+  "feats": [
+    {
+      "name": "Archery",
+      "description": "<p><em>Fighting Style Feat (Prerequisite: Fighting Style Feature)</em></p>\r\n<p>You gain a +2 bonus to attack rolls you make with Ranged weapons.</p>",
+      "level": null,
+      "limitedUse": null
+    },
+    {
+      "name": "Farmer Ability Score Improvements",
+      "description": "<p>The Farmer Background allows you to choose between Strength, Constitution, and Wisdom. Increase one of these scores by 2 and another one by 1, or increase all three by 1. None of these increases can raise a score above 20.</p>",
+      "level": null,
+      "limitedUse": null
+    },
+    {
+      "name": "Lucky",
+      "description": "<p><em>Origin Feat</em></p>\r\n<p>You gain the following benefits.</p>\r\n<p><em><strong>Luck Points.</strong></em> You have a number of Luck Points equal to your Proficiency Bonus and can spend the points on the benefits below. You regain your expended Luck Points when you finish a Long Rest.</p>\r\n<p><em><strong>Advantage.</strong></em> When you roll a d20 for a D20 Test, you can spend 1 Luck Point to give yourself Advantage on the roll.</p>\r\n<p><em><strong>Disadvantage.</strong></em> When a creature rolls a d20 for an attack roll against you, you can spend 1 Luck Point to impose Disadvantage on that roll.</p>",
+      "level": null,
+      "limitedUse": null
+    },
+    {
+      "name": "Piercer",
+      "description": "<p><em>General Feat (Prerequisite: Level 4+)</em></p>\r\n<p>You gain the following benefits.</p>\r\n<p><em><strong>Ability Score Increase.</strong></em> Increase your Strength or Dexterity by 1, to a maximum of 20.</p>\r\n<p><em><strong> Puncture.</strong></em> Once per turn, when you hit a creature with an attack that deals Piercing damage, you can reroll one of the attack’s damage dice, and you must use the new roll.</p>\r\n<p><em><strong> Enhanced Critical.</strong></em> When you score a Critical Hit that deals Piercing damage to a creature, you can roll one additional damage die when determining the extra Piercing damage the target takes.</p>",
+      "level": null,
+      "limitedUse": null
+    },
+    {
+      "name": "Tough",
+      "description": "<p><em>Origin Feat</em></p>\r\n<p>Your Hit Point maximum increases by an amount equal to twice your character level when you gain this feat. Whenever you gain a character level thereafter, your Hit Point maximum increases by an additional 2 Hit Points.</p>",
+      "level": null,
+      "limitedUse": null
+    },
+    {
+      "name": "Weapon Mastery",
+      "description": "<p>Your training with weapons allows you to use the mastery properties of two kinds of weapons of your choice with which you have proficiency.</p>\r\n<p>Whenever you finish a Long Rest, you can change the kinds of weapons you chose.</p>",
+      "level": null,
+      "limitedUse": null
+    }
+  ],
+  "features": [
+    {
+      "name": "Dread Ambusher",
+      "description": "<p>You have mastered the art of creating fearsome ambushes, granting you the following benefits.</p>\r\n<p><strong><em>Ambusher’s Leap.</em></strong> At the start of your first turn of each combat, your Speed increases by 10 feet until the end of that turn.</p>\r\n<p><strong><em>Dreadful Strike.</em></strong> When you attack a creature and hit it with a weapon, you can deal an extra 2d6 Psychic damage. You can use this benefit only once per turn, you can use it a number of times equal to your Wisdom modifier (minimum of once), and you regain all expended uses when you finish a Long Rest.</p>\r\n<p><strong><em>Initiative Bonus.</em></strong> When you roll Initiative, you can add your Wisdom modifier to the roll.</p>"
+    },
+    {
+      "name": "Gloom Stalker Spells",
+      "description": "<p>When you reach a Ranger level specified in the Gloom Stalker Spells table, you thereafter always have the listed spells prepared.</p>\r\n<table class=\"table-compendium table--sub-features\" style=\"--sb-table-row-bg-hover: #b3d3df; --sb-table-row-bg-dark: #d7e8ee; --sb-table-row-bg-light: #f1f7f9; --dark-sb-table-row-bg-light: #5e7982; --dark-sb-table-row-bg-dark: #5c7f8c; --dark-sb-table-row-bg-hover: #78a2b0;\"><caption>\r\n<h5 id=\"GloomStalkerSpells\" class=\"compendium-hr quick-menu-exclude\">Gloom Stalker Spells</h5>\r\n</caption>\r\n<thead>\r\n<tr>\r\n<th>Ranger Level</th>\r\n<th>Spells</th>\r\n</tr>\r\n</thead>\r\n<tbody>\r\n<tr>\r\n<td>3</td>\r\n<td>Disguise Self</td>\r\n</tr>\r\n<tr>\r\n<td>5</td>\r\n<td>Rope Trick</td>\r\n</tr>\r\n<tr>\r\n<td>9</td>\r\n<td>Fear</td>\r\n</tr>\r\n<tr>\r\n<td>13</td>\r\n<td>Greater Invisibility</td>\r\n</tr>\r\n<tr>\r\n<td>17</td>\r\n<td>Seeming</td>\r\n</tr>\r\n</tbody>\r\n</table>"
+    },
+    {
+      "name": "Umbral Sight",
+      "description": "<p>You gain Darkvision with a range of 60 feet. If you already have Darkvision when you gain this feature, its range increases by 60 feet.</p>\r\n<p>You are also adept at evading creatures that rely on Darkvision. While entirely in Darkness, you have the Invisible condition to any creature that relies on Darkvision to see you in that Darkness.</p>"
+    },
+    {
+      "name": "Iron Mind",
+      "description": "<p>You have honed your ability to resist mind-altering powers. You gain proficiency in Wisdom saving throws. If you already have this proficiency, you instead gain proficiency in Intelligence or Charisma saving throws (your choice).</p>"
+    },
+    {
+      "name": "Stalker’s Flurry",
+      "description": "<p>The Psychic damage of your Dreadful Strike becomes 2d8. In addition, when you use the Dreadful Strike effect of your Dread Ambusher feature, you can cause one of the following additional effects.</p>\r\n<p><strong><em>Sudden Strike.</em></strong> You can make another attack with the same weapon against a different creature that is within 5 feet of the original target and that is within the weapon’s range.</p>\r\n<p><strong><em>Mass Fear.</em></strong> The target and each creature within 10 feet of it must make a Wisdom saving throw against your spell save DC. On a failed save, a creature has the Frightened condition until the start of your next turn.</p>"
+    },
+    {
+      "name": "Shadowy Dodge",
+      "description": "<p>When a creature makes an attack roll against you, you can take a Reaction to impose Disadvantage on that roll. Whether the attack hits or misses, you can then teleport up to 30 feet to an unoccupied space you can see.</p>"
+    },
+    {
+      "name": "Core Ranger Traits",
+      "description": "<p>As a Level 1 Character:</p>\r\n<ul>\r\n<li>Gain all the traits in the Core Ranger Traits table.</li>\r\n<li>Gain the Ranger’s level 1 features.</li>\r\n</ul>\r\n<table class=\"table-compendium table--left-all\" style=\"--sb-table-row-bg-hover: #b3d3df; --sb-table-row-bg-dark: #d7e8ee; --sb-table-row-bg-light: #f1f7f9; --dark-sb-table-row-bg-light: #5e7982; --dark-sb-table-row-bg-dark: #5c7f8c; --dark-sb-table-row-bg-hover: #78a2b0;\"><caption>Core Ranger Traits</caption>\r\n<tbody>\r\n<tr>\r\n<th>Primary Ability</th>\r\n<td>Dexterity and Wisdom</td>\r\n</tr>\r\n<tr>\r\n<th>Hit Point Die</th>\r\n<td>D10 per Ranger level</td>\r\n</tr>\r\n<tr>\r\n<th>Saving Throw Proficiencies</th>\r\n<td>Strength and Dexterity</td>\r\n</tr>\r\n<tr>\r\n<th>Skill Proficiencies</th>\r\n<td><em>Choose 3:</em> Animal Handling, Athletics, Insight, Investigation, Nature, Perception, Stealth, or Survival</td>\r\n</tr>\r\n<tr>\r\n<th>Weapon Proficiencies</th>\r\n<td>Simple and Martial weapons</td>\r\n</tr>\r\n<tr>\r\n<th>Armor Training</th>\r\n<td>Light and Medium armor and Shields</td>\r\n</tr>\r\n<tr>\r\n<th>Starting Equipment</th>\r\n<td><em>Choose A or B:</em> (A) Studded Leather Armor, Scimitar, Shortsword, Longbow, 20 Arrows, Quiver, Druidic Focus (sprig of mistletoe), Explorer’s Pack, and 7 GP; or (B) 150 GP</td>\r\n</tr>\r\n</tbody>\r\n</table>"
+    },
+    {
+      "name": "Spellcasting",
+      "description": "<p>You have learned to channel the magical essence of nature to cast spells.</p>\r\n<p><strong><em>Spell Slots.</em></strong> The Ranger Features table shows how many spell slots you have to cast your level 1+ spells. You regain all expended slots when you finish a Long Rest.</p>\r\n<p><strong><em>Prepared Spells of Level 1+</em></strong>. You prepare the list of level 1+ spells that are available for you to cast with this feature. To start, choose two level 1 Ranger spells.</p>\r\n<p>The number of spells on your list increases as you gain Ranger levels, as shown in the Prepared Spells column of the Ranger Features table. Whenever that number increases, choose additional Ranger spells until the number of spells on your list matches the number in the Ranger Features table. The chosen spells must be of a level for which you have spell slots. For example, if you’re a level 5 Ranger, your list of prepared spells can include six Ranger spells of level 1 or 2 in any combination.</p>\r\n<p>If another Ranger feature gives you spells that you always have prepared, those spells don’t count against the number of spells you can prepare with this feature, but those spells otherwise count as Ranger spells for you.</p>\r\n<p><strong><em>Changing Your Prepared Spells.</em></strong> Whenever you finish a Long Rest, you can replace one spell on your list with another Ranger spell for which you have spell slots.</p>\r\n<p><strong><em>Spellcasting Ability.</em></strong> Wisdom is your spellcasting ability for your Ranger spells.</p>\r\n<p><strong><em>Spellcasting Focus.</em></strong> You can use a Druidic Focus as a Spellcasting Focus for your Ranger spells.</p>"
+    },
+    {
+      "name": "Favored Enemy",
+      "description": "<p>You always have the Hunter’s Mark spell prepared. You can cast it twice without expending a spell slot, and you regain all expended uses of this ability when you finish a Long Rest.</p>\r\n<p>The number of times you can cast the spell without a spell slot increases when you reach certain Ranger levels.</p>"
+    },
+    {
+      "name": "Weapon Mastery",
+      "description": "<p>Your training with weapons allows you to use the mastery properties of two kinds of weapons of your choice with which you have proficiency, such as Longbows and Shortswords.</p>\r\n<p>Whenever you finish a Long Rest, you can change the kinds of weapons you chose. For example, you could switch to using the mastery properties of Scimitars and Longswords.</p>"
+    },
+    {
+      "name": "Deft Explorer",
+      "description": "<p>Thanks to your travels, you gain the following benefits.</p>\r\n<p><strong><em>Expertise.</em></strong> Choose one of your skill proficiencies with which you lack Expertise. You gain Expertise in that skill.</p>\r\n<p><strong><em>Languages.</em></strong> You know two languages of your choice.</p>"
+    },
+    {
+      "name": "Fighting Style",
+      "description": "<p>You gain a Fighting Style feat of your choice. Instead of choosing one of those feats, you can choose the option below.</p>"
+    },
+    {
+      "name": "Ranger Subclass",
+      "description": "<p>You gain a Ranger subclass of your choice. A subclass is a specialization that grants you features at certain Ranger levels. For the rest of your career, you gain each of your subclass’s features that are of your Ranger level or lower.</p>"
+    },
+    {
+      "name": "Ability Score Improvement",
+      "description": "<p>You gain the Ability Score Improvement feat or another feat of your choice for which you qualify. You gain this feature again at Ranger levels 8, 12, and 16.</p>"
+    },
+    {
+      "name": "Extra Attack",
+      "description": "<p>You can attack twice instead of once whenever you take the Attack action on your turn.</p>"
+    },
+    {
+      "name": "Roving",
+      "description": "<p>Your Speed increases by 10 feet while you aren’t wearing Heavy armor. You also have a Climb Speed and a Swim Speed equal to your Speed.</p>"
+    },
+    {
+      "name": "8: Ability Score Improvement",
+      "description": "<p>You gain the Ability Score Improvement feat or another feat of your choice for which you qualify. You gain this feature again at Ranger levels 12 and 16.</p>"
+    },
+    {
+      "name": "Expertise",
+      "description": "<p>Choose two of your skill proficiencies with which you lack Expertise. You gain Expertise in those skills.</p>"
+    },
+    {
+      "name": "Tireless",
+      "description": "<p>Primal forces now help fuel you on your journeys, granting you the following benefits.</p>\r\n<p><strong><em>Temporary Hit Points.</em></strong> As a Magic action, you can give yourself a number of Temporary Hit Points equal to 1d8 plus your Wisdom modifier (minimum of 1). You can use this action a number of times equal to your Wisdom modifier (minimum of once), and you regain all expended uses when you finish a Long Rest.</p>\r\n<p><strong><em>Decrease Exhaustion.</em></strong> Whenever you finish a Short Rest, your Exhaustion level, if any, decreases by 1.</p>"
+    },
+    {
+      "name": "12: Ability Score Improvement",
+      "description": "<p>You gain the Ability Score Improvement feat or another feat of your choice for which you qualify. You gain this feature again at Ranger level 16.</p>"
+    },
+    {
+      "name": "Relentless Hunter",
+      "description": "<p>Taking damage can’t break your Concentration on Hunter’s Mark.</p>"
+    },
+    {
+      "name": "Nature’s Veil",
+      "description": "<p>You invoke spirits of nature to magically hide yourself. As a Bonus Action, you can give yourself the Invisible condition until the end of your next turn.</p>\r\n<p>You can use this feature a number of times equal to your Wisdom modifier (minimum of once), and you regain all expended uses when you finish a Long Rest.</p>"
+    },
+    {
+      "name": "16: Ability Score Improvement",
+      "description": "<p>You gain the Ability Score Improvement feat or another feat of your choice for which you qualify.</p>"
+    },
+    {
+      "name": "Precise Hunter",
+      "description": "<p>You have Advantage on attack rolls against the creature currently marked by your Hunter’s Mark.</p>"
+    },
+    {
+      "name": "Feral Senses",
+      "description": "<p>Your connection to the forces of nature grants you Blindsight with a range of 30 feet.</p>"
+    },
+    {
+      "name": "Epic Boon",
+      "description": "<p>You gain an Epic Boon feat or another feat of your choice for which you qualify.</p>"
+    },
+    {
+      "name": "Foe Slayer",
+      "description": "<p>The damage die of your Hunter’s Mark is a d10 rather than a d6.</p>"
+    },
+    {
+      "name": "Resourceful",
+      "description": "<p>You gain Heroic Inspiration whenever you finish a Long Rest.</p>"
+    },
+    {
+      "name": "Skillful",
+      "description": "<p>You gain proficiency in one skill of your choice.</p>"
+    },
+    {
+      "name": "Versatile",
+      "description": "<p>You gain an Origin feat of your choice.</p>"
+    },
+    {
+      "name": "Creature Type",
+      "description": "<p>You are a Humanoid.</p>"
+    },
+    {
+      "name": "Size",
+      "description": "<p>Your Size is Medium (about 4&ndash;7 feet tall) or Small (about 2&ndash;4 feet tall), chosen when you select this species.</p>"
+    },
+    {
+      "name": "Speed",
+      "description": "<p>Your Speed is 30 feet.</p>"
+    },
+    {
+      "name": "Ability Score Increases",
+      "description": "<p>When determining your character’s ability scores, increase one score by 2 and a different one by 1, or increase three scores by 1. None of these increases can raise a score above 20.</p>"
+    },
+    {
+      "name": "Languages",
+      "description": "<p>Your character knows at least three languages: Common plus two languages you roll or choose from the Standard Languages table. Knowledge of a language means your character can communicate in it, read it, and write it. Your class and other features might also give you languages.</p>\r\n<p>The Standard Languages table lists languages that are widespread on D&amp;D worlds. Every player character knows Common, which originated in the planar metropolis of Sigil, the hub of the multiverse. The other standard languages originated with the first members of the most prominent species in the worlds of D&amp;D and have since spread widely.</p>\r\n<table class=\"table-compendium table--generic-dice\" style=\"--sb-table-row-bg-hover: #b3d3df; --sb-table-row-bg-dark: #d7e8ee; --sb-table-row-bg-light: #f1f7f9; --dark-sb-table-row-bg-light: #5e7982; --dark-sb-table-row-bg-dark: #5c7f8c; --dark-sb-table-row-bg-hover: #78a2b0;\"><caption><strong>Standard Languages</strong></caption>\r\n<thead>\r\n<tr>\r\n<th>1d12</th>\r\n<th>Language</th>\r\n<th>Origin</th>\r\n</tr>\r\n</thead>\r\n<tbody>\r\n<tr>\r\n<td>&mdash;</td>\r\n<td>Common</td>\r\n<td>Sigil</td>\r\n</tr>\r\n<tr>\r\n<td>1</td>\r\n<td>Common Sign Language</td>\r\n<td>Sigil</td>\r\n</tr>\r\n<tr>\r\n<td>2</td>\r\n<td>Draconic</td>\r\n<td>Dragons</td>\r\n</tr>\r\n<tr>\r\n<td>3-4</td>\r\n<td>Dwarvish</td>\r\n<td>Dwarves</td>\r\n</tr>\r\n<tr>\r\n<td>5-6</td>\r\n<td>Elvish</td>\r\n<td>Elves</td>\r\n</tr>\r\n<tr>\r\n<td>7</td>\r\n<td>Giant</td>\r\n<td>Giants</td>\r\n</tr>\r\n<tr>\r\n<td>8</td>\r\n<td>Gnomish</td>\r\n<td>Gnomes</td>\r\n</tr>\r\n<tr>\r\n<td>9</td>\r\n<td>Goblin</td>\r\n<td>Goblinoids</td>\r\n</tr>\r\n<tr>\r\n<td>10-11</td>\r\n<td>Halfling</td>\r\n<td>Halflings</td>\r\n</tr>\r\n<tr>\r\n<td>12</td>\r\n<td>Orc</td>\r\n<td>Orcs</td>\r\n</tr>\r\n</tbody>\r\n</table>"
+    },
+    {
+      "name": "Archery",
+      "description": "<p><em>Fighting Style Feat (Prerequisite: Fighting Style Feature)</em></p>\r\n<p>You gain a +2 bonus to attack rolls you make with Ranged weapons.</p>"
+    },
+    {
+      "name": "Farmer Ability Score Improvements",
+      "description": "<p>The Farmer Background allows you to choose between Strength, Constitution, and Wisdom. Increase one of these scores by 2 and another one by 1, or increase all three by 1. None of these increases can raise a score above 20.</p>"
+    },
+    {
+      "name": "Lucky",
+      "description": "<p><em>Origin Feat</em></p>\r\n<p>You gain the following benefits.</p>\r\n<p><em><strong>Luck Points.</strong></em> You have a number of Luck Points equal to your Proficiency Bonus and can spend the points on the benefits below. You regain your expended Luck Points when you finish a Long Rest.</p>\r\n<p><em><strong>Advantage.</strong></em> When you roll a d20 for a D20 Test, you can spend 1 Luck Point to give yourself Advantage on the roll.</p>\r\n<p><em><strong>Disadvantage.</strong></em> When a creature rolls a d20 for an attack roll against you, you can spend 1 Luck Point to impose Disadvantage on that roll.</p>"
+    },
+    {
+      "name": "Piercer",
+      "description": "<p><em>General Feat (Prerequisite: Level 4+)</em></p>\r\n<p>You gain the following benefits.</p>\r\n<p><em><strong>Ability Score Increase.</strong></em> Increase your Strength or Dexterity by 1, to a maximum of 20.</p>\r\n<p><em><strong> Puncture.</strong></em> Once per turn, when you hit a creature with an attack that deals Piercing damage, you can reroll one of the attack’s damage dice, and you must use the new roll.</p>\r\n<p><em><strong> Enhanced Critical.</strong></em> When you score a Critical Hit that deals Piercing damage to a creature, you can roll one additional damage die when determining the extra Piercing damage the target takes.</p>"
+    },
+    {
+      "name": "Tough",
+      "description": "<p><em>Origin Feat</em></p>\r\n<p>Your Hit Point maximum increases by an amount equal to twice your character level when you gain this feat. Whenever you gain a character level thereafter, your Hit Point maximum increases by an additional 2 Hit Points.</p>"
+    }
+  ],
+  "proficiencies": {
+    "armor": [
+      "Light Armor",
+      "Medium Armor",
+      "Shields"
+    ],
+    "weapons": [
+      "Simple Weapons",
+      "Martial Weapons"
+    ],
+    "tools": [
+      "Carpenter's Tools"
+    ],
+    "languages": [
+      "Common",
+      "Common Sign Language",
+      "Elvish",
+      "Abyssal",
+      "Infernal"
+    ],
+    "defenses": [
+      {
+        "name": "Fire",
+        "type": "resistance",
+        "condition": null
+      }
+    ],
+    "senses": [],
+    "other": [
+      "Hit Points",
+      "Subclass",
+      "Extra Attacks",
+      "Speed",
+      "Innate Speed (Climbing)",
+      "Innate Speed (Swimming)",
+      "Initiative",
+      "Darkvision",
+      "Magic",
+      "Ranged Weapon Attacks",
+      "Hit Points per Level",
+      "Slow (Light Crossbow)",
+      "Nick (Dagger)"
+    ]
+  },
+  "attacks": [
+    {
+      "name": "Unarmed Strike",
+      "range": null,
+      "longRange": null,
+      "attackBonus": 3,
+      "damage": "1+0",
+      "damageType": "Bludgeoning",
+      "notes": "",
+      "description": ""
+    },
+    {
+      "name": "Hunter’s Mark",
+      "range": {
+        "range": 90,
+        "longRange": null,
+        "aoeType": null,
+        "aoeSize": null,
+        "hasAoeSpecialDescription": false,
+        "minimumRange": null
+      },
+      "longRange": null,
+      "attackBonus": 0,
+      "damage": "1d6",
+      "damageType": "Force",
+      "notes": "",
+      "description": "<p>You always have the Hunter&rsquo;s Mark spell prepared. You can cast it twice without expending a spell slot, and you regain all expended uses of this ability when you finish a Long Rest.</p>\r\n<p>The number of times you can cast the spell without a spell slot increases when you reach certain Ranger levels.</p>"
+    },
+    {
+      "name": "Dreadful Strike",
+      "range": {
+        "range": null,
+        "longRange": null,
+        "aoeType": null,
+        "aoeSize": null,
+        "hasAoeSpecialDescription": false,
+        "minimumRange": null
+      },
+      "longRange": null,
+      "attackBonus": 0,
+      "damage": "2d6",
+      "damageType": "Psychic",
+      "notes": "",
+      "description": "<p>You have mastered the art of creating fearsome ambushes, granting you the following benefits.</p>\r\n<p><strong><em>Ambusher&rsquo;s Leap.</em></strong> At the start of your first turn of each combat, your Speed increases by 10 feet until the end of that turn.</p>\r\n<p><strong><em>Dreadful Strike.</em></strong> When you attack a creature and hit it with a weapon, you can deal an extra 2d6 Psychic damage. You can use this benefit only once per turn, you can use it a number of times equal to your Wisdom modifier (minimum of once), and you regain all expended uses when you finish a [rules]Long Rest[/rules].</p>\r\n<p><strong><em>Initiative Bonus.</em></strong> When you roll [rules]Initiative[/rules], you can add your Wisdom modifier to the roll.</p>"
+    },
+    {
+      "name": "Light Crossbow of Warning",
+      "range": "80 ft.",
+      "longRange": "320 ft.",
+      "attackBonus": 6,
+      "damage": "1d8+3",
+      "damageType": "Piercing",
+      "notes": "Ammunition, Loading, Range, Two-Handed, Slow",
+      "description": "<p>As long as this weapon is within your reach and you are attuned to it, you and allies within 30 feet of you gain the following benefits.</p>\r\n<p><em><strong>Alarm.</strong></em> The weapon magically awakens each subject who is sleeping naturally when combat begins. This benefit doesn’t wake a subject from magically induced sleep.</p>\r\n<p><em><strong>Supernatural Readiness.</strong></em> Each subject has Advantage on its Initiative rolls.</p>"
+    },
+    {
+      "name": "Dagger",
+      "range": "20 ft.",
+      "longRange": "60 ft.",
+      "attackBonus": 6,
+      "damage": "1d4+3",
+      "damageType": "Piercing",
+      "notes": "Finesse, Light, Thrown, Nick",
+      "description": "<p>Proficiency with a Dagger allows you to add your proficiency bonus to the attack roll for any attack you make with it.</p>\r\n<div class=\"mastery-container\"><hr />\r\n<p>This weapon has the following mastery property. To use this property, you must have a feature that lets you use it.</p>\r\n<p><strong><em>Nick.</em></strong> When you make the extra attack of the Light property, you can make it as part of the Attack action instead of as a Bonus Action. You can make this extra attack only once per turn.</p>\r\n</div>"
+    },
+    {
+      "name": "Crossbow, Heavy",
+      "range": "100 ft.",
+      "longRange": "400 ft.",
+      "attackBonus": 6,
+      "damage": "1d10+3",
+      "damageType": "Piercing",
+      "notes": "Ammunition, Heavy, Loading, Range, Two-Handed, Push",
+      "description": "<p>Proficiency with a Heavy Crossbow allows you to add your proficiency bonus to the attack roll for any attack you make with it.</p>\r\n<div class=\"mastery-container\"><hr />\r\n<p>This weapon has the following mastery property. To use this property, you must have a feature that lets you use it.</p>\r\n<p><strong><em>Push.</em></strong> If you hit a creature with this weapon, you can push the creature up to 10 feet straight away from yourself if it is Large or smaller.</p>\r\n</div>"
+    }
+  ],
+  "attacking": {
+    "attacksPerAction": 2,
+    "fightingStyle": "Archery"
+  },
+  "spellcasting": {
+    "abilityId": 5,
+    "ability": "WIS",
+    "mod": "+2",
+    "attack": "+5",
+    "save": 13
+  },
+  "limitedUses": [],
+  "campaign": {
+    "id": 2068660,
+    "name": "Obuqula",
+    "dm": "Skojar"
+  },
+  "decorations": {
+    "avatarUrl": "https://www.dndbeyond.com/avatars/44651/45/1581111423-133639844.jpeg?width=150&height=150&fit=crop&quality=95&auto=webp",
+    "frameAvatarUrl": null,
+    "backdropAvatarUrl": null
   },
   "deathSaves": {
     "successes": null,
@@ -973,7 +1206,10 @@
     "allies": null,
     "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
     "enemies": null,
-    "organizations": null
+    "organizations": null,
+    "personalPossessions": null,
+    "otherHoldings": null,
+    "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
   },
   "traits": {
     "age": 17,
@@ -990,227 +1226,232 @@
     "personalityTraits": "Innocent, Ambitious, Curious, Hardy",
     "size": "Medium"
   },
-  "spells": {
-    "1": [
-      {
-        "name": "Hunter's Mark",
-        "level": 1,
-        "prepared": false,
-        "castingTime": "BA",
-        "range": {
-          "origin": "Ranged",
-          "rangeValue": 90,
-          "aoeType": null,
-          "aoeValue": null
+  "spells": [
+    {
+      "level": 1,
+      "spells": [
+        {
+          "name": "Hunter's Mark",
+          "level": 1,
+          "prepared": false,
+          "castingTime": "BA",
+          "range": {
+            "origin": "Ranged",
+            "rangeValue": 90,
+            "aoeType": null,
+            "aoeValue": null
+          },
+          "school": "Divination",
+          "source": "class",
+          "concentration": true,
+          "ritual": false,
+          "components": [
+            "V"
+          ],
+          "toHit": null,
+          "dc": null,
+          "effect": "Damage",
+          "duration": "1 Hour (Concentration)"
         },
-        "school": "Divination",
-        "source": "class",
-        "concentration": true,
-        "ritual": false,
-        "components": [
-          "V"
-        ],
-        "toHit": null,
-        "dc": null,
-        "effect": "Damage",
-        "duration": "1 Hour (Concentration)"
-      },
-      {
-        "name": "Disguise Self",
-        "level": 1,
-        "prepared": false,
-        "castingTime": "A",
-        "range": {
-          "origin": "Self",
-          "rangeValue": null,
-          "aoeType": null,
-          "aoeValue": null
+        {
+          "name": "Disguise Self",
+          "level": 1,
+          "prepared": false,
+          "castingTime": "A",
+          "range": {
+            "origin": "Self",
+            "rangeValue": null,
+            "aoeType": null,
+            "aoeValue": null
+          },
+          "school": "Illusion",
+          "source": "class",
+          "concentration": false,
+          "ritual": false,
+          "components": [
+            "V",
+            "S"
+          ],
+          "toHit": null,
+          "dc": null,
+          "effect": "Shapechanging",
+          "duration": "1 Hour (Time)"
         },
-        "school": "Illusion",
-        "source": "class",
-        "concentration": false,
-        "ritual": false,
-        "components": [
-          "V",
-          "S"
-        ],
-        "toHit": null,
-        "dc": null,
-        "effect": "Shapechanging",
-        "duration": "1 Hour (Time)"
-      },
-      {
-        "name": "Ensnaring Strike",
-        "level": 1,
-        "prepared": false,
-        "castingTime": "BA",
-        "range": {
-          "origin": "Self",
-          "rangeValue": null,
-          "aoeType": null,
-          "aoeValue": null
+        {
+          "name": "Ensnaring Strike",
+          "level": 1,
+          "prepared": false,
+          "castingTime": "BA",
+          "range": {
+            "origin": "Self",
+            "rangeValue": null,
+            "aoeType": null,
+            "aoeValue": null
+          },
+          "school": "Conjuration",
+          "source": "class",
+          "concentration": true,
+          "ritual": false,
+          "components": [
+            "V"
+          ],
+          "toHit": null,
+          "dc": 13,
+          "effect": "Damage",
+          "duration": "1 Minute (Concentration)"
         },
-        "school": "Conjuration",
-        "source": "class",
-        "concentration": true,
-        "ritual": false,
-        "components": [
-          "V"
-        ],
-        "toHit": null,
-        "dc": 13,
-        "effect": "Damage",
-        "duration": "1 Minute (Concentration)"
-      },
-      {
-        "name": "Hail of Thorns",
-        "level": 1,
-        "prepared": false,
-        "castingTime": "BA",
-        "range": {
-          "origin": "Self",
-          "rangeValue": null,
-          "aoeType": null,
-          "aoeValue": null
+        {
+          "name": "Hail of Thorns",
+          "level": 1,
+          "prepared": false,
+          "castingTime": "BA",
+          "range": {
+            "origin": "Self",
+            "rangeValue": null,
+            "aoeType": null,
+            "aoeValue": null
+          },
+          "school": "Conjuration",
+          "source": "class",
+          "concentration": false,
+          "ritual": false,
+          "components": [
+            "V"
+          ],
+          "toHit": null,
+          "dc": 13,
+          "effect": "Damage",
+          "duration": " (Instantaneous)"
         },
-        "school": "Conjuration",
-        "source": "class",
-        "concentration": false,
-        "ritual": false,
-        "components": [
-          "V"
-        ],
-        "toHit": null,
-        "dc": 13,
-        "effect": "Damage",
-        "duration": " (Instantaneous)"
-      },
-      {
-        "name": "Snare",
-        "level": 1,
-        "prepared": false,
-        "castingTime": "m",
-        "range": {
-          "origin": "Touch",
-          "rangeValue": null,
-          "aoeType": null,
-          "aoeValue": null
+        {
+          "name": "Snare",
+          "level": 1,
+          "prepared": false,
+          "castingTime": "m",
+          "range": {
+            "origin": "Touch",
+            "rangeValue": null,
+            "aoeType": null,
+            "aoeValue": null
+          },
+          "school": "Abjuration",
+          "source": "class",
+          "concentration": false,
+          "ritual": false,
+          "components": [
+            "S",
+            "M"
+          ],
+          "toHit": null,
+          "dc": 13,
+          "effect": "Control",
+          "duration": "8 Hour (Time)"
         },
-        "school": "Abjuration",
-        "source": "class",
-        "concentration": false,
-        "ritual": false,
-        "components": [
-          "S",
-          "M"
-        ],
-        "toHit": null,
-        "dc": 13,
-        "effect": "Control",
-        "duration": "8 Hour (Time)"
-      },
-      {
-        "name": "Beast Bond",
-        "level": 1,
-        "prepared": false,
-        "castingTime": "A",
-        "range": {
-          "origin": "Touch",
-          "rangeValue": null,
-          "aoeType": null,
-          "aoeValue": null
+        {
+          "name": "Beast Bond",
+          "level": 1,
+          "prepared": false,
+          "castingTime": "A",
+          "range": {
+            "origin": "Touch",
+            "rangeValue": null,
+            "aoeType": null,
+            "aoeValue": null
+          },
+          "school": "Divination",
+          "source": "class",
+          "concentration": true,
+          "ritual": false,
+          "components": [
+            "V",
+            "S",
+            "M"
+          ],
+          "toHit": null,
+          "dc": null,
+          "effect": "Communication",
+          "duration": "10 Minute (Concentration)"
+        }
+      ]
+    },
+    {
+      "level": 2,
+      "spells": [
+        {
+          "name": "Rope Trick",
+          "level": 2,
+          "prepared": false,
+          "castingTime": "A",
+          "range": {
+            "origin": "Touch",
+            "rangeValue": 0,
+            "aoeType": null,
+            "aoeValue": null
+          },
+          "school": "Transmutation",
+          "source": "class",
+          "concentration": false,
+          "ritual": false,
+          "components": [
+            "V",
+            "S",
+            "M"
+          ],
+          "toHit": null,
+          "dc": null,
+          "effect": "Utility",
+          "duration": "1 Hour (Time)"
         },
-        "school": "Divination",
-        "source": "class",
-        "concentration": true,
-        "ritual": false,
-        "components": [
-          "V",
-          "S",
-          "M"
-        ],
-        "toHit": null,
-        "dc": null,
-        "effect": "Communication",
-        "duration": "10 Minute (Concentration)"
-      }
-    ],
-    "2": [
-      {
-        "name": "Rope Trick",
-        "level": 2,
-        "prepared": false,
-        "castingTime": "A",
-        "range": {
-          "origin": "Touch",
-          "rangeValue": 0,
-          "aoeType": null,
-          "aoeValue": null
+        {
+          "name": "Healing Spirit",
+          "level": 2,
+          "prepared": false,
+          "castingTime": "BA",
+          "range": {
+            "origin": "Ranged",
+            "rangeValue": 60,
+            "aoeType": "Cube",
+            "aoeValue": 5
+          },
+          "school": "Conjuration",
+          "source": "class",
+          "concentration": true,
+          "ritual": false,
+          "components": [
+            "V",
+            "S"
+          ],
+          "toHit": null,
+          "dc": null,
+          "effect": "Healing",
+          "duration": "1 Minute (Concentration)"
         },
-        "school": "Transmutation",
-        "source": "class",
-        "concentration": false,
-        "ritual": false,
-        "components": [
-          "V",
-          "S",
-          "M"
-        ],
-        "toHit": null,
-        "dc": null,
-        "effect": "Utility",
-        "duration": "1 Hour (Time)"
-      },
-      {
-        "name": "Healing Spirit",
-        "level": 2,
-        "prepared": false,
-        "castingTime": "BA",
-        "range": {
-          "origin": "Ranged",
-          "rangeValue": 60,
-          "aoeType": "Cube",
-          "aoeValue": 5
-        },
-        "school": "Conjuration",
-        "source": "class",
-        "concentration": true,
-        "ritual": false,
-        "components": [
-          "V",
-          "S"
-        ],
-        "toHit": null,
-        "dc": null,
-        "effect": "Healing",
-        "duration": "1 Minute (Concentration)"
-      },
-      {
-        "name": "Pass without Trace",
-        "level": 2,
-        "prepared": false,
-        "castingTime": "A",
-        "range": {
-          "origin": "Self",
-          "rangeValue": 0,
-          "aoeType": "Emanation",
-          "aoeValue": 30
-        },
-        "school": "Abjuration",
-        "source": "class",
-        "concentration": true,
-        "ritual": false,
-        "components": [
-          "V",
-          "S",
-          "M"
-        ],
-        "toHit": null,
-        "dc": null,
-        "effect": "Buff",
-        "duration": "1 Hour (Concentration)"
-      }
-    ]
-  },
-  "id": "octavian-hoff"
+        {
+          "name": "Pass without Trace",
+          "level": 2,
+          "prepared": false,
+          "castingTime": "A",
+          "range": {
+            "origin": "Self",
+            "rangeValue": 0,
+            "aoeType": "Emanation",
+            "aoeValue": 30
+          },
+          "school": "Abjuration",
+          "source": "class",
+          "concentration": true,
+          "ritual": false,
+          "components": [
+            "V",
+            "S",
+            "M"
+          ],
+          "toHit": null,
+          "dc": null,
+          "effect": "Buff",
+          "duration": "1 Hour (Concentration)"
+        }
+      ]
+    }
+  ]
 }

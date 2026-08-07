@@ -1241,3 +1241,144 @@ export function initCombatTrackerWidget(
     },
   };
 }
+
+// --- Macro action support (common/js/lib/widgets/macro-runner.js) ---
+// Standalone — no mounted Combat Tracker widget instance required. Each
+// call does its own fetch → mutate → save round trip against the real
+// "encounter" Library record (preferLocal:false, same reasoning the live
+// widget's own save/writeThroughToCharacter already document: this has to
+// see whatever's actually on the server right now, not a stale local
+// cache), rather than reusing the widget's own in-memory `state.encounter`
+// — there may be no live widget mounted anywhere on this dashboard at all.
+
+export const COMBAT_MACRO_ACTIONS = {
+  advanceTurn: { label: "Advance turn", params: ["delta"] },
+  start: { label: "Start combat" },
+  stop: { label: "Stop combat" },
+  show: { label: "Show to table" },
+  hide: { label: "Hide from table" },
+  addCombatant: { label: "Add a combatant", params: ["refKind", "refId", "name"] },
+  rollInitiative: { label: "Roll initiative (non-characters)" },
+};
+
+// `target` is either a real encounter id, or "active" (the literal string)
+// — resolved dynamically via resolveActiveSpotlightId against whichever
+// encounter is currently spotlighted to the group, exactly like the
+// player-mode poll above already does. Never a specific widget instance id
+// — see macro-runner.js's own design notes on why Clock/Calendar can't do
+// the same and need Phase 2 instead.
+async function resolveMacroEncounterId(target, { dataManager, groupContext }) {
+  const trimmed = (target || "").trim();
+  if (trimmed && trimmed.toLowerCase() !== "active") return trimmed;
+  return resolveActiveSpotlightId(dataManager, { groupId: groupContext?.groupId, kind: "encounter" });
+}
+
+async function loadMacroEncounter(id, dataManager) {
+  const result = await dataManager.get("encounter", id, { preferLocal: false });
+  const encounter = result?.payload;
+  if (!encounter || !Array.isArray(encounter.combatants)) {
+    throw new Error(`Encounter "${id}" not found.`);
+  }
+  return encounter;
+}
+
+export async function runCombatMacroAction(action, { dataManager, groupContext, status } = {}) {
+  const encounterId = await resolveMacroEncounterId(action?.target, { dataManager, groupContext });
+  if (!encounterId) {
+    throw new Error("No encounter to target (none currently shown to the table, and no specific id given).");
+  }
+  const actionName = action?.action;
+  const params = action?.params || {};
+
+  if (actionName === "show" || actionName === "hide") {
+    const groupId = groupContext?.groupId;
+    if (!groupId) throw new Error("No active campaign to show/hide this to.");
+    if (actionName === "show") {
+      await dataManager.spotlightToGroup({ groupId, contentType: "encounter", contentId: encounterId });
+    } else {
+      await dataManager.clearSpotlight({ groupId, kind: "encounter", id: encounterId });
+    }
+    return;
+  }
+
+  const encounter = await loadMacroEncounter(encounterId, dataManager);
+
+  if (actionName === "advanceTurn") {
+    if (!encounter.combatants.length) return;
+    const delta = Number(params.delta) || 1;
+    const count = encounter.combatants.length;
+    let next = encounter.activeIndex + delta;
+    if (next >= count) {
+      next = 0;
+      encounter.round += 1;
+    } else if (next < 0) {
+      next = count - 1;
+      encounter.round = Math.max(1, encounter.round - 1);
+    }
+    encounter.activeIndex = next;
+  } else if (actionName === "start") {
+    encounter.started = true;
+    encounter.round = 1;
+    encounter.activeIndex = 0;
+  } else if (actionName === "stop") {
+    encounter.started = false;
+  } else if (actionName === "addCombatant") {
+    let resolvedName = params.name;
+    let stats = { hp: 0, maxHp: 0, tempHp: 0, ac: 0 };
+    let combatBindings = null;
+    if (params.refKind && params.refId) {
+      try {
+        const result = await dataManager.get(params.refKind, params.refId, { preferLocal: false });
+        const payload = result.payload || {};
+        if (!resolvedName) resolvedName = payload.name || payload.title || params.refId;
+        const fields = await loadSystemFields(dataManager, encounter.systemId);
+        combatBindings = deriveCombatBindings(fields);
+        stats = resolveCombatantStats(combatBindings, payload);
+      } catch (error) {
+        resolvedName = resolvedName || params.refId;
+      }
+    }
+    encounter.combatants.push({
+      id: randomId(),
+      name: uniquifyCombatantName(resolvedName || "Combatant", encounter.combatants),
+      refKind: params.refKind || null,
+      refId: params.refId || null,
+      initiative: 0,
+      hp: stats.hp,
+      maxHp: stats.maxHp,
+      tempHp: stats.tempHp,
+      ac: stats.ac,
+      conditions: [],
+      isPc: params.refKind === "character",
+      hidden: false,
+    });
+  } else if (actionName === "rollInitiative") {
+    const targets = encounter.combatants.filter((c) => c.refKind !== "character");
+    if (targets.length) {
+      const fields = await loadSystemFields(dataManager, encounter.systemId);
+      const combatBindings = deriveCombatBindings(fields);
+      const modifierEntry = findBindingByRole(combatBindings, "modifier");
+      const modifierPath = modifierEntry?.binding;
+      const sides = Number(String(modifierEntry?.die || "d20").replace(/^d/i, "")) || 20;
+      await Promise.all(
+        targets.map(async (combatant) => {
+          let modifier = 0;
+          if (modifierPath && combatant.refKind && combatant.refId) {
+            try {
+              const result = await dataManager.get(combatant.refKind, combatant.refId, { preferLocal: false });
+              const resolved = Number(resolveBinding(modifierPath, result.payload || {}));
+              if (Number.isFinite(resolved)) modifier = resolved;
+            } catch (error) {
+              // Fall back to +0 — same as the live widget's own version.
+            }
+          }
+          combatant.initiative = Math.floor(Math.random() * sides) + 1 + modifier;
+        })
+      );
+    }
+  } else {
+    throw new Error(`Unknown Combat Tracker macro action "${actionName}".`);
+  }
+
+  await dataManager.save("encounter", encounter.id, encounter);
+}

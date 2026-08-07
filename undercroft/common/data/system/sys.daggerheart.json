@@ -1,0 +1,1179 @@
+{
+  "id": "sys.daggerheart",
+  "title": "Daggerheart",
+  "version": "0.1",
+  "fields": [
+    {
+      "type": "string",
+      "key": "name",
+      "label": "Name",
+      "required": true
+    },
+    {
+      "type": "string",
+      "key": "pronouns",
+      "label": "Pronouns"
+    },
+    {
+      "type": "number",
+      "key": "level",
+      "label": "Level",
+      "minimum": 1,
+      "maximum": 10,
+      "default": 1
+    },
+    {
+      "type": "number",
+      "key": "proficiency",
+      "label": "Proficiency",
+      "minimum": 1,
+      "maximum": 6,
+      "default": 1
+    },
+    {
+      "type": "array",
+      "key": "ancestries",
+      "label": "Ancestry",
+      "values": [
+        {
+          "name": "Clank",
+          "description": "Sentient mechanical beings built from a variety of materials, including metal, wood, and stone."
+        },
+        {
+          "name": "Drakona",
+          "description": "Wingless dragon-humanoids with elemental breath and natural scaled armor."
+        },
+        {
+          "name": "Dwarf",
+          "description": "Short, sturdy folk with dense musculature and skin well suited to tattoos and gemstone embedding."
+        },
+        {
+          "name": "Elf",
+          "description": "Tall, pointed-eared humanoids with heightened senses who enter a celestial trance instead of sleeping."
+        },
+        {
+          "name": "Faerie",
+          "description": "Winged, insectile creatures who undergo a metamorphosis during their lifetime."
+        },
+        {
+          "name": "Faun",
+          "description": "Goat-like humanoids with horns, cloven hooves, and long limbs."
+        },
+        {
+          "name": "Firbolg",
+          "description": "Bovine humanoids with broad noses, long tails, and remarkable strength."
+        },
+        {
+          "name": "Fungril",
+          "description": "Mushroom-like beings of extreme variety in appearance, communicating through mycelial networks."
+        },
+        {
+          "name": "Galapa",
+          "description": "Turtle-like humanoids with retractable shells for protection."
+        },
+        {
+          "name": "Giant",
+          "description": "Towering humanoids with broad frames and, in early life, additional eyes."
+        },
+        {
+          "name": "Goblin",
+          "description": "Small folk with large ears and keen senses suited to navigating in darkness."
+        },
+        {
+          "name": "Halfling",
+          "description": "Small humanoids with oversized feet and ears, naturally attuned to magnetic fields."
+        },
+        {
+          "name": "Human",
+          "description": "Adaptable, dexterous beings known for their endurance."
+        },
+        {
+          "name": "Infernis",
+          "description": "Demon-descended humanoids with horns, canine teeth, and colorful skin."
+        },
+        {
+          "name": "Katari",
+          "description": "Feline humanoids with retractable claws, slit pupils, and heightened senses."
+        },
+        {
+          "name": "Orc",
+          "description": "Square-featured folk with decorative tusks and pointed ears."
+        },
+        {
+          "name": "Ribbet",
+          "description": "Amphibious frog-humanoids with webbed appendages and a hopping gait."
+        },
+        {
+          "name": "Simiah",
+          "description": "Ape-like beings with prehensile feet and tails, skilled at climbing."
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "communities",
+      "label": "Community",
+      "values": [
+        {
+          "name": "Highborne",
+          "description": "Accustomed to a life of elegance, opulence, and prestige within the upper echelons of society."
+        },
+        {
+          "name": "Loreborne",
+          "description": "A society that favors strong academic or political prowess and values knowledge."
+        },
+        {
+          "name": "Orderborne",
+          "description": "Communities focused on discipline or faith, unified around shared principles."
+        },
+        {
+          "name": "Ridgeborne",
+          "description": "Mountain dwellers known for hardiness and adaptation to harsh alpine terrain."
+        },
+        {
+          "name": "Seaborne",
+          "description": "Water-based societies closely tied to the ocean tides and the creatures who inhabit them."
+        },
+        {
+          "name": "Slyborne",
+          "description": "Communities operating outside the law, with disparate goals and clever means of achieving them."
+        },
+        {
+          "name": "Underborne",
+          "description": "Subterranean societies recognized for incredible boldness and skill in engineering."
+        },
+        {
+          "name": "Wanderborne",
+          "description": "Nomadic peoples defined by their traveling lifestyle rather than any one location."
+        },
+        {
+          "name": "Wildborne",
+          "description": "Forest communities defined by their dedication to the conservation of their homelands."
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "domains",
+      "label": "Domain",
+      "values": [
+        {
+          "name": "Arcana",
+          "description": "Innate and instinctual magic, channeling raw elemental forces."
+        },
+        {
+          "name": "Blade",
+          "description": "Weapon mastery, achieving power over death through skilled combat."
+        },
+        {
+          "name": "Bone",
+          "description": "Tactics and the body, controlling physical abilities and predicting opponents."
+        },
+        {
+          "name": "Codex",
+          "description": "Intensive magical study, commanding versatile magic through recorded knowledge."
+        },
+        {
+          "name": "Grace",
+          "description": "Charisma, bending perception and defining reality through magnetism."
+        },
+        {
+          "name": "Midnight",
+          "description": "Shadows and secrecy, controlling enigmas and obscurity."
+        },
+        {
+          "name": "Sage",
+          "description": "The natural world, unleashing raw earth and creature magic."
+        },
+        {
+          "name": "Splendor",
+          "description": "Life, granting healing and control over death."
+        },
+        {
+          "name": "Valor",
+          "description": "Protection, channeling strength to defend allies in battle."
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "classes",
+      "label": "Class",
+      "values": [
+        {
+          "name": "Bard",
+          "description": "A charismatic performer and storyteller who channels Grace and Codex to inspire allies.",
+          "evasion": 10,
+          "hp": 5,
+          "classItem": "A romance novel or a letter never opened",
+          "hopeFeature": "Make a Scene — Spend 3 Hope to temporarily Distract a target within Close range, giving them a -2 penalty to their Difficulty.",
+          "domains": [
+            {
+              "name": "Codex"
+            },
+            {
+              "name": "Grace"
+            }
+          ],
+          "subclasses": [
+            {
+              "name": "Troubadour"
+            },
+            {
+              "name": "Wordsmith"
+            }
+          ]
+        },
+        {
+          "name": "Druid",
+          "description": "A shapeshifting guardian of the wild, drawing on Arcana and Sage magic.",
+          "evasion": 10,
+          "hp": 6,
+          "classItem": "A small bag of rocks and bones or a strange pendant found in the dirt",
+          "hopeFeature": "Druid's Hope — Spend 3 Hope to transform into a Beastform without marking Stress and raise one trait by +1 until dropping the form.",
+          "domains": [
+            {
+              "name": "Arcana"
+            },
+            {
+              "name": "Sage"
+            }
+          ],
+          "subclasses": [
+            {
+              "name": "Warden of the Elements"
+            },
+            {
+              "name": "Warden of Renewal"
+            }
+          ]
+        },
+        {
+          "name": "Guardian",
+          "description": "An unshakable protector who channels Blade and Valor to hold the line.",
+          "evasion": 9,
+          "hp": 7,
+          "classItem": "A totem from your mentor or a secret key",
+          "hopeFeature": "Frontline Tank — Spend 3 Hope to clear 2 Armor Slots.",
+          "domains": [
+            {
+              "name": "Blade"
+            },
+            {
+              "name": "Valor"
+            }
+          ],
+          "subclasses": [
+            {
+              "name": "Stalwart"
+            },
+            {
+              "name": "Vengeance"
+            }
+          ]
+        },
+        {
+          "name": "Ranger",
+          "description": "A keen-eyed hunter and tracker who draws on Bone and Sage.",
+          "evasion": 12,
+          "hp": 6,
+          "classItem": "A trophy from your first kill or a seemingly broken compass",
+          "hopeFeature": "Hold Them Off — Spend 3 Hope when you succeed on an attack with a weapon to use that same roll against two additional adversaries within range of the attack.",
+          "domains": [
+            {
+              "name": "Bone"
+            },
+            {
+              "name": "Sage"
+            }
+          ],
+          "subclasses": [
+            {
+              "name": "Beastbound"
+            },
+            {
+              "name": "Wayfinder"
+            }
+          ]
+        },
+        {
+          "name": "Rogue",
+          "description": "A cunning infiltrator who channels Grace and Midnight.",
+          "evasion": 12,
+          "hp": 6,
+          "classItem": "A set of forgery tools or a grappling hook",
+          "hopeFeature": "Rogue's Dodge — Spend 3 Hope to gain a +2 bonus to your Evasion until the next time an attack succeeds against you, or until your next rest.",
+          "domains": [
+            {
+              "name": "Grace"
+            },
+            {
+              "name": "Midnight"
+            }
+          ],
+          "subclasses": [
+            {
+              "name": "Nightwalker"
+            },
+            {
+              "name": "Syndicate"
+            }
+          ]
+        },
+        {
+          "name": "Seraph",
+          "description": "A divine agent of judgment and protection, channeling Splendor and Valor.",
+          "evasion": 9,
+          "hp": 7,
+          "classItem": "A bundle of offerings or a sigil of your god",
+          "hopeFeature": "Life Support — Spend 3 Hope to clear a Hit Point on an ally within Close range.",
+          "domains": [
+            {
+              "name": "Splendor"
+            },
+            {
+              "name": "Valor"
+            }
+          ],
+          "subclasses": [
+            {
+              "name": "Divine Wielder"
+            },
+            {
+              "name": "Winged Sentinel"
+            }
+          ]
+        },
+        {
+          "name": "Sorcerer",
+          "description": "A wielder of innate, volatile magic drawn from Arcana and Midnight.",
+          "evasion": 10,
+          "hp": 6,
+          "classItem": "A whispering orb or a family heirloom",
+          "hopeFeature": "Volatile Magic — Spend 3 Hope to reroll any number of your damage dice on an attack that deals magic damage.",
+          "domains": [
+            {
+              "name": "Arcana"
+            },
+            {
+              "name": "Midnight"
+            }
+          ],
+          "subclasses": [
+            {
+              "name": "Elemental Origin"
+            },
+            {
+              "name": "Primal Origin"
+            }
+          ]
+        },
+        {
+          "name": "Warrior",
+          "description": "A dedicated combatant who channels Blade and Bone mastery.",
+          "evasion": 11,
+          "hp": 6,
+          "classItem": "The drawing of a lover or a sharpening stone",
+          "hopeFeature": "No Mercy — Spend 3 Hope to gain a +1 bonus to your attack rolls until your next rest.",
+          "domains": [
+            {
+              "name": "Blade"
+            },
+            {
+              "name": "Bone"
+            }
+          ],
+          "subclasses": [
+            {
+              "name": "Call of the Brave"
+            },
+            {
+              "name": "Call of the Slayer"
+            }
+          ]
+        },
+        {
+          "name": "Wizard",
+          "description": "A scholar of magic who channels Codex and Splendor through intensive study.",
+          "evasion": 11,
+          "hp": 5,
+          "classItem": "A book you're trying to translate or a tiny, harmless elemental pet",
+          "hopeFeature": "Not This Time — Spend 3 Hope to force an adversary within Far range to reroll an attack or damage roll.",
+          "domains": [
+            {
+              "name": "Codex"
+            },
+            {
+              "name": "Splendor"
+            }
+          ],
+          "subclasses": [
+            {
+              "name": "School of Knowledge"
+            },
+            {
+              "name": "School of War"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "traits",
+      "label": "Traits",
+      "children": [
+        {
+          "type": "number",
+          "key": "traits.agility",
+          "label": "Agility",
+          "shortName": "AGI",
+          "minimum": -2,
+          "maximum": 5
+        },
+        {
+          "type": "number",
+          "key": "traits.strength",
+          "label": "Strength",
+          "shortName": "STR",
+          "minimum": -2,
+          "maximum": 5
+        },
+        {
+          "type": "number",
+          "key": "traits.finesse",
+          "label": "Finesse",
+          "shortName": "FIN",
+          "minimum": -2,
+          "maximum": 5
+        },
+        {
+          "type": "number",
+          "key": "traits.instinct",
+          "label": "Instinct",
+          "shortName": "INS",
+          "minimum": -2,
+          "maximum": 5
+        },
+        {
+          "type": "number",
+          "key": "traits.presence",
+          "label": "Presence",
+          "shortName": "PRE",
+          "minimum": -2,
+          "maximum": 5
+        },
+        {
+          "type": "number",
+          "key": "traits.knowledge",
+          "label": "Knowledge",
+          "shortName": "KNO",
+          "minimum": -2,
+          "maximum": 5
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "hp",
+      "label": "Hit Points",
+      "children": [
+        {
+          "type": "number",
+          "key": "hp.current",
+          "label": "Current",
+          "minimum": 0,
+          "maximum": 20
+        },
+        {
+          "type": "number",
+          "key": "hp.max",
+          "label": "Max",
+          "minimum": 1,
+          "maximum": 20
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "stress",
+      "label": "Stress",
+      "children": [
+        {
+          "type": "number",
+          "key": "stress.current",
+          "label": "Current",
+          "minimum": 0,
+          "maximum": 12
+        },
+        {
+          "type": "number",
+          "key": "stress.max",
+          "label": "Max",
+          "minimum": 1,
+          "maximum": 12,
+          "default": 6
+        }
+      ]
+    },
+    {
+      "type": "number",
+      "key": "hope",
+      "label": "Hope",
+      "minimum": 0,
+      "maximum": 6,
+      "default": 2
+    },
+    {
+      "type": "number",
+      "key": "evasion",
+      "label": "Evasion",
+      "minimum": 0,
+      "maximum": 20
+    },
+    {
+      "type": "number",
+      "key": "armorScore",
+      "label": "Armor Score",
+      "minimum": 0,
+      "maximum": 12
+    },
+    {
+      "type": "object",
+      "key": "thresholds",
+      "label": "Damage Thresholds",
+      "children": [
+        {
+          "type": "number",
+          "key": "thresholds.major",
+          "label": "Major",
+          "minimum": 1
+        },
+        {
+          "type": "number",
+          "key": "thresholds.severe",
+          "label": "Severe",
+          "minimum": 1
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "gold",
+      "label": "Gold",
+      "children": [
+        {
+          "type": "number",
+          "key": "gold.handfuls",
+          "label": "Handfuls",
+          "minimum": 0,
+          "maximum": 9
+        },
+        {
+          "type": "number",
+          "key": "gold.bags",
+          "label": "Bags",
+          "minimum": 0,
+          "maximum": 9
+        },
+        {
+          "type": "number",
+          "key": "gold.chests",
+          "label": "Chests",
+          "minimum": 0,
+          "maximum": 1
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "primaryWeapons",
+      "label": "Primary Weapon",
+      "values": [
+        {
+          "name": "Arcane Gauntlets",
+          "description": "Strength • Melee • d10+3 magic • Two-Handed",
+          "trait": "Strength",
+          "range": "Melee",
+          "damage": "d10+3",
+          "damageType": "Magic",
+          "burden": "Two-Handed",
+          "feature": ""
+        },
+        {
+          "name": "Battleaxe",
+          "description": "Strength • Melee • d10+3 physical • Two-Handed",
+          "trait": "Strength",
+          "range": "Melee",
+          "damage": "d10+3",
+          "damageType": "Physical",
+          "burden": "Two-Handed",
+          "feature": ""
+        },
+        {
+          "name": "Broadsword",
+          "description": "Agility • Melee • d8 physical • One-Handed — +1 to attack rolls",
+          "trait": "Agility",
+          "range": "Melee",
+          "damage": "d8",
+          "damageType": "Physical",
+          "burden": "One-Handed",
+          "feature": "+1 to attack rolls"
+        },
+        {
+          "name": "Crossbow",
+          "description": "Finesse • Far • d6+1 physical • One-Handed",
+          "trait": "Finesse",
+          "range": "Far",
+          "damage": "d6+1",
+          "damageType": "Physical",
+          "burden": "One-Handed",
+          "feature": ""
+        },
+        {
+          "name": "Cutlass",
+          "description": "Presence • Melee • d8+1 physical • One-Handed",
+          "trait": "Presence",
+          "range": "Melee",
+          "damage": "d8+1",
+          "damageType": "Physical",
+          "burden": "One-Handed",
+          "feature": ""
+        },
+        {
+          "name": "Dagger",
+          "description": "Finesse • Melee • d8+1 physical • One-Handed",
+          "trait": "Finesse",
+          "range": "Melee",
+          "damage": "d8+1",
+          "damageType": "Physical",
+          "burden": "One-Handed",
+          "feature": ""
+        },
+        {
+          "name": "Dualstaff",
+          "description": "Instinct • Far • d6+3 magic • Two-Handed",
+          "trait": "Instinct",
+          "range": "Far",
+          "damage": "d6+3",
+          "damageType": "Magic",
+          "burden": "Two-Handed",
+          "feature": ""
+        },
+        {
+          "name": "Glowing Rings",
+          "description": "Agility • Very Close • d10+2 magic • Two-Handed",
+          "trait": "Agility",
+          "range": "Very Close",
+          "damage": "d10+2",
+          "damageType": "Magic",
+          "burden": "Two-Handed",
+          "feature": ""
+        },
+        {
+          "name": "Greatstaff",
+          "description": "Knowledge • Very Far • d6 magic • Two-Handed — Roll an additional die, discard the lowest",
+          "trait": "Knowledge",
+          "range": "Very Far",
+          "damage": "d6",
+          "damageType": "Magic",
+          "burden": "Two-Handed",
+          "feature": "Roll an additional die, discard the lowest"
+        },
+        {
+          "name": "Greatsword",
+          "description": "Strength • Melee • d10+3 physical • Two-Handed — Reduced Evasion; bonus damage available",
+          "trait": "Strength",
+          "range": "Melee",
+          "damage": "d10+3",
+          "damageType": "Physical",
+          "burden": "Two-Handed",
+          "feature": "Reduced Evasion; bonus damage available"
+        },
+        {
+          "name": "Halberd",
+          "description": "Strength • Very Close • d10+2 physical • Two-Handed — -1 to Finesse",
+          "trait": "Strength",
+          "range": "Very Close",
+          "damage": "d10+2",
+          "damageType": "Physical",
+          "burden": "Two-Handed",
+          "feature": "-1 to Finesse"
+        },
+        {
+          "name": "Hallowed Axe",
+          "description": "Strength • Melee • d8+1 magic • One-Handed",
+          "trait": "Strength",
+          "range": "Melee",
+          "damage": "d8+1",
+          "damageType": "Magic",
+          "burden": "One-Handed",
+          "feature": ""
+        },
+        {
+          "name": "Hand Crossbow",
+          "description": "Finesse • Far • d6+1 physical • One-Handed",
+          "trait": "Finesse",
+          "range": "Far",
+          "damage": "d6+1",
+          "damageType": "Physical",
+          "burden": "One-Handed",
+          "feature": ""
+        },
+        {
+          "name": "Hand Runes",
+          "description": "Instinct • Very Close • d10 magic • One-Handed",
+          "trait": "Instinct",
+          "range": "Very Close",
+          "damage": "d10",
+          "damageType": "Magic",
+          "burden": "One-Handed",
+          "feature": ""
+        },
+        {
+          "name": "Longbow",
+          "description": "Agility • Very Far • d8+3 physical • Two-Handed — -1 to Finesse",
+          "trait": "Agility",
+          "range": "Very Far",
+          "damage": "d8+3",
+          "damageType": "Physical",
+          "burden": "Two-Handed",
+          "feature": "-1 to Finesse"
+        },
+        {
+          "name": "Longsword",
+          "description": "Agility • Melee • d10+3 physical • Two-Handed",
+          "trait": "Agility",
+          "range": "Melee",
+          "damage": "d10+3",
+          "damageType": "Physical",
+          "burden": "Two-Handed",
+          "feature": ""
+        },
+        {
+          "name": "Mace",
+          "description": "Strength • Melee • d8+1 physical • One-Handed",
+          "trait": "Strength",
+          "range": "Melee",
+          "damage": "d8+1",
+          "damageType": "Physical",
+          "burden": "One-Handed",
+          "feature": ""
+        },
+        {
+          "name": "Quarterstaff",
+          "description": "Instinct • Melee • d10+3 physical • Two-Handed",
+          "trait": "Instinct",
+          "range": "Melee",
+          "damage": "d10+3",
+          "damageType": "Physical",
+          "burden": "Two-Handed",
+          "feature": ""
+        },
+        {
+          "name": "Rapier",
+          "description": "Presence • Melee • d8 physical • One-Handed — Mark a Stress to target another creature",
+          "trait": "Presence",
+          "range": "Melee",
+          "damage": "d8",
+          "damageType": "Physical",
+          "burden": "One-Handed",
+          "feature": "Mark a Stress to target another creature"
+        },
+        {
+          "name": "Returning Blade",
+          "description": "Finesse • Close • d8 magic • One-Handed — Returns immediately after being thrown",
+          "trait": "Finesse",
+          "range": "Close",
+          "damage": "d8",
+          "damageType": "Magic",
+          "burden": "One-Handed",
+          "feature": "Returns immediately after being thrown"
+        },
+        {
+          "name": "Scepter",
+          "description": "Presence • Far • d6 magic • Two-Handed — Alternative melee configuration available",
+          "trait": "Presence",
+          "range": "Far",
+          "damage": "d6",
+          "damageType": "Magic",
+          "burden": "Two-Handed",
+          "feature": "Alternative melee configuration available"
+        },
+        {
+          "name": "Shortbow",
+          "description": "Agility • Far • d6+3 physical • Two-Handed",
+          "trait": "Agility",
+          "range": "Far",
+          "damage": "d6+3",
+          "damageType": "Physical",
+          "burden": "Two-Handed",
+          "feature": ""
+        },
+        {
+          "name": "Shortstaff",
+          "description": "Instinct • Close • d8+1 magic • One-Handed",
+          "trait": "Instinct",
+          "range": "Close",
+          "damage": "d8+1",
+          "damageType": "Magic",
+          "burden": "One-Handed",
+          "feature": ""
+        },
+        {
+          "name": "Shortsword",
+          "description": "Agility • Melee • d8 physical • One-Handed — Bonus when paired with a primary weapon",
+          "trait": "Agility",
+          "range": "Melee",
+          "damage": "d8",
+          "damageType": "Physical",
+          "burden": "One-Handed",
+          "feature": "Bonus when paired with a primary weapon"
+        },
+        {
+          "name": "Small Dagger",
+          "description": "Finesse • Melee • d8 physical • One-Handed — Bonus when paired with a primary weapon",
+          "trait": "Finesse",
+          "range": "Melee",
+          "damage": "d8",
+          "damageType": "Physical",
+          "burden": "One-Handed",
+          "feature": "Bonus when paired with a primary weapon"
+        },
+        {
+          "name": "Spear",
+          "description": "Finesse • Very Close • d8+3 physical • Two-Handed",
+          "trait": "Finesse",
+          "range": "Very Close",
+          "damage": "d8+3",
+          "damageType": "Physical",
+          "burden": "Two-Handed",
+          "feature": ""
+        },
+        {
+          "name": "Wand",
+          "description": "Knowledge • Far • d6+1 magic • One-Handed",
+          "trait": "Knowledge",
+          "range": "Far",
+          "damage": "d6+1",
+          "damageType": "Magic",
+          "burden": "One-Handed",
+          "feature": ""
+        },
+        {
+          "name": "Warhammer",
+          "description": "Strength • Melee • d12+3 physical • Two-Handed — -1 to Evasion",
+          "trait": "Strength",
+          "range": "Melee",
+          "damage": "d12+3",
+          "damageType": "Physical",
+          "burden": "Two-Handed",
+          "feature": "-1 to Evasion"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "armorTypes",
+      "label": "Armor",
+      "values": [
+        {
+          "name": "Gambeson",
+          "description": "Score 3 • Thresholds 5/11 — Flexible: +1 to Evasion",
+          "baseScore": 3,
+          "baseMajor": 5,
+          "baseSevere": 11,
+          "feature": "Flexible: +1 to Evasion"
+        },
+        {
+          "name": "Leather",
+          "description": "Score 3 • Thresholds 6/13",
+          "baseScore": 3,
+          "baseMajor": 6,
+          "baseSevere": 13,
+          "feature": ""
+        },
+        {
+          "name": "Chainmail",
+          "description": "Score 4 • Thresholds 7/15 — Heavy: -1 to Evasion",
+          "baseScore": 4,
+          "baseMajor": 7,
+          "baseSevere": 15,
+          "feature": "Heavy: -1 to Evasion"
+        },
+        {
+          "name": "Full Plate",
+          "description": "Score 4 • Thresholds 8/17 — Very Heavy: -2 to Evasion; -1 to Agility",
+          "baseScore": 4,
+          "baseMajor": 8,
+          "baseSevere": 17,
+          "feature": "Very Heavy: -2 to Evasion; -1 to Agility"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "experiences",
+      "label": "Experiences",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Experience"
+        },
+        {
+          "type": "number",
+          "key": "modifier",
+          "label": "Modifier",
+          "default": 2
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "inventory",
+      "label": "Inventory",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Item"
+        },
+        {
+          "type": "number",
+          "key": "quantity",
+          "label": "Quantity",
+          "minimum": 0
+        },
+        {
+          "type": "string",
+          "key": "notes",
+          "label": "Notes"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "connections",
+      "label": "Connections",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Name"
+        },
+        {
+          "type": "string",
+          "key": "notes",
+          "label": "Notes"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "combatBindings",
+      "label": "Combat Bindings",
+      "values": [
+        {
+          "name": "Hit Points",
+          "role": "resource",
+          "binding": "@hp.current",
+          "maxPath": "@hp.max"
+        },
+        {
+          "name": "Stress",
+          "role": "resource",
+          "binding": "@stress.current",
+          "maxPath": "@stress.max"
+        },
+        {
+          "name": "Hope",
+          "role": "resource",
+          "binding": "@hope",
+          "max": 6
+        },
+        {
+          "name": "Evasion",
+          "role": "value",
+          "binding": "@evasion"
+        },
+        {
+          "name": "Armor Score",
+          "role": "value",
+          "binding": "@armorScore"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "npcTypes",
+      "label": "NPC Types",
+      "values": [
+        {
+          "name": "Legendary Duelist",
+          "difficulty": 18,
+          "hitPoints": 10,
+          "stress": 5,
+          "attackModifier": 6,
+          "feature": "Riposte: reacts to a missed attack against them with a free strike."
+        },
+        {
+          "name": "Arch-Cultist",
+          "difficulty": 16,
+          "hitPoints": 8,
+          "stress": 5,
+          "attackModifier": 5,
+          "feature": "Dark Ritual: spends Stress to empower a nearby cultist's next roll."
+        },
+        {
+          "name": "Knight-Captain",
+          "difficulty": 15,
+          "hitPoints": 9,
+          "stress": 4,
+          "attackModifier": 4,
+          "feature": "Rally: an ally within Close clears a Stress."
+        },
+        {
+          "name": "Battle Mage",
+          "difficulty": 14,
+          "hitPoints": 7,
+          "stress": 5,
+          "attackModifier": 4,
+          "feature": "Arcane Bolt: a Far-range magic attack."
+        },
+        {
+          "name": "Bounty Hunter",
+          "difficulty": 13,
+          "hitPoints": 7,
+          "stress": 4,
+          "attackModifier": 4,
+          "feature": "Snare: on a hit, the target is Restrained until they break free."
+        },
+        {
+          "name": "Cult Adept",
+          "difficulty": 12,
+          "hitPoints": 6,
+          "stress": 4,
+          "attackModifier": 3,
+          "feature": "Dark Bolt: a Far-range magic attack."
+        },
+        {
+          "name": "Veteran Soldier",
+          "difficulty": 12,
+          "hitPoints": 6,
+          "stress": 3,
+          "attackModifier": 3,
+          "feature": "Shield Wall: gains Armor Score +1 while standing with another Soldier."
+        },
+        {
+          "name": "Hedge Wizard",
+          "difficulty": 11,
+          "hitPoints": 5,
+          "stress": 4,
+          "attackModifier": 2,
+          "feature": "Minor Ward: reduces the next instance of incoming magic damage by 1d4."
+        },
+        {
+          "name": "Highway Bandit",
+          "difficulty": 11,
+          "hitPoints": 5,
+          "stress": 3,
+          "attackModifier": 2,
+          "feature": "Ambush: advantage on the first attack of a scene."
+        },
+        {
+          "name": "Mercenary",
+          "difficulty": 10,
+          "hitPoints": 5,
+          "stress": 3,
+          "attackModifier": 2,
+          "feature": "Professional: rerolls one failed reaction roll per scene."
+        },
+        {
+          "name": "Town Guard",
+          "difficulty": 10,
+          "hitPoints": 5,
+          "stress": 2,
+          "attackModifier": 1,
+          "feature": "Call for Backup: summons another Guard once per scene."
+        },
+        {
+          "name": "Farmer",
+          "difficulty": 7,
+          "hitPoints": 3,
+          "stress": 2,
+          "attackModifier": 0,
+          "feature": "Harmless: deals no real damage on a hit, just a shove or a scare."
+        },
+        {
+          "name": "Tavern Keeper",
+          "difficulty": 8,
+          "hitPoints": 3,
+          "stress": 2,
+          "attackModifier": 0,
+          "feature": "Homebrew Courage: fights back only when cornered."
+        },
+        {
+          "name": "Peddler",
+          "difficulty": 8,
+          "hitPoints": 3,
+          "stress": 2,
+          "attackModifier": 0,
+          "feature": "Haggler: talks their way out of a fight if given the chance."
+        },
+        {
+          "name": "Dockhand",
+          "difficulty": 9,
+          "hitPoints": 4,
+          "stress": 2,
+          "attackModifier": 1,
+          "feature": "Strong Back: advantage on rolls to shove or grapple."
+        },
+        {
+          "name": "Cutpurse",
+          "difficulty": 9,
+          "hitPoints": 4,
+          "stress": 3,
+          "attackModifier": 1,
+          "feature": "Slippery: advantage on rolls to flee or hide."
+        },
+        {
+          "name": "Scout",
+          "difficulty": 10,
+          "hitPoints": 5,
+          "stress": 3,
+          "attackModifier": 2,
+          "feature": "Keen Eyes: can't be caught unaware."
+        },
+        {
+          "name": "Smuggler",
+          "difficulty": 10,
+          "hitPoints": 5,
+          "stress": 3,
+          "attackModifier": 2,
+          "feature": "Hidden Blade: advantage on the first attack if unnoticed."
+        },
+        {
+          "name": "Bandit Captain",
+          "difficulty": 12,
+          "hitPoints": 6,
+          "stress": 4,
+          "attackModifier": 3,
+          "feature": "Rally Cry: an ally within Close clears a Stress."
+        },
+        {
+          "name": "Rogue Knight",
+          "difficulty": 14,
+          "hitPoints": 8,
+          "stress": 4,
+          "attackModifier": 4,
+          "feature": "Oathbreaker's Fury: deals +1d8 damage but marks a Stress."
+        }
+      ]
+    }
+  ],
+  "importers": []
+}

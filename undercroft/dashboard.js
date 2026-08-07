@@ -5,6 +5,7 @@ import { initAuthControls } from "./common/js/lib/auth-ui.js";
 import { initHelpSystem } from "./common/js/lib/help.js";
 import { initHelpBrowser } from "./common/js/lib/help-browser.js";
 import { refreshTooltips, disposeTooltips } from "./common/js/lib/tooltips.js";
+import { createIconButton } from "./common/js/lib/ui-components.js";
 import { createSortable } from "./common/js/lib/dnd.js";
 import { initCharacterSummaryWidget } from "./common/js/lib/widgets/character-summary.js";
 import { initGameLogWidget, SPOTLIGHT_KIND_LABELS, clearGameLogView } from "./common/js/lib/widgets/game-log.js";
@@ -16,6 +17,8 @@ import { initBrowserWidget } from "./common/js/lib/widgets/browser.js";
 import { initCalendarWidget } from "./common/js/lib/widgets/calendar.js";
 import { initSoundboardWidget } from "./common/js/lib/widgets/soundboard.js";
 import { initDiceRollerWidget } from "./common/js/lib/widgets/dice-roller.js";
+import { initWledWidget, resolveWledDeviceByAlias, normalizeWledDeviceList } from "./common/js/lib/widgets/wled.js";
+import { initMacroBoardWidget } from "./common/js/lib/widgets/macro-board.js";
 import { openContentPicker } from "./common/js/lib/widgets/content-picker.js";
 import { resolveGroupContext } from "./common/js/lib/widgets/group-context.js";
 import { watchSpotlight } from "./common/js/lib/spotlight-inbox.js";
@@ -80,7 +83,11 @@ function getRowCount() {
   return layout?.rowCount || DEFAULT_ROW_COUNT;
 }
 
-const { status } = initAppShell({ namespace: "dashboard" });
+const { status } = initAppShell({
+  namespace: "dashboard",
+  leftPane: { size: "default", initial: "collapsed" },
+  rightPane: { size: "lg", initial: "collapsed" },
+});
 const dataManager = new DataManager({ baseUrl: resolveApiBase(), storagePrefix: "undercroft.workbench" });
 initAuthControls({ root: document, status, dataManager });
 // This page lives at the suite root, one level shallower than every other
@@ -160,6 +167,63 @@ const WIDGET_CATALOG = [
     init: (container, ctx) => initDiceRollerWidget(container, { status: ctx.status, dataManager: ctx.dataManager }),
   },
   {
+    id: "wled",
+    label: "Lighting (WLED)",
+    icon: "tabler:bulb",
+    multiple: true,
+    // The known-devices LIST is account-wide (wledDevices, above — GM-tied,
+    // not per-card), threaded straight from module scope rather than through
+    // ctx (nothing else needs it, and every mount reads the current value at
+    // mount time same as ctx.layout would). Which device THIS card shows is
+    // per-instance instead, via the usual contentRef/setContentRef — see
+    // wled.js's own header comment for the full split.
+    init: (container, ctx) =>
+      initWledWidget(container, {
+        contentRef: ctx.contentRef,
+        setContentRef: ctx.setContentRef,
+        setTitle: ctx.setTitle,
+        status: ctx.status,
+        devices: wledDevices,
+        onDevicesChange: persistWledDevices,
+        // Phase 2 — "Follow a Clock" (wled.js's own live-binding section)
+        // needs these to poll/subscribe to the spotlight transport, same as
+        // every other follower in the suite.
+        dataManager: ctx.dataManager,
+        groupContext: ctx.groupContext,
+      }),
+  },
+  {
+    id: "macroboard",
+    label: "Macros",
+    icon: "tabler:bolt",
+    // One board shows every saved macro (dataManager.list("macro", ...)) —
+    // no per-instance config of its own, same "multiple:false" shape as
+    // Character/Game Log/Combat. wledDevices/persistWledDevices threaded
+    // the same way the wled entry above does — the Macro board's own WLED-
+    // alias resolution prompt (see macro-board.js) needs the same
+    // account-wide device list, not a second copy of it.
+    init: (container, ctx) =>
+      initMacroBoardWidget(container, {
+        dataManager: ctx.dataManager,
+        status: ctx.status,
+        groupContext: ctx.groupContext,
+        setTitle: ctx.setTitle,
+        wledDevices,
+        onWledDevicesChange: persistWledDevices,
+        // Auto-adds a live control surface (WLED/Soundboard/Combat) for
+        // whatever a macro action just touched, if one isn't already on
+        // this dashboard — see ensureWidgetForMacroAction's own comment.
+        ensureWidget: ensureWidgetForMacroAction,
+        // Live-read, not the mount-time snapshot — see buildCtx's own
+        // comment. Clicking a macro button while rearranging the layout
+        // makes no sense as "run the real macro" (lights/sound firing for
+        // real while you're just dragging cards around); macro-board.js
+        // checks this at click time to redirect to Loom's Macro editor
+        // instead.
+        isEditing: ctx.isEditing,
+      }),
+  },
+  {
     id: "handout",
     label: "Handout",
     icon: "tabler:cards",
@@ -188,6 +252,14 @@ const WIDGET_CATALOG = [
         setTitle: ctx.setTitle,
         forcePlayerView: ctx.forcePlayerView,
         plainMountContainer: ctx.plainMountContainer,
+        // A Journal page rendered in here can embed its own `` `macro:...` ``
+        // triggers (journal-macro.js) — this is what gives THOSE the same
+        // "auto-add/reuse a live control surface" treatment the Macro board
+        // widget's own runs already get, instead of always falling back to
+        // the standalone, no-widget-grid path. See ensureWidgetForMacroAction's
+        // own comment; only ever wired up for a real widget grid to add to,
+        // same restriction as the Macro board's own use of it.
+        ensureWidget: ensureWidgetForMacroAction,
       });
     },
     renderInspector(container, { instance, api }) {
@@ -690,6 +762,18 @@ function togglePinnedHelpTopic(topicId) {
   persistSetting("pinnedHelpTopics", "dashboardPinnedHelpTopics", pinnedHelpTopics);
 }
 
+function loadWledDevices(serverSettings) {
+  if (Array.isArray(serverSettings?.dashboardWledDevices)) {
+    return normalizeWledDeviceList(serverSettings.dashboardWledDevices);
+  }
+  return normalizeWledDeviceList(loadLocalSetting("wledDevices"));
+}
+
+function persistWledDevices(devices) {
+  wledDevices = Array.isArray(devices) ? devices : [];
+  persistSetting("wledDevices", "dashboardWledDevices", wledDevices);
+}
+
 function loadSeenSpotlightId(serverSettings) {
   if (typeof serverSettings?.dashboardSeenSpotlightId === "string") return serverSettings.dashboardSeenSpotlightId;
   const local = loadLocalSetting("seenSpotlightId");
@@ -813,6 +897,12 @@ let groupContext = null;
 let background = "";
 let headerTitleOverride = "";
 let pinnedHelpTopics = [];
+// Known WLED devices ({ip,label}) — account-wide (GM-tied, not per-widget-
+// card or per-suite) via persistSetting, same local+server merge-patch sync
+// every other setting on this page uses. Which one a given WLED widget CARD
+// is showing/controlling is separate, per-instance state (see that widget's
+// own contentRef) — see wled.js's own header comment for the full split.
+let wledDevices = [];
 let seenSpotlightId = "";
 let selectedWidgetInstanceId = "";
 let editing = false;
@@ -826,6 +916,44 @@ const cardElements = new Map();
 // per `[data-grid-zone]" — torn down and rebuilt each time renderWidgetGrid
 // runs (see that function's own comment).
 const gridZoneRegistry = new Map();
+
+// Built and mounted before the querySelector("[data-*]") lines below query
+// for these buttons, so every existing selector/event-listener call site
+// elsewhere in this file keeps working unchanged. Dashboard's chrome uses
+// its own `btn-dark` color (not the generator tools' outline-secondary/
+// primary/success/danger palette) and top-placed tooltips (not the other
+// tools' bottom) — both passed as explicit overrides rather than through
+// ACTION_PRESETS/kind defaults, which assume the generator-tool convention.
+document.querySelector("[data-dashboard-color-reset-mount]")?.appendChild(
+  createIconButton({
+    icon: "tabler:eraser",
+    label: "Reset background",
+    variant: "dark",
+    kind: "toolbar",
+    tooltipPlacement: "top",
+    attrs: { "data-dashboard-color-reset": true },
+  })
+);
+document.querySelector("[data-dashboard-screen-toggle-mount]")?.appendChild(
+  createIconButton({
+    icon: "tabler:device-tv",
+    label: "Open a live, read-only mirror of whatever's currently shown to the table — for a physical second screen/TV",
+    variant: "dark",
+    kind: "toolbar",
+    tooltipPlacement: "top",
+    attrs: { "data-dashboard-screen-toggle": true },
+  })
+);
+document.querySelector("[data-widget-inspector-toolbar-mount]")?.appendChild(
+  createIconButton({
+    icon: "tabler:trash",
+    label: "Remove widget",
+    variant: "outline-danger",
+    kind: "toolbar",
+    tooltipPlacement: "top",
+    attrs: { "data-widget-inspector-remove": true },
+  })
+);
 
 const dashboardShellEl = document.querySelector("[data-dashboard-shell]");
 const screenRootEl = document.querySelector("[data-dashboard-screen-root]");
@@ -1015,6 +1143,13 @@ function buildCtx(instance, { setTitle, setHeaderAction, setRightAction } = {}) 
     // hook applyEditingState can find and flip itself, using this only for
     // the initial state.
     editing,
+    // A live-read counterpart to `editing` above, for the rarer case of a
+    // widget that needs the CURRENT value at some later moment (a click
+    // handler), not just its value at mount time — a plain closure over the
+    // same `let editing`, so calling it always reads whatever's true right
+    // now regardless of when ctx was built. See macro-board.js's own use
+    // (deciding whether a macro button runs the macro or opens it in Loom).
+    isEditing: () => editing,
   };
 }
 
@@ -1734,6 +1869,101 @@ function addWidget(widgetType, contentRef = null) {
   return instance;
 }
 
+// Which macro action types get an auto-added, ongoing control surface on
+// THIS dashboard when none already exists — not every type: Character
+// shows whichever character is PINNED (a GM-wide preference a macro
+// shouldn't silently override to whatever character it happened to touch),
+// and Handout/Map/Game Log/Browser/Dice Roller are all "fire and forget"
+// outcomes the group-log/spotlight broadcast itself already delivers in
+// full — a widget on the GM's OWN dashboard was never needed for any of
+// those to have worked. WLED/Soundboard/Combat are the three where a macro
+// changes something genuinely ONGOING that benefits from staying visible
+// and adjustable afterward (lights, currently-playing music, a running
+// encounter) — matching the user's own "Haunted Forest" example.
+const MACRO_ACTION_WIDGET_TYPES = { wled: "wled", soundboard: "soundboard", combat: "combat" };
+
+// Clock/Calendar have no "ensure/add" story at all — unlike WLED/Soundboard/
+// Combat (one meaningful instance, or a clearly-resolvable target), a macro
+// targeting "whichever clock is shown to the table" can't sensibly conjure
+// one into existence (which of possibly several would it even mean?). This
+// only ever finds an already-mounted, already-visible instance of that type
+// — see clocks.js/calendar.js's own isVisible() — returning null (a clear
+// "nothing shown right now" error from macro-runner.js's own handler) when
+// none qualifies, rather than guessing.
+function findActiveWidgetInstance(widgetType) {
+  const candidates = layout.widgets.filter((widget) => widget.widgetType === widgetType);
+  for (const widget of candidates) {
+    const api = mounted.get(widget.instanceId);
+    if (api && typeof api.isVisible === "function" && api.isVisible()) return api;
+  }
+  return null;
+}
+
+// Passed into runMacro (macro-runner.js) as `ensureWidget`, called once per
+// action before that action's own handler runs. Only ever wired up here —
+// the Dashboard's own Macro board widget — never for a Journal-embedded
+// macro trigger (journal-macro.js), since there's no widget grid to add to
+// on a Repository page at all.
+//
+// WLED/Combat both externalize their real state (the physical device, the
+// saved encounter record) — once a widget exists and is pointed at the
+// right target, it just shows the correct thing on its own next
+// fetch/mount, no extra plumbing needed (WLED's own contentRef is set to
+// the resolved device below; Combat Tracker already defaults to whichever
+// encounter is currently active/spotlighted with no contentRef needed, the
+// same resolution startEncounter's own navigation already relies on).
+// Soundboard is the one exception — playback lives in an ephemeral
+// in-browser Audio object a freshly-mounted widget has nothing to
+// "reconnect" to on its own — see soundboard.js's own exposed
+// runMacroAction (returned from initSoundboardWidget, called by
+// runSoundboardMacroAction) for how macro playback gets routed through
+// whichever Soundboard widget instance actually ends up existing instead.
+function ensureWidgetForMacroAction(action) {
+  if (action?.type === "clock" || action?.type === "calendar") {
+    return findActiveWidgetInstance(action.type);
+  }
+  const catalogId = MACRO_ACTION_WIDGET_TYPES[action?.type];
+  if (!catalogId) return null;
+  if (catalogId === "wled") {
+    // Multiple WLED cards can exist (one per lighting zone) — reusing
+    // whichever one happens to be first in layout.widgets regardless of
+    // which device IT's pointed at would route the command through a card
+    // showing the WRONG device's state (confirmed: this is exactly why the
+    // "Haunted Forest" macro turned the lights on for real but the on-screen
+    // card kept reading "Off" — the command itself went straight to the
+    // device either way, but no card that actually shows that device ever
+    // got a chance to refresh). Matches by the resolved device's own ip
+    // against each existing card's persisted contentRef.selectedIp first.
+    const device = resolveWledDeviceByAlias(wledDevices, action?.target);
+    const matching = device
+      ? layout.widgets.find((widget) => widget.widgetType === "wled" && widget.contentRef?.selectedIp === device.ip)
+      : null;
+    if (matching) return mounted.get(matching.instanceId) || null;
+    const instance = addWidget(catalogId, device ? { selectedIp: device.ip } : null);
+    return instance ? mounted.get(instance.instanceId) || null : null;
+  }
+  // Prefers a candidate whose mounted api actually exposes runMacroAction
+  // over just "whichever matches this widgetType first" — a Soundboard (or
+  // Combat) card can be mounted as a read-only FOLLOWER instead of the real
+  // authoring one (contentRef.followKind — created by acceptSpotlight when
+  // this account accepted someone else's spotlight, or the second-screen
+  // mirror's own forcePlayerView self-follow), which has no runMacroAction
+  // at all despite sharing the same widgetType. Silently grabbing that one
+  // would send a macro's soundboard action down the standalone fallback
+  // path (soundboard.js's own runSoundboardMacroAction) instead — audio
+  // would still start (the fallback plays it too), but THIS card, being
+  // read-only, would never reflect it either way. Falls back to the first
+  // match if nothing qualifies (Combat, whose handler doesn't care about
+  // widgetInstance at all) rather than null, so behavior for non-follower
+  // cases is unchanged.
+  const candidates = layout.widgets.filter((widget) => widget.widgetType === catalogId);
+  const capable = candidates.find((widget) => typeof mounted.get(widget.instanceId)?.runMacroAction === "function");
+  const existing = capable || candidates[0];
+  if (existing) return mounted.get(existing.instanceId) || null;
+  const instance = addWidget(catalogId, null);
+  return instance ? mounted.get(instance.instanceId) || null : null;
+}
+
 // One icon button per available widget type — "available" meaning either the
 // type allows multiple instances, or this is the first one. A type with no
 // more available slots just disappears from the toolbar rather than
@@ -1817,6 +2047,13 @@ function applyEditingState() {
     // this is the opposite sense from Remove/setRightAction above — shown
     // only while NOT editing, hidden while editing rather than the reverse.
     gridEl.querySelectorAll("[data-map-zoom-panel]").forEach((panel) => panel.classList.toggle("d-none", editing));
+    // Macro board run buttons (macro-board.js) — the click BEHAVIOR already
+    // switches live via ctx.isEditing() (buildCtx), this just keeps the
+    // visible hint in sync so it doesn't read stale after a toggle with no
+    // other reason for macro-board.js to re-render.
+    gridEl.querySelectorAll("[data-macro-run-button]").forEach((button) => {
+      button.title = editing ? "Edit in Loom" : "Run macro";
+    });
     // The drag-to-resize handle (mountWidget) — editing-only. Plain inline
     // style.display, not the .d-none/.d-flex classes used elsewhere here —
     // see that element's own comment (createWidgetCard) on why.
@@ -2035,6 +2272,7 @@ async function boot() {
   background = loadBackground(serverSettings);
   headerTitleOverride = loadHeaderTitle(serverSettings);
   pinnedHelpTopics = loadPinnedHelpTopics(serverSettings);
+  wledDevices = loadWledDevices(serverSettings);
   seenSpotlightId = loadSeenSpotlightId(serverSettings);
   applyBackground(background);
   void initHelpBrowser({

@@ -1,4 +1,4 @@
-import { resolveBinding } from "../../common/js/lib/bindings.js";
+import { resolveBinding, createLookupFn } from "../../common/js/lib/bindings.js";
 import { TEXT_SIZE_PX as TEXT_SIZE_MAP } from "../../common/js/lib/text-size.js";
 
 const GAP_UNIT_REM = 0.25;
@@ -7,7 +7,30 @@ const GAP_UNIT_REM = 0.25;
 // font-size, same convention CSS itself uses for line-height.
 const DEFAULT_LINE_HEIGHT = 1.3;
 
-function shouldHide(node) {
+// Every binding/formula resolution in this file goes through here instead
+// of resolveBinding directly, so `lookup(table, key)` (bindings.js's
+// createLookupFn) is available in every one of them for free — a template
+// author writing `=lookup("abilities","str").color` shouldn't need this
+// file to specifically know about it at each call site. Press has no
+// System concept of its own (see createLookupFn's own comment on why that's
+// deliberate, not a gap to close) — createLookupFn's second (System field
+// list) argument is simply omitted here, so `lookup` searches only
+// whatever's actually in `context`, same as any other @binding already
+// does.
+function resolveBindingWithLookup(raw, context) {
+  return resolveBinding(raw, context, { functions: { lookup: createLookupFn(context) } });
+}
+
+// node.visibleWhen is a single combined literal/@path/=formula string, same
+// convention as node.text/node.iconClass/node.url — when present, its
+// resolved truthiness is what decides visibility, taking over from the
+// plain node.hidden checkbox (set by the inspector's own manual click path;
+// see press/js/app.js's visibilityToggle). A falsy resolved value hides the
+// node exactly like node.hidden === true always has.
+function shouldHide(node, context) {
+  if (typeof node?.visibleWhen === "string" && node.visibleWhen.trim()) {
+    return !resolveBindingWithLookup(node.visibleWhen, context);
+  }
   return Boolean(node?.hidden);
 }
 
@@ -26,14 +49,14 @@ function applyClassName(element, className) {
 // Callers do `resolveClassName(node, context) ?? "some-default-class"` to
 // fall back to a required base class (e.g. "press-image") when a node
 // doesn't specify its own — that only works if this returns null/undefined
-// for "nothing to apply", not "" (which resolveBinding("", ...) legitimately
+// for "nothing to apply", not "" (which resolveBindingWithLookup("", ...) legitimately
 // returns for a className-less node), or the ?? never triggers and the
 // element silently ends up with no class — and therefore none of that base
 // class's CSS — at all.
 function resolveClassName(node, context) {
   const raw = node?.className ?? node?.classNameBind ?? "";
   if (typeof raw === "string") {
-    const resolved = resolveBinding(raw, context);
+    const resolved = resolveBindingWithLookup(raw, context);
     return resolved || null;
   }
   return raw || null;
@@ -55,9 +78,40 @@ function resolveTextSizePx(node) {
   return TEXT_SIZE_MAP.md;
 }
 
+// color/backgroundColor/borderColor each have a "When" counterpart
+// (colorWhen/backgroundColorWhen/borderColorWhen — same single-combined-
+// field shape as node.visibleWhen, see shouldHide's own comment) that
+// overrides the literal when non-empty, resolved via resolveBindingWithLookup
+// against the same context every other bound value on this node already
+// resolves against. Returns a shallow-cloned styles object with the
+// override applied where resolution actually produced something —
+// applyInlineStyles/applyBorderStyles stay completely unaware any of this
+// exists, reading whatever they're handed exactly as before. An
+// unresolvable/invalid result always falls back to the literal value,
+// never a JS-invented color.
+const COLOR_WHEN_KEYS = {
+  color: "colorWhen",
+  backgroundColor: "backgroundColorWhen",
+  borderColor: "borderColorWhen",
+};
+
+function resolveEffectiveStyles(styles, context) {
+  if (!styles || typeof styles !== "object") return styles;
+  let overridden = null;
+  Object.entries(COLOR_WHEN_KEYS).forEach(([styleProp, whenProp]) => {
+    const raw = typeof styles[whenProp] === "string" ? styles[whenProp].trim() : "";
+    if (!raw) return;
+    const resolved = resolveBindingWithLookup(raw, context);
+    if (typeof resolved === "string" && resolved.trim()) {
+      if (!overridden) overridden = { ...styles };
+      overridden[styleProp] = resolved.trim();
+    }
+  });
+  return overridden || styles;
+}
+
 function applyInlineStyles(element, styles = {}) {
   if (!element || typeof styles !== "object") return;
-  const borderEnabled = hasBorderStyles(styles);
   if (typeof styles.fontSize === "number") {
     element.style.fontSize = `${styles.fontSize}px`;
   }
@@ -73,51 +127,46 @@ function applyInlineStyles(element, styles = {}) {
   if (styles.backgroundColor) {
     element.style.backgroundColor = styles.backgroundColor;
   }
-  if (styles.borderColor) {
-    element.style.borderColor = styles.borderColor;
-  } else {
-    element.style.removeProperty("border-color");
-  }
-  if (borderEnabled) {
-    applyBorderStyles(element, styles);
-  } else {
-    resetBorderStyles(element);
-  }
+  applyBorderStyles(element, styles);
 }
 
-function hasBorderStyles(styles = {}) {
-  return (
-    styles.borderColor ||
-    typeof styles.borderWidth === "number" ||
-    styles.borderStyle ||
-    typeof styles.borderRadius === "number" ||
-    typeof styles.borderRadius === "string" ||
-    styles.borderSides
-  );
-}
-
+// Every border property is set directly, unconditionally, from its own
+// data field — no "if borderStyle then apply the rest" branch. CSS itself
+// already treats border-style: none/unset as no visible border regardless
+// of what border-color/border-width say, so there's no need for JS to
+// separately decide whether these should apply (matches Workbench's
+// identical fix, component-styles.js's applyComponentStyles). Setting a
+// style property to "" is equivalent to removeProperty, so an unset value
+// correctly clears back to the browser's own default here, not "".
 function applyBorderStyles(element, styles = {}) {
+  const borderColor = styles.borderColor || "";
+  const borderStyle = styles.borderStyle || "";
+  // Safety fallback, not a business default — CSS needs a real number to
+  // draw a border with at all. Only visible once borderStyle is actually a
+  // real value; harmless otherwise (a width with no style renders nothing).
   const borderWidth = typeof styles.borderWidth === "number" ? styles.borderWidth : 1;
-  const borderStyle = styles.borderStyle || "solid";
+  // Corner rounding is independent of whether a border line renders at all
+  // — it also shapes the node's own background/shadow — so it's read
+  // directly here too, not gated on border state.
   const borderRadius =
     typeof styles.borderRadius === "number"
       ? `${styles.borderRadius}px`
       : typeof styles.borderRadius === "string"
         ? styles.borderRadius
-        : null;
-  if (borderRadius) {
-    element.style.borderRadius = borderRadius;
-  } else {
-    element.style.removeProperty("border-radius");
-  }
+        : "";
+  element.style.borderRadius = borderRadius;
 
   const sides = styles.borderSides;
   if (sides && typeof sides === "object") {
-    applyBorderSide(element.style, "Top", sides.top, borderWidth, borderStyle);
-    applyBorderSide(element.style, "Right", sides.right, borderWidth, borderStyle);
-    applyBorderSide(element.style, "Bottom", sides.bottom, borderWidth, borderStyle);
-    applyBorderSide(element.style, "Left", sides.left, borderWidth, borderStyle);
+    applyBorderSide(element.style, "Top", sides.top, borderWidth, borderStyle, borderColor);
+    applyBorderSide(element.style, "Right", sides.right, borderWidth, borderStyle, borderColor);
+    applyBorderSide(element.style, "Bottom", sides.bottom, borderWidth, borderStyle, borderColor);
+    applyBorderSide(element.style, "Left", sides.left, borderWidth, borderStyle, borderColor);
+    element.style.removeProperty("border-color");
+    element.style.removeProperty("border-width");
+    element.style.removeProperty("border-style");
   } else {
+    element.style.borderColor = borderColor;
     element.style.borderWidth = `${borderWidth}px`;
     element.style.borderStyle = borderStyle;
     element.style.removeProperty("border-top-width");
@@ -128,28 +177,19 @@ function applyBorderStyles(element, styles = {}) {
     element.style.removeProperty("border-right-style");
     element.style.removeProperty("border-bottom-style");
     element.style.removeProperty("border-left-style");
+    element.style.removeProperty("border-top-color");
+    element.style.removeProperty("border-right-color");
+    element.style.removeProperty("border-bottom-color");
+    element.style.removeProperty("border-left-color");
   }
 }
 
-function applyBorderSide(style, side, enabled, width, borderStyle) {
+function applyBorderSide(style, side, enabled, width, borderStyle, borderColor) {
   const widthValue = enabled === false ? 0 : width;
   const styleValue = enabled === false ? "none" : borderStyle;
   style[`border${side}Width`] = `${widthValue}px`;
   style[`border${side}Style`] = styleValue;
-}
-
-function resetBorderStyles(element) {
-  element.style.removeProperty("border-width");
-  element.style.removeProperty("border-style");
-  element.style.removeProperty("border-radius");
-  element.style.removeProperty("border-top-width");
-  element.style.removeProperty("border-right-width");
-  element.style.removeProperty("border-bottom-width");
-  element.style.removeProperty("border-left-width");
-  element.style.removeProperty("border-top-style");
-  element.style.removeProperty("border-right-style");
-  element.style.removeProperty("border-bottom-style");
-  element.style.removeProperty("border-left-style");
+  style[`border${side}Color`] = borderColor;
 }
 
 function applyGap(element, gap) {
@@ -321,7 +361,7 @@ function createCurvedTextElement(node, text, className) {
   const wrapper = document.createElement("div");
   wrapper.classList.add("press-curved-text");
   applyClassName(wrapper, className);
-  applyInlineStyles(wrapper, node.style);
+  applyInlineStyles(wrapper, resolveEffectiveStyles(node.style, context));
   applyTextTransform(wrapper, node);
 
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -421,7 +461,7 @@ function renderRepeaterDecorator(node, itemContext, index) {
     // the item's own data (e.g. an icon/rank field) just as easily as a
     // fixed symbol like "→".
     const raw = decorator.text ?? "";
-    const resolved = typeof raw === "string" && raw.trim().startsWith("@") ? resolveBinding(raw, itemContext) : raw;
+    const resolved = typeof raw === "string" && raw.trim().startsWith("@") ? resolveBindingWithLookup(raw, itemContext) : raw;
     el.textContent = resolved ?? "";
   }
   return el;
@@ -429,7 +469,7 @@ function renderRepeaterDecorator(node, itemContext, index) {
 
 function renderRepeater(node, context, options) {
   const itemsBindExpr = node.itemsBind;
-  const resolvedItems = resolveBinding(itemsBindExpr, context);
+  const resolvedItems = resolveBindingWithLookup(itemsBindExpr, context);
   // Same "show the binding expression itself" fallback list/table used —
   // an unresolved binding renders as a visible placeholder row rather than
   // silently collapsing to nothing when no data is loaded yet. A genuinely
@@ -505,7 +545,7 @@ function renderRepeater(node, context, options) {
       const row = document.createElement("div");
       applyClassName(row, "d-flex align-items-start gap-2");
       const itemClassRaw = node.itemClassNameBind ?? node.itemClassName ?? "";
-      const resolvedClass = typeof itemClassRaw === "string" ? resolveBinding(itemClassRaw, itemContext) : itemClassRaw;
+      const resolvedClass = typeof itemClassRaw === "string" ? resolveBindingWithLookup(itemClassRaw, itemContext) : itemClassRaw;
       applyClassName(row, resolvedClass ?? "");
       const decoratorEl = renderRepeaterDecorator(node, itemContext, index);
       if (decoratorEl) row.appendChild(decoratorEl);
@@ -526,7 +566,7 @@ function renderRepeater(node, context, options) {
       row.appendChild(content);
       listEl.appendChild(row);
     });
-    applyInlineStyles(listEl, node.style);
+    applyInlineStyles(listEl, resolveEffectiveStyles(node.style, context));
     applyTextTransform(listEl, node);
     if (!headerRow) {
       applySpaceAfter(listEl, node);
@@ -631,14 +671,14 @@ function renderRepeater(node, context, options) {
     tbody.appendChild(tr);
   });
   table.appendChild(tbody);
-  applyInlineStyles(table, node.style);
+  applyInlineStyles(table, resolveEffectiveStyles(node.style, context));
   applySpaceAfter(table, node);
   return table;
 }
 
 function renderField(node, context, options = {}) {
   const bindingExpr = node.text ?? node.value ?? node.bind;
-  const resolved = resolveBinding(bindingExpr, context);
+  const resolved = resolveBindingWithLookup(bindingExpr, context);
   // A real "@path"/"=formula" binding that has nothing to resolve against
   // (no data loaded, or this field is genuinely blank in the loaded data)
   // falls back to showing the binding expression itself rather than nothing
@@ -667,7 +707,7 @@ function renderField(node, context, options = {}) {
       if (isEmptyBindingResult) {
         applyClassName(el, "press-binding-placeholder");
       }
-      applyInlineStyles(el, node.style);
+      applyInlineStyles(el, resolveEffectiveStyles(node.style, context));
       applyTextFormatting(el, node);
       applyTextTransform(el, node);
       return el;
@@ -679,16 +719,16 @@ function renderField(node, context, options = {}) {
       const classTokens = resolvedClass.split(/\s+/).filter(Boolean);
       const wrapperTokens = classTokens.filter((token) => !token.startsWith("ddb-") && !token.startsWith("bi-") && token !== "bi");
       const fallbackIconTokens = classTokens.filter((token) => token.startsWith("ddb-") || token.startsWith("bi-"));
-      const iconClassRaw = resolveBinding(node.iconClass, context) ?? node.iconClass ?? "";
+      const iconClassRaw = resolveBindingWithLookup(node.iconClass, context) ?? node.iconClass ?? "";
       const iconClassText = typeof iconClassRaw === "string" ? iconClassRaw : String(iconClassRaw ?? "");
       const iconTokens = iconClassText.split(/\s+/).filter((token) => token.startsWith("ddb-") || token.startsWith("bi-"));
       const resolvedIconTokens = iconTokens.length ? iconTokens : fallbackIconTokens;
       const wrapper = document.createElement("span");
       applyClassName(wrapper, wrapperTokens.join(" "));
-      applyInlineStyles(wrapper, node.style);
+      applyInlineStyles(wrapper, resolveEffectiveStyles(node.style, context));
       applyTextFormatting(wrapper, node);
       applyTextTransform(wrapper, node);
-      const ariaLabel = resolveBinding(node.ariaLabel, context) ?? node.ariaLabel ?? node.label;
+      const ariaLabel = resolveBindingWithLookup(node.ariaLabel, context) ?? node.ariaLabel ?? node.label;
       if (resolvedIconTokens.length) {
         const icon = document.createElement("span");
         const needsBootstrapBase = resolvedIconTokens.some((token) => token.startsWith("bi-"));
@@ -725,13 +765,13 @@ function renderField(node, context, options = {}) {
       if (Number.isFinite(node?.gap)) {
         applyGap(wrapper, node.gap);
       }
-      const labelValue = resolveBinding(node.label, context) ?? node.label ?? "";
+      const labelValue = resolveBindingWithLookup(node.label, context) ?? node.label ?? "";
       const label = createTextElement("p", labelValue, "card-meta mb-0");
       const val = createTextElement("p", value ?? "—", "mb-0 fw-semibold");
       if (isEmptyBindingResult) {
         applyClassName(val, "press-binding-placeholder");
       }
-      applyInlineStyles(wrapper, node.style);
+      applyInlineStyles(wrapper, resolveEffectiveStyles(node.style, context));
       applyTextColor(label, node.style);
       applyTextColor(val, node.style);
       applyTextFormatting(label, node);
@@ -742,10 +782,10 @@ function renderField(node, context, options = {}) {
       return wrapper;
     }
     case "image": {
-      const src = resolveBinding(node.url ?? node.src ?? node.text ?? node.value ?? node.bind, context);
+      const src = resolveBindingWithLookup(node.url ?? node.src ?? node.text ?? node.value ?? node.bind, context);
       const el = document.createElement("div");
       applyClassName(el, resolveClassName(node, context) ?? "press-image");
-      applyInlineStyles(el, node.style);
+      applyInlineStyles(el, resolveEffectiveStyles(node.style, context));
       // Independent of the general border-color/width/style system (which
       // would also draw a visible 1px border just from setting a radius) —
       // this is purely a corner-rounding knob, defaulting to square corners
@@ -834,7 +874,7 @@ function renderGrid(node, context, options) {
   container.dataset.pressContainer = "grid";
   applyClassName(container, "d-grid");
   applyClassName(container, resolveClassName(node, context));
-  applyInlineStyles(container, node.style);
+  applyInlineStyles(container, resolveEffectiveStyles(node.style, context));
   // A migrated stack/row's className may still carry a stray "d-flex" (or
   // similar) left over from the old renderer's own base class — inline
   // display always wins over any class regardless of source order, so it
@@ -1096,7 +1136,7 @@ function renderLayer(node, context, options) {
   container.dataset.pressOrigin = node.origin || "safe";
   applyClassName(container, "press-layer position-relative w-100 h-100");
   applyClassName(container, resolveClassName(node, context));
-  applyInlineStyles(container, node.style);
+  applyInlineStyles(container, resolveEffectiveStyles(node.style, context));
   asArray(node.placements).forEach((placement, index) => {
     if (!placement?.node) return;
     // Same per-card override merge as renderNode's node-level one, one
@@ -1108,7 +1148,7 @@ function renderLayer(node, context, options) {
     // matching renderNode's own hidden check for the non-layer case.
     const nodeOverride = options?.nodeOverrides?.[placement.node.uid]?.node;
     const effectiveChildNode = nodeOverride ? { ...placement.node, ...nodeOverride } : placement.node;
-    if (shouldHide(effectiveChildNode)) return;
+    if (shouldHide(effectiveChildNode, context)) return;
     const placementOverride = options?.nodeOverrides?.[placement.node.uid]?.placement;
     const effectivePlacement = placementOverride ? { ...placement, ...placementOverride } : placement;
     const wrapper = document.createElement("div");
@@ -1196,7 +1236,7 @@ export function renderNode(node, context = {}, options = {}) {
   // isn't a real use case, only its properties.
   const override = options?.nodeOverrides?.[node.uid]?.node;
   const effective = override ? { ...node, ...override } : node;
-  if (shouldHide(effective)) return document.createComment("empty");
+  if (shouldHide(effective, context)) return document.createComment("empty");
   switch (node.type) {
     case "grid":
       return attachEditorHooks(renderGrid(effective, context, options), node, options);

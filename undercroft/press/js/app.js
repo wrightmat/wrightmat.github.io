@@ -1,4 +1,6 @@
-import { bindCollapsibleToggle } from "../../common/js/lib/collapsible.js";
+import { bindCollapsibleToggle, createCollapseToggleButton, setElementCollapsed } from "../../common/js/lib/collapsible.js";
+import { bindCopyButton } from "../../common/js/lib/clipboard.js";
+import { COMPONENT_ICONS } from "../../common/js/lib/component-icons.js";
 import {
   ensureDdbIconOptionsLoaded,
   ensureBootstrapIconNamesLoaded,
@@ -17,7 +19,17 @@ import { DataManager } from "../../common/js/lib/data-manager.js";
 import { resolveApiBase } from "../../common/js/lib/api.js";
 import { initAuthControls } from "../../common/js/lib/auth-ui.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
-import { createJsonPreviewRenderer } from "../../common/js/lib/json-preview.js";
+import {
+  createJsonDataPanel,
+  createCollapsibleSection,
+  createToolbarButtonGroup,
+  createIconButton,
+  createFormFloatingField,
+  createButtonCheckGroup,
+  createCheckField,
+  createCompactField,
+} from "../../common/js/lib/ui-components.js";
+import { createFormulaToggleField, createHalfWidthNumberField, createFieldRow } from "../../common/js/lib/inspector-fields.js";
 import { createSortable } from "../../common/js/lib/dnd.js";
 import {
   normalizeLegacyLayoutNode,
@@ -48,7 +60,9 @@ import {
 import { getSourceById, getSources } from "./sources.js";
 import { loadSourceData, LIBRARY_KINDS } from "./source-data.js";
 import { loadSampleData, setSampleDataText, getSampleDataText, getSampleData, subscribeSampleData } from "./sample-data.js";
-import { resolveBinding } from "../../common/js/lib/bindings.js";
+import { resolveBinding, createLookupFn } from "../../common/js/lib/bindings.js";
+import { createColorPickerField } from "../../common/js/lib/color-picker.js";
+import { refreshTooltips } from "../../common/js/lib/tooltips.js";
 import { attachFormulaAutocomplete } from "../../common/js/lib/formula-autocomplete.js";
 import { listFormulaFunctionMetadata } from "../../common/js/lib/formula-metadata.js";
 import { collectDataFields } from "../../common/js/lib/data-fields.js";
@@ -73,6 +87,726 @@ import {
   isCustomFontId,
   DEFAULT_FONT_FAMILY,
 } from "../../common/js/lib/font-library.js";
+
+// Built and mounted before any of the querySelector/getElementById lines
+// below query these buttons (Print by id, the rest by data-action), so
+// every existing selector/disabled-state call site elsewhere in this file
+// keeps working unchanged. Import/Export icons deviate from their preset
+// defaults (upload/download here, not file-import/file-export) — preserved
+// exactly, not "fixed" to the preset. Print is Press's own "one true primary
+// activity" per the style guide, hence primary: true and its position right
+// after Redo.
+createToolbarButtonGroup([
+  { action: "undo", label: "Undo", attrs: { "data-action": "undo-layout" } },
+  { action: "redo", label: "Redo", attrs: { "data-action": "redo-layout" } },
+  { action: "print", label: "Print", primary: true, attrs: { id: "printButton" } },
+  { action: "new", label: "New Template", attrs: { "data-action": "new-template" } },
+  { action: "import", icon: "tabler:upload", label: "Import", attrs: { "data-action": "import-layout" } },
+  { action: "save", label: "Save", attrs: { "data-action": "save-layout" } },
+  { action: "export", icon: "tabler:download", label: "Export", attrs: { "data-action": "export-layout" } },
+]).forEach((button) => document.querySelector("[data-press-toolbar-mount]")?.appendChild(button));
+
+// The Component/Template Inspector's individually-toggled property fields
+// (createFormFloatingField/createButtonCheckGroup/createCheckField/
+// createCompactField — common/js/lib/ui-components.js) — built and mounted
+// here, before any of the querySelector/getElementById lines below query
+// them by id or data-component-*/data-template-* attribute, so every
+// existing selector/read/write call site elsewhere in this file keeps
+// working unchanged. Each field here is genuinely one-of-a-kind (not
+// duplicated across the suite, or even within this file) — this exists to
+// turn "one repeated markup shape, many distinct configs" into data, not to
+// introduce a new abstraction the content doesn't need. Left as static HTML
+// on purpose (not migrated): the icon-field and image-url input-groups, the
+// component-type-summary card, and the already JS-generated color fields
+// (data-inspector-color-fields, built separately by createColorPickerField)
+// — none of those are the same repeated shape, forcing them through would
+// be a new abstraction for content that doesn't need one.
+//
+// replaceWith, not appendChild — the built field becomes the flex item
+// itself instead of sitting inside an extra wrapper div. That wrapper used
+// to stay in-flow (0 height, but still a real flex child) even when the
+// field inside it was conditionally hidden, so every hidden field between
+// two visible ones was still spending a full gap-3 on both sides of it —
+// stacked across a dozen conditionally-hidden fields, that's what produced
+// the large dead space users were seeing in the inspector. Any class the
+// static mount div itself carried (grid col-* sizing, mostly) is merged
+// onto the built field so removing the wrapper doesn't lose that layout.
+function mountInspectorField(key, element) {
+  const mount = document.querySelector(`[data-inspector-mount="${key}"]`);
+  if (!mount) return;
+  if (mount.className) element.classList.add(...mount.classList);
+  mount.replaceWith(element);
+}
+
+// Template Properties — previously ~30 hand-built label+input pairs across
+// this file's Template/Grid Properties panels and Position/Image-size/
+// Pan-Zoom/Border fields, none backed by any factory (createCompactField
+// didn't exist yet). All read/written externally via the same data-*
+// attribute query convention every other field in this file already uses —
+// these mount calls only build the markup.
+mountInspectorField("template-id", createCompactField({ type: "text", id: "templateId", label: "ID", dataAttr: "data-template-id" }));
+mountInspectorField("template-name", createCompactField({ type: "text", id: "templateName", label: "Name", dataAttr: "data-template-name" }));
+mountInspectorField(
+  "template-description",
+  createCompactField({ type: "textarea", id: "templateDescription", label: "Description", dataAttr: "data-template-description", rows: 2 })
+);
+mountInspectorField(
+  "template-type",
+  createCompactField({
+    type: "select",
+    id: "templateType",
+    label: "Type",
+    dataAttr: "data-template-type",
+    options: [
+      { value: "sheet", label: "Sheet" },
+      { value: "card", label: "Card" },
+      { value: "chip", label: "Chip" },
+    ],
+  })
+);
+mountInspectorField(
+  "template-base-font",
+  createCompactField({ type: "text", id: "templateBaseFont", label: "Base font", dataAttr: "data-template-base-font", autocomplete: "off" })
+);
+mountInspectorField(
+  "template-formats",
+  createCompactField({ type: "select-multiple", id: "templateFormats", label: "Formats", dataAttr: "data-template-formats", size: 6 })
+);
+mountInspectorField(
+  "custom-size-label",
+  createCompactField({ type: "text", id: "customSizeLabel", label: "Custom size label", dataAttr: "data-custom-size-label", placeholder: "Postcard" })
+);
+mountInspectorField(
+  "custom-size-width",
+  createCompactField({ type: "number", id: "customSizeWidth", label: "Width (in)", dataAttr: "data-custom-size-width", min: 0, step: 0.01 })
+);
+mountInspectorField(
+  "custom-size-height",
+  createCompactField({ type: "number", id: "customSizeHeight", label: "Height (in)", dataAttr: "data-custom-size-height", min: 0, step: 0.01 })
+);
+mountInspectorField(
+  "template-sources",
+  createCompactField({ type: "select-multiple", id: "templateSources", label: "Supported sources", dataAttr: "data-template-sources", size: 4 })
+);
+mountInspectorField(
+  "template-front-repeat",
+  createCompactField({ type: "text", id: "templateFrontRepeat", label: "Front repeat binding", dataAttr: "data-template-front-repeat", placeholder: "@features" })
+);
+mountInspectorField(
+  "template-back-repeat",
+  createCompactField({ type: "text", id: "templateBackRepeat", label: "Back repeat binding", dataAttr: "data-template-back-repeat", placeholder: "@features" })
+);
+mountInspectorField(
+  "template-front-data",
+  createCompactField({ type: "text", id: "templateFrontData", label: "Front data binding (or global)", dataAttr: "data-template-front-data", placeholder: "@" })
+);
+mountInspectorField(
+  "template-back-data",
+  createCompactField({ type: "text", id: "templateBackData", label: "Back data binding (or global)", dataAttr: "data-template-back-data", placeholder: "@" })
+);
+mountInspectorField(
+  "template-card-width",
+  createCompactField({ type: "number", id: "templateCardWidth", label: "Cell width (in)", dataAttr: "data-template-card-width", min: 0, step: 0.01 })
+);
+mountInspectorField(
+  "template-card-height",
+  createCompactField({ type: "number", id: "templateCardHeight", label: "Cell height (in)", dataAttr: "data-template-card-height", min: 0, step: 0.01 })
+);
+mountInspectorField(
+  "template-card-gutter",
+  createCompactField({ type: "number", id: "templateCardGutter", label: "Gutter (in)", dataAttr: "data-template-card-gutter", min: 0, step: 0.01 })
+);
+mountInspectorField(
+  "template-card-safe-inset",
+  createCompactField({ type: "number", id: "templateCardSafeInset", label: "Safe inset (in)", dataAttr: "data-template-card-safe-inset", min: 0, step: 0.01 })
+);
+mountInspectorField(
+  "template-card-bleed",
+  createCompactField({ type: "number", id: "templateCardBleed", label: "Bleed (in)", dataAttr: "data-template-card-bleed", min: 0, step: 0.01 })
+);
+mountInspectorField(
+  "template-card-corner-radius",
+  createCompactField({ type: "number", id: "templateCardCornerRadius", label: "Corner radius (in)", dataAttr: "data-template-card-corner-radius", min: 0, step: 0.01 })
+);
+mountInspectorField(
+  "template-card-columns",
+  createCompactField({ type: "number", id: "templateCardColumns", label: "Columns", dataAttr: "data-template-card-columns", min: 1, step: 1 })
+);
+mountInspectorField(
+  "template-card-rows",
+  createCompactField({ type: "number", id: "templateCardRows", label: "Rows", dataAttr: "data-template-card-rows", min: 1, step: 1 })
+);
+mountInspectorField(
+  "component-image-width",
+  createCompactField({ type: "number", id: "componentImageWidth", label: "Image width (in)", dataAttr: "data-component-image-width", min: 0, step: 0.01 })
+);
+mountInspectorField(
+  "component-image-height",
+  createCompactField({ type: "number", id: "componentImageHeight", label: "Image height (in)", dataAttr: "data-component-image-height", min: 0, step: 0.01 })
+);
+mountInspectorField(
+  "component-image-focal-x",
+  createCompactField({ type: "number", id: "componentImageFocalX", label: "Pan X (%)", dataAttr: "data-component-image-focal-x", min: 0, max: 100, step: 1, placeholder: 50 })
+);
+mountInspectorField(
+  "component-image-focal-y",
+  createCompactField({ type: "number", id: "componentImageFocalY", label: "Pan Y (%)", dataAttr: "data-component-image-focal-y", min: 0, max: 100, step: 1, placeholder: 50 })
+);
+mountInspectorField(
+  "component-image-zoom",
+  createCompactField({
+    type: "number",
+    id: "componentImageZoom",
+    label: "Zoom (×)",
+    dataAttr: "data-component-image-zoom",
+    min: 0.1,
+    max: 5,
+    step: 0.1,
+    placeholder: 1,
+    tooltip:
+      "Scales past a normal Cover fit, anchored on Pan X/Y — above 1 zooms in on an oversized image, below 1 shrinks it further (may expose empty space around it)",
+  })
+);
+mountInspectorField(
+  "component-position-x",
+  createCompactField({ type: "number", id: "componentPositionX", label: "X (in)", dataAttr: "data-component-position-x", step: 0.01 })
+);
+mountInspectorField(
+  "component-position-y",
+  createCompactField({ type: "number", id: "componentPositionY", label: "Y (in)", dataAttr: "data-component-position-y", step: 0.01 })
+);
+mountInspectorField(
+  "component-position-width",
+  createCompactField({ type: "text", id: "componentPositionWidth", label: "Width (in or %)", dataAttr: "data-component-position-width", placeholder: "auto" })
+);
+mountInspectorField(
+  "component-position-height",
+  createCompactField({ type: "text", id: "componentPositionHeight", label: "Height (in or %)", dataAttr: "data-component-position-height", placeholder: "auto" })
+);
+mountInspectorField(
+  "component-position-z",
+  createCompactField({
+    type: "number", id: "componentPositionZ", label: "Z-order", dataAttr: "data-component-position-z", step: 1,
+    tooltip: "Stacking order — higher numbers render on top",
+  })
+);
+mountInspectorField(
+  "component-position-rotate",
+  createCompactField({
+    type: "number", id: "componentPositionRotate", label: "Rotate (deg)", dataAttr: "data-component-position-rotate", step: 1,
+    tooltip: "Rotation around the element's center",
+  })
+);
+mountInspectorField(
+  "component-text-size-line-height",
+  createFieldRow(
+    [
+      createHalfWidthNumberField("Font size (pt)", undefined, undefined, {
+        id: "componentTextSizeCustom", dataAttr: "data-component-text-size-custom", step: 0.5, placeholder: "12",
+      }),
+      createHalfWidthNumberField("Line height", undefined, undefined, {
+        id: "componentTextLineHeight", dataAttr: "data-component-text-line-height", min: 0.5, max: 3, step: 0.05, placeholder: "1.3",
+        tooltip:
+          "Multiplier of the font size, same for every text field by default (1.3) — set explicitly here if you want this one tighter or looser, e.g. to match spacing between inline and non-inline text.",
+      }),
+    ],
+    { columns: 2 }
+  )
+);
+mountInspectorField(
+  "component-border-width-radius",
+  createFieldRow(
+    [
+      createHalfWidthNumberField("Thickness (px)", undefined, undefined, {
+        id: "componentBorderWidth", dataAttr: "data-component-border-width", min: 0, max: 12, step: 1,
+      }),
+      createHalfWidthNumberField("Corner radius (px)", undefined, undefined, {
+        id: "componentBorderRadius", dataAttr: "data-component-border-radius", min: 0, max: 24, step: 1,
+      }),
+    ],
+    { columns: 2 }
+  )
+);
+mountInspectorField(
+  "component-border-style",
+  createCompactField({
+    type: "select",
+    id: "componentBorderStyle",
+    label: "Border style",
+    dataAttr: "data-component-border-style",
+    options: [
+      { value: "none", label: "None" },
+      { value: "solid", label: "Solid" },
+      { value: "dashed", label: "Dashed" },
+      { value: "dotted", label: "Dotted" },
+      { value: "double", label: "Double" },
+      { value: "groove", label: "Groove" },
+      { value: "ridge", label: "Ridge" },
+      { value: "inset", label: "Inset" },
+      { value: "outset", label: "Outset" },
+    ],
+  })
+);
+{
+  const patternCategoryGroup = createButtonCheckGroup({
+    ariaLabel: "Pattern category",
+    name: "patternCategory",
+    dataAttr: "data-pattern-category",
+    options: [
+      { id: "patternCategoryFills", value: "fills", text: "Fills" },
+      { id: "patternCategoryPatterns", value: "patterns", text: "Patterns" },
+      { id: "patternCategoryBanners", value: "banners", text: "Banners" },
+      { id: "patternCategoryShapes", value: "shapes", text: "Shapes" },
+    ],
+  });
+  patternCategoryGroup.querySelector("#patternCategoryFills").checked = true;
+  mountInspectorField("pattern-category", patternCategoryGroup);
+}
+mountInspectorField("source-select", createCompactField({ type: "select", id: "sourceSelect", label: "Source", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select" }));
+mountInspectorField(
+  "template-select",
+  createCompactField({
+    type: "select", id: "templateSelect", label: "Template", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select",
+    helpTopic: "press.templates", helpPlacement: "left",
+  })
+);
+mountInspectorField(
+  "format-select",
+  createCompactField({
+    type: "select", id: "formatSelect", label: "Size", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select",
+    helpTopic: "press.size", helpPlacement: "left",
+  })
+);
+mountInspectorField(
+  "orientation-select",
+  createCompactField({
+    type: "select", id: "orientationSelect", label: "Orientation", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select",
+    helpTopic: "press.orientation", helpPlacement: "left",
+  })
+);
+mountInspectorField(
+  "add-font-value",
+  createFormFloatingField({
+    type: "text",
+    id: "addFontValue",
+    label: "Font name or CSS font-family value",
+    dataAttr: "data-add-font-value",
+    placeholder: "Encode Sans Expanded",
+  })
+);
+
+mountInspectorField(
+  "text",
+  createFormFloatingField({
+    type: "textarea",
+    label: "Binding / Text",
+    labelAttr: "data-component-text-label",
+    wrapperAttr: "data-inspector-text-field",
+    dataAttr: "data-component-text",
+    placeholder: "Edit text",
+    style: "min-height: 72px",
+  })
+);
+mountInspectorField(
+  "repeater-items",
+  createFormFloatingField({
+    type: "textarea",
+    label: "Items",
+    dataAttr: "data-component-repeater-items",
+    placeholder: "One entry per line, or an @path binding",
+    style: "min-height: 72px",
+    tooltip:
+      "Which array repeats — not what each item shows. Select the actual text/icon/etc. on the canvas and set its own Binding to a key from the item (e.g. @name), same as any other component.",
+  })
+);
+mountInspectorField(
+  "repeater-columns",
+  createFormFloatingField({
+    type: "number",
+    id: "componentRepeaterColumns",
+    label: "Columns",
+    dataAttr: "data-component-repeater-columns",
+    min: 1,
+    max: 8,
+    step: 1,
+    placeholder: 1,
+  })
+);
+mountInspectorField(
+  "repeater-template-columns",
+  createFormFloatingField({
+    type: "text",
+    label: "Column widths",
+    wrapperAttr: "data-inspector-repeater-template-columns",
+    hidden: true,
+    dataAttr: "data-component-repeater-template-columns",
+    placeholder: "30% 70%",
+    tooltip: "CSS grid-template-columns-style value for column widths, e.g. 30% 70%",
+  })
+);
+mountInspectorField(
+  "repeater-header",
+  createCheckField({
+    id: "componentRepeaterHeader",
+    label: "Header row",
+    dataAttr: "data-component-repeater-header",
+    switchStyle: true,
+  })
+);
+mountInspectorField(
+  "repeater-decorator-type",
+  createFormFloatingField({
+    type: "select",
+    id: "componentRepeaterDecoratorType",
+    label: "Item decorator",
+    dataAttr: "data-component-repeater-decorator-type",
+    tooltip:
+      "An optional marker shown before each item — bullet, auto number, or a custom symbol/binding. Doesn't affect what the item itself shows; that's set by binding the item's own content on the canvas.",
+    options: [
+      { value: "none", label: "None" },
+      { value: "bullet", label: "Bullet (•)" },
+      { value: "number", label: "Number (1. 2. 3.)" },
+      { value: "custom", label: "Custom symbol or binding" },
+    ],
+  })
+);
+mountInspectorField(
+  "repeater-decorator-text",
+  createFormFloatingField({
+    type: "text",
+    label: "Decorator symbol / binding",
+    wrapperAttr: "data-inspector-repeater-decorator-text",
+    hidden: true,
+    dataAttr: "data-component-repeater-decorator-text",
+    placeholder: "→ or @icon",
+  })
+);
+mountInspectorField(
+  "image-fit",
+  createFormFloatingField({
+    type: "select",
+    id: "componentImageFit",
+    label: "Image fit",
+    wrapperAttr: "data-inspector-image-field",
+    hidden: true,
+    dataAttr: "data-component-image-fit",
+    options: [
+      { value: "cover", label: "Cover (crop to fill, preserve aspect ratio)" },
+      { value: "contain", label: "Contain (fit inside box, preserve aspect ratio)" },
+      { value: "fill", label: "Fill (stretch to exactly fill box)" },
+    ],
+  })
+);
+mountInspectorField(
+  "image-corner-radius",
+  createFormFloatingField({
+    type: "number",
+    id: "componentImageCornerRadius",
+    label: "Corner radius (px)",
+    wrapperAttr: "data-inspector-image-field",
+    hidden: true,
+    dataAttr: "data-component-image-corner-radius",
+    min: 0,
+    step: 1,
+    placeholder: 0,
+  })
+);
+mountInspectorField(
+  "layer-origin",
+  createFormFloatingField({
+    type: "select",
+    id: "componentLayerOrigin",
+    label: "Layer sizes against",
+    wrapperAttr: "data-inspector-layer-origin",
+    hidden: true,
+    dataAttr: "data-component-layer-origin",
+    tooltip: "Controls what box this layer (and therefore any 100%-sized placement inside it) sizes against",
+    options: [
+      { value: "safe", label: "Safe area (inset from the card edge by Safe inset)" },
+      { value: "trim", label: "Trim (fills the card exactly)" },
+      { value: "bleed", label: "Bleed (extends past the card edge into bleed)" },
+    ],
+  })
+);
+mountInspectorField(
+  "gap",
+  createFormFloatingField({
+    type: "number",
+    id: "componentGap",
+    label: "Gap",
+    wrapperAttr: "data-inspector-gap-field",
+    hidden: true,
+    dataAttr: "data-component-gap",
+    min: 0,
+    max: 12,
+    step: 1,
+    placeholder: 4,
+  })
+);
+mountInspectorField(
+  "space-after",
+  createFormFloatingField({
+    type: "number",
+    id: "componentSpaceAfter",
+    label: "Space after",
+    wrapperAttr: "data-inspector-space-after-field",
+    hidden: true,
+    dataAttr: "data-component-space-after",
+    min: 0,
+    max: 12,
+    step: 1,
+    placeholder: 0,
+    tooltip:
+      "Space after this whole component, before whatever comes next — same scale as Gap, but Gap only affects spacing between this component's own internal items, not its next sibling.",
+  })
+);
+mountInspectorField(
+  "row-columns",
+  createFormFloatingField({
+    type: "number",
+    id: "componentColumns",
+    label: "Columns",
+    wrapperAttr: "data-inspector-row-columns",
+    hidden: true,
+    dataAttr: "data-component-columns",
+    min: 1,
+    max: 6,
+    step: 1,
+    placeholder: 2,
+  })
+);
+mountInspectorField(
+  "template-columns",
+  createFormFloatingField({
+    type: "text",
+    label: "Column template",
+    wrapperAttr: "data-inspector-template-columns",
+    hidden: true,
+    dataAttr: "data-component-template-columns",
+    placeholder: "1fr 2fr",
+    tooltip: "CSS grid-template-columns value, overrides equal-width columns",
+  })
+);
+mountInspectorField(
+  "grid-rows",
+  createFormFloatingField({
+    type: "number",
+    id: "componentGridRows",
+    label: "Rows",
+    wrapperAttr: "data-inspector-grid-rows",
+    hidden: true,
+    dataAttr: "data-component-grid-rows",
+    min: 1,
+    max: 24,
+    step: 1,
+    placeholder: 2,
+  })
+);
+mountInspectorField(
+  "template-rows",
+  createFormFloatingField({
+    type: "text",
+    label: "Row template",
+    wrapperAttr: "data-inspector-template-rows",
+    hidden: true,
+    dataAttr: "data-component-template-rows",
+    placeholder: "auto auto",
+    tooltip: "CSS grid-template-rows value, overrides content-sized rows",
+  })
+);
+mountInspectorField(
+  "align-x",
+  createButtonCheckGroup({
+    ariaLabel: "Horizontal alignment",
+    name: "componentAlignX",
+    dataAttr: "data-component-align-x",
+    options: [
+      { id: "componentAlignXStart", value: "start", icon: "tabler:align-left", text: "Left", tooltip: "Align left" },
+      { id: "componentAlignXCenter", value: "center", icon: "tabler:align-center", text: "Center", tooltip: "Align center" },
+      { id: "componentAlignXEnd", value: "end", icon: "tabler:align-right", text: "Right", tooltip: "Align right" },
+      { id: "componentAlignXJustify", value: "justify", icon: "tabler:align-justified", text: "Stretch", tooltip: "Stretch to fill" },
+    ],
+  })
+);
+mountInspectorField(
+  "align-y",
+  createButtonCheckGroup({
+    ariaLabel: "Vertical alignment",
+    name: "componentAlignY",
+    dataAttr: "data-component-align-y",
+    options: [
+      { id: "componentAlignYStart", value: "start", icon: "tabler:layout-align-top", text: "Top", tooltip: "Align top" },
+      { id: "componentAlignYCenter", value: "center", icon: "tabler:layout-align-middle", text: "Middle", tooltip: "Align middle" },
+      { id: "componentAlignYEnd", value: "end", icon: "tabler:layout-align-bottom", text: "Bottom", tooltip: "Align bottom" },
+      { id: "componentAlignYJustify", value: "justify", icon: "tabler:layout-distribute-vertical", text: "Justified", tooltip: "Space evenly" },
+    ],
+  })
+);
+mountInspectorField(
+  "font-family",
+  createFormFloatingField({
+    type: "text",
+    id: "componentFontFamily",
+    label: "Font",
+    dataAttr: "data-component-font-family",
+    placeholder: "Search fonts…",
+    autocomplete: "off",
+  })
+);
+mountInspectorField(
+  "text-size",
+  createButtonCheckGroup({
+    ariaLabel: "Font size",
+    name: "componentTextSize",
+    dataAttr: "data-component-text-size",
+    options: [
+      { id: "componentTextSizeXs", value: "xs", text: "XS", tooltip: "Extra small" },
+      { id: "componentTextSizeSm", value: "sm", text: "Sm", tooltip: "Small" },
+      { id: "componentTextSizeMd", value: "md", text: "Md", tooltip: "Medium" },
+      { id: "componentTextSizeLg", value: "lg", text: "Lg", tooltip: "Large" },
+      { id: "componentTextSizeXl", value: "xl", text: "XL", tooltip: "Extra large" },
+      {
+        id: "componentTextSizeAuto",
+        value: "auto",
+        text: "Auto",
+        tooltip:
+          "Shrinks the text to fit its container instead of using a fixed size — only has an effect where the container is actually size-constrained, e.g. a Layer placement with a set width/height.",
+      },
+    ],
+  })
+);
+mountInspectorField(
+  "text-inline",
+  createCheckField({
+    id: "componentTextInline",
+    label: "Inline (flows with the next component)",
+    dataAttr: "data-component-text-inline",
+    switchStyle: true,
+    tooltip:
+      "Flows this text inline with whatever comes right after it in the same cell (e.g. a bold heading immediately followed by a plain description) instead of stacking as its own block/line.",
+  })
+);
+mountInspectorField(
+  "text-orientation",
+  createButtonCheckGroup({
+    groupClassName: "btn-group template-radio-group press-text-orientation-group",
+    ariaLabel: "Text orientation",
+    name: "componentTextOrientation",
+    dataAttr: "data-component-text-orientation",
+    options: [
+      { id: "componentTextOrientationHorizontal", value: "horizontal", text: "Horizontal", tooltip: "Reading left to right" },
+      { id: "componentTextOrientationVertical", value: "vertical", text: "Vertical", tooltip: "Rotated 90°" },
+      { id: "componentTextOrientationDiagonal", value: "diagonal", text: "Diagonal", tooltip: "Rotated 45°" },
+      { id: "componentTextOrientationCurveUp", value: "curve-up", text: "Curved up", tooltip: "Arcs upward" },
+      { id: "componentTextOrientationCurveDown", value: "curve-down", text: "Curved down", tooltip: "Arcs downward" },
+    ],
+  })
+);
+mountInspectorField(
+  "text-decoration",
+  createButtonCheckGroup({
+    ariaLabel: "Text decoration",
+    inputType: "checkbox",
+    dataAttr: "data-component-text-style",
+    options: [
+      { id: "componentTextBold", dataValue: "bold", icon: "tabler:bold", text: "Bold", tooltip: "Bold" },
+      { id: "componentTextItalic", dataValue: "italic", icon: "tabler:italic", text: "Italic", tooltip: "Italic" },
+      { id: "componentTextUnderline", dataValue: "underline", icon: "tabler:underline", text: "Underline", tooltip: "Underline" },
+    ],
+  })
+);
+mountInspectorField(
+  "alignment",
+  createButtonCheckGroup({
+    ariaLabel: "Text alignment",
+    name: "componentAlignment",
+    dataAttr: "data-component-align",
+    options: [
+      { id: "componentAlignStart", value: "start", icon: "tabler:align-left", text: "Left", tooltip: "Align left", labelAttr: "data-alignment-label", labelAttrValue: "start" },
+      { id: "componentAlignCenter", value: "center", icon: "tabler:align-center", text: "Center", tooltip: "Align center", labelAttr: "data-alignment-label", labelAttrValue: "center" },
+      { id: "componentAlignEnd", value: "end", icon: "tabler:align-right", text: "Right", tooltip: "Align right", labelAttr: "data-alignment-label", labelAttrValue: "end" },
+      { id: "componentAlignJustify", value: "justify", icon: "tabler:align-justified", text: "Justify", tooltip: "Justify", labelAttr: "data-alignment-label", labelAttrValue: "justify" },
+    ],
+  })
+);
+mountInspectorField(
+  "border-sides",
+  createButtonCheckGroup({
+    ariaLabel: "Border sides",
+    inputType: "checkbox",
+    dataAttr: "data-component-border-side",
+    options: [
+      { id: "componentBorderSideTop", dataValue: "top", text: "Top" },
+      { id: "componentBorderSideRight", dataValue: "right", text: "Right" },
+      { id: "componentBorderSideBottom", dataValue: "bottom", text: "Bottom" },
+      { id: "componentBorderSideLeft", dataValue: "left", text: "Left" },
+    ],
+  })
+);
+// The same unified toggle/formula control Workbench's Template editor uses
+// (createFormulaToggleField, common/js/lib/inspector-fields.js) — one
+// switch + one inline binding/formula field instead of two visually
+// disconnected controls. Press's own visibleWhen storage was already a
+// single field supporting both "@binding" and "=formula" syntax
+// (resolveBindingWithLookup handles both), so only the control's shape
+// changes here, not the data model.
+const visibleField = createFormulaToggleField("Visible", {
+  placeholder: "@attributes.isSecret or =not(@hideThis)",
+  evaluate: (raw) => {
+    const trimmed = typeof raw === "string" ? raw.trim() : "";
+    if (!trimmed) return undefined;
+    return Boolean(resolveBindingWithLookup(trimmed, getSampleData()));
+  },
+  onManualChange: (checked) => {
+    // Only fires from a real manual click — the switch is disabled
+    // whenever visibleWhen has content (see createFormulaToggleField).
+    recordUndoableChange(() => {
+      updateSelectedNode((node) => {
+        node.hidden = !checked;
+      });
+      renderPreview();
+      renderLayoutList();
+    });
+  },
+  onBindingChange: (raw) => {
+    updateSelectedNode((node) => {
+      const next = raw.trim();
+      if (next) {
+        node.visibleWhen = next;
+      } else {
+        delete node.visibleWhen;
+      }
+    });
+    renderPreview();
+    renderLayoutList();
+    updateSaveState();
+  },
+});
+visibleField.bindingInput.autocomplete = "off";
+visibleField.bindingInput.spellcheck = false;
+mountInspectorField("visible", visibleField);
+mountInspectorField(
+  "aria-label",
+  createFormFloatingField({
+    type: "text",
+    label: "Aria label",
+    wrapperAttr: "data-inspector-aria-label-field",
+    hidden: true,
+    dataAttr: "data-component-aria-label",
+    placeholder: "Aria label",
+  })
+);
+mountInspectorField(
+  "class-name",
+  createFormFloatingField({
+    type: "text",
+    label: "Classes",
+    wrapperAttr: "data-inspector-class-name-field",
+    dataAttr: "data-component-class-name",
+    placeholder: "Classes",
+    autocomplete: "off",
+  })
+);
 
 const templateSelect = document.getElementById("templateSelect");
 const formatSelect = document.getElementById("formatSelect");
@@ -104,21 +838,60 @@ const canvasZoomLevelLabel = document.querySelector("[data-canvas-zoom-level]");
 const guideLegendElement = document.querySelector("[data-canvas-guide-legend]");
 const generateButton = document.getElementById("generateButton");
 const printButton = document.getElementById("printButton");
-const selectionToggle = document.querySelector("[data-selection-toggle]");
-const selectionToggleLabel = selectionToggle?.querySelector("[data-toggle-label]");
-const selectionPanel = document.querySelector("[data-selection-panel]");
+// selectionToggle/selectionPanel used to be queried here as static markup;
+// the section is now built inside initPressCollapsibles() instead (see
+// there), since createCollapsibleSection needs to run after
+// applySelectionCollapse's own `let` declaration further down this file.
 const newTemplateButton = document.querySelector('[data-action="new-template"]');
-const jsonPreview = document.querySelector("[data-json-preview]");
-const jsonBytes = document.querySelector("[data-preview-bytes]");
 const undoButton = document.querySelector('[data-action="undo-layout"]');
 const redoButton = document.querySelector('[data-action="redo-layout"]');
 const saveButton = document.querySelector('[data-action="save-layout"]');
 const paletteList = document.querySelector("[data-press-palette]");
 const layoutList = document.querySelector("[data-layout-list]");
 const layoutEmptyState = document.querySelector("[data-layout-empty]");
-const sampleDataInput = document.querySelector("[data-sample-data-input]");
-const sampleDataError = document.querySelector("[data-sample-data-error]");
-const sampleDataLabel = document.querySelector("[data-sample-data-label]");
+
+// JSON Data — a plain readonly preview, built via the shared factory (same
+// shape as every other tool's JSON Data panel). getSelectionContext/
+// resolveBasePreviewData are function declarations (hoisted) and
+// buildTemplatePreview is an import, so referencing them here — well before
+// their own definitions further down the file — is safe; this closure only
+// runs when jsonDataPanel.render() is actually called, always well after
+// full module evaluation.
+const jsonDataPanel = createJsonDataPanel({
+  label: "JSON Data",
+  id: "press-json",
+  getData: () => {
+    const context = getSelectionContext();
+    if (!context.template) {
+      return {};
+    }
+    const previewData = resolveBasePreviewData();
+    return buildTemplatePreview(context.template, previewData);
+  },
+});
+
+// Sample Data — an editable textarea (readonly only while showing a real
+// loaded record's data instead of the placeholder sample), so it's built
+// from the lower-level createCollapsibleSection rather than
+// createJsonDataPanel, which always renders readonly.
+const sampleDataInput = document.createElement("textarea");
+sampleDataInput.className = "form-control form-control-sm font-monospace json-preview-text";
+sampleDataInput.id = "press-sample-data-input";
+sampleDataInput.rows = 10;
+sampleDataInput.setAttribute("data-sample-data-input", "");
+const sampleDataError = document.createElement("div");
+sampleDataError.className = "invalid-feedback d-block mt-2 d-none";
+sampleDataError.setAttribute("data-sample-data-error", "");
+const sampleDataSection = createCollapsibleSection({
+  label: "Sample Data",
+  id: "press-sample-data",
+  helpTopic: "press.sample-data",
+  actions: [{ icon: "tabler:copy", label: "Copy to clipboard" }],
+  content: (panel) => panel.append(sampleDataInput, sampleDataError),
+});
+sampleDataSection.section.setAttribute("data-sample-data-section", "");
+const [sampleDataCopyButton] = sampleDataSection.actionButtons;
+const sampleDataLabel = sampleDataSection.header.querySelector("h2");
 const templateInspector = document.querySelector("[data-template-inspector]");
 const templateIdInput = document.querySelector("[data-template-id]");
 const templateNameInput = document.querySelector("[data-template-name]");
@@ -144,22 +917,49 @@ const templateFrontDataInput = document.querySelector("[data-template-front-data
 const templateFrontRepeatInput = document.querySelector("[data-template-front-repeat]");
 const templateBackDataInput = document.querySelector("[data-template-back-data]");
 const templateBackRepeatInput = document.querySelector("[data-template-back-repeat]");
-const templateToggle = document.querySelector("[data-template-toggle]");
-const templateToggleLabel = templateToggle?.querySelector("[data-template-toggle-label]");
-const templatePanel = document.querySelector("[data-template-panel]");
-const pageBindingsToggle = document.querySelector("[data-page-bindings-toggle]");
-const pageBindingsToggleLabel = pageBindingsToggle?.querySelector("[data-page-bindings-toggle-label]");
+// templateToggle/templatePanel used to be queried here as static markup;
+// the section is now built inside initPressCollapsibles() instead (see
+// there), since it needs to run after applyTemplateCollapse's own `let`
+// declaration further down this file. pageBindingsPanel's own content
+// markup is untouched (Page Bindings uses the toggle-only migration shape,
+// to preserve its <h3> heading level — see initPressCollapsibles), so it's
+// still queried directly here; only its toggle button is now JS-built.
 const pageBindingsPanel = document.querySelector("[data-page-bindings-panel]");
 const templateSaveButton = document.querySelector("[data-template-save]");
+// Built and mounted before the querySelector lines just below, so every
+// existing selector/disabled-state/title call site elsewhere in this file
+// keeps working unchanged. Clear Uniqueness has no ACTION_PRESETS match, so
+// its icon/variant are both explicit. Both Duplicate's and (further below)
+// Component's tooltip text is longer than their aria-label/visible-hidden
+// text — attrs' own data-bs-title, applied after the label-driven one
+// inside createIconButton, overrides just the tooltip without touching
+// aria-label.
+createToolbarButtonGroup([
+  { action: "duplicate", label: "Duplicate Template", attrs: { "data-template-duplicate": true } },
+  {
+    icon: "tabler:eraser",
+    variant: "outline-secondary",
+    label: "Clear all uniqueness",
+    attrs: {
+      "data-template-clear-uniqueness": true,
+      "data-bs-title": "Clear all per-card uniqueness on this template",
+    },
+  },
+  {
+    action: "delete",
+    label: "Delete Template",
+    visible: false,
+    attrs: { "data-template-delete": true },
+  },
+]).forEach((button) => document.querySelector("[data-template-toolbar-mount]")?.appendChild(button));
+
 const templateDuplicateButton = document.querySelector("[data-template-duplicate]");
 const templateClearUniquenessButton = document.querySelector("[data-template-clear-uniqueness]");
 const templateDeleteButton = document.querySelector("[data-template-delete]");
-const cardToggle = document.querySelector("[data-card-toggle]");
-const cardToggleLabel = cardToggle?.querySelector("[data-card-toggle-label]");
 const cardPanel = document.querySelector("[data-card-panel]");
-const componentToggle = document.querySelector("[data-component-toggle]");
-const componentToggleLabel = componentToggle?.querySelector("[data-component-toggle-label]");
-const componentPanel = document.querySelector("[data-component-panel]");
+// cardToggle (toggle-only migration shape, preserves its <h3> heading) and
+// componentToggle/componentPanel (full section migration) are now built
+// inside initPressCollapsibles() instead of queried here — see there.
 const inspectorSection = document.querySelector("[data-component-inspector]");
 const typeSummary = document.querySelector("[data-component-type-summary]");
 let typeIcon = document.querySelector("[data-component-type-icon]");
@@ -232,6 +1032,7 @@ const repeaterDecoratorTypeInput = document.querySelector("[data-component-repea
 const repeaterDecoratorTextInput = document.querySelector("[data-component-repeater-decorator-text]");
 const repeaterDecoratorTextGroup = document.querySelector("[data-inspector-repeater-decorator-text]");
 const textSettingGroups = Array.from(document.querySelectorAll("[data-inspector-text-settings]"));
+const textGroupWrapper = document.querySelector("[data-inspector-text-group]");
 const fontFamilyInput = document.querySelector("[data-component-font-family]");
 const addFontModalElement = document.getElementById("press-add-font-modal");
 const addFontValueInput = document.querySelector("[data-add-font-value]");
@@ -266,16 +1067,58 @@ const textLineHeightInput = document.querySelector("[data-component-text-line-he
 const textOrientationInputs = Array.from(document.querySelectorAll("[data-component-text-orientation]"));
 const textAngleInput = document.querySelector("[data-component-text-angle]");
 const textCurveInput = document.querySelector("[data-component-text-curve]");
-const colorInputs = Array.from(document.querySelectorAll("[data-component-color]"));
-const colorClearButtons = Array.from(document.querySelectorAll("[data-component-color-clear]"));
+// The popover this builds (createColorPickerField) owns its own persistent
+// DOM/state (drag square, hue slider, binding box) that a static <input
+// type="color"> can't host, so this one part of the otherwise-static
+// inspector is rebuilt wholesale on every updateInspector() call instead of
+// having its .value synced in place — see renderColorFields.
+const colorFieldsContainer = document.querySelector("[data-inspector-color-fields]");
 const borderGroup = document.querySelector("[data-inspector-border-group]");
 const borderWidthInput = document.querySelector("[data-component-border-width]");
 const borderStyleInput = document.querySelector("[data-component-border-style]");
 const borderRadiusInput = document.querySelector("[data-component-border-radius]");
 const borderSideInputs = Array.from(document.querySelectorAll("[data-component-border-side]"));
+const borderSidesField = document.querySelector("[data-inspector-border-sides-field]");
 const textStyleToggles = Array.from(document.querySelectorAll("[data-component-text-style]"));
 const alignInputs = Array.from(document.querySelectorAll("[data-component-align]"));
-const visibilityToggle = document.querySelector("[data-component-visible]");
+const visibilityToggle = visibleField.switchInput;
+const visibleWhenInput = visibleField.bindingInput;
+// Built and mounted before the querySelector lines just below, so every
+// existing selector/state call site elsewhere in this file keeps working
+// unchanged. Make Unique has no ACTION_PRESETS match (icon/variant explicit)
+// and carries an aria-pressed state the factory doesn't model — set via
+// attrs, then flipped directly by this file's own existing
+// makeUniqueButton.setAttribute("aria-pressed", ...) calls elsewhere, same
+// as before. Delete Component's own visually-hidden label span needs the
+// data-component-delete-label marker this file's deleteButtonLabel relies
+// on for its own textContent updates — createToolbarButtonGroup builds that
+// span internally with no hook to tag it, so it's added as a one-off
+// afterward via a plain DOM query on the built button.
+const componentToolbarButtons = createToolbarButtonGroup([
+  {
+    icon: "tabler:fingerprint",
+    variant: "outline-secondary",
+    label: "Make Unique",
+    attrs: {
+      "data-component-make-unique": true,
+      "aria-pressed": "false",
+      "data-bs-title":
+        "Make Unique — while on, edits to this component apply only to the card/chip shown in Grid View, not the shared template (only available from the Grid View tab)",
+    },
+  },
+  {
+    action: "duplicate",
+    label: "Duplicate Component",
+    attrs: {
+      "data-component-duplicate": true,
+      "data-bs-title": "Duplicate — Ctrl+D (also Copy/Cut/Paste with Ctrl+C/Ctrl+X/Ctrl+V on any selected component)",
+    },
+  },
+  { action: "delete", label: "Delete Component", attrs: { "data-component-delete": true } },
+]);
+componentToolbarButtons[2]?.querySelector(".visually-hidden")?.setAttribute("data-component-delete-label", "");
+componentToolbarButtons.forEach((button) => document.querySelector("[data-component-toolbar-mount]")?.appendChild(button));
+
 const deleteButton = document.querySelector("[data-component-delete]");
 const deleteButtonLabel = document.querySelector("[data-component-delete-label]");
 const duplicateButton = document.querySelector("[data-component-duplicate]");
@@ -288,8 +1131,14 @@ const bindingFieldCache = {
   source: null,
   entries: [],
 };
-const rightPane = document.querySelector('[data-pane="right"]');
-const rightPaneToggle = document.querySelector('[data-pane-toggle="right"]');
+// Not a module-top-level const — the <aside> itself is now JS-built by
+// buildPaneShell() (common/js/lib/app-shell.js), inside initAppShell(),
+// which this file only calls later (from initShell(), invoked from
+// initPress()); an eager query here would capture null permanently. Every
+// call site below queries it live instead.
+function queryRightPane() {
+  return document.querySelector('[data-pane="right"]');
+}
 
 const sourceValues = {};
 const sourcePayloads = {};
@@ -344,17 +1193,182 @@ let templateIdAuto = false;
 let sampleDataSaveTimer = null;
 let sampleDataMode = "sample";
 
+// Placeholder swatch color shown only while the field is unset (covered
+// by the X overlay regardless) — never written to the node itself.
 const COLOR_DEFAULTS = {
-  foreground: "#212529",
+  text: "#212529",
   background: "#ffffff",
   border: "#dee2e6",
 };
+
+// One combined field per color (node.style.colorWhen/backgroundColorWhen/
+// borderColorWhen) — same "single string, @binding or =formula" shape
+// visibleWhen already uses, not Workbench's split Binding+Formula pair
+// (Press always has a concrete getSampleData() record to run a formula
+// against, so there's no need to distinguish the two the way Workbench's
+// preview-only canvas does).
+//
+// "text" (not "foreground") — matches Workbench's own rename (see that
+// tool's COLOR_FIELD_MAP comment): this only ever colors a node's own
+// text, so the label said what it does instead of a vaguer, easily
+// confused-with-"fill" name. Press has no component with a separate fill
+// concept yet (nothing here needs a 4th color the way Workbench's Toggle
+// does), so unlike Workbench this stays three entries — the vocabulary
+// (prop: "color", same as always) is unaffected, only the key/label.
+const COLOR_FIELD_MAP = {
+  text: { label: "Text", prop: "color", whenProp: "colorWhen", default: COLOR_DEFAULTS.text },
+  background: { label: "Background", prop: "backgroundColor", whenProp: "backgroundColorWhen", default: COLOR_DEFAULTS.background },
+  border: { label: "Border", prop: "borderColor", whenProp: "borderColorWhen", default: COLOR_DEFAULTS.border },
+};
+
+// Every inspector-side binding/formula preview in this file goes through
+// here instead of resolveBinding directly, for the same reason
+// template-renderer.js's own identically-named wrapper exists: so
+// `lookup(table, key)` (bindings.js's createLookupFn) is available
+// everywhere a template author can type a binding/formula, not just
+// colors. No System field list is passed here either, matching
+// template-renderer.js's own — this inspector's preview should show
+// exactly what the real render would, and the real render only ever
+// searches `context` (see createLookupFn's own comment on why Press never
+// gets a System-schema fallback).
+function resolveBindingWithLookup(raw, context) {
+  return resolveBinding(raw, context, { functions: { lookup: createLookupFn(context) } });
+}
+
+// The picker's own evaluate() hook — mirrors template-renderer.js's
+// resolveEffectiveStyles exactly (resolveBindingWithLookup against the same
+// sample data everything else in this inspector already previews against),
+// so what the swatch shows here always matches what actually renders.
+function evaluateColorWhen(raw) {
+  const trimmed = typeof raw === "string" ? raw.trim() : "";
+  if (!trimmed) return undefined;
+  const resolved = resolveBindingWithLookup(trimmed, getSampleData());
+  return typeof resolved === "string" && resolved.trim() ? resolved.trim() : undefined;
+}
+
+// Clears and rebuilds the Colors group's three fields for the given node
+// (or empties it when node is null) — see colorFieldsContainer's own
+// comment on why this section, alone among the inspector, gets rebuilt
+// instead of having plain .value assignments synced onto static markup.
+function renderColorFields(node) {
+  if (!colorFieldsContainer) return;
+  colorFieldsContainer.innerHTML = "";
+  if (!node) return;
+  Object.entries(COLOR_FIELD_MAP).forEach(([key, config]) => {
+    const bindingValue = node.style?.[config.whenProp] || "";
+    colorFieldsContainer.appendChild(
+      createColorPickerField(config.label, {
+        // The RAW stored color (node.style.color/backgroundColor/
+        // borderColor) — no getComputedStyle, no inferring from what's
+        // currently rendered in previewStage (a prior version resolved the
+        // "real" rendered color off the live preview node, which broke in
+        // practice: previewStage applies its OWN selected-node outline
+        // (.press-component--selected) to the same element a node's own
+        // borderColor renders on, so a selected border-less node's computed
+        // border color was the editor's own selection ring, not the node's
+        // actual, nonexistent border). Also no padding to COLOR_DEFAULTS
+        // when empty — that used to happen here (a removed
+        // resolveEffectiveColor helper) and made a cleared color
+        // indistinguishable from a real, explicitly-chosen default: the
+        // picker's own committedHex/hasManualValue derive straight from
+        // value, so a padded non-empty value always read as "set," and the
+        // unset-X overlay never showed after Clear. defaultValue below
+        // already covers "what hue to start the popover from when nothing's
+        // set" — set means set, empty means unset, full stop.
+        value: node.style?.[config.prop] || "",
+        defaultValue: config.default,
+        bindingValue,
+        evaluate: evaluateColorWhen,
+        // Fires once per commit (Accept/Enter/closing the popover — see
+        // color-picker.js's own commitCurrent), never per drag frame, so
+        // wrapping the whole thing in one recordUndoableChange entry is
+        // exactly right — same single-snapshot-per-real-edit contract every
+        // other inspector field already gets.
+        onManualChange: (value) => {
+          recordUndoableChange(() => {
+            updateSelectedNode((n) => {
+              const styles = { ...(n.style ?? {}) };
+              styles[config.prop] = value;
+              if (key === "border") {
+                // Picking a border color is also a valid way to turn the
+                // border on, same as typing a literal one already was —
+                // matches borderStyleInput's own "turning on for the first
+                // time" fill-in (only what's still genuinely unset).
+                if (!Number.isFinite(styles.borderWidth)) styles.borderWidth = 1;
+                if (!styles.borderStyle) styles.borderStyle = "solid";
+                if (!("borderRadius" in styles)) styles.borderRadius = 6;
+                if (!styles.borderSides) styles.borderSides = { top: true, right: true, bottom: true, left: true };
+              }
+              n.style = styles;
+            });
+            renderPreview();
+            updateSaveState();
+          });
+        },
+        // "=formula" or "@binding" both just get written verbatim into the
+        // one combined field — resolveBinding (evaluateColorWhen above,
+        // template-renderer.js's real render) handles telling them apart.
+        onBindingChange: (raw) => {
+          const trimmed = raw.trim();
+          recordUndoableChange(() => {
+            updateSelectedNode((n) => {
+              const styles = { ...(n.style ?? {}) };
+              if (trimmed) {
+                styles[config.whenProp] = trimmed;
+              } else {
+                delete styles[config.whenProp];
+              }
+              n.style = styles;
+            });
+            renderPreview();
+            updateSaveState();
+          });
+        },
+        onClear: () => {
+          recordUndoableChange(() => {
+            updateSelectedNode((n) => {
+              const styles = { ...(n.style ?? {}) };
+              delete styles[config.whenProp];
+              if (key === "text") {
+                // Text always renders with a real, visible color — "clear"
+                // resets to the real default (white) rather than leaving it
+                // genuinely unset, matching createComponent's own seeded
+                // default for new components. Explicitly "#ffffff", not
+                // COLOR_DEFAULTS.text (that's the muted placeholder shown
+                // ONLY while genuinely unset — using it here would have
+                // reset to a real, "set" dark grey that just happens to
+                // look identical to the unset swatch, a stale mismatch
+                // from before this comment's own "white" was written).
+                styles.color = "#ffffff";
+              } else if (key === "background") {
+                delete styles.backgroundColor;
+              } else if (key === "border") {
+                // borderStyle (not borderColor) is the border on/off switch
+                // — clearing just the color here doesn't turn the border
+                // off, only clears the color itself.
+                delete styles.borderColor;
+              }
+              if (Object.keys(styles).length) {
+                n.style = styles;
+              } else {
+                delete n.style;
+              }
+            });
+            renderPreview();
+            updateInspector();
+            updateSaveState();
+          });
+        },
+      })
+    );
+  });
+}
 const paletteComponents = [
   {
     id: "grid",
     label: "Grid",
     description: "Rows and columns of layout content",
-    icon: "tabler:layout-grid",
+    icon: COMPONENT_ICONS.grid,
     node: {
       type: "grid",
       columns: 1,
@@ -390,7 +1404,7 @@ const paletteComponents = [
     id: "layer",
     label: "Layer",
     description: "Freely positioned, stacked elements",
-    icon: "tabler:stack-2",
+    icon: COMPONENT_ICONS.layer,
     node: {
       type: "layer",
       placements: [
@@ -414,7 +1428,7 @@ const paletteComponents = [
     id: "stat",
     label: "Block",
     description: "Label + value blocks",
-    icon: "tabler:graph",
+    icon: COMPONENT_ICONS.stat,
     node: {
       type: "field",
       component: "stat",
@@ -440,7 +1454,7 @@ const paletteComponents = [
     id: "icon",
     label: "Icon",
     description: "CSS class icons and status markers",
-    icon: "tabler:star",
+    icon: COMPONENT_ICONS.icon,
     node: {
       type: "field",
       component: "icon",
@@ -452,7 +1466,7 @@ const paletteComponents = [
     id: "image",
     label: "Image",
     description: "Artwork or icon with URL binding",
-    icon: "tabler:photo",
+    icon: COMPONENT_ICONS.image,
     node: {
       type: "field",
       component: "image",
@@ -464,7 +1478,7 @@ const paletteComponents = [
     id: "repeater",
     label: "Repeater",
     description: "Repeating list, paragraphs, or table",
-    icon: "tabler:list-details",
+    icon: COMPONENT_ICONS.repeater,
     // A single, unopinionated starting point — one text field bound to
     // @value (works immediately against the sample string array below) in
     // one column, no header, no decorator. There are no other preset
@@ -487,7 +1501,7 @@ const paletteComponents = [
     id: "text",
     label: "Text",
     description: "Paragraphs, summaries, or captions",
-    icon: "tabler:align-left",
+    icon: COMPONENT_ICONS.text,
     node: {
       type: "field",
       component: "text",
@@ -543,6 +1557,7 @@ function initShell() {
   const { undoStack: stack, undo, redo, status: shellStatus } = initAppShell({
     namespace: "press-layout",
     storagePrefix: "undercroft.press.undo",
+    rightPane: { size: "lg", initial: "collapsed" },
     onUndo: (entry) => {
       if (!entry?.before) {
         return { applied: false };
@@ -855,7 +1870,7 @@ function resolveNodePreviewContext(node, targetId, context) {
     // resolves item index 0's context and walks that one row, plus
     // headerCells[0] (if any) walked with the outer context since a header
     // renders once, never per-item.
-    const items = resolveBinding(node.itemsBind, context) ?? node.items ?? [];
+    const items = resolveBindingWithLookup(node.itemsBind, context) ?? node.items ?? [];
     const itemContext = createItemContext(context, asArray(items)[0], 0);
     const templateRow = Array.isArray(node.cells) ? node.cells[0] : null;
     if (Array.isArray(templateRow)) {
@@ -912,18 +1927,7 @@ function getInspectorPreviewContext(nodeId) {
   return resolveNodePreviewContext(layout, nodeId, baseContext) ?? baseContext;
 }
 
-const renderJsonPreview = createJsonPreviewRenderer({
-  resolvePreviewElement: () => jsonPreview,
-  resolveBytesElement: () => jsonBytes,
-  serialize: () => {
-    const context = getSelectionContext();
-    if (!context.template) {
-      return {};
-    }
-    const previewData = resolveBasePreviewData();
-    return buildTemplatePreview(context.template, previewData);
-  },
-});
+const renderJsonPreview = jsonDataPanel.render;
 
 function removeDuplicateSampleDataSections() {
   const sections = document.querySelectorAll("[data-sample-data-section]");
@@ -1578,7 +2582,7 @@ function duplicateActiveTemplate() {
   // click — without this, the new id/name at the top (the actual proof a
   // duplicate happened) is scrolled out of view and the only sign it worked
   // is a toast that's easy to miss.
-  rightPane?.querySelector(".workbench-sticky-pane")?.scrollTo({ top: 0, behavior: "smooth" });
+  queryRightPane()?.querySelector(".workbench-sticky-pane")?.scrollTo({ top: 0, behavior: "smooth" });
   status?.show(`Duplicated as "${name}"`, { type: "success", timeout: 2000 });
 }
 
@@ -2632,15 +3636,15 @@ function resolveTextTransform(node) {
   };
 }
 
+// borderStyle is the border on/off switch — not "any of borderColor/
+// Width/Style/Radius/Sides happens to be present" (the old OR-based
+// check here let a stray borderWidth/Radius with no borderStyle/Color
+// masquerade as "there's a border"). borderRadius is deliberately not
+// checked — it independently shapes a node's own background/shadow
+// rounding even with no border line drawn, so it isn't downstream of
+// this switch the way color/width/sides are.
 function hasBorderStyles(styles = {}) {
-  return (
-    styles.borderColor ||
-    typeof styles.borderWidth === "number" ||
-    styles.borderStyle ||
-    typeof styles.borderRadius === "number" ||
-    typeof styles.borderRadius === "string" ||
-    styles.borderSides
-  );
+  return Boolean(styles.borderStyle) && styles.borderStyle !== "none";
 }
 
 
@@ -2719,7 +3723,7 @@ function resolveIconPreviewValue(value, context) {
       return directValue;
     }
   }
-  const resolved = resolveBinding(trimmed, resolvedContext);
+  const resolved = resolveBindingWithLookup(trimmed, resolvedContext);
   if (resolved === null || resolved === undefined) {
     return "";
   }
@@ -3089,6 +4093,19 @@ function getNodeText(node) {
   return "";
 }
 
+// createFormulaToggleField's own internal listener already re-syncs the
+// switch's checked/disabled/indeterminate state on every keystroke in the
+// binding field (live-evaluating via the `evaluate` callback passed to it
+// above — same resolveBinding call template-renderer.js's own shouldHide
+// uses for the real render), so selection-change is the only time this
+// file needs to push state into the field from the outside.
+function syncVisibilityControl(node) {
+  visibleField.syncToggleState({
+    checked: !node?.hidden,
+    bindingValue: node?.visibleWhen || "",
+  });
+}
+
 function updateInspector() {
   if (!inspectorSection) return;
   const layout = getLayoutForSide(currentSide);
@@ -3246,6 +4263,7 @@ function updateInspector() {
     imageFieldGroups.forEach((group) => setGroupVisibility(group, false));
     setGroupVisibility(imageSizeFieldGroup, false);
     setGroupVisibility(layerOriginField, false);
+    setGroupVisibility(textGroupWrapper, true);
     textSettingGroups.forEach((group) => {
       if (group === textDecorationGroup) return;
       setGroupVisibility(group, true);
@@ -3301,17 +4319,14 @@ function updateInspector() {
     });
     if (textAngleInput) textAngleInput.value = "0";
     if (textCurveInput) textCurveInput.value = "0";
-    colorInputs.forEach((input) => {
-      const key = input.dataset.componentColor;
-      input.value = COLOR_DEFAULTS[key] || "#000000";
-    });
+    renderColorFields(null);
     textStyleToggles.forEach((input) => {
       input.checked = false;
     });
     alignInputs.forEach((input) => {
       input.checked = input.value === "start";
     });
-    if (visibilityToggle) visibilityToggle.checked = true;
+    syncVisibilityControl(null);
     if (textEditorLabel) {
       textEditorLabel.textContent = "Binding / Text";
     }
@@ -3350,6 +4365,12 @@ function updateInspector() {
   if (layerOriginInput) {
     layerOriginInput.value = isLayerNode ? node.origin || "safe" : "safe";
   }
+  // Wraps every text-related sub-group (Font/Text size/Orientation/
+  // Decoration/Alignment) — hidden only when ALL of them would be, so the
+  // collapsible "Text" heading+toggle never shows with nothing underneath
+  // it. Grid/Layer/Image are the only types where that happens: Repeater
+  // still has Alignment, Icon still has Font/Text size/Decoration.
+  setGroupVisibility(textGroupWrapper, !isLayoutNode && !isImageNode);
   textSettingGroups.forEach((group) => {
     if (group === textDecorationGroup) return;
     setGroupVisibility(group, !isLayoutNode && !isImageNode && !isRepeaterNode);
@@ -3555,25 +4576,21 @@ function updateInspector() {
   if (textAngleInput) textAngleInput.value = String(resolvedAngle);
   if (textCurveInput) textCurveInput.value = String(textTransformState.curve ?? 0);
 
-  colorInputs.forEach((input) => {
-    const key = input.dataset.componentColor;
-    const styles = node?.style ?? {};
-    if (key === "foreground") {
-      input.value = styles.color || COLOR_DEFAULTS.foreground;
-    } else if (key === "background") {
-      input.value = styles.backgroundColor || COLOR_DEFAULTS.background;
-    } else if (key === "border") {
-      input.value = styles.borderColor || COLOR_DEFAULTS.border;
-    }
-  });
+  renderColorFields(node);
 
   if (borderWidthInput) {
-    borderWidthInput.value = borderVisible
-      ? String(Number.isFinite(node?.style?.borderWidth) ? node.style.borderWidth : 1)
-      : "";
+    // Shows the raw stored value, blank if it's not a real number — not a
+    // fabricated "1" display default. applyBorderStyles' own `typeof
+    // styles.borderWidth === "number" ? ... : 1` fallback is a rendering
+    // concern (CSS needs some number to draw with), not a display one.
+    borderWidthInput.value = Number.isFinite(node?.style?.borderWidth) ? String(node.style.borderWidth) : "";
   }
   if (borderStyleInput) {
-    borderStyleInput.value = borderVisible ? node?.style?.borderStyle ?? "solid" : "solid";
+    // Reads node.style.borderStyle directly — it's the border on/off
+    // switch, not borderColor (a prior version of this had that backwards;
+    // see hasBorderStyles' own comment). Matches Workbench's identical fix
+    // (createBorderControls).
+    borderStyleInput.value = node?.style?.borderStyle || "none";
   }
   if (borderRadiusInput) {
     const rawRadius = node?.style?.borderRadius;
@@ -3590,6 +4607,13 @@ function updateInspector() {
       input.checked = borderVisible ? sides[key] !== false : false;
     });
   }
+  // No Sides field at all with no border — "which sides" isn't a real,
+  // applicable choice with the switch off; showing it pre-checked while
+  // inert is its own kind of invisible-default confusion (matches
+  // Workbench's identical fix, createBorderControls).
+  if (borderSidesField) {
+    borderSidesField.hidden = !borderVisible;
+  }
 
   textStyleToggles.forEach((input) => {
     const styleKey = input.dataset.componentTextStyle;
@@ -3601,10 +4625,7 @@ function updateInspector() {
     input.checked = input.value === alignment;
   });
 
-  if (visibilityToggle) {
-    visibilityToggle.checked = !node.hidden;
-  }
-
+  syncVisibilityControl(node);
 }
 
 function selectFirstNode() {
@@ -4613,40 +5634,157 @@ async function handleGeneratePrint() {
   }
 }
 
+// Adds a real collapse/expand toggle to the Component Inspector's own
+// named field groups (Text, Colors, Border, Behavior, Advanced) —
+// previously always-expanded, only ever visibility-TOGGLED (shown/hidden
+// entirely depending on the selected node's type via setGroupVisibility,
+// never individually collapsed). Purely additive: wraps each group's
+// existing content (after its own heading) into a collapsible body and
+// injects a chevron toggle, reusing createCollapseToggleButton — the same
+// shared primitive (common/js/lib/collapsible.js) Workbench's own
+// createCollapsibleSection (common/js/lib/inspector-fields.js) is built
+// on, so both tools' inspectors behave identically. Scoped to groups
+// confirmed to have a clean single "heading div, then content" shape —
+// several OTHER groups in this same panel mix multiple concerns in one
+// visibility-gated container (e.g. the text orientation/decoration div
+// carries both data-inspector-text-settings and data-inspector-text-
+// decoration) and aren't safe to make collapsible sections in their own
+// right without deeper restructuring; that's exactly why data-inspector-
+// text-group exists as an outer wrapper instead of collapsing each text
+// sub-group individually — it only ever touches its own heading + direct
+// children, never reaches into what's mixed together inside them.
+// Orthogonal to setGroupVisibility, which
+// only ever toggles the outer group's own `hidden` — a group hidden as
+// "not applicable to this node type" still hides in full (heading, toggle,
+// and body together); this collapse state only governs the body's
+// visibility while the group itself is shown.
+function makeInspectorGroupCollapsible(selector, { defaultCollapsed = true } = {}) {
+  const group = document.querySelector(selector);
+  if (!group) return;
+  const heading = group.firstElementChild;
+  if (!heading) return;
+  const bodyChildren = Array.from(group.children).slice(1);
+  if (!bodyChildren.length) return;
+  const body = document.createElement("div");
+  body.className = "d-flex flex-column gap-2";
+  bodyChildren.forEach((child) => body.appendChild(child));
+  const headerRow = document.createElement("div");
+  headerRow.className = "d-flex align-items-center justify-content-between gap-2";
+  group.insertBefore(headerRow, heading);
+  headerRow.appendChild(heading);
+  const { button } = createCollapseToggleButton({
+    label: heading.textContent || "section",
+    collapsed: defaultCollapsed,
+    onToggle: (collapsed) => {
+      setElementCollapsed(body, collapsed);
+    },
+  });
+  headerRow.appendChild(button);
+  setElementCollapsed(body, defaultCollapsed);
+  group.appendChild(body);
+}
+
+function initInspectorGroupCollapsibles() {
+  makeInspectorGroupCollapsible("[data-inspector-text-group]");
+  makeInspectorGroupCollapsible("[data-inspector-color-group]");
+  makeInspectorGroupCollapsible("[data-inspector-border-group]");
+  makeInspectorGroupCollapsible("[data-inspector-behavior-group]");
+  makeInspectorGroupCollapsible("[data-inspector-advanced]");
+}
+
+// Builds and mounts a collapsible-section chevron toggle via the shared
+// factory, for a header whose other content (label, help span) stays
+// static HTML — the section-level createCollapsibleSection isn't used here
+// since it would rebuild the whole header as an <h2>, but Page
+// Bindings/Grid Properties are nested one level deeper and use <h3> for
+// their heading; forcing them through the full factory would silently
+// change that heading level. Mirrors Orrery's own identically-shaped local
+// helper.
+function createCollapsibleToggleButton(mountSelector, collapsed) {
+  const button = createIconButton({
+    icon: "tabler:chevron-right",
+    className: "collapsible-toggle",
+    includeToggleLabel: true,
+  });
+  button.setAttribute("aria-expanded", collapsed ? "false" : "true");
+  document.querySelector(mountSelector)?.appendChild(button);
+  return button;
+}
+
 function initPressCollapsibles() {
-  applySelectionCollapse = bindCollapsibleToggle(selectionToggle, selectionPanel, {
+  initInspectorGroupCollapsibles();
+  // Each of these five adopts its existing static `[data-xxx-panel]`
+  // markup (own content stays hand-authored HTML — only the header+chevron
+  // wrapper is JS-built) as its section's content.
+  const selectionsSection = createCollapsibleSection({
+    label: "Selections",
+    helpTopic: "press.selection",
     collapsed: false,
-    expandLabel: "Expand selections",
-    collapseLabel: "Collapse selections",
-    labelElement: selectionToggleLabel,
+    content: document.querySelector("[data-selection-panel]"),
   });
-  applyTemplateCollapse = bindCollapsibleToggle(templateToggle, templatePanel, {
+  selectionsSection.section.id = "press-selection";
+  document.querySelector("[data-selection-mount]")?.appendChild(selectionsSection.section);
+  applySelectionCollapse = selectionsSection.setCollapsed;
+
+  const templateSection = createCollapsibleSection({
+    label: "Template Properties",
     collapsed: false,
-    expandLabel: "Expand template properties",
-    collapseLabel: "Collapse template properties",
-    labelElement: templateToggleLabel,
+    className: "d-flex flex-column gap-4",
+    content: document.querySelector("[data-template-panel]"),
   });
+  templateSection.section.setAttribute("data-template-properties", "");
+  document.querySelector("[data-template-properties-mount]")?.appendChild(templateSection.section);
+  applyTemplateCollapse = templateSection.setCollapsed;
+
+  const pageBindingsToggle = createCollapsibleToggleButton("[data-page-bindings-toggle-mount]", false);
   applyPageBindingsCollapse = bindCollapsibleToggle(pageBindingsToggle, pageBindingsPanel, {
     collapsed: false,
     expandLabel: "Expand page bindings",
     collapseLabel: "Collapse page bindings",
-    labelElement: pageBindingsToggleLabel,
   });
+
+  const cardToggle = createCollapsibleToggleButton("[data-card-toggle-mount]", false);
   applyCardCollapse = bindCollapsibleToggle(cardToggle, cardPanel, {
     collapsed: false,
     expandLabel: "Expand card properties",
     collapseLabel: "Collapse card properties",
-    labelElement: cardToggleLabel,
   });
-  applyComponentCollapse = bindCollapsibleToggle(componentToggle, componentPanel, {
+
+  const componentSection = createCollapsibleSection({
+    label: "Component Properties",
+    helpTopic: "press.inspector",
     collapsed: true,
-    expandLabel: "Expand component properties",
-    collapseLabel: "Collapse component properties",
-    labelElement: componentToggleLabel,
+    className: "d-flex flex-column gap-4",
+    content: document.querySelector("[data-component-panel]"),
   });
+  componentSection.section.setAttribute("data-component-properties", "");
+  // The original help span also carried data-help-placement="left"
+  // (tooltip renders to the left, since this section sits in the narrower
+  // right-hand inspector pane) — createCollapsibleSection's own helpTopic
+  // option doesn't expose that, so it's set directly on the built span.
+  componentSection.section
+    .querySelector("[data-help-topic]")
+    ?.setAttribute("data-help-placement", "left");
+  document.querySelector("[data-component-properties-mount]")?.appendChild(componentSection.section);
+  applyComponentCollapse = componentSection.setCollapsed;
+
+  // jsonDataPanel/sampleDataSection already wire their own collapse
+  // behavior at construction (ui-components.js) — mounting is all that's
+  // left here. Sample Data order matters: it comes before JSON Data (which
+  // carries mt-auto to stay last in the pane).
+  document.querySelector("[data-sample-data-mount]")?.appendChild(sampleDataSection.section);
+  document.querySelector("[data-json-mount]")?.appendChild(jsonDataPanel.section);
+  bindCopyButton(sampleDataCopyButton, sampleDataInput);
 }
 
 function setInspectorMode(mode) {
+  // Both queried live, not as module-top-level consts — the toggle button
+  // lives inside the header and the pane itself is the <aside> buildPaneShell
+  // builds, both only existing once initAppShell() has run, which is later
+  // than this module's own top-level code; an eager query here would have
+  // captured null permanently.
+  const rightPaneToggle = document.querySelector('[data-pane-toggle="right"]');
+  const rightPane = queryRightPane();
   if (rightPane && rightPaneToggle) {
     expandPane(rightPane, rightPaneToggle);
   }
@@ -5858,80 +6996,6 @@ function bindInspectorControls() {
     });
   });
 
-  if (colorInputs.length) {
-    colorInputs.forEach((input) => {
-      input.addEventListener("focus", () => beginPendingUndo(input));
-      input.addEventListener("blur", () => commitPendingUndo(input));
-      input.addEventListener("change", () => commitPendingUndo(input));
-      input.addEventListener("input", () => {
-        const key = input.dataset.componentColor;
-        const value = input.value;
-        updateSelectedNode((node) => {
-          const styles = { ...(node.style ?? {}) };
-          if (key === "foreground") {
-            styles.color = value;
-          } else if (key === "background") {
-            styles.backgroundColor = value;
-          } else if (key === "border") {
-            styles.borderColor = value;
-            if (!Number.isFinite(styles.borderWidth)) {
-              styles.borderWidth = 1;
-            }
-            if (!styles.borderStyle) {
-              styles.borderStyle = "solid";
-            }
-            if (!("borderRadius" in styles)) {
-              styles.borderRadius = 6;
-            }
-            if (!styles.borderSides) {
-              styles.borderSides = { top: true, right: true, bottom: true, left: true };
-            }
-          }
-          node.style = styles;
-        });
-        renderPreview();
-        updateInspector();
-        updateSaveState();
-      });
-    });
-  }
-
-  if (colorClearButtons.length) {
-    colorClearButtons.forEach((button) => {
-      button.addEventListener("click", () => {
-        const key = button.dataset.componentColorClear;
-        recordUndoableChange(() => {
-          updateSelectedNode((node) => {
-            const styles = { ...(node.style ?? {}) };
-            if (key === "foreground") {
-              delete styles.color;
-            } else if (key === "background") {
-              delete styles.backgroundColor;
-            } else if (key === "border") {
-              delete styles.borderColor;
-              delete styles.borderWidth;
-              delete styles.borderStyle;
-              delete styles.borderRadius;
-              delete styles.borderSides;
-            }
-            if (Object.keys(styles).length) {
-              node.style = styles;
-            } else {
-              delete node.style;
-            }
-          });
-          const input = colorInputs.find((entry) => entry.dataset.componentColor === key);
-          if (input) {
-            input.value = COLOR_DEFAULTS[key] || "#000000";
-          }
-          renderPreview();
-          updateInspector();
-          updateSaveState();
-        });
-      });
-    });
-  }
-
   if (borderWidthInput) {
     borderWidthInput.addEventListener("focus", () => beginPendingUndo(borderWidthInput));
     borderWidthInput.addEventListener("blur", () => commitPendingUndo(borderWidthInput));
@@ -5960,14 +7024,29 @@ function bindInspectorControls() {
       const value = borderStyleInput.value;
       updateSelectedNode((node) => {
         const styles = { ...(node.style ?? {}) };
-        if (!value) {
+        if (!value || value === "none") {
+          // Turning the border off — style is the switch, so everything
+          // downstream of it goes back to genuinely unset too, not left
+          // behind as stale data with no effect.
           delete styles.borderStyle;
+          delete styles.borderColor;
+          delete styles.borderWidth;
+          delete styles.borderSides;
         } else {
           styles.borderStyle = value;
+          // Turning the border ON for the first time — write real,
+          // explicit values right now rather than leaving borderColor/
+          // borderWidth unset and letting the renderer invent a fallback
+          // no one actually chose. Only fills in what's still genuinely
+          // unset — an already-configured color/width isn't overwritten
+          // just because style changed again.
+          if (!styles.borderColor) styles.borderColor = COLOR_DEFAULTS.border;
+          if (typeof styles.borderWidth !== "number") styles.borderWidth = 1;
         }
         node.style = styles;
       });
       renderPreview();
+      updateInspector();
       updateSaveState();
     });
   }
@@ -6037,16 +7116,16 @@ function bindInspectorControls() {
     });
   }
 
-  if (visibilityToggle) {
-    visibilityToggle.addEventListener("change", () => {
-      recordUndoableChange(() => {
-        updateSelectedNode((node) => {
-          node.hidden = !visibilityToggle.checked;
-        });
-        renderPreview();
-        renderLayoutList();
-      });
-    });
+  // The actual node mutation + re-render (both the switch's manual click
+  // and the binding field's live typing) is wired via onManualChange/
+  // onBindingChange on createFormulaToggleField itself, above — only the
+  // pending-undo focus/blur pattern (one undo step per typing session,
+  // not one per keystroke) needs its own listeners here, same as every
+  // other free-text field in this inspector.
+  if (visibleWhenInput) {
+    visibleWhenInput.addEventListener("focus", () => beginPendingUndo(visibleWhenInput));
+    visibleWhenInput.addEventListener("blur", () => commitPendingUndo(visibleWhenInput));
+    visibleWhenInput.addEventListener("change", () => commitPendingUndo(visibleWhenInput));
   }
 
   if (deleteButton) {
@@ -6560,6 +7639,14 @@ async function initPress() {
   wireEvents();
   activeTemplateId = getActiveTemplate()?.id ?? null;
   setInspectorMode("template");
+  // Press never had this — every other tool in the suite calls it, but
+  // Press's static data-bs-toggle="tooltip" markup (Border thickness/Grid
+  // gap/the new Visible-binding field/etc.) was silently inert with no
+  // Bootstrap Tooltip instance ever attached. One-time init is enough:
+  // these elements are only ever shown/hidden (hidden attribute/display),
+  // never destroyed and recreated, so the listeners this attaches stay
+  // valid for the life of the page.
+  refreshTooltips(document);
 }
 
 initPress();

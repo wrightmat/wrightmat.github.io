@@ -131,10 +131,6 @@ body[data-theme="dark"] .preview-stage {
   min-width: 2.4rem;
 }
 
-.press-inline-input {
-  width: 4.5rem;
-}
-
 .press-text-transform-row {
   overflow-x: auto;
 }
@@ -191,10 +187,6 @@ body[data-theme="dark"] .preview-stage {
   pointer-events: none;
   z-index: 2;
   opacity: 0.85;
-}
-
-.press-sample-data-input {
-  font-size: 0.65rem;
 }
 
 .card-guides {

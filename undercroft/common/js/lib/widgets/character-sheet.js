@@ -335,7 +335,14 @@ export function initCharacterVitals(container, { dataManager, status, characterI
     }
     if (destroyed) return;
     character = result.payload || {};
-    await loadSystemContext(character.system);
+    // Assigned Systems (systemIds — see Loom's own "Assigned Systems"
+    // checkboxes) replaces the old singular `system` field; a character can
+    // have more than one assigned, but this widget's combat-binding/
+    // conditions lookup only ever needs one System, so the first entry
+    // wins. `character.system` stays a fallback for any not-yet-resaved
+    // record that still only has the legacy field.
+    const systemId = Array.isArray(character.systemIds) ? character.systemIds[0] : character.system;
+    await loadSystemContext(systemId);
     if (destroyed) return;
     render();
   }
@@ -354,4 +361,93 @@ export function initCharacterVitals(container, { dataManager, status, characterI
       container.innerHTML = "";
     },
   };
+}
+
+// --- Macro action support (common/js/lib/widgets/macro-runner.js) ---
+// Standalone — no mounted widget instance required. Same fetch → resolve
+// combat bindings → mutate → save shape as doPersistBinding/
+// loadSystemContext above, just against a character id passed in per call
+// rather than this widget's own closure state.
+
+export const CHARACTER_MACRO_ACTIONS = {
+  adjustVital: { label: "Adjust HP/AC", params: ["field", "value", "delta"] },
+  addCondition: { label: "Add condition", params: ["condition"] },
+  removeCondition: { label: "Remove condition", params: ["condition"] },
+};
+
+async function loadMacroCombatBindings(dataManager, character) {
+  const systemId = Array.isArray(character?.systemIds) ? character.systemIds[0] : character?.system;
+  if (!systemId) return null;
+  try {
+    // preferLocal: false — same reasoning as loadSystemContext above.
+    const result = await dataManager.get("system", systemId, { preferLocal: false });
+    const fields = Array.isArray(result?.payload?.fields) ? result.payload.fields : [];
+    const field = findRoleBoundField(fields);
+    return field && Array.isArray(field.values) ? field.values : null;
+  } catch (error) {
+    return null;
+  }
+}
+
+export async function runCharacterMacroAction(action, { dataManager } = {}) {
+  const characterId = action?.target;
+  if (!characterId) {
+    throw new Error("No character id given.");
+  }
+  // preferLocal: false — a read-modify-write round trip against whatever
+  // the character record actually is right now, same reasoning
+  // doPersistBinding/combat-tracker.js's own writeThroughToCharacter apply.
+  const result = await dataManager.get("character", characterId, { preferLocal: false });
+  const character = result?.payload;
+  if (!character) {
+    throw new Error(`Character "${characterId}" not found.`);
+  }
+  const combatBindings = await loadMacroCombatBindings(dataManager, character);
+  const params = action?.params || {};
+  const actionName = action?.action;
+
+  if (actionName === "adjustVital") {
+    const resource = findBindingByRole(combatBindings, "resource");
+    const value = findBindingByRole(combatBindings, "value");
+    const fieldBindings = {
+      hp: resource?.binding,
+      maxHp: resource?.maxPath,
+      tempHp: resource?.tempPath,
+      ac: value?.binding,
+    };
+    const binding = fieldBindings[params.field];
+    if (!binding) {
+      throw new Error(`This character's System has no "${params.field}" combat binding.`);
+    }
+    let next;
+    if (params.delta !== undefined) {
+      const current = Number(resolveBinding(binding, character)) || 0;
+      next = current + Number(params.delta);
+    } else {
+      next = Number(params.value);
+    }
+    setAtBinding(binding, character, next);
+  } else if (actionName === "addCondition" || actionName === "removeCondition") {
+    const tags = findBindingByRole(combatBindings, "tags");
+    if (!tags?.binding) {
+      throw new Error("This character's System has no conditions combat binding.");
+    }
+    const conditionValue = String(params.condition || "").trim();
+    if (!conditionValue) {
+      throw new Error("No condition given.");
+    }
+    const current = resolveBinding(tags.binding, character);
+    const list = Array.isArray(current) ? current.slice() : [];
+    const index = list.indexOf(conditionValue);
+    if (actionName === "addCondition") {
+      if (index === -1) list.push(conditionValue);
+    } else if (index !== -1) {
+      list.splice(index, 1);
+    }
+    setAtBinding(tags.binding, character, list);
+  } else {
+    throw new Error(`Unknown Character macro action "${actionName}".`);
+  }
+
+  await dataManager.save("character", characterId, character);
 }

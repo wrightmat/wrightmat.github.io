@@ -1,0 +1,25 @@
+{
+  "template": "tpl.bitd.crew",
+  "systemIds": ["sys.bitd"],
+  "data": {},
+  "kind": "character",
+  "name": "The Red Lanterns",
+  "crewPlaybook": "Shadows",
+  "reputation": ["Subtle", "Bold"],
+  "tier": 1,
+  "heat": 3,
+  "wanted": 0,
+  "crewCoin": 4,
+  "vault": 14,
+  "upgrades": [
+    { "name": "Secure Lair", "purchased": true },
+    { "name": "Spy Network", "purchased": false }
+  ],
+  "claims": [
+    { "name": "The Docks", "controlled": true },
+    { "name": "Nightmarket", "controlled": false }
+  ],
+  "cohorts": [
+    { "type": "Gang", "notes": "Skulking, Vicious — street toughs loyal to the crew." }
+  ]
+}

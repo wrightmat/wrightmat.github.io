@@ -25,6 +25,24 @@
 //   { step:"filter", bind }                        - keep elements where bind is truthy
 //   { step:"flatten" }                              - array-of-arrays or object-of-arrays -> one array
 //   { step:"group-by", bind }                       - -> { [bind result]: [elements...] }
+//   { step:"entries", keyName, valueName }           - object-of-arrays (e.g. group-by's own
+//                                                       output) -> [{[keyName]:k, [valueName]:v}, ...],
+//                                                       one entry per own key, in the same order
+//                                                       Object.entries would give (ascending
+//                                                       numeric order for integer-like string
+//                                                       keys — exactly group-by's own key shape —
+//                                                       regardless of insertion order, per the
+//                                                       JS spec). Needed whenever a template author
+//                                                       needs to loop over the GROUPS themselves
+//                                                       (e.g. a Repeater-of-Repeaters over spell
+//                                                       levels) rather than reach into one already-
+//                                                       known key directly (@spells.3) — a plain
+//                                                       object has no length/index a Repeater's own
+//                                                       binding can iterate. keyName/valueName
+//                                                       default to "key"/"value"; a numeric-looking
+//                                                       key is coerced back to a real number (group-
+//                                                       by's own key is always a string) so a bound
+//                                                       @level reads as 3, not "3".
 //   { step:"sort", bind, direction:"asc"|"desc" }   - order by bind result
 //   { step:"dedup", bind }                          - keep first element per distinct bind result
 //   { step:"custom", fn, args }                     - escape hatch: fn(currentValue, context, args, env)
@@ -113,6 +131,15 @@ function applyStep(value, step, context, env) {
         (groups[groupKey] = groups[groupKey] || []).push(item);
       });
       return groups;
+    }
+    case "entries": {
+      const source = value && typeof value === "object" && !Array.isArray(value) ? value : {};
+      const keyName = step.keyName || "key";
+      const valueName = step.valueName || "value";
+      return Object.entries(source).map(([key, entryValue]) => {
+        const numericKey = key.trim() !== "" && !Number.isNaN(Number(key)) ? Number(key) : key;
+        return { [keyName]: numericKey, [valueName]: entryValue };
+      });
     }
     case "sort": {
       const direction = step.direction === "desc" ? -1 : 1;

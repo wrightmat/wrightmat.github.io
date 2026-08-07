@@ -1,5 +1,26 @@
-import { initThemeControls } from "../js/lib/theme.js";
-import { loadHelpTopics } from "../js/lib/help.js";
+import { initAppShell } from "./js/lib/app-shell.js";
+import { DataManager } from "./js/lib/data-manager.js";
+import { resolveApiBase } from "./js/lib/api.js";
+import { initAuthControls } from "./js/lib/auth-ui.js";
+import { loadHelpTopics } from "./js/lib/help.js";
+
+// Same shell bootstrap every other page under common/ uses (account.html's
+// own account.js is the reference) — this page used to live one directory
+// deeper (common/docs/index.html), which put it at the wrong depth for
+// initAppShell's own tool-context path math (resolveToolContextPath reads
+// the second-to-last URL segment, assuming every page sits exactly one
+// level under the suite root) and silently broke the tool-switcher nav as
+// a result. Moved flat into common/ instead of working around that.
+const { status } = initAppShell({
+  namespace: "docs",
+  leftPaneLabel: "Toggle topics pane",
+  leftPane: { size: "lg", initial: "expanded" },
+  // docs.html is the one page in the suite with no right pane at all.
+  rightPaneLabel: null,
+  rightPane: null,
+});
+const dataManager = new DataManager({ baseUrl: resolveApiBase(), storagePrefix: "undercroft.workbench" });
+initAuthControls({ root: document, status, dataManager });
 
 function slugify(value) {
   return String(value || "")
@@ -9,18 +30,27 @@ function slugify(value) {
     .replace(/^-+|-+$/g, "");
 }
 
+// Resolves a topic's own stored `href` (data/help-topics.json) into an
+// absolute URL for the "Open in app" button — most topics point at another
+// tool entirely ("../loom/index.html?help=..."), a few still point back at
+// this same page ("docs.html#topic-id"). Base is just "wherever this page
+// itself lives," same as new URL(href, document.baseURI) would give —
+// spelled out explicitly rather than relying on baseURI so a <base> tag
+// added later for some other reason can't silently change this.
 function resolveTopicUrl(href) {
-  const basePath = window.location.pathname.replace(/docs\/[\w.-]+$/, "");
-  const base = `${window.location.origin}${basePath}`;
+  const base = `${window.location.origin}${window.location.pathname.replace(/[^/]*$/, "")}`;
   try {
-    const url = new URL(href, base);
-    return url.toString();
+    return new URL(href, base).toString();
   } catch (error) {
     console.warn("Unable to resolve topic href", href, error);
     return href;
   }
 }
 
+// Just the topic-count/last-updated/version badges — the catalog's own
+// free-text description lives in a separate paragraph (renderDescription
+// below) since both sit in the left pane's fixed header, above the
+// scrollable topic nav.
 function renderMetadata(root, metadata, topics) {
   if (!root) return;
   root.innerHTML = "";
@@ -40,12 +70,11 @@ function renderMetadata(root, metadata, topics) {
     pill.textContent = `Catalog v${metadata.version}`;
     root.appendChild(pill);
   }
-  if (metadata?.description) {
-    const description = document.createElement("span");
-    description.className = "text-body-secondary small";
-    description.textContent = metadata.description;
-    root.appendChild(description);
-  }
+}
+
+function renderDescription(root, metadata) {
+  if (!root) return;
+  root.textContent = metadata?.description || "";
 }
 
 function buildTocList(tocRoot, groupedTopics) {
@@ -165,12 +194,12 @@ function groupTopicsByCategory(topics) {
 }
 
 (async () => {
-  initThemeControls(document);
   const tocRoot = document.querySelector("[data-docs-toc]");
   const contentRoot = document.querySelector("[data-docs-root]");
   const metaRoot = document.querySelector("[data-docs-metadata]");
+  const descriptionRoot = document.querySelector("[data-docs-description]");
   try {
-    const { topics, raw } = await loadHelpTopics("../data/help-topics.json");
+    const { topics, raw } = await loadHelpTopics("data/help-topics.json");
     if (!topics.length) {
       if (contentRoot) {
         contentRoot.innerHTML = "";
@@ -180,11 +209,13 @@ function groupTopicsByCategory(topics) {
         contentRoot.appendChild(empty);
       }
       renderMetadata(metaRoot, raw?.metadata || {}, topics);
+      renderDescription(descriptionRoot, raw?.metadata || {});
       buildTocList(tocRoot, []);
       return;
     }
     const grouped = groupTopicsByCategory(topics);
     renderMetadata(metaRoot, raw?.metadata || {}, topics);
+    renderDescription(descriptionRoot, raw?.metadata || {});
     buildTocList(tocRoot, grouped);
     renderTopics(contentRoot, grouped);
   } catch (error) {

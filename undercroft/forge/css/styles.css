@@ -4,12 +4,6 @@
  * of things Bootstrap can't express directly.
  */
 
-[data-npc-json-preview] {
-  min-height: 8rem;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
 /* Looks like the plain-text value it replaces until hovered/focused, so an
    editable field (currently just Name) doesn't visually stand out from the
    read-only ones next to it until you actually interact with it. */

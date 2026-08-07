@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "version": "1.1",
-    "lastUpdated": "2026-07-24",
+    "version": "1.5",
+    "lastUpdated": "2026-08-06",
     "description": "Contextual help topics for the Undercroft suite."
   },
   "topics": [
@@ -14,7 +14,7 @@
         "The center canvas adjusts to the active tool: system schema trees, template layout boards, or interactive character sheets.",
         "The right pane hosts inspectors, metadata, and contextual utilities such as JSON previews or collaboration panels."],
       "category": "Workbench Fundamentals",
-      "href": "docs/index.html#workspace-overview"
+      "href": "docs.html#workspace-overview"
     },
     {
       "id": "workspace.theme",
@@ -25,7 +25,7 @@
         "System theme uses the browser's `prefers-color-scheme` media query. All panes recompute colors immediately when toggled.",
         "Bootstrap tooltips and icons inherit the active theme for consistent contrast."],
       "category": "Workbench Fundamentals",
-      "href": "docs/index.html#workspace-theme"
+      "href": "docs.html#workspace-theme"
     },
     {
       "id": "workspace.undo",
@@ -36,7 +36,7 @@
         "Use Ctrl+Z / Cmd+Z to undo and Ctrl+Shift+Z / Cmd+Shift+Z to redo. Buttons in toolbars mirror the same behaviour.",
         "Undo history is serialised to local storage so reloading restores the last working state, even when offline."],
       "category": "Workbench Fundamentals",
-      "href": "docs/index.html#workspace-undo"
+      "href": "docs.html#workspace-undo"
     },
     {
       "id": "system.palette",
@@ -47,7 +47,7 @@
         "Dropping a field onto the canvas assigns a stable node id and queues an undo entry so the action can be reverted.",
         "Numeric fields expose additional constraints (min, max, step) once selected in the inspector."],
       "category": "System Editor",
-      "href": "docs/index.html#system-palette"
+      "href": "docs.html#system-palette"
     },
     {
       "id": "system.inspector",
@@ -58,7 +58,7 @@
         "The inspector honours tier restrictions—creator tier is required to persist systems to the server.",
         "Computed expressions use the shared formula engine so templates and characters evaluate the same syntax."],
       "category": "System Editor",
-      "href": "docs/index.html#system-inspector"
+      "href": "docs.html#system-inspector"
     },
     {
       "id": "system.picker",
@@ -69,7 +69,7 @@
         "Use the \"New System\" modal to clone a builtin into your workspace with a custom id and version tag.",
         "When a builtin asset is temporarily unavailable, a status badge surfaces the outage without blocking other work."],
       "category": "System Editor",
-      "href": "docs/index.html#system-builtins"
+      "href": "docs.html#system-builtins"
     },
     {
       "id": "template.library",
@@ -80,7 +80,7 @@
         "Dropping a component hydrates default styles, labels, and bindings that can be refined in the properties panel.",
         "Repeaters and groups retain nested child components and expose quick actions for duplication or removal."],
       "category": "Template Builder",
-      "href": "docs/index.html#template-library"
+      "href": "docs.html#template-library"
     },
     {
       "id": "template.properties",
@@ -91,7 +91,34 @@
         "Binding pickers are populated from the active system schema via the shared `component-data` helpers.",
         "Advanced sections toggle formatting, colour accents, and responsive behaviour without custom CSS."],
       "category": "Template Builder",
-      "href": "docs/index.html#template-properties"
+      "href": "docs.html#template-properties"
+    },
+    {
+      "id": "template.bindings",
+      "title": "Bindings & Formulas Reference",
+      "summary": "How @bindings and =formulas work across every Workbench field — syntax, available functions, and where each is (and isn't) supported.",
+      "details": [
+        "Every content field in the Template editor has three modes, decided by how the value starts: plain text is shown as-is, `@some.path` reads a value from the character record, and `=expression` (an actual formula) computes one. Type directly into the same field to switch between them — there's no separate toggle.",
+        "`@path` is a dot-separated path into the character record (e.g. `@abilities.strength.score`, `@inventory.0.name`). It resolves the same way for every binding-capable field: Input, Track's Segments, Icon's glyph, Image's URL, Container's own heading, Text's Binding/Text field, and more.",
+        "Inside a Repeater's item template, `@path` resolves relative to that ONE repeated row instead of the top-level character record — `@name` there means \"this item's own name,\" not a top-level `name` field. This applies to every component dropped into an item template, including a nested Repeater's own binding.",
+        "\"Binding\" and \"Source\" are two different concepts, not interchangeable words for the same thing: Binding/Text pulls a VALUE from the character record; Source pulls a CHOICES LIST from the System's own field definitions (used by Input's dropdown/radio/checkbox options and Toggle's states). A field labeled \"Source\" is not a place to type a value binding.",
+        "`=expression` formulas are JavaScript-like math/logic expressions, not a full scripting language — only these characters are allowed: letters, digits, and `+ - * / ( ) . , @ < > = ! ? & | % : ' \" _ [ ]` plus whitespace. Object literals, template strings, and semicolons aren't supported; anything else in a formula fails outright with \"Formula contains unsupported characters.\"",
+        "Both `if(condition, whenTrue, whenFalse)` and a real ternary (`condition ? whenTrue : whenFalse`) work — they're equivalent, use whichever reads better. Both nest freely: `=if(@dc, \"DC\"+@dc, if(@toHit, @toHit, \"-\"))` is valid. `if(...)` is an ordinary function call, not special syntax, so ALL of its arguments are evaluated every time, not just the branch that's returned — a nested `if()` in the unused branch still runs.",
+        "String literals need real quotes: `=\"Level \" + @level` concatenates a literal string with a bound number. Unbalanced quotes anywhere in the expression will fail to parse.",
+        "A bound value used in a formula is coerced before your expression ever sees it: missing, `null`, and empty-string all become `0`; a numeric-looking value (including a numeric string like `\"15\"`) becomes a real number; anything else (a genuine non-empty string, an array, an object) passes through unchanged. This is what makes a plain `@dc` (with no comparison at all) the right \"does this field have a value\" check — it's already `0`/falsy when the field is null or absent.",
+        "`@path.someProperty` (including `.length`) only resolves when the bound value is ITSELF an array or plain object — a template's `.` traversal walks real object/array properties, not a primitive's own built-in ones. `@components.length` works because `components` is an array; `@dc.length` does NOT work because `dc` is a plain number-or-null field, and numbers have no such property to walk into — it silently resolves to nothing, then gets coerced to `0` same as any other missing value, which is why it looked like it was \"always zero\" rather than erroring. Use the plain truthy check above instead of `.length` for any number-or-null field.",
+        "String functions: `len(value)` — character count for a string, element count for an array. `upper(value)` / `lower(value)` — case conversion. `split(value, separator)` — returns an array (index it directly, e.g. `split(@name,\" \")` then use the result elsewhere in the same expression). `replace(value, search, replacement)` — replaces every occurrence of a literal search string, not a regex (there's no regex support — search text is matched exactly as written). All four take the value first, same argument order as `clamp`/`mod`/`pow`. Native `+` concatenation still works alongside these (`=\"DC \" + @dc`).",
+        "Math and rounding functions: `abs(value)`, `ceil(value)`, `floor(value)`, `round(value)`, `sqrt(value)`, `pow(base, exponent)`, `mod(dividend, divisor)`, `clamp(value, min, max)`.",
+        "Multi-argument functions (any number of values): `min(...values)`, `max(...values)`, `avg(...values)`, `sum(...values)`, `and(...values)`, `or(...values)`. `not(value)` takes one.",
+        "`lookup(table, key)` looks up one entry from a named table and returns the WHOLE matched entry, not just one field — so `=lookup('abilities','str').color` reads the color property off whatever entry matched. `table` first tries to match a System field by name (using that field's own declared list of values); failing that, `table` is resolved as an ordinary dotted path into the same data every other binding reads. A key matches an entry by its sourceId, id, dotted key's last segment, name, shortName, or label — whichever the entry actually has.",
+        "`roller(notation, fallback)` rolls a dice expression (e.g. `roller(\"2d6+3\", 0)`) and returns the total — only meaningful in Play/Edit, where it triggers the real dice roller and logs the roll. In the Template editor's own canvas preview it just returns `fallback` (or 0), since there's nothing to actually roll against yet.",
+        "Every binding/formula field shows a live feedback line right under the input as you type: a preview of what the current value resolves to against the template's sample data, or a red \"Formula error: ...\" message if it fails to parse or evaluate. This runs through the exact same evaluation as the real thing, `lookup()` included, so what you see there is what you'll get once the template's Data section is filled in for real.",
+        "That preview uses the template's own sample data, not a real character record — a formula referencing a field the current System doesn't declare, or an @path that's only meaningful inside a Repeater item, may correctly show no value in the preview even though it resolves fine once actually bound to a character.",
+        "Not every field supports every mode. A Repeater's own top-level binding only accepts `@path` — the value has to be a real array to repeat over, and a formula's result can't be one. Container's Label field, Icon's glyph, and Image's URL each support all three modes in one single field rather than a separate generic Binding/Formula control.",
+        "Colors (Text/Foreground/Background/Border) and the Visible/Collapsible/Locked toggles use this exact same `@binding`/`=formula` convention too — a color swatch's own Binding/Formula box and a boolean toggle's condition field both resolve exactly like every other field described here."
+      ],
+      "category": "Template Builder",
+      "href": "docs.html#template-bindings"
     },
     {
       "id": "character.records",
@@ -102,7 +129,7 @@
         "Local drafts are saved in IndexedDB/localStorage namespaces scoped by the current authenticated user.",
         "Saving pushes the draft to the API with ownership metadata so access tiers and share permissions stay intact."],
       "category": "Character Sheet",
-      "href": "docs/index.html#character-records"
+      "href": "docs.html#character-records"
     },
     {
       "id": "character.dice",
@@ -113,7 +140,7 @@
         "Component formulas resolve bindings through the same evaluation pipeline as the system editor.",
         "Roll history persists per-session so the log survives page reloads during an active play session."],
       "category": "Character Sheet",
-      "href": "docs/index.html#character-dice"
+      "href": "docs.html#character-dice"
     },
     {
       "id": "collaboration.shares",
@@ -317,6 +344,19 @@
       "href": "../loom/index.html#loom-library"
     },
     {
+      "id": "loom.macros",
+      "title": "Macros",
+      "summary": "A dedicated tab for authoring Macros — the ordered list of actions a Macro runs when triggered, from the Dashboard's Macro board widget or a Journal note.",
+      "details": [
+        "Macros are a real Library kind (creator-tier gated, shareable) — this tab is a purpose-built editor for that same data, the same relationship the Systems tab has to the System kind. The generic Library tab can still open a Macro as raw JSON like any other kind.",
+        "Each action row targets one widget type (WLED, Soundboard, Handout, Combat, ...) — the fields shown change to match what that type actually needs (a device alias, a clip id, a contentRef, ...).",
+        "Actions run top to bottom — order matters (e.g. dim the lights, then play the sting).",
+        "A WLED action's device is a free-text alias, never a literal IP — the GM running the macro maps it to one of their own saved devices the first time it's triggered, so the same Macro works for anyone's own lighting rig."
+      ],
+      "category": "Loom",
+      "href": "../loom/index.html#loom-macros"
+    },
+    {
       "id": "loom.systems",
       "title": "Systems",
       "summary": "A System is a set of Properties plus whichever Library entities are assigned to it — the same System concept Workbench's Template and Character pages already consume.",
@@ -329,12 +369,13 @@
       "href": "../loom/index.html#loom-systems"
     },
     {
-      "id": "loom.systemPreview",
-      "title": "Preview Data (JSON)",
-      "summary": "Sample data used to preview array/object bindings in Workbench's Template editor — it isn't part of any real character's data.",
+      "id": "loom.systemJsonPreview",
+      "title": "JSON Preview",
+      "summary": "A live, read-only view of the whole System record as it will be saved.",
       "details": [
-        "Keyed by field path, e.g. {\"inventory\": [...]}, matching whatever Array/Object Properties this System defines.",
-        "Properties above are the main way to define a System's shape — this is just a backup/reference, not something most edits touch."
+        "Updates as you edit — Id/Title/Version and every Property row all flow straight into it, so you can see the System's real shape before ever clicking Save.",
+        "Once saved, this is exactly what dataManager.get(\"systems\", id) returns — the same record you'd see if you looked this System up in the Library.",
+        "Read-only — edit the fields above instead; this panel only ever reflects them."
       ],
       "category": "Loom",
       "href": "../loom/index.html#loom-systems"
@@ -360,14 +401,15 @@
       "title": "Array value options",
       "summary": "Which extra columns show on each of this property's values, and what each one actually does.",
       "details": [
-        "Cost — a number each value spends from (or, if negative, refunds into) the active budget ceiling. Only meaningful on a Property that is NOT the one picked as Vault's Budget ceiling field (see that Vault topic): if this Property IS the ceiling field, Vault's own budget math ignores its Cost entirely and uses its Target budget instead. Turn this on for Properties like Activation or Item Form, where every value has a point cost.",
-        "Target budget — a number each value sets as a target budget. It's only read as \"the ceiling\" from whichever one Property Vault's Budget ceiling field setting names; on every other Property, a Target budget value is just stored data some other consumer can use however it wants (e.g. Combat Scaling's per-CR entries carry Target budget for Crucible's own stat scaling, completely unrelated to Vault's economy). Cost and Target budget are not \"pick whichever fits\" — which one a given Property's values actually use is decided entirely by whether that Property is the current ceiling field.",
-        "Source ID — a stable numeric ID (typically a D&D Beyond identifier) this value can be looked up by. This is what lets a DDB character/monster import resolve a raw numeric code (e.g. an alignment or condition ID from D&D Beyond's export) back to this value — see common/docs/lookup-tables-migration.md for the full list of fields that use it and why.",
-        "Short name — a short label or abbreviation for this value (e.g. \"STR\" for Strength, \"LG\" for Lawful Good, \"V\"/\"S\"/\"M\" for spell components, \"A\"/\"BA\"/\"R\" for Activation's action-economy codes) shown anywhere full names don't fit. It's one shared property name used the same way across every Property that needs a short form — Alignments, Abilities, Activation, Spell Components, Sizes, and Speeds all use it — rather than each Property inventing its own name for the same idea.",
-        "Library-linked — each value can point at a real Library entity of a chosen kind (the Library kind field shown in the main Array contents row) instead of just being a display string. Turning this on reveals a Library-kind field and, per value, a select of that kind's saved entities — saving a matching Library entity later auto-links it by name, so linking by hand is only needed when a match is ambiguous.",
-        "Role — a small fixed vocabulary describing this value's structural behavior, useful anywhere it fits: Resource (a number with a max, optionally a temp buffer that absorbs damage first), Value (one standalone number), Tags (a multi-select status list), or Modifier (a number that feeds a die roll). Whichever array's values use Role is what the Combat Tracker widget and Workbench's character view treat as a System's live play-state (see 'Combat Bindings') — but nothing requires that to be its only use.",
         "Binding — a generic @-path pointing this value at another field (e.g. @stats.hitPoints.current) — where this value's live data is read/written. Not specific to Role or Combat Bindings — any value on any array can carry one.",
+        "Description — flavor or rules text for this value, shown under its label wherever this Property's options are presented (a Select's dropdown, a Checkbox/Radio group's own option list). Without this on, a value's description still round-trips through Extra properties JSON instead — this just gives it a dedicated field.",
+        "Library-linked — each value can point at a real Library entity of a chosen kind (the Library kind field shown in the main Array contents row) instead of just being a display string. Turning this on reveals a Library-kind field and, per value, a select of that kind's saved entities — saving a matching Library entity later auto-links it by name, so linking by hand is only needed when a match is ambiguous.",
+        "Short name — a short label or abbreviation for this value (e.g. \"STR\" for Strength, \"LG\" for Lawful Good, \"V\"/\"S\"/\"M\" for spell components, \"A\"/\"BA\"/\"R\" for Activation's action-economy codes) shown anywhere full names don't fit. It's one shared property name used the same way across every Property that needs a short form — Alignments, Abilities, Activation, Spell Components, Sizes, and Speeds all use it — rather than each Property inventing its own name for the same idea.",
+        "Source ID — a stable numeric ID (typically a D&D Beyond identifier) this value can be looked up by. This is what lets a DDB character/monster import resolve a raw numeric code (e.g. an alignment or condition ID from D&D Beyond's export) back to this value — see common/docs/lookup-tables-migration.md for the full list of fields that use it and why.",
         "Source field — a different kind of pointer: the key of another array field on this same System whose values are this value's list of valid options (e.g. a Tags-role value naming a Conditions field), not where data lives but where the choices are defined.",
+        "Cost — a number each value spends from (or, if negative, refunds into) the active budget ceiling. Only meaningful on a Property that is NOT the one picked as Vault's Budget ceiling field (see that Vault topic): if this Property IS the ceiling field, Vault's own budget math ignores its Cost entirely and uses its Target budget instead. Turn this on for Properties like Activation or Item Form, where every value has a point cost.",
+        "Role — a small fixed vocabulary describing this value's structural behavior, useful anywhere it fits: Resource (a number with a max, optionally a temp buffer that absorbs damage first), Value (one standalone number), Tags (a multi-select status list), or Modifier (a number that feeds a die roll). Whichever array's values use Role is what the Combat Tracker widget and Workbench's character view treat as a System's live play-state (see 'Combat Bindings') — but nothing requires that to be its only use.",
+        "Target budget — a number each value sets as a target budget. It's only read as \"the ceiling\" from whichever one Property Vault's Budget ceiling field setting names; on every other Property, a Target budget value is just stored data some other consumer can use however it wants (e.g. Combat Scaling's per-CR entries carry Target budget for Crucible's own stat scaling, completely unrelated to Vault's economy). Cost and Target budget are not \"pick whichever fits\" — which one a given Property's values actually use is decided entirely by whether that Property is the current ceiling field.",
         "A role's own extra metadata that's still just a single field's own quirk (Resource's max/temp path, Modifier's die) has no dedicated column — it's authored directly in that value's Extra properties JSON instead, the same as any other one-off property (see 'System Properties')."
       ],
       "category": "Loom",
@@ -454,6 +496,18 @@
         "Generic, not specific to Role or Combat Bindings — any value on any array can carry one, the same way a Workbench Template's own fields bind to data with @-paths (see common/js/lib/bindings.js).",
         "On whichever array the Combat Tracker widget and Workbench's character view treat as a System's live play-state, this is the path they read and write for this value — e.g. @stats.hitPoints.current or @stats.armorClass.",
         "Not to be confused with Source field, which points at where a value's list of valid *options* is defined, not where its own data lives — see that topic."
+      ],
+      "category": "Loom",
+      "href": "../loom/index.html#loom-systems"
+    },
+    {
+      "id": "loom.systemValueDescription",
+      "title": "Description",
+      "summary": "Flavor or rules text for this value, shown wherever this Property's own options are presented.",
+      "details": [
+        "Shown under this value's own label in a Select's dropdown or a Checkbox/Radio group's own option list — e.g. a Blades in the Dark special ability's rules text, an armor type's own blurb, a Vice's own flavor line.",
+        "Turn this on for any Property whose values benefit from more than just a name — most enum-style Properties (Vices, Armor, special abilities, ...) do; a short vocabulary list (Alignments' short codes, tag names) usually doesn't need it.",
+        "Without this on, a value's description (if it has one) still round-trips through this row's Extra properties JSON instead — turning this on just gives it its own dedicated field rather than requiring hand-typed JSON."
       ],
       "category": "Loom",
       "href": "../loom/index.html#loom-systems"
@@ -877,6 +931,18 @@
         "This is a Crucible tool preference, not System data — it's stored only in this browser (per System), never written into the System record edited in Loom, the same way Vault's Budget ceiling field setting works.",
         "Defaults to a property literally named \"combatScaling\" if one exists and nothing is picked here, so existing Systems keep working without needing to set anything.",
         "A different System, or a different generator entirely, might reuse the same property for something else or have no combat-scaling concept at all — picking None here just means Crucible generates without a scaling axis."
+      ],
+      "category": "Crucible",
+      "href": "../crucible/index.html#crucible-overrides"
+    },
+    {
+      "id": "crucible.creatureTypeField",
+      "title": "Creature type field",
+      "summary": "Which of this System's Array properties Crucible reads as its Creature Type vocabulary.",
+      "details": [
+        "This is a Crucible tool preference, not System data — it's stored only in this browser (per System), never written into the System record edited in Loom, the same way Combat scaling field and Vault's Budget ceiling field settings work.",
+        "Defaults to a property literally named \"creatureTypes\" if one exists and nothing is picked here, so existing Systems keep working without needing to set anything.",
+        "Different Systems use different nomenclature for this concept (5e's own Creature Type vocabulary vs. another game's \"Kind\"/\"Origin\"/whatever it calls its own version) — picking None here just means Crucible generates with no creature-type axis."
       ],
       "category": "Crucible",
       "href": "../crucible/index.html#crucible-overrides"

@@ -130,8 +130,14 @@ def _fetch_group_members_batch(state: ServerState, group_ids: List[str]) -> Dict
             except json.JSONDecodeError:
                 metadata = {}
         parsed_metadata[row["content_id"]] = metadata
-        if metadata.get("system"):
-            referenced_ids["system"].add(metadata["system"])
+        # Assigned Systems (systemIds, a list — the same "Assigned Systems"
+        # mechanism every Library kind uses in Loom now) replaces the old
+        # singular `system` field. `system` is still read as a fallback for
+        # any character not yet resaved since the migration (see
+        # common/data/kind/character.json's metadataFields).
+        for system_id in metadata.get("systemIds") or ([metadata["system"]] if metadata.get("system") else []):
+            if system_id:
+                referenced_ids["system"].add(system_id)
         if metadata.get("template"):
             referenced_ids["template"].add(metadata["template"])
 
@@ -159,13 +165,20 @@ def _fetch_group_members_batch(state: ServerState, group_ids: List[str]) -> Dict
         }
         if content_type == "character":
             metadata = parsed_metadata.get(content_id, {})
-            system_id = metadata.get("system") or ""
+            system_ids = metadata.get("systemIds") or ([metadata["system"]] if metadata.get("system") else [])
+            system_ids = [sid for sid in system_ids if sid]
+            system_names = [titles.get(("system", sid), sid) for sid in system_ids]
             template_id = metadata.get("template") or ""
             entry.update(
                 {
                     "label": row["character_title"] or content_id,
-                    "system": system_id,
-                    "system_name": titles.get(("system", system_id), system_id),
+                    "system_ids": system_ids,
+                    "system_names": system_names,
+                    # Scalar fallbacks (first assigned System) for any
+                    # caller not yet updated to the systemIds/system_ids
+                    # array — see Workbench's Assigned Systems migration.
+                    "system": system_ids[0] if system_ids else "",
+                    "system_name": system_names[0] if system_names else "",
                     "template": template_id,
                     "template_title": titles.get(("template", template_id), ""),
                     "owner_id": row["character_owner_id"],
@@ -346,17 +359,47 @@ def accessible_group_ids(state: ServerState, user: Optional[User]) -> List[str]:
     return list({*owned, *member_of})
 
 
-def _fetch_group_log_entries(state: ServerState, group_id: str, limit: int) -> List[Dict[str, Any]]:
-    rows = state.db.execute(
-        """
-        SELECT id, entry_type, author_id, author_name, message, payload, created_at
-        FROM group_logs
-        WHERE group_id = ?
-        ORDER BY id DESC
-        LIMIT ?
-        """,
-        (group_id, limit),
-    ).fetchall()
+def _fetch_group_log_entries(
+    state: ServerState, group_id: str, limit: int, entry_types: Optional[List[str]] = None
+) -> List[Dict[str, Any]]:
+    # entry_types (optional) restricts the LIMIT-bounded window to specific
+    # types instead of the group's raw, most-recent-N-of-everything log —
+    # needed because ordinary chat/roll entries and a single chatty
+    # inline-kind widget's own spotlight-update refreshes (a Clock ticking,
+    # a Browser URL edit — every one of those is its own row, see
+    # create_group_log_entry's own comment) all share this same bounded
+    # window. Without this, enough of either can silently push an unrelated
+    # widget's still-active `spotlight` entry outside the fetched window,
+    # making resolveIsSpotlighted (spotlight.js) wrongly conclude it's no
+    # longer shown even though nothing ever cleared it — confirmed as the
+    # cause of the second-screen mirror going completely blank whenever a
+    # Clock widget had been ticked/edited enough times. Callers resolving
+    # "what's currently spotlighted" pass the three spotlight-related types;
+    # the Game Log widget's own read (wanting everything, unfiltered) omits
+    # this entirely.
+    if entry_types:
+        placeholders = ",".join("?" for _ in entry_types)
+        rows = state.db.execute(
+            f"""
+            SELECT id, entry_type, author_id, author_name, message, payload, created_at
+            FROM group_logs
+            WHERE group_id = ? AND entry_type IN ({placeholders})
+            ORDER BY id DESC
+            LIMIT ?
+            """,
+            (group_id, *entry_types, limit),
+        ).fetchall()
+    else:
+        rows = state.db.execute(
+            """
+            SELECT id, entry_type, author_id, author_name, message, payload, created_at
+            FROM group_logs
+            WHERE group_id = ?
+            ORDER BY id DESC
+            LIMIT ?
+            """,
+            (group_id, limit),
+        ).fetchall()
     ordered = list(rows)
     ordered.reverse()
     return _serialize_log_entries(ordered)
@@ -421,6 +464,9 @@ def get_active_spotlights(state: ServerState, group_id: str, limit: int = 200) -
     return list(active.values())
 
 
+_VALID_LOG_ENTRY_TYPES = {"message", "roll", "spotlight", "spotlight-clear", "spotlight-update"}
+
+
 def list_group_log(
     state: ServerState,
     group_id: Optional[str],
@@ -428,10 +474,15 @@ def list_group_log(
     *,
     share_token: Optional[str] = None,
     limit: Optional[int] = None,
+    entry_types: Optional[List[str]] = None,
 ) -> Dict[str, Any]:
     row, share_mode = _resolve_group_access(state, group_id, user, share_token=share_token)
     limit_value = _sanitize_log_limit(limit)
-    entries = _fetch_group_log_entries(state, row["id"], limit_value)
+    # Silently drops anything not a real entry_type rather than erroring —
+    # this is a read-side filter, not user input worth rejecting a whole
+    # request over.
+    types_value = [t for t in entry_types if t in _VALID_LOG_ENTRY_TYPES] if entry_types else None
+    entries = _fetch_group_log_entries(state, row["id"], limit_value, types_value)
     payload: Dict[str, Any] = {
         "group": {"id": row["id"], "name": row["name"], "type": row["type"]},
         "entries": entries,
@@ -796,11 +847,13 @@ def claim_group_character(state: ServerState, token: str, character_id: str, use
     )
     state.db.commit()
     touch_share_link(state, token)
+    claimed_system_ids = metadata.get("systemIds") or ([metadata["system"]] if metadata.get("system") else [])
     return {
         "character": {
             "id": character_row["id"],
             "name": character_row["title"],
-            "system": metadata.get("system", ""),
+            "system_ids": [sid for sid in claimed_system_ids if sid],
+            "system": claimed_system_ids[0] if claimed_system_ids else "",
         },
         "group": {
             "id": group_row["id"],

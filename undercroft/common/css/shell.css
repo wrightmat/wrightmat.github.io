@@ -564,6 +564,182 @@ a.undercroft-tool-card:focus-visible {
   padding: 0.2rem 0.45rem;
 }
 
+/* A native <input type="color"> can't represent "no value set" — it always
+   shows/requires a literal 6-digit hex. Each tool's color-control JS reads
+   only the actual stored/resolved value (never getComputedStyle — see
+   feedback_inspector_reads_json_only), so "unset" here means the data
+   itself has nothing set — never "this component didn't explicitly
+   override a default," since a default that's actually in effect is a
+   real color and gets shown as one. Showing both a color AND the unset X
+   at the same time was an earlier, wrong version of this: a half-dimmed
+   swatch still reads as "a (muted) color," not "no color." The fix is
+   exclusive-or, not both at once — the swatch is fully hidden (opacity: 0,
+   not just dimmed) and the icon covers the entire square on its own
+   checkered "transparent" background, so there is never any color
+   bleeding through underneath the X. .template-color-swatch is the small
+   position:relative wrapper each tool's color control puts around its own
+   swatch for this icon to center against — now always the custom
+   .color-picker-swatch button (common/js/lib/color-picker.js), which
+   replaced the native <input type="color"> in both tools so a
+   binding/formula box would have somewhere to live alongside the manual
+   controls. .form-control-color is kept below only because some other,
+   unrelated swatch use elsewhere in these tools (e.g. the pattern
+   library's own color slot) still uses the native input directly. */
+.template-color-swatch {
+  position: relative;
+  display: inline-flex;
+}
+
+.template-color-swatch .template-color-unset-icon {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  font-size: 1rem;
+  color: var(--bs-body-color);
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius-sm, 0.25rem);
+  background-color: var(--bs-body-bg);
+  background-image:
+    linear-gradient(45deg, var(--bs-tertiary-bg) 25%, transparent 25%, transparent 75%, var(--bs-tertiary-bg) 75%),
+    linear-gradient(45deg, var(--bs-tertiary-bg) 25%, transparent 25%, transparent 75%, var(--bs-tertiary-bg) 75%);
+  background-size: 8px 8px;
+  background-position: 0 0, 4px 4px;
+}
+
+.template-color-control--unset .template-color-swatch .template-color-unset-icon {
+  display: flex;
+}
+
+.template-color-control--unset .form-control-color,
+.template-color-control--unset .color-picker-swatch {
+  opacity: 0;
+}
+
+/* A binding/formula override that can't be previewed (Workbench's Template
+   editor never evaluates "=formula", only "@bindings" — see
+   evaluatePreviewCondition's own comment) is neither "set" nor "unset" —
+   it's a real, active override whose actual color just isn't knowable
+   here. Distinct treatment from --unset's checkerboard-X: a diagonal
+   stripe pattern reads as "this will be computed," not "nothing chosen." */
+.color-picker-indeterminate .color-picker-swatch {
+  background-image: repeating-linear-gradient(
+    45deg,
+    var(--bs-tertiary-bg),
+    var(--bs-tertiary-bg) 4px,
+    var(--bs-secondary-bg, var(--bs-tertiary-bg)) 4px,
+    var(--bs-secondary-bg, var(--bs-tertiary-bg)) 8px
+  );
+}
+
+.color-picker-swatch {
+  width: 2.75rem;
+  height: 1.85rem;
+  padding: 0;
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius-sm, 0.25rem);
+  background-color: var(--bs-body-bg);
+  cursor: pointer;
+}
+
+.color-picker-swatch:focus-visible {
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.35);
+}
+
+.color-picker-popover {
+  position: absolute;
+  top: calc(100% + 0.375rem);
+  left: 0;
+  z-index: 1300;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 14rem;
+  padding: 0.75rem;
+  background-color: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius, 0.375rem);
+  box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.25);
+}
+
+.color-picker-sv {
+  position: relative;
+  width: 100%;
+  height: 8rem;
+  border-radius: var(--bs-border-radius-sm, 0.25rem);
+  cursor: crosshair;
+  /* Layer order (first = topmost): black fades in from the bottom (value
+     axis), white fades in from the left (saturation axis), pure hue fills
+     the rest — the standard CSS-only saturation/value square, no canvas
+     needed. --color-picker-hue is set inline by color-picker.js. */
+  background-image:
+    linear-gradient(to top, #000, rgba(0, 0, 0, 0)),
+    linear-gradient(to right, #fff, rgba(255, 255, 255, 0));
+  background-color: hsl(var(--color-picker-hue, 0) 100% 50%);
+}
+
+.color-picker-sv.disabled {
+  cursor: default;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.color-picker-sv-indicator {
+  position: absolute;
+  width: 0.75rem;
+  height: 0.75rem;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 0.125rem rgba(0, 0, 0, 0.6);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.color-picker-hue {
+  position: relative;
+  width: 100%;
+  height: 0.75rem;
+  border-radius: 999px;
+  cursor: pointer;
+  background-image: linear-gradient(to right, red, yellow, lime, cyan, blue, magenta, red);
+}
+
+.color-picker-hue.disabled {
+  cursor: default;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.color-picker-hue-handle {
+  position: absolute;
+  top: 50%;
+  width: 0.25rem;
+  height: 1.1rem;
+  background-color: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.4);
+  border-radius: 0.125rem;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.color-picker-binding {
+  padding-top: 0.25rem;
+  border-top: 1px solid var(--bs-border-color);
+}
+
+/* A narrow input paired with a small inline label in one row
+   (`d-flex align-items-center gap-2`) — Press's own compact convention for
+   secondary numeric fields (Font size (pt)/Line height, Text angle/curve),
+   moved here (renamed from Press-specific "press-inline-input") so
+   Workbench's own inspector can use the identical look instead of a full-
+   width stacked label+input for the same kind of field. */
+.inline-compact-input {
+  width: 4.5rem;
+}
+
 .template-radio-group {
   flex-wrap: wrap;
   gap: 0.25rem;
@@ -644,38 +820,40 @@ a.undercroft-tool-card:focus-visible {
   gap: 0.375rem;
 }
 
+/* No background-color/.is-active rule here on purpose — Foreground/
+   Background are real component data now (renderLinearTrackContent,
+   component-renderers.js sets background-color inline, per segment),
+   not a hardcoded --bs-primary/--bs-border-color pair. */
 .template-linear-track__segment {
   flex: 1 1 0;
   height: 0.75rem;
   border-radius: 999px;
-  background-color: var(--bs-border-color);
   transition: background-color 0.2s ease, opacity 0.2s ease;
 }
 
-.template-linear-track__segment.is-active {
-  background-color: var(--bs-primary);
-}
-
+/* An actual SVG donut-of-wedges now (renderCircularTrackContent,
+   component-renderers.js — see that function's own header comment for why
+   this moved off a conic-gradient div, which warped into a lens/parabola
+   shape whenever its box wasn't a reliably perfect square). The SVG and
+   the centered "X/Y" label are stacked in the same grid cell (both get
+   `grid-area: 1 / 1` below) rather than the old absolutely-positioned
+   mask div — one less element, and nothing to keep in sync with the
+   ring's own inner radius (that's baked into the wedge path math now). */
 .template-circular-track {
   width: 6rem;
   height: 6rem;
-  border-radius: 50%;
-  border: 1px solid var(--bs-border-color);
   display: grid;
   place-items: center;
-  position: relative;
-  overflow: hidden;
 }
 
-.template-circular-track__mask {
-  position: absolute;
-  inset: 0.5rem;
-  border-radius: 50%;
-  background-color: var(--bs-body-bg);
+.template-circular-track__svg {
+  grid-area: 1 / 1;
+  width: 100%;
+  height: 100%;
 }
 
 .template-circular-track__value {
-  position: relative;
+  grid-area: 1 / 1;
   font-weight: 600;
 }
 
@@ -683,26 +861,56 @@ a.undercroft-tool-card:focus-visible {
   align-items: center;
 }
 
+/* No color/.is-active rule here on purpose — Text/Foreground are real
+   component data now (renderSelectGroupContent, component-renderers.js
+   sets color inline), not a hardcoded --bs-tertiary-color/--bs-body-color
+   pair. */
 .template-select-tag {
   font-weight: 600;
-  color: var(--bs-tertiary-color);
   transition: color 0.2s ease;
 }
 
-.template-select-tag.is-active {
-  color: var(--bs-body-color);
-}
-
+/* border-{side}-color/width/style and background-color are all set
+   directly by renderToggleContent (component-renderers.js), the same
+   unconditional "reflect whatever's actually stored" way
+   applyComponentStyles applies borders to every other type's own wrapper
+   — real Style/Thickness/Sides support, not a fixed 1px solid line. No
+   base border/background COLOR here at all (nothing to fall back to): an
+   inline style always wins the cascade regardless, and this component's
+   own data — never a Bootstrap theme color standing in for an unset value
+   — is the only thing that should ever decide what renders here (see
+   feedback_visual_data_never_on_system and this session's broader
+   "no invisible defaults" standard). --template-toggle-fill-color/
+   --template-toggle-border-color (below) are the two colors that DO stay
+   custom properties, since a ::before pseudo-element and .has-ring's own
+   outline can only ever be reached via CSS, never a direct inline style.
+   background/border/font/appearance ARE reset here, though — this glyph is
+   a <button> when editable (renderToggleContent) and a <span> otherwise
+   (Template editor's canvas preview is always inert), and an *empty*
+   inline background-color only clears an override, it doesn't force
+   transparent — a bare <button> still gets the browser's own opaque
+   default face color with nothing here to say otherwise, while a <span>
+   never had one to begin with. Without this reset, an unset Background
+   showed correctly-transparent in the canvas preview and a stray grey
+   button face in real Play/Edit — the two renderers ARE sharing this exact
+   function (see feedback_workbench_renderer_parity), the tag swap itself
+   was the only thing actually diverging. */
 .template-toggle-shape {
   position: relative;
-  width: 2.5rem;
-  height: 2.5rem;
-  border: 1px solid var(--bs-border-color);
-  background-color: var(--bs-body-bg);
+  width: 2.25rem;
+  height: 2.25rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  appearance: none;
+  -webkit-appearance: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -722,12 +930,19 @@ a.undercroft-tool-card:focus-visible {
   clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
 }
 
+/* Solid fill color, full opacity — no rgba/alpha blending. This used to
+   fade in at a capped opacity (never above ~0.8), which meant the
+   Background color underneath was ALWAYS partly showing through even at
+   "full," making Foreground look broken/inert rather than just faded.
+   A clean scaleY reveal of a fully-opaque Foreground layer over the
+   shape's own Background is the classic half-filled-dot look, and makes
+   both colors clearly, independently visible at any fill level. */
 .template-toggle-shape::before {
   content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background-color: rgba(var(--bs-primary-rgb), var(--template-toggle-opacity, 0.35));
+  background-color: var(--template-toggle-fill-color, transparent);
   transform-origin: bottom center;
   transform: scaleY(var(--template-toggle-level, 0));
   transition: transform 0.2s ease, background-color 0.2s ease;
@@ -738,9 +953,48 @@ a.undercroft-tool-card:focus-visible {
   clip-path: inherit;
 }
 
-.template-toggle-shape.is-active {
-  border-color: var(--bs-primary);
-  box-shadow: inset 0 0 0 2px rgba(var(--bs-primary-rgb), 0.25);
+/* A quartered-diamond shape variant — a wedge/pie fill (conic-gradient,
+   clockwise from the top) instead of the default shapes' smooth bottom-up
+   fill, proving a shape can express --template-toggle-level however suits
+   it rather than needing a new *data* concept per look (see
+   feedback_visual_data_never_on_system memory and Toggle's own
+   resolveToggleStateStyle in component-renderers.js — the state->fillLevel
+   mapping is identical regardless of which shape is rendering it). */
+.template-toggle-shape--diamond-quarters {
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+}
+
+.template-toggle-shape--diamond-quarters::before {
+  clip-path: inherit;
+  background-color: transparent;
+  background-image: conic-gradient(
+    var(--template-toggle-fill-color, transparent) calc(var(--template-toggle-level, 0) * 360deg),
+    transparent 0
+  );
+  transform: none;
+}
+
+/* The "double proficiency"/Expertise-style emphasis ring — component data
+   (component.stateStyles[state].ring), orthogonal to fillLevel. Reuses the
+   component's own border color (not a separate invented "ring color" —
+   there's no 4th color field for it) via an outline rather than a
+   box-shadow or an inset/expanded pseudo-element, specifically because
+   .template-toggle-shape has overflow:hidden (needed to clip the fill
+   layer to the shape's own bounds) — outline paints outside the border
+   box regardless of overflow, so it's the one decoration that doesn't need
+   special-casing per shape. The shrink is a transform, not a smaller
+   width/height: renderToggleContent (component-renderers.js) applies the
+   component's own Width/Height fields as inline styles, which always beat
+   a class-based width/height rule of ours — transform is a separate
+   property applied after layout, so it scales down whatever size the
+   component author actually configured instead of silently fighting it.
+   Scaling shrinks the outline right along with the shape (they're the same
+   painted box), which is what keeps the ring hugging the now-smaller dot
+   instead of floating free of it. */
+.template-toggle-shape.has-ring {
+  outline: 4px solid var(--template-toggle-border-color, transparent);
+  outline-offset: 2px;
+  transform: scale(0.75);
 }
 
 /* Dropzone family — the drag-and-drop target box template/component editors
@@ -760,6 +1014,21 @@ a.undercroft-tool-card:focus-visible {
      defaulted in workbench/css/styles.css's .workbench-canvas-card rule),
      not a zone-level stacking gap. */
   min-height: 4.5rem;
+  /* A flex item's default min-width is auto (≈ its content's own
+     min-content width), not 0 — without this, a component whose content
+     wants to be wide (a long Text value, in particular) refuses to shrink
+     below that width even inside a narrow multi-column Container cell,
+     blowing the whole grid track wider than its own minmax(0, 1fr) track
+     size instead of respecting it. See .template-container-zone below,
+     the same fix one level up the chain. width:100% is paired with it
+     rather than relying on flex's own default align-items:stretch alone —
+     stretch only fills whatever space this item's PARENT already resolved
+     as available; across 3-4 nested flex/grid levels an explicit width at
+     every level is what actually guarantees each one gets a real, definite
+     width to shrink from, instead of every level just assuming the one
+     below it will sort it out. */
+  width: 100%;
+  min-width: 0;
   transition: border-color 0.2s ease, background-color 0.2s ease;
 }
 
@@ -806,11 +1075,43 @@ a.undercroft-tool-card:focus-visible {
   gap: 0.5rem;
   height: 100%;
   flex: 1 1 auto;
+  /* The direct CSS Grid item for .template-container-grid's own
+     grid-template-columns (repeat(N, minmax(0, 1fr))) — same "grid items
+     default to min-width:auto, not the track's own 0 minimum" fix as
+     .template-dropzone above, one level further out. Without this, a wide
+     Text (or other) component inside just one cell stretched the whole
+     column (and every other column with it, via 1fr) past its intended
+     share of a multi-column Container — confirmed with 6 columns. Explicit
+     width:100% for the same reason .template-dropzone's own comment gives
+     — an explicit width at every level, not just relying on grid's own
+     default justify-items:stretch to carry it all the way down. */
+  width: 100%;
+  min-width: 0;
 }
 
 .template-container-zone > .template-dropzone,
 .template-container-zone > .workbench-dropzone {
   min-height: 6rem;
+}
+
+/* Text inside a Container zone truncates to one line with an ellipsis
+   instead of overflowing (or growing tall from wrapping) a narrow column —
+   the Template editor's Inspector (and the real bound value in Play/Edit's
+   own data) still has the full text/binding, so nothing is actually lost,
+   just not all shown at once in a tight cell. A no-op whenever the text
+   already fits its cell — these three properties only ever kick in once
+   content is genuinely wider than the space available ("if too wide", not
+   unconditionally). Scoped to Container zones specifically, not every Text
+   component everywhere (e.g. a Repeater item's own Text, or a top-level
+   canvas Text, still wrap/grow normally). */
+.template-dropzone .workbench-text-content,
+.workbench-dropzone .workbench-text-content {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .template-dropzone-label,
@@ -847,6 +1148,23 @@ a.undercroft-tool-card:focus-visible {
 
 .workbench-repeater-table tbody tr + tr td {
   border-top: 1px solid var(--bs-border-color);
+}
+
+/* Horizontal Repeater's own rows>1 case (renderRepeaterHorizontalGrid,
+   workbench-character-view.js) — the transposed counterpart to
+   .workbench-repeater-table above: array items become grid COLUMNS
+   (auto-generated, unknown count until render) instead of table rows, so
+   this is a real CSS Grid rather than a <table> — see that function's own
+   comment for why a <colgroup>-style fixed-width list can't describe the
+   repeating axis here the way it does for the table. grid-template-rows/
+   grid-auto-flow are set inline per-instance (need the live row count);
+   this just handles spacing/sizing. */
+.workbench-repeater-grid {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(3rem, auto);
+  gap: 0.35rem 1rem;
+  font-size: 0.9em;
 }
 
 /* Single-row radio/toggle-button group — shrinks buttons to fit one row
@@ -1074,4 +1392,35 @@ a.undercroft-tool-card:focus-visible {
 .help-topic-trigger:focus-visible {
   color: var(--bs-primary) !important;
   text-decoration: none;
+}
+
+/* Shared collapse/expand chevron button — createCollapseToggleButton
+   (common/js/lib/collapsible.js), used by Workbench's canvas cards AND
+   Inspector sections, and by Press's own Inspector group toggles (Colors/
+   Borders/Advanced). Previously only defined in workbench/css/styles.css,
+   so Press's identical buttons rendered unstyled/inconsistent — moved here
+   so every consumer gets the same look. */
+.canvas-collapse-toggle {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--bs-border-color);
+  background-color: var(--bs-body-bg);
+  color: var(--bs-body-color);
+  padding: 0;
+  margin-left: 0;
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.canvas-collapse-toggle:hover {
+  background-color: var(--bs-tertiary-bg);
+}
+
+.canvas-collapse-toggle:focus-visible {
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.35);
+}
+
+.canvas-collapse-toggle .iconify {
+  font-size: 1rem;
 }

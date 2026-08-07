@@ -130,6 +130,81 @@ export function setAtBinding(binding, context, value) {
   return true;
 }
 
+function normalizeLookupKey(value) {
+  return value === undefined || value === null ? "" : String(value).trim().toLowerCase();
+}
+
+// An entry matches a lookup key by whichever of these it actually has —
+// a raw sourceId/id (System field metadata's own numbering), the last
+// segment of a dotted `key` ("abilities.strength" -> "strength"), or a
+// name/shortName/label a template author would more naturally type
+// ("strength", "STR", "Strength"). A bare scalar array entry (no object)
+// matches directly on its own value, so a plain string/number list works
+// as a lookup table too, not just System-shaped {sourceId, name, ...}
+// objects.
+function lookupEntryMatches(entry, key) {
+  if (entry === undefined || entry === null) return false;
+  if (typeof entry !== "object") {
+    return normalizeLookupKey(entry) === normalizeLookupKey(key);
+  }
+  const keySuffix = typeof entry.key === "string" ? entry.key.split(".").pop() : undefined;
+  const candidates = [entry.sourceId, entry.id, keySuffix, entry.name, entry.shortName, entry.label];
+  return candidates.some(
+    (candidate) => candidate !== undefined && normalizeLookupKey(candidate) === normalizeLookupKey(key)
+  );
+}
+
+function findInLookupTable(table, key) {
+  if (Array.isArray(table)) {
+    return table.find((entry) => lookupEntryMatches(entry, key));
+  }
+  if (table && typeof table === "object" && Object.prototype.hasOwnProperty.call(table, key)) {
+    return table[key];
+  }
+  return undefined;
+}
+
+// The generic `lookup(table, key)` formula function — one implementation
+// shared by every tool, not a family of one-off ability/skill/whatever
+// functions. `table` is a name, resolved two ways depending on what this
+// caller has available:
+//  1. `fieldDefinitions` (a System's own `fields` array, when the caller
+//     has one — Workbench does via state.systemDefinition, Press
+//     deliberately never will; see this function's own call sites) — a
+//     field whose `key` matches `table` has its `children` or `values`
+//     reshaped into a searchable list, the same reshaping already used for
+//     DDB-import's own lookup tables (system-lookup-tables.js).
+//  2. Failing that, `table` is resolved as a plain dotted path against
+//     `context` — the exact same data any other @binding already reads,
+//     whatever shape that happens to be for the calling tool. This is
+//     what makes `lookup` work identically in Press (no System, only
+//     whatever's in the sample data) and Workbench without either one
+//     needing its own bespoke lookup logic — the underlying data source
+//     differs, the function doesn't.
+// Returns the whole matched entry (or undefined, never an invented
+// placeholder) so a formula can read any of its properties —
+// `lookup("abilities","str").color`, `lookup("skills","athletics").ability`,
+// etc. — not just a single hardcoded field.
+export function createLookupFn(context, fieldDefinitions) {
+  return (table, key) => {
+    if (typeof table !== "string" || !table.trim()) return undefined;
+    const name = table.trim();
+    if (Array.isArray(fieldDefinitions)) {
+      const field = fieldDefinitions.find((entry) => entry && entry.key === name);
+      const entries = Array.isArray(field?.children)
+        ? field.children
+        : Array.isArray(field?.values)
+          ? field.values
+          : null;
+      if (entries) {
+        const match = entries.find((entry) => lookupEntryMatches(entry, key));
+        if (match !== undefined) return match;
+      }
+    }
+    return findInLookupTable(resolveDottedPath(context, name), key);
+  };
+}
+
 const ROLE_BOUND_ROLES = new Set(["resource", "value", "tags", "modifier"]);
 
 // A System's live play-state (health, AC, conditions, initiative, or

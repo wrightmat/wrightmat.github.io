@@ -83,6 +83,62 @@
       "url": "https://cdn.freesound.org/previews/195/195439_3634316-lq.mp3",
       "type": "sfx",
       "loop": false
+    },
+    {
+      "id": "92cdd9ae-41dc-4220-a08a-8f71873f640c",
+      "name": "Divine Intervention",
+      "url": "https://cdn.tabletoprpgmusic.com/music/standardtracks/DivineIntervention.ogg",
+      "type": "music",
+      "loop": true
+    },
+    {
+      "id": "5f024c85-f8da-4bb1-9007-58cb17ced273",
+      "name": "Dungeon of Doom",
+      "url": "https://cdn.tabletoprpgmusic.com/music/standardtracks/DungeonofDoom.ogg",
+      "type": "music",
+      "loop": true
+    },
+    {
+      "id": "f03e442f-9659-4b20-bfbe-04087ae45260",
+      "name": "Echoes from the Abyss",
+      "url": "https://cdn.tabletoprpgmusic.com/music/standardtracks/EchoesfromtheAbyss.ogg",
+      "type": "music",
+      "loop": true
+    },
+    {
+      "id": "a605dde1-67ad-489c-86e4-b220da48a34c",
+      "name": "Spirits of the Jungle",
+      "url": "https://cdn.tabletoprpgmusic.com/music/standardtracks/SpiritsoftheJungle.ogg",
+      "type": "music",
+      "loop": true
+    },
+    {
+      "id": "ef5d7845-fc9f-4dde-a947-45ea1c8f5e01",
+      "name": "Beyond the Gates",
+      "url": "https://cdn.tabletoprpgmusic.com/music/standardtracks/BeyondtheGates.ogg",
+      "type": "music",
+      "loop": true
+    },
+    {
+      "id": "d49fba0f-1ef5-48a0-bc4d-5d60213a88ee",
+      "name": "Fire Temple",
+      "url": "https://cdn.tabletoprpgmusic.com/music/standardtracks/FireTemple.ogg",
+      "type": "music",
+      "loop": true
+    },
+    {
+      "id": "e6cab19c-1c2e-4b22-9cc7-686cb25e4f6a",
+      "name": "Fey Dreams",
+      "url": "https://cdn.tabletoprpgmusic.com/music/standardtracks/FeyDreams.ogg",
+      "type": "music",
+      "loop": true
+    },
+    {
+      "id": "ba7328e5-1032-416e-b17f-7f852af78ea3",
+      "name": "Dreamscape",
+      "url": "https://cdn.tabletoprpgmusic.com/music/standardtracks/Dreamscape.ogg",
+      "type": "music",
+      "loop": true
     }
   ]
 }

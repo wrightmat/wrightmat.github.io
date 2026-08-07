@@ -24,7 +24,20 @@ import { parseTableReferenceExpression, resolveTableReference, describeTableRow 
 // `{expression, isTable:true, pageTitle, blockId, roll, dieSize, row,
 // headers}` instead — callers that care about the difference check
 // `result.isTable`, everyone else can just read `.expression` back.
-export async function rollExpression(expression, { status, label = "", dataManager } = {}) {
+//
+// `groupContext`/`broadcast` are optional and default to no behavior change
+// for every existing caller (character-sheet.js's Initiative roller, the
+// Dice Roller dashboard widget) — when both a truthy `broadcast` and a real
+// `groupContext.groupId` are given, a successful plain-expression roll also
+// posts a `type:"roll"` group log entry, same shape
+// workbench-character-view.js's own recordGameLogRoll already posts, so it
+// renders identically in the Game Log/second-screen wherever roll entries
+// are already handled. Table rolls aren't broadcast this way yet — not
+// needed for the Dice Roller macro action this was added for.
+export async function rollExpression(
+  expression,
+  { status, label = "", dataManager, groupContext = null, broadcast = false } = {}
+) {
   const trimmed = String(expression || "").trim();
   const tableRef = parseTableReferenceExpression(trimmed);
   if (tableRef) {
@@ -58,6 +71,28 @@ export async function rollExpression(expression, { status, label = "", dataManag
     const result = rollDiceExpression(trimmed);
     const prefix = label ? `${label}: ` : "";
     status?.show(`${prefix}${trimmed} → ${result.total}`, { type: "success", timeout: 2200 });
+    if (broadcast && dataManager && groupContext?.groupId) {
+      void dataManager
+        .createGroupLogEntry({
+          groupId: groupContext.groupId,
+          type: "roll",
+          message: "",
+          payload: {
+            expression: trimmed,
+            notation: result.notation || trimmed,
+            total: result.total,
+            detailHtml: result.detailHtml || undefined,
+            detailText: result.detailText || undefined,
+            dice: Array.isArray(result.dice) && result.dice.length ? result.dice : undefined,
+            label: label || undefined,
+          },
+        })
+        .catch(() => {
+          // Best-effort — the roll itself already succeeded and was
+          // reported locally above; a failed broadcast just means nobody
+          // else sees it in the Game Log this time.
+        });
+    }
     return { expression: trimmed, total: result.total, result };
   } catch (error) {
     status?.show(error.message || "Unable to roll that.", { type: "danger" });

@@ -53,17 +53,17 @@ export function createCanvasCardElement({
   element.classList.add("workbench-canvas-card", "d-flex", "flex-column");
   if (bare) {
     // A component nested inside a Container/zone in Play view — no
-    // background/shadow/padding of its own (the outer Container's card
-    // already provides that boundary once; stacking a full second card's
-    // worth of padding per nested child is what made a Container's content
-    // sit noticeably indented from a plain sibling field's own left edge).
+    // background/shadow of its own (the outer Container's card already
+    // provides that boundary once; stacking a full second card's worth of
+    // chrome per nested child is what made a Container's content sit
+    // noticeably indented from a plain sibling field's own left edge).
     element.classList.add("workbench-canvas-card--bare");
   } else {
-    // Not Bootstrap's `.p-3` utility class — also `!important`-generated,
-    // which would block a component's own custom Padding
-    // (applyComponentStyles) the same way `.border` blocked custom
-    // borders. The equivalent default padding lives in
-    // workbench/css/styles.css's .workbench-canvas-card rule instead.
+    // Not Bootstrap's `.p-3` utility class — `!important`-generated, which
+    // would block a component's own custom Padding (applyComponentStyles)
+    // the same way `.border` blocked custom borders. There's no default
+    // padding to replace it with, by design — see .workbench-canvas-card's
+    // own comment in workbench/css/styles.css.
     element.classList.add("bg-body", "shadow-sm");
   }
   if (gapClass) {
@@ -207,41 +207,8 @@ export function createStandardCardChrome({
   return { header, actions, iconElement, deleteButton, ensureActions };
 }
 
-export function createCollapseToggleButton({ label = "section", collapsed = false, onToggle } = {}) {
-  let isCollapsed = Boolean(collapsed);
-  const button = document.createElement("button");
-  button.type = "button";
-  button.classList.add("canvas-collapse-toggle", "d-inline-flex", "align-items-center", "justify-content-center");
-
-  const icon = document.createElement("span");
-  icon.className = "iconify";
-  icon.setAttribute("aria-hidden", "true");
-  button.appendChild(icon);
-
-  function update(nextState) {
-    isCollapsed = Boolean(nextState);
-    const expandedLabel = label ? ` ${label}` : "";
-    const actionLabel = isCollapsed ? `Expand${expandedLabel}` : `Collapse${expandedLabel}`;
-    icon.setAttribute("data-icon", isCollapsed ? "tabler:chevron-right" : "tabler:chevron-down");
-    button.setAttribute("aria-expanded", String(!isCollapsed));
-    button.setAttribute("aria-label", actionLabel);
-    button.setAttribute("title", actionLabel);
-  }
-
-  update(isCollapsed);
-
-  button.addEventListener("click", (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    const next = !isCollapsed;
-    update(next);
-    if (typeof onToggle === "function") {
-      onToggle(next);
-    }
-  });
-
-  return {
-    button,
-    setCollapsed: update,
-  };
-}
+// Canonical implementation now lives in common/js/lib/collapsible.js
+// (shared with the new inspector-fields.js collapsible sections) —
+// re-exported here so existing call sites in this tool don't need to
+// change their import path.
+export { createCollapseToggleButton } from "../../../common/js/lib/collapsible.js";

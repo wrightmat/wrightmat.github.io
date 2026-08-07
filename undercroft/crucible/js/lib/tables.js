@@ -31,21 +31,29 @@ function slugify(name) {
 // vocabulary — what "creature type" even means, and the full taxonomy of
 // them, is a per-system rules concept the same way Languages or Classes
 // are, not something Crucible should own one shared Library-kind list of.
-// Reads straight off the active System's own `creatureTypes` array field
-// (Loom's Properties editor) — same mechanism as loadCombatScalingLevels
-// below, including "values returned close to as-authored, just adding a
-// slugified `id` fallback" so existing content (Features tagged by
-// creature-type id, e.g. "beast") keeps resolving correctly. Absent on a
-// System means no creature types defined, which callers should treat as
-// "nothing eligible" rather than an error.
-export async function listCreatureTypesForSystem(dataManager, systemId) {
+// Reads straight off the active System's own array field (Loom's Properties
+// editor) — same mechanism as loadCombatScalingLevels below, including
+// "values returned close to as-authored, just adding a slugified `id`
+// fallback" so existing content (Features tagged by creature-type id, e.g.
+// "beast") keeps resolving correctly. Absent on a System means no creature
+// types defined, which callers should treat as "nothing eligible" rather
+// than an error.
+//
+// Which field supplies this data is Crucible's own tool preference, not
+// System data — different systems use different nomenclature for this
+// concept (5e's "Creature Type" vocabulary, another game's "Kind"/"Origin"/
+// whatever it calls its own version) — so it's configurable exactly like
+// combatScalingField below (see getCreatureTypeFieldPreference in app.js),
+// defaulting to "creatureTypes" so existing Systems keep working without
+// needing to set anything.
+export async function listCreatureTypesForSystem(dataManager, systemId, creatureTypeField = "creatureTypes") {
   if (!dataManager || !systemId) return [];
   try {
     // preferLocal: false — a Loom edit to the System's fields must be
     // visible immediately, not hidden behind a stale local cache.
     const result = await dataManager.get("systems", systemId, { preferLocal: false });
     const fields = Array.isArray(result?.payload?.fields) ? result.payload.fields : [];
-    const field = fields.find((entry) => entry.type === "array" && entry.key === "creatureTypes");
+    const field = fields.find((entry) => entry.type === "array" && entry.key === (creatureTypeField || "creatureTypes"));
     if (!field) return [];
     return (field.values || []).map((value, index) => ({
       id: value.id || slugify(value.name) || `creature-type-${index}`,

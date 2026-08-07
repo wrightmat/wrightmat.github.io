@@ -4,47 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Undercroft Press</title>
-    <script>
-      (function () {
-        const storageKey = "undercroft.workbench.theme";
-        const THEMES = ["light", "system", "dark"];
-        const prefersDark = () =>
-          typeof window !== "undefined" &&
-          window.matchMedia &&
-          window.matchMedia("(prefers-color-scheme: dark)").matches;
-        const resolveTheme = (preference) => {
-          if (preference === "dark") return "dark";
-          if (preference === "light") return "light";
-          return prefersDark() ? "dark" : "light";
-        };
-        const apply = (value) => {
-          const preference = THEMES.includes(value) ? value : "system";
-          const resolved = resolveTheme(preference);
-          const root = document.documentElement;
-          const body = document.body;
-          if (root) {
-            root.dataset.themePreference = preference;
-            root.dataset.theme = resolved;
-            root.dataset.bsTheme = resolved;
-            root.style.colorScheme = resolved;
-          }
-          if (body) {
-            body.dataset.themePreference = preference;
-            body.dataset.theme = resolved;
-            body.dataset.bsTheme = resolved;
-            body.style.colorScheme = resolved;
-          }
-          return preference;
-        };
-        try {
-          const stored = localStorage.getItem(storageKey);
-          apply(stored);
-        } catch (error) {
-          apply("system");
-          console.warn("Unable to read theme preference", error);
-        }
-      })();
-    </script>
+    <script src="../common/js/theme-init.js"></script>
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
       rel="stylesheet"
@@ -58,151 +18,13 @@
   </head>
   <body class="bg-body text-body" data-undercroft-tool="press">
     <div class="workbench-app d-flex flex-column no-print">
-      <header class="workbench-header border-bottom bg-body-tertiary">
-        <div class="workbench-header-grid pe-2 py-3">
-          <div></div>
-          <div class="d-flex align-items-center gap-3 w-100">
-            <div class="d-flex align-items-center gap-3">
-              <button
-                class="btn btn-outline-secondary d-flex align-items-center justify-content-center"
-                type="button"
-                data-pane-toggle="left"
-                aria-label="Toggle navigation pane"
-              >
-                <span class="iconify fs-5" data-icon="tabler:layout-sidebar-right" aria-hidden="true"></span>
-                <span class="visually-hidden">Toggle navigation pane</span>
-              </button>
-              <h1 class="h5 mb-0 d-flex align-items-center gap-2">
-                <nav data-undercroft-tool-nav aria-label="Undercroft tools"></nav>
-              </h1>
-            </div>
-            <div class="ms-auto d-flex align-items-center gap-3 flex-wrap">
-              <div data-auth-control class="d-flex">
-                <button class="btn btn-outline-secondary" type="button">Login / Register</button>
-              </div>
-              <div class="btn-group" role="group" aria-label="Theme toggle">
-                <button class="btn btn-outline-primary" type="button" data-theme-option="light" aria-label="Use light theme">
-                  <span class="iconify fs-5" data-icon="tabler:sun" aria-hidden="true"></span>
-                  <span class="visually-hidden">Light theme</span>
-                </button>
-                <button class="btn btn-outline-primary" type="button" data-theme-option="system">System</button>
-                <button class="btn btn-outline-primary" type="button" data-theme-option="dark" aria-label="Use dark theme">
-                  <span class="iconify fs-5" data-icon="tabler:moon" aria-hidden="true"></span>
-                  <span class="visually-hidden">Dark theme</span>
-                </button>
-              </div>
-              <button
-                class="btn btn-outline-secondary d-flex align-items-center justify-content-center"
-                type="button"
-                data-pane-toggle="right"
-                aria-label="Toggle details pane"
-              >
-                <span class="iconify fs-5" data-icon="tabler:adjustments-horizontal" aria-hidden="true"></span>
-                <span class="visually-hidden">Toggle details pane</span>
-              </button>
-            </div>
-          </div>
-          <div></div>
-        </div>
-      </header>
+      <div data-app-shell-header></div>
 
       <div class="workbench-shell d-flex">
-        <aside
-          class="border-end border-body-tertiary bg-body-tertiary shadow-theme flex-shrink-0 workbench-sidebar workbench-pane"
-          data-pane="left"
-          data-pane-collapsed-class="d-none"
-          data-pane-expanded-class="d-flex"
-          data-pane-initial="expanded"
-        >
-          <div class="workbench-pane-content d-flex flex-column gap-4 p-4 workbench-sticky-pane">
+        <div data-pane-content="left">
             <section class="d-flex flex-column gap-3">
               <div class="btn-toolbar justify-content-center" role="toolbar" aria-label="Press actions">
-                <div class="btn-group" role="group">
-                  <button
-                    class="btn btn-outline-secondary p-2"
-                    type="button"
-                    data-action="undo-layout"
-                    data-bs-toggle="tooltip"
-                    data-bs-placement="bottom"
-                    data-bs-title="Undo"
-                    aria-label="Undo"
-                  >
-                    <span class="iconify fs-5" data-icon="tabler:arrow-back-up" aria-hidden="true"></span>
-                    <span class="visually-hidden">Undo</span>
-                  </button>
-                  <button
-                    class="btn btn-outline-secondary p-2"
-                    type="button"
-                    data-action="redo-layout"
-                    data-bs-toggle="tooltip"
-                    data-bs-placement="bottom"
-                    data-bs-title="Redo"
-                    aria-label="Redo"
-                  >
-                    <span class="iconify fs-5" data-icon="tabler:arrow-forward-up" aria-hidden="true"></span>
-                    <span class="visually-hidden">Redo</span>
-                  </button>
-                  <button
-                    class="btn btn-primary p-2"
-                    type="button"
-                    id="printButton"
-                    data-bs-toggle="tooltip"
-                    data-bs-placement="bottom"
-                    data-bs-title="Print"
-                    aria-label="Print"
-                  >
-                    <span class="iconify fs-5" data-icon="tabler:printer" aria-hidden="true"></span>
-                    <span class="visually-hidden">Print</span>
-                  </button>
-                  <button
-                    class="btn btn-outline-primary p-2"
-                    type="button"
-                    data-action="new-template"
-                    data-bs-toggle="tooltip"
-                    data-bs-placement="bottom"
-                    data-bs-title="New Template"
-                    aria-label="New Template"
-                  >
-                    <span class="iconify fs-5" data-icon="tabler:file-plus" aria-hidden="true"></span>
-                    <span class="visually-hidden">New Template</span>
-                  </button>
-                  <button
-                    class="btn btn-outline-secondary p-2"
-                    type="button"
-                    data-action="import-layout"
-                    data-bs-toggle="tooltip"
-                    data-bs-placement="bottom"
-                    data-bs-title="Import"
-                    aria-label="Import"
-                  >
-                    <span class="iconify fs-5" data-icon="tabler:upload" aria-hidden="true"></span>
-                    <span class="visually-hidden">Import</span>
-                  </button>
-                  <button
-                    class="btn btn-outline-success p-2"
-                    type="button"
-                    data-action="save-layout"
-                    data-bs-toggle="tooltip"
-                    data-bs-placement="bottom"
-                    data-bs-title="Save"
-                    aria-label="Save"
-                  >
-                    <span class="iconify fs-5" data-icon="tabler:device-floppy" aria-hidden="true"></span>
-                    <span class="visually-hidden">Save</span>
-                  </button>
-                  <button
-                    class="btn btn-outline-secondary p-2"
-                    type="button"
-                    data-action="export-layout"
-                    data-bs-toggle="tooltip"
-                    data-bs-placement="bottom"
-                    data-bs-title="Export"
-                    aria-label="Export"
-                  >
-                    <span class="iconify fs-5" data-icon="tabler:download" aria-hidden="true"></span>
-                    <span class="visually-hidden">Export</span>
-                  </button>
-                </div>
+                <div class="btn-group" role="group" data-press-toolbar-mount></div>
               </div>
               <div class="d-flex flex-column gap-3" id="press-palette">
                 <div class="d-flex justify-content-between align-items-center">
@@ -213,121 +35,31 @@
                 </div>
                 <div class="d-grid gap-2" data-press-palette></div>
               </div>
-              <section class="pane-card mt-auto" data-json-section id="press-json">
-                <button
-                  class="btn btn-link w-100 d-flex justify-content-between align-items-center text-decoration-none px-0 py-1"
-                  type="button"
-                  data-bs-toggle="collapse"
-                  data-bs-target="#press-json-preview"
-                  aria-expanded="false"
-                  aria-controls="press-json-preview"
-                >
-                  <span class="text-uppercase fs-6 fw-semibold text-body-secondary">JSON Preview</span>
-                  <span class="badge text-bg-secondary" data-preview-bytes>0 B</span>
-                </button>
-                <div class="collapse" id="press-json-preview">
-                  <div class="bg-body p-2 mt-2">
-                    <textarea
-                      class="form-control form-control-sm font-monospace small json-preview-text"
-                      rows="10"
-                      style="max-height: 16rem"
-                      data-json-preview
-                      readonly
-                    ></textarea>
-                  </div>
-                </div>
-              </section>
-              <section class="pane-card" data-sample-data-section id="press-sample-data">
-                <button
-                  class="btn btn-link w-100 d-flex justify-content-between align-items-center text-decoration-none px-0 py-1"
-                  type="button"
-                  data-bs-toggle="collapse"
-                  data-bs-target="#press-sample-data-editor"
-                  aria-expanded="false"
-                  aria-controls="press-sample-data-editor"
-                >
-                  <span class="text-uppercase fs-6 fw-semibold text-body-secondary d-flex align-items-center gap-2">
-                    <span data-sample-data-label>Sample Data</span>
-                    <span class="align-middle" data-help-topic="press.sample-data" data-help-insert="replace"></span>
-                  </span>
-                </button>
-                <div class="collapse" id="press-sample-data-editor">
-                  <div class="bg-body p-2 mt-2">
-                    <textarea
-                      class="form-control form-control-sm font-monospace small press-sample-data-input"
-                      id="press-sample-data-input"
-                      rows="10"
-                      data-sample-data-input
-                    ></textarea>
-                    <div class="invalid-feedback d-block mt-2 d-none" data-sample-data-error></div>
-                  </div>
-                </div>
-              </section>
+              <div data-sample-data-mount></div>
+              <div class="mt-auto" data-json-mount></div>
             </section>
-          </div>
-        </aside>
+        </div>
 
         <main class="workbench-main flex-grow-1 p-3 overflow-auto d-flex flex-column gap-4">
             <div class="card shadow-theme">
               <div class="card-body">
-                <section class="d-flex flex-column gap-3" data-selection-section id="press-selection">
-                  <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
-                    <div class="d-flex align-items-center gap-2">
-                      <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0">Selections</h2>
-                      <span class="align-middle" data-help-topic="press.selection" data-help-insert="replace"></span>
-                    </div>
-                    <div class="d-flex align-items-center gap-2">
-                      <button
-                        class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center collapsible-toggle"
-                        type="button"
-                        data-selection-toggle
-                        aria-expanded="true"
-                      >
-                        <span class="iconify" data-icon="tabler:chevron-right" aria-hidden="true"></span>
-                        <span class="visually-hidden" data-toggle-label>Collapse selections</span>
-                      </button>
-                    </div>
-                  </div>
-                  <div class="d-flex flex-column gap-3" data-selection-panel>
+                <div data-selection-mount></div>
+                <div class="d-flex flex-column gap-3" data-selection-panel>
                     <div class="row g-3 align-items-start">
-                      <div class="col-12 col-lg-6 d-flex flex-column gap-2">
-                        <label class="form-label fw-semibold mb-0" for="sourceSelect">Source</label>
-                        <select class="form-select" id="sourceSelect"></select>
-                      </div>
+                      <div class="col-12 col-lg-6" data-inspector-mount="source-select"></div>
                       <div class="col-12 col-lg-6 d-flex flex-column gap-2">
                         <div id="sourceInputContainer" class="d-flex flex-column gap-2"></div>
                       </div>
-                      <div class="col-12">
-                      </div>
                     </div>
                     <div class="row g-3 align-items-start" id="press-templates">
-                      <div class="col-12 col-lg-4 d-flex flex-column gap-2">
-                        <div class="d-flex align-items-center justify-content-between gap-2">
-                          <label class="form-label fw-semibold mb-0" for="templateSelect">Template</label>
-                          <span class="align-middle" data-help-topic="press.templates" data-help-insert="replace" data-help-placement="left"></span>
-                        </div>
-                        <select class="form-select" id="templateSelect"></select>
-                      </div>
-                      <div class="col-12 col-lg-4 d-flex flex-column gap-2">
-                        <div class="d-flex align-items-center justify-content-between gap-2">
-                          <label class="form-label fw-semibold mb-0" for="formatSelect">Size</label>
-                          <span class="align-middle" data-help-topic="press.size" data-help-insert="replace" data-help-placement="left"></span>
-                        </div>
-                        <select class="form-select" id="formatSelect"></select>
-                      </div>
-                      <div class="col-12 col-lg-4 d-flex flex-column gap-2">
-                        <div class="d-flex align-items-center justify-content-between gap-2">
-                          <label class="form-label fw-semibold mb-0" for="orientationSelect">Orientation</label>
-                          <span class="align-middle" data-help-topic="press.orientation" data-help-insert="replace" data-help-placement="left"></span>
-                        </div>
-                        <select class="form-select" id="orientationSelect"></select>
-                      </div>
+                      <div class="col-12 col-lg-4" data-inspector-mount="template-select"></div>
+                      <div class="col-12 col-lg-4" data-inspector-mount="format-select"></div>
+                      <div class="col-12 col-lg-4" data-inspector-mount="orientation-select"></div>
                     </div>
                     <div class="d-flex justify-content-end">
                       <button class="btn btn-outline-primary" id="generateButton">Generate Print</button>
                     </div>
                   </div>
-                </section>
               </div>
             </div>
             <div class="card shadow-theme">
@@ -449,133 +181,31 @@
             </div>
         </main>
 
-        <aside
-          class="d-none flex-column gap-4 border-start border-body-tertiary bg-body-tertiary shadow-theme flex-shrink-0 workbench-sidebar-lg workbench-pane"
-          data-pane="right"
-          data-pane-collapsed-class="d-none"
-          data-pane-expanded-class="d-flex"
-          data-pane-initial="collapsed"
-        >
-          <div class="workbench-pane-content d-flex flex-column gap-4 p-4 workbench-sticky-pane">
-            <section class="d-flex flex-column gap-4" data-template-properties>
-            <div class="d-flex align-items-center justify-content-between">
-              <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Template Properties</h2>
-              <div class="d-flex align-items-center gap-2">
-                <button
-                  class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center collapsible-toggle"
-                  type="button"
-                  data-template-toggle
-                  aria-expanded="false"
-                >
-                  <span class="iconify" data-icon="tabler:chevron-right" aria-hidden="true"></span>
-                  <span class="visually-hidden" data-template-toggle-label>Expand template properties</span>
-                </button>
-              </div>
-            </div>
+        <div data-pane-content="right">
+            <div data-template-properties-mount></div>
             <div class="d-flex flex-column gap-4" data-template-panel data-template-inspector>
               <div class="btn-toolbar justify-content-center" role="toolbar" aria-label="Template actions">
-                <div class="btn-group" role="group">
-                  <button
-                    class="btn btn-outline-success p-2"
-                    type="button"
-                    data-template-duplicate
-                    data-bs-toggle="tooltip"
-                    data-bs-placement="bottom"
-                    data-bs-title="Duplicate Template"
-                    aria-label="Duplicate Template"
-                  >
-                    <span class="iconify fs-5" data-icon="tabler:copy" aria-hidden="true"></span>
-                    <span class="visually-hidden">Duplicate Template</span>
-                  </button>
-                  <button
-                    class="btn btn-outline-secondary p-2"
-                    type="button"
-                    data-template-clear-uniqueness
-                    data-bs-toggle="tooltip"
-                    data-bs-placement="bottom"
-                    data-bs-title="Clear all per-card uniqueness on this template"
-                    aria-label="Clear all uniqueness"
-                  >
-                    <span class="iconify fs-5" data-icon="tabler:eraser" aria-hidden="true"></span>
-                    <span class="visually-hidden">Clear all uniqueness</span>
-                  </button>
-                  <button
-                    class="btn btn-outline-danger p-2 d-none"
-                    type="button"
-                    data-template-delete
-                    data-bs-toggle="tooltip"
-                    data-bs-placement="bottom"
-                    data-bs-title="Delete Template"
-                    aria-label="Delete Template"
-                  >
-                    <span class="iconify fs-5" data-icon="tabler:trash" aria-hidden="true"></span>
-                    <span class="visually-hidden">Delete Template</span>
-                  </button>
-                </div>
+                <div class="btn-group" role="group" data-template-toolbar-mount></div>
               </div>
-              <div class="row g-3">
-                <div class="col-12">
-                  <label class="form-label small text-body-secondary fw-semibold" for="templateId">ID</label>
-                  <input class="form-control form-control-sm" id="templateId" data-template-id />
-                </div>
-                <div class="col-12">
-                  <label class="form-label small text-body-secondary fw-semibold" for="templateName">Name</label>
-                  <input class="form-control form-control-sm" id="templateName" data-template-name />
-                </div>
-                <div class="col-12">
-                  <label class="form-label small text-body-secondary fw-semibold" for="templateDescription">Description</label>
-                  <textarea class="form-control form-control-sm" id="templateDescription" rows="2" data-template-description></textarea>
-                </div>
-                <div class="col-12">
-                  <label class="form-label small text-body-secondary fw-semibold" for="templateType">Type</label>
-                  <select class="form-select form-select-sm" id="templateType" data-template-type>
-                    <option value="sheet">Sheet</option>
-                    <option value="card">Card</option>
-                    <option value="chip">Chip</option>
-                  </select>
-                </div>
-                <div class="col-12">
-                  <label class="form-label small text-body-secondary fw-semibold" for="templateBaseFont">Base font</label>
-                  <input class="form-control form-control-sm" id="templateBaseFont" data-template-base-font autocomplete="off" />
-                </div>
+              <div class="d-flex flex-column gap-3">
+                <div data-inspector-mount="template-id"></div>
+                <div data-inspector-mount="template-name"></div>
+                <div data-inspector-mount="template-description"></div>
+                <div data-inspector-mount="template-type"></div>
+                <div data-inspector-mount="template-base-font"></div>
               </div>
               <div class="d-flex flex-column gap-2">
-                <label class="form-label small text-body-secondary fw-semibold" for="templateFormats">Formats</label>
-                <select
-                  class="form-select form-select-sm"
-                  id="templateFormats"
-                  size="6"
-                  multiple
-                  data-template-formats
-                ></select>
+                <div data-inspector-mount="template-formats"></div>
                 <div class="row g-2 align-items-end" data-custom-size-form>
-                  <div class="col-4">
-                    <label class="form-label small text-body-secondary" for="customSizeLabel">Custom size label</label>
-                    <input class="form-control form-control-sm" id="customSizeLabel" type="text" placeholder="Postcard" data-custom-size-label />
-                  </div>
-                  <div class="col-3">
-                    <label class="form-label small text-body-secondary" for="customSizeWidth">Width (in)</label>
-                    <input class="form-control form-control-sm" id="customSizeWidth" type="number" min="0" step="0.01" data-custom-size-width />
-                  </div>
-                  <div class="col-3">
-                    <label class="form-label small text-body-secondary" for="customSizeHeight">Height (in)</label>
-                    <input class="form-control form-control-sm" id="customSizeHeight" type="number" min="0" step="0.01" data-custom-size-height />
-                  </div>
+                  <div class="col-4" data-inspector-mount="custom-size-label"></div>
+                  <div class="col-3" data-inspector-mount="custom-size-width"></div>
+                  <div class="col-3" data-inspector-mount="custom-size-height"></div>
                   <div class="col-2">
                     <button class="btn btn-outline-secondary btn-sm w-100" type="button" data-custom-size-add>Add</button>
                   </div>
                 </div>
               </div>
-              <div class="d-flex flex-column gap-2">
-                <label class="form-label small text-body-secondary fw-semibold" for="templateSources">Supported sources</label>
-                <select
-                  class="form-select form-select-sm"
-                  id="templateSources"
-                  size="4"
-                  multiple
-                  data-template-sources
-                ></select>
-              </div>
+              <div data-inspector-mount="template-sources"></div>
               <section
                 class="border rounded-3 bg-body p-3 d-flex flex-column gap-3"
                 id="press-page-bindings"
@@ -586,222 +216,40 @@
                     <h3 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Page Bindings</h3>
                     <span class="align-middle" data-help-topic="press.page-bindings" data-help-insert="replace"></span>
                   </div>
-                  <button
-                    class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center collapsible-toggle"
-                    type="button"
-                    data-page-bindings-toggle
-                    aria-expanded="true"
-                  >
-                    <span class="iconify" data-icon="tabler:chevron-right" aria-hidden="true"></span>
-                    <span class="visually-hidden" data-page-bindings-toggle-label>Collapse page bindings</span>
-                  </button>
+                  <span data-page-bindings-toggle-mount></span>
                 </div>
                 <div class="d-flex flex-column gap-3" data-page-bindings-panel>
-                  <div>
-                    <label class="form-label small text-body-secondary fw-semibold" for="templateFrontRepeat">Front repeat binding</label>
-                    <input
-                      class="form-control form-control-sm"
-                      id="templateFrontRepeat"
-                      placeholder="@features"
-                      data-template-front-repeat
-                    />
-                  </div>
-                  <div>
-                    <label class="form-label small text-body-secondary fw-semibold" for="templateBackRepeat">Back repeat binding</label>
-                    <input
-                      class="form-control form-control-sm"
-                      id="templateBackRepeat"
-                      placeholder="@features"
-                      data-template-back-repeat
-                    />
-                  </div>
-                 <div>
-                    <label class="form-label small text-body-secondary fw-semibold" for="templateFrontData">Front data binding (or global)</label>
-                    <input
-                      class="form-control form-control-sm"
-                      id="templateFrontData"
-                      placeholder="@"
-                      data-template-front-data
-                    />
-                  </div>
-                  <div>
-                    <label class="form-label small text-body-secondary fw-semibold" for="templateBackData">Back data binding (or global)</label>
-                    <input
-                      class="form-control form-control-sm"
-                      id="templateBackData"
-                      placeholder="@"
-                      data-template-back-data
-                    />
-                  </div>
+                  <div data-inspector-mount="template-front-repeat"></div>
+                  <div data-inspector-mount="template-back-repeat"></div>
+                  <div data-inspector-mount="template-front-data"></div>
+                  <div data-inspector-mount="template-back-data"></div>
                 </div>
               </section>
               <section class="border rounded-3 bg-body p-3 d-flex flex-column gap-3" data-template-card-group hidden>
                 <div class="d-flex align-items-center justify-content-between">
                   <h3 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Grid Properties</h3>
-                  <button
-                    class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center collapsible-toggle"
-                    type="button"
-                    data-card-toggle
-                    aria-expanded="false"
-                  >
-                    <span class="iconify" data-icon="tabler:chevron-right" aria-hidden="true"></span>
-                    <span class="visually-hidden" data-card-toggle-label>Expand grid properties</span>
-                  </button>
+                  <span data-card-toggle-mount></span>
                 </div>
                 <div class="d-flex flex-column gap-3" data-card-panel>
-                  <div class="row g-3">
-                    <div class="col-6">
-                      <label class="form-label small text-body-secondary fw-semibold" for="templateCardWidth">Cell width (in)</label>
-                      <input
-                        class="form-control form-control-sm"
-                        id="templateCardWidth"
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        data-template-card-width
-                      />
-                    </div>
-                    <div class="col-6">
-                      <label class="form-label small text-body-secondary fw-semibold" for="templateCardHeight">Cell height (in)</label>
-                      <input
-                        class="form-control form-control-sm"
-                        id="templateCardHeight"
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        data-template-card-height
-                      />
-                    </div>
-                    <div class="col-6">
-                      <label class="form-label small text-body-secondary fw-semibold" for="templateCardGutter">Gutter (in)</label>
-                      <input
-                        class="form-control form-control-sm"
-                        id="templateCardGutter"
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        data-template-card-gutter
-                      />
-                    </div>
-                    <div class="col-6">
-                      <label class="form-label small text-body-secondary fw-semibold" for="templateCardSafeInset">Safe inset (in)</label>
-                      <input
-                        class="form-control form-control-sm"
-                        id="templateCardSafeInset"
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        data-template-card-safe-inset
-                      />
-                    </div>
-                    <div class="col-6">
-                      <label class="form-label small text-body-secondary fw-semibold" for="templateCardBleed">Bleed (in)</label>
-                      <input
-                        class="form-control form-control-sm"
-                        id="templateCardBleed"
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        data-template-card-bleed
-                      />
-                    </div>
-                    <div class="col-6">
-                      <label class="form-label small text-body-secondary fw-semibold" for="templateCardCornerRadius">Corner radius (in)</label>
-                      <input
-                        class="form-control form-control-sm"
-                        id="templateCardCornerRadius"
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        data-template-card-corner-radius
-                      />
-                    </div>
-                    <div class="col-6">
-                      <label class="form-label small text-body-secondary fw-semibold" for="templateCardColumns">Columns</label>
-                      <input
-                        class="form-control form-control-sm"
-                        id="templateCardColumns"
-                        type="number"
-                        min="1"
-                        step="1"
-                        data-template-card-columns
-                      />
-                    </div>
-                    <div class="col-6">
-                      <label class="form-label small text-body-secondary fw-semibold" for="templateCardRows">Rows</label>
-                      <input
-                        class="form-control form-control-sm"
-                        id="templateCardRows"
-                        type="number"
-                        min="1"
-                        step="1"
-                        data-template-card-rows
-                      />
-                    </div>
+                  <div class="row g-2">
+                    <div class="col-6" data-inspector-mount="template-card-width"></div>
+                    <div class="col-6" data-inspector-mount="template-card-height"></div>
+                    <div class="col-6" data-inspector-mount="template-card-gutter"></div>
+                    <div class="col-6" data-inspector-mount="template-card-safe-inset"></div>
+                    <div class="col-6" data-inspector-mount="template-card-bleed"></div>
+                    <div class="col-6" data-inspector-mount="template-card-corner-radius"></div>
+                    <div class="col-6" data-inspector-mount="template-card-columns"></div>
+                    <div class="col-6" data-inspector-mount="template-card-rows"></div>
                   </div>
                 </div>
               </section>
             </div>
-          </section>
           <hr class="border-body-tertiary opacity-50 my-2" />
-          <section class="d-flex flex-column gap-4" data-component-properties>
-            <div class="d-flex align-items-center justify-content-between">
-              <div class="d-flex align-items-center gap-2">
-                <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Component Properties</h2>
-                <span class="align-middle" data-help-topic="press.inspector" data-help-insert="replace" data-help-placement="left"></span>
-              </div>
-              <button
-                class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center collapsible-toggle"
-                type="button"
-                data-component-toggle
-                aria-expanded="false"
-              >
-                <span class="iconify" data-icon="tabler:chevron-right" aria-hidden="true"></span>
-                <span class="visually-hidden" data-component-toggle-label>Expand component properties</span>
-              </button>
-            </div>
+          <div data-component-properties-mount></div>
             <div class="d-flex flex-column gap-3" data-component-panel>
               <section class="d-flex flex-column gap-3" id="press-inspector" data-component-inspector>
                 <div class="btn-toolbar justify-content-center" role="toolbar" aria-label="Component actions">
-                  <div class="btn-group" role="group">
-                    <button
-                      class="btn btn-outline-secondary p-2"
-                      type="button"
-                      data-component-make-unique
-                      data-bs-toggle="tooltip"
-                      data-bs-placement="bottom"
-                      data-bs-title="Make Unique — while on, edits to this component apply only to the card/chip shown in Grid View, not the shared template (only available from the Grid View tab)"
-                      aria-label="Make Unique"
-                      aria-pressed="false"
-                    >
-                      <span class="iconify fs-5" data-icon="tabler:fingerprint" aria-hidden="true"></span>
-                      <span class="visually-hidden">Make Unique</span>
-                    </button>
-                    <button
-                      class="btn btn-outline-success p-2"
-                      type="button"
-                      data-component-duplicate
-                      data-bs-toggle="tooltip"
-                      data-bs-placement="bottom"
-                      data-bs-title="Duplicate — Ctrl+D (also Copy/Cut/Paste with Ctrl+C/Ctrl+X/Ctrl+V on any selected component)"
-                      aria-label="Duplicate Component"
-                    >
-                      <span class="iconify fs-5" data-icon="tabler:copy" aria-hidden="true"></span>
-                      <span class="visually-hidden">Duplicate Component</span>
-                    </button>
-                    <button
-                      class="btn btn-outline-danger p-2"
-                      type="button"
-                      data-component-delete
-                      data-bs-toggle="tooltip"
-                      data-bs-placement="bottom"
-                      data-bs-title="Delete Component"
-                      aria-label="Delete Component"
-                    >
-                      <span class="iconify fs-5" data-icon="tabler:trash" aria-hidden="true"></span>
-                      <span class="visually-hidden" data-component-delete-label>Delete Component</span>
-                    </button>
-                  </div>
+                  <div class="btn-group" role="group" data-component-toolbar-mount></div>
                 </div>
                 <div class="d-flex flex-column gap-3">
                   <div
@@ -814,7 +262,7 @@
                       data-icon="tabler:components"
                       aria-hidden="true"
                     ></span>
-                    <div class="d-flex flex-column">
+                    <div class="d-flex flex-column flex-grow-1" style="min-width: 0">
                       <div class="fw-semibold" data-component-type-label>Component</div>
                       <div class="text-body-secondary extra-small text-truncate" data-component-type-description>
                         Select a component to view details.
@@ -853,83 +301,14 @@
                       />
                     </div>
                   </div>
-                  <div class="form-floating" data-inspector-text-field>
-                    <textarea class="form-control" placeholder="Edit text" style="min-height: 72px" data-component-text></textarea>
-                    <label class="fw-semibold" data-component-text-label>Binding / Text</label>
-                  </div>
+                  <div data-inspector-mount="text"></div>
                   <div class="d-flex flex-column gap-2" data-inspector-repeater-fields hidden>
-                    <div class="form-floating">
-                      <textarea
-                        class="form-control"
-                        placeholder="One entry per line, or an @path binding"
-                        style="min-height: 72px"
-                        data-component-repeater-items
-                        data-bs-toggle="tooltip"
-                        data-bs-placement="top"
-                        data-bs-title="Which array repeats — not what each item shows. Select the actual text/icon/etc. on the canvas and set its own Binding to a key from the item (e.g. @name), same as any other component."
-                      ></textarea>
-                      <label class="fw-semibold">Items</label>
-                    </div>
-                    <div class="form-floating">
-                      <input
-                        type="number"
-                        class="form-control"
-                        id="componentRepeaterColumns"
-                        min="1"
-                        max="8"
-                        step="1"
-                        placeholder="1"
-                        data-component-repeater-columns
-                      />
-                      <label class="fw-semibold" for="componentRepeaterColumns">Columns</label>
-                    </div>
-                    <div class="form-floating" data-inspector-repeater-template-columns hidden>
-                      <input
-                        class="form-control"
-                        placeholder="30% 70%"
-                        type="text"
-                        data-component-repeater-template-columns
-                        data-bs-toggle="tooltip"
-                        data-bs-placement="top"
-                        data-bs-title="CSS grid-template-columns-style value for column widths, e.g. 30% 70%"
-                      />
-                      <label class="fw-semibold">Column widths</label>
-                    </div>
-                    <div class="form-check form-switch">
-                      <input
-                        class="form-check-input"
-                        type="checkbox"
-                        role="switch"
-                        id="componentRepeaterHeader"
-                        data-component-repeater-header
-                      />
-                      <label class="form-check-label" for="componentRepeaterHeader">Header row</label>
-                    </div>
-                    <div class="form-floating">
-                      <select
-                        class="form-select"
-                        id="componentRepeaterDecoratorType"
-                        data-component-repeater-decorator-type
-                        data-bs-toggle="tooltip"
-                        data-bs-placement="top"
-                        data-bs-title="An optional marker shown before each item — bullet, auto number, or a custom symbol/binding. Doesn't affect what the item itself shows; that's set by binding the item's own content on the canvas."
-                      >
-                        <option value="none">None</option>
-                        <option value="bullet">Bullet (•)</option>
-                        <option value="number">Number (1. 2. 3.)</option>
-                        <option value="custom">Custom symbol or binding</option>
-                      </select>
-                      <label class="fw-semibold" for="componentRepeaterDecoratorType">Item decorator</label>
-                    </div>
-                    <div class="form-floating" data-inspector-repeater-decorator-text hidden>
-                      <input
-                        class="form-control"
-                        placeholder="→ or @icon"
-                        type="text"
-                        data-component-repeater-decorator-text
-                      />
-                      <label class="fw-semibold">Decorator symbol / binding</label>
-                    </div>
+                    <div data-inspector-mount="repeater-items"></div>
+                    <div data-inspector-mount="repeater-columns"></div>
+                    <div data-inspector-mount="repeater-template-columns"></div>
+                    <div data-inspector-mount="repeater-header"></div>
+                    <div data-inspector-mount="repeater-decorator-type"></div>
+                    <div data-inspector-mount="repeater-decorator-text"></div>
                   </div>
                   <div class="input-group" data-inspector-image-field hidden>
                     <div class="form-floating">
@@ -949,464 +328,57 @@
                     </button>
                   </div>
                   <div class="row g-2" data-inspector-image-size-field hidden>
-                    <div class="col-6">
-                      <label class="form-label small text-body-secondary fw-semibold" for="componentImageWidth">Image width (in)</label>
-                      <input
-                        class="form-control form-control-sm"
-                        id="componentImageWidth"
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        data-component-image-width
-                      />
-                    </div>
-                    <div class="col-6">
-                      <label class="form-label small text-body-secondary fw-semibold" for="componentImageHeight">Image height (in)</label>
-                      <input
-                        class="form-control form-control-sm"
-                        id="componentImageHeight"
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        data-component-image-height
-                      />
-                    </div>
+                    <div class="col-6" data-inspector-mount="component-image-width"></div>
+                    <div class="col-6" data-inspector-mount="component-image-height"></div>
                   </div>
-                  <div class="form-floating" data-inspector-image-field hidden>
-                    <select class="form-select" id="componentImageFit" data-component-image-fit>
-                      <option value="cover">Cover (crop to fill, preserve aspect ratio)</option>
-                      <option value="contain">Contain (fit inside box, preserve aspect ratio)</option>
-                      <option value="fill">Fill (stretch to exactly fill box)</option>
-                    </select>
-                    <label class="fw-semibold" for="componentImageFit">Image fit</label>
-                  </div>
-                  <div class="form-floating" data-inspector-image-field hidden>
-                    <input
-                      class="form-control"
-                      placeholder="0"
-                      type="number"
-                      min="0"
-                      step="1"
-                      id="componentImageCornerRadius"
-                      data-component-image-corner-radius
-                    />
-                    <label class="fw-semibold" for="componentImageCornerRadius">Corner radius (px)</label>
-                  </div>
+                  <div data-inspector-mount="image-fit"></div>
+                  <div data-inspector-mount="image-corner-radius"></div>
                   <div class="row g-2" data-inspector-image-field hidden>
-                    <div class="col-4">
-                      <label class="form-label small text-body-secondary fw-semibold" for="componentImageFocalX">Pan X (%)</label>
-                      <input
-                        class="form-control form-control-sm"
-                        id="componentImageFocalX"
-                        type="number"
-                        min="0"
-                        max="100"
-                        step="1"
-                        placeholder="50"
-                        data-component-image-focal-x
-                      />
-                    </div>
-                    <div class="col-4">
-                      <label class="form-label small text-body-secondary fw-semibold" for="componentImageFocalY">Pan Y (%)</label>
-                      <input
-                        class="form-control form-control-sm"
-                        id="componentImageFocalY"
-                        type="number"
-                        min="0"
-                        max="100"
-                        step="1"
-                        placeholder="50"
-                        data-component-image-focal-y
-                      />
-                    </div>
-                    <div class="col-4">
-                      <label
-                        class="form-label small text-body-secondary fw-semibold"
-                        for="componentImageZoom"
-                        data-bs-toggle="tooltip"
-                        data-bs-placement="top"
-                        data-bs-title="Scales past a normal Cover fit, anchored on Pan X/Y — above 1 zooms in on an oversized image, below 1 shrinks it further (may expose empty space around it)"
-                        >Zoom (×)</label
-                      >
-                      <input
-                        class="form-control form-control-sm"
-                        id="componentImageZoom"
-                        type="number"
-                        min="0.1"
-                        max="5"
-                        step="0.1"
-                        placeholder="1"
-                        data-component-image-zoom
-                      />
-                    </div>
+                    <div class="col-4" data-inspector-mount="component-image-focal-x"></div>
+                    <div class="col-4" data-inspector-mount="component-image-focal-y"></div>
+                    <div class="col-4" data-inspector-mount="component-image-zoom"></div>
                   </div>
-                  <div class="form-floating" data-inspector-layer-origin hidden>
-                    <select
-                      class="form-select"
-                      id="componentLayerOrigin"
-                      data-component-layer-origin
-                      data-bs-toggle="tooltip"
-                      data-bs-placement="top"
-                      data-bs-title="Controls what box this layer (and therefore any 100%-sized placement inside it) sizes against"
-                    >
-                      <option value="safe">Safe area (inset from the card edge by Safe inset)</option>
-                      <option value="trim">Trim (fills the card exactly)</option>
-                      <option value="bleed">Bleed (extends past the card edge into bleed)</option>
-                    </select>
-                    <label class="fw-semibold" for="componentLayerOrigin">Layer sizes against</label>
-                  </div>
-                  <div class="form-floating" data-inspector-gap-field hidden>
-                    <input
-                      type="number"
-                      class="form-control"
-                      id="componentGap"
-                      min="0"
-                      max="12"
-                      step="1"
-                      placeholder="4"
-                      data-component-gap
-                    />
-                    <label class="fw-semibold" for="componentGap">Gap</label>
-                  </div>
-                  <div class="form-floating" data-inspector-space-after-field hidden>
-                    <input
-                      type="number"
-                      class="form-control"
-                      id="componentSpaceAfter"
-                      min="0"
-                      max="12"
-                      step="1"
-                      placeholder="0"
-                      data-component-space-after
-                      data-bs-toggle="tooltip"
-                      data-bs-placement="top"
-                      data-bs-title="Space after this whole component, before whatever comes next — same scale as Gap, but Gap only affects spacing between this component's own internal items, not its next sibling."
-                    />
-                    <label class="fw-semibold" for="componentSpaceAfter">Space after</label>
-                  </div>
-                  <div class="form-floating" data-inspector-row-columns hidden>
-                    <input
-                      type="number"
-                      class="form-control"
-                      id="componentColumns"
-                      min="1"
-                      max="6"
-                      step="1"
-                      placeholder="2"
-                      data-component-columns
-                    />
-                    <label class="fw-semibold" for="componentColumns">Columns</label>
-                  </div>
-                  <div class="form-floating" data-inspector-template-columns hidden>
-                    <input
-                      class="form-control"
-                      placeholder="1fr 2fr"
-                      type="text"
-                      data-component-template-columns
-                      data-bs-toggle="tooltip"
-                      data-bs-placement="top"
-                      data-bs-title="CSS grid-template-columns value, overrides equal-width columns"
-                    />
-                    <label class="fw-semibold">Column template</label>
-                  </div>
-                  <div class="form-floating" data-inspector-grid-rows hidden>
-                    <input
-                      type="number"
-                      class="form-control"
-                      id="componentGridRows"
-                      min="1"
-                      max="24"
-                      step="1"
-                      placeholder="2"
-                      data-component-grid-rows
-                    />
-                    <label class="fw-semibold" for="componentGridRows">Rows</label>
-                  </div>
-                  <div class="form-floating" data-inspector-template-rows hidden>
-                    <input
-                      class="form-control"
-                      placeholder="auto auto"
-                      type="text"
-                      data-component-template-rows
-                      data-bs-toggle="tooltip"
-                      data-bs-placement="top"
-                      data-bs-title="CSS grid-template-rows value, overrides content-sized rows"
-                    />
-                    <label class="fw-semibold">Row template</label>
-                  </div>
+                  <div data-inspector-mount="layer-origin"></div>
+                  <div data-inspector-mount="gap"></div>
+                  <div data-inspector-mount="space-after"></div>
+                  <div data-inspector-mount="row-columns"></div>
+                  <div data-inspector-mount="template-columns"></div>
+                  <div data-inspector-mount="grid-rows"></div>
+                  <div data-inspector-mount="template-rows"></div>
                   <div class="d-flex flex-column gap-2" data-inspector-grid-align-x hidden>
                     <label class="fw-semibold text-body-secondary">Horizontal alignment</label>
-                    <div class="btn-group template-radio-group" role="group" aria-label="Horizontal alignment">
-                      <input type="radio" class="btn-check" name="componentAlignX" id="componentAlignXStart" value="start" data-component-align-x />
-                      <label class="btn btn-outline-secondary" for="componentAlignXStart" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Align left">
-                        <span class="iconify" data-icon="tabler:align-left" aria-hidden="true"></span>
-                        <span class="template-radio-label">Left</span>
-                      </label>
-                      <input type="radio" class="btn-check" name="componentAlignX" id="componentAlignXCenter" value="center" data-component-align-x />
-                      <label class="btn btn-outline-secondary" for="componentAlignXCenter" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Align center">
-                        <span class="iconify" data-icon="tabler:align-center" aria-hidden="true"></span>
-                        <span class="template-radio-label">Center</span>
-                      </label>
-                      <input type="radio" class="btn-check" name="componentAlignX" id="componentAlignXEnd" value="end" data-component-align-x />
-                      <label class="btn btn-outline-secondary" for="componentAlignXEnd" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Align right">
-                        <span class="iconify" data-icon="tabler:align-right" aria-hidden="true"></span>
-                        <span class="template-radio-label">Right</span>
-                      </label>
-                      <input type="radio" class="btn-check" name="componentAlignX" id="componentAlignXJustify" value="justify" data-component-align-x />
-                      <label class="btn btn-outline-secondary" for="componentAlignXJustify" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Stretch to fill">
-                        <span class="iconify" data-icon="tabler:align-justified" aria-hidden="true"></span>
-                        <span class="template-radio-label">Stretch</span>
-                      </label>
-                    </div>
+                    <span data-inspector-mount="align-x"></span>
                   </div>
                   <div class="d-flex flex-column gap-2" data-inspector-grid-align-y hidden>
                     <label class="fw-semibold text-body-secondary">Vertical alignment</label>
-                    <div class="btn-group template-radio-group" role="group" aria-label="Vertical alignment">
-                      <input type="radio" class="btn-check" name="componentAlignY" id="componentAlignYStart" value="start" data-component-align-y />
-                      <label class="btn btn-outline-secondary" for="componentAlignYStart" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Align top">
-                        <span class="iconify" data-icon="tabler:layout-align-top" aria-hidden="true"></span>
-                        <span class="template-radio-label">Top</span>
-                      </label>
-                      <input type="radio" class="btn-check" name="componentAlignY" id="componentAlignYCenter" value="center" data-component-align-y />
-                      <label class="btn btn-outline-secondary" for="componentAlignYCenter" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Align middle">
-                        <span class="iconify" data-icon="tabler:layout-align-middle" aria-hidden="true"></span>
-                        <span class="template-radio-label">Middle</span>
-                      </label>
-                      <input type="radio" class="btn-check" name="componentAlignY" id="componentAlignYEnd" value="end" data-component-align-y />
-                      <label class="btn btn-outline-secondary" for="componentAlignYEnd" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Align bottom">
-                        <span class="iconify" data-icon="tabler:layout-align-bottom" aria-hidden="true"></span>
-                        <span class="template-radio-label">Bottom</span>
-                      </label>
-                      <input type="radio" class="btn-check" name="componentAlignY" id="componentAlignYJustify" value="justify" data-component-align-y />
-                      <label class="btn btn-outline-secondary" for="componentAlignYJustify" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Space evenly">
-                        <span class="iconify" data-icon="tabler:layout-distribute-vertical" aria-hidden="true"></span>
-                        <span class="template-radio-label">Justified</span>
-                      </label>
-                    </div>
+                    <span data-inspector-mount="align-y"></span>
                   </div>
                   <div class="row g-2" data-inspector-position hidden>
-                    <div class="col-6">
-                      <label class="form-label small text-body-secondary fw-semibold" for="componentPositionX">X (in)</label>
-                      <input class="form-control form-control-sm" id="componentPositionX" type="number" step="0.01" data-component-position-x />
-                    </div>
-                    <div class="col-6">
-                      <label class="form-label small text-body-secondary fw-semibold" for="componentPositionY">Y (in)</label>
-                      <input class="form-control form-control-sm" id="componentPositionY" type="number" step="0.01" data-component-position-y />
-                    </div>
-                    <div class="col-6">
-                      <label class="form-label small text-body-secondary fw-semibold" for="componentPositionWidth">Width (in or %)</label>
-                      <input class="form-control form-control-sm" id="componentPositionWidth" type="text" placeholder="auto" data-component-position-width />
-                    </div>
-                    <div class="col-6">
-                      <label class="form-label small text-body-secondary fw-semibold" for="componentPositionHeight">Height (in or %)</label>
-                      <input class="form-control form-control-sm" id="componentPositionHeight" type="text" placeholder="auto" data-component-position-height />
-                    </div>
-                    <div class="col-6">
-                      <label class="form-label small text-body-secondary fw-semibold" for="componentPositionZ">Z-order</label>
-                      <input
-                        class="form-control form-control-sm"
-                        id="componentPositionZ"
-                        type="number"
-                        step="1"
-                        data-component-position-z
-                        data-bs-toggle="tooltip"
-                        data-bs-placement="top"
-                        data-bs-title="Stacking order — higher numbers render on top"
-                      />
-                    </div>
-                    <div class="col-6">
-                      <label class="form-label small text-body-secondary fw-semibold" for="componentPositionRotate">Rotate (deg)</label>
-                      <input
-                        class="form-control form-control-sm"
-                        id="componentPositionRotate"
-                        type="number"
-                        step="1"
-                        data-component-position-rotate
-                        data-bs-toggle="tooltip"
-                        data-bs-placement="top"
-                        data-bs-title="Rotation around the element's center"
-                      />
-                    </div>
+                    <div class="col-6" data-inspector-mount="component-position-x"></div>
+                    <div class="col-6" data-inspector-mount="component-position-y"></div>
+                    <div class="col-6" data-inspector-mount="component-position-width"></div>
+                    <div class="col-6" data-inspector-mount="component-position-height"></div>
+                    <div class="col-6" data-inspector-mount="component-position-z"></div>
+                    <div class="col-6" data-inspector-mount="component-position-rotate"></div>
                   </div>
+                  <div class="d-flex flex-column gap-2" data-inspector-text-group>
+                    <div class="text-uppercase fs-6 fw-semibold text-body-secondary">Text</div>
                   <div class="d-flex flex-column gap-2" data-inspector-text-settings>
-                    <div class="form-floating">
-                      <input
-                        class="form-control"
-                        placeholder="Search fonts…"
-                        type="text"
-                        id="componentFontFamily"
-                        data-component-font-family
-                        autocomplete="off"
-                      />
-                      <label class="fw-semibold" for="componentFontFamily">Font</label>
-                    </div>
+                    <div data-inspector-mount="font-family"></div>
                   </div>
                   <div class="d-flex flex-column gap-2" data-inspector-text-settings>
                     <label class="fw-semibold text-body-secondary">Text size</label>
-                    <div class="btn-group template-radio-group" role="group" aria-label="Font size">
-                      <input
-                        type="radio"
-                        class="btn-check"
-                        name="componentTextSize"
-                        id="componentTextSizeXs"
-                        value="xs"
-                        data-component-text-size
-                      />
-                      <label class="btn btn-outline-secondary" for="componentTextSizeXs" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Extra small">XS</label>
-                      <input
-                        type="radio"
-                        class="btn-check"
-                        name="componentTextSize"
-                        id="componentTextSizeSm"
-                        value="sm"
-                        data-component-text-size
-                      />
-                      <label class="btn btn-outline-secondary" for="componentTextSizeSm" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Small">Sm</label>
-                      <input
-                        type="radio"
-                        class="btn-check"
-                        name="componentTextSize"
-                        id="componentTextSizeMd"
-                        value="md"
-                        data-component-text-size
-                      />
-                      <label class="btn btn-outline-secondary" for="componentTextSizeMd" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Medium">Md</label>
-                      <input
-                        type="radio"
-                        class="btn-check"
-                        name="componentTextSize"
-                        id="componentTextSizeLg"
-                        value="lg"
-                        data-component-text-size
-                      />
-                      <label class="btn btn-outline-secondary" for="componentTextSizeLg" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Large">Lg</label>
-                      <input
-                        type="radio"
-                        class="btn-check"
-                        name="componentTextSize"
-                        id="componentTextSizeXl"
-                        value="xl"
-                        data-component-text-size
-                      />
-                      <label class="btn btn-outline-secondary" for="componentTextSizeXl" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Extra large">XL</label>
-                      <input
-                        type="radio"
-                        class="btn-check"
-                        name="componentTextSize"
-                        id="componentTextSizeAuto"
-                        value="auto"
-                        data-component-text-size
-                      />
-                      <label
-                        class="btn btn-outline-secondary"
-                        for="componentTextSizeAuto"
-                        data-bs-toggle="tooltip"
-                        data-bs-placement="top"
-                        data-bs-title="Shrinks the text to fit its container instead of using a fixed size — only has an effect where the container is actually size-constrained, e.g. a Layer placement with a set width/height."
-                      >Auto</label>
-                    </div>
-                    <div class="d-flex align-items-center gap-2">
-                      <label class="form-label small text-body-secondary mb-0" for="componentTextSizeCustom">Font size (pt)</label>
-                      <input
-                        class="form-control form-control-sm press-inline-input"
-                        id="componentTextSizeCustom"
-                        type="number"
-                        step="0.5"
-                        placeholder="12"
-                        data-component-text-size-custom
-                      />
-                    </div>
-                    <div class="d-flex align-items-center gap-2">
-                      <label class="form-label small text-body-secondary mb-0" for="componentTextLineHeight">Line height</label>
-                      <input
-                        class="form-control form-control-sm press-inline-input"
-                        id="componentTextLineHeight"
-                        type="number"
-                        min="0.5"
-                        max="3"
-                        step="0.05"
-                        placeholder="1.3"
-                        data-component-text-line-height
-                        data-bs-toggle="tooltip"
-                        data-bs-placement="top"
-                        data-bs-title="Multiplier of the font size, same for every text field by default (1.3) — set explicitly here if you want this one tighter or looser, e.g. to match spacing between inline and non-inline text."
-                      />
-                    </div>
-                    <div class="form-check form-switch">
-                      <input
-                        class="form-check-input"
-                        type="checkbox"
-                        role="switch"
-                        id="componentTextInline"
-                        data-component-text-inline
-                      />
-                      <label
-                        class="form-check-label"
-                        for="componentTextInline"
-                        data-bs-toggle="tooltip"
-                        data-bs-placement="top"
-                        data-bs-title="Flows this text inline with whatever comes right after it in the same cell (e.g. a bold heading immediately followed by a plain description) instead of stacking as its own block/line."
-                        >Inline (flows with the next component)</label
-                      >
-                    </div>
+                    <span data-inspector-mount="text-size"></span>
+                    <div data-inspector-mount="component-text-size-line-height"></div>
+                    <div data-inspector-mount="text-inline"></div>
                   </div>
                   <div class="d-flex flex-column gap-2" data-inspector-text-settings data-inspector-text-decoration>
                     <label class="fw-semibold text-body-secondary">Text orientation</label>
-                    <div
-                      class="btn-group template-radio-group template-radio-group--single-row press-text-orientation-group"
-                      role="group"
-                      aria-label="Text orientation"
-                    >
-                      <input
-                        type="radio"
-                        class="btn-check"
-                        name="componentTextOrientation"
-                        id="componentTextOrientationHorizontal"
-                        value="horizontal"
-                        data-component-text-orientation
-                      />
-                      <label class="btn btn-outline-secondary" for="componentTextOrientationHorizontal" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Reading left to right">Horizontal</label>
-                      <input
-                        type="radio"
-                        class="btn-check"
-                        name="componentTextOrientation"
-                        id="componentTextOrientationVertical"
-                        value="vertical"
-                        data-component-text-orientation
-                      />
-                      <label class="btn btn-outline-secondary" for="componentTextOrientationVertical" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Rotated 90°">Vertical</label>
-                      <input
-                        type="radio"
-                        class="btn-check"
-                        name="componentTextOrientation"
-                        id="componentTextOrientationDiagonal"
-                        value="diagonal"
-                        data-component-text-orientation
-                      />
-                      <label class="btn btn-outline-secondary" for="componentTextOrientationDiagonal" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Rotated 45°">Diagonal</label>
-                      <input
-                        type="radio"
-                        class="btn-check"
-                        name="componentTextOrientation"
-                        id="componentTextOrientationCurveUp"
-                        value="curve-up"
-                        data-component-text-orientation
-                      />
-                      <label class="btn btn-outline-secondary" for="componentTextOrientationCurveUp" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Arcs upward">Curved up</label>
-                      <input
-                        type="radio"
-                        class="btn-check"
-                        name="componentTextOrientation"
-                        id="componentTextOrientationCurveDown"
-                        value="curve-down"
-                        data-component-text-orientation
-                      />
-                      <label class="btn btn-outline-secondary" for="componentTextOrientationCurveDown" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Arcs downward">Curved down</label>
-                    </div>
+                    <span data-inspector-mount="text-orientation"></span>
                     <div class="d-flex align-items-center gap-2 flex-nowrap press-text-transform-row">
                       <label class="form-label small text-body-secondary mb-0" for="componentTextAngle">Angle</label>
                       <input
-                        class="form-control form-control-sm press-inline-input"
+                        class="form-control form-control-sm inline-compact-input"
                         id="componentTextAngle"
                         type="number"
                         step="1"
@@ -1418,7 +390,7 @@
                       />
                       <label class="form-label small text-body-secondary mb-0" for="componentTextCurve">Curve</label>
                       <input
-                        class="form-control form-control-sm press-inline-input"
+                        class="form-control form-control-sm inline-compact-input"
                         id="componentTextCurve"
                         type="number"
                         step="1"
@@ -1432,225 +404,48 @@
                   </div>
                   <div class="d-flex flex-column gap-2" data-inspector-text-settings>
                     <label class="fw-semibold text-body-secondary">Text decoration</label>
-                    <div class="btn-group template-radio-group" role="group" aria-label="Text decoration">
-                      <input type="checkbox" class="btn-check" id="componentTextBold" data-component-text-style="bold" />
-                      <label class="btn btn-outline-secondary" for="componentTextBold" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Bold">
-                        <span class="iconify" data-icon="tabler:bold" aria-hidden="true"></span>
-                        <span class="template-radio-label">Bold</span>
-                      </label>
-                      <input type="checkbox" class="btn-check" id="componentTextItalic" data-component-text-style="italic" />
-                      <label class="btn btn-outline-secondary" for="componentTextItalic" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Italic">
-                        <span class="iconify" data-icon="tabler:italic" aria-hidden="true"></span>
-                        <span class="template-radio-label">Italic</span>
-                      </label>
-                      <input type="checkbox" class="btn-check" id="componentTextUnderline" data-component-text-style="underline" />
-                      <label class="btn btn-outline-secondary" for="componentTextUnderline" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Underline">
-                        <span class="iconify" data-icon="tabler:underline" aria-hidden="true"></span>
-                        <span class="template-radio-label">Underline</span>
-                      </label>
-                    </div>
-                  </div>
-                  <div class="d-flex flex-column gap-2" data-inspector-color-group>
-                    <div class="fw-semibold text-body-secondary">Colors</div>
-                    <div class="template-color-grid">
-                      <div class="template-color-control">
-                        <label class="form-label small text-body-secondary mb-0" for="componentColorForeground">Foreground</label>
-                        <div class="d-flex align-items-center gap-2">
-                          <input
-                            type="color"
-                            class="form-control form-control-color"
-                            id="componentColorForeground"
-                            value="#212529"
-                            title="Pick a foreground color"
-                            data-component-color="foreground"
-                          />
-                          <button
-                            class="btn btn-outline-secondary btn-sm"
-                            type="button"
-                            data-component-color-clear="foreground"
-                            aria-label="Reset foreground color"
-                            data-bs-toggle="tooltip"
-                            data-bs-placement="top"
-                            data-bs-title="Reset foreground color"
-                          >
-                            <span class="iconify" data-icon="tabler:circle-off" aria-hidden="true"></span>
-                          </button>
-                        </div>
-                      </div>
-                      <div class="template-color-control">
-                        <label class="form-label small text-body-secondary mb-0" for="componentColorBackground">Background</label>
-                        <div class="d-flex align-items-center gap-2">
-                          <input
-                            type="color"
-                            class="form-control form-control-color"
-                            id="componentColorBackground"
-                            value="#ffffff"
-                            title="Pick a background color"
-                            data-component-color="background"
-                          />
-                          <button
-                            class="btn btn-outline-secondary btn-sm"
-                            type="button"
-                            data-component-color-clear="background"
-                            aria-label="Reset background color"
-                            data-bs-toggle="tooltip"
-                            data-bs-placement="top"
-                            data-bs-title="Reset background color"
-                          >
-                            <span class="iconify" data-icon="tabler:circle-off" aria-hidden="true"></span>
-                          </button>
-                        </div>
-                      </div>
-                      <div class="template-color-control">
-                        <label class="form-label small text-body-secondary mb-0" for="componentColorBorder">Border</label>
-                        <div class="d-flex align-items-center gap-2">
-                          <input
-                            type="color"
-                            class="form-control form-control-color"
-                            id="componentColorBorder"
-                            value="#dee2e6"
-                            title="Pick a border color"
-                            data-component-color="border"
-                          />
-                          <button
-                            class="btn btn-outline-secondary btn-sm"
-                            type="button"
-                            data-component-color-clear="border"
-                            aria-label="Reset border color"
-                            data-bs-toggle="tooltip"
-                            data-bs-placement="top"
-                            data-bs-title="Reset border color"
-                          >
-                            <span class="iconify" data-icon="tabler:circle-off" aria-hidden="true"></span>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="d-flex flex-column gap-2" data-inspector-border-group hidden>
-                    <div class="fw-semibold text-body-secondary">Borders</div>
-                    <div class="d-flex align-items-start gap-2 flex-wrap">
-                      <div class="d-flex flex-column gap-1">
-                        <label class="form-label small text-body-secondary mb-0" for="componentBorderWidth">Thickness (px)</label>
-                        <input class="form-control" type="number" min="0" max="12" step="1" id="componentBorderWidth" data-component-border-width />
-                      </div>
-                      <div class="d-flex flex-column gap-1">
-                        <label class="form-label small text-body-secondary mb-0" for="componentBorderRadius">Corner radius (px)</label>
-                        <input class="form-control" type="number" min="0" max="24" step="1" id="componentBorderRadius" data-component-border-radius />
-                      </div>
-                    </div>
-                    <div class="d-flex flex-column gap-1">
-                      <label class="form-label small text-body-secondary mb-0" for="componentBorderStyle">Border style</label>
-                      <select class="form-select" id="componentBorderStyle" data-component-border-style>
-                        <option value="solid">Solid</option>
-                        <option value="dashed">Dashed</option>
-                        <option value="dotted">Dotted</option>
-                        <option value="double">Double</option>
-                        <option value="groove">Groove</option>
-                        <option value="ridge">Ridge</option>
-                        <option value="inset">Inset</option>
-                        <option value="outset">Outset</option>
-                        <option value="none">None</option>
-                      </select>
-                    </div>
-                    <div class="d-flex flex-column gap-2">
-                      <label class="form-label small text-body-secondary mb-0">Border sides</label>
-                      <div class="d-flex flex-wrap gap-2">
-                        <div class="form-check">
-                          <input class="form-check-input" type="checkbox" id="componentBorderSideTop" data-component-border-side="top" />
-                          <label class="form-check-label" for="componentBorderSideTop">Top</label>
-                        </div>
-                        <div class="form-check">
-                          <input class="form-check-input" type="checkbox" id="componentBorderSideRight" data-component-border-side="right" />
-                          <label class="form-check-label" for="componentBorderSideRight">Right</label>
-                        </div>
-                        <div class="form-check">
-                          <input class="form-check-input" type="checkbox" id="componentBorderSideBottom" data-component-border-side="bottom" />
-                          <label class="form-check-label" for="componentBorderSideBottom">Bottom</label>
-                        </div>
-                        <div class="form-check">
-                          <input class="form-check-input" type="checkbox" id="componentBorderSideLeft" data-component-border-side="left" />
-                          <label class="form-check-label" for="componentBorderSideLeft">Left</label>
-                        </div>
-                      </div>
-                    </div>
+                    <span data-inspector-mount="text-decoration"></span>
                   </div>
                   <div class="d-flex flex-column gap-2" data-inspector-alignment>
                     <label class="fw-semibold text-body-secondary" data-alignment-title>Alignment</label>
-                    <div class="btn-group template-radio-group" role="group" aria-label="Text alignment">
-                      <input
-                        type="radio"
-                        class="btn-check"
-                        name="componentAlignment"
-                        id="componentAlignStart"
-                        value="start"
-                        data-component-align
-                      />
-                      <label class="btn btn-outline-secondary" for="componentAlignStart" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Align left">
-                        <span class="iconify" data-icon="tabler:align-left" aria-hidden="true"></span>
-                        <span class="template-radio-label" data-alignment-label="start">Left</span>
-                      </label>
-                      <input
-                        type="radio"
-                        class="btn-check"
-                        name="componentAlignment"
-                        id="componentAlignCenter"
-                        value="center"
-                        data-component-align
-                      />
-                      <label class="btn btn-outline-secondary" for="componentAlignCenter" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Align center">
-                        <span class="iconify" data-icon="tabler:align-center" aria-hidden="true"></span>
-                        <span class="template-radio-label" data-alignment-label="center">Center</span>
-                      </label>
-                      <input
-                        type="radio"
-                        class="btn-check"
-                        name="componentAlignment"
-                        id="componentAlignEnd"
-                        value="end"
-                        data-component-align
-                      />
-                      <label class="btn btn-outline-secondary" for="componentAlignEnd" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Align right">
-                        <span class="iconify" data-icon="tabler:align-right" aria-hidden="true"></span>
-                        <span class="template-radio-label" data-alignment-label="end">Right</span>
-                      </label>
-                      <input
-                        type="radio"
-                        class="btn-check"
-                        name="componentAlignment"
-                        id="componentAlignJustify"
-                        value="justify"
-                        data-component-align
-                      />
-                      <label class="btn btn-outline-secondary" for="componentAlignJustify" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Justify">
-                        <span class="iconify" data-icon="tabler:align-justified" aria-hidden="true"></span>
-                        <span class="template-radio-label" data-alignment-label="justify">Justify</span>
-                      </label>
+                    <span data-inspector-mount="alignment"></span>
+                  </div>
+                  </div>
+                  <div class="d-flex flex-column gap-2" data-inspector-color-group>
+                    <div class="text-uppercase fs-6 fw-semibold text-body-secondary">Colors</div>
+                    <!-- Populated by press/js/app.js via createColorPickerField
+                         (common/js/lib/color-picker.js) — each field owns a
+                         custom popover (drag-based hue/saturation controls
+                         plus a binding/formula box), which isn't something a
+                         static <input type="color"> can host, so this one
+                         part of the otherwise-static inspector is rebuilt on
+                         every updateInspector() call, the same way
+                         Workbench's own inspector already rebuilds wholesale
+                         on every selection change. -->
+                    <div class="template-color-grid" data-inspector-color-fields></div>
+                  </div>
+                  <div class="d-flex flex-column gap-2" data-inspector-border-group hidden>
+                    <div class="text-uppercase fs-6 fw-semibold text-body-secondary">Border</div>
+                    <div data-inspector-mount="component-border-width-radius"></div>
+                    <div data-inspector-mount="component-border-style"></div>
+                    <div class="d-flex flex-column gap-2" data-inspector-border-sides-field>
+                      <label class="form-label small text-body-secondary mb-0">Border sides</label>
+                      <div data-inspector-mount="border-sides"></div>
                     </div>
                   </div>
-                  <div class="d-flex flex-wrap gap-3 align-items-center">
-                    <div class="form-check form-switch">
-                      <input class="form-check-input" type="checkbox" role="switch" id="componentVisibility" data-component-visible />
-                      <label class="form-check-label" for="componentVisibility">Show in layout</label>
-                    </div>
+                  <div class="d-flex flex-column gap-2" data-inspector-behavior-group>
+                    <div class="text-uppercase fs-6 fw-semibold text-body-secondary">Behavior</div>
+                    <div data-inspector-mount="visible"></div>
                   </div>
                   <div class="border-top pt-2 mt-2 d-flex flex-column gap-2" data-inspector-advanced>
-                    <div class="fw-semibold text-body-secondary">Advanced</div>
-                    <div class="form-floating" data-inspector-aria-label-field hidden>
-                      <input class="form-control" placeholder="Aria label" type="text" data-component-aria-label />
-                      <label class="fw-semibold">Aria label</label>
-                    </div>
-                    <div class="form-floating" data-inspector-class-name-field>
-                      <input class="form-control" placeholder="Classes" type="text" data-component-class-name autocomplete="off" />
-                      <label class="fw-semibold">Classes</label>
-                    </div>
+                    <div class="text-uppercase fs-6 fw-semibold text-body-secondary">Advanced</div>
+                    <div data-inspector-mount="aria-label"></div>
+                    <div data-inspector-mount="class-name"></div>
                   </div>
                 </div>
               </section>
             </div>
-          </section>
-          </div>
-        </aside>
+        </div>
       </div>
     </div>
 
@@ -1664,16 +459,7 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body d-flex flex-column gap-3">
-            <div class="btn-group template-radio-group" role="group" aria-label="Pattern category">
-              <input type="radio" class="btn-check" name="patternCategory" id="patternCategoryFills" value="fills" checked data-pattern-category />
-              <label class="btn btn-outline-secondary" for="patternCategoryFills">Fills</label>
-              <input type="radio" class="btn-check" name="patternCategory" id="patternCategoryPatterns" value="patterns" data-pattern-category />
-              <label class="btn btn-outline-secondary" for="patternCategoryPatterns">Patterns</label>
-              <input type="radio" class="btn-check" name="patternCategory" id="patternCategoryBanners" value="banners" data-pattern-category />
-              <label class="btn btn-outline-secondary" for="patternCategoryBanners">Banners</label>
-              <input type="radio" class="btn-check" name="patternCategory" id="patternCategoryShapes" value="shapes" data-pattern-category />
-              <label class="btn btn-outline-secondary" for="patternCategoryShapes">Shapes</label>
-            </div>
+            <div data-inspector-mount="pattern-category"></div>
             <div class="row g-3">
               <div class="col-12 col-md-7">
                 <div class="d-flex flex-wrap gap-2" data-pattern-thumbnails></div>
@@ -1707,16 +493,7 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body d-flex flex-column gap-2">
-            <div class="form-floating">
-              <input
-                class="form-control"
-                placeholder="Encode Sans Expanded"
-                type="text"
-                id="addFontValue"
-                data-add-font-value
-              />
-              <label class="fw-semibold" for="addFontValue">Font name or CSS font-family value</label>
-            </div>
+            <div data-inspector-mount="add-font-value"></div>
             <div class="text-body-secondary extra-small">
               A single name (e.g. <code>Roboto Condensed</code>) loads it from Google Fonts automatically and adds
               it to the font list for everyone, from now on. Include a comma — a fallback font, like

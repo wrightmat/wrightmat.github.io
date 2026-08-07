@@ -165,14 +165,6 @@
   background-color: var(--bs-tertiary-bg);
 }
 
-/* Base font-size now comes from the shared .json-preview-text class
-   (common/css/shell.css) — only this tool's extra scroll-height behavior
-   stays here. */
-.orrery-json-preview {
-  max-height: 18rem;
-  overflow: auto;
-}
-
 .orrery-shell .workbench-header,
 .orrery-shell .workbench-pane,
 .orrery-shell .orrery-floating-panel,

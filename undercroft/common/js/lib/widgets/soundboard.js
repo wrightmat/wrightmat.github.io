@@ -400,11 +400,23 @@ export function initSoundboardWidget(
     return loopOverrides.has(clip.id) ? loopOverrides.get(clip.id) : Boolean(clip.loop);
   }
 
+  // The active clip (playing OR paused — it stays pinned across a pause
+  // rather than jumping back into list order and then back to the top
+  // again on resume, which read as more confusing than helpful) floats to
+  // the very top of its own type's list, ahead of the query filter's own
+  // alphabetical/library order — the exact "which one's playing right now"
+  // question that prompted this, no scrolling required to answer it.
   function clipsByType(type) {
     const query = searchQuery.trim().toLowerCase();
-    return getAllClips().filter(
+    const clips = getAllClips().filter(
       (clip) => clip.type === type && (!query || clip.name.toLowerCase().includes(query))
     );
+    const activeId = activeClipId[type];
+    if (!activeId) return clips;
+    const activeIndex = clips.findIndex((clip) => clip.id === activeId);
+    if (activeIndex <= 0) return clips;
+    const [activeClip] = clips.splice(activeIndex, 1);
+    return [activeClip, ...clips];
   }
 
   function buildBroadcastData() {
@@ -482,6 +494,61 @@ export function initSoundboardWidget(
       status?.show(error.message || "Unable to update visibility.", { type: "error" });
     }
     await refreshVisibility();
+  }
+
+  // Exposed on this instance's own returned object (see the bottom of this
+  // function) — what macro-runner.js's runSoundboardMacroAction (soundboard.js's
+  // own module-level exports below) calls INSTEAD of its standalone
+  // fallback whenever a real, mounted Soundboard widget exists for it to
+  // route through (dashboard.js's own ensureWidgetForMacroAction — see that
+  // function's own comment). Routing through THIS widget's own player/
+  // activeClipId/broadcast state, rather than a disconnected module-level
+  // player, is what makes a macro-started clip show up as "now playing" —
+  // and stay controllable (Stop, volume, loop) — in whichever real
+  // Soundboard widget the GM has on screen, auto-added or not.
+  async function runMacroAction(action) {
+    const params = action?.params || {};
+    if (action?.action === "play") {
+      // getClipById alone isn't enough here: this widget's own mount kicks
+      // off loadClipLibrary() but doesn't await it (see this file's own
+      // init below), so a macro that auto-adds this widget and fires
+      // immediately (dashboard.js's ensureWidgetForMacroAction) can still
+      // race ahead of that fetch. resolveClip (below) covers that by
+      // lazily awaiting loadClipLibrary() itself on a cache miss — the
+      // exact "Unknown clip" bug this widget's standalone macro path
+      // already fixed once, just reachable again through this instance
+      // path since it used to call getClipById directly.
+      const clip = await resolveClip(params.clipId);
+      if (!clip) throw new Error(`Unknown clip "${params.clipId || ""}".`);
+      const loop = params.loop !== undefined ? Boolean(params.loop) : effectiveLoop(clip);
+      player.play(clip.type, { ...clip, loop });
+      activeClipId[clip.type] = clip.id;
+      pausedState[clip.type] = false;
+      seqCounter[clip.type] += 1;
+      renderLists();
+      if (params.broadcast && groupId && instanceId) {
+        if (!visible) {
+          // A macro asking to broadcast implies "start showing this to the
+          // table" — same as clicking the eye icon — so later natural
+          // state changes (pause, stop, the clip ending on its own) keep
+          // reaching followers too, not just this one snapshot.
+          visible = true;
+          updateVisibilityAction();
+          void dataManager
+            .spotlightToGroup({ groupId, contentType: "soundboard", contentId: instanceId, skipShare: true, data: buildBroadcastData() })
+            .catch(() => {});
+        } else {
+          void pushBroadcastState();
+        }
+      }
+      return Promise.resolve();
+    }
+    if (action?.action === "stop") {
+      const type = params.clipType === "music" || params.clipType === "sfx" ? params.clipType : "sfx";
+      handleStopClick(type);
+      return Promise.resolve();
+    }
+    return Promise.reject(new Error(`Unknown Soundboard macro action "${action?.action}".`));
   }
 
   // Clicking the same active clip again toggles pause/resume in place (no
@@ -826,6 +893,7 @@ export function initSoundboardWidget(
   void refreshVisibility();
 
   return {
+    runMacroAction,
     // `removed` is only ever true from dashboard.js's removeWidget — the
     // one moment this instance's own still-active spotlight (if any) needs
     // clearing, same orphan-prevention reasoning Clock/Browser/Calendar's
@@ -843,4 +911,141 @@ export function initSoundboardWidget(
       }
     },
   };
+}
+
+// --- Macro action support (common/js/lib/widgets/macro-runner.js) ---
+// Prefers routing through a real, mounted Soundboard widget's own
+// runMacroAction (see initSoundboardWidget above) when one is available —
+// dashboard.js's own ensureWidgetForMacroAction auto-adds one if none
+// exists yet, specifically so a macro-started clip shows up as "now
+// playing" (and stays controllable — Stop, volume, loop) in a real widget
+// the GM can see, rather than an invisible standalone player nothing on
+// screen reflects. The standalone path below (module-level createLocalPlayer
+// + a macro-owned spotlight id) is the fallback for contexts with no
+// widget grid to add to at all — a macro fired from a Journal note
+// (journal-macro.js) or a Dashboard with `ensureWidget` unavailable for
+// any other reason. resolveSpotlightData has no dependency on any widget
+// being mounted (see spotlight.js), so the fallback's own broadcast still
+// reaches followers/the second-screen mirror either way.
+
+export const SOUNDBOARD_MACRO_ACTIONS = {
+  play: { label: "Play a clip", params: ["clipId", "broadcast", "loop"] },
+  stop: { label: "Stop a clip", params: ["clipType", "broadcast"] },
+};
+
+// A macro-owned spotlight id, distinct from any real widget instanceId
+// (those are always `w_xxxxx` — see dashboard.js's generateInstanceId) —
+// so a macro-triggered broadcast can never collide with a live Soundboard
+// widget's own broadcast slot.
+const MACRO_SPOTLIGHT_ID = "macro";
+
+let macroPlayer = null;
+function getMacroPlayer() {
+  if (!macroPlayer) macroPlayer = createLocalPlayer({});
+  return macroPlayer;
+}
+
+// getClipById reads audio-clip-library.js's own in-memory `customClips`,
+// which starts empty and is only ever populated by loadClipLibrary() — the
+// live Soundboard widget calls that on its own mount, but a macro can run
+// with no Soundboard widget mounted anywhere on the dashboard at all (the
+// whole point of this being standalone). Confirmed real bug: running a
+// clip-playing macro before any Soundboard widget had ever mounted this
+// session failed with "Unknown clip" even for a perfectly valid id, since
+// nothing had loaded the library yet. Lazily loads once, on first miss —
+// loadClipLibrary has no internal caching guard of its own (see its own
+// comment), so this only pays the fetch cost when the cache actually
+// turns out to be empty, not on every macro run once it's warm.
+async function resolveClip(clipId) {
+  const existing = getClipById(clipId);
+  if (existing) return existing;
+  await loadClipLibrary();
+  return getClipById(clipId);
+}
+
+export async function runSoundboardMacroAction(action, { dataManager, groupContext, widgetInstance } = {}) {
+  if (widgetInstance && typeof widgetInstance.runMacroAction === "function") {
+    return widgetInstance.runMacroAction(action);
+  }
+
+  const params = action?.params || {};
+  const actionName = action?.action;
+
+  if (actionName === "play") {
+    const clip = await resolveClip(params.clipId);
+    if (!clip) {
+      throw new Error(`Unknown clip "${params.clipId || ""}".`);
+    }
+    const loop = params.loop !== undefined ? Boolean(params.loop) : Boolean(clip.loop);
+    // Confirmed real bug: `broadcast` used to REPLACE local playback
+    // instead of adding to it — a macro run with no live Soundboard
+    // widget for ensureWidget to route through (a Journal-triggered macro
+    // with no widget grid at all, or one where ensureWidget didn't find/
+    // add a match) posted the "show to the table" spotlight entry and
+    // nothing else, so the GM who actually fired the macro heard nothing
+    // — only a follower who'd separately accepted that spotlight would.
+    // The live widget's own runMacroAction never had this bug (it always
+    // plays locally via player.play, broadcasting is a true addition on
+    // top) — matched here now instead of a second, inconsistent shape.
+    getMacroPlayer().play(clip.type, { ...clip, loop });
+    // Best-effort, same as the live widget's own runMacroAction (which
+    // silently skips/swallows a missing groupContext or a failed post
+    // rather than throwing) — a broadcast that can't go out doesn't mean
+    // the local play the GM can already hear should read as a failed step.
+    const groupId = groupContext?.groupId;
+    if (params.broadcast && dataManager && groupId) {
+      try {
+        // Merge onto whatever's already in the macro's own broadcast slot
+        // rather than overwriting it outright, so playing a Music clip
+        // doesn't silently stop an unrelated SFX another macro action
+        // already started broadcasting under the same id.
+        const existing = (await resolveSpotlightData(dataManager, {
+          groupId,
+          kind: "soundboard",
+          id: MACRO_SPOTLIGHT_ID,
+        })) || {};
+        const entry = { clipId: clip.id, name: clip.name, url: clip.url, loop, seq: Date.now(), paused: false };
+        await dataManager.spotlightToGroup({
+          groupId,
+          contentType: "soundboard",
+          contentId: MACRO_SPOTLIGHT_ID,
+          skipShare: true,
+          data: { ...existing, [clip.type]: entry },
+        });
+      } catch (error) {
+        // Best-effort — the local play above already succeeded either way.
+      }
+    }
+    return;
+  }
+
+  if (actionName === "stop") {
+    const type = params.clipType === "music" || params.clipType === "sfx" ? params.clipType : "sfx";
+    // Same additive fix as "play" above — always stop the local player;
+    // clearing the broadcast slot is a best-effort addition, not a
+    // replacement (a broadcast-started clip that never played locally,
+    // under the old bug, also could never be silenced locally either).
+    getMacroPlayer().stop(type);
+    const groupId = groupContext?.groupId;
+    if (params.broadcast && dataManager && groupId) {
+      try {
+        const existing = (await resolveSpotlightData(dataManager, {
+          groupId,
+          kind: "soundboard",
+          id: MACRO_SPOTLIGHT_ID,
+        })) || {};
+        await dataManager.updateSpotlightData({
+          groupId,
+          kind: "soundboard",
+          id: MACRO_SPOTLIGHT_ID,
+          data: { ...existing, [type]: null },
+        });
+      } catch (error) {
+        // Best-effort — the local stop above already succeeded either way.
+      }
+    }
+    return;
+  }
+
+  throw new Error(`Unknown Soundboard macro action "${actionName}".`);
 }

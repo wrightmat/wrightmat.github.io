@@ -4,47 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Undercroft</title>
-    <script>
-      (function () {
-        const storageKey = "undercroft.workbench.theme";
-        const THEMES = ["light", "system", "dark"];
-        const prefersDark = () =>
-          typeof window !== "undefined" &&
-          window.matchMedia &&
-          window.matchMedia("(prefers-color-scheme: dark)").matches;
-        const resolveTheme = (preference) => {
-          if (preference === "dark") return "dark";
-          if (preference === "light") return "light";
-          return prefersDark() ? "dark" : "light";
-        };
-        const apply = (value) => {
-          const preference = THEMES.includes(value) ? value : "system";
-          const resolved = resolveTheme(preference);
-          const root = document.documentElement;
-          const body = document.body;
-          if (root) {
-            root.dataset.themePreference = preference;
-            root.dataset.theme = resolved;
-            root.dataset.bsTheme = resolved;
-            root.style.colorScheme = resolved;
-          }
-          if (body) {
-            body.dataset.themePreference = preference;
-            body.dataset.theme = resolved;
-            body.dataset.bsTheme = resolved;
-            body.style.colorScheme = resolved;
-          }
-          return preference;
-        };
-        try {
-          const stored = localStorage.getItem(storageKey);
-          apply(stored);
-        } catch (error) {
-          apply("system");
-          console.warn("Unable to read theme preference", error);
-        }
-      })();
-    </script>
+    <script src="common/js/theme-init.js"></script>
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
       rel="stylesheet"
@@ -77,66 +37,14 @@
   </head>
   <body class="bg-body text-body" data-undercroft-tool="home">
     <div class="d-flex flex-column min-vh-100" data-dashboard-shell>
-      <header class="workbench-header border-bottom bg-body-tertiary">
-        <div class="workbench-header-grid pe-2 py-3">
-          <div></div>
-          <div class="d-flex align-items-center gap-3 w-100">
-            <div class="d-flex align-items-center gap-3">
-              <button
-                class="btn btn-outline-secondary d-flex align-items-center justify-content-center"
-                type="button"
-                data-pane-toggle="left"
-                aria-label="Toggle navigation pane"
-              >
-                <span class="iconify fs-5" data-icon="tabler:layout-sidebar-right" aria-hidden="true"></span>
-                <span class="visually-hidden">Toggle navigation pane</span>
-              </button>
-              <h1 class="h5 mb-0 d-flex align-items-center gap-2">
-                <nav data-undercroft-tool-nav aria-label="Undercroft tools"></nav>
-              </h1>
-            </div>
-            <div class="ms-auto d-flex align-items-center gap-3 flex-wrap">
-              <div data-auth-control class="d-flex">
-                <button class="btn btn-outline-secondary" type="button">Login / Register</button>
-              </div>
-              <div class="btn-group" role="group" aria-label="Theme toggle">
-                <button class="btn btn-outline-primary" type="button" data-theme-option="light" aria-label="Use light theme">
-                  <span class="iconify fs-5" data-icon="tabler:sun" aria-hidden="true"></span>
-                  <span class="visually-hidden">Light theme</span>
-                </button>
-                <button class="btn btn-outline-primary" type="button" data-theme-option="system">System</button>
-                <button class="btn btn-outline-primary" type="button" data-theme-option="dark" aria-label="Use dark theme">
-                  <span class="iconify fs-5" data-icon="tabler:moon" aria-hidden="true"></span>
-                  <span class="visually-hidden">Dark theme</span>
-                </button>
-              </div>
-              <button
-                class="btn btn-outline-secondary d-flex align-items-center justify-content-center"
-                type="button"
-                data-pane-toggle="right"
-                aria-label="Toggle details pane"
-              >
-                <span class="iconify fs-5" data-icon="tabler:adjustments-horizontal" aria-hidden="true"></span>
-                <span class="visually-hidden">Toggle details pane</span>
-              </button>
-            </div>
-          </div>
-          <div></div>
-        </div>
-      </header>
+      <div data-app-shell-header></div>
       <div class="d-flex flex-grow-1 overflow-hidden">
-        <aside
-          class="d-none flex-column gap-4 border-end border-body-tertiary bg-body-tertiary p-4 shadow-theme flex-shrink-0 workbench-sidebar overflow-hidden"
-          data-pane="left"
-          data-pane-collapsed-class="d-none"
-          data-pane-expanded-class="d-flex"
-          data-pane-initial="collapsed"
-        >
+        <div data-pane-content="left">
           <div class="d-flex flex-column gap-3 overflow-hidden" style="min-height: 0;" data-help-browser>
             <div>
               <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-1">Help &amp; Documentation</h2>
               <p class="fs-6 text-body-secondary mb-0">Search or browse how each tool and shared concept works. Pin the ones you want close at hand.</p>
-              <a class="small" href="common/docs/index.html" target="_blank" rel="noopener noreferrer">
+              <a class="small" href="common/docs.html" target="_blank" rel="noopener noreferrer">
                 Open the full documentation page &#8599;
               </a>
             </div>
@@ -176,7 +84,7 @@
               <ul class="small ps-3 mb-0 d-flex flex-column gap-1" data-help-browser-detail-list></ul>
             </div>
           </div>
-        </aside>
+        </div>
         <main class="workbench-main flex-grow-1 p-3 overflow-auto d-flex flex-column gap-4" data-dashboard-main>
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
               <h2 class="h4 mb-0 d-flex align-items-center gap-2 flex-grow-1" style="min-width: 0;">
@@ -248,30 +156,10 @@
                         data-dashboard-color-input
                       />
                     </label>
-                    <button
-                      class="btn btn-dark p-2"
-                      type="button"
-                      data-dashboard-color-reset
-                      data-bs-toggle="tooltip"
-                      data-bs-placement="top"
-                      data-bs-title="Reset background"
-                    >
-                      <span class="iconify fs-5" data-icon="tabler:eraser" aria-hidden="true"></span>
-                      <span class="visually-hidden">Reset background</span>
-                    </button>
+                    <span data-dashboard-color-reset-mount></span>
                   </div>
                 </div>
-                <button
-                  class="btn btn-dark p-2"
-                  type="button"
-                  data-dashboard-screen-toggle
-                  data-bs-toggle="tooltip"
-                  data-bs-placement="top"
-                  data-bs-title="Open a live, read-only mirror of whatever's currently shown to the table — for a physical second screen/TV"
-                >
-                  <span class="iconify fs-5" data-icon="tabler:device-tv" aria-hidden="true"></span>
-                  <span class="visually-hidden">Second screen</span>
-                </button>
+                <span data-dashboard-screen-toggle-mount></span>
                 <button class="btn btn-dark py-2 px-3" type="button" data-dashboard-edit-toggle>
                   Edit layout
                 </button>
@@ -279,13 +167,7 @@
             </div>
             <div class="dashboard-grid" data-dashboard-grid></div>
         </main>
-        <aside
-          class="d-none flex-column gap-3 border-start border-body-tertiary bg-body-tertiary p-4 shadow-theme flex-shrink-0 workbench-sidebar-lg overflow-hidden"
-          data-pane="right"
-          data-pane-collapsed-class="d-none"
-          data-pane-expanded-class="d-flex"
-          data-pane-initial="collapsed"
-        >
+        <div data-pane-content="right">
           <div class="d-flex flex-column gap-3 overflow-auto" data-widget-inspector>
             <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Widget Inspector</h2>
             <p class="small text-body-secondary mb-0" data-widget-inspector-empty>
@@ -293,25 +175,13 @@
             </p>
             <div class="d-flex flex-column gap-3 d-none" data-widget-inspector-details>
               <div class="btn-toolbar justify-content-center overflow-x-auto" role="toolbar" aria-label="Widget actions">
-                <div class="btn-group" role="group" aria-label="Widget actions">
-                  <button
-                    class="btn btn-outline-danger p-2"
-                    type="button"
-                    data-widget-inspector-remove
-                    data-bs-toggle="tooltip"
-                    data-bs-placement="top"
-                    data-bs-title="Remove widget"
-                  >
-                    <span class="iconify fs-5" data-icon="tabler:trash" aria-hidden="true"></span>
-                    <span class="visually-hidden">Remove widget</span>
-                  </button>
-                </div>
+                <div class="btn-group" role="group" aria-label="Widget actions" data-widget-inspector-toolbar-mount></div>
               </div>
               <span class="badge text-bg-secondary align-self-start" data-widget-inspector-type></span>
               <div class="d-flex flex-column gap-2" data-widget-inspector-body></div>
             </div>
           </div>
-        </aside>
+        </div>
       </div>
     </div>
     <!-- Shown instead of everything above (data-dashboard-shell) when the URL

@@ -1,9 +1,14 @@
 import { initAppShell } from "../../common/js/lib/app-shell.js";
 import { initAuthControls } from "../../common/js/lib/auth-ui.js";
-import { updateJsonPreview } from "../../common/js/lib/json-preview.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
 import { refreshTooltips } from "../../common/js/lib/tooltips.js";
-import { bindCollapsibleToggle } from "../../common/js/lib/collapsible.js";
+import {
+  createJsonDataPanel,
+  createToolbarButtonGroup,
+  createCollapsibleSection,
+  createEmptyStateCard,
+  createCompactField,
+} from "../../common/js/lib/ui-components.js";
 import { listFeaturesForSystem, getSystemPropertyTypes } from "./lib/tables.js";
 import { generateEffect, computeBudget } from "./lib/generator.js";
 import { createEffectRecord, toPressExportShape } from "./lib/effect-schema.js";
@@ -18,6 +23,7 @@ import {
   generateNoteForRecord,
 } from "../../common/js/lib/generator-kit.js";
 import { confirmDelete } from "../../common/js/lib/ownership.js";
+import { initToolSettings } from "../../common/js/lib/tool-settings.js";
 
 let status = null;
 let dataManager = null;
@@ -33,9 +39,53 @@ let currentRecord = null;
 // this exact pattern.
 const dirtyGate = createDirtyGate({ buildSnapshot: () => toPressExportShape(buildRecordForSave()) });
 
+// Built and mounted before `elements` below queries for these buttons by
+// their data-*-effect attribute, so every existing selector/disabled-state
+// call site elsewhere in this file keeps working unchanged.
+createToolbarButtonGroup([
+  { action: "generate", icon: "tabler:sparkles", label: "Generate Effect", primary: true, attrs: { "data-generate-effect": true } },
+  { action: "save", label: "Save", disabled: true, attrs: { "data-save-effect": true } },
+  { action: "export", label: "Export JSON", disabled: true, attrs: { "data-export-effect": true } },
+  { action: "delete", label: "Delete", disabled: true, attrs: { "data-delete-effect": true } },
+]).forEach((button) => document.querySelector("[data-effect-toolbar-mount]")?.appendChild(button));
+document.querySelector("[data-effect-empty-state]")?.appendChild(
+  createEmptyStateCard({
+    icon: "tabler:sparkles",
+    message:
+      "No effect generated yet. Optionally pin properties or a Signature Effect, then click Generate Effect — or build one by hand once a result exists, using the Features section's Add/Remove controls.",
+  })
+);
+
+// Named data-field-mount (not data-inspector-mount) — this file's own
+// [data-inspector-mount] selector below is a single bare marker for the
+// Detail Inspector's collapsible wrapper; a keyed attribute of the same
+// name would collide with it (attribute selectors match on presence, not
+// value).
+// replaceWith, not appendChild — see press/js/app.js's mountInspectorField
+// for why: an appended-into wrapper stays an empty-but-in-flow flex item
+// even while its field is conditionally hidden, silently spending a full
+// gap-3 on both sides of it. Any class the static mount div itself carried
+// is merged onto the built field first so removing the wrapper doesn't
+// lose that layout.
+function mountField(key, element) {
+  const mount = document.querySelector(`[data-field-mount="${key}"]`);
+  if (!mount) return;
+  if (mount.className) element.classList.add(...mount.classList);
+  mount.replaceWith(element);
+}
+mountField("system-select", createCompactField({ type: "select", id: "vaultSystemSelect", label: "System", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-system-select" }));
+mountField("signature-feature-override", createCompactField({ type: "select", id: "vaultSignatureOverride", label: "Signature Effect", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-signature-feature-override" }));
+mountField(
+  "locked-features",
+  createCompactField({
+    type: "select-multiple", id: "vaultLockedFeatures", label: "Locked Features", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select",
+    dataAttr: "data-locked-features", helpTopic: "vault.lockedFeatures", size: 5,
+  })
+);
+mountField("effect-name", createCompactField({ type: "text", id: "vaultEffectName", label: "Name", labelClass: "form-label fw-semibold mb-0", controlClass: "form-control", dataAttr: "data-effect-name", placeholder: "Unnamed" }));
+
 const elements = {
   systemSelect: document.querySelector("[data-system-select]"),
-  budgetCeilingFieldSelect: document.querySelector("[data-budget-ceiling-field]"),
   propertyOverridesContainer: document.querySelector("[data-property-overrides]"),
   signatureOverride: document.querySelector("[data-signature-feature-override]"),
   lockedFeatures: document.querySelector("[data-locked-features]"),
@@ -55,15 +105,28 @@ const elements = {
   budgetRemaining: document.querySelector("[data-budget-remaining]"),
   notesText: document.querySelector("[data-notes-text]"),
   generateNoteButton: document.querySelector("[data-generate-note]"),
-  jsonPreview: document.querySelector("[data-effect-json-preview]"),
-  jsonBytes: document.querySelector("[data-effect-json-bytes]"),
   inspectorEmpty: document.querySelector("[data-inspector-empty]"),
   inspectorDetail: document.querySelector("[data-inspector-detail]"),
   inspectorJson: document.querySelector("[data-inspector-json]"),
-  inspectorToggle: document.querySelector("[data-inspector-toggle]"),
-  inspectorToggleLabel: document.querySelector("[data-inspector-toggle-label]"),
-  inspectorPanel: document.querySelector("[data-inspector-panel]"),
 };
+
+// Adopts the existing static `[data-inspector-panel]` markup (its own
+// content stays hand-authored HTML — only the header+chevron wrapper is
+// JS-built) as this section's content; createCollapsibleSection's own
+// internal bindCollapsibleToggle replaces the old standalone one below.
+{
+  const inspectorSection = createCollapsibleSection({
+    label: "Inspector",
+    collapsed: false,
+    content: document.querySelector("[data-inspector-panel]"),
+  });
+  document.querySelector("[data-inspector-mount]")?.appendChild(inspectorSection.section);
+}
+
+const jsonDataPanel = createJsonDataPanel({
+  label: "JSON Data",
+  getData: () => (currentRecord ? toPressExportShape(currentRecord) : null),
+});
 
 function currentSystemId() {
   return elements.systemSelect?.value || "";
@@ -88,25 +151,6 @@ function setBudgetCeilingFieldPreference(systemId, fieldKey) {
     dataManager.saveLocal(BUDGET_CEILING_BUCKET, systemId, { budgetCeilingField: fieldKey });
   } else {
     dataManager.removeLocal(BUDGET_CEILING_BUCKET, systemId);
-  }
-}
-
-function populateBudgetCeilingFieldSelect(selectedFieldKey) {
-  const select = elements.budgetCeilingFieldSelect;
-  if (!select) return;
-  select.innerHTML = "";
-  const blank = document.createElement("option");
-  blank.value = "";
-  blank.textContent = "None";
-  select.appendChild(blank);
-  propertyTypes.forEach((propertyType) => {
-    const option = document.createElement("option");
-    option.value = propertyType.id;
-    option.textContent = propertyType.label || propertyType.id;
-    select.appendChild(option);
-  });
-  if (propertyTypes.some((propertyType) => propertyType.id === selectedFieldKey)) {
-    select.value = selectedFieldKey;
   }
 }
 
@@ -229,7 +273,6 @@ async function reloadReferenceData() {
   populateOverrideSelect(elements.signatureOverride, features, "Random");
   populateLockedFeaturesSelect();
   populateAddFeatureSelect();
-  populateBudgetCeilingFieldSelect(budgetCeilingField);
 }
 
 function featureLabel(id) {
@@ -358,7 +401,7 @@ function refreshEffectView() {
   renderFeatureList(currentRecord);
   renderBudget(currentRecord);
   populateAddFeatureSelect();
-  updateJsonPreview(elements.jsonPreview, elements.jsonBytes, toPressExportShape(currentRecord));
+  jsonDataPanel.render();
   updateActionButtons();
 }
 
@@ -406,7 +449,7 @@ function renderEffect(record) {
     elements.emptyState?.classList.remove("d-none");
     elements.display?.classList.add("d-none");
     updateActionButtons();
-    updateJsonPreview(elements.jsonPreview, elements.jsonBytes, null);
+    jsonDataPanel.render();
     return;
   }
   elements.emptyState?.classList.add("d-none");
@@ -420,7 +463,7 @@ function renderEffect(record) {
   elements.inspectorEmpty?.classList.remove("d-none");
   elements.inspectorDetail?.classList.add("d-none");
   updateActionButtons();
-  updateJsonPreview(elements.jsonPreview, elements.jsonBytes, toPressExportShape(record));
+  jsonDataPanel.render();
 }
 
 function handleGenerate() {
@@ -509,7 +552,11 @@ async function handleGenerateNote() {
 }
 
 async function init() {
-  const shell = initAppShell({ namespace: "vault", storagePrefix: "undercroft.vault.undo" });
+  const shell = initAppShell({
+    namespace: "vault",
+    storagePrefix: "undercroft.vault.undo",
+    settingsSlotAttr: "data-vault-settings-slot",
+  });
   status = shell.status;
   const auth = initAuthControls({
     status,
@@ -535,17 +582,45 @@ async function init() {
     if (featureId) addFeature(featureId);
   });
   elements.systemSelect?.addEventListener("change", () => reloadReferenceData());
-  elements.budgetCeilingFieldSelect?.addEventListener("change", () => {
-    const fieldKey = elements.budgetCeilingFieldSelect.value;
-    setBudgetCeilingFieldPreference(currentSystemId(), fieldKey);
-    propertyTypes.forEach((propertyType) => {
-      propertyType.setsBudgetCeiling = propertyType.id === fieldKey;
-    });
-    if (currentRecord) {
-      recomputeBudget(currentRecord);
-      refreshEffectView();
-    }
+
+  // Budget ceiling field picker, moved into a gear-icon Settings modal
+  // (upper-left of the header) — same shared module and visual pattern
+  // Repository's own Settings button already uses. getValue/setValue defer
+  // straight to the per-System dataManager.getLocal/saveLocal preference
+  // above rather than this module's own flat store (see tool-settings.js's
+  // own comment on that option).
+  initToolSettings({
+    toolId: "vault",
+    dataManager,
+    status,
+    title: "Vault Settings",
+    definitions: () => [
+      {
+        key: "budgetCeilingField",
+        type: "select",
+        label: "Budget ceiling field",
+        helpTopic: "vault.budgetCeilingField",
+        options: [{ value: "", label: "None" }, ...propertyTypes.map((propertyType) => ({ value: propertyType.id, label: propertyType.label || propertyType.id }))],
+        getValue: () => getBudgetCeilingFieldPreference(currentSystemId()),
+        setValue: (fieldKey) => {
+          setBudgetCeilingFieldPreference(currentSystemId(), fieldKey);
+          propertyTypes.forEach((propertyType) => {
+            propertyType.setsBudgetCeiling = propertyType.id === fieldKey;
+          });
+          if (currentRecord) {
+            recomputeBudget(currentRecord);
+            refreshEffectView();
+          }
+        },
+      },
+    ],
+    // Queried live (not via `elements`, unlike everything else in this
+    // object) because the header — and this mount point inside it — is now
+    // built by initAppShell() itself, which runs after `elements` above is
+    // already constructed; an eager query here would have captured null.
+    mountButton: (button) => document.querySelector("[data-vault-settings-slot]")?.appendChild(button),
   });
+
   // Name/Notes aren't written back into currentRecord until Save/Export
   // actually runs (see buildRecordForSave) — without this, editing either
   // field wouldn't re-enable an already-saved record's Save button until
@@ -553,12 +628,7 @@ async function init() {
   elements.nameInput?.addEventListener("input", updateActionButtons);
   elements.notesText?.addEventListener("input", updateActionButtons);
 
-  bindCollapsibleToggle(elements.inspectorToggle, elements.inspectorPanel, {
-    collapsed: false,
-    expandLabel: "Expand inspector",
-    collapseLabel: "Collapse inspector",
-    labelElement: elements.inspectorToggleLabel,
-  });
+  document.querySelector("[data-json-mount]")?.appendChild(jsonDataPanel.section);
 
   await populateSystemSelect();
   await reloadReferenceData();

@@ -137,3 +137,29 @@ export function initDiceRollerWidget(container, { status, dataManager } = {}) {
     },
   };
 }
+
+// --- Macro action support (common/js/lib/widgets/macro-runner.js) ---
+// rollExpression is already standalone given just dataManager — no mounted
+// Dice Roller widget instance required. `announce` just flips on
+// rollExpression's own broadcast option (see dice-roll.js).
+
+export const DICEROLLER_MACRO_ACTIONS = {
+  roll: { label: "Roll an expression", params: ["expression", "announce"] },
+};
+
+export async function runDiceRollerMacroAction(action, { dataManager, groupContext, status } = {}) {
+  const params = action?.params || {};
+  const expression = String(params.expression || "").trim();
+  if (!expression) {
+    throw new Error("No dice expression given.");
+  }
+  const result = await rollExpression(expression, {
+    status,
+    dataManager,
+    groupContext,
+    broadcast: Boolean(params.announce),
+  });
+  if (!result) {
+    throw new Error(`Unable to roll "${expression}".`);
+  }
+}

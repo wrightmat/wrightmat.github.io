@@ -20,14 +20,39 @@ traversing a recipe defined by the chosen Archetype.
 
 ## Undercroft Suite Context
 
-Every data type Crucible needs is a Library kind, managed the same way as every other
-kind in the suite (Loom's generic Library tab, `dataManager.list/get/save/delete`,
-DB-backed ownership/sharing/`is_public` via `library_items`, per-kind tier policy from
-the kind registry). Crucible itself has **no dedicated authoring UI** for its
-reference data — Creature Types, Archetypes, Roles, and Features are all authored in
+Archetype (`monster-archetype`), Role (`monster-role`), and Feature (`feature`) are
+each a Library kind, managed the same way as every other kind in the suite (Loom's
+generic Library tab, `dataManager.list/get/save/delete`, DB-backed ownership/sharing/
+`is_public` via `library_items`, per-kind tier policy from the kind registry).
+Crucible itself has **no dedicated authoring UI** for these — they're authored in
 Loom, the same way Locations and Species Name Profiles are authored in Loom's Places
 panel rather than in Forge. Crucible only reads them, plus writes its own generated
 output (the `monster` kind).
+
+**Creature Type is not a Library kind** — unlike the three above, it's System-defined
+game-rule vocabulary (what "creature type" even means, and the full taxonomy of it, is
+a per-system rules concept the same way Languages or Classes are), so it lives as an
+ordinary array field directly on the active System's own record (`sys.dnd5e.json`
+ships a `creatureTypes` field seeded with the 14 standard 5e types), not a second
+shared Library-kind list. Which field on the System supplies this data is Crucible's
+own tool preference (different Systems use different nomenclature — see "Settings"
+below), not an objective fact about the System, so it's never read from a fixed key
+name alone.
+
+### Settings
+
+A gear icon in the header (upper-left, matching Repository's own Settings button —
+both built from the shared `common/js/lib/tool-settings.js` module) opens a modal with
+two per-System tool preferences: **Combat scaling field** and **Creature type field**
+— which of the active System's own array fields (Loom's Properties editor) Crucible
+should read as its Combat Scaling levels / Creature Type vocabulary, respectively.
+Both default to a conventionally-named field (`combatScaling` / `creatureTypes`) when
+unset, so an existing System works with no configuration at all; a System using
+different field names (or a homebrew system with its own vocabulary) can point
+Crucible at the right one instead. Neither setting is System data — each is
+remembered locally in this browser, per System (`dataManager.getLocal/saveLocal`,
+bucket `"crucible-settings"`), never written into the System record itself, mirroring
+Vault's own Budget Ceiling Field preference exactly.
 
 Crucible has **no whole-tool tier gate** — it stays open like Forge, not gated like
 Loom, since it mainly reads reference data rather than authoring the sensitive parts.

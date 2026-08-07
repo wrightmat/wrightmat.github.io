@@ -1,0 +1,9 @@
+{
+  "id": "macro",
+  "label": "Macro",
+  "plural": "Macros",
+  "icon": "tabler:bolt",
+  "readTier": "free",
+  "writeTier": "gm",
+  "titleFields": ["name"]
+}

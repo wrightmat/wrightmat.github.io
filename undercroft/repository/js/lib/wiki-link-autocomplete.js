@@ -49,8 +49,11 @@ function ensureMirror() {
 // The caret's own (top, left) within the textarea's own unscrolled content
 // box, found by mirroring everything before it, a marker span, then
 // everything after — the standard technique for this since textareas expose
-// no native "pixel position of character N" API at all.
-function measureCaretPosition(textarea, caretIndex) {
+// no native "pixel position of character N" API at all. Exported — reused
+// as-is by code-block-autocomplete.js (the `` `macro:`/`encounter:`/`dice:`
+// `` autocomplete), which needs the exact same caret-to-pixel measurement
+// for its own dropdown, not a second copy of this technique.
+export function measureCaretPosition(textarea, caretIndex) {
   const mirror = ensureMirror();
   const computed = getComputedStyle(textarea);
   MIRROR_STYLE_PROPS.forEach((prop) => {

@@ -1,9 +1,16 @@
 import { initAppShell } from "../../common/js/lib/app-shell.js";
 import { initAuthControls, escapeHtml } from "../../common/js/lib/auth-ui.js";
-import { updateJsonPreview } from "../../common/js/lib/json-preview.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
 import { refreshTooltips } from "../../common/js/lib/tooltips.js";
 import { bindCollapsibleToggle } from "../../common/js/lib/collapsible.js";
+import {
+  createJsonDataPanel,
+  createToolbarButtonGroup,
+  createCollapsibleSection,
+  createIconButton,
+  createEmptyStateCard,
+  createCompactField,
+} from "../../common/js/lib/ui-components.js";
 import {
   listLocationTypesForSystem,
   listLocationPurposesForSystem,
@@ -62,12 +69,79 @@ let locationCleanSnapshot = null;
 // as settingCatalog above — used only for the Delete button's access gate.
 let locationCatalog = new Map();
 
+// Built and mounted before `elements` below queries for these buttons by
+// their data-*-setting/data-*-location attributes, so every existing
+// selector/disabled-state call site elsewhere in this file keeps working
+// unchanged.
+createToolbarButtonGroup([
+  { action: "new", icon: "tabler:map-plus", label: "New Setting", attrs: { "data-new-setting": true } },
+  { action: "save", label: "Save Setting", attrs: { "data-save-setting": true } },
+  { action: "delete", label: "Delete Setting", disabled: true, attrs: { "data-delete-setting": true } },
+]).forEach((button) => document.querySelector("[data-setting-toolbar-mount]")?.appendChild(button));
+createToolbarButtonGroup([
+  { action: "generate", icon: "tabler:map-2", label: "Generate Location", primary: true, attrs: { "data-generate-location": true } },
+  { action: "save", label: "Save", disabled: true, attrs: { "data-save-location": true } },
+  { action: "export", label: "Export JSON", disabled: true, attrs: { "data-export-location": true } },
+  { action: "delete", label: "Delete Location", disabled: true, attrs: { "data-delete-location": true } },
+]).forEach((button) => document.querySelector("[data-location-toolbar-mount]")?.appendChild(button));
+document.querySelector("[data-location-empty-state]")?.appendChild(
+  createEmptyStateCard({
+    icon: "tabler:map-2",
+    message:
+      "No Location loaded yet. Pick a Setting, optionally pin a Type, Purpose, or Environment, then click Generate Location — or pick an existing Location above to revisit and expand it.",
+  })
+);
+
+// Named data-field-mount (not data-inspector-mount) — this file's own
+// [data-inspector-mount] selector below is a single bare marker for the
+// Detail Inspector's collapsible wrapper; a keyed attribute of the same
+// name would collide with it (attribute selectors match on presence, not
+// value).
+// replaceWith, not appendChild — see press/js/app.js's mountInspectorField
+// for why: an appended-into wrapper stays an empty-but-in-flow flex item
+// even while its field is conditionally hidden, silently spending a full
+// gap-3 on both sides of it. Any class the static mount div itself carried
+// is merged onto the built field first so removing the wrapper doesn't
+// lose that layout.
+function mountField(key, element) {
+  const mount = document.querySelector(`[data-field-mount="${key}"]`);
+  if (!mount) return;
+  if (mount.className) element.classList.add(...mount.classList);
+  mount.replaceWith(element);
+}
+mountField("system-select", createCompactField({ type: "select", id: "sanctumSystemSelect", label: "System", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-system-select" }));
+mountField(
+  "setting-select",
+  createCompactField({
+    type: "select", id: "sanctumSettingSelect", label: "Setting", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select",
+    dataAttr: "data-setting-select", helpTopic: "sanctum.setting",
+  })
+);
+mountField("location-select", createCompactField({ type: "select", id: "sanctumLocationSelect", label: "Location", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-location-select" }));
+mountField("type-override", createCompactField({ type: "select", id: "sanctumTypeOverride", label: "Type", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-type-override" }));
+mountField("purpose-override", createCompactField({ type: "select", id: "sanctumPurposeOverride", label: "Purpose", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-purpose-override" }));
+mountField("environment-override", createCompactField({ type: "select", id: "sanctumEnvironmentOverride", label: "Environment", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-environment-override" }));
+mountField(
+  "locked-features",
+  createCompactField({
+    type: "select-multiple", id: "sanctumLockedFeatures", label: "Locked Features", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select",
+    dataAttr: "data-locked-features", helpTopic: "sanctum.lockedFeatures", size: 4,
+  })
+);
+mountField("location-name", createCompactField({ type: "text", id: "sanctumLocationName", label: "Name", labelClass: "form-label fw-semibold mb-0", controlClass: "form-control", dataAttr: "data-location-name", placeholder: "Unnamed" }));
+mountField("identity-type", createCompactField({ type: "select", id: "sanctumIdentityType", label: "Type", dataAttr: "data-identity-type" }));
+mountField("identity-purpose", createCompactField({ type: "select", id: "sanctumIdentityPurpose", label: "Purpose", dataAttr: "data-identity-purpose" }));
+mountField("identity-environment", createCompactField({ type: "select", id: "sanctumIdentityEnvironment", label: "Environment", dataAttr: "data-identity-environment" }));
+mountField("parent-select", createCompactField({ type: "select", id: "sanctumParentSelect", label: "Parent", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-parent-select" }));
+mountField("setting-name", createCompactField({ type: "text", id: "sanctumSettingName", label: "Name", dataAttr: "data-setting-name" }));
+mountField("setting-description", createCompactField({ type: "textarea", id: "sanctumSettingDescription", label: "Description", dataAttr: "data-setting-description", rows: 2 }));
+mountField("calendar-days-per-week", createCompactField({ type: "number", id: "sanctumCalendarDaysPerWeek", label: "Days per week", dataAttr: "data-calendar-days-per-week", min: 0, step: 1 }));
+mountField("calendar-epoch-label", createCompactField({ type: "text", id: "sanctumCalendarEpochLabel", label: "Epoch label", dataAttr: "data-calendar-epoch-label", placeholder: "e.g. YK" }));
+mountField("calendar-starting-year", createCompactField({ type: "number", id: "sanctumCalendarStartingYear", label: "Starting year", dataAttr: "data-calendar-starting-year", step: 1 }));
+
 const elements = {
   systemSelect: document.querySelector("[data-system-select]"),
   settingSelect: document.querySelector("[data-setting-select]"),
-  settingToggle: document.querySelector("[data-setting-toggle]"),
-  settingToggleLabel: document.querySelector("[data-setting-toggle-label]"),
-  settingPanel: document.querySelector("[data-setting-panel]"),
   newSettingButton: document.querySelector("[data-new-setting]"),
   deleteSettingButton: document.querySelector("[data-delete-setting]"),
   settingNameInput: document.querySelector("[data-setting-name]"),
@@ -93,15 +167,9 @@ const elements = {
   identityTypeSelect: document.querySelector("[data-identity-type]"),
   identityPurposeSelect: document.querySelector("[data-identity-purpose]"),
   identityEnvironmentSelect: document.querySelector("[data-identity-environment]"),
-  featuresToggle: document.querySelector("[data-features-toggle]"),
-  featuresToggleLabel: document.querySelector("[data-features-toggle-label]"),
-  featuresPanel: document.querySelector("[data-features-panel]"),
   featureList: document.querySelector("[data-feature-list]"),
   addFeatureSelect: document.querySelector("[data-add-feature-select]"),
   addFeatureButton: document.querySelector("[data-add-feature-button]"),
-  assetsNeedsToggle: document.querySelector("[data-assets-needs-toggle]"),
-  assetsNeedsToggleLabel: document.querySelector("[data-assets-needs-toggle-label]"),
-  assetsNeedsPanel: document.querySelector("[data-assets-needs-panel]"),
   assetList: document.querySelector("[data-asset-list]"),
   addAssetKindSelect: document.querySelector("[data-add-asset-kind-select]"),
   addAssetEntitySelect: document.querySelector("[data-add-asset-entity-select]"),
@@ -110,15 +178,6 @@ const elements = {
   addNeedKindSelect: document.querySelector("[data-add-need-kind-select]"),
   addNeedEntitySelect: document.querySelector("[data-add-need-entity-select]"),
   addNeedButton: document.querySelector("[data-add-need-button]"),
-  relationshipsToggle: document.querySelector("[data-relationships-toggle]"),
-  relationshipsToggleLabel: document.querySelector("[data-relationships-toggle-label]"),
-  relationshipsPanel: document.querySelector("[data-relationships-panel]"),
-  notesToggle: document.querySelector("[data-notes-toggle]"),
-  notesToggleLabel: document.querySelector("[data-notes-toggle-label]"),
-  notesPanel: document.querySelector("[data-notes-panel]"),
-  npcConfigToggle: document.querySelector("[data-npc-config-toggle]"),
-  npcConfigToggleLabel: document.querySelector("[data-npc-config-toggle-label]"),
-  npcConfigPanel: document.querySelector("[data-npc-config-panel]"),
   speciesWeightRows: document.querySelector("[data-species-weight-rows]"),
   speciesWeightTotal: document.querySelector("[data-species-weight-total]"),
   addSpeciesWeightButton: document.querySelector("[data-add-species-weight]"),
@@ -128,9 +187,6 @@ const elements = {
   addArchetypeOverrideButton: document.querySelector("[data-add-archetype-override]"),
   fallbackNameRows: document.querySelector("[data-fallback-name-rows]"),
   addFallbackNameButton: document.querySelector("[data-add-fallback-name]"),
-  calendarToggle: document.querySelector("[data-calendar-toggle]"),
-  calendarToggleLabel: document.querySelector("[data-calendar-toggle-label]"),
-  calendarPanel: document.querySelector("[data-calendar-panel]"),
   daysPerWeekInput: document.querySelector("[data-calendar-days-per-week]"),
   weekdayNameRows: document.querySelector("[data-weekday-name-rows]"),
   addWeekdayNameButton: document.querySelector("[data-add-weekday-name]"),
@@ -142,15 +198,15 @@ const elements = {
   startingYearInput: document.querySelector("[data-calendar-starting-year]"),
   notesText: document.querySelector("[data-notes-text]"),
   generateNoteButton: document.querySelector("[data-generate-note]"),
-  jsonPreview: document.querySelector("[data-location-json-preview]"),
-  jsonBytes: document.querySelector("[data-location-json-bytes]"),
   inspectorEmpty: document.querySelector("[data-inspector-empty]"),
   inspectorDetail: document.querySelector("[data-inspector-detail]"),
   inspectorJson: document.querySelector("[data-inspector-json]"),
-  inspectorToggle: document.querySelector("[data-inspector-toggle]"),
-  inspectorToggleLabel: document.querySelector("[data-inspector-toggle-label]"),
-  inspectorPanel: document.querySelector("[data-inspector-panel]"),
 };
+
+const jsonDataPanel = createJsonDataPanel({
+  label: "JSON Data",
+  getData: () => (currentRecord ? toPressExportShape(currentRecord) : null),
+});
 
 function slugify(name) {
   return (
@@ -905,7 +961,7 @@ function renderConnectedToList(record) {
         currentRecord.connectedTo = currentRecord.connectedTo.filter((entry) => entry !== id);
         renderConnectedToList(currentRecord);
         populateAddConnectionSelect();
-        updateJsonPreview(elements.jsonPreview, elements.jsonBytes, toPressExportShape(currentRecord));
+        jsonDataPanel.render();
         updateActionButtons();
       },
       removeLabel: "Remove connection",
@@ -986,7 +1042,7 @@ function refreshEditableLists() {
   renderFeatureList(currentRecord);
   renderAssetsAndNeeds(currentRecord);
   populateAddFeatureSelect();
-  updateJsonPreview(elements.jsonPreview, elements.jsonBytes, toPressExportShape(currentRecord));
+  jsonDataPanel.render();
   updateActionButtons();
 }
 
@@ -997,7 +1053,7 @@ function renderLocation(record) {
     elements.emptyState?.classList.remove("d-none");
     elements.display?.classList.add("d-none");
     updateActionButtons();
-    updateJsonPreview(elements.jsonPreview, elements.jsonBytes, null);
+    jsonDataPanel.render();
     return;
   }
   elements.emptyState?.classList.add("d-none");
@@ -1016,7 +1072,7 @@ function renderLocation(record) {
   elements.inspectorEmpty?.classList.remove("d-none");
   elements.inspectorDetail?.classList.add("d-none");
   updateActionButtons();
-  updateJsonPreview(elements.jsonPreview, elements.jsonBytes, toPressExportShape(record));
+  jsonDataPanel.render();
 }
 
 function readLockedFeatureIds() {
@@ -1123,55 +1179,103 @@ async function handleGenerateNote() {
 }
 
 // --- Wiring ------------------------------------------------------------------
+// Each section below adopts its own existing static `[data-xxx-panel]`
+// markup (its own content stays hand-authored HTML — only the
+// header+chevron wrapper is JS-built) as createCollapsibleSection's
+// content; the factory's own internal bindCollapsibleToggle replaces every
+// standalone call this function used to make. Notes keeps its "Generate
+// Note" sibling button in static HTML (a shape createCollapsibleSection
+// would clobber by rebuilding the whole header), so only its toggle button
+// is built and mounted, the same way Orrery's own toggle-only sections do.
+// Calendar is built before Setting Properties on purpose: Setting
+// Properties adopts the whole `[data-setting-panel]` div, which contains
+// Calendar's own mount point — Calendar has to already be migrated in
+// place before that adoption happens.
 function initCollapsibles() {
-  bindCollapsibleToggle(elements.inspectorToggle, elements.inspectorPanel, {
-    collapsed: false,
-    expandLabel: "Expand inspector",
-    collapseLabel: "Collapse inspector",
-    labelElement: elements.inspectorToggleLabel,
+  document.querySelector("[data-inspector-mount]")?.appendChild(
+    createCollapsibleSection({
+      label: "Inspector",
+      collapsed: false,
+      content: document.querySelector("[data-inspector-panel]"),
+    }).section
+  );
+
+  document.querySelector("[data-features-mount]")?.appendChild(
+    createCollapsibleSection({
+      label: "Features",
+      helpTopic: "sanctum.features",
+      collapsed: false,
+      className: "d-flex flex-column gap-2",
+      panelClassName: "d-flex flex-column gap-2",
+      content: document.querySelector("[data-features-panel]"),
+    }).section
+  );
+
+  document.querySelector("[data-assets-needs-mount]")?.appendChild(
+    createCollapsibleSection({
+      label: "Assets & Needs",
+      helpTopic: "sanctum.assets",
+      collapsed: false,
+      className: "d-flex flex-column gap-2",
+      panelClassName: "d-flex flex-column gap-2",
+      content: document.querySelector("[data-assets-needs-panel]"),
+    }).section
+  );
+
+  document.querySelector("[data-relationships-mount]")?.appendChild(
+    createCollapsibleSection({
+      label: "Relationships",
+      helpTopic: "sanctum.relationships",
+      collapsed: true,
+      className: "d-flex flex-column gap-2",
+      panelClassName: "d-flex flex-column gap-2",
+      content: document.querySelector("[data-relationships-panel]"),
+    }).section
+  );
+
+  document.querySelector("[data-npc-config-mount]")?.appendChild(
+    createCollapsibleSection({
+      label: "NPC Generation Config (optional)",
+      helpTopic: "sanctum.npcConfig",
+      collapsed: true,
+      className: "d-flex flex-column gap-2",
+      panelClassName: "d-flex flex-column gap-3",
+      content: document.querySelector("[data-npc-config-panel]"),
+    }).section
+  );
+
+  const notesToggle = createIconButton({
+    icon: "tabler:chevron-right",
+    className: "collapsible-toggle",
+    includeToggleLabel: true,
   });
-  bindCollapsibleToggle(elements.settingToggle, elements.settingPanel, {
-    collapsed: false,
-    expandLabel: "Expand setting properties",
-    collapseLabel: "Collapse setting properties",
-    labelElement: elements.settingToggleLabel,
-  });
-  bindCollapsibleToggle(elements.npcConfigToggle, elements.npcConfigPanel, {
-    collapsed: true,
-    expandLabel: "Expand NPC Generation Config",
-    collapseLabel: "Collapse NPC Generation Config",
-    labelElement: elements.npcConfigToggleLabel,
-  });
-  bindCollapsibleToggle(elements.calendarToggle, elements.calendarPanel, {
-    collapsed: true,
-    expandLabel: "Expand calendar",
-    collapseLabel: "Collapse calendar",
-    labelElement: elements.calendarToggleLabel,
-  });
-  bindCollapsibleToggle(elements.featuresToggle, elements.featuresPanel, {
-    collapsed: false,
-    expandLabel: "Expand features",
-    collapseLabel: "Collapse features",
-    labelElement: elements.featuresToggleLabel,
-  });
-  bindCollapsibleToggle(elements.assetsNeedsToggle, elements.assetsNeedsPanel, {
-    collapsed: false,
-    expandLabel: "Expand assets and needs",
-    collapseLabel: "Collapse assets and needs",
-    labelElement: elements.assetsNeedsToggleLabel,
-  });
-  bindCollapsibleToggle(elements.relationshipsToggle, elements.relationshipsPanel, {
-    collapsed: true,
-    expandLabel: "Expand relationships",
-    collapseLabel: "Collapse relationships",
-    labelElement: elements.relationshipsToggleLabel,
-  });
-  bindCollapsibleToggle(elements.notesToggle, elements.notesPanel, {
+  notesToggle.setAttribute("aria-expanded", "true");
+  document.querySelector("[data-notes-toggle-mount]")?.appendChild(notesToggle);
+  bindCollapsibleToggle(notesToggle, document.querySelector("[data-notes-panel]"), {
     collapsed: false,
     expandLabel: "Expand notes",
     collapseLabel: "Collapse notes",
-    labelElement: elements.notesToggleLabel,
   });
+
+  document.querySelector("[data-calendar-mount]")?.appendChild(
+    createCollapsibleSection({
+      label: "Calendar (optional)",
+      helpTopic: "sanctum.calendar",
+      collapsed: true,
+      className: "d-flex flex-column gap-2",
+      content: document.querySelector("[data-calendar-panel]"),
+    }).section
+  );
+
+  document.querySelector("[data-setting-mount]")?.appendChild(
+    createCollapsibleSection({
+      label: "Setting Properties",
+      collapsed: false,
+      content: document.querySelector("[data-setting-panel]"),
+    }).section
+  );
+
+  document.querySelector("[data-json-mount]")?.appendChild(jsonDataPanel.section);
 }
 
 async function init() {
@@ -1197,17 +1301,17 @@ async function init() {
   elements.identityTypeSelect?.addEventListener("change", () => {
     if (!currentRecord) return;
     currentRecord.typeId = elements.identityTypeSelect.value || null;
-    updateJsonPreview(elements.jsonPreview, elements.jsonBytes, toPressExportShape(currentRecord));
+    jsonDataPanel.render();
   });
   elements.identityPurposeSelect?.addEventListener("change", () => {
     if (!currentRecord) return;
     currentRecord.purposeId = elements.identityPurposeSelect.value || null;
-    updateJsonPreview(elements.jsonPreview, elements.jsonBytes, toPressExportShape(currentRecord));
+    jsonDataPanel.render();
   });
   elements.identityEnvironmentSelect?.addEventListener("change", () => {
     if (!currentRecord) return;
     currentRecord.environment = elements.identityEnvironmentSelect.value || null;
-    updateJsonPreview(elements.jsonPreview, elements.jsonBytes, toPressExportShape(currentRecord));
+    jsonDataPanel.render();
   });
 
   elements.addAssetKindSelect?.addEventListener("change", () =>
@@ -1293,7 +1397,7 @@ async function init() {
     if (!currentRecord.connectedTo.includes(id)) currentRecord.connectedTo.push(id);
     renderConnectedToList(currentRecord);
     populateAddConnectionSelect();
-    updateJsonPreview(elements.jsonPreview, elements.jsonBytes, toPressExportShape(currentRecord));
+    jsonDataPanel.render();
     updateActionButtons();
   });
 

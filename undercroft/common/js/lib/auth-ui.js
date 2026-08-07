@@ -297,6 +297,27 @@ export function initAuthControls({
     }
   }
 
+  // getActiveGroup() only ever returns whatever {groupId, name} was cached
+  // at the moment setActiveGroup was last called (renderUserMenu's own
+  // data-campaign-select handler below) — it never re-checks that against
+  // the server, so a group renamed (or deleted) since then leaves this
+  // browser showing a stale name (or, worse, a dead groupId) indefinitely.
+  // This is the one place that actually fetches the live group list, so
+  // it's also the one place that can catch the cache up: refresh the
+  // cached name if it drifted, or clear the selection entirely if the
+  // group no longer exists at all. groupId itself is never rewritten (a
+  // true rename keeps the same id) — only the id's own validity/label.
+  function resyncActiveGroup(groups) {
+    const active = manager.getActiveGroup();
+    if (!active?.groupId) return;
+    const live = groups.find((group) => group.id === active.groupId);
+    if (!live) {
+      manager.setActiveGroup(null);
+    } else if (live.name !== active.name) {
+      manager.setActiveGroup(active.groupId, live.name || "");
+    }
+  }
+
   async function refreshUserMenu(user) {
     let groups = [];
     try {
@@ -305,6 +326,7 @@ export function initAuthControls({
     } catch (error) {
       console.warn("Unable to load campaign groups", error);
     }
+    resyncActiveGroup(groups);
     if (sessionUser()?.username === user.username) {
       renderUserMenu(user, groups);
     }

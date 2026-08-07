@@ -23,7 +23,17 @@ export function watchSpotlight({ dataManager, groupId = "", shareToken = "", las
     if (destroyed) return;
     let entries;
     try {
-      const log = await dataManager.getGroupLog({ groupId, shareToken, limit: 20 });
+      // types filter — see spotlight.js's own SPOTLIGHT_LOG_TYPES comment:
+      // without it, this poll's own small `limit` window is just as
+      // susceptible to being crowded out by ordinary chat/roll entries (or
+      // a chatty inline-kind widget's own frequent spotlight-update
+      // refreshes) as the bug that filter fixed there — a genuinely-new
+      // "show to table" could silently never surface an accept prompt.
+      // "spotlight-update" itself is deliberately excluded here (unlike
+      // spotlight.js's own filter) — this poll only ever cares about a
+      // brand-new spotlight or a clear, never a data refresh on one already
+      // seen.
+      const log = await dataManager.getGroupLog({ groupId, shareToken, limit: 20, types: ["spotlight", "spotlight-clear"] });
       entries = Array.isArray(log?.entries) ? log.entries : [];
     } catch (error) {
       return;

@@ -26,6 +26,19 @@ export async function listPrintTemplates(dataManager) {
 // dropdown with nothing appropriate to pick.
 export const LINK_ONLY_KINDS = new Set(["map", "encounter"]);
 
+// Every lookup below only ever cares about these three entry types — passed
+// to getGroupLog's own `types` filter so the LIMIT-bounded window it reads
+// is spent entirely on spotlight-relevant rows, not diluted by ordinary
+// chat/roll log entries (or, more sharply, a single chatty inline-kind
+// widget's own frequent spotlight-update refreshes — a Clock ticking, a
+// Browser URL edit — each one its own row). Confirmed cause of a real bug:
+// enough of either crowded an unrelated widget's still-active `spotlight`
+// entry out of the unfiltered window, making resolveIsSpotlighted wrongly
+// report it as no longer shown even though nothing ever cleared it — the
+// Dashboard's second-screen mirror going completely blank whenever a Clock
+// widget on it had been ticked/edited enough times.
+const SPOTLIGHT_LOG_TYPES = ["spotlight", "spotlight-update", "spotlight-clear"];
+
 // "What's the most recently spotlighted thing of this kind, if it's still
 // active" — a SINGLE-SLOT resolution, correct for consumers that only ever
 // care about one active thing per kind and have no specific id of their own
@@ -54,10 +67,10 @@ export const LINK_ONLY_KINDS = new Set(["map", "encounter"]);
 // Returns null if nothing of `kind` is currently spotlighted (either
 // nothing ever was, or a later clear — scoped or global — superseded the
 // last spotlight of this kind).
-async function resolveActiveSpotlightEntry(dataManager, { groupId, shareToken, kind, limit = 25 } = {}) {
+async function resolveActiveSpotlightEntry(dataManager, { groupId, shareToken, kind, limit = 100 } = {}) {
   if (!dataManager || (!groupId && !shareToken)) return null;
   try {
-    const log = await dataManager.getGroupLog({ groupId, shareToken, limit });
+    const log = await dataManager.getGroupLog({ groupId, shareToken, limit, types: SPOTLIGHT_LOG_TYPES });
     const entries = Array.isArray(log?.entries) ? log.entries : [];
     entries.sort((a, b) => (Date.parse(b.created_at) || 0) - (Date.parse(a.created_at) || 0));
     const latest = entries.find((entry) => {
@@ -74,7 +87,7 @@ async function resolveActiveSpotlightEntry(dataManager, { groupId, shareToken, k
   }
 }
 
-export async function resolveActiveSpotlightId(dataManager, { groupId, shareToken, kind, limit = 25 } = {}) {
+export async function resolveActiveSpotlightId(dataManager, { groupId, shareToken, kind, limit = 100 } = {}) {
   const entry = await resolveActiveSpotlightEntry(dataManager, { groupId, shareToken, kind, limit });
   return entry?.payload?.id || "";
 }
@@ -100,10 +113,10 @@ export async function resolveActiveSpotlightId(dataManager, { groupId, shareToke
 // spotlighted only if it's a `spotlight` or `spotlight-update` (see
 // resolveActiveSpotlightEntry's own comment on why the two are equivalent
 // here).
-async function resolveActiveInstanceEntry(dataManager, { groupId, shareToken, kind, id, limit = 25 } = {}) {
+async function resolveActiveInstanceEntry(dataManager, { groupId, shareToken, kind, id, limit = 100 } = {}) {
   if (!dataManager || (!groupId && !shareToken) || !kind || !id) return null;
   try {
-    const log = await dataManager.getGroupLog({ groupId, shareToken, limit });
+    const log = await dataManager.getGroupLog({ groupId, shareToken, limit, types: SPOTLIGHT_LOG_TYPES });
     const entries = Array.isArray(log?.entries) ? log.entries : [];
     entries.sort((a, b) => (Date.parse(b.created_at) || 0) - (Date.parse(a.created_at) || 0));
     const latest = entries.find((entry) => {
@@ -125,7 +138,7 @@ async function resolveActiveInstanceEntry(dataManager, { groupId, shareToken, ki
   }
 }
 
-export async function resolveIsSpotlighted(dataManager, { groupId, shareToken, kind, id, limit = 25 } = {}) {
+export async function resolveIsSpotlighted(dataManager, { groupId, shareToken, kind, id, limit = 100 } = {}) {
   const entry = await resolveActiveInstanceEntry(dataManager, { groupId, shareToken, kind, id, limit });
   return Boolean(entry);
 }
@@ -136,7 +149,7 @@ export async function resolveIsSpotlighted(dataManager, { groupId, shareToken, k
 // own comment) reads instead of fetching a Library record, since these
 // kinds have none. Picks up the latest `data`, whether it came from the
 // original `spotlight` entry or a later `spotlight-update` refresh.
-export async function resolveSpotlightData(dataManager, { groupId, shareToken, kind, id, limit = 25 } = {}) {
+export async function resolveSpotlightData(dataManager, { groupId, shareToken, kind, id, limit = 100 } = {}) {
   const entry = await resolveActiveInstanceEntry(dataManager, { groupId, shareToken, kind, id, limit });
   return entry?.payload?.data ?? null;
 }

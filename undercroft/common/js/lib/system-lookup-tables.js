@@ -89,6 +89,20 @@ export function deriveLookupTables(systemPayload) {
     activations: positional(valuesOf(fields, "activation"), (entry) => entry.shortName),
     components: positional(valuesOf(fields, "components"), (entry) => entry.shortName),
     conditions: positionalNames(valuesOf(fields, "conditions")),
+    // Only a fallback source for attacksTable (mapping-custom-functions.js)
+    // — DDB's own friendly damage-type strings (weapon items'
+    // `definition.damageType`, spell-backed actions' own `type:"damage"`
+    // modifier) are always preferred when present; this only resolves the
+    // rarer case where an action carries just a numeric `damageTypeId`
+    // with no string anywhere nearby. sourceId 0-3 (None/Bludgeoning/
+    // Piercing/Slashing) are user-confirmed; 4-13 are a best-effort guess
+    // (see sys.dnd5e.json's own damageTypes field) — correct there if
+    // wrong, nothing here depends on the specific numbers.
+    damageTypes: valuesOf(fields, "damageTypes").map((entry) => ({ id: entry.sourceId, name: entry.name })),
+    // Positional (index = sourceId), matching DDB's own numeric
+    // limitedUse.resetType codes directly — confirmed against a live
+    // export: `resetType: 2` there is "Long Rest".
+    durations: positionalNames(valuesOf(fields, "durations")),
     abilities,
     alignments: valuesOf(fields, "alignments").map((entry) => ({
       id: entry.sourceId,

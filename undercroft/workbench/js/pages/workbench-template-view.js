@@ -10,11 +10,11 @@ import {
   createCollapseToggleButton,
   createStandardCardChrome,
 } from "../lib/canvas-card.js";
-import { createJsonPreviewRenderer } from "../../../common/js/lib/json-preview.js";
 import { createRootInsertionHandler } from "../lib/root-inserter.js";
 import { expandPane } from "../../../common/js/lib/panes.js";
 import { refreshTooltips } from "../../../common/js/lib/tooltips.js";
 import { bindCollapsibleToggle } from "../../../common/js/lib/collapsible.js";
+import { createJsonDataPanel, createToolbarButtonGroup, createIconButton, createCompactField } from "../../../common/js/lib/ui-components.js";
 import {
   listBuiltinSystems,
   listBuiltinTemplates,
@@ -23,15 +23,30 @@ import {
   applyBuiltinCatalog,
   verifyBuiltinAsset,
 } from "../lib/content-registry.js";
-import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../lib/component-styles.js";
+import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting, applyImageStyles } from "../lib/component-styles.js";
+import {
+  createFormulaToggleField,
+  createCollapsibleSection,
+  createTypeSummaryHeader,
+  createFieldRow,
+  createSwitchField,
+  createHalfWidthNumberField,
+  createFormFloatingField,
+  createButtonCheckGroup,
+} from "../../../common/js/lib/inspector-fields.js";
+import { createColorPickerField } from "../../../common/js/lib/color-picker.js";
+import { renderTextContent, resolveImageUrl, renderImageContent, renderIconContent, renderContainerContent, renderInputContent, renderLinearTrackContent, renderCircularTrackContent, renderSelectGroupContent, renderToggleContent, toggleStateEntryFromRaw, excludeToggleWrapperColors } from "../lib/component-renderers.js";
 import { collectSystemFields, categorizeFieldType } from "../lib/system-schema.js";
 import { attachFormulaAutocomplete } from "../../../common/js/lib/formula-autocomplete.js";
+import { evaluateFormula } from "../../../common/js/lib/formula-engine.js";
+import { createLookupFn } from "../../../common/js/lib/bindings.js";
 import { resolveFieldTypeMeta } from "../lib/field-type-meta.js";
 import { listFormulaFunctionMetadata } from "../../../common/js/lib/formula-metadata.js";
 import {
   normalizeBindingValue,
   resolveBindingFromContexts,
   normalizeOptionEntries,
+  resolveTabEntries,
   buildSystemPreviewData,
 } from "../lib/component-data.js";
 import { createLabeledField, normalizeLabelPosition } from "../lib/component-layout.js";
@@ -135,7 +150,8 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
   let lastSavedTemplateSignature = null;
   let templateIdAuto = false;
 
-  markTemplateClean();
+  // markTemplateClean() itself moved to the end of this function's own init
+  // sequence — NOT called here — see that call site's own comment for why.
 
   let pendingSharedTemplate = resolveSharedRecordParam("templates");
 
@@ -143,8 +159,40 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     return Boolean(state.template && (state.template.id || state.template.title));
   }
 
+  // Same three checks handleDrop and the palette's own onActivate already
+  // ran independently before either would insert a component — Paste is a
+  // third insertion path, so this is the single source of truth for the
+  // gate + its messaging rather than a fourth hand-copied block.
+  function canInsertComponent() {
+    if (!hasActiveTemplate()) {
+      return {
+        ok: false,
+        message: "Create or load a template before adding components.",
+        options: { type: "warning", timeout: 2400 },
+      };
+    }
+    const metadata = getTemplateMetadata(state.template?.id);
+    if (!templateAllowsEdits(metadata)) {
+      return { ok: false, message: describeTemplateEditRestriction(metadata), options: { type: "warning", timeout: 2800 } };
+    }
+    if (!dataManager.hasWriteAccess("templates")) {
+      const required = dataManager.describeRequiredWriteTier("templates");
+      const message = required
+        ? `Saving templates requires a ${required} tier.`
+        : "Your tier cannot save templates.";
+      return { ok: false, message, options: { type: "warning", timeout: 2800 } };
+    }
+    return { ok: true };
+  }
+
   const dropzones = new Map();
   const containerActiveTabs = new Map();
+  // The last Copy/Cut'd component (component-shaped object, its own uid
+  // stale/irrelevant — regenerateComponentUids assigns fresh ones at Paste
+  // time, same as every other insertion path). Deliberately module-level
+  // like containerActiveTabs/componentCollapsedState above, not part of
+  // `state` — it's editor session scratch space, never serialized/undone.
+  let componentClipboard = null;
   const componentCollapsedState = new Map();
 
   // Pattern/shape picker modal state (Image component) — declared here,
@@ -186,6 +234,28 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     return Array.isArray(components) ? components.map((component) => cloneComponentTree(component)) : [];
   }
 
+  // Same cmp-N counter createComponent/hydrateComponent already use for
+  // every new-to-this-session component — a pasted copy needs a uid this
+  // session has never handed out before (never the source's own uid,
+  // stale from a Copy or already freed by a Cut) since uid is the key
+  // every selection/collapse/active-tab Map in this file is keyed by;
+  // reusing one would silently alias the paste to an unrelated component.
+  // Recurses into zones (Container/Repeater) so a pasted subtree's every
+  // descendant gets its own fresh uid too, not just the root.
+  function regenerateComponentUids(component) {
+    if (!component || typeof component !== "object") return component;
+    componentCounter += 1;
+    component.uid = `cmp-${componentCounter}`;
+    if (component.zones && typeof component.zones === "object") {
+      Object.values(component.zones).forEach((items) => {
+        if (Array.isArray(items)) {
+          items.forEach((child) => regenerateComponentUids(child));
+        }
+      });
+    }
+    return component;
+  }
+
   function snapshotContainerTabs() {
     return Array.from(containerActiveTabs.entries());
   }
@@ -215,6 +285,72 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
 
   await initializeBuiltins();
 
+  // Built and mounted before Object.assign(elements, {...}) below queries
+  // these buttons by their data-action/data-delete-template attribute, so
+  // every existing selector/disabled-state call site elsewhere in this file
+  // keeps working unchanged. Unlike the shell-level toolbar in workbench.js,
+  // this cluster maps cleanly onto createToolbarButtonGroup's own
+  // New/Save/Duplicate/Delete presets with no icon/variant overrides needed.
+  createToolbarButtonGroup([
+    { action: "new", label: "New Template", attrs: { "data-action": "new-template" } },
+    {
+      action: "save",
+      label: "Save",
+      visible: false,
+      attrs: { "data-action": "save-template", "data-workbench-view-panel": "template" },
+    },
+    {
+      action: "duplicate",
+      label: "Duplicate Template",
+      visible: false,
+      attrs: { "data-action": "duplicate-template", "data-duplicate-template": true },
+    },
+    { action: "delete", label: "Delete Template", visible: false, attrs: { "data-delete-template": true } },
+  ]).forEach((button) => document.querySelector("[data-template-toolbar-mount]")?.appendChild(button));
+
+  // replaceWith, not appendChild — see press/js/app.js's mountInspectorField
+  // for why: an appended-into wrapper stays an empty-but-in-flow flex item
+  // even while its field is conditionally hidden, silently spending a full
+  // gap-3 on both sides of it. Any class the static mount div itself carried
+  // is merged onto the built field first so removing the wrapper doesn't
+  // lose that layout.
+  function mountField(key, element) {
+    const mount = document.querySelector(`[data-field-mount="${key}"]`);
+    if (!mount) return;
+    if (mount.className) element.classList.add(...mount.classList);
+    mount.replaceWith(element);
+  }
+  mountField(
+    "template-select",
+    createCompactField({ type: "select", id: "template-select", label: "Active template", labelClass: "form-label fw-semibold text-body-secondary", controlClass: "form-select", dataAttr: "data-template-select" })
+  );
+  mountField("new-template-id", createCompactField({ type: "text", id: "new-template-id", label: "Template ID", dataAttr: "data-new-template-id", name: "id", required: true, placeholder: "e.g. tpl.custom" }));
+  mountField("new-template-title", createCompactField({ type: "text", id: "new-template-title", label: "Template Title", dataAttr: "data-new-template-title", name: "title", required: true, placeholder: "e.g. Hero Sheet" }));
+  mountField("new-template-version", createCompactField({ type: "text", id: "new-template-version", label: "Starting Version", dataAttr: "data-new-template-version", name: "version", value: "0.1" }));
+  mountField(
+    "new-template-system",
+    createCompactField({ type: "select", id: "new-template-system", label: "System", controlClass: "form-select", dataAttr: "data-new-template-system", name: "schema", required: true })
+  );
+  mountField(
+    "pattern-category",
+    createButtonCheckGroup({
+      ariaLabel: "Pattern category",
+      name: "workbenchPatternCategory",
+      dataAttr: "data-pattern-category",
+      options: [
+        { id: "workbenchPatternCategoryFills", value: "fills", text: "Fills" },
+        { id: "workbenchPatternCategoryPatterns", value: "patterns", text: "Patterns" },
+        { id: "workbenchPatternCategoryBanners", value: "banners", text: "Banners" },
+        { id: "workbenchPatternCategoryShapes", value: "shapes", text: "Shapes" },
+      ],
+    })
+  );
+  document.getElementById("workbenchPatternCategoryFills").checked = true;
+  mountField(
+    "add-font-value",
+    createFormFloatingField({ type: "text", id: "workbenchAddFontValue", label: "Font name or CSS font-family value", dataAttr: "data-add-font-value", placeholder: "Encode Sans Expanded" })
+  );
+
   Object.assign(elements, {
     templateSelect: document.querySelector("[data-template-select]"),
     palette: document.querySelector("[data-palette]"),
@@ -237,14 +373,9 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     templateMeta: document.querySelector("[data-template-meta]"),
     rightPane: document.querySelector('[data-pane="right"]'),
     rightPaneToggle: document.querySelector('[data-pane-toggle="right"]'),
-    jsonPreview: document.querySelector("[data-json-preview]"),
-    jsonPreviewBytes: document.querySelector("[data-preview-bytes]"),
     templateProperties: document.querySelector("[data-template-properties]"),
-    selectionsToggle: document.querySelector("[data-selections-toggle]"),
     selectionsPanel: document.querySelector("[data-selections-panel]"),
-    templatePropertiesToggle: document.querySelector("[data-template-properties-toggle]"),
     templatePropertiesPanel: document.querySelector("[data-template-properties-panel]"),
-    componentPropertiesToggle: document.querySelector("[data-component-properties-toggle]"),
     componentPropertiesPanel: document.querySelector("[data-component-properties-panel]"),
     patternModal: document.getElementById("workbench-pattern-modal"),
     patternCategoryInputs: Array.from(document.querySelectorAll("[data-pattern-category]")),
@@ -259,25 +390,50 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     addFontWarningElement: document.querySelector("[data-add-font-warning]"),
   });
 
+  // Builds and mounts just the collapsible-toggle chevron button via the
+  // shared factory — these three sections' headers each keep other
+  // hand-authored content (a toolbar, a card layout) that a full
+  // createCollapsibleSection would clobber if it rebuilt the whole header,
+  // so only the toggle button itself is JS-built (same shape as Orrery's
+  // own createCollapsibleToggleButton helper).
+  function createSectionToggleButton(mountSelector, collapsed) {
+    const button = createIconButton({
+      icon: "tabler:chevron-right",
+      className: "collapsible-toggle",
+      includeToggleLabel: true,
+    });
+    button.setAttribute("aria-expanded", collapsed ? "false" : "true");
+    document.querySelector(mountSelector)?.appendChild(button);
+    return button;
+  }
+
   // Same shared collapse mechanism as every other tool (Forge/Loom/Press/
-  // Sanctum/Orrery) — these three sections used to be wired as raw Bootstrap
-  // `data-bs-toggle="collapse"` without the `.collapsible-toggle` class,
-  // which meant their chevron icon never rotated on toggle. Template
-  // Properties and Component Properties also need programmatic control
-  // (renderInspector swaps which one is expanded based on selection — see
-  // expandTemplatePropertiesSection/collapseComponentPropertiesSection
-  // below), so their bindCollapsibleToggle() return value is kept.
+  // Sanctum/Orrery). Template Properties and Component Properties also need
+  // programmatic control (renderInspector swaps which one is expanded based
+  // on selection — see expandTemplatePropertiesSection/
+  // collapseComponentPropertiesSection below), so their
+  // bindCollapsibleToggle() return value is kept.
   const applyTemplatePropertiesCollapse = bindCollapsibleToggle(
-    elements.templatePropertiesToggle,
+    createSectionToggleButton("[data-template-properties-toggle-mount]", false),
     elements.templatePropertiesPanel,
     { collapsed: false }
   );
   const applyComponentPropertiesCollapse = bindCollapsibleToggle(
-    elements.componentPropertiesToggle,
+    createSectionToggleButton("[data-component-properties-toggle-mount]", true),
     elements.componentPropertiesPanel,
     { collapsed: true }
   );
-  bindCollapsibleToggle(elements.selectionsToggle, elements.selectionsPanel, { collapsed: false });
+  bindCollapsibleToggle(
+    createSectionToggleButton("[data-selections-toggle-mount]", false),
+    elements.selectionsPanel,
+    { collapsed: false }
+  );
+
+  const templateJsonPanel = createJsonDataPanel({
+    label: "JSON Data",
+    getData: () => serializeTemplateState(),
+  });
+  document.querySelector("[data-template-json-mount]")?.appendChild(templateJsonPanel.section);
 
   const insertComponentAtCanvasRoot = createRootInsertionHandler({
     createItem: (type) => {
@@ -431,6 +587,10 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
   const COMPONENT_DEFINITIONS = {
     input: {
       label: "Input",
+      // Matches the palette's own text (workbench/index.html) exactly —
+      // one canonical description per type, not two independently-written
+      // strings that drift apart (see createTypeSummaryHeader's own note).
+      description: "Text, number, select, radio, checkbox",
       defaults: {
         name: "Input Field",
         variant: "text",
@@ -446,7 +606,7 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
       supportsReadOnly: true,
       supportsAlignment: true,
       textControls: true,
-      colorControls: ["foreground", "background", "border"],
+      colorControls: ["text", "background", "border"],
       supportsLabelPosition: true,
     },
     // Core port of Press's own Repeater — replaces List entirely (a fixed
@@ -460,6 +620,7 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     // compatibility shim" call already made for Divider.
     repeater: {
       label: "Repeater",
+      description: "Inventory and item lists",
       defaults: {
         name: "Repeater",
         zones: {},
@@ -474,6 +635,25 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
         columns: 1,
         templateColumns: "",
         showHeader: false,
+        // Vertical (default, unchanged from before this existed) stacks
+        // repeated items top-to-bottom, with `columns` meaning "how many
+        // distinct field templates does each row have" (table mode).
+        // Horizontal flows items left-to-right instead — the whole model
+        // is transposed: `columns` means "how many distinct field
+        // templates does each ITEM's own column have" (stacked within
+        // it), and the header becomes a header COLUMN instead of a header
+        // ROW. Same zone keys/storage either way (item-{n}/header-{n}) —
+        // see ensureRepeaterZone and renderRepeaterComponent
+        // (workbench-character-view.js) for what actually changes.
+        orientation: "vertical",
+        // Spacing BETWEEN repeated items in Horizontal orientation (the
+        // rows===1 flex row and rows>1 CSS grid — see renderRepeaterInspector
+        // and renderRepeaterHorizontalList/Grid in workbench-character-
+        // view.js), same "Grid gap" concept and field as Container's own —
+        // was previously a fixed, non-configurable CSS/utility-class value.
+        gap: 16,
+        // Horizontal-only — see createRepeaterFillToggle's own comment.
+        fill: false,
       },
       supportsBinding: true,
       supportsFormula: false,
@@ -495,9 +675,16 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     // renderImagePreview/renderImageComponent's own comments.
     image: {
       label: "Image",
+      description: "Portraits, logos, or patterns",
       defaults: {
         name: "Image",
         url: "https://placekitten.com/320/180",
+        // Same generic key Icon/Text/Container use for their own single
+        // "literal, @binding, or =formula" field — see createImageUrlControl
+        // and renderImageContent's own comment. Takes priority over `url`
+        // when set (="ddb-"+@type, an expression a bare @path can't
+        // express), same precedence as those.
+        formula: "",
         alt: "Illustration",
         fit: "cover",
         width: "",
@@ -522,9 +709,15 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     // authored, exactly like Press).
     icon: {
       label: "Icon",
+      description: "A single icon glyph",
       defaults: {
         name: "Icon",
         iconClass: "",
+        // Was implicit (undefined, not an invisible-default problem since
+        // every read site already treats non-string as "no formula" —
+        // just not explicitly seeded like Image/Container's own copy of
+        // this same field). Seeded now for consistency with those.
+        formula: "",
         ariaLabel: "",
       },
       supportsBinding: false,
@@ -532,7 +725,7 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
       supportsReadOnly: false,
       supportsAlignment: false,
       textControls: false,
-      colorControls: ["foreground"],
+      colorControls: ["text"],
     },
     // Renamed from "Label" — a single combined Binding/Text field (its own
     // dedicated inspector control, renderTextInspector, using
@@ -548,6 +741,7 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     // normally at render time regardless.
     text: {
       label: "Text",
+      description: "Static text or headings",
       defaults: {
         name: "Text",
         text: "Text",
@@ -557,12 +751,18 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
       supportsReadOnly: false,
       supportsAlignment: true,
       textControls: true,
-      colorControls: ["foreground", "background", "border"],
+      colorControls: ["text", "background", "border"],
     },
     container: {
       label: "Container",
+      description: "Grids and tabs",
       defaults: {
         name: "Container",
+        // Same generic key Icon/Image/Text use for their own single
+        // "literal, @binding, or =formula" field — see
+        // createContainerLabelControl. Takes priority over `label` when
+        // set, same precedence as those.
+        formula: "",
         // Only 2 variants now — Grid (which also covers what used to be
         // separate "Columns"/"Rows" types: a Columns-only layout is a Grid
         // with rows:1, a Rows-only layout is a Grid with columns:1) and
@@ -574,6 +774,11 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
         templateColumns: "",
         templateRows: "",
         tabLabels: ["Tab 1", "Tab 2"],
+        // Play-view-only tab lock (Source-driven tabs only) — see
+        // resolveLockedTabIndex, workbench-character-view.js. Blank means
+        // "no lock, every tab always switchable," same as every Container
+        // that existed before this field did.
+        activeTabBinding: "",
         gap: 16,
         zones: {},
       },
@@ -582,10 +787,11 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
       supportsReadOnly: false,
       supportsAlignment: true,
       textControls: true,
-      colorControls: ["foreground", "background", "border"],
+      colorControls: ["text", "background", "border"],
     },
     track: {
       label: "Track",
+      description: "Progress bars or clocks",
       defaults: {
         name: "Track",
         // Linear vs. Circular is now a variant of one component (see the
@@ -597,41 +803,109 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
         segmentFormula: "",
         value: 3,
         labelPosition: "top",
+        // The active/filled segment color (linear segments, the circular
+        // gauge's own conic-gradient) — previously hardcoded to
+        // var(--bs-primary) in both CSS and JS, ignoring this component's
+        // own data entirely despite Colors already showing a picker for
+        // it. Same Text/Foreground split Toggle already has: Text colors
+        // the label only, Foreground is the shape's own fill. Matches
+        // Bootstrap's own default --bs-primary exactly (this project has
+        // no theme override), so existing/new Tracks look unchanged until
+        // an author actually customizes it.
+        foregroundColor: "#0d6efd",
+        foregroundColorBinding: "",
+        foregroundColorFormula: "",
       },
       supportsBinding: true,
       supportsFormula: false,
       supportsReadOnly: false,
       supportsAlignment: true,
       textControls: true,
-      colorControls: ["foreground", "background", "border"],
+      colorControls: ["text", "foreground", "background", "border"],
       supportsLabelPosition: true,
     },
     "select-group": {
       label: "Select Group",
+      description: "Pills, tags, or segmented toggles",
       defaults: {
         name: "Select Group",
         variant: "pills",
         multiple: false,
         sourceBinding: "",
         labelPosition: "top",
+        // The selected/active option's own color (tags' active text,
+        // buttons'/pills' active state) — previously hardcoded CSS
+        // (.template-select-tag/.is-active, var(--bs-tertiary-color)/
+        // var(--bs-body-color)) and Bootstrap's own .btn-outline-secondary
+        // for buttons/pills, ignoring this component's data entirely. Same
+        // Text/Foreground split as Track above.
+        foregroundColor: "#0d6efd",
+        foregroundColorBinding: "",
+        foregroundColorFormula: "",
       },
       supportsBinding: true,
       supportsFormula: false,
       supportsReadOnly: true,
       supportsAlignment: true,
       textControls: true,
-      colorControls: ["foreground", "background", "border"],
+      colorControls: ["text", "foreground", "background", "border"],
       supportsLabelPosition: true,
     },
     toggle: {
       label: "Toggle",
+      description: "Multi-state proficiencies",
       defaults: {
         name: "Toggle",
         states: ["Novice", "Skilled", "Expert"],
         activeIndex: 0,
-        shape: "circle",
         statesBinding: "",
         value: "Novice",
+        shape: "circle",
+        // textColor blank, same as every other type now — inherits the
+        // template's own Font Default when unset (see createComponent's
+        // own textColor comment). Colors the field's own label ONLY —
+        // foregroundColor below is the separate concept that drives the
+        // shape's own fill (see renderToggleContent, component-renderers.js);
+        // they used to be the same field, which is exactly the "Foreground
+        // controls text AND fill" confusion this split exists to remove.
+        //
+        // foregroundColor/backgroundColor below ARE still real, explicit
+        // hex — not left blank for CSS to invent a Bootstrap-theme color
+        // behind the scenes (see feedback_inspector_reads_json_only / this
+        // session's whole "no invisible defaults" standard, and shell.css's
+        // own comment on .template-toggle-shape). Unlike textColor, these
+        // have no template-wide default to fall back to (Template
+        // Properties only defines a Font default, deliberately — see
+        // createBlankTemplate's own comment on why Background/Border are a
+        // separate literal-sheet-appearance concept instead), so a Toggle
+        // with both left blank would have no visible fill/backdrop at all.
+        // backgroundColor is dark specifically so a white foregroundColor
+        // fill is actually visible against it — not an arbitrary pick.
+        textColor: "",
+        foregroundColor: "#ffffff",
+        foregroundColorBinding: "",
+        foregroundColorFormula: "",
+        backgroundColor: "#495057",
+        // Unlike most types (border off by default, turned on by picking a
+        // style or color), Toggle's own outline is meant to always be on
+        // — the shape is the whole point of this component, so a
+        // borderless one is the unusual case, not the default.
+        borderStyle: "solid",
+        borderColor: "#343a40",
+        borderWidth: 1,
+        // Per-state visual mapping (fillLevel/ring), keyed by each state's
+        // own string value — component/template data, deliberately NOT
+        // anything read off the Source/System (see
+        // feedback_visual_data_never_on_system memory). Empty by default;
+        // an unconfigured state falls back to position-based fill — see
+        // resolveToggleStateStyle in component-renderers.js.
+        stateStyles: {},
+        // Blank by default — the glyph stretches to fill its container's
+        // width (see .component-field--label-top's own stretch rule),
+        // matching the behavior that already existed before these fields
+        // did. Set explicitly to override — see renderToggleContent.
+        width: "",
+        height: "",
         labelPosition: "top",
       },
       supportsBinding: true,
@@ -639,18 +913,14 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
       supportsReadOnly: true,
       supportsAlignment: true,
       textControls: true,
-      colorControls: ["foreground", "background", "border"],
+      colorControls: ["text", "foreground", "background", "border"],
       supportsLabelPosition: true,
     },
   };
 
   let componentCounter = 0;
 
-  const renderPreview = createJsonPreviewRenderer({
-    resolvePreviewElement: () => elements.jsonPreview,
-    resolveBytesElement: () => elements.jsonPreviewBytes,
-    serialize: serializeTemplateState,
-  });
+  const renderPreview = templateJsonPanel.render;
 
   function getActiveTabIndex(component, total = 0) {
     if (!component?.uid) return 0;
@@ -672,14 +942,128 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     containerActiveTabs.delete(component.uid);
   }
 
+  // `default` matches Press's own COLOR_DEFAULTS exactly (Bootstrap's own
+  // body-color/body-bg/border-color) — a placeholder swatch color shown
+  // only while the field is unset (covered by the X overlay regardless),
+  // never written to the component itself.
+  // "text" (not "foreground") — the label was renamed from Foreground to
+  // Text to match the underlying field name (textColor) and, more
+  // importantly, to stop it being confused with the actual Foreground
+  // concept below: a component's real fill/accent color, distinct from
+  // whatever colors its own literal text (most types don't have anything
+  // that would use Foreground at all — it's only declared in colorControls
+  // for the types that genuinely need a fill separate from their text,
+  // Toggle being the first).
+  // The template-wide fallback for any component's own Text when that
+  // component's field is blank — always a real value, never clearable (see
+  // normalizeTemplateDefaults). Text only: there's always a text color to
+  // fall back to, but "no background"/"no border" are themselves
+  // legitimate, meaningful per-component choices (color-picker.js's own
+  // --unset support), so a cleared Background/Border must actually mean
+  // "none," not silently inherit whatever the template's own sheet-wide
+  // Background/Border happen to be. The template's own Background/Border
+  // (state.template.backgroundColor/borderStyle/etc.) are a separate,
+  // literal concept — the sheet's own visible appearance, applied once to
+  // the canvas root, never resolved per-component.
+  // White, not Bootstrap's own light-mode default (#212529) — matches the
+  // dark-card aesthetic every component's own seeded defaults already
+  // assume elsewhere in this app (e.g. Toggle's own textColor: "#ffffff").
+  const DEFAULT_TEMPLATE_COLORS = { fontColor: "#ffffff" };
+
+  function normalizeTemplateDefaults(raw) {
+    const source = raw && typeof raw === "object" ? raw : {};
+    return {
+      fontColor: typeof source.fontColor === "string" && source.fontColor.trim() ? source.fontColor.trim() : DEFAULT_TEMPLATE_COLORS.fontColor,
+    };
+  }
+
   const COLOR_FIELD_MAP = {
-    foreground: { label: "Foreground", prop: "textColor" },
-    background: { label: "Background", prop: "backgroundColor" },
-    border: { label: "Border", prop: "borderColor" },
+    text: { label: "Text", prop: "textColor", bindingProp: "textColorBinding", formulaProp: "textColorFormula", default: "#212529" },
+    foreground: { label: "Foreground", prop: "foregroundColor", bindingProp: "foregroundColorBinding", formulaProp: "foregroundColorFormula", default: "#ffffff" },
+    background: { label: "Background", prop: "backgroundColor", bindingProp: "backgroundColorBinding", formulaProp: "backgroundColorFormula", default: "#ffffff" },
+    border: { label: "Border", prop: "borderColor", bindingProp: "borderColorBinding", formulaProp: "borderColorFormula", default: "#dee2e6" },
   };
 
-  // Matches Press's own border-style option list exactly (press/index.html).
+  // Reads the actual JSON property and nothing else — no getComputedStyle,
+  // no inferring from what's currently rendered in the canvas. A prior
+  // version of this resolved the "real" rendered color off the live canvas
+  // node, which sounded right in the abstract but broke in practice: the
+  // canvas applies its OWN selection-outline border (.template-component-
+  // selected — border: 1px solid var(--bs-primary) !important) to the same
+  // element a component's own borderColor is applied to, so a selected,
+  // border-less component's computed border color was the editor's blue
+  // selection ring, not the component's own (nonexistent) border. The only
+  // trustworthy source is the data itself: set means set, empty means
+  // unset, full stop.
+  // Every key a color-field commit (manual pick, binding/formula, or
+  // Clear) can touch — the three colors themselves, their Binding/Formula
+  // pairs, and the border side-effect fields a first color pick or Clear
+  // can also flip (see createColorRow's own comments on both). Undo/redo
+  // for a color change is a snapshot-and-restore of exactly these keys on
+  // the one component involved, not a whole-tree clone (unlike add/remove/
+  // clear's own undo entries) — nothing here ever touches children, so
+  // there's no tree structure to preserve.
+  const COLOR_UNDO_KEYS = [
+    "textColor",
+    "textColorBinding",
+    "textColorFormula",
+    "backgroundColor",
+    "backgroundColorBinding",
+    "backgroundColorFormula",
+    "borderColor",
+    "borderColorBinding",
+    "borderColorFormula",
+    "borderStyle",
+    "borderWidth",
+    "borderRadius",
+    "borderSides",
+  ];
+
+  function snapshotColorKeys(component) {
+    const snapshot = {};
+    COLOR_UNDO_KEYS.forEach((key) => {
+      snapshot[key] = component[key];
+    });
+    return cloneComponentTree(snapshot);
+  }
+
+  function applyColorKeys(component, snapshot) {
+    if (!snapshot) return;
+    COLOR_UNDO_KEYS.forEach((key) => {
+      component[key] = snapshot[key];
+    });
+  }
+
+  // Wraps updateComponent for the three color-field handlers only — same
+  // options/rerender contract, plus a before/after snapshot of the color
+  // keys pushed as a single undo entry (case "componentColor" below), the
+  // same "one entry per real commit" granularity Press's own
+  // recordUndoableChange already gives every one of its fields. Skips
+  // pushing anything when the snapshot didn't actually change (e.g. Accept
+  // clicked with nothing touched), matching color-picker.js's own `dirty`
+  // guard against no-op commits.
+  function updateComponentColor(uid, mutate, options) {
+    const found = findComponent(uid);
+    if (!found) return;
+    const before = snapshotColorKeys(found.component);
+    updateComponent(uid, mutate, options);
+    const after = snapshotColorKeys(found.component);
+    if (JSON.stringify(before) === JSON.stringify(after)) return;
+    undoStack.push({
+      type: "componentColor",
+      templateId: state.template?.id || "",
+      componentId: uid,
+      before,
+      after,
+    });
+  }
+
+  // "None" first — the natural default for a component with no border
+  // color chosen yet (see createBorderControls' own default-style logic);
+  // the rest match Press's own border-style option list exactly
+  // (press/index.html).
   const BORDER_STYLE_OPTIONS = [
+    { value: "none", label: "None" },
     { value: "solid", label: "Solid" },
     { value: "dashed", label: "Dashed" },
     { value: "dotted", label: "Dotted" },
@@ -688,7 +1072,6 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     { value: "ridge", label: "Ridge" },
     { value: "inset", label: "Inset" },
     { value: "outset", label: "Outset" },
-    { value: "none", label: "None" },
   ];
 
   const DEFAULT_BORDER_SIDES = { top: true, right: true, bottom: true, left: true };
@@ -780,6 +1163,23 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     return true;
   }
 
+  // Palette markup hardcodes each item's icon in workbench/index.html —
+  // synced here from the shared COMPONENT_ICONS registry (now itself
+  // re-exported from common/js/lib/component-icons.js, shared with Press)
+  // at init time, so there's one source of truth instead of a second,
+  // hand-maintained copy that can silently drift from the canvas card's
+  // own icon.
+  if (elements.palette) {
+    elements.palette.querySelectorAll("[data-component-type]").forEach((item) => {
+      const type = item.dataset.componentType;
+      const icon = COMPONENT_ICONS[type];
+      const iconElement = item.querySelector(".iconify[data-icon]");
+      if (icon && iconElement) {
+        iconElement.dataset.icon = icon;
+      }
+    });
+  }
+
   if (elements.palette) {
     initPaletteInteractions(elements.palette, {
       groupName: "template-canvas",
@@ -788,25 +1188,9 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
         if (!value || !COMPONENT_DEFINITIONS[value]) {
           return;
         }
-        if (!hasActiveTemplate()) {
-          status.show("Create or load a template before adding components.", {
-            type: "warning",
-            timeout: 2400,
-          });
-          return;
-        }
-        const metadata = getTemplateMetadata(state.template?.id);
-        if (!templateAllowsEdits(metadata)) {
-          const message = describeTemplateEditRestriction(metadata);
-          status.show(message, { type: "warning", timeout: 2800 });
-          return;
-        }
-        if (!dataManager.hasWriteAccess("templates")) {
-          const required = dataManager.describeRequiredWriteTier("templates");
-          const message = required
-            ? `Saving templates requires a ${required} tier.`
-            : "Your tier cannot save templates.";
-          status.show(message, { type: "warning", timeout: 2800 });
+        const gate = canInsertComponent();
+        if (!gate.ok) {
+          status.show(gate.message, gate.options);
           return;
         }
         insertComponentAtCanvasRoot(value);
@@ -843,21 +1227,39 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     return false;
   }
 
+  // Delete/Copy/Cut/Paste all act on the current canvas selection — no
+  // dedicated buttons (per-card icons for these ate too much room on
+  // small components; standard OS-level shortcuts don't). Guarded on
+  // isEditableTarget the same way Delete already was, so typing/copying
+  // text in a focused field (an inspector text input, a contenteditable)
+  // is never hijacked — the browser's own native behavior wins there.
   document.addEventListener("keydown", (event) => {
-    if (event.key !== "Delete") {
+    if (event.defaultPrevented || isEditableTarget(document.activeElement)) {
       return;
     }
-    if (event.defaultPrevented) {
+    if (event.key === "Delete") {
+      if (!state.selectedId) return;
+      removeComponent(state.selectedId);
       return;
     }
-    const active = document.activeElement;
-    if (isEditableTarget(active)) {
+    // metaKey too — Cmd+C/X/V on macOS.
+    if (!(event.ctrlKey || event.metaKey)) {
       return;
     }
-    if (!state.selectedId) {
-      return;
+    const key = event.key.toLowerCase();
+    if (key === "c") {
+      if (!state.selectedId) return;
+      event.preventDefault();
+      copySelectedComponent();
+    } else if (key === "x") {
+      if (!state.selectedId) return;
+      event.preventDefault();
+      cutSelectedComponent();
+    } else if (key === "v") {
+      if (!componentClipboard?.component) return;
+      event.preventDefault();
+      pasteClipboardComponent();
     }
-    removeComponent(state.selectedId);
   });
 
   if (elements.saveButton) {
@@ -1155,6 +1557,19 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
   // actually find and load it) before that first paint, not just from
   // whenever the Font field's own dropdown happens to load it lazily.
   await loadCustomFonts();
+  // Deliberately here, not at the top of this function — computeTemplateSignature()
+  // (via serializeTemplateState -> normalizeTemplateDefaults) reads
+  // DEFAULT_TEMPLATE_COLORS, a `const` declared later in this same function
+  // body. Calling this before that declaration's own line has actually run
+  // hits the temporal-dead-zone and throws, which computeTemplateSignature's
+  // try/catch swallows into a silent `null` — a `null` baseline that then
+  // never gets corrected unless a real template loads, so a later, real
+  // signature (once everything IS initialized) always reads as "changed"
+  // against it. Confirmed exactly this behavior via added debug logging:
+  // the very first bare-page beforeunload always fired, without the user
+  // touching anything. By this point in init every module-level `const`
+  // this call chain depends on has already executed.
+  markTemplateClean();
   renderCanvas();
   renderInspector();
   ensureTemplateSelectValue();
@@ -1169,6 +1584,26 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     // know about this at all (see the base font's own doc comment in
     // font-library.js).
     elements.canvasRoot.style.fontFamily = state.template?.baseFontFamily || DEFAULT_FONT_FAMILY;
+    // The sheet's own literal background/border (Template Properties) —
+    // reuses applyComponentStyles directly (component-styles.js) rather
+    // than a second hand-written border/background application: the
+    // canvas root just needs the exact same "reflect whatever's actually
+    // stored, per side" treatment every component's own wrapper already
+    // gets, fed a component-shaped object standing in for the template.
+    // textColor deliberately blank — Font stays a per-component fallback
+    // only (see TEMPLATE_DEFAULT_COLOR_MAP), never a literal root color.
+    applyComponentStyles(elements.canvasRoot, {
+      textColor: "",
+      backgroundColor: resolveTemplateColorForPreview("backgroundColor"),
+      borderStyle: state.template?.borderStyle || "",
+      borderColor: resolveTemplateColorForPreview("borderColor"),
+      borderWidth: state.template?.borderWidth,
+      borderSides: state.template?.borderSides,
+      borderRadius: 0,
+      padding: "",
+      margin: "",
+      className: "",
+    });
     elements.canvasRoot.innerHTML = "";
     elements.canvasRoot.dataset.dropzone = "root";
     elements.canvasRoot.dataset.dropzoneParent = "";
@@ -1212,6 +1647,25 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
       schema: state.template?.schema || "",
       description: state.template?.description || "",
       type: state.template?.type || "sheet",
+      // Neither of these was ever actually saved before — Base font
+      // affected the live canvas (elements.canvasRoot.style.fontFamily)
+      // while editing but silently reset on every reload, and Play/Edit
+      // never received it at all. Found while wiring up the same "template-
+      // wide fallback" mechanism for colors — fixed alongside it since it's
+      // the same gap.
+      baseFontFamily: state.template?.baseFontFamily || "",
+      defaults: normalizeTemplateDefaults(state.template?.defaults),
+      // The sheet's own literal background/border — see createBlankTemplate's
+      // own comment on why this is separate from `defaults` above.
+      backgroundColor: state.template?.backgroundColor || "",
+      backgroundColorBinding: state.template?.backgroundColorBinding || "",
+      backgroundColorFormula: state.template?.backgroundColorFormula || "",
+      borderStyle: state.template?.borderStyle || "",
+      borderColor: state.template?.borderColor || "",
+      borderColorBinding: state.template?.borderColorBinding || "",
+      borderColorFormula: state.template?.borderColorFormula || "",
+      borderWidth: state.template?.borderWidth ?? null,
+      borderSides: state.template?.borderSides || null,
       components: state.components.map(serializeComponentForPreview),
     };
   }
@@ -2168,29 +2622,9 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
   }
 
   function handleDrop(event) {
-    if (!hasActiveTemplate()) {
-      status.show("Create or load a template before adding components.", {
-        type: "warning",
-        timeout: 2400,
-      });
-      event.item.remove();
-      renderCanvas();
-      return;
-    }
-    const metadata = getTemplateMetadata(state.template?.id);
-    if (!templateAllowsEdits(metadata)) {
-      const message = describeTemplateEditRestriction(metadata);
-      status.show(message, { type: "warning", timeout: 2800 });
-      event.item.remove();
-      renderCanvas();
-      return;
-    }
-    if (!dataManager.hasWriteAccess("templates")) {
-      const required = dataManager.describeRequiredWriteTier("templates");
-      const message = required
-        ? `Saving templates requires a ${required} tier.`
-        : "Your tier cannot save templates.";
-      status.show(message, { type: "warning", timeout: 2800 });
+    const gate = canInsertComponent();
+    if (!gate.ok) {
+      status.show(gate.message, gate.options);
       event.item.remove();
       renderCanvas();
       return;
@@ -2411,13 +2845,43 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
       id: `cmp-${componentCounter}`,
       label: (defaults.label || defaults.name || definition.label || type).trim(),
       name: undefined,
+      // Blank, same as background/border/foreground — a new component
+      // inherits the template's own Font Default (state.template.defaults.
+      // fontColor) until textColor is explicitly set, via
+      // resolveComponentColors/resolveComponentColorsForPreview's
+      // TEMPLATE_DEFAULT_COLOR_KEYS/MAP fallback. Used to be a hardcoded
+      // "#ffffff" here (and force-filled onto already-saved components in
+      // hydrateComponent) — that pinned every component to white
+      // regardless of the template's own default, and made Clear on the
+      // Text swatch a no-op (see createColorRow's own onClear).
       textColor: "",
+      // Same plain-value-plus-binding/formula shape as visible/
+      // visibilityBinding/visibilityFormula (createFormulaToggleField) —
+      // a color's own binding/formula pair overrides the literal hex above
+      // when non-empty, resolved via common/js/lib/color-picker.js's
+      // createColorPickerField in the inspector and (for real, at render
+      // time) resolveEffectiveComponentColors/resolveComponentColors in
+      // workbench-template-view.js/workbench-character-view.js.
+      textColorBinding: "",
+      textColorFormula: "",
       backgroundColor: "",
+      backgroundColorBinding: "",
+      backgroundColorFormula: "",
+      // borderStyle is the border on/off switch — everything below it
+      // (color/width/radius/sides) is downstream and only means anything
+      // once borderStyle is a real value, not "none"/empty. Border color
+      // is NOT the determinant (a prior version of this comment/logic had
+      // that backwards); see createBorderControls' Style select change
+      // handler for where color/width get written for real the moment a
+      // style is actually chosen, and hydrateComponent for the matching
+      // cleanup on load.
+      borderStyle: "",
       borderColor: "",
-      borderWidth: 1,
-      borderStyle: "solid",
+      borderColorBinding: "",
+      borderColorFormula: "",
+      borderWidth: null,
       borderRadius: 0,
-      borderSides: { ...DEFAULT_BORDER_SIDES },
+      borderSides: null,
       // Raw CSS shorthand strings (e.g. "8px" or "4px 8px 12px 16px"),
       // passed straight through to the real padding/margin CSS properties
       // — no Workbench-specific parsing. Empty means no override, letting
@@ -2425,22 +2889,50 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
       // rule) show through.
       padding: "",
       margin: "",
+      // Plain manual fallback for the unified Visible toggle — used only
+      // when neither visibilityBinding nor visibilityFormula is set (same
+      // "leave blank to always show" contract as before, just now backed
+      // by a real field the manual switch can actually flip, matching
+      // Collapsible/Locked's own plain-boolean + binding/formula shape).
+      visible: true,
       visibilityBinding: "",
       visibilityFormula: "",
+      // Collapsible/Locked (readOnly) each keep their existing plain
+      // boolean AND gain a binding/formula pair, same "unified toggle/
+      // formula" control as Visible above (see createFormulaToggleField) —
+      // storage key stays "readOnly" (not renamed to "locked") to avoid a
+      // wider migration across every existing read site of this field;
+      // only the inspector's own displayed label changes to "Locked".
+      collapsibleBinding: "",
+      collapsibleFormula: "",
+      readOnlyBinding: "",
+      readOnlyFormula: "",
       textSize: "md",
       // Matches Press's own Font/Text Size/Font Size/Line Height system
       // exactly (common/js/lib/font-picker.js, common/js/lib/text-size.js)
-      // — fontFamily/lineHeight empty/null means "no override, inherit the
-      // natural default"; fontSizeCustom (a pt value), when set, wins over
-      // the textSize preset above, same precedence Press uses.
+      // — fontFamily/fontSizeCustom empty/null means "no override, inherit
+      // the natural default"; fontSizeCustom (a pt value), when set, wins
+      // over the textSize preset above, same precedence Press uses.
+      // Line Height is seeded with a real, visible 1.3 (Press's own
+      // DEFAULT_LINE_HEIGHT — template-renderer.js) rather than left
+      // null/hidden: whatever the Line Height field shows is exactly what
+      // gets applied, no separate invisible fallback layer (component-
+      // styles.js's applyTextFormatting reads this value as-is). null stays
+      // reachable only on templates saved before this field existed.
       fontFamily: "",
       fontSizeCustom: null,
-      lineHeight: null,
+      lineHeight: 1.3,
       // Freeform CSS class names (Advanced section) — see
       // common/js/lib/class-name-picker.js's suggestion list.
       className: "",
       textStyles: { bold: false, italic: false, underline: false },
       align: "start",
+      // Align Items (align-self) — genuinely separate from `align` (Text
+      // Align, text-align) above; see applyComponentStyles' own comment
+      // (component-styles.js) for why they're two fields, not one. Blank
+      // means no override (align-self: auto) — same "blank = no override"
+      // convention as fontFamily.
+      alignSelf: "",
       binding: "",
       readOnly: false,
       collapsible: false,
@@ -2525,7 +3017,7 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     return component;
   }
 
-  function createComponentElement(component) {
+  function createComponentElement(component, itemContext = null) {
     const definition = COMPONENT_DEFINITIONS[component.type] || {};
     const iconName = COMPONENT_ICONS[component.type] || "tabler:app-window";
     const typeLabel = definition.label || component.type;
@@ -2582,13 +3074,59 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
       }
     }
 
+    // The Visible toggle/formula's actual truthiness is never evaluated
+    // here (see the CSS comment on .template-component--hidden for why —
+    // same "don't hide based on synthesized preview data" reasoning
+    // documented for the Behavior section itself), but a plain manual
+    // "Visible" off IS an unconditional authoring choice, safe to reflect
+    // directly: dim the card and badge it so it doesn't read as merely
+    // unselected. A binding/formula-driven Visible gets its own, non-
+    // dimmed badge instead — flagging "this depends on a condition" without
+    // claiming to know which way that condition will actually go for any
+    // given character.
+    const manuallyHidden = component.visible === false;
+    const hasVisibilityCondition = Boolean(component.visibilityBinding || component.visibilityFormula);
+    wrapper.classList.toggle("template-component--hidden", manuallyHidden);
+    if (manuallyHidden || hasVisibilityCondition) {
+      const visibilityPill = document.createElement("span");
+      visibilityPill.className = `template-visibility-pill badge ${manuallyHidden ? "text-bg-warning" : "text-bg-secondary"}`;
+      const visibilityIcon = document.createElement("span");
+      visibilityIcon.className = "iconify";
+      visibilityIcon.dataset.icon = manuallyHidden ? "tabler:eye-off" : "tabler:variable";
+      visibilityIcon.setAttribute("aria-hidden", "true");
+      visibilityPill.appendChild(visibilityIcon);
+      visibilityPill.setAttribute("data-bs-toggle", "tooltip");
+      visibilityPill.setAttribute("data-bs-placement", "top");
+      visibilityPill.setAttribute(
+        "data-bs-title",
+        manuallyHidden ? "Hidden — Visible is turned off" : "Visible depends on a binding/formula"
+      );
+      const insertBefore = iconElement && actions.contains(iconElement) ? iconElement : null;
+      if (insertBefore) {
+        actions.insertBefore(visibilityPill, insertBefore);
+      } else {
+        actions.appendChild(visibilityPill);
+      }
+      if (window.bootstrap && typeof window.bootstrap.Tooltip === "function") {
+        // eslint-disable-next-line no-new
+        new window.bootstrap.Tooltip(visibilityPill);
+      }
+    }
+
     if (iconElement) {
       iconElement.tabIndex = 0;
     }
 
     wrapper.appendChild(header);
 
-    const preview = renderComponentPreview(component);
+    // Resolved ONCE, used for both the content below AND the wrapper's own
+    // applyComponentStyles call further down — previously computed twice,
+    // redundantly, with content getting the RAW component (so a heading's
+    // own applyTextFormatting call, e.g. Container/Image, never saw a
+    // binding/formula/template-default-resolved color, only the wrapper
+    // did).
+    const resolvedComponent = resolveComponentColorsForPreview(component);
+    const preview = renderComponentPreview(resolvedComponent, itemContext);
     const bodyElement = preview instanceof Element ? preview : (() => {
       const container = document.createElement("div");
       container.appendChild(preview);
@@ -2641,14 +3179,23 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
       wrapper.classList.remove("is-collapsed");
     }
 
-    applyComponentStyles(wrapper, component);
+    applyComponentStyles(wrapper, excludeToggleWrapperColors(resolvedComponent));
     return wrapper;
   }
 
-  function renderComponentPreview(component) {
+  // itemContext (preview-only — see resolvePreviewItemValue) only ever
+  // matters for the option-resolving types (a Source-driven tab's own
+  // Special-Abilities-style checkbox group needs its OWN tab's real
+  // System-sourced item, not the template-wide preview data every other
+  // bound field's preview resolves against) and Container (so it can pass
+  // its incoming context through to plain children, and compute its own
+  // tab item contexts for its own tab zones independently — see
+  // renderContainerPreview). Every other type ignores the extra argument
+  // exactly as it did before this parameter existed.
+  function renderComponentPreview(component, itemContext = null) {
     switch (component.type) {
       case "input":
-        return renderInputPreview(component);
+        return renderInputPreview(component, itemContext);
       case "repeater":
         return renderRepeaterPreview(component);
       case "image":
@@ -2658,11 +3205,11 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
       case "text":
         return renderTextPreview(component);
       case "container":
-        return renderContainerPreview(component);
+        return renderContainerPreview(component, itemContext);
       case "track":
         return renderTrackPreview(component);
       case "select-group":
-        return renderSelectGroupComponentPreview(component);
+        return renderSelectGroupComponentPreview(component, itemContext);
       case "toggle":
         return renderTogglePreview(component);
       default:
@@ -2725,33 +3272,129 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     return resolveBindingFromContexts(normalized, contexts);
   }
 
-  function resolveSelectPreviewOptions(component) {
+  // Preview-only counterpart to workbench-character-view.js's
+  // resolveRepeaterItemValue, for a Source-driven tab's own item (available
+  // while authoring — System data, not a live character record). Same
+  // "@value means the item itself, unconditionally" precedence; a deeper
+  // "@foo.bar" path walks the item itself when it's a plain object. Returns
+  // undefined (not the item, not a bound value) when `raw` isn't an "@..."
+  // binding at all, so callers can tell "this component isn't item-relative"
+  // apart from "it resolved to nothing" and fall back to the ordinary,
+  // non-item-relative preview path.
+  function resolvePreviewItemValue(item, raw) {
+    const text = typeof raw === "string" ? raw.trim() : "";
+    if (!text.startsWith("@")) return undefined;
+    const path = text.slice(1).split(".").map((segment) => segment.trim()).filter(Boolean);
+    if (path.length === 1 && path[0] === "value") return item;
+    if (!path.length || item === null || typeof item !== "object") return undefined;
+    let cursor = item;
+    for (const segment of path) {
+      if (!cursor || typeof cursor !== "object" || !(segment in cursor)) return undefined;
+      cursor = cursor[segment];
+    }
+    return cursor;
+  }
+
+  // Prefers resolveSystemFieldValues (below — the same direct System-field
+  // lookup Toggle's own preview has always used) over the generic
+  // resolvePreviewBindingValue path — see that function's own comment for
+  // the confirmed bug this fixes (a Source option's own `description`
+  // silently discarded upstream by buildSystemPreviewData before this ever
+  // saw it, same as Toggle's original sourceId problem). Falls back to the
+  // old path when the binding isn't a plain top-level System field key.
+  // `itemContext` (set only inside a Source-driven tab's own zone — see
+  // renderContainerPreview) is tried FIRST, ahead of both: a Special-
+  // Abilities-style checkbox group bound to "@value" means "this tab's own
+  // item", which resolveSystemFieldValues (a top-level System field lookup)
+  // could never resolve on its own.
+  function resolveSelectPreviewOptions(component, itemContext = null) {
     const binding = normalizeBindingValue(component?.sourceBinding);
     if (!binding) {
       return [];
     }
+    if (itemContext) {
+      const itemValues = resolvePreviewItemValue(itemContext.item, binding);
+      if (itemValues !== undefined) return normalizeOptionEntries(itemValues);
+    }
+    const systemValues = resolveSystemFieldValues(component?.sourceBinding);
+    if (systemValues) return normalizeOptionEntries(systemValues);
     const bound = resolvePreviewBindingValue(binding);
     return normalizeOptionEntries(bound);
   }
 
-  function resolveSelectGroupPreviewOptions(component) {
+  function resolveSelectGroupPreviewOptions(component, itemContext = null) {
     const binding = normalizeBindingValue(component?.sourceBinding);
     if (!binding) {
       return [];
     }
+    if (itemContext) {
+      const itemValues = resolvePreviewItemValue(itemContext.item, binding);
+      if (itemValues !== undefined) return normalizeOptionEntries(itemValues);
+    }
+    const systemValues = resolveSystemFieldValues(component?.sourceBinding);
+    if (systemValues) return normalizeOptionEntries(systemValues);
     const bound = resolvePreviewBindingValue(binding);
     return normalizeOptionEntries(bound);
   }
 
+  // A Source binding means specifically "a choices list from the System
+  // record", resolved DIRECTLY against the System's own field schema
+  // (state.systemDefinition.fields) — see resolveSystemFieldValues'
+  // identical twin in workbench-character-view.js for the full reasoning
+  // (buildSystemPreviewData strips everything but each entry's own .name
+  // off an array-of-choices field before the generic
+  // resolvePreviewBindingValue path ever sees them, so that path alone
+  // could never recover a dropped sourceId OR a dropped `description` —
+  // confirmed as two separate real bugs from the same root cause, not
+  // just Toggle's original one). Used by resolveSelectPreviewOptions/
+  // resolveSelectGroupPreviewOptions above now too. Only a plain,
+  // single-segment field key is supported — no Source binding in this
+  // suite has ever needed anything nested.
+  function resolveSystemFieldValues(statesBinding) {
+    const trimmed = typeof statesBinding === "string" ? statesBinding.trim() : "";
+    const key = trimmed.startsWith("@") ? trimmed.slice(1).trim() : trimmed;
+    if (!key || key.includes(".")) return null;
+    const fields = state.systemDefinition?.fields;
+    if (!Array.isArray(fields)) return null;
+    const field = fields.find((entry) => entry && entry.key === key);
+    if (!field) return null;
+    if (Array.isArray(field.values) && field.values.length) return field.values;
+    if (Array.isArray(field.children) && field.children.length) return field.children;
+    return null;
+  }
+
+  // Source (statesBinding) first, falling back to the literal `states` list
+  // — matching resolveToggleStates' own fallback in workbench-character-view.js
+  // exactly (a Toggle authored with only a literal states list, no Source,
+  // previously showed the canvas's "select a source" empty-state message
+  // even though it would render its literal states fine in real Play/Edit —
+  // a preview/real-render parity gap, fixed here rather than left as-is).
+  // Deliberately NOT normalizeOptionEntries — see resolveToggleStates' own
+  // identical comment in workbench-character-view.js: it discards a Source
+  // entry's own sourceId, which is what real bound data keying off a
+  // proficiency rank (etc.) is very plausibly stored against. Resolves the
+  // RAW Source array via toggleStateEntryFromRaw instead, same as the real
+  // render, so preview and real render agree on what a state's identity
+  // actually is.
   function resolveTogglePreviewStates(component) {
-    const binding = normalizeBindingValue(component?.statesBinding);
-    if (!binding) {
-      return [];
+    let rawList = resolveSystemFieldValues(component?.statesBinding);
+    if (!rawList) {
+      const binding = normalizeBindingValue(component?.statesBinding);
+      if (binding) {
+        const bound = resolvePreviewBindingValue(binding);
+        rawList = Array.isArray(bound) ? bound : bound && typeof bound === "object" ? Object.values(bound) : null;
+      }
     }
-    const bound = resolvePreviewBindingValue(binding);
-    return normalizeOptionEntries(bound)
-      .map((entry) => entry.label || entry.value)
-      .filter((value) => value != null && value !== "");
+    if (rawList && rawList.length) {
+      const entries = rawList.map(toggleStateEntryFromRaw).filter(Boolean);
+      if (entries.length) return entries;
+    }
+    if (Array.isArray(component?.states) && component.states.length) {
+      return component.states
+        .filter((s) => s != null)
+        .map((s) => ({ value: s, label: String(s) }));
+    }
+    return [];
   }
 
   function createPreviewEmptyState(message = "Select a source to preview values.") {
@@ -2798,9 +3441,23 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     };
 
     if (component.containerType === "tabs") {
-      const labels = Array.isArray(component.tabLabels) && component.tabLabels.length
-        ? component.tabLabels
-        : ["Tab 1", "Tab 2"];
+      // Source-driven tabs (tabLabelsSourceBinding) take priority over the
+      // static tabLabels list when set — one tab per resolved entry, using
+      // its own derived label (resolveTabEntries — see that function's own
+      // comment for why an object-of-arrays Source, like Blades in the
+      // Dark's restructured `playbooks`, uses each key as its tab's own
+      // label rather than a nested field definition's own dotted key).
+      // Falls straight through to the existing static-list behavior when no
+      // Source is set, so every other tabs Container in the suite is
+      // unaffected.
+      const sourceValues = resolveSystemFieldValues(component.tabLabelsSourceBinding);
+      const sourceEntries = sourceValues ? resolveTabEntries(sourceValues) : null;
+      const labels =
+        sourceEntries && sourceEntries.length
+          ? sourceEntries.map((entry) => entry.label)
+          : Array.isArray(component.tabLabels) && component.tabLabels.length
+            ? component.tabLabels
+            : ["Tab 1", "Tab 2"];
       labels.forEach((labelText, index) => {
         registerZone(`tab-${index}`, (labelText || `Tab ${index + 1}`).trim() || `Tab ${index + 1}`);
       });
@@ -2825,16 +3482,35 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     // from before normalizeContainerType ran, or a shrunk column/row count)
     // has its children salvaged into the first remaining zone rather than
     // discarded — same convention already used when a user shrinks a grid's
-    // own column count.
-    Object.keys(component.zones).forEach((key) => {
-      if (!validKeys.has(key)) {
-        const items = component.zones[key];
-        if (Array.isArray(items) && items.length && zones.length) {
-          zones[0].components.push(...items);
+    // own column count. Skipped entirely for Source-driven tabs
+    // (tabLabelsSourceBinding set): confirmed to actually happen (not just
+    // theoretical) — the Template editor's own load sequence calls
+    // renderCanvas() once synchronously BEFORE state.systemDefinition has
+    // finished its async fetch (updateSystemContext nulls it first, fetches
+    // after — see that function). That render sees resolveSystemFieldValues
+    // resolve to nothing, falls back to the (now-empty, since Source took
+    // over) static tabLabels, then the 2-tab default — a transient
+    // mis-resolve, not a real "these tabs no longer exist." Without this
+    // guard, that one render permanently deletes every "extra" zone key
+    // (beyond the 2-tab fallback) and merges its authored content into
+    // zone 0 — every OTHER tab's own content, dumped onto the first tab,
+    // forever, the instant the page loads once. A stale key here is always
+    // safe to just leave alone (worst case: dead, unused zone data sitting
+    // around) — never safe to guess-delete off a single resolve that could
+    // easily be transient.
+    const isSourceDrivenTabs =
+      component.containerType === "tabs" && Boolean(normalizeBindingValue(component.tabLabelsSourceBinding));
+    if (!isSourceDrivenTabs) {
+      Object.keys(component.zones).forEach((key) => {
+        if (!validKeys.has(key)) {
+          const items = component.zones[key];
+          if (Array.isArray(items) && items.length && zones.length) {
+            zones[0].components.push(...items);
+          }
+          delete component.zones[key];
         }
-        delete component.zones[key];
-      }
-    });
+      });
+    }
 
     return zones;
   }
@@ -2885,14 +3561,20 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
       zones.push({ key, label, components: component.zones[key] });
     };
 
+    // Purely cosmetic below (same zone-{n} keys/storage regardless) —
+    // Horizontal transposes what "columns" means (see the orientation
+    // field's own comment in COMPONENT_DEFINITIONS), so the axis word in
+    // every zone label/seed flips from "Column" to "Row" to match.
+    const isHorizontal = component.orientation === "horizontal";
+    const axisWord = isHorizontal ? "Row" : "Column";
     if (component.showHeader) {
       for (let col = 0; col < columns; col += 1) {
-        const label = columns > 1 ? `Header — Column ${col + 1}` : "Header";
-        registerZone(`header-${col}`, label, { seedText: `Column ${col + 1}` });
+        const label = columns > 1 ? `Header — ${axisWord} ${col + 1}` : "Header";
+        registerZone(`header-${col}`, label, { seedText: `${axisWord} ${col + 1}` });
       }
     }
     for (let col = 0; col < columns; col += 1) {
-      const label = columns > 1 ? `Item — Column ${col + 1}` : "Item template";
+      const label = columns > 1 ? `Item — ${axisWord} ${col + 1}` : "Item template";
       registerZone(`item-${col}`, label);
     }
 
@@ -2927,7 +3609,7 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     return zones;
   }
 
-  function createContainerDropzone(component, zone, { label, hint } = {}) {
+  function createContainerDropzone(component, zone, { label, hint, alignItems, textAlign, itemContext = null } = {}) {
     const wrapper = document.createElement("div");
     wrapper.className = "template-container-zone d-flex flex-column gap-2";
     if (label) {
@@ -2941,9 +3623,16 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     drop.dataset.dropzone = "true";
     drop.dataset.dropzoneParent = component.uid;
     drop.dataset.dropzoneKey = zone.key;
+    // Applied directly to `drop` — the actual flex container the dropped
+    // component cards become children of — not `wrapper`, which only ever
+    // has the label badge and `drop` itself as its own two children.
+    // alignItems/textAlign set on `wrapper` was a no-op for card
+    // positioning even when a real value was resolved.
+    if (alignItems) drop.style.alignItems = alignItems;
+    if (textAlign) drop.style.textAlign = textAlign;
     if (Array.isArray(zone.components) && zone.components.length) {
       zone.components.forEach((child) => {
-        drop.appendChild(createComponentElement(child));
+        drop.appendChild(createComponentElement(child, itemContext));
       });
     } else {
       const placeholder = createCanvasPlaceholder(hint || "Drag components here", {
@@ -2983,101 +3672,50 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     });
   }
 
-  function renderInputPreview(component) {
-    const labelText = getComponentLabel(component, "Input");
-    const variant = (component.variant || "text").toLowerCase();
-    const previewOptions = resolveSelectPreviewOptions(component);
-    let control;
-    let labelTag = "label";
-    let labelFor = "";
-    if (variant === "radio" || variant === "checkbox") {
-      control = renderChoiceGroup(component, variant);
-      labelTag = "div";
-    } else if (variant === "textarea") {
-      const textarea = document.createElement("textarea");
-      textarea.className = "form-control";
-      textarea.rows = clampInteger(component.rows ?? 3, 2, 12);
-      textarea.placeholder = component.placeholder || "";
-      textarea.disabled = !!component.readOnly;
-      labelFor = toId([component.uid, "preview", "textarea"]);
-      if (labelFor) {
-        textarea.id = labelFor;
-      }
-      control = textarea;
-    } else if (variant === "select") {
-      const select = document.createElement("select");
-      select.className = "form-select";
-      previewOptions.forEach((option) => {
-        const opt = document.createElement("option");
-        opt.value = option.value;
-        opt.textContent = option.label || option.value;
-        select.appendChild(opt);
-      });
-      select.disabled = !!component.readOnly;
-      labelFor = toId([component.uid, "preview", "select"]);
-      if (labelFor) {
-        select.id = labelFor;
-      }
-      control = select;
-    } else {
-      const input = document.createElement("input");
-      input.className = "form-control";
-      if (variant === "number") {
-        input.type = "number";
-      } else {
-        input.type = "text";
-      }
-      input.placeholder = component.placeholder || "";
-      input.disabled = !!component.readOnly;
-      labelFor = toId([component.uid, "preview", "input"]);
-      if (labelFor) {
-        input.id = labelFor;
-      }
-      control = input;
-    }
-    const field = createLabeledField({
-      component,
-      control,
-      labelText,
-      labelTag,
-      labelFor,
-      labelClasses: ["form-label", "mb-1"],
-      applyFormatting: applyTextFormatting,
+  function renderInputPreview(component, itemContext = null) {
+    return renderInputContent(component, {
+      resolveValue(comp, fallback) {
+        return fallback;
+      },
+      // Visual disabled-state only (matches component.readOnly exactly, as
+      // before) — onChange is a no-op regardless, so a listener firing in
+      // the canvas never actually does anything; there's no live data to
+      // write to here.
+      editable(comp) {
+        return !comp.readOnly;
+      },
+      onChange() {},
+      resolveOptions(comp) {
+        return resolveSelectPreviewOptions(comp, itemContext);
+      },
+      // Same real bug fixed on the live view's own resolveChoiceOptions
+      // (workbench-character-view.js): a Checkbox/Radio group never
+      // consulted its Source binding at all, only Select did. A Source IS
+      // configured (sourceBinding set) trusts its resolution exactly like
+      // Select does just above (resolveSelectPreviewOptions), including
+      // showing genuinely empty if the bound System field has nothing yet
+      // — a Source you can SEE resolving to nothing while authoring is more
+      // honest than silently swapping in sample placeholders that look
+      // like real, configured choices. Falls back to 3 sample options only
+      // when there's no Source at all — an empty, never-configured group
+      // still shows its shape while authoring, unlike the live view.
+      resolveChoiceOptions(comp) {
+        if (comp?.sourceBinding) {
+          return resolveSelectPreviewOptions(comp, itemContext);
+        }
+        return Array.isArray(comp.options) && comp.options.length ? comp.options : ["Option A", "Option B", "Option C"];
+      },
+      wrapControl(input) {
+        return input;
+      },
+      wrapEmptyOptions(field) {
+        const container = document.createElement("div");
+        container.className = "d-flex flex-column gap-2";
+        container.appendChild(field);
+        container.appendChild(createPreviewEmptyState());
+        return container;
+      },
     });
-    if (variant === "select" && !previewOptions.length) {
-      const container = document.createElement("div");
-      container.className = "d-flex flex-column gap-2";
-      container.appendChild(field);
-      container.appendChild(createPreviewEmptyState());
-      return container;
-    }
-    return field;
-  }
-
-  function renderChoiceGroup(component, type) {
-    const wrapper = document.createElement("div");
-    wrapper.className = "d-flex flex-wrap gap-2";
-    const options = Array.isArray(component.options) && component.options.length
-      ? component.options
-      : ["Option A", "Option B", "Option C"];
-    options.forEach((option, index) => {
-      const id = toId([component.uid, type, option, index]);
-      const formCheck = document.createElement("div");
-      formCheck.className = "form-check form-check-inline";
-      const input = document.createElement("input");
-      input.className = "form-check-input";
-      input.type = type;
-      input.name = `${component.uid}-${type}`;
-      input.id = id;
-      input.disabled = !!component.readOnly;
-      const label = document.createElement("label");
-      label.className = "form-check-label";
-      label.setAttribute("for", id);
-      label.textContent = option;
-      formCheck.append(input, label);
-      wrapper.appendChild(formCheck);
-    });
-    return wrapper;
   }
 
   // The canvas shows the item template ONCE, as a real editable dropzone
@@ -3154,7 +3792,10 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     const type = decorator?.type || "none";
     if (type === "bullet") return "•";
     if (type === "number") return "1.";
-    if (type === "custom") return (decorator.text || "").trim() || "(empty)";
+    if (type === "custom") {
+      const formula = typeof decorator.formula === "string" ? decorator.formula.trim() : "";
+      return formula ? `=${formula}` : (decorator.text || "").trim() || "(empty)";
+    }
     return "";
   }
 
@@ -3163,79 +3804,26 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
   // fallback everywhere a URL is needed, written to `.url` on every edit
   // going forward (never `.src` again), so existing Image components keep
   // showing their picture with no migration step and self-heal on first edit.
-  function resolveImageUrl(component) {
-    return component.url || component.src || "";
-  }
-
-  // Shared by the canvas preview and (a duplicate small copy of the same
-  // logic, since that's a separate file) the real character-sheet render —
-  // matches Press's own template-renderer.js image case exactly, minus the
-  // inches/Layer-sizing branch, which has no equivalent here (Workbench
-  // components always fill their own container zone/cell, never a
-  // free-positioned print Layer).
-  function applyImageStyles(img, component) {
-    img.style.objectFit = component.fit === "fill" ? "fill" : component.fit === "contain" ? "contain" : "cover";
-    const width = typeof component.width === "string" ? component.width.trim() : "";
-    const height = typeof component.height === "string" ? component.height.trim() : "";
-    img.style.width = width || "100%";
-    img.style.height = height || "auto";
-    const cornerRadius = Number(component.cornerRadius);
-    img.style.borderRadius = Number.isFinite(cornerRadius) && cornerRadius > 0 ? `${cornerRadius}px` : "";
-    const focalX = Number.isFinite(Number(component.focalX)) ? Number(component.focalX) : 50;
-    const focalY = Number.isFinite(Number(component.focalY)) ? Number(component.focalY) : 50;
-    img.style.objectPosition = `${focalX}% ${focalY}%`;
-    const zoom = Number(component.zoom);
-    if (Number.isFinite(zoom) && zoom !== 1) {
-      img.style.transform = `scale(${zoom})`;
-      img.style.transformOrigin = `${focalX}% ${focalY}%`;
-    } else {
-      img.style.transform = "";
-      img.style.transformOrigin = "";
-    }
-  }
-
   function renderImagePreview(component) {
-    const wrapper = document.createElement("div");
-    wrapper.className = "text-center";
-    wrapper.style.overflow = "hidden";
-    const img = document.createElement("img");
-    img.src = resolveImageUrl(component) || "https://placekitten.com/320/180";
-    img.alt = component.alt || "Image";
-    applyImageStyles(img, component);
-    wrapper.appendChild(img);
-    return wrapper;
+    return renderImageContent(component, {
+      resolveBindableString(raw) {
+        return resolvePreviewBindingValue(raw);
+      },
+      evaluateFormula: evaluatePreviewFormula,
+    });
   }
 
-  // iconClass is itself the binding-or-literal string (see the icon
-  // registry entry's own comment) — for the canvas preview specifically, an
-  // "@path" value resolves against the template's sample/preview data
+  // iconClass, for the canvas preview specifically, an "@path" value
+  // resolves against the template's sample/preview data
   // (resolvePreviewBindingValue, the same helper every other bound field's
   // preview uses) rather than a live character record.
-  function resolveIconPreviewClassList(component) {
-    const raw = typeof component.iconClass === "string" ? component.iconClass.trim() : "";
-    if (raw.startsWith("@")) {
-      return resolveIconClassList(resolvePreviewBindingValue(raw));
-    }
-    return resolveIconClassList(raw);
-  }
-
   function renderIconPreview(component) {
-    const wrapper = document.createElement("span");
-    wrapper.className = "d-inline-flex align-items-center";
-    const classes = resolveIconPreviewClassList(component);
-    if (classes.length) {
-      const icon = document.createElement("span");
-      icon.className = classes.join(" ");
-      if (component.textColor) icon.style.color = component.textColor;
-      wrapper.appendChild(icon);
-    } else {
-      wrapper.classList.add("press-icon--empty");
-      const placeholder = document.createElement("span");
-      placeholder.className = "press-icon__placeholder";
-      placeholder.textContent = component.label || "Icon";
-      wrapper.appendChild(placeholder);
-    }
-    return wrapper;
+    return renderIconContent(component, {
+      resolveBindableString(raw) {
+        return resolvePreviewBindingValue(raw);
+      },
+      evaluateFormula: evaluatePreviewFormula,
+    });
   }
 
   function renderTextPreview(component) {
@@ -3251,105 +3839,83 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     // against). In both cases, show the binding/formula itself instead of
     // silently falling through to the generic "Text" type label, which
     // looked exactly like the binding/formula hadn't been captured at all.
-    const binding = normalizeBindingValue(component.binding);
-    const formula = typeof component.formula === "string" ? component.formula.trim() : "";
-    let value = "";
-    if (formula) {
-      value = `=${formula}`;
-    } else if (binding) {
-      const resolved = resolvePreviewBindingValue(binding);
-      value = resolved !== undefined && resolved !== null && String(resolved).trim()
-        ? String(resolved).trim()
-        : binding;
-    }
-    if (!value) {
-      value = (component.text || "").trim() || getComponentLabel(component, "");
-    }
-    if (!value) {
-      return document.createDocumentFragment();
-    }
-    const text = document.createElement("div");
-    text.className = "fw-semibold";
-    text.textContent = value;
-    applyTextFormatting(text, component);
-    return text;
+    return renderTextContent(component, {
+      resolveValue(comp, fallback) {
+        const binding = normalizeBindingValue(comp.binding);
+        const formula = typeof comp.formula === "string" ? comp.formula.trim() : "";
+        if (formula) {
+          return `=${formula}`;
+        }
+        if (binding) {
+          const resolved = resolvePreviewBindingValue(binding);
+          return resolved !== undefined && resolved !== null && String(resolved).trim()
+            ? String(resolved).trim()
+            : binding;
+        }
+        return fallback;
+      },
+    });
   }
 
-  function renderContainerPreview(component) {
-    const wrapper = document.createElement("div");
-    wrapper.className = "d-flex flex-column gap-3";
-    const labelText = getComponentLabel(component, "Container");
-    if (labelText) {
-      const heading = document.createElement("div");
-      heading.className = "fw-semibold";
-      heading.textContent = labelText;
-      applyTextFormatting(heading, component);
-      wrapper.appendChild(heading);
-    }
+  // resolveContainerZoneAlignItems/resolveContainerZoneTextAlign now live in
+  // ../lib/component-renderers.js, shared with workbench-character-view.js.
 
-    const zones = ensureContainerZones(component);
-    const gap = clampInteger(component.gap ?? 16, 0, 64);
-
-    switch (component.containerType) {
-      case "tabs": {
-        const labels = zones.map((zone) => zone.label);
-        const activeIndex = getActiveTabIndex(component, labels.length);
-        const nav = document.createElement("div");
-        nav.className = "d-flex flex-wrap gap-2";
-        labels.forEach((label, index) => {
-          const button = document.createElement("button");
-          button.type = "button";
-          const isActive = index === activeIndex;
-          button.className = `btn btn-outline-secondary btn-sm${isActive ? " active" : ""}`;
-          button.textContent = label;
-          button.addEventListener("click", (event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            if (isActive) return;
-            setActiveTabIndex(component, index);
-            renderCanvas();
-          });
-          nav.appendChild(button);
-        });
-        wrapper.appendChild(nav);
-
-        const zone = zones[activeIndex] || zones[0];
-        if (zone) {
-          const dropzone = createContainerDropzone(component, zone, {
-            label: labels[activeIndex] || zone.label,
-            hint: `Drop components for ${labels[activeIndex] || zone.label || "this tab"}`,
-          });
-          wrapper.appendChild(dropzone);
+  // itemContext here is the context this Container ITSELF was rendered
+  // with — i.e. this Container is nested inside an OUTER Source-driven
+  // tab's zone — passed through unchanged to plain (non-tab) children.
+  // Orthogonal to, and checked independently of, whether this Container
+  // ALSO has its OWN tabLabelsSourceBinding (computed fresh per zone,
+  // below) — mirrors workbench-character-view.js's renderContainerComponent
+  // exactly (see its own renderZone for the live-view twin of this split).
+  function renderContainerPreview(component, itemContext = null) {
+    return renderContainerContent(component, {
+      // Container's own Label field accepts a literal "@path" the same way
+      // Icon's iconClass/Image's url do, plus a separate `formula` field
+      // for the "=" case (createContainerLabelControl) — evaluated first,
+      // same as Icon's/Image's own canvas preview. Binding/literal resolve
+      // against the template's sample/preview data — previously this
+      // canvas preview never attempted binding resolution for Label at
+      // all, unlike every other bound field's own preview.
+      resolveValue(comp, fallback) {
+        const formula = typeof comp.formula === "string" ? comp.formula.trim() : "";
+        if (formula) {
+          const result = evaluatePreviewFormula(formula);
+          if (result !== undefined && result !== null && String(result).trim()) {
+            return String(result).trim();
+          }
+          return `=${formula}`;
         }
-        break;
-      }
-      case "grid":
-      default: {
-        // "grid" is the only remaining non-tabs variant (ensureContainerZones
-        // has already normalized any legacy "columns"/"rows" value above).
-        const grid = document.createElement("div");
-        grid.className = "template-container-grid";
-        const columns = clampInteger(component.columns || 2, 1, MAX_CONTAINER_COLUMNS);
-        const templateColumns = typeof component.templateColumns === "string" ? component.templateColumns.trim() : "";
-        const templateRows = typeof component.templateRows === "string" ? component.templateRows.trim() : "";
-        grid.style.gridTemplateColumns = templateColumns || `repeat(${columns}, minmax(0, 1fr))`;
-        if (templateRows) {
-          grid.style.gridTemplateRows = templateRows;
-        }
-        grid.style.gap = `${gap}px`;
-        zones.forEach((zone) => {
-          grid.appendChild(
-            createContainerDropzone(component, zone, {
-              label: zone.label,
-              hint: `Drop components into ${zone.label}`,
-            })
-          );
-        });
-        wrapper.appendChild(grid);
-        break;
-      }
-    }
-    return wrapper;
+        const raw = typeof comp.label === "string" ? comp.label.trim() : "";
+        if (!raw.startsWith("@")) return fallback;
+        const resolved = resolvePreviewBindingValue(raw);
+        return resolved !== undefined && resolved !== null && String(resolved).trim()
+          ? String(resolved).trim()
+          : raw;
+      },
+      getZones(comp) {
+        return ensureContainerZones(comp);
+      },
+      renderZone(comp, zone, { label, hint, alignItems, textAlign, zoneIndex }) {
+        // Preview-only twin of the live view's own tabEntry lookup
+        // (workbench-character-view.js's renderContainerComponent) — a
+        // Source-driven tab's own zone gets a { kind: "tab", item, key }
+        // context built from that SAME tab's real System-sourced entry, so
+        // an authored Special-Abilities-style checkbox group inside it can
+        // preview that tab's own real options (resolveSelectPreviewOptions,
+        // resolvePreviewItemValue) while still being authored just once.
+        const sourceValues = resolveSystemFieldValues(comp.tabLabelsSourceBinding);
+        const tabEntries = sourceValues ? resolveTabEntries(sourceValues) : null;
+        const tabEntry = tabEntries && Number.isInteger(zoneIndex) ? tabEntries[zoneIndex] : null;
+        const zoneItemContext = tabEntry ? { kind: "tab", item: tabEntry.item, key: tabEntry.key } : itemContext;
+        return createContainerDropzone(comp, zone, { label, hint, alignItems, textAlign, itemContext: zoneItemContext });
+      },
+      getActiveTabIndex(comp, total) {
+        return getActiveTabIndex(comp, total);
+      },
+      setActiveTabIndex(comp, index) {
+        setActiveTabIndex(comp, index);
+      },
+    });
   }
 
   function resolveTrackSegmentCount(component) {
@@ -3406,184 +3972,105 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     return component.trackShape === "circular" ? renderCircularTrackPreview(component) : renderLinearTrackPreview(component);
   }
 
+  const previewTrackCtx = {
+    resolveTrackState(comp) {
+      return getTrackPreviewState(comp);
+    },
+    editable() {
+      return false;
+    },
+    onChange() {},
+  };
+
   function renderLinearTrackPreview(component) {
-    const labelText = getComponentLabel(component, "Track");
-    const track = document.createElement("div");
-    track.className = "template-linear-track";
-    const { segments, active } = getTrackPreviewState(component);
-    const total = Math.max(segments, 1);
-    for (let index = 0; index < total; index += 1) {
-      const segment = document.createElement("div");
-      segment.className = "template-linear-track__segment";
-      if (index < active) {
-        segment.classList.add("is-active");
-      }
-      segment.title = `Segment ${index + 1}`;
-      track.appendChild(segment);
-    }
-    return createLabeledField({
-      component,
-      control: track,
-      labelText,
-      labelTag: "div",
-      labelClasses: ["fw-semibold", "text-body-secondary"],
-      applyFormatting: applyTextFormatting,
-    });
+    return renderLinearTrackContent(component, previewTrackCtx);
   }
 
   function renderCircularTrackPreview(component) {
-    const labelText = getComponentLabel(component, "Clock");
-    const circle = document.createElement("div");
-    circle.className = "template-circular-track";
-    const { segments, active } = getTrackPreviewState(component);
-    const total = Math.max(segments, 1);
-    const step = 360 / total;
-    const gradientStops = [];
-    for (let index = 0; index < total; index += 1) {
-      const start = index * step;
-      const end = start + step;
-      const color = index < active ? "var(--bs-primary)" : "var(--bs-border-color)";
-      gradientStops.push(`${color} ${start}deg ${end}deg`);
-    }
-    circle.style.background = `conic-gradient(${gradientStops.join(", ")})`;
-    const mask = document.createElement("div");
-    mask.className = "template-circular-track__mask";
-    circle.appendChild(mask);
-    const value = document.createElement("div");
-    value.className = "template-circular-track__value";
-    value.textContent = `${Math.min(active, total)}/${total}`;
-    circle.appendChild(value);
-    return createLabeledField({
-      component,
-      control: circle,
-      labelText,
-      labelTag: "div",
-      labelClasses: ["fw-semibold", "text-body-secondary"],
-      applyFormatting: applyTextFormatting,
-    });
+    return renderCircularTrackContent(component, previewTrackCtx);
   }
 
-  function renderSelectGroupComponentPreview(component) {
-    const labelText = getComponentLabel(component, "Select");
-    const options = resolveSelectGroupPreviewOptions(component);
-    if (!options.length) {
-      const container = document.createElement("div");
-      container.className = "d-flex flex-column gap-2";
-      if (labelText) {
-        container.appendChild(
-          createLabeledField({
-            component,
-            control: document.createDocumentFragment(),
-            labelText,
-            labelTag: "div",
-            labelClasses: ["fw-semibold"],
-            applyFormatting: applyTextFormatting,
-          })
-        );
-      }
-      container.appendChild(createPreviewEmptyState());
-      return container;
-    }
-    let control;
-    if (component.variant === "tags") {
-      control = document.createElement("div");
-      control.className = "template-select-tags d-flex flex-wrap gap-2";
-      options.forEach((option, index) => {
-        const tag = document.createElement("span");
-        tag.className = "template-select-tag";
-        const label = option.label || option.value || "";
-        const slug = label.trim().toLowerCase().replace(/\s+/g, "-");
-        tag.textContent = `#${slug || "tag"}`;
-        if (component.multiple !== false && index < 2) {
-          tag.classList.add("is-active");
-        } else if (!component.multiple && index === 0) {
-          tag.classList.add("is-active");
+  function renderSelectGroupComponentPreview(component, itemContext = null) {
+    return renderSelectGroupContent(component, {
+      resolveOptions(comp) {
+        return resolveSelectGroupPreviewOptions(comp, itemContext);
+      },
+      // No live record to compare against — a representative "first
+      // option(s) look selected" state instead, matching each variant's
+      // own original preview logic (tags treats `multiple` slightly more
+      // leniently than buttons/default — preserved as-is, not a bug this
+      // pass is fixing).
+      isActive(comp, option, index) {
+        if (comp.variant === "tags") {
+          return comp.multiple !== false ? index < 2 : index === 0;
         }
-        control.appendChild(tag);
-      });
-    } else if (component.variant === "buttons") {
-      control = document.createElement("div");
-      control.className = "btn-group";
-      options.forEach((option, index) => {
-        const button = document.createElement("button");
-        button.type = "button";
-        const isActive = component.multiple ? index < 2 : index === 0;
-        button.className = `btn btn-outline-secondary${isActive ? " active" : ""}`;
-        if (component.readOnly) {
-          button.classList.add("disabled");
+        return comp.multiple ? index < 2 : index === 0;
+      },
+      editable(comp) {
+        return !comp.readOnly;
+      },
+      onSelect() {},
+      wrapEmptyOptions(comp, labelText) {
+        const container = document.createElement("div");
+        container.className = "d-flex flex-column gap-2";
+        if (labelText) {
+          container.appendChild(
+            createLabeledField({
+              component: comp,
+              control: document.createDocumentFragment(),
+              labelText,
+              labelTag: "div",
+              labelClasses: ["fw-semibold", "text-body-secondary"],
+              applyFormatting: applyTextFormatting,
+            })
+          );
         }
-        button.textContent = option.label || option.value;
-        control.appendChild(button);
-      });
-    } else {
-      control = document.createElement("div");
-      control.className = "d-flex flex-wrap gap-2";
-      options.forEach((option, index) => {
-        const button = document.createElement("button");
-        button.type = "button";
-        const isActive = component.multiple ? index < 2 : index === 0;
-        button.className = `btn btn-outline-secondary btn-sm rounded-pill${isActive ? " active" : ""}`;
-        if (component.readOnly) {
-          button.classList.add("disabled");
-        }
-        button.textContent = option.label || option.value;
-        control.appendChild(button);
-      });
-    }
-    return createLabeledField({
-      component,
-      control,
-      labelText,
-      labelTag: "div",
-      labelClasses: ["fw-semibold"],
-      applyFormatting: applyTextFormatting,
+        container.appendChild(createPreviewEmptyState());
+        return container;
+      },
     });
   }
 
   function renderTogglePreview(component) {
-    const labelText = getComponentLabel(component, "Toggle");
-    const states = resolveTogglePreviewStates(component);
-    const shape = component.shape || "circle";
-    const fallbackState = typeof component.value === "string" ? component.value.trim() : "";
-    const hasStates = states.length > 0;
-    let activeIndex = hasStates && fallbackState ? states.findIndex((state) => String(state) === fallbackState) : -1;
-    if (activeIndex < 0) {
-      activeIndex = clampInteger(component.activeIndex ?? 0, 0, Math.max(states.length - 1, 0));
-    }
-    if (activeIndex < 0) {
-      activeIndex = 0;
-    }
-    const maxIndex = Math.max(states.length - 1, 1);
-    const progress = maxIndex > 0 ? activeIndex / maxIndex : 0;
-    const preview = document.createElement("div");
-    preview.className = `template-toggle-shape template-toggle-shape--${shape}`;
-    if (progress > 0) {
-      preview.classList.add("is-active");
-    }
-    preview.style.setProperty("--template-toggle-level", progress.toFixed(3));
-    const opacity = 0.25 + progress * 0.55;
-    preview.style.setProperty("--template-toggle-opacity", opacity.toFixed(3));
-    if (hasStates) {
-      preview.setAttribute("aria-label", states[Math.min(activeIndex, states.length - 1)] || "Toggle state");
-    } else {
-      preview.setAttribute("aria-label", "Toggle preview");
-    }
-    const field = createLabeledField({
-      component,
-      control: preview,
-      labelText,
-      labelTag: "div",
-      labelClasses: ["fw-semibold", "text-body-secondary"],
-      applyFormatting: applyTextFormatting,
+    return renderToggleContent(component, {
+      resolveStates(comp) {
+        return resolveTogglePreviewStates(comp);
+      },
+      resolveActiveIndex(comp, states) {
+        const fallbackState = typeof comp.value === "string" ? comp.value.trim() : "";
+        let activeIndex = states.length && fallbackState
+          ? states.findIndex((s) => String(s.value) === fallbackState)
+          : -1;
+        if (activeIndex < 0) {
+          activeIndex = clampInteger(comp.activeIndex ?? 0, 0, Math.max(states.length - 1, 0));
+        }
+        return activeIndex < 0 ? 0 : activeIndex;
+      },
+      // Always inert — same as Track's own canvas preview (previewTrackCtx
+      // above). Toggle isn't a native form control anymore (a select that
+      // could plausibly stay focusable-but-inert); it's a clickable shape,
+      // and the canvas preview shouldn't invite a click that silently does
+      // nothing (onChange below is a no-op either way).
+      editable() {
+        return false;
+      },
+      onChange() {},
+      wrapEmptyStates(field) {
+        const container = document.createElement("div");
+        container.className = "d-flex flex-column gap-2";
+        container.appendChild(field);
+        container.appendChild(createPreviewEmptyState("Select a source to preview toggle states."));
+        return container;
+      },
+      // Forces a half-filled look regardless of the component's own real
+      // active state — the canvas preview is for judging how Background
+      // (the unfilled portion) and Foreground (the filled portion) look
+      // together while authoring them, not for showing what the default
+      // active state happens to be (which could easily be fully empty or
+      // fully filled, hiding one of the two colors entirely). Real
+      // Play/Edit is unaffected — this ctx only ever backs the canvas.
+      previewFillLevel: 0.5,
     });
-    if (!hasStates) {
-      const container = document.createElement("div");
-      container.className = "d-flex flex-column gap-2";
-      container.appendChild(field);
-      container.appendChild(createPreviewEmptyState("Select a source to preview toggle states."));
-      return container;
-    }
-    return field;
   }
 
   function selectComponent(uid) {
@@ -3664,6 +4151,94 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     }
   }
 
+  // Copy/Cut/Paste (Ctrl/Cmd+C/X/V, wired up alongside Delete near the top
+  // of this file) — the only way to move a component across a Tab
+  // Container's tabs (or into an empty one). Drag-drop can't do this: only
+  // the ACTIVE tab's zone is ever in the DOM at once (see
+  // renderContainerContent in component-renderers.js), so there's nothing
+  // for SortableJS to drag a card into on any other tab. Clipboard state
+  // (componentClipboard) sidesteps that entirely — Cut/Copy record the
+  // selected component, the author switches tabs (or selects a different
+  // target) however they like, then Paste inserts wherever the CURRENT
+  // selection says to, same as a fresh drop from the palette would.
+  function copySelectedComponent() {
+    const found = findComponent(state.selectedId);
+    if (!found) return;
+    componentClipboard = { component: cloneComponentTree(found.component) };
+    const label = COMPONENT_DEFINITIONS[found.component.type]?.label || "component";
+    status.show(`Copied ${label} — select a target, then Ctrl+V to paste`, { timeout: 2200 });
+  }
+
+  function cutSelectedComponent() {
+    const uid = state.selectedId;
+    const found = findComponent(uid);
+    if (!found) return;
+    componentClipboard = { component: cloneComponentTree(found.component) };
+    const label = COMPONENT_DEFINITIONS[found.component.type]?.label || "component";
+    // silent: true — removeComponent's own "Removed component" toast would
+    // otherwise immediately replace this more specific one.
+    removeComponent(uid, { silent: true });
+    status.show(`Cut ${label} — select a target, then Ctrl+V to paste`, { type: "info", timeout: 2600 });
+  }
+
+  // Where Paste lands: no selection -> end of the root canvas (matches a
+  // fresh palette drop with nothing selected). A zone-bearing component
+  // selected (Container/Repeater) -> INTO that container, at the end of
+  // its currently active zone — for a Tabs container specifically, that's
+  // whichever tab is on screen right now, empty or not, which is the one
+  // case drag-drop can never reach. Any other component selected -> right
+  // after it, as a new sibling in its own zone (a plain reorder-by-paste).
+  function getPasteTarget() {
+    const selection = findComponent(state.selectedId);
+    if (!selection) {
+      return { parentId: "", zoneKey: "root", index: state.components.length };
+    }
+    const { component, parent, zoneKey, index } = selection;
+    if (isZoneContainer(component)) {
+      const zones = ensureComponentZones(component);
+      if (zones.length) {
+        let targetZone = zones[0];
+        if (component.type === "container" && component.containerType === "tabs") {
+          const activeIndex = getActiveTabIndex(component, zones.length);
+          targetZone = zones[activeIndex] || zones[0];
+        }
+        return { parentId: component.uid, zoneKey: targetZone.key, index: targetZone.components.length };
+      }
+    }
+    return { parentId: parent?.uid || "", zoneKey, index: index + 1 };
+  }
+
+  function pasteClipboardComponent() {
+    if (!componentClipboard?.component) {
+      status.show("Nothing to paste — Copy or Cut a component first", { type: "warning", timeout: 2000 });
+      return;
+    }
+    const gate = canInsertComponent();
+    if (!gate.ok) {
+      status.show(gate.message, gate.options);
+      return;
+    }
+    const target = getPasteTarget();
+    const component = regenerateComponentUids(cloneComponentTree(componentClipboard.component));
+    const previousSelectedId = state.selectedId || null;
+    insertComponent(target.parentId, target.zoneKey, target.index, component);
+    state.selectedId = component.uid;
+    undoStack.push({
+      type: "add",
+      templateId: state.template?.id || "",
+      component: cloneComponentTree(component),
+      parentId: target.parentId,
+      zoneKey: target.zoneKey,
+      index: target.index,
+      previousSelectedId,
+    });
+    const label = COMPONENT_DEFINITIONS[component.type]?.label || "component";
+    status.show(`Pasted ${label}`, { type: "success", timeout: 1800 });
+    renderCanvas();
+    renderInspector();
+    expandInspectorPane();
+  }
+
   function ensureTemplateContext(entry) {
     if (!entry || typeof entry !== "object") {
       return false;
@@ -3732,6 +4307,20 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
         renderInspector();
         return { message: "Restored template canvas", options: { type: "info", timeout: 1600 } };
       }
+      case "componentColor": {
+        if (!entry.componentId || !entry.before) {
+          return { message: "Nothing to undo", options: { timeout: 1200 } };
+        }
+        const found = findComponent(entry.componentId);
+        if (!found) {
+          return { message: "Component no longer exists", options: { type: "warning", timeout: 1800 } };
+        }
+        applyColorKeys(found.component, entry.before);
+        state.selectedId = entry.componentId;
+        renderCanvas();
+        renderInspector();
+        return { message: "Reverted color change", options: { type: "info", timeout: 1500 } };
+      }
       case "save": {
         return { message: "Saved template state noted", options: { type: "info", timeout: 1500 } };
       }
@@ -3796,6 +4385,20 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
         renderInspector();
         return { message: "Cleared template canvas", options: { type: "info", timeout: 1500 } };
       }
+      case "componentColor": {
+        if (!entry.componentId || !entry.after) {
+          return { message: "Nothing to redo", options: { timeout: 1200 } };
+        }
+        const found = findComponent(entry.componentId);
+        if (!found) {
+          return { message: "Component no longer exists", options: { type: "warning", timeout: 1800 } };
+        }
+        applyColorKeys(found.component, entry.after);
+        state.selectedId = entry.componentId;
+        renderCanvas();
+        renderInspector();
+        return { message: "Reapplied color change", options: { type: "info", timeout: 1500 } };
+      }
       case "save": {
         return { message: "Save action noted", options: { type: "info", timeout: 1500 } };
       }
@@ -3833,6 +4436,17 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
       type: data.type || "",
       origin,
       shareToken: effectiveShareToken,
+      baseFontFamily: data.baseFontFamily || "",
+      defaults: data.defaults || null,
+      backgroundColor: data.backgroundColor || "",
+      backgroundColorBinding: data.backgroundColorBinding || "",
+      backgroundColorFormula: data.backgroundColorFormula || "",
+      borderStyle: data.borderStyle || "",
+      borderColor: data.borderColor || "",
+      borderColorBinding: data.borderColorBinding || "",
+      borderColorFormula: data.borderColorFormula || "",
+      borderWidth: data.borderWidth,
+      borderSides: data.borderSides || null,
     });
     componentCounter = 0;
     const components = Array.isArray(data.components)
@@ -3893,7 +4507,13 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
         origin: "draft",
         emitStatus: true,
         statusMessage: `Started ${title}`,
-        markClean: false,
+        // A brand-new, still-empty template has nothing unsaved to lose —
+        // same reasoning the "New Template" modal's own draft creation
+        // already uses (markClean: !isDuplicate, true for a genuinely new
+        // one). This was the one path left saying otherwise, which made
+        // the beforeunload warning (hasUnsavedTemplateChanges) fire the
+        // instant this button was clicked, before any real edit.
+        markClean: true,
       }
     );
     templateIdAuto = true;
@@ -4104,6 +4724,73 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
       excludeDefault: true,
     });
 
+    // Font Default — the ONLY true template-wide fallback (resolveComponentColorsForPreview
+    // here, resolveComponentColors in workbench-character-view.js): every
+    // component's own Text falls back to this when blank. Native
+    // <input type="color"> on purpose — this one is meant to always hold a
+    // real, simple literal color, never clearable, and a color input can't
+    // be empty by construction, which is exactly the guarantee needed here.
+    state.template.defaults = normalizeTemplateDefaults(state.template.defaults);
+    const fontDefaultInput = document.createElement("input");
+    fontDefaultInput.type = "color";
+    fontDefaultInput.className = "form-control form-control-color";
+    fontDefaultInput.value = state.template.defaults.fontColor;
+    fontDefaultInput.disabled = !canEdit;
+    fontDefaultInput.title = "Default font color";
+    fontDefaultInput.addEventListener("input", () => {
+      state.template.defaults.fontColor = fontDefaultInput.value;
+      syncTemplateActions();
+      renderCanvas();
+    });
+    form.appendChild(createTemplateField({ labelText: "Font Default", control: fontDefaultInput, id: "template-font-default" }));
+
+    // Background/Border below are NOT fallbacks for anything — they're the
+    // sheet's own literal, visible appearance (applied to the canvas root
+    // above). Same createColorPickerField every component's own Colors
+    // section already uses (common/js/lib/color-picker.js) — the same
+    // Clear/unset (checkered-X) handling and the same Binding/Formula
+    // capability, not a simplified one-off; a plain <input type="color">
+    // can never actually represent "cleared" (it always shows a solid
+    // color), which is exactly why Clear looked broken with the previous
+    // version of this control even though the underlying data really was
+    // being cleared.
+    form.appendChild(
+      createColorPickerField("Background", {
+        value: state.template.backgroundColor || "",
+        defaultValue: COLOR_FIELD_MAP.background.default,
+        bindingValue: state.template.backgroundColorFormula
+          ? `=${state.template.backgroundColorFormula}`
+          : state.template.backgroundColorBinding || "",
+        evaluate: evaluateTemplateColorPreview,
+        onManualChange: (value) => {
+          state.template.backgroundColor = value;
+          syncTemplateActions();
+          renderCanvas();
+        },
+        onBindingChange: (raw) => {
+          const trimmed = raw.trim();
+          if (trimmed.startsWith("=")) {
+            state.template.backgroundColorFormula = trimmed.slice(1).trim();
+            state.template.backgroundColorBinding = "";
+          } else {
+            state.template.backgroundColorBinding = trimmed;
+            state.template.backgroundColorFormula = "";
+          }
+          syncTemplateActions();
+          renderCanvas();
+        },
+        onClear: () => {
+          state.template.backgroundColor = "";
+          state.template.backgroundColorBinding = "";
+          state.template.backgroundColorFormula = "";
+          syncTemplateActions();
+          renderCanvas();
+        },
+      })
+    );
+
+    form.appendChild(createTemplateBorderControls(canEdit));
+
     const systemSelect = document.createElement("select");
     systemSelect.className = "form-select";
     systemSelect.disabled = !canEdit;
@@ -4124,6 +4811,75 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
 
     elements.templateProperties.appendChild(form);
     restoreTemplatePropertiesFocus(focusSnapshot);
+  }
+
+  // Whether ANY of the given keys currently differ from a pristine,
+  // freshly-created component of the same type — used to force a
+  // collapsed-by-default section (Appearance/Behavior/Advanced) open when
+  // the component already has non-default values set there, per the
+  // standard section-order spec (see common/docs/inspector-standards.md).
+  // Builds a real throwaway instance via createComponent (not a hand-
+  // reconstructed defaults guess) so this can never drift from the actual
+  // defaults logic — but saves/restores componentCounter around the call
+  // so a comparison-only instance never steals a uid number a real new
+  // component would otherwise get.
+  function hasNonDefaultValues(component, keys) {
+    if (!component?.type || !Array.isArray(keys) || !keys.length) {
+      return false;
+    }
+    const savedCounter = componentCounter;
+    let pristine;
+    try {
+      pristine = createComponent(component.type);
+    } catch (error) {
+      return false;
+    } finally {
+      componentCounter = savedCounter;
+    }
+    return keys.some((key) => {
+      const current = component[key];
+      const defaultValue = pristine[key];
+      if ((typeof current === "object" && current !== null) || (typeof defaultValue === "object" && defaultValue !== null)) {
+        return JSON.stringify(current) !== JSON.stringify(defaultValue);
+      }
+      return current !== defaultValue;
+    });
+  }
+
+  // Split to match the canonical section list both tools now share —
+  // General, Text, Colors, Border, Behavior, Advanced (see
+  // createCollapsibleSection's own note in common/js/lib/inspector-fields.js
+  // for why Press can't literally run this same code, and what it does
+  // share instead). Colors vs. Border: the three swatches (text/background/
+  // border color) are a "Colors" concern; a border's geometry (width/style/
+  // radius/sides) is its own separate "Border" section, exactly mirroring
+  // Press's own Colors-group-has-the-border-swatch / Borders-group-has-the-
+  // geometry split.
+  const TEXT_KEYS = ["labelPosition", "fontFamily", "textSize", "fontSizeCustom", "lineHeight", "textStyles", "align"];
+  const COLOR_KEYS = ["textColor", "foregroundColor", "backgroundColor", "borderColor"];
+  const BORDER_KEYS = ["borderWidth", "borderStyle", "borderRadius", "borderSides"];
+  const BEHAVIOR_KEYS = [
+    "collapsible", "collapsibleBinding", "collapsibleFormula",
+    "readOnly", "readOnlyBinding", "readOnlyFormula",
+    "editableInPlay", "editableInPlayBinding", "editableInPlayFormula",
+    "visible", "visibilityBinding", "visibilityFormula",
+  ];
+  const ADVANCED_KEYS = ["padding", "margin", "className"];
+
+  // Every field builder used in the inspector (createTextInput,
+  // createRadioButtonGroup, createBindingFormulaInput, and the Image/Icon
+  // one-off Binding/Text controls) marks its own label/heading with the
+  // shared ".fw-semibold" class, its textContent set to the exact labelText
+  // passed in — regardless of whether that label sits directly in the
+  // control's wrapper or nested inside a ".form-floating" wrapper a level
+  // down. That's enough to find a specific named field (Type, Placeholder,
+  // Source / Options, Binding / Text) inside an already-built controls
+  // array and pull it out to reposition, without every builder needing its
+  // own tagging convention.
+  function pluckControlByLabel(controls, labelText) {
+    const index = controls.findIndex((el) => el?.querySelector?.(".fw-semibold")?.textContent === labelText);
+    if (index === -1) return null;
+    return controls.splice(index, 1)[0];
   }
 
   function renderInspector() {
@@ -4148,11 +4904,58 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     if (isZoneContainer(component)) {
       ensureComponentZones(component);
     }
+    const wrapper = document.createElement("div");
+    // gap-3 (not gap-4) — tighter than the rest of the form's own section
+    // spacing on purpose: this is the one gap between the Type Summary card
+    // and everything below it, and a Type selector (when the type has one)
+    // is the very next thing after it — no reason for more air here than
+    // between any other two adjacent fields.
+    wrapper.className = "d-flex flex-column gap-3";
+
+    // Standard section 1 — Type Summary (never collapsible; see
+    // common/docs/inspector-standards.md for the fixed section order every
+    // component type follows in both Press and Workbench).
+    const parentLabel = selection.parent ? (selection.parent.label || selection.parent.name || COMPONENT_DEFINITIONS[selection.parent.type]?.label) : null;
+    wrapper.appendChild(
+      createTypeSummaryHeader({
+        icon: COMPONENT_ICONS[component.type] || "tabler:app-window",
+        label: definition.label || component.type,
+        description: definition.description || "",
+        parentLabel,
+        onSelectParent: parentLabel ? () => selectComponent(selection.parent.uid) : null,
+      })
+    );
+
     const form = document.createElement("form");
     form.className = "d-flex flex-column gap-4";
     form.addEventListener("submit", (event) => event.preventDefault());
 
-    const identityControls = [
+    // Field order within section 2 (General) follows one fixed rule
+    // regardless of type: Type (if the type has one), ID, Label, Placeholder
+    // (if the type has one), Source / Options (if applicable), Binding /
+    // Text, then whatever remains of the type's own controls. Type/
+    // Placeholder/Source-Options/Binding-Text are authored inside each
+    // render*Inspector (or createDataControls) alongside the type's other
+    // fields, so they're plucked out here by their label text and
+    // re-inserted at the front so the fixed order holds no matter which
+    // type built them.
+    const componentSpecificControls = renderComponentSpecificInspector(component).filter(Boolean);
+    const dataControls = createDataControls(component, definition).filter(Boolean);
+    const remainingComponentControls = [...componentSpecificControls, ...dataControls];
+    const typeControl = pluckControlByLabel(remainingComponentControls, "Type");
+    const placeholderControl = pluckControlByLabel(remainingComponentControls, "Placeholder");
+    const sourceOptionsControl = pluckControlByLabel(remainingComponentControls, "Source / Options");
+    const bindingTextControl = pluckControlByLabel(remainingComponentControls, "Binding / Text");
+
+    // Standard section 2 (unlabeled — never collapsible, always expanded,
+    // this is why the inspector was opened). Type/ID/Label/Placeholder/
+    // Source-Options/Binding-Text/rest all live here as one flat, unheaded
+    // group. Not a "General" section: a named section in this inspector
+    // means collapsible-with-a-heading (see createCollapsibleSection), and
+    // this one is neither — it's just the fields that come before the
+    // first real named section (Text).
+    const generalControls = [
+      typeControl,
       createTextInput(component, "ID", component.id || "", (value) => {
         updateComponent(component.uid, (draft) => {
           draft.id = value.trim();
@@ -4164,80 +4967,143 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
       // second, redundant place to set text, exactly the "two fields for
       // one concept" problem Text was created to eliminate in the first
       // place — so it's omitted for this type only.
+      // Container gets its own Label control here too (createContainerLabelControl)
+      // instead of the plain binding-blind one — it still needs to accept a
+      // literal/`@path`/`=formula` in one field, which the generic Label
+      // input below doesn't support. Called directly in this Identity-
+      // section slot (not plucked from remainingComponentControls the way
+      // Type/Source-Options/Binding-Text are) since it was never really a
+      // "Binding / Text" field to begin with — that label was a mislabel
+      // this same fix retired, along with the `draft.name` side effect the
+      // generic Label field below still has.
       component.type === "text"
         ? null
-        : createTextInput(component, "Label", getComponentLabel(component), (value) => {
-            updateComponent(component.uid, (draft) => {
-              const next = value.trim();
-              draft.label = next;
-              draft.name = next;
-            }, { rerenderCanvas: true });
-          }, { placeholder: "Displayed label" }),
+        : component.type === "container"
+          ? createContainerLabelControl(component)
+          : createTextInput(component, "Label", getComponentLabel(component), (value) => {
+              updateComponent(component.uid, (draft) => {
+                const next = value.trim();
+                draft.label = next;
+                draft.name = next;
+              }, { rerenderCanvas: true });
+            }, { placeholder: "Displayed label" }),
+      placeholderControl,
+      sourceOptionsControl,
+      bindingTextControl,
+      ...remainingComponentControls,
+      // Every type, unconditionally — see createAlignItemsControl's own
+      // comment for why this lives here (top/unlabeled section) rather
+      // than in "Text" alongside Text Align.
+      createAlignItemsControl(component),
     ].filter(Boolean);
-    if (identityControls.length) {
-      const identityGroup = document.createElement("div");
-      identityGroup.className = "d-flex flex-column gap-3";
-      identityControls.forEach((control) => identityGroup.appendChild(control));
-      form.appendChild(identityGroup);
+    if (generalControls.length) {
+      const generalGroup = document.createElement("div");
+      generalGroup.className = "d-flex flex-column gap-3";
+      generalControls.forEach((control) => generalGroup.appendChild(control));
+      form.appendChild(generalGroup);
     }
 
-    const componentSpecificControls = renderComponentSpecificInspector(component).filter(Boolean);
-    if (componentSpecificControls.length) {
-      const componentSection = document.createElement("section");
-      componentSection.className = "d-flex flex-column gap-3";
-      componentSpecificControls.forEach((control) => componentSection.appendChild(control));
-      form.appendChild(componentSection);
-    }
-
-    const dataControls = createDataControls(component, definition);
-    const dataSection = createSection("Data", dataControls);
-    if (dataSection) {
-      form.appendChild(dataSection);
-    }
-
-    const appearanceControls = [];
-    const colorControls = getColorControls(component);
-    if (colorControls.length) {
-      appearanceControls.push(createColorRow(component, colorControls));
-      if (colorControls.includes("border")) {
-        appearanceControls.push(createBorderControls(component));
-      }
-    }
-    if (componentSupportsLabelPosition(component)) {
-      appearanceControls.push(createLabelPositionControl(component));
-    }
+    // Standard section 3 — Text (collapsed by default unless non-default
+    // values are already set). Font/Text size/Label position/Text style
+    // (bold/italic/underline)/Alignment — every text-formatting concern,
+    // as its own section, matching Press's own separate "Text" group
+    // rather than folding it into a single catch-all "Appearance" section.
+    // Font is always first (createTextFormattingControls' own first entry)
+    // — Label position goes last, after Alignment, not first: it's a
+    // structural placement choice (where the label sits relative to the
+    // component), not a text-formatting property, so it reads better as
+    // the last thing in this section rather than leading it.
+    const textControls = [];
     if (componentHasTextControls(component)) {
-      appearanceControls.push(...createTextFormattingControls(component));
-      appearanceControls.push(createTextStyleControls(component));
+      textControls.push(...createTextFormattingControls(component));
+      textControls.push(createTextStyleControls(component));
     }
     if (definition.supportsAlignment !== false && componentHasTextControls(component)) {
-      appearanceControls.push(createAlignmentControls(component));
+      textControls.push(createAlignmentControls(component));
     }
-    appearanceControls.push(...createSpacingControls(component));
-    const appearanceSection = createSection("Appearance", appearanceControls);
-    if (appearanceSection) {
-      form.appendChild(appearanceSection);
+    if (componentSupportsLabelPosition(component)) {
+      textControls.push(createLabelPositionControl(component));
+    }
+    if (textControls.filter(Boolean).length) {
+      form.appendChild(
+        createCollapsibleSection("Text", textControls, {
+          defaultCollapsed: true,
+          forceOpen: hasNonDefaultValues(component, TEXT_KEYS),
+        })
+      );
     }
 
+    // Standard section 4 — Colors (collapsed by default unless non-default
+    // values are already set). The three swatches only — border geometry
+    // (width/style/radius/sides) is its own "Border" section below,
+    // matching Press's own Colors-group-has-the-swatch/Border-group-has-
+    // the-geometry split exactly.
+    const colorControls = getColorControls(component);
+    if (colorControls.length) {
+      form.appendChild(
+        createCollapsibleSection("Colors", [createColorRow(component, colorControls)], {
+          defaultCollapsed: true,
+          forceOpen: hasNonDefaultValues(component, COLOR_KEYS),
+        })
+      );
+    }
+
+    // Standard section 5 — Border (collapsed by default unless non-default
+    // values are already set). Only for types whose Colors section includes
+    // a border swatch at all — same gating this used to apply when Border
+    // was folded into Appearance. Toggle included — Style/Width/Sides are
+    // real for it now (component-renderers.js's renderToggleContent draws
+    // a genuine per-side border, not a fixed 1px line); Corner radius is
+    // the one field here that only actually does something for the
+    // "square" shape (every other shape already has its own silhouette —
+    // circle's border-radius:999px, diamond/star/diamond-quarters' own
+    // clip-path — that an independently authored radius would conflict
+    // with, not compose with), but showing it unconditionally reuses this
+    // section as-is rather than forking it just for Toggle.
+    if (colorControls.includes("border")) {
+      form.appendChild(
+        createCollapsibleSection("Border", [createBorderControls(component)], {
+          defaultCollapsed: true,
+          forceOpen: hasNonDefaultValues(component, BORDER_KEYS),
+        })
+      );
+    }
+
+    // Standard section 6 — Behavior (collapsed by default unless
+    // non-default values are already set).
     const behaviorControls = [createCollapsibleToggle(component)];
     if (definition.supportsReadOnly) {
       behaviorControls.push(createReadOnlyToggle(component));
     }
+    if (definition.supportsBinding) {
+      behaviorControls.push(createEditableInPlayToggle(component));
+    }
     behaviorControls.push(createVisibilityControl(component));
-    const behaviorSection = createSection("Behavior", behaviorControls);
-    if (behaviorSection) {
-      form.appendChild(behaviorSection);
-    }
+    form.appendChild(
+      createCollapsibleSection("Behavior", behaviorControls, {
+        defaultCollapsed: true,
+        forceOpen: hasNonDefaultValues(component, BEHAVIOR_KEYS),
+      })
+    );
 
-    // Available unconditionally, every type — matches Press's own Classes
-    // field being ungated (unlike everything else in this inspector, which
-    // is gated by registry flags/component type).
-    const advancedSection = createSection("Advanced", [createClassNameControl(component)]);
-    if (advancedSection) {
-      form.appendChild(advancedSection);
-    }
+    // Standard section 7 — Advanced (collapsed by default unless non-
+    // default values are already set). Available unconditionally, every
+    // type — matches Press's own Classes field being ungated (unlike
+    // everything else in this inspector, which is gated by registry
+    // flags/component type).
+    form.appendChild(
+      createCollapsibleSection(
+        "Advanced",
+        [...createSpacingControls(component), createClassNameControl(component)],
+        {
+          defaultCollapsed: true,
+          forceOpen: hasNonDefaultValues(component, ADVANCED_KEYS),
+        }
+      )
+    );
 
-    elements.inspector.appendChild(form);
+    wrapper.appendChild(form);
+    elements.inspector.appendChild(wrapper);
     refreshTooltips(elements.inspector);
     restoreInspectorFocus(focusSnapshot);
   }
@@ -4303,6 +5169,18 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     }
   }
 
+  // Only two field concepts exist across this whole inspector (see
+  // feedback_suite_wide_parity_principle / project_binding_text_vs_source
+  // memory): "Binding / Text" (what populates this component from the
+  // Character record — the field written to on selection) and
+  // "Source / Options" (what populates a CHOICES LIST from the System
+  // record — only present at all for the types that genuinely have one).
+  // Previously the second, generic field here was left with no labelText
+  // override at all, defaulting to createBindingFormulaInput's own generic
+  // "Binding / Formula" — identical to the Source field's OWN generic
+  // fallback would have been, making the two indistinguishable. This
+  // output is merged directly into each type's own Component section now
+  // (renderInspector), not a separate generic "Data" section.
   function createDataControls(component, definition = {}) {
     const supportsBinding = definition.supportsBinding !== false;
     const supportsFormula = definition.supportsFormula !== false;
@@ -4315,7 +5193,7 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     if (component.type === "input" && (component.variant || "text") === "select") {
       const controls = [
         createBindingFormulaInput(component, {
-          labelText: "Source",
+          labelText: "Source / Options",
           placeholder: "@data.options",
           bindingKey: "sourceBinding",
           formulaKey: null,
@@ -4328,6 +5206,7 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
           },
         }),
         createBindingFormulaInput(component, {
+          labelText: "Binding / Text",
           supportsBinding,
           supportsFormula,
           allowedFieldCategories: ["string", "number"],
@@ -4339,7 +5218,7 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     if (component.type === "select-group") {
       const controls = [
         createBindingFormulaInput(component, {
-          labelText: "Source",
+          labelText: "Source / Options",
           placeholder: "@metadata.options",
           bindingKey: "sourceBinding",
           formulaKey: null,
@@ -4354,6 +5233,7 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
       ];
       controls.push(
         createBindingFormulaInput(component, {
+          labelText: "Binding / Text",
           supportsBinding,
           supportsFormula,
           allowedFieldCategories: component.multiple ? ["array", "object"] : ["string", "number"],
@@ -4365,7 +5245,7 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     if (component.type === "toggle") {
       const controls = [
         createBindingFormulaInput(component, {
-          labelText: "Source",
+          labelText: "Source / Options",
           placeholder: "@metadata.states",
           bindingKey: "statesBinding",
           formulaKey: null,
@@ -4378,6 +5258,7 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
           },
         }),
         createBindingFormulaInput(component, {
+          labelText: "Binding / Text",
           supportsBinding,
           supportsFormula,
           allowedFieldCategories: ["string", "number"],
@@ -4390,6 +5271,7 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     if (supportsBinding || supportsFormula) {
       controls.push(
         createBindingFormulaInput(component, {
+          labelText: "Binding / Text",
           supportsBinding,
           supportsFormula,
         })
@@ -4463,44 +5345,93 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     restoreFocusSnapshot(elements.templateProperties, snapshot, "data-template-field");
   }
 
-  function createSection(title, controls = []) {
-    const filtered = controls.filter(Boolean);
-    if (!filtered.length) return null;
-    const section = document.createElement("section");
-    section.className = "d-flex flex-column gap-3";
-    if (title) {
-      const heading = document.createElement("div");
-      heading.className = "text-uppercase fs-6 fw-semibold text-body-secondary";
-      heading.textContent = title;
-      section.appendChild(heading);
-    }
-    filtered.forEach((control) => section.appendChild(control));
-    return section;
-  }
-
   function createColorRow(component, keys = []) {
     const controls = keys.filter((key) => COLOR_FIELD_MAP[key]);
     if (!controls.length) return null;
     const wrapper = document.createElement("div");
     wrapper.className = "d-flex flex-column gap-2";
-    const label = document.createElement("div");
-    label.className = "fw-semibold text-body-secondary";
-    label.textContent = "Colors";
-    wrapper.appendChild(label);
+    // No "Colors" heading here — the outer "Colors" SECTION heading
+    // (createCollapsibleSection) already says what this is; a second one
+    // in here too was a duplicate.
     const grid = document.createElement("div");
     grid.className = "template-color-grid";
-    if (controls.length >= 3) {
-      grid.style.gridTemplateColumns = "repeat(3, minmax(0, 1fr))";
-    } else if (controls.length > 0) {
-      grid.style.gridTemplateColumns = `repeat(${controls.length}, minmax(0, 1fr))`;
+    if (controls.length > 0) {
+      // Caps at 4 per row, not just 3 — Toggle is the first type with all
+      // four concepts (Text/Foreground/Background/Border) at once.
+      grid.style.gridTemplateColumns = `repeat(${Math.min(controls.length, 4)}, minmax(0, 1fr))`;
     }
     controls.forEach((key) => {
       const config = COLOR_FIELD_MAP[key];
+      const bindingValue = component[config.formulaProp]
+        ? `=${component[config.formulaProp]}`
+        : component[config.bindingProp] || "";
       grid.appendChild(
-        createColorInput(component, config.label, component[config.prop], (value) => {
-          updateComponent(component.uid, (draft) => {
-            draft[config.prop] = value;
-          }, { rerenderCanvas: true, rerenderInspector: true });
+        createColorPickerField(config.label, {
+          // The RAW stored color, not padded to config.default when empty
+          // — createColorPickerField already has its own defaultValue param
+          // for "what hue to start the popover from when nothing's set."
+          // Padding value itself (the old resolveEffectiveColor helper) made
+          // a cleared color indistinguishable from a real, explicitly-chosen
+          // default: the picker's own committedHex/hasManualValue derive
+          // straight from value, so a padded non-empty value always read as
+          // "set," and the unset-X overlay never showed after Clear.
+          value: component[config.prop] || "",
+          defaultValue: config.default,
+          bindingValue,
+          evaluate: evaluatePreviewColor,
+          // updateComponentColor (not updateComponent directly) — same
+          // rerender contract, plus the before/after snapshot that makes
+          // this undoable (case "componentColor" in applyTemplateUndo/
+          // Redo). Fires once per commit (Accept/Enter/closing the popover
+          // — see color-picker.js's own commitCurrent), never per drag
+          // frame, so one undo entry per real edit is exactly right.
+          onManualChange: (value) => {
+            updateComponentColor(component.uid, (draft) => {
+              draft[config.prop] = value;
+              // Picking a border color is also a valid way to turn the
+              // border on — not just the Style select (createBorderControls)
+              // — so this needs the same "turning on for the first time,
+              // write real values" treatment that select's own change
+              // handler does, or the color swatch alone does nothing
+              // visible. Only when a real color is actually chosen; clearing
+              // the swatch still doesn't touch style (that's the select's
+              // job alone, matching createBorderControls' own comment).
+              if (key === "border" && value && (!draft.borderStyle || draft.borderStyle === "none")) {
+                draft.borderStyle = "solid";
+                if (draft.borderWidth === null || draft.borderWidth === undefined) draft.borderWidth = 1;
+              }
+            }, { rerenderCanvas: true, rerenderInspector: true });
+          },
+          // Same "=formula writes the Formula key, anything else writes the
+          // Binding key" split every other Binding/Formula pair in this file
+          // uses (Visible/Collapsible/Locked, Track's segments).
+          onBindingChange: (raw) => {
+            const trimmed = raw.trim();
+            updateComponentColor(component.uid, (draft) => {
+              if (trimmed.startsWith("=")) {
+                draft[config.formulaProp] = trimmed.slice(1).trim();
+                draft[config.bindingProp] = "";
+              } else {
+                draft[config.bindingProp] = trimmed;
+                draft[config.formulaProp] = "";
+              }
+            }, { rerenderCanvas: true, rerenderInspector: true });
+          },
+          onClear: () => {
+            updateComponentColor(component.uid, (draft) => {
+              draft[config.bindingProp] = "";
+              draft[config.formulaProp] = "";
+              // Also resets the literal itself back to unset — same as
+              // every other color field (background/border/foreground).
+              // A blank textColor isn't "invisible text": it means inherit
+              // the template's own Font Default (resolveComponentColors/
+              // resolveComponentColorsForPreview's TEMPLATE_DEFAULT_COLOR_
+              // KEYS/MAP fallback, the one color fallback this app still
+              // has, by design), same as a blank background/border means
+              // inherit the template's own literal sheet background/border.
+              draft[config.prop] = "";
+            }, { rerenderCanvas: true, rerenderInspector: true });
+          },
         })
       );
     });
@@ -4516,117 +5447,247 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
   function createBorderControls(component) {
     const wrapper = document.createElement("div");
     wrapper.className = "d-flex flex-column gap-2";
-    const heading = document.createElement("div");
-    heading.className = "fw-semibold text-body-secondary";
-    heading.textContent = "Border";
-    wrapper.appendChild(heading);
 
-    const row = document.createElement("div");
-    row.className = "d-flex align-items-start gap-2 flex-wrap";
-    row.appendChild(
-      createNumberInput(component, "Thickness (px)", component.borderWidth ?? 1, (value) => {
-        updateComponent(component.uid, (draft) => {
-          draft.borderWidth = value === null ? 1 : value;
-        }, { rerenderCanvas: true });
-      }, { min: 0, max: 12, step: 1 })
-    );
-    row.appendChild(
-      createNumberInput(component, "Corner radius (px)", component.borderRadius ?? 0, (value) => {
-        updateComponent(component.uid, (draft) => {
-          draft.borderRadius = value === null ? 0 : value;
-        }, { rerenderCanvas: true });
-      }, { min: 0, max: 24, step: 1 })
-    );
-    wrapper.appendChild(row);
-
+    // Style select comes first — no separate "Style" label of its own (the
+    // outer "Border" SECTION heading — createCollapsibleSection's own —
+    // already says what this is; a second "Border" heading in here too was
+    // a duplicate, now removed). An aria-label keeps the select accessible
+    // without a visible second label.
+    //
+    // currentStyle reads component.borderStyle directly — no cross-
+    // property inference. borderStyle IS the border on/off switch;
+    // borderColor/borderWidth/borderSides are downstream of it, not the
+    // other way around (a component can't have "a border color" without
+    // "a border" — style is what makes it a border at all). See the Style
+    // select's own change handler below for the write-time half of this:
+    // choosing a real style writes real borderColor/borderWidth values
+    // into the data right then, so nothing downstream ever needs its own
+    // invented rendering fallback.
     const styleWrapper = document.createElement("div");
     styleWrapper.className = "d-flex flex-column";
     const styleId = toId([component.uid, "border-style"]);
-    const styleLabel = document.createElement("label");
-    styleLabel.className = "form-label fw-semibold text-body-secondary";
-    styleLabel.setAttribute("for", styleId);
-    styleLabel.textContent = "Style";
     const styleSelect = document.createElement("select");
     styleSelect.className = "form-select";
     styleSelect.id = styleId;
+    styleSelect.setAttribute("aria-label", "Border style");
+    const currentStyle = component.borderStyle || "none";
     BORDER_STYLE_OPTIONS.forEach(({ value, label: optionLabel }) => {
       const option = document.createElement("option");
       option.value = value;
       option.textContent = optionLabel;
-      if ((component.borderStyle || "solid") === value) {
+      if (currentStyle === value) {
         option.selected = true;
       }
       styleSelect.appendChild(option);
     });
     styleSelect.addEventListener("change", () => {
       updateComponent(component.uid, (draft) => {
-        draft.borderStyle = styleSelect.value;
-      }, { rerenderCanvas: true });
+        const nextStyle = styleSelect.value;
+        if (nextStyle === "none") {
+          // Turning the border off — style is the switch, so everything
+          // downstream of it goes back to genuinely unset too, not left
+          // behind as stale data with no effect (see hydrateComponent's
+          // identical cleanup for data loaded from before this existed).
+          draft.borderStyle = "";
+          draft.borderColor = "";
+          draft.borderWidth = null;
+          draft.borderSides = null;
+        } else {
+          draft.borderStyle = nextStyle;
+          // Turning the border ON for the first time — write real,
+          // explicit values right now rather than leaving borderColor/
+          // borderWidth blank and letting the renderer invent a fallback
+          // no one actually chose. Only fills in what's still genuinely
+          // unset — an already-configured color/width from a previous
+          // border isn't overwritten just because style changed again.
+          if (!draft.borderColor) draft.borderColor = COLOR_FIELD_MAP.border.default;
+          if (draft.borderWidth === null || draft.borderWidth === undefined) draft.borderWidth = 1;
+        }
+      }, { rerenderCanvas: true, rerenderInspector: true });
     });
-    styleWrapper.append(styleLabel, styleSelect);
+    styleWrapper.appendChild(styleSelect);
     wrapper.appendChild(styleWrapper);
 
-    wrapper.appendChild(
-      createInspectorToggleGroup(
-        component,
-        "Sides",
-        [
-          { value: "top", label: "Top" },
-          { value: "right", label: "Right" },
-          { value: "bottom", label: "Bottom" },
-          { value: "left", label: "Left" },
-        ],
-        component.borderSides || DEFAULT_BORDER_SIDES,
-        (key, checked) => {
+    // Corner radius is a no-op for every Toggle shape except "square" (see
+    // renderToggleContent, component-renderers.js) — circle already has
+    // its own fixed radius, diamond/star/diamond-quarters their own
+    // clip-path, so an independently authored radius there would do
+    // nothing. Left out entirely rather than shown-but-inert, same
+    // reasoning the Sides group below already applies when there's no
+    // border at all — showing a live-looking control that quietly does
+    // nothing is its own kind of invisible-default confusion.
+    const showCornerRadius = component.type !== "toggle" || component.shape === "square";
+    const thicknessRadiusFields = [
+      createHalfWidthNumberField("Thickness (px)", component.borderWidth, (value) => {
+        updateComponent(component.uid, (draft) => {
+          draft.borderWidth = value === null ? 1 : value;
+        }, { rerenderCanvas: true });
+      }, { min: 0, max: 12, step: 1 }),
+    ];
+    if (showCornerRadius) {
+      thicknessRadiusFields.push(
+        createHalfWidthNumberField("Corner radius (px)", component.borderRadius ?? 0, (value) => {
           updateComponent(component.uid, (draft) => {
-            draft.borderSides = { ...(draft.borderSides || DEFAULT_BORDER_SIDES) };
-            draft.borderSides[key] = checked;
+            draft.borderRadius = value === null ? 0 : value;
           }, { rerenderCanvas: true });
-        }
-      )
-    );
+        }, { min: 0, max: 24, step: 1 })
+      );
+    }
+    wrapper.appendChild(createFieldRow(thicknessRadiusFields, showCornerRadius ? { columns: 2 } : {}));
+
+    // No Sides toggle group at all when there's no border — with the
+    // switch off, "which sides" isn't a real, applicable choice; showing
+    // it pre-checked while inert is its own kind of invisible-default
+    // confusion (looks like a live setting, does nothing). No "Sides"
+    // heading either when it IS shown — the button group's own icon-less
+    // Top/Right/Bottom/Left labels are self-explanatory directly under
+    // Border's other controls.
+    if (currentStyle !== "none") {
+      wrapper.appendChild(
+        createInspectorToggleGroup(
+          component,
+          "",
+          [
+            { value: "top", label: "Top" },
+            { value: "right", label: "Right" },
+            { value: "bottom", label: "Bottom" },
+            { value: "left", label: "Left" },
+          ],
+          component.borderSides || DEFAULT_BORDER_SIDES,
+          (key, checked) => {
+            updateComponent(component.uid, (draft) => {
+              draft.borderSides = { ...(draft.borderSides || DEFAULT_BORDER_SIDES) };
+              draft.borderSides[key] = checked;
+            }, { rerenderCanvas: true });
+          }
+        )
+      );
+    }
 
     return wrapper;
   }
 
-  function createColorInput(component, labelText, value, onChange) {
-    const container = document.createElement("div");
-    container.className = "template-color-control";
-    const id = toId([component.uid, labelText, "color"]);
-    const label = document.createElement("label");
-    label.className = "form-label small text-body-secondary mb-0";
-    label.setAttribute("for", id);
-    label.textContent = labelText;
-    const input = document.createElement("input");
-    input.type = "color";
-    input.className = "form-control form-control-color";
-    input.id = id;
-    input.value = value || "#000000";
-    input.addEventListener("input", () => {
-      onChange(input.value);
+  // The sheet's own literal border — same Style/Color/Width/Sides shape
+  // createBorderControls above gives every component, but writing to
+  // state.template directly (renderCanvas/syncTemplateActions) instead of
+  // updateComponent(component.uid, ...), since the template itself isn't a
+  // component in state.components. Reuses BORDER_STYLE_OPTIONS/
+  // DEFAULT_BORDER_SIDES/createHalfWidthNumberField/createFieldRow/
+  // createInspectorToggleGroup as-is (all already generic, not coupled to
+  // updateComponent) — only the Style-select/Width/Sides change handlers
+  // are template-specific rewrites of createBorderControls' own.
+  function createTemplateBorderControls(canEdit) {
+    const wrapper = document.createElement("div");
+    const heading = document.createElement("div");
+    heading.className = "form-label fw-semibold text-body-secondary";
+    heading.textContent = "Border";
+    wrapper.appendChild(heading);
+    const body = document.createElement("div");
+    body.className = "d-flex flex-column gap-2";
+
+    const styleWrapper = document.createElement("div");
+    styleWrapper.className = "d-flex flex-column";
+    const styleSelect = document.createElement("select");
+    styleSelect.className = "form-select";
+    styleSelect.id = toId(["template", "border-style"]);
+    styleSelect.disabled = !canEdit;
+    styleSelect.setAttribute("aria-label", "Border style");
+    const currentStyle = state.template.borderStyle || "none";
+    BORDER_STYLE_OPTIONS.forEach(({ value, label: optionLabel }) => {
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = optionLabel;
+      if (currentStyle === value) option.selected = true;
+      styleSelect.appendChild(option);
     });
-    const controls = document.createElement("div");
-    controls.className = "d-flex align-items-center gap-2";
-    controls.appendChild(input);
-    const clear = document.createElement("button");
-    clear.type = "button";
-    clear.className = "btn btn-outline-secondary btn-sm";
-    clear.innerHTML = '<span class="iconify" data-icon="tabler:circle-off" aria-hidden="true"></span>';
-    clear.setAttribute("aria-label", `Clear ${labelText.toLowerCase()} color`);
-    clear.setAttribute("data-bs-toggle", "tooltip");
-    clear.setAttribute("data-bs-placement", "top");
-    clear.setAttribute("data-bs-title", "Reset to default");
-    clear.addEventListener("click", () => {
-      input.value = "#000000";
-      onChange("");
+    styleSelect.addEventListener("change", () => {
+      const nextStyle = styleSelect.value;
+      if (nextStyle === "none") {
+        state.template.borderStyle = "";
+        state.template.borderColor = "";
+        state.template.borderWidth = null;
+        state.template.borderSides = null;
+      } else {
+        state.template.borderStyle = nextStyle;
+        if (!state.template.borderColor) state.template.borderColor = COLOR_FIELD_MAP.border.default;
+        if (state.template.borderWidth === null || state.template.borderWidth === undefined) state.template.borderWidth = 1;
+      }
+      syncTemplateActions();
+      renderCanvas();
+      renderTemplateProperties();
     });
-    controls.appendChild(clear);
-    container.append(label, controls);
-    if (window.bootstrap && typeof window.bootstrap.Tooltip === "function") {
-      // eslint-disable-next-line no-new
-      new window.bootstrap.Tooltip(clear);
+    styleWrapper.appendChild(styleSelect);
+    body.appendChild(styleWrapper);
+
+    if (currentStyle !== "none") {
+      // Same createColorPickerField as Background above — real Clear/unset
+      // handling and Binding/Formula, not a plain <input type="color">.
+      body.appendChild(
+        createColorPickerField("Color", {
+          value: state.template.borderColor || "",
+          defaultValue: COLOR_FIELD_MAP.border.default,
+          bindingValue: state.template.borderColorFormula
+            ? `=${state.template.borderColorFormula}`
+            : state.template.borderColorBinding || "",
+          evaluate: evaluateTemplateColorPreview,
+          onManualChange: (value) => {
+            state.template.borderColor = value;
+            syncTemplateActions();
+            renderCanvas();
+          },
+          onBindingChange: (raw) => {
+            const trimmed = raw.trim();
+            if (trimmed.startsWith("=")) {
+              state.template.borderColorFormula = trimmed.slice(1).trim();
+              state.template.borderColorBinding = "";
+            } else {
+              state.template.borderColorBinding = trimmed;
+              state.template.borderColorFormula = "";
+            }
+            syncTemplateActions();
+            renderCanvas();
+          },
+          onClear: () => {
+            state.template.borderColor = "";
+            state.template.borderColorBinding = "";
+            state.template.borderColorFormula = "";
+            syncTemplateActions();
+            renderCanvas();
+          },
+        })
+      );
+
+      body.appendChild(
+        createHalfWidthNumberField("Thickness (px)", state.template.borderWidth, (value) => {
+          state.template.borderWidth = value === null ? 1 : value;
+          syncTemplateActions();
+          renderCanvas();
+        }, { min: 0, max: 12, step: 1 })
+      );
+
+      body.appendChild(
+        createInspectorToggleGroup(
+          { uid: "template" },
+          "",
+          [
+            { value: "top", label: "Top" },
+            { value: "right", label: "Right" },
+            { value: "bottom", label: "Bottom" },
+            { value: "left", label: "Left" },
+          ],
+          state.template.borderSides || DEFAULT_BORDER_SIDES,
+          (key, checked) => {
+            state.template.borderSides = { ...(state.template.borderSides || DEFAULT_BORDER_SIDES) };
+            state.template.borderSides[key] = checked;
+            syncTemplateActions();
+            renderCanvas();
+          }
+        )
+      );
     }
-    return container;
+
+    wrapper.appendChild(body);
+    return wrapper;
   }
 
   // Replaces the old single Text Size radio group with Press's own fuller
@@ -4676,31 +5737,41 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     const effectivePx = hasCustomSize
       ? ptToPx(Number(component.fontSizeCustom))
       : TEXT_SIZE_PX[component.textSize] ?? TEXT_SIZE_PX.md;
+    // Font size (pt) + Line height, one row, each filling half of it —
+    // same createHalfWidthNumberField pair as Border's Thickness/Corner
+    // radius row.
     controls.push(
-      createNumberInput(
-        component,
-        "Font size (pt)",
-        hasCustomSize ? Number(component.fontSizeCustom) : Number(pxToPt(effectivePx)),
-        (value) => {
-          updateComponent(component.uid, (draft) => {
-            draft.fontSizeCustom = value;
-          }, { rerenderCanvas: true, rerenderInspector: true });
-        },
-        { min: 4, max: 144, step: 0.5 }
-      )
-    );
-
-    controls.push(
-      createNumberInput(
-        component,
-        "Line height",
-        Number.isFinite(Number(component.lineHeight)) ? Number(component.lineHeight) : null,
-        (value) => {
-          updateComponent(component.uid, (draft) => {
-            draft.lineHeight = value;
-          }, { rerenderCanvas: true });
-        },
-        { min: 0.5, max: 3, step: 0.05 }
+      createFieldRow(
+        [
+          createHalfWidthNumberField(
+            "Font size (pt)",
+            hasCustomSize ? Number(component.fontSizeCustom) : Number(pxToPt(effectivePx)),
+            (value) => {
+              updateComponent(component.uid, (draft) => {
+                draft.fontSizeCustom = value;
+              }, { rerenderCanvas: true, rerenderInspector: true });
+            },
+            { min: 4, max: 144, step: 0.5 }
+          ),
+          createHalfWidthNumberField(
+            "Line height",
+            // component.lineHeight != null first, not just Number.isFinite(Number(...))
+            // on its own — Number(null) coerces to 0, a "finite number", which
+            // wrongly displayed 0 (a real, explicit "collapse to zero height"
+            // value) for a component that had never had a Line Height set at
+            // all. Same bug shape as fontSizeCustom above.
+            component.lineHeight != null && Number.isFinite(Number(component.lineHeight))
+              ? Number(component.lineHeight)
+              : null,
+            (value) => {
+              updateComponent(component.uid, (draft) => {
+                draft.lineHeight = value;
+              }, { rerenderCanvas: true });
+            },
+            { min: 0.5, max: 3, step: 0.05 }
+          ),
+        ],
+        { columns: 2 }
       )
     );
 
@@ -4711,13 +5782,12 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
   // font-picker.js/font-library.js) — same "Add a font…" modal/Google
   // Fonts flow as Press, sharing the exact same server-persisted list.
   function createFontFamilyControl(component) {
+    // form-floating, matching Press's own Font field exactly (and
+    // createBindingFormulaInput's identical treatment above) — input
+    // before label as direct children of the .form-floating wrapper.
     const wrapper = document.createElement("div");
-    wrapper.className = "d-flex flex-column";
+    wrapper.className = "form-floating";
     const id = toId([component.uid, "Font", "input"]);
-    const label = document.createElement("label");
-    label.className = "form-label fw-semibold text-body-secondary";
-    label.setAttribute("for", id);
-    label.textContent = "Font";
     const input = document.createElement("input");
     input.className = "form-control";
     input.type = "text";
@@ -4727,11 +5797,16 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     const currentFamily = typeof component.fontFamily === "string" ? component.fontFamily.trim() : "";
     const matchedOption = findFontOptionByFamily(currentFamily);
     input.value = matchedOption ? matchedOption.label : currentFamily || "Default (template font)";
+    const label = document.createElement("label");
+    label.className = "fw-semibold";
+    label.setAttribute("for", id);
+    label.textContent = "Font";
     // Must run AFTER the input has a local DOM parent (append below) —
-    // attachFontFamilyAutocomplete checks input.parentElement to find where
-    // to attach its dropdown, same lesson learned from the Icon field
-    // earlier this session.
-    wrapper.append(label, input);
+    // attachFontFamilyAutocomplete checks input.closest(".form-floating")
+    // (falling back to input.parentElement) to find where to attach its
+    // dropdown, same lesson learned from the Icon field earlier this
+    // session.
+    wrapper.append(input, label);
     attachFontFamilyAutocomplete(input, {
       onSelect: (option) => {
         updateComponent(component.uid, (draft) => {
@@ -4759,14 +5834,15 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
   // Freeform CSS class names — same suggestion list/autocomplete as Press
   // (common/js/lib/class-name-picker.js), e.g. text-shadow-dark for a drop
   // shadow. Applied via applyComponentStyles (component-styles.js).
+  // form-floating, matching Font (createFontFamilyControl) exactly — same
+  // "look and act like the other top fields" style, and the dropdown
+  // (attachClassNameAutocomplete/ensureClassNameAutocompleteContainer)
+  // already targets input.closest(".form-floating") ?? input.parentElement,
+  // same as the font/icon pickers, so it needs no changes to work here.
   function createClassNameControl(component) {
     const wrapper = document.createElement("div");
-    wrapper.className = "d-flex flex-column";
+    wrapper.className = "form-floating";
     const id = toId([component.uid, "Classes", "input"]);
-    const label = document.createElement("label");
-    label.className = "form-label fw-semibold text-body-secondary";
-    label.setAttribute("for", id);
-    label.textContent = "Classes";
     const input = document.createElement("input");
     input.className = "form-control";
     input.type = "text";
@@ -4780,7 +5856,11 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
         draft.className = next;
       }, { rerenderCanvas: true });
     });
-    wrapper.append(label, input);
+    const label = document.createElement("label");
+    label.className = "fw-semibold";
+    label.setAttribute("for", id);
+    label.textContent = "Classes";
+    wrapper.append(input, label);
     attachClassNameAutocomplete(input);
     return wrapper;
   }
@@ -4799,6 +5879,12 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     });
   }
 
+  // Text Align — plain CSS text-align (component.align), applied by
+  // applyTextFormatting (component-styles.js). Renamed from the bare
+  // "Alignment" it used to share with Align Items below (createAlignItemsControl)
+  // now that they're two distinct fields/controls — this one only ever
+  // affects how THIS component's own text content is aligned, never how
+  // the component itself is positioned within its parent.
   function createAlignmentControls(component) {
     const options = [
       { value: "start", icon: "tabler:align-left", label: "Left" },
@@ -4806,55 +5892,357 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
       { value: "end", icon: "tabler:align-right", label: "Right" },
       { value: "justify", icon: "tabler:align-justified", label: "Justify" },
     ];
-    return createRadioButtonGroup(component, "Alignment", options, component.align || "start", (value) => {
+    return createRadioButtonGroup(component, "Text Align", options, component.align || "start", (value) => {
       updateComponent(component.uid, (draft) => {
         draft.align = value;
       }, { rerenderCanvas: true });
     });
   }
 
-  function createCollapsibleToggle(component) {
-    const wrapper = document.createElement("div");
-    wrapper.className = "form-check form-switch";
-    const id = toId([component.uid, "collapsible"]);
-    const input = document.createElement("input");
-    input.className = "form-check-input";
-    input.type = "checkbox";
-    input.id = id;
-    input.checked = !!component.collapsible;
-    input.addEventListener("change", () => {
+  // Align Items — CSS align-self (component.alignSelf), applied by
+  // applyComponentStyles (component-styles.js) to the component's own
+  // outer wrapper. Lives in the unlabeled "top" section (generalControls,
+  // renderInspector) for every type, deliberately NOT inside the "Text"
+  // section alongside Text Align above — this positions the component
+  // itself within its own parent (a Container zone, most commonly; a
+  // no-op wherever the parent isn't flex/grid), a layout concern, not a
+  // text-formatting one. "Stretch" (align-self: stretch) is the one value
+  // with no equivalent in Text Align's own four options, so this isn't
+  // just a relabeled copy of that control.
+  function createAlignItemsControl(component) {
+    // "Auto" (blank) first, same reasoning as BORDER_STYLE_OPTIONS' own
+    // "None" — the real default (align-self: auto, inherit the parent's
+    // align-items) isn't the same thing as "Start," so defaulting the
+    // radio selection to Start would misrepresent an unset value as an
+    // explicit choice.
+    const options = [
+      { value: "", label: "Auto" },
+      { value: "start", icon: "tabler:layout-align-top", label: "Start" },
+      { value: "center", icon: "tabler:layout-align-middle", label: "Center" },
+      { value: "end", icon: "tabler:layout-align-bottom", label: "End" },
+      { value: "stretch", icon: "tabler:arrows-vertical", label: "Stretch" },
+    ];
+    return createRadioButtonGroup(component, "Align Items", options, component.alignSelf || "", (value) => {
       updateComponent(component.uid, (draft) => {
-        draft.collapsible = input.checked;
+        draft.alignSelf = value;
       }, { rerenderCanvas: true });
     });
-    const label = document.createElement("label");
-    label.className = "form-check-label";
-    label.setAttribute("for", id);
-    label.textContent = "Collapsible";
-    wrapper.append(input, label);
-    return wrapper;
   }
 
-  function createReadOnlyToggle(component) {
-    const wrapper = document.createElement("div");
-    wrapper.className = "form-check form-switch";
-    const id = toId([component.uid, "read-only"]);
-    const input = document.createElement("input");
-    input.className = "form-check-input";
-    input.type = "checkbox";
-    input.id = id;
-    input.checked = !!component.readOnly;
-    input.addEventListener("change", () => {
-      updateComponent(component.uid, (draft) => {
-        draft.readOnly = input.checked;
-      }, { rerenderCanvas: true });
+  // Resolves a "@binding"/"=formula" condition string against the Template
+  // editor's own sample/preview data, for createFormulaToggleField's live
+  // preview — mirrors resolvePreviewBindingValue's own "no live record"
+  // limits exactly: an "@path" resolves against sample data same as every
+  // other bound field's preview; a "=formula" can't be evaluated here at
+  // all (no formula engine wired into this canvas — see renderTextPreview's
+  // own identical comment), so it returns undefined (shown as the toggle's
+  // native indeterminate state) rather than guessing true or false.
+  // The one place the Template editor actually evaluates a "=formula"
+  // (see evaluatePreviewCondition/evaluatePreviewColor's own comments below
+  // — everything else here treats "=" as unresolvable, an established
+  // limit, not a technical one: evaluateFormula only ever needs a single
+  // plain object to resolve @paths against, and state.systemPreviewData
+  // (buildSystemPreviewData) already exists as exactly that "pretend
+  // record" for the canvas). Two real limits worth knowing before relying
+  // on this for a specific formula: systemPreviewData is synthesized purely
+  // from the System's own declared field schema, so a formula referencing
+  // an ad-hoc key that only exists in a DDB-mapping-computed field's output
+  // shape (nothing in Loom's field editor declares it) has no sample value
+  // to resolve — and this is called with the top-level preview data only,
+  // never a Repeater item's own data (see renderRepeaterPreview's own
+  // comment: the canvas doesn't iterate/preview real per-item data at all
+  // today, it just shows the item template as an editable dropzone).
+  // lookup(table, key) is real-evaluation-only in character-view.js
+  // (evaluateFormulaWithLookup) — without this, any formula using it would
+  // throw "lookup is not defined" here, even though it's perfectly valid
+  // and will work fine once played. Same createLookupFn every other tool
+  // uses, just resolved against the template's own sample data
+  // (state.systemPreviewData) instead of a live character record.
+  function previewFormulaOptions() {
+    return { functions: { lookup: createLookupFn(state.systemPreviewData || {}, state.systemDefinition?.fields) } };
+  }
+
+  function evaluatePreviewFormula(formula) {
+    const trimmed = typeof formula === "string" ? formula.trim() : "";
+    if (!trimmed) return undefined;
+    try {
+      const result = evaluateFormula(trimmed, state.systemPreviewData || {}, previewFormulaOptions());
+      return result === null ? undefined : result;
+    } catch (error) {
+      return undefined;
+    }
+  }
+
+  // Same evaluation as evaluatePreviewFormula, but for the inspector's own
+  // live feedback (createFieldPreviewFeedback below) — that one fails
+  // closed to "nothing shown" on purpose (render time can't tell a broken
+  // formula apart from one that simply hasn't resolved against this
+  // system's sample data yet, and shouldn't try). The inspector needs the
+  // actual distinction: a real syntax/runtime error is worth interrupting
+  // the author for, an unresolved-but-valid formula isn't.
+  function evaluatePreviewFormulaDetailed(formula) {
+    try {
+      const result = evaluateFormula(formula, state.systemPreviewData || {}, previewFormulaOptions());
+      return { ok: true, value: result === null ? undefined : result };
+    } catch (error) {
+      return { ok: false, error: error?.message || "Invalid formula" };
+    }
+  }
+
+  // Shared live feedback line for every literal/@binding/=formula field
+  // (createBindingFormulaInput below, plus Icon/Image/Container/Repeater
+  // decorator's own hand-rolled equivalents) — a formula's syntax/runtime
+  // errors were previously silent everywhere; this surfaces the actual
+  // error, and previews what a binding/formula currently resolves to
+  // against the template's own sample data, so an author isn't flying
+  // blind until they load a real character to test on. Plain literal text
+  // shows nothing — it's already fully visible in the input itself, a
+  // preview of it would just repeat the field back.
+  function createFieldPreviewFeedback() {
+    const element = document.createElement("div");
+    element.className = "extra-small d-none";
+
+    function update(raw, { supportsBinding = true, supportsFormula = true } = {}) {
+      const trimmed = typeof raw === "string" ? raw.trim() : "";
+      if (supportsFormula && trimmed.startsWith("=")) {
+        const outcome = evaluatePreviewFormulaDetailed(trimmed.slice(1).trim());
+        element.classList.remove("d-none");
+        if (!outcome.ok) {
+          element.classList.add("text-danger");
+          element.classList.remove("text-body-secondary");
+          element.textContent = `Formula error: ${outcome.error}`;
+        } else {
+          element.classList.remove("text-danger");
+          element.classList.add("text-body-secondary");
+          const preview =
+            outcome.value === undefined || outcome.value === null || outcome.value === ""
+              ? "(no value)"
+              : String(outcome.value);
+          element.textContent = `Preview: ${preview}`;
+        }
+        return;
+      }
+      if (supportsBinding && trimmed.startsWith("@")) {
+        const resolved = resolvePreviewBindingValue(trimmed);
+        element.classList.remove("d-none", "text-danger");
+        element.classList.add("text-body-secondary");
+        const preview =
+          resolved === undefined || resolved === null || String(resolved).trim() === ""
+            ? "(no sample data for this field)"
+            : String(resolved);
+        element.textContent = `Preview: ${preview}`;
+        return;
+      }
+      element.classList.add("d-none");
+    }
+
+    return { element, update };
+  }
+
+  // The template's own sheet-wide Background/Border color — same
+  // Formula-then-Binding-then-literal precedence a component's own colors
+  // resolve with (resolveComponentColors, workbench-character-view.js),
+  // just read off state.template instead of a component. `prop` is
+  // "backgroundColor" or "borderColor"; *Formula/*Binding are the sibling
+  // fields createColorPickerField (Template Properties) writes into.
+  function resolveTemplateColorForPreview(prop) {
+    const template = state.template || {};
+    const formula = typeof template[`${prop}Formula`] === "string" ? template[`${prop}Formula`].trim() : "";
+    if (formula) {
+      const result = evaluatePreviewFormula(formula);
+      if (typeof result === "string" && result.trim()) return result.trim();
+    }
+    const binding = typeof template[`${prop}Binding`] === "string" ? template[`${prop}Binding`].trim() : "";
+    if (binding) {
+      const resolved = resolvePreviewBindingValue(binding);
+      if (typeof resolved === "string" && resolved.trim()) return resolved.trim();
+    }
+    return template[prop] || "";
+  }
+
+  // The color picker's own live-typed-value preview (createColorPickerField's
+  // `evaluate` hook, called with whatever's currently in the Binding/Formula
+  // box, not yet committed) for the template's own Background/Border —
+  // unlike evaluatePreviewColor (used for every component's own color
+  // fields), this DOES evaluate "=formula" — see evaluatePreviewFormula's
+  // own comment on why the template-level fields specifically support that
+  // now.
+  function evaluateTemplateColorPreview(raw) {
+    const trimmed = typeof raw === "string" ? raw.trim() : "";
+    if (!trimmed) return undefined;
+    if (trimmed.startsWith("=")) {
+      const result = evaluatePreviewFormula(trimmed.slice(1).trim());
+      return typeof result === "string" && result.trim() ? result.trim() : undefined;
+    }
+    if (trimmed.startsWith("@")) {
+      const resolved = resolvePreviewBindingValue(trimmed);
+      return typeof resolved === "string" && resolved.trim() ? resolved.trim() : undefined;
+    }
+    return undefined;
+  }
+
+  function evaluatePreviewCondition(raw) {
+    const trimmed = typeof raw === "string" ? raw.trim() : "";
+    if (!trimmed) return undefined;
+    if (trimmed.startsWith("=")) return undefined;
+    if (trimmed.startsWith("@")) {
+      const resolved = resolvePreviewBindingValue(trimmed);
+      return resolved === undefined ? undefined : Boolean(resolved);
+    }
+    return Boolean(trimmed);
+  }
+
+  // Same "@binding previews, =formula doesn't" limit as evaluatePreviewCondition
+  // above, for a color's own binding/formula box (createColorPickerField,
+  // common/js/lib/color-picker.js) — returns a hex string (or undefined,
+  // shown as the swatch's own indeterminate stripe state) rather than a
+  // boolean.
+  function evaluatePreviewColor(raw) {
+    const trimmed = typeof raw === "string" ? raw.trim() : "";
+    if (!trimmed) return undefined;
+    if (trimmed.startsWith("=")) return undefined;
+    if (trimmed.startsWith("@")) {
+      const resolved = resolvePreviewBindingValue(trimmed);
+      return typeof resolved === "string" && resolved.trim() ? resolved.trim() : undefined;
+    }
+    return undefined;
+  }
+
+  // Editor-canvas rendering only (createComponentElement) — resolves each
+  // color's @binding against the same sample/preview data the swatch's own
+  // live preview uses; a formula falls back to the literal color instead
+  // (the canvas never evaluates "=formula" at all — see
+  // evaluatePreviewColor's own comment), same "best-effort, never invents
+  // a color" rule real Play/Edit's own resolveComponentColors follows.
+  // Text only — see normalizeTemplateDefaults' own comment on why
+  // Background/Border aren't per-component fallbacks at all.
+  const TEMPLATE_DEFAULT_COLOR_MAP = { text: "fontColor" };
+
+  function resolveComponentColorsForPreview(component) {
+    let overridden = null;
+    Object.values(COLOR_FIELD_MAP).forEach(({ prop, bindingProp }) => {
+      const binding = typeof component[bindingProp] === "string" ? component[bindingProp].trim() : "";
+      if (!binding || !binding.startsWith("@")) return;
+      const resolved = resolvePreviewBindingValue(binding);
+      const normalized = typeof resolved === "string" ? resolved.trim() : "";
+      if (!normalized) return;
+      if (!overridden) overridden = { ...component };
+      overridden[prop] = normalized;
     });
-    const label = document.createElement("label");
-    label.className = "form-check-label";
-    label.setAttribute("for", id);
-    label.textContent = "Read only";
-    wrapper.append(input, label);
-    return wrapper;
+    // Still blank after binding resolution? Fall back to the template's
+    // own default — the ONLY fallback any color field should reach now,
+    // in the canvas same as real Play/Edit (resolveComponentColors,
+    // workbench-character-view.js).
+    const templateDefaults = normalizeTemplateDefaults(state.template?.defaults);
+    Object.entries(TEMPLATE_DEFAULT_COLOR_MAP).forEach(([key, defaultKey]) => {
+      const prop = COLOR_FIELD_MAP[key].prop;
+      const current = (overridden || component)[prop];
+      if (typeof current !== "string" || !current.trim()) {
+        if (!overridden) overridden = { ...component };
+        overridden[prop] = templateDefaults[defaultKey];
+      }
+    });
+    return overridden || component;
+  }
+
+  // The unified toggle/formula control (createFormulaToggleField) backs
+  // Collapsible/Locked/Visible identically — a plain manual switch when
+  // the condition field is empty, or a live (binding) / indeterminate
+  // (formula) preview of the condition when it's not. Storage keeps its
+  // existing boolean field (component.collapsible/readOnly) plus a new
+  // *Binding/*Formula pair — see createComponent's own defaults comment.
+  function createCollapsibleToggle(component) {
+    return createFormulaToggleField("Collapsible", {
+      checked: !!component.collapsible,
+      bindingValue: component.collapsibleFormula ? `=${component.collapsibleFormula}` : component.collapsibleBinding || "",
+      evaluate: evaluatePreviewCondition,
+      onManualChange: (checked) => {
+        updateComponent(component.uid, (draft) => {
+          draft.collapsible = checked;
+        }, { rerenderCanvas: true });
+      },
+      onBindingChange: (raw) => {
+        const trimmed = raw.trim();
+        updateComponent(component.uid, (draft) => {
+          if (trimmed.startsWith("=")) {
+            draft.collapsibleFormula = trimmed.slice(1).trim();
+            draft.collapsibleBinding = "";
+          } else {
+            draft.collapsibleBinding = trimmed;
+            draft.collapsibleFormula = "";
+          }
+        }, { rerenderCanvas: true });
+      },
+    });
+  }
+
+  // "Locked" — storage key stays "readOnly" (see createComponent's own
+  // defaults comment for why the field itself wasn't renamed).
+  function createReadOnlyToggle(component) {
+    return createFormulaToggleField("Locked", {
+      checked: !!component.readOnly,
+      bindingValue: component.readOnlyFormula ? `=${component.readOnlyFormula}` : component.readOnlyBinding || "",
+      evaluate: evaluatePreviewCondition,
+      onManualChange: (checked) => {
+        updateComponent(component.uid, (draft) => {
+          draft.readOnly = checked;
+        }, { rerenderCanvas: true });
+      },
+      onBindingChange: (raw) => {
+        const trimmed = raw.trim();
+        updateComponent(component.uid, (draft) => {
+          if (trimmed.startsWith("=")) {
+            draft.readOnlyFormula = trimmed.slice(1).trim();
+            draft.readOnlyBinding = "";
+          } else {
+            draft.readOnlyBinding = trimmed;
+            draft.readOnlyFormula = "";
+          }
+        }, { rerenderCanvas: true });
+      },
+    });
+  }
+
+  // "Editable in Play" — same unified toggle/formula shape as Collapsible/
+  // Locked above, gated by supportsBinding (the same set of types that
+  // have anything for isEditable/a Repeater's own add-row UI to act on:
+  // Input, Repeater, Track, Select Group, Toggle). Storage:
+  // component.editableInPlay + editableInPlayBinding/Formula. This is
+  // what a component (or a Repeater item-template node — same field
+  // names, read by isRepeaterItemNodeEditableInPlay instead — the
+  // inspector doesn't distinguish nesting) opts into to stay live-
+  // adjustable in Play view instead of gated behind Edit mode like
+  // everything else — a genuine authored choice per component now,
+  // replacing the old hardcoded "matches a System combatBindings path"
+  // guess (isCombatBindingComponent, removed from workbench-character-
+  // view.js). Marking a Repeater itself Editable in Play is also what
+  // enables its Add/Remove-row controls in Play view, not just Edit mode
+  // (see renderRepeaterComponent, workbench-character-view.js).
+  function createEditableInPlayToggle(component) {
+    return createFormulaToggleField("Editable in Play", {
+      checked: !!component.editableInPlay,
+      bindingValue: component.editableInPlayFormula
+        ? `=${component.editableInPlayFormula}`
+        : component.editableInPlayBinding || "",
+      evaluate: evaluatePreviewCondition,
+      onManualChange: (checked) => {
+        updateComponent(component.uid, (draft) => {
+          draft.editableInPlay = checked;
+        }, { rerenderCanvas: true });
+      },
+      onBindingChange: (raw) => {
+        const trimmed = raw.trim();
+        updateComponent(component.uid, (draft) => {
+          if (trimmed.startsWith("=")) {
+            draft.editableInPlayFormula = trimmed.slice(1).trim();
+            draft.editableInPlayBinding = "";
+          } else {
+            draft.editableInPlayBinding = trimmed;
+            draft.editableInPlayFormula = "";
+          }
+        }, { rerenderCanvas: true });
+      },
+    });
   }
 
   // Available on every component type (not gated by the registry) — a
@@ -4865,15 +6253,31 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
   // (see renderComponentCard in workbench-character-view.js) — the canvas
   // only has synthesized sample data, so hiding components there based on
   // it could make them un-selectable/un-editable for reasons the author
-  // can't see.
+  // can't see. The unified toggle's own live-preview evaluation (above)
+  // doesn't conflict with this: it only drives the toggle's own visual
+  // state in the inspector, never the canvas's actual visibility.
   function createVisibilityControl(component) {
-    return createBindingFormulaInput(component, {
-      labelText: "Visible when",
-      placeholder: "@conditions.prone or =@hitPoints.current > 0",
-      bindingKey: "visibilityBinding",
-      formulaKey: "visibilityFormula",
-      supportsFormula: true,
-      helperText: "Leave blank to always show.",
+    return createFormulaToggleField("Visible", {
+      checked: component.visible !== false,
+      bindingValue: component.visibilityFormula ? `=${component.visibilityFormula}` : component.visibilityBinding || "",
+      evaluate: evaluatePreviewCondition,
+      onManualChange: (checked) => {
+        updateComponent(component.uid, (draft) => {
+          draft.visible = checked;
+        }, { rerenderCanvas: true });
+      },
+      onBindingChange: (raw) => {
+        const trimmed = raw.trim();
+        updateComponent(component.uid, (draft) => {
+          if (trimmed.startsWith("=")) {
+            draft.visibilityFormula = trimmed.slice(1).trim();
+            draft.visibilityBinding = "";
+          } else {
+            draft.visibilityBinding = trimmed;
+            draft.visibilityFormula = "";
+          }
+        }, { rerenderCanvas: true });
+      },
     });
   }
 
@@ -4924,20 +6328,19 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
       afterCommit = null,
     } = {}
   ) {
+    // form-floating, matching Press's own Binding/Text field exactly — a
+    // real Bootstrap floating label needs input/label as direct children,
+    // input before label (Bootstrap's shrink-on-focus CSS is a general
+    // sibling selector, so nothing else needs to sit between them).
+    // .form-floating is itself position:relative, so the suggestions
+    // dropdown below still positions correctly with no extra wrapper.
     const wrapper = document.createElement("div");
-    wrapper.className = "d-flex flex-column gap-1";
+    wrapper.className = "form-floating";
     const id = toId([component.uid, "binding-formula"]);
-    const label = document.createElement("label");
-    label.className = "form-label fw-semibold text-body-secondary";
-    label.setAttribute("for", id);
-    label.textContent = labelText;
 
     const allowedFieldCategories = Array.isArray(categoryOverride) && categoryOverride.length
       ? categoryOverride.map((category) => String(category).toLowerCase())
       : getComponentBindingCategories(component);
-
-    const inputWrapper = document.createElement("div");
-    inputWrapper.className = "position-relative";
 
     const input = document.createElement("input");
     input.className = "form-control";
@@ -4955,6 +6358,11 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     input.value = getBindingEditorValue(component, { bindingKey, formulaKey, textKey });
     input.setAttribute("aria-autocomplete", "list");
 
+    const label = document.createElement("label");
+    label.className = "fw-semibold";
+    label.setAttribute("for", id);
+    label.textContent = labelText;
+
     const suggestions = document.createElement("div");
     suggestions.className = "list-group position-absolute top-100 start-0 w-100 shadow-sm bg-body border mt-1 d-none";
     suggestions.id = `${id}-suggestions`;
@@ -4965,8 +6373,10 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     suggestions.style.overflowY = "auto";
     input.setAttribute("aria-controls", suggestions.id);
 
-    inputWrapper.append(input, suggestions);
-    wrapper.append(label, inputWrapper);
+    const feedback = createFieldPreviewFeedback();
+    feedback.update(input.value, { supportsBinding, supportsFormula });
+
+    wrapper.append(input, label, suggestions, feedback.element);
 
     const MAX_SUGGESTIONS = 12;
     let listeningForUpdates = false;
@@ -5096,12 +6506,14 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
       applySuggestion: ({ applyDefault }) => {
         applyDefault();
         commitValue(input.value);
+        feedback.update(input.value, { supportsBinding, supportsFormula });
       },
     });
 
     input.addEventListener("input", () => {
       commitValue(input.value);
       autocomplete.update();
+      feedback.update(input.value, { supportsBinding, supportsFormula });
     });
 
     input.addEventListener("focus", () => {
@@ -5145,63 +6557,55 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     return wrapper;
   }
 
+  // form-floating for all three — matching Press's own compact "small
+  // label integrated into the control" look (and createBindingFormulaInput/
+  // createFontFamilyControl's identical treatment above), rather than the
+  // old stacked label-above-input style. A placeholder is required for
+  // Bootstrap's empty-vs-filled floating behavior to engage at all; where
+  // the caller doesn't supply real placeholder text, a single space keeps
+  // the label floated-small and out of the way instead of overlapping the
+  // (still-empty) value.
+  // Thin adapters over the shared inspector-fields.js/ui-components.js
+  // factories — kept as local functions (same signatures as before) so
+  // none of this file's ~45 call sites need to change, but the actual
+  // markup construction is now the one shared implementation Press's
+  // Component Inspector also uses, instead of a second hand-built copy.
   function createTextInput(component, labelText, value, onInput, { placeholder = "", type = "text" } = {}) {
-    const wrapper = document.createElement("div");
-    wrapper.className = "d-flex flex-column";
     const id = toId([component.uid, labelText, "input"]);
-    const label = document.createElement("label");
-    label.className = "form-label fw-semibold text-body-secondary";
-    label.setAttribute("for", id);
-    label.textContent = labelText;
-    const input = document.createElement("input");
-    input.className = "form-control";
-    input.type = type;
-    input.id = id;
-    if (placeholder) input.placeholder = placeholder;
+    const field = createFormFloatingField({ type, id, label: labelText, placeholder: placeholder || " " });
+    const input = field.querySelector("input");
     input.value = value ?? "";
     input.addEventListener("input", () => {
       onInput(input.value);
     });
-    wrapper.append(label, input);
-    return wrapper;
+    return field;
   }
 
   function createTextarea(component, labelText, value, onInput, { rows = 3, placeholder = "" } = {}) {
-    const wrapper = document.createElement("div");
-    wrapper.className = "d-flex flex-column";
     const id = toId([component.uid, labelText, "textarea"]);
-    const label = document.createElement("label");
-    label.className = "form-label fw-semibold text-body-secondary";
-    label.setAttribute("for", id);
-    label.textContent = labelText;
-    const textarea = document.createElement("textarea");
-    textarea.className = "form-control";
-    textarea.id = id;
-    textarea.rows = rows;
-    if (placeholder) textarea.placeholder = placeholder;
+    const field = createFormFloatingField({
+      type: "textarea",
+      id,
+      label: labelText,
+      placeholder: placeholder || " ",
+      // Bootstrap's form-floating needs an explicit height on textareas
+      // (the `rows` attribute doesn't play well with the padding it adds
+      // for the label) — matches Press's own text field, which sets this
+      // directly instead of using `rows` at all.
+      style: `min-height: ${rows * 24}px`,
+    });
+    const textarea = field.querySelector("textarea");
     textarea.value = value ?? "";
     textarea.addEventListener("input", () => {
       onInput(textarea.value);
     });
-    wrapper.append(label, textarea);
-    return wrapper;
+    return field;
   }
 
   function createNumberInput(component, labelText, value, onChange, { min, max, step = 1 } = {}) {
-    const wrapper = document.createElement("div");
-    wrapper.className = "d-flex flex-column";
     const id = toId([component.uid, labelText, "number"]);
-    const label = document.createElement("label");
-    label.className = "form-label fw-semibold text-body-secondary";
-    label.setAttribute("for", id);
-    label.textContent = labelText;
-    const input = document.createElement("input");
-    input.className = "form-control";
-    input.type = "number";
-    input.id = id;
-    if (min !== undefined) input.min = String(min);
-    if (max !== undefined) input.max = String(max);
-    input.step = String(step);
+    const field = createFormFloatingField({ type: "number", id, label: labelText, placeholder: " ", min, max, step });
+    const input = field.querySelector("input");
     if (value !== undefined && value !== null) {
       input.value = value;
     }
@@ -5212,8 +6616,7 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
       }
       onChange(next);
     });
-    wrapper.append(label, input);
-    return wrapper;
+    return field;
   }
 
   function createRadioButtonGroup(
@@ -5228,84 +6631,72 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     wrapper.className = "d-flex flex-column gap-2";
     const heading = document.createElement("div");
     heading.className = "fw-semibold text-body-secondary";
+    // Kept in the DOM (not skipped) even when hidden — pluckControlByLabel
+    // (renderInspector) finds the Type selector by this exact element/text,
+    // and a screen-reader-only label is still better than none. visually-
+    // hidden takes the element out of layout entirely (position: absolute),
+    // so it costs zero visible space in this flex column regardless.
+    if (config.hideLabel) {
+      heading.classList.add("visually-hidden");
+    }
     heading.textContent = labelText;
     wrapper.appendChild(heading);
-    const group = document.createElement("div");
-    group.className = "btn-group template-radio-group";
-    if (config.forceSingleRow) {
-      group.classList.add("template-radio-group--single-row");
-    }
     const name = toId([component.uid, labelText, "radio"]);
-    options.forEach((option, index) => {
-      const id = toId([component.uid, labelText, option.value, index]);
-      const input = document.createElement("input");
-      input.type = "radio";
-      input.className = "btn-check";
-      input.name = name;
-      input.id = id;
-      input.value = option.value;
+    const group = createButtonCheckGroup({
+      ariaLabel: labelText,
+      name,
+      options: options.map((option, index) => ({
+        id: toId([component.uid, labelText, option.value, index]),
+        value: option.value,
+        icon: option.icon,
+        text: option.label ?? option.value,
+      })),
+    });
+    group.querySelectorAll("input").forEach((input, index) => {
+      const option = options[index];
       input.checked = option.value === currentValue;
       input.addEventListener("change", () => {
         if (input.checked) {
           onChange(option.value);
         }
       });
-      const label = document.createElement("label");
-      label.className = "btn btn-outline-secondary btn-sm";
-      label.setAttribute("for", id);
-
-      if (option.icon) {
-        const icon = document.createElement("span");
-        icon.className = "iconify";
-        icon.dataset.icon = option.icon;
-        icon.setAttribute("aria-hidden", "true");
-        label.appendChild(icon);
-      }
-
-      const labelTextNode = option.label ?? option.value;
-      if (labelTextNode) {
-        const text = document.createElement("span");
-        text.className = "template-radio-label";
-        text.textContent = labelTextNode;
-        label.appendChild(text);
-      }
-
-      group.append(input, label);
     });
     wrapper.appendChild(group);
     return wrapper;
   }
 
+  // Unified with createRadioButtonGroup's own button-group styling
+  // (template-radio-group, single-row by default) — this used to render as
+  // a bare, larger `.btn-group` with no visual relation to the radio-group
+  // controls right next to it in the same inspector, even though it's the
+  // same segmented-button-group widget (radio vs. checkbox selection is
+  // the only real difference). Matches Press's own already-shared
+  // "Text decoration" checkbox group, which is this exact same field.
   function createInspectorToggleGroup(component, labelText, options, values, onToggle) {
     const wrapper = document.createElement("div");
     wrapper.className = "d-flex flex-column gap-2";
-    const heading = document.createElement("div");
-    heading.className = "fw-semibold text-body-secondary";
-    heading.textContent = labelText;
-    wrapper.appendChild(heading);
-    const group = document.createElement("div");
-    group.className = "btn-group";
-    options.forEach((option, index) => {
-      const id = toId([component.uid, labelText, option.value, index]);
-      const input = document.createElement("input");
-      input.type = "checkbox";
-      input.className = "btn-check";
-      input.id = id;
+    if (labelText) {
+      const heading = document.createElement("div");
+      heading.className = "fw-semibold text-body-secondary";
+      heading.textContent = labelText;
+      wrapper.appendChild(heading);
+    }
+    const group = createButtonCheckGroup({
+      ariaLabel: labelText || undefined,
+      inputType: "checkbox",
+      options: options.map((option, index) => ({
+        id: toId([component.uid, labelText, option.value, index]),
+        icon: option.icon,
+        text: option.label,
+      })),
+    });
+    group.querySelectorAll("input").forEach((input, index) => {
+      const option = options[index];
       input.autocomplete = "off";
       input.checked = !!values[option.value];
       input.addEventListener("change", () => {
         onToggle(option.value, input.checked);
       });
-      const label = document.createElement("label");
-      label.className = "btn btn-outline-secondary btn-sm";
-      label.setAttribute("for", id);
-      if (option.icon) {
-        label.innerHTML = `<span class="iconify" data-icon="${option.icon}" aria-hidden="true"></span>`;
-      }
-      if (option.label) {
-        label.innerHTML += `<span class="ms-1">${option.label}</span>`;
-      }
-      group.append(input, label);
     });
     wrapper.appendChild(group);
     return wrapper;
@@ -5370,7 +6761,7 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
             { rerenderCanvas: true, rerenderInspector: true }
           );
         },
-        { forceSingleRow: true }
+        { forceSingleRow: true, hideLabel: true }
       )
     );
     controls.push(
@@ -5402,42 +6793,102 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
   // that here, same as before), but the decorator is a small enough,
   // structural-not-content knob that it belongs in the inspector like
   // everything else's Type/Shape selectors.
-  function createRepeaterHeaderToggle(component) {
-    const wrapper = document.createElement("div");
-    wrapper.className = "form-check form-switch";
-    const id = toId([component.uid, "repeater-header"]);
-    const input = document.createElement("input");
-    input.className = "form-check-input";
-    input.type = "checkbox";
-    input.id = id;
-    input.checked = !!component.showHeader;
-    input.addEventListener("change", () => {
+  // Purely structural/authoring-time choice, not state that plausibly
+  // varies by character — plain switch, not the unified toggle/formula
+  // control (see createFormulaToggleField's own usage for Visible/
+  // Collapsible/Locked, which DO vary by character).
+  function createRepeaterHeaderToggle(component, { isHorizontal = false } = {}) {
+    return createSwitchField(isHorizontal ? "Header column" : "Header row", !!component.showHeader, (checked) => {
       updateComponent(component.uid, (draft) => {
-        draft.showHeader = input.checked;
+        draft.showHeader = checked;
         ensureRepeaterZone(draft);
       }, { rerenderCanvas: true, rerenderInspector: true });
     });
-    const label = document.createElement("label");
-    label.className = "form-check-label";
-    label.setAttribute("for", id);
-    label.textContent = "Header row";
-    wrapper.append(input, label);
-    return wrapper;
+  }
+
+  // Horizontal-only — Vertical items already fill the full width of their
+  // single stacking column naturally (block-level, width:100%), so there's
+  // nothing to "fill" there. Off by default (unchanged existing behavior:
+  // items sit at their own natural content width, left-packed, wrapping
+  // once they run out of row space) — a real design choice, not always
+  // wanted (e.g. a long, open-ended list of items looks better left-packed
+  // than stretched to fill one row). See renderRepeaterHorizontalList/Grid
+  // (workbench-character-view.js) for what actually changes: item cells/
+  // columns grow equally to consume the full available width instead of
+  // sizing to their own content, while any header column/decorator stays
+  // its own natural size.
+  function createRepeaterFillToggle(component) {
+    return createSwitchField("Fill available width", !!component.fill, (checked) => {
+      updateComponent(component.uid, (draft) => {
+        draft.fill = checked;
+      }, { rerenderCanvas: true });
+    });
+  }
+
+  // Off by default — most Repeaters (ability scores, skills, a fixed
+  // defenses/senses list, ...) have a fixed, System-defined cardinality
+  // where an Add/Remove control would be actively wrong to offer. Turned on
+  // per-Repeater for the genuinely open-ended lists (Inventory, a crew's
+  // Upgrades/Claims/Cohorts, ...) — see renderRepeaterComponent
+  // (workbench-character-view.js) for what this actually gates: its own
+  // Add-item button and each row's own Remove button, still further gated
+  // by mode/Editable in Play the same as everything else there. Same
+  // "purely structural/authoring-time choice" reasoning as
+  // createRepeaterHeaderToggle above — a plain switch, not the unified
+  // toggle/formula control, since whether a list is open-ended at all
+  // isn't state that plausibly varies by character.
+  function createRepeaterAllowAddRemoveToggle(component) {
+    return createSwitchField("Add/remove items", !!component.allowAddRemove, (checked) => {
+      updateComponent(component.uid, (draft) => {
+        draft.allowAddRemove = checked;
+      }, { rerenderCanvas: true });
+    });
+  }
+
+  // Vertical (default) stacks repeated items top-to-bottom; Horizontal
+  // flows them left-to-right — a real pivot of the whole authoring model,
+  // not just a CSS direction flip (see the orientation field's own comment
+  // in COMPONENT_DEFINITIONS, and renderRepeaterComponent in
+  // workbench-character-view.js for what actually renders differently).
+  function createRepeaterOrientationControl(component) {
+    return createRadioButtonGroup(
+      component,
+      "Layout direction",
+      [
+        { value: "vertical", icon: "tabler:arrow-down", label: "Vertical" },
+        { value: "horizontal", icon: "tabler:arrow-right", label: "Horizontal" },
+      ],
+      component.orientation === "horizontal" ? "horizontal" : "vertical",
+      (value) => {
+        updateComponent(component.uid, (draft) => {
+          draft.orientation = value;
+          ensureRepeaterZone(draft);
+        }, { rerenderCanvas: true, rerenderInspector: true });
+      }
+    );
   }
 
   function renderRepeaterInspector(component) {
     const decorator = component.decorator && typeof component.decorator === "object" ? component.decorator : { type: "none" };
     const columns = clampInteger(component.columns || 1, 1, MAX_REPEATER_COLUMNS);
+    const isHorizontal = component.orientation === "horizontal";
     const controls = [];
+    controls.push(createRepeaterOrientationControl(component));
     controls.push(
-      createNumberInput(component, "Columns", columns, (value) => {
+      createNumberInput(component, isHorizontal ? "Rows" : "Columns", columns, (value) => {
         updateComponent(component.uid, (draft) => {
           draft.columns = value === null ? 1 : clampInteger(value, 1, MAX_REPEATER_COLUMNS);
           ensureRepeaterZone(draft);
         }, { rerenderCanvas: true, rerenderInspector: true });
       }, { min: 1, max: MAX_REPEATER_COLUMNS, step: 1 })
     );
-    if (columns > 1) {
+    // "Column widths" sizes the N *fixed* field-columns of Vertical table
+    // mode via a <colgroup> — Horizontal's repeating axis is the items
+    // themselves (unknown count until render, rendered as a CSS Grid, not
+    // a <table> — see renderRepeaterComponent), which a fixed-width list
+    // like this can't meaningfully describe, so it's hidden there instead
+    // of offered with no effect.
+    if (columns > 1 && !isHorizontal) {
       controls.push(
         createTextInput(component, "Column widths", component.templateColumns || "", (value) => {
           const next = value.trim();
@@ -5448,7 +6899,23 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
         }, { placeholder: "30% 70%" })
       );
     }
-    controls.push(createRepeaterHeaderToggle(component));
+    controls.push(createRepeaterHeaderToggle(component, { isHorizontal }));
+    controls.push(createRepeaterAllowAddRemoveToggle(component));
+    // Spacing between repeated items — only meaningful for Horizontal (the
+    // items sit side-by-side; Vertical already stacks them with each
+    // component's own Margin, same as everywhere else). Same field/control
+    // as Container's own "Grid gap (px)".
+    if (isHorizontal) {
+      controls.push(createRepeaterFillToggle(component));
+      controls.push(
+        createNumberInput(component, "Grid gap (px)", component.gap ?? 16, (value) => {
+          const next = clampInteger(value ?? 16, 0, 64);
+          updateComponent(component.uid, (draft) => {
+            draft.gap = next;
+          }, { rerenderCanvas: true });
+        }, { min: 0, max: 64, step: 4 })
+      );
+    }
     controls.push(
       createRadioButtonGroup(
         component,
@@ -5468,20 +6935,62 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
       )
     );
     if (decorator.type === "custom") {
-      controls.push(
-        createTextInput(component, "Decorator text", decorator.text || "", (value) => {
-          updateComponent(component.uid, (draft) => {
-            draft.decorator = { type: "custom", text: value };
-          }, { rerenderCanvas: true });
-        }, { placeholder: "→ or @icon" })
-      );
+      // Same literal/@binding/=formula field as Container's Label, Image's
+      // URL, Icon's iconClass, and Text's own Binding/Text — a decorator's
+      // custom text is always resolved per-row (resolveRepeaterDecorator,
+      // workbench-character-view.js), never against the top-level draft,
+      // so "=formula" here means "computed from THIS row's own fields."
+      // Hand-rolled instead of createTextInput (which every OTHER field on
+      // this control list uses) specifically to make room for the live
+      // feedback line below — createTextInput itself stays plain, since
+      // adding this to every one of its many non-binding uses (Height,
+      // Column widths, ...) would just be noise there.
+      const decoratorWrapper = document.createElement("div");
+      decoratorWrapper.className = "form-floating";
+      const decoratorId = toId([component.uid, "Decorator text", "input"]);
+      const decoratorInput = document.createElement("input");
+      decoratorInput.className = "form-control";
+      decoratorInput.type = "text";
+      decoratorInput.id = decoratorId;
+      decoratorInput.placeholder = "→, @icon, or =formula";
+      decoratorInput.value = decorator.formula ? `=${decorator.formula}` : decorator.text || "";
+      const decoratorLabel = document.createElement("label");
+      decoratorLabel.className = "fw-semibold";
+      decoratorLabel.setAttribute("for", decoratorId);
+      decoratorLabel.textContent = "Decorator text";
+      const decoratorFeedback = createFieldPreviewFeedback();
+      decoratorFeedback.update(decoratorInput.value);
+      decoratorInput.addEventListener("input", () => {
+        const trimmed = decoratorInput.value.trim();
+        updateComponent(component.uid, (draft) => {
+          if (trimmed.startsWith("=")) {
+            draft.decorator = { type: "custom", text: "", formula: trimmed.slice(1).trim() };
+          } else {
+            draft.decorator = { type: "custom", text: decoratorInput.value, formula: "" };
+          }
+        }, { rerenderCanvas: true });
+        decoratorFeedback.update(decoratorInput.value);
+      });
+      decoratorWrapper.append(decoratorInput, decoratorLabel, decoratorFeedback.element);
+      controls.push(decoratorWrapper);
     }
     return controls;
   }
 
   // URL text input + the pattern/shape picker's own "brush" trigger button
   // alongside it — the one piece of the Image inspector that isn't a plain
-  // createTextInput, since it needs a second control in the same row.
+  // createTextInput, since it needs a second control in the same row (so
+  // it can't just be createBindingFormulaInput with textKey:"url" the way
+  // Container's own equivalent field is — this one still needs Icon-style
+  // hand-rolled commit logic to make room for that button).
+  // "Binding / Text" — not "Image URL" — matching every other component's
+  // data-population field name exactly (see project_binding_text_vs_source
+  // memory). A literal URL, an "@path", or "=formula" (component.formula,
+  // same generic key Icon/Text/Container use) resolved against the
+  // Character record at render time (see renderImageContent's
+  // ctx.resolveBindableString/ctx.evaluateFormula in component-renderers.js
+  // — Image previously had no binding OR formula support at all here, a
+  // real functional gap, not just a naming one).
   function createImageUrlControl(component) {
     const wrapper = document.createElement("div");
     wrapper.className = "d-flex flex-column";
@@ -5489,19 +6998,29 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     const label = document.createElement("label");
     label.className = "form-label fw-semibold text-body-secondary";
     label.setAttribute("for", id);
-    label.textContent = "Image URL";
+    label.textContent = "Binding / Text";
     const row = document.createElement("div");
     row.className = "d-flex gap-1";
     const input = document.createElement("input");
     input.className = "form-control";
     input.type = "text";
     input.id = id;
-    input.placeholder = "https://";
-    input.value = resolveImageUrl(component);
+    input.placeholder = "https://..., @portrait.url, or =formula";
+    input.value = component.formula ? `=${component.formula}` : resolveImageUrl(component);
+    const feedback = createFieldPreviewFeedback();
+    feedback.update(input.value);
     input.addEventListener("input", () => {
+      const trimmed = input.value.trim();
       updateComponent(component.uid, (draft) => {
-        draft.url = input.value;
+        if (trimmed.startsWith("=")) {
+          draft.formula = trimmed.slice(1).trim();
+          draft.url = "";
+        } else {
+          draft.url = input.value;
+          draft.formula = "";
+        }
       }, { rerenderCanvas: true });
+      feedback.update(input.value);
     });
     const patternButton = document.createElement("button");
     patternButton.type = "button";
@@ -5515,7 +7034,7 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     patternButton.appendChild(icon);
     patternButton.addEventListener("click", () => openPatternPicker(component, input));
     row.append(input, patternButton);
-    wrapper.append(label, row);
+    wrapper.append(label, row, feedback.element);
     return wrapper;
   }
 
@@ -5989,7 +7508,16 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     const label = document.createElement("label");
     label.className = "form-label fw-semibold text-body-secondary";
     label.setAttribute("for", id);
-    label.textContent = "Icon";
+    // "Binding / Text" — not "Icon" — matching every other component's
+    // data-population field name exactly (see
+    // project_binding_text_vs_source memory): typing "@some.path" directly
+    // into this same field is how a bound icon is authored, same
+    // literal-or-binding convention as Text's own field. "=formula" is a
+    // third mode on the same field (component.formula, the same generic
+    // key Text/Input use) rather than a second input — takes priority over
+    // iconClass when set, for a computed icon class (e.g. ="ddb-"+@type)
+    // that a single bound @path can't express.
+    label.textContent = "Binding / Text";
     const row = document.createElement("div");
     row.className = "input-group";
     // Two nested spans, matching Press's own markup exactly (press/index.html's
@@ -6009,23 +7537,47 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     input.className = "form-control";
     input.type = "text";
     input.id = id;
-    input.placeholder = "ddb-fire, bi-star, or @some.path";
-    input.value = component.iconClass || "";
+    input.placeholder = "ddb-fire, bi-star, @some.path, or =formula";
+    input.value = component.formula ? `=${component.formula}` : component.iconClass || "";
+    const feedback = createFieldPreviewFeedback();
 
     const refreshPreview = () => {
       previewSpan.innerHTML = "";
-      const classes = resolveIconClassList(input.value.trim().startsWith("@") ? "" : input.value);
+      const trimmed = input.value.trim();
+      // Same resolution renderIconPreview's canvas swatch uses (both read
+      // from state.systemPreviewData) — a literal name resolves as-is, an
+      // "@" binding and a "=" formula both resolve against sample data, so
+      // this little preview and the canvas agree on what a bound/computed
+      // icon will actually look like.
+      let resolved = input.value;
+      if (trimmed.startsWith("=")) {
+        resolved = evaluatePreviewFormula(trimmed.slice(1).trim());
+      } else if (trimmed.startsWith("@")) {
+        resolved = resolvePreviewBindingValue(trimmed);
+      }
+      const classes = resolveIconClassList(resolved);
       if (classes.length) {
         const icon = document.createElement("span");
         icon.className = classes.join(" ");
         previewSpan.appendChild(icon);
       }
+      // The swatch above only ever shows "some glyph" or "nothing" — it
+      // can't distinguish a bad formula from one that just hasn't resolved
+      // against this system's sample data yet. This line can.
+      feedback.update(input.value);
     };
     refreshPreview();
 
     const commit = (value) => {
+      const trimmed = value.trim();
       updateComponent(component.uid, (draft) => {
-        draft.iconClass = value;
+        if (trimmed.startsWith("=")) {
+          draft.formula = trimmed.slice(1).trim();
+          draft.iconClass = "";
+        } else {
+          draft.iconClass = value;
+          draft.formula = "";
+        }
       }, { rerenderCanvas: true });
       refreshPreview();
     };
@@ -6037,7 +7589,7 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     // so it never hit this; this one is built fresh on every inspector
     // render and has to be appended first.
     row.append(previewWrap, input);
-    wrapper.append(label, row);
+    wrapper.append(label, row, feedback.element);
     attachIconAutocomplete(input, {
       onSelect: (value) => {
         input.value = value;
@@ -6068,6 +7620,50 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     ];
   }
 
+  // "Label" — Identity-section position, same as every other type's own
+  // generic Label field, just not binding-blind: this one still accepts a
+  // literal heading, an "@path", or an "=formula" (component.formula, same
+  // generic key Icon/Image/Text use) in one field, matching the "any text
+  // field takes a binding, formula, or literal" convention. Previously
+  // labeled "Binding / Text" and plucked into the Component-section slot
+  // (pluckControlByLabel) — that was a genuine mislabel (Container has no
+  // real `binding` field at all; this was always just its own Label field
+  // wearing the Binding/Text vocabulary's name) — now called directly from
+  // generalControls' own Identity-section ternary instead, so it doesn't
+  // need to be plucked out of anything.
+  function createContainerLabelControl(component) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "d-flex flex-column";
+    const id = toId([component.uid, "Container", "label-input"]);
+    const label = document.createElement("label");
+    label.className = "form-label fw-semibold text-body-secondary";
+    label.setAttribute("for", id);
+    label.textContent = "Label";
+    const input = document.createElement("input");
+    input.className = "form-control";
+    input.type = "text";
+    input.id = id;
+    input.placeholder = "Displayed label, @path, or =formula";
+    input.value = component.formula ? `=${component.formula}` : component.label || "";
+    const feedback = createFieldPreviewFeedback();
+    feedback.update(input.value);
+    input.addEventListener("input", () => {
+      const trimmed = input.value.trim();
+      updateComponent(component.uid, (draft) => {
+        if (trimmed.startsWith("=")) {
+          draft.formula = trimmed.slice(1).trim();
+          draft.label = "";
+        } else {
+          draft.label = trimmed;
+          draft.formula = "";
+        }
+      }, { rerenderCanvas: true });
+      feedback.update(input.value);
+    });
+    wrapper.append(label, input, feedback.element);
+    return wrapper;
+  }
+
   function renderContainerInspector(component) {
     normalizeContainerType(component);
     const controls = [];
@@ -6085,10 +7681,34 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
             draft.containerType = value;
             ensureContainerZones(draft);
           }, { rerenderCanvas: true, rerenderInspector: true });
-        }
+        },
+        { hideLabel: true }
       )
     );
     if (component.containerType === "tabs") {
+      // Source-driven tabs — an addition to the static list below, not a
+      // replacement: when set, one tab is generated per resolved Source
+      // entry (see resolveSystemFieldValues/ensureContainerZones) instead
+      // of the literal tabLabels list. Same shared control every other
+      // Source field uses (Select's/Toggle's own "Source / Options"), just
+      // labeled "Source" here since this one drives which/how-many tabs
+      // exist, not a single field's own choices list.
+      controls.push(
+        createBindingFormulaInput(component, {
+          labelText: "Source",
+          placeholder: "@playbooks",
+          bindingKey: "tabLabelsSourceBinding",
+          formulaKey: null,
+          supportsFormula: false,
+          allowedFieldCategories: ["object", "array"],
+          afterCommit: ({ draft, result }) => {
+            if (!result || result.type === "empty") {
+              draft.tabLabelsSourceBinding = "";
+            }
+            ensureContainerZones(draft);
+          },
+        })
+      );
       controls.push(
         createTextarea(component, "Tab labels (one per line)", (component.tabLabels || []).join("\n"), (value) => {
           updateComponent(component.uid, (draft) => {
@@ -6097,46 +7717,69 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
           }, { rerenderCanvas: true });
         }, { rows: 3, placeholder: "Details\nInventory" })
       );
+      // Play-view-only lock (Source-driven tabs only — see
+      // resolveLockedTabIndex, workbench-character-view.js): when set to
+      // the character's own selection field (e.g. "@class", "@playbook"),
+      // Play view shows ONLY the one tab matching that value, no nav bar —
+      // Edit view is completely unaffected, every tab stays switchable
+      // there regardless (that's the character-creation surface). Blank
+      // (the default) leaves every tab always switchable in both modes,
+      // same as before this field existed.
+      controls.push(
+        createTextInput(component, "Locked tab (Play)", component.activeTabBinding || "", (value) => {
+          const next = value.trim();
+          updateComponent(component.uid, (draft) => {
+            if (next) draft.activeTabBinding = next;
+            else delete draft.activeTabBinding;
+          }, { rerenderCanvas: true });
+        }, { placeholder: "@class" })
+      );
     } else {
       controls.push(
-        createNumberInput(component, "Columns", component.columns || 2, (value) => {
-          const next = clampInteger(value ?? 2, 1, MAX_CONTAINER_COLUMNS);
-          updateComponent(component.uid, (draft) => {
-            draft.columns = next;
-            ensureContainerZones(draft);
-          }, { rerenderCanvas: true, rerenderInspector: true });
-        }, { min: 1, max: MAX_CONTAINER_COLUMNS })
+        createFieldRow(
+          [
+            createNumberInput(component, "Columns", component.columns || 2, (value) => {
+              const next = clampInteger(value ?? 2, 1, MAX_CONTAINER_COLUMNS);
+              updateComponent(component.uid, (draft) => {
+                draft.columns = next;
+                ensureContainerZones(draft);
+              }, { rerenderCanvas: true, rerenderInspector: true });
+            }, { min: 1, max: MAX_CONTAINER_COLUMNS }),
+            createNumberInput(component, "Rows", component.rows || 1, (value) => {
+              const next = clampInteger(value ?? 1, 1, MAX_CONTAINER_ROWS);
+              updateComponent(component.uid, (draft) => {
+                draft.rows = next;
+                ensureContainerZones(draft);
+              }, { rerenderCanvas: true, rerenderInspector: true });
+            }, { min: 1, max: MAX_CONTAINER_ROWS }),
+          ],
+          { columns: 2 }
+        )
       );
       controls.push(
-        createNumberInput(component, "Rows", component.rows || 1, (value) => {
-          const next = clampInteger(value ?? 1, 1, MAX_CONTAINER_ROWS);
-          updateComponent(component.uid, (draft) => {
-            draft.rows = next;
-            ensureContainerZones(draft);
-          }, { rerenderCanvas: true, rerenderInspector: true });
-        }, { min: 1, max: MAX_CONTAINER_ROWS })
-      );
-      controls.push(
-        createTextInput(component, "Column template", component.templateColumns || "", (value) => {
-          const next = value.trim();
-          updateComponent(component.uid, (draft) => {
-            if (next) draft.templateColumns = next;
-            else delete draft.templateColumns;
-          }, { rerenderCanvas: true });
-        }, { placeholder: "1fr 2fr" })
-      );
-      controls.push(
-        createTextInput(component, "Row template", component.templateRows || "", (value) => {
-          const next = value.trim();
-          updateComponent(component.uid, (draft) => {
-            if (next) draft.templateRows = next;
-            else delete draft.templateRows;
-          }, { rerenderCanvas: true });
-        }, { placeholder: "auto auto" })
+        createFieldRow(
+          [
+            createTextInput(component, "Column template", component.templateColumns || "", (value) => {
+              const next = value.trim();
+              updateComponent(component.uid, (draft) => {
+                if (next) draft.templateColumns = next;
+                else delete draft.templateColumns;
+              }, { rerenderCanvas: true });
+            }, { placeholder: "1fr 2fr" }),
+            createTextInput(component, "Row template", component.templateRows || "", (value) => {
+              const next = value.trim();
+              updateComponent(component.uid, (draft) => {
+                if (next) draft.templateRows = next;
+                else delete draft.templateRows;
+              }, { rerenderCanvas: true });
+            }, { placeholder: "auto auto" }),
+          ],
+          { columns: 2 }
+        )
       );
     }
     controls.push(
-      createNumberInput(component, "Column/row gap (px)", component.gap ?? 16, (value) => {
+      createNumberInput(component, "Grid gap (px)", component.gap ?? 16, (value) => {
         const next = clampInteger(value ?? 16, 0, 64);
         updateComponent(component.uid, (draft) => {
           draft.gap = next;
@@ -6206,7 +7849,8 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
           updateComponent(component.uid, (draft) => {
             draft.variant = value;
           }, { rerenderCanvas: true });
-        }
+        },
+        { hideLabel: true }
       )
     );
     controls.push(
@@ -6228,27 +7872,173 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     return controls;
   }
 
+  // Shape is labeled "Type" (not "Shape", no visible heading) on purpose —
+  // it's the same UX role Input's variant selector (text/textarea/select/
+  // etc.) and Select Group's variant selector (pills/tags/buttons) already
+  // fill for their own types, both literally labeled "Type" too
+  // (renderInputInspector/renderSelectGroupInspector) — the one control
+  // that picks how this component's core control fundamentally renders.
+  // Naming it "Type" (not a separate, novel label) is what makes
+  // pluckControlByLabel (renderInspector) front-load it right below the
+  // Type Summary card for free, matching every other type's own Type
+  // selector placement, instead of writing bespoke placement logic here.
   function renderToggleInspector(component) {
     const controls = [];
     controls.push(
       createRadioButtonGroup(
         component,
-        "Shape",
+        "Type",
         [
           { value: "circle", icon: "tabler:circle", label: "Circle" },
           { value: "square", icon: "tabler:square", label: "Square" },
           { value: "diamond", icon: "tabler:diamond", label: "Diamond" },
           { value: "star", icon: "tabler:star", label: "Star" },
+          { value: "diamond-quarters", icon: "tabler:layout-grid", label: "Quartered" },
         ],
         component.shape || "circle",
         (value) => {
+          // rerenderInspector too — the Border section's Corner radius
+          // field is only shown for shape "square" (see createBorderControls'
+          // own comment), so switching shape has to redraw the inspector,
+          // not just the canvas, or that field's visibility goes stale
+          // until something else happens to re-render it.
           updateComponent(component.uid, (draft) => {
             draft.shape = value;
-          }, { rerenderCanvas: true });
-        }
+          }, { rerenderCanvas: true, rerenderInspector: true });
+        },
+        { forceSingleRow: true, hideLabel: true }
       )
     );
+    // Optional — blank keeps today's default (the shape stretches to fill
+    // its container's width via .component-field--label-top's own
+    // stretch rule, fixed at the CSS-default height, which can distort a
+    // circle into an oval in a narrow repeater column). Same free-CSS-value
+    // convention as Image's own Width/Height fields; set as an inline
+    // style on the glyph itself (see renderToggleContent), which naturally
+    // outranks that stretch rule without needing any CSS specificity work.
+    // Side by side, same row — same createFieldRow(..., {columns:2}) split
+    // Border's own Thickness/Corner-radius pair already uses.
+    controls.push(
+      createFieldRow(
+        [
+          createTextInput(component, "Width", component.width || "", (value) => {
+            const next = value.trim();
+            updateComponent(component.uid, (draft) => {
+              draft.width = next;
+            }, { rerenderCanvas: true });
+          }, { placeholder: "Fills available width" }),
+          createTextInput(component, "Height", component.height || "", (value) => {
+            const next = value.trim();
+            updateComponent(component.uid, (draft) => {
+              draft.height = next;
+            }, { rerenderCanvas: true });
+          }, { placeholder: "2.5rem" }),
+        ],
+        { columns: 2 }
+      )
+    );
+    controls.push(createToggleStateStylesEditor(component));
     return controls;
+  }
+
+  // One row per currently-resolved state (Source binding, falling back to
+  // the literal `states` list — resolveTogglePreviewStates' own fallback),
+  // each with a fill percentage and a Ring checkbox writing into
+  // component.stateStyles[stateValue]. This is component/template data on
+  // purpose, not anything read off the Source/System — see
+  // feedback_visual_data_never_on_system memory: the same semantic states
+  // (e.g. "Half"/"Half Round Up"/"Proficiency"/"Expertise") need to render
+  // differently per template and even per System, so the mapping can't live
+  // upstream of the component that's actually doing the drawing. A state
+  // with no configured entry shows its position-based fallback value
+  // pre-filled (not blank) — matches resolveToggleStateStyle's own
+  // fallback in component-renderers.js, so what's shown here always equals
+  // what actually renders before the author touches anything.
+  function createToggleStateStylesEditor(component) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "d-flex flex-column gap-2";
+    const heading = document.createElement("div");
+    heading.className = "fw-semibold text-body-secondary";
+    heading.textContent = "State visuals";
+    wrapper.appendChild(heading);
+
+    const states = resolveTogglePreviewStates(component);
+    if (!states.length) {
+      wrapper.appendChild(
+        createPreviewEmptyState("Select a source (or add literal states) to configure how each state looks.")
+      );
+      return wrapper;
+    }
+
+    const stateStyles =
+      component.stateStyles && typeof component.stateStyles === "object" ? component.stateStyles : {};
+    const maxIndex = Math.max(states.length - 1, 1);
+
+    states.forEach((entry, index) => {
+      const key = String(entry.value);
+      const displayLabel = entry.label || key;
+      const configured = stateStyles[key] || {};
+      const positionFallback = states.length <= 1 ? 1 : index / maxIndex;
+      const currentFill = typeof configured.fillLevel === "number" ? configured.fillLevel : positionFallback;
+
+      const row = document.createElement("div");
+      row.className = "d-flex align-items-center gap-2";
+
+      const label = document.createElement("span");
+      label.className = "small text-body-secondary flex-grow-1 text-truncate";
+      label.textContent = displayLabel;
+      label.title = displayLabel;
+
+      const fillInput = document.createElement("input");
+      fillInput.type = "number";
+      fillInput.className = "form-control form-control-sm";
+      fillInput.style.width = "5rem";
+      fillInput.min = "0";
+      fillInput.max = "100";
+      fillInput.step = "5";
+      fillInput.value = String(Math.round(currentFill * 100));
+      fillInput.setAttribute("aria-label", `${displayLabel} fill percent`);
+      fillInput.addEventListener("change", () => {
+        const parsed = Number(fillInput.value);
+        const clamped = Number.isFinite(parsed) ? Math.max(0, Math.min(100, parsed)) / 100 : positionFallback;
+        fillInput.value = String(Math.round(clamped * 100));
+        updateComponent(component.uid, (draft) => {
+          const nextStyles = {
+            ...(draft.stateStyles && typeof draft.stateStyles === "object" ? draft.stateStyles : {}),
+          };
+          nextStyles[key] = { ...(nextStyles[key] || {}), fillLevel: clamped };
+          draft.stateStyles = nextStyles;
+        }, { rerenderCanvas: true });
+      });
+
+      const ringId = toId([component.uid, "toggleRing", key, index]);
+      const ringWrap = document.createElement("div");
+      ringWrap.className = "form-check form-check-sm mb-0";
+      const ringInput = document.createElement("input");
+      ringInput.type = "checkbox";
+      ringInput.className = "form-check-input";
+      ringInput.id = ringId;
+      ringInput.checked = Boolean(configured.ring);
+      ringInput.addEventListener("change", () => {
+        updateComponent(component.uid, (draft) => {
+          const nextStyles = {
+            ...(draft.stateStyles && typeof draft.stateStyles === "object" ? draft.stateStyles : {}),
+          };
+          nextStyles[key] = { ...(nextStyles[key] || {}), ring: ringInput.checked };
+          draft.stateStyles = nextStyles;
+        }, { rerenderCanvas: true });
+      });
+      const ringLabel = document.createElement("label");
+      ringLabel.className = "form-check-label small text-body-secondary";
+      ringLabel.setAttribute("for", ringId);
+      ringLabel.textContent = "Ring";
+      ringWrap.append(ringInput, ringLabel);
+
+      row.append(label, fillInput, ringWrap);
+      wrapper.appendChild(row);
+    });
+
+    return wrapper;
   }
 
   function updateComponent(uid, mutate, { rerenderCanvas = false, rerenderInspector = false } = {}) {
@@ -6361,6 +8151,48 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
       if ((merged.value === undefined || merged.value === null || merged.value === "") && Array.isArray(merged.states) && merged.states.length) {
         merged.value = merged.states[0];
       }
+      // Background used to get an unconditional "#495057, since an empty
+      // value isn't a real 'no background' choice for this type" backfill
+      // here, same as borderStyle/borderColor below. That stopped being
+      // true once Background got real unset/X-overlay support in the color
+      // picker (see color-picker.js's --unset handling) — "no background"
+      // (show through to whatever's behind the shape) became a legitimate,
+      // intentional choice, and this hydration step (which runs once, every
+      // time a template's saved JSON loads fresh) silently overwrote it
+      // right back to grey on every load even when the JSON itself stayed
+      // correctly empty (see workbench-character-view.js's own identical
+      // fix — this file has its own separate hydrateComponent). Border
+      // keeps its own backfill below since that wasn't the reported
+      // problem: borderStyle has to be filled in here (not left to the
+      // generic "no style = no border" rule further down to just clear
+      // borderColor right back out) — Toggle's border is meant to always be
+      // on by default, the one type where that's true.
+      if (!merged.borderStyle || merged.borderStyle === "none") {
+        merged.borderStyle = "solid";
+      }
+      if (!merged.borderColor) {
+        merged.borderColor = "#343a40";
+      }
+      if (merged.borderWidth === null || merged.borderWidth === undefined) {
+        merged.borderWidth = 1;
+      }
+      // foregroundColor (the shape's own fill) used to just BE textColor —
+      // one field doing two jobs, which is exactly the confusion the
+      // Text/Foreground split exists to remove (see COLOR_FIELD_MAP's own
+      // comment). Anything saved before the split has no foregroundColor
+      // at all, so inherit whatever textColor currently is (preserving
+      // the fill's existing look) rather than falling back to the generic
+      // new-component default and silently changing how an old template
+      // renders.
+      if (!merged.foregroundColor) {
+        merged.foregroundColor = merged.textColor || "#ffffff";
+      }
+      if (typeof merged.foregroundColorBinding !== "string") {
+        merged.foregroundColorBinding = "";
+      }
+      if (typeof merged.foregroundColorFormula !== "string") {
+        merged.foregroundColorFormula = "";
+      }
     }
     if (merged.type === "input") {
       if (typeof merged.sourceBinding !== "string") {
@@ -6398,6 +8230,28 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     } else if (Object.prototype.hasOwnProperty.call(merged, "labelPosition")) {
       delete merged.labelPosition;
     }
+    // borderStyle is the border on/off switch, not borderColor — a
+    // component with no style (or style: "none") has no border, full
+    // stop, and everything downstream of that (color/width/sides — but
+    // NOT radius, which independently shapes the card's own background/
+    // shadow rounding even with no border line drawn) is stale leftover
+    // data, not a real, current choice, whenever style says there's
+    // nothing here. Strips it back to empty on every load so the stored
+    // data itself matches "nothing set" — this exact shape existed in
+    // practice (every component used to be seeded with borderStyle:
+    // "solid" and a full borderSides object regardless of borderColor,
+    // before those seeds were removed — see createComponent's own
+    // comment), so old saved templates need this cleanup, not just new
+    // ones going forward. Applies to Toggle too now that it has real
+    // Style/Width/Sides support (component-renderers.js's
+    // renderToggleContent) — see createComponent's own toggle defaults for
+    // why its OWN seeded borderStyle is "solid", not "" like most types.
+    if (!merged.borderStyle || merged.borderStyle === "none") {
+      merged.borderStyle = "";
+      merged.borderColor = "";
+      merged.borderWidth = null;
+      merged.borderSides = null;
+    }
     return merged;
   }
 
@@ -6418,6 +8272,17 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     type = "sheet",
     origin = "draft",
     shareToken = "",
+    baseFontFamily = "",
+    defaults = null,
+    backgroundColor = "",
+    backgroundColorBinding = "",
+    backgroundColorFormula = "",
+    borderStyle = "",
+    borderColor = "",
+    borderColorBinding = "",
+    borderColorFormula = "",
+    borderWidth = null,
+    borderSides = null,
   } = {}) {
     return {
       id: id || "",
@@ -6432,6 +8297,30 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
       permissions: "",
       ownerId: null,
       ownerUsername: "",
+      baseFontFamily: baseFontFamily || "",
+      // A brand-new template (defaults === null) and an already-saved one
+      // predating this field both land here — normalizeTemplateDefaults
+      // always returns a real fontColor either way, matching "New
+      // templates should seed simple default template values like we do
+      // with the font."
+      defaults: normalizeTemplateDefaults(defaults),
+      // The sheet's own literal, visible background/border — blank by
+      // default (a real, meaningful "no background"/"no border" choice,
+      // same as any component's own field), NOT a per-component fallback.
+      // Applied once to the canvas/sheet root (renderCanvas here,
+      // applyTemplateData in workbench-character-view.js), same
+      // Binding/Formula-capable shape a component's own Colors section
+      // uses (createColorPickerField) — same picker, same Clear/unset
+      // handling, not a simplified one-off.
+      backgroundColor: backgroundColor || "",
+      backgroundColorBinding: backgroundColorBinding || "",
+      backgroundColorFormula: backgroundColorFormula || "",
+      borderStyle: borderStyle || "",
+      borderColor: borderColor || "",
+      borderColorBinding: borderColorBinding || "",
+      borderColorFormula: borderColorFormula || "",
+      borderWidth: borderWidth === null || borderWidth === undefined ? null : borderWidth,
+      borderSides: borderSides && typeof borderSides === "object" ? { ...borderSides } : null,
     };
   }
 

@@ -30,6 +30,28 @@ const BASE_FUNCTIONS = {
   and: (...values) => values.every(Boolean),
   or: (...values) => values.some(Boolean),
   not: (value) => !value,
+  // String helpers — deliberately plain, no regex (a regex literal isn't
+  // expressible through SAFE_PATTERN/the @-substitution step anyway, and
+  // a template author shouldn't need to know regex to substitute text).
+  // `value` first on all of these, same subject-first argument order as
+  // clamp/mod/pow above, not JS's own String.prototype order.
+  len: (value) => {
+    if (Array.isArray(value)) return value.length;
+    if (value === undefined || value === null) return 0;
+    return String(value).length;
+  },
+  upper: (value) => String(value ?? "").toUpperCase(),
+  lower: (value) => String(value ?? "").toLowerCase(),
+  split: (value, separator) => String(value ?? "").split(separator ?? ""),
+  // Whole-string substitution (every occurrence), not just the first —
+  // split/join instead of String.prototype.replace so a literal search
+  // string never gets misread as regex syntax.
+  replace: (value, search, replacement) => {
+    const str = String(value ?? "");
+    const searchStr = String(search ?? "");
+    if (!searchStr) return str;
+    return str.split(searchStr).join(String(replacement ?? ""));
+  },
 };
 
 function coerceValue(value) {
@@ -103,6 +125,12 @@ export function evaluateFormula(formula, context = {}, options = {}) {
   return evaluator(getter, runtimeFunctions);
 }
 
+// "roller" and "lookup" aren't in BASE_FUNCTIONS itself — both are injected
+// per-caller via options.functions instead (see roller's own inline
+// definition above and bindings.js's createLookupFn). Every real caller
+// provides both in practice though, so they belong in the advertised
+// function list too — otherwise the inspector's own autocomplete
+// (formula-metadata.js) would never suggest either.
 export function listFormulaFunctions() {
-  return [...new Set([...Object.keys(BASE_FUNCTIONS), "roller"])];
+  return [...new Set([...Object.keys(BASE_FUNCTIONS), "roller", "lookup"])];
 }

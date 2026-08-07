@@ -1,9 +1,14 @@
 import { initAppShell } from "../../common/js/lib/app-shell.js";
 import { initAuthControls } from "../../common/js/lib/auth-ui.js";
-import { updateJsonPreview } from "../../common/js/lib/json-preview.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
 import { refreshTooltips } from "../../common/js/lib/tooltips.js";
-import { bindCollapsibleToggle } from "../../common/js/lib/collapsible.js";
+import {
+  createJsonDataPanel,
+  createToolbarButtonGroup,
+  createCollapsibleSection,
+  createEmptyStateCard,
+  createCompactField,
+} from "../../common/js/lib/ui-components.js";
 import {
   listCreatureTypesForSystem,
   listArchetypesForSystem,
@@ -27,6 +32,7 @@ import {
   generateNoteForRecord,
 } from "../../common/js/lib/generator-kit.js";
 import { confirmDelete } from "../../common/js/lib/ownership.js";
+import { initToolSettings } from "../../common/js/lib/tool-settings.js";
 
 let status = null;
 let dataManager = null;
@@ -50,13 +56,72 @@ let currentRecord = null;
 // on the server to target (see common/js/lib/dirty-gate.js).
 const dirtyGate = createDirtyGate({ buildSnapshot: () => toPressExportShape(buildRecordForSave()) });
 
+// Built and mounted before `elements` below queries for these buttons by
+// their data-*-monster attribute, so every existing selector/disabled-state
+// call site elsewhere in this file keeps working unchanged.
+createToolbarButtonGroup([
+  { action: "generate", label: "Generate Monster", primary: true, attrs: { "data-generate-monster": true } },
+  { action: "save", label: "Save", disabled: true, attrs: { "data-save-monster": true } },
+  { action: "export", label: "Export JSON", disabled: true, attrs: { "data-export-monster": true } },
+  { action: "delete", label: "Delete", disabled: true, attrs: { "data-delete-monster": true } },
+]).forEach((button) => document.querySelector("[data-monster-toolbar-mount]")?.appendChild(button));
+document.querySelector("[data-monster-empty-state]")?.appendChild(
+  createEmptyStateCard({
+    icon: "tabler:flask",
+    message: "No monster generated yet. Optionally pin a Creature Type, Archetype, or Role, then click Generate Monster.",
+  })
+);
+
+// Named data-field-mount (not data-inspector-mount) — this file's own
+// [data-inspector-mount] selector below is a single bare marker for the
+// Detail Inspector's collapsible wrapper; a keyed attribute of the same
+// name would collide with it (attribute selectors match on presence, not
+// value).
+// replaceWith, not appendChild — see press/js/app.js's mountInspectorField
+// for why: an appended-into wrapper stays an empty-but-in-flow flex item
+// even while its field is conditionally hidden, silently spending a full
+// gap-3 on both sides of it. Any class the static mount div itself carried
+// is merged onto the built field first so removing the wrapper doesn't
+// lose that layout.
+function mountField(key, element) {
+  const mount = document.querySelector(`[data-field-mount="${key}"]`);
+  if (!mount) return;
+  if (mount.className) element.classList.add(...mount.classList);
+  mount.replaceWith(element);
+}
+mountField("system-select", createCompactField({ type: "select", id: "crucibleSystemSelect", label: "System", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-system-select" }));
+mountField(
+  "creature-type-override",
+  createCompactField({
+    type: "select", id: "crucibleCreatureTypeOverride", label: "Creature Type", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select",
+    dataAttr: "data-creature-type-override", helpTopic: "crucible.overrides",
+  })
+);
+mountField("archetype-override", createCompactField({ type: "select", id: "crucibleArchetypeOverride", label: "Archetype", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-archetype-override" }));
+mountField("role-override", createCompactField({ type: "select", id: "crucibleRoleOverride", label: "Role", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-role-override" }));
+mountField(
+  "combat-scaling-override",
+  createCompactField({
+    type: "select", id: "crucibleCombatScalingOverride", label: "Combat Scaling", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select",
+    dataAttr: "data-combat-scaling-override", helpTopic: "crucible.combatScaling",
+  })
+);
+mountField("signature-feature-override", createCompactField({ type: "select", id: "crucibleSignatureOverride", label: "Signature Feature", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-signature-feature-override" }));
+mountField(
+  "locked-features",
+  createCompactField({
+    type: "select-multiple", id: "crucibleLockedFeatures", label: "Locked Features", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select",
+    dataAttr: "data-locked-features", helpTopic: "crucible.lockedFeatures", size: 5,
+  })
+);
+mountField("monster-name", createCompactField({ type: "text", id: "crucibleMonsterName", label: "Name", labelClass: "form-label fw-semibold mb-0", controlClass: "form-control", dataAttr: "data-monster-name", placeholder: "Unnamed" }));
+
 const elements = {
   systemSelect: document.querySelector("[data-system-select]"),
   creatureTypeOverride: document.querySelector("[data-creature-type-override]"),
   archetypeOverride: document.querySelector("[data-archetype-override]"),
   roleOverride: document.querySelector("[data-role-override]"),
   combatScalingOverride: document.querySelector("[data-combat-scaling-override]"),
-  combatScalingFieldSelect: document.querySelector("[data-combat-scaling-field]"),
   signatureOverride: document.querySelector("[data-signature-feature-override]"),
   lockedFeatures: document.querySelector("[data-locked-features]"),
   generateButton: document.querySelector("[data-generate-monster]"),
@@ -74,59 +139,115 @@ const elements = {
   statsBudget: document.querySelector("[data-stats-budget]"),
   notesText: document.querySelector("[data-notes-text]"),
   generateNoteButton: document.querySelector("[data-generate-note]"),
-  jsonPreview: document.querySelector("[data-monster-json-preview]"),
-  jsonBytes: document.querySelector("[data-monster-json-bytes]"),
   inspectorEmpty: document.querySelector("[data-inspector-empty]"),
   inspectorDetail: document.querySelector("[data-inspector-detail]"),
   inspectorJson: document.querySelector("[data-inspector-json]"),
-  inspectorToggle: document.querySelector("[data-inspector-toggle]"),
-  inspectorToggleLabel: document.querySelector("[data-inspector-toggle-label]"),
-  inspectorPanel: document.querySelector("[data-inspector-panel]"),
 };
+
+// Adopts the existing static `[data-inspector-panel]` markup (its own
+// content stays hand-authored HTML — only the header+chevron wrapper is
+// JS-built) as this section's content; createCollapsibleSection's own
+// internal bindCollapsibleToggle replaces the old standalone one below.
+{
+  const inspectorSection = createCollapsibleSection({
+    label: "Inspector",
+    collapsed: false,
+    content: document.querySelector("[data-inspector-panel]"),
+  });
+  document.querySelector("[data-inspector-mount]")?.appendChild(inspectorSection.section);
+}
+
+const jsonDataPanel = createJsonDataPanel({
+  label: "JSON Data",
+  getData: () => (currentRecord ? toPressExportShape(currentRecord) : null),
+});
 
 function currentSystemId() {
   return elements.systemSelect?.value || "";
 }
 
-// Which array field Crucible treats as combat-scaling data is a Crucible tool
-// preference, not System data — it's not game content, it's "which of this
-// System's fields does Crucible's own generator special-case," so it lives in
-// this browser's local storage (keyed per System), never in the System record
+// Which array field Crucible treats as combat-scaling data — and, separately,
+// which one it treats as creature-type data — is a Crucible tool preference,
+// not System data: it's not game content, it's "which of this System's
+// fields does Crucible's own generator special-case," so it lives in this
+// browser's local storage (keyed per System), never in the System record
 // edited in Loom. Mirrors Vault's budgetCeilingField preference exactly (see
-// vault/js/app.js).
-const COMBAT_SCALING_BUCKET = "crucible-settings";
+// vault/js/app.js). Both settings share one per-System record (read/write
+// through the small helpers below, not saveLocal directly) since
+// dataManager.saveLocal replaces the whole record for a given (bucket, id) —
+// writing one setting straight through saveLocal would silently wipe out
+// the other one's already-saved value for that same System.
+const CRUCIBLE_SETTINGS_BUCKET = "crucible-settings";
+
+function getCrucibleSystemSettings(systemId) {
+  if (!dataManager || !systemId) return {};
+  return dataManager.getLocal(CRUCIBLE_SETTINGS_BUCKET, systemId) || {};
+}
+
+function setCrucibleSystemSetting(systemId, key, value) {
+  if (!dataManager || !systemId) return;
+  const next = { ...getCrucibleSystemSettings(systemId), [key]: value };
+  if (!next.combatScalingField && !next.creatureTypeField) {
+    dataManager.removeLocal(CRUCIBLE_SETTINGS_BUCKET, systemId);
+  } else {
+    dataManager.saveLocal(CRUCIBLE_SETTINGS_BUCKET, systemId, next);
+  }
+}
 
 function getCombatScalingFieldPreference(systemId) {
-  if (!dataManager || !systemId) return "";
-  return dataManager.getLocal(COMBAT_SCALING_BUCKET, systemId)?.combatScalingField || "";
+  return getCrucibleSystemSettings(systemId).combatScalingField || "";
 }
 
 function setCombatScalingFieldPreference(systemId, fieldKey) {
-  if (!dataManager || !systemId) return;
-  if (fieldKey) {
-    dataManager.saveLocal(COMBAT_SCALING_BUCKET, systemId, { combatScalingField: fieldKey });
-  } else {
-    dataManager.removeLocal(COMBAT_SCALING_BUCKET, systemId);
-  }
+  setCrucibleSystemSetting(systemId, "combatScalingField", fieldKey || "");
 }
 
-function populateCombatScalingFieldSelect(selectedFieldKey) {
-  const select = elements.combatScalingFieldSelect;
-  if (!select) return;
-  select.innerHTML = "";
-  const blank = document.createElement("option");
-  blank.value = "";
-  blank.textContent = "None";
-  select.appendChild(blank);
-  arrayFieldOptions.forEach((field) => {
-    const option = document.createElement("option");
-    option.value = field.key;
-    option.textContent = field.label || field.key;
-    select.appendChild(option);
-  });
-  if (arrayFieldOptions.some((field) => field.key === selectedFieldKey)) {
-    select.value = selectedFieldKey;
-  }
+// Different Systems use different nomenclature for this concept (5e's own
+// "Creature Type" vocabulary vs. another game's "Kind"/"Origin"/whatever it
+// calls its own version) — see listCreatureTypesForSystem's own comment in
+// lib/tables.js — so which array field supplies it is configurable exactly
+// like combatScalingField above, defaulting to "creatureTypes" there when
+// unset.
+function getCreatureTypeFieldPreference(systemId) {
+  return getCrucibleSystemSettings(systemId).creatureTypeField || "";
+}
+
+function setCreatureTypeFieldPreference(systemId, fieldKey) {
+  setCrucibleSystemSetting(systemId, "creatureTypeField", fieldKey || "");
+}
+
+// Both settings share the same option list (every top-level array field the
+// active System defines) — built once here rather than duplicated in each
+// definition below.
+function fieldPreferenceOptions() {
+  return [{ value: "", label: "None" }, ...arrayFieldOptions.map((field) => ({ value: field.key, label: field.label || field.key }))];
+}
+
+// The conventional field-name fallback each loader applies on its own when
+// given no explicit preference (loadCombatScalingLevels's/
+// listCreatureTypesForSystem's own default parameters) — duplicated here
+// only so the Settings modal can show what's actually in effect (e.g.
+// "Creature Types") instead of misleadingly showing "None" while generation
+// quietly uses that field anyway.
+const CONVENTIONAL_FIELD_DEFAULTS = {
+  combatScalingField: "combatScaling",
+  creatureTypeField: "creatureTypes",
+};
+
+// Display-only: the value the Settings modal should show as "currently in
+// effect" for one of these pickers — the explicit stored choice if there is
+// one, else the conventional default key IF the active System actually
+// defines a field with that name, else genuinely nothing ("None"). Kept
+// separate from getCombatScalingFieldPreference/getCreatureTypeFieldPreference
+// (used for the real Promise.all calls in reloadReferenceData), which stay a
+// plain "raw preference or ''" — the loader functions they feed already
+// apply this same conventional default themselves when given '', so
+// resolving it again here is purely about what the dropdown displays, not a
+// second source of truth for generation.
+function resolveEffectiveFieldPreference(prefKey, rawValue) {
+  if (rawValue) return rawValue;
+  const conventionalDefault = CONVENTIONAL_FIELD_DEFAULTS[prefKey];
+  return arrayFieldOptions.some((field) => field.key === conventionalDefault) ? conventionalDefault : "";
 }
 
 async function populateSystemSelect() {
@@ -184,8 +305,9 @@ function populateLockedFeaturesSelect() {
 async function reloadReferenceData() {
   const systemId = currentSystemId();
   const combatScalingField = getCombatScalingFieldPreference(systemId);
+  const creatureTypeField = getCreatureTypeFieldPreference(systemId);
   [creatureTypes, archetypes, roles, features, combatScalingLevels, arrayFieldOptions, abilityFieldDefs] = await Promise.all([
-    listCreatureTypesForSystem(dataManager, systemId),
+    listCreatureTypesForSystem(dataManager, systemId, creatureTypeField || undefined),
     listArchetypesForSystem(dataManager, systemId),
     listRolesForSystem(dataManager, systemId),
     listFeaturesForSystem(dataManager, systemId),
@@ -199,7 +321,6 @@ async function reloadReferenceData() {
   populateOverrideSelect(elements.combatScalingOverride, combatScalingLevels, "Random");
   populateOverrideSelect(elements.signatureOverride, features, "Random");
   populateLockedFeaturesSelect();
-  populateCombatScalingFieldSelect(combatScalingField);
 }
 
 function featureLabel(id) {
@@ -384,7 +505,7 @@ function renderMonster(record) {
     elements.emptyState?.classList.remove("d-none");
     elements.display?.classList.add("d-none");
     updateActionButtons();
-    updateJsonPreview(elements.jsonPreview, elements.jsonBytes, null);
+    jsonDataPanel.render();
     return;
   }
   elements.emptyState?.classList.add("d-none");
@@ -398,7 +519,7 @@ function renderMonster(record) {
   elements.inspectorEmpty?.classList.remove("d-none");
   elements.inspectorDetail?.classList.add("d-none");
   updateActionButtons();
-  updateJsonPreview(elements.jsonPreview, elements.jsonBytes, toPressExportShape(record));
+  jsonDataPanel.render();
 }
 
 function readLockedFeatureIds() {
@@ -497,7 +618,11 @@ async function handleGenerateNote() {
 }
 
 async function init() {
-  const shell = initAppShell({ namespace: "crucible", storagePrefix: "undercroft.crucible.undo" });
+  const shell = initAppShell({
+    namespace: "crucible",
+    storagePrefix: "undercroft.crucible.undo",
+    settingsSlotAttr: "data-crucible-settings-slot",
+  });
   status = shell.status;
   const auth = initAuthControls({
     status,
@@ -519,10 +644,56 @@ async function init() {
   elements.exportButton?.addEventListener("click", handleExport);
   elements.generateNoteButton?.addEventListener("click", handleGenerateNote);
   elements.systemSelect?.addEventListener("change", () => reloadReferenceData());
-  elements.combatScalingFieldSelect?.addEventListener("change", () => {
-    setCombatScalingFieldPreference(currentSystemId(), elements.combatScalingFieldSelect.value);
-    reloadReferenceData();
+
+  // Combat Scaling/Creature Type field pickers, moved into a gear-icon
+  // Settings modal (upper-left of the header) — same shared module and
+  // visual pattern Repository's own Settings button already uses. Each
+  // definition's getValue/setValue defers straight to the per-System
+  // dataManager.getLocal/saveLocal helpers above rather than this module's
+  // own flat store, since the value is genuinely scoped per-System, not
+  // per-tool (see tool-settings.js's own comment on that option).
+  initToolSettings({
+    toolId: "crucible",
+    dataManager,
+    status,
+    title: "Crucible Settings",
+    definitions: () => {
+      const systemId = currentSystemId();
+      const options = fieldPreferenceOptions();
+      return [
+        {
+          key: "combatScalingField",
+          type: "select",
+          label: "Combat scaling field",
+          helpTopic: "crucible.combatScalingField",
+          options,
+          getValue: () => resolveEffectiveFieldPreference("combatScalingField", getCombatScalingFieldPreference(systemId)),
+          setValue: (value) => {
+            setCombatScalingFieldPreference(systemId, value);
+            reloadReferenceData();
+          },
+        },
+        {
+          key: "creatureTypeField",
+          type: "select",
+          label: "Creature type field",
+          helpTopic: "crucible.creatureTypeField",
+          options,
+          getValue: () => resolveEffectiveFieldPreference("creatureTypeField", getCreatureTypeFieldPreference(systemId)),
+          setValue: (value) => {
+            setCreatureTypeFieldPreference(systemId, value);
+            reloadReferenceData();
+          },
+        },
+      ];
+    },
+    // Queried live (not via `elements`) because the header — and this
+    // mount point inside it — is now built by initAppShell() itself, which
+    // runs after `elements` above is already constructed; an eager query
+    // here would have captured null.
+    mountButton: (button) => document.querySelector("[data-crucible-settings-slot]")?.appendChild(button),
   });
+
   // Name/Notes aren't written back into currentRecord until Save/Export
   // actually runs (see buildRecordForSave) — without this, editing either
   // field wouldn't re-enable an already-saved record's Save button until
@@ -530,12 +701,7 @@ async function init() {
   elements.nameInput?.addEventListener("input", updateActionButtons);
   elements.notesText?.addEventListener("input", updateActionButtons);
 
-  bindCollapsibleToggle(elements.inspectorToggle, elements.inspectorPanel, {
-    collapsed: false,
-    expandLabel: "Expand inspector",
-    collapseLabel: "Collapse inspector",
-    labelElement: elements.inspectorToggleLabel,
-  });
+  document.querySelector("[data-json-mount]")?.appendChild(jsonDataPanel.section);
 
   await populateSystemSelect();
   await reloadReferenceData();

@@ -1,0 +1,100 @@
+{
+  "template": "tpl.bitd.character",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "data": {},
+  "kind": "character",
+  "name": "Rook",
+  "alias": "The Quiet Knife",
+  "look": "Sharp coat, tired eyes, a scar across one eyebrow.",
+  "heritage": "Skovlan",
+  "background": "Underworld",
+  "playbook": "Cutter",
+  "vice": "Stupor",
+  "vicePurveyor": "The Leaky Barrel, a dockside den run by old man Fenn",
+  "actions": {
+    "insight": {
+      "hunt": 1,
+      "study": 0,
+      "survey": 1,
+      "tinker": 0
+    },
+    "prowess": {
+      "finesse": 1,
+      "prowl": 2,
+      "skirmish": 3,
+      "wreck": 1
+    },
+    "resolve": {
+      "attune": 0,
+      "command": 1,
+      "consort": 0,
+      "sway": 1
+    }
+  },
+  "stress": 0,
+  "trauma": [],
+  "harm": {
+    "lesser1": "Exhausted",
+    "lesser2": "",
+    "moderate1": "",
+    "moderate2": "",
+    "severe": ""
+  },
+  "armor": [
+    "Armor"
+  ],
+  "healingClock": 0,
+  "load": "Normal",
+  "loadout": [
+    {
+      "name": "Heavy Weapon",
+      "load": 2,
+      "carried": true
+    },
+    {
+      "name": "Armor",
+      "load": 1,
+      "carried": true
+    },
+    {
+      "name": "Manacles",
+      "load": 1,
+      "carried": true
+    },
+    {
+      "name": "Liquor, Drugs, Poison",
+      "load": 1,
+      "carried": false
+    }
+  ],
+  "specialAbilitiesPurchased": {
+    "cutter": [
+      "Bodyguard",
+      "Battleborn"
+    ],
+    "hound": []
+  },
+  "xp": {
+    "playbook": 2,
+    "insight": 0,
+    "prowess": 3,
+    "resolve": 1
+  },
+  "coin": 2,
+  "stash": 8,
+  "contacts": [
+    {
+      "name": "Ilsa Coldstream",
+      "relationship": "Friend",
+      "notes": "Bell Warden with a soft spot for strays."
+    },
+    {
+      "name": "Roric the Fence",
+      "relationship": "Rival",
+      "notes": "Undercuts every deal Rook tries to make."
+    }
+  ],
+  "id": "rook"
+}

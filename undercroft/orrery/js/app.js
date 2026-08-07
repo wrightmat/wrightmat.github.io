@@ -1,6 +1,6 @@
 import { bindCollapsibleToggle } from "../../common/js/lib/collapsible.js";
 import { initAppShell } from "../../common/js/lib/app-shell.js";
-import { createJsonPreviewRenderer } from "../../common/js/lib/json-preview.js";
+import { createJsonDataPanel, createIconButton, createToolbarButtonGroup, createCompactField, createButtonCheckGroup } from "../../common/js/lib/ui-components.js";
 import { initAuthControls } from "../../common/js/lib/auth-ui.js";
 import { refreshTooltips } from "../../common/js/lib/tooltips.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
@@ -57,6 +57,7 @@ const state = {
 const { status, undoStack, undo, redo } = initAppShell({
   namespace: "orrery",
   storagePrefix: "undercroft.orrery.undo",
+  leftPaneLabel: "Toggle palette pane",
   onUndo: (entry) => {
     if (!entry) {
       return null;
@@ -93,6 +94,164 @@ const baseMapManager = new BaseMapManager({
   },
 });
 
+// Small local helpers for two button shapes this file uses that don't map
+// cleanly onto createIconButton's "compact"/"toolbar" kinds: a plain-link
+// "About X" help tooltip (same shape already hand-built for the JSON Data
+// panel's own help button below, via jsonHelpButton) and a small
+// btn-group-sm "Add X" action with a visually-hidden label (compact sizing,
+// but WITH a hidden label span, unlike every other compact-kind button in
+// the suite).
+function createHelpButton(title, label) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "btn btn-link p-0 text-body-secondary";
+  button.setAttribute("data-bs-toggle", "tooltip");
+  button.setAttribute("data-bs-placement", "top");
+  button.setAttribute("data-bs-title", title);
+  button.setAttribute("aria-label", label);
+  button.innerHTML = '<span class="iconify" data-icon="tabler:help" aria-hidden="true"></span>';
+  return button;
+}
+function withHiddenLabel(button, label) {
+  const span = document.createElement("span");
+  span.className = "visually-hidden";
+  span.textContent = label;
+  button.appendChild(span);
+  return button;
+}
+
+// Built and mounted before `elements` below queries for these buttons by
+// their data-action/data-add-*/data-selection-clear attribute, so every
+// existing selector/disabled-state call site elsewhere in this file keeps
+// working unchanged.
+createToolbarButtonGroup([
+  { action: "undo", label: "Undo", attrs: { "data-action": "undo-layout" } },
+  { action: "redo", label: "Redo", attrs: { "data-action": "redo-layout" } },
+  { action: "new", icon: "tabler:map-plus", label: "New Map", attrs: { "data-action": "new-map" } },
+  // Import/Export aren't wired to any handler yet (confirmed: no
+  // `data-action` delegation or per-button listener exists anywhere in this
+  // file today) — preserved exactly as inert placeholders, same as before.
+  { action: "import", icon: "tabler:upload", label: "Import", attrs: { "data-action": "import-layout" } },
+  { action: "save", label: "Save Map", disabled: true, attrs: { "data-action": "save-layout" } },
+  { action: "export", icon: "tabler:download", label: "Export", attrs: { "data-action": "export-layout" } },
+  { action: "delete", label: "Delete Map", disabled: true, attrs: { "data-action": "delete-map" } },
+]).forEach((button) => document.querySelector("[data-map-toolbar-mount]")?.appendChild(button));
+
+document.querySelector("[data-add-layer-mount]")?.append(
+  withHiddenLabel(
+    createIconButton({ icon: "tabler:vector", variant: "outline-primary", label: "Add vector layer", attrs: { "data-add-layer": "vector" } }),
+    "Add vector layer"
+  ),
+  withHiddenLabel(
+    createIconButton({ icon: "tabler:grid-dots", variant: "outline-primary", label: "Add grid layer", attrs: { "data-add-layer": "grid" } }),
+    "Add grid layer"
+  ),
+  withHiddenLabel(
+    createIconButton({ icon: "tabler:photo", variant: "outline-primary", label: "Add raster layer", attrs: { "data-add-layer": "raster" } }),
+    "Add raster layer"
+  ),
+  withHiddenLabel(
+    createIconButton({ icon: "tabler:map-pin", variant: "outline-primary", label: "Add marker layer", attrs: { "data-add-layer": "marker" } }),
+    "Add marker layer"
+  )
+);
+document.querySelector("[data-add-group-mount]")?.appendChild(
+  withHiddenLabel(
+    createIconButton({ icon: "tabler:folder-plus", variant: "outline-primary", label: "Add group", attrs: { "data-add-group": true } }),
+    "Add group"
+  )
+);
+document.querySelector("[data-add-view-mount]")?.appendChild(
+  withHiddenLabel(
+    createIconButton({ icon: "tabler:eye-plus", variant: "outline-primary", label: "Add view", attrs: { "data-add-view": true } }),
+    "Add view"
+  )
+);
+
+document
+  .querySelector("[data-layers-help-mount]")
+  ?.appendChild(
+    createHelpButton(
+      "Layers hold vector shapes, grids, rasters, or markers. Add a layer to start placing content on the map.",
+      "About layers"
+    )
+  );
+document
+  .querySelector("[data-groups-help-mount]")
+  ?.appendChild(
+    createHelpButton("Groups organize layers or grid cells so you can manage related content together.", "About groups")
+  );
+document
+  .querySelector("[data-basemap-help-mount]")
+  ?.appendChild(
+    createHelpButton("Choose and configure the background tiles, image, or canvas for the map.", "About base map settings")
+  );
+document
+  .querySelector("[data-selection-help-mount]")
+  ?.appendChild(
+    createHelpButton("Inspect and edit the currently selected layer, view, group, or grid cells.", "About selection details")
+  );
+
+document.querySelector("[data-selection-clear-mount]")?.appendChild(
+  createIconButton({
+    icon: "tabler:x",
+    variant: "outline-danger",
+    label: "Clear selection",
+    tooltipPlacement: "bottom",
+    attrs: { "data-selection-clear": true },
+  })
+);
+
+// Builds and mounts a collapsible-section chevron toggle via the shared
+// factory, for a header whose other content (label, help/clear buttons)
+// stays static HTML — the section-level createCollapsibleSection isn't used
+// here since it would rebuild the whole header, conflicting with those
+// already-mounted siblings.
+function createCollapsibleToggleButton(mountSelector, collapsed) {
+  const button = createIconButton({
+    icon: "tabler:chevron-right",
+    className: "collapsible-toggle",
+    includeToggleLabel: true,
+  });
+  button.setAttribute("aria-expanded", collapsed ? "false" : "true");
+  document.querySelector(mountSelector)?.appendChild(button);
+  return button;
+}
+
+// replaceWith, not appendChild — see press/js/app.js's mountInspectorField
+// for why: an appended-into wrapper stays an empty-but-in-flow flex item
+// even while its field is conditionally hidden, silently spending a full
+// gap-3 on both sides of it. Any class the static mount div itself carried
+// is merged onto the built field first so removing the wrapper doesn't
+// lose that layout.
+function mountField(key, element) {
+  const mount = document.querySelector(`[data-field-mount="${key}"]`);
+  if (!mount) return;
+  if (mount.className) element.classList.add(...mount.classList);
+  mount.replaceWith(element);
+}
+mountField(
+  "map-select",
+  createCompactField({
+    type: "select", id: "orreryMapSelect", label: "Map", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select",
+    dataAttr: "data-map-select", helpTopic: "orrery.maps",
+  })
+);
+mountField(
+  "base-map-type",
+  createButtonCheckGroup({
+    ariaLabel: "Base map type",
+    name: "base-map-type",
+    dataAttr: "data-base-map-option",
+    options: [
+      { id: "base-map-tile", value: "tile", text: "Tile" },
+      { id: "base-map-image", value: "image", text: "Image" },
+      { id: "base-map-canvas", value: "canvas", text: "Canvas" },
+    ],
+  })
+);
+mountField("base-map-image-src", createCompactField({ type: "text", id: "base-map-image-src", label: "Image URL", labelClass: "form-label mb-0", dataAttr: "data-base-map-image-src" }));
+
 const elements = {
   mapSelect: document.querySelector("[data-map-select]"),
   mapNameInput: document.querySelector("[data-map-name]"),
@@ -108,9 +267,14 @@ const elements = {
   imageWidth: document.querySelector("[data-base-map-image-width]"),
   imageHeight: document.querySelector("[data-base-map-image-height]"),
   canvasBackground: document.querySelector("[data-base-map-canvas-background]"),
-  baseMapToggle: document.querySelector("[data-base-map-toggle]"),
+  // Built below (not queried) — the collapsible-toggle chevron button now
+  // comes from the shared createIconButton factory instead of static
+  // markup; everything else in each section's header (label, help mount,
+  // clear-selection mount) stays hand-authored HTML since it predates and
+  // is unrelated to the toggle itself.
+  baseMapToggle: createCollapsibleToggleButton("[data-base-map-toggle-mount]", false),
   baseMapPanel: document.querySelector("[data-base-map-panel]"),
-  selectionToggle: document.querySelector("[data-selection-toggle]"),
+  selectionToggle: createCollapsibleToggleButton("[data-selection-toggle-mount]", true),
   selectionPanel: document.querySelector("[data-selection-panel]"),
   selectionClear: document.querySelector("[data-selection-clear]"),
   undoButton: document.querySelector('[data-action="undo-layout"]'),
@@ -136,15 +300,27 @@ const elements = {
   viewZoom: document.querySelector("[data-view-zoom]"),
   viewCenter: document.querySelector("[data-view-center]"),
   viewPan: document.querySelector("[data-view-pan]"),
-  jsonPreview: document.querySelector("[data-json-preview]"),
-  jsonSize: document.querySelector("[data-json-size]"),
 };
 
-const renderJsonPreview = createJsonPreviewRenderer({
-  resolvePreviewElement: () => elements.jsonPreview,
-  resolveBytesElement: () => elements.jsonSize,
-  serialize: () => state.map,
+const jsonDataPanel = createJsonDataPanel({
+  label: "JSON Data",
+  getData: () => state.map,
 });
+// Orrery's JSON Data section keeps one extra element beyond the shared
+// factory's own markup — a "what is this" help tooltip next to the heading
+// (distinct from the copy/collapse controls) — inserted directly into the
+// label group the factory already built.
+const jsonHelpButton = document.createElement("button");
+jsonHelpButton.type = "button";
+jsonHelpButton.className = "btn btn-link p-0 text-body-secondary";
+jsonHelpButton.setAttribute("data-bs-toggle", "tooltip");
+jsonHelpButton.setAttribute("data-bs-placement", "top");
+jsonHelpButton.setAttribute("data-bs-title", "Preview the current map model and verify exported data.");
+jsonHelpButton.setAttribute("aria-label", "About JSON preview");
+jsonHelpButton.innerHTML = '<span class="iconify" data-icon="tabler:help" aria-hidden="true"></span>';
+jsonDataPanel.header.firstElementChild?.appendChild(jsonHelpButton);
+
+const renderJsonPreview = jsonDataPanel.render;
 
 // Wraps the raw preview renderer so every one of this file's many renderJson()
 // call sites (already sitting after essentially every edit — layer/marker/
@@ -208,6 +384,8 @@ const setSelectionCollapsed = bindCollapsibleToggle(elements.selectionToggle, el
   expandLabel: "Expand selection",
   collapseLabel: "Collapse selection",
 });
+
+document.querySelector("[data-json-mount]")?.appendChild(jsonDataPanel.section);
 
 function normalizeTier(tier) {
   return typeof tier === "string" ? tier.trim().toLowerCase() : "";

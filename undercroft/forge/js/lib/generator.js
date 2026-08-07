@@ -11,6 +11,21 @@ import {
 } from "./tables.js";
 import { generateSpeciesName } from "./name-generator.js";
 
+// Distinguishes "this System has no Stats concept bound at all" (Blades in
+// the Dark: no archetypeStats field, tables.stats resolves to an empty
+// map — Stats is genuinely omitted from the record, not just null) from
+// "this System has Stats, but not for this particular archetype" (D&D's
+// Wildcard/setting-specific rolls — tables.stats is non-empty, but this one
+// name isn't in it — stays a real `stats: null`, rendered as "No stat block
+// available for this archetype" rather than silently disappearing).
+// undefined (not null) is a deliberate choice for the first case:
+// JSON.stringify already drops undefined-valued keys on its own, so a
+// saved/exported record for an unbound System has no `stats` key at all.
+function resolveStats(tables, archetypeName) {
+  const hasStatsTable = tables.stats && Object.keys(tables.stats).length > 0;
+  return hasStatsTable ? getStatsForArchetype(tables.stats, archetypeName) : undefined;
+}
+
 // Composes one full NPC roll (Identity + 4D) from a Location config and the
 // loaded table set. `tables.speciesProfiles` must already be populated for
 // this Location (see loadSpeciesProfilesForLocation in tables.js) since a
@@ -47,7 +62,7 @@ export function generateNpc(location, tables, { overrides = {}, random = Math.ra
       drive: fourD.drive.label,
       direction: fourD.direction.label,
     },
-    stats: getStatsForArchetype(tables.stats, archetype.name),
+    stats: resolveStats(tables, archetype.name),
     note: null,
     rolls: {
       species,
@@ -97,7 +112,7 @@ export function rerollAttribute(record, tables, location, attribute, { random = 
       const archetype = rollArchetype(tables.archetype, location, { random });
       next.identity.archetype = archetype.name;
       next.rolls.archetype = archetype;
-      next.stats = getStatsForArchetype(tables.stats, archetype.name);
+      next.stats = resolveStats(tables, archetype.name);
       break;
     }
     case "alignment": {

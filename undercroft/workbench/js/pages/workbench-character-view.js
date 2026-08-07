@@ -5,7 +5,8 @@ import {
   createCollapseToggleButton,
   createStandardCardChrome,
 } from "../lib/canvas-card.js";
-import { createJsonPreviewRenderer } from "../../../common/js/lib/json-preview.js";
+import { setElementCollapsed, bindCollapsibleToggle } from "../../../common/js/lib/collapsible.js";
+import { createJsonDataPanel, createCollapsibleSection, createIconButton, createCompactField } from "../../../common/js/lib/ui-components.js";
 import { escapeHtml } from "../../../common/js/lib/auth-ui.js";
 import { refreshTooltips } from "../../../common/js/lib/tooltips.js";
 import { confirmDelete } from "../../../common/js/lib/ownership.js";
@@ -21,15 +22,15 @@ import {
   verifyBuiltinAsset,
 } from "../lib/content-registry.js";
 import { applyComponentStyles, applyTextFormatting } from "../lib/component-styles.js";
+import { renderTextContent, renderImageContent, renderIconContent, renderContainerContent, renderInputContent, renderLinearTrackContent, renderCircularTrackContent, renderSelectGroupContent, renderToggleContent, toggleStateEntryFromRaw, excludeToggleWrapperColors } from "../lib/component-renderers.js";
 import { loadCustomFonts, DEFAULT_FONT_FAMILY } from "../../../common/js/lib/font-library.js";
-import { resolveIconClassList } from "../../../common/js/lib/icon-picker.js";
-import { createLabeledField } from "../lib/component-layout.js";
 import { evaluateFormula } from "../../../common/js/lib/formula-engine.js";
-import { resolveBinding, findRoleBoundField } from "../../../common/js/lib/bindings.js";
+import { resolveBinding, createLookupFn } from "../../../common/js/lib/bindings.js";
 import { rollDiceExpression } from "../lib/dice.js";
 import { QUICK_DICE, parseQuickDiceCounts, incrementDieInExpression } from "../../../common/js/lib/widgets/dice-roll.js";
 import {
   normalizeOptionEntries,
+  resolveTabEntries,
   resolveBindingFromContexts,
   buildSystemPreviewData,
 } from "../lib/component-data.js";
@@ -67,13 +68,6 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     characterOrigin: null,
     systemDefinition: null,
     systemPreviewData: {},
-    // Binding paths (e.g. "@stats.hitPoints.current") the active System's
-    // combatBindings field names as live-combat-adjustable — see
-    // updateSystemContext. A field bound to one of these stays editable
-    // outside Edit mode (Play view), since HP/AC/Conditions get adjusted
-    // mid-session, not during sheet editing; every other field keeps the
-    // normal edit-mode-only gating.
-    combatBindingPaths: new Set(),
     viewLocked: false,
     shareToken: "",
   };
@@ -146,6 +140,17 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
   const notesState = { collapsed: true };
   const dicePanelState = { collapsed: false };
   const gameLogPanelState = { collapsed: false };
+  const nowShowingPanelState = { collapsed: false };
+  // Assigned once the corresponding section is built below (createCollapsibleSection's
+  // own setCollapsed / bindCollapsibleToggle's own apply) — captured here so
+  // setNotesCollapsed/setDiceCollapsed/setGameLogCollapsed/setNowShowingCollapsed/
+  // setGroupShareCollapsed (further below) can drive them programmatically,
+  // replacing the old bespoke updateCollapsibleSection() helper.
+  let applyNotesCollapse = () => {};
+  let applyDiceCollapse = () => {};
+  let applyGameLogCollapse = () => {};
+  let applyNowShowingCollapse = () => {};
+  let applyGroupShareCollapse = () => {};
 
   function cloneValue(value) {
     if (value === undefined) {
@@ -360,6 +365,32 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     return `Only ${ownerLabel} can save this character.`;
   }
 
+  // replaceWith, not appendChild — see press/js/app.js's mountInspectorField
+  // for why: an appended-into wrapper stays an empty-but-in-flow flex item
+  // even while its field is conditionally hidden, silently spending a full
+  // gap-3 on both sides of it. Any class the static mount div itself carried
+  // is merged onto the built field first so removing the wrapper doesn't
+  // lose that layout.
+  function mountField(key, element) {
+    const mount = document.querySelector(`[data-field-mount="${key}"]`);
+    if (!mount) return;
+    if (mount.className) element.classList.add(...mount.classList);
+    mount.replaceWith(element);
+  }
+  mountField(
+    "character-select",
+    createCompactField({
+      type: "select", id: "character-select", label: "Character", labelClass: "form-label fw-semibold text-body-secondary", controlClass: "form-select",
+      dataAttr: "data-character-select", helpTopic: "character.records", helpPlacement: "right",
+    })
+  );
+  mountField("new-character-id", createCompactField({ type: "text", id: "new-character-id", label: "Character ID", dataAttr: "data-new-character-id", name: "id", required: true, placeholder: "e.g. cha.my-hero" }));
+  mountField("new-character-name", createCompactField({ type: "text", id: "new-character-name", label: "Character Name", dataAttr: "data-new-character-name", name: "name", required: true, placeholder: "e.g. Elandra" }));
+  mountField(
+    "new-character-template",
+    createCompactField({ type: "select", id: "new-character-template", label: "Template", controlClass: "form-select", dataAttr: "data-new-character-template", name: "template", required: true })
+  );
+
   const elements = {
     characterSelect: document.querySelector("[data-character-select]"),
     canvasRoot: document.querySelector("[data-character-canvas-root]"),
@@ -373,19 +404,13 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     modeIndicator: document.querySelector("[data-mode-indicator]"),
     notesSection: document.querySelector("[data-notes-section]"),
     noteEditor: document.querySelector("[data-note-editor]"),
-    notesToggle: document.querySelector("[data-notes-toggle]"),
-    notesToggleLabel: document.querySelector("[data-notes-toggle-label]"),
     notesPanel: document.querySelector("[data-notes-panel]"),
-    jsonPreview: document.querySelector("[data-character-json-preview]"),
-    jsonPreviewBytes: document.querySelector("[data-character-preview-bytes]"),
     diceSection: document.querySelector("[data-dice-section]"),
     diceForm: document.querySelector("[data-dice-form]"),
     diceExpression: document.querySelector("[data-dice-expression]"),
     diceQuickButtons: document.querySelectorAll("[data-dice-button]"),
     diceClearButton: document.querySelector("[data-dice-clear]"),
     dicePanel: document.querySelector("[data-dice-panel]"),
-    diceToggle: document.querySelector("[data-dice-toggle]"),
-    diceToggleLabel: document.querySelector("[data-dice-toggle-label]"),
     leftPane: document.querySelector('[data-pane="left"]'),
     leftPaneToggle: document.querySelector('[data-pane-toggle="left"]'),
     rightPane: document.querySelector('[data-pane="right"]'),
@@ -396,8 +421,6 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     newCharacterName: document.querySelector("[data-new-character-name]"),
     newCharacterTemplate: document.querySelector("[data-new-character-template]"),
     groupShareSection: document.querySelector("[data-group-share-section]"),
-    groupShareToggle: document.querySelector("[data-group-share-toggle]"),
-    groupShareToggleLabel: document.querySelector("[data-group-share-toggle-label]"),
     groupSharePanel: document.querySelector("[data-group-share-panel]"),
     groupShareStatus: document.querySelector("[data-group-share-status]"),
     gameLogSection: document.querySelector("[data-game-log-section]"),
@@ -408,23 +431,115 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     gameLogRefresh: document.querySelector("[data-game-log-refresh]"),
     gameLogStatus: document.querySelector("[data-game-log-status]"),
     gameLogTitle: document.querySelector("[data-game-log-group]"),
-    gameLogToggle: document.querySelector("[data-game-log-toggle]"),
-    gameLogToggleLabel: document.querySelector("[data-game-log-toggle-label]"),
     nowShowingSection: document.querySelector("[data-now-showing-section]"),
+    nowShowingPanel: document.querySelector("[data-now-showing-panel]"),
     nowShowingContent: document.querySelector("[data-now-showing-content]"),
   };
 
+  // Builds and mounts each section's chevron toggle via the shared
+  // ui-components.js factories, replacing the old bespoke
+  // updateCollapsibleSection() helper (removed below) with the same
+  // mechanism every other tool in the suite already uses. Notes/Dice/Now
+  // Showing/Group Share each get a full createCollapsibleSection (their
+  // headers had nothing else in them); Game Log keeps its existing
+  // Refresh-button sibling and static content, so only its toggle button is
+  // built via createIconButton + a direct bindCollapsibleToggle call.
+  // Keeps a state object's own `.collapsed` in sync after a direct click on
+  // a factory-built toggle (which handles the actual show/hide itself,
+  // internally, with no hook to observe from outside) — registered after
+  // the toggle already exists, so it fires after bindCollapsibleToggle's own
+  // click listener on the same element (same-element listeners run in
+  // registration order), reading the just-applied result rather than racing
+  // it. Without this, external code that reads e.g. gameLogPanelState.collapsed
+  // (see setGameLogCollapsed's other call sites) would see a stale value
+  // after any manual click.
+  function syncCollapsedStateOnClick(toggle, stateObj) {
+    toggle?.addEventListener("click", () => {
+      stateObj.collapsed = toggle.getAttribute("aria-expanded") !== "true";
+    });
+  }
+
+  {
+    const notesSection = createCollapsibleSection({
+      label: "Notes",
+      collapsed: notesState.collapsed,
+      content: elements.notesPanel,
+    });
+    document.querySelector("[data-notes-mount]")?.appendChild(notesSection.section);
+    elements.notesToggle = notesSection.toggle;
+    applyNotesCollapse = notesSection.setCollapsed;
+    syncCollapsedStateOnClick(notesSection.toggle, notesState);
+  }
+  {
+    const diceSectionBuilt = createCollapsibleSection({
+      label: "Dice Roller",
+      helpTopic: "character.dice",
+      collapsed: dicePanelState.collapsed,
+      content: elements.dicePanel,
+    });
+    document.querySelector("[data-dice-mount]")?.appendChild(diceSectionBuilt.section);
+    elements.diceToggle = diceSectionBuilt.toggle;
+    applyDiceCollapse = diceSectionBuilt.setCollapsed;
+    syncCollapsedStateOnClick(diceSectionBuilt.toggle, dicePanelState);
+  }
+  {
+    const nowShowingSectionBuilt = createCollapsibleSection({
+      label: "Now Showing",
+      collapsed: nowShowingPanelState.collapsed,
+      content: elements.nowShowingPanel,
+    });
+    document.querySelector("[data-now-showing-mount]")?.appendChild(nowShowingSectionBuilt.section);
+    elements.nowShowingToggle = nowShowingSectionBuilt.toggle;
+    applyNowShowingCollapse = nowShowingSectionBuilt.setCollapsed;
+    syncCollapsedStateOnClick(nowShowingSectionBuilt.toggle, nowShowingPanelState);
+  }
+  {
+    const groupShareSectionBuilt = createCollapsibleSection({
+      label: "Group characters",
+      collapsed: groupShareState.collapsed,
+      content: elements.groupSharePanel,
+      // Group Share's click needs bespoke gating (blocked entirely without
+      // an active share token) and a post-expand re-render — behavior the
+      // factory's own auto-toggle-on-click can't express. autoBindToggle
+      // only sets the toggle's initial visual state here; the actual click
+      // listener is the explicit handler registered further below,
+      // alongside the other toggles' click wiring.
+      autoBindToggle: false,
+    });
+    document.querySelector("[data-group-share-mount]")?.appendChild(groupShareSectionBuilt.section);
+    elements.groupShareToggle = groupShareSectionBuilt.toggle;
+    applyGroupShareCollapse = groupShareSectionBuilt.setCollapsed;
+  }
+  {
+    const gameLogToggleButton = createIconButton({
+      icon: "tabler:chevron-right",
+      className: "collapsible-toggle",
+      includeToggleLabel: true,
+    });
+    gameLogToggleButton.setAttribute("aria-expanded", gameLogPanelState.collapsed ? "false" : "true");
+    document.querySelector("[data-game-log-toggle-mount]")?.appendChild(gameLogToggleButton);
+    elements.gameLogToggle = gameLogToggleButton;
+    applyGameLogCollapse = bindCollapsibleToggle(gameLogToggleButton, elements.gameLogPanel, {
+      collapsed: gameLogPanelState.collapsed,
+      expandLabel: "Expand game log",
+      collapseLabel: "Collapse game log",
+    });
+    syncCollapsedStateOnClick(gameLogToggleButton, gameLogPanelState);
+  }
+
   assignSectionAriaConnections();
 
-  const renderPreview = createJsonPreviewRenderer({
-    resolvePreviewElement: () => elements.jsonPreview,
-    resolveBytesElement: () => elements.jsonPreviewBytes,
-    serialize: () => state.draft || {},
+  const characterJsonPanel = createJsonDataPanel({
+    label: "JSON Data",
+    getData: () => state.draft || {},
   });
+  document.querySelector("[data-character-json-mount]")?.appendChild(characterJsonPanel.section);
+  const renderPreview = characterJsonPanel.render;
 
   setNotesCollapsed(true);
   setGroupShareCollapsed(groupShareState.collapsed);
   setDiceCollapsed(false);
+  setNowShowingCollapsed(false);
   setGameLogCollapsed(false);
 
   let newCharacterModalInstance = null;
@@ -501,11 +616,14 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       elements.canvasRoot.addEventListener("focusout", (event) => {
         const target = event.target.closest?.("[data-binding-path]");
         if (!target) return;
-        // Outside Edit mode, only a combat-binding field (Play-editable —
-        // see isCombatBindingComponent) still needs this; every other
-        // field is read-only in Play view and never fires this in the
-        // first place.
-        if (state.mode !== "edit" && !state.combatBindingPaths.has(target.dataset.bindingPath || "")) return;
+        // A disabled/read-only control can't receive focus/input in the
+        // first place (see renderInputContent etc. setting
+        // `input.disabled = !editable`), so reaching this listener at all
+        // already means the current mode+component allow editing — Edit
+        // mode, or a component explicitly authored "Editable in Play" (see
+        // isEditable/isComponentEditableInPlay). No need to separately
+        // re-derive that here.
+        if (target.disabled || target.readOnly) return;
         // renderCanvas() fully rebuilds the DOM on every keystroke
         // (applyBindingValue), destroying and recreating the very field
         // being typed into, then synchronously restoring focus onto its
@@ -590,27 +708,13 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       });
     }
 
-    if (elements.notesToggle) {
-      elements.notesToggle.addEventListener("click", (event) => {
-        event.preventDefault();
-        setNotesCollapsed(!notesState.collapsed);
-      });
-    }
-
-    if (elements.diceToggle) {
-      elements.diceToggle.addEventListener("click", (event) => {
-        event.preventDefault();
-        setDiceCollapsed(!dicePanelState.collapsed);
-      });
-    }
-
-    if (elements.gameLogToggle) {
-      elements.gameLogToggle.addEventListener("click", (event) => {
-        event.preventDefault();
-        setGameLogCollapsed(!gameLogPanelState.collapsed);
-      });
-    }
-
+    // Notes/Dice/Game Log/Now Showing no longer need a click handler here —
+    // their factory-built toggles already flip on click internally
+    // (createCollapsibleSection/bindCollapsibleToggle), with
+    // syncCollapsedStateOnClick (above) keeping each state object's
+    // `.collapsed` in sync for any code that reads it afterward. Group
+    // Share keeps its own explicit handler below since its click needs
+    // bespoke gating a plain toggle can't express.
     if (elements.groupShareToggle) {
       elements.groupShareToggle.addEventListener("click", (event) => {
         event.preventDefault();
@@ -640,79 +744,35 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     registerBuiltinContent();
   }
 
-  function updateCollapsibleSection({
-    section,
-    panel,
-    toggle,
-    label,
-    collapsed,
-    expandLabel,
-    collapseLabel,
-  }) {
-    const next = Boolean(collapsed);
-    const expanded = !next;
-    if (panel) {
-      panel.hidden = next;
-      panel.classList.toggle("d-none", next);
-    }
-    if (section) {
-      section.classList.toggle("is-collapsed", next);
-    }
-    const actionLabel = expanded ? collapseLabel : expandLabel;
-    if (toggle) {
-      toggle.setAttribute("aria-expanded", expanded ? "true" : "false");
-      if (actionLabel) {
-        toggle.setAttribute("aria-label", actionLabel);
-        toggle.setAttribute("title", actionLabel);
-      }
-      toggle.classList.toggle("is-collapsed", next);
-      toggle.dataset.collapsed = next ? "true" : "false";
-    }
-    if (label) {
-      label.textContent = actionLabel;
-    }
-  }
-
   function setNotesCollapsed(collapsed) {
     const next = Boolean(collapsed);
     notesState.collapsed = next;
-    updateCollapsibleSection({
-      section: elements.notesSection,
-      panel: elements.notesPanel,
-      toggle: elements.notesToggle,
-      label: elements.notesToggleLabel,
-      collapsed: next,
-      expandLabel: "Expand notes",
-      collapseLabel: "Collapse notes",
-    });
+    applyNotesCollapse(next);
   }
 
   function setDiceCollapsed(collapsed) {
     const next = Boolean(collapsed);
     dicePanelState.collapsed = next;
-    updateCollapsibleSection({
-      section: elements.diceSection,
-      panel: elements.dicePanel,
-      toggle: elements.diceToggle,
-      label: elements.diceToggleLabel,
-      collapsed: next,
-      expandLabel: "Expand dice roller",
-      collapseLabel: "Collapse dice roller",
-    });
+    applyDiceCollapse(next);
   }
 
   function setGameLogCollapsed(collapsed) {
     const next = Boolean(collapsed);
     gameLogPanelState.collapsed = next;
-    updateCollapsibleSection({
-      section: elements.gameLogSection,
-      panel: elements.gameLogPanel,
-      toggle: elements.gameLogToggle,
-      label: elements.gameLogToggleLabel,
-      collapsed: next,
-      expandLabel: "Expand game log",
-      collapseLabel: "Collapse game log",
-    });
+    applyGameLogCollapse(next);
+  }
+
+  // Independent of setNowShowingVisible (further below) — that toggles the
+  // whole *section's* d-none based on whether there's an active spotlight
+  // to show at all, while this toggles just the *panel* inside it, same as
+  // Dice/Game Log's own manual collapse. The two are orthogonal: a
+  // spotlight can arrive while the panel is manually collapsed (it stays
+  // collapsed until the player opens it), and collapsing the panel never
+  // hides the section itself while a spotlight is active.
+  function setNowShowingCollapsed(collapsed) {
+    const next = Boolean(collapsed);
+    nowShowingPanelState.collapsed = next;
+    applyNowShowingCollapse(next);
   }
 
   function registerBuiltinContent() {
@@ -814,33 +874,6 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
   function resetSystemContext() {
     state.systemDefinition = null;
     state.systemPreviewData = {};
-    state.combatBindingPaths = new Set();
-  }
-
-  // Combat Bindings isn't a field type or a marker of its own — it's
-  // whichever ordinary Enum-mode Array field's values happen to use Role
-  // (see findRoleBoundField in common/js/lib/bindings.js and
-  // combat-tracker.js's own deriveCombatBindings, which reads the identical
-  // field for the same purpose from the tracker side), so any System can
-  // name its bindings array whatever it wants. Each value names a Role
-  // (resource/value/tags/modifier) plus a generic `binding` @-path it reads
-  // and writes; a Resource-role value may also carry maxPath/tempPath in its
-  // Extra properties JSON (no dedicated column — see loom/js/app.js's
-  // VALUE_COLUMNS). Every binding/maxPath/tempPath across every value is
-  // collected here since any of them can be a live Play-mode-editable
-  // target.
-  // Absent on a System just means no field gets the Play-mode-editable
-  // treatment, gracefully — same convention as every other optional System
-  // field this suite uses.
-  function extractCombatBindingPaths(definition) {
-    const fields = Array.isArray(definition?.fields) ? definition.fields : [];
-    const field = findRoleBoundField(fields);
-    if (!field) return new Set();
-    const paths = (field.values || [])
-      .flatMap((value) => [value?.binding, value?.maxPath, value?.tempPath])
-      .filter((value) => typeof value === "string" && value.trim())
-      .map((value) => value.trim());
-    return new Set(paths);
   }
 
   async function fetchSystemDefinition(systemId) {
@@ -936,7 +969,6 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       if (definition) {
         state.systemDefinition = definition;
         state.systemPreviewData = buildSystemPreviewData(definition);
-        state.combatBindingPaths = extractCombatBindingPaths(definition);
       }
     } catch (error) {
       console.warn("Character editor: unable to prepare system context", error);
@@ -1138,10 +1170,20 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     // Delete Character now lives in the shared left-pane toolbar rather than
     // a standalone button with its own data-workbench-view-panel tag — it
     // already has this classList.toggle("d-none", ...) below, and tagging it
-    // for view-switching too would just fight over the same class. Folding
-    // "only in Edit view" into this same check keeps one owner of the
-    // element's visibility, updated automatically since setMode() already
-    // calls syncCharacterActions() on every view switch.
+    // for view-switching too would just fight over the same class (the
+    // generic panel-toggle in workbench.js's setWorkbenchView always runs
+    // LAST on a tab click, so it would win over whatever this function
+    // decided about permissions the last time a character loaded). Folding
+    // "only in Edit view" into THIS check instead — reading
+    // document.body.dataset.workbenchView directly, the same shared signal
+    // setNowShowingVisible's own comment already established — is the one
+    // owner. That still needs this function to actually re-run on every
+    // view switch, not just the edit/play ones setMode itself covers —
+    // confirmed real gap: switching from Edit to the Template tab never
+    // called setMode at all (only "edit"/"play" do), so this never re-ran,
+    // and the button — visible from Edit — simply stayed visible. Fixed by
+    // exporting this function so workbench.js's setWorkbenchView can call
+    // it on every tab click, not just edit/play ones (see its own comment).
     //
     // Delete is deliberately wider than canEditRecord: an admin can delete
     // any character regardless of ownership (server's is_owner() already
@@ -1149,7 +1191,8 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     // doesn't fold the admin bypass into canEditRecord itself.
     const isAdmin = dataManager.getUserTier() === "admin";
     const canDeleteRecord = draftHasId && (isAdmin || canEditRecord);
-    const showDelete = canDeleteRecord && canWrite && state.mode === "edit";
+    const showDelete =
+      canDeleteRecord && canWrite && state.mode === "edit" && document.body.dataset.workbenchView === "edit";
     elements.deleteCharacterButton.classList.toggle("d-none", !showDelete);
     if (!showDelete) {
       elements.deleteCharacterButton.disabled = true;
@@ -1608,23 +1651,52 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
           sharePermissions: entry.permissions || "",
         });
       });
+      // Public library characters (e.g. Rook/The Red Lanterns — is_public=1
+      // DB rows seeded from common/data/character/*.json, owned by whoever
+      // authored them, not the current session) were silently dropped here
+      // before — this block only ever read remote.owned/remote.shared, never
+      // remote.public, unlike loadTemplateRecords' own
+      // dataManager.collectListEntries(remote), which already defaults to
+      // ["items","owned","shared","public"]. ownership:"public" is already
+      // fully handled downstream (view-only gating, "Public characters are
+      // view-only" messaging — see characterOwnership/describeCharacterEditRestriction),
+      // so this was purely a missing catalog entry, not a missing capability.
+      const publicChars = Array.isArray(remote?.public) ? remote.public : [];
+      const publicIds = [];
+      publicChars.forEach((entry) => {
+        if (!entry || !entry.id) return;
+        publicIds.push(entry.id);
+        registerCharacterRecord({
+          id: entry.id,
+          title: entry.name || entry.title || entry.id,
+          template: entry.template || "",
+          templateTitle: entry.template_title || "",
+          source: "remote",
+          ownership: "public",
+          ownerId: entry.owner_id ?? null,
+          ownerUsername: entry.owner_username || "",
+          ownerTier: entry.owner_tier || "",
+        });
+      });
 
       // Local storage mirrors every remote save (see DataManager.save), so a
       // character deleted elsewhere (e.g. via Loom, a separate DataManager
       // instance/tab) leaves a stale local copy behind that would otherwise
       // linger in this dropdown forever. This fresh, authoritative owned/
-      // shared listing is the source of truth for what this account still
-      // has — any catalog entry previously believed owned/shared but now
-      // missing from it is confirmed gone, so it's pruned the same way
-      // handleCharacterLoadFailure does for a 404'd load. Builtin/local-only
-      // (anonymous) entries are never touched here.
+      // shared/public listing is the source of truth for what this account
+      // still has — any catalog entry previously believed owned/shared/
+      // public but now missing from it is confirmed gone, so it's pruned the
+      // same way handleCharacterLoadFailure does for a 404'd load. Builtin/
+      // local-only (anonymous) entries are never touched here.
       const confirmedOwnedIds = new Set(ownedIds);
       const confirmedSharedIds = new Set(sharedIds);
+      const confirmedPublicIds = new Set(publicIds);
       Array.from(characterCatalog.entries()).forEach(([id, metadata]) => {
         if (metadata.source === "builtin") return;
         const isStaleOwned = metadata.ownership === "owned" && !confirmedOwnedIds.has(id);
         const isStaleShared = metadata.ownership === "shared" && !confirmedSharedIds.has(id);
-        if (!isStaleOwned && !isStaleShared) return;
+        const isStalePublic = metadata.ownership === "public" && !confirmedPublicIds.has(id);
+        if (!isStaleOwned && !isStaleShared && !isStalePublic) return;
         try {
           dataManager.removeLocal("characters", id);
         } catch (storageError) {
@@ -1642,15 +1714,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
   function setGroupShareCollapsed(collapsed) {
     const next = Boolean(collapsed);
     groupShareState.collapsed = next;
-    updateCollapsibleSection({
-      section: elements.groupShareSection,
-      panel: elements.groupSharePanel,
-      toggle: elements.groupShareToggle,
-      label: elements.groupShareToggleLabel,
-      collapsed: next,
-      expandLabel: "Expand group characters",
-      collapseLabel: "Collapse group characters",
-    });
+    applyGroupShareCollapse(next);
     if (elements.groupShareStatus) {
       const shouldHide = next || !groupShareState.token;
       elements.groupShareStatus.hidden = shouldHide;
@@ -1685,6 +1749,10 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     const gameLogPanelId = ensureElementId(elements.gameLogPanel, "character-game-log");
     if (gameLogPanelId && elements.gameLogToggle) {
       elements.gameLogToggle.setAttribute("aria-controls", gameLogPanelId);
+    }
+    const nowShowingPanelId = ensureElementId(elements.nowShowingPanel, "character-now-showing");
+    if (nowShowingPanelId && elements.nowShowingToggle) {
+      elements.nowShowingToggle.setAttribute("aria-controls", nowShowingPanelId);
     }
   }
 
@@ -2051,12 +2119,23 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
   // attribute, which a `!important` `display` class silently defeats — the
   // same landmine Press's own app.js documents for setElementVisible)
   // avoids any display-property specificity conflict.
+  // Two independent conditions decide whether this section shows: an
+  // active spotlight (this function's own `visible` argument, computed
+  // from gameLogState) AND the current top-level view being Play/Edit —
+  // Now Showing has no place in the Template editor, where there's no
+  // "now" being played. workbench.js sets document.body.dataset.
+  // workbenchView on every view switch; this section no longer carries
+  // data-workbench-view-panel itself (removed from index.html), so this is
+  // the only thing gating it — one source of truth instead of two
+  // separate d-none togglers fighting over the same element.
   function setNowShowingVisible(visible) {
     if (!elements.nowShowingSection) {
       return;
     }
-    elements.nowShowingSection.classList.toggle("d-none", !visible);
-    elements.nowShowingSection.classList.toggle("d-flex", visible);
+    const viewAllows = document.body.dataset.workbenchView !== "template";
+    const shouldShow = Boolean(visible) && viewAllows;
+    elements.nowShowingSection.classList.toggle("d-none", !shouldShow);
+    elements.nowShowingSection.classList.toggle("d-flex", shouldShow);
   }
 
   function hideNowShowing() {
@@ -2549,7 +2628,8 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
         title: member.label || member.content_id,
         template: member.template || "",
         templateTitle: member.template_title || "",
-        system: member.system || "",
+        systemIds: Array.isArray(member.system_ids) ? member.system_ids : member.system ? [member.system] : [],
+        systemNames: Array.isArray(member.system_names) ? member.system_names : member.system_name ? [member.system_name] : [],
         source: "remote",
         ownership: "shared",
         ownerUsername: member.owner_username || "",
@@ -2654,7 +2734,9 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     title.className = "fw-semibold";
     title.textContent = formatGroupMemberLabel(member);
     header.appendChild(title);
-    const systemLabel = member.system_name || member.system;
+    const systemLabel = Array.isArray(member.system_names) && member.system_names.length
+      ? member.system_names.join(", ")
+      : member.system_name || member.system;
     if (systemLabel) {
       const system = document.createElement("div");
       system.className = "text-body-secondary small";
@@ -2696,7 +2778,8 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
         title: member.label || member.content_id,
         template: member.template || "",
         templateTitle: member.template_title || "",
-        system: member.system || "",
+        systemIds: Array.isArray(member.system_ids) ? member.system_ids : member.system ? [member.system] : [],
+        systemNames: Array.isArray(member.system_names) ? member.system_names : member.system_name ? [member.system_name] : [],
         source: "remote",
         ownership: "shared",
         ownerUsername: member.owner_username || "",
@@ -2959,6 +3042,26 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       preview: cloneValue(payload.preview) || undefined,
       sample: cloneValue(payload.sample) || undefined,
       samples: cloneValue(payload.samples) || undefined,
+      // Neither was previously carried through from the saved template at
+      // all — Base font silently fell back to DEFAULT_FONT_FAMILY here
+      // regardless of what the Template editor showed (that page never
+      // saved it either — see serializeTemplateState's own comment); this
+      // file has its own separate template object, so it needs its own
+      // copy of the same normalization workbench-template-view.js uses.
+      baseFontFamily: typeof payload.baseFontFamily === "string" ? payload.baseFontFamily : "",
+      defaults: normalizeTemplateDefaults(payload.defaults),
+      // The sheet's own literal background/border — same "this file has
+      // its own separate template object" reasoning as baseFontFamily/
+      // defaults above.
+      backgroundColor: typeof payload.backgroundColor === "string" ? payload.backgroundColor : "",
+      backgroundColorBinding: typeof payload.backgroundColorBinding === "string" ? payload.backgroundColorBinding : "",
+      backgroundColorFormula: typeof payload.backgroundColorFormula === "string" ? payload.backgroundColorFormula : "",
+      borderStyle: typeof payload.borderStyle === "string" ? payload.borderStyle : "",
+      borderColor: typeof payload.borderColor === "string" ? payload.borderColor : "",
+      borderColorBinding: typeof payload.borderColorBinding === "string" ? payload.borderColorBinding : "",
+      borderColorFormula: typeof payload.borderColorFormula === "string" ? payload.borderColorFormula : "",
+      borderWidth: payload.borderWidth ?? null,
+      borderSides: payload.borderSides && typeof payload.borderSides === "object" ? payload.borderSides : null,
     };
     componentCounter = 0;
     const components = Array.isArray(payload.components)
@@ -3188,6 +3291,22 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     // Same cascade-via-inheritance the Template editor's own canvas uses —
     // see font-library.js's own doc comment on DEFAULT_FONT_FAMILY.
     elements.canvasRoot.style.fontFamily = state.template?.baseFontFamily || DEFAULT_FONT_FAMILY;
+    // Same sheet-wide literal background/border as the Template editor's
+    // own canvas (workbench-template-view.js's identical call) — reuses
+    // applyComponentStyles directly rather than a second hand-written
+    // border/background application.
+    applyComponentStyles(elements.canvasRoot, {
+      textColor: "",
+      backgroundColor: resolveTemplateColor("backgroundColor"),
+      borderStyle: state.template?.borderStyle || "",
+      borderColor: resolveTemplateColor("borderColor"),
+      borderWidth: state.template?.borderWidth,
+      borderSides: state.template?.borderSides,
+      borderRadius: 0,
+      padding: "",
+      margin: "",
+      className: "",
+    });
     elements.canvasRoot.innerHTML = "";
     if (!state.draft?.id) {
       elements.canvasRoot.appendChild(
@@ -3240,19 +3359,15 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       return null;
     }
     const bare = nested;
-    const collapsibleValue = component?.collapsible;
-    const collapsible = typeof collapsibleValue === "string"
-      ? collapsibleValue.toLowerCase() === "true"
-      : Boolean(collapsibleValue);
-    // The card's default padding-top reserves space for the icon/actions
-    // header row (see workbench/css/styles.css) — never shown at all here,
-    // so that reserved space is pure waste that compounds badly with
-    // nesting (a Container's own card plus every one of its children's own
-    // cards each reserve it), which is what read as excessive
-    // "indentation". `bare` (nested children specifically) goes further and
-    // drops the whole card box, not just the header space.
+    const collapsible = isComponentCollapsible(component);
+    // `bare` (nested children only) drops the whole card box (background/
+    // shadow/corner-rounding) — the outer Container's own card already
+    // provides that boundary once, so a nested child sits flush with its
+    // cell instead of stacking a second one. No padding to reconcile here
+    // either way — the base .workbench-canvas-card rule has none of its
+    // own by default (a real per-component Padding setting owns that now).
     const wrapper = createCanvasCardElement({
-      classes: ["character-component", "workbench-canvas-card--no-header"],
+      classes: ["character-component"],
       dataset: { componentId: component.uid || "" },
       gapClass: "gap-3",
       bare,
@@ -3266,7 +3381,17 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       removeButtonOptions: false,
     });
     wrapper.appendChild(header);
-    const content = renderComponentContent(component);
+    // Resolved ONCE, used for both the content below AND the wrapper's own
+    // applyComponentStyles call further down — previously computed twice,
+    // redundantly, with content getting the RAW component (so a heading's
+    // own applyTextFormatting call, e.g. Container/Image, never saw a
+    // binding/formula/template-default-resolved color, only the wrapper
+    // did). Safe to pass into every interactive renderer too — write-back
+    // (onChange/updateBinding) keys off component.uid/binding, never the
+    // object reference itself, and this is always a shallow copy with
+    // every other field untouched.
+    const resolvedComponent = resolveComponentColors(component);
+    const content = renderComponentContent(resolvedComponent);
     const body = content instanceof Element ? content : (() => {
       const container = document.createElement("div");
       container.appendChild(content);
@@ -3294,7 +3419,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
             }
           }
           if (body instanceof HTMLElement) {
-            body.hidden = next;
+            setElementCollapsed(body, next);
           }
           wrapper.classList.toggle("is-collapsed", next);
         },
@@ -3304,7 +3429,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       }
       header.appendChild(collapseButton);
       if (body instanceof HTMLElement) {
-        body.hidden = collapsed;
+        setElementCollapsed(body, collapsed);
       }
       wrapper.classList.toggle("is-collapsed", collapsed);
       setCollapsed(collapsed);
@@ -3313,11 +3438,11 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
         collapsedComponents.delete(component.uid);
       }
       if (body instanceof HTMLElement) {
-        body.hidden = false;
+        setElementCollapsed(body, false);
       }
       wrapper.classList.remove("is-collapsed");
     }
-    applyComponentStyles(wrapper, component);
+    applyComponentStyles(wrapper, excludeToggleWrapperColors(resolvedComponent));
     return wrapper;
   }
 
@@ -3359,241 +3484,111 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
   // so Repeater items get the exact same interactive control as everywhere
   // else instead of a separate, narrower hand-written copy.
   function renderInputComponent(component, itemContext = null) {
-    const labelText = component.label || component.name || "Field";
-    const editable = itemContext
-      ? Boolean(component.binding) && state.mode === "edit"
-      : isEditable(component);
-    const resolvedValue = itemContext
-      ? resolveRepeaterItemValue(itemContext.item, component.binding) ?? (component.value ?? "")
-      : resolveComponentValue(component, component.value ?? "");
-    const setValue = (value) => {
+    const writeValue = (comp, value) => {
       if (itemContext) {
-        setRepeaterItemValue(itemContext.repeaterComponent, itemContext.index, component.binding, value);
+        setItemContextValue(itemContext, comp.binding, value);
       } else {
-        updateBinding(component.binding, value);
+        updateBinding(comp.binding, value);
       }
     };
-    const variant = (component.variant || "text").toLowerCase();
-    const componentUid = component?.uid || "";
-    const labelClasses = ["form-label", "fw-semibold", "text-body-secondary", "mb-0"];
-
-    if (variant === "select") {
-      const select = document.createElement("select");
-      select.className = "form-select";
-      if (componentUid) {
-        select.id = `${componentUid}-select`;
-      }
-      const currentValue = resolvedValue == null ? "" : String(resolvedValue);
-      const options = resolveSelectionOptions(component);
-      options.forEach(({ value, label }) => {
-        const opt = document.createElement("option");
-        opt.value = value;
-        opt.textContent = label;
-        if (opt.value === currentValue) {
-          opt.selected = true;
+    return renderInputContent(component, {
+      resolveValue(comp, fallback) {
+        if (itemContext) {
+          const resolved = resolveItemContextValue(itemContext, comp.binding);
+          return resolved != null ? resolved : fallback;
         }
-        select.appendChild(opt);
-      });
-      select.disabled = !editable;
-      assignBindingMetadata(select, component);
-      if (editable) {
-        select.addEventListener("change", () => {
-          setValue(select.value);
-        });
-      }
-      return createLabeledField({
-        component,
-        control: select,
-        labelText,
-        labelTag: "label",
-        labelFor: select.id || "",
-        labelClasses,
-        applyFormatting: applyTextFormatting,
-      });
-    }
-
-    if (variant === "textarea") {
-      const textarea = document.createElement("textarea");
-      textarea.className = "form-control";
-      if (componentUid) {
-        textarea.id = `${componentUid}-textarea`;
-      }
-      const rows = Number.isFinite(Number(component.rows)) ? Number(component.rows) : 3;
-      textarea.rows = Math.min(Math.max(Math.round(rows), 2), 12);
-      textarea.placeholder = component.placeholder || "";
-      textarea.value = resolvedValue != null ? String(resolvedValue) : "";
-      textarea.disabled = !editable;
-      assignBindingMetadata(textarea, component);
-      if (editable) {
-        textarea.addEventListener("input", () => {
-          setValue(textarea.value);
-        });
-      }
-      return createLabeledField({
-        component,
-        control: textarea,
-        labelText,
-        labelTag: "label",
-        labelFor: textarea.id || "",
-        labelClasses,
-        applyFormatting: applyTextFormatting,
-      });
-    }
-
-    if (variant === "radio" || variant === "checkbox") {
-      const group = document.createElement("div");
-      group.className = "d-flex flex-wrap gap-2";
-      const options = Array.isArray(component.options) ? component.options : [];
-      const currentValue = variant === "checkbox"
-        ? Array.isArray(resolvedValue)
-          ? resolvedValue.map(String)
-          : []
-        : resolvedValue == null
-        ? ""
-        : String(resolvedValue);
-      options.forEach((option, index) => {
-        const optionValue = typeof option === "string" ? option : option.value;
-        const optionLabel = typeof option === "string" ? option : option.label;
-        const id = `${component.uid}-${variant}-${index}`;
-        const formCheck = document.createElement("div");
-        formCheck.className = "form-check form-check-inline";
-        const input = document.createElement("input");
-        input.className = "form-check-input";
-        input.type = variant;
-        input.name = `${component.uid}-${variant}`;
-        input.id = id;
-        input.disabled = !editable;
-        if (variant === "radio") {
-          input.value = optionValue;
-          input.checked = optionValue === currentValue;
-        } else {
-          input.value = optionValue;
-          input.checked = currentValue.includes(String(optionValue));
+        return resolveComponentValue(comp, fallback);
+      },
+      editable(comp) {
+        return itemContext
+          ? Boolean(comp.binding) && (state.mode === "edit" || isRepeaterItemNodeEditableInPlay(comp, itemContext.item))
+          : isEditable(comp);
+      },
+      onChange(comp, value) {
+        writeValue(comp, value);
+      },
+      resolveOptions(comp) {
+        return resolveSelectionOptions(comp, { itemContext });
+      },
+      // Confirmed real bug: an Input's Checkbox/Radio group variant never
+      // consulted its own Source binding at all — only Select did (via
+      // resolveOptions above) — so a checkbox-group field with a Source set
+      // (e.g. Blades in the Dark's Trauma/Armor/Load, sourceBinding
+      // "@traumaConditions"/"@armorTypes"/"@loadTiers") silently fell all
+      // the way back to whatever static `options` a freshly-added component
+      // ships with ("Option A"/"Option B") instead of the System's real
+      // vocabulary. resolveSelectionOptions already does exactly the right
+      // thing (Source first, static `options` only when no Source is set)
+      // — reused here rather than a second, narrower copy of that fallback
+      // logic. allowBlank: false — a blank "nothing chosen" pill makes
+      // sense for a single-select dropdown, not a multi-select checkbox/
+      // radio group (see resolveSelectionOptions's own comment).
+      resolveChoiceOptions(comp) {
+        return resolveSelectionOptions(comp, { allowBlank: false, itemContext });
+      },
+      // Play view, not Editable in Play (renderInputContent only ever
+      // calls this when !editable already) — Select/Number/Textarea/
+      // plain-text Input all read like plain text there instead of a
+      // grayed-out disabled control. Edit view keeps the normal boxed
+      // look regardless — that's the authoring context, a locked/formula-
+      // driven field there is still meant to read as "a real field, just
+      // not touchable right now," not blend into plain prose. Doesn't
+      // depend on itemContext — `editable` (checked by the caller before
+      // this even runs) already accounts for a Repeater item's own
+      // editability, so this applies the same way inside a Repeater cell.
+      plainReadOnly() {
+        return state.mode !== "edit";
+      },
+      decorate(el, comp, meta) {
+        assignBindingMetadata(el, comp, meta);
+      },
+      // Number fields authored "Editable in Play" (HP, AC, ...) get +/-
+      // stepper buttons instead of the plain input — they're adjusted
+      // repeatedly and quickly mid-combat, and a spinner is faster/more
+      // reliable than selecting and retyping a value each time, in both
+      // Play and Edit view. A `roller` takes priority over this:
+      // Initiative is both Play-editable (combat-tracker.js needs a
+      // generic path to its modifier for the "Roll Initiative" toolbar
+      // button) and a rollable field on the sheet — for the sheet itself,
+      // rolling is the more useful action than nudging the value by 1, so
+      // the roll button wins for any component that has both.
+      wrapControl(input, comp, { labelText, editable }) {
+        const variant = (comp.variant || "text").toLowerCase();
+        const hasRoller = typeof comp.roller === "string" && comp.roller.trim().length > 0;
+        if (!itemContext && editable && variant === "number" && !hasRoller && isComponentEditableInPlay(comp)) {
+          const step = Number(comp.step) || 1;
+          const applyDelta = (delta) => {
+            const current = Number(input.value) || 0;
+            const next = current + delta;
+            input.value = next;
+            writeValue(comp, next);
+            void persistDraft({ silent: true });
+          };
+          const spinnerGroup = document.createElement("div");
+          spinnerGroup.className = "input-group input-group-sm";
+          input.classList.add("text-center");
+          spinnerGroup.appendChild(createSpinnerButton("tabler:minus", `Decrease ${labelText}`, () => applyDelta(-step)));
+          spinnerGroup.appendChild(input);
+          spinnerGroup.appendChild(createSpinnerButton("tabler:plus", `Increase ${labelText}`, () => applyDelta(step)));
+          return spinnerGroup;
         }
-        assignBindingMetadata(input, component, { value: optionValue });
-        if (editable) {
-          input.addEventListener("change", () => {
-            if (variant === "radio") {
-              setValue(input.value);
-            } else {
-              const checkedValues = Array.from(group.querySelectorAll("input[type=checkbox]"))
-                .filter((node) => node.checked)
-                .map((node) => node.value);
-              setValue(checkedValues);
-            }
-          });
+        const inputContainer = document.createElement("div");
+        inputContainer.className = "position-relative";
+        const componentUid = comp?.uid || "";
+        const rollExpressions = componentUid ? componentRollDirectives.get(componentUid) : null;
+        // Shown in both Play and Edit view — a rollable field (Initiative,
+        // any formula-driven check/save) is just as useful to roll while
+        // editing the sheet as while playing.
+        const showRollOverlay = Array.isArray(rollExpressions) && rollExpressions.length > 0;
+        if (showRollOverlay) {
+          input.classList.add("character-rollable-input");
         }
-        const optionLabelEl = document.createElement("label");
-        optionLabelEl.className = "form-check-label";
-        optionLabelEl.setAttribute("for", id);
-        optionLabelEl.textContent = optionLabel;
-        formCheck.append(input, optionLabelEl);
-        group.appendChild(formCheck);
-      });
-      return createLabeledField({
-        component,
-        control: group,
-        labelText,
-        labelTag: "div",
-        labelClasses: ["fw-semibold", "text-body-secondary"],
-        applyFormatting: applyTextFormatting,
-      });
-    }
-
-    const input = document.createElement("input");
-    input.className = "form-control";
-    if (componentUid) {
-      input.id = `${componentUid}-input`;
-    }
-    if (variant === "number") {
-      input.type = "number";
-      if (component.min !== undefined) input.min = component.min;
-      if (component.max !== undefined) input.max = component.max;
-      if (component.step !== undefined) input.step = component.step;
-      const numericValue = resolvedValue == null ? "" : resolvedValue;
-      input.value = numericValue === undefined || numericValue === null ? "" : numericValue;
-    } else {
-      input.type = component.inputType || "text";
-      input.placeholder = component.placeholder || "";
-      input.value = resolvedValue ?? "";
-    }
-    input.disabled = !editable;
-    assignBindingMetadata(input, component);
-    if (editable) {
-      if (variant === "number") {
-        input.addEventListener("input", () => {
-          const raw = input.value;
-          if (raw === "") {
-            setValue(null);
-            return;
-          }
-          const next = Number(raw);
-          setValue(Number.isNaN(next) ? raw : next);
-        });
-      } else {
-        input.addEventListener("input", () => {
-          setValue(input.value);
-        });
-      }
-    }
-    // Combat-binding number fields (HP, AC, ...) get +/- stepper buttons
-    // instead of the plain input — they're adjusted repeatedly and quickly
-    // mid-combat, and a spinner is faster/more reliable than selecting and
-    // retyping a value each time, in both Play and Edit view. A `roller`
-    // takes priority over this: Initiative is both a combatBindings target
-    // (combat-tracker.js needs a generic path to its modifier for the "Roll
-    // Initiative" toolbar button) and a rollable field on the sheet — for
-    // the sheet itself, rolling is the more useful action than nudging the
-    // value by 1, so the roll button (below) wins for any component that
-    // has both.
-    const hasRoller = typeof component.roller === "string" && component.roller.trim().length > 0;
-    if (!itemContext && editable && variant === "number" && !hasRoller && isCombatBindingComponent(component)) {
-      const step = Number(component.step) || 1;
-      const applyDelta = (delta) => {
-        const current = Number(input.value) || 0;
-        const next = current + delta;
-        input.value = next;
-        setValue(next);
-        void persistDraft({ silent: true });
-      };
-      const spinnerGroup = document.createElement("div");
-      spinnerGroup.className = "input-group input-group-sm";
-      input.classList.add("text-center");
-      spinnerGroup.appendChild(createSpinnerButton("tabler:minus", `Decrease ${labelText}`, () => applyDelta(-step)));
-      spinnerGroup.appendChild(input);
-      spinnerGroup.appendChild(createSpinnerButton("tabler:plus", `Increase ${labelText}`, () => applyDelta(step)));
-      return createLabeledField({
-        component,
-        control: spinnerGroup,
-        labelText,
-        labelTag: "label",
-        labelFor: input.id || "",
-        labelClasses,
-        applyFormatting: applyTextFormatting,
-      });
-    }
-    const inputContainer = document.createElement("div");
-    inputContainer.className = "position-relative";
-    const rollExpressions = componentUid ? componentRollDirectives.get(componentUid) : null;
-    // Shown in both Play and Edit view — a rollable field (Initiative, any
-    // formula-driven check/save) is just as useful to roll while editing
-    // the sheet as while playing.
-    const showRollOverlay = Array.isArray(rollExpressions) && rollExpressions.length > 0;
-    if (showRollOverlay) {
-      input.classList.add("character-rollable-input");
-    }
-    inputContainer.appendChild(input);
-    if (showRollOverlay) {
-      inputContainer.appendChild(createRollOverlayButton(component, rollExpressions));
-    }
-    return createLabeledField({
-      component,
-      control: inputContainer,
-      labelText,
-      labelTag: "label",
-      labelFor: input.id || "",
-      labelClasses,
-      applyFormatting: applyTextFormatting,
+        inputContainer.appendChild(input);
+        if (showRollOverlay) {
+          inputContainer.appendChild(createRollOverlayButton(comp, rollExpressions));
+        }
+        return inputContainer;
+      },
     });
   }
 
@@ -3605,13 +3600,27 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
   // setRepeaterItemValue below for the write-back counterpart, used by
   // Input/Toggle/Select Group/Track item nodes to make them real, editable
   // controls instead of read-only text.
+  //
+  // "@value" always means "this item itself," checked before the object/
+  // primitive branch below — previously only reachable for a primitive item
+  // (`typeof item !== "object"`), since a Repeater item is normally either a
+  // primitive or a field-shaped object where `@value` would otherwise try
+  // to walk a literal `.value` property. Source-driven Tabs (Container's own
+  // tabLabelsSourceBinding) need this to also work when the item genuinely
+  // **is** an array or object — e.g. Blades in the Dark's restructured
+  // `playbooks.Cutter`, a bare abilities array with no wrapping object at
+  // all — "@value" there has to mean the array itself, not a nonexistent
+  // `.value` property on it.
   function resolveRepeaterItemValue(item, raw) {
     const text = typeof raw === "string" ? raw.trim() : "";
     if (!text.startsWith("@")) return raw;
     const path = text.slice(1).split(".").map((segment) => segment.trim()).filter(Boolean);
     if (!path.length) return undefined;
+    if (path.length === 1 && path[0] === "value") {
+      return item;
+    }
     if (item === null || typeof item !== "object") {
-      return path.length === 1 && path[0] === "value" ? item : undefined;
+      return undefined;
     }
     let cursor = item;
     for (const segment of path) {
@@ -3672,6 +3681,102 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     }
   }
 
+  // Lowercase, collapse non-alphanumeric runs to "_", trim — used only for
+  // a Source-driven Tab's own write-path key (resolveTabItemPath below),
+  // matching the slugs Blades in the Dark's character data already used
+  // before this session's own migration (`specialAbilitiesPurchased.cutter`,
+  // `.not_to_be_trifled_with`).
+  function slugify(value) {
+    return String(value ?? "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "_")
+      .replace(/^_+|_+$/g, "");
+  }
+
+  // The write-path counterpart to a Source-driven Tab's own item context —
+  // resolveRepeaterItemPath's equivalent for `kind: "tab"`. A Repeater's
+  // items live in a character-owned array, so "item N" naturally maps to a
+  // write path rooted at that array. A tab's own "item" comes from SYSTEM
+  // data (no character-owned array to index into at all) — the write path
+  // instead keys off the tab's own stable identity (its playbook name),
+  // via a literal `{item}` placeholder token inside the binding string
+  // (e.g. `@specialAbilitiesPurchased.{item}`), substituted with the
+  // slugified tab key before segment-walking. A binding with no `{item}`
+  // token at all falls back to an ordinary top-level path (rare — a tab's
+  // own child binding straight to top-level character data, not scoped to
+  // "this tab" at all).
+  function resolveTabItemPath(rawBinding, tabKey) {
+    const text = typeof rawBinding === "string" ? rawBinding.trim() : "";
+    if (!text.startsWith("@")) return null;
+    const substituted = text.slice(1).replace(/\{item\}/g, slugify(tabKey));
+    return resolveBindingPath(`@${substituted}`);
+  }
+
+  // setRepeaterItemValue's counterpart for `kind: "tab"` — same
+  // getValueAtPath/applyBindingValue/undo-stack reuse, only the path
+  // resolution differs.
+  function setTabItemValue(rawBinding, tabKey, value) {
+    const pathSegments = resolveTabItemPath(rawBinding, tabKey);
+    if (!pathSegments) {
+      return;
+    }
+    const previousValue = cloneValue(getValueAtPath(pathSegments));
+    const nextValue = cloneValue(value);
+    if (valuesEqual(previousValue, nextValue)) {
+      return;
+    }
+    const focusSnapshot = captureActiveField();
+    const applied = applyBindingValue(pathSegments, nextValue, { focusSnapshot });
+    if (applied && undoStack) {
+      const previousValueDefined = previousValue !== undefined;
+      const nextValueDefined = nextValue !== undefined;
+      undoStack.push({
+        type: "binding",
+        characterId: state.draft?.id || "",
+        path: pathSegments,
+        previousValue: previousValueDefined ? previousValue : null,
+        previousValueDefined,
+        nextValue: nextValueDefined ? nextValue : null,
+        nextValueDefined,
+      });
+    }
+  }
+
+  // Single write dispatch every item-template node's own writeValue closure
+  // calls now, instead of calling setRepeaterItemValue directly — picks the
+  // right path-resolution strategy for itemContext.kind ("repeater", the
+  // default/original shape, vs "tab", see setTabItemValue above); every
+  // caller stays agnostic to which kind of item it's actually inside.
+  function setItemContextValue(itemContext, raw, value) {
+    if (itemContext?.kind === "tab") {
+      setTabItemValue(raw, itemContext.key, value);
+    } else {
+      setRepeaterItemValue(itemContext?.repeaterComponent, itemContext?.index, raw, value);
+    }
+  }
+
+  // Read counterpart to setItemContextValue, same dispatch. Confirmed real
+  // bug this fixes: every per-type renderer's own resolveValue used to call
+  // resolveRepeaterItemValue(itemContext.item, raw) unconditionally — for
+  // `kind: "tab"`, itemContext.item is the tab's own SYSTEM-sourced item
+  // (e.g. a playbook's bare abilities array), which has no
+  // `specialAbilitiesPurchased` property on it at all, so a tab child's own
+  // `@specialAbilitiesPurchased.{item}` binding always resolved to
+  // undefined on READ — even though setItemContextValue's WRITE side
+  // already correctly wrote the value into the live character draft. A
+  // checkbox toggled inside a tab looked like it worked (its own DOM
+  // checked state flips immediately, no rerender needed) but reading it
+  // back — switching tabs away and back, which tears down and rebuilds
+  // that zone's DOM — always came back empty, since the read path was
+  // never actually looking in the draft at all.
+  function resolveItemContextValue(itemContext, raw) {
+    if (itemContext?.kind === "tab") {
+      const pathSegments = resolveTabItemPath(raw, itemContext.key);
+      return pathSegments ? getValueAtPath(pathSegments) : undefined;
+    }
+    return resolveRepeaterItemValue(itemContext?.item, raw);
+  }
+
   // One item-template node, rendered against one item. Input/Toggle/Select
   // Group/Track delegate to their own real top-level renderers (with an
   // itemContext override so reads/writes scope to this item — see those
@@ -3691,55 +3796,108 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
   // component outside a Repeater) rather than being force-disabled —
   // matching Press's own "headers render with the outer context, not item
   // context."
-  function renderRepeaterItemNode(node, item, repeaterComponent, index) {
-    const itemContext = repeaterComponent ? { repeaterComponent, index, item } : null;
-    switch (node.type) {
+  // Every type here now accepts (component, itemContext) uniformly (see
+  // component-renderers.js's shared ctx pattern), so this dispatch is just
+  // a thin delegate into the SAME functions the top-level
+  // renderComponentContent switch uses — not a separate hand-rolled
+  // implementation per type. This is what retired the previous per-type
+  // duplicate bodies here (which had drifted: no aria-label/empty-state on
+  // Icon, no Label heading on Image, a different placeholder image URL) and
+  // the one-off renderRepeaterContainerNode (Container gets itemContext
+  // support the same way every other type does now).
+  // Shared by renderRepeaterItemNode and renderTabItemNode below — the
+  // switch itself doesn't care which kind of item context it's rendering
+  // against (every render*Component function already just forwards
+  // itemContext through, agnostic to its own shape), only how each one's
+  // own writeValue/resolveOptions resolve underneath (setItemContextValue,
+  // resolveSelectionOptions's own itemContext branch). `item` stays a
+  // separate parameter, not derived from `itemContext.item` — a header-row
+  // call (itemContext null) still needs it for resolveRepeaterItemNodeColors/
+  // the plain-text default branch below.
+  function dispatchItemContextNode(node, item, itemContext) {
+    // Resolved ONCE — used for the content dispatch below AND the final
+    // applyComponentStyles call, same reasoning as renderComponentCard's
+    // own identical fix (a Container/Image item-template node's own
+    // heading needs the resolved color too, not just the outer element).
+    const resolvedNode = resolveRepeaterItemNodeColors(node, item);
+    let element;
+    switch (resolvedNode.type) {
       case "input":
-        return renderInputComponent(node, itemContext);
+        element = renderInputComponent(resolvedNode, itemContext);
+        break;
       case "toggle":
-        return renderToggleComponent(node, itemContext);
+        element = renderToggleComponent(resolvedNode, itemContext);
+        break;
       case "select-group":
-        return renderSelectGroupComponent(node, itemContext);
+        element = renderSelectGroupComponent(resolvedNode, itemContext);
+        break;
       case "track":
-        return renderTrackComponent(node, itemContext);
-      case "text": {
-        const text = document.createElement("div");
-        text.className = "text-body";
-        const resolved = node.binding ? resolveRepeaterItemValue(item, node.binding) : node.text || node.label || "";
-        text.textContent = resolved != null ? String(resolved) : "";
-        applyTextFormatting(text, node);
-        return text;
-      }
-      case "icon": {
-        const wrapper = document.createElement("span");
-        wrapper.className = "d-inline-flex align-items-center";
-        const raw = typeof node.iconClass === "string" ? node.iconClass.trim() : "";
-        const resolvedClass = raw.startsWith("@") ? resolveRepeaterItemValue(item, raw) : raw;
-        const classes = resolveIconClassList(resolvedClass);
-        if (classes.length) {
-          const icon = document.createElement("span");
-          icon.className = classes.join(" ");
-          wrapper.appendChild(icon);
-        }
-        return wrapper;
-      }
-      case "image": {
-        const img = document.createElement("img");
-        const rawUrl = node.url || node.src || "";
-        const resolvedUrl = typeof rawUrl === "string" && rawUrl.trim().startsWith("@") ? resolveRepeaterItemValue(item, rawUrl) : rawUrl;
-        img.src = resolvedUrl || "https://placehold.co/320x180?text=Image";
-        img.alt = node.alt || "Image";
-        applyImageStyles(img, node);
-        return img;
-      }
+        element = renderTrackComponent(resolvedNode, itemContext);
+        break;
+      case "text":
+        element = renderTextComponent(resolvedNode, itemContext);
+        break;
+      case "icon":
+        element = renderIconComponent(resolvedNode, itemContext);
+        break;
+      case "image":
+        element = renderImageComponent(resolvedNode, itemContext);
+        break;
+      case "container":
+        element = renderContainerComponent(resolvedNode, itemContext);
+        break;
+      case "repeater":
+        // A Repeater dropped inside another Repeater's item template — the
+        // Template editor's own canvas already accepted this drop (its
+        // zone/dropzone machinery is generic, no type restriction), but
+        // Play/Edit had no case for it here, so it silently fell through
+        // to the plain-text default below instead of actually repeating.
+        // itemContext (this OUTER repeater's own item/index) is what makes
+        // the nested Repeater's binding resolve relative to THIS row
+        // rather than the top-level draft — see renderRepeaterComponent's
+        // own comment.
+        element = renderRepeaterComponent(resolvedNode, itemContext);
+        break;
       default: {
-        const value = resolveRepeaterItemValue(item, node.binding);
+        const value = resolveRepeaterItemValue(item, resolvedNode.binding);
         const text = document.createElement("div");
         text.className = "text-body small";
-        text.textContent = value != null && value !== "" ? String(value) : node.label || node.name || "";
-        return text;
+        text.textContent = value != null && value !== "" ? String(value) : resolvedNode.label || resolvedNode.name || "";
+        element = text;
       }
     }
+    // Every top-level component gets its border/colors/padding/margin from
+    // renderComponentCard's own applyComponentStyles call — but an item-
+    // template node rendered here deliberately skips renderComponentCard
+    // entirely (no header/chrome/drag-handle belongs on a repeater row
+    // cell), which meant it ALSO skipped the only place those styles ever
+    // get applied. Not just Container — every type above returned bare,
+    // unstyled content. Applied here, once, after the dispatch, rather than
+    // inside each individual render*Component function, so it can't be
+    // missed again by a future type added to this switch.
+    if (element instanceof HTMLElement) {
+      applyComponentStyles(element, excludeToggleWrapperColors(resolvedNode));
+    }
+    return element;
+  }
+
+  function renderRepeaterItemNode(node, item, repeaterComponent, index) {
+    const itemContext = repeaterComponent
+      ? { kind: "repeater", repeaterComponent, ownerComponent: repeaterComponent, index, item }
+      : null;
+    return dispatchItemContextNode(node, item, itemContext);
+  }
+
+  // Source-driven Tabs' own entry point (Container's tabLabelsSourceBinding
+  // — see renderContainerComponent's own renderZone) — same dispatch as a
+  // Repeater item, a different itemContext shape: no character-owned array
+  // to index into (the tab's own "item" comes from System data, e.g. one
+  // playbook's own bare abilities array), so writes key off `key` (the
+  // tab's own stable identity, its playbook name) via resolveTabItemPath/
+  // setTabItemValue instead of a numeric index.
+  function renderTabItemNode(node, item, containerComponent, index, key) {
+    const itemContext = { kind: "tab", item, key, index, ownerComponent: containerComponent };
+    return dispatchItemContextNode(node, item, itemContext);
   }
 
   // Ported from Press's own Repeater decorator (none/bullet/number/custom)
@@ -3752,6 +3910,16 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     if (type === "bullet") return "•";
     if (type === "number") return `${index + 1}.`;
     if (type === "custom") {
+      // formula first, same precedence as every other single-field content
+      // control (Text/Icon/Image/Container) — a decorator's own custom
+      // text is always per-row already (a decorator has no "top-level, no
+      // itemContext" mode to begin with), so this always resolves against
+      // the current item, no dataContext branch needed.
+      const formula = typeof decorator.formula === "string" ? decorator.formula.trim() : "";
+      if (formula) {
+        const result = resolveContextFormula(formula, { item });
+        if (result != null && result !== "") return String(result);
+      }
       const raw = typeof decorator.text === "string" ? decorator.text : "";
       const trimmed = raw.trim();
       if (trimmed.startsWith("@")) {
@@ -3787,7 +3955,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     return Number.isFinite(raw) && raw > 0 ? Math.min(Math.round(raw), 8) : 1;
   }
 
-  function renderRepeaterItemRow(component, templateNodes, item, index) {
+  function renderRepeaterItemRow(component, templateNodes, item, index, onRemoveItem = null) {
     const row = document.createElement("div");
     row.className = "d-flex align-items-start gap-2 border-bottom pb-2";
     row.dataset.repeaterIndex = String(index);
@@ -3807,6 +3975,9 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       body.appendChild(renderRepeaterItemNode(node, item, component, index));
     });
     row.appendChild(body);
+    if (onRemoveItem) {
+      row.appendChild(createRepeaterRemoveButton(() => onRemoveItem(index)));
+    }
     return row;
   }
 
@@ -3830,7 +4001,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
   // CSS Grid, since this is genuinely tabular data: the header row must
   // render exactly once regardless of how many items repeat, which a
   // Container's zones (everything in them repeats) can't do at all.
-  function renderRepeaterTable(component, columns, itemColumns, items) {
+  function renderRepeaterTable(component, columns, itemColumns, items, onRemoveItem = null) {
     const table = document.createElement("table");
     table.className = "workbench-repeater-table";
     const decorator = component.decorator && typeof component.decorator === "object" ? component.decorator : null;
@@ -3849,6 +4020,9 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
           col.style.width = width;
           colgroup.appendChild(col);
         });
+      if (onRemoveItem) {
+        colgroup.appendChild(document.createElement("col"));
+      }
       table.appendChild(colgroup);
     }
     if (component.showHeader) {
@@ -3868,6 +4042,9 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
         });
         headerTr.appendChild(th);
       });
+      if (onRemoveItem) {
+        headerTr.appendChild(document.createElement("th"));
+      }
       thead.appendChild(headerTr);
       table.appendChild(thead);
     }
@@ -3888,13 +4065,266 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
         });
         tr.appendChild(td);
       });
+      if (onRemoveItem) {
+        const actionTd = document.createElement("td");
+        actionTd.appendChild(createRepeaterRemoveButton(() => onRemoveItem(index)));
+        tr.appendChild(actionTd);
+      }
       tbody.appendChild(tr);
     });
     table.appendChild(tbody);
     return table;
   }
 
-  function renderRepeaterComponent(component) {
+  // Horizontal's own single-item-template case (rows === 1 — the ability-
+  // score box case: one item template, repeated per array item, flowing
+  // left-to-right instead of stacking top-to-bottom). Mirrors
+  // renderRepeaterItemRow, but as a self-contained column-of-content cell
+  // (decorator above its own content, not beside it) meant to sit in a
+  // flex ROW of siblings rather than a flex COLUMN of stacked rows.
+  function renderRepeaterHorizontalItemCell(component, templateNodes, item, index, onRemoveItem = null) {
+    const cell = document.createElement("div");
+    cell.className = "d-flex flex-column gap-1";
+    cell.dataset.repeaterIndex = String(index);
+    // "Fill available width" (Horizontal-only — see createRepeaterFillToggle)
+    // — grows every item cell equally to consume the row's full width
+    // instead of each sizing to its own content and leaving the remainder
+    // empty. min-width:0 lets a cell actually shrink below its content's
+    // own width once it's a flex-grow item sharing space with siblings —
+    // same reasoning as every other flex-shrink fix in this codebase.
+    if (component.fill) {
+      cell.style.flex = "1 1 0";
+      cell.style.minWidth = "0";
+    }
+    const decoratorText = resolveRepeaterDecorator(component, item, index);
+    if (decoratorText) {
+      const marker = document.createElement("div");
+      marker.className = "text-body-secondary small";
+      marker.textContent = decoratorText;
+      cell.appendChild(marker);
+    }
+    templateNodes.forEach((node) => {
+      if (!isRepeaterItemNodeVisible(node, item)) return;
+      cell.appendChild(renderRepeaterItemNode(node, item, component, index));
+    });
+    if (onRemoveItem) {
+      cell.appendChild(createRepeaterRemoveButton(() => onRemoveItem(index)));
+    }
+    return cell;
+  }
+
+  // The non-repeating header CELL for Horizontal's rows===1 case — rendered
+  // once, placed before the repeated items, from the "header-0" zone.
+  // Horizontal's rows>1 counterpart (a full header COLUMN, one label per
+  // field-row) is renderRepeaterHorizontalGrid's own header column below.
+  function renderRepeaterHorizontalHeaderCell(headerNodes) {
+    const cell = document.createElement("div");
+    cell.className = "d-flex flex-column gap-1 fw-semibold text-body-secondary flex-shrink-0 border-end pe-3";
+    headerNodes.forEach((node) => {
+      if (!isRepeaterItemNodeVisible(node, null)) return;
+      cell.appendChild(renderRepeaterItemNode(node, null));
+    });
+    return cell;
+  }
+
+  function renderRepeaterHorizontalList(component, templateNodes, items, onRemoveItem = null) {
+    const row = document.createElement("div");
+    row.className = "d-flex flex-row flex-wrap align-items-start";
+    // Matches Container's own "Grid gap (px)" field exactly (see
+    // renderRepeaterInspector, Horizontal-only) — was previously a fixed
+    // Bootstrap gap-3 utility class with no way to change it.
+    const gapPx = Number.isFinite(Number(component.gap)) ? Number(component.gap) : 16;
+    row.style.gap = `${gapPx}px`;
+    if (component.showHeader) {
+      const headerNodes = getRepeaterColumnZoneNodes(component, "header", 0);
+      if (headerNodes.length) {
+        row.appendChild(renderRepeaterHorizontalHeaderCell(headerNodes));
+      }
+    }
+    items.forEach((item, index) => {
+      row.appendChild(renderRepeaterHorizontalItemCell(component, templateNodes, item, index, onRemoveItem));
+    });
+    return row;
+  }
+
+  // Horizontal's own multi-row case (rows > 1) — the full transpose of
+  // Vertical table mode: array items become GRID COLUMNS (one per item,
+  // auto-generated — there's no fixed count until render) instead of table
+  // ROWS, and the `rows` field templates become fixed GRID ROWS within
+  // each item's own column instead of table columns within each item's own
+  // row. CSS Grid (`grid-auto-flow: column`), not a <table>, specifically
+  // because the repeating axis (items) has no fixed count for a
+  // <colgroup>-style width list to describe the way Vertical table mode's
+  // fixed field-columns do (see renderRepeaterTable/"Column widths" — that
+  // field is hidden for Horizontal in the inspector for the same reason).
+  // Decorator, when set, becomes an extra grid ROW of per-item markers
+  // (transposed from Vertical table mode's own per-item COLUMN) rather
+  // than a per-row marker, since "rows" here are now shared FIELD
+  // templates, not individual items.
+  function renderRepeaterHorizontalGrid(component, rows, itemColumns, items, onRemoveItem = null) {
+    const grid = document.createElement("div");
+    grid.className = "workbench-repeater-grid";
+    const decorator = component.decorator && typeof component.decorator === "object" ? component.decorator : null;
+    const hasDecorator = Boolean(decorator && decorator.type && decorator.type !== "none");
+    const totalGridRows = rows + (hasDecorator ? 1 : 0) + (onRemoveItem ? 1 : 0);
+    grid.style.gridTemplateRows = `repeat(${totalGridRows}, auto)`;
+    // Matches Container's own "Grid gap (px)" field exactly (see
+    // renderRepeaterInspector, Horizontal-only) — overrides
+    // .workbench-repeater-grid's own fixed CSS gap (shell.css), which had
+    // no way to change it. Uniform row+column gap, same as Container's own
+    // single-value field.
+    const gapPx = Number.isFinite(Number(component.gap)) ? Number(component.gap) : 16;
+    grid.style.gap = `${gapPx}px`;
+    // "Fill available width" (Horizontal-only — see createRepeaterFillToggle)
+    // — unlike the rows===1 list case, .workbench-repeater-grid's own
+    // grid-auto-columns (shell.css) applies uniformly to every
+    // auto-generated column, header included, so a plain CSS override
+    // would stretch the header column too. items.length IS known here (at
+    // render time, unlike template-authoring time — see this function's
+    // own comment above on why "Column widths" is hidden instead), so an
+    // explicit grid-template-columns is used instead: the header column
+    // (if shown) keeps its own natural width, and only the N item columns
+    // share the remaining space equally.
+    if (component.fill) {
+      const itemTrack = `repeat(${items.length}, minmax(0, 1fr))`;
+      grid.style.gridTemplateColumns = component.showHeader ? `auto ${itemTrack}` : itemTrack;
+    }
+
+    if (component.showHeader) {
+      if (hasDecorator) {
+        grid.appendChild(document.createElement("div"));
+      }
+      const headerRows = Array.from({ length: rows }, (_, row) => getRepeaterColumnZoneNodes(component, "header", row));
+      headerRows.forEach((nodes) => {
+        const cell = document.createElement("div");
+        cell.className = "fw-semibold text-body-secondary small pe-3 border-end";
+        nodes.forEach((node) => {
+          if (!isRepeaterItemNodeVisible(node, null)) return;
+          cell.appendChild(renderRepeaterItemNode(node, null));
+        });
+        grid.appendChild(cell);
+      });
+      if (onRemoveItem) {
+        grid.appendChild(document.createElement("div"));
+      }
+    }
+
+    items.forEach((item, index) => {
+      if (hasDecorator) {
+        const marker = document.createElement("div");
+        marker.className = "text-body-secondary small text-center";
+        marker.textContent = resolveRepeaterDecorator(component, item, index);
+        grid.appendChild(marker);
+      }
+      itemColumns.forEach((nodes) => {
+        const cell = document.createElement("div");
+        nodes.forEach((node) => {
+          if (!isRepeaterItemNodeVisible(node, item)) return;
+          cell.appendChild(renderRepeaterItemNode(node, item, component, index));
+        });
+        grid.appendChild(cell);
+      });
+      if (onRemoveItem) {
+        const actionCell = document.createElement("div");
+        actionCell.className = "text-center";
+        actionCell.appendChild(createRepeaterRemoveButton(() => onRemoveItem(index)));
+        grid.appendChild(actionCell);
+      }
+    });
+    return grid;
+  }
+
+  // Small icon-only button for a Repeater row's own "Remove" control — same
+  // iconify/tabler pattern as createSpinnerButton above, just danger-styled
+  // and sized down to fit inline with a row's own content.
+  function createRepeaterRemoveButton(onRemove) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "btn btn-sm btn-outline-danger flex-shrink-0";
+    button.setAttribute("aria-label", "Remove item");
+    const icon = document.createElement("span");
+    icon.className = "iconify";
+    icon.dataset.icon = "tabler:trash";
+    icon.setAttribute("aria-hidden", "true");
+    button.appendChild(icon);
+    button.addEventListener("click", (event) => {
+      event.preventDefault();
+      onRemove();
+    });
+    return button;
+  }
+
+  // Trailing "Add item" control, appended once below the repeated rows
+  // (not per-row, unlike Remove) — same iconify/tabler pattern, label text
+  // included since a bare icon here would be too easy to miss below a long
+  // list.
+  function createRepeaterAddButton(onAdd) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "btn btn-sm btn-outline-secondary align-self-start d-inline-flex align-items-center gap-1";
+    const icon = document.createElement("span");
+    icon.className = "iconify";
+    icon.dataset.icon = "tabler:plus";
+    icon.setAttribute("aria-hidden", "true");
+    button.appendChild(icon);
+    button.appendChild(document.createTextNode("Add item"));
+    button.addEventListener("click", (event) => {
+      event.preventDefault();
+      onAdd();
+    });
+    return button;
+  }
+
+  // Whole-array write-back for a Repeater's own Add/Remove-row controls —
+  // same top-level-vs-nested distinction updateBinding/setRepeaterItemValue
+  // already draw for a single field: a nested Repeater (itemContext set)
+  // writes the new array back into the OUTER item's own field via
+  // setRepeaterItemValue, exactly like any other item-template node's own
+  // binding; a top-level Repeater writes the draft directly via
+  // updateBinding. Both already handle undo/rerender/autosave-trigger, so
+  // nothing extra is needed here.
+  function writeRepeaterItems(component, itemContext, nextItems) {
+    if (itemContext) {
+      setItemContextValue(itemContext, component.binding, nextItems);
+    } else {
+      updateBinding(component.binding, nextItems);
+    }
+  }
+
+  // A freshly added row starts as an empty object — exactly the shape
+  // renderRepeaterItemNode already renders correctly for a HEADER row
+  // (item=null: resolveRepeaterItemValue returns undefined, and every
+  // node type's own existing empty/zero fallback takes it from there), so
+  // no new per-type default logic is needed for the common case. The one
+  // exception is a primitive-array Repeater — an item-template node bound
+  // to the literal "@value" rather than an object field, where the item
+  // itself IS the value (see resolveRepeaterItemValue) — there a blank
+  // entry has to be the right primitive instead of "{}".
+  function createBlankRepeaterItem(itemColumns) {
+    const valueNode = itemColumns.flat().find((node) => {
+      const binding = typeof node?.binding === "string" ? node.binding.trim() : "";
+      return binding === "@value";
+    });
+    if (valueNode) {
+      if (valueNode.type === "input" && valueNode.variant === "number") return 0;
+      if (valueNode.type === "input" && valueNode.variant === "checkbox") return [];
+      return "";
+    }
+    return {};
+  }
+
+  // itemContext (same shape every other item-template node's own
+  // render*Component takes — see renderImageComponent/renderIconComponent/
+  // renderTextComponent/renderContainerComponent above) makes THIS repeater
+  // a nested one: its own binding resolves relative to the OUTER item
+  // (resolveRepeaterItemValue), not the top-level draft — a Repeater bound
+  // to "@spells" one level down (the array field on each {level, spells}
+  // group) means the group object, not state.draft.spells. Everything
+  // below this line stays the same regardless of nesting depth: rendering
+  // one row hands its own item down to renderRepeaterItemNode, which
+  // dispatches type "repeater" straight back into this function with ITS
+  // OWN itemContext, so arbitrarily deep nesting falls out for free.
+  function renderRepeaterComponent(component, itemContext = null) {
     const wrapper = document.createElement("div");
     wrapper.className = "d-flex flex-column gap-2";
     const labelText = component.label || component.name;
@@ -3915,14 +4345,62 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       );
       return wrapper;
     }
-    const value = resolveComponentValue(component);
+    // Repeater has no formula/roller support (supportsFormula: false,
+    // workbench-template-view.js) — a plain @path is all its own binding
+    // ever holds, so the item-relative resolver every other nested node
+    // uses is enough here too, no need for resolveComponentValue's fuller
+    // formula/roller machinery.
+    const value = itemContext
+      ? resolveItemContextValue(itemContext, component.binding)
+      : resolveComponentValue(component);
     const items = Array.isArray(value) ? value : [];
+    // Add/Remove-row controls — first gated by component.allowAddRemove
+    // (createRepeaterAllowAddRemoveToggle, workbench-template-view.js): an
+    // explicit per-Repeater authoring choice, off by default, since most
+    // Repeaters (ability scores, skills, a fixed defenses list, ...) have a
+    // fixed cardinality where Add/Remove would be actively wrong to offer —
+    // only a genuinely open-ended list (Inventory, Upgrades, ...) turns it
+    // on. Once on, WHEN it's usable follows the same authored "Editable in
+    // Play" setting every other component uses (isComponentEditableInPlay),
+    // checked on the Repeater ITSELF rather than a per-node condition,
+    // since adding/removing a whole row isn't one field's own concern. Edit
+    // mode always allows it, same as every other field's own gating; a
+    // Repeater with no binding at all has nothing to write to, so it's
+    // excluded regardless of mode.
+    const canManage =
+      Boolean(component.allowAddRemove) &&
+      Boolean(component.binding) &&
+      (state.mode === "edit" || isComponentEditableInPlay(component));
+    const handleAddItem = () => {
+      writeRepeaterItems(component, itemContext, [...items, createBlankRepeaterItem(itemColumns)]);
+    };
+    const handleRemoveItem = (index) => {
+      writeRepeaterItems(component, itemContext, items.filter((_, i) => i !== index));
+    };
+    const onRemoveItem = canManage ? handleRemoveItem : null;
     if (!items.length) {
       wrapper.appendChild(createCanvasPlaceholder("No items.", { variant: "compact" }));
+      if (canManage) {
+        wrapper.appendChild(createRepeaterAddButton(handleAddItem));
+      }
+      return wrapper;
+    }
+    if (component.orientation === "horizontal") {
+      wrapper.appendChild(
+        columns > 1
+          ? renderRepeaterHorizontalGrid(component, columns, itemColumns, items, onRemoveItem)
+          : renderRepeaterHorizontalList(component, itemColumns[0], items, onRemoveItem)
+      );
+      if (canManage) {
+        wrapper.appendChild(createRepeaterAddButton(handleAddItem));
+      }
       return wrapper;
     }
     if (columns > 1) {
-      wrapper.appendChild(renderRepeaterTable(component, columns, itemColumns, items));
+      wrapper.appendChild(renderRepeaterTable(component, columns, itemColumns, items, onRemoveItem));
+      if (canManage) {
+        wrapper.appendChild(createRepeaterAddButton(handleAddItem));
+      }
       return wrapper;
     }
     if (component.showHeader) {
@@ -3932,219 +4410,231 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       }
     }
     items.forEach((item, index) => {
-      wrapper.appendChild(renderRepeaterItemRow(component, itemColumns[0], item, index));
+      wrapper.appendChild(renderRepeaterItemRow(component, itemColumns[0], item, index, onRemoveItem));
     });
-    return wrapper;
-  }
-
-  // An old saved template may still have `component.src` instead of
-  // `component.url` (see workbench-template-view.js's own identical
-  // fallback/comment) — read here too so an existing Image component keeps
-  // showing its picture with no migration step.
-  function resolveImageUrl(component) {
-    return component.url || component.src || "";
-  }
-
-  // Mirrors workbench-template-view.js's own applyImageStyles exactly (a
-  // small enough function that duplicating it, same as every other
-  // per-type renderer in this file, is simpler than sharing a module
-  // between the two editors for one function).
-  function applyImageStyles(img, component) {
-    img.style.objectFit = component.fit === "fill" ? "fill" : component.fit === "contain" ? "contain" : "cover";
-    const width = typeof component.width === "string" ? component.width.trim() : "";
-    const height = typeof component.height === "string" ? component.height.trim() : "";
-    img.style.width = width || "100%";
-    img.style.height = height || "auto";
-    const cornerRadius = Number(component.cornerRadius);
-    img.style.borderRadius = Number.isFinite(cornerRadius) && cornerRadius > 0 ? `${cornerRadius}px` : "";
-    const focalX = Number.isFinite(Number(component.focalX)) ? Number(component.focalX) : 50;
-    const focalY = Number.isFinite(Number(component.focalY)) ? Number(component.focalY) : 50;
-    img.style.objectPosition = `${focalX}% ${focalY}%`;
-    const zoom = Number(component.zoom);
-    if (Number.isFinite(zoom) && zoom !== 1) {
-      img.style.transform = `scale(${zoom})`;
-      img.style.transformOrigin = `${focalX}% ${focalY}%`;
-    } else {
-      img.style.transform = "";
-      img.style.transformOrigin = "";
-    }
-  }
-
-  function renderImageComponent(component) {
-    const wrapper = document.createElement("div");
-    wrapper.className = "d-flex flex-column gap-2";
-    wrapper.style.overflow = "hidden";
-    const label = component.label || component.name;
-    if (label) {
-      const heading = document.createElement("div");
-      heading.className = "fw-semibold text-body-secondary";
-      heading.textContent = label;
-      wrapper.appendChild(heading);
-    }
-    const image = document.createElement("img");
-    image.alt = component.alt || label || "Image";
-    image.src = resolveImageUrl(component) || "https://placehold.co/640x360?text=Image";
-    applyImageStyles(image, component);
-    wrapper.appendChild(image);
-    return wrapper;
-  }
-
-  // iconClass is itself the binding-or-literal string (no separate generic
-  // Binding field — see the icon registry entry's own comment in
-  // workbench-template-view.js). An "@path" value resolves against the live
-  // draft record, same mechanism Track's segmentBinding uses.
-  function resolveIconClass(component) {
-    const raw = typeof component.iconClass === "string" ? component.iconClass.trim() : "";
-    if (!raw.startsWith("@")) return raw;
-    const path = resolveBindingPath(raw);
-    const resolved = path ? getValueAtPath(path) : undefined;
-    return typeof resolved === "string" ? resolved : "";
-  }
-
-  function renderIconComponent(component) {
-    const wrapper = document.createElement("span");
-    wrapper.className = "d-inline-flex align-items-center";
-    const classes = resolveIconClassList(resolveIconClass(component));
-    if (classes.length) {
-      const icon = document.createElement("span");
-      icon.className = classes.join(" ");
-      if (component.textColor) icon.style.color = component.textColor;
-      wrapper.appendChild(icon);
-    } else {
-      wrapper.classList.add("press-icon--empty");
-      const placeholder = document.createElement("span");
-      placeholder.className = "press-icon__placeholder";
-      placeholder.textContent = component.label || "Icon";
-      wrapper.appendChild(placeholder);
-    }
-    const ariaLabel = component.ariaLabel || "";
-    if (ariaLabel) {
-      wrapper.setAttribute("role", "img");
-      wrapper.setAttribute("aria-label", ariaLabel);
-    } else {
-      wrapper.setAttribute("aria-hidden", "true");
+    if (canManage) {
+      wrapper.appendChild(createRepeaterAddButton(handleAddItem));
     }
     return wrapper;
   }
 
-  function renderTextComponent(component) {
-    const text = document.createElement("div");
-    text.className = "text-body";
-    const resolved = resolveComponentValue(component, component.text || component.label || "Text");
-    text.textContent = resolved != null ? String(resolved) : "";
-    applyTextFormatting(text, component);
-    return text;
+  // Shared by every "single field, three modes" content field (Icon's
+  // iconClass+formula, Image's url+formula, Container's label+formula, a
+  // Repeater's own item-template Text) — evaluates a formula against the
+  // live draft record, or (when itemContext is set) against that one
+  // repeater item instead, same "resolve relative to the current row"
+  // scoping every other item-template node's own binding resolution
+  // already uses. Originally Icon-only (renderIconComponent); factored out
+  // once Text/Image/Container needed the identical logic rather than each
+  // re-implementing the same dataContext switch.
+  function resolveContextFormula(formula, itemContext) {
+    const dataContext = itemContext ? (itemContext.item && typeof itemContext.item === "object" ? itemContext.item : {}) : state.draft || {};
+    try {
+      return evaluateFormulaWithLookup(formula, dataContext, itemContext ? {} : { rollDice: rollDiceExpression });
+    } catch (error) {
+      console.warn("Character editor: unable to evaluate formula", error);
+      return undefined;
+    }
   }
 
-  // Legacy "columns"/"rows" containerType values (from before Container
-  // was consolidated to Grid/Tabs) are resolved here rather than mutated in
-  // place — this file only ever works with a hydrated, deep-cloned copy of
-  // the template (see hydrateComponent), so there's no persistent draft to
-  // migrate the way the Template editor's own normalizeContainerType has.
-  // "rows" ignores whatever stray `columns` value the old defaults left
-  // sitting on the component (1 column); "columns"/"grid" read `columns` as
-  // authored; anything else defaults to 2.
-  function resolveContainerColumns(component) {
-    if (component.containerType === "rows") return 1;
-    const raw = Number(component.columns);
-    return Number.isFinite(raw) && raw > 0 ? Math.min(raw, 9) : 2;
+  // url — like Icon's iconClass, itself the binding-or-literal string, plus
+  // a separate `formula` field for the "=" case (see createImageUrlControl,
+  // workbench-template-view.js) — checked first, same precedence
+  // resolveComponentValue's own formula-before-binding order uses for every
+  // generic-Data-section-driven type.
+  function renderImageComponent(component, itemContext = null) {
+    return renderImageContent(component, {
+      resolveBindableString(raw) {
+        if (itemContext) {
+          return resolveItemContextValue(itemContext, raw);
+        }
+        const path = resolveBindingPath(raw);
+        return path ? getValueAtPath(path) : undefined;
+      },
+      evaluateFormula(formula) {
+        return resolveContextFormula(formula, itemContext);
+      },
+    });
   }
 
-  function renderContainerComponent(component) {
-    const zones = normalizeZones(component);
-    // Matches workbench-template-view.js's own renderContainerPreview —
-    // was missing here entirely, so a Container's own Label only ever
-    // showed in the Template editor's canvas, never in Play or Edit.
-    const labelText = component.label || component.name;
-    const outer = document.createElement("div");
-    outer.className = "d-flex flex-column gap-3";
-    if (labelText) {
-      const heading = document.createElement("div");
-      heading.className = "fw-semibold text-body-secondary";
-      heading.textContent = labelText;
-      outer.appendChild(heading);
-    }
-    if (!zones.length) {
-      outer.appendChild(
-        createCanvasPlaceholder("No components in this container yet.", { variant: "compact" })
-      );
-      return outer;
-    }
+  // iconClass, An "@path" value resolves against the live draft record
+  // (same mechanism Track's segmentBinding uses), or — when itemContext is
+  // set — against that one repeater item, same as every other item-template
+  // node's own per-item binding resolution.
+  function renderIconComponent(component, itemContext = null) {
+    return renderIconContent(component, {
+      resolveBindableString(raw) {
+        if (itemContext) {
+          return resolveItemContextValue(itemContext, raw);
+        }
+        const path = resolveBindingPath(raw);
+        return path ? getValueAtPath(path) : undefined;
+      },
+      evaluateFormula(formula) {
+        return resolveContextFormula(formula, itemContext);
+      },
+    });
+  }
 
-    if (component.containerType === "tabs") {
-      const wrapper = document.createElement("div");
-      wrapper.className = "d-flex flex-column gap-3";
-      const nav = document.createElement("div");
-      nav.className = "d-flex flex-wrap gap-2";
-      // No gap here — spacing between the zone's own components is each
-      // component's own Margin now (applyComponentStyles), not a Container-
-      // level stacking gap. See workbench/css/styles.css's
-      // .workbench-canvas-card default margin-bottom.
-      const body = document.createElement("div");
-      body.className = "d-flex flex-column";
+  function renderTextComponent(component, itemContext = null) {
+    return renderTextContent(component, {
+      resolveValue(comp, fallback) {
+        if (itemContext) {
+          // Formula first, same precedence as the non-item branch below
+          // (resolveComponentValue's own formula-before-binding order) —
+          // previously only comp.binding was ever checked here, so a Text
+          // dropped into a Repeater's item template silently ignored its
+          // own Formula field.
+          const formula = typeof comp.formula === "string" ? comp.formula.trim() : "";
+          if (formula) {
+            const result = resolveContextFormula(formula, itemContext);
+            if (result != null) return result;
+          }
+          const resolved = comp.binding ? resolveItemContextValue(itemContext, comp.binding) : undefined;
+          return resolved != null ? resolved : fallback;
+        }
+        return resolveComponentValue(comp, fallback);
+      },
+    });
+  }
 
-      const renderBody = (index) => {
-        body.innerHTML = "";
-        const zone = zones[index] || zones[0];
-        (zone?.components || []).forEach((child) => {
+  // resolveContainerColumns/resolveContainerZoneAlignItems/
+  // resolveContainerZoneTextAlign now live in ../lib/component-renderers.js,
+  // shared with workbench-template-view.js.
+  function renderContainerComponent(component, itemContext = null) {
+    return renderContainerContent(component, {
+      // Container's own Label field accepts a literal "@path" the same way
+      // Icon's iconClass does, plus a separate `formula` field for the "="
+      // case (see createContainerLabelControl, workbench-template-view.js)
+      // — checked first, same precedence as every other single-field
+      // content control. Binding/literal resolve against the live draft
+      // record, or (when itemContext is set) against that one repeater
+      // item, same as every other item-template node's own per-item
+      // resolution.
+      resolveValue(comp, fallback) {
+        const formula = typeof comp.formula === "string" ? comp.formula.trim() : "";
+        if (formula) {
+          const result = resolveContextFormula(formula, itemContext);
+          if (result != null) return result;
+        }
+        const trimmed = typeof fallback === "string" ? fallback.trim() : "";
+        if (!trimmed.startsWith("@")) return fallback;
+        if (itemContext) {
+          const resolved = resolveItemContextValue(itemContext, trimmed);
+          return resolved != null ? resolved : "";
+        }
+        const path = resolveBindingPath(trimmed);
+        const resolved = path ? getValueAtPath(path) : undefined;
+        return resolved != null ? resolved : "";
+      },
+      getZones(comp) {
+        return normalizeZones(comp);
+      },
+      renderZone(comp, zone, { alignItems, textAlign, zoneIndex }) {
+        const cell = document.createElement("div");
+        cell.className = "d-flex flex-column";
+        if (alignItems) cell.style.alignItems = alignItems;
+        if (textAlign) cell.style.textAlign = textAlign;
+        // A container whose tabs are Source-generated (tabLabelsSourceBinding
+        // resolved — see normalizeZones, which builds the same tab list)
+        // gives each tab's own children an item-relative context rooted at
+        // that tab's own System-sourced item (e.g. one playbook's own
+        // abilities array). This is orthogonal to — and checked ahead of —
+        // whether this Container is ALSO nested inside an outer Repeater
+        // (itemContext, below): a Container can be either, both, or neither.
+        const sourceValues = resolveSystemFieldValues(comp.tabLabelsSourceBinding);
+        const tabEntries = sourceValues ? resolveTabEntries(sourceValues) : null;
+        const tabEntry = tabEntries && Number.isInteger(zoneIndex) ? tabEntries[zoneIndex] : null;
+        (zone.components || []).forEach((child) => {
+          if (tabEntry) {
+            const node = renderTabItemNode(child, tabEntry.item, comp, zoneIndex, tabEntry.key);
+            if (node) cell.appendChild(node);
+            return;
+          }
+          // A Container nested inside a Repeater item renders its own
+          // zone children the same bare, chrome-less way every other
+          // item-template node does — via renderRepeaterItemNode, which
+          // threads itemContext through — not renderComponentCard, which
+          // has no itemContext concept at all. Without this, a Text (or
+          // any other) component nested inside such a Container silently
+          // fell back to resolving against the live draft record (or its
+          // own placeholder), instead of this one repeater item.
+          if (itemContext) {
+            const node = renderRepeaterItemNode(child, itemContext.item, itemContext.repeaterComponent, itemContext.index);
+            if (node) cell.appendChild(node);
+            return;
+          }
           const card = renderComponentCard(child, { nested: true });
           if (card) {
-            body.appendChild(card);
+            cell.appendChild(card);
           }
         });
-      };
-
-      const initialIndex = Math.min(Math.max(containerActiveTabs.get(component.uid) ?? 0, 0), zones.length - 1);
-      zones.forEach((zone, index) => {
-        const button = document.createElement("button");
-        button.type = "button";
-        button.className = `btn btn-outline-secondary btn-sm${index === initialIndex ? " active" : ""}`;
-        button.textContent = zone.label || `Tab ${index + 1}`;
-        button.addEventListener("click", () => {
-          containerActiveTabs.set(component.uid, index);
-          Array.from(nav.children).forEach((btn, i) => btn.classList.toggle("active", i === index));
-          renderBody(index);
-        });
-        nav.appendChild(button);
-      });
-      renderBody(initialIndex);
-      wrapper.append(nav, body);
-      outer.appendChild(wrapper);
-      return outer;
-    }
-
-    // "grid" — the only remaining variant (see resolveContainerColumns for
-    // legacy "columns"/"rows" handling). Row count doesn't need resolving
-    // separately for CSS Grid purposes — with grid-template-columns set,
-    // the browser auto-wraps into however many rows the zone count needs,
-    // matching the editor's own row-major zone order.
-    const wrapper = document.createElement("div");
-    wrapper.className = "template-container-grid";
-    const templateColumns = typeof component.templateColumns === "string" ? component.templateColumns.trim() : "";
-    const templateRows = typeof component.templateRows === "string" ? component.templateRows.trim() : "";
-    wrapper.style.gridTemplateColumns = templateColumns || `repeat(${resolveContainerColumns(component)}, minmax(0, 1fr))`;
-    if (templateRows) {
-      wrapper.style.gridTemplateRows = templateRows;
-    }
-    // Spacing BETWEEN grid columns/rows — the one remaining legitimate use
-    // of CSS gap (see Container's "Column/row gap" inspector field). Not
-    // the same thing as spacing between components stacked within one
-    // cell, which is each component's own Margin (see below).
-    const columnGap = Number.isFinite(Number(component.gap)) ? Number(component.gap) : 16;
-    wrapper.style.gap = `${columnGap}px`;
-    zones.forEach((zone) => {
-      const cell = document.createElement("div");
-      cell.className = "d-flex flex-column";
-      zone.components.forEach((child) => {
-        const card = renderComponentCard(child, { nested: true });
-        if (card) {
-          cell.appendChild(card);
-        }
-      });
-      wrapper.appendChild(cell);
+        return cell;
+      },
+      // Keyed by component.uid + item index, not just component.uid — the
+      // same Container template renders once per array item, so a shared
+      // key would make switching tabs on one item's copy switch every
+      // other item's copy too.
+      getActiveTabIndex(comp, total) {
+        const key = itemContext ? `${comp.uid}:${itemContext.index}` : comp.uid;
+        const current = containerActiveTabs.get(key) ?? 0;
+        if (!Number.isFinite(total) || total <= 0) return Math.max(0, current);
+        return Math.min(Math.max(0, current), Math.max(0, total - 1));
+      },
+      setActiveTabIndex(comp, index) {
+        const key = itemContext ? `${comp.uid}:${itemContext.index}` : comp.uid;
+        containerActiveTabs.set(key, Math.max(0, index));
+      },
+      // Play view only (Edit always shows every tab, switchable — that's
+      // the authoring/character-creation surface where picking a different
+      // class/playbook is the whole point). A Source-driven tabs container
+      // with an authored `activeTabBinding` (e.g. "@class", "@playbook")
+      // locks to whichever ONE tab matches the character's own current
+      // value there — every other tab is hidden entirely (not just
+      // disabled), same as any other field that isn't editable in Play:
+      // Play shows who this character IS, not a browsable menu of who they
+      // could have been. No `activeTabBinding` authored at all (every
+      // template that existed before this feature) is completely
+      // unaffected — falls straight through to null, normal switchable
+      // tabs, same as today.
+      resolveLockedTabIndex(comp) {
+        if (state.mode === "edit") return null;
+        const binding = typeof comp.activeTabBinding === "string" ? comp.activeTabBinding.trim() : "";
+        if (!binding) return null;
+        const currentValue = getBindingValue(binding);
+        if (currentValue == null) return null;
+        const sourceValues = resolveSystemFieldValues(comp.tabLabelsSourceBinding);
+        const tabEntries = sourceValues ? resolveTabEntries(sourceValues) : null;
+        if (!tabEntries) return null;
+        const index = tabEntries.findIndex(
+          (entry) => entry.key === currentValue || entry.label === currentValue
+        );
+        return index >= 0 ? index : null;
+      },
+      renderEmptyPlaceholder() {
+        return createCanvasPlaceholder("No components in this container yet.", { variant: "compact" });
+      },
     });
-    outer.appendChild(wrapper);
-    return outer;
+  }
+
+  // Every real (non-preview) formula evaluation in this file goes through
+  // here instead of evaluateFormula directly, so `lookup(table, key)`
+  // (bindings.js's createLookupFn) is available in every one of them for
+  // free — a template author writing `=lookup("abilities","str").color`
+  // shouldn't need each call site to specifically wire it in. The System's
+  // own field list (state.systemDefinition?.fields) is passed as
+  // createLookupFn's fallback source regardless of which `context` this
+  // particular call is evaluating against (the active System doesn't
+  // change just because this is a repeater-item context instead of the
+  // main draft) — Press's own identically-purposed wrapper
+  // (resolveBindingWithLookup, template-renderer.js) omits this argument
+  // entirely instead, since Press has no System of its own; see
+  // createLookupFn's own comment for why that's deliberate.
+  function evaluateFormulaWithLookup(formula, context, options = {}) {
+    return evaluateFormula(formula, context, {
+      ...options,
+      functions: { ...(options.functions || {}), lookup: createLookupFn(context, state.systemDefinition?.fields) },
+    });
   }
 
   // Resolves the track's own segment COUNT (not its active value — that's
@@ -4159,7 +4649,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     const formula = typeof component.segmentFormula === "string" ? component.segmentFormula.trim() : "";
     if (formula) {
       try {
-        const result = evaluateFormula(formula, state.draft || {}, { rollDice: rollDiceExpression });
+        const result = evaluateFormulaWithLookup(formula, state.draft || {}, { rollDice: rollDiceExpression });
         const numeric = Number(result);
         if (Number.isFinite(numeric) && numeric > 0) return Math.round(numeric);
       } catch (error) {
@@ -4181,156 +4671,45 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     return Number.isFinite(fallback) && fallback > 0 ? Math.round(fallback) : 6;
   }
 
-  // Clicking the segment that's currently the LAST active one un-fills it
-  // (steps back by one); clicking any other segment fills up to and
-  // including it — one click always sets a clear, predictable fill level
-  // rather than needing a drag gesture.
-  function nextTrackValue(clickedIndex, active) {
-    return clickedIndex + 1 === active ? clickedIndex : clickedIndex + 1;
-  }
-
   function renderTrackComponent(component, itemContext = null) {
+    const ctx = {
+      resolveTrackState(comp) {
+        const segments = Math.max(1, resolveTrackSegments(comp));
+        const resolvedValue = Number(
+          itemContext
+            ? resolveItemContextValue(itemContext, comp.binding) ?? (comp.value ?? 0)
+            : resolveComponentValue(comp, comp.value ?? 0)
+        );
+        const active = Number.isFinite(resolvedValue) ? Math.max(0, Math.min(segments, Math.round(resolvedValue))) : 0;
+        return { segments, active };
+      },
+      editable(comp) {
+        return itemContext
+          ? Boolean(comp.binding) && (state.mode === "edit" || isRepeaterItemNodeEditableInPlay(comp, itemContext.item))
+          : isEditable(comp);
+      },
+      onChange(comp, value) {
+        if (itemContext) {
+          setItemContextValue(itemContext, comp.binding, value);
+        } else {
+          updateBinding(comp.binding, value);
+        }
+      },
+      decorate(el, comp) {
+        assignBindingMetadata(el, comp);
+      },
+    };
     return component.trackShape === "circular"
-      ? renderCircularTrackComponent(component, itemContext)
-      : renderLinearTrackComponent(component, itemContext);
-  }
-
-  function renderLinearTrackComponent(component, itemContext = null) {
-    const labelText = component.label || "Track";
-    const segments = Math.max(1, resolveTrackSegments(component));
-    const resolvedValue = Number(
-      itemContext
-        ? resolveRepeaterItemValue(itemContext.item, component.binding) ?? (component.value ?? 0)
-        : resolveComponentValue(component, component.value ?? 0)
-    );
-    const active = Number.isFinite(resolvedValue) ? Math.max(0, Math.min(segments, Math.round(resolvedValue))) : 0;
-    const editable = itemContext
-      ? Boolean(component.binding) && state.mode === "edit"
-      : isEditable(component);
-    const setValue = (value) => {
-      if (itemContext) {
-        setRepeaterItemValue(itemContext.repeaterComponent, itemContext.index, component.binding, value);
-      } else {
-        updateBinding(component.binding, value);
-      }
-    };
-
-    const track = document.createElement("div");
-    track.className = "template-linear-track";
-    assignBindingMetadata(track, component);
-    for (let index = 0; index < segments; index += 1) {
-      const segment = document.createElement(editable ? "button" : "div");
-      segment.className = "template-linear-track__segment";
-      if (index < active) {
-        segment.classList.add("is-active");
-      }
-      segment.title = `Segment ${index + 1}`;
-      if (editable) {
-        segment.type = "button";
-        // A plain <button> reset — .template-linear-track__segment supplies
-        // the actual sizing/color/shape, this just strips the browser's own
-        // button chrome (border, padding, default background) so an
-        // interactive segment looks identical to the canvas preview's
-        // static <div> ones.
-        segment.style.border = "none";
-        segment.style.padding = "0";
-        segment.style.cursor = "pointer";
-        segment.addEventListener("click", () => {
-          setValue(nextTrackValue(index, active));
-        });
-      }
-      track.appendChild(segment);
-    }
-
-    return createLabeledField({
-      component,
-      control: track,
-      labelText,
-      labelTag: "div",
-      labelClasses: ["fw-semibold", "text-body-secondary"],
-      applyFormatting: applyTextFormatting,
-    });
-  }
-
-  function renderCircularTrackComponent(component, itemContext = null) {
-    const labelText = component.label || "Track";
-    const segments = Math.max(1, resolveTrackSegments(component));
-    const resolvedValue = Number(
-      itemContext
-        ? resolveRepeaterItemValue(itemContext.item, component.binding) ?? (component.value ?? 0)
-        : resolveComponentValue(component, component.value ?? 0)
-    );
-    const active = Number.isFinite(resolvedValue) ? Math.max(0, Math.min(segments, Math.round(resolvedValue))) : 0;
-    const editable = itemContext
-      ? Boolean(component.binding) && state.mode === "edit"
-      : isEditable(component);
-    const setValue = (value) => {
-      if (itemContext) {
-        setRepeaterItemValue(itemContext.repeaterComponent, itemContext.index, component.binding, value);
-      } else {
-        updateBinding(component.binding, value);
-      }
-    };
-    const step = 360 / segments;
-
-    const circle = document.createElement("div");
-    circle.className = "template-circular-track";
-    assignBindingMetadata(circle, component);
-    const gradientStops = [];
-    for (let index = 0; index < segments; index += 1) {
-      const start = index * step;
-      const end = start + step;
-      const color = index < active ? "var(--bs-primary)" : "var(--bs-border-color)";
-      gradientStops.push(`${color} ${start}deg ${end}deg`);
-    }
-    circle.style.background = `conic-gradient(${gradientStops.join(", ")})`;
-    if (editable) {
-      circle.style.cursor = "pointer";
-      circle.setAttribute("role", "slider");
-      circle.setAttribute("tabindex", "0");
-      circle.setAttribute("aria-valuemin", "0");
-      circle.setAttribute("aria-valuemax", String(segments));
-      circle.setAttribute("aria-valuenow", String(active));
-      // conic-gradient's own 0deg is straight up (12 o'clock), going
-      // clockwise — atan2 measures from the positive-x axis (3 o'clock)
-      // instead, so +90deg re-anchors the click angle to the same
-      // reference the gradient itself uses.
-      circle.addEventListener("click", (event) => {
-        const rect = circle.getBoundingClientRect();
-        const cx = rect.left + rect.width / 2;
-        const cy = rect.top + rect.height / 2;
-        const angle = (Math.atan2(event.clientY - cy, event.clientX - cx) * 180) / Math.PI + 90;
-        const normalized = ((angle % 360) + 360) % 360;
-        const clickedIndex = Math.min(segments - 1, Math.floor(normalized / step));
-        setValue(nextTrackValue(clickedIndex, active));
-      });
-    }
-    const mask = document.createElement("div");
-    mask.className = "template-circular-track__mask";
-    circle.appendChild(mask);
-    const value = document.createElement("div");
-    value.className = "template-circular-track__value";
-    value.textContent = `${active}/${segments}`;
-    circle.appendChild(value);
-
-    return createLabeledField({
-      component,
-      control: circle,
-      labelText,
-      labelTag: "div",
-      labelClasses: ["fw-semibold", "text-body-secondary"],
-      applyFormatting: applyTextFormatting,
-    });
+      ? renderCircularTrackContent(component, ctx)
+      : renderLinearTrackContent(component, ctx);
   }
 
   function renderSelectGroupComponent(component, itemContext = null) {
-    const labelText = component.label || "Options";
-    const editable = itemContext
-      ? Boolean(component.binding) && state.mode === "edit"
-      : isEditable(component);
-    const value = itemContext
-      ? resolveRepeaterItemValue(itemContext.item, component.binding) ?? (component.multiple ? [] : "")
-      : resolveComponentValue(component, component.value ?? (component.multiple ? [] : ""));
+    const readCurrentValue = (comp) =>
+      itemContext
+        ? resolveItemContextValue(itemContext, comp.binding) ?? (comp.multiple ? [] : "")
+        : resolveComponentValue(comp, comp.value ?? (comp.multiple ? [] : ""));
+    const value = readCurrentValue(component);
     const activeValues = component.multiple
       ? Array.isArray(value)
         ? value.map(String)
@@ -4340,115 +4719,103 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       : value != null
       ? String(value)
       : "";
-    const options = resolveSelectionOptions(component, { allowBlank: !component.multiple });
-    const group = document.createElement("div");
-    group.className = "btn-group flex-wrap";
-    group.setAttribute("role", "group");
-    options.forEach(({ value: optionValue, label: optionLabel }) => {
-      const normalizedOption = String(optionValue);
-      const button = document.createElement("button");
-      button.type = "button";
-      const isActive = component.multiple
-        ? activeValues.includes(normalizedOption)
-        : normalizedOption === activeValues;
-      button.className = isActive ? "btn btn-primary btn-sm" : "btn btn-outline-secondary btn-sm";
-      button.textContent = optionLabel;
-      button.disabled = !editable;
-      assignBindingMetadata(button, component, { value: optionValue });
-      if (editable) {
-        button.addEventListener("click", () => {
-          const setValue = (next) => {
-            if (itemContext) {
-              setRepeaterItemValue(itemContext.repeaterComponent, itemContext.index, component.binding, next);
-            } else {
-              updateBinding(component.binding, next);
-            }
-          };
-          if (component.multiple) {
-            const current = itemContext
-              ? resolveRepeaterItemValue(itemContext.item, component.binding) ?? []
-              : resolveComponentValue(component, component.value ?? []);
-            const normalizedCurrent = Array.isArray(current)
-              ? current.map(String)
-              : current != null
-              ? [String(current)]
-              : [];
-            const exists = normalizedCurrent.includes(normalizedOption);
-            const next = exists
-              ? normalizedCurrent.filter((entry) => entry !== normalizedOption)
-              : [...normalizedCurrent, normalizedOption];
-            setValue(next);
+    return renderSelectGroupContent(component, {
+      resolveOptions(comp) {
+        return resolveSelectionOptions(comp, { allowBlank: !comp.multiple, itemContext });
+      },
+      isActive(comp, option) {
+        const normalizedOption = String(option.value);
+        return comp.multiple ? activeValues.includes(normalizedOption) : normalizedOption === activeValues;
+      },
+      editable(comp) {
+        return itemContext
+          ? Boolean(comp.binding) && (state.mode === "edit" || isRepeaterItemNodeEditableInPlay(comp, itemContext.item))
+          : isEditable(comp);
+      },
+      onSelect(comp, optionValue) {
+        const setValue = (next) => {
+          if (itemContext) {
+            setItemContextValue(itemContext, comp.binding, next);
           } else {
-            setValue(optionValue);
+            updateBinding(comp.binding, next);
           }
-          // A button click is already a single, discrete action — unlike
-          // free-typed text/number input, there's no keystroke-batching
-          // reason to wait for a blur event before saving (and, in Play
-          // mode, no reliable blur to wait for anyway — see the focusout
-          // listener's own comment). Same immediate-persist approach as
-          // the HP/AC spinner buttons.
-          void persistDraft({ silent: true });
-        });
-      }
-      group.appendChild(button);
-    });
-    return createLabeledField({
-      component,
-      control: group,
-      labelText,
-      labelTag: "div",
-      labelClasses: ["fw-semibold", "text-body-secondary"],
-      applyFormatting: applyTextFormatting,
+        };
+        if (comp.multiple) {
+          const current = readCurrentValue(comp);
+          const normalizedCurrent = Array.isArray(current)
+            ? current.map(String)
+            : current != null
+            ? [String(current)]
+            : [];
+          const normalizedOption = String(optionValue);
+          const exists = normalizedCurrent.includes(normalizedOption);
+          const next = exists
+            ? normalizedCurrent.filter((entry) => entry !== normalizedOption)
+            : [...normalizedCurrent, normalizedOption];
+          setValue(next);
+        } else {
+          setValue(optionValue);
+        }
+        // A button click is already a single, discrete action — unlike
+        // free-typed text/number input, there's no keystroke-batching
+        // reason to wait for a blur event before saving (and, in Play
+        // mode, no reliable blur to wait for anyway — see the focusout
+        // listener's own comment). Same immediate-persist approach as the
+        // HP/AC spinner buttons.
+        void persistDraft({ silent: true });
+      },
+      decorate(el, comp, meta) {
+        assignBindingMetadata(el, comp, meta);
+      },
     });
   }
 
   function renderToggleComponent(component, itemContext = null) {
-    const labelText = component.label || "Toggle";
-    const select = document.createElement("select");
-    select.className = "form-select form-select-sm";
-    if (component?.uid) {
-      select.id = `${component.uid}-toggle`;
-    }
-    const states = resolveToggleStates(component);
-    const resolvedState = itemContext
-      ? resolveRepeaterItemValue(itemContext.item, component.binding)
-      : resolveComponentValue(component);
-    const normalizedState = resolvedState != null ? String(resolvedState) : null;
-    states.forEach((stateValue, index) => {
-      const label = stateValue != null ? String(stateValue) : `State ${index + 1}`;
-      const option = document.createElement("option");
-      option.value = label;
-      option.textContent = label;
-      const shouldSelect = normalizedState !== null
-        ? normalizedState === String(stateValue)
-        : component.activeIndex === index;
-      if (shouldSelect) {
-        option.selected = true;
-      }
-      select.appendChild(option);
-    });
-    const editable = itemContext
-      ? Boolean(component.binding) && state.mode === "edit"
-      : isEditable(component);
-    select.disabled = !editable;
-    assignBindingMetadata(select, component);
-    if (editable) {
-      select.addEventListener("change", () => {
-        if (itemContext) {
-          setRepeaterItemValue(itemContext.repeaterComponent, itemContext.index, component.binding, select.value);
-        } else {
-          updateBinding(component.binding, select.value);
+    return renderToggleContent(component, {
+      resolveStates(comp) {
+        return resolveToggleStates(comp);
+      },
+      resolveActiveIndex(comp, states) {
+        const resolvedState = itemContext
+          ? resolveItemContextValue(itemContext, comp.binding)
+          : resolveComponentValue(comp);
+        const normalizedState = resolvedState != null ? String(resolvedState) : null;
+        if (normalizedState !== null) {
+          return states.findIndex((s) => String(s.value) === normalizedState);
         }
-      });
-    }
-    return createLabeledField({
-      component,
-      control: select,
-      labelText,
-      labelTag: "label",
-      labelFor: select.id || "",
-      labelClasses: ["fw-semibold", "text-body-secondary", "mb-0"],
-      applyFormatting: applyTextFormatting,
+        return typeof comp.activeIndex === "number" ? comp.activeIndex : -1;
+      },
+      // Driven by the same authored "Editable in Play" setting every other
+      // type uses (isComponentEditableInPlay/isRepeaterItemNodeEditableInPlay)
+      // — an explicit per-component choice an author opts into, not a
+      // hardcoded Play-mode carve-out inferred from whatever the binding
+      // happens to match. feedback_play_mode_never_editable_by_default's
+      // original concern was specifically about silently inheriting THAT
+      // guess for a type it was never meant for (a proficiency-style
+      // indicator toggled mid-combat by accident); an authored, per-
+      // component opt-in doesn't have that problem — nothing changes for a
+      // Toggle unless someone deliberately turns it on.
+      editable(comp) {
+        if (componentHasFormula(comp) || isComponentLocked(comp)) {
+          return false;
+        }
+        if (state.mode === "edit") {
+          return itemContext ? Boolean(comp.binding) : true;
+        }
+        return itemContext
+          ? Boolean(comp.binding) && isRepeaterItemNodeEditableInPlay(comp, itemContext.item)
+          : isComponentEditableInPlay(comp);
+      },
+      onChange(comp, value) {
+        if (itemContext) {
+          setItemContextValue(itemContext, comp.binding, value);
+        } else {
+          updateBinding(comp.binding, value);
+        }
+      },
+      decorate(el, comp) {
+        assignBindingMetadata(el, comp);
+      },
     });
   }
 
@@ -4456,10 +4823,16 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     if (!component || !component.zones || typeof component.zones !== "object") {
       return [];
     }
+    // Source-driven tabs (tabLabelsSourceBinding) take priority over the
+    // static tabLabels list, same resolution ensureContainerZones uses in
+    // workbench-template-view.js — see resolveTabEntries' own comment.
+    const sourceValues = resolveSystemFieldValues(component.tabLabelsSourceBinding);
+    const sourceEntries = sourceValues ? resolveTabEntries(sourceValues) : null;
     return Object.keys(component.zones).map((key, index) => ({
       key,
       label:
         component.zoneLabels?.[key] ||
+        (sourceEntries ? sourceEntries[index]?.label : null) ||
         (Array.isArray(component.tabLabels) ? component.tabLabels[index] : null) ||
         formatZoneLabel(key, index),
       components: Array.isArray(component.zones[key]) ? component.zones[key].map((child) => child) : [],
@@ -4503,6 +4876,68 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     // its own separate render dispatch, not a shared one.
     if (clone.type === "label") {
       clone.type = "text";
+    }
+    // Toggle's Background used to get an unconditional "#495057, since an
+    // empty value isn't a real 'no background' choice for this type" backfill
+    // here. That was wrong the moment Background got real unset/X-overlay
+    // support in the color picker (see color-picker.js's --unset handling) —
+    // "no background" (show through to whatever's behind the shape) became
+    // a legitimate, intentional choice, and this hydration step (which runs
+    // once, every time a template's saved JSON loads fresh — exactly what
+    // Play/Edit does) silently overwrote it right back to grey on every
+    // load, even though the JSON itself stayed correctly empty. Toggle is
+    // the only component type this ever applied to, and Border keeps its
+    // own separate backfill below since that wasn't the reported problem.
+    if (clone.type === "toggle") {
+      // borderStyle/borderWidth need the same backfill as borderColor —
+      // renderToggleContent (component-renderers.js) reads borderStyle
+      // directly to decide whether to draw a border at all (it's the
+      // switch, same as everywhere else in this app), so old saved data
+      // with no borderStyle would render borderless even with a real
+      // borderColor sitting right there unused. Matches
+      // workbench-template-view.js's own identical fill-in; this file has
+      // its own separate hydrateComponent, so it needs its own copy.
+      if (!clone.borderStyle || clone.borderStyle === "none") {
+        clone.borderStyle = "solid";
+      }
+      if (!clone.borderColor) {
+        clone.borderColor = "#343a40";
+      }
+      if (clone.borderWidth === null || clone.borderWidth === undefined) {
+        clone.borderWidth = 1;
+      }
+      // foregroundColor (the shape's own fill) used to just BE textColor
+      // — see workbench-template-view.js's identical comment for the full
+      // reasoning. Inherits whatever textColor currently is so an already-
+      // saved Toggle's fill doesn't silently change appearance.
+      if (!clone.foregroundColor) {
+        clone.foregroundColor = clone.textColor || "#ffffff";
+      }
+      if (typeof clone.foregroundColorBinding !== "string") {
+        clone.foregroundColorBinding = "";
+      }
+      if (typeof clone.foregroundColorFormula !== "string") {
+        clone.foregroundColorFormula = "";
+      }
+    }
+    // Track's active/filled segment color and Select Group's active
+    // option color — previously hardcoded CSS (var(--bs-primary)/
+    // .btn-outline-secondary/etc.), never a real component field. Matches
+    // Bootstrap's own default --bs-primary (#0d6efd) so already-saved
+    // components keep their current look until an author customizes it.
+    // Matches workbench-template-view.js's own identical fill-in; this
+    // file has its own separate hydrateComponent, so it needs its own
+    // copy.
+    if (clone.type === "track" || clone.type === "select-group") {
+      if (!clone.foregroundColor) {
+        clone.foregroundColor = "#0d6efd";
+      }
+      if (typeof clone.foregroundColorBinding !== "string") {
+        clone.foregroundColorBinding = "";
+      }
+      if (typeof clone.foregroundColorFormula !== "string") {
+        clone.foregroundColorFormula = "";
+      }
     }
     const normalizedBinding = normalizeBinding(clone.binding ?? clone.bind ?? "");
     if (normalizedBinding) {
@@ -4642,7 +5077,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     const formula = typeof component.visibilityFormula === "string" ? component.visibilityFormula.trim() : "";
     if (formula) {
       try {
-        return Boolean(evaluateFormula(formula, state.draft || {}, { rollDice: rollDiceExpression }));
+        return Boolean(evaluateFormulaWithLookup(formula, state.draft || {}, { rollDice: rollDiceExpression }));
       } catch (error) {
         console.warn("Character editor: unable to evaluate visibility formula", error);
         return true;
@@ -4652,7 +5087,167 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     if (binding) {
       return Boolean(getBindingValue(binding));
     }
-    return true;
+    // No condition set — falls back to the unified toggle's own plain
+    // manual switch (component.visible, default true) rather than
+    // unconditionally always-true, matching Collapsible/Locked's identical
+    // plain-boolean-plus-binding/formula shape (see createFormulaToggleField
+    // in workbench-template-view.js).
+    return component.visible !== false;
+  }
+
+  // Same shape as isComponentVisible — a plain boolean (component.collapsible)
+  // overridable by a binding/formula pair, driven by the same unified
+  // toggle/formula control in the Template editor's Inspector.
+  function isComponentCollapsible(component) {
+    if (!component) return false;
+    const formula = typeof component.collapsibleFormula === "string" ? component.collapsibleFormula.trim() : "";
+    if (formula) {
+      try {
+        return Boolean(evaluateFormulaWithLookup(formula, state.draft || {}, { rollDice: rollDiceExpression }));
+      } catch (error) {
+        console.warn("Character editor: unable to evaluate collapsible formula", error);
+        return false;
+      }
+    }
+    const binding = typeof component.collapsibleBinding === "string" ? component.collapsibleBinding.trim() : "";
+    if (binding) {
+      return Boolean(getBindingValue(binding));
+    }
+    const value = component?.collapsible;
+    return typeof value === "string" ? value.toLowerCase() === "true" : Boolean(value);
+  }
+
+  // Same shape again — "Locked" in the Inspector, component.readOnly in
+  // storage (kept as-is to avoid renaming every existing read site of this
+  // field — see createComponent's own defaults comment).
+  function isComponentLocked(component) {
+    if (!component) return false;
+    const formula = typeof component.readOnlyFormula === "string" ? component.readOnlyFormula.trim() : "";
+    if (formula) {
+      try {
+        return Boolean(evaluateFormulaWithLookup(formula, state.draft || {}, { rollDice: rollDiceExpression }));
+      } catch (error) {
+        console.warn("Character editor: unable to evaluate locked formula", error);
+        return false;
+      }
+    }
+    const binding = typeof component.readOnlyBinding === "string" ? component.readOnlyBinding.trim() : "";
+    if (binding) {
+      return Boolean(getBindingValue(binding));
+    }
+    return Boolean(component.readOnly);
+  }
+
+  // Foreground/Background/Border each have a binding/formula pair
+  // (textColorBinding/textColorFormula, etc. — see createComponent's own
+  // comment, workbench-template-view.js) that overrides the literal hex
+  // when non-empty, same fallback chain as isComponentVisible/
+  // isComponentCollapsible/isComponentLocked above: formula first
+  // (evaluateFormula against the live draft), then binding
+  // (getBindingValue), else the plain stored color. Returns a shallow-
+  // cloned component with textColor/backgroundColor/borderColor
+  // overridden where a real resolved value exists — applyComponentStyles
+  // itself stays completely unaware any of this exists, reading whatever
+  // it's handed exactly as before (see component-styles.js). An
+  // unresolvable/invalid result always falls back to the literal value,
+  // never a JS-invented color.
+  const COLOR_BINDING_KEYS = {
+    textColor: { binding: "textColorBinding", formula: "textColorFormula" },
+    foregroundColor: { binding: "foregroundColorBinding", formula: "foregroundColorFormula" },
+    backgroundColor: { binding: "backgroundColorBinding", formula: "backgroundColorFormula" },
+    borderColor: { binding: "borderColorBinding", formula: "borderColorFormula" },
+  };
+
+  // This file has its own separate template object (applyTemplateData
+  // above), so it needs its own copy of workbench-template-view.js's
+  // identical normalization. Font only, always a real value — Background/
+  // Border are NOT per-component fallbacks (see TEMPLATE_DEFAULT_COLOR_KEYS'
+  // own comment below): a component with its own field cleared should stay
+  // genuinely transparent/borderless, not silently pick up whatever color
+  // the template's sheet-wide Background/Border happen to be.
+  function normalizeTemplateDefaults(raw) {
+    const source = raw && typeof raw === "object" ? raw : {};
+    return {
+      fontColor: typeof source.fontColor === "string" && source.fontColor.trim() ? source.fontColor.trim() : "#ffffff",
+    };
+  }
+
+  // Text only. There's always a text color to fall back to (some real
+  // color has to render), which isn't true for Background/Border — "no
+  // background"/"no border" are themselves legitimate, meaningful choices
+  // a component can make (see color-picker.js's own --unset support), so
+  // clearing one must actually mean "none," not "quietly inherit the
+  // template's own sheet-wide setting." The template's own Background/
+  // Border (state.template.backgroundColor/borderStyle/etc.) are a
+  // completely separate, literal concept — the sheet's own visible
+  // appearance, applied once to the canvas/sheet root, not resolved
+  // per-component here at all.
+  const TEMPLATE_DEFAULT_COLOR_KEYS = { textColor: "fontColor" };
+
+  // The template's own sheet-wide Background/Border color — same
+  // Formula-then-Binding-then-literal precedence resolveComponentColors
+  // uses for a component's own colors, just read off state.template (and
+  // resolved against the live draft, not sample data — this file has no
+  // canvas-preview concept, only the real character record). `prop` is
+  // "backgroundColor" or "borderColor".
+  function resolveTemplateColor(prop) {
+    const template = state.template || {};
+    const formula = typeof template[`${prop}Formula`] === "string" ? template[`${prop}Formula`].trim() : "";
+    if (formula) {
+      try {
+        const result = evaluateFormulaWithLookup(formula, state.draft || {}, { rollDice: rollDiceExpression });
+        if (typeof result === "string" && result.trim()) return result.trim();
+      } catch (error) {
+        console.warn(`Character editor: unable to evaluate template ${prop} formula`, error);
+      }
+    }
+    const binding = typeof template[`${prop}Binding`] === "string" ? template[`${prop}Binding`].trim() : "";
+    if (binding) {
+      const resolved = getBindingValue(binding);
+      if (typeof resolved === "string" && resolved.trim()) return resolved.trim();
+    }
+    return template[prop] || "";
+  }
+
+  function resolveComponentColors(component) {
+    if (!component) return component;
+    let overridden = null;
+    Object.entries(COLOR_BINDING_KEYS).forEach(([colorProp, keys]) => {
+      const formula = typeof component[keys.formula] === "string" ? component[keys.formula].trim() : "";
+      if (formula) {
+        try {
+          const result = evaluateFormulaWithLookup(formula, state.draft || {}, { rollDice: rollDiceExpression });
+          if (typeof result === "string" && result.trim()) {
+            if (!overridden) overridden = { ...component };
+            overridden[colorProp] = result.trim();
+            return;
+          }
+        } catch (error) {
+          console.warn(`Character editor: unable to evaluate ${colorProp} formula`, error);
+        }
+      }
+      const binding = typeof component[keys.binding] === "string" ? component[keys.binding].trim() : "";
+      if (binding) {
+        const resolved = getBindingValue(binding);
+        if (typeof resolved === "string" && resolved.trim()) {
+          if (!overridden) overridden = { ...component };
+          overridden[colorProp] = resolved.trim();
+        }
+      }
+    });
+    // Still blank after binding/formula? Fall back to the template's own
+    // default — this is the ONLY fallback any color field should ever
+    // reach now; no more hardcoded Bootstrap theme colors standing in for
+    // "nobody chose anything."
+    const templateDefaults = normalizeTemplateDefaults(state.template?.defaults);
+    Object.entries(TEMPLATE_DEFAULT_COLOR_KEYS).forEach(([colorProp, defaultKey]) => {
+      const current = (overridden || component)[colorProp];
+      if (typeof current !== "string" || !current.trim()) {
+        if (!overridden) overridden = { ...component };
+        overridden[colorProp] = templateDefaults[defaultKey];
+      }
+    });
+    return overridden || component;
   }
 
   // Same idea as isComponentVisible, but for a Repeater item-template node
@@ -4664,7 +5259,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     const formula = typeof node.visibilityFormula === "string" ? node.visibilityFormula.trim() : "";
     if (formula) {
       try {
-        return Boolean(evaluateFormula(formula, item && typeof item === "object" ? item : {}, {}));
+        return Boolean(evaluateFormulaWithLookup(formula, item && typeof item === "object" ? item : {}, {}));
       } catch (error) {
         console.warn("Character editor: unable to evaluate item visibility formula", error);
         return true;
@@ -4677,14 +5272,101 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     return true;
   }
 
-  // A field bound to one of the active System's combatBindings paths (HP,
-  // AC, Conditions, ...) stays live-adjustable in Play view — those get
-  // adjusted mid-combat, not during a sheet-editing session, so gating them
-  // behind Edit mode the way every other field is would make them
-  // unreachable exactly when they're needed most.
-  function isCombatBindingComponent(component) {
-    const binding = normalizeBinding(component?.binding);
-    return Boolean(binding) && state.combatBindingPaths.has(binding);
+  // Same idea as isRepeaterItemNodeVisible, but for whether a Repeater
+  // item-template node's own field (e.g. an Inventory row's "Carried"
+  // checkbox) stays live-adjustable in Play view — same formula/binding/
+  // plain-boolean precedence as isComponentEditableInPlay below, just
+  // evaluated against the current item instead of the top-level draft
+  // (same item-relative scoping every other per-node condition here uses).
+  function isRepeaterItemNodeEditableInPlay(node, item) {
+    if (!node) return false;
+    const formula = typeof node.editableInPlayFormula === "string" ? node.editableInPlayFormula.trim() : "";
+    if (formula) {
+      try {
+        return Boolean(evaluateFormulaWithLookup(formula, item && typeof item === "object" ? item : {}, {}));
+      } catch (error) {
+        console.warn("Character editor: unable to evaluate item editable-in-play formula", error);
+        return false;
+      }
+    }
+    const binding = typeof node.editableInPlayBinding === "string" ? node.editableInPlayBinding.trim() : "";
+    if (binding) {
+      return Boolean(resolveRepeaterItemValue(item, binding));
+    }
+    return Boolean(node.editableInPlay);
+  }
+
+  // Same idea as resolveComponentColors, but for a Repeater item-template
+  // node — evaluated against the current item as the data context (same
+  // "relative to the item, not the top-level draft" distinction
+  // isRepeaterItemNodeVisible makes above).
+  function resolveRepeaterItemNodeColors(node, item) {
+    if (!node) return node;
+    let overridden = null;
+    Object.entries(COLOR_BINDING_KEYS).forEach(([colorProp, keys]) => {
+      const formula = typeof node[keys.formula] === "string" ? node[keys.formula].trim() : "";
+      if (formula) {
+        try {
+          const result = evaluateFormulaWithLookup(formula, item && typeof item === "object" ? item : {}, {});
+          if (typeof result === "string" && result.trim()) {
+            if (!overridden) overridden = { ...node };
+            overridden[colorProp] = result.trim();
+            return;
+          }
+        } catch (error) {
+          console.warn(`Character editor: unable to evaluate item ${colorProp} formula`, error);
+        }
+      }
+      const binding = typeof node[keys.binding] === "string" ? node[keys.binding].trim() : "";
+      if (binding) {
+        const resolved = resolveRepeaterItemValue(item, binding);
+        if (typeof resolved === "string" && resolved.trim()) {
+          if (!overridden) overridden = { ...node };
+          overridden[colorProp] = resolved.trim();
+        }
+      }
+    });
+    // Same template-default fallback as resolveComponentColors above — a
+    // Repeater item's own row is still part of the same template.
+    const templateDefaults = normalizeTemplateDefaults(state.template?.defaults);
+    Object.entries(TEMPLATE_DEFAULT_COLOR_KEYS).forEach(([colorProp, defaultKey]) => {
+      const current = (overridden || node)[colorProp];
+      if (typeof current !== "string" || !current.trim()) {
+        if (!overridden) overridden = { ...node };
+        overridden[colorProp] = templateDefaults[defaultKey];
+      }
+    });
+    return overridden || node;
+  }
+
+  // Same shape as isComponentLocked/isComponentCollapsible above — "Editable
+  // in Play" in the Inspector, a genuine per-component authored setting
+  // (plain boolean + Binding + Formula) for whether a component stays
+  // live-adjustable in Play view instead of gated behind Edit mode like
+  // everything else. HP/AC/Conditions/Initiative get adjusted mid-session,
+  // not during sheet editing, so an author opts those in explicitly —
+  // replacing the old isCombatBindingComponent mechanism, which inferred
+  // Play-editability from whether a component's binding happened to match
+  // one of the active System's own Role-tagged combatBindings paths: a
+  // hardcoded, System-shape-dependent guess rather than something an
+  // author actually chose on the component itself. See
+  // feedback_play_mode_never_editable_by_default.
+  function isComponentEditableInPlay(component) {
+    if (!component) return false;
+    const formula = typeof component.editableInPlayFormula === "string" ? component.editableInPlayFormula.trim() : "";
+    if (formula) {
+      try {
+        return Boolean(evaluateFormulaWithLookup(formula, state.draft || {}, { rollDice: rollDiceExpression }));
+      } catch (error) {
+        console.warn("Character editor: unable to evaluate editable-in-play formula", error);
+        return false;
+      }
+    }
+    const binding = typeof component.editableInPlayBinding === "string" ? component.editableInPlayBinding.trim() : "";
+    if (binding) {
+      return Boolean(getBindingValue(binding));
+    }
+    return Boolean(component.editableInPlay);
   }
 
   function isEditable(component) {
@@ -4694,13 +5376,13 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     if (componentHasFormula(component)) {
       return false;
     }
-    if (component.readOnly) {
+    if (isComponentLocked(component)) {
       return false;
     }
     if (state.mode === "edit") {
       return true;
     }
-    return isCombatBindingComponent(component);
+    return isComponentEditableInPlay(component);
   }
 
   function resolveComponentValue(component, fallback = undefined) {
@@ -4738,7 +5420,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       const collected = new Set();
       try {
         const dataContext = state.draft || {};
-        const result = evaluateFormula(component.formula, dataContext, {
+        const result = evaluateFormulaWithLookup(component.formula, dataContext, {
           onRoll: (notation) => {
             if (typeof notation === "string") {
               const trimmedNotation = notation.trim();
@@ -4784,10 +5466,38 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
   // group — there's no such thing as a blank "pill," and clicking one
   // would be a meaningless no-op. `allowBlank` lets multi-select callers
   // (renderSelectGroupComponent with multiple: true) opt out.
-  function resolveSelectionOptions(component, { allowBlank = true } = {}) {
+  function resolveSelectionOptions(component, { allowBlank = true, itemContext = null } = {}) {
     const expectsSource = Boolean(component?.sourceBinding);
     const addBlank = expectsSource && allowBlank;
-    const boundOptions = normalizeOptionEntries(resolveSourceBindingValue(component?.sourceBinding));
+    // Item-relative first — confirmed real, pre-existing gap: a Source-
+    // bound Checkbox/Radio/Select dropped inside a Repeater's own item
+    // template (or, now, a Source-driven Tab) never had its own Source
+    // resolved relative to that item at all, always falling straight to
+    // the global System-field lookup below even when sourceBinding was
+    // meant as "look this up on the item itself" (e.g. a Tab's own
+    // `sourceBinding: "@value"` — the tab's own bare abilities array, per
+    // resolveRepeaterItemValue's own "@value" fix). resolveRepeaterItemValue
+    // returns `undefined` for anything it can't resolve against the item,
+    // which correctly falls through to the unchanged global path below —
+    // this is purely additive, not a behavior change for any Source field
+    // with no itemContext at all.
+    const itemValues = itemContext ? resolveRepeaterItemValue(itemContext.item, component?.sourceBinding) : undefined;
+    // Prefer resolving straight against the System's own field definition
+    // (resolveSystemFieldValues, below — the same direct lookup Toggle's
+    // own Source has always used) over the generic, lossy
+    // resolveSourceBindingValue/systemPreviewData path — see that
+    // function's own comment for the confirmed bug this fixes (a Source
+    // option's own `description` silently discarded upstream, even though
+    // normalizeOptionEntries already knows how to carry it through once it
+    // actually receives it). Falls back to the old path only when the
+    // binding isn't a plain top-level System field key resolveSystemFieldValues
+    // can handle (or systemDefinition isn't loaded yet) — unchanged
+    // behavior for anything that isn't a straightforward Source binding.
+    const resolvedValues =
+      itemValues !== undefined
+        ? itemValues
+        : resolveSystemFieldValues(component?.sourceBinding) ?? resolveSourceBindingValue(component?.sourceBinding);
+    const boundOptions = normalizeOptionEntries(resolvedValues);
     if (boundOptions.length || expectsSource) {
       return addBlank ? ensureLeadingBlankOption(boundOptions) : boundOptions;
     }
@@ -4798,13 +5508,59 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     return addBlank ? ensureLeadingBlankOption([]) : [];
   }
 
+  // A Source binding means specifically "a choices list from the System
+  // record" (Binding/Text vs Source vocabulary — code-conventions.md), so
+  // this resolves DIRECTLY against the System's own field schema
+  // (state.systemDefinition.fields), not through the generic
+  // resolveSourceBindingValue/systemPreviewData machinery every plain
+  // Binding field uses. That machinery is for INSTANCE-data preview
+  // purposes and is lossy for anything richer than a bare display name:
+  // buildSystemPreviewData (workbench/js/lib/component-data.js) reduces
+  // an array-of-choices field down to just each entry's own .name before
+  // this code ever runs — confirmed two real bugs from that, not just
+  // Toggle's own original one (a plain @proficiencies binding always
+  // resolving against that stripped copy meant toggleStateEntryFromRaw
+  // never had a real sourceId to find): a Checkbox/Radio group's own
+  // Source options (Blades in the Dark's Trauma/Armor/Load/Special
+  // Abilities) silently lost each option's own `description` the exact
+  // same way, even after normalizeOptionEntries (component-data.js) was
+  // taught to carry it through — the field it was reading from had
+  // already thrown it away upstream. Used by resolveSelectionOptions
+  // below now too, not just Toggle's own resolveToggleStates. Only a
+  // plain, single-segment field key is supported (e.g.
+  // "specialAbilitiesCutter", not "abilities.strength") — no Source
+  // binding in this suite has ever needed anything nested.
+  function resolveSystemFieldValues(sourceBinding) {
+    const trimmed = typeof sourceBinding === "string" ? sourceBinding.trim() : "";
+    const key = trimmed.startsWith("@") ? trimmed.slice(1).trim() : trimmed;
+    if (!key || key.includes(".")) return null;
+    const fields = state.systemDefinition?.fields;
+    if (!Array.isArray(fields)) return null;
+    const field = fields.find((entry) => entry && entry.key === key);
+    if (!field) return null;
+    if (Array.isArray(field.values) && field.values.length) return field.values;
+    if (Array.isArray(field.children) && field.children.length) return field.children;
+    return null;
+  }
+
+  // Deliberately NOT normalizeOptionEntries — that shared helper collapses
+  // every entry to a bare {value: <derived string>, label} without ever
+  // checking `sourceId`, which discards a Source entry's own canonical
+  // identity (see toggleStateEntryFromRaw's own comment, component-renderers.js).
   function resolveToggleStates(component) {
-    const boundStates = normalizeOptionEntries(resolveSourceBindingValue(component?.statesBinding));
-    if (boundStates.length) {
-      return boundStates.map((entry) => entry.label || entry.value).filter((value) => value != null);
+    let rawList = resolveSystemFieldValues(component?.statesBinding);
+    if (!rawList) {
+      const raw = resolveSourceBindingValue(component?.statesBinding);
+      rawList = Array.isArray(raw) ? raw : raw && typeof raw === "object" ? Object.values(raw) : null;
+    }
+    if (rawList && rawList.length) {
+      const entries = rawList.map(toggleStateEntryFromRaw).filter(Boolean);
+      if (entries.length) return entries;
     }
     if (Array.isArray(component?.states) && component.states.length) {
-      return component.states.map((state) => (state != null ? String(state) : state)).filter((state) => state != null);
+      return component.states
+        .filter((state) => state != null)
+        .map((state) => ({ value: state, label: String(state) }));
     }
     return [];
   }
@@ -5148,11 +5904,18 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       status.show("Character ID already exists. Choose another one.", { type: "warning", timeout: 2400 });
       return false;
     }
+    // Assigned Systems (systemIds — the same array every other Library kind
+    // uses for its own "Assigned Systems" checkboxes in Loom) replaces the
+    // old singular `system` field; a character can have more than one
+    // System assigned, but a freshly created one starts with just the
+    // Template's own schema, same single value the legacy field used to
+    // carry — just in array form now.
+    const initialSchema = state.template?.schema || templateMetadata?.schema || "";
     const draft = {
       id: trimmedId,
       title: trimmedName,
       template: trimmedTemplate,
-      system: state.template?.schema || templateMetadata?.schema || "",
+      systemIds: initialSchema ? [initialSchema] : [],
       data: { name: trimmedName },
       state: { timers: {}, log: [] },
     };
@@ -5540,5 +6303,10 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     markClean: markCharacterClean,
     setMode,
     reloadTemplateIfActive,
+    // Lets workbench.js's setWorkbenchView re-check toolbar-button
+    // visibility (Delete Character) on every tab click, not just the
+    // edit/play ones setMode itself already covers — see
+    // syncCharacterActions' own showDelete comment for the gap this closes.
+    refreshToolbar: syncCharacterActions,
   };
 }

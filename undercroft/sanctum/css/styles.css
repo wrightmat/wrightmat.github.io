@@ -4,7 +4,6 @@
  * Bootstrap can't express directly.
  */
 
-[data-location-json-preview],
 [data-inspector-json] {
   min-height: 6rem;
   white-space: pre-wrap;
