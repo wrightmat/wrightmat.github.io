@@ -1,16 +1,29 @@
-// A `` `macro:`/`encounter:`/`dice:` `` autocomplete dropdown for the plain
+// A `` `macro:`/`encounter:`/`dice:` `` — and now every other Library
+// kind's own `` `kindId:` `` — autocomplete dropdown for the plain
 // <textarea> body editor — same style/mechanics as wiki-link-autocomplete.js
 // (mirror-<div> caret measurement, a positioned list-group dropdown,
 // arrow/Enter/Tab/Escape keyboard nav, mousedown-to-select), just detecting
 // a different in-progress syntax: an unclosed single-backtick code span
-// starting with one of the three recognized prefixes, instead of an
-// unclosed `[[`. Reuses measureCaretPosition from that module rather than a
-// second copy of the same non-trivial measurement technique.
+// starting with one of the recognized prefixes, instead of an unclosed
+// `[[`. Reuses measureCaretPosition from that module rather than a second
+// copy of the same non-trivial measurement technique.
 import { measureCaretPosition } from "./wiki-link-autocomplete.js";
-import { fetchKindEntriesWithIds } from "../../../common/js/lib/content-fetch.js";
+import { fetchKindEntriesWithIds, loadLibraryKinds } from "../../../common/js/lib/content-fetch.js";
 import { QUICK_DICE } from "../../../common/js/lib/widgets/dice-roll.js";
+import { EXCLUDED_KINDS, iconFor } from "./journal-kind-reference.js";
 
-const PREFIX_PATTERN = /^(macro|encounter|dice)\s*:\s*/i;
+// macro/encounter/dice are always recognized, even before the full kind
+// list below has loaded — the three special-cased prefixes this dropdown
+// (and markdown.js's own rendering) already understood before generic kind
+// references existed. Rebuilt once loadLibraryKinds() resolves (see
+// attachCodeBlockAutocomplete below) to also recognize every other kind.
+let PREFIX_PATTERN = /^(macro|encounter|dice)\s*:\s*/i;
+
+function buildPrefixPattern(kindIds) {
+  const extra = (kindIds || []).filter((id) => !EXCLUDED_KINDS.has(id) && id !== "macro" && id !== "encounter" && id !== "dice");
+  const alternation = ["macro", "encounter", "dice", ...extra].join("|");
+  return new RegExp(`^(${alternation})\\s*:\\s*`, "i");
+}
 
 // Detects an in-progress `` `type:...` `` span ending exactly at the
 // cursor — nothing closing it (a "`") and no newline crossed (this suite's
@@ -97,6 +110,28 @@ function diceCandidates(query) {
   }));
 }
 
+// Every kind that isn't macro/encounter/dice — same shape as macroCandidates
+// above, just parameterized on which kind's own saved entries to offer.
+async function genericCandidates(dataManager, kindId, query) {
+  if (!dataManager) return [];
+  const entries = await fetchKindEntriesWithIds(dataManager, kindId).catch(() => []);
+  const q = query.trim().toLowerCase();
+  const seen = new Set();
+  const results = [];
+  entries.forEach(({ id, entity }) => {
+    const name = String(entity?.name || entity?.title || id || "").trim();
+    if (!name || seen.has(name.toLowerCase())) return;
+    if (q && !name.toLowerCase().includes(q)) return;
+    seen.add(name.toLowerCase());
+    results.push({ kind: kindId, label: name, insertText: name });
+  });
+  return results.slice(0, 20);
+}
+
+// macro/monster/npc/dice keep their own specific icons (a bolt, paws, a
+// person, dice pips) even though monster/npc/macro also have a shared
+// journal-kind-reference.js entry — iconFor's own fallback covers every
+// other kind so this map doesn't need one entry per Library kind.
 const KIND_ICON = {
   macro: "tabler:bolt",
   monster: "tabler:paw",
@@ -116,6 +151,17 @@ export function attachCodeBlockAutocomplete(textarea, { dataManager } = {}) {
   dropdown.style.minWidth = "12rem";
   dropdown.style.display = "none";
   document.body.appendChild(dropdown);
+
+  // Fetched once per attach (Repository only ever has the one body
+  // textarea) — until this resolves, PREFIX_PATTERN stays at its
+  // macro/encounter/dice-only default, so typing one of those still works
+  // immediately; every other kind's own prefix becomes recognized the
+  // moment the list loads, with no reload/re-attach needed.
+  void loadLibraryKinds()
+    .then((kinds) => {
+      PREFIX_PATTERN = buildPrefixPattern((kinds || []).map((kind) => kind.id));
+    })
+    .catch(() => {});
 
   let candidates = [];
   let activeIndex = -1;
@@ -145,7 +191,7 @@ export function attachCodeBlockAutocomplete(textarea, { dataManager } = {}) {
       }`;
       const iconSpan = document.createElement("span");
       iconSpan.className = "iconify flex-shrink-0";
-      iconSpan.dataset.icon = KIND_ICON[candidate.kind] || "tabler:file-text";
+      iconSpan.dataset.icon = KIND_ICON[candidate.kind] || iconFor(candidate.kind);
       iconSpan.setAttribute("aria-hidden", "true");
       item.append(iconSpan, document.createTextNode(candidate.label));
       // mousedown+preventDefault (not click) — same reasoning
@@ -227,7 +273,8 @@ export function attachCodeBlockAutocomplete(textarea, { dataManager } = {}) {
     let nextCandidates;
     if (parsed.type === "macro") nextCandidates = await macroCandidates(dataManager, parsed.query);
     else if (parsed.type === "encounter") nextCandidates = await encounterCandidates(dataManager, parsed.query);
-    else nextCandidates = diceCandidates(parsed.query);
+    else if (parsed.type === "dice") nextCandidates = diceCandidates(parsed.query);
+    else nextCandidates = await genericCandidates(dataManager, parsed.type, parsed.query);
     if (token !== requestToken) return; // superseded by a later keystroke
     if (!nextCandidates.length) {
       hide();

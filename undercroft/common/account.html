@@ -178,6 +178,30 @@
                         </div>
                       </div>
                     </div>
+                    <hr class="my-4" />
+                    <div class="row g-4">
+                      <div class="col-12 col-lg-6">
+                        <div class="d-flex flex-column gap-3">
+                          <div>
+                            <h3 class="h5 mb-1">Preferences</h3>
+                            <p class="text-body-secondary mb-0">
+                              Personal touches other tools can pick up automatically — Orrery, for one, uses this as a
+                              new marker's default outline color when you link a character you own.
+                            </p>
+                          </div>
+                          <div class="template-color-control template-color-control--unset" data-favorite-color-control>
+                            <label class="form-label" for="admin-settings-favorite-color">Favorite color</label>
+                            <div class="d-flex align-items-center gap-2">
+                              <div class="template-color-swatch position-relative">
+                                <input class="form-control-color" id="admin-settings-favorite-color" type="color" value="#000000" />
+                                <span class="iconify template-color-unset-icon" data-icon="tabler:x" aria-hidden="true"></span>
+                              </div>
+                              <button class="btn btn-outline-secondary btn-sm" type="button" data-favorite-color-clear disabled>Clear</button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                   <div class="tab-pane fade" id="admin-panel-owned" data-admin-tab-panel="owned" role="tabpanel" hidden>
                     <div class="d-flex flex-column gap-3">

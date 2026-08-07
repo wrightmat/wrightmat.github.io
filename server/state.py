@@ -11,6 +11,13 @@ from typing import Dict, Tuple
 from .config import ConfigLoader, MountConfig, ServerConfig
 
 
+# A burst of clicks from an idle/unwatched group shouldn't grow
+# ServerState.pending_pings unbounded — only the most recent handful ever
+# matter, since pings are meant to fade within a couple of seconds on the
+# client anyway.
+MAX_PINGS_PER_GROUP = 20
+
+
 def _tune_connection(db: sqlite3.Connection) -> None:
     # WAL + NORMAL turns most commits into a log-append instead of a full
     # fsync of the main database file — SQLite's own documented pairing.
@@ -45,6 +52,19 @@ class ServerState:
     # every call (some request paths call it more than once). Cleared in
     # reload() below since root_dir can change there.
     kind_policy_cache: Dict[str, Dict[str, object]] = field(default_factory=dict)
+    # Ephemeral per-group "ping" events (map pointer clicks) — deliberately
+    # NOT persisted to the database or the library_items table at all: a
+    # ping is a transient pointer-broadcast, not a saved record, and routing
+    # it through the normal save-then-poll path would (a) pollute a map's
+    # own undo/edit history with something nobody actually edited and (b)
+    # force a real DB write for something that's meant to vanish in seconds.
+    # Reuses the exact same "own small in-memory dict + dedicated lock,
+    # separate from the broad request-serializing `lock`" shape as
+    # pending_touches above, for the same reason: recording a ping during a
+    # request should never have to wait on (or block) unrelated requests.
+    pending_pings: Dict[str, list] = field(default_factory=dict)
+    pings_lock: threading.Lock = field(default_factory=threading.Lock)
+    ping_seq: int = 0
 
     @classmethod
     def from_loader(cls, loader: ConfigLoader) -> "ServerState":
@@ -92,6 +112,25 @@ class ServerState:
             drained = self.pending_touches
             self.pending_touches = {}
         return drained
+
+    # `data` is the ping's own payload (x, y, by) — opaque to this method,
+    # just stamped with a monotonic seq so _handle_live_stream can tell
+    # which pings a given connection has already sent (same "int watermark"
+    # shape as its own group_log handling, not a modified_at string since
+    # there's no backing row at all here).
+    def record_ping(self, group_id: str, data: dict) -> int:
+        with self.pings_lock:
+            self.ping_seq += 1
+            seq = self.ping_seq
+            bucket = self.pending_pings.setdefault(group_id, [])
+            bucket.append({"seq": seq, **data})
+            if len(bucket) > MAX_PINGS_PER_GROUP:
+                del bucket[: len(bucket) - MAX_PINGS_PER_GROUP]
+            return seq
+
+    def get_ping_bucket(self, group_id: str) -> list:
+        with self.pings_lock:
+            return list(self.pending_pings.get(group_id, []))
 
 
 def configure_logging(level: str) -> None:

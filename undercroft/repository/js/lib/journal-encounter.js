@@ -39,8 +39,10 @@ export function parseEncounterBlock(text) {
 // Case-insensitive exact-name match only — no fuzzy matching exists
 // anywhere in this suite (Combat Tracker's own "Add Combatant" box is just a
 // native <datalist>), and an unmatched name is meant to fall back to
-// Freeform, not guess at a near-miss.
-function findMatch(name, monsters, npcs) {
+// Freeform, not guess at a near-miss. Exported for journal-kind-reference.js's
+// own extractContentReferences, which resolves an `encounter:` block's
+// creature names the exact same way when building the Related panel's list.
+export function findMatch(name, monsters, npcs) {
   const lower = name.trim().toLowerCase();
   const monsterMatch = monsters.find((entry) => (entry.entity?.name || "").trim().toLowerCase() === lower);
   if (monsterMatch) return { kind: "monster", id: monsterMatch.id, payload: monsterMatch.entity || {} };

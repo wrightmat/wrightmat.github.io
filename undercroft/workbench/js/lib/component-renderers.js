@@ -97,7 +97,11 @@ export function resolveContainerColumns(component) {
 export function renderContainerContent(component, ctx) {
   const wrapper = document.createElement("div");
   wrapper.className = "d-flex flex-column gap-3";
-  const fallbackLabel = component.label || component.name || "";
+  // No `|| component.name` fallback — `name` is only the internal layer-panel
+  // identifier set at creation time (COMPONENT_DEFINITIONS.container.defaults.
+  // name), not a display default; falling back to it made clearing the Label
+  // field impossible to actually achieve (it kept showing "Container").
+  const fallbackLabel = component.label || "";
   const labelText = ctx.resolveValue(component, fallbackLabel);
   if (labelText) {
     const heading = document.createElement("div");

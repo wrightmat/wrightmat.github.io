@@ -1,0 +1,115 @@
+{
+  "id": "53f55848-628c-49ed-ac24-a1ccbfcc32eb",
+  "name": "Tidecrown",
+  "baseMap": {
+    "type": "image",
+    "settings": {
+      "tile": {
+        "provider": "OpenStreetMap Standard",
+        "urlTemplate": "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        "attribution": "© OpenStreetMap contributors",
+        "minZoom": 1,
+        "maxZoom": 19,
+        "initialZoom": 2
+      },
+      "image": {
+        "src": "http://wizz.tplinkdns.com:8084/s/w37XwZLkwde2HW6/preview",
+        "width": null,
+        "height": null
+      },
+      "canvas": {
+        "width": 1600,
+        "height": 1000,
+        "background": "#f8f9fa"
+      }
+    },
+    "properties": {}
+  },
+  "view": {
+    "mode": "cartesian",
+    "zoom": 1.75,
+    "center": {
+      "lat": 0,
+      "lng": 0
+    },
+    "pan": {
+      "x": -109,
+      "y": 781
+    }
+  },
+  "initialView": {
+    "zoom": 1,
+    "pan": {
+      "x": 0,
+      "y": 0
+    }
+  },
+  "layers": [
+    {
+      "id": "88b547f1-aca2-49ff-8fe7-58de9c6bab4c",
+      "type": "grid",
+      "name": "Primary Grid Layer",
+      "visible": false,
+      "opacity": 0.35,
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "elements": [],
+      "settings": {
+        "gridType": "square",
+        "cellSize": 30,
+        "lineColor": "#0f172a",
+        "fogOfWar": false,
+        "revealGroupId": "",
+        "fogOpacity": 0.92,
+        "fogPreviewOpacity": 0.6
+      },
+      "properties": {}
+    },
+    {
+      "id": "b4e1e663-b2df-466f-8661-8e7c2a2c5340",
+      "type": "marker",
+      "name": "Marker Layer",
+      "visible": true,
+      "opacity": 1,
+      "position": {
+        "x": 1024,
+        "y": 572
+      },
+      "elements": [
+        {
+          "id": "d465d577-6772-45e0-923c-f8c42c316695",
+          "kind": "marker",
+          "refKind": "character",
+          "refId": "octavian-hoff",
+          "label": "Octavian Hoff",
+          "image": "https://www.dndbeyond.com/avatars/44651/45/1581111423-133639844.jpeg?width=150&height=150&fit=crop&quality=95&auto=webp",
+          "position": {
+            "x": 11,
+            "y": -287
+          },
+          "sizeCells": 1,
+          "outlineColor": "#3f59d9"
+        }
+      ],
+      "settings": {
+        "icon": "",
+        "size": 24,
+        "color": "#0ea5e9",
+        "showLabels": true,
+        "labelSize": 10
+      },
+      "properties": {}
+    }
+  ],
+  "groups": [],
+  "views": [],
+  "properties": {},
+  "measurement": {
+    "scale": null,
+    "unit": ""
+  },
+  "createdAt": "2026-08-07T15:25:48.585Z",
+  "updatedAt": "2026-08-07T17:15:47.263Z"
+}

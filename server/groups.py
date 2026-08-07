@@ -585,6 +585,31 @@ def create_group_log_entry(
     return serialized[0] if serialized else {}
 
 
+# A map "ping" — a transient pointer broadcast (Orrery's click-to-ping tool),
+# never written to group_logs/library_items at all (see
+# ServerState.pending_pings' own comment for why). Reuses the exact same
+# membership check create_group_log_entry does via _resolve_group_access —
+# only an actual member (or the owner/admin) of a real campaign group can
+# post one, same as posting to the group's own log.
+def record_group_ping(
+    state: ServerState,
+    group_id: Optional[str],
+    user: Optional[User],
+    *,
+    share_token: Optional[str] = None,
+    position: Optional[Dict[str, Any]] = None,
+) -> None:
+    # `position` is opaque here — {x,y} for an image/canvas base map, {lat,lng}
+    # for a tile one, same as a marker element's own `.position` (see
+    # orrery/js/lib/map-viewer.js's markerPositionToLocalPixel) — stored and
+    # relayed through the SSE stream as-is, never interpreted server-side.
+    if not isinstance(position, dict) or not position:
+        raise AuthError("Ping requires a position")
+    row, _ = _resolve_group_access(state, group_id, user, share_token=share_token)
+    by = (user.username if user else "") or "A visitor"
+    state.record_ping(row["id"], {"position": position, "by": by})
+
+
 def list_character_groups(state: ServerState, user: Optional[User], character_id: str) -> Dict[str, Any]:
     if not user:
         raise AuthError("Authentication required")

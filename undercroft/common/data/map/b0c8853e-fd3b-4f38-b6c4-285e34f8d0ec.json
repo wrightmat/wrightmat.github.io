@@ -1,0 +1,71 @@
+{
+  "id": "b0c8853e-fd3b-4f38-b6c4-285e34f8d0ec",
+  "name": "Test Map",
+  "baseMap": {
+    "type": "image",
+    "settings": {
+      "tile": {
+        "provider": "OpenStreetMap Standard",
+        "urlTemplate": "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        "attribution": "© OpenStreetMap contributors",
+        "minZoom": 1,
+        "maxZoom": 19,
+        "initialZoom": 2
+      },
+      "image": {
+        "src": "https://pro2-bar-s3-cdn-cf4.myportfolio.com/b6995f0dd8973d41d32271aa7bc4c60a/f9d5a70b25d398db755863b1_rw_1200.jpg?h=a805161f87ed709ff183f7834fd5a8e1",
+        "width": null,
+        "height": null
+      },
+      "canvas": {
+        "width": 1600,
+        "height": 1000,
+        "background": "#f8f9fa"
+      }
+    },
+    "properties": {}
+  },
+  "view": {
+    "mode": "cartesian",
+    "zoom": 1.25,
+    "center": {
+      "lat": 0,
+      "lng": 0
+    },
+    "pan": {
+      "x": 109,
+      "y": -143
+    }
+  },
+  "layers": [
+    {
+      "id": "69a671a1-9080-4ade-b726-5ca406ca6e27",
+      "type": "grid",
+      "name": "Grid Layer",
+      "visible": true,
+      "opacity": 0.35,
+      "position": {
+        "x": 8,
+        "y": 8
+      },
+      "elements": [],
+      "settings": {
+        "gridType": "square",
+        "cellSize": 38.5,
+        "lineColor": "#0f172a",
+        "fogOfWar": false,
+        "revealGroupId": ""
+      },
+      "properties": {}
+    }
+  ],
+  "groups": [],
+  "views": [],
+  "properties": {},
+  "measurement": {
+    "scale": 5,
+    "unit": "ft"
+  },
+  "createdAt": "2026-08-07T09:47:00.878Z",
+  "updatedAt": "2026-08-07T11:15:33.668Z"
+}

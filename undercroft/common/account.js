@@ -45,6 +45,9 @@ const elements = {
   passwordForm: document.querySelector("[data-admin-password-form]"),
   passwordError: document.querySelector("[data-admin-password-error]"),
   passwordConfirm: document.getElementById("admin-settings-password-confirm"),
+  favoriteColorControl: document.querySelector("[data-favorite-color-control]"),
+  favoriteColorInput: document.getElementById("admin-settings-favorite-color"),
+  favoriteColorClear: document.querySelector("[data-favorite-color-clear]"),
 };
 
 const TIER_OPTIONS = [
@@ -213,6 +216,43 @@ function populateSettings({ force = false } = {}) {
       passwordField.value = "";
     }
   }
+  if (elements.favoriteColorInput && (force || document.activeElement !== elements.favoriteColorInput)) {
+    void loadFavoriteColor();
+  }
+}
+
+// No default — deliberately NOT auto-saved or shown as "already chosen"
+// the way an earlier version of this did. .template-color-control--unset
+// (common/css/shell.css, the same checkerboard-X treatment Press/Workbench's
+// own color-picker.js uses for "nothing set") is the ONLY thing that stands
+// in for a value here; the user has to actually pick a color for one to
+// exist at all. Any tool can read the real value back the same way
+// (dataManager.getUserSettings() → .favoriteColor) — no dedicated endpoint,
+// just another key in the same general-purpose settings blob
+// dashboardLayout/dashboardBackground/etc. already share (server/auth.py's
+// users.settings column).
+function setFavoriteColorUnset(isUnset) {
+  elements.favoriteColorControl?.classList.toggle("template-color-control--unset", isUnset);
+  if (elements.favoriteColorClear) {
+    elements.favoriteColorClear.disabled = isUnset;
+  }
+}
+
+async function loadFavoriteColor() {
+  if (!elements.favoriteColorInput || !dataManager.isAuthenticated()) {
+    return;
+  }
+  try {
+    const settings = await dataManager.getUserSettings();
+    if (typeof settings?.favoriteColor === "string" && settings.favoriteColor) {
+      elements.favoriteColorInput.value = settings.favoriteColor;
+      setFavoriteColorUnset(false);
+      return;
+    }
+  } catch (error) {
+    // Falls through to the unset state below either way.
+  }
+  setFavoriteColorUnset(true);
 }
 
 function formatTier(tier) {
@@ -841,6 +881,40 @@ if (Array.isArray(elements.ownedSortHeaders)) {
 }
 
 updateOwnedSortIndicators();
+
+if (elements.favoriteColorInput) {
+  elements.favoriteColorInput.addEventListener("change", async () => {
+    if (!dataManager.isAuthenticated()) {
+      return;
+    }
+    setFavoriteColorUnset(false);
+    try {
+      await dataManager.saveUserSettings({ favoriteColor: elements.favoriteColorInput.value });
+      status?.show("Favorite color saved", { type: "success", timeout: 1500 });
+    } catch (error) {
+      status?.show(error.message || "Unable to save your favorite color.", { type: "error" });
+    }
+  });
+}
+
+if (elements.favoriteColorClear) {
+  elements.favoriteColorClear.addEventListener("click", async () => {
+    if (!dataManager.isAuthenticated()) {
+      return;
+    }
+    setFavoriteColorUnset(true);
+    try {
+      // "" (not deleting the key) — dataManager.saveUserSettings is a
+      // merge-patch, and the read side above already treats a falsy
+      // favoriteColor exactly like a missing one, so this is a real,
+      // explicit "the user chose to clear this," not silent data loss.
+      await dataManager.saveUserSettings({ favoriteColor: "" });
+      status?.show("Favorite color cleared", { type: "info", timeout: 1500 });
+    } catch (error) {
+      status?.show(error.message || "Unable to clear your favorite color.", { type: "error" });
+    }
+  });
+}
 
 if (elements.emailForm) {
   elements.emailForm.addEventListener("submit", async (event) => {

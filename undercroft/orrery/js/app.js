@@ -1,20 +1,29 @@
 import { bindCollapsibleToggle } from "../../common/js/lib/collapsible.js";
 import { initAppShell } from "../../common/js/lib/app-shell.js";
-import { createJsonDataPanel, createIconButton, createToolbarButtonGroup, createCompactField, createButtonCheckGroup } from "../../common/js/lib/ui-components.js";
+import { createJsonDataPanel, createIconButton, createToolbarButtonGroup, createCompactField, createButtonCheckGroup, createCheckField, createIconPickerField, createFormFloatingField, createEmptyStateCard } from "../../common/js/lib/ui-components.js";
+import { createFieldRow, createHalfWidthNumberField, createCollapsibleSection } from "../../common/js/lib/inspector-fields.js";
+import { exportRecordAsJson } from "../../common/js/lib/generator-kit.js";
+import { watchMapForChanges } from "../../common/js/lib/map-live-sync.js";
 import { initAuthControls } from "../../common/js/lib/auth-ui.js";
-import { refreshTooltips } from "../../common/js/lib/tooltips.js";
+import { refreshTooltips, disposeTooltips } from "../../common/js/lib/tooltips.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
 import { fetchKindEntriesWithIds, loadLibraryKinds } from "../../common/js/lib/content-fetch.js";
+import { createTokenImageField } from "../../common/js/lib/token-picker.js";
 import { allowsDelete, refreshOwnershipCatalog, confirmDelete } from "../../common/js/lib/ownership.js";
 import {
   createGroup,
   createGridCell,
   createLayer,
+  createLayerSettings,
   createMapModel,
   createMarkerElement,
+  createVectorPathElement,
+  createVectorShapeElement,
+  AOE_SHAPE_TYPES,
   createView,
   updateBaseMapType,
   updateMapTimestamp,
+  resolveInitialView,
 } from "./lib/map-model.js";
 import { BaseMapManager } from "./lib/base-maps.js";
 // The shared map-rendering core (also used by the Dashboard's Map widget —
@@ -38,7 +47,18 @@ import {
   getLayerSizeScale,
   getLayerRenderPosition,
   getGridLayoutScale as sharedGetGridLayoutScale,
-  getGridOffset as sharedGetGridOffset,
+  getGridBackgroundPosition as sharedGetGridBackgroundPosition,
+  getGridOffset,
+  getGridHitTestScale,
+  markerPositionToLocalPixel,
+  localPixelToMarkerPosition,
+  getGridCoordFromPoint,
+  getGridCellPixelRect,
+  getGridCellSize,
+  resolveClickPosition,
+  createPingMarker,
+  getMarkerLayerOffset,
+  renderShapeElement,
 } from "./lib/map-viewer.js";
 
 const state = {
@@ -81,6 +101,44 @@ const dataManager = auth.dataManager;
 // access gate (owner-or-admin, or a local/anonymous entry) — same
 // rule and shape as Sanctum's settingCatalog/locationCatalog.
 let mapCatalog = new Map();
+
+// Whether the Draw tool (setupDrawTool) is currently armed — module-scope
+// (not local to setupDrawTool) because renderLayerOverlays' own
+// onVectorPathClick wiring needs to read it too: a drawn path must stay
+// click-through while this is true, so a new stroke can start anywhere,
+// including on top of an existing one.
+let drawModeActive = false;
+
+// Same reasoning as drawModeActive just above — a placed AoE shape must
+// stay click-through while this is true, so a new one can be dropped
+// anywhere, including on top of an existing shape/path.
+let shapeModeActive = false;
+
+// Selecting a Group makes its target grid layer directly clickable —
+// single click adds one cell, click-and-drag paints a sweep — with no
+// separate toggle needed, same immediacy the OLD "select a layer, click a
+// cell" flow already had before Groups existed as their own selection kind.
+// paintTargetLayerId remembers the GM's own "Paint on layer" pick for maps
+// with more than one grid layer and no Fog-of-War link to fall back on
+// (resolvePaintTargetLayer's own priority order) — persists across
+// switching between groups on purpose, not reset on every selection change.
+// paintDragBefore is the pre-gesture snapshot a whole drag batches into ONE
+// undo entry, same "commit once at drag-end" pattern shape/marker dragging
+// already use.
+let paintTargetLayerId = null;
+let paintDragBefore = null;
+
+// Set by showMapEmptyState/hideMapEmptyState — updateMapToolbarState's own
+// Delete gate (mapAllowsDelete) checks THIS too, not just ownership.
+// Without it, an admin account's own "admins can delete anything" bypass in
+// ownerOrAdminAllows made Delete re-enable itself the instant
+// populateMapSelect (called right after showMapEmptyState at startup) ran
+// updateMapToolbarState again — the exact "two mechanisms fighting over one
+// element's disabled state" bug this suite keeps tripping over, just for
+// an admin session specifically (any other tier correctly saw the
+// placeholder's random, never-saved id fail ownership and stayed
+// disabled, which is why this was easy to miss testing as a non-admin).
+let mapIsLoaded = false;
 
 const mapContainer = document.querySelector("#orrery-map");
 const baseMapManager = new BaseMapManager({
@@ -128,11 +186,8 @@ createToolbarButtonGroup([
   { action: "undo", label: "Undo", attrs: { "data-action": "undo-layout" } },
   { action: "redo", label: "Redo", attrs: { "data-action": "redo-layout" } },
   { action: "new", icon: "tabler:map-plus", label: "New Map", attrs: { "data-action": "new-map" } },
-  // Import/Export aren't wired to any handler yet (confirmed: no
-  // `data-action` delegation or per-button listener exists anywhere in this
-  // file today) — preserved exactly as inert placeholders, same as before.
-  { action: "import", icon: "tabler:upload", label: "Import", attrs: { "data-action": "import-layout" } },
   { action: "save", label: "Save Map", disabled: true, attrs: { "data-action": "save-layout" } },
+  { action: "import", icon: "tabler:upload", label: "Import", attrs: { "data-action": "import-layout" } },
   { action: "export", icon: "tabler:download", label: "Export", attrs: { "data-action": "export-layout" } },
   { action: "delete", label: "Delete Map", disabled: true, attrs: { "data-action": "delete-map" } },
 ]).forEach((button) => document.querySelector("[data-map-toolbar-mount]")?.appendChild(button));
@@ -237,6 +292,10 @@ mountField(
     dataAttr: "data-map-select", helpTopic: "orrery.maps",
   })
 );
+// Same icon+text+tooltip toggle shape Press's own align-x/align-y groups
+// use (createButtonCheckGroup already supports it natively) — was plain
+// text-only buttons before, the one field in this panel not matching the
+// suite's standard icon-toggle convention.
 mountField(
   "base-map-type",
   createButtonCheckGroup({
@@ -244,20 +303,137 @@ mountField(
     name: "base-map-type",
     dataAttr: "data-base-map-option",
     options: [
-      { id: "base-map-tile", value: "tile", text: "Tile" },
-      { id: "base-map-image", value: "image", text: "Image" },
-      { id: "base-map-canvas", value: "canvas", text: "Canvas" },
+      { id: "base-map-tile", value: "tile", icon: "tabler:map", text: "Tile", tooltip: "Tile map (Leaflet-based)" },
+      { id: "base-map-image", value: "image", icon: "tabler:photo", text: "Image", tooltip: "Uploaded image" },
+      { id: "base-map-canvas", value: "canvas", icon: "tabler:artboard", text: "Canvas", tooltip: "Blank canvas" },
     ],
   })
 );
-mountField("base-map-image-src", createCompactField({ type: "text", id: "base-map-image-src", label: "Image URL", labelClass: "form-label mb-0", dataAttr: "data-base-map-image-src" }));
+// Primary/standalone right-pane fields all use the floating-label shape
+// (createFormFloatingField) — the same convention Workbench's own inspector
+// uses for a single full-width field — not createCompactField, which is
+// reserved for fields condensed into a dense paired row (Image Width/Height
+// just below).
+mountField("base-map-image-src", createFormFloatingField({ type: "text", id: "base-map-image-src", label: "Image URL", dataAttr: "data-base-map-image-src", placeholder: " " }));
+mountField(
+  "map-name",
+  createFormFloatingField({
+    type: "text", id: "orreryMapName", label: "Map Name",
+    dataAttr: "data-map-name", placeholder: "Map name",
+  })
+);
+// One scale/unit for the whole map (not per-grid-layer — a map's grid
+// squares always represent the same real-world distance no matter which
+// layer happens to be selected). Deliberately no default value stamped in
+// here — see createMapModel's own comment; the Measure tool checks both are
+// actually set and disables itself otherwise, rather than silently
+// measuring against an invented number.
+mountField(
+  "map-measurement",
+  createFieldRow(
+    [
+      createCompactField({ type: "number", id: "map-measurement-scale", label: "Scale per cell", dataAttr: "data-map-measurement-scale", min: 0, step: 1 }),
+      createCompactField({ type: "text", id: "map-measurement-unit", label: "Scale unit", dataAttr: "data-map-measurement-unit" }),
+    ],
+    { columns: 2 }
+  )
+);
+// The view a map ALWAYS opens to (see resolveInitialView, map-model.js) —
+// unlike Scale per cell/unit just above, these DO ship a real default (1 /
+// 0 / 0) rather than starting unset, matching createMapModel's own
+// initialView default exactly, so a brand-new map's fields already show
+// the values it'll actually open at.
+// Position X/Y only means anything for image/canvas maps — a tile map's
+// view is addressed by center lat/lng + zoom (TileBaseMap.setView never
+// even reads pan), so Position X/Y is currently a true no-op there.
+// Confirmed as the actual cause of "the Initial X/Y settings don't seem to
+// do anything": on a tile map, they genuinely don't yet. Hiding them for
+// that type (renderBaseMapSettings toggles .orrery-initial-position-field,
+// same "show/hide by baseMap.type" convention data-base-map-settings
+// already uses just above) is honest about the current limitation instead
+// of leaving two fields that quietly do nothing. Initial Zoom stays
+// visible/functional for every type.
+const initialViewRow = createFieldRow(
+  [
+    createCompactField({ type: "number", id: "map-initial-zoom", label: "Initial Zoom", dataAttr: "data-map-initial-zoom", min: 0.1, step: 0.1 }),
+    createCompactField({ type: "number", id: "map-initial-position-x", label: "Initial Position X", dataAttr: "data-map-initial-position-x", step: 1 }),
+    createCompactField({ type: "number", id: "map-initial-position-y", label: "Initial Position Y", dataAttr: "data-map-initial-position-y", step: 1 }),
+  ],
+  { columns: 3 }
+);
+Array.from(initialViewRow.children)
+  .slice(1)
+  .forEach((col) => col.classList.add("orrery-initial-position-field"));
+mountField("map-initial-view", initialViewRow);
+const tileProviderField = createFormFloatingField({
+  type: "text", id: "base-map-tile-provider", label: "Tile Provider", placeholder: " ",
+  value: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+});
+tileProviderField.classList.add("orrery-provider-input");
+mountField("base-map-tile-provider", tileProviderField);
+// Quick-pick options carry their tile URL/zoom payload as dataset attrs read
+// by the change handler below (~L2650) — createFormFloatingField's `options`
+// param only knows {value, label}, so the payload is stamped onto the built
+// <option> elements afterward rather than hand-writing this select in HTML.
+const TILE_QUICK_PICKS = {
+  "forgotten-realms": { url: "https://loremaps.github.io/LoreMaps-Faerun-Tiles/Tiles/{z}/{x}/{y}.png", maxZoom: "6", initialZoom: "3" },
+  eberron: { url: "https://eberronmap.johnarcadian.com/worldbin/eberron/{z}/{x}/{y}.jpg", maxZoom: "7", initialZoom: "2.75" },
+  sharn: { url: "https://eberronmap.johnarcadian.com/worldbin/sharncityoftowers/{z}/{x}/{y}.jpg", maxZoom: "6", initialZoom: "2" },
+  "real-world": { url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", maxZoom: "19", initialZoom: "2" },
+};
+const tileQuickPickField = createFormFloatingField({
+  type: "select", id: "base-map-tile-quick-pick", label: "Quick picks",
+  dataAttr: "data-base-map-tile-quick-pick",
+  options: [
+    { value: "", label: "Select a tile provider" },
+    { value: "forgotten-realms", label: "Forgotten Realms" },
+    { value: "eberron", label: "Eberron" },
+    { value: "sharn", label: "Sharn: City of Towers" },
+    { value: "real-world", label: "Real World" },
+  ],
+});
+tileQuickPickField.querySelectorAll("option").forEach((option) => {
+  const preset = TILE_QUICK_PICKS[option.value];
+  if (!preset) return;
+  option.dataset.tileUrl = preset.url;
+  option.dataset.tileMaxZoom = preset.maxZoom;
+  option.dataset.tileInitialZoom = preset.initialZoom;
+});
+mountField("base-map-tile-quick-pick", tileQuickPickField);
+// Free text, not type="number" — a number input rejects "%" at the browser
+// level, and these need to accept blank (native size), a literal pixel
+// count, or a "NN%" scale-of-native value (see base-maps.js's own
+// applyImageDimensions/resolveImageDimension for how each is resolved).
+mountField(
+  "base-map-image-size",
+  createFieldRow(
+    [
+      createCompactField({ type: "text", id: "base-map-image-width", label: "Width", dataAttr: "data-base-map-image-width", placeholder: "Native, 150%, or 1200" }),
+      createCompactField({ type: "text", id: "base-map-image-height", label: "Height", dataAttr: "data-base-map-image-height", placeholder: "Native, 150%, or 800" }),
+    ],
+    { columns: 2 }
+  )
+);
+mountField(
+  "base-map-canvas-background",
+  createFormFloatingField({
+    type: "color", id: "base-map-canvas-background", label: "Canvas Background", dataAttr: "data-base-map-canvas-background",
+  })
+);
 
 const elements = {
   mapSelect: document.querySelector("[data-map-select]"),
   mapNameInput: document.querySelector("[data-map-name]"),
+  measurementScale: document.querySelector("[data-map-measurement-scale]"),
+  measurementUnit: document.querySelector("[data-map-measurement-unit]"),
+  initialZoom: document.querySelector("[data-map-initial-zoom]"),
+  initialPositionX: document.querySelector("[data-map-initial-position-x]"),
+  initialPositionY: document.querySelector("[data-map-initial-position-y]"),
   newMapButton: document.querySelector('[data-action="new-map"]'),
   saveMapButton: document.querySelector('[data-action="save-layout"]'),
   deleteMapButton: document.querySelector('[data-action="delete-map"]'),
+  importButton: document.querySelector('[data-action="import-layout"]'),
+  exportButton: document.querySelector('[data-action="export-layout"]'),
   mapMain: document.querySelector("[data-map-main]"),
   baseMapRadios: Array.from(document.querySelectorAll("[data-base-map-option]")),
   baseMapSettings: Array.from(document.querySelectorAll("[data-base-map-settings]")),
@@ -286,15 +462,37 @@ const elements = {
   viewAdd: document.querySelector("[data-add-view]"),
   viewList: document.querySelector("[data-view-list]"),
   selectionTitle: document.querySelector("[data-selection-title]"),
-  selectionType: document.querySelector("[data-selection-type]"),
+  selectionTypeIcon: document.querySelector("[data-selection-type-icon]"),
   selectionDetails: document.querySelector("[data-selection-details]"),
+  selectionToolbar: document.querySelector("[data-selection-toolbar-mount]"),
   selectionEditor: document.querySelector("[data-selection-editor]"),
   zoomIn: document.querySelector("[data-zoom-in]"),
   zoomOut: document.querySelector("[data-zoom-out]"),
   zoomReset: document.querySelector("[data-zoom-reset]"),
+  measureToggle: document.querySelector("[data-measure-toggle]"),
+  // Tooltip trigger lives on this wrapping span, not the button itself — a
+  // native `disabled` button doesn't reliably fire the hover/focus events
+  // Bootstrap's tooltip listens for in every browser, so a tooltip attached
+  // directly to the button can silently never show while it's disabled
+  // (confirmed: exactly what happened here). Standard Bootstrap pattern for
+  // "explain why this is disabled" — see their own docs' disabled-button
+  // tooltip example.
+  measureToggleWrap: document.querySelector("[data-measure-toggle-wrap]"),
+  measureReadout: document.querySelector("[data-measure-readout]"),
+  drawToggle: document.querySelector("[data-draw-toggle]"),
+  drawToggleWrap: document.querySelector("[data-draw-toggle-wrap]"),
+  shapeToggle: document.querySelector("[data-shape-toggle]"),
+  shapeToggleWrap: document.querySelector("[data-shape-toggle-wrap]"),
+  shapeType: document.querySelector("[data-shape-type]"),
+  shapeReadout: document.querySelector("[data-shape-readout]"),
+  pingToggle: document.querySelector("[data-ping-toggle]"),
+  pingToggleWrap: document.querySelector("[data-ping-toggle-wrap]"),
   viewToggle: document.querySelector("[data-view-toggle]"),
   viewDetails: document.querySelector("[data-view-details]"),
   viewPanel: document.querySelector("[data-view-panel]"),
+  mapEmptyState: document.querySelector("[data-map-empty-state]"),
+  mapPropertiesEmptyState: document.querySelector("[data-map-properties-empty-state]"),
+  mapPropertiesWrapper: document.querySelector("[data-map-properties-wrapper]"),
   viewHandle: document.querySelector("[data-view-handle]"),
   viewMode: document.querySelector("[data-view-mode]"),
   viewZoom: document.querySelector("[data-view-zoom]"),
@@ -349,18 +547,20 @@ const LAYER_SETTINGS_SCHEMA = {
         { value: "hex", label: "Hex" },
       ],
     },
-    { key: "cellSize", label: "Cell size", type: "number", min: 5, step: 5 },
+    { key: "cellSize", label: "Cell size", type: "number", min: 1, step: 1 },
     { key: "lineColor", label: "Line color", type: "color" },
   ],
-  raster: [
-    { key: "src", label: "Image URL", type: "text" },
-    { key: "width", label: "Width", type: "number", min: 50, step: 10 },
-    { key: "height", label: "Height", type: "number", min: 50, step: 10 },
-  ],
+  // Width/Height aren't schema-driven — they need the free-text "blank,
+  // NN%, or px" handling createDimensionField provides (see
+  // renderLayerSelectionEditor's own raster branch), not
+  // buildLayerSettingField's plain numeric field.
+  raster: [{ key: "src", label: "Image URL", type: "text" }],
   marker: [
     { key: "icon", label: "Icon", type: "text" },
     { key: "size", label: "Size", type: "number", min: 2, step: 1 },
     { key: "color", label: "Color", type: "color" },
+    { key: "outlineColor", label: "Outline color", type: "color" },
+    { key: "outlineWidth", label: "Outline width", type: "number", min: 0, step: 1 },
   ],
 };
 
@@ -373,7 +573,7 @@ const VIEW_TIER_OPTIONS = [
 ];
 const VIEW_TIER_VALUES = new Set(VIEW_TIER_OPTIONS.map((option) => option.value));
 
-bindCollapsibleToggle(elements.baseMapToggle, elements.baseMapPanel, {
+const setBaseMapCollapsed = bindCollapsibleToggle(elements.baseMapToggle, elements.baseMapPanel, {
   collapsed: false,
   expandLabel: "Expand base map",
   collapseLabel: "Collapse base map",
@@ -384,6 +584,18 @@ const setSelectionCollapsed = bindCollapsibleToggle(elements.selectionToggle, el
   expandLabel: "Expand selection",
   collapseLabel: "Collapse selection",
 });
+
+// Map Properties and Selection share one "what's the GM focused on right
+// now" spotlight — expanding one collapses the other, rather than letting
+// both sit open (or both collapsed) at once. `selectionExpanded` drives
+// both: true when a layer/group/view/marker/grid-cells selection is active
+// (Selection open, Map Properties closed), false when there's nothing
+// selected (a freshly loaded/new map — Map Properties open, Selection
+// closed).
+function setPanelFocus(selectionExpanded) {
+  setSelectionCollapsed(!selectionExpanded);
+  setBaseMapCollapsed(selectionExpanded);
+}
 
 document.querySelector("[data-json-mount]")?.appendChild(jsonDataPanel.section);
 
@@ -414,6 +626,76 @@ function normalizeView(view, { layerIds = [], groupIds = [] } = {}) {
   };
 }
 
+// Shown at page load and never since — every real load path (New Map,
+// picking a saved map, an undo/redo landing on real map data, a
+// spotlighted ?map= link) funnels through applyMapSnapshot, which calls
+// hideMapEmptyState() unconditionally. There's still a harmless, never-
+// rendered createMapModel() sitting in state.map underneath this the whole
+// time (avoids having to make every single one of this file's many
+// state.map.* reads null-safe) — this overlay's only job is making sure
+// nobody ever SEES that placeholder or the raw tile map it'd otherwise
+// mount, until they've actually picked or created something.
+// Add Layer/Add Group/Add View all mutate state.map directly with no
+// selection step first (unlike every other mutating action, which needs
+// something already selected/loaded to act on) — the only thing gating
+// them is a real map existing to add to at all, so they toggle on exactly
+// the same "is a real map loaded" signal the empty-state canvas itself
+// uses, not a separate flag.
+function setMapActionsEnabled(enabled) {
+  elements.layerButtons.forEach((button) => {
+    button.disabled = !enabled;
+  });
+  if (elements.groupAdd) elements.groupAdd.disabled = !enabled;
+  if (elements.viewAdd) elements.viewAdd.disabled = !enabled;
+  // Import/Export both act on state.map directly with no map-existence
+  // check of their own (same "nothing gates them but a real map being
+  // loaded" reasoning as Add Layer/Group/View above) — Export would
+  // otherwise happily dump the harmless placeholder createMapModel() as
+  // if it were real map data, and Import would silently overwrite it
+  // instead of visibly failing.
+  if (elements.importButton) elements.importButton.disabled = !enabled;
+  if (elements.exportButton) elements.exportButton.disabled = !enabled;
+  // Delete has its own, more specific gate (mapAllowsDelete — ownership,
+  // not just "is a map loaded"), reapplied by updateMapToolbarState once a
+  // real map is actually loaded — only force it OFF here when there's no
+  // map to even consider deleting; never force it ON and fight that check.
+  if (!enabled && elements.deleteMapButton) {
+    elements.deleteMapButton.disabled = true;
+  }
+}
+
+function showMapEmptyState() {
+  mapIsLoaded = false;
+  elements.mapEmptyState?.classList.remove("d-none");
+  elements.viewPanel?.classList.add("d-none");
+  // Map Properties otherwise showed every field (Name, Base Map settings,
+  // Measurement, Initial View) sitting there blank/at-default with no map
+  // to actually belong to — confusing, since a blank Name field or a
+  // default Tile/OSM radio reads as "this is the map's real state," not
+  // "there is no map." Swapped for a single small line of static text
+  // (data-map-properties-empty-state, right in the HTML — no card/icon,
+  // unlike the canvas's own empty state, since this is a small aside under
+  // an existing section header, not the page's main empty-canvas moment).
+  // Toggles the OUTER data-map-properties-wrapper, not data-base-map-panel
+  // itself —
+  // that inner panel's own d-none/hidden is already owned by the Map
+  // Properties collapse toggle button (setCollapsibleState), and fighting
+  // over the same element's visibility state is exactly the kind of bug
+  // this suite keeps tripping over.
+  elements.mapPropertiesWrapper?.classList.add("d-none");
+  elements.mapPropertiesEmptyState?.classList.remove("d-none");
+  setMapActionsEnabled(false);
+}
+
+function hideMapEmptyState() {
+  mapIsLoaded = true;
+  elements.mapEmptyState?.classList.add("d-none");
+  elements.viewPanel?.classList.remove("d-none");
+  elements.mapPropertiesWrapper?.classList.remove("d-none");
+  elements.mapPropertiesEmptyState?.classList.add("d-none");
+  setMapActionsEnabled(true);
+}
+
 function applyMapSnapshot(snapshot) {
   if (!snapshot) {
     return;
@@ -422,19 +704,68 @@ function applyMapSnapshot(snapshot) {
   if (!state.map.views) {
     state.map.views = [];
   }
+  // Backward-compatible with maps saved before the Measure tool's scale/unit
+  // moved to the map level (see createMapModel's own comment) — an older
+  // saved map just has no measurement configured yet, same as a brand-new
+  // one, not a crash.
+  if (!state.map.measurement) {
+    state.map.measurement = { scale: null, unit: "" };
+  }
   state.map.views = state.map.views.map((view) =>
     normalizeView(view, {
       layerIds: state.map.layers?.map((layer) => layer.id) || [],
       groupIds: state.map.groups?.map((group) => group.id) || [],
     }),
   );
+  // Backward-compatible with maps saved before Initial Zoom/Position
+  // existed — gives the new Map Properties fields something concrete to
+  // read/edit (resolveInitialView below tolerates a missing initialView
+  // fine either way).
+  if (!state.map.initialView) {
+    state.map.initialView = { zoom: 1, pan: { x: 0, y: 0 } };
+  }
+  // Backward-compatible with layers saved before a settings key existed
+  // (e.g. Marker's outlineWidth/outlineColor/showLabels) — a merge, not a
+  // replace, so anything the GM already configured is untouched; this is
+  // what makes "the input shows blank instead of the real 2px default"
+  // impossible going forward, for this or any future new layer setting,
+  // rather than special-casing each one's own field-building code to guess
+  // a fallback the underlying data never actually had.
+  (state.map.layers || []).forEach((layer) => {
+    layer.settings = { ...createLayerSettings(layer.type), ...(layer.settings || {}) };
+  });
   state.selection = { kind: null, id: null, layerId: null, cells: [], anchor: null };
+  hideMapEmptyState();
+  // Always opens at the map's OWN configured Initial Zoom/Position, never
+  // wherever a previous editing session's camera happened to be left —
+  // state.map.view keeps live-syncing during THIS session same as before
+  // (see onViewChange), so Reset/the floating view details panel keep
+  // working exactly as before; only what a FRESH load starts at changes.
+  state.map.view = resolveInitialView(state.map);
   baseMapManager.setBaseMap(state.map.baseMap, state.map.view);
   if (elements.mapNameInput) {
     elements.mapNameInput.value = state.map.name || "";
   }
+  if (elements.measurementScale) {
+    elements.measurementScale.value = state.map.measurement.scale ?? "";
+  }
+  if (elements.measurementUnit) {
+    elements.measurementUnit.value = state.map.measurement.unit || "";
+  }
+  if (elements.initialZoom) {
+    elements.initialZoom.value = state.map.initialView.zoom;
+  }
+  if (elements.initialPositionX) {
+    elements.initialPositionX.value = state.map.initialView.pan.x;
+  }
+  if (elements.initialPositionY) {
+    elements.initialPositionY.value = state.map.initialView.pan.y;
+  }
+  updateMeasureAvailability();
+  updateDrawAvailability();
+  updateShapeAvailability();
   renderAll();
-  setSelectionCollapsed(true);
+  setPanelFocus(false);
 }
 
 // Owner-or-admin, or a local/anonymous entry — same rule as Sanctum's
@@ -480,6 +811,102 @@ function getVisibleLayerIds() {
   return computeVisibleLayerIds(state.map, getEffectiveViewerTier(), currentUserHasFullMapAccess());
 }
 
+// Snaps a marker's dropped/placed position to the nearest cell center of
+// the map's first visible grid layer, matching how every major VTT places
+// tokens by default. No-op (returns position unchanged) when the map has no
+// grid layer. `markerLayer` is the marker's OWN layer (both call sites
+// already have it) — required to correctly convert between coordinate
+// frames, see below.
+//
+// Must subtract/re-add the grid layer's own position offset around the
+// coord lookup — createGridLayerElement's own click-to-select hit test does
+// the same subtraction (see its own pointerdown handler in
+// lib/map-viewer.js) before calling getGridCoordFromPoint, since that
+// function (and getGridCellPixelRect) both work in "pixels from the grid's
+// OWN configured origin," not "pixels from the container's corner."
+//
+// `position` (and therefore markerPositionToLocalPixel(position)) is
+// relative to the MARKER layer's own pan offset, not the container's true
+// corner (see getMarkerElementPixelPosition's own "offset.x + local.x" —
+// the marker layer's offset gets added back at RENDER time, meaning
+// whatever's stored here has to exclude it). The grid math below works in
+// true container-relative space (matching getGridOffset's own meaning), so
+// the marker layer's own offset has to be added back in before doing that
+// math, and subtracted back out before returning — confirmed as a real,
+// consistent bug before this fix: any marker layer with a non-zero
+// Position X/Y of its own (dragging the WHOLE layer, not an individual
+// marker) snapped every marker on it to the wrong cell, off by however far
+// the marker layer itself had been panned. This is a DIFFERENT offset than
+// the earlier zoom-scale fix (getGridHitTestScale) — that one was about
+// zoom, this one is about mixing two layers' own, unrelated pan offsets
+// into one coordinate.
+function snapMarkerPositionToGrid(position, markerLayer) {
+  // Not filtered on visibility — hiding the grid's lines isn't a statement
+  // that it stops being the map's real cell size/scale (see
+  // findPrimaryGridLayer's own matching comment below).
+  const gridLayer = state.map.layers.find((entry) => entry.type === "grid");
+  if (!gridLayer) {
+    return position;
+  }
+  const markerOffset = markerLayer ? getMarkerLayerOffset(state.map, markerLayer) : { x: 0, y: 0 };
+  const localPixel = markerPositionToLocalPixel(baseMapManager, state.map, position);
+  const containerRelative = { x: localPixel.x + markerOffset.x, y: localPixel.y + markerOffset.y };
+  const gridOffset = getGridOffset(baseMapManager, state.map, gridLayer);
+  // containerRelative and gridOffset are both pure content-space (zoom-
+  // independent for non-tile maps), but getGridCoordFromPoint expects its
+  // point in the "hit-test" scale (see getGridHitTestScale's own comment)
+  // — multiplying by that same factor first is what makes its internal
+  // /hitScale step round-trip back to the right cell instead of double-
+  // dividing by zoom. getGridCellPixelRect's own OUTPUT needs no such
+  // adjustment — its cellSize is already content-space for non-tile maps
+  // (getGridLayoutScale is a flat 1 there), same as `rect`/`gridOffset`.
+  const hitScale = getGridHitTestScale(baseMapManager, state.map);
+  const relativePoint = { x: (containerRelative.x - gridOffset.x) * hitScale, y: (containerRelative.y - gridOffset.y) * hitScale };
+  const coord = getGridCoordFromPoint(baseMapManager, state.map, gridLayer, relativePoint);
+  const rect = getGridCellPixelRect(baseMapManager, state.map, gridLayer, coord);
+  const containerCenter = { x: rect.x + gridOffset.x + rect.width / 2, y: rect.y + gridOffset.y + rect.height / 2 };
+  const center = { x: containerCenter.x - markerOffset.x, y: containerCenter.y - markerOffset.y };
+  return localPixelToMarkerPosition(baseMapManager, state.map, center);
+}
+
+// Same "convert to true container-relative content-space, snap, convert
+// back" shape as snapMarkerPositionToGrid just above, but rounds to the
+// nearest grid LINE INTERSECTION (a corner) instead of the nearest cell
+// CENTER. A token filling a whole cell belongs centered on it; an AoE
+// template's origin is where a player would actually measure range from —
+// the corner between cells — so the shape's own edges land on grid lines
+// instead of cutting cells in half. Skips the getGridCoordFromPoint/
+// getGridCellPixelRect round-trip snapMarkerPositionToGrid needs (that
+// machinery finds a specific CELL; a corner is just "round each axis to
+// the nearest multiple of cell size" directly in the same content-space
+// gridOffset/getGridCellSize already share — no hitScale conversion
+// needed since neither input here is ever a real screen-pixel point).
+function snapShapeOriginToGrid(position, shapeLayer) {
+  const gridLayer = state.map.layers.find((entry) => entry.type === "grid");
+  if (!gridLayer) {
+    return position;
+  }
+  // Hex grids have no clean 4-corner analog (each cell has 6 vertices,
+  // shared unevenly with neighbors) — falls back to the same cell-center
+  // snap a marker uses rather than inventing an ambiguous hex rule nothing
+  // else here establishes.
+  if (getGridType(gridLayer) === "hex") {
+    return snapMarkerPositionToGrid(position, shapeLayer);
+  }
+  const shapeOffset = shapeLayer ? getMarkerLayerOffset(state.map, shapeLayer) : { x: 0, y: 0 };
+  const localPixel = markerPositionToLocalPixel(baseMapManager, state.map, position);
+  const containerRelative = { x: localPixel.x + shapeOffset.x, y: localPixel.y + shapeOffset.y };
+  const gridOffset = getGridOffset(baseMapManager, state.map, gridLayer);
+  const cellSize = getGridCellSize(baseMapManager, state.map, gridLayer);
+  const relativeX = containerRelative.x - gridOffset.x;
+  const relativeY = containerRelative.y - gridOffset.y;
+  const snapped = {
+    x: Math.round(relativeX / cellSize) * cellSize + gridOffset.x - shapeOffset.x,
+    y: Math.round(relativeY / cellSize) * cellSize + gridOffset.y - shapeOffset.y,
+  };
+  return localPixelToMarkerPosition(baseMapManager, state.map, snapped);
+}
+
 // "Clean" baseline for the whole map (a JSON snapshot at last load/save) —
 // Save only lights up once the live map actually differs from it, the same
 // isDirty/markClean convention Loom/Sanctum already use for their own
@@ -498,9 +925,119 @@ function markMapClean() {
   updateMapToolbarState();
 }
 
+// Whether the pointer's currently in one of the Map Properties inputs —
+// isMapDirty()/selection alone don't catch someone mid-keystroke in a text
+// field they haven't blurred yet (Map Name, Scale/Unit, Tile Provider,
+// Image URL/Width/Height, Canvas Background): state.map itself hasn't
+// changed yet at that point (only the raw input value has), so isMapDirty()
+// is still false and a poll landing right then would overwrite the field's
+// on-screen value with whatever the server has, discarding the keystrokes —
+// confirmed as the actual mechanism behind "changes get thrown out if not
+// saved by the time the map refreshes."
+function isEditingMapProperties() {
+  const active = document.activeElement;
+  if (!active) return false;
+  return [
+    elements.mapNameInput,
+    elements.measurementScale,
+    elements.measurementUnit,
+    elements.tileProvider,
+    elements.tileQuickPick,
+    elements.imageSrc,
+    elements.imageWidth,
+    elements.imageHeight,
+    elements.canvasBackground,
+  ].includes(active);
+}
+
+// Folds a remote map's layers/groups/base map into the live in-memory map
+// WITHOUT touching anything else — no applyMapSnapshot (which also resets
+// selection, collapses/expands panels, and re-renders every pane), no
+// baseMapManager.setBaseMap() unless the base map itself actually changed
+// (that call tears down and rebuilds the whole Leaflet/image/canvas stage,
+// which is what was actually causing the reported "frequent flashing" on
+// every single poll tick, base map change or not). Only renderLayerOverlays()
+// runs afterward — the map canvas itself — never renderLayers()/
+// renderGroups()/renderViewsList()/renderBaseMapSettings()/renderJson(), so
+// the left/right pane UI (and anything the GM has open/mid-editing there)
+// stays completely undisturbed, per the explicit ask that only the map
+// itself should refresh. state.map.view is DELIBERATELY excluded from this
+// merge — it's this session's own live camera position (pan/zoom), a purely
+// local concern, not something a remote poll should ever overwrite.
+// Confirmed as a real, significant bug before this: overwriting it here
+// (without also calling setBaseMap, since only the base map TYPE/settings
+// gate that, not the view) desynced state.map.view.zoom from what
+// PanZoomController had actually rendered — grid-cell click math (which
+// reads state.map.view.zoom) then disagreed with the real on-screen scale
+// by a growing amount the further from the map's origin you clicked, until
+// a real pan/zoom forced both back into sync. A poll landing between the
+// map's own load and a GM's first interaction (very likely, given how
+// often this fires) made it look like it happened on every fresh load.
+function applyRemoteMapLayers(nextMap) {
+  const baseMapChanged = JSON.stringify(nextMap.baseMap) !== JSON.stringify(state.map.baseMap);
+  state.map.layers = nextMap.layers || [];
+  state.map.groups = nextMap.groups || [];
+  state.map.baseMap = nextMap.baseMap || state.map.baseMap;
+  state.map.updatedAt = nextMap.updatedAt;
+  if (baseMapChanged) {
+    baseMapManager.setBaseMap(state.map.baseMap, state.map.view);
+  }
+  renderLayerOverlays();
+  // Re-baseline "clean" against the map as it now stands (this function is
+  // only ever called from behind an !isMapDirty() check, so state.map
+  // exactly matched mapCleanSnapshot before this merge) — otherwise Save
+  // would light up right after a poll the GM never touched, since the
+  // in-memory map now legitimately differs from the old snapshot.
+  mapCleanSnapshot = JSON.stringify(state.map);
+  updateMapToolbarState();
+}
+
+// Picks up a saved map's own remote changes (a player dragging their token
+// via the Dashboard's Map widget, a GM editing the same map from another
+// tab) into Orrery's own authoring view, via the same poll+live-stream
+// mechanism that widget already uses (common/js/lib/map-live-sync.js) — see
+// its own header for why the live-stream half is a no-op here (Orrery has
+// no campaign-group context for a map, unlike a Dashboard widget) while the
+// plain poll still works regardless. Deliberately conservative about when
+// to actually apply an incoming change: never while there's an unsaved
+// local edit (isMapDirty()), an active selection, or a Map Properties field
+// mid-edit — any of those would mean silently discarding or disrupting
+// whatever the GM is doing right now — a remote change just waits for the
+// next poll once they're idle again instead.
+let mapWatcher = null;
+function watchCurrentMap(id, shareToken = "") {
+  mapWatcher?.stop();
+  mapWatcher = null;
+  if (!id || !dataManager) {
+    return;
+  }
+  mapWatcher = watchMapForChanges({
+    dataManager,
+    mapId: id,
+    shareToken,
+    // The account's active campaign (see getActiveCampaignGroupId) — also
+    // what activates the SSE "wake sooner" half of onChange below, since
+    // Orrery has no other group context of its own (see this module's own
+    // map-live-sync.js header comment).
+    groupId: getActiveCampaignGroupId(),
+    // 20s, was 10s — less pressure on the "don't land mid-edit" guards
+    // below now that a routine tick is a lot cheaper (applyRemoteMapLayers,
+    // not a full applyMapSnapshot), but there's no reason to poll a screen
+    // nobody's actively watching for changes twice as often as needed.
+    pollIntervalMs: 20000,
+    onChange: (nextMap) => {
+      if (!nextMap || nextMap.id !== state.map.id || isMapDirty() || state.selection.kind !== null || isEditingMapProperties()) {
+        return;
+      }
+      applyRemoteMapLayers(nextMap);
+    },
+    onPing: renderIncomingPing,
+  });
+}
+
 function updateMapToolbarState() {
   if (elements.deleteMapButton) {
-    elements.deleteMapButton.disabled = !mapAllowsDelete(state.map.id);
+    elements.deleteMapButton.disabled = !mapIsLoaded || !mapAllowsDelete(state.map.id);
   }
   if (elements.saveMapButton) {
     elements.saveMapButton.disabled = !isMapDirty();
@@ -528,10 +1065,16 @@ async function populateMapSelect() {
     ...localEntries.map((entry) => ({ id: entry.id, name: entry.payload?.name || entry.id })),
   ];
   elements.mapSelect.innerHTML = "";
-  const blank = document.createElement("option");
-  blank.value = "";
-  blank.textContent = "New / unsaved";
-  elements.mapSelect.appendChild(blank);
+  // An inert placeholder, not a selectable "new/unsaved" state — matching
+  // Workbench's own template/character selector convention (disabled
+  // option, unselectable again once a real map's chosen). "New Map" is now
+  // the only way to get a fresh map; the dropdown is purely for loading
+  // saved ones.
+  const placeholder = document.createElement("option");
+  placeholder.value = "";
+  placeholder.disabled = true;
+  placeholder.textContent = "Select Map";
+  elements.mapSelect.appendChild(placeholder);
   combined
     .slice()
     .sort((a, b) => a.name.localeCompare(b.name))
@@ -569,12 +1112,44 @@ function setSelection(kind, id = null, extra = {}) {
       cells: state.selection.cells.map((cell) => ({ ...cell })),
     };
   }
+  // The left pane's own Layers/Groups/Views lists only ever got rebuilt as
+  // a side effect of MUTATING actions (applyGroupChange, add/delete
+  // layer/group/view, ...) — never from a plain selection change on its
+  // own. Confirmed as a real bug before this: a group's blue .active state
+  // only ever appeared via one of those mutation-triggered rebuilds, and
+  // then stayed frozen on that same row forever after — every later
+  // selection change (clicking a different group, a layer, anything)
+  // updates state.selection just fine, but with nothing left to
+  // re-render these three lists, the DOM's own stale .active classes
+  // never move or clear. Cheap enough to just always do here — these are
+  // small lists, and explicit selection changes (unlike paint-mode's own
+  // per-cell drag updates, which never call setSelection at all) are
+  // infrequent.
+  renderLayers();
+  renderGroups();
+  renderViewsList();
   renderSelection();
   renderLayerOverlays();
   syncOverlayInteractivity();
+  updateDrawAvailability();
+  updateShapeAvailability();
   const shouldExpand =
-    kind === "layer" || kind === "group" || kind === "grid-cells" || kind === "view" || kind === "marker-element";
-  setSelectionCollapsed(!shouldExpand);
+    kind === "layer" || kind === "group" || kind === "grid-cells" || kind === "view" || kind === "marker-element" || kind === "vector-path";
+  setPanelFocus(shouldExpand);
+}
+
+// Click-to-select, click-again-to-deselect — used by the left pane's own
+// Layer/Group/View list rows (their whole reason to exist is picking one
+// thing at a time; re-clicking the one already active most naturally means
+// "never mind"), not by every setSelection call in this file (a delete
+// handler picking a fallback selection, say, isn't a row the GM clicked
+// twice — a plain setSelection there stays a plain setSelection).
+function toggleSelection(kind, id, extra = {}) {
+  if (state.selection.kind === kind && state.selection.id === id) {
+    setSelection(null);
+  } else {
+    setSelection(kind, id, extra);
+  }
 }
 
 function renderBaseMapSettings() {
@@ -587,11 +1162,17 @@ function renderBaseMapSettings() {
     const type = section.dataset.baseMapSettings;
     section.classList.toggle("d-none", type !== baseMap.type);
   });
+  document.querySelectorAll(".orrery-initial-position-field").forEach((field) => {
+    field.classList.toggle("d-none", baseMap.type === "tile");
+  });
 
   const imageSettings = baseMap.settings.image;
   elements.imageSrc.value = imageSettings.src;
-  elements.imageWidth.value = imageSettings.width;
-  elements.imageHeight.value = imageSettings.height;
+  // null (no override, native size) has to become "" here — assigning null
+  // directly to a text input's .value stringifies to the literal text
+  // "null".
+  elements.imageWidth.value = imageSettings.width ?? "";
+  elements.imageHeight.value = imageSettings.height ?? "";
 
   const canvasSettings = baseMap.settings.canvas;
   elements.canvasBackground.value = canvasSettings.background;
@@ -604,53 +1185,144 @@ function renderBaseMapSettings() {
   }
 }
 
+// Same icon per layer type as the "Add X layer" buttons just above this
+// list (data-add-layer-mount) — literally the same string, so the list row
+// always matches whatever icon a GM just clicked to create it.
+const LAYER_TYPE_ICONS = {
+  vector: "tabler:vector",
+  grid: "tabler:grid-dots",
+  raster: "tabler:photo",
+  marker: "tabler:map-pin",
+};
+
+// Displayed topmost-first (reverse of state.map.layers' own array order,
+// where a LATER array index renders on top — see renderMapLayers in
+// lib/map-viewer.js, which appends in plain array order and lets normal DOM
+// stacking put later siblings in front) — matches the Photoshop-style
+// convention GMs already expect: the layer nearest the top of the list is
+// the one rendered nearest the front of the map.
+// Palette-style row (icon left, larger, matching Press/Workbench's own
+// component palette) — Visible and Move up/down both moved to the right
+// pane's Selection panel once a layer is actually selected (the "Visible"
+// switch in renderLayerSelectionEditor, the move-up/move-down toolbar
+// buttons), so this list is purely "pick a layer" now, not a second place
+// those same controls live and can drift out of sync.
 function renderLayers() {
+  disposeTooltips(elements.layerList);
   elements.layerList.innerHTML = "";
   const visibleLayerIds = getVisibleLayerIds();
-  state.map.layers.forEach((layer) => {
-    if (visibleLayerIds && !visibleLayerIds.has(layer.id)) {
-      return;
-    }
-    const item = document.createElement("div");
-    item.className = "list-group-item d-flex justify-content-between align-items-center";
-
-    const labelButton = document.createElement("button");
-    labelButton.type = "button";
-    labelButton.className = "btn btn-link p-0 text-decoration-none text-start flex-grow-1";
-    labelButton.textContent = layer.name;
-    labelButton.addEventListener("click", () => setSelection("layer", layer.id));
-
-    const meta = document.createElement("div");
-    meta.className = "d-flex align-items-center gap-2";
-
-    const visibilityToggle = document.createElement("input");
-    visibilityToggle.type = "checkbox";
-    visibilityToggle.className = "form-check-input";
-    visibilityToggle.checked = layer.visible;
-    visibilityToggle.addEventListener("change", () => {
-      recordHistory("layer visibility", () => {
-        layer.visible = visibilityToggle.checked;
-        updateMapTimestamp(state.map);
-      });
-      renderSelection();
-      renderLayerOverlays();
-      renderJson();
+  state.map.layers
+    .slice()
+    .reverse()
+    .forEach((layer) => {
+      if (visibleLayerIds && !visibleLayerIds.has(layer.id)) {
+        return;
+      }
+      const item = document.createElement("button");
+      item.type = "button";
+      item.className = "list-group-item list-group-item-action d-flex align-items-center gap-2";
+      if (state.selection.kind === "layer" && state.selection.id === layer.id) {
+        item.classList.add("active");
+      }
+      const icon = document.createElement("span");
+      icon.className = "iconify fs-4 text-primary flex-shrink-0";
+      icon.dataset.icon = LAYER_TYPE_ICONS[layer.type] || "tabler:layers-intersect";
+      icon.setAttribute("aria-hidden", "true");
+      const label = document.createElement("span");
+      label.className = "text-truncate";
+      label.textContent = layer.name;
+      item.append(icon, label);
+      item.addEventListener("click", () => toggleSelection("layer", layer.id));
+      elements.layerList.appendChild(item);
     });
+}
 
-    const typeBadge = document.createElement("span");
-    typeBadge.className = "badge text-bg-secondary text-uppercase";
-    typeBadge.textContent = layer.type;
-
-    meta.appendChild(visibilityToggle);
-    meta.appendChild(typeBadge);
-
-    item.appendChild(labelButton);
-    item.appendChild(meta);
-    elements.layerList.appendChild(item);
+function moveLayer(layer, delta) {
+  const layers = state.map.layers;
+  const index = layers.indexOf(layer);
+  const nextIndex = index + delta;
+  if (index === -1 || nextIndex < 0 || nextIndex >= layers.length) {
+    return;
+  }
+  recordHistory("reorder layer", () => {
+    layers.splice(index, 1);
+    layers.splice(nextIndex, 0, layer);
+    updateMapTimestamp(state.map);
   });
+  renderLayers();
+  // Also re-renders the right pane's own copy of these same reorder
+  // buttons (renderLayerSelectionEditor) so their disabled-at-the-boundary
+  // state stays correct regardless of which copy (left list or right
+  // panel) was actually clicked.
+  renderSelection();
+  renderLayerOverlays();
+  renderJson();
+}
+
+// Deep-copies a layer — settings/position/opacity/properties, plus every
+// one of its own elements — through the SAME map-model.js factories that
+// create them fresh, rather than hand-rolling a JSON clone with the
+// original's own ids poked out. Marker/path/shape/grid-cell ids are what
+// Groups and selection state key off of; sharing them with the source
+// layer would make the two layers' own elements indistinguishable to
+// anything that looks one up by id, not just visually duplicated.
+function duplicateLayer(sourceLayer) {
+  const layer = createLayer({ type: sourceLayer.type, name: `${sourceLayer.name} (copy)` });
+  layer.visible = sourceLayer.visible;
+  layer.opacity = sourceLayer.opacity;
+  layer.position = { ...(sourceLayer.position || { x: 0, y: 0 }) };
+  layer.settings = JSON.parse(JSON.stringify(sourceLayer.settings || {}));
+  layer.properties = JSON.parse(JSON.stringify(sourceLayer.properties || {}));
+  layer.elements = (sourceLayer.elements || []).map((element) => duplicateLayerElement(element));
+  return layer;
+}
+
+function duplicateLayerElement(element) {
+  if (element.kind === "marker") {
+    return createMarkerElement({
+      refKind: element.refKind,
+      refId: element.refId,
+      label: element.label,
+      image: element.image,
+      position: element.position ? { ...element.position } : undefined,
+    });
+  }
+  if (element.kind === "path") {
+    return createVectorPathElement({
+      points: (element.points || []).map((point) => ({ ...point })),
+      strokeColor: element.strokeColor,
+      fillColor: element.fillColor,
+      strokeWidth: element.strokeWidth,
+    });
+  }
+  if (element.kind === "shape") {
+    return createVectorShapeElement({
+      shapeType: element.shapeType,
+      origin: element.origin ? { ...element.origin } : undefined,
+      sizeCells: element.sizeCells,
+      angleDeg: element.angleDeg,
+      spreadDeg: element.spreadDeg,
+      widthCells: element.widthCells,
+      strokeColor: element.strokeColor,
+      fillColor: element.fillColor,
+      strokeWidth: element.strokeWidth,
+    });
+  }
+  if (element.kind === "cell") {
+    // `key` is coord-derived (getGridCellKey), not an identity id — safe
+    // (and correct) to carry over as-is, unlike `id` which createGridCell
+    // regenerates fresh below.
+    const cell = createGridCell({ key: element.key, coord: element.coord ? { ...element.coord } : undefined, gridType: element.gridType });
+    cell.properties = JSON.parse(JSON.stringify(element.properties || {}));
+    return cell;
+  }
+  // Unknown element kind — shouldn't happen, but fall back to a raw clone
+  // rather than silently dropping it.
+  return JSON.parse(JSON.stringify(element));
 }
 
 function renderGroups() {
+  disposeTooltips(elements.groupList);
   elements.groupList.innerHTML = "";
   if (state.map.groups.length === 0) {
     const empty = document.createElement("div");
@@ -662,16 +1334,25 @@ function renderGroups() {
   state.map.groups.forEach((group) => {
     const item = document.createElement("button");
     item.type = "button";
-    item.className = "list-group-item list-group-item-action d-flex justify-content-between align-items-center";
+    // Palette-style row (icon left, larger) — same icon as the Add group
+    // button just above this list (data-add-group-mount), matching Layers'
+    // own row convention just above.
+    item.className = "list-group-item list-group-item-action d-flex align-items-center gap-2";
+    // .active (Bootstrap's real styled selection state), not aria-current —
+    // matches Views below and Combat Tracker's own selected-row convention;
+    // aria-current alone has no visual effect anywhere in this suite's CSS.
     if (state.selection.kind === "group" && state.selection.id === group.id) {
-      item.setAttribute("aria-current", "true");
+      item.classList.add("active");
     }
-    item.textContent = group.name;
-    const badge = document.createElement("span");
-    badge.className = "badge text-bg-secondary";
-    badge.textContent = `${group.elementIds.length} items`;
-    item.appendChild(badge);
-    item.addEventListener("click", () => setSelection("group", group.id));
+    const icon = document.createElement("span");
+    icon.className = "iconify fs-4 text-primary flex-shrink-0";
+    icon.dataset.icon = "tabler:folder-plus";
+    icon.setAttribute("aria-hidden", "true");
+    const label = document.createElement("span");
+    label.className = "text-truncate";
+    label.textContent = group.name;
+    item.append(icon, label);
+    item.addEventListener("click", () => toggleSelection("group", group.id));
     elements.groupList.appendChild(item);
   });
 }
@@ -680,6 +1361,7 @@ function renderViewsList() {
   if (!elements.viewList) {
     return;
   }
+  disposeTooltips(elements.viewList);
   elements.viewList.innerHTML = "";
   if (!state.map.views || state.map.views.length === 0) {
     const empty = document.createElement("div");
@@ -692,18 +1374,41 @@ function renderViewsList() {
     const isSelected = state.selection.kind === "view" && state.selection.id === view.id;
     const item = document.createElement("button");
     item.type = "button";
-    item.className = "list-group-item list-group-item-action d-flex justify-content-between align-items-center";
+    // Palette-style row (icon left, larger) — same icon as the Add view
+    // button just above this list (data-add-view-mount), matching
+    // Layers'/Groups' own row convention just above.
+    item.className = "list-group-item list-group-item-action d-flex align-items-center gap-2";
     if (isSelected) {
       item.classList.add("active");
     }
-    item.textContent = view.name;
-    const badge = document.createElement("span");
-    badge.className = "badge text-bg-secondary";
-    badge.textContent = "View";
-    item.appendChild(badge);
-    item.addEventListener("click", () => setSelection("view", view.id));
+    const icon = document.createElement("span");
+    icon.className = "iconify fs-4 text-primary flex-shrink-0";
+    icon.dataset.icon = "tabler:eye-plus";
+    icon.setAttribute("aria-hidden", "true");
+    const label = document.createElement("span");
+    label.className = "text-truncate";
+    label.textContent = view.name;
+    item.append(icon, label);
+    item.addEventListener("click", () => toggleSelection("view", view.id));
     elements.viewList.appendChild(item);
   });
+}
+
+// Replaces the old text badge/pill (data-selection-type) — a single blue
+// icon, same "consistent blue icon instead of a pill" treatment the
+// Layers/Groups/Views list rows just above already use, and (where the
+// kind IS a layer type) literally the same icon those rows/the Add-layer
+// buttons use. null hides it entirely (the "No selection" state).
+function setSelectionTypeIcon(icon) {
+  if (!elements.selectionTypeIcon) {
+    return;
+  }
+  if (icon) {
+    elements.selectionTypeIcon.dataset.icon = icon;
+    elements.selectionTypeIcon.classList.remove("d-none");
+  } else {
+    elements.selectionTypeIcon.classList.add("d-none");
+  }
 }
 
 function renderSelection() {
@@ -711,11 +1416,21 @@ function renderSelection() {
   if (elements.selectionClear) {
     elements.selectionClear.classList.toggle("d-none", selection.kind === null);
   }
+  // Cleared unconditionally, then repopulated only by whichever selection
+  // kind's own render function actually uses it (currently
+  // renderLayerSelectionEditor, renderVectorShapeSelectionEditor,
+  // renderGroupSelectionEditor, and renderViewSelectionEditor) — marker
+  // and drawn-path selection still build a standalone inline Delete
+  // instead, and leave this empty.
+  if (elements.selectionToolbar) {
+    disposeTooltips(elements.selectionToolbar);
+    elements.selectionToolbar.innerHTML = "";
+  }
   if (selection.kind === "layer") {
     const layer = map.layers.find((entry) => entry.id === selection.id);
     if (layer) {
       elements.selectionTitle.textContent = layer.name;
-      elements.selectionType.textContent = layer.type;
+      setSelectionTypeIcon(LAYER_TYPE_ICONS[layer.type] || "tabler:layers-intersect");
       if (elements.selectionDetails) {
         elements.selectionDetails.textContent = `Visible: ${layer.visible ? "Yes" : "No"}`;
       }
@@ -728,7 +1443,7 @@ function renderSelection() {
     const group = map.groups.find((entry) => entry.id === selection.id);
     if (group) {
       elements.selectionTitle.textContent = group.name;
-      elements.selectionType.textContent = "Group";
+      setSelectionTypeIcon("tabler:folder-plus");
       if (elements.selectionDetails) {
         elements.selectionDetails.textContent = `Members: ${group.elementIds.length}`;
       }
@@ -741,7 +1456,7 @@ function renderSelection() {
     const view = map.views?.find((entry) => entry.id === selection.id);
     if (view) {
       elements.selectionTitle.textContent = view.name;
-      elements.selectionType.textContent = "View";
+      setSelectionTypeIcon("tabler:eye-plus");
       if (elements.selectionDetails) {
         elements.selectionDetails.textContent = view.description ? "Custom view" : "No description yet.";
       }
@@ -754,9 +1469,8 @@ function renderSelection() {
     const layer = map.layers.find((entry) => entry.id === selection.layerId);
     if (layer) {
       const cellCount = selection.cells.length;
-      const label = cellCount === 1 ? "Grid Cell" : "Grid Cells";
-      elements.selectionTitle.textContent = cellCount === 1 ? "Cell Selection" : "Cell Selection";
-      elements.selectionType.textContent = label;
+      elements.selectionTitle.textContent = "Cell Selection";
+      setSelectionTypeIcon("tabler:square-check");
       if (elements.selectionDetails) {
         elements.selectionDetails.textContent = `${layer.name} · ${cellCount} ${cellCount === 1 ? "cell" : "cells"}`;
       }
@@ -770,7 +1484,7 @@ function renderSelection() {
     const markerElement = layer?.elements?.find((entry) => entry.id === selection.id);
     if (layer && markerElement) {
       elements.selectionTitle.textContent = markerElement.label || "Marker";
-      elements.selectionType.textContent = "Marker";
+      setSelectionTypeIcon("tabler:map-pin");
       if (elements.selectionDetails) {
         elements.selectionDetails.textContent = markerElement.refKind
           ? `${layer.name} · references ${markerElement.refKind}/${markerElement.refId || "(none picked)"}`
@@ -781,16 +1495,300 @@ function renderSelection() {
     }
   }
 
+  if (selection.kind === "vector-path") {
+    const layer = map.layers.find((entry) => entry.id === selection.layerId);
+    const pathElement = layer?.elements?.find((entry) => entry.id === selection.id);
+    if (layer && pathElement && pathElement.kind === "shape") {
+      elements.selectionTitle.textContent = "AoE Shape";
+      setSelectionTypeIcon("tabler:target");
+      if (elements.selectionDetails) {
+        elements.selectionDetails.textContent = `${layer.name} · ${pathElement.shapeType}`;
+      }
+      renderVectorShapeSelectionEditor(layer, pathElement);
+      return;
+    }
+    if (layer && pathElement) {
+      elements.selectionTitle.textContent = "Drawn Path";
+      setSelectionTypeIcon("tabler:pencil");
+      if (elements.selectionDetails) {
+        elements.selectionDetails.textContent = `${layer.name} · ${pathElement.points?.length || 0} points`;
+      }
+      renderVectorPathSelectionEditor(layer, pathElement);
+      return;
+    }
+  }
+
   elements.selectionTitle.textContent = "No selection";
-  elements.selectionType.textContent = "None";
+  setSelectionTypeIcon(null);
   if (elements.selectionDetails) {
     elements.selectionDetails.textContent = "Select a layer, group, view, grid cell, or marker to inspect it.";
   }
   clearSelectionEditor();
 }
 
+// Turn-off-draw-mode-to-erase editor for one freehand path drawn on a
+// vector layer — only reachable via clicking an existing path while both
+// Draw and Shape mode are off (see setupDrawTool/setupShapeTool's shared
+// onVectorPathClick gating), same "select a placed thing, then Delete"
+// pattern as a marker element's own editor.
+function renderVectorPathSelectionEditor(layer, pathElement) {
+  if (!elements.selectionEditor) {
+    return;
+  }
+  const container = elements.selectionEditor;
+  disposeTooltips(container);
+  container.innerHTML = "";
+
+  const hint = document.createElement("p");
+  hint.className = "text-body-secondary small mb-0";
+  hint.textContent = "Delete this stroke, or turn Draw mode back on to add more.";
+  container.appendChild(hint);
+
+  const deleteButton = document.createElement("button");
+  deleteButton.type = "button";
+  deleteButton.className = "btn btn-outline-danger btn-sm";
+  deleteButton.textContent = "Delete Path";
+  deleteButton.dataset.action = "delete-selected";
+  deleteButton.addEventListener("click", () => {
+    recordHistory("delete path", () => {
+      layer.elements = (layer.elements || []).filter((entry) => entry.id !== pathElement.id);
+      updateMapTimestamp(state.map);
+    });
+    setSelection("layer", layer.id);
+  });
+  container.appendChild(deleteButton);
+}
+
+// Same "select a placed thing, then Delete" pattern as a drawn path's own
+// editor just above, plus numeric fields (createHalfWidthNumberField,
+// same factory every other inspector field in this file uses) to dial in
+// the shape's size/direction precisely after the drag-to-place gesture —
+// click-drag (setupShapeTool) gets it roughly right with live feedback,
+// these fields nudge it exactly. Size/Width are edited in the map's own
+// configured measurement unit when one's set (converting through
+// state.map.measurement.scale, same as sizeCells is converted to a real
+// distance everywhere else), falling back to raw cells otherwise so the
+// fields still work on a shape placed before scale/unit were configured.
+function renderVectorShapeSelectionEditor(layer, shapeElement) {
+  if (!elements.selectionEditor) {
+    return;
+  }
+  const container = elements.selectionEditor;
+  disposeTooltips(container);
+  container.innerHTML = "";
+
+  const useRealUnits = hasMapMeasurementConfigured();
+  const unitLabel = useRealUnits ? state.map.measurement.unit : "cells";
+  const toDisplay = (cells) => (useRealUnits ? cells * state.map.measurement.scale : cells);
+  const fromDisplay = (value) => (useRealUnits ? value / state.map.measurement.scale : value);
+
+  // No renderSelection() — same reasoning as Layer's own
+  // applyLayerPositionChange (see createCommitOnBlurNumberField's comment):
+  // shapeType (the only thing that decides which of these fields even show)
+  // never changes from editing Size/Angle/Spread/Width, so there's nothing
+  // in this panel that needs rebuilding in response, and doing it anyway
+  // only risked destroying the very input being edited.
+  function applyShapeChange(label, apply) {
+    recordHistory(label, () => {
+      apply();
+      updateMapTimestamp(state.map);
+    });
+    renderLayerOverlays();
+    renderJson();
+  }
+
+  // Position X/Y edit the same content-space pixel coordinate Layer
+  // Position X/Y already exposes (markerPositionToLocalPixel/
+  // localPixelToMarkerPosition — the exact conversion drag-to-place and
+  // drag-to-move already round-trip through), not shapeElement.origin's
+  // raw stored shape directly — origin is {x,y} for image/canvas maps but
+  // {lat,lng} for tile ones, and this keeps the field meaning "pixels from
+  // the map's own center" either way, same as every other on-map position
+  // in this panel.
+  const originPixel = markerPositionToLocalPixel(baseMapManager, state.map, shapeElement.origin);
+  const positionRow = createFieldRow(
+    [
+      createCommitOnBlurNumberField("Position X", Math.round(originPixel.x), (value) => {
+        if (value === null) return;
+        applyShapeChange("shape position", () => {
+          const next = markerPositionToLocalPixel(baseMapManager, state.map, shapeElement.origin);
+          shapeElement.origin = localPixelToMarkerPosition(baseMapManager, state.map, { x: value, y: next.y });
+        });
+      }),
+      createCommitOnBlurNumberField("Position Y", Math.round(originPixel.y), (value) => {
+        if (value === null) return;
+        applyShapeChange("shape position", () => {
+          const next = markerPositionToLocalPixel(baseMapManager, state.map, shapeElement.origin);
+          shapeElement.origin = localPixelToMarkerPosition(baseMapManager, state.map, { x: next.x, y: value });
+        });
+      }),
+    ],
+    { columns: 2 }
+  );
+  container.appendChild(positionRow);
+
+  // Whole-unit granularity, not fractional — AoE templates generally land
+  // on whole real-world-unit increments (5ft steps in most D&D-style
+  // systems); a raw cells*scale conversion produced fiddly decimals like
+  // "13.33 ft" for no real benefit. Same Math.round(...*scale)/scale shape
+  // as setupShapeTool's own snapCellsToWholeUnit, applied here at commit
+  // time instead of drag time.
+  const fields = [
+    createCommitOnBlurNumberField(
+      shapeElement.shapeType === "square" ? `Side (${unitLabel})` : `Size (${unitLabel})`,
+      Math.round(toDisplay(shapeElement.sizeCells || 0)),
+      (value) => {
+        if (value === null) return;
+        applyShapeChange("shape size", () => {
+          shapeElement.sizeCells = Math.max(0, fromDisplay(Math.round(value)));
+        });
+      },
+      { min: 0, step: 1 }
+    ),
+  ];
+
+  if (shapeElement.shapeType === "cone" || shapeElement.shapeType === "line") {
+    fields.push(
+      createCommitOnBlurNumberField("Angle (degrees)", Math.round(shapeElement.angleDeg || 0), (value) => {
+        if (value === null) return;
+        applyShapeChange("shape angle", () => {
+          shapeElement.angleDeg = value;
+        });
+      })
+    );
+  }
+  if (shapeElement.shapeType === "cone") {
+    fields.push(
+      createCommitOnBlurNumberField("Spread (degrees)", Math.round(shapeElement.spreadDeg ?? 53), (value) => {
+        if (value === null) return;
+        applyShapeChange("shape spread", () => {
+          shapeElement.spreadDeg = value;
+        });
+      }, { min: 1, max: 360 })
+    );
+  }
+  if (shapeElement.shapeType === "line") {
+    fields.push(
+      createCommitOnBlurNumberField(
+        `Width (${unitLabel})`,
+        Math.round(toDisplay(shapeElement.widthCells || 0)),
+        (value) => {
+          if (value === null) return;
+          applyShapeChange("shape width", () => {
+            shapeElement.widthCells = Math.max(0, fromDisplay(Math.round(value)));
+          });
+        },
+        { min: 0, step: 1 }
+      )
+    );
+  }
+
+  container.appendChild(createFieldRow(fields, { columns: 2 }));
+
+  // Fill color/opacity and outline color/width — every one of these always
+  // has a real, concrete value on shapeElement already (createVectorShapeElement's
+  // own "no invisible defaults" rule), so these fields just reflect what's
+  // actually there, never a mystery blank waiting on a render-time fallback.
+  const fillColorField = createCompactField({
+    type: "color",
+    label: "Fill color",
+    controlClass: "form-control form-control-color",
+  });
+  fillColorField.querySelector("input").value = shapeElement.fillColor;
+  fillColorField.querySelector("input").addEventListener("change", (event) => {
+    applyShapeChange("shape fill color", () => {
+      shapeElement.fillColor = event.target.value;
+    });
+  });
+
+  // Same range-slider shape every other Opacity in this suite uses
+  // (buildLayerOpacityField's own — 0-1, step 0.05, form-range), not a
+  // number field — this is the one established "opacity" control
+  // vocabulary, not a shape-specific deviation.
+  const opacityField = createCompactField({ type: "range", label: "Opacity", controlClass: "form-range", min: 0, max: 1, step: 0.05 });
+  const opacityInput = opacityField.querySelector("input");
+  opacityInput.value = Number.isFinite(shapeElement.opacity) ? shapeElement.opacity : 0.5;
+  opacityInput.addEventListener("change", () => {
+    const value = Number(opacityInput.value);
+    if (!Number.isFinite(value)) return;
+    applyShapeChange("shape opacity", () => {
+      shapeElement.opacity = value;
+    });
+  });
+  container.appendChild(createFieldRow([fillColorField, opacityField], { columns: 2 }));
+
+  const outlineColorField = createCompactField({
+    type: "color",
+    label: "Outline color",
+    controlClass: "form-control form-control-color",
+  });
+  outlineColorField.querySelector("input").value = shapeElement.strokeColor;
+  outlineColorField.querySelector("input").addEventListener("change", (event) => {
+    applyShapeChange("shape outline color", () => {
+      shapeElement.strokeColor = event.target.value;
+    });
+  });
+
+  const outlineWidthField = createCommitOnBlurNumberField(
+    "Outline width",
+    shapeElement.strokeWidth || 2,
+    (value) => {
+      if (value === null) return;
+      applyShapeChange("shape outline width", () => {
+        shapeElement.strokeWidth = Math.max(0, value);
+      });
+    },
+    { min: 0, step: 1 }
+  );
+  container.appendChild(createFieldRow([outlineColorField, outlineWidthField], { columns: 2 }));
+
+  const snapField = createCheckField({
+    id: `shape-snap-${shapeElement.id}`,
+    label: "Snap to Grid",
+    switchStyle: true,
+  });
+  const snapInput = snapField.querySelector("input");
+  snapInput.checked = shapeElement.snapToGrid !== false;
+  snapInput.addEventListener("change", () => {
+    applyShapeChange("shape snap to grid", () => {
+      shapeElement.snapToGrid = snapInput.checked;
+      // Snapping ON right now (not just future drags) re-aligns the shape
+      // to the grid immediately, the same instant-feedback expectation
+      // toggling a setting usually carries — otherwise the toggle would
+      // read "on" while the shape visibly sat off-grid until next moved.
+      if (snapInput.checked) {
+        shapeElement.origin = snapShapeOriginToGrid(shapeElement.origin, layer);
+      }
+    });
+  });
+  container.appendChild(snapField);
+
+  // Same shared icon-toolbar factory/mount point Layer selection uses
+  // (renderLayerSelectionEditor) instead of a standalone inline button —
+  // renderSelection() already clears data-selection-toolbar-mount before
+  // every render, so only whichever selection kind is current populates it.
+  if (elements.selectionToolbar) {
+    createToolbarButtonGroup([
+      {
+        action: "delete",
+        label: "Delete shape",
+        attrs: { "data-action": "delete-selected" },
+        onClick: () => {
+          recordHistory("delete shape", () => {
+            layer.elements = (layer.elements || []).filter((entry) => entry.id !== shapeElement.id);
+            updateMapTimestamp(state.map);
+          });
+          setSelection("layer", layer.id);
+        },
+      },
+    ]).forEach((button) => elements.selectionToolbar.appendChild(button));
+    refreshTooltips(elements.selectionToolbar);
+  }
+}
+
 function clearSelectionEditor() {
   if (elements.selectionEditor) {
+    disposeTooltips(elements.selectionEditor);
     elements.selectionEditor.innerHTML = "";
     const placeholder = document.createElement("p");
     placeholder.className = "text-body-secondary small mb-0";
@@ -811,28 +1809,33 @@ function syncOverlayInteractivity() {
         ? state.selection.layerId
         : null;
   const layer = selectedLayerId ? state.map.layers.find((entry) => entry.id === selectedLayerId) : null;
-  const isInteractive = Boolean(layer && (layer.type === "grid" || layer.type === "marker"));
+  // A selected Group also arms its own target grid layer's interactivity
+  // without the grid layer itself ever being the current `selection` — this
+  // pointer-events gate (tile maps only, via the Leaflet pane below) has to
+  // know about that too, or clicking/painting a group's cells would never
+  // even reach the grid's own pointerdown listener on a tile base map.
+  const isInteractive = Boolean(layer && (layer.type === "grid" || layer.type === "marker")) || state.selection.kind === "group";
   overlay.classList.toggle("is-interactive", isInteractive);
   if (overlay.parentElement && overlay.parentElement.classList.contains("leaflet-pane")) {
     overlay.parentElement.style.pointerEvents = isInteractive ? "auto" : "none";
   }
 }
 
-// getGridLayoutScale/getGridOffset delegate to lib/map-viewer.js now (same
-// coordinate math the shared createGridLayerElement uses internally) — kept
-// here only because bindLayerDrag's whole-layer drag (Orrery-authoring-only)
-// still needs them directly. getGridType/getGridCellKey/
-// createGridCellSelectionEntry/findGridCellById/normalizeGroupMembers are
-// imported straight from the shared module below (identical signatures, no
-// wrapper needed) since findGridCell/ensureGridCell/buildGridRangeSelection/
-// formatGridCellLabel/summarizeGridSelection and the group-editing UI still
-// call them directly.
+// getGridLayoutScale/getGridBackgroundPosition delegate to lib/map-viewer.js
+// now (same coordinate math the shared createGridLayerElement uses
+// internally) — kept here only because bindLayerDrag's whole-layer drag
+// (Orrery-authoring-only) still needs them directly. getGridType/
+// getGridCellKey/createGridCellSelectionEntry/findGridCellById/
+// normalizeGroupMembers are imported straight from the shared module below
+// (identical signatures, no wrapper needed) since findGridCell/
+// ensureGridCell/buildGridRangeSelection/formatGridCellLabel/
+// summarizeGridSelection and the group-editing UI still call them directly.
 function getGridLayoutScale() {
   return sharedGetGridLayoutScale(baseMapManager, state.map);
 }
 
-function getGridOffset(layer) {
-  return sharedGetGridOffset(baseMapManager, state.map, layer);
+function getGridBackgroundPosition(layer) {
+  return sharedGetGridBackgroundPosition(baseMapManager, state.map, layer);
 }
 
 function getGroupMemberKey(member) {
@@ -983,7 +1986,7 @@ function updateTileLayerElementPosition(layer, element) {
 function selectMarkerElementForDrag(layer, markerElement, dotEl) {
   state.selection = { kind: "marker-element", id: markerElement.id, layerId: layer.id, cells: [], anchor: null };
   renderSelection();
-  setSelectionCollapsed(false);
+  setPanelFocus(true);
   const container = dotEl.parentElement;
   if (container) {
     container
@@ -991,6 +1994,22 @@ function selectMarkerElementForDrag(layer, markerElement, dotEl) {
       .forEach((node) => node.classList.remove("is-selected"));
   }
   dotEl.classList.add("is-selected");
+}
+
+// Same reasoning as selectMarkerElementForDrag just above — updates
+// state.selection and the inspector panel only, deliberately skipping
+// renderLayerOverlays(): that would tear down and replace the very
+// hit-target/visible SVG nodes a shape drag is about to setPointerCapture
+// on and drive via onMove/onUp (map-viewer.js's own renderShapeElement),
+// ending the gesture before it even starts. Confirmed as a real bug before
+// this split existed: routing a shape's pointerdown through the plain
+// setSelection("vector-path", ...) every OTHER vector-path click uses (see
+// onVectorPathClick below) rebuilt the overlay on every click, which is
+// exactly why shapes could be selected but never actually dragged.
+function selectShapeElementForDrag(layer, elementId) {
+  state.selection = { kind: "vector-path", id: elementId, layerId: layer.id, cells: [], anchor: null };
+  renderSelection();
+  setPanelFocus(true);
 }
 
 let activeLayerDrag = null;
@@ -1005,7 +2024,15 @@ function bindLayerDrag(target, layer, element) {
     }
     event.preventDefault();
     event.stopPropagation();
-    target.setPointerCapture(event.pointerId);
+    // Best-effort — see map-viewer.js's renderShapeElement/beginMarkerDrag
+    // for why (some browsers throw InvalidStateError capturing in certain
+    // DOM positions); the window-level pointermove/pointerup listeners
+    // below track the gesture regardless.
+    try {
+      target.setPointerCapture(event.pointerId);
+    } catch (error) {
+      // Ignored — see comment above.
+    }
     activeLayerDrag = {
       id: layer.id,
       startX: event.clientX,
@@ -1039,12 +2066,15 @@ function bindLayerDrag(target, layer, element) {
       y: activeLayerDrag.originY + adjustedDeltaY,
     };
     if (activeLayerDrag.target) {
-      if (state.map.baseMap.type !== "tile") {
+      // Grid folds position into its own backgroundPosition below instead —
+      // translating the wrapper too would apply the same offset twice (see
+      // createLayerWrapper's own matching exclusion, map-viewer.js).
+      if (state.map.baseMap.type !== "tile" && layer.type !== "grid") {
         activeLayerDrag.target.style.transform = `translate(${layer.position.x}px, ${layer.position.y}px)`;
       }
     }
     if (activeLayerDrag.element?.classList.contains("orrery-layer-grid-overlay")) {
-      const offset = getGridOffset(layer);
+      const offset = getGridBackgroundPosition(layer);
       activeLayerDrag.element.style.backgroundPosition = `${offset.x}px ${offset.y}px`;
     } else {
       updateTileLayerElementPosition(layer, activeLayerDrag.element);
@@ -1055,7 +2085,11 @@ function bindLayerDrag(target, layer, element) {
     if (!activeLayerDrag || activeLayerDrag.id !== layer.id) {
       return;
     }
-    target.releasePointerCapture(event.pointerId);
+    try {
+      target.releasePointerCapture(event.pointerId);
+    } catch (error) {
+      // Ignored — capture above may never have actually been acquired.
+    }
     target.classList.remove("is-dragging");
     updateMapTimestamp(state.map);
     const after = JSON.stringify(state.map);
@@ -1081,6 +2115,23 @@ function bindLayerDrag(target, layer, element) {
 // a new marker," per-marker drag→undo-stack recording, and the whole-layer
 // drag handle. None of these run at all when a caller (the widget) doesn't
 // pass them.
+// Resolves which grid layer a selected Group's cells get painted onto —
+// its own Fog of War-linked layer if it has one (the common case this
+// exists for), else the GM's own last explicit "Paint on layer" pick if
+// that layer still exists, else the map's first grid layer.
+function resolvePaintTargetLayer(group) {
+  if (!group) {
+    return null;
+  }
+  const gridLayers = state.map.layers.filter((entry) => entry.type === "grid");
+  const fogLinked = gridLayers.find((entry) => entry.settings?.revealGroupId === group.id);
+  if (fogLinked) {
+    return fogLinked;
+  }
+  const remembered = paintTargetLayerId ? gridLayers.find((entry) => entry.id === paintTargetLayerId) : null;
+  return remembered || gridLayers[0] || null;
+}
+
 function renderLayerOverlays() {
   const overlay = baseMapManager.getOverlayContainer();
   if (!overlay) {
@@ -1089,6 +2140,7 @@ function renderLayerOverlays() {
   syncOverlayInteractivity();
   const activeGroup =
     state.selection.kind === "group" ? state.map.groups.find((group) => group.id === state.selection.id) : null;
+  const paintLayer = resolvePaintTargetLayer(activeGroup);
   renderMapLayers(overlay, baseMapManager, state.map, {
     viewerTier: getEffectiveViewerTier(),
     hasFullAccess: currentUserHasFullMapAccess(),
@@ -1126,7 +2178,7 @@ function renderLayerOverlays() {
       }
     },
     onMarkerLayerEmptyClick: (layer, position, event) => {
-      const newElement = createMarkerElement({ position });
+      const newElement = createMarkerElement({ position: snapMarkerPositionToGrid(position, layer) });
       recordHistory("place marker", () => {
         layer.elements = layer.elements || [];
         layer.elements.push(newElement);
@@ -1138,7 +2190,7 @@ function renderLayerOverlays() {
     onMarkerDragStart: (layer, markerElement, dotEl) => selectMarkerElementForDrag(layer, markerElement, dotEl),
     onMarkerDragEnd: (layer, markerElement, nextPosition) => {
       const before = JSON.stringify(state.map);
-      markerElement.position = nextPosition;
+      markerElement.position = snapMarkerPositionToGrid(nextPosition, layer);
       updateMapTimestamp(state.map);
       const after = JSON.stringify(state.map);
       if (before !== after) {
@@ -1148,6 +2200,14 @@ function renderLayerOverlays() {
       // full renderLayerOverlays() mid-drag would replace dotEl in the DOM
       // out from under the pointer capture driving the gesture.
       renderLayerOverlays();
+      // The marker's own Position X/Y fields (if this marker's inspector is
+      // still open) need this to pick up where the drag actually landed —
+      // renderLayerOverlays() alone doesn't touch the selection panel.
+      // Safe here specifically because it's AFTER the deferred-until-drag-
+      // end point above (dotEl isn't mid-gesture anymore), unlike a
+      // renderSelection() during the drag itself, which would tear out the
+      // very node the pointer capture is driving.
+      renderSelection();
       syncOverlayInteractivity();
       renderJson();
     },
@@ -1157,6 +2217,85 @@ function renderLayerOverlays() {
       wrapper.appendChild(handle);
       wrapper.classList.add("is-draggable");
       bindLayerDrag(handle, layer, element);
+    },
+    // Only wired while Draw/Shape mode is off (see setupDrawTool/
+    // setupShapeTool) — a drawn path or placed shape needs to stay
+    // click-through while actively drawing, so a new stroke can start
+    // anywhere, including on top of an existing one — but NOT gated on
+    // shapeModeActive: a placed shape should always be immediately
+    // selectable/draggable, matching how a placed Marker already works
+    // (click it to select, click empty space to place a new one), even
+    // while the Shape tool is still armed. Confirmed as a real bug before
+    // this: with shapes ALSO click-through while shapeModeActive, clicking
+    // a just-placed shape didn't select it — it fell through and stamped a
+    // brand new shape on top of it instead. A shape uses the lightweight
+    // selectShapeElementForDrag (no overlay rebuild — see its own comment)
+    // since it might be about to be dragged; a plain path has no drag to
+    // protect, so the regular setSelection is fine.
+    onVectorPathClick: drawModeActive
+      ? undefined
+      : (layer, elementId, event, kind) => {
+          if (kind === "shape") {
+            selectShapeElementForDrag(layer, elementId);
+          } else {
+            setSelection("vector-path", elementId, { layerId: layer.id });
+          }
+        },
+    onShapeDragEnd: drawModeActive
+      ? undefined
+      : (layer, elementId, nextOrigin) => {
+          const shapeElement = layer.elements?.find((entry) => entry.id === elementId);
+          if (!shapeElement) return;
+          const before = JSON.stringify(state.map);
+          // snapMarkerPositionToGrid isn't actually marker-specific — it
+          // only ever uses the layer's own generic getMarkerLayerOffset, so
+          // it snaps any layer's element position, shape included.
+          shapeElement.origin = shapeElement.snapToGrid !== false ? snapShapeOriginToGrid(nextOrigin, layer) : nextOrigin;
+          updateMapTimestamp(state.map);
+          const after = JSON.stringify(state.map);
+          if (before !== after) {
+            undoStack.push({ label: "move shape", before, after });
+          }
+          renderLayerOverlays();
+          renderJson();
+        },
+    paintModeActive: Boolean(activeGroup && paintLayer),
+    paintTargetLayerId: paintLayer?.id ?? null,
+    // Additive only (never removes a cell already a member) — a single
+    // click or a whole drag sweep both just add cells in, not a toggle/
+    // erase tool; removing individual cells still works fine through the
+    // plain select-then-checkbox path this doesn't replace. No
+    // recordHistory per cell — paintDragBefore (captured on the FIRST cell
+    // of a gesture) and onGridCellPaintEnd below batch the whole gesture
+    // (single click included) into one undo entry.
+    onGridCellPaint: (layer, coord) => {
+      const group = activeGroup;
+      if (!group) return;
+      if (paintDragBefore === null) {
+        paintDragBefore = JSON.stringify(state.map);
+      }
+      const resolved = findGridCell(layer, coord) || ensureGridCell(layer, coord);
+      const member = { layerId: layer.id, elementId: resolved.id, kind: "grid-cell" };
+      const key = getGroupMemberKey(member);
+      const alreadyMember = normalizeGroupMembers(group).some((entry) => getGroupMemberKey(entry) === key);
+      if (alreadyMember) return;
+      group.elementIds = [...normalizeGroupMembers(group), member];
+      updateMapTimestamp(state.map);
+      renderLayerOverlays();
+      renderJson();
+    },
+    onGridCellPaintEnd: () => {
+      if (paintDragBefore !== null) {
+        const after = JSON.stringify(state.map);
+        if (paintDragBefore !== after) {
+          undoStack.push({ label: "paint group cells", before: paintDragBefore, after });
+        }
+        paintDragBefore = null;
+      }
+      // Full rebuild only at drag-end (not per-cell, see onGridCellPaint's
+      // own comment) — refreshes the Members list/count in the still-open
+      // group editor.
+      renderSelection();
     },
   });
 }
@@ -1168,14 +2307,354 @@ function createSelectionSectionTitle(text) {
   return title;
 }
 
-function createFieldWrapper(labelText, input) {
-  const wrapper = document.createElement("label");
-  wrapper.className = "d-flex flex-column gap-1 small";
-  const label = document.createElement("span");
-  label.className = "text-body-secondary";
-  label.textContent = labelText;
-  wrapper.appendChild(label);
-  wrapper.appendChild(input);
+// createHalfWidthNumberField (common/js/lib/inspector-fields.js) commits on
+// every "input" event — every keystroke — which is fine for its OTHER
+// callers (e.g. Workbench's Template editor, whose rerender only touches a
+// separate canvas preview) but was actively dangerous here: Position X/Y's
+// own apply function used to call renderSelection(), rebuilding this whole
+// panel — including the very input being typed into — on every single
+// keystroke. That destroys the focused input and drops focus (often back to
+// nothing/<body>) without restoring it; the NEXT keystroke then lands
+// wherever focus fell instead of the input, and if that keystroke happened
+// to be Delete/Backspace, the global keydown handler's "click whatever
+// delete-selected button is showing" shortcut fired — deleting the entire
+// selected layer. Confirmed as the actual cause of "typing in Position X/Y
+// sometimes deletes the whole layer," and (since a blur-triggered rebuild
+// mid-Tab-transition has the same focus-loss problem) of Tab no longer
+// landing on the expected next field either. This wrapper builds the same
+// field but commits on "change" (blur/Enter) instead — matching how every
+// OTHER numeric field in this file (buildLayerSettingField's non-"half"
+// branch) already behaves — and is paired everywhere below with an apply
+// function that does NOT call renderSelection() for exactly the fields
+// (Position X/Y, AoE shape Size/Angle/Spread/Width) where nothing else in
+// the panel depends on the new value, so there's nothing left to rebuild
+// mid-edit at all.
+function createCommitOnBlurNumberField(label, value, onChange, options = {}) {
+  const field = createHalfWidthNumberField(label, value, undefined, options);
+  if (typeof onChange !== "function") {
+    return field;
+  }
+  const input = field.querySelector("input");
+  input.addEventListener("change", () => {
+    const next = input.value === "" ? null : Number(input.value);
+    if (next !== null && Number.isNaN(next)) {
+      return;
+    }
+    onChange(next);
+  });
+  return field;
+}
+
+// Shared by the base map's own Image Width/Height (setupMapEvents) and a
+// Raster layer's Width/Height (buildLayerSettingField calls this instead
+// for those two keys) — three valid forms, matching
+// base-maps.js's own resolveImageDimension exactly: blank means "clear the
+// override, render at native size" (null — NOT rejected the way
+// Number("") <= 0 used to silently reject it, which meant these fields
+// could never actually be cleared before), "NN%" scales the image's own
+// native size, anything else must be a literal positive pixel number.
+function parseImageDimension(raw) {
+  const trimmed = raw.trim();
+  if (!trimmed) {
+    return { valid: true, value: null };
+  }
+  if (trimmed.endsWith("%")) {
+    const pct = parseFloat(trimmed);
+    return Number.isFinite(pct) && pct > 0 ? { valid: true, value: trimmed } : { valid: false };
+  }
+  const numeric = Number(trimmed);
+  return Number.isFinite(numeric) && numeric > 0 ? { valid: true, value: numeric } : { valid: false };
+}
+
+// Free text, not type="number" — a number input rejects "%" at the browser
+// level. Tracks the last successfully-committed display value itself
+// (rather than re-reading whatever prop it was built with) so reverting an
+// invalid edit doesn't regress to a stale value once the field has already
+// committed at least one real change — this field is never rebuilt after
+// mount (see applyLayerSettingsFieldChange's own no-renderSelection()
+// reasoning), so nothing else keeps that tracking for it.
+function createDimensionField(label, value, onChange, options = {}) {
+  const field = createCompactField({ type: "text", label, ...options });
+  const input = field.querySelector("input");
+  let lastGoodDisplay = value ?? "";
+  input.value = lastGoodDisplay;
+  input.addEventListener("change", () => {
+    const parsed = parseImageDimension(input.value);
+    if (!parsed.valid) {
+      input.value = lastGoodDisplay;
+      return;
+    }
+    lastGoodDisplay = input.value.trim();
+    onChange(parsed.value);
+  });
+  return field;
+}
+
+// Position X/Y both on a Layer's whole-layer pan offset and (separately) a
+// Marker element's own {x,y} share this exact shape. Recorded via
+// applyLayerPositionChange (NOT applyLayerChange — see
+// createCommitOnBlurNumberField's own comment for why this specific field
+// must not rebuild the panel it lives in). Marker elements use their own
+// inline updater instead (see renderMarkerElementSelectionEditor).
+function applyLayerPositionChange(label, apply) {
+  recordHistory(label, () => {
+    apply();
+    updateMapTimestamp(state.map);
+  });
+  renderLayerOverlays();
+  renderJson();
+}
+
+function buildLayerPositionField(layer, axis, label) {
+  return createCommitOnBlurNumberField(label, layer.position?.[axis] ?? 0, (value) => {
+    if (value === null) {
+      return;
+    }
+    applyLayerPositionChange(`layer position ${axis}`, () => {
+      layer.position = { ...(layer.position || { x: 0, y: 0 }), [axis]: value };
+    });
+  });
+}
+
+function buildLayerOpacityField(layer) {
+  const field = createCompactField({ type: "range", label: "Opacity", controlClass: "form-range", min: 0, max: 1, step: 0.05 });
+  const input = field.querySelector("input");
+  input.value = layer.opacity;
+  input.addEventListener("change", () => {
+    const value = Number(input.value);
+    if (!Number.isFinite(value)) {
+      return;
+    }
+    applyLayerChange("layer opacity", () => {
+      layer.opacity = value;
+    });
+  });
+  return field;
+}
+
+// One field per LAYER_SETTINGS_SCHEMA[layer.type] entry (Stroke/Fill color,
+// Grid type, Cell size, Marker size/color, ...), same change/undo wiring
+// throughout (recordHistory via applyLayerSettingsChange, plus the
+// gridType-changes-invalidate-cell-selection special case) regardless of
+// shape. `variant` picks the shape to match how the field sits in the
+// layout:
+// - "floating" (default) — createFormFloatingField, the suite-wide shape
+//   for a standalone single-column field (Grid type, Cell size, Stroke
+//   width, Raster's Image URL) — matches Workbench's own inspector
+//   convention for primary right-pane controls.
+// - "compact" — createCompactField's small-label-above-input shape, for a
+//   field condensed into a dense paired row (a color swatch next to
+//   Opacity, Scale next to Scale unit).
+// - "half" — createHalfWidthNumberField, for a numeric field condensed
+//   alongside Position X/Y (Marker's own Size) — same shape as Position
+//   itself, so labels in that row match instead of one being visibly
+//   larger than the others.
+function buildLayerSettingField(layer, field, { variant = "floating" } = {}) {
+  if (!field) {
+    return document.createDocumentFragment();
+  }
+  if (variant === "half") {
+    return createCommitOnBlurNumberField(field.label, layer.settings?.[field.key], (value) => {
+      if (value === null) {
+        return;
+      }
+      applyLayerSettingsFieldChange(`layer ${field.key}`, () => {
+        layer.settings = layer.settings || {};
+        layer.settings[field.key] = value;
+      });
+    }, { min: field.min, max: field.max, step: field.step });
+  }
+  const factory = variant === "compact" ? createCompactField : createFormFloatingField;
+  const built = factory({
+    type: field.type === "select" ? "select" : field.type,
+    label: field.label,
+    controlClass: field.type === "color" ? "form-control form-control-color" : undefined,
+    // form-floating's label-float behavior needs a placeholder attribute to
+    // key off of (Bootstrap's :placeholder-shown check) — a single space
+    // when there's no real placeholder text, same convention Workbench's
+    // own createTextInput/createNumberInput already follow.
+    placeholder: variant === "floating" && field.type !== "select" ? " " : undefined,
+    options: field.options || [],
+    min: field.min,
+    max: field.max,
+    step: field.step,
+  });
+  const input = built.querySelector("input, select");
+  const currentValue = layer.settings?.[field.key];
+  if (currentValue !== undefined) {
+    input.value = String(currentValue);
+  }
+  input.addEventListener("change", () => {
+    let nextValue = input.value;
+    if (field.type === "number") {
+      const numeric = Number(nextValue);
+      if (!Number.isFinite(numeric)) {
+        return;
+      }
+      nextValue = numeric;
+    }
+    applyLayerSettingsFieldChange(`layer ${field.key}`, () => {
+      layer.settings = layer.settings || {};
+      layer.settings[field.key] = nextValue;
+    });
+    if (field.key === "gridType" && state.selection.kind === "grid-cells" && state.selection.layerId === layer.id) {
+      setSelection("layer", layer.id);
+    }
+  });
+  return built;
+}
+
+// The Marker Layer's Icon setting — a free-text field until now with no
+// visual effect (createMarkerDot never read layer.settings.icon; fixed
+// alongside this to actually render the chosen icon). Uses the same
+// autocomplete+preview picker as Press/Workbench's icon fields.
+function buildMarkerIconField(layer) {
+  const field = createIconPickerField({
+    label: "Icon",
+    value: layer.settings?.icon || "",
+    onSelect: (value) => {
+      applyLayerSettingsChange("layer icon", () => {
+        layer.settings = layer.settings || {};
+        layer.settings.icon = value;
+      });
+    },
+  });
+  return field;
+}
+
+// Show Labels toggle + Position/Size — same "toggle, then conditionally
+// show the fields it gates" shape buildFogOfWarFields already uses, not a
+// LAYER_SETTINGS_SCHEMA entry since Position/Size only make sense to show
+// once labels are actually on.
+function buildMarkerLabelFields(layer) {
+  const wrapper = document.createDocumentFragment();
+  const toggleField = createCheckField({ id: `layer-labels-${layer.id}`, label: "Show Labels", switchStyle: true });
+  const toggleInput = toggleField.querySelector("input");
+  toggleInput.checked = Boolean(layer.settings?.showLabels);
+  toggleInput.addEventListener("change", () => {
+    applyLayerSettingsChange("layer show labels", () => {
+      layer.settings = layer.settings || {};
+      layer.settings.showLabels = toggleInput.checked;
+    });
+  });
+  wrapper.appendChild(toggleField);
+  if (layer.settings?.showLabels) {
+    const positionField = createFormFloatingField({
+      type: "select",
+      label: "Label position",
+      options: [
+        { value: "above", label: "Above marker" },
+        { value: "below", label: "Below marker" },
+        { value: "over", label: "Over marker" },
+      ],
+    });
+    const positionSelect = positionField.querySelector("select");
+    positionSelect.value = layer.settings.labelPosition || "below";
+    positionSelect.addEventListener("change", () => {
+      applyLayerSettingsFieldChange("layer label position", () => {
+        layer.settings.labelPosition = positionSelect.value;
+      });
+    });
+    const sizeField = createCommitOnBlurNumberField(
+      "Label size",
+      Number.isFinite(layer.settings.labelSize) ? layer.settings.labelSize : 12,
+      (value) => {
+        if (value === null) return;
+        applyLayerSettingsFieldChange("layer label size", () => {
+          layer.settings.labelSize = Math.max(1, value);
+        });
+      },
+      { min: 1, step: 1 }
+    );
+    wrapper.appendChild(createFieldRow([positionField, sizeField], { columns: 2 }));
+  }
+  return wrapper;
+}
+
+// Fog of War toggle + reveal-group picker for a grid layer. Deliberately not
+// a LAYER_SETTINGS_SCHEMA entry like the rest of the grid fields — the
+// reveal-group select needs live options from state.map.groups, which the
+// schema-driven buildLayerSettingField (static options only) can't supply,
+// same reasoning as buildMarkerIconField's own special-casing.
+function buildFogOfWarFields(layer) {
+  const wrapper = document.createDocumentFragment();
+  const toggleRow = document.createElement("div");
+  toggleRow.className = "d-flex align-items-center justify-content-between gap-2";
+  const toggleField = createCheckField({ id: `layer-fog-${layer.id}`, label: "Fog of War", switchStyle: true });
+  const toggleInput = toggleField.querySelector("input");
+  toggleInput.checked = Boolean(layer.settings?.fogOfWar);
+  toggleInput.addEventListener("change", () => {
+    applyLayerSettingsChange("layer fog of war", () => {
+      layer.settings = layer.settings || {};
+      layer.settings.fogOfWar = toggleInput.checked;
+      // Auto-create a dedicated reveal group the first time fog is turned
+      // on, so there's immediately somewhere to add cells via the existing
+      // Groups UI instead of a dead "fog on, nothing configured yet" state.
+      if (toggleInput.checked && !layer.settings.revealGroupId) {
+        const group = createGroup({ name: `${layer.name} — Revealed` });
+        state.map.groups.push(group);
+        layer.settings.revealGroupId = group.id;
+      }
+    });
+    // applyLayerSettingsChange doesn't re-render the left pane's Groups
+    // list (most settings changes have nothing to do with it) — the new
+    // reveal group created above needs it explicitly, or it exists in
+    // state.map.groups but never appears anywhere for the GM to find.
+    renderGroups();
+  });
+  const fogHelp = document.createElement("span");
+  fogHelp.className = "align-middle";
+  fogHelp.dataset.helpTopic = "orrery.fogOfWar";
+  fogHelp.dataset.helpInsert = "replace";
+  toggleRow.append(toggleField, fogHelp);
+  wrapper.appendChild(toggleRow);
+  initHelpSystem({ root: toggleRow });
+  if (layer.settings?.fogOfWar) {
+    const groupField = createFormFloatingField({ type: "select", label: "Reveal group" });
+    const select = groupField.querySelector("select");
+    state.map.groups.forEach((group) => {
+      const option = document.createElement("option");
+      option.value = group.id;
+      option.textContent = group.name;
+      select.appendChild(option);
+    });
+    select.value = layer.settings.revealGroupId || "";
+    select.addEventListener("change", () => {
+      applyLayerSettingsChange("layer reveal group", () => {
+        layer.settings.revealGroupId = select.value;
+      });
+    });
+    wrapper.appendChild(groupField);
+
+    // Same range-slider shape as every other Opacity in this suite
+    // (buildLayerOpacityField's own). Two independent sliders, not one —
+    // "opaque enough a player can't cheat" and "visible enough a GM can
+    // actually see it while working" are different targets (see
+    // createLayerSettings's own comment on these two keys).
+    const playerOpacityField = createCompactField({ type: "range", label: "Player Fog Opacity", controlClass: "form-range", min: 0, max: 1, step: 0.05 });
+    const playerOpacityInput = playerOpacityField.querySelector("input");
+    playerOpacityInput.value = Number.isFinite(layer.settings.fogOpacity) ? layer.settings.fogOpacity : 0.92;
+    playerOpacityInput.addEventListener("change", () => {
+      const value = Number(playerOpacityInput.value);
+      if (!Number.isFinite(value)) return;
+      applyLayerSettingsFieldChange("layer fog opacity", () => {
+        layer.settings.fogOpacity = value;
+      });
+    });
+
+    const previewOpacityField = createCompactField({ type: "range", label: "GM Preview Opacity", controlClass: "form-range", min: 0, max: 1, step: 0.05 });
+    const previewOpacityInput = previewOpacityField.querySelector("input");
+    previewOpacityInput.value = Number.isFinite(layer.settings.fogPreviewOpacity) ? layer.settings.fogPreviewOpacity : 0.6;
+    previewOpacityInput.addEventListener("change", () => {
+      const value = Number(previewOpacityInput.value);
+      if (!Number.isFinite(value)) return;
+      applyLayerSettingsFieldChange("layer fog preview opacity", () => {
+        layer.settings.fogPreviewOpacity = value;
+      });
+    });
+
+    wrapper.appendChild(createFieldRow([playerOpacityField, previewOpacityField], { columns: 2 }));
+  }
   return wrapper;
 }
 
@@ -1197,6 +2676,40 @@ function applyLayerSettingsChange(label, apply) {
   });
   renderSelection();
   renderLayerOverlays();
+  renderJson();
+}
+
+// Same reasoning as applyLayerPositionChange/createCommitOnBlurNumberField
+// — used by buildLayerSettingField for every schema-driven setting (Grid
+// Type, Cell Size, Line/Stroke/Fill color, Stroke Width, Image URL/Width/
+// Height, Marker Size — none of which show/hide any OTHER field in this
+// panel based on their own value, unlike Fog of War's own Reveal Group
+// field, which still goes through applyLayerSettingsChange above for
+// exactly that reason). Skipping renderSelection() here is what actually
+// lets Tab move Name → Position X → Position Y → Grid Type → Cell Size
+// without a mid-transition rebuild stealing focus at every stop along the
+// way, not just the Position fields.
+function applyLayerSettingsFieldChange(label, apply) {
+  recordHistory(label, () => {
+    apply();
+    updateMapTimestamp(state.map);
+  });
+  renderLayerOverlays();
+  renderJson();
+}
+
+// Same reasoning as applyLayerSettingsFieldChange just above, for the
+// Layer's own Name field — renderLayers() still runs (the left-hand layer
+// list shows each layer's name), but renderSelection() doesn't, since
+// nothing else in THIS panel depends on the name, and Name is the first
+// stop in the Name → Position X → Position Y → Grid Type → Cell Size tab
+// sequence, so a rebuild on committing it would derail every field after.
+function applyLayerNameChange(label, apply) {
+  recordHistory(label, () => {
+    apply();
+    updateMapTimestamp(state.map);
+  });
+  renderLayers();
   renderJson();
 }
 
@@ -1263,13 +2776,11 @@ function renderLayerSelectionEditor(layer) {
     return;
   }
   const container = elements.selectionEditor;
+  disposeTooltips(container);
   container.innerHTML = "";
 
-  container.appendChild(createSelectionSectionTitle("Layer Properties"));
-
-  const nameInput = document.createElement("input");
-  nameInput.type = "text";
-  nameInput.className = "form-control form-control-sm";
+  const nameField = createFormFloatingField({ type: "text", label: "Name" });
+  const nameInput = nameField.querySelector("input");
   nameInput.value = layer.name;
   nameInput.addEventListener("change", () => {
     const value = nameInput.value.trim();
@@ -1277,144 +2788,74 @@ function renderLayerSelectionEditor(layer) {
       nameInput.value = layer.name;
       return;
     }
-    applyLayerChange("layer name", () => {
+    applyLayerNameChange("layer name", () => {
       layer.name = value;
     });
   });
-  container.appendChild(createFieldWrapper("Name", nameInput));
+  container.appendChild(nameField);
 
-  const positionGrid = document.createElement("div");
-  positionGrid.className = "d-grid gap-2";
-  positionGrid.style.gridTemplateColumns = "repeat(2, minmax(0, 1fr))";
+  const isMarkerLayer = layer.type === "marker";
+  const isGridLayer = layer.type === "grid";
 
-  const positionX = document.createElement("input");
-  positionX.type = "number";
-  positionX.className = "form-control form-control-sm";
-  positionX.value = layer.position?.x ?? 0;
-  positionX.addEventListener("change", () => {
-    const value = Number(positionX.value);
-    if (!Number.isFinite(value)) {
-      return;
-    }
-    applyLayerChange("layer position x", () => {
-      layer.position = { ...(layer.position || { x: 0, y: 0 }), x: value };
-    });
-  });
-
-  const positionY = document.createElement("input");
-  positionY.type = "number";
-  positionY.className = "form-control form-control-sm";
-  positionY.value = layer.position?.y ?? 0;
-  positionY.addEventListener("change", () => {
-    const value = Number(positionY.value);
-    if (!Number.isFinite(value)) {
-      return;
-    }
-    applyLayerChange("layer position y", () => {
-      layer.position = { ...(layer.position || { x: 0, y: 0 }), y: value };
-    });
-  });
-
-  positionGrid.appendChild(createFieldWrapper("Position X", positionX));
-  positionGrid.appendChild(createFieldWrapper("Position Y", positionY));
-  container.appendChild(positionGrid);
-
-  const visibilityWrapper = document.createElement("div");
-  visibilityWrapper.className = "form-check";
-  const visibilityInput = document.createElement("input");
-  visibilityInput.className = "form-check-input";
-  visibilityInput.type = "checkbox";
-  visibilityInput.id = `layer-visible-${layer.id}`;
-  visibilityInput.checked = layer.visible;
-  visibilityInput.addEventListener("change", () => {
-    applyLayerChange("layer visibility", () => {
-      layer.visible = visibilityInput.checked;
-    });
-  });
-  const visibilityLabel = document.createElement("label");
-  visibilityLabel.className = "form-check-label small";
-  visibilityLabel.setAttribute("for", visibilityInput.id);
-  visibilityLabel.textContent = "Visible";
-  visibilityWrapper.appendChild(visibilityInput);
-  visibilityWrapper.appendChild(visibilityLabel);
-  container.appendChild(visibilityWrapper);
-
-  const opacityInput = document.createElement("input");
-  opacityInput.type = "range";
-  opacityInput.className = "form-range";
-  opacityInput.min = "0";
-  opacityInput.max = "1";
-  opacityInput.step = "0.05";
-  opacityInput.value = layer.opacity;
-  opacityInput.addEventListener("change", () => {
-    const value = Number(opacityInput.value);
-    if (!Number.isFinite(value)) {
-      return;
-    }
-    applyLayerChange("layer opacity", () => {
-      layer.opacity = value;
-    });
-  });
-  container.appendChild(createFieldWrapper("Opacity", opacityInput));
-
-  const settingsSchema = LAYER_SETTINGS_SCHEMA[layer.type] || [];
-  if (settingsSchema.length) {
-    settingsSchema.forEach((field) => {
-      const input = document.createElement(field.type === "select" ? "select" : "input");
-      if (field.type !== "select") {
-        input.type = field.type;
-      }
-      input.className = field.type === "select" ? "form-select form-select-sm" : "form-control form-control-sm";
-      if (field.type === "range") {
-        input.className = "form-range";
-      }
-      if (field.min !== undefined) {
-        input.min = String(field.min);
-      }
-      if (field.max !== undefined) {
-        input.max = String(field.max);
-      }
-      if (field.step !== undefined) {
-        input.step = String(field.step);
-      }
-      if (field.type === "select") {
-        (field.options || []).forEach((option) => {
-          const optionElement = document.createElement("option");
-          optionElement.value = option.value;
-          optionElement.textContent = option.label;
-          input.appendChild(optionElement);
-        });
-      }
-      const currentValue = layer.settings?.[field.key];
-      if (currentValue !== undefined) {
-        input.value = String(currentValue);
-      }
-      input.addEventListener("change", () => {
-        let nextValue = input.value;
-        if (field.type === "number" || field.type === "range") {
-          const numeric = Number(nextValue);
-          if (!Number.isFinite(numeric)) {
-            return;
-          }
-          nextValue = numeric;
-        }
-        applyLayerSettingsChange(`layer ${field.key}`, () => {
-          layer.settings = layer.settings || {};
-          layer.settings[field.key] = nextValue;
-        });
-        if (
-          field.key === "gridType" &&
-          state.selection.kind === "grid-cells" &&
-          state.selection.layerId === layer.id
-        ) {
-          setSelection("layer", layer.id);
-        }
-      });
-      container.appendChild(createFieldWrapper(field.label, input));
-    });
+  // Every layer type keeps Position as its own row EXCEPT marker (folded
+  // into its own condensed Size+Position row below).
+  if (!isMarkerLayer) {
+    container.appendChild(
+      createFieldRow([buildLayerPositionField(layer, "x", "Position X"), buildLayerPositionField(layer, "y", "Position Y")], { columns: 2 })
+    );
   }
 
-  container.appendChild(createSelectionSectionTitle("Custom Properties"));
+  // Opacity stays its own row for vector/raster layers, but condenses into
+  // a shared row with Color (marker) / Line color (grid) below instead.
+  if (!isMarkerLayer && !isGridLayer) {
+    container.appendChild(buildLayerOpacityField(layer));
+  }
+
+  const settingsSchema = LAYER_SETTINGS_SCHEMA[layer.type] || [];
+  const schemaField = (key) => settingsSchema.find((field) => field.key === key);
+  if (isMarkerLayer) {
+    const colorField = buildLayerSettingField(layer, schemaField("color"), { variant: "compact" });
+    container.appendChild(createFieldRow([colorField, buildLayerOpacityField(layer)], { columns: 2 }));
+    const sizeField = buildLayerSettingField(layer, schemaField("size"), { variant: "half" });
+    container.appendChild(
+      createFieldRow(
+        [sizeField, buildLayerPositionField(layer, "x", "Position X"), buildLayerPositionField(layer, "y", "Position Y")],
+        { columns: 3 }
+      )
+    );
+    container.appendChild(buildMarkerIconField(layer));
+    const outlineColorField = buildLayerSettingField(layer, schemaField("outlineColor"), { variant: "compact" });
+    const outlineWidthField = buildLayerSettingField(layer, schemaField("outlineWidth"), { variant: "half" });
+    container.appendChild(createFieldRow([outlineColorField, outlineWidthField], { columns: 2 }));
+    container.appendChild(buildMarkerLabelFields(layer));
+  } else if (isGridLayer) {
+    container.appendChild(buildLayerSettingField(layer, schemaField("gridType"), { variant: "floating" }));
+    container.appendChild(buildLayerSettingField(layer, schemaField("cellSize"), { variant: "floating" }));
+    const lineColorField = buildLayerSettingField(layer, schemaField("lineColor"), { variant: "compact" });
+    container.appendChild(createFieldRow([lineColorField, buildLayerOpacityField(layer)], { columns: 2 }));
+    container.appendChild(buildFogOfWarFields(layer));
+  } else if (layer.type === "vector") {
+    const strokeColorField = buildLayerSettingField(layer, schemaField("strokeColor"), { variant: "compact" });
+    const fillColorField = buildLayerSettingField(layer, schemaField("fillColor"), { variant: "compact" });
+    container.appendChild(createFieldRow([strokeColorField, fillColorField], { columns: 2 }));
+    container.appendChild(buildLayerSettingField(layer, schemaField("strokeWidth"), { variant: "floating" }));
+  } else if (layer.type === "raster") {
+    container.appendChild(buildLayerSettingField(layer, schemaField("src"), { variant: "floating" }));
+    const widthField = createDimensionField("Width", layer.settings?.width, (value) => {
+      applyLayerSettingsFieldChange("layer width", () => {
+        layer.settings = layer.settings || {};
+        layer.settings.width = value;
+      });
+    }, { placeholder: "Native, 150%, or 800" });
+    const heightField = createDimensionField("Height", layer.settings?.height, (value) => {
+      applyLayerSettingsFieldChange("layer height", () => {
+        layer.settings = layer.settings || {};
+        layer.settings.height = value;
+      });
+    }, { placeholder: "Native, 150%, or 600" });
+    container.appendChild(createFieldRow([widthField, heightField], { columns: 2 }));
+  }
+
   const propertiesWrapper = document.createElement("div");
   propertiesWrapper.className = "d-flex flex-column gap-2";
   const entries = Object.entries(layer.properties || {});
@@ -1495,29 +2936,90 @@ function renderLayerSelectionEditor(layer) {
   actionGroup.appendChild(pasteButton);
   actionRow.appendChild(actionGroup);
 
-  container.appendChild(actionRow);
-  container.appendChild(propertiesWrapper);
+  container.appendChild(
+    createCollapsibleSection("Custom Properties", [actionRow, propertiesWrapper], { defaultCollapsed: entries.length === 0 })
+  );
   refreshTooltips();
 
-  const deleteButton = document.createElement("button");
-  deleteButton.type = "button";
-  deleteButton.className = "btn btn-danger btn-sm mt-3";
-  deleteButton.textContent = "Delete layer";
-  deleteButton.addEventListener("click", () => {
-    const index = state.map.layers.findIndex((entry) => entry.id === layer.id);
-    if (index === -1) {
-      return;
-    }
-    recordHistory("delete layer", () => {
-      state.map.layers.splice(index, 1);
-      updateMapTimestamp(state.map);
+  // Visible + reorder, together at the bottom — the same two controls the
+  // left-pane layer list itself shows inline (the checkbox and the
+  // up/down buttons), mirrored here since neither was represented in this
+  // panel at all before. Visible is routed through the exact same
+  // applyLayerChange the left-pane checkbox now also uses (see renderLayers'
+  // own comment) so the two can never drift out of sync with each other.
+  const bottomVisibilityField = createCheckField({ id: `layer-visible-${layer.id}`, label: "Visible", switchStyle: true });
+  const bottomVisibilityInput = bottomVisibilityField.querySelector("input");
+  bottomVisibilityInput.checked = layer.visible;
+  bottomVisibilityInput.addEventListener("change", () => {
+    applyLayerChange("layer visibility", () => {
+      layer.visible = bottomVisibilityInput.checked;
     });
-    setSelection(null);
-    renderLayers();
-    renderLayerOverlays();
-    renderJson();
   });
-  container.appendChild(deleteButton);
+  container.appendChild(bottomVisibilityField);
+
+  // Same icon-toolbar factory Press's own Component Inspector uses for
+  // this exact "move up/down, duplicate, delete the selected thing" set —
+  // mounted in the shared data-selection-toolbar-mount slot above the
+  // editor fields (renderSelection() clears it before every render; only
+  // this function, the one selection kind these four actions apply to,
+  // repopulates it). `delete`'s data-action="delete-selected" is
+  // load-bearing — it's what the global Delete/Backspace keyboard shortcut
+  // looks for via elements.selectionEditor's own querySelector, so it has
+  // to carry over from the old hand-built button exactly.
+  if (elements.selectionToolbar) {
+    const layerIndex = state.map.layers.indexOf(layer);
+    createToolbarButtonGroup([
+      {
+        action: "move-up",
+        label: "Move layer up",
+        icon: "tabler:arrow-up",
+        disabled: layerIndex >= state.map.layers.length - 1,
+        onClick: () => moveLayer(layer, 1),
+      },
+      {
+        action: "move-down",
+        label: "Move layer down",
+        icon: "tabler:arrow-down",
+        disabled: layerIndex <= 0,
+        onClick: () => moveLayer(layer, -1),
+      },
+      {
+        action: "duplicate",
+        label: "Duplicate layer",
+        onClick: () => {
+          const copy = duplicateLayer(layer);
+          recordHistory("duplicate layer", () => {
+            state.map.layers.splice(layerIndex + 1, 0, copy);
+            updateMapTimestamp(state.map);
+          });
+          setSelection("layer", copy.id);
+          renderLayers();
+          renderLayerOverlays();
+          renderJson();
+        },
+      },
+      {
+        action: "delete",
+        label: "Delete layer",
+        attrs: { "data-action": "delete-selected" },
+        onClick: () => {
+          const index = state.map.layers.findIndex((entry) => entry.id === layer.id);
+          if (index === -1) {
+            return;
+          }
+          recordHistory("delete layer", () => {
+            state.map.layers.splice(index, 1);
+            updateMapTimestamp(state.map);
+          });
+          setSelection(null);
+          renderLayers();
+          renderLayerOverlays();
+          renderJson();
+        },
+      },
+    ]).forEach((button) => elements.selectionToolbar.appendChild(button));
+    refreshTooltips(elements.selectionToolbar);
+  }
 }
 
 function createPropertyRow({ key, value, onUpdate, onRemove }) {
@@ -1690,8 +3192,8 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
     return;
   }
   const container = elements.selectionEditor;
+  disposeTooltips(container);
   container.innerHTML = "";
-  container.appendChild(createSelectionSectionTitle("Marker Properties"));
 
   // Same shape as applyLayerChange/applyLayerSettingsChange: snapshot for
   // undo, then refresh the inspector (title/details reflect the new label
@@ -1706,31 +3208,80 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
     renderJson();
   }
 
-  const labelInput = document.createElement("input");
-  labelInput.type = "text";
-  labelInput.className = "form-control form-control-sm";
+  const labelField = createFormFloatingField({ type: "text", label: "Label", placeholder: "Label" });
+  const labelInput = labelField.querySelector("input");
   labelInput.value = markerElement.label || "";
-  labelInput.placeholder = "Label";
   labelInput.addEventListener("change", () => {
     const value = labelInput.value.trim();
     applyMarkerElementChange("marker label", () => {
       markerElement.label = value;
     });
   });
-  container.appendChild(createFieldWrapper("Label", labelInput));
+  container.appendChild(labelField);
 
-  const kindSelect = document.createElement("select");
-  kindSelect.className = "form-select form-select-sm";
+  // Multiplier on the grid's own cell size (createMarkerElement/
+  // createMarkerDot) — 1 is a normal one-square token; a Large creature
+  // (D&D 5e) is 2, Huge is 3, etc. Whole-number steps only, same "AoE
+  // templates land on whole increments" reasoning setupShapeTool's own
+  // snapCellsToWholeUnit follows — a fractional token size isn't a real
+  // VTT convention the way a fractional AoE range sometimes is.
+  const sizeField = createCommitOnBlurNumberField(
+    "Size (grid squares)",
+    Number.isFinite(markerElement.sizeCells) && markerElement.sizeCells > 0 ? markerElement.sizeCells : 1,
+    (value) => {
+      if (value === null) return;
+      applyMarkerElementChange("marker size", () => {
+        markerElement.sizeCells = Math.max(1, Math.round(value));
+      });
+    },
+    { min: 1, step: 1 }
+  );
+  container.appendChild(sizeField);
+
+  // Per-marker override of the layer's own outline color (createMarkerDot
+  // reads markerElement.outlineColor first, falling back to the layer
+  // default) — shows whichever's currently EFFECTIVE (this marker's own if
+  // set, else the layer's), but always commits as this marker's own once
+  // touched, same "copy once, stays user-editable after" shape image/label
+  // already follow.
+  const outlineColorField = createCompactField({
+    type: "color",
+    label: "Outline color",
+    controlClass: "form-control form-control-color",
+  });
+  outlineColorField.querySelector("input").value = markerElement.outlineColor || layer.settings?.outlineColor || "#0f172a";
+  outlineColorField.querySelector("input").addEventListener("change", (event) => {
+    applyMarkerElementChange("marker outline color", () => {
+      markerElement.outlineColor = event.target.value;
+    });
+  });
+  container.appendChild(outlineColorField);
+
+  const imageField = createTokenImageField({
+    label: "Image",
+    value: markerElement.image || "",
+    dataManager,
+    status,
+    onSelect: (url) => {
+      applyMarkerElementChange("marker image", () => {
+        markerElement.image = url;
+      });
+    },
+  });
+  container.appendChild(imageField);
+
+  const referencesField = createFormFloatingField({ type: "select", label: "References" });
+  const kindSelect = referencesField.querySelector("select");
   const noReferenceOption = document.createElement("option");
   noReferenceOption.value = "";
   noReferenceOption.textContent = "No reference";
   kindSelect.appendChild(noReferenceOption);
-  container.appendChild(createFieldWrapper("References", kindSelect));
+  container.appendChild(referencesField);
 
-  const entitySelect = document.createElement("select");
-  entitySelect.className = "form-select form-select-sm";
+  const entityField = createFormFloatingField({ type: "select", label: "Entity" });
+  const entitySelect = entityField.querySelector("select");
   entitySelect.disabled = true;
-  container.appendChild(createFieldWrapper("Entity", entitySelect));
+  container.appendChild(entityField);
 
   const previewBox = document.createElement("div");
   previewBox.className = "small text-body-secondary border rounded p-2";
@@ -1747,6 +3298,32 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
       const name = result?.payload?.name || markerElement.refId;
       const description = result?.payload?.description || "";
       previewBox.textContent = description ? `${name} — ${description}` : name;
+      // A marker linked before its reference had an image (e.g. a Character
+      // imported before the DDB mapping picked up `image`, or re-imported
+      // later to add one) never gets a second chance at the entitySelect
+      // "change" handler's own inheritance below — that only fires once, at
+      // link time. Every render of an already-linked marker re-checks here
+      // too, so a referenced record gaining an image later is picked up the
+      // next time this panel opens, without ever overwriting an image the
+      // GM set (or intentionally cleared) by hand — same `!markerElement.image`
+      // guard as the link-time path.
+      if (!markerElement.image && result?.payload?.image) {
+        applyMarkerElementChange("marker image", () => {
+          markerElement.image = result.payload.image;
+        });
+      }
+      // Same "every panel open re-checks, not just link time" reasoning as
+      // image just above — a marker linked before Favorite Color existed
+      // (or before the signed-in user had one saved) never gets a second
+      // chance at the entitySelect "change" handler's own inheritance.
+      if (!markerElement.outlineColor && dataManager.isAuthenticated?.()) {
+        const settings = await dataManager.getUserSettings();
+        if (typeof settings?.favoriteColor === "string" && settings.favoriteColor) {
+          applyMarkerElementChange("marker outline color", () => {
+            markerElement.outlineColor = settings.favoriteColor;
+          });
+        }
+      }
     } catch (error) {
       previewBox.textContent = "Unable to load entity.";
     }
@@ -1812,54 +3389,102 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
   entitySelect.addEventListener("change", () => {
     const refId = entitySelect.value;
     const option = entitySelect.selectedOptions[0];
-    applyMarkerElementChange("marker reference entity", () => {
-      markerElement.refId = refId;
-      if (!markerElement.label && option && option.value) {
-        markerElement.label = option.textContent;
+    const kind = kindSelect.value;
+    // Image inheritance needs the full record payload (unlike label, which
+    // reads straight off the <option> text) — fetch it once here, before
+    // applyMarkerElementChange's renderSelection() tears this whole editor
+    // down and rebuilds it, rather than re-fetching inside refreshPreview on
+    // every render (which would re-trigger the auto-fill and a spurious undo
+    // entry each time the panel simply redraws).
+    (async () => {
+      let inheritedImage = "";
+      if (!markerElement.image && refId && kind && dataManager) {
+        try {
+          const result = await dataManager.get(kind, refId);
+          inheritedImage = result?.payload?.image || "";
+        } catch (error) {
+          inheritedImage = "";
+        }
       }
-    });
+      // Doesn't verify THIS specific record belongs to the signed-in user
+      // (that needs a dedicated ownership lookup — dataManager.get's own
+      // payload carries no owner info, only a full kind-wide list() call
+      // does) — simplified to "whoever's linking an entity, while signed
+      // in, hasn't set an outline yet" instead, same "copy once, stays
+      // user-editable after" precedent as image/label just above.
+      let inheritedOutlineColor = "";
+      if (!markerElement.outlineColor && refId && dataManager?.isAuthenticated?.()) {
+        try {
+          const settings = await dataManager.getUserSettings();
+          inheritedOutlineColor = typeof settings?.favoriteColor === "string" ? settings.favoriteColor : "";
+        } catch (error) {
+          inheritedOutlineColor = "";
+        }
+      }
+      applyMarkerElementChange("marker reference entity", () => {
+        markerElement.refId = refId;
+        if (!markerElement.label && option && option.value) {
+          markerElement.label = option.textContent;
+        }
+        if (!markerElement.image && inheritedImage) {
+          markerElement.image = inheritedImage;
+        }
+        if (!markerElement.outlineColor && inheritedOutlineColor) {
+          markerElement.outlineColor = inheritedOutlineColor;
+        }
+      });
+    })();
   });
 
-  const positionGrid = document.createElement("div");
-  positionGrid.className = "d-grid gap-2";
-  positionGrid.style.gridTemplateColumns = "repeat(2, minmax(0, 1fr))";
-
-  const positionX = document.createElement("input");
-  positionX.type = "number";
-  positionX.className = "form-control form-control-sm";
-  positionX.value = markerElement.position?.x ?? 0;
-  positionX.addEventListener("change", () => {
-    const value = Number(positionX.value);
-    if (!Number.isFinite(value)) {
+  // Deliberately NOT applyMarkerElementChange — same reasoning as Layer's
+  // own applyLayerPositionChange (see createCommitOnBlurNumberField's
+  // comment): nothing else in this panel depends on the marker's position,
+  // so renderSelection() rebuilding it mid-edit only risked destroying the
+  // focused input for no benefit.
+  function applyMarkerPositionChange(label, apply) {
+    recordHistory(label, () => {
+      apply();
+      updateMapTimestamp(state.map);
+    });
+    renderLayerOverlays();
+    renderJson();
+  }
+  // Reads/wrote markerElement.position.x/.y directly before this — correct
+  // for an image/canvas map (where position genuinely IS {x,y}) but always
+  // silently 0 for a tile map, whose position is {lat,lng} instead (.x/.y
+  // are just undefined on that shape). Confirmed as the actual cause of
+  // "I'd expect an initial position, not zero, for all Markers": every
+  // marker on a tile map showed 0/0 here regardless of where it actually
+  // was. Same markerPositionToLocalPixel/localPixelToMarkerPosition
+  // round-trip the shape origin's own Position X/Y already uses fixes it
+  // for both map types uniformly — "pixels from the map's own center,"
+  // not the raw stored shape.
+  const markerOriginPixel = markerPositionToLocalPixel(baseMapManager, state.map, markerElement.position);
+  function updateMarkerPosition(axis, value) {
+    if (value === null) {
       return;
     }
-    applyMarkerElementChange("marker position x", () => {
-      markerElement.position = { ...(markerElement.position || { x: 0, y: 0 }), x: value };
+    applyMarkerPositionChange(`marker position ${axis}`, () => {
+      const next = markerPositionToLocalPixel(baseMapManager, state.map, markerElement.position);
+      next[axis] = value;
+      markerElement.position = localPixelToMarkerPosition(baseMapManager, state.map, next);
     });
-  });
-
-  const positionY = document.createElement("input");
-  positionY.type = "number";
-  positionY.className = "form-control form-control-sm";
-  positionY.value = markerElement.position?.y ?? 0;
-  positionY.addEventListener("change", () => {
-    const value = Number(positionY.value);
-    if (!Number.isFinite(value)) {
-      return;
-    }
-    applyMarkerElementChange("marker position y", () => {
-      markerElement.position = { ...(markerElement.position || { x: 0, y: 0 }), y: value };
-    });
-  });
-
-  positionGrid.appendChild(createFieldWrapper("Position X", positionX));
-  positionGrid.appendChild(createFieldWrapper("Position Y", positionY));
-  container.appendChild(positionGrid);
+  }
+  container.appendChild(
+    createFieldRow(
+      [
+        createCommitOnBlurNumberField("Position X", Math.round(markerOriginPixel.x), (value) => updateMarkerPosition("x", value)),
+        createCommitOnBlurNumberField("Position Y", Math.round(markerOriginPixel.y), (value) => updateMarkerPosition("y", value)),
+      ],
+      { columns: 2 }
+    )
+  );
 
   const deleteButton = document.createElement("button");
   deleteButton.type = "button";
   deleteButton.className = "btn btn-outline-danger btn-sm";
   deleteButton.textContent = "Delete Marker";
+  deleteButton.dataset.action = "delete-selected";
   deleteButton.addEventListener("click", () => {
     recordHistory("delete marker", () => {
       layer.elements = (layer.elements || []).filter((entry) => entry.id !== markerElement.id);
@@ -1875,6 +3500,7 @@ function renderGridCellSelectionEditor(layer, selectedCells) {
     return;
   }
   const container = elements.selectionEditor;
+  disposeTooltips(container);
   container.innerHTML = "";
 
   const selectionSummary = document.createElement("div");
@@ -1898,6 +3524,7 @@ function renderGridCellSelectionEditor(layer, selectedCells) {
     badgeRow.appendChild(badge);
   });
   if (selectedCells.length > 12) {
+    disposeTooltips(badgeRow);
     badgeRow.innerHTML = "";
     const summary = document.createElement("span");
     summary.className = "badge text-bg-secondary";
@@ -1991,22 +3618,19 @@ function renderGridCellSelectionEditor(layer, selectedCells) {
 
   container.appendChild(groupSection);
 
-  container.appendChild(createSelectionSectionTitle("Custom Properties"));
-
+  let bulkNotice = null;
   if (selectedCells.length > 1) {
-    const notice = document.createElement("div");
-    notice.className = "d-flex align-items-center gap-2";
+    bulkNotice = document.createElement("div");
+    bulkNotice.className = "d-flex align-items-center gap-2";
     const noticeLabel = document.createElement("span");
     noticeLabel.className = "small text-body-secondary";
     noticeLabel.textContent = "Editing properties applies to all selected cells.";
-    notice.appendChild(noticeLabel);
+    bulkNotice.appendChild(noticeLabel);
     const help = document.createElement("span");
     help.className = "align-middle";
     help.dataset.helpTopic = "orrery.bulkEdit";
     help.dataset.helpInsert = "replace";
-    notice.appendChild(help);
-    container.appendChild(notice);
-    initHelpSystem({ root: notice });
+    bulkNotice.appendChild(help);
   }
 
   const propertiesWrapper = document.createElement("div");
@@ -2093,8 +3717,14 @@ function renderGridCellSelectionEditor(layer, selectedCells) {
   actionGroup.appendChild(copyButton);
   actionGroup.appendChild(pasteButton);
   actionRow.appendChild(actionGroup);
-  container.appendChild(actionRow);
+  const customPropertiesFields = bulkNotice ? [bulkNotice, actionRow, propertiesWrapper] : [actionRow, propertiesWrapper];
+  container.appendChild(
+    createCollapsibleSection("Custom Properties", customPropertiesFields, { defaultCollapsed: entries.length === 0 })
+  );
   refreshTooltips();
+  if (bulkNotice) {
+    initHelpSystem({ root: bulkNotice });
+  }
 
   if (selectedCells.length > 1) {
     container.appendChild(createSelectionSectionTitle("Bulk Add/Update"));
@@ -2130,8 +3760,6 @@ function renderGridCellSelectionEditor(layer, selectedCells) {
     bulkRow.appendChild(bulkButton);
     container.appendChild(bulkRow);
   }
-
-  container.appendChild(propertiesWrapper);
 }
 
 function createGroupPropertyRow(group, key, value) {
@@ -2179,13 +3807,11 @@ function renderGroupSelectionEditor(group) {
     return;
   }
   const container = elements.selectionEditor;
+  disposeTooltips(container);
   container.innerHTML = "";
 
-  container.appendChild(createSelectionSectionTitle("Group Properties"));
-
-  const nameInput = document.createElement("input");
-  nameInput.type = "text";
-  nameInput.className = "form-control form-control-sm";
+  const nameField = createFormFloatingField({ type: "text", label: "Name", placeholder: " " });
+  const nameInput = nameField.querySelector("input");
   nameInput.value = group.name;
   nameInput.addEventListener("change", () => {
     const value = nameInput.value.trim();
@@ -2197,9 +3823,177 @@ function renderGroupSelectionEditor(group) {
       group.name = value;
     });
   });
-  container.appendChild(createFieldWrapper("Name", nameInput));
+  container.appendChild(nameField);
 
-  container.appendChild(createSelectionSectionTitle("Custom Properties"));
+  // Selecting this group already arms its target grid layer for direct
+  // click/drag cell-adding with no separate toggle (renderLayerOverlays'
+  // own resolvePaintTargetLayer + isInteractive check) — this panel only
+  // needs to expose WHICH layer that is when it's ambiguous.
+  const gridLayers = state.map.layers.filter((entry) => entry.type === "grid");
+  const fogLinkedLayer = gridLayers.find((entry) => entry.settings?.revealGroupId === group.id);
+  const resolvedPaintLayer = resolvePaintTargetLayer(group);
+  const lastSelection = state.lastGridSelection;
+  const selectionLayer = lastSelection?.layerId
+    ? state.map.layers.find((layer) => layer.id === lastSelection.layerId)
+    : null;
+  const canAddSelectedCells = Boolean(lastSelection?.cells?.length && selectionLayer);
+  const members = normalizeGroupMembers(group);
+
+  function addSelectedCellsToGroup() {
+    if (!canAddSelectedCells) {
+      return;
+    }
+    applyGroupChange("add group members", () => {
+      const nextMembers = new Map(normalizeGroupMembers(group).map((member) => [getGroupMemberKey(member), member]));
+      lastSelection.cells.forEach((cell) => {
+        const resolved = findGridCell(selectionLayer, cell.coord) || ensureGridCell(selectionLayer, cell.coord);
+        const member = { layerId: selectionLayer.id, elementId: resolved.id, kind: "grid-cell" };
+        nextMembers.set(getGroupMemberKey(member), member);
+      });
+      group.elementIds = Array.from(nextMembers.values());
+    });
+  }
+
+  function deleteThisGroup() {
+    const index = state.map.groups.findIndex((entry) => entry.id === group.id);
+    if (index === -1) {
+      return;
+    }
+    recordHistory("delete group", () => {
+      state.map.groups.splice(index, 1);
+      updateMapTimestamp(state.map);
+    });
+    setSelection(null);
+    renderGroups();
+    renderLayerOverlays();
+    renderJson();
+  }
+
+  // Same shared icon-toolbar factory/mount point Layer and AoE Shape
+  // selection already use (data-selection-toolbar-mount) — renderSelection()
+  // clears it before every render, so only whichever selection kind is
+  // current repopulates it.
+  if (elements.selectionToolbar) {
+    createToolbarButtonGroup([
+      {
+        action: "add-selected-cells",
+        label: canAddSelectedCells ? `Add selected cells (${lastSelection.cells.length})` : "Add selected cells",
+        icon: "tabler:square-plus",
+        disabled: !canAddSelectedCells,
+        onClick: addSelectedCellsToGroup,
+      },
+      {
+        action: "delete",
+        label: "Delete group",
+        attrs: { "data-action": "delete-selected" },
+        onClick: deleteThisGroup,
+      },
+    ]).forEach((button) => elements.selectionToolbar.appendChild(button));
+    refreshTooltips(elements.selectionToolbar);
+  }
+
+  const membersBody = [];
+
+  // Only shown when it's actually ambiguous which layer clicking/painting
+  // targets — a Fog of War link already resolves it unambiguously
+  // (resolvePaintTargetLayer's own priority order), same as a single grid
+  // layer does.
+  if (!fogLinkedLayer && gridLayers.length > 1) {
+    const paintLayerField = createCompactField({
+      type: "select",
+      label: "Paint on layer",
+      options: gridLayers.map((entry) => ({ value: entry.id, label: entry.name })),
+    });
+    const paintLayerSelect = paintLayerField.querySelector("select");
+    paintLayerSelect.value = resolvedPaintLayer?.id || "";
+    paintLayerSelect.addEventListener("change", () => {
+      paintTargetLayerId = paintLayerSelect.value;
+      renderLayerOverlays();
+    });
+    membersBody.push(paintLayerField);
+  }
+
+  const summaryRow = document.createElement("div");
+  summaryRow.className = "d-flex align-items-center justify-content-between gap-2";
+  const summary = document.createElement("div");
+  summary.className = "small text-body-secondary";
+  summary.textContent = members.length ? `${members.length} ${members.length === 1 ? "cell" : "cells"}` : "No members yet.";
+  const summaryActions = document.createElement("div");
+  summaryActions.className = "d-flex align-items-center gap-2";
+  const membersHelp = document.createElement("span");
+  membersHelp.className = "align-middle";
+  membersHelp.dataset.helpTopic = "orrery.gridSelection";
+  membersHelp.dataset.helpInsert = "replace";
+  summaryActions.appendChild(membersHelp);
+  if (members.length) {
+    // Distinct icon from the per-member remove buttons below (trash-x vs
+    // plain trash) so "clear everything" reads differently at a glance
+    // from "remove this one cell."
+    const removeAllButton = document.createElement("button");
+    removeAllButton.type = "button";
+    removeAllButton.className = "btn btn-outline-danger btn-sm d-inline-flex align-items-center justify-content-center";
+    removeAllButton.setAttribute("aria-label", "Remove all members");
+    removeAllButton.setAttribute("data-bs-toggle", "tooltip");
+    removeAllButton.setAttribute("data-bs-placement", "bottom");
+    removeAllButton.setAttribute("data-bs-title", "Remove all members");
+    removeAllButton.innerHTML = "<span class=\"iconify\" data-icon=\"tabler:trash-x\" aria-hidden=\"true\"></span>";
+    removeAllButton.addEventListener("click", () => {
+      applyGroupChange("clear group members", () => {
+        group.elementIds = [];
+      });
+    });
+    summaryActions.appendChild(removeAllButton);
+  }
+  summaryRow.append(summary, summaryActions);
+  membersBody.push(summaryRow);
+  initHelpSystem({ root: summaryRow });
+
+  // Its own scrollable box (orrery-pane-list — the same class the left
+  // pane's Layers/Groups/Views lists already use for exactly this) so a
+  // group with dozens of painted cells doesn't balloon the whole right
+  // pane — separate from the Members section's own collapse/expand, which
+  // hides the whole thing away instead.
+  const memberList = document.createElement("div");
+  memberList.className = "orrery-pane-list d-flex flex-column gap-2 p-2 border rounded";
+
+  if (!members.length) {
+    const emptyMembers = document.createElement("div");
+    emptyMembers.className = "small text-body-secondary";
+    emptyMembers.textContent = "No members assigned yet.";
+    memberList.appendChild(emptyMembers);
+  } else {
+    members.forEach((member) => {
+      const row = document.createElement("div");
+      row.className = "d-flex align-items-center justify-content-between gap-2";
+      const label = document.createElement("span");
+      label.className = "small";
+      label.textContent = resolveGroupMemberLabel(member);
+
+      const removeButton = document.createElement("button");
+      removeButton.type = "button";
+      removeButton.className = "btn btn-outline-danger btn-sm d-inline-flex align-items-center justify-content-center";
+      removeButton.setAttribute("aria-label", "Remove member");
+      removeButton.setAttribute("data-bs-toggle", "tooltip");
+      removeButton.setAttribute("data-bs-placement", "bottom");
+      removeButton.setAttribute("data-bs-title", "Remove member");
+      removeButton.innerHTML = "<span class=\"iconify\" data-icon=\"tabler:trash\" aria-hidden=\"true\"></span>";
+      removeButton.addEventListener("click", () => {
+        applyGroupChange("remove group member", () => {
+          const memberKey = getGroupMemberKey(member);
+          group.elementIds = normalizeGroupMembers(group).filter((entry) => getGroupMemberKey(entry) !== memberKey);
+        });
+      });
+
+      row.appendChild(label);
+      row.appendChild(removeButton);
+      memberList.appendChild(row);
+    });
+  }
+  membersBody.push(memberList);
+
+  container.appendChild(createCollapsibleSection("Members", membersBody));
+  refreshTooltips();
+
   const propertiesWrapper = document.createElement("div");
   propertiesWrapper.className = "d-flex flex-column gap-2";
   const entries = Object.entries(group.properties || {});
@@ -2279,132 +4073,10 @@ function renderGroupSelectionEditor(group) {
   actionGroup.appendChild(copyButton);
   actionGroup.appendChild(pasteButton);
   actionRow.appendChild(actionGroup);
-  container.appendChild(actionRow);
-  container.appendChild(propertiesWrapper);
+  container.appendChild(
+    createCollapsibleSection("Custom Properties", [actionRow, propertiesWrapper], { defaultCollapsed: !entries.length })
+  );
   refreshTooltips();
-
-  const membersHeader = document.createElement("div");
-  membersHeader.className = "d-flex align-items-center justify-content-between gap-2";
-  const membersTitle = createSelectionSectionTitle("Members");
-  const membersHelp = document.createElement("span");
-  membersHelp.className = "align-middle";
-  membersHelp.dataset.helpTopic = "orrery.gridSelection";
-  membersHelp.dataset.helpInsert = "replace";
-  membersHeader.appendChild(membersTitle);
-  membersHeader.appendChild(membersHelp);
-  container.appendChild(membersHeader);
-  initHelpSystem({ root: membersHeader });
-
-  const memberActions = document.createElement("div");
-  memberActions.className = "d-flex flex-column gap-2";
-  const lastSelection = state.lastGridSelection;
-  const selectionLayer = lastSelection?.layerId
-    ? state.map.layers.find((layer) => layer.id === lastSelection.layerId)
-    : null;
-  const summary = document.createElement("div");
-  summary.className = "small text-body-secondary";
-  if (lastSelection?.cells?.length && selectionLayer) {
-    summary.textContent = `Last selection: ${selectionLayer.name} • ${lastSelection.cells.length} cells`;
-  } else {
-    summary.textContent = "Select grid cells on the map, then click Add selected cells.";
-  }
-  const addMembersButton = document.createElement("button");
-  addMembersButton.type = "button";
-  addMembersButton.className = "btn btn-outline-primary btn-sm align-self-start";
-  addMembersButton.textContent = `Add selected cells${lastSelection?.cells?.length ? ` (${lastSelection.cells.length})` : ""}`;
-  addMembersButton.disabled = !(lastSelection?.cells?.length && selectionLayer);
-  addMembersButton.addEventListener("click", () => {
-    if (!lastSelection?.cells?.length || !selectionLayer) {
-      return;
-    }
-    applyGroupChange("add group members", () => {
-      const nextMembers = new Map(
-        normalizeGroupMembers(group).map((member) => [getGroupMemberKey(member), member]),
-      );
-      lastSelection.cells.forEach((cell) => {
-        const resolved = findGridCell(selectionLayer, cell.coord) || ensureGridCell(selectionLayer, cell.coord);
-        const member = { layerId: selectionLayer.id, elementId: resolved.id, kind: "grid-cell" };
-        nextMembers.set(getGroupMemberKey(member), member);
-      });
-      group.elementIds = Array.from(nextMembers.values());
-    });
-  });
-  memberActions.appendChild(summary);
-  memberActions.appendChild(addMembersButton);
-  container.appendChild(memberActions);
-  const memberList = document.createElement("div");
-  memberList.className = "d-flex flex-column gap-2";
-  const members = normalizeGroupMembers(group);
-
-  if (!members.length) {
-    const emptyMembers = document.createElement("div");
-    emptyMembers.className = "small text-body-secondary";
-    emptyMembers.textContent = "No members assigned yet.";
-    memberList.appendChild(emptyMembers);
-  } else {
-    members.forEach((member) => {
-      const row = document.createElement("div");
-      row.className = "d-flex align-items-center justify-content-between gap-2";
-      const label = document.createElement("span");
-      label.className = "small";
-      label.textContent = resolveGroupMemberLabel(member);
-
-      const removeButton = document.createElement("button");
-      removeButton.type = "button";
-      removeButton.className = "btn btn-outline-danger btn-sm d-inline-flex align-items-center justify-content-center";
-      removeButton.setAttribute("aria-label", "Remove member");
-      removeButton.setAttribute("data-bs-toggle", "tooltip");
-      removeButton.setAttribute("data-bs-placement", "bottom");
-      removeButton.setAttribute("data-bs-title", "Remove member");
-      removeButton.innerHTML = "<span class=\"iconify\" data-icon=\"tabler:trash\" aria-hidden=\"true\"></span>";
-      removeButton.addEventListener("click", () => {
-        applyGroupChange("remove group member", () => {
-          const memberKey = getGroupMemberKey(member);
-          group.elementIds = normalizeGroupMembers(group).filter((entry) => getGroupMemberKey(entry) !== memberKey);
-        });
-      });
-
-      row.appendChild(label);
-      row.appendChild(removeButton);
-      memberList.appendChild(row);
-    });
-  }
-
-  if (members.length) {
-    const removeAllButton = document.createElement("button");
-    removeAllButton.type = "button";
-    removeAllButton.className = "btn btn-outline-danger btn-sm align-self-start";
-    removeAllButton.textContent = "Remove all members";
-    removeAllButton.addEventListener("click", () => {
-      applyGroupChange("clear group members", () => {
-        group.elementIds = [];
-      });
-    });
-    memberList.appendChild(removeAllButton);
-  }
-
-  container.appendChild(memberList);
-  refreshTooltips();
-
-  const deleteButton = document.createElement("button");
-  deleteButton.type = "button";
-  deleteButton.className = "btn btn-danger btn-sm mt-3";
-  deleteButton.textContent = "Delete group";
-  deleteButton.addEventListener("click", () => {
-    const index = state.map.groups.findIndex((entry) => entry.id === group.id);
-    if (index === -1) {
-      return;
-    }
-    recordHistory("delete group", () => {
-      state.map.groups.splice(index, 1);
-      updateMapTimestamp(state.map);
-    });
-    setSelection(null);
-    renderGroups();
-    renderLayerOverlays();
-    renderJson();
-  });
-  container.appendChild(deleteButton);
 }
 
 function renderViewSelectionEditor(view) {
@@ -2412,13 +4084,11 @@ function renderViewSelectionEditor(view) {
     return;
   }
   const container = elements.selectionEditor;
+  disposeTooltips(container);
   container.innerHTML = "";
 
-  container.appendChild(createSelectionSectionTitle("View Details"));
-
-  const nameInput = document.createElement("input");
-  nameInput.type = "text";
-  nameInput.className = "form-control form-control-sm";
+  const nameField = createFormFloatingField({ type: "text", label: "Name", placeholder: " " });
+  const nameInput = nameField.querySelector("input");
   nameInput.value = view.name;
   nameInput.addEventListener("change", () => {
     const value = nameInput.value.trim();
@@ -2430,19 +4100,22 @@ function renderViewSelectionEditor(view) {
       view.name = value;
     });
   });
-  container.appendChild(createFieldWrapper("Name", nameInput));
+  container.appendChild(nameField);
 
-  const descriptionInput = document.createElement("textarea");
-  descriptionInput.className = "form-control form-control-sm";
-  descriptionInput.rows = 3;
+  const descriptionField = createFormFloatingField({
+    // form-floating textareas need an explicit height (the `rows` attribute
+    // fights the padding it adds for the label) — same fix Workbench's own
+    // createTextarea/Press's text field already apply.
+    type: "textarea", label: "Description", placeholder: "Describe what this view shows or hides.", style: "min-height: 72px",
+  });
+  const descriptionInput = descriptionField.querySelector("textarea");
   descriptionInput.value = view.description || "";
-  descriptionInput.placeholder = "Describe what this view shows or hides.";
   descriptionInput.addEventListener("change", () => {
     applyViewChange("view description", () => {
       view.description = descriptionInput.value.trim();
     });
   });
-  container.appendChild(createFieldWrapper("Description", descriptionInput));
+  container.appendChild(descriptionField);
 
   container.appendChild(createSelectionSectionTitle("Visible Layers"));
   const layerVisibility = document.createElement("div");
@@ -2557,24 +4230,33 @@ function renderViewSelectionEditor(view) {
   });
   container.appendChild(tierWrapper);
 
-  const deleteButton = document.createElement("button");
-  deleteButton.type = "button";
-  deleteButton.className = "btn btn-danger btn-sm mt-3";
-  deleteButton.textContent = "Delete view";
-  deleteButton.addEventListener("click", () => {
-    const index = state.map.views.findIndex((entry) => entry.id === view.id);
-    if (index === -1) {
-      return;
-    }
-    recordHistory("delete view", () => {
-      state.map.views.splice(index, 1);
-      updateMapTimestamp(state.map);
-    });
-    setSelection(null);
-    renderViewsList();
-    renderJson();
-  });
-  container.appendChild(deleteButton);
+  // Same shared icon-toolbar factory/mount point Layer/Shape/Group
+  // selection already use (data-selection-toolbar-mount) instead of a
+  // standalone inline button — renderSelection() clears it before every
+  // render, so only whichever selection kind is current repopulates it.
+  if (elements.selectionToolbar) {
+    createToolbarButtonGroup([
+      {
+        action: "delete",
+        label: "Delete view",
+        attrs: { "data-action": "delete-selected" },
+        onClick: () => {
+          const index = state.map.views.findIndex((entry) => entry.id === view.id);
+          if (index === -1) {
+            return;
+          }
+          recordHistory("delete view", () => {
+            state.map.views.splice(index, 1);
+            updateMapTimestamp(state.map);
+          });
+          setSelection(null);
+          renderViewsList();
+          renderJson();
+        },
+      },
+    ]).forEach((button) => elements.selectionToolbar.appendChild(button));
+    refreshTooltips(elements.selectionToolbar);
+  }
 }
 
 function renderView() {
@@ -2682,12 +4364,16 @@ function setupBaseMapEvents() {
 
   const updateImageDimension = (key, element) => {
     element.addEventListener("change", () => {
-      const value = Number(element.value);
-      if (!Number.isFinite(value) || value <= 0) {
+      const parsed = parseImageDimension(element.value);
+      if (!parsed.valid) {
+        // Same "revert to whatever's actually stored" pattern the Name
+        // field's own empty-value guard uses, rather than leaving text in
+        // the field the model never actually accepted.
+        element.value = state.map.baseMap.settings.image[key] ?? "";
         return;
       }
       recordHistory(`image ${key}`, () => {
-        state.map.baseMap.settings.image[key] = value;
+        state.map.baseMap.settings.image[key] = parsed.value;
         updateMapTimestamp(state.map);
       });
       if (state.map.baseMap.type === "image") {
@@ -2795,6 +4481,642 @@ function setupViewEvents() {
     state.map.view = baseMapManager.getView();
     renderView();
   });
+  setupMeasureTool();
+  setupDrawTool();
+  setupShapeTool();
+  setupPingTool();
+}
+
+// Module-scope (not local to setupDrawTool) — updateDrawAvailability needs
+// to run from setSelection/applyMapSnapshot too, not just the toggle's own
+// click handler, so the button's enabled state and tooltip stay correct the
+// moment the selection changes, not only when the user next tries the
+// toggle.
+function getSelectedVectorLayer() {
+  if (state.selection.kind !== "layer") return null;
+  const layer = state.map.layers.find((entry) => entry.id === state.selection.id);
+  return layer?.type === "vector" ? layer : null;
+}
+
+// Keeps the Draw toggle's enabled state and tooltip in sync with whether a
+// vector layer is currently selected — same disabled-with-explanatory-
+// tooltip pattern as updateMeasureAvailability/Ping's own updateToggleAvailability.
+// Confirmed as a real bug before this: the toggle used to stay visually
+// "active" after a failed draw attempt (no vector layer selected), even
+// though nothing was actually drawable — clicking it only showed a toast,
+// it never reflected in the button's own state, so the button kept lying
+// about whether drawing would work.
+function updateDrawAvailability() {
+  if (!elements.drawToggle) return;
+  const hasVectorLayer = Boolean(getSelectedVectorLayer());
+  elements.drawToggle.disabled = !hasVectorLayer;
+  const tooltipTarget = elements.drawToggleWrap || elements.drawToggle;
+  tooltipTarget.setAttribute(
+    "data-bs-title",
+    hasVectorLayer ? "Draw on the selected vector layer" : "Select a vector layer to enable drawing"
+  );
+  refreshTooltips(tooltipTarget.parentElement || document);
+  if (!hasVectorLayer && drawModeActive) {
+    drawModeActive = false;
+    elements.drawToggle.classList.remove("active");
+    elements.drawToggle.setAttribute("aria-pressed", "false");
+    mapContainer?.classList.remove("orrery-drawing");
+  }
+}
+
+// Freehand drawing on the currently-selected vector layer — replaces the
+// old fixed placeholder triangle every vector layer used to render
+// regardless of content (see createVectorLayerElement's own header). A
+// click-drag on the map accumulates points into a live preview polyline
+// (a throwaway SVG appended directly to the overlay, not run through the
+// normal layer.elements render pipeline until the gesture ends, same
+// "don't tear down the DOM mid-gesture" reasoning bindLayerDrag/
+// beginMarkerDrag already follow), then commits the finished stroke as one
+// createVectorPathElement on release.
+function setupDrawTool() {
+  if (!elements.drawToggle || !mapContainer) {
+    return;
+  }
+  updateDrawAvailability();
+
+  elements.drawToggle.addEventListener("click", () => {
+    if (elements.drawToggle.disabled) return;
+    drawModeActive = !drawModeActive;
+    elements.drawToggle.classList.toggle("active", drawModeActive);
+    elements.drawToggle.setAttribute("aria-pressed", drawModeActive ? "true" : "false");
+    mapContainer.classList.toggle("orrery-drawing", drawModeActive);
+    // Re-render so onVectorPathClick's own drawModeActive gate (see
+    // renderLayerOverlays) picks up the change immediately — otherwise a
+    // layer selected before toggling Draw would keep its stale
+    // click-to-select/click-through wiring until the next unrelated
+    // re-render.
+    renderLayerOverlays();
+  });
+
+  mapContainer.addEventListener("pointerdown", (event) => {
+    if (!drawModeActive || event.button !== 0) return;
+    const layer = getSelectedVectorLayer();
+    if (!layer) {
+      // Shouldn't normally be reachable — the toggle disables itself the
+      // instant there's no vector layer selected (updateDrawAvailability) —
+      // kept as a defensive fallback for a selection change landing between
+      // that check and this click.
+      status.show("Select a vector layer first.", { type: "warning", timeout: 2000 });
+      return;
+    }
+    event.preventDefault();
+    baseMapManager.setInteractionEnabled(false);
+    const overlay = baseMapManager.getOverlayContainer();
+    const points = [];
+
+    const preview = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    preview.style.position = "absolute";
+    preview.style.inset = "0";
+    preview.style.width = "100%";
+    preview.style.height = "100%";
+    preview.style.overflow = "visible";
+    preview.style.pointerEvents = "none";
+    const polyline = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+    polyline.setAttribute("fill", "none");
+    polyline.setAttribute("stroke", layer.settings?.strokeColor || "#0f172a");
+    polyline.setAttribute("stroke-width", String(layer.settings?.strokeWidth || 2));
+    polyline.setAttribute("stroke-linecap", "round");
+    polyline.setAttribute("stroke-linejoin", "round");
+    preview.appendChild(polyline);
+    overlay.appendChild(preview);
+
+    function addPoint(pointerEvent) {
+      const position = resolveClickPosition(baseMapManager, state.map, pointerEvent, overlay);
+      if (!position) return;
+      points.push(position);
+      const pixelPoints = points.map((point) => markerPositionToLocalPixel(baseMapManager, state.map, point));
+      polyline.setAttribute("points", pixelPoints.map((point) => `${point.x},${point.y}`).join(" "));
+    }
+    addPoint(event);
+
+    const onMove = (moveEvent) => addPoint(moveEvent);
+    const onUp = () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      baseMapManager.setInteractionEnabled(true);
+      preview.remove();
+      if (points.length > 1) {
+        recordHistory("draw path", () => {
+          layer.elements = layer.elements || [];
+          layer.elements.push(
+            // Stroke-only by default (no layer.settings.fillColor passed
+            // through) — an open freehand polyline's implicit closing
+            // segment (last point back to first) almost never produces a
+            // sensible fill shape, unlike the old single hardcoded closed
+            // triangle this replaced.
+            createVectorPathElement({
+              points,
+              strokeColor: layer.settings?.strokeColor,
+              strokeWidth: layer.settings?.strokeWidth,
+            })
+          );
+          updateMapTimestamp(state.map);
+        });
+        renderLayerOverlays();
+        renderJson();
+      }
+    };
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+  });
+}
+
+// Keeps the Shape toggle's enabled state and tooltip in sync with the same
+// two prerequisites Draw and Measure each already gate on individually — a
+// selected vector layer (a shape lives in layer.elements just like a drawn
+// path) and a configured grid scale/unit (a shape's size is authored in
+// cells and converted to a real distance the same way Measure's own readout
+// is). Same pattern as updateDrawAvailability/updateMeasureAvailability.
+function updateShapeAvailability() {
+  if (!elements.shapeToggle) return;
+  const hasVectorLayer = Boolean(getSelectedVectorLayer());
+  const configured = hasMapMeasurementConfigured();
+  const available = hasVectorLayer && configured;
+  elements.shapeToggle.disabled = !available;
+  const tooltipTarget = elements.shapeToggleWrap || elements.shapeToggle;
+  tooltipTarget.setAttribute(
+    "data-bs-title",
+    available
+      ? "Draw an AoE shape on the selected vector layer"
+      : !hasVectorLayer
+        ? "Select a vector layer to enable AoE shapes"
+        : "Set Scale per cell and Scale unit (bottom of Map Properties) to enable AoE shapes"
+  );
+  refreshTooltips(tooltipTarget.parentElement || document);
+  if (!available && shapeModeActive) {
+    shapeModeActive = false;
+    elements.shapeToggle.classList.remove("active");
+    elements.shapeToggle.setAttribute("aria-pressed", "false");
+    mapContainer?.classList.remove("orrery-shaping");
+    elements.shapeType?.classList.add("d-none");
+  }
+}
+
+// AoE measurement shapes (Circle/Cone/Line/Square) onto the selected vector
+// layer — the SAME click-drag-commit gesture Draw's own freehand stroke
+// uses (a live preview appended straight to the overlay, torn down on
+// release, committed as one element via recordHistory), sized through the
+// exact same screen-pixel-distance-to-cells conversion Measure's own
+// readout uses (pixelsToCells) instead of any new coordinate math. The live
+// preview reuses map-viewer.js's own renderShapeElement — the same function
+// that renders a COMMITTED shape — against a throwaway element object, so
+// there's exactly one place in the whole codebase that knows how to turn a
+// shape's fields into an SVG primitive.
+function setupShapeTool() {
+  if (!elements.shapeToggle || !mapContainer) {
+    return;
+  }
+  updateShapeAvailability();
+
+  elements.shapeToggle.addEventListener("click", () => {
+    if (elements.shapeToggle.disabled) return;
+    shapeModeActive = !shapeModeActive;
+    elements.shapeToggle.classList.toggle("active", shapeModeActive);
+    elements.shapeToggle.setAttribute("aria-pressed", shapeModeActive ? "true" : "false");
+    mapContainer.classList.toggle("orrery-shaping", shapeModeActive);
+    elements.shapeType?.classList.toggle("d-none", !shapeModeActive);
+    // Same reasoning as setupDrawTool's own click handler — a re-render
+    // picks up the orrery-shaping cursor class and the Shape Type picker's
+    // own visibility toggle immediately. Existing shapes stay selectable/
+    // draggable regardless of this toggle now (see onVectorPathClick/
+    // onShapeDragEnd's own comment) — only NEW placement gates on it.
+    renderLayerOverlays();
+  });
+
+  function setReadout(text) {
+    if (!elements.shapeReadout) return;
+    elements.shapeReadout.textContent = text || "";
+    elements.shapeReadout.classList.toggle("d-none", !text);
+  }
+
+  mapContainer.addEventListener("pointerdown", (event) => {
+    if (!shapeModeActive || event.button !== 0) return;
+    const layer = getSelectedVectorLayer();
+    if (!layer) {
+      // Shouldn't normally be reachable — same defensive fallback reasoning
+      // as setupDrawTool's own equivalent check.
+      status.show("Select a vector layer first.", { type: "warning", timeout: 2000 });
+      return;
+    }
+    event.preventDefault();
+    baseMapManager.setInteractionEnabled(false);
+    const overlay = baseMapManager.getOverlayContainer();
+    const origin = resolveClickPosition(baseMapManager, state.map, event, overlay);
+    if (!origin) {
+      baseMapManager.setInteractionEnabled(true);
+      return;
+    }
+    const shapeType = AOE_SHAPE_TYPES.includes(elements.shapeType?.value) ? elements.shapeType.value : "circle";
+    const startClientX = event.clientX;
+    const startClientY = event.clientY;
+    const offset = getMarkerLayerOffset(state.map, layer);
+
+    const preview = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    preview.style.position = "absolute";
+    preview.style.inset = "0";
+    preview.style.width = "100%";
+    preview.style.height = "100%";
+    preview.style.overflow = "visible";
+    preview.style.pointerEvents = "none";
+    overlay.appendChild(preview);
+
+    let sizeCells = 0;
+    let angleDeg = 0;
+
+    function drawPreview() {
+      preview.innerHTML = "";
+      renderShapeElement(
+        preview,
+        baseMapManager,
+        state.map,
+        layer,
+        {
+          id: "shape-preview",
+          kind: "shape",
+          shapeType,
+          origin,
+          sizeCells,
+          angleDeg,
+          spreadDeg: 53,
+          widthCells: 1,
+          strokeColor: layer.settings?.strokeColor,
+          fillColor: layer.settings?.fillColor,
+          strokeWidth: layer.settings?.strokeWidth,
+        },
+        offset,
+        {}
+      );
+    }
+    drawPreview();
+
+    function onMove(moveEvent) {
+      const dx = moveEvent.clientX - startClientX;
+      const dy = moveEvent.clientY - startClientY;
+      const cells = pixelsToCells(Math.hypot(dx, dy));
+      if (cells === null) {
+        setReadout("No grid layer to measure against.");
+        sizeCells = 0;
+        drawPreview();
+        return;
+      }
+      sizeCells = snapCellsToWholeUnit(cells);
+      angleDeg = (Math.atan2(dy, dx) * 180) / Math.PI;
+      const distance = Math.round(sizeCells * state.map.measurement.scale);
+      setReadout(`${distance} ${state.map.measurement.unit} (${sizeCells.toFixed(1)} cells)`);
+      drawPreview();
+    }
+
+    function onUp() {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      baseMapManager.setInteractionEnabled(true);
+      preview.remove();
+      setReadout("");
+      if (sizeCells > 0) {
+        recordHistory("place shape", () => {
+          layer.elements = layer.elements || [];
+          layer.elements.push(
+            createVectorShapeElement({
+              shapeType,
+              // Snap to Grid defaults on (createVectorShapeElement's own
+              // snapToGrid default) — new shapes land pre-snapped so the
+              // toggle's initial checked state actually matches what just
+              // happened, not a stale claim about an unsnapped placement.
+              origin: snapShapeOriginToGrid(origin, layer),
+              sizeCells,
+              angleDeg,
+              strokeColor: layer.settings?.strokeColor,
+              fillColor: layer.settings?.fillColor,
+              strokeWidth: layer.settings?.strokeWidth,
+            })
+          );
+          updateMapTimestamp(state.map);
+        });
+        renderLayerOverlays();
+        renderJson();
+      }
+    }
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+  });
+}
+
+// The account's own single "active campaign" (set from the header's user
+// menu — see auth-ui.js's renderUserMenu/data-campaign-select, and
+// dataManager.getActiveGroup/setActiveGroup) — reused here rather than
+// giving Orrery its own separate campaign picker, which would just be a
+// second, easy-to-desync place to pick the same thing the header already
+// asks for once, shared across every tool.
+function getActiveCampaignGroupId() {
+  return dataManager?.getActiveGroup?.()?.groupId || "";
+}
+
+// A dedicated overlay for ping dots, lazily created as a SIBLING of the
+// regular layer overlay (baseMapManager.getOverlayContainer()'s own
+// parent — the pan/zoom-transformed element either base map type already
+// positions its overlay host inside, so a sibling there still lands in the
+// same coordinate space) rather than a child of the overlay host itself.
+// Necessary because renderMapLayers does `overlay.innerHTML = ""` on every
+// single re-render (any selection change, any edit, every ~10s poll tick)
+// — a ping appended directly into that container could get wiped out well
+// before its own fade animation finished, or even before painting a single
+// frame, which is exactly why pings were never visibly showing up at all.
+function getPingOverlayHost() {
+  const overlay = baseMapManager.getOverlayContainer();
+  const parent = overlay?.parentElement;
+  if (!parent) return null;
+  let host = parent.querySelector("[data-ping-overlay-host]");
+  if (!host) {
+    host = document.createElement("div");
+    host.dataset.pingOverlayHost = "";
+    host.style.position = "absolute";
+    host.style.inset = "0";
+    host.style.width = "100%";
+    host.style.height = "100%";
+    host.style.pointerEvents = "none";
+    parent.appendChild(host);
+  }
+  return host;
+}
+
+// Renders someone's ping (a click-to-ping broadcast — see
+// setupPingTool below and server/state.py's ServerState.pending_pings) as a
+// transient dot on the map. Called for BOTH remote pings (via the live
+// watcher's onPing) and the local GM's own — there's no separate optimistic
+// render path (see setupPingTool's own comment on why); every ping, including
+// your own, arrives back through the same live-stream echo.
+function renderIncomingPing({ position, by }) {
+  if (!position) return;
+  const host = getPingOverlayHost();
+  if (!host) return;
+  host.appendChild(createPingMarker(baseMapManager, state.map, position, by || ""));
+}
+
+// Click-to-ping — a transient pointer broadcast to a campaign group's table
+// (NOT one of Orrery's own map "Groups," the grid-cell-organizing concept
+// used elsewhere in this file — this is the account's real campaign/session
+// group, the same concept the Dashboard/spotlight system uses). Requires an
+// active campaign (see getActiveCampaignGroupId), both because the
+// server-side ping endpoint requires one and because that's what activates
+// the live-stream subscription this whole feature rides on (see
+// watchCurrentMap/map-live-sync.js's own onPing wiring) — no active
+// campaign means no live connection to echo the ping back through at all,
+// so the toggle stays disabled until one's set from the header menu.
+function setupPingTool() {
+  if (!elements.pingToggle || !mapContainer) {
+    return;
+  }
+  let active = false;
+
+  function updateToggleAvailability() {
+    const hasGroup = Boolean(getActiveCampaignGroupId());
+    elements.pingToggle.disabled = !hasGroup;
+    // A disabled button with no explanation just looks broken — the
+    // tooltip is the only visible signal here, so it has to say WHY, not
+    // just repeat what the icon already implies. Set on the WRAPPING span
+    // (data-ping-toggle-wrap), not the button — a native `disabled` button
+    // doesn't reliably fire the hover/focus events Bootstrap's tooltip
+    // listens for, so a tooltip on the button itself can silently never
+    // show while disabled (confirmed: exactly what happened here). Standard
+    // Bootstrap pattern for this — see their own disabled-button-tooltip
+    // docs example.
+    const tooltipTarget = elements.pingToggleWrap || elements.pingToggle;
+    tooltipTarget.setAttribute(
+      "data-bs-title",
+      hasGroup ? "Click the map to ping" : "Select a campaign from the account menu (top right) to enable pinging"
+    );
+    refreshTooltips(tooltipTarget.parentElement || document);
+    if (!hasGroup && active) {
+      active = false;
+      elements.pingToggle.classList.remove("active");
+      elements.pingToggle.setAttribute("aria-pressed", "false");
+      mapContainer.classList.remove("orrery-pinging");
+    }
+  }
+
+  updateToggleAvailability();
+
+  // The header's own campaign switcher (auth-ui.js) fires this on every
+  // change, from any tool's page — picking up on it here means switching
+  // campaigns from the header takes effect immediately without a reload,
+  // same as every other "active campaign"-aware surface in the suite.
+  window.addEventListener("workbench:active-group-changed", () => {
+    updateToggleAvailability();
+    if (state.map.id) {
+      watchCurrentMap(state.map.id);
+    }
+  });
+
+  elements.pingToggle.addEventListener("click", () => {
+    if (elements.pingToggle.disabled) return;
+    active = !active;
+    elements.pingToggle.classList.toggle("active", active);
+    elements.pingToggle.setAttribute("aria-pressed", active ? "true" : "false");
+    mapContainer.classList.toggle("orrery-pinging", active);
+  });
+
+  mapContainer.addEventListener("pointerdown", (event) => {
+    if (!active || event.button !== 0 || !dataManager) return;
+    const groupId = getActiveCampaignGroupId();
+    if (!groupId) return;
+    const overlay = baseMapManager.getOverlayContainer();
+    if (!overlay) return;
+    const position = resolveClickPosition(baseMapManager, state.map, event, overlay);
+    if (!position) return;
+    // Render locally right away rather than relying purely on the
+    // live-stream echo to send it back — the whole SSE round-trip (server
+    // record, next 1s poll tick, connection delivery, client dispatch) is a
+    // lot of links for feedback on your OWN click to depend on end to end,
+    // and any single one having trouble (a slow/stalled connection, a
+    // reconnect in progress) meant the pinger saw literally nothing happen.
+    // Every OTHER viewer's copy still only ever arrives via the real echo.
+    renderIncomingPing({ position, by: dataManager.session?.user?.username || "You" });
+    void dataManager.postMapPing({ groupId, position }).catch((error) => {
+      status.show(error.message || "Unable to send ping.", { type: "error", timeout: 3000 });
+    });
+  });
+}
+
+// The map's first grid layer supplies the cell size in pixels a measurement
+// converts through — same "first grid layer, if any" convention as
+// snapMarkerPositionToGrid, for the same reason (most maps have exactly one
+// grid layer; a second one is an edge case this quietly doesn't
+// special-case rather than asking the user to pick). Deliberately NOT
+// filtered on the layer's own visibility — Visible toggles whether the grid
+// LINES render, not whether the grid is still "the" grid whose cell size
+// defines the map's scale; Measure/Shape sizing changing just because the
+// GM hid the grid lines was a real, confirmed bug. The real-world distance
+// one cell REPRESENTS comes from state.map.measurement instead (see
+// createMapModel's own comment) — a map-wide setting, not a per-layer one,
+// and never defaulted: updateMeasureAvailability keeps the tool disabled
+// until the GM has actually set both.
+function findPrimaryGridLayer() {
+  return state.map.layers.find((entry) => entry.type === "grid") || null;
+}
+
+function hasMapMeasurementConfigured() {
+  return Number.isFinite(state.map.measurement?.scale) && state.map.measurement.scale > 0 && Boolean(state.map.measurement?.unit);
+}
+
+// Shared by Measure's own formatDistance and the Shape tool's live readout —
+// both convert a raw on-screen pixel distance into grid cells the exact same
+// way (the primary grid layer's own on-screen cell size, which already bakes
+// in the current zoom). Returns null when there's no grid layer to convert
+// against, same "quietly can't measure" case formatDistance already handled.
+function pixelsToCells(pixelDistance) {
+  const gridLayer = findPrimaryGridLayer();
+  if (!gridLayer) {
+    return null;
+  }
+  const cellSizePx = getGridCellSize(baseMapManager, state.map, gridLayer);
+  if (!cellSizePx) {
+    return null;
+  }
+  return pixelDistance / cellSizePx;
+}
+
+// AoE shape sizes generally fall in whole real-world-unit increments (5ft
+// steps in most D&D-style systems) — rounding the CELLS value so
+// cells*scale lands on a whole unit avoids fiddly decimals like "13.3 ft"
+// while still landing on any concrete size, not hardcoded to multiples of
+// 5 specifically. No-op (returns cells unchanged) if the map has no usable
+// scale to round against.
+function snapCellsToWholeUnit(cells) {
+  const scale = state.map.measurement?.scale;
+  if (!Number.isFinite(scale) || scale <= 0) {
+    return cells;
+  }
+  return Math.round(cells * scale) / scale;
+}
+
+// Keeps the Measure toggle's enabled state and tooltip in sync with
+// state.map.measurement — called on map load/switch (applyMapSnapshot) and
+// whenever the Scale per cell/Scale unit fields change (setupMapEvents), not
+// just once at startup, since either can change mid-session.
+function updateMeasureAvailability() {
+  if (!elements.measureToggle) return;
+  const configured = hasMapMeasurementConfigured();
+  elements.measureToggle.disabled = !configured;
+  const tooltipTarget = elements.measureToggleWrap || elements.measureToggle;
+  tooltipTarget.setAttribute(
+    "data-bs-title",
+    configured ? "Measure distance" : "Set Scale per cell and Scale unit (bottom of Map Properties) to enable measuring"
+  );
+  refreshTooltips(tooltipTarget.parentElement || document);
+  if (!configured) {
+    elements.measureToggle.classList.remove("active");
+    elements.measureToggle.setAttribute("aria-pressed", "false");
+    mapContainer?.classList.remove("orrery-measuring");
+  }
+}
+
+// Click-drag anywhere on the map measures the straight-line distance
+// between the two points, converted through the primary grid layer's own
+// on-screen cell size and the map's own configured scale/unit. Deliberately
+// a pure SCREEN-PIXEL-DELTA measurement (start/end clientX/clientY, divided
+// by the grid's own on-screen cell size from getGridCellSize, which already
+// bakes in the current zoom) rather than converting either point through a
+// specific layer's own local coordinate space — a relative distance needs
+// no absolute position at all, which sidesteps the same base-map-type/
+// layer-offset coordinate reconciliation snapMarkerPositionToGrid has to
+// account for.
+function setupMeasureTool() {
+  if (!elements.measureToggle || !mapContainer) {
+    return;
+  }
+  let active = false;
+  let dragging = false;
+  updateMeasureAvailability();
+
+  function setReadout(text) {
+    if (!elements.measureReadout) return;
+    elements.measureReadout.textContent = text || "";
+    elements.measureReadout.classList.toggle("d-none", !text);
+  }
+
+  function formatDistance(pixelDistance) {
+    const cells = pixelsToCells(pixelDistance);
+    if (cells === null) {
+      return "No grid layer to measure against.";
+    }
+    const distance = cells * state.map.measurement.scale;
+    return `${distance.toFixed(1)} ${state.map.measurement.unit} (${cells.toFixed(1)} cells)`;
+  }
+
+  // Drawn in plain screen (clientX/clientY) space, same as the distance math
+  // above — a straight line from the pointerdown point to the live cursor
+  // position needs no map-local coordinate conversion at all, it's already
+  // exactly what's being measured. Appended to <body> (position: fixed, so
+  // it tracks the viewport regardless of any scroll/layout underneath it),
+  // not the map overlay, since it's a screen-space UI affordance, not map
+  // content.
+  function createMeasureLine(startX, startY) {
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("class", "orrery-measure-line-overlay");
+    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    line.setAttribute("x1", String(startX));
+    line.setAttribute("y1", String(startY));
+    line.setAttribute("x2", String(startX));
+    line.setAttribute("y2", String(startY));
+    svg.appendChild(line);
+    const startDot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    startDot.setAttribute("cx", String(startX));
+    startDot.setAttribute("cy", String(startY));
+    startDot.setAttribute("r", "4");
+    svg.appendChild(startDot);
+    document.body.appendChild(svg);
+    return {
+      update(endX, endY) {
+        line.setAttribute("x2", String(endX));
+        line.setAttribute("y2", String(endY));
+      },
+      remove() {
+        svg.remove();
+      },
+    };
+  }
+
+  function onPointerDown(event) {
+    if (!active || event.button !== 0) return;
+    event.preventDefault();
+    dragging = true;
+    baseMapManager.setInteractionEnabled(false);
+    const startX = event.clientX;
+    const startY = event.clientY;
+    const measureLine = createMeasureLine(startX, startY);
+    const onMove = (moveEvent) => {
+      const dx = moveEvent.clientX - startX;
+      const dy = moveEvent.clientY - startY;
+      measureLine.update(moveEvent.clientX, moveEvent.clientY);
+      setReadout(formatDistance(Math.hypot(dx, dy)));
+    };
+    const onUp = () => {
+      dragging = false;
+      baseMapManager.setInteractionEnabled(true);
+      measureLine.remove();
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+    };
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+  }
+
+  mapContainer.addEventListener("pointerdown", onPointerDown);
+
+  elements.measureToggle.addEventListener("click", () => {
+    active = !active;
+    elements.measureToggle.classList.toggle("active", active);
+    elements.measureToggle.setAttribute("aria-pressed", active ? "true" : "false");
+    mapContainer.classList.toggle("orrery-measuring", active);
+    if (!active && !dragging) {
+      setReadout("");
+    }
+  });
 }
 
 function setupActionEvents() {
@@ -2806,6 +5128,23 @@ function setupActionEvents() {
   }
   if (elements.selectionClear) {
     elements.selectionClear.addEventListener("click", () => setSelection(null));
+  }
+
+  // "Click off" any selected layer/group/view — the X button was the only
+  // way to deselect before this, which isn't discoverable and doesn't match
+  // how clicking empty space deselects in basically every other editor.
+  // Excludes clicks landing on any actual control (button/input/select/
+  // textarea/link) AND anywhere inside a .list-group-item row — otherwise
+  // an imprecise click near a layer's own badge/padding (not its name
+  // button) would deselect it instead of doing nothing, which would feel
+  // like a misclick trap rather than "clicking elsewhere."
+  const leftPane = document.querySelector('[data-pane-content="left"]');
+  if (leftPane) {
+    leftPane.addEventListener("click", (event) => {
+      if (state.selection.kind === null) return;
+      if (event.target.closest("button, input, select, textarea, a, .list-group-item")) return;
+      setSelection(null);
+    });
   }
 }
 
@@ -2822,6 +5161,54 @@ function setupMapEvents() {
     });
   }
 
+  if (elements.measurementScale && elements.measurementUnit) {
+    const applyMeasurementChange = () => {
+      const scaleValue = elements.measurementScale.value === "" ? null : Number(elements.measurementScale.value);
+      const unitValue = elements.measurementUnit.value.trim();
+      recordHistory("map measurement", () => {
+        state.map.measurement = {
+          scale: Number.isFinite(scaleValue) ? scaleValue : null,
+          unit: unitValue,
+        };
+        updateMapTimestamp(state.map);
+      });
+      updateMeasureAvailability();
+      updateShapeAvailability();
+      renderJson();
+    };
+    elements.measurementScale.addEventListener("change", applyMeasurementChange);
+    elements.measurementUnit.addEventListener("change", applyMeasurementChange);
+  }
+
+  // Only commits the SETTING — deliberately does not re-mount the base map
+  // live (that would jerk the camera around mid-edit); it takes effect the
+  // next time this map is actually loaded (applyMapSnapshot's own
+  // resolveInitialView call).
+  if (elements.initialZoom && elements.initialPositionX && elements.initialPositionY) {
+    const applyInitialViewChange = () => {
+      const zoomValue = Number(elements.initialZoom.value);
+      const xValue = Number(elements.initialPositionX.value);
+      const yValue = Number(elements.initialPositionY.value);
+      const zoom = Number.isFinite(zoomValue) && zoomValue > 0 ? zoomValue : 1;
+      const x = Number.isFinite(xValue) ? xValue : 0;
+      const y = Number.isFinite(yValue) ? yValue : 0;
+      recordHistory("map initial view", () => {
+        state.map.initialView = { zoom, pan: { x, y } };
+        updateMapTimestamp(state.map);
+      });
+      // Reflect back in case an invalid/empty entry got reverted to the
+      // default (1 / 0 / 0), same "don't leave text the model never
+      // actually accepted" pattern the Name field's own guard uses.
+      elements.initialZoom.value = zoom;
+      elements.initialPositionX.value = x;
+      elements.initialPositionY.value = y;
+      renderJson();
+    };
+    elements.initialZoom.addEventListener("change", applyInitialViewChange);
+    elements.initialPositionX.addEventListener("change", applyInitialViewChange);
+    elements.initialPositionY.addEventListener("change", applyInitialViewChange);
+  }
+
   if (elements.newMapButton) {
     elements.newMapButton.addEventListener("click", () => {
       applyMapSnapshot(JSON.stringify(createMapModel()));
@@ -2830,6 +5217,7 @@ function setupMapEvents() {
       // "clean until you actually change something" convention Sanctum's
       // New Setting/Location already follows.
       markMapClean();
+      watchCurrentMap(null);
       status.show("Started a new map.", { type: "info", timeout: 1500 });
     });
   }
@@ -2841,6 +5229,40 @@ function setupMapEvents() {
     if (!isMapDirty()) return;
     event.preventDefault();
     event.returnValue = "";
+  });
+
+  // Delete/Backspace deletes whatever's currently selected (layer, group,
+  // view, marker, drawn path, shape) — every selection editor's own
+  // "Delete X" button carries data-action="delete-selected" for exactly
+  // this, so this just finds and clicks whichever one is currently
+  // rendered rather than re-implementing each editor's own delete logic
+  // (recordHistory, setSelection afterward, ...) a second time here.
+  // Checks BOTH selectionEditor and selectionToolbar — Layer/Shape/Group's
+  // own Delete now lives in the shared icon-toolbar mount
+  // (data-selection-toolbar-mount), not inside selectionEditor itself, and
+  // this shortcut needs to find it there too, not just the older kinds
+  // (marker, path, view) that still build a standalone inline button.
+  window.addEventListener("keydown", (event) => {
+    const target = event.target;
+    const isEditableTarget =
+      target instanceof HTMLElement &&
+      (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.tagName === "SELECT" || target.isContentEditable);
+    if (event.key === "Escape") {
+      // Escape always deselects, even from inside a field (blurring it
+      // first) — matches the left-pane click-off behavior above, just from
+      // the keyboard.
+      if (isEditableTarget) target.blur();
+      if (state.selection.kind !== null) setSelection(null);
+      return;
+    }
+    if (event.key !== "Delete" && event.key !== "Backspace") return;
+    if (isEditableTarget) return;
+    const deleteButton =
+      elements.selectionToolbar?.querySelector('[data-action="delete-selected"]') ||
+      elements.selectionEditor?.querySelector('[data-action="delete-selected"]');
+    if (!deleteButton || deleteButton.disabled) return;
+    event.preventDefault();
+    deleteButton.click();
   });
 
   if (elements.saveMapButton) {
@@ -2856,6 +5278,9 @@ function setupMapEvents() {
         // dirty baseline before populateMapSelect's own updateMapToolbarState
         // call (via refreshMapCatalog) re-evaluates Delete too.
         markMapClean();
+        // A brand-new map now has a real backing record — start watching it
+        // (idempotent for an already-loaded map, just restarts the poll).
+        watchCurrentMap(state.map.id);
         await populateMapSelect();
       } catch (error) {
         status.show(`Unable to save map: ${error.message}`, { type: "error", timeout: 4000 });
@@ -2872,11 +5297,55 @@ function setupMapEvents() {
         status.show("Deleted.", { type: "success", timeout: 2000 });
         applyMapSnapshot(JSON.stringify(createMapModel()));
         markMapClean();
+        watchCurrentMap(null);
         await populateMapSelect();
       } catch (error) {
         status.show(`Unable to delete map: ${error.message}`, { type: "error", timeout: 4000 });
       }
     });
+  }
+
+  if (elements.exportButton) {
+    // Reuses the same Blob/anchor/download mechanics Crucible/Vault/Sanctum
+    // already share for "download this record as a .json file" — an
+    // identity shape function, since a map export is a portable copy of
+    // itself, not a Press-ingestion shape like those tools' own records.
+    elements.exportButton.addEventListener("click", () => {
+      exportRecordAsJson(state.map, (map) => map);
+    });
+  }
+
+  if (elements.importButton) {
+    const importInput = document.createElement("input");
+    importInput.type = "file";
+    importInput.accept = "application/json";
+    importInput.className = "d-none";
+    importInput.addEventListener("change", async () => {
+      const file = importInput.files?.[0];
+      importInput.value = "";
+      if (!file) return;
+      let parsed;
+      try {
+        parsed = JSON.parse(await file.text());
+      } catch (error) {
+        status.show("That file isn't valid JSON.", { type: "error", timeout: 3000 });
+        return;
+      }
+      if (!parsed || !Array.isArray(parsed.layers) || !parsed.baseMap || typeof parsed.baseMap !== "object") {
+        status.show("That file doesn't look like an Orrery map.", { type: "error", timeout: 3000 });
+        return;
+      }
+      // Funnels through the same snapshot path New/Load/Undo/Redo already
+      // use, so history/dirty-state/JSON-preview stay consistent — left
+      // dirty (not markMapClean()) since an imported file is unsaved
+      // content until the user explicitly hits Save.
+      applyMapSnapshot(JSON.stringify(parsed));
+      if (elements.mapSelect) elements.mapSelect.value = "";
+      watchCurrentMap(null);
+      status.show(`Imported "${state.map.name || "map"}".`, { type: "success", timeout: 2000 });
+    });
+    document.body.appendChild(importInput);
+    elements.importButton.addEventListener("click", () => importInput.click());
   }
 
   if (elements.mapSelect) {
@@ -2900,6 +5369,7 @@ async function loadMapById(id, shareToken = "") {
   if (!id) {
     applyMapSnapshot(JSON.stringify(createMapModel()));
     markMapClean();
+    watchCurrentMap(null);
     return;
   }
   if (!dataManager) return;
@@ -2913,6 +5383,7 @@ async function loadMapById(id, shareToken = "") {
     // on a state that still legitimately differs from the last save, and
     // Save needs to reflect that.
     markMapClean();
+    watchCurrentMap(state.map.id, shareToken);
   } catch (error) {
     status.show(`Unable to load map: ${error.message}`, { type: "error", timeout: 4000 });
   }
@@ -2989,6 +5460,19 @@ function setupViewPanelDrag() {
   };
 
   handle.addEventListener("pointerdown", (event) => {
+    // Same "don't hijack an actual control" guard the left-pane click-off
+    // handler already uses — this bar also holds the zoom buttons and the
+    // Measure/Draw/Shape toggles plus the Shape Type <select>. Buttons
+    // tolerated the unconditional preventDefault() below (their own click
+    // still fires regardless of what a prior pointerdown prevented), but a
+    // native <select>'s dropdown-opening IS exactly what browsers tie to
+    // that default action — confirmed as the actual cause of the Shape
+    // Type dropdown never opening, since every pointerdown on it, anywhere
+    // in this handle, got preventDefault()'d before the browser could show
+    // its options.
+    if (event.target.closest("button, select, input, textarea, a")) {
+      return;
+    }
     event.preventDefault();
     const panelRect = panel.getBoundingClientRect();
     const containerRect = container.getBoundingClientRect();
@@ -3003,10 +5487,18 @@ function setupViewPanelDrag() {
   });
 }
 
-baseMapManager.setBaseMap(state.map.baseMap, state.map.view);
-if (elements.mapNameInput) {
-  elements.mapNameInput.value = state.map.name || "";
-}
+// Deliberately does NOT mount state.map's own base map or call renderAll()
+// here — state.map is still just the harmless placeholder createMapModel()
+// built at module load (see its own comment), and mounting/rendering it
+// would paint a real, functioning default Tile/OSM map (plus its Primary
+// Grid Layer, Name field, etc.) behind/around the empty-state card below,
+// completely defeating the point of it. The various setup*Events calls
+// just below only wire listeners onto STATIC toolbar buttons (Add Layer,
+// Add Group, zoom controls, base map type radios) that exist in the HTML
+// regardless of state.map's content, not onto anything renderAll() would
+// have produced — safe to call before a real map is ever loaded.
+// applyMapSnapshot (New Map / picking a saved map / the ?map= deep link)
+// is what actually calls setBaseMap + renderAll for the first time.
 setupBaseMapEvents();
 setupLayerEvents();
 setupGroupEvents();
@@ -3016,11 +5508,22 @@ setupActionEvents();
 setupMapEvents();
 setupViewPanelToggle();
 setupViewPanelDrag();
-renderAll();
 refreshTooltips();
 initHelpSystem({ root: document });
 // The freshly created, never-edited map at page load has nothing to save
 // yet — without this, mapCleanSnapshot starts null and Save would show
 // enabled from the very first render.
 markMapClean();
+if (elements.mapEmptyState) {
+  elements.mapEmptyState.appendChild(
+    createEmptyStateCard({ icon: "tabler:map", message: "Select a map above, or click New Map to start one." })
+  );
+}
+// Hides everything renderAll() above just painted (the harmless, never-
+// saved default map createMapModel() built at module load) until the GM
+// actually picks or creates one — see showMapEmptyState's own comment.
+// loadMapFromUrlParam below, if there's a real ?map= to load, calls
+// loadMapById -> applyMapSnapshot -> hideMapEmptyState() and reveals it
+// immediately.
+showMapEmptyState();
 void populateMapSelect().then(() => loadMapFromUrlParam());

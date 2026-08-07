@@ -1,4 +1,4 @@
-import { initAppShell, resolveToolContextPath } from "../../common/js/lib/app-shell.js";
+import { initAppShell, resolveToolContextPath, resolveToolHref } from "../../common/js/lib/app-shell.js";
 import { initAuthControls } from "../../common/js/lib/auth-ui.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
 import { refreshTooltips } from "../../common/js/lib/tooltips.js";
@@ -14,6 +14,7 @@ import { buildGroupTree, getDisplayPills, parseTag } from "./lib/journal-tags.js
 import { extractOutline } from "./lib/journal-outline.js";
 import { toggleTaskLine, taskLineText, updateCheckboxLineText } from "./lib/journal-tasks.js";
 import { startEncounter, deterministicEncounterId } from "./lib/journal-encounter.js";
+import { extractContentReferences, findKindReferenceRecord, EXCLUDED_KINDS } from "./lib/journal-kind-reference.js";
 import { attachWikiLinkAutocomplete } from "./lib/wiki-link-autocomplete.js";
 import { attachCodeBlockAutocomplete } from "./lib/code-block-autocomplete.js";
 import { createToolbarButtonGroup, createCollapsibleSection, createEmptyStateCard } from "../../common/js/lib/ui-components.js";
@@ -205,7 +206,7 @@ let selectedId = "";
 // exists server-side yet to delete) and never subject to ownership gating.
 let draftEntry = null;
 // The in-memory edit state of whichever page is selected — mutated directly
-// by the title/body/tags/refs controls, compared against `cleanSnapshot` to
+// by the title/body/tags controls, compared against `cleanSnapshot` to
 // drive Save's dirty-gating. Deliberately NOT auto-saved on every keystroke
 // (see Save's own button) — same explicit-Save convention Press/Orrery both
 // use, not a parallel autosave model.
@@ -226,8 +227,32 @@ function cloneTags(tags) {
   return [...(tags || [])];
 }
 
-function cloneRefs(refs) {
-  return (refs || []).map((ref) => ({ ...ref }));
+// Every Library kind this page's own `` `kindId:Name` `` references/
+// autocomplete can target, minus the ones journal-kind-reference.js's own
+// EXCLUDED_KINDS already carves out (journal/kind/encounter/macro — the
+// first two don't make sense as a generic reference, the latter two have
+// their own richer, dedicated syntax already). Fetched once and cached —
+// this suite's kind list doesn't change mid-session. `validKindIds`/
+// `kindLabelsMap` are read SYNCHRONOUSLY by renderPreview (renderMarkdown
+// itself never fetches anything, see its own header comment) — empty until
+// this resolves, same "chips just don't appear yet" grace period every
+// other fetch-then-render path in this file already accepts, rather than
+// blocking the first render on it.
+let libraryKindsPromise = null;
+let validKindIds = new Set();
+let kindLabelsMap = {};
+function ensureLibraryKinds() {
+  if (!libraryKindsPromise) {
+    libraryKindsPromise = loadLibraryKinds()
+      .then((kinds) => {
+        const list = kinds || [];
+        validKindIds = new Set(list.map((kind) => kind.id).filter((id) => !EXCLUDED_KINDS.has(id)));
+        kindLabelsMap = Object.fromEntries(list.map((kind) => [kind.id, kind.label || kind.id]));
+        return list;
+      })
+      .catch(() => []);
+  }
+  return libraryKindsPromise;
 }
 
 // Merges the remote list (fetchKindEntriesWithIds — {id, entity}) with
@@ -528,6 +553,14 @@ function renderPreview() {
     // active campaign, not a per-page setting.
     groupContext: { groupId: dataManager.getActiveGroup()?.groupId || "" },
     dataManager,
+    // Empty until ensureLibraryKinds resolves — renderMarkdown stays fully
+    // synchronous (see its own header comment), so a `` `kindId:Name` ``
+    // block simply doesn't turn into a chip on the very first render of the
+    // very first page opened this session; every later render (kinds are
+    // fetched once, cached module-wide) has them.
+    validKindIds,
+    kindLabels: kindLabelsMap,
+    onOpenReference: (kindId, name) => void handleOpenReference(kindId, name),
   });
   previewEl.appendChild(node);
   // Positional pairing with the Outline panel's own entries (extractOutline
@@ -608,7 +641,8 @@ function wouldCreateCycle(candidateParentId, forId) {
 // page in the left-pane list (see buildPageNode/buildGroupTree in
 // journal-tags.js and renderPageNode above). Kept as its own section rather
 // than folded into Related since it's a structured single-value field
-// (`workingPayload.parentId`), not another entry in the `refs` array.
+// (`workingPayload.parentId`), not a `` `kindId:Name` `` reference extracted
+// from the body.
 function renderParent() {
   if (!parentContentEl || !workingPayload) return;
   parentContentEl.innerHTML = "";
@@ -675,71 +709,96 @@ function handleClearParent() {
   renderTags();
 }
 
-function renderRelated() {
+// No longer a manually maintained `refs` list with its own Add/Remove
+// controls — Related is fully derived from the page's own body, same as
+// Outline/Backlinks below, by scanning for `` `kindId:Name` ``/
+// `` `encounter:...` ``/`` `macro:...` `` references and resolving each
+// against the real Library record it names (extractContentReferences).
+// Re-render is debounced off the same body-input listener that already
+// drives Outline (see the textarea's "input" handler below), so this stays
+// in sync as the author types rather than only refreshing on save.
+let relatedRequestToken = 0;
+let relatedRenderTimer = null;
+
+// Debounced the same FIELD_COMMIT_DEBOUNCE_MS beat as scheduleFieldCommit —
+// unlike renderOutline (a pure local scan), each pass here fetches every
+// referenced kind's own entries, so firing it on every raw keystroke would
+// mean a fetch burst per character typed rather than once per pause.
+function scheduleRelatedRender() {
+  window.clearTimeout(relatedRenderTimer);
+  relatedRenderTimer = window.setTimeout(() => void renderRelated(), FIELD_COMMIT_DEBOUNCE_MS);
+}
+
+async function renderRelated() {
   if (!relatedListEl || !workingPayload) return;
+  await ensureLibraryKinds();
+  const token = (relatedRequestToken += 1);
+  const refs = await extractContentReferences(workingPayload.body, dataManager, validKindIds);
+  // A newer keystroke already kicked off another pass — this one's result
+  // is stale, drop it rather than let it clobber the newer render.
+  if (token !== relatedRequestToken) return;
   relatedListEl.innerHTML = "";
-  const refs = workingPayload.refs || [];
-  const list = el("div", "d-flex flex-column gap-1");
   if (!refs.length) {
-    list.appendChild(el("p", "text-body-secondary small mb-0", "Nothing linked yet."));
+    relatedListEl.appendChild(el("p", "text-body-secondary small mb-0", "Nothing referenced yet."));
+    setRelatedCollapsed(true);
+    return;
   }
-  refs.forEach((ref, index) => {
-    const row = el("div", "d-flex align-items-center justify-content-between gap-2 small");
-    row.appendChild(el("span", null, `${ref.kind}: ${ref.id}`));
-    const removeButton = el("button", "btn btn-outline-secondary btn-sm py-0 px-1", "×");
-    removeButton.type = "button";
-    removeButton.addEventListener("click", () => {
-      recordHistory("remove reference", () => {
-        workingPayload.refs = refs.filter((_, i) => i !== index);
-      });
-      updateToolbarState();
-      renderRelated();
-    });
-    row.appendChild(removeButton);
-    list.appendChild(row);
+  refs.forEach((ref) => {
+    const link = el(
+      "button",
+      "btn btn-link btn-sm p-0 d-block text-start",
+      `${kindLabelsMap[ref.kind] || ref.kind}: ${ref.name}`
+    );
+    link.type = "button";
+    link.addEventListener("click", () => void handleOpenReference(ref.kind, ref.id));
+    relatedListEl.appendChild(link);
   });
-  relatedListEl.appendChild(list);
-  const addButton = el("button", "btn btn-outline-secondary btn-sm align-self-start mt-2", "+ Add reference");
-  addButton.type = "button";
-  addButton.addEventListener("click", () => void addRelatedReference());
-  relatedListEl.appendChild(addButton);
-  setRelatedCollapsed(refs.length === 0);
+  setRelatedCollapsed(false);
 }
 
-async function addRelatedReference() {
-  const kinds = (await loadLibraryKinds().catch(() => [])).filter((entry) => entry.id !== KIND);
-  if (!kinds.length || !workingPayload) return;
-  const kindId = await promptForKind(kinds);
-  if (!kindId) return;
-  const chosenId = await openContentPicker({ dataManager, kind: kindId, title: `Choose a ${kindId}` });
-  if (!chosenId) return;
-  recordHistory("add reference", () => {
-    workingPayload.refs = [...(workingPayload.refs || []), { kind: kindId, id: chosenId }];
-  });
-  updateToolbarState();
-  renderRelated();
+const REFERENCE_PREVIEW_MODAL_ID = "repository-reference-preview-modal";
+
+// A page's Related links can point into any of the other 20-odd Library
+// kinds (NPCs live in Forge, monsters in Crucible, systems in Loom, ...) —
+// there's no single "open this record's editor" route to jump to across
+// tools, so this shows a lightweight read-only preview in place instead,
+// same reasoning journal-macro.js's/journal-encounter.js's own chips stay
+// self-contained rather than navigating away from the page being read.
+//
+// `map` is the one exception: unlike every other kind, a map IS a whole
+// live view (Orrery's own pan/zoom/layers/fog), not a few lines of
+// description worth a static preview — so this navigates straight to
+// Orrery with that map loaded (`?map=<id>`, same deep link a spotlighted
+// map's own link already uses — see journal-encounter.js's own
+// resolveToolHref usage for the identical cross-tool navigation pattern)
+// instead of opening the read-only modal.
+async function handleOpenReference(kindId, id) {
+  const record = await findKindReferenceRecord(dataManager, kindId, id);
+  if (!record) {
+    status?.show(`Couldn't find that ${kindLabelsMap[kindId] || kindId}.`, { type: "error", timeout: 3000 });
+    return;
+  }
+  if (kindId === "map") {
+    window.location.href = `${resolveToolHref("orrery", resolveToolContextPath())}?map=${encodeURIComponent(record.id)}`;
+    return;
+  }
+  showReferencePreview(record);
 }
 
-const KIND_PICK_MODAL_ID = "repository-kind-picker-modal";
-
-function promptForKind(kinds) {
-  let modal = document.getElementById(KIND_PICK_MODAL_ID);
+function showReferencePreview(record) {
+  let modal = document.getElementById(REFERENCE_PREVIEW_MODAL_ID);
   if (!modal) {
     const wrapper = document.createElement("div");
     wrapper.innerHTML = `
-      <div class="modal fade" id="${KIND_PICK_MODAL_ID}" tabindex="-1" aria-hidden="true">
+      <div class="modal fade" id="${REFERENCE_PREVIEW_MODAL_ID}" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
           <div class="modal-content">
             <div class="modal-header">
-              <h1 class="modal-title fs-5">Related item's kind</h1>
+              <h1 class="modal-title fs-5" data-repository-reference-title></h1>
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-              <select class="form-select" data-repository-kind-select></select>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-              <button type="button" class="btn btn-primary" data-repository-kind-confirm>Next</button>
+              <p class="text-body-secondary small mb-0" data-repository-reference-body></p>
             </div>
           </div>
         </div>
@@ -748,36 +807,14 @@ function promptForKind(kinds) {
     modal = wrapper.firstElementChild;
     document.body.appendChild(modal);
   }
-  const select = modal.querySelector("[data-repository-kind-select]");
-  const confirmButton = modal.querySelector("[data-repository-kind-confirm]");
-  select.innerHTML = "";
-  kinds
-    .slice()
-    .sort((a, b) => (a.label || a.id).localeCompare(b.label || b.id))
-    .forEach((kind) => select.appendChild(new Option(kind.label || kind.id, kind.id)));
+  modal.querySelector("[data-repository-reference-title]").textContent = record.name;
+  modal.querySelector("[data-repository-reference-body]").textContent =
+    record.payload?.description || record.payload?.summary || "No description.";
   const bsModal =
     window.bootstrap && typeof window.bootstrap.Modal === "function"
       ? window.bootstrap.Modal.getOrCreateInstance(modal)
       : null;
-  return new Promise((resolve) => {
-    let settled = false;
-    const finish = (result) => {
-      if (settled) return;
-      settled = true;
-      confirmButton.removeEventListener("click", onConfirm);
-      modal.removeEventListener("hidden.bs.modal", onHidden);
-      resolve(result);
-    };
-    const onConfirm = () => {
-      bsModal?.hide();
-      finish(select.value || null);
-    };
-    const onHidden = () => finish(null);
-    confirmButton.addEventListener("click", onConfirm);
-    modal.addEventListener("hidden.bs.modal", onHidden);
-    if (bsModal) bsModal.show();
-    else finish(select.value || null);
-  });
+  bsModal?.show();
 }
 
 function renderBacklinks() {
@@ -1060,7 +1097,6 @@ function selectPage(id, { heading = "", remember = true, pushHistory = true } = 
   workingPayload = {
     ...entry.payload,
     tags: cloneTags(entry.payload?.tags),
-    refs: cloneRefs(entry.payload?.refs),
   };
   cleanSnapshot = JSON.stringify(workingPayload);
   renderPageTree();
@@ -1082,15 +1118,15 @@ function selectPage(id, { heading = "", remember = true, pushHistory = true } = 
   }
 }
 
-function createDraftEntry({ title = "", body = "", tags = [], refs = [], parentId = "" } = {}) {
+function createDraftEntry({ title = "", body = "", tags = [], parentId = "" } = {}) {
   captureScrollMemory();
   const id = generateId();
   draftEntry = {
     id,
-    payload: { title: title || "Untitled page", body, tags: cloneTags(tags), refs: cloneRefs(refs), parentId },
+    payload: { title: title || "Untitled page", body, tags: cloneTags(tags), parentId },
   };
   selectedId = id;
-  workingPayload = { ...draftEntry.payload, tags: cloneTags(draftEntry.payload.tags), refs: cloneRefs(draftEntry.payload.refs) };
+  workingPayload = { ...draftEntry.payload, tags: cloneTags(draftEntry.payload.tags) };
   // Never equal to any real JSON.stringify(workingPayload) — a draft is
   // dirty from the moment it exists, since nothing has been saved yet.
   cleanSnapshot = null;
@@ -1139,7 +1175,6 @@ function handleDuplicate() {
     title: `${workingPayload.title || "Untitled page"} Copy`,
     body: workingPayload.body || "",
     tags: workingPayload.tags,
-    refs: workingPayload.refs,
     parentId: workingPayload.parentId || "",
   });
 }
@@ -1223,6 +1258,7 @@ bodyTextarea?.addEventListener("input", () => {
   workingPayload.body = bodyTextarea.value;
   updateToolbarState();
   renderOutline();
+  scheduleRelatedRender();
 });
 bodyTextarea?.addEventListener("change", () => commitFieldEdit());
 
@@ -1258,6 +1294,16 @@ window.addEventListener("popstate", (event) => {
 updateToolbarState();
 refreshTooltips();
 void initHelpSystem({ root: document });
+// Fetched once, up front — validKindIds/kindLabelsMap need to be populated
+// before the FIRST renderPreview/renderRelated call can turn a
+// `` `kindId:Name` `` block into a chip. If a page's already selected and
+// rendered by the time this resolves (unlikely — loadLibraryKinds is a
+// single small fetch — but not impossible on a slow connection), refresh
+// it once so those chips don't wait for the next keystroke to appear.
+void ensureLibraryKinds().then(() => {
+  if (currentMode === "view") renderPreview();
+  void renderRelated();
+});
 void refreshEntries().then(() => {
   // A bookmarked/reloaded `?page=<id>` deep-links straight to that page —
   // resolved AFTER entries load, since findEntry needs the fetched list.

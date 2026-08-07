@@ -47,6 +47,10 @@ export function generateNpc(location, tables, { overrides = {}, random = Math.ra
   return {
     locationId: location?.id ?? null,
     name: nameResult.name,
+    // Never rolled/generated — set manually afterward (Orrery's own marker
+    // editor copies this into a placed marker's own image once, when the
+    // marker references this NPC — see map-model.js's createMarkerElement).
+    image: "",
     identity: {
       species: species.label,
       archetype: archetype.name,
