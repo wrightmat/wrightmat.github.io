@@ -17,14 +17,14 @@
      explicit borderRadius (once it has a border) overrides this inline. */
   border-radius: var(--bs-border-radius-lg);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
-  /* Plain (non-!important) defaults, replacing the old .p-3 Bootstrap
-     utility class (see createCanvasCardElement) for the same reason the
-     border/rounded-3 classes were replaced — .p-3 would otherwise block a
-     component's own custom Padding. padding-top stays higher, reserving
-     space for the icon/actions header row (see the --no-header variant
-     below for when that space isn't needed). */
-  padding: 1rem;
-  padding-top: 2.25rem;
+  /* No default padding at all (previously 1rem, 2.25rem on top to reserve
+     space for the icon/actions header row) — a real per-component Padding
+     setting exists (applyComponentStyles), same "no hardcoded default —
+     whatever's needed belongs in the real, user-editable setting" reasoning
+     already applied to border above. The header no longer needs reserved
+     space either: it's hover/selected-revealed now (see the CSS further
+     below), so it overlays directly on top of the component's own content
+     rather than pushing it down to make room. */
   /* Replaces every hardcoded stacking gap this project used to have
      (canvas-root's gap-3, Container cells' gap-3, the dropzone's own
      gap: 0.75rem) — a component's own Margin (applyComponentStyles) is now
@@ -32,31 +32,28 @@
      sibling follows it, with this as the sensible default when nothing
      explicit is set. */
   margin-bottom: 1rem;
+  /* The last link in the flex/grid "min-width:auto" shrink chain a
+     Container's own narrow columns need (see common/css/shell.css's
+     .template-container-zone/.template-dropzone) — this card is itself a
+     flex item of .template-dropzone (flex-column), so without this it
+     would independently refuse to shrink below its own content's width
+     regardless of what its ancestors allow. width:100% is paired with it
+     (matches shell.css's own dropzone/zone rules) rather than relying on
+     flex's default align-items:stretch alone to carry a definite width
+     down through every nested level — harmless outside a Container too,
+     since a plain block-level card would already default to its parent's
+     full width regardless; this just makes that explicit instead of
+     assumed. */
+  width: 100%;
+  min-width: 0;
 }
 
-/* Play/view mode never shows the icon/actions header row at all (see
-   renderComponentCard's showTypeIcon) — no reason to keep reserving
-   padding-top for it there. Matches the plain p-3 top padding every other
-   side already has. */
-.workbench-canvas-card--no-header {
-  padding-top: 1rem;
-}
-
-/* A nested (Container/zone-child) component in Play view — see
-   createCanvasCardElement's bare option, which already skips adding the
-   bg-body/shadow-sm/p-3 classes for this case (so there's no default
-   background/shadow to strip here — doing that with !important too would
-   wrongly blank out a component's own legitimately-set custom background
-   via applyComponentStyles). Only padding and the base rule's
-   border-radius need overriding here; no !important needed — same
-   specificity as the rules they override (.workbench-canvas-card,
-   .workbench-canvas-card--no-header), so source order (this rule comes
-   after both) is enough. Result: the nested component's content sits
-   flush with the cell it's in, lining up with a plain top-level sibling
-   field's own left edge instead of paying for a second nested card's
-   worth of padding on top of the Container's own. */
+/* A nested (Container/zone-child) component in Play view — the base rule
+   above already has no default padding of its own to strip (see its own
+   comment), so the only thing left to override here is corner rounding:
+   a nested component sits flush with its cell, not rounded like a
+   free-standing top-level card. */
 .workbench-canvas-card--bare {
-  padding: 0;
   border-radius: 0;
 }
 
@@ -120,6 +117,68 @@
   cursor: grabbing;
 }
 
+/* Icon/binding-pill/delete chrome only earns its space once you're actually
+   interacting with a component — it's absolutely-positioned over the
+   card's own content (see .template-component-header above), and left
+   always-on it routinely obscured otherwise-important content. Hidden by
+   default, revealed on hover, keyboard focus (:focus-within — tabbing to
+   the Delete button), or while the component is selected (so it doesn't
+   vanish the instant the mouse leaves the component you just clicked).
+   Scoped to .template-component-header specifically — the Template
+   editor's own header — not the shared .workbench-canvas-card__header
+   class Play/Edit's cards also carry, whose header is already normally
+   empty there (see the :empty rule above) and isn't the complaint here. */
+.template-component-header {
+  opacity: 0;
+  /* Same hit-testing reasoning as the :empty rule above — while hidden,
+     this absolutely-positioned box would otherwise keep intercepting
+     clicks meant for the card's own content underneath it, invisibly. */
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+/* :hover (and :focus-within) bubbles to every ancestor whose box contains
+   the cursor/focus, not just the innermost element under it — so a plain
+   ".template-component:hover .template-component-header" rule matched a
+   Container's own :hover state too, revealing every nested child's header
+   at once instead of just whichever one the cursor is actually over.
+   :not(:has(.template-component:hover)) excludes a component whenever one
+   of its OWN nested .template-component descendants is also currently
+   hovered, leaving only the innermost one under the cursor lit up. Direct
+   child (>) since the header is always createComponentElement's own direct
+   wrapper.appendChild(header) — never nested deeper. Selected stays
+   unconditional — that's about which component the Inspector is editing,
+   not hover nesting. */
+.template-component:hover:not(:has(.template-component:hover)) > .template-component-header,
+.template-component:focus-within:not(:has(.template-component:focus-within)) > .template-component-header,
+.template-component.template-component-selected > .template-component-header {
+  opacity: 1;
+  /* The whole header bar (not just its visible icon/pill/delete cluster)
+     is intentionally the drag handle (data-sortable-handle) — grabbing
+     anywhere along that top strip reorders the component, not just
+     clicking its visible buttons — so pointer-events stays on the full
+     box here rather than being narrowed to its children or the box
+     shrunk to fit them. A Container's Tab nav can sit underneath this
+     same strip (at whatever width its tabs happen to render at); see
+     .template-container-tabs-nav below for how that's resolved without
+     touching this box's width/position at all. */
+  pointer-events: auto;
+}
+
+/* A Container's Tab nav row can render directly under the header bar
+   above (e.g. when the Container has no Label heading pushing it down) —
+   rather than trying to carve a hole in the header matching whatever width
+   the tabs happen to render at (impossible to know in advance — no
+   measurement, no reserved spacing added to the template), this simply
+   gives the nav row a higher stacking position than the header. Wherever
+   the two geometrically overlap, the nav (and its buttons) now paints on
+   top and receives the click; everywhere else — including the empty space
+   between the tabs and the header's own icon/pill/delete cluster — the
+   header stays on top as the drag handle, exactly as before. */
+.template-container-tabs-nav {
+  position: relative;
+  z-index: 2;
+}
+
 .template-component-actions,
 .workbench-canvas-card__actions {
   display: flex;
@@ -148,7 +207,8 @@
 }
 
 .template-binding-pill,
-.template-roller-pill {
+.template-roller-pill,
+.template-visibility-pill {
   font-size: 0.75rem;
   max-width: 12rem;
   white-space: nowrap;
@@ -156,30 +216,26 @@
   text-overflow: ellipsis;
 }
 
-.canvas-collapse-toggle {
-  width: 1.75rem;
-  height: 1.75rem;
-  border-radius: 999px;
-  border: 1px solid var(--bs-border-color);
-  background-color: var(--bs-body-bg);
-  color: var(--bs-body-color);
-  padding: 0;
-  margin-left: 0;
-  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+.template-visibility-pill .iconify {
+  font-size: 0.8125rem;
 }
 
-.canvas-collapse-toggle:hover {
-  background-color: var(--bs-tertiary-bg);
+/* The Template editor deliberately never evaluates a component's Visible
+   binding/formula against sample data (see createDataControls/the Behavior
+   section's own comment) — hiding a card outright here would make it
+   unselectable based on synthesized preview values, not the real character
+   it'll actually render for. A manually-off Visible toggle is different:
+   that's a real, unconditional authoring choice, not data-dependent, so
+   it's safe to actually show as dimmed — paired with the badge above so
+   "why is this faded" always has a visible answer. */
+.template-component--hidden {
+  opacity: 0.45;
 }
 
-.canvas-collapse-toggle:focus-visible {
-  outline: 0;
-  box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.35);
-}
-
-.canvas-collapse-toggle .iconify {
-  font-size: 1rem;
-}
+/* .canvas-collapse-toggle now lives in common/css/shell.css — shared with
+   Press, which gained its own collapse-toggle buttons (Colors/Borders/
+   Advanced inspector groups) and needs the identical look, not a second,
+   unstyled copy. */
 
 .workbench-canvas-card.is-collapsed > :not(.workbench-canvas-card__header),
 .template-component.is-collapsed > :not(.workbench-canvas-card__header) {

@@ -11,7 +11,11 @@
         "userId": { "type": "field", "bind": "@userId" },
         "username": { "type": "field", "bind": "@username" },
         "name": { "type": "field", "bind": "@name" },
+        "race": { "type": "field", "bind": "@race.fullName" },
+        "class": { "type": "custom", "fn": "primaryClassName" },
         "level": { "type": "custom", "fn": "totalLevel" },
+        "levels": { "type": "custom", "fn": "classLevelBreakdown" },
+        "inspiration": { "type": "field", "bind": "=@inspiration ? true : false" },
         "classes": {
           "type": "pipeline",
           "source": "@classes",
@@ -32,6 +36,10 @@
       }
     },
     "proficiency": { "type": "custom", "fn": "proficiencyBonus" },
+    "alignment": { "type": "custom", "fn": "alignmentTable" },
+    "initiative": { "type": "custom", "fn": "initiativeTable" },
+    "senses": { "type": "custom", "fn": "sensesTable" },
+    "speeds": { "type": "custom", "fn": "speedsTable" },
     "conditions": {
       "type": "pipeline",
       "source": "@conditions",
@@ -71,8 +79,12 @@
             "fields": {
               "name": { "type": "field", "bind": "@definition.name" },
               "quantity": { "type": "field", "bind": "=@quantity || 1" },
-              "weight": { "type": "field", "bind": "=@definition.weight || 0" },
-              "notes": { "type": "field", "bind": "=@notes || ''" }
+              "weight": { "type": "field", "bind": "=(@definition.weight || 0) * (@definition.weightMultiplier || 1) * (@quantity || 1)" },
+              "notes": { "type": "field", "bind": "=@definition.snippet || @definition.description || ''" },
+              "canAttune": { "type": "field", "bind": "=@definition.canAttune ? true : false" },
+              "isAttuned": { "type": "field", "bind": "=@isAttuned ? true : false" },
+              "canEquip": { "type": "field", "bind": "=@definition.canEquip ? true : false" },
+              "isEquipped": { "type": "field", "bind": "=@equipped ? true : false" }
             }
           }
         }
@@ -85,6 +97,29 @@
         "description": { "type": "field", "bind": "@background.definition.description" },
         "feature": { "type": "field", "bind": "@background.definition.featureName" },
         "characteristics": { "type": "field", "bind": "@background.personalityTraits" }
+      }
+    },
+    "feats": { "type": "custom", "fn": "featsTable" },
+    "features": { "type": "custom", "fn": "featuresTable" },
+    "proficiencies": { "type": "custom", "fn": "proficienciesTable" },
+    "attacks": { "type": "custom", "fn": "attacksTable" },
+    "attacking": { "type": "custom", "fn": "attackingTable" },
+    "spellcasting": { "type": "custom", "fn": "spellcastingTable" },
+    "limitedUses": { "type": "custom", "fn": "limitedUsesTable" },
+    "campaign": {
+      "type": "object",
+      "fields": {
+        "id": { "type": "field", "bind": "@campaign.id" },
+        "name": { "type": "field", "bind": "@campaign.name" },
+        "dm": { "type": "field", "bind": "@campaign.dmUsername" }
+      }
+    },
+    "decorations": {
+      "type": "object",
+      "fields": {
+        "avatarUrl": { "type": "field", "bind": "@decorations.avatarUrl" },
+        "frameAvatarUrl": { "type": "field", "bind": "@decorations.frameAvatarUrl" },
+        "backdropAvatarUrl": { "type": "field", "bind": "@decorations.backdropAvatarUrl" }
       }
     },
     "deathSaves": {
@@ -101,7 +136,10 @@
         "allies": { "type": "field", "bind": "@notes.allies" },
         "backstory": { "type": "field", "bind": "@notes.backstory" },
         "enemies": { "type": "field", "bind": "@notes.enemies" },
-        "organizations": { "type": "field", "bind": "@notes.organizations" }
+        "organizations": { "type": "field", "bind": "@notes.organizations" },
+        "personalPossessions": { "type": "field", "bind": "@notes.personalPossessions" },
+        "otherHoldings": { "type": "field", "bind": "@notes.otherHoldings" },
+        "otherNotes": { "type": "field", "bind": "@notes.otherNotes" }
       }
     },
     "traits": {
@@ -171,7 +209,8 @@
             }
           },
           { "step": "dedup", "bind": "@name" },
-          { "step": "group-by", "bind": "@level" }
+          { "step": "group-by", "bind": "@level" },
+          { "step": "entries", "keyName": "level", "valueName": "spells" }
         ]
       }
     }

@@ -1,8 +1,15 @@
 import { initAppShell } from "../../common/js/lib/app-shell.js";
 import { initAuthControls, escapeHtml } from "../../common/js/lib/auth-ui.js";
 import { initTierGate } from "../../common/js/lib/access.js";
-import { updateJsonPreview, formatSize } from "../../common/js/lib/json-preview.js";
-import { bindCollapsibleToggle, setCollapsibleState } from "../../common/js/lib/collapsible.js";
+import { updateJsonPreview } from "../../common/js/lib/json-preview.js";
+import { bindCollapsibleToggle } from "../../common/js/lib/collapsible.js";
+import {
+  createJsonDataPanel,
+  createIconButton,
+  createToolbarButtonGroup,
+  createCollapsibleSection,
+  createCompactField,
+} from "../../common/js/lib/ui-components.js";
 import { refreshTooltips } from "../../common/js/lib/tooltips.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
 import { applyMapping } from "../../common/js/lib/mapping-engine.js";
@@ -12,6 +19,9 @@ import { loadSourceDataRaw, loadLibraryKinds, fetchKindEntriesWithIds } from "..
 import { initShareModal } from "../../common/js/lib/share-modal.js";
 import { allowsDelete, confirmDelete } from "../../common/js/lib/ownership.js";
 import { createSortable } from "../../common/js/lib/dnd.js";
+import { loadClipLibrary, getAllClips } from "../../common/js/lib/audio-clip-library.js";
+import { MACRO_ACTION_CATALOG } from "../../common/js/lib/widgets/macro-action-catalog.js";
+import { HANDOUT_KINDS, KIND_LABELS as HANDOUT_KIND_LABELS } from "../../common/js/lib/widgets/handout.js";
 
 const SOURCES = [
   {
@@ -30,9 +40,211 @@ const SOURCES = [
   },
 ];
 
+// Built and mounted before any of this file's many querySelector("[data-*]")
+// lines below (undo/redo/mapping consts here, library/system/macro consts
+// further down, loomGroup*/loomUser* consts much later in the file) — every
+// one of them keeps working unchanged since each JS-created button carries
+// the exact same data-* attribute/selector its static markup used to.
+createToolbarButtonGroup([
+  { action: "undo", label: "Undo", attrs: { "data-action": "undo-mapping" } },
+  { action: "redo", label: "Redo", attrs: { "data-action": "redo-mapping" } },
+]).forEach((button) => document.querySelector("[data-loom-toolbar-mount]")?.appendChild(button));
+createToolbarButtonGroup([
+  { action: "new", label: "New Mapping", attrs: { "data-action": "new-mapping", "data-loom-view-panel": "import" } },
+  { action: "save", label: "Save Mapping", disabled: true, attrs: { "data-action": "save-mapping", "data-loom-view-panel": "import" } },
+  {
+    action: "rename",
+    icon: "tabler:pencil",
+    label: "Rename Mapping",
+    disabled: true,
+    attrs: { "data-action": "rename-mapping", "data-loom-view-panel": "import" },
+  },
+]).forEach((button) => document.querySelector("[data-loom-toolbar-mount]")?.appendChild(button));
+createToolbarButtonGroup([
+  { action: "new", label: "New Entity", attrs: { "data-library-new": true, "data-loom-view-panel": "library", hidden: true } },
+  {
+    action: "save",
+    label: "Save Entity",
+    disabled: true,
+    attrs: { "data-library-save": true, "data-loom-view-panel": "library", hidden: true },
+  },
+  {
+    action: "delete",
+    label: "Delete Entity",
+    disabled: true,
+    attrs: { "data-library-delete": true, "data-loom-view-panel": "library", hidden: true },
+  },
+]).forEach((button) => document.querySelector("[data-loom-toolbar-mount]")?.appendChild(button));
+createToolbarButtonGroup([
+  { action: "new", label: "New System", attrs: { "data-system-new": true, "data-loom-view-panel": "systems", hidden: true } },
+  {
+    action: "save",
+    label: "Save System",
+    disabled: true,
+    attrs: { "data-system-save": true, "data-loom-view-panel": "systems", hidden: true },
+  },
+  {
+    action: "duplicate",
+    label: "Duplicate System",
+    disabled: true,
+    attrs: { "data-system-duplicate": true, "data-loom-view-panel": "systems", hidden: true },
+  },
+  {
+    action: "delete",
+    label: "Delete System",
+    disabled: true,
+    attrs: { "data-system-delete": true, "data-loom-view-panel": "systems", hidden: true },
+  },
+]).forEach((button) => document.querySelector("[data-loom-toolbar-mount]")?.appendChild(button));
+createToolbarButtonGroup([
+  { action: "new", label: "New Macro", attrs: { "data-macro-new": true, "data-loom-view-panel": "macros", hidden: true } },
+  {
+    action: "save",
+    label: "Save Macro",
+    disabled: true,
+    attrs: { "data-macro-save": true, "data-loom-view-panel": "macros", hidden: true },
+  },
+  {
+    action: "delete",
+    label: "Delete Macro",
+    disabled: true,
+    attrs: { "data-macro-delete": true, "data-loom-view-panel": "macros", hidden: true },
+  },
+]).forEach((button) => document.querySelector("[data-loom-toolbar-mount]")?.appendChild(button));
+createToolbarButtonGroup([
+  {
+    action: "new",
+    icon: "tabler:user-plus",
+    label: "New User",
+    attrs: { "data-loom-user-new": true, "data-loom-view-panel": "users", hidden: true },
+  },
+  {
+    action: "save",
+    label: "Save User",
+    disabled: true,
+    attrs: { "data-loom-user-save": true, "data-loom-view-panel": "users", hidden: true },
+  },
+  {
+    action: "delete",
+    label: "Delete User",
+    disabled: true,
+    attrs: { "data-loom-user-delete": true, "data-loom-view-panel": "users", hidden: true },
+  },
+]).forEach((button) => document.querySelector("[data-loom-toolbar-mount]")?.appendChild(button));
+createToolbarButtonGroup([
+  {
+    action: "new",
+    icon: "tabler:folder-plus",
+    label: "New Group",
+    attrs: { "data-loom-group-new": true, "data-loom-view-panel": "groups", hidden: true },
+  },
+  {
+    action: "save",
+    label: "Save Group",
+    disabled: true,
+    attrs: { "data-loom-group-save": true, "data-loom-view-panel": "groups", hidden: true },
+  },
+  {
+    action: "delete",
+    label: "Delete Group",
+    disabled: true,
+    attrs: { "data-loom-group-delete": true, "data-loom-view-panel": "groups", hidden: true },
+  },
+]).forEach((button) => document.querySelector("[data-loom-toolbar-mount]")?.appendChild(button));
+
+// "Add Property"/"Add Action" — small inline compact-kind buttons (top
+// tooltip, plain icon), not part of the left-pane toolbar cluster above.
+// Original markup used `btn-sm p-1` rather than createIconButton's own
+// compact-kind padding; `p-1` is added via className to match exactly.
+document.querySelector("[data-system-add-property-mount]")?.appendChild(
+  createIconButton({
+    icon: "tabler:plus",
+    label: "Add Property",
+    className: "p-1",
+    attrs: { "data-system-add-property": true },
+  })
+);
+document.querySelector("[data-macro-add-action-mount]")?.appendChild(
+  createIconButton({
+    icon: "tabler:plus",
+    label: "Add Action",
+    className: "p-1",
+    attrs: { "data-macro-add-action": true },
+  })
+);
+
+// Property Inspector toolbar (right pane) — New/Delete/Duplicate/Required
+// Property. Built directly via createIconButton rather than
+// createToolbarButtonGroup: it needs top tooltip placement (this toolbar
+// sits in the right pane, unlike the bottom-placement left-pane clusters
+// above) and Required is a genuine pressed/unpressed toggle
+// (aria-pressed), not a fire-once action, so it doesn't fit the
+// New/Save/Delete preset shape.
+const propertyInspectorToolbarMount = document.querySelector("[data-property-inspector-toolbar-mount]");
+if (propertyInspectorToolbarMount) {
+  propertyInspectorToolbarMount.append(
+    createIconButton({
+      icon: "tabler:file-plus",
+      label: "New Property",
+      variant: "outline-primary",
+      kind: "toolbar",
+      tooltipPlacement: "top",
+      attrs: { "data-system-inspector-new": true },
+    }),
+    createIconButton({
+      icon: "tabler:trash",
+      label: "Delete Property",
+      variant: "outline-danger",
+      kind: "toolbar",
+      tooltipPlacement: "top",
+      attrs: { "data-system-inspector-delete": true },
+    }),
+    createIconButton({
+      icon: "tabler:copy",
+      label: "Duplicate Property",
+      variant: "outline-secondary",
+      kind: "toolbar",
+      tooltipPlacement: "top",
+      attrs: { "data-system-inspector-duplicate": true },
+    }),
+    createIconButton({
+      icon: "tabler:asterisk",
+      label: "Mark as Required",
+      variant: "outline-secondary",
+      kind: "toolbar",
+      tooltipPlacement: "top",
+      attrs: { "data-system-inspector-required": true, "aria-pressed": "false" },
+    })
+  );
+}
+
+// replaceWith, not appendChild — see press/js/app.js's mountInspectorField
+// for why: an appended-into wrapper stays an empty-but-in-flow flex item
+// even while its field is conditionally hidden, silently spending a full
+// gap-3 on both sides of it. Any class the static mount div itself carried
+// is merged onto the built field first so removing the wrapper doesn't
+// lose that layout.
+function mountField(key, element) {
+  const mount = document.querySelector(`[data-field-mount="${key}"]`);
+  if (!mount) return;
+  if (mount.className) element.classList.add(...mount.classList);
+  mount.replaceWith(element);
+}
+mountField("mapping-select", createCompactField({ type: "select", id: "loomMappingSelect", label: "Mapping", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-mapping-select" }));
+
 const mappingSelect = document.querySelector("[data-mapping-select]");
-const mappingsToggle = document.querySelector("[data-mappings-toggle]");
-const mappingsPanel = document.querySelector("[data-mappings-panel]");
+// Adopts each section's existing static `[data-xxx-panel]` markup (its own
+// content stays hand-authored HTML — only the header+chevron wrapper is
+// JS-built) as the collapsible section's content; createCollapsibleSection's
+// own internal bindCollapsibleToggle replaces the old standalone calls
+// below. Selection/Mapping Tree/Entities/Data all start expanded
+// (collapsed: false), matching their original aria-expanded="true" markup.
+const mappingsSection = createCollapsibleSection({
+  label: "Selection",
+  collapsed: false,
+  content: document.querySelector("[data-mappings-panel]"),
+});
+document.querySelector("[data-mappings-mount]")?.appendChild(mappingsSection.section);
 const nodePalette = document.querySelector("[data-node-palette]");
 const stepPaletteSection = document.querySelector("[data-step-palette-section]");
 const stepPalette = document.querySelector("[data-step-palette]");
@@ -44,17 +256,54 @@ const sourceValueLabelRow = document.querySelector("[data-source-value-label-row
 const sourceFetchButton = document.querySelector("[data-source-fetch]");
 const entitiesSummary = document.querySelector("[data-entities-summary]");
 const entitiesList = document.querySelector("[data-entities-list]");
-const entitiesToggle = document.querySelector("[data-entities-toggle]");
-const entitiesPanel = document.querySelector("[data-entities-panel]");
-const ioToggle = document.querySelector("[data-io-toggle]");
-const ioPanel = document.querySelector("[data-io-panel]");
+// Entities and Data (io) both need programmatic re-collapse later
+// (enterMappingMode's workflow-mode logic below) — their setCollapsed
+// return values are captured for that, same as treeSetCollapsed below.
+const entitiesSection = createCollapsibleSection({
+  label: "Entities",
+  collapsed: false,
+  content: document.querySelector("[data-entities-panel]"),
+});
+document.querySelector("[data-entities-mount]")?.appendChild(entitiesSection.section);
+const entitiesSetCollapsed = entitiesSection.setCollapsed;
+const ioSection = createCollapsibleSection({
+  label: "Data",
+  collapsed: false,
+  content: document.querySelector("[data-io-panel]"),
+});
+document.querySelector("[data-io-mount]")?.appendChild(ioSection.section);
+const ioSetCollapsed = ioSection.setCollapsed;
+// Builds and mounts a collapsible-section chevron toggle via the shared
+// factory, for a header whose other content (label, Refresh button) stays
+// static HTML — the section-level createCollapsibleSection isn't used here
+// since it would rebuild the whole header, conflicting with that sibling
+// Refresh button (see Orrery's identical helper for the precedent).
+function createCollapsibleToggleButton(mountSelector, collapsed) {
+  const button = createIconButton({
+    icon: "tabler:chevron-right",
+    className: "collapsible-toggle",
+    includeToggleLabel: true,
+  });
+  button.setAttribute("aria-expanded", collapsed ? "false" : "true");
+  document.querySelector(mountSelector)?.appendChild(button);
+  return button;
+}
+
 const recentSavesContainer = document.querySelector("[data-recent-saves]");
 const recentSavesRefreshButton = document.querySelector("[data-recent-saves-refresh]");
-const recentSavesToggle = document.querySelector("[data-recent-saves-toggle]");
+const recentSavesToggle = createCollapsibleToggleButton("[data-recent-saves-toggle-mount]", true);
 const recentSavesPanel = document.querySelector("[data-recent-saves-panel]");
 const treeContainer = document.querySelector("[data-mapping-tree]");
-const treeToggle = document.querySelector("[data-mapping-tree-toggle]");
-const treePanel = document.querySelector("[data-mapping-tree-panel]");
+// Mapping Tree needs programmatic re-collapse later (enterMappingMode's
+// workflow-mode logic below) — its setCollapsed return value is captured
+// for that, same as entitiesSetCollapsed/ioSetCollapsed above.
+const treeSection = createCollapsibleSection({
+  label: "Mapping Tree",
+  collapsed: false,
+  content: document.querySelector("[data-mapping-tree-panel]"),
+});
+document.querySelector("[data-mapping-tree-mount]")?.appendChild(treeSection.section);
+const treeSetCollapsed = treeSection.setCollapsed;
 const inspectorContainer = document.querySelector("[data-inspector]");
 const rawPreviewEl = document.querySelector("[data-raw-preview]");
 const mappedPreviewEl = document.querySelector("[data-mapped-preview]");
@@ -65,6 +314,25 @@ const saveButton = document.querySelector('[data-action="save-mapping"]');
 const renameButton = document.querySelector('[data-action="rename-mapping"]');
 
 // --- Library / Systems DOM refs ---------------------------------------------
+
+mountField("library-id", createCompactField({ type: "text", id: "loomLibraryId", label: "Id", labelClass: "form-label fw-semibold mb-0", dataAttr: "data-library-id", disabled: true }));
+mountField(
+  "library-template-select",
+  createCompactField({
+    type: "select", id: "loomLibraryTemplate", label: "Assigned Template", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select",
+    dataAttr: "data-library-template-select", helpTopic: "loom.libraryTemplate",
+  })
+);
+mountField(
+  "library-json",
+  createCompactField({
+    type: "textarea", id: "loomLibraryJson", label: "Entity JSON", labelClass: "form-label fw-semibold mb-0", controlClass: "form-control form-control-sm font-monospace",
+    dataAttr: "data-library-json", rows: 20, spellcheck: "false",
+  })
+);
+mountField("system-id", createCompactField({ type: "text", id: "loomSystemId", label: "Id", labelClass: "form-label fw-semibold mb-0", dataAttr: "data-system-id", disabled: true }));
+mountField("system-title", createCompactField({ type: "text", id: "loomSystemTitle", label: "Title", labelClass: "form-label fw-semibold mb-0", dataAttr: "data-system-title" }));
+mountField("system-version", createCompactField({ type: "text", id: "loomSystemVersion", label: "Version", labelClass: "form-label fw-semibold mb-0", dataAttr: "data-system-version" }));
 
 const libraryIdInput = document.querySelector("[data-library-id]");
 const librarySystemSection = document.querySelector("[data-library-system-section]");
@@ -77,17 +345,28 @@ const libraryNewButton = document.querySelector("[data-library-new]");
 const librarySaveButton = document.querySelector("[data-library-save]");
 const libraryDeleteButton = document.querySelector("[data-library-delete]");
 
+mountField("system-select", createCompactField({ type: "select", id: "loomSystemSelect", label: "System", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-system-select" }));
+
 const systemSelect = document.querySelector("[data-system-select]");
 const systemIdInput = document.querySelector("[data-system-id]");
 const systemTitleInput = document.querySelector("[data-system-title]");
 const systemVersionInput = document.querySelector("[data-system-version]");
-const systemPreviewInput = document.querySelector("[data-system-preview]");
-const systemPreviewBytesEl = document.querySelector("[data-system-preview-bytes]");
 const systemPropertyRows = document.querySelector("[data-system-property-rows]");
 const systemNewButton = document.querySelector("[data-system-new]");
 const systemSaveButton = document.querySelector("[data-system-save]");
+const systemDuplicateButton = document.querySelector("[data-system-duplicate]");
 const systemDeleteButton = document.querySelector("[data-system-delete]");
 const systemAddPropertyButton = document.querySelector("[data-system-add-property]");
+// Read-only, live "the whole record as it'll be saved" view — see
+// buildSystemPayload/renderSystemJsonPreview below. Built via the shared
+// ui-components.js factory (pilot migration) instead of hand-written markup
+// + separate collapsible/copy wiring.
+const systemJsonPanelInstance = createJsonDataPanel({
+  label: "JSON Data",
+  helpTopic: "loom.systemJsonPreview",
+  getData: () => buildSystemPayload(),
+});
+document.querySelector("[data-system-json-mount]")?.appendChild(systemJsonPanelInstance.section);
 // Property Inspector (right pane) — a second, more spacious way to edit
 // whichever property row is currently selected in the Properties list above,
 // for anyone who finds that list's single-row-per-property layout cramped or
@@ -102,6 +381,28 @@ const systemInspectorNewButton = document.querySelector("[data-system-inspector-
 const systemInspectorDeleteButton = document.querySelector("[data-system-inspector-delete]");
 const systemInspectorDuplicateButton = document.querySelector("[data-system-inspector-duplicate]");
 const systemInspectorRequiredButton = document.querySelector("[data-system-inspector-required]");
+
+// Macros tab — its own dedicated authoring UI (mirrors the Systems tab
+// above: a select of existing records + New/Save/Delete, editing one at a
+// time), NOT a section bolted onto the generic Library JSON editor. The
+// generic Library tab (libraryJsonTextarea etc. above) still edits a
+// "macro" kind entity too, same as any other kind, but as raw JSON only —
+// this tab is the non-JSON authoring surface for it, same relationship
+// Systems has to its own kind.
+mountField("macro-select", createCompactField({ type: "select", id: "loomMacroSelect", label: "Macro", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-macro-select" }));
+mountField("macro-id", createCompactField({ type: "text", id: "loomMacroId", label: "Id", labelClass: "form-label fw-semibold mb-0", dataAttr: "data-macro-id", disabled: true }));
+mountField("macro-name", createCompactField({ type: "text", id: "loomMacroName", label: "Name", labelClass: "form-label fw-semibold mb-0", dataAttr: "data-macro-name" }));
+mountField("macro-icon", createCompactField({ type: "text", id: "loomMacroIcon", label: "Icon", labelClass: "form-label fw-semibold mb-0", dataAttr: "data-macro-icon", placeholder: "tabler:bolt" }));
+
+const macroRecordSelect = document.querySelector("[data-macro-select]");
+const macroIdInput = document.querySelector("[data-macro-id]");
+const macroNameInput = document.querySelector("[data-macro-name]");
+const macroIconInput = document.querySelector("[data-macro-icon]");
+const macroActionsList = document.querySelector("[data-macro-actions]");
+const macroAddActionButton = document.querySelector("[data-macro-add-action]");
+const macroNewButton = document.querySelector("[data-macro-new]");
+const macroSaveButton = document.querySelector("[data-macro-save]");
+const macroDeleteButton = document.querySelector("[data-macro-delete]");
 let selectedSystemPropertyRow = null;
 
 // The set of function names never depends on which lookup tables the
@@ -156,6 +457,7 @@ const SNAPSHOT_HANDLERS = {
   mapping: { create: createMappingSnapshot, apply: applyMappingSnapshot },
   library: { create: createLibrarySnapshot, apply: applyLibrarySnapshot },
   system: { create: createSystemSnapshot, apply: applySystemSnapshot },
+  macro: { create: createMacroSnapshot, apply: applyMacroSnapshot },
 };
 
 // --- Save/Rename/Delete gating -----------------------------------------
@@ -164,7 +466,15 @@ const SNAPSHOT_HANDLERS = {
 // doesn't need its own parallel tracking. Save only lights up once the
 // current state actually differs from that baseline; Rename/Delete only
 // need a real, currently-loaded item (an id), not necessarily a change.
-const cleanSnapshots = { mapping: null, library: null, system: null };
+const cleanSnapshots = { mapping: null, library: null, system: null, macro: null };
+
+// Declared here (a no-op placeholder, reassigned once real DOM/state is
+// ready — see buildSystemPayload/collectSystemProperties below) so
+// updateToolbarState below can call it unconditionally on every System
+// edit without a `let`-in-temporal-dead-zone ReferenceError: this const
+// block sits well before that later reassignment runs, `let` has no TDZ
+// issue once past its own declaration, only before it.
+let renderSystemJsonPreview = () => {};
 
 function markClean(type) {
   const handler = SNAPSHOT_HANDLERS[type];
@@ -206,6 +516,22 @@ function canDeleteSystem() {
   return systemAllowsDelete(systemSelect?.value);
 }
 
+// Enabled off the same "there's a real id typed" check Save uses, but
+// without also requiring isDirty("system") — duplicating an unmodified,
+// already-saved System is exactly as valid as duplicating a mid-edit one.
+function canDuplicateSystem() {
+  return Boolean((systemIdInput?.value || "").trim());
+}
+
+function canSaveMacro() {
+  return Boolean((macroIdInput?.value || "").trim()) && isDirty("macro");
+}
+
+function canDeleteMacro() {
+  const id = (macroIdInput?.value || "").trim() || macroRecordSelect?.value;
+  return libraryEntryAllowsDelete("macro", id);
+}
+
 // Surfaces *why* Save is disabled for the common case of broken JSON —
 // canSaveLibrary() already silently requires currentLibraryEntity() to
 // parse, but a disabled button with no explanation left the user unable to
@@ -238,7 +564,11 @@ function updateToolbarState() {
   if (librarySaveButton) librarySaveButton.disabled = !canSaveLibrary();
   if (libraryDeleteButton) libraryDeleteButton.disabled = !canDeleteLibrary();
   if (systemSaveButton) systemSaveButton.disabled = !canSaveSystem();
+  if (systemDuplicateButton) systemDuplicateButton.disabled = !canDuplicateSystem();
   if (systemDeleteButton) systemDeleteButton.disabled = !canDeleteSystem();
+  if (macroSaveButton) macroSaveButton.disabled = !canSaveMacro();
+  if (macroDeleteButton) macroDeleteButton.disabled = !canDeleteMacro();
+  renderSystemJsonPreview();
 }
 
 function createMappingSnapshot() {
@@ -749,38 +1079,6 @@ if (treeContainer) {
   treeContainer.addEventListener("mouseleave", () => setHoveredElement(null));
 }
 
-if (treeToggle && treePanel) {
-  bindCollapsibleToggle(treeToggle, treePanel, {
-    collapsed: false,
-    expandLabel: "Expand mapping tree",
-    collapseLabel: "Collapse mapping tree",
-  });
-}
-
-if (mappingsToggle && mappingsPanel) {
-  bindCollapsibleToggle(mappingsToggle, mappingsPanel, {
-    collapsed: false,
-    expandLabel: "Expand selection",
-    collapseLabel: "Collapse selection",
-  });
-}
-
-if (entitiesToggle && entitiesPanel) {
-  bindCollapsibleToggle(entitiesToggle, entitiesPanel, {
-    collapsed: false,
-    expandLabel: "Expand entities",
-    collapseLabel: "Collapse entities",
-  });
-}
-
-if (ioToggle && ioPanel) {
-  bindCollapsibleToggle(ioToggle, ioPanel, {
-    collapsed: false,
-    expandLabel: "Expand data",
-    collapseLabel: "Collapse data",
-  });
-}
-
 // --- Workflow mode: a mapping with a fixed $source (already saved/loaded)
 // locks the Data Source dropdown to that source and favors the Entities pane;
 // a brand-new mapping (no $source yet) leaves Data Source selectable and
@@ -800,27 +1098,9 @@ function applySourceLock(source) {
 function enterMappingMode(definition) {
   const source = definition && typeof definition === "object" ? definition.$source : null;
   applySourceLock(source || null);
-  if (treeToggle && treePanel) {
-    setCollapsibleState(treeToggle, treePanel, {
-      collapsed: Boolean(source),
-      expandLabel: "Expand mapping tree",
-      collapseLabel: "Collapse mapping tree",
-    });
-  }
-  if (entitiesToggle && entitiesPanel) {
-    setCollapsibleState(entitiesToggle, entitiesPanel, {
-      collapsed: !source,
-      expandLabel: "Expand entities",
-      collapseLabel: "Collapse entities",
-    });
-  }
-  if (ioToggle && ioPanel) {
-    setCollapsibleState(ioToggle, ioPanel, {
-      collapsed: false,
-      expandLabel: "Expand data",
-      collapseLabel: "Collapse data",
-    });
-  }
+  treeSetCollapsed(Boolean(source));
+  entitiesSetCollapsed(!source);
+  ioSetCollapsed(false);
 }
 
 // --- Palette handlers ------------------------------------------------------
@@ -1047,7 +1327,7 @@ async function saveEntity(entity) {
     if (entity.kind === "character") {
       // The DDB mapping only ever produces character *content* (identity,
       // stats, abilities, ...) — it has no concept of which Workbench
-      // template/system a character is assigned to, or the `data` bucket
+      // template/system(s) a character is assigned to, or the `data` bucket
       // Workbench's own sheet fields write into (see
       // workbench-character-view.js's persistDraft). A plain overwrite here
       // (re-importing to refresh an existing character's DDB-sourced
@@ -1055,15 +1335,16 @@ async function saveEntity(entity) {
       // vanish from Workbench's own picker — which filters on `template`
       // being set — even though the record itself still exists and loads
       // fine here in Loom. Preserve whatever the existing record already
-      // had for these three keys; the fresh mapped content still wins for
-      // everything the mapping actually produces.
+      // had for these keys; the fresh mapped content still wins for
+      // everything the mapping actually produces. systemIds (Assigned
+      // Systems), not the legacy singular `system` — that field is gone.
       try {
         // preferLocal: false for the same reason loadLibraryEntry uses it —
         // this specifically needs the record actually on the server right
         // now, not a possibly-stale local cache from an earlier save.
         const existing = await dataManager.get("character", id, { preferLocal: false });
         const prior = existing?.payload || {};
-        data = { template: prior.template, system: prior.system, data: prior.data, ...entity.data };
+        data = { template: prior.template, systemIds: prior.systemIds, data: prior.data, ...entity.data };
       } catch (error) {
         // No existing record at this id — nothing to preserve, first import.
       }
@@ -1171,7 +1452,7 @@ if (recentSavesToggle && recentSavesPanel) {
 // on the right are Import-only; Library/Systems carry their own
 // pickers/toolbars inline, so they don't need anything extra from either
 // side pane).
-const LOOM_VIEWS = ["import", "library", "systems", "users", "groups"];
+const LOOM_VIEWS = ["import", "library", "systems", "macros", "users", "groups"];
 const loomViewTabsContainer = document.querySelector("[data-loom-view-tabs]");
 
 function setLoomView(view) {
@@ -1195,6 +1476,8 @@ function setLoomView(view) {
     void loomLoadUsers();
   } else if (view === "library") {
     void loomLoadLibraryTable();
+  } else if (view === "macros") {
+    void populateMacroSelect();
   }
 }
 
@@ -1208,6 +1491,31 @@ if (loomViewTabsContainer) {
 
 // --- Groups & Users tabs (ported from the retired Admin tool — Loom is now
 // the suite's data-administration surface, tier-gated per tab below) --------
+mountField("groups-select", createCompactField({ type: "select", id: "loomGroupsSelect", label: "Group", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-loom-groups-select" }));
+mountField("group-name", createCompactField({ type: "text", id: "loomGroupName", label: "Name", labelClass: "form-label fw-semibold mb-0", dataAttr: "data-loom-group-name" }));
+mountField(
+  "users-tier-filter",
+  createCompactField({ type: "select", id: "loomUsersTierFilter", label: "Tier", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select form-select-sm", dataAttr: "data-loom-users-tier-filter" })
+);
+mountField("users-select", createCompactField({ type: "select", id: "loomUsersSelect", label: "User", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-loom-users-select" }));
+mountField("user-username", createCompactField({ type: "text", id: "loomUserUsername", label: "Username", labelClass: "form-label fw-semibold mb-0", dataAttr: "data-loom-user-username", disabled: true }));
+mountField("user-email", createCompactField({ type: "email", id: "loomUserEmail", label: "Email", labelClass: "form-label fw-semibold mb-0", dataAttr: "data-loom-user-email" }));
+mountField(
+  "user-password",
+  createCompactField({ type: "password", id: "loomUserPassword", label: "Password", labelClass: "form-label fw-semibold mb-0", dataAttr: "data-loom-user-password", autocomplete: "new-password" })
+);
+mountField("user-tier", createCompactField({ type: "select", id: "loomUserTier", label: "Tier", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-loom-user-tier" }));
+mountField(
+  "user-status",
+  createCompactField({
+    type: "select", id: "loomUserStatus", label: "Status", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-loom-user-status",
+    options: [
+      { value: "1", label: "Active" },
+      { value: "0", label: "Inactive" },
+    ],
+  })
+);
+
 const loomGroupsMessage = document.querySelector("[data-loom-groups-message]");
 const loomGroupsSelect = document.querySelector("[data-loom-groups-select]");
 const loomGroupEmpty = document.querySelector("[data-loom-group-empty]");
@@ -1975,9 +2283,12 @@ if (loomGroupShareDisableButton) {
 // --- Tab-level tier gating ----------------------------------------------------
 // The whole tool is gated at GM tier and above (see init()'s initTierGate
 // call), but not every tab makes sense at every tier above that floor: GM
-// sees only Groups (run a campaign, nothing else); Creator adds back
-// Import/Library/Systems (author reusable content); Admin adds Users
-// (suite-wide tier management) on top of everything Creator sees.
+// sees Groups and Macros (running a campaign — Macros' own kind is
+// writeTier "gm" in common/data/kind/macro.json, a GM's own table cues, not
+// Creator-authored shareable content in the same sense Systems/Templates
+// are); Creator adds Import/Library/Systems (author reusable, shareable
+// content); Admin adds Users (suite-wide tier management) on top of
+// everything Creator sees.
 const LOOM_CREATOR_TABS = ["import", "library", "systems"];
 
 function loomAvailableViews() {
@@ -1986,7 +2297,7 @@ function loomAvailableViews() {
   return LOOM_VIEWS.filter((view) => {
     if (LOOM_CREATOR_TABS.includes(view)) return meetsCreator;
     if (view === "users") return isAdmin;
-    return true; // groups: available to every tier the whole tool already requires (gm+)
+    return true; // groups/macros: available to every tier the whole tool already requires (gm+)
   });
 }
 
@@ -2021,6 +2332,15 @@ function updateLoomTabAvailability() {
 // item here only surfaces its metadata/Share action, it doesn't load it into
 // the Kind+Entity editor below.
 const loomLibraryTableMessage = document.querySelector("[data-loom-library-table-message]");
+mountField(
+  "library-table-type",
+  createCompactField({ type: "select", id: "loomLibraryTableType", label: "Type", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select form-select-sm", dataAttr: "data-loom-library-table-type" })
+);
+mountField(
+  "library-table-select",
+  createCompactField({ type: "select", id: "loomLibraryTableSelect", label: "Item", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-loom-library-table-select" })
+);
+
 const loomLibraryTableTypeSelect = document.querySelector("[data-loom-library-table-type]");
 const loomLibraryTableSelect = document.querySelector("[data-loom-library-table-select]");
 const loomLibraryInspectorEmpty = document.querySelector("[data-loom-library-table-inspector-empty]");
@@ -2455,12 +2775,604 @@ if (libraryTemplateSelect) {
       if (templateId) {
         entity.template = templateId;
         const chosen = Array.from(libraryTemplateSelect.options).find((option) => option.value === templateId);
-        if (chosen?.dataset.schema) entity.system = chosen.dataset.schema;
+        // Folds the chosen Template's own System into this character's
+        // Assigned Systems (systemIds) instead of the old singular `system`
+        // field — that legacy key is gone; Assigned Systems (the same
+        // librarySystemList checkboxes above) is the one mechanism every
+        // Library kind uses for "which System(s) does this apply to" now.
+        // Additive only (never removes an already-assigned System the
+        // author picked independently of the Template cascade).
+        if (chosen?.dataset.schema) {
+          const ids = new Set(Array.isArray(entity.systemIds) ? entity.systemIds : []);
+          ids.add(chosen.dataset.schema);
+          entity.systemIds = Array.from(ids);
+        }
       } else {
         delete entity.template;
       }
       libraryJsonTextarea.value = JSON.stringify(entity, null, 2);
+      populateLibrarySystemCheckboxes(entity.systemIds);
     });
+  });
+}
+
+// --- Macro Actions editor (Library tab, kind "macro" only) -----------------
+// Same kind-gated-section pattern as populateLibraryTemplateSelect above,
+// authoring the exact actions:[] array runMacro() (macro-runner.js) reads
+// at execution time. Type/label/action metadata comes from the shared
+// MACRO_ACTION_CATALOG (macro-action-catalog.js) — the same registry
+// macro-runner.js's own per-step toasts read — plus one more thing only
+// this authoring UI needs: which kind of `target` field (if any) each type
+// takes. No `target` for Clock/Calendar — see their own *_MACRO_ACTIONS
+// comment: there's no portable "which one" to author into a shared macro,
+// only "whichever is currently shown to the table," resolved at run time
+// (dashboard.js's findActiveWidgetInstance).
+const MACRO_ACTION_TARGET_KINDS = {
+  wled: "alias",
+  combat: "encounterOrActive",
+  character: "characterId",
+};
+const MACRO_ACTION_TYPES = Object.fromEntries(
+  Object.entries(MACRO_ACTION_CATALOG).map(([type, def]) => [
+    type,
+    { ...def, target: MACRO_ACTION_TARGET_KINDS[type] || null },
+  ])
+);
+
+function macroActionsFor(type) {
+  return MACRO_ACTION_TYPES[type]?.actions || {};
+}
+
+function macroFieldRow(labelText, inputEl) {
+  const wrap = document.createElement("div");
+  wrap.className = "d-flex flex-column gap-1";
+  const label = document.createElement("label");
+  label.className = "form-label small mb-0 text-body-secondary";
+  label.textContent = labelText;
+  wrap.append(label, inputEl);
+  return wrap;
+}
+
+function macroTextInput(value, placeholder, onChange) {
+  const input = document.createElement("input");
+  input.type = "text";
+  input.className = "form-control form-control-sm";
+  if (placeholder) input.placeholder = placeholder;
+  input.value = value ?? "";
+  input.addEventListener("change", () => onChange(input.value));
+  return input;
+}
+
+function macroNumberInput(value, onChange) {
+  const input = document.createElement("input");
+  input.type = "number";
+  input.className = "form-control form-control-sm";
+  if (value !== undefined && value !== null) input.value = value;
+  input.addEventListener("change", () => onChange(input.value === "" ? undefined : Number(input.value)));
+  return input;
+}
+
+function macroCheckbox(checked, labelText, onChange) {
+  const wrap = document.createElement("div");
+  wrap.className = "form-check";
+  const input = document.createElement("input");
+  input.type = "checkbox";
+  input.className = "form-check-input";
+  const id = `library-macro-check-${Math.random().toString(36).slice(2, 9)}`;
+  input.id = id;
+  input.checked = Boolean(checked);
+  input.addEventListener("change", () => onChange(input.checked));
+  const label = document.createElement("label");
+  label.className = "form-check-label small";
+  label.htmlFor = id;
+  label.textContent = labelText;
+  wrap.append(input, label);
+  return wrap;
+}
+
+function macroSelect(options, value, onChange) {
+  const select = document.createElement("select");
+  select.className = "form-select form-select-sm";
+  options.forEach(({ value: optValue, label }) => {
+    const option = document.createElement("option");
+    option.value = optValue;
+    option.textContent = label;
+    option.selected = optValue === (value ?? "");
+    select.appendChild(option);
+  });
+  select.addEventListener("change", () => onChange(select.value));
+  return select;
+}
+
+function macroClipOptions() {
+  return [
+    { value: "", label: "Select a clip…" },
+    ...getAllClips().map((clip) => ({ value: clip.id, label: `${clip.name} (${clip.type})` })),
+  ];
+}
+
+// Shared by every "pick one saved record of a kind" field below (Handout/
+// Map's contentRef id, Character's target, Encounter's target) — one inline
+// <select> populated via fetchKindEntriesWithIds, never a modal picker. This
+// used to be two different patterns (an inline select for Character/
+// Encounter, a "Choose…" button opening openContentPicker for Handout/Map);
+// unified onto the inline-select shape since it's what every other
+// reference field here already used, and a modal adds a click for no benefit
+// once the list is short enough to live in a dropdown (the same content
+// picker Handout/Map's own live widgets use for their initial "add" step,
+// where the list can be much longer, keeps the modal — this is Loom's
+// authoring-time editor, not that picker).
+function macroKindEntitySelect(kind, currentValue, onChange, { leadingOption } = {}) {
+  const blank = leadingOption || { value: "", label: kind ? "Select…" : "Pick a kind first…" };
+  const select = macroSelect([blank], currentValue || blank.value, onChange);
+  select.disabled = !kind;
+  if (dataManager && kind) {
+    void fetchKindEntriesWithIds(dataManager, kind)
+      .then((entries) => {
+        const current = select.value || currentValue || blank.value;
+        select.innerHTML = "";
+        [blank, ...entries.map(({ id, entity }) => ({ value: id, label: entity?.name || entity?.title || id }))].forEach(
+          ({ value, label }) => {
+            const option = document.createElement("option");
+            option.value = value;
+            option.textContent = label;
+            option.selected = value === current;
+            select.appendChild(option);
+          }
+        );
+      })
+      .catch(() => {});
+  }
+  return select;
+}
+
+function renderMacroParamField(fieldName, action, onUpdate) {
+  const params = action.params && typeof action.params === "object" ? action.params : {};
+  const setParam = (patch) => onUpdate({ ...params, ...patch });
+
+  switch (fieldName) {
+    case "presetId":
+      return macroFieldRow("Preset id", macroNumberInput(params.presetId, (v) => setParam({ presetId: v })));
+    case "value":
+      return macroFieldRow("Value", macroNumberInput(params.value, (v) => setParam({ value: v })));
+    case "delta":
+      return macroFieldRow("Delta (+/-)", macroNumberInput(params.delta, (v) => setParam({ delta: v })));
+    case "fx":
+      return macroFieldRow("Effect index", macroNumberInput(params.fx, (v) => setParam({ fx: v })));
+    case "segmentId":
+      return macroFieldRow("Segment id (optional)", macroNumberInput(params.segmentId, (v) => setParam({ segmentId: v })));
+    case "clipId": {
+      const select = macroSelect(macroClipOptions(), params.clipId || "", (v) => setParam({ clipId: v }));
+      void loadClipLibrary().then(() => {
+        const current = select.value || params.clipId || "";
+        select.innerHTML = "";
+        macroClipOptions().forEach(({ value, label }) => {
+          const option = document.createElement("option");
+          option.value = value;
+          option.textContent = label;
+          option.selected = value === current;
+          select.appendChild(option);
+        });
+      });
+      return macroFieldRow("Clip", select);
+    }
+    case "clipType":
+      return macroFieldRow(
+        "Clip type",
+        macroSelect(
+          [
+            { value: "sfx", label: "SFX" },
+            { value: "music", label: "Music" },
+          ],
+          params.clipType || "sfx",
+          (v) => setParam({ clipType: v })
+        )
+      );
+    case "loop":
+      return macroCheckbox(params.loop, "Loop", (v) => setParam({ loop: v }));
+    case "broadcast":
+      return macroCheckbox(params.broadcast, "Broadcast to the table", (v) => setParam({ broadcast: v }));
+    case "announce":
+      return macroCheckbox(params.announce, "Post result to the Game Log", (v) => setParam({ announce: v }));
+    case "message":
+      return macroFieldRow("Message", macroTextInput(params.message, "Text to post", (v) => setParam({ message: v })));
+    case "expression":
+      return macroFieldRow("Expression", macroTextInput(params.expression, "e.g. 2d6 + 3", (v) => setParam({ expression: v })));
+    case "url":
+      return macroFieldRow("URL", macroTextInput(params.url, "https://…", (v) => setParam({ url: v })));
+    case "condition":
+      return macroFieldRow("Condition", macroTextInput(params.condition, "e.g. Poisoned", (v) => setParam({ condition: v })));
+    case "field":
+      return macroFieldRow(
+        "Field",
+        macroSelect(
+          [
+            { value: "hp", label: "HP" },
+            { value: "maxHp", label: "Max HP" },
+            { value: "tempHp", label: "Temp HP" },
+            { value: "ac", label: "AC" },
+          ],
+          params.field || "hp",
+          (v) => setParam({ field: v })
+        )
+      );
+    case "refKind":
+      return macroFieldRow(
+        "Combatant kind",
+        macroSelect(
+          [
+            { value: "monster", label: "Monster" },
+            { value: "npc", label: "NPC" },
+            { value: "character", label: "Character" },
+          ],
+          params.refKind || "monster",
+          (v) => setParam({ refKind: v })
+        )
+      );
+    case "refId":
+      return macroFieldRow("Combatant id", macroTextInput(params.refId, "", (v) => setParam({ refId: v })));
+    case "name":
+      return macroFieldRow("Name (optional)", macroTextInput(params.name, "", (v) => setParam({ name: v })));
+    case "filled":
+      return macroFieldRow("Filled segments", macroNumberInput(params.filled, (v) => setParam({ filled: v })));
+    case "minutes":
+      return macroFieldRow("Minutes (+/-)", macroNumberInput(params.minutes, (v) => setParam({ minutes: v })));
+    case "contentRef": {
+      const contentRef = params.contentRef && typeof params.contentRef === "object" ? params.contentRef : {};
+      const isMap = action.type === "map";
+      const wrap = document.createElement("div");
+      wrap.className = "d-flex flex-column gap-2";
+
+      if (!isMap) {
+        // Restricted to what Handout can actually render (HANDOUT_KINDS,
+        // imported from handout.js) — not every Library kind. This used to
+        // offer the full kind list, which meant most choices would 404 at
+        // run time; picking a real kind from Handout's own actual palette
+        // is a matching-precedent fix, not just a smaller list.
+        const kindOptions = [
+          { value: "", label: "Select a kind…" },
+          ...HANDOUT_KINDS.map((id) => ({ value: id, label: HANDOUT_KIND_LABELS[id] || id })),
+        ];
+        const kindSelect = macroSelect(kindOptions, contentRef.kind || "", (v) =>
+          setParam({ contentRef: { kind: v, id: "" } })
+        );
+        wrap.appendChild(macroFieldRow("Content kind", kindSelect));
+      }
+
+      const targetKind = isMap ? "map" : contentRef.kind;
+      const idSelect = macroKindEntitySelect(
+        targetKind,
+        contentRef.id,
+        (v) => setParam({ contentRef: { ...contentRef, kind: targetKind, id: v } }),
+        { leadingOption: { value: "", label: targetKind ? "Select…" : "Pick a kind first…" } }
+      );
+      wrap.appendChild(macroFieldRow("Content", idSelect));
+      return wrap;
+    }
+    default:
+      return null;
+  }
+}
+
+function renderMacroTargetField(targetKind, action, onChange) {
+  if (targetKind === "alias") {
+    return macroFieldRow("Device alias", macroTextInput(action.target, "e.g. table-lights", onChange));
+  }
+  if (targetKind === "characterId") {
+    const select = macroKindEntitySelect("character", action.target, onChange, {
+      leadingOption: { value: "", label: "Select a character…" },
+    });
+    return macroFieldRow("Character", select);
+  }
+  if (targetKind === "encounterOrActive") {
+    const select = macroKindEntitySelect("encounter", action.target || "active", onChange, {
+      leadingOption: { value: "active", label: "Whichever is shown to the table" },
+    });
+    return macroFieldRow("Encounter", select);
+  }
+  return null;
+}
+
+// The Macros tab's own in-progress action list — source of truth while
+// editing, the same role editingSystemImporters plays for the Systems tab
+// (collectSystemProperties reads the DOM instead, since Properties nest
+// arbitrarily deep; a flat actions array has no such need). newMacroEditor/
+// loadMacroIntoEditor/applyMacroSnapshot all reset this before re-rendering.
+let macroEditorActions = [];
+
+function updateMacroAction(index, patch) {
+  recordUndoableChange("macro", () => {
+    if (!macroEditorActions[index]) return;
+    macroEditorActions[index] = { ...macroEditorActions[index], ...patch };
+    renderMacroActionsEditor();
+  });
+}
+
+function removeMacroAction(index) {
+  recordUndoableChange("macro", () => {
+    macroEditorActions.splice(index, 1);
+    renderMacroActionsEditor();
+  });
+}
+
+function reorderMacroActions(oldIndex, newIndex) {
+  if (oldIndex === newIndex) return;
+  recordUndoableChange("macro", () => {
+    const [moved] = macroEditorActions.splice(oldIndex, 1);
+    macroEditorActions.splice(newIndex, 0, moved);
+    renderMacroActionsEditor();
+  });
+}
+
+function renderMacroActionRow(action, index) {
+  const row = document.createElement("div");
+  row.className = "d-flex flex-column gap-2 border rounded p-2";
+
+  const headerRow = document.createElement("div");
+  headerRow.className = "d-flex align-items-center gap-2";
+
+  const handle = document.createElement("span");
+  handle.className = "iconify text-body-secondary";
+  handle.dataset.icon = "tabler:grip-vertical";
+  handle.setAttribute("data-sortable-handle", "");
+  handle.setAttribute("aria-hidden", "true");
+  handle.style.cursor = "grab";
+  headerRow.appendChild(handle);
+
+  const typeOptions = [
+    { value: "", label: "Select a widget…" },
+    ...Object.entries(MACRO_ACTION_TYPES).map(([value, def]) => ({ value, label: def.label })),
+  ];
+  const typeSelect = macroSelect(typeOptions, action.type || "", (value) => {
+    const firstAction = Object.keys(macroActionsFor(value))[0] || "";
+    updateMacroAction(index, { type: value, action: firstAction, target: "", params: {} });
+  });
+  typeSelect.classList.add("flex-grow-1");
+  headerRow.appendChild(typeSelect);
+
+  if (action.type) {
+    const actionOptions = Object.entries(macroActionsFor(action.type)).map(([value, def]) => ({
+      value,
+      label: def.label || value,
+    }));
+    const actionSelect = macroSelect(actionOptions, action.action || "", (value) => {
+      updateMacroAction(index, { action: value, params: {} });
+    });
+    actionSelect.classList.add("flex-grow-1");
+    headerRow.appendChild(actionSelect);
+  }
+
+  const removeButton = document.createElement("button");
+  removeButton.type = "button";
+  removeButton.className = "btn btn-outline-danger btn-sm p-1";
+  removeButton.setAttribute("aria-label", "Remove action");
+  removeButton.title = "Remove action";
+  removeButton.innerHTML = `<span class="iconify" data-icon="tabler:trash" aria-hidden="true"></span>`;
+  removeButton.addEventListener("click", () => removeMacroAction(index));
+  headerRow.appendChild(removeButton);
+
+  row.appendChild(headerRow);
+
+  const typeDef = MACRO_ACTION_TYPES[action.type];
+  if (typeDef?.target) {
+    const targetField = renderMacroTargetField(typeDef.target, action, (value) => updateMacroAction(index, { target: value }));
+    if (targetField) row.appendChild(targetField);
+  }
+
+  if (action.type && action.action) {
+    const fields = macroActionsFor(action.type)[action.action]?.params || [];
+    if (fields.length) {
+      const fieldsWrap = document.createElement("div");
+      fieldsWrap.className = "d-flex flex-column gap-2";
+      fields.forEach((fieldName) => {
+        const fieldEl = renderMacroParamField(fieldName, action, (nextParams) =>
+          updateMacroAction(index, { params: nextParams })
+        );
+        if (fieldEl) fieldsWrap.appendChild(fieldEl);
+      });
+      row.appendChild(fieldsWrap);
+    }
+  }
+
+  return row;
+}
+
+let macroActionsSortable = null;
+
+function renderMacroActionsEditor() {
+  if (!macroActionsList) return;
+  macroActionsList.innerHTML = "";
+  if (!macroEditorActions.length) {
+    const empty = document.createElement("p");
+    empty.className = "small text-body-secondary mb-0";
+    empty.textContent = "No actions yet — add one below.";
+    macroActionsList.appendChild(empty);
+  } else {
+    macroEditorActions.forEach((action, index) => {
+      macroActionsList.appendChild(renderMacroActionRow(action || {}, index));
+    });
+  }
+  if (macroActionsSortable) {
+    macroActionsSortable.destroy();
+    macroActionsSortable = null;
+  }
+  if (macroEditorActions.length > 1) {
+    macroActionsSortable = createSortable(macroActionsList, {
+      onEnd(event) {
+        if (event.oldIndex === event.newIndex) return;
+        reorderMacroActions(event.oldIndex, event.newIndex);
+      },
+    });
+  }
+}
+
+function currentMacroPayload() {
+  return {
+    id: (macroIdInput?.value || "").trim(),
+    name: (macroNameInput?.value || "").trim(),
+    icon: (macroIconInput?.value || "").trim(),
+    actions: macroEditorActions,
+  };
+}
+
+function createMacroSnapshot() {
+  return JSON.parse(JSON.stringify(currentMacroPayload()));
+}
+
+function applyMacroSnapshot(snapshot) {
+  if (!snapshot) return;
+  if (macroIdInput) macroIdInput.value = snapshot.id || "";
+  if (macroNameInput) macroNameInput.value = snapshot.name || "";
+  if (macroIconInput) macroIconInput.value = snapshot.icon || "";
+  macroEditorActions = Array.isArray(snapshot.actions) ? snapshot.actions : [];
+  renderMacroActionsEditor();
+}
+
+function newMacroEditor() {
+  // Same "typeable only before the first save" id rule as Systems — once a
+  // macro exists, its id is how a shared record and any future reference to
+  // it stay stable.
+  if (macroIdInput) {
+    macroIdInput.value = "";
+    macroIdInput.disabled = false;
+  }
+  if (macroNameInput) macroNameInput.value = "";
+  if (macroIconInput) macroIconInput.value = "";
+  macroEditorActions = [];
+  renderMacroActionsEditor();
+  markClean("macro");
+}
+
+async function loadMacroIntoEditor(id) {
+  if (!dataManager) return;
+  try {
+    // preferLocal: false — same reasoning as loadSystemIntoEditor: this is
+    // the authoritative editor for macro content, so a stale local cache
+    // entry silently winning over the current server file would mean a
+    // resave here reverts whatever's actually on the server.
+    const result = await dataManager.get("macro", id, { preferLocal: false });
+    const payload = result.payload || {};
+    if (macroIdInput) {
+      macroIdInput.value = payload.id || id;
+      macroIdInput.disabled = true;
+    }
+    if (macroNameInput) macroNameInput.value = payload.name || "";
+    if (macroIconInput) macroIconInput.value = payload.icon || "";
+    macroEditorActions = Array.isArray(payload.actions) ? payload.actions : [];
+    renderMacroActionsEditor();
+    await refreshLibraryEntryCatalog("macro");
+    markClean("macro");
+  } catch (error) {
+    status?.show(`Unable to load macro: ${error.message}`, { type: "error", timeout: 4000 });
+  }
+}
+
+async function populateMacroSelect() {
+  if (!macroRecordSelect || !dataManager) return;
+  const current = macroRecordSelect.value;
+  let entries = [];
+  try {
+    entries = await fetchKindEntriesWithIds(dataManager, "macro");
+  } catch (error) {
+    status?.show(`Unable to list macros: ${error.message}`, { type: "error", timeout: 4000 });
+  }
+  macroRecordSelect.innerHTML = "";
+  const blank = document.createElement("option");
+  blank.value = "";
+  blank.textContent = entries.length ? "New macro…" : "No macros saved yet";
+  macroRecordSelect.appendChild(blank);
+  entries
+    .slice()
+    .sort((a, b) => (a.entity?.name || a.id).localeCompare(b.entity?.name || b.id))
+    .forEach(({ id, entity }) => {
+      const option = document.createElement("option");
+      option.value = id;
+      option.textContent = entity?.name || id;
+      macroRecordSelect.appendChild(option);
+    });
+  if (Array.from(macroRecordSelect.options).some((option) => option.value === current)) {
+    macroRecordSelect.value = current;
+  }
+}
+
+if (macroRecordSelect) {
+  macroRecordSelect.addEventListener("change", () => {
+    if (!macroRecordSelect.value) {
+      newMacroEditor();
+      return;
+    }
+    void loadMacroIntoEditor(macroRecordSelect.value);
+  });
+}
+
+if (macroNewButton) {
+  macroNewButton.addEventListener("click", () => {
+    recordUndoableChange("macro", () => {
+      if (macroRecordSelect) macroRecordSelect.value = "";
+      newMacroEditor();
+    });
+  });
+}
+
+if (macroAddActionButton) {
+  macroAddActionButton.addEventListener("click", () => {
+    recordUndoableChange("macro", () => {
+      macroEditorActions.push({ type: "", action: "", target: "", params: {} });
+      renderMacroActionsEditor();
+    });
+  });
+}
+
+wireUndoTracking(macroIdInput, "macro");
+wireUndoTracking(macroNameInput, "macro");
+wireUndoTracking(macroIconInput, "macro");
+
+if (macroSaveButton) {
+  macroSaveButton.addEventListener("click", async () => {
+    if (!dataManager) return;
+    const id = (macroIdInput?.value || "").trim();
+    if (!id) {
+      status?.show("Macro id is required.", { type: "error", timeout: 3000 });
+      return;
+    }
+    const payload = {
+      id,
+      name: (macroNameInput?.value || "").trim() || id,
+      icon: (macroIconInput?.value || "").trim() || "tabler:bolt",
+      actions: macroEditorActions,
+    };
+    try {
+      await dataManager.save("macro", id, payload);
+      status?.show(`Saved macro ${id}.`, { type: "success", timeout: 2000 });
+      if (macroIdInput) macroIdInput.disabled = true;
+      await populateMacroSelect();
+      macroRecordSelect.value = id;
+      markClean("macro");
+    } catch (error) {
+      status?.show(`Unable to save macro: ${error.message}`, { type: "error", timeout: 4000 });
+    }
+  });
+}
+
+if (macroDeleteButton) {
+  macroDeleteButton.addEventListener("click", async () => {
+    if (!dataManager) return;
+    const id = (macroIdInput?.value || "").trim() || macroRecordSelect?.value;
+    if (!id) {
+      status?.show("Select a macro to delete first.", { type: "warning", timeout: 2500 });
+      return;
+    }
+    if (!confirmDelete({ label: `macro "${id}"` })) return;
+    try {
+      await dataManager.delete("macro", id);
+      status?.show(`Deleted macro ${id}.`, { type: "success", timeout: 2000 });
+    } catch (error) {
+      dataManager.removeLocal("macro", id);
+      status?.show(`Removed ${id} locally (server delete failed: ${error.message}).`, { type: "warning", timeout: 4000 });
+    }
+    newMacroEditor();
+    if (macroRecordSelect) macroRecordSelect.value = "";
+    await populateMacroSelect();
   });
 }
 
@@ -2806,10 +3718,16 @@ if (libraryDeleteButton) {
 // directly in the value's "Extra properties" JSON catch-all instead, the
 // same as any other field-specific property (see below).
 const VALUE_COLUMNS = [
-  { key: "cost", label: "Cost", type: "number", placeholder: "Cost" },
-  { key: "targetBudget", label: "Target budget", type: "number", placeholder: "Target budget" },
-  { key: "sourceId", label: "Source ID", type: "number", placeholder: "Source ID" },
+  { key: "binding", label: "Binding", type: "string", placeholder: "@path" },
+  // `wide` (flex-grow instead of a fixed narrow width — see
+  // renderSystemValueRow) is Description-only: every other column is a
+  // short token (a number, an @path, a short id) that fits a fixed few
+  // rem; Description is prose, the same reason Extra JSON already grows.
+  { key: "description", label: "Description", type: "string", placeholder: "Description", wide: true },
   { key: "shortName", label: "Short name", type: "string", placeholder: "Short name" },
+  { key: "sourceId", label: "Source ID", type: "number", placeholder: "Source ID" },
+  { key: "sourceField", label: "Source field", type: "string", placeholder: "e.g. conditions" },
+  { key: "cost", label: "Cost", type: "number", placeholder: "Cost" },
   {
     key: "role",
     label: "Role",
@@ -2823,8 +3741,7 @@ const VALUE_COLUMNS = [
       { value: "modifier", label: "Modifier" },
     ],
   },
-  { key: "binding", label: "Binding", type: "string", placeholder: "@path" },
-  { key: "sourceField", label: "Source field", type: "string", placeholder: "e.g. conditions" },
+  { key: "targetBudget", label: "Target budget", type: "number", placeholder: "Budget" },
 ];
 
 function fieldValueColumnState(field) {
@@ -2927,15 +3844,24 @@ function renderSystemPropertyRow(field = {}, container = systemPropertyRows) {
   const currentTypeMeta = PROPERTY_TYPES.find((entry) => entry.value === field.type) || PROPERTY_TYPES[0];
   const arrayMode = field.item ? "item" : "values";
   const columnState = fieldValueColumnState(field);
-  const optionCheckbox = (key, label, topicId, extraAttr = "") => `
-    <div class="form-check form-check-inline mb-0">
-      <input class="form-check-input" type="checkbox" ${extraAttr} id="system-prop-${key}-${Math.random().toString(36).slice(2)}" data-property-option="${key}" />
-      <label class="form-check-label small">
+  // Custom-built rather than Bootstrap's .form-check/.form-check-inline —
+  // those assume a stacked layout and carry their own ~1rem right margin on
+  // top of this row's own flex `gap`, which is exactly the wasted space
+  // that pushed this row into a horizontal scrollbar. A plain flex pair
+  // (gap-1 between input/label, extra-small text) packs the same 9 options
+  // measurably tighter with no loss of the click target or help icon.
+  const optionCheckbox = (key, label, topicId, extraAttr = "") => {
+    const inputId = `system-prop-${key}-${Math.random().toString(36).slice(2)}`;
+    return `
+    <div class="form-check form-check-inline mb-0 text-nowrap flex-shrink-0">
+      <input class="form-check-input" type="checkbox" ${extraAttr} id="${inputId}" data-property-option="${key}" />
+      <label class="form-check-label extra-small" for="${inputId}">
         ${label}
         <span class="align-middle" data-help-topic="${topicId}" data-help-insert="replace"></span>
       </label>
     </div>
   `;
+  };
   row.innerHTML = `
     <div class="d-flex align-items-center gap-2">
       <button
@@ -2976,15 +3902,16 @@ function renderSystemPropertyRow(field = {}, container = systemPropertyRows) {
         <span class="iconify" data-icon="tabler:trash" aria-hidden="true"></span>
       </button>
     </div>
-    <div class="d-flex flex-wrap gap-2 align-items-center" data-system-array-options hidden>
-      ${optionCheckbox("cost", "Cost", "loom.systemValueCost", columnState.cost ? "checked" : "")}
-      ${optionCheckbox("targetBudget", "Target budget", "loom.systemValueTargetBudget", columnState.targetBudget ? "checked" : "")}
-      ${optionCheckbox("sourceId", "Source ID", "loom.systemValueSourceId", columnState.sourceId ? "checked" : "")}
-      ${optionCheckbox("shortName", "Short name", "loom.systemValueShortName", columnState.shortName ? "checked" : "")}
-      ${optionCheckbox("libraryLinked", "Library-linked", "loom.systemValueLibraryLinked", columnState.libraryLinked ? "checked" : "")}
-      ${optionCheckbox("role", "Role", "loom.systemValueRole", columnState.role ? "checked" : "")}
+    <div class="d-flex flex-nowrap overflow-x-auto gap-2 align-items-center pb-1" data-system-array-options hidden>
       ${optionCheckbox("binding", "Binding", "loom.systemValueBinding", columnState.binding ? "checked" : "")}
+      ${optionCheckbox("description", "Description", "loom.systemValueDescription", columnState.description ? "checked" : "")}
+      ${optionCheckbox("libraryLinked", "Library", "loom.systemValueLibraryLinked", columnState.libraryLinked ? "checked" : "")}
+      ${optionCheckbox("shortName", "Short name", "loom.systemValueShortName", columnState.shortName ? "checked" : "")}
+      ${optionCheckbox("sourceId", "Source ID", "loom.systemValueSourceId", columnState.sourceId ? "checked" : "")}
       ${optionCheckbox("sourceField", "Source field", "loom.systemValueSourceField", columnState.sourceField ? "checked" : "")}
+      ${optionCheckbox("cost", "Cost", "loom.systemValueCost", columnState.cost ? "checked" : "")}
+      ${optionCheckbox("role", "Role", "loom.systemValueRole", columnState.role ? "checked" : "")}
+      ${optionCheckbox("targetBudget", "Budget", "loom.systemValueTargetBudget", columnState.targetBudget ? "checked" : "")}
     </div>
     <div class="d-flex flex-column gap-2 ps-3 border-start" data-system-object-section hidden>
       <div class="d-flex align-items-center justify-content-between gap-2">
@@ -3195,13 +4122,13 @@ function renderSystemValueRow(entry = {}, container) {
           </select>`
         : `<input
             class="form-control form-control-sm"
-            style="width: 6rem;"
+            style="${column.wide ? "min-width: 12rem;" : "width: 6rem;"}"
             type="${column.type === "number" ? "number" : "text"}"
             placeholder="${column.placeholder}"
             value="${escapeHtml(currentValue)}"
             data-value-column-input="${column.key}"
           />`;
-    return `<div class="flex-shrink-0" data-value-column="${column.key}" hidden>${control}</div>`;
+    return `<div class="${column.wide ? "flex-grow-1" : "flex-shrink-0"}" data-value-column="${column.key}" hidden>${control}</div>`;
   }).join("");
   // Anything beyond the columns above (a field-specific stat block like
   // combatScaling's hitPoints/armorClass/..., or anything not yet promoted
@@ -3404,6 +4331,49 @@ function collectSystemProperties() {
   return collectFieldsFromContainer(systemPropertyRows);
 }
 
+// The one place that assembles a full System record from the editor's
+// current form state — used by both the Save handler and the live JSON
+// Preview panel below, so JSON Preview is guaranteed to show exactly what
+// Save actually writes.
+function buildSystemPayload() {
+  const id = (systemIdInput?.value || "").trim();
+  return {
+    id,
+    title: (systemTitleInput?.value || "").trim() || id,
+    version: (systemVersionInput?.value || "").trim() || "0.1",
+    fields: collectSystemProperties(),
+    importers: editingSystemImporters,
+  };
+}
+
+// Read-only "the whole record as it'll be saved" view. Hooked into
+// updateToolbarState (below) rather than a separate call site per edit —
+// every System edit already runs through there (structural changes via
+// recordUndoableChange, free-typed fields via wireUndoTracking's live
+// `input` listener), the same single choke point Save-button-enabling
+// already relies on, so this updates live without needing its own wiring.
+renderSystemJsonPreview = systemJsonPanelInstance.render;
+
+// Existing ids come straight off the System <select>'s own already-
+// populated options (populateSystemSelect) — no separate catalog needed,
+// unlike Workbench's Template duplicate (which tracks its own
+// templateCatalog Map for other reasons); this is the one place Loom's
+// System editor needs an "all known ids" list at all.
+function generateDuplicateSystemId(baseId) {
+  const raw = (baseId || "").trim();
+  const root = raw.replace(/(-copy\d*)$/i, "") || raw || "system";
+  const existingIds = new Set(
+    Array.from(systemSelect?.options || []).map((option) => option.value).filter(Boolean)
+  );
+  let candidate = `${root}-copy`;
+  let counter = 2;
+  while (existingIds.has(candidate)) {
+    candidate = `${root}-copy${counter}`;
+    counter += 1;
+  }
+  return candidate;
+}
+
 async function populateSystemSelect() {
   if (!systemSelect) return;
   const systems = await listAllSystems();
@@ -3427,14 +4397,8 @@ function createSystemSnapshot() {
     id: systemIdInput?.value || "",
     title: systemTitleInput?.value || "",
     version: systemVersionInput?.value || "",
-    preview: systemPreviewInput?.value || "",
     properties: collectSystemProperties(),
   };
-}
-
-function refreshSystemPreviewBytes() {
-  if (!systemPreviewBytesEl) return;
-  systemPreviewBytesEl.textContent = formatSize(new Blob([systemPreviewInput?.value || ""]).size);
 }
 
 function applySystemSnapshot(snapshot) {
@@ -3442,8 +4406,6 @@ function applySystemSnapshot(snapshot) {
   if (systemIdInput) systemIdInput.value = snapshot.id;
   if (systemTitleInput) systemTitleInput.value = snapshot.title;
   if (systemVersionInput) systemVersionInput.value = snapshot.version;
-  if (systemPreviewInput) systemPreviewInput.value = snapshot.preview || "";
-  refreshSystemPreviewBytes();
   if (systemPropertyRows) {
     systemPropertyRows.innerHTML = "";
     (snapshot.properties || []).forEach((field) => renderSystemPropertyRow(field));
@@ -3620,14 +4582,15 @@ function createInspectorTypeSelect(row) {
 }
 
 const SYSTEM_INSPECTOR_ARRAY_OPTIONS = [
-  ["cost", "Cost", "loom.systemValueCost"],
-  ["targetBudget", "Target budget", "loom.systemValueTargetBudget"],
-  ["sourceId", "Source ID", "loom.systemValueSourceId"],
-  ["shortName", "Short name", "loom.systemValueShortName"],
-  ["libraryLinked", "Library-linked", "loom.systemValueLibraryLinked"],
-  ["role", "Role", "loom.systemValueRole"],
   ["binding", "Binding", "loom.systemValueBinding"],
+  ["description", "Description", "loom.systemValueDescription"],
+  ["libraryLinked", "Library", "loom.systemValueLibraryLinked"],
+  ["shortName", "Short name", "loom.systemValueShortName"],
+  ["sourceId", "Source ID", "loom.systemValueSourceId"],
   ["sourceField", "Source field", "loom.systemValueSourceField"],
+  ["cost", "Cost", "loom.systemValueCost"],
+  ["role", "Role", "loom.systemValueRole"],
+  ["targetBudget", "Budget", "loom.systemValueTargetBudget"],
 ];
 
 function buildSystemInspectorFields(row) {
@@ -3794,8 +4757,6 @@ function newSystemEditor() {
   }
   if (systemTitleInput) systemTitleInput.value = "";
   if (systemVersionInput) systemVersionInput.value = "0.1";
-  if (systemPreviewInput) systemPreviewInput.value = "";
-  refreshSystemPreviewBytes();
   editingSystemImporters = [];
   if (systemPropertyRows) systemPropertyRows.innerHTML = "";
   selectSystemPropertyRow(null);
@@ -3818,10 +4779,6 @@ async function loadSystemIntoEditor(id) {
     }
     if (systemTitleInput) systemTitleInput.value = payload.title || "";
     if (systemVersionInput) systemVersionInput.value = payload.version || "";
-    if (systemPreviewInput) {
-      systemPreviewInput.value = payload.preview ? JSON.stringify(payload.preview, null, 2) : "";
-    }
-    refreshSystemPreviewBytes();
     editingSystemImporters = Array.isArray(payload.importers) ? payload.importers : [];
     if (systemPropertyRows) {
       systemPropertyRows.innerHTML = "";
@@ -3853,6 +4810,36 @@ if (systemNewButton) {
   });
 }
 
+// Clones the CURRENTLY LOADED/edited System in place — id/title/version/
+// Preview Data/every Property row stay exactly as they are on screen, only
+// the id (which must be unique) and title get a "-copy"/"(Copy)" suffix.
+// Deliberately doesn't round-trip through buildSystemPayload/
+// collectSystemProperties + re-render — the rows are already right there in
+// the DOM, so this only needs to touch Id/Title and re-enable Id for
+// editing (same as any other not-yet-saved draft). Matches this editor's
+// own simpler, non-modal "New System" flow (no id/title prompt dialog, just
+// pre-filled fields the user reviews before Save) rather than Workbench
+// Template's modal-based duplicate.
+if (systemDuplicateButton) {
+  systemDuplicateButton.addEventListener("click", () => {
+    const sourceId = (systemIdInput?.value || "").trim();
+    if (!sourceId) return;
+    recordUndoableChange("system", () => {
+      const suggestedId = generateDuplicateSystemId(sourceId);
+      if (systemIdInput) {
+        systemIdInput.value = suggestedId;
+        systemIdInput.disabled = false;
+      }
+      if (systemTitleInput) {
+        const baseTitle = (systemTitleInput.value || "").trim() || sourceId;
+        systemTitleInput.value = `${baseTitle} (Copy)`;
+      }
+    });
+    if (systemSelect) systemSelect.value = "";
+    status?.show(`Duplicated "${sourceId}" — review the new Id/Title, then Save.`, { type: "info", timeout: 3000 });
+  });
+}
+
 if (systemAddPropertyButton) {
   systemAddPropertyButton.addEventListener("click", () => {
     recordUndoableChange("system", () => renderSystemPropertyRow());
@@ -3862,10 +4849,6 @@ if (systemAddPropertyButton) {
 wireUndoTracking(systemIdInput, "system");
 wireUndoTracking(systemTitleInput, "system");
 wireUndoTracking(systemVersionInput, "system");
-wireUndoTracking(systemPreviewInput, "system");
-if (systemPreviewInput) {
-  systemPreviewInput.addEventListener("input", refreshSystemPreviewBytes);
-}
 wireUndoTracking(systemPropertyRows, "system", {
   selector: "input, select, textarea",
 });
@@ -3952,34 +4935,16 @@ if (systemPropertyRows) {
 if (systemSaveButton) {
   systemSaveButton.addEventListener("click", async () => {
     if (!dataManager) return;
-    const id = (systemIdInput?.value || "").trim();
-    if (!id) {
+    const payload = buildSystemPayload();
+    if (!payload.id) {
       status?.show("System id is required.", { type: "error", timeout: 3000 });
       return;
     }
-    let preview;
-    const previewRaw = (systemPreviewInput?.value || "").trim();
-    if (previewRaw) {
-      try {
-        preview = JSON.parse(previewRaw);
-      } catch (error) {
-        status?.show(`Preview Data isn't valid JSON: ${error.message}`, { type: "error", timeout: 4000 });
-        return;
-      }
-    }
-    const payload = {
-      id,
-      title: (systemTitleInput?.value || "").trim() || id,
-      version: (systemVersionInput?.value || "").trim() || "0.1",
-      fields: collectSystemProperties(),
-      importers: editingSystemImporters,
-    };
-    if (preview !== undefined) payload.preview = preview;
     try {
-      await dataManager.save("systems", id, payload);
-      status?.show(`Saved system ${id}.`, { type: "success", timeout: 2000 });
+      await dataManager.save("systems", payload.id, payload);
+      status?.show(`Saved system ${payload.id}.`, { type: "success", timeout: 2000 });
       await populateSystemSelect();
-      systemSelect.value = id;
+      systemSelect.value = payload.id;
       await populateLibrarySystemCheckboxes(currentLibraryEntity()?.systemIds);
       markClean("system");
     } catch (error) {
@@ -4183,6 +5148,8 @@ async function init() {
   const shell = initAppShell({
     namespace: "loom-mapping",
     storagePrefix: "undercroft.loom.undo",
+    leftPaneLabel: "Toggle palette pane",
+    rightPaneLabel: "Toggle inspector pane",
     onUndo: (entry) => {
       const handler = SNAPSHOT_HANDLERS[entry?.type];
       if (!handler || !entry?.before) return { applied: false };
@@ -4271,6 +5238,22 @@ async function init() {
 
   await populateSystemSelect();
   newSystemEditor();
+
+  newMacroEditor();
+
+  // Deep link from the Dashboard's Macro board widget (macro-board.js) —
+  // clicking a macro while rearranging the layout lands here instead of
+  // running it for real, already on the Macros tab with that macro loaded,
+  // so editing it is one click away instead of a manual tab-and-select.
+  // Runs after updateLoomTabAvailability() above so the tab is already
+  // visible for this session's tier by the time setLoomView fires.
+  const deepLinkMacroId = new URLSearchParams(window.location.search).get("macro");
+  if (deepLinkMacroId) {
+    setLoomView("macros");
+    await populateMacroSelect();
+    if (macroRecordSelect) macroRecordSelect.value = deepLinkMacroId;
+    await loadMacroIntoEditor(deepLinkMacroId);
+  }
 
   initHelpSystem({ root: document });
   refreshTooltips(document);

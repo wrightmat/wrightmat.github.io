@@ -6,7 +6,6 @@
 // rather than duplicating a second dice parser.
 import { rollDiceExpression } from "../../../workbench/js/lib/dice.js";
 import { fetchLibraryEntry, fetchKindEntriesWithIds } from "../../../common/js/lib/content-fetch.js";
-import { abilityModifier } from "../../../common/js/lib/dnd-rules.js";
 
 // Gender (d8, Male x3 / Female x3 / Androgynous x1 / Non-Binary x1) is a
 // genuinely uniform die roll with a fixed face->outcome mapping — CLAUDE.md
@@ -85,21 +84,23 @@ export function getAttitudeLabel(value) {
 
 let tablesPromise = null;
 
-// Loads the system-agnostic/system-specific table files once and caches the
-// parsed result — these never change at runtime, unlike Locations (which
-// the GM can add/edit via the Location Builder panel) and Species Name
-// Profiles (edited via Manage Species, loaded separately below since which
-// ones are needed depends on which Location is selected).
+// Loads the system-agnostic 4D table file once and caches the parsed result
+// — never changes at runtime, unlike Locations (which the GM can add/edit
+// via the Location Builder panel) and Species Name Profiles (edited via
+// Manage Species, loaded separately below since which ones are needed
+// depends on which Location is selected). Archetype (and its per-name
+// Stats) used to live here too as a second hardcoded D&D-5e-only file
+// (archetypes-dnd5e.json, fetched unconditionally regardless of System) —
+// it's now System-scoped data, loaded by loadArchetypeTable below and
+// refreshed by refreshSystemVocabulary (forge/js/app.js) whenever the
+// active System changes, the same way Alignment/Ability labels already
+// work.
 export async function loadForgeTables() {
   if (!tablesPromise) {
     tablesPromise = (async () => {
       const base = new URL("../../data/", import.meta.url);
-      const [fourD, archetype, stats] = await Promise.all([
-        fetch(new URL("tables-4d.json", base)).then((r) => r.json()),
-        fetch(new URL("archetypes-dnd5e.json", base)).then((r) => r.json()),
-        fetch(new URL("stats-dnd5e.json", base)).then((r) => r.json()),
-      ]);
-      return { fourD, archetype, stats };
+      const fourD = await fetch(new URL("tables-4d.json", base)).then((r) => r.json());
+      return { fourD };
     })();
   }
   return tablesPromise;
@@ -140,7 +141,8 @@ export async function loadAlignmentFaces(dataManager, systemId) {
 // The active System's own "abilities" object field's children (key +
 // shortName) — same fallback reasoning as loadAlignmentFaces above. Strips
 // the "abilities." key prefix so callers get bare keys (e.g. "strength")
-// matching the shape stats-dnd5e.json's own ability data already uses.
+// matching the flat keys a System's own npcTypes entries use for their own
+// Stats (see loadArchetypeTable below).
 export async function loadAbilityFieldDefs(dataManager, systemId) {
   const system = await fetchSystemRecord(dataManager, systemId);
   const fields = Array.isArray(system?.fields) ? system.fields : [];
@@ -154,6 +156,77 @@ export async function loadAbilityFieldDefs(dataManager, systemId) {
   return defs.length ? defs : DEFAULT_ABILITY_FIELD_DEFS;
 }
 
+// Every top-level array field on the active System, so Forge's Settings
+// modal (Archetype field picker) can list all real candidates —
+// deliberately unfiltered (unlike Vault's own cost/targetBudget-shaped
+// field lister), same reasoning and same preferLocal: false as Crucible's
+// own listArrayFieldOptions (crucible/js/lib/tables.js): a live Loom edit
+// to the System's fields must be visible immediately, not hidden behind a
+// stale local cache.
+export async function listArrayFieldOptions(dataManager, systemId) {
+  if (!dataManager || !systemId) return [];
+  try {
+    const result = await dataManager.get("systems", systemId, { preferLocal: false });
+    const fields = Array.isArray(result?.payload?.fields) ? result.payload.fields : [];
+    return fields
+      .filter((entry) => entry.type === "array")
+      .map((entry) => ({ key: entry.key, label: entry.label || entry.key }));
+  } catch (error) {
+    return [];
+  }
+}
+
+// Archetype — one System-defined array field ("NPC Types") carries
+// everything: each value's `name` (the roll table) AND whatever other keys
+// that entry has (Stats, whatever shape a System wants — see
+// statsKeyOptionsFrom/getStatsForArchetype). One field, not two — a name
+// and its own stat block are one concept, not two things a GM would ever
+// want to bind separately. Which array field supplies it is Forge's own
+// tool preference (see getArchetypeFieldPreference in app.js), defaulting
+// to "npcTypes" so an existing System (D&D) works with no configuration.
+// Values are read in order and zipped to rolls 2-21; a value with no name
+// is skipped rather than producing a blank/"undefined" entry, so an
+// under-authored System just has gaps (resolved to "Unknown" by
+// rollArchetype's own existing fallback) instead of a broken display.
+// Rolls 22/23 (location override) and 24 (Wildcard) are a fixed Forge
+// convention layered on top of every System's own table, not per-system
+// data — unchanged from the original hardcoded shape.
+//
+// Returns `{ entries, statsByName }`: `entries` is the roll table
+// (getArchetypeOptions/rollArchetype's existing shape, unchanged), and
+// `statsByName` is every value keyed by its own name, every key intact
+// (unfiltered) — which of those keys actually become a generated NPC's
+// Stats is a *separate* Forge tool preference (see getStatsKeysPreference/
+// resolveArchetypeStats in app.js), since a System might carry extra
+// per-archetype metadata that isn't meant to be shown as a Stat at all.
+export async function loadArchetypeTable(dataManager, systemId, archetypeField = "npcTypes") {
+  const rawValues = [];
+  if (dataManager && systemId && archetypeField) {
+    try {
+      const result = await dataManager.get("systems", systemId, { preferLocal: false });
+      const fields = Array.isArray(result?.payload?.fields) ? result.payload.fields : [];
+      const field = fields.find((entry) => entry.type === "array" && entry.key === archetypeField);
+      (field?.values || []).slice(0, 20).forEach((value) => {
+        if (value?.name) rawValues.push(value);
+      });
+    } catch (error) {
+      // No System record, or a transient fetch failure — fall through with
+      // whatever entries were already resolved (none) plus the fixed
+      // 22/23/24 entries below, same graceful-degrade as every other
+      // System-field reader in this file.
+    }
+  }
+  const entries = rawValues.map((value, index) => ({ roll: index + 2, name: value.name }));
+  entries.push({ roll: 22, name: null, overridable: true });
+  entries.push({ roll: 23, name: null, overridable: true });
+  entries.push({ roll: 24, name: "Wildcard" });
+  const statsByName = {};
+  rawValues.forEach((value) => {
+    statsByName[value.name] = value;
+  });
+  return { entries, statsByName };
+}
+
 // Setting/Location are authored in Sanctum and Species in Loom, both as
 // generic Library kinds (setting/location/species) rather than Forge-only
 // files — fetchKindEntriesWithIds (common/js/lib/content-fetch.js) fetches
@@ -163,7 +236,16 @@ export async function listSettingsForSystem(dataManager, systemId) {
   if (!systemId) return [];
   const entries = await fetchKindEntriesWithIds(dataManager, "setting");
   return entries
-    .filter((entry) => entry.entity.systemId === systemId)
+    .filter((entry) => {
+      // systemIds (plural) is the only System-association field a Setting
+      // carries — same convention every other Library kind uses (see
+      // sanctum/CLAUDE.md: "There is no separate systemId field anywhere —
+      // an earlier pass introduced one before this was corrected"). An
+      // empty/absent array means universally compatible, same as
+      // Crucible's listKindForSystem.
+      const ids = Array.isArray(entry.entity.systemIds) ? entry.entity.systemIds : [];
+      return !ids.length || ids.includes(systemId);
+    })
     .map((entry) => ({ id: entry.id, name: entry.entity.name || entry.id }));
 }
 
@@ -198,8 +280,18 @@ export async function loadSetting(id) {
 const speciesProfileCache = new Map();
 
 export async function loadSpeciesProfilesForLocation(location) {
+  // "other" is the population-weighting catchall (rollWeightedSpecies'
+  // own fallback below, also a real, selectable speciesWeights row per the
+  // Location builder's "Other" bucket) — a sentinel, not a real species
+  // Library entry, so it's never fetched. Skipping it here (rather than
+  // just swallowing the resulting fetchLibraryEntry 404 in the catch
+  // below) avoids a needless failed request on every location that uses it.
   const ids = Array.from(
-    new Set((location?.speciesWeights || []).map((entry) => entry.entityId).filter(Boolean))
+    new Set(
+      (location?.speciesWeights || [])
+        .map((entry) => entry.entityId)
+        .filter((id) => id && id !== "other")
+    )
   );
   const profiles = await Promise.all(
     ids.map(async (id) => {
@@ -319,29 +411,34 @@ export function rollAttitude({ random = Math.random } = {}) {
   return { value: face, label: getAttitudeLabel(face), notation };
 }
 
-// Basic combat stats (ability scores, AC, HP) come straight from the D&D5e
-// Monster Manual NPC stat block matching this archetype — CLAUDE.md: "using
-// D&D 5e Monster Manual NPC stat blocks." There's nothing to roll here, it's
-// a deterministic lookup by name, so it's a plain function rather than a
-// rollX helper. Setting-specific archetypes (rolls 22/23) and Wildcard (24)
-// have no fixed identity, so no stat block exists for them — callers get
-// null and should show a graceful fallback rather than blank/zeroed stats.
-// stats-dnd5e.json stores hitPoints as a flat number (the archetype's max) —
-// wrapped into { max, current } here to match the shape every kind's
-// stats.hitPoints uses (see combat-tracker.js#addCombatant). A freshly
-// rolled NPC is undamaged, so current starts at max.
-export function getStatsForArchetype(statsTable, archetypeName) {
-  const entry = statsTable?.archetypes?.[archetypeName];
+// Basic combat stats for this archetype, whatever shape the active
+// System's own npcTypes entries happen to define (ability scores/AC/HP
+// for D&D, an Adversary-style block for another System, or nothing at
+// all). `statsMap` here is already filtered down to just the keys
+// Forge's own "Stats" tool preference selected (see resolveArchetypeStats
+// in app.js) — this function doesn't know or care which keys those are.
+// There's nothing to roll here, it's a deterministic lookup by name, so
+// it's a plain function rather than a rollX helper. Setting-specific
+// archetypes (rolls 22/23), Wildcard (24), and any System with no Stats
+// keys selected at all have no fixed identity/no stat concept — callers
+// get null and should show a graceful fallback rather than blank/zeroed
+// stats. `hitPoints` is the one key given special handling: authored as a
+// flat number (the archetype's max), wrapped here into { max, current } to
+// match the shape every kind's stats.hitPoints uses (see
+// combat-tracker.js#addCombatant) — a freshly rolled NPC is undamaged, so
+// current starts at max. Every other key passes through verbatim; Combat
+// Tracker resolves Initiative/AC/etc. through the System's own
+// combatBindings, not anything precomputed here.
+export function getStatsForArchetype(statsMap, archetypeName) {
+  const entry = statsMap?.[archetypeName];
   if (!entry) return null;
-  const maxHp = Number(entry.hitPoints ?? 0);
-  return {
-    ...entry,
-    hitPoints: { max: maxHp, current: maxHp },
-    // Combat Tracker's "Roll Initiative" button reads this via the System's
-    // combatBindings rather than deriving it itself — the D&D-specific math
-    // stays here in the 5e generator, not in system-agnostic tracker code.
-    initiativeBonus: abilityModifier(entry.abilities?.dexterity),
-  };
+  const { name, ...rest } = entry;
+  const result = { ...rest };
+  if (result.hitPoints !== undefined && typeof result.hitPoints !== "object") {
+    const maxHp = Number(result.hitPoints) || 0;
+    result.hitPoints = { max: maxHp, current: maxHp };
+  }
+  return result;
 }
 
 // Resolves every archetype entry to its final display name for a given

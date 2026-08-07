@@ -21,6 +21,16 @@ import { connectLiveStream } from "../live.js";
 import { resolveIsSpotlighted, resolveSpotlightData } from "../spotlight.js";
 import { createReliableInterval } from "../reliable-interval.js";
 
+// --- Macro action support (common/js/lib/widgets/macro-runner.js) --------
+// Same "active only, no portable target" story as Clock's own
+// CLOCK_MACRO_ACTIONS — see that file's comment for why.
+export const CALENDAR_MACRO_ACTIONS = {
+  show: { label: "Show to table" },
+  hide: { label: "Hide from table" },
+  advanceDay: { label: "Advance / retreat days", params: ["delta"] },
+  advanceTime: { label: "Advance / retreat minutes", params: ["minutes"] },
+};
+
 // 5s — same cadence Clock/Browser's own follower/GM polls use.
 const POLL_INTERVAL_MS = 5000;
 const MINUTES_PER_DAY = 1440;
@@ -462,6 +472,31 @@ export function initCalendarWidget(
     persistState({ time: { ...time, ...patch } });
   }
 
+  // --- Macro action support (common/js/lib/widgets/macro-runner.js) ---
+  // Same reasoning as Clock's own runMacroAction: no portable target, only
+  // "whichever calendar is currently shown" (dashboard.js's
+  // findActiveWidgetInstance, driven by isVisible() below).
+  async function runMacroAction(action) {
+    const params = action?.params || {};
+    if (action?.action === "show") {
+      if (!visible) await toggleVisibility();
+      return;
+    }
+    if (action?.action === "hide") {
+      if (visible) await toggleVisibility();
+      return;
+    }
+    if (action?.action === "advanceDay") {
+      advanceDay(Number(params.delta ?? 1) || 1);
+      return;
+    }
+    if (action?.action === "advanceTime") {
+      advanceTime(Number(params.minutes ?? 60) || 60);
+      return;
+    }
+    throw new Error(`Unknown Calendar macro action "${action?.action}".`);
+  }
+
   function renderTimeSection() {
     const section = el("div", "d-flex flex-column gap-2 border-top pt-2");
     const toggleWrap = el("div", "form-check form-switch mb-0");
@@ -603,6 +638,8 @@ export function initCalendarWidget(
   void boot();
 
   return {
+    runMacroAction,
+    isVisible: () => visible,
     // `removed` is only ever true from dashboard.js's removeWidget — the
     // one moment this instance's own still-active spotlight (if any) needs
     // clearing, same orphan-prevention reasoning Clock/Browser's own

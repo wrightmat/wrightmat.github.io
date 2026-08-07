@@ -42,13 +42,17 @@ import { startEncounter, deterministicEncounterId } from "../../../../repository
 // card shape and stay out of this widget entirely; every other registered
 // kind (character, system, template, taxonomy entries like class/species/...)
 // isn't something a GM hands to the table as a card.
-const HANDOUT_KINDS = ["npc", "location", "monster", "effect", "journal"];
+// Exported for macro-runner.js/loom's Macro editor — a Handout macro
+// action's contentRef.kind should only ever offer a kind this widget can
+// actually render, not every Library kind that exists (see loom/js/app.js's
+// own MACRO_ACTION_TYPES.handout).
+export const HANDOUT_KINDS = ["npc", "location", "monster", "effect", "journal"];
 
 // Same labels SPOTLIGHT_KIND_LABELS (game-log.js) uses for the log line —
 // kept as its own small table here rather than importing that one, since
 // this needs the bare noun ("NPC"), not the "an NPC" article form the log
-// sentence wants.
-const KIND_LABELS = {
+// sentence wants. Exported alongside HANDOUT_KINDS for the same reason.
+export const KIND_LABELS = {
   npc: "NPC",
   location: "Location",
   monster: "Monster",
@@ -230,6 +234,7 @@ export function initHandoutWidget(
     setTitle,
     forcePlayerView = false,
     plainMountContainer = null,
+    ensureWidget,
   } = {}
 ) {
   const kind = contentRef?.kind;
@@ -330,9 +335,9 @@ export function initHandoutWidget(
         dataManager,
         // Same gate as the eye-icon visibility toggle just below — true only
         // for the owning GM's own dashboard, never a player/shared viewer:
-        // starting combat and rolling dice are both GM-only actions here
-        // (checkboxes are never interactive in Handout at all — see
-        // interactiveCheckboxes' own default above).
+        // starting combat, rolling dice, and firing a macro are all GM-only
+        // actions here (checkboxes are never interactive in Handout at all —
+        // see interactiveCheckboxes' own default above).
         interactiveEncounters: canToggleVisibility,
         onStartEncounter: (creatures, blockIndex) =>
           void startEncounter({
@@ -345,6 +350,9 @@ export function initHandoutWidget(
             id: deterministicEncounterId(id, blockIndex),
           }),
         interactiveDice: canToggleVisibility,
+        interactiveMacros: canToggleVisibility,
+        groupContext: { groupId, shareToken },
+        ensureWidget,
       })
     );
     container.appendChild(card);

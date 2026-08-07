@@ -24,6 +24,12 @@ import { applyTaskCheckboxes } from "./journal-tasks.js";
 // <code> element" treatment as dice: blocks — see journal-encounter.js's own
 // header comment and applyEncounterBlocks below.
 import { parseEncounterBlock } from "./journal-encounter.js";
+// `` `macro:...` `` inline code spans — fully self-contained (parsing,
+// chip, AND resolution/execution all live in journal-macro.js), same shape
+// journal-dice.js already uses, unlike encounter blocks (which need this
+// page's own id, so their execution is a caller-supplied callback instead —
+// see journal-macro.js's own header comment for why macros don't need that).
+import { applyMacroBlocks } from "./journal-macro.js";
 // `> [!type]` callout blockquotes — parsing/color-icon lookup lives in
 // journal-callouts.js (same split as journal-encounter.js's own
 // parseEncounterBlock: that module parses, this one renders); see
@@ -329,7 +335,8 @@ function applyCalloutStyling(container) {
 
 // renderMarkdown(rawBody, {resolveWikiLink, onNavigate, status,
 // interactiveCheckboxes, onToggleTask, interactiveEncounters,
-// onStartEncounter, interactiveDice, dataManager}) → a detached DOM node ready to append
+// onStartEncounter, interactiveDice, interactiveMacros, groupContext,
+// dataManager}) → a detached DOM node ready to append
 // (not an HTML string) — building the click handlers here, once, is simpler
 // than the caller re-querying the rendered markup afterward. `status` is
 // only used for the dice-roller toast (rollExpression's own — see
@@ -338,14 +345,18 @@ function applyCalloutStyling(container) {
 // `` `dice:2d6` `` chip never touches it; omitted, a table-reference chip
 // still renders, just permanently shows "—" (rollExpression's own "not
 // available here" case). `interactiveCheckboxes`/`interactiveEncounters`/
-// `interactiveDice` are NOT user-facing settings — Repository's own editor
-// always passes all three true (checking a box off, starting an encounter,
-// or rolling dice always works there); handout.js's read-only Dashboard
-// rendering leaves interactiveCheckboxes false always, and
-// interactiveEncounters/interactiveDice true only for the owning GM's own
-// dashboard (same gate as the eye-icon visibility toggle) — a player looking
-// at a shown-to-the-table page must never be able to edit the GM's note
-// source, start combat, or roll dice by clicking something in it.
+// `interactiveDice`/`interactiveMacros` are NOT user-facing settings —
+// Repository's own editor always passes all four true (checking a box off,
+// starting an encounter, rolling dice, or running a macro always works
+// there); handout.js's read-only Dashboard rendering leaves
+// interactiveCheckboxes false always, and
+// interactiveEncounters/interactiveDice/interactiveMacros true only for the
+// owning GM's own dashboard (same gate as the eye-icon visibility toggle) —
+// a player looking at a shown-to-the-table page must never be able to edit
+// the GM's note source, start combat, roll dice, or fire a macro (WLED
+// commands, table-wide sound/handouts, ...) by clicking something in it.
+// `groupContext` is only needed for `` `macro:...` `` — see
+// journal-macro.js's own runMacroReference for what it's used for.
 export function renderMarkdown(
   rawBody,
   {
@@ -357,7 +368,10 @@ export function renderMarkdown(
     interactiveEncounters = false,
     onStartEncounter,
     interactiveDice = false,
+    interactiveMacros = false,
+    groupContext,
     dataManager,
+    ensureWidget,
   } = {}
 ) {
   const container = document.createElement("div");
@@ -379,6 +393,7 @@ export function renderMarkdown(
   applyWikiLinkStyling(container, { onNavigate });
   applyDiceRollers(container, { status, interactive: interactiveDice, dataManager });
   applyEncounterBlocks(container, { interactive: interactiveEncounters, onStartEncounter });
+  applyMacroBlocks(container, { status, interactive: interactiveMacros, dataManager, groupContext, ensureWidget });
   applyCalloutStyling(container);
   // Off by default at this layer — Repository's own editor always opts in;
   // handout.js's player-facing rendering leaves this false so a checkbox on

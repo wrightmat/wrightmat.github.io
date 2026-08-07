@@ -35,8 +35,11 @@ same way as every other kind in the suite:
   `targetBudget` on every value. Exactly one field is the ceiling-setter, named by
   Vault's own `budgetCeilingField` **tool preference** — a per-System choice stored in
   this browser's local storage (`js/app.js`'s `getBudgetCeilingFieldPreference`/
-  `setBudgetCeilingFieldPreference`, bucket `"vault-settings"`), picked from a dropdown
-  in Vault itself, not System data edited in Loom: which field acts as the ceiling is
+  `setBudgetCeilingFieldPreference`, bucket `"vault-settings"`), picked from the
+  Settings modal (the gear icon in the header, upper-left — built from the shared
+  `common/js/lib/tool-settings.js` module, the same one Repository's own Settings
+  button uses; mirrors Crucible's own Combat Scaling/Creature Type field settings
+  exactly) in Vault itself, not System data edited in Loom: which field acts as the ceiling is
   Vault's own interpretive choice among a System's fields, not an objective fact about
   the System's data model, so it never round-trips through the System record. That
   field's chosen value's `targetBudget` becomes the generation's target budget while
@@ -52,10 +55,12 @@ same way as every other kind in the suite:
   slugified form of each value's `name`.
   A different System (a different game) can define a completely
   different set of property types/values with zero Vault code changes, the same way
-  adding a new Library kind requires zero server code changes. Every newly-created
-  System is seeded with the 4 default generator-property fields (Rarity, Activation,
-  Item Form, Environment) by Loom's `newSystemEditor()`, but they live in the same
-  editing UI as every other field — there is no separate "Generator Properties"
+  adding a new Library kind requires zero server code changes. Rarity/Activation/Item
+  Form/Environment are just `sys.dnd5e`'s own conventional choice of generator-property
+  fields, not a seeded default — Loom's `newSystemEditor()` starts a new System with no
+  fields at all (confirmed against `feedback_system_property_seeding`: only seed a field
+  if every System needs it, so none are). Whatever fields a System does declare live in
+  the same editing UI as every other field — there is no separate "Generator Properties"
   section anymore.
 - **`effect`** — Vault's own generated-output Library kind (mirrors `monster` exactly:
   `readTier: free`, `writeTier: free`).

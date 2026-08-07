@@ -1,0 +1,1000 @@
+{
+  "id": "sys.bitd",
+  "title": "Blades in the Dark",
+  "version": "0.1",
+  "fields": [
+    {
+      "type": "string",
+      "key": "name",
+      "label": "Name",
+      "required": true
+    },
+    {
+      "type": "string",
+      "key": "alias",
+      "label": "Alias"
+    },
+    {
+      "type": "string",
+      "key": "look",
+      "label": "Look"
+    },
+    {
+      "type": "array",
+      "key": "heritages",
+      "label": "Heritage",
+      "values": [
+        {
+          "name": "Akoros"
+        },
+        {
+          "name": "Iruvia"
+        },
+        {
+          "name": "Severos"
+        },
+        {
+          "name": "Skovlan"
+        },
+        {
+          "name": "Tycheros"
+        },
+        {
+          "name": "Dagger Isles"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "backgrounds",
+      "label": "Background",
+      "values": [
+        {
+          "name": "Academic"
+        },
+        {
+          "name": "Labor"
+        },
+        {
+          "name": "Law"
+        },
+        {
+          "name": "Military"
+        },
+        {
+          "name": "Noble"
+        },
+        {
+          "name": "Trade"
+        },
+        {
+          "name": "Underworld"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "vices",
+      "label": "Vice",
+      "values": [
+        {
+          "name": "Faith",
+          "description": "Praying, ceremonies to old gods, seeking the miraculous, spiritual devotion."
+        },
+        {
+          "name": "Gambling",
+          "description": "Betting on fights, racing, cards, dice, and other games of chance."
+        },
+        {
+          "name": "Luxury",
+          "description": "Fine clothes, food, drink, drugs, and other indulgent pleasures."
+        },
+        {
+          "name": "Obligation",
+          "description": "Fulfilling the needs of your friends, family, or associates."
+        },
+        {
+          "name": "Pleasure",
+          "description": "Hedonistic thrills, carnal pleasures, ecstatic worship."
+        },
+        {
+          "name": "Stupor",
+          "description": "Drinking, drugs, and other means of numbing oneself."
+        },
+        {
+          "name": "Weird",
+          "description": "Occult knowledge, forbidden lore, communion with spirits."
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "playbooks",
+      "label": "Playbook",
+      "children": [
+        {
+          "type": "array",
+          "key": "playbooks.cutter",
+          "label": "Cutter",
+          "values": [
+            {
+              "name": "Bodyguard",
+              "description": "When you take Harm meant for an ally, reduce it by one level."
+            },
+            {
+              "name": "Battleborn",
+              "description": "You don't suffer the effects of lesser or moderate harm until the engagement ends."
+            },
+            {
+              "name": "Not to Be Trifled With",
+              "description": "When you take a moment to intimidate someone, roll Command; they must Resist with a worse position."
+            }
+          ]
+        },
+        {
+          "type": "array",
+          "key": "playbooks.hound",
+          "label": "Hound",
+          "values": [
+            {
+              "name": "Ghost",
+              "description": "You may move like a ghost, undetected by normal means, when you Prowl."
+            },
+            {
+              "name": "Mule",
+              "description": "You may carry Heavy Load without penalty, and a Normal Load counts as Light."
+            },
+            {
+              "name": "Trueblade",
+              "description": "Your ranged attacks with a bow or firearm gain increased range and precision."
+            }
+          ]
+        },
+        {
+          "type": "array",
+          "key": "playbooks.leech",
+          "label": "Leech",
+          "values": [
+            {
+              "name": "Turtle",
+              "description": "When you Set Up to defend yourself or an ally, take +1d."
+            },
+            {
+              "name": "Alchemist",
+              "description": "You can whip up alchemical solutions to most any problem, given time and materials."
+            },
+            {
+              "name": "Sawbones",
+              "description": "You're an exceptional physician. When you Tinker to heal someone, take +1d."
+            }
+          ]
+        },
+        {
+          "type": "array",
+          "key": "playbooks.lurk",
+          "label": "Lurk",
+          "values": [
+            {
+              "name": "Ghost",
+              "description": "You may move like a ghost, undetected by normal means, when you Prowl."
+            },
+            {
+              "name": "Shadow",
+              "description": "While in dim light or darkness, you may become practically invisible."
+            },
+            {
+              "name": "Vigor",
+              "description": "You may push yourself without marking harm; ignore the effects of exhaustion."
+            }
+          ]
+        },
+        {
+          "type": "array",
+          "key": "playbooks.slide",
+          "label": "Slide",
+          "values": [
+            {
+              "name": "Ghost Tongue",
+              "description": "You know the language of ghosts and spirits and can speak with them."
+            },
+            {
+              "name": "Cloak & Dagger",
+              "description": "You have a knack for saying just the right thing in a lie. Take +1d when you Sway to deceive."
+            },
+            {
+              "name": "Mind's Order",
+              "description": "You have iron self-control. You can resist mental and emotional intrusions with Resolve instead of Insight."
+            }
+          ]
+        },
+        {
+          "type": "array",
+          "key": "playbooks.spider",
+          "label": "Spider",
+          "values": [
+            {
+              "name": "Foresight",
+              "description": "At the start of each session, take 2 stress and ask the GM one question about an upcoming challenge."
+            },
+            {
+              "name": "Rated Ability",
+              "description": "Choose one action rating (up to 2 dots): Command, Consort, or Sway. Increase it by one."
+            },
+            {
+              "name": "Iron Will",
+              "description": "You may resist harm and fear with Resolve, adding your Tier to the roll."
+            }
+          ]
+        },
+        {
+          "type": "array",
+          "key": "playbooks.whisper",
+          "label": "Whisper",
+          "values": [
+            {
+              "name": "Ritualist",
+              "description": "You know rites and rituals that allow you to channel supernatural power."
+            },
+            {
+              "name": "Ghost Contract",
+              "description": "You've formed a pact with a ghost, granting you access to its power."
+            },
+            {
+              "name": "Eerie",
+              "description": "There's something deeply unsettling about you. Take +1d when you Consort or Sway to intimidate through the uncanny."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "actions",
+      "label": "Actions",
+      "children": [
+        {
+          "type": "object",
+          "key": "actions.insight",
+          "label": "Insight",
+          "children": [
+            {
+              "type": "number",
+              "key": "actions.insight.hunt",
+              "label": "Hunt",
+              "minimum": 0,
+              "maximum": 4
+            },
+            {
+              "type": "number",
+              "key": "actions.insight.study",
+              "label": "Study",
+              "minimum": 0,
+              "maximum": 4
+            },
+            {
+              "type": "number",
+              "key": "actions.insight.survey",
+              "label": "Survey",
+              "minimum": 0,
+              "maximum": 4
+            },
+            {
+              "type": "number",
+              "key": "actions.insight.tinker",
+              "label": "Tinker",
+              "minimum": 0,
+              "maximum": 4
+            }
+          ]
+        },
+        {
+          "type": "object",
+          "key": "actions.prowess",
+          "label": "Prowess",
+          "children": [
+            {
+              "type": "number",
+              "key": "actions.prowess.finesse",
+              "label": "Finesse",
+              "minimum": 0,
+              "maximum": 4
+            },
+            {
+              "type": "number",
+              "key": "actions.prowess.prowl",
+              "label": "Prowl",
+              "minimum": 0,
+              "maximum": 4
+            },
+            {
+              "type": "number",
+              "key": "actions.prowess.skirmish",
+              "label": "Skirmish",
+              "minimum": 0,
+              "maximum": 4
+            },
+            {
+              "type": "number",
+              "key": "actions.prowess.wreck",
+              "label": "Wreck",
+              "minimum": 0,
+              "maximum": 4
+            }
+          ]
+        },
+        {
+          "type": "object",
+          "key": "actions.resolve",
+          "label": "Resolve",
+          "children": [
+            {
+              "type": "number",
+              "key": "actions.resolve.attune",
+              "label": "Attune",
+              "minimum": 0,
+              "maximum": 4
+            },
+            {
+              "type": "number",
+              "key": "actions.resolve.command",
+              "label": "Command",
+              "minimum": 0,
+              "maximum": 4
+            },
+            {
+              "type": "number",
+              "key": "actions.resolve.consort",
+              "label": "Consort",
+              "minimum": 0,
+              "maximum": 4
+            },
+            {
+              "type": "number",
+              "key": "actions.resolve.sway",
+              "label": "Sway",
+              "minimum": 0,
+              "maximum": 4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "traumaConditions",
+      "label": "Trauma",
+      "values": [
+        {
+          "name": "Cold",
+          "description": "You are unable to connect emotionally with other people."
+        },
+        {
+          "name": "Haunted",
+          "description": "You're bothered by disturbing thoughts or visions."
+        },
+        {
+          "name": "Obsessed",
+          "description": "You're consumed by a fixation. Difficult to focus on anything else."
+        },
+        {
+          "name": "Paranoid",
+          "description": "You imagine danger everywhere. You can't trust others."
+        },
+        {
+          "name": "Reckless",
+          "description": "You have little regard for your own safety or best interests."
+        },
+        {
+          "name": "Soft",
+          "description": "You lose your edge. Compassion overwhelms you."
+        },
+        {
+          "name": "Unstable",
+          "description": "Your emotional state is volatile. Trifles enrage you."
+        },
+        {
+          "name": "Vicious",
+          "description": "You seek out opportunities to hurt people, even for no good reason."
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "harm",
+      "label": "Harm",
+      "children": [
+        {
+          "type": "string",
+          "key": "harm.lesser1",
+          "label": "Lesser Harm 1"
+        },
+        {
+          "type": "string",
+          "key": "harm.lesser2",
+          "label": "Lesser Harm 2"
+        },
+        {
+          "type": "string",
+          "key": "harm.moderate1",
+          "label": "Moderate Harm 1"
+        },
+        {
+          "type": "string",
+          "key": "harm.moderate2",
+          "label": "Moderate Harm 2"
+        },
+        {
+          "type": "string",
+          "key": "harm.severe",
+          "label": "Severe Harm"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "harmLevels",
+      "label": "Harm Level",
+      "values": [
+        {
+          "name": "Lesser",
+          "effect": "-1d to affected actions"
+        },
+        {
+          "name": "Moderate",
+          "effect": "-1d to affected actions, need help to remove"
+        },
+        {
+          "name": "Severe",
+          "effect": "Incapacitated until treated"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "armorTypes",
+      "label": "Armor",
+      "values": [
+        {
+          "name": "Armor",
+          "description": "Reduce harm from an attack by one level, once per score."
+        },
+        {
+          "name": "Heavy Armor",
+          "description": "Reduce harm from an attack by one level, but you're Slow."
+        },
+        {
+          "name": "Special Armor",
+          "description": "Unique protection granted by an ability or item."
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "loadTiers",
+      "label": "Load",
+      "values": [
+        {
+          "name": "Light",
+          "capacity": 3
+        },
+        {
+          "name": "Normal",
+          "capacity": 5
+        },
+        {
+          "name": "Heavy",
+          "capacity": 6
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "loadoutCatalog",
+      "label": "Loadout Item",
+      "values": [
+        {
+          "name": "Fine Weapon",
+          "load": 1
+        },
+        {
+          "name": "Heavy Weapon",
+          "load": 2
+        },
+        {
+          "name": "Sword",
+          "load": 1
+        },
+        {
+          "name": "Pistol",
+          "load": 1
+        },
+        {
+          "name": "Blade or Small Weapon",
+          "load": 0
+        },
+        {
+          "name": "Armor",
+          "load": 1
+        },
+        {
+          "name": "Heavy Armor",
+          "load": 2
+        },
+        {
+          "name": "Manacles",
+          "load": 1
+        },
+        {
+          "name": "Lantern",
+          "load": 1
+        },
+        {
+          "name": "Climbing Gear",
+          "load": 1
+        },
+        {
+          "name": "Alarm Clock",
+          "load": 1
+        },
+        {
+          "name": "Documents (fake or stolen)",
+          "load": 1
+        },
+        {
+          "name": "Disguise",
+          "load": 1
+        },
+        {
+          "name": "Tools of the Trade",
+          "load": 1
+        },
+        {
+          "name": "Demolition Tools",
+          "load": 2
+        },
+        {
+          "name": "Lockpicks",
+          "load": 0
+        },
+        {
+          "name": "Liquor, Drugs, Poison",
+          "load": 1
+        },
+        {
+          "name": "First Aid Kit",
+          "load": 1
+        },
+        {
+          "name": "Caltrops",
+          "load": 1
+        },
+        {
+          "name": "Bottle of Booze",
+          "load": 0
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "crewPlaybooks",
+      "label": "Crew Playbook",
+      "values": [
+        {
+          "name": "Assassins",
+          "description": "Ghosts and killers who murder for coin or cause."
+        },
+        {
+          "name": "Bravos",
+          "description": "Thugs, duelists, and mercenaries selling muscle and violence."
+        },
+        {
+          "name": "Cult",
+          "description": "Zealots devoted to a strange and secret power."
+        },
+        {
+          "name": "Hawkers",
+          "description": "Smugglers and dealers of vice and contraband."
+        },
+        {
+          "name": "Shadows",
+          "description": "Thieves and infiltrators who take what they want unseen."
+        },
+        {
+          "name": "Smugglers",
+          "description": "Runners who move contraband cargo through the city and beyond."
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "crewReputationTags",
+      "label": "Crew Reputation",
+      "values": [
+        {
+          "name": "Bloody"
+        },
+        {
+          "name": "Bold"
+        },
+        {
+          "name": "Cunning"
+        },
+        {
+          "name": "Discreet"
+        },
+        {
+          "name": "Honorable"
+        },
+        {
+          "name": "Innovative"
+        },
+        {
+          "name": "Ruthless"
+        },
+        {
+          "name": "Subtle"
+        },
+        {
+          "name": "Superstitious"
+        },
+        {
+          "name": "Zealous"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "crewUpgrades",
+      "label": "Crew Upgrade",
+      "values": [
+        {
+          "name": "Secure Lair",
+          "description": "Your lair is difficult to break into."
+        },
+        {
+          "name": "Quality Weapons",
+          "description": "Your crew is well-armed with quality gear."
+        },
+        {
+          "name": "Spy Network",
+          "description": "You have eyes and ears throughout the city."
+        },
+        {
+          "name": "Vehicle",
+          "description": "A boat, carriage, or other means of transport."
+        },
+        {
+          "name": "Torturer's Tools",
+          "description": "Equipment for extracting information or vengeance."
+        },
+        {
+          "name": "Forgery Den",
+          "description": "Facilities for producing fake documents or goods."
+        },
+        {
+          "name": "Vault",
+          "description": "A secure place to stash coin and valuables."
+        },
+        {
+          "name": "Vices",
+          "description": "Facilities to indulge a specific vice for clients."
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "loadout",
+      "label": "Loadout",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Item"
+        },
+        {
+          "type": "number",
+          "key": "load",
+          "label": "Load"
+        },
+        {
+          "type": "boolean",
+          "key": "carried",
+          "label": "Carried"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "contacts",
+      "label": "Contacts",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Name"
+        },
+        {
+          "type": "string",
+          "key": "relationship",
+          "label": "Relationship"
+        },
+        {
+          "type": "string",
+          "key": "notes",
+          "label": "Notes"
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "xp",
+      "label": "Experience",
+      "children": [
+        {
+          "type": "number",
+          "key": "xp.playbook",
+          "label": "Playbook XP",
+          "minimum": 0,
+          "maximum": 8
+        },
+        {
+          "type": "number",
+          "key": "xp.insight",
+          "label": "Insight XP",
+          "minimum": 0,
+          "maximum": 6
+        },
+        {
+          "type": "number",
+          "key": "xp.prowess",
+          "label": "Prowess XP",
+          "minimum": 0,
+          "maximum": 6
+        },
+        {
+          "type": "number",
+          "key": "xp.resolve",
+          "label": "Resolve XP",
+          "minimum": 0,
+          "maximum": 6
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "upgrades",
+      "label": "Purchased Upgrades",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Upgrade"
+        },
+        {
+          "type": "boolean",
+          "key": "purchased",
+          "label": "Purchased"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "claims",
+      "label": "Claims",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Claim"
+        },
+        {
+          "type": "boolean",
+          "key": "controlled",
+          "label": "Controlled"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "cohorts",
+      "label": "Cohorts",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "type",
+          "label": "Type"
+        },
+        {
+          "type": "string",
+          "key": "notes",
+          "label": "Expertise / Notes"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "npcTypes",
+      "label": "NPC Types",
+      "values": [
+        {
+          "name": "Ghost"
+        },
+        {
+          "name": "Hull"
+        },
+        {
+          "name": "Whisper-Cultist"
+        },
+        {
+          "name": "Leech-Doctor"
+        },
+        {
+          "name": "Spider"
+        },
+        {
+          "name": "Ash-Priest"
+        },
+        {
+          "name": "Bluecoat Inspector"
+        },
+        {
+          "name": "Bravo"
+        },
+        {
+          "name": "Smuggler"
+        },
+        {
+          "name": "Fence"
+        },
+        {
+          "name": "Shopkeep"
+        },
+        {
+          "name": "Laborer"
+        },
+        {
+          "name": "Dockhand"
+        },
+        {
+          "name": "Servant"
+        },
+        {
+          "name": "Factory Worker"
+        },
+        {
+          "name": "Street Urchin"
+        },
+        {
+          "name": "Cutpurse"
+        },
+        {
+          "name": "Beggar"
+        },
+        {
+          "name": "Noble's Attendant"
+        },
+        {
+          "name": "Bluecoat Sergeant"
+        }
+      ]
+    }
+  ],
+  "importers": [],
+  "preview": {
+    "actions": {
+      "insight": {
+        "hunt": 1,
+        "study": 0,
+        "survey": 2,
+        "tinker": 0
+      },
+      "prowess": {
+        "finesse": 2,
+        "prowl": 1,
+        "skirmish": 3,
+        "wreck": 1
+      },
+      "resolve": {
+        "attune": 0,
+        "command": 1,
+        "consort": 1,
+        "sway": 0
+      }
+    },
+    "stress": 3,
+    "xp": {
+      "playbook": 2,
+      "insight": 1,
+      "prowess": 3,
+      "resolve": 0
+    },
+    "healingClock": 1,
+    "harm": {
+      "lesser1": "Winded",
+      "lesser2": "",
+      "moderate1": "Deep Cut",
+      "moderate2": "",
+      "severe": ""
+    },
+    "trauma": [
+      "Reckless"
+    ],
+    "specialAbilitiesPurchased": {
+      "cutter": [
+        "Bodyguard"
+      ]
+    },
+    "coin": 4,
+    "stash": 12,
+    "loadout": [
+      {
+        "name": "Sword",
+        "load": 1,
+        "carried": true
+      },
+      {
+        "name": "Armor",
+        "load": 1,
+        "carried": true
+      },
+      {
+        "name": "Lockpicks",
+        "load": 0,
+        "carried": true
+      }
+    ],
+    "contacts": [
+      {
+        "name": "Ilsa Coldstream",
+        "relationship": "Friend",
+        "notes": "Bell Warden with a soft spot for strays."
+      },
+      {
+        "name": "Roric the Fence",
+        "relationship": "Rival",
+        "notes": "Undercuts every deal you try to make."
+      }
+    ],
+    "crewPlaybook": "Shadows",
+    "reputation": [
+      "Subtle",
+      "Bold"
+    ],
+    "tier": 1,
+    "heat": 4,
+    "wanted": 1,
+    "crewCoin": 6,
+    "vault": 20,
+    "upgrades": [
+      {
+        "name": "Secure Lair",
+        "purchased": true
+      },
+      {
+        "name": "Spy Network",
+        "purchased": false
+      }
+    ],
+    "claims": [
+      {
+        "name": "The Docks",
+        "controlled": true
+      },
+      {
+        "name": "Nightmarket",
+        "controlled": false
+      }
+    ],
+    "cohorts": [
+      {
+        "type": "Gang",
+        "notes": "Skulking, Vicious — street toughs loyal to the crew."
+      }
+    ]
+  }
+}

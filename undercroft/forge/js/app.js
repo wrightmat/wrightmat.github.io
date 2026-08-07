@@ -1,10 +1,17 @@
 import { initAppShell } from "../../common/js/lib/app-shell.js";
 import { initAuthControls, escapeHtml } from "../../common/js/lib/auth-ui.js";
-import { updateJsonPreview } from "../../common/js/lib/json-preview.js";
 import { expandPane } from "../../common/js/lib/panes.js";
-import { bindCollapsibleToggle } from "../../common/js/lib/collapsible.js";
+import {
+  createJsonDataPanel,
+  createToolbarButtonGroup,
+  createIconButton,
+  createCollapsibleSection,
+  createEmptyStateCard,
+  createCompactField,
+} from "../../common/js/lib/ui-components.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
 import { refreshTooltips } from "../../common/js/lib/tooltips.js";
+import { initToolSettings } from "../../common/js/lib/tool-settings.js";
 import {
   loadForgeTables,
   listSettingsForSystem,
@@ -16,6 +23,8 @@ import {
   getAttitudeLabel,
   loadAlignmentFaces,
   loadAbilityFieldDefs,
+  listArrayFieldOptions,
+  loadArchetypeTable,
   GENDER_FACES,
   AGE_FACES,
   RELATIONSHIP_STATUS_FACES,
@@ -29,6 +38,110 @@ import { buildLocationPressTemplate } from "./lib/press-export.js";
 import { createDirtyGate } from "../../common/js/lib/dirty-gate.js";
 import { abilityModifier } from "../../common/js/lib/dnd-rules.js";
 import { confirmDelete } from "../../common/js/lib/ownership.js";
+
+// Built and mounted before any of the querySelector("[data-*-npc]") lines
+// below, so every existing selector/disabled-state call site elsewhere in
+// this file keeps working unchanged.
+createToolbarButtonGroup([
+  { action: "generate", icon: "tabler:dice-5", label: "Generate NPC", primary: true, attrs: { "data-generate-npc": true } },
+  { action: "save", label: "Save", disabled: true, attrs: { "data-save-npc": true } },
+  { action: "export", label: "Export JSON", disabled: true, attrs: { "data-export-npc": true } },
+  { action: "delete", label: "Delete", disabled: true, attrs: { "data-delete-npc": true } },
+]).forEach((button) => document.querySelector("[data-npc-toolbar-mount]")?.appendChild(button));
+document.querySelector("[data-export-location-template-mount]")?.appendChild(
+  createIconButton({
+    icon: "tabler:printer",
+    label: "Export Press Template",
+    kind: "toolbar",
+    className: "flex-shrink-0",
+    attrs: { "data-export-location-template": true },
+  })
+);
+document.querySelector("[data-npc-empty-state]")?.appendChild(
+  createEmptyStateCard({
+    icon: "tabler:dice-5",
+    message: "No NPC generated yet. Choose a Location and click Generate NPC.",
+  })
+);
+
+// Named data-field-mount (not data-inspector-mount) — this file's own
+// [data-inspector-mount] selector below is a single bare marker for the
+// Component Properties collapsible wrapper; a keyed attribute of the same
+// name would collide with it (attribute selectors match on presence, not
+// value, so the bare querySelector could pick up one of these instead).
+// replaceWith, not appendChild — see press/js/app.js's mountInspectorField
+// for why: an appended-into wrapper stays an empty-but-in-flow flex item
+// even while its field is conditionally hidden, silently spending a full
+// gap-3 on both sides of it. Any class the static mount div itself carried
+// is merged onto the built field first so removing the wrapper doesn't
+// lose that layout.
+function mountField(key, element) {
+  const mount = document.querySelector(`[data-field-mount="${key}"]`);
+  if (!mount) return;
+  if (mount.className) element.classList.add(...mount.classList);
+  mount.replaceWith(element);
+}
+mountField(
+  "system-select",
+  createCompactField({
+    type: "select", id: "forgeSystemSelect", label: "System", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select",
+    dataAttr: "data-system-select", helpTopic: "forge.generate",
+  })
+);
+mountField("setting-select", createCompactField({ type: "select", id: "forgeSettingSelect", label: "Setting", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-setting-select" }));
+mountField("location-select", createCompactField({ type: "select", id: "forgeLocationSelect", label: "Location", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-location-select" }));
+mountField(
+  "species-override",
+  createCompactField({
+    type: "select", id: "forgeSpeciesOverride", label: "Species", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select",
+    dataAttr: "data-species-override", helpTopic: "forge.overrides",
+  })
+);
+mountField("archetype-override", createCompactField({ type: "select", id: "forgeArchetypeOverride", label: "Archetype", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-archetype-override" }));
+mountField("alignment-override", createCompactField({ type: "select", id: "forgeAlignmentOverride", label: "Alignment", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-alignment-override" }));
+mountField("gender-override", createCompactField({ type: "select", id: "forgeGenderOverride", label: "Gender", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-gender-override" }));
+mountField("location-name", createCompactField({ type: "text", id: "forgeLocationName", label: "Name", labelClass: "form-label fw-semibold mb-0", controlClass: "form-control", dataAttr: "data-location-name", readonly: true }));
+mountField("location-system", createCompactField({ type: "text", id: "forgeLocationSystem", label: "System", labelClass: "form-label fw-semibold mb-0", controlClass: "form-control", dataAttr: "data-location-system", readonly: true }));
+mountField("location-setting", createCompactField({ type: "text", id: "forgeLocationSetting", label: "Setting", labelClass: "form-label fw-semibold mb-0", controlClass: "form-control", dataAttr: "data-location-setting", readonly: true }));
+mountField("species-label", createCompactField({ type: "text", id: "forgeSpeciesLabel", label: "Label", labelClass: "form-label fw-semibold mb-0", controlClass: "form-control", dataAttr: "data-species-label", readonly: true }));
+mountField(
+  "species-name-mode",
+  createCompactField({
+    type: "select", id: "forgeSpeciesNameMode", label: "Name Mode", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select",
+    dataAttr: "data-species-name-mode", helpTopic: "forge.nameMode", disabled: true,
+    options: [
+      { value: "blend", label: "Blended" },
+      { value: "synonym", label: "Synonyms" },
+    ],
+  })
+);
+mountField(
+  "species-last-name-form",
+  createCompactField({
+    type: "select", id: "forgeSpeciesLastNameForm", label: "Last Name Form", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select",
+    dataAttr: "data-species-last-name-form", disabled: true,
+    options: [
+      { value: "none", label: "None" },
+      { value: "family", label: "Family" },
+      { value: "clan", label: "Clan" },
+      { value: "patronymic", label: "Patronymic" },
+    ],
+  })
+);
+mountField(
+  "species-first-names",
+  createCompactField({
+    type: "textarea", label: "First Names", labelClass: "form-label fw-semibold mb-0", controlClass: "form-control form-control-sm font-monospace",
+    dataAttr: "data-species-first-names", helpTopic: "forge.speciesProfileEditor", rows: 8, readonly: true,
+  })
+);
+mountField(
+  "species-last-names",
+  createCompactField({
+    type: "textarea", label: "Last Names", labelClass: "form-label fw-semibold mb-0", controlClass: "form-control form-control-sm font-monospace",
+    dataAttr: "data-species-last-names", rows: 8, readonly: true,
+  })
+);
 
 const systemSelect = document.querySelector("[data-system-select]");
 const settingSelect = document.querySelector("[data-setting-select]");
@@ -44,19 +157,32 @@ const npcDisplay = document.querySelector("[data-npc-display]");
 const identityFields = document.querySelector("[data-identity-fields]");
 const fourDFields = document.querySelector("[data-fourd-fields]");
 const statsFields = document.querySelector("[data-stats-fields]");
+// The whole Stats card (Identity/4D/Note each have their own sibling
+// card too) — hidden entirely rather than shown with an explanatory
+// message when there's nothing to display, see renderStats below.
+const statsCard = statsFields?.closest(".card") || null;
 const generateNoteButton = document.querySelector("[data-generate-note]");
 const noteText = document.querySelector("[data-note-text]");
 
 const saveButton = document.querySelector("[data-save-npc]");
 const exportButton = document.querySelector("[data-export-npc]");
 const deleteButton = document.querySelector("[data-delete-npc]");
-const npcJsonPreview = document.querySelector("[data-npc-json-preview]");
-const npcJsonBytes = document.querySelector("[data-npc-json-bytes]");
+const jsonDataPanel = createJsonDataPanel({
+  label: "JSON Data",
+  getData: () => (currentRecord ? toPressExportShape(currentRecord) : {}),
+});
 
-const rightPane = document.querySelector('[data-pane="right"]');
-const rightPaneToggle = document.querySelector('[data-pane-toggle="right"]');
-
-const inspectorToggle = document.querySelector("[data-inspector-toggle]");
+// Adopts the existing static `[data-inspector-panel]` markup (its own
+// content stays hand-authored HTML — only the header+chevron wrapper is
+// JS-built) as this section's content; createCollapsibleSection's own
+// internal bindCollapsibleToggle replaces the old standalone one below.
+const inspectorSection = createCollapsibleSection({
+  label: "Component Properties",
+  helpTopic: "forge.inspector",
+  collapsed: false,
+  content: document.querySelector("[data-inspector-panel]"),
+});
+document.querySelector("[data-inspector-mount]")?.appendChild(inspectorSection.section);
 const inspectorPanel = document.querySelector("[data-inspector-panel]");
 const inspectorEmpty = document.querySelector("[data-inspector-empty]");
 const inspectorLocation = document.querySelector("[data-inspector-location]");
@@ -123,20 +249,171 @@ const FOURD_FIELD_DEFS = [
 let ABILITY_FIELD_DEFS = [];
 let ABILITY_KEYS = new Set();
 
+// Every top-level array field the active System defines — refreshed
+// alongside everything else in refreshSystemVocabulary, used to populate
+// the Settings modal's Archetype field picker below.
+let arrayFieldOptions = [];
+
+// Every key (besides `name`) present on any entry of the currently-resolved
+// Archetype table — refreshed alongside arrayFieldOptions, used to populate
+// the Settings modal's Stats picker (which of those keys should actually be
+// generated/shown as Stats). Empty for a System whose archetype entries
+// carry nothing but a name (Blades in the Dark) — so the Stats picker has
+// nothing to offer, exactly matching "Stats is not a concept this System
+// has."
+let archetypeStatKeyOptions = [];
+
+// Which array field on the active System supplies the Archetype roll table
+// (name *and* Stats both live on the same entries — see loadArchetypeTable
+// in lib/tables.js) — same "per-tool preference, not System data" pattern
+// Crucible uses for its own Combat Scaling field/Creature Type field
+// settings (crucible/js/app.js), mirrored here: one merged per-System
+// record (dataManager.getLocal/saveLocal replaces the whole record for a
+// given (bucket, id), so writing one setting straight through would
+// silently wipe the other one's already-saved value), removed entirely
+// once both preferences are back to their unset state.
+const FORGE_SETTINGS_BUCKET = "forge-settings";
+
+function getForgeSystemSettings(systemId) {
+  if (!dataManager || !systemId) return {};
+  return dataManager.getLocal(FORGE_SETTINGS_BUCKET, systemId) || {};
+}
+
+function setForgeSystemSetting(systemId, key, value) {
+  if (!dataManager || !systemId) return;
+  const next = { ...getForgeSystemSettings(systemId), [key]: value };
+  // An empty statsKeys carries no information (see getStatsKeysPreference
+  // below — it's treated the same as never having set it), so it doesn't
+  // keep this record alive on its own.
+  if (!next.archetypeField && !(next.statsKeys && next.statsKeys.length)) {
+    dataManager.removeLocal(FORGE_SETTINGS_BUCKET, systemId);
+  } else {
+    dataManager.saveLocal(FORGE_SETTINGS_BUCKET, systemId, next);
+  }
+}
+
+function getArchetypeFieldPreference(systemId) {
+  return getForgeSystemSettings(systemId).archetypeField || "";
+}
+
+function setArchetypeFieldPreference(systemId, fieldKey) {
+  setForgeSystemSetting(systemId, "archetypeField", fieldKey || "");
+}
+
+// An empty selection is treated exactly like "never configured" — both
+// default to every key the active System's archetype entries happen to
+// carry (so D&D shows all 6 abilities + AC + HP with zero configuration).
+// There's no way to deliberately mean "show zero Stats for a System that
+// has them" here on purpose — and there shouldn't be: the Stats picker is
+// a native <select multiple>, where a single plain click (no ctrl/cmd)
+// deselects every other option, so "nothing checked" is far more likely to
+// be an accidental slip than a real decision. Treating it as "not
+// configured" instead of "permanently disabled" is what actually matches
+// the Settings modal's own behavior elsewhere (Archetype field's "None" is
+// a real, deliberate choice from a single-select dropdown — a fundamentally
+// safer gesture than emptying a multiselect).
+function getStatsKeysPreference(systemId) {
+  const stored = getForgeSystemSettings(systemId).statsKeys;
+  return Array.isArray(stored) && stored.length ? stored : null;
+}
+
+function setStatsKeysPreference(systemId, keys) {
+  setForgeSystemSetting(systemId, "statsKeys", Array.isArray(keys) ? keys : []);
+}
+
+// Every array field the active System defines, for the Archetype field
+// picker — "None" is a real, valid choice (a System with no archetype
+// table authored yet).
+function archetypeFieldOptions() {
+  return [{ value: "", label: "None" }, ...arrayFieldOptions.map((field) => ({ value: field.key, label: field.label || field.key }))];
+}
+
+// The conventional field-name fallback loadArchetypeTable applies on its
+// own when given no explicit preference — duplicated here only so the
+// Settings modal can show what's actually in effect (e.g. "NPC Types")
+// instead of misleadingly showing "None" while generation quietly uses
+// that field anyway.
+const CONVENTIONAL_ARCHETYPE_FIELD = "npcTypes";
+
+// Display-only: the value the Settings modal should show as "currently in
+// effect" — the explicit stored choice if there is one, else the
+// conventional default key IF the active System actually defines a field
+// with that name, else genuinely "None". Kept separate from
+// getArchetypeFieldPreference (used for the real loadArchetypeTable call in
+// refreshSystemVocabulary), which stays a plain "raw preference or ''" —
+// the loader already applies this same conventional default itself when
+// given '', so resolving it again here is purely about what the dropdown
+// displays, not a second source of truth for generation.
+function resolveEffectiveArchetypeField(rawValue) {
+  if (rawValue) return rawValue;
+  return arrayFieldOptions.some((field) => field.key === CONVENTIONAL_ARCHETYPE_FIELD) ? CONVENTIONAL_ARCHETYPE_FIELD : "";
+}
+
+// Every key (besides `name`) present on any archetype entry, nice-labeled —
+// reuses the exact same labeling renderStats uses (a System's own ability
+// short names where they match, else Title Case), so the Settings modal's
+// checklist and the generated Stats card always agree on what a key is
+// called.
+function statsKeyOptionsFrom(statsByName) {
+  const abilityDefByKey = new Map(ABILITY_FIELD_DEFS.map((def) => [def.key, def]));
+  const keys = new Set();
+  Object.values(statsByName || {}).forEach((entry) => {
+    Object.keys(entry).forEach((key) => {
+      if (key !== "name") keys.add(key);
+    });
+  });
+  return Array.from(keys).map((key) => ({
+    value: key,
+    label: abilityDefByKey.get(key)?.label || titleCaseKey(key),
+  }));
+}
+
+// Which of an archetype's own keys actually become the generated NPC's
+// Stats — a real saved subset if one exists, else every key available (see
+// getStatsKeysPreference above; an empty saved selection counts as "none
+// exists" there, not as a request for zero keys). Returns a name-keyed map
+// matching getStatsForArchetype's own expected shape, filtered down to just
+// the resolved keys — empty entirely only when the System's own archetype
+// entries have no extra keys at all, which is exactly how a Stats-less
+// System (Blades in the Dark) ends up contributing nothing to a generated
+// NPC's `stats`.
+function resolveArchetypeStats(statsByName, systemId) {
+  const explicitKeys = getStatsKeysPreference(systemId);
+  const availableKeys = archetypeStatKeyOptions.map((option) => option.value);
+  const keys = explicitKeys !== null ? explicitKeys : availableKeys;
+  const result = {};
+  if (!keys.length) return result;
+  Object.entries(statsByName || {}).forEach(([name, entry]) => {
+    const filtered = {};
+    keys.forEach((key) => {
+      if (entry[key] !== undefined) filtered[key] = entry[key];
+    });
+    if (Object.keys(filtered).length) result[name] = filtered;
+  });
+  return result;
+}
+
 // Called once at init (after the default System is selected) and again on
-// every System select change — keeps the alignment override dropdown and
-// the ability-score card labels/keys in sync with whichever System is
-// currently active.
+// every System select change — keeps the alignment override dropdown, the
+// ability-score card labels/keys, and the Archetype table (Stats included)
+// in sync with whichever System is currently active.
 async function refreshSystemVocabulary(systemId) {
-  const [alignmentFaces, abilityFieldDefs] = await Promise.all([
+  const archetypeField = getArchetypeFieldPreference(systemId);
+  const [alignmentFaces, abilityFieldDefs, fieldOptions, archetypeTable] = await Promise.all([
     loadAlignmentFaces(dataManager, systemId),
     loadAbilityFieldDefs(dataManager, systemId),
+    listArrayFieldOptions(dataManager, systemId),
+    loadArchetypeTable(dataManager, systemId, archetypeField || undefined),
   ]);
-  if (tables) {
-    tables.alignmentFaces = alignmentFaces;
-  }
+  arrayFieldOptions = fieldOptions;
   ABILITY_FIELD_DEFS = abilityFieldDefs;
   ABILITY_KEYS = new Set(abilityFieldDefs.map((entry) => entry.key));
+  archetypeStatKeyOptions = statsKeyOptionsFrom(archetypeTable.statsByName);
+  if (tables) {
+    tables.alignmentFaces = alignmentFaces;
+    tables.archetype = { entries: archetypeTable.entries };
+    tables.stats = resolveArchetypeStats(archetypeTable.statsByName, systemId);
+  }
   populateSelectOptions(alignmentOverrideSelect, alignmentFaces);
 }
 
@@ -222,26 +499,56 @@ function buildFieldCard({
   return col;
 }
 
-// Ability scores are all shown in a single row (6 compact boxes), AC/HP in
-// a second row underneath — deliberately smaller/plainer than the
-// Identity/4D cards since there's nothing to reroll here (see getStatsForArchetype).
+// "strength" -> "Strength", "attackModifier" -> "Attack Modifier" — used for
+// any stats key with no matching ABILITY_FIELD_DEFS short name, so a
+// System's own archetypeStats keys (whatever shape it happens to use) still
+// get a readable label with zero per-System UI code.
+function titleCaseKey(key) {
+  return String(key || "")
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/^./, (char) => char.toUpperCase())
+    .trim();
+}
+
+// Schema-driven: renders whatever keys are actually present on the resolved
+// stats object instead of assuming D&D's fixed "6 abilities + AC + HP"
+// shape (see getStatsForArchetype in lib/tables.js) — a different System's
+// archetypeStats field can carry an entirely different set of keys (or
+// none at all). `hitPoints` is the one key still special-cased, as a
+// max/current pair — worth keeping the nice split display, only rendered
+// if present. A key matching one of the active System's own ability
+// fields (ABILITY_FIELD_DEFS) gets that field's short label and a live
+// (+N) modifier suffix; every other key gets a plain title-cased label. A
+// string-valued entry (e.g. a Daggerheart Adversary's Feature text) renders
+// full-width instead of jammed into the compact number-box grid.
+//
+// No stats at all — whether this System has no Stats bound (Blades in the
+// Dark) or this particular archetype has no block within a System that
+// otherwise does (D&D's Wildcard/setting-specific rolls) — hides the whole
+// card rather than showing it with an explanatory message; there's nothing
+// useful to look at either way.
 function renderStats(stats) {
   statsFields.innerHTML = "";
   if (!stats) {
-    const col = document.createElement("div");
-    col.className = "col-12";
-    col.innerHTML =
-      '<p class="small text-body-secondary mb-0">No stat block available for this archetype (setting-specific or Wildcard).</p>';
-    statsFields.appendChild(col);
+    statsCard?.classList.add("d-none");
     return;
   }
-  ABILITY_FIELD_DEFS.forEach(({ key, label }) => {
+  statsCard?.classList.remove("d-none");
+  const abilityDefByKey = new Map(ABILITY_FIELD_DEFS.map((def) => [def.key, def]));
+  const compactEntries = [];
+  const wideEntries = [];
+  Object.entries(stats).forEach(([key, value]) => {
+    if (key === "hitPoints") return;
+    (typeof value === "string" && value.length > 12 ? wideEntries : compactEntries).push([key, value]);
+  });
+  compactEntries.forEach(([key, value]) => {
+    const abilityDef = abilityDefByKey.get(key);
     statsFields.appendChild(
       buildFieldCard({
         key,
-        label,
-        value: stats.abilities?.[key] ?? "",
-        suffix: abilityModifierText(stats.abilities?.[key]),
+        label: abilityDef?.label || titleCaseKey(key),
+        value: value ?? "",
+        suffix: abilityDef ? abilityModifierText(value) : "",
         rerollable: false,
         colClass: "col-4 col-md-2",
         compact: true,
@@ -249,39 +556,43 @@ function renderStats(stats) {
       })
     );
   });
-  statsFields.appendChild(
-    buildFieldCard({
-      key: "armorClass",
-      label: "AC",
-      value: stats.armorClass,
-      rerollable: false,
-      colClass: "col-4",
-      compact: true,
-      editable: true,
-    })
-  );
-  statsFields.appendChild(
-    buildFieldCard({
-      key: "currentHp",
-      label: "Current HP",
-      value: stats.hitPoints?.current ?? "",
-      rerollable: false,
-      colClass: "col-4",
-      compact: true,
-      editable: true,
-    })
-  );
-  statsFields.appendChild(
-    buildFieldCard({
-      key: "maxHp",
-      label: "Max HP",
-      value: stats.hitPoints?.max ?? "",
-      rerollable: false,
-      colClass: "col-4",
-      compact: true,
-      editable: true,
-    })
-  );
+  if (stats.hitPoints) {
+    statsFields.appendChild(
+      buildFieldCard({
+        key: "currentHp",
+        label: "Current HP",
+        value: stats.hitPoints?.current ?? "",
+        rerollable: false,
+        colClass: "col-4",
+        compact: true,
+        editable: true,
+      })
+    );
+    statsFields.appendChild(
+      buildFieldCard({
+        key: "maxHp",
+        label: "Max HP",
+        value: stats.hitPoints?.max ?? "",
+        rerollable: false,
+        colClass: "col-4",
+        compact: true,
+        editable: true,
+      })
+    );
+  }
+  wideEntries.forEach(([key, value]) => {
+    statsFields.appendChild(
+      buildFieldCard({
+        key,
+        label: titleCaseKey(key),
+        value: value ?? "",
+        rerollable: false,
+        colClass: "col-12",
+        compact: false,
+        editable: true,
+      })
+    );
+  });
 }
 
 // Save (dirty-gated) and Delete (saved-gated) button state, shared by
@@ -301,7 +612,7 @@ function renderNpc(record) {
   refreshActionButtons();
 
   if (!record) {
-    updateJsonPreview(npcJsonPreview, npcJsonBytes, {});
+    jsonDataPanel.render();
     return;
   }
 
@@ -332,7 +643,7 @@ function renderNpc(record) {
   renderStats(record.stats);
 
   noteText.value = record.note || "";
-  updateJsonPreview(npcJsonPreview, npcJsonBytes, toPressExportShape(record));
+  jsonDataPanel.render();
 
   // Regenerating/rerolling replaces the Identity/4D boxes wholesale, so the
   // selected box's highlight (and, for a roll-driven inspector view, its
@@ -623,6 +934,13 @@ function updateInspector() {
 
   if (!selectedFieldKey) return;
 
+  // Both queried live, not as module-top-level consts — the toggle button
+  // lives in the header and the pane <aside> itself is now also JS-built
+  // (initAppShell()'s buildPaneShell), both later than this module's own
+  // top-level code runs; an eager query for either here would have
+  // captured null permanently.
+  const rightPane = document.querySelector('[data-pane="right"]');
+  const rightPaneToggle = document.querySelector('[data-pane-toggle="right"]');
   if (rightPane && rightPaneToggle) {
     expandPane(rightPane, rightPaneToggle);
   }
@@ -694,11 +1012,23 @@ function getFieldTableData(key) {
 // --- Event wiring ------------------------------------------------------
 
 generateButton.addEventListener("click", () => {
-  if (!currentLocation || !tables) return;
-  const overrides = readOverrides();
-  const record = createNpcRecord(generateNpc(currentLocation, tables, { overrides }));
-  dirtyGate.markDirty();
-  renderNpc(record);
+  if (!settingSelect.value) {
+    status?.show("Select a Setting first.", { type: "warning", timeout: 2500 });
+    return;
+  }
+  if (!currentLocation) {
+    status?.show("Select a Location first.", { type: "warning", timeout: 2500 });
+    return;
+  }
+  if (!tables) return;
+  try {
+    const overrides = readOverrides();
+    const record = createNpcRecord(generateNpc(currentLocation, tables, { overrides }));
+    dirtyGate.markDirty();
+    renderNpc(record);
+  } catch (error) {
+    status?.show(`Unable to generate: ${error.message}`, { type: "error", timeout: 4000 });
+  }
 });
 
 [identityFields, fourDFields].forEach((container) => {
@@ -731,35 +1061,38 @@ identityFields.addEventListener("input", (event) => {
   if (!input || !currentRecord) return;
   const field = input.dataset.editableField;
   currentRecord = field === "name" ? { ...currentRecord, name: input.value } : currentRecord;
-  updateJsonPreview(npcJsonPreview, npcJsonBytes, toPressExportShape(currentRecord));
+  jsonDataPanel.render();
   refreshActionButtons();
 });
 
-// Typing directly into a Stats field (ability scores, AC, HP) keeps the
-// record in sync the same way — ability scores also live-update their (+N)
-// modifier suffix alongside, since that's derived rather than stored.
+// Typing directly into a Stats field keeps the record in sync the same way
+// — ability scores also live-update their (+N) modifier suffix alongside,
+// since that's derived rather than stored. hitPoints stays the one
+// special-cased key (a max/current pair); every other key is a flat
+// stats[field] write, coerced to a number only if it already held one (so
+// a text stat like a Daggerheart Adversary's Feature line doesn't get
+// silently zeroed).
 statsFields.addEventListener("input", (event) => {
   const input = event.target.closest("[data-editable-field]");
   if (!input || !currentRecord?.stats) return;
   const field = input.dataset.editableField;
-  const numericValue = Number(input.value) || 0;
-  if (ABILITY_KEYS.has(field)) {
-    currentRecord = {
-      ...currentRecord,
-      stats: { ...currentRecord.stats, abilities: { ...currentRecord.stats.abilities, [field]: numericValue } },
-    };
-    const suffixEl = statsFields.querySelector(`[data-editable-suffix="${field}"]`);
-    if (suffixEl) suffixEl.textContent = abilityModifierText(numericValue);
-  } else if (field === "currentHp" || field === "maxHp") {
+  if (field === "currentHp" || field === "maxHp") {
+    const numericValue = Number(input.value) || 0;
     const hpKey = field === "currentHp" ? "current" : "max";
     currentRecord = {
       ...currentRecord,
       stats: { ...currentRecord.stats, hitPoints: { ...currentRecord.stats.hitPoints, [hpKey]: numericValue } },
     };
   } else {
-    currentRecord = { ...currentRecord, stats: { ...currentRecord.stats, [field]: numericValue } };
+    const previousValue = currentRecord.stats[field];
+    const nextValue = typeof previousValue === "number" ? Number(input.value) || 0 : input.value;
+    currentRecord = { ...currentRecord, stats: { ...currentRecord.stats, [field]: nextValue } };
+    if (ABILITY_KEYS.has(field)) {
+      const suffixEl = statsFields.querySelector(`[data-editable-suffix="${field}"]`);
+      if (suffixEl) suffixEl.textContent = abilityModifierText(nextValue);
+    }
   }
-  updateJsonPreview(npcJsonPreview, npcJsonBytes, toPressExportShape(currentRecord));
+  jsonDataPanel.render();
   refreshActionButtons();
 });
 
@@ -787,7 +1120,7 @@ generateNoteButton.addEventListener("click", async () => {
 noteText.addEventListener("input", () => {
   if (!currentRecord) return;
   currentRecord = { ...currentRecord, note: noteText.value };
-  updateJsonPreview(npcJsonPreview, npcJsonBytes, toPressExportShape(currentRecord));
+  jsonDataPanel.render();
   refreshActionButtons();
 });
 
@@ -885,18 +1218,66 @@ speciesLastNameFormSelect.addEventListener("change", () => toggleSpeciesLastName
 // --- Init ----------------------------------------------------------------
 
 async function init() {
-  const shell = initAppShell({ namespace: "forge", storagePrefix: "undercroft.forge.undo" });
+  const shell = initAppShell({
+    namespace: "forge",
+    storagePrefix: "undercroft.forge.undo",
+    settingsSlotAttr: "data-forge-settings-slot",
+  });
   status = shell.status;
   const auth = initAuthControls({
     status,
   });
   dataManager = auth.dataManager;
 
-  bindCollapsibleToggle(inspectorToggle, inspectorPanel, {
-    collapsed: false,
-    expandLabel: "Expand component properties",
-    collapseLabel: "Collapse component properties",
+  // Archetype field picker + Stats key checklist, in a gear-icon Settings
+  // modal (upper-left of the header) — same shared module and visual
+  // pattern Crucible's own Settings button already uses. Each definition's
+  // getValue/setValue defers straight to the per-System
+  // dataManager.getLocal/saveLocal helpers above rather than this module's
+  // own flat store, since the value is genuinely scoped per-System, not
+  // per-tool (see tool-settings.js's own comment on that option).
+  initToolSettings({
+    toolId: "forge",
+    dataManager,
+    status,
+    title: "Forge Settings",
+    definitions: () => {
+      const systemId = systemSelect.value;
+      return [
+        {
+          key: "archetypeField",
+          type: "select",
+          label: "Archetype field",
+          options: archetypeFieldOptions(),
+          getValue: () => resolveEffectiveArchetypeField(getArchetypeFieldPreference(systemId)),
+          setValue: (value) => {
+            setArchetypeFieldPreference(systemId, value);
+            refreshSystemVocabulary(systemId);
+          },
+        },
+        {
+          key: "statsKeys",
+          type: "multiselect",
+          label: "Stats",
+          // Every key the active System's own Archetype entries carry
+          // (besides name) — empty for a System with no Stats concept at
+          // all (Blades in the Dark), so this picker has nothing to offer
+          // instead of a misleading always-populated list.
+          options: archetypeStatKeyOptions,
+          getValue: () => getStatsKeysPreference(systemId) ?? archetypeStatKeyOptions.map((option) => option.value),
+          setValue: (values) => {
+            setStatsKeysPreference(systemId, values);
+            refreshSystemVocabulary(systemId);
+          },
+        },
+      ];
+    },
+    // Queried live (not via a captured const) because the header — and this
+    // mount point inside it — is built by initAppShell() itself, above.
+    mountButton: (button) => document.querySelector("[data-forge-settings-slot]")?.appendChild(button),
   });
+
+  document.querySelector("[data-json-mount]")?.appendChild(jsonDataPanel.section);
   // The static markup only carries `hidden` on the Location/Species/Roll
   // panels, which Bootstrap's `!important` `.d-flex` beats on its own (see
   // setInspectorSectionVisible) — run the real visibility logic once up

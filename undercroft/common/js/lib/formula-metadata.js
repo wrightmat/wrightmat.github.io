@@ -18,6 +18,12 @@ const FORMULA_FUNCTION_SIGNATURES = {
   sqrt: "sqrt(value)",
   sum: "sum(...values)",
   roller: "roller(notation, fallback)",
+  lookup: "lookup(table, key)",
+  len: "len(value)",
+  upper: "upper(value)",
+  lower: "lower(value)",
+  split: "split(value, separator)",
+  replace: "replace(value, search, replacement)",
 };
 
 export function listFormulaFunctionMetadata() {

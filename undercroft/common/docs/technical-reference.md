@@ -12,7 +12,7 @@ All pages share a structural shell initialised through `initAppShell`, which wir
 
 ### Theme management
 
-Theme controls rely on `initThemeControls`, which reads and persists preferences under `undercroft.workbench.theme`, applies CSS custom properties on both `<html>` and `<body>`, and keeps buttons in sync with `prefers-color-scheme` changes.【F:undercroft/common/js/lib/theme.js†L1-L107】 Every HTML page includes the same bootstrapping script to apply the stored theme before paint, guaranteeing flicker-free transitions.【F:undercroft/workbench/index.html†L4-L42】【F:undercroft/common/docs/index.html†L4-L42】
+Theme controls rely on `initThemeControls`, which reads and persists preferences under `undercroft.workbench.theme`, applies CSS custom properties on both `<html>` and `<body>`, and keeps buttons in sync with `prefers-color-scheme` changes.【F:undercroft/common/js/lib/theme.js†L1-L107】 Every HTML page includes the same bootstrapping script to apply the stored theme before paint, guaranteeing flicker-free transitions.【F:undercroft/workbench/index.html†L4-L42】【F:undercroft/common/docs.html†L4-L42】
 
 ### Data management & offline cache
 
@@ -28,7 +28,7 @@ Help topics live in `../common/data/help-topics.json` and are loaded once via `l
 
 ### Documentation site
 
-The end-user documentation at `docs/index.html` consumes the same JSON catalog to render a table of contents, grouped topics, and metadata cards.【F:undercroft/common/docs/index.html†L1-L99】【F:undercroft/common/docs/docs.js†L1-L153】 Topic sections generate permalink anchors, include bullet-point deep dives, and expose an “Open in app” button that resolves relative paths to the Workbench entry points.【F:undercroft/common/docs/docs.js†L37-L111】 Theme toggles reuse the shared controls so the docs stay visually aligned with the tools.【F:undercroft/common/docs/index.html†L100-L135】
+The end-user documentation at `common/docs.html` (moved from `common/docs/index.html` so it sits at the same directory depth as `account.html` and can use the exact same `initAppShell` bootstrap — including the tool-switcher nav, which silently broke when the page lived one level deeper) consumes the same JSON catalog to render a topic-selector left pane and topic-content center pane.【F:undercroft/common/docs.html†L1-L135】【F:undercroft/common/docs.js†L1-L235】 Topic sections generate permalink anchors, include bullet-point deep dives, and expose an “Open in app” button that resolves relative paths to the Workbench entry points.【F:undercroft/common/docs.js†L1-L235】 Theme and pane toggles reuse the shared controls so the docs stay visually aligned with the tools.【F:undercroft/common/docs.html†L1-L135】
 
 ---
 

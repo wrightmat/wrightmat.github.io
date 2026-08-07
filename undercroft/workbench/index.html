@@ -4,47 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Undercroft Workbench</title>
-    <script>
-      (function () {
-        const storageKey = "undercroft.workbench.theme";
-        const THEMES = ["light", "system", "dark"];
-        const prefersDark = () =>
-          typeof window !== "undefined" &&
-          window.matchMedia &&
-          window.matchMedia("(prefers-color-scheme: dark)").matches;
-        const resolveTheme = (preference) => {
-          if (preference === "dark") return "dark";
-          if (preference === "light") return "light";
-          return prefersDark() ? "dark" : "light";
-        };
-        const apply = (value) => {
-          const preference = THEMES.includes(value) ? value : "system";
-          const resolved = resolveTheme(preference);
-          const root = document.documentElement;
-          const body = document.body;
-          if (root) {
-            root.dataset.themePreference = preference;
-            root.dataset.theme = resolved;
-            root.dataset.bsTheme = resolved;
-            root.style.colorScheme = resolved;
-          }
-          if (body) {
-            body.dataset.themePreference = preference;
-            body.dataset.theme = resolved;
-            body.dataset.bsTheme = resolved;
-            body.style.colorScheme = resolved;
-          }
-          return preference;
-        };
-        try {
-          const stored = localStorage.getItem(storageKey);
-          apply(stored);
-        } catch (error) {
-          apply("system");
-          console.warn("Unable to read theme preference", error);
-        }
-      })();
-    </script>
+    <script src="../common/js/theme-init.js"></script>
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
       rel="stylesheet"
@@ -67,168 +27,11 @@
   </head>
   <body class="bg-body text-body" data-undercroft-tool="workbench">
     <div class="workbench-app d-flex flex-column">
-      <header class="workbench-header border-bottom bg-body-tertiary">
-        <div class="workbench-header-grid pe-2 py-3">
-          <div></div>
-          <div class="d-flex align-items-center gap-3 w-100">
-            <div class="d-flex align-items-center gap-3">
-              <button
-                class="btn btn-outline-secondary d-flex align-items-center justify-content-center"
-                type="button"
-                data-pane-toggle="left"
-                aria-label="Toggle left pane"
-              >
-                <span class="iconify fs-5" data-icon="tabler:layout-sidebar-right" aria-hidden="true"></span>
-                <span class="visually-hidden">Toggle left pane</span>
-              </button>
-              <h1 class="h5 mb-0 d-flex align-items-center gap-2">
-                <nav data-undercroft-tool-nav aria-label="Undercroft tools"></nav>
-              </h1>
-            </div>
-            <div class="ms-auto d-flex align-items-center gap-3 flex-wrap">
-              <div data-auth-control class="d-flex">
-                <button class="btn btn-outline-secondary" type="button">Login / Register</button>
-              </div>
-              <div class="btn-group" role="group" aria-label="Theme toggle">
-                <button class="btn btn-outline-primary" type="button" data-theme-option="light" aria-label="Use light theme">
-                  <span class="iconify fs-5" data-icon="tabler:sun" aria-hidden="true"></span>
-                  <span class="visually-hidden">Light theme</span>
-                </button>
-                <button class="btn btn-outline-primary" type="button" data-theme-option="system">System</button>
-                <button class="btn btn-outline-primary" type="button" data-theme-option="dark" aria-label="Use dark theme">
-                  <span class="iconify fs-5" data-icon="tabler:moon" aria-hidden="true"></span>
-                  <span class="visually-hidden">Dark theme</span>
-                </button>
-              </div>
-              <button
-                class="btn btn-outline-secondary d-flex align-items-center justify-content-center"
-                type="button"
-                data-pane-toggle="right"
-                aria-label="Toggle right pane"
-              >
-                <span class="iconify fs-5" data-icon="tabler:adjustments-horizontal" aria-hidden="true"></span>
-                <span class="visually-hidden">Toggle right pane</span>
-              </button>
-            </div>
-          </div>
-          <div></div>
-        </div>
-      </header>
+      <div data-app-shell-header></div>
       <div class="workbench-shell d-flex">
-        <aside
-          class="workbench-pane border-end border-body-tertiary bg-body-tertiary flex-shrink-0 workbench-sidebar"
-          data-pane="left"
-          data-pane-collapsed-class="d-none"
-          data-pane-expanded-class="d-flex"
-          data-pane-initial="expanded"
-        >
-          <div class="workbench-pane-content d-flex flex-column gap-4 p-4 workbench-sticky-pane">
+        <div data-pane-content="left">
             <div class="btn-toolbar justify-content-center overflow-x-auto" role="toolbar" aria-label="Workbench actions">
-              <div class="btn-group" role="group">
-                <button
-                  class="btn btn-outline-secondary p-2"
-                  type="button"
-                  data-action="undo"
-                  data-bs-toggle="tooltip"
-                  data-bs-placement="bottom"
-                  data-bs-title="Undo"
-                  aria-label="Undo"
-                >
-                  <span class="iconify fs-5" data-icon="tabler:arrow-back-up" aria-hidden="true"></span>
-                  <span class="visually-hidden">Undo</span>
-                </button>
-                <button
-                  class="btn btn-outline-secondary p-2"
-                  type="button"
-                  data-action="redo"
-                  data-bs-toggle="tooltip"
-                  data-bs-placement="bottom"
-                  data-bs-title="Redo"
-                  aria-label="Redo"
-                >
-                  <span class="iconify fs-5" data-icon="tabler:arrow-forward-up" aria-hidden="true"></span>
-                  <span class="visually-hidden">Redo</span>
-                </button>
-                <button
-                  class="btn btn-outline-secondary p-2 d-none"
-                  type="button"
-                  data-action="export-template"
-                  data-workbench-view-panel="template"
-                  data-bs-toggle="tooltip"
-                  data-bs-placement="bottom"
-                  data-bs-title="Export JSON"
-                  aria-label="Export JSON"
-                >
-                  <span class="iconify fs-5" data-icon="tabler:download" aria-hidden="true"></span>
-                  <span class="visually-hidden">Export JSON</span>
-                </button>
-                <button
-                  class="btn btn-outline-danger p-2 d-none"
-                  type="button"
-                  data-action="clear-canvas"
-                  data-workbench-view-panel="template"
-                  data-bs-toggle="tooltip"
-                  data-bs-placement="bottom"
-                  data-bs-title="Clear canvas"
-                  aria-label="Clear canvas"
-                >
-                  <span class="iconify fs-5" data-icon="tabler:trash" aria-hidden="true"></span>
-                  <span class="visually-hidden">Clear canvas</span>
-                </button>
-
-                <button
-                  class="btn btn-outline-primary p-2"
-                  type="button"
-                  data-action="new-character"
-                  data-workbench-view-panel="edit"
-                  data-bs-toggle="tooltip"
-                  data-bs-placement="bottom"
-                  data-bs-title="New Character"
-                  aria-label="New Character"
-                >
-                  <span class="iconify fs-5" data-icon="tabler:file-plus" aria-hidden="true"></span>
-                  <span class="visually-hidden">New Character</span>
-                </button>
-                <button
-                  class="btn btn-outline-success p-2 d-none"
-                  type="button"
-                  data-action="save-character"
-                  data-workbench-view-panel="edit"
-                  data-bs-toggle="tooltip"
-                  data-bs-placement="bottom"
-                  data-bs-title="Save"
-                  aria-label="Save"
-                >
-                  <span class="iconify fs-5" data-icon="tabler:device-floppy" aria-hidden="true"></span>
-                  <span class="visually-hidden">Save</span>
-                </button>
-                <button
-                  class="btn btn-outline-secondary p-2"
-                  type="button"
-                  data-action="export-character"
-                  data-workbench-view-panel="play edit"
-                  data-bs-toggle="tooltip"
-                  data-bs-placement="bottom"
-                  data-bs-title="Export JSON"
-                  aria-label="Export JSON"
-                >
-                  <span class="iconify fs-5" data-icon="tabler:download" aria-hidden="true"></span>
-                  <span class="visually-hidden">Export JSON</span>
-                </button>
-                <button
-                  class="btn btn-outline-danger p-2 d-none"
-                  type="button"
-                  data-action="delete-character"
-                  data-delete-character
-                  data-bs-toggle="tooltip"
-                  data-bs-placement="bottom"
-                  data-bs-title="Delete Character"
-                  aria-label="Delete Character"
-                >
-                  <span class="iconify fs-5" data-icon="tabler:trash" aria-hidden="true"></span>
-                  <span class="visually-hidden">Delete Character</span>
-                </button>
-              </div>
+              <div class="btn-group" role="group" data-workbench-toolbar-mount></div>
             </div>
 
             <section class="d-flex flex-column gap-3 d-none" data-workbench-view-panel="template">
@@ -304,39 +107,11 @@
                   </div>
                 </div>
               </div>
-              <section class="pane-card mt-auto">
-                <button
-                  class="btn btn-link w-100 d-flex justify-content-between align-items-center text-decoration-none px-0 py-1"
-                  type="button"
-                  data-bs-toggle="collapse"
-                  data-bs-target="#template-json-preview"
-                  aria-expanded="false"
-                  aria-controls="template-json-preview"
-                >
-                  <span class="text-uppercase fs-6 fw-semibold text-body-secondary">JSON Preview</span>
-                  <span class="badge text-bg-secondary" data-preview-bytes>0 B</span>
-                </button>
-                <div class="collapse" id="template-json-preview">
-                  <div class="bg-body p-2 mt-2">
-                    <pre class="text-body-secondary small overflow-auto mb-0 json-preview-text" style="max-height: 16rem" data-json-preview>{}</pre>
-                  </div>
-                </div>
-              </section>
+              <div class="mt-auto" data-template-json-mount></div>
             </section>
 
             <section class="d-flex flex-column gap-3" data-workbench-view-panel="play edit" data-notes-section>
-              <div class="d-flex align-items-center justify-content-between">
-                <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Notes</h2>
-                <button
-                  class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center collapsible-toggle"
-                  type="button"
-                  data-notes-toggle
-                  aria-expanded="false"
-                >
-                  <span class="iconify" data-notes-toggle-icon data-icon="tabler:chevron-right" aria-hidden="true"></span>
-                  <span class="visually-hidden" data-notes-toggle-label>Expand notes</span>
-                </button>
-              </div>
+              <div data-notes-mount></div>
               <div class="d-flex flex-column gap-3" data-notes-panel hidden>
                 <textarea
                   class="form-control form-control-sm character-notes"
@@ -346,42 +121,13 @@
                 ></textarea>
               </div>
             </section>
-            <section class="pane-card" data-workbench-view-panel="play edit" data-json-section id="workbench-character-json">
-              <button
-                class="btn btn-link w-100 d-flex justify-content-between align-items-center text-decoration-none px-0 py-1"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#workbench-character-json-preview"
-                aria-expanded="false"
-                aria-controls="workbench-character-json-preview"
-              >
-                <span class="text-uppercase fs-6 fw-semibold text-body-secondary">JSON Preview</span>
-                <span class="badge text-bg-secondary" data-character-preview-bytes>0 B</span>
-              </button>
-              <div class="collapse" id="workbench-character-json-preview">
-                <div class="bg-body p-2 mt-2">
-                  <pre class="text-body-secondary small overflow-auto mb-0 json-preview-text" style="max-height: 16rem" data-character-json-preview>{}</pre>
-                </div>
-              </div>
-            </section>
-            <section class="d-flex flex-column gap-3 mt-auto" data-workbench-view-panel="play edit" hidden data-group-share-section>
-              <div class="d-flex align-items-center justify-content-between">
-                <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Group characters</h2>
-                <button
-                  class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center collapsible-toggle"
-                  type="button"
-                  data-group-share-toggle
-                  aria-expanded="true"
-                >
-                  <span class="iconify" data-group-share-toggle-icon data-icon="tabler:chevron-right" aria-hidden="true"></span>
-                  <span class="visually-hidden" data-group-share-toggle-label>Collapse group characters</span>
-                </button>
-              </div>
+            <section class="d-flex flex-column gap-3" data-workbench-view-panel="play edit" hidden data-group-share-section>
+              <div data-group-share-mount></div>
               <div class="d-flex flex-column gap-3" data-group-share-panel></div>
               <div class="text-body-secondary small" data-group-share-status hidden></div>
             </section>
-          </div>
-        </aside>
+            <div class="mt-auto" data-workbench-view-panel="play edit" id="workbench-character-json" data-character-json-mount></div>
+        </div>
         <main class="workbench-main flex-grow-1 p-3 overflow-auto d-flex flex-column gap-4">
             <ul class="nav nav-tabs mb-0" role="tablist" data-workbench-view-tabs>
               <li class="nav-item" role="presentation">
@@ -407,25 +153,12 @@
               <div class="card shadow-theme">
                 <div class="card-header bg-body d-flex justify-content-between align-items-center">
                   <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Selections</h2>
-                  <div class="d-flex align-items-center gap-2">
-                    <button
-                      class="btn btn-outline-secondary btn-sm d-flex align-items-center justify-content-center collapsible-toggle"
-                      type="button"
-                      data-selections-toggle
-                      aria-expanded="true"
-                    >
-                      <span class="iconify" data-icon="tabler:chevron-down" aria-hidden="true"></span>
-                      <span class="visually-hidden">Toggle selections</span>
-                    </button>
-                  </div>
+                  <div class="d-flex align-items-center gap-2" data-selections-toggle-mount></div>
                 </div>
                 <div data-selections-panel>
                   <div class="card-body">
                     <div class="row g-3 align-items-end">
-                      <div class="col-12 col-md-4 col-lg-3">
-                        <label class="form-label fw-semibold text-body-secondary" for="template-select">Active template</label>
-                        <select class="form-select" id="template-select" data-template-select></select>
-                      </div>
+                      <div class="col-12 col-md-4 col-lg-3" data-field-mount="template-select"></div>
                       <div class="col-12 col-md text-md-end">
                         <div class="small text-body-secondary" data-template-meta>No template selected</div>
                       </div>
@@ -437,7 +170,6 @@
                 <div class="card-body d-flex flex-column gap-3">
                   <div class="d-flex justify-content-between align-items-center">
                     <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Canvas</h2>
-                    <span class="fs-6 text-body-secondary">Layout preview</span>
                   </div>
                   <div class="flex-grow-1 d-flex flex-column" data-canvas-root data-sortable-id="canvas"></div>
                 </div>
@@ -448,13 +180,7 @@
               <div class="card shadow-theme" data-character-toolbar>
                 <div class="card-body">
                   <div class="row g-3 align-items-end">
-                    <div class="col-12 col-lg-4 col-xl-3">
-                      <label class="form-label fw-semibold text-body-secondary d-flex align-items-center gap-2" for="character-select">
-                        <span>Character</span>
-                        <span class="align-middle" data-help-topic="character.records" data-help-insert="replace" data-help-placement="right"></span>
-                      </label>
-                      <select class="form-select" id="character-select" data-character-select></select>
-                    </div>
+                    <div class="col-12 col-lg-4 col-xl-3" data-field-mount="character-select"></div>
                   </div>
                 </div>
               </div>
@@ -462,87 +188,23 @@
                 <div class="card-body d-flex flex-column gap-3">
                   <div class="d-flex justify-content-between align-items-center">
                     <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Sheet</h2>
-                    <span class="fs-6 text-body-secondary" data-mode-indicator>Viewing</span>
                   </div>
                   <div class="flex-grow-1 d-flex flex-column" data-character-canvas-root></div>
                 </div>
               </div>
             </section>
         </main>
-        <aside
-          class="workbench-pane border-start border-body-tertiary bg-body-tertiary flex-shrink-0 workbench-sidebar-lg"
-          data-pane="right"
-          data-pane-collapsed-class="d-none"
-          data-pane-expanded-class="d-flex"
-          data-pane-initial="expanded"
-        >
-          <div class="workbench-pane-content d-flex flex-column gap-4 p-4 workbench-sticky-pane">
+        <div data-pane-content="right">
             <section class="d-flex flex-column gap-3 d-none" data-workbench-view-panel="template">
               <div class="d-flex justify-content-between align-items-center">
-                <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Template Properties</h2>
-                <button
-                  class="btn btn-outline-secondary btn-sm d-flex align-items-center justify-content-center collapsible-toggle"
-                  type="button"
-                  data-template-properties-toggle
-                  aria-expanded="true"
-                >
-                  <span class="iconify" data-icon="tabler:chevron-down" aria-hidden="true"></span>
-                  <span class="visually-hidden">Toggle template properties</span>
-                </button>
+                <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0 d-flex align-items-center gap-2">
+                  <span>Template Properties</span>
+                  <span class="align-middle" data-help-topic="template.bindings" data-help-insert="replace"></span>
+                </h2>
+                <span data-template-properties-toggle-mount></span>
               </div>
               <div class="btn-toolbar justify-content-center" role="toolbar" aria-label="Template management">
-                <div class="btn-group" role="group">
-                  <button
-                    class="btn btn-outline-primary p-2"
-                    type="button"
-                    data-action="new-template"
-                    data-bs-toggle="tooltip"
-                    data-bs-placement="bottom"
-                    data-bs-title="New Template"
-                    aria-label="New Template"
-                  >
-                    <span class="iconify fs-5" data-icon="tabler:file-plus" aria-hidden="true"></span>
-                    <span class="visually-hidden">New Template</span>
-                  </button>
-                  <button
-                    class="btn btn-outline-success p-2 d-none"
-                    type="button"
-                    data-action="save-template"
-                    data-workbench-view-panel="template"
-                    data-bs-toggle="tooltip"
-                    data-bs-placement="bottom"
-                    data-bs-title="Save"
-                    aria-label="Save"
-                  >
-                    <span class="iconify fs-5" data-icon="tabler:device-floppy" aria-hidden="true"></span>
-                    <span class="visually-hidden">Save</span>
-                  </button>
-                  <button
-                    class="btn btn-outline-success p-2 d-none"
-                    type="button"
-                    data-action="duplicate-template"
-                    data-duplicate-template
-                    data-bs-toggle="tooltip"
-                    data-bs-placement="bottom"
-                    data-bs-title="Duplicate Template"
-                    aria-label="Duplicate Template"
-                  >
-                    <span class="iconify fs-5" data-icon="tabler:copy" aria-hidden="true"></span>
-                    <span class="visually-hidden">Duplicate Template</span>
-                  </button>
-                  <button
-                    class="btn btn-outline-danger p-2 d-none"
-                    type="button"
-                    data-delete-template
-                    data-bs-toggle="tooltip"
-                    data-bs-placement="bottom"
-                    data-bs-title="Delete Template"
-                    aria-label="Delete Template"
-                  >
-                    <span class="iconify fs-5" data-icon="tabler:trash" aria-hidden="true"></span>
-                    <span class="visually-hidden">Delete Template</span>
-                  </button>
-                </div>
+                <div class="btn-group" role="group" data-template-toolbar-mount></div>
               </div>
               <div data-template-properties-panel>
                 <div class="d-flex flex-column gap-3 fs-6" data-template-properties>
@@ -555,15 +217,7 @@
                   <span>Component Properties</span>
                   <span class="align-middle" data-help-topic="template.properties" data-help-insert="replace"></span>
                 </h2>
-                <button
-                  class="btn btn-outline-secondary btn-sm d-flex align-items-center justify-content-center collapsible-toggle"
-                  type="button"
-                  data-component-properties-toggle
-                  aria-expanded="false"
-                >
-                  <span class="iconify" data-icon="tabler:chevron-right" aria-hidden="true"></span>
-                  <span class="visually-hidden">Toggle component properties</span>
-                </button>
+                <span data-component-properties-toggle-mount></span>
               </div>
               <div data-component-properties-panel>
                 <div class="d-flex flex-column gap-3 fs-6" data-inspector>
@@ -573,30 +227,17 @@
             </section>
 
             <section class="d-flex flex-column gap-3" data-workbench-view-panel="play edit" data-dice-section>
-              <div class="d-flex align-items-center justify-content-between">
-                <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0 d-flex align-items-center gap-2">
-                  <span>Dice Roller</span>
-                  <span class="align-middle" data-help-topic="character.dice" data-help-insert="replace"></span>
-                </h2>
-                <button
-                  class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center collapsible-toggle"
-                  type="button"
-                  data-dice-toggle
-                  aria-expanded="true"
-                >
-                  <span class="iconify" data-dice-toggle-icon data-icon="tabler:chevron-right" aria-hidden="true"></span>
-                  <span class="visually-hidden" data-dice-toggle-label>Collapse dice roller</span>
-                </button>
-              </div>
+              <div data-dice-mount></div>
               <div class="d-flex flex-column gap-3" data-dice-panel></div>
             </section>
             <section
               class="d-none flex-column gap-3"
-              data-workbench-view-panel="play edit"
               data-now-showing-section
             >
-              <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Now Showing</h2>
-              <div class="d-flex justify-content-center" data-now-showing-content></div>
+              <div data-now-showing-mount></div>
+              <div data-now-showing-panel>
+                <div class="d-flex justify-content-center" data-now-showing-content></div>
+              </div>
             </section>
             <section class="d-flex flex-column gap-3" data-workbench-view-panel="play edit" data-game-log-section>
               <div class="d-flex align-items-center justify-content-between">
@@ -622,15 +263,7 @@
                       <span class="visually-hidden">Refresh game log</span>
                     </button>
                   </div>
-                  <button
-                    class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center collapsible-toggle"
-                    type="button"
-                    data-game-log-toggle
-                    aria-expanded="true"
-                  >
-                    <span class="iconify" data-game-log-toggle-icon data-icon="tabler:chevron-right" aria-hidden="true"></span>
-                    <span class="visually-hidden" data-game-log-toggle-label>Collapse game log</span>
-                  </button>
+                  <span data-game-log-toggle-mount></span>
                 </div>
               </div>
               <div class="d-flex flex-column gap-3" data-game-log-panel>
@@ -650,8 +283,7 @@
                 </form>
               </div>
             </section>
-          </div>
-        </aside>
+        </div>
       </div>
     </div>
     <div class="status-root" data-status-root></div>
@@ -665,22 +297,16 @@
           <form class="needs-validation" novalidate data-new-template-form>
             <div class="modal-body d-flex flex-column gap-3">
               <div>
-                <label class="form-label" for="new-template-id">Template ID</label>
-                <input id="new-template-id" class="form-control" type="text" name="id" required data-new-template-id placeholder="e.g. tpl.custom" />
+                <div data-field-mount="new-template-id"></div>
                 <div class="invalid-feedback">Please provide a unique template ID.</div>
               </div>
               <div>
-                <label class="form-label" for="new-template-title">Template Title</label>
-                <input id="new-template-title" class="form-control" type="text" name="title" required data-new-template-title placeholder="e.g. Hero Sheet" />
+                <div data-field-mount="new-template-title"></div>
                 <div class="invalid-feedback">Please provide a readable title.</div>
               </div>
+              <div data-field-mount="new-template-version"></div>
               <div>
-                <label class="form-label" for="new-template-version">Starting Version</label>
-                <input id="new-template-version" class="form-control" type="text" name="version" value="0.1" data-new-template-version />
-              </div>
-              <div>
-                <label class="form-label" for="new-template-system">System</label>
-                <select id="new-template-system" class="form-select" name="schema" required data-new-template-system></select>
+                <div data-field-mount="new-template-system"></div>
                 <div class="invalid-feedback">Select a system for this template.</div>
               </div>
             </div>
@@ -702,18 +328,15 @@
           <form class="needs-validation" novalidate data-new-character-form>
             <div class="modal-body d-flex flex-column gap-3">
               <div>
-                <label class="form-label" for="new-character-id">Character ID</label>
-                <input id="new-character-id" class="form-control" type="text" name="id" required data-new-character-id placeholder="e.g. cha.my-hero" />
+                <div data-field-mount="new-character-id"></div>
                 <div class="invalid-feedback">Please provide a character ID.</div>
               </div>
               <div>
-                <label class="form-label" for="new-character-name">Character Name</label>
-                <input id="new-character-name" class="form-control" type="text" name="name" required data-new-character-name placeholder="e.g. Elandra" />
+                <div data-field-mount="new-character-name"></div>
                 <div class="invalid-feedback">Please provide a character name.</div>
               </div>
               <div>
-                <label class="form-label" for="new-character-template">Template</label>
-                <select id="new-character-template" class="form-select" name="template" required data-new-character-template></select>
+                <div data-field-mount="new-character-template"></div>
                 <div class="invalid-feedback">Select a template for this character.</div>
               </div>
             </div>
@@ -755,16 +378,7 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body d-flex flex-column gap-3">
-            <div class="btn-group template-radio-group" role="group" aria-label="Pattern category">
-              <input type="radio" class="btn-check" name="workbenchPatternCategory" id="workbenchPatternCategoryFills" value="fills" checked data-pattern-category />
-              <label class="btn btn-outline-secondary" for="workbenchPatternCategoryFills">Fills</label>
-              <input type="radio" class="btn-check" name="workbenchPatternCategory" id="workbenchPatternCategoryPatterns" value="patterns" data-pattern-category />
-              <label class="btn btn-outline-secondary" for="workbenchPatternCategoryPatterns">Patterns</label>
-              <input type="radio" class="btn-check" name="workbenchPatternCategory" id="workbenchPatternCategoryBanners" value="banners" data-pattern-category />
-              <label class="btn btn-outline-secondary" for="workbenchPatternCategoryBanners">Banners</label>
-              <input type="radio" class="btn-check" name="workbenchPatternCategory" id="workbenchPatternCategoryShapes" value="shapes" data-pattern-category />
-              <label class="btn btn-outline-secondary" for="workbenchPatternCategoryShapes">Shapes</label>
-            </div>
+            <div data-field-mount="pattern-category"></div>
             <div class="row g-3">
               <div class="col-12 col-md-7">
                 <div class="d-flex flex-wrap gap-2" data-pattern-thumbnails></div>
@@ -797,16 +411,7 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body d-flex flex-column gap-2">
-            <div class="form-floating">
-              <input
-                class="form-control"
-                placeholder="Encode Sans Expanded"
-                type="text"
-                id="workbenchAddFontValue"
-                data-add-font-value
-              />
-              <label class="fw-semibold" for="workbenchAddFontValue">Font name or CSS font-family value</label>
-            </div>
+            <div data-field-mount="add-font-value"></div>
             <div class="text-body-secondary extra-small">
               A single name (e.g. <code>Roboto Condensed</code>) loads it from Google Fonts automatically and adds
               it to the font list for everyone, from now on — the same shared library Press's own Font field uses.

@@ -1046,11 +1046,23 @@ export class DataManager {
     return payload;
   }
 
-  async getGroupLog({ groupId = "", shareToken = "", limit = undefined } = {}) {
+  // `types` (optional) restricts the LIMIT-bounded server query to specific
+  // entry types instead of the group's raw, most-recent-N-of-everything log
+  // — see groups.py's _fetch_group_log_entries's own comment for why this
+  // matters: spotlight.js's own resolution passes the three spotlight-
+  // related types so ordinary chat/roll entries (and a single chatty
+  // inline-kind widget's own frequent spotlight-update refreshes) can't
+  // crowd an unrelated widget's still-active spotlight entry out of the
+  // fetched window. Omit for the Game Log widget's own read, which wants
+  // everything, unfiltered, exactly as before.
+  async getGroupLog({ groupId = "", shareToken = "", limit = undefined, types = undefined } = {}) {
     const token = shareToken ? String(shareToken) : "";
     const params = new URLSearchParams();
     if (limit !== undefined && limit !== null) {
       params.set("limit", String(limit));
+    }
+    if (Array.isArray(types) && types.length) {
+      params.set("types", types.join(","));
     }
     const query = params.toString() ? `?${params.toString()}` : "";
     if (token) {

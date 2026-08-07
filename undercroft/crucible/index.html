@@ -4,47 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Undercroft Crucible</title>
-    <script>
-      (function () {
-        const storageKey = "undercroft.workbench.theme";
-        const THEMES = ["light", "system", "dark"];
-        const prefersDark = () =>
-          typeof window !== "undefined" &&
-          window.matchMedia &&
-          window.matchMedia("(prefers-color-scheme: dark)").matches;
-        const resolveTheme = (preference) => {
-          if (preference === "dark") return "dark";
-          if (preference === "light") return "light";
-          return prefersDark() ? "dark" : "light";
-        };
-        const apply = (value) => {
-          const preference = THEMES.includes(value) ? value : "system";
-          const resolved = resolveTheme(preference);
-          const root = document.documentElement;
-          const body = document.body;
-          if (root) {
-            root.dataset.themePreference = preference;
-            root.dataset.theme = resolved;
-            root.dataset.bsTheme = resolved;
-            root.style.colorScheme = resolved;
-          }
-          if (body) {
-            body.dataset.themePreference = preference;
-            body.dataset.theme = resolved;
-            body.dataset.bsTheme = resolved;
-            body.style.colorScheme = resolved;
-          }
-          return preference;
-        };
-        try {
-          const stored = localStorage.getItem(storageKey);
-          apply(stored);
-        } catch (error) {
-          apply("system");
-          console.warn("Unable to read theme preference", error);
-        }
-      })();
-    </script>
+    <script src="../common/js/theme-init.js"></script>
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
       rel="stylesheet"
@@ -56,192 +16,32 @@
   </head>
   <body class="bg-body text-body" data-undercroft-tool="crucible">
     <div class="d-flex flex-column min-vh-100 workbench-app">
-      <header class="workbench-header border-bottom bg-body-tertiary">
-        <div class="workbench-header-grid pe-2 py-3">
-          <div></div>
-          <div class="d-flex align-items-center gap-3 w-100">
-            <div class="d-flex align-items-center gap-3">
-              <button
-                class="btn btn-outline-secondary d-flex align-items-center justify-content-center"
-                type="button"
-                data-pane-toggle="left"
-                aria-label="Toggle navigation pane"
-              >
-                <span class="iconify fs-5" data-icon="tabler:layout-sidebar-right" aria-hidden="true"></span>
-                <span class="visually-hidden">Toggle navigation pane</span>
-              </button>
-              <h1 class="h5 mb-0 d-flex align-items-center gap-2">
-                <nav data-undercroft-tool-nav aria-label="Undercroft tools"></nav>
-              </h1>
-            </div>
-            <div class="ms-auto d-flex align-items-center gap-3 flex-wrap">
-              <div data-auth-control class="d-flex">
-                <button class="btn btn-outline-secondary" type="button">Login / Register</button>
-              </div>
-              <div class="btn-group" role="group" aria-label="Theme toggle">
-                <button class="btn btn-outline-primary" type="button" data-theme-option="light" aria-label="Use light theme">
-                  <span class="iconify fs-5" data-icon="tabler:sun" aria-hidden="true"></span>
-                  <span class="visually-hidden">Light theme</span>
-                </button>
-                <button class="btn btn-outline-primary" type="button" data-theme-option="system">System</button>
-                <button class="btn btn-outline-primary" type="button" data-theme-option="dark" aria-label="Use dark theme">
-                  <span class="iconify fs-5" data-icon="tabler:moon" aria-hidden="true"></span>
-                  <span class="visually-hidden">Dark theme</span>
-                </button>
-              </div>
-              <button
-                class="btn btn-outline-secondary d-flex align-items-center justify-content-center"
-                type="button"
-                data-pane-toggle="right"
-                aria-label="Toggle details pane"
-              >
-                <span class="iconify fs-5" data-icon="tabler:adjustments-horizontal" aria-hidden="true"></span>
-                <span class="visually-hidden">Toggle details pane</span>
-              </button>
-            </div>
-          </div>
-          <div></div>
-        </div>
-      </header>
+      <div data-app-shell-header></div>
 
       <div class="d-flex flex-grow-1 workbench-shell">
-        <aside
-          class="border-end border-body-tertiary bg-body-tertiary shadow-theme flex-shrink-0 workbench-sidebar workbench-pane"
-          data-pane="left"
-          data-pane-collapsed-class="d-none"
-          data-pane-expanded-class="d-flex"
-          data-pane-initial="expanded"
-        >
-          <div class="workbench-pane-content d-flex flex-column gap-4 p-3 workbench-sticky-pane">
-            <div class="btn-toolbar justify-content-center" role="toolbar" aria-label="Monster actions">
-              <div class="btn-group" role="group">
-                <button
-                  class="btn btn-primary p-2"
-                  type="button"
-                  data-generate-monster
-                  data-bs-toggle="tooltip"
-                  data-bs-placement="bottom"
-                  data-bs-title="Generate Monster"
-                  aria-label="Generate Monster"
-                >
-                  <span class="iconify fs-5" data-icon="tabler:flask" aria-hidden="true"></span>
-                  <span class="visually-hidden">Generate Monster</span>
-                </button>
-                <button
-                  class="btn btn-outline-success p-2"
-                  type="button"
-                  data-save-monster
-                  disabled
-                  data-bs-toggle="tooltip"
-                  data-bs-placement="bottom"
-                  data-bs-title="Save"
-                  aria-label="Save"
-                >
-                  <span class="iconify fs-5" data-icon="tabler:device-floppy" aria-hidden="true"></span>
-                  <span class="visually-hidden">Save</span>
-                </button>
-                <button
-                  class="btn btn-outline-secondary p-2"
-                  type="button"
-                  data-export-monster
-                  disabled
-                  data-bs-toggle="tooltip"
-                  data-bs-placement="bottom"
-                  data-bs-title="Export JSON"
-                  aria-label="Export JSON"
-                >
-                  <span class="iconify fs-5" data-icon="tabler:file-export" aria-hidden="true"></span>
-                  <span class="visually-hidden">Export JSON</span>
-                </button>
-                <button
-                  class="btn btn-outline-danger p-2"
-                  type="button"
-                  data-delete-monster
-                  disabled
-                  data-bs-toggle="tooltip"
-                  data-bs-placement="bottom"
-                  data-bs-title="Delete"
-                  aria-label="Delete"
-                >
-                  <span class="iconify fs-5" data-icon="tabler:trash" aria-hidden="true"></span>
-                  <span class="visually-hidden">Delete</span>
-                </button>
-              </div>
-            </div>
-
-            <section class="d-flex flex-column gap-2" id="crucible-generate">
-              <label class="form-label fw-semibold mb-0" for="crucibleSystemSelect">System</label>
-              <select class="form-select" id="crucibleSystemSelect" data-system-select></select>
-
-              <label class="form-label fw-semibold mb-0 d-flex align-items-center gap-1" for="crucibleCombatScalingField">
-                Combat scaling field
-                <span class="align-middle" data-help-topic="crucible.combatScalingField" data-help-insert="replace"></span>
-              </label>
-              <select class="form-select" id="crucibleCombatScalingField" data-combat-scaling-field>
-                <option value="">None</option>
-              </select>
-
-              <div class="d-flex flex-column gap-2" id="crucible-overrides">
-                <label class="form-label fw-semibold mb-0 d-flex align-items-center gap-2" for="crucibleCreatureTypeOverride">
-                  <span>Creature Type</span>
-                  <span class="align-middle" data-help-topic="crucible.overrides" data-help-insert="replace"></span>
-                </label>
-                <select class="form-select" id="crucibleCreatureTypeOverride" data-creature-type-override></select>
-
-                <label class="form-label fw-semibold mb-0" for="crucibleArchetypeOverride">Archetype</label>
-                <select class="form-select" id="crucibleArchetypeOverride" data-archetype-override></select>
-
-                <label class="form-label fw-semibold mb-0" for="crucibleRoleOverride">Role</label>
-                <select class="form-select" id="crucibleRoleOverride" data-role-override></select>
-
-                <label class="form-label fw-semibold mb-0 d-flex align-items-center gap-2" for="crucibleCombatScalingOverride">
-                  <span>Combat Scaling</span>
-                  <span class="align-middle" data-help-topic="crucible.combatScaling" data-help-insert="replace"></span>
-                </label>
-                <select class="form-select" id="crucibleCombatScalingOverride" data-combat-scaling-override></select>
-
-                <label class="form-label fw-semibold mb-0" for="crucibleSignatureOverride">Signature Feature</label>
-                <select class="form-select" id="crucibleSignatureOverride" data-signature-feature-override></select>
-
-                <label class="form-label fw-semibold mb-0 d-flex align-items-center gap-2" for="crucibleLockedFeatures">
-                  <span>Locked Features</span>
-                  <span class="align-middle" data-help-topic="crucible.lockedFeatures" data-help-insert="replace"></span>
-                </label>
-                <select class="form-select" id="crucibleLockedFeatures" data-locked-features multiple size="5"></select>
-              </div>
-            </section>
-
-            <section class="pane-card mt-auto" data-json-section id="crucible-json">
-              <button
-                class="btn btn-link w-100 d-flex justify-content-between align-items-center text-decoration-none px-0 py-1"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#crucible-json-preview"
-                aria-expanded="false"
-                aria-controls="crucible-json-preview"
-              >
-                <span class="text-uppercase fs-6 fw-semibold text-body-secondary">JSON Preview</span>
-                <span class="badge text-bg-secondary" data-monster-json-bytes>0 B</span>
-              </button>
-              <div class="collapse" id="crucible-json-preview">
-                <div class="bg-body p-2 mt-2">
-                  <pre class="border rounded-3 p-2 bg-body small mb-0" data-monster-json-preview></pre>
-                </div>
-              </div>
-            </section>
+        <div data-pane-content="left">
+          <div class="btn-toolbar justify-content-center" role="toolbar" aria-label="Monster actions">
+            <div class="btn-group" role="group" data-monster-toolbar-mount></div>
           </div>
-        </aside>
+
+          <section class="d-flex flex-column gap-2" id="crucible-generate">
+            <div data-field-mount="system-select"></div>
+
+            <div class="d-flex flex-column gap-2" id="crucible-overrides">
+              <div data-field-mount="creature-type-override"></div>
+              <div data-field-mount="archetype-override"></div>
+              <div data-field-mount="role-override"></div>
+              <div data-field-mount="combat-scaling-override"></div>
+              <div data-field-mount="signature-feature-override"></div>
+              <div data-field-mount="locked-features"></div>
+            </div>
+          </section>
+
+          <div class="mt-auto" id="crucible-json" data-json-mount></div>
+        </div>
 
         <main class="workbench-main flex-grow-1 p-3 overflow-auto">
-          <div class="d-flex flex-column gap-3" data-monster-empty-state>
-            <div class="card shadow-theme">
-              <div class="card-body text-center text-body-secondary py-5">
-                <span class="iconify fs-1 d-block mb-2" data-icon="tabler:flask" aria-hidden="true"></span>
-                No monster generated yet. Optionally pin a Creature Type, Archetype, or
-                Role, then click Generate Monster.
-              </div>
-            </div>
-          </div>
+          <div class="d-flex flex-column gap-3" data-monster-empty-state></div>
 
           <div class="d-flex flex-column gap-3 d-none" data-monster-display>
             <div class="card shadow-theme">
@@ -251,16 +51,7 @@
                     <span>Identity</span>
                     <span class="align-middle" data-help-topic="crucible.identity" data-help-insert="replace"></span>
                   </h2>
-                  <div>
-                    <label class="form-label fw-semibold mb-1" for="crucibleMonsterName">Name</label>
-                    <input
-                      type="text"
-                      class="form-control"
-                      id="crucibleMonsterName"
-                      data-monster-name
-                      placeholder="Unnamed"
-                    />
-                  </div>
+                  <div data-field-mount="monster-name"></div>
                   <div class="row g-3" data-identity-fields></div>
                 </section>
               </div>
@@ -324,36 +115,17 @@
           </div>
         </main>
 
-        <aside
-          class="border-start border-body-tertiary bg-body-tertiary shadow-theme flex-shrink-0 workbench-sidebar workbench-pane"
-          data-pane="right"
-          data-pane-collapsed-class="d-none"
-          data-pane-expanded-class="d-flex"
-          data-pane-initial="expanded"
-        >
-          <div class="workbench-pane-content d-flex flex-column gap-3 p-3 workbench-sticky-pane">
-            <div class="d-flex align-items-center justify-content-between">
-              <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0">Inspector</h2>
-              <button
-                class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center collapsible-toggle"
-                type="button"
-                data-inspector-toggle
-                aria-expanded="true"
-              >
-                <span class="iconify" data-icon="tabler:chevron-down" aria-hidden="true"></span>
-                <span class="visually-hidden" data-inspector-toggle-label>Collapse inspector</span>
-              </button>
+        <div data-pane-content="right">
+          <div data-inspector-mount></div>
+          <div class="d-flex flex-column gap-3" data-inspector-panel>
+            <div data-inspector-empty class="border border-dashed rounded-3 p-3 text-center text-body-secondary small">
+              Select a feature in the Features list to see its full detail here.
             </div>
-            <div class="d-flex flex-column gap-3" data-inspector-panel>
-              <div data-inspector-empty class="border border-dashed rounded-3 p-3 text-center text-body-secondary small">
-                Select a feature in the Features list to see its full detail here.
-              </div>
-              <div data-inspector-detail class="d-none">
-                <pre class="border rounded-3 p-2 bg-body small mb-0" data-inspector-json></pre>
-              </div>
+            <div data-inspector-detail class="d-none">
+              <pre class="border rounded-3 p-2 bg-body small mb-0" data-inspector-json></pre>
             </div>
           </div>
-        </aside>
+        </div>
       </div>
     </div>
 

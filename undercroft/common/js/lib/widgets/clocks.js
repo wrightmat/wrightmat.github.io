@@ -43,6 +43,19 @@ const DEFAULT_CONFIG = {
   autoTickSeconds: 60,
 };
 
+// --- Macro action support (common/js/lib/widgets/macro-runner.js) --------
+// Exported so loom/js/app.js's Macro editor can build the Type/Action
+// pickers from the real registry instead of a second, driftable copy.
+// `target` is deliberately absent everywhere in this suite for this type —
+// there's no portable "which clock" to author into a shared macro record,
+// only "whichever one is currently shown" (see runMacroAction below).
+export const CLOCK_MACRO_ACTIONS = {
+  show: { label: "Show to table" },
+  hide: { label: "Hide from table" },
+  advance: { label: "Advance / retreat", params: ["delta"] },
+  set: { label: "Set filled segments", params: ["filled"] },
+};
+
 // 5s (was 30s) — same reasoning as combat-tracker.js's own POLL_INTERVAL_MS:
 // a physical second-screen display wants a clock's own tick to feel live,
 // and single-window background polling is now confirmed reliable.
@@ -304,6 +317,38 @@ export function initClockWidget(
     void pushVisibleUpdate();
   }
 
+  // --- Macro action support (common/js/lib/widgets/macro-runner.js) ---
+  // Unlike every portable-by-id action type, a Clock has no Library record
+  // and can't be addressed by instance id from a shared macro (see this
+  // file's own header comment) — the only sensible target is "whichever
+  // clock is currently shown to the table," which dashboard.js's own
+  // findActiveWidgetInstance resolves by scanning mounted Clock instances
+  // for the one reporting isVisible() === true. show/hide reuse
+  // toggleVisibility's own logic rather than unconditionally toggling, so a
+  // "show" action run twice in a row is a no-op the second time, not a hide.
+  async function runMacroAction(action) {
+    const params = action?.params || {};
+    if (action?.action === "show") {
+      if (!visible) await toggleVisibility();
+      return;
+    }
+    if (action?.action === "hide") {
+      if (visible) await toggleVisibility();
+      return;
+    }
+    if (action?.action === "advance") {
+      const delta = Number(params.delta ?? 1) || 1;
+      persist({ ...config, filled: Math.max(0, Math.min(config.segments, config.filled + delta)) });
+      return;
+    }
+    if (action?.action === "set") {
+      const nextFilled = Math.max(0, Math.min(config.segments, Number(params.filled ?? config.filled) || 0));
+      persist({ ...config, filled: nextFilled });
+      return;
+    }
+    throw new Error(`Unknown Clock macro action "${action?.action}".`);
+  }
+
   // Only ever reached for a genuine GM-authoring instance now — a
   // forcePlayerView instance returns early above (as a follower of itself)
   // before this closure is even built, so there's no player-view branch to
@@ -313,10 +358,14 @@ export function initClockWidget(
     container.innerHTML = "";
     const wrap = el("div", "d-flex flex-column gap-2");
 
-    // Row 1 — name, segment count, and fill direction together.
-    const topRow = el("div", "d-flex flex-wrap gap-2 align-items-end");
+    // Row 1 — name, segment count, direction, and color together, always
+    // one row (no flex-wrap) — the name field is the one that shrinks
+    // (flex-grow *and* the browser's own default flex-shrink) to make room
+    // for the other three, which all have a fixed/intrinsic width, rather
+    // than letting the row wrap and push color onto its own line.
+    const topRow = el("div", "d-flex gap-2 align-items-end");
     const nameWrap = el("div", "flex-grow-1");
-    nameWrap.style.minWidth = "6rem";
+    nameWrap.style.minWidth = "3rem";
     const nameInput = document.createElement("input");
     nameInput.type = "text";
     nameInput.className = "form-control form-control-sm";
@@ -444,6 +493,11 @@ export function initClockWidget(
   void refreshVisibility();
 
   return {
+    runMacroAction,
+    // Read by dashboard.js's findActiveWidgetInstance (ensureWidgetForMacroAction)
+    // to find which of possibly several mounted Clock instances a macro's
+    // "active" targeting should actually touch.
+    isVisible: () => visible,
     // `removed` is only ever true from dashboard.js's removeWidget (as
     // opposed to a routine re-render's destroyAllWidgets, which never passes
     // it) — the one moment this instance's own still-active spotlight (if

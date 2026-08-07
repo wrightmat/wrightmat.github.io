@@ -1,0 +1,327 @@
+{
+  "id": "tpl.bitd.crew",
+  "title": "Blades in the Dark \u2014 Crew",
+  "version": "0.1",
+  "schema": "sys.bitd",
+  "description": "Crew sheet for Blades in the Dark: tier, heat, claims, upgrades, and cohorts.",
+  "type": "sheet",
+  "baseFontFamily": "",
+  "defaults": {
+    "fontColor": "#ffffff"
+  },
+  "backgroundColor": "",
+  "backgroundColorBinding": "",
+  "backgroundColorFormula": "",
+  "borderStyle": "",
+  "borderColor": "",
+  "borderColorBinding": "",
+  "borderColorFormula": "",
+  "borderWidth": null,
+  "borderSides": null,
+  "components": [
+    {
+      "uid": "bitd-9",
+      "type": "container",
+      "id": "bitd-10",
+      "label": "Crew Identity",
+      "name": "Crew Identity",
+      "containerType": "grid",
+      "columns": 2,
+      "rows": 2,
+      "zones": {
+        "grid-0-0": [
+          {
+            "uid": "bitd-1",
+            "type": "input",
+            "id": "bitd-2",
+            "label": "Crew Name",
+            "name": "Crew Name",
+            "variant": "text",
+            "binding": "@name"
+          }
+        ],
+        "grid-0-1": [
+          {
+            "uid": "bitd-3",
+            "type": "input",
+            "id": "bitd-4",
+            "label": "Crew Playbook",
+            "name": "Crew Playbook",
+            "variant": "select",
+            "binding": "@crewPlaybook",
+            "sourceBinding": "@crewPlaybooks"
+          }
+        ],
+        "grid-1-0": [
+          {
+            "uid": "bitd-5",
+            "type": "input",
+            "id": "bitd-6",
+            "label": "Reputation",
+            "name": "Reputation",
+            "variant": "checkbox",
+            "binding": "@reputation",
+            "sourceBinding": "@crewReputationTags"
+          }
+        ],
+        "grid-1-1": [
+          {
+            "uid": "bitd-7",
+            "type": "track",
+            "id": "bitd-8",
+            "label": "Tier",
+            "name": "Tier",
+            "binding": "@tier",
+            "trackShape": "linear",
+            "segments": 5,
+            "segmentBinding": "5"
+          }
+        ]
+      }
+    },
+    {
+      "uid": "bitd-15",
+      "type": "container",
+      "id": "bitd-16",
+      "label": "Heat & Wanted Level",
+      "name": "Heat & Wanted Level",
+      "containerType": "grid",
+      "columns": 2,
+      "rows": 1,
+      "zones": {
+        "grid-0-0": [
+          {
+            "uid": "bitd-11",
+            "type": "track",
+            "id": "bitd-12",
+            "label": "Heat",
+            "name": "Heat",
+            "binding": "@heat",
+            "trackShape": "linear",
+            "segments": 9,
+            "segmentBinding": "9"
+          }
+        ],
+        "grid-0-1": [
+          {
+            "uid": "bitd-13",
+            "type": "track",
+            "id": "bitd-14",
+            "label": "Wanted Level",
+            "name": "Wanted Level",
+            "binding": "@wanted",
+            "trackShape": "circular",
+            "segments": 4,
+            "segmentBinding": "4"
+          }
+        ]
+      }
+    },
+    {
+      "uid": "bitd-21",
+      "type": "container",
+      "id": "bitd-22",
+      "label": "Coin & Vault",
+      "name": "Coin & Vault",
+      "containerType": "grid",
+      "columns": 2,
+      "rows": 1,
+      "zones": {
+        "grid-0-0": [
+          {
+            "uid": "bitd-17",
+            "type": "input",
+            "id": "bitd-18",
+            "label": "Coin",
+            "name": "Coin",
+            "variant": "number",
+            "binding": "@crewCoin"
+          }
+        ],
+        "grid-0-1": [
+          {
+            "uid": "bitd-19",
+            "type": "input",
+            "id": "bitd-20",
+            "label": "Vault",
+            "name": "Vault",
+            "variant": "number",
+            "binding": "@vault"
+          }
+        ]
+      }
+    },
+    {
+      "uid": "bitd-27",
+      "type": "repeater",
+      "id": "bitd-28",
+      "label": "Upgrades",
+      "name": "Upgrades",
+      "binding": "@upgrades",
+      "allowAddRemove": true,
+      "columns": 2,
+      "showHeader": true,
+      "zones": {
+        "item-0": [
+          {
+            "uid": "bitd-23",
+            "type": "input",
+            "id": "bitd-24",
+            "label": "Upgrade",
+            "name": "Upgrade",
+            "variant": "select",
+            "binding": "@name",
+            "sourceBinding": "@crewUpgrades"
+          }
+        ],
+        "item-1": [
+          {
+            "uid": "bitd-25",
+            "type": "input",
+            "id": "bitd-26",
+            "label": "Purchased",
+            "name": "Purchased",
+            "variant": "checkbox",
+            "binding": "@purchased",
+            "options": [
+              "Purchased"
+            ]
+          }
+        ],
+        "header-0": [
+          {
+            "uid": "bitd-29",
+            "type": "text",
+            "id": "bitd-30",
+            "label": "Upgrade",
+            "name": "Upgrade",
+            "text": "Upgrade"
+          }
+        ],
+        "header-1": [
+          {
+            "uid": "bitd-31",
+            "type": "text",
+            "id": "bitd-32",
+            "label": "Purchased",
+            "name": "Purchased",
+            "text": "Purchased"
+          }
+        ]
+      }
+    },
+    {
+      "uid": "bitd-37",
+      "type": "repeater",
+      "id": "bitd-38",
+      "label": "Claims",
+      "name": "Claims",
+      "binding": "@claims",
+      "allowAddRemove": true,
+      "columns": 2,
+      "showHeader": true,
+      "zones": {
+        "item-0": [
+          {
+            "uid": "bitd-33",
+            "type": "input",
+            "id": "bitd-34",
+            "label": "Claim",
+            "name": "Claim",
+            "variant": "text",
+            "binding": "@name"
+          }
+        ],
+        "item-1": [
+          {
+            "uid": "bitd-35",
+            "type": "input",
+            "id": "bitd-36",
+            "label": "Controlled",
+            "name": "Controlled",
+            "variant": "checkbox",
+            "binding": "@controlled",
+            "options": [
+              "Controlled"
+            ]
+          }
+        ],
+        "header-0": [
+          {
+            "uid": "bitd-39",
+            "type": "text",
+            "id": "bitd-40",
+            "label": "Claim",
+            "name": "Claim",
+            "text": "Claim"
+          }
+        ],
+        "header-1": [
+          {
+            "uid": "bitd-41",
+            "type": "text",
+            "id": "bitd-42",
+            "label": "Controlled",
+            "name": "Controlled",
+            "text": "Controlled"
+          }
+        ]
+      }
+    },
+    {
+      "uid": "bitd-47",
+      "type": "repeater",
+      "id": "bitd-48",
+      "label": "Cohorts",
+      "name": "Cohorts",
+      "binding": "@cohorts",
+      "allowAddRemove": true,
+      "columns": 2,
+      "showHeader": true,
+      "zones": {
+        "item-0": [
+          {
+            "uid": "bitd-43",
+            "type": "input",
+            "id": "bitd-44",
+            "label": "Type",
+            "name": "Type",
+            "variant": "text",
+            "binding": "@type"
+          }
+        ],
+        "item-1": [
+          {
+            "uid": "bitd-45",
+            "type": "input",
+            "id": "bitd-46",
+            "label": "Expertise / Notes",
+            "name": "Expertise / Notes",
+            "variant": "text",
+            "binding": "@notes"
+          }
+        ],
+        "header-0": [
+          {
+            "uid": "bitd-49",
+            "type": "text",
+            "id": "bitd-50",
+            "label": "Type",
+            "name": "Type",
+            "text": "Type"
+          }
+        ],
+        "header-1": [
+          {
+            "uid": "bitd-51",
+            "type": "text",
+            "id": "bitd-52",
+            "label": "Expertise / Notes",
+            "name": "Expertise / Notes",
+            "text": "Expertise / Notes"
+          }
+        ]
+      }
+    }
+  ]
+}

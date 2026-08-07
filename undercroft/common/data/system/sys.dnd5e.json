@@ -76,25 +76,82 @@
       "key": "languages",
       "label": "Languages",
       "values": [
-        { "name": "Common", "shortName": "standard" },
-        { "name": "Common Sign Language", "shortName": "standard" },
-        { "name": "Draconic", "shortName": "standard" },
-        { "name": "Dwarvish", "shortName": "standard" },
-        { "name": "Elvish", "shortName": "standard" },
-        { "name": "Giant", "shortName": "standard" },
-        { "name": "Gnomish", "shortName": "standard" },
-        { "name": "Goblin", "shortName": "standard" },
-        { "name": "Halfling", "shortName": "standard" },
-        { "name": "Orc", "shortName": "standard" },
-        { "name": "Abyssal", "shortName": "rare" },
-        { "name": "Celestial", "shortName": "rare" },
-        { "name": "Deep Speech", "shortName": "rare" },
-        { "name": "Druidic", "shortName": "rare" },
-        { "name": "Infernal", "shortName": "rare" },
-        { "name": "Primordial", "shortName": "rare" },
-        { "name": "Sylvan", "shortName": "rare" },
-        { "name": "Thieves' Cant", "shortName": "rare" },
-        { "name": "Undercommon", "shortName": "rare" }
+        {
+          "name": "Common",
+          "shortName": "standard"
+        },
+        {
+          "name": "Common Sign Language",
+          "shortName": "standard"
+        },
+        {
+          "name": "Draconic",
+          "shortName": "standard"
+        },
+        {
+          "name": "Dwarvish",
+          "shortName": "standard"
+        },
+        {
+          "name": "Elvish",
+          "shortName": "standard"
+        },
+        {
+          "name": "Giant",
+          "shortName": "standard"
+        },
+        {
+          "name": "Gnomish",
+          "shortName": "standard"
+        },
+        {
+          "name": "Goblin",
+          "shortName": "standard"
+        },
+        {
+          "name": "Halfling",
+          "shortName": "standard"
+        },
+        {
+          "name": "Orc",
+          "shortName": "standard"
+        },
+        {
+          "name": "Abyssal",
+          "shortName": "rare"
+        },
+        {
+          "name": "Celestial",
+          "shortName": "rare"
+        },
+        {
+          "name": "Deep Speech",
+          "shortName": "rare"
+        },
+        {
+          "name": "Druidic",
+          "shortName": "rare"
+        },
+        {
+          "name": "Infernal",
+          "shortName": "rare"
+        },
+        {
+          "name": "Primordial",
+          "shortName": "rare"
+        },
+        {
+          "name": "Sylvan",
+          "shortName": "rare"
+        },
+        {
+          "name": "Thieves' Cant",
+          "shortName": "rare"
+        },
+        {
+          "name": "Undercommon",
+          "shortName": "rare"
+        }
       ]
     },
     {
@@ -108,6 +165,7 @@
           "label": "Strength",
           "shortName": "STR",
           "sourceId": 1,
+          "color": "#e74c3c",
           "minimum": 1,
           "maximum": 20
         },
@@ -117,6 +175,7 @@
           "label": "Dexterity",
           "shortName": "DEX",
           "sourceId": 2,
+          "color": "#f1c40f",
           "minimum": 1,
           "maximum": 20
         },
@@ -126,6 +185,7 @@
           "label": "Constitution",
           "shortName": "CON",
           "sourceId": 3,
+          "color": "#e67e22",
           "minimum": 1,
           "maximum": 20
         },
@@ -135,6 +195,7 @@
           "label": "Intelligence",
           "shortName": "INT",
           "sourceId": 4,
+          "color": "#3498db",
           "minimum": 1,
           "maximum": 20
         },
@@ -144,6 +205,7 @@
           "label": "Wisdom",
           "shortName": "WIS",
           "sourceId": 5,
+          "color": "#2ecc71",
           "minimum": 1,
           "maximum": 20
         },
@@ -153,6 +215,7 @@
           "label": "Charisma",
           "shortName": "CHA",
           "sourceId": 6,
+          "color": "#9b59b6",
           "minimum": 1,
           "maximum": 20
         }
@@ -253,11 +316,31 @@
       "key": "currency",
       "label": "Currency",
       "values": [
-        { "name": "Copper", "shortName": "cp", "cost": 1 },
-        { "name": "Silver", "shortName": "sp", "cost": 10 },
-        { "name": "Electrum", "shortName": "ep", "cost": 50 },
-        { "name": "Gold", "shortName": "gp", "cost": 100 },
-        { "name": "Platinum", "shortName": "pp", "cost": 1000 }
+        {
+          "name": "Copper",
+          "cost": 1,
+          "shortName": "cp"
+        },
+        {
+          "name": "Silver",
+          "cost": 10,
+          "shortName": "sp"
+        },
+        {
+          "name": "Electrum",
+          "cost": 50,
+          "shortName": "ep"
+        },
+        {
+          "name": "Gold",
+          "cost": 100,
+          "shortName": "gp"
+        },
+        {
+          "name": "Platinum",
+          "cost": 1000,
+          "shortName": "pp"
+        }
       ]
     },
     {
@@ -265,10 +348,18 @@
       "key": "weaponCategories",
       "label": "Weapon Categories",
       "values": [
-        { "name": "Simple Melee" },
-        { "name": "Simple Ranged" },
-        { "name": "Martial Melee" },
-        { "name": "Martial Ranged" }
+        {
+          "name": "Simple Melee"
+        },
+        {
+          "name": "Simple Ranged"
+        },
+        {
+          "name": "Martial Melee"
+        },
+        {
+          "name": "Martial Ranged"
+        }
       ]
     },
     {
@@ -276,17 +367,39 @@
       "key": "weaponProperties",
       "label": "Weapon Properties",
       "values": [
-        { "name": "Ammunition" },
-        { "name": "Finesse" },
-        { "name": "Heavy" },
-        { "name": "Light" },
-        { "name": "Loading" },
-        { "name": "Range" },
-        { "name": "Reach" },
-        { "name": "Special" },
-        { "name": "Thrown" },
-        { "name": "Two-Handed" },
-        { "name": "Versatile" }
+        {
+          "name": "Ammunition"
+        },
+        {
+          "name": "Finesse"
+        },
+        {
+          "name": "Heavy"
+        },
+        {
+          "name": "Light"
+        },
+        {
+          "name": "Loading"
+        },
+        {
+          "name": "Range"
+        },
+        {
+          "name": "Reach"
+        },
+        {
+          "name": "Special"
+        },
+        {
+          "name": "Thrown"
+        },
+        {
+          "name": "Two-Handed"
+        },
+        {
+          "name": "Versatile"
+        }
       ]
     },
     {
@@ -294,14 +407,30 @@
       "key": "weaponMastery",
       "label": "Weapon Mastery",
       "values": [
-        { "name": "Cleave" },
-        { "name": "Graze" },
-        { "name": "Nick" },
-        { "name": "Push" },
-        { "name": "Sap" },
-        { "name": "Slow" },
-        { "name": "Topple" },
-        { "name": "Vex" }
+        {
+          "name": "Cleave"
+        },
+        {
+          "name": "Graze"
+        },
+        {
+          "name": "Nick"
+        },
+        {
+          "name": "Push"
+        },
+        {
+          "name": "Sap"
+        },
+        {
+          "name": "Slow"
+        },
+        {
+          "name": "Topple"
+        },
+        {
+          "name": "Vex"
+        }
       ]
     },
     {
@@ -309,10 +438,18 @@
       "key": "armorCategories",
       "label": "Armor Categories",
       "values": [
-        { "name": "Light" },
-        { "name": "Medium" },
-        { "name": "Heavy" },
-        { "name": "Shield" }
+        {
+          "name": "Light"
+        },
+        {
+          "name": "Medium"
+        },
+        {
+          "name": "Heavy"
+        },
+        {
+          "name": "Shield"
+        }
       ]
     },
     {
@@ -371,25 +508,21 @@
         },
         {
           "name": "Seconds",
-          "cost": null,
           "sourceId": 5,
           "shortName": "s"
         },
         {
           "name": "Minutes",
-          "cost": null,
           "sourceId": 6,
           "shortName": "m"
         },
         {
           "name": "Hours",
-          "cost": null,
           "sourceId": 7,
           "shortName": "h"
         },
         {
           "name": "Special",
-          "cost": null,
           "sourceId": 8,
           "shortName": "S"
         }
@@ -532,10 +665,10 @@
       "values": [
         {
           "name": "Hit Points",
-          "role": "resource",
-          "binding": "@stats.hitPoints.current",
           "maxPath": "@stats.hitPoints.max",
-          "tempPath": "@stats.hitPoints.temp"
+          "tempPath": "@stats.hitPoints.temp",
+          "role": "resource",
+          "binding": "@stats.hitPoints.current"
         },
         {
           "name": "Armor Class",
@@ -550,9 +683,9 @@
         },
         {
           "name": "Initiative",
+          "die": "d20",
           "role": "modifier",
-          "binding": "@stats.initiativeBonus",
-          "die": "d20"
+          "binding": "@stats.initiativeBonus"
         }
       ]
     },
@@ -561,40 +694,346 @@
       "key": "combatScaling",
       "label": "Combat Scaling",
       "values": [
-        { "name": "CR 0", "targetBudget": 3, "hitPoints": 4, "armorClass": 13, "damagePerRound": 0, "attackBonus": 3, "saveDC": 13, "xp": 10 },
-        { "name": "CR 1/8", "targetBudget": 4, "hitPoints": 21, "armorClass": 13, "damagePerRound": 3, "attackBonus": 3, "saveDC": 13, "xp": 25 },
-        { "name": "CR 1/4", "targetBudget": 4, "hitPoints": 43, "armorClass": 13, "damagePerRound": 5, "attackBonus": 3, "saveDC": 13, "xp": 50 },
-        { "name": "CR 1/2", "targetBudget": 5, "hitPoints": 60, "armorClass": 13, "damagePerRound": 7, "attackBonus": 3, "saveDC": 13, "xp": 100 },
-        { "name": "CR 1", "targetBudget": 6, "hitPoints": 78, "armorClass": 13, "damagePerRound": 11, "attackBonus": 3, "saveDC": 13, "xp": 200 },
-        { "name": "CR 2", "targetBudget": 8, "hitPoints": 93, "armorClass": 13, "damagePerRound": 18, "attackBonus": 3, "saveDC": 13, "xp": 450 },
-        { "name": "CR 3", "targetBudget": 10, "hitPoints": 108, "armorClass": 13, "damagePerRound": 23, "attackBonus": 4, "saveDC": 14, "xp": 700 },
-        { "name": "CR 4", "targetBudget": 12, "hitPoints": 123, "armorClass": 14, "damagePerRound": 29, "attackBonus": 5, "saveDC": 14, "xp": 1100 },
-        { "name": "CR 5", "targetBudget": 14, "hitPoints": 138, "armorClass": 15, "damagePerRound": 35, "attackBonus": 6, "saveDC": 15, "xp": 1800 },
-        { "name": "CR 6", "targetBudget": 16, "hitPoints": 153, "armorClass": 15, "damagePerRound": 41, "attackBonus": 6, "saveDC": 15, "xp": 2300 },
-        { "name": "CR 7", "targetBudget": 18, "hitPoints": 168, "armorClass": 15, "damagePerRound": 47, "attackBonus": 6, "saveDC": 15, "xp": 2900 },
-        { "name": "CR 8", "targetBudget": 20, "hitPoints": 183, "armorClass": 16, "damagePerRound": 53, "attackBonus": 7, "saveDC": 16, "xp": 3900 },
-        { "name": "CR 9", "targetBudget": 22, "hitPoints": 198, "armorClass": 16, "damagePerRound": 59, "attackBonus": 7, "saveDC": 16, "xp": 5000 },
-        { "name": "CR 10", "targetBudget": 24, "hitPoints": 213, "armorClass": 17, "damagePerRound": 65, "attackBonus": 7, "saveDC": 16, "xp": 5900 },
-        { "name": "CR 11", "targetBudget": 26, "hitPoints": 228, "armorClass": 17, "damagePerRound": 71, "attackBonus": 8, "saveDC": 17, "xp": 7200 },
-        { "name": "CR 12", "targetBudget": 28, "hitPoints": 243, "armorClass": 17, "damagePerRound": 77, "attackBonus": 8, "saveDC": 17, "xp": 8400 },
-        { "name": "CR 13", "targetBudget": 30, "hitPoints": 258, "armorClass": 18, "damagePerRound": 83, "attackBonus": 8, "saveDC": 18, "xp": 10000 },
-        { "name": "CR 14", "targetBudget": 32, "hitPoints": 273, "armorClass": 18, "damagePerRound": 89, "attackBonus": 8, "saveDC": 18, "xp": 11500 },
-        { "name": "CR 15", "targetBudget": 34, "hitPoints": 288, "armorClass": 18, "damagePerRound": 95, "attackBonus": 8, "saveDC": 18, "xp": 13000 },
-        { "name": "CR 16", "targetBudget": 36, "hitPoints": 303, "armorClass": 18, "damagePerRound": 101, "attackBonus": 9, "saveDC": 18, "xp": 15000 },
-        { "name": "CR 17", "targetBudget": 38, "hitPoints": 318, "armorClass": 19, "damagePerRound": 107, "attackBonus": 10, "saveDC": 19, "xp": 18000 },
-        { "name": "CR 18", "targetBudget": 40, "hitPoints": 333, "armorClass": 19, "damagePerRound": 113, "attackBonus": 10, "saveDC": 19, "xp": 20000 },
-        { "name": "CR 19", "targetBudget": 42, "hitPoints": 348, "armorClass": 19, "damagePerRound": 119, "attackBonus": 10, "saveDC": 19, "xp": 22000 },
-        { "name": "CR 20", "targetBudget": 44, "hitPoints": 378, "armorClass": 19, "damagePerRound": 131, "attackBonus": 10, "saveDC": 19, "xp": 25000 },
-        { "name": "CR 21", "targetBudget": 46, "hitPoints": 423, "armorClass": 19, "damagePerRound": 149, "attackBonus": 11, "saveDC": 20, "xp": 33000 },
-        { "name": "CR 22", "targetBudget": 48, "hitPoints": 468, "armorClass": 19, "damagePerRound": 167, "attackBonus": 11, "saveDC": 20, "xp": 41000 },
-        { "name": "CR 23", "targetBudget": 50, "hitPoints": 513, "armorClass": 19, "damagePerRound": 185, "attackBonus": 11, "saveDC": 20, "xp": 50000 },
-        { "name": "CR 24", "targetBudget": 52, "hitPoints": 558, "armorClass": 19, "damagePerRound": 203, "attackBonus": 12, "saveDC": 21, "xp": 62000 },
-        { "name": "CR 25", "targetBudget": 54, "hitPoints": 603, "armorClass": 19, "damagePerRound": 221, "attackBonus": 12, "saveDC": 21, "xp": 75000 },
-        { "name": "CR 26", "targetBudget": 56, "hitPoints": 648, "armorClass": 19, "damagePerRound": 239, "attackBonus": 12, "saveDC": 21, "xp": 90000 },
-        { "name": "CR 27", "targetBudget": 58, "hitPoints": 693, "armorClass": 19, "damagePerRound": 257, "attackBonus": 13, "saveDC": 22, "xp": 105000 },
-        { "name": "CR 28", "targetBudget": 60, "hitPoints": 738, "armorClass": 19, "damagePerRound": 275, "attackBonus": 13, "saveDC": 22, "xp": 120000 },
-        { "name": "CR 29", "targetBudget": 62, "hitPoints": 783, "armorClass": 19, "damagePerRound": 293, "attackBonus": 13, "saveDC": 22, "xp": 135000 },
-        { "name": "CR 30", "targetBudget": 64, "hitPoints": 828, "armorClass": 19, "damagePerRound": 311, "attackBonus": 14, "saveDC": 23, "xp": 155000 }
+        {
+          "name": "CR 0",
+          "hitPoints": 4,
+          "armorClass": 13,
+          "damagePerRound": 0,
+          "attackBonus": 3,
+          "saveDC": 13,
+          "xp": 10,
+          "targetBudget": 3
+        },
+        {
+          "name": "CR 1/8",
+          "hitPoints": 21,
+          "armorClass": 13,
+          "damagePerRound": 3,
+          "attackBonus": 3,
+          "saveDC": 13,
+          "xp": 25,
+          "targetBudget": 4
+        },
+        {
+          "name": "CR 1/4",
+          "hitPoints": 43,
+          "armorClass": 13,
+          "damagePerRound": 5,
+          "attackBonus": 3,
+          "saveDC": 13,
+          "xp": 50,
+          "targetBudget": 4
+        },
+        {
+          "name": "CR 1/2",
+          "hitPoints": 60,
+          "armorClass": 13,
+          "damagePerRound": 7,
+          "attackBonus": 3,
+          "saveDC": 13,
+          "xp": 100,
+          "targetBudget": 5
+        },
+        {
+          "name": "CR 1",
+          "hitPoints": 78,
+          "armorClass": 13,
+          "damagePerRound": 11,
+          "attackBonus": 3,
+          "saveDC": 13,
+          "xp": 200,
+          "targetBudget": 6
+        },
+        {
+          "name": "CR 2",
+          "hitPoints": 93,
+          "armorClass": 13,
+          "damagePerRound": 18,
+          "attackBonus": 3,
+          "saveDC": 13,
+          "xp": 450,
+          "targetBudget": 8
+        },
+        {
+          "name": "CR 3",
+          "hitPoints": 108,
+          "armorClass": 13,
+          "damagePerRound": 23,
+          "attackBonus": 4,
+          "saveDC": 14,
+          "xp": 700,
+          "targetBudget": 10
+        },
+        {
+          "name": "CR 4",
+          "hitPoints": 123,
+          "armorClass": 14,
+          "damagePerRound": 29,
+          "attackBonus": 5,
+          "saveDC": 14,
+          "xp": 1100,
+          "targetBudget": 12
+        },
+        {
+          "name": "CR 5",
+          "hitPoints": 138,
+          "armorClass": 15,
+          "damagePerRound": 35,
+          "attackBonus": 6,
+          "saveDC": 15,
+          "xp": 1800,
+          "targetBudget": 14
+        },
+        {
+          "name": "CR 6",
+          "hitPoints": 153,
+          "armorClass": 15,
+          "damagePerRound": 41,
+          "attackBonus": 6,
+          "saveDC": 15,
+          "xp": 2300,
+          "targetBudget": 16
+        },
+        {
+          "name": "CR 7",
+          "hitPoints": 168,
+          "armorClass": 15,
+          "damagePerRound": 47,
+          "attackBonus": 6,
+          "saveDC": 15,
+          "xp": 2900,
+          "targetBudget": 18
+        },
+        {
+          "name": "CR 8",
+          "hitPoints": 183,
+          "armorClass": 16,
+          "damagePerRound": 53,
+          "attackBonus": 7,
+          "saveDC": 16,
+          "xp": 3900,
+          "targetBudget": 20
+        },
+        {
+          "name": "CR 9",
+          "hitPoints": 198,
+          "armorClass": 16,
+          "damagePerRound": 59,
+          "attackBonus": 7,
+          "saveDC": 16,
+          "xp": 5000,
+          "targetBudget": 22
+        },
+        {
+          "name": "CR 10",
+          "hitPoints": 213,
+          "armorClass": 17,
+          "damagePerRound": 65,
+          "attackBonus": 7,
+          "saveDC": 16,
+          "xp": 5900,
+          "targetBudget": 24
+        },
+        {
+          "name": "CR 11",
+          "hitPoints": 228,
+          "armorClass": 17,
+          "damagePerRound": 71,
+          "attackBonus": 8,
+          "saveDC": 17,
+          "xp": 7200,
+          "targetBudget": 26
+        },
+        {
+          "name": "CR 12",
+          "hitPoints": 243,
+          "armorClass": 17,
+          "damagePerRound": 77,
+          "attackBonus": 8,
+          "saveDC": 17,
+          "xp": 8400,
+          "targetBudget": 28
+        },
+        {
+          "name": "CR 13",
+          "hitPoints": 258,
+          "armorClass": 18,
+          "damagePerRound": 83,
+          "attackBonus": 8,
+          "saveDC": 18,
+          "xp": 10000,
+          "targetBudget": 30
+        },
+        {
+          "name": "CR 14",
+          "hitPoints": 273,
+          "armorClass": 18,
+          "damagePerRound": 89,
+          "attackBonus": 8,
+          "saveDC": 18,
+          "xp": 11500,
+          "targetBudget": 32
+        },
+        {
+          "name": "CR 15",
+          "hitPoints": 288,
+          "armorClass": 18,
+          "damagePerRound": 95,
+          "attackBonus": 8,
+          "saveDC": 18,
+          "xp": 13000,
+          "targetBudget": 34
+        },
+        {
+          "name": "CR 16",
+          "hitPoints": 303,
+          "armorClass": 18,
+          "damagePerRound": 101,
+          "attackBonus": 9,
+          "saveDC": 18,
+          "xp": 15000,
+          "targetBudget": 36
+        },
+        {
+          "name": "CR 17",
+          "hitPoints": 318,
+          "armorClass": 19,
+          "damagePerRound": 107,
+          "attackBonus": 10,
+          "saveDC": 19,
+          "xp": 18000,
+          "targetBudget": 38
+        },
+        {
+          "name": "CR 18",
+          "hitPoints": 333,
+          "armorClass": 19,
+          "damagePerRound": 113,
+          "attackBonus": 10,
+          "saveDC": 19,
+          "xp": 20000,
+          "targetBudget": 40
+        },
+        {
+          "name": "CR 19",
+          "hitPoints": 348,
+          "armorClass": 19,
+          "damagePerRound": 119,
+          "attackBonus": 10,
+          "saveDC": 19,
+          "xp": 22000,
+          "targetBudget": 42
+        },
+        {
+          "name": "CR 20",
+          "hitPoints": 378,
+          "armorClass": 19,
+          "damagePerRound": 131,
+          "attackBonus": 10,
+          "saveDC": 19,
+          "xp": 25000,
+          "targetBudget": 44
+        },
+        {
+          "name": "CR 21",
+          "hitPoints": 423,
+          "armorClass": 19,
+          "damagePerRound": 149,
+          "attackBonus": 11,
+          "saveDC": 20,
+          "xp": 33000,
+          "targetBudget": 46
+        },
+        {
+          "name": "CR 22",
+          "hitPoints": 468,
+          "armorClass": 19,
+          "damagePerRound": 167,
+          "attackBonus": 11,
+          "saveDC": 20,
+          "xp": 41000,
+          "targetBudget": 48
+        },
+        {
+          "name": "CR 23",
+          "hitPoints": 513,
+          "armorClass": 19,
+          "damagePerRound": 185,
+          "attackBonus": 11,
+          "saveDC": 20,
+          "xp": 50000,
+          "targetBudget": 50
+        },
+        {
+          "name": "CR 24",
+          "hitPoints": 558,
+          "armorClass": 19,
+          "damagePerRound": 203,
+          "attackBonus": 12,
+          "saveDC": 21,
+          "xp": 62000,
+          "targetBudget": 52
+        },
+        {
+          "name": "CR 25",
+          "hitPoints": 603,
+          "armorClass": 19,
+          "damagePerRound": 221,
+          "attackBonus": 12,
+          "saveDC": 21,
+          "xp": 75000,
+          "targetBudget": 54
+        },
+        {
+          "name": "CR 26",
+          "hitPoints": 648,
+          "armorClass": 19,
+          "damagePerRound": 239,
+          "attackBonus": 12,
+          "saveDC": 21,
+          "xp": 90000,
+          "targetBudget": 56
+        },
+        {
+          "name": "CR 27",
+          "hitPoints": 693,
+          "armorClass": 19,
+          "damagePerRound": 257,
+          "attackBonus": 13,
+          "saveDC": 22,
+          "xp": 105000,
+          "targetBudget": 58
+        },
+        {
+          "name": "CR 28",
+          "hitPoints": 738,
+          "armorClass": 19,
+          "damagePerRound": 275,
+          "attackBonus": 13,
+          "saveDC": 22,
+          "xp": 120000,
+          "targetBudget": 60
+        },
+        {
+          "name": "CR 29",
+          "hitPoints": 783,
+          "armorClass": 19,
+          "damagePerRound": 293,
+          "attackBonus": 13,
+          "saveDC": 22,
+          "xp": 135000,
+          "targetBudget": 62
+        },
+        {
+          "name": "CR 30",
+          "hitPoints": 828,
+          "armorClass": 19,
+          "damagePerRound": 311,
+          "attackBonus": 14,
+          "saveDC": 23,
+          "xp": 155000,
+          "targetBudget": 64
+        }
       ]
     },
     {
@@ -603,43 +1042,79 @@
       "label": "Damage Types",
       "values": [
         {
-          "name": "Acid"
+          "name": "",
+          "sourceId": 0
         },
         {
-          "name": "Bludgeoning"
+          "name": "Bludgeoning",
+          "sourceId": 1
         },
         {
-          "name": "Cold"
+          "name": "Piercing",
+          "sourceId": 2
         },
         {
-          "name": "Fire"
+          "name": "Slashing",
+          "sourceId": 3
         },
         {
-          "name": "Force"
+          "name": "Necrotic",
+          "sourceId": 4
         },
         {
-          "name": "Lightning"
+          "name": "Acid",
+          "sourceId": 5
         },
         {
-          "name": "Necrotic"
+          "name": "Cold",
+          "sourceId": 6
         },
         {
-          "name": "Piercing"
+          "name": "Fire",
+          "sourceId": 7
         },
         {
-          "name": "Poison"
+          "name": "Lightning",
+          "sourceId": 8
         },
         {
-          "name": "Psychic"
+          "name": "Poison",
+          "sourceId": 9
         },
         {
-          "name": "Radiant"
+          "name": "Radiant",
+          "sourceId": 10
         },
         {
-          "name": "Slashing"
+          "name": "Psychic",
+          "sourceId": 11
         },
         {
-          "name": "Thunder"
+          "name": "Thunder",
+          "sourceId": 12
+        },
+        {
+          "name": "Force",
+          "sourceId": 13
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "durations",
+      "label": "Durations",
+      "values": [
+        {
+          "name": "",
+          "sourceId": 0
+        },
+        {
+          "name": "Short Rest",
+          "sourceId": 1
+        },
+        {
+          "name": "Long Rest",
+          "sourceId": 2
         }
       ]
     },
@@ -652,9 +1127,20 @@
           "id": "aberration",
           "name": "Aberration",
           "description": "A creature whose form and thought are alien to the natural world — unsettling to look at and often incomprehensible in motive.",
-          "vocabulary": { "namePatterns": ["The {name} That Should Not Be", "{name}-Thing"] },
-          "traitTags": ["alien", "psionic", "unnatural"],
-          "defaultSenses": ["darkvision 60 ft."],
+          "vocabulary": {
+            "namePatterns": [
+              "The {name} That Should Not Be",
+              "{name}-Thing"
+            ]
+          },
+          "traitTags": [
+            "alien",
+            "psionic",
+            "unnatural"
+          ],
+          "defaultSenses": [
+            "darkvision 60 ft."
+          ],
           "defaultResistances": [],
           "defaultImmunities": []
         },
@@ -662,9 +1148,19 @@
           "id": "beast",
           "name": "Beast",
           "description": "A natural, non-magical animal, though often larger, fiercer, or stranger than its mundane cousins.",
-          "vocabulary": { "namePatterns": ["Giant {name}", "{name} Stalker"] },
-          "traitTags": ["natural", "instinctive"],
-          "defaultSenses": ["keen smell or hearing"],
+          "vocabulary": {
+            "namePatterns": [
+              "Giant {name}",
+              "{name} Stalker"
+            ]
+          },
+          "traitTags": [
+            "natural",
+            "instinctive"
+          ],
+          "defaultSenses": [
+            "keen smell or hearing"
+          ],
           "defaultResistances": [],
           "defaultImmunities": []
         },
@@ -672,29 +1168,69 @@
           "id": "celestial",
           "name": "Celestial",
           "description": "A creature native to the upper planes, acting (or claiming to act) with a purpose sanctioned by a greater power.",
-          "vocabulary": { "namePatterns": ["{name}, Radiant Herald", "The {name}-Blessed"] },
-          "traitTags": ["good-aligned", "radiant", "purposeful"],
-          "defaultSenses": ["darkvision 120 ft."],
-          "defaultResistances": ["radiant"],
+          "vocabulary": {
+            "namePatterns": [
+              "{name}, Radiant Herald",
+              "The {name}-Blessed"
+            ]
+          },
+          "traitTags": [
+            "good-aligned",
+            "radiant",
+            "purposeful"
+          ],
+          "defaultSenses": [
+            "darkvision 120 ft."
+          ],
+          "defaultResistances": [
+            "radiant"
+          ],
           "defaultImmunities": []
         },
         {
           "id": "construct",
           "name": "Construct",
           "description": "An animated object or artificial body, built or shaped rather than born, following its programming or binding rather than instinct.",
-          "vocabulary": { "namePatterns": ["{name} Automaton", "The {name} Engine"] },
-          "traitTags": ["artificial", "mindless-or-bound"],
-          "defaultSenses": ["darkvision 60 ft."],
+          "vocabulary": {
+            "namePatterns": [
+              "{name} Automaton",
+              "The {name} Engine"
+            ]
+          },
+          "traitTags": [
+            "artificial",
+            "mindless-or-bound"
+          ],
+          "defaultSenses": [
+            "darkvision 60 ft."
+          ],
           "defaultResistances": [],
-          "defaultImmunities": ["poison", "disease", "charmed", "frightened"]
+          "defaultImmunities": [
+            "poison",
+            "disease",
+            "charmed",
+            "frightened"
+          ]
         },
         {
           "id": "dragon",
           "name": "Dragon",
           "description": "A reptilian creature of ancient, often magical lineage — proud, territorial, and rarely anyone's servant by choice.",
-          "vocabulary": { "namePatterns": ["{name} the Ancient", "{name}wing"] },
-          "traitTags": ["draconic", "territorial", "elemental-breath"],
-          "defaultSenses": ["blindsight 30 ft.", "darkvision 120 ft."],
+          "vocabulary": {
+            "namePatterns": [
+              "{name} the Ancient",
+              "{name}wing"
+            ]
+          },
+          "traitTags": [
+            "draconic",
+            "territorial",
+            "elemental-breath"
+          ],
+          "defaultSenses": [
+            "blindsight 30 ft.",
+            "darkvision 120 ft."
+          ],
           "defaultResistances": [],
           "defaultImmunities": []
         },
@@ -702,19 +1238,43 @@
           "id": "elemental",
           "name": "Elemental",
           "description": "A creature made manifest from one of the fundamental planes of existence, acting on straightforward, often single-minded impulses.",
-          "vocabulary": { "namePatterns": ["{name} of the Churn", "Living {name}"] },
-          "traitTags": ["elemental-nature", "single-minded"],
-          "defaultSenses": ["darkvision 60 ft."],
+          "vocabulary": {
+            "namePatterns": [
+              "{name} of the Churn",
+              "Living {name}"
+            ]
+          },
+          "traitTags": [
+            "elemental-nature",
+            "single-minded"
+          ],
+          "defaultSenses": [
+            "darkvision 60 ft."
+          ],
           "defaultResistances": [],
-          "defaultImmunities": ["poison", "exhaustion"]
+          "defaultImmunities": [
+            "poison",
+            "exhaustion"
+          ]
         },
         {
           "id": "fey",
           "name": "Fey",
           "description": "A creature tied to the vitality of nature and bound (whether it admits it or not) by old, strange rules of bargain and trickery.",
-          "vocabulary": { "namePatterns": ["{name} of the Old Wood", "The {name}-Touched"] },
-          "traitTags": ["fey-nature", "trickery", "bound-by-bargain"],
-          "defaultSenses": ["darkvision 60 ft."],
+          "vocabulary": {
+            "namePatterns": [
+              "{name} of the Old Wood",
+              "The {name}-Touched"
+            ]
+          },
+          "traitTags": [
+            "fey-nature",
+            "trickery",
+            "bound-by-bargain"
+          ],
+          "defaultSenses": [
+            "darkvision 60 ft."
+          ],
           "defaultResistances": [],
           "defaultImmunities": []
         },
@@ -722,18 +1282,39 @@
           "id": "fiend",
           "name": "Fiend",
           "description": "A creature of wickedness native to (or long corrupted by) the lower planes, acting with malice and purpose.",
-          "vocabulary": { "namePatterns": ["{name} of the Pit", "The {name}-Touched"] },
-          "traitTags": ["evil-aligned", "fire", "cunning"],
-          "defaultSenses": ["darkvision 120 ft."],
-          "defaultResistances": ["fire"],
+          "vocabulary": {
+            "namePatterns": [
+              "{name} of the Pit",
+              "The {name}-Touched"
+            ]
+          },
+          "traitTags": [
+            "evil-aligned",
+            "fire",
+            "cunning"
+          ],
+          "defaultSenses": [
+            "darkvision 120 ft."
+          ],
+          "defaultResistances": [
+            "fire"
+          ],
           "defaultImmunities": []
         },
         {
           "id": "giant",
           "name": "Giant",
           "description": "A humanoid-shaped creature of great size and strength, from a society with its own old, rigid sense of order.",
-          "vocabulary": { "namePatterns": ["{name} the Towering", "{name}-Kin"] },
-          "traitTags": ["huge-stature", "strength-focused"],
+          "vocabulary": {
+            "namePatterns": [
+              "{name} the Towering",
+              "{name}-Kin"
+            ]
+          },
+          "traitTags": [
+            "huge-stature",
+            "strength-focused"
+          ],
           "defaultSenses": [],
           "defaultResistances": [],
           "defaultImmunities": []
@@ -742,8 +1323,16 @@
           "id": "humanoid",
           "name": "Humanoid",
           "description": "A creature of the common mortal races, organized into societies, professions, and factions much like the player characters.",
-          "vocabulary": { "namePatterns": ["{name} the Sellsword", "{name} of the Watch"] },
-          "traitTags": ["mortal", "organized"],
+          "vocabulary": {
+            "namePatterns": [
+              "{name} the Sellsword",
+              "{name} of the Watch"
+            ]
+          },
+          "traitTags": [
+            "mortal",
+            "organized"
+          ],
           "defaultSenses": [],
           "defaultResistances": [],
           "defaultImmunities": []
@@ -752,9 +1341,19 @@
           "id": "monstrosity",
           "name": "Monstrosity",
           "description": "A frightening creature not entirely natural, often the product of magic gone wrong or a bloodline warped by it.",
-          "vocabulary": { "namePatterns": ["{name}spawn", "The {name} Horror"] },
-          "traitTags": ["unnatural-origin", "frightening"],
-          "defaultSenses": ["darkvision 60 ft."],
+          "vocabulary": {
+            "namePatterns": [
+              "{name}spawn",
+              "The {name} Horror"
+            ]
+          },
+          "traitTags": [
+            "unnatural-origin",
+            "frightening"
+          ],
+          "defaultSenses": [
+            "darkvision 60 ft."
+          ],
           "defaultResistances": [],
           "defaultImmunities": []
         },
@@ -762,18 +1361,39 @@
           "id": "ooze",
           "name": "Ooze",
           "description": "A creature with a gelatinous, near-formless body — mindless in most cases, but relentless in what little it does pursue.",
-          "vocabulary": { "namePatterns": ["{name} Ooze", "Creeping {name}"] },
-          "traitTags": ["amorphous", "mindless", "corrosive"],
-          "defaultSenses": ["blindsight 60 ft. (blind beyond this radius)"],
+          "vocabulary": {
+            "namePatterns": [
+              "{name} Ooze",
+              "Creeping {name}"
+            ]
+          },
+          "traitTags": [
+            "amorphous",
+            "mindless",
+            "corrosive"
+          ],
+          "defaultSenses": [
+            "blindsight 60 ft. (blind beyond this radius)"
+          ],
           "defaultResistances": [],
-          "defaultImmunities": ["prone"]
+          "defaultImmunities": [
+            "prone"
+          ]
         },
         {
           "id": "plant",
           "name": "Plant",
           "description": "A creature of vegetable rather than animal nature, ranging from barely mobile to aggressively territorial.",
-          "vocabulary": { "namePatterns": ["{name} Bloom", "Elder {name}"] },
-          "traitTags": ["vegetal", "territorial"],
+          "vocabulary": {
+            "namePatterns": [
+              "{name} Bloom",
+              "Elder {name}"
+            ]
+          },
+          "traitTags": [
+            "vegetal",
+            "territorial"
+          ],
           "defaultSenses": [],
           "defaultResistances": [],
           "defaultImmunities": []
@@ -782,11 +1402,27 @@
           "id": "undead",
           "name": "Undead",
           "description": "Animated remains or restless spirits, driven by hunger, compulsion, or unfinished business rather than a living creature's needs.",
-          "vocabulary": { "namePatterns": ["The Risen {name}", "{name}, Bound in Death"] },
-          "traitTags": ["necrotic", "undead-nature", "fear"],
-          "defaultSenses": ["darkvision 60 ft."],
-          "defaultResistances": ["necrotic"],
-          "defaultImmunities": ["poison", "exhaustion"]
+          "vocabulary": {
+            "namePatterns": [
+              "The Risen {name}",
+              "{name}, Bound in Death"
+            ]
+          },
+          "traitTags": [
+            "necrotic",
+            "undead-nature",
+            "fear"
+          ],
+          "defaultSenses": [
+            "darkvision 60 ft."
+          ],
+          "defaultResistances": [
+            "necrotic"
+          ],
+          "defaultImmunities": [
+            "poison",
+            "exhaustion"
+          ]
         }
       ]
     },
@@ -797,53 +1433,80 @@
       "values": [
         {
           "name": "Lawful Good",
-          "shortName": "LG",
-          "sourceId": 1
+          "sourceId": 1,
+          "shortName": "LG"
         },
         {
           "name": "Neutral Good",
-          "shortName": "NG",
-          "sourceId": 2
+          "sourceId": 2,
+          "shortName": "NG"
         },
         {
           "name": "Chaotic Good",
-          "shortName": "CG",
-          "sourceId": 3
+          "sourceId": 3,
+          "shortName": "CG"
         },
         {
           "name": "Lawful Neutral",
-          "shortName": "LN",
-          "sourceId": 4
+          "sourceId": 4,
+          "shortName": "LN"
         },
         {
           "name": "True Neutral",
-          "shortName": "N",
-          "sourceId": 5
+          "sourceId": 5,
+          "shortName": "N"
         },
         {
           "name": "Chaotic Neutral",
-          "shortName": "CN",
-          "sourceId": 6
+          "sourceId": 6,
+          "shortName": "CN"
         },
         {
           "name": "Lawful Evil",
-          "shortName": "LE",
-          "sourceId": 7
+          "sourceId": 7,
+          "shortName": "LE"
         },
         {
           "name": "Neutral Evil",
-          "shortName": "NE",
-          "sourceId": 8
+          "sourceId": 8,
+          "shortName": "NE"
         },
         {
           "name": "Chaotic Evil",
-          "shortName": "CE",
-          "sourceId": 9
+          "sourceId": 9,
+          "shortName": "CE"
         },
         {
           "name": "Unaligned",
-          "shortName": "U",
-          "sourceId": 10
+          "sourceId": 10,
+          "shortName": "U"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "proficiencies",
+      "label": "Proficiencies",
+      "values": [
+        {
+          "name": "None",
+          "sourceId": 0
+        },
+        {
+          "name": "Half",
+          "sourceId": 1
+        },
+        {
+          "name": "Half Round Up",
+          "sourceId": 2
+        },
+        {
+          "name": "Proficiency",
+          "sourceId": 3
+        },
+        {
+          "name": "Expertise",
+          "sourceId": 4
         }
       ]
     },
@@ -966,14 +1629,30 @@
       "key": "spellSchools",
       "label": "Spell Schools",
       "values": [
-        { "name": "Abjuration" },
-        { "name": "Conjuration" },
-        { "name": "Divination" },
-        { "name": "Enchantment" },
-        { "name": "Evocation" },
-        { "name": "Illusion" },
-        { "name": "Necromancy" },
-        { "name": "Transmutation" }
+        {
+          "name": "Abjuration"
+        },
+        {
+          "name": "Conjuration"
+        },
+        {
+          "name": "Divination"
+        },
+        {
+          "name": "Enchantment"
+        },
+        {
+          "name": "Evocation"
+        },
+        {
+          "name": "Illusion"
+        },
+        {
+          "name": "Necromancy"
+        },
+        {
+          "name": "Transmutation"
+        }
       ]
     },
     {
@@ -981,16 +1660,46 @@
       "key": "spellLevels",
       "label": "Spell Levels",
       "values": [
-        { "name": "Cantrip", "targetBudget": 1 },
-        { "name": "1st Level", "targetBudget": 3 },
-        { "name": "2nd Level", "targetBudget": 5 },
-        { "name": "3rd Level", "targetBudget": 7 },
-        { "name": "4th Level", "targetBudget": 9 },
-        { "name": "5th Level", "targetBudget": 11 },
-        { "name": "6th Level", "targetBudget": 13 },
-        { "name": "7th Level", "targetBudget": 15 },
-        { "name": "8th Level", "targetBudget": 17 },
-        { "name": "9th Level", "targetBudget": 19 }
+        {
+          "name": "Cantrip",
+          "targetBudget": 1
+        },
+        {
+          "name": "1st Level",
+          "targetBudget": 3
+        },
+        {
+          "name": "2nd Level",
+          "targetBudget": 5
+        },
+        {
+          "name": "3rd Level",
+          "targetBudget": 7
+        },
+        {
+          "name": "4th Level",
+          "targetBudget": 9
+        },
+        {
+          "name": "5th Level",
+          "targetBudget": 11
+        },
+        {
+          "name": "6th Level",
+          "targetBudget": 13
+        },
+        {
+          "name": "7th Level",
+          "targetBudget": 15
+        },
+        {
+          "name": "8th Level",
+          "targetBudget": 17
+        },
+        {
+          "name": "9th Level",
+          "targetBudget": 19
+        }
       ]
     },
     {
@@ -1087,6 +1796,233 @@
           "name": "Survival",
           "ability": "wisdom",
           "sourceId": 15
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "npcTypes",
+      "label": "NPC Types",
+      "values": [
+        {
+          "name": "Archmage",
+          "strength": 10,
+          "dexterity": 14,
+          "constitution": 12,
+          "intelligence": 20,
+          "wisdom": 15,
+          "charisma": 16,
+          "armorClass": 12,
+          "hitPoints": 99
+        },
+        {
+          "name": "Cult Fanatic",
+          "strength": 11,
+          "dexterity": 14,
+          "constitution": 12,
+          "intelligence": 10,
+          "wisdom": 13,
+          "charisma": 14,
+          "armorClass": 13,
+          "hitPoints": 33
+        },
+        {
+          "name": "Berserker",
+          "strength": 16,
+          "dexterity": 13,
+          "constitution": 16,
+          "intelligence": 9,
+          "wisdom": 11,
+          "charisma": 9,
+          "armorClass": 13,
+          "hitPoints": 67
+        },
+        {
+          "name": "Gladiator",
+          "strength": 18,
+          "dexterity": 15,
+          "constitution": 16,
+          "intelligence": 10,
+          "wisdom": 12,
+          "charisma": 15,
+          "armorClass": 16,
+          "hitPoints": 112
+        },
+        {
+          "name": "Tribal Warrior",
+          "strength": 13,
+          "dexterity": 11,
+          "constitution": 12,
+          "intelligence": 8,
+          "wisdom": 11,
+          "charisma": 8,
+          "armorClass": 12,
+          "hitPoints": 11
+        },
+        {
+          "name": "Druid",
+          "strength": 11,
+          "dexterity": 12,
+          "constitution": 12,
+          "intelligence": 12,
+          "wisdom": 15,
+          "charisma": 11,
+          "armorClass": 11,
+          "hitPoints": 27
+        },
+        {
+          "name": "Knight",
+          "strength": 16,
+          "dexterity": 11,
+          "constitution": 14,
+          "intelligence": 9,
+          "wisdom": 11,
+          "charisma": 15,
+          "armorClass": 18,
+          "hitPoints": 52
+        },
+        {
+          "name": "Veteran",
+          "strength": 16,
+          "dexterity": 13,
+          "constitution": 14,
+          "intelligence": 10,
+          "wisdom": 11,
+          "charisma": 10,
+          "armorClass": 17,
+          "hitPoints": 58
+        },
+        {
+          "name": "Spy",
+          "strength": 10,
+          "dexterity": 15,
+          "constitution": 10,
+          "intelligence": 12,
+          "wisdom": 14,
+          "charisma": 16,
+          "armorClass": 12,
+          "hitPoints": 27
+        },
+        {
+          "name": "Priest",
+          "strength": 10,
+          "dexterity": 10,
+          "constitution": 10,
+          "intelligence": 13,
+          "wisdom": 16,
+          "charisma": 13,
+          "armorClass": 13,
+          "hitPoints": 27
+        },
+        {
+          "name": "Noble",
+          "strength": 11,
+          "dexterity": 12,
+          "constitution": 11,
+          "intelligence": 12,
+          "wisdom": 14,
+          "charisma": 16,
+          "armorClass": 15,
+          "hitPoints": 9
+        },
+        {
+          "name": "Commoner",
+          "strength": 10,
+          "dexterity": 10,
+          "constitution": 10,
+          "intelligence": 10,
+          "wisdom": 10,
+          "charisma": 10,
+          "armorClass": 10,
+          "hitPoints": 4
+        },
+        {
+          "name": "Guard",
+          "strength": 13,
+          "dexterity": 12,
+          "constitution": 12,
+          "intelligence": 10,
+          "wisdom": 11,
+          "charisma": 10,
+          "armorClass": 16,
+          "hitPoints": 11
+        },
+        {
+          "name": "Bandit",
+          "strength": 11,
+          "dexterity": 12,
+          "constitution": 12,
+          "intelligence": 10,
+          "wisdom": 10,
+          "charisma": 10,
+          "armorClass": 12,
+          "hitPoints": 11
+        },
+        {
+          "name": "Acolyte",
+          "strength": 10,
+          "dexterity": 10,
+          "constitution": 10,
+          "intelligence": 10,
+          "wisdom": 14,
+          "charisma": 11,
+          "armorClass": 10,
+          "hitPoints": 9
+        },
+        {
+          "name": "Thug",
+          "strength": 15,
+          "dexterity": 11,
+          "constitution": 14,
+          "intelligence": 10,
+          "wisdom": 10,
+          "charisma": 11,
+          "armorClass": 11,
+          "hitPoints": 32
+        },
+        {
+          "name": "Scout",
+          "strength": 11,
+          "dexterity": 14,
+          "constitution": 12,
+          "intelligence": 11,
+          "wisdom": 13,
+          "charisma": 11,
+          "armorClass": 13,
+          "hitPoints": 16
+        },
+        {
+          "name": "Cultist",
+          "strength": 11,
+          "dexterity": 12,
+          "constitution": 10,
+          "intelligence": 10,
+          "wisdom": 11,
+          "charisma": 10,
+          "armorClass": 12,
+          "hitPoints": 9
+        },
+        {
+          "name": "Mage",
+          "strength": 9,
+          "dexterity": 14,
+          "constitution": 11,
+          "intelligence": 17,
+          "wisdom": 12,
+          "charisma": 11,
+          "armorClass": 12,
+          "hitPoints": 40
+        },
+        {
+          "name": "Bandit Captain",
+          "strength": 15,
+          "dexterity": 16,
+          "constitution": 14,
+          "intelligence": 14,
+          "wisdom": 11,
+          "charisma": 14,
+          "armorClass": 15,
+          "hitPoints": 65
         }
       ]
     }

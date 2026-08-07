@@ -17,7 +17,7 @@ function normaliseTopic(rawTopic) {
   const title = typeof rawTopic.title === "string" ? rawTopic.title.trim() : id;
   const summary = typeof rawTopic.summary === "string" ? rawTopic.summary.trim() : title;
   const category = typeof rawTopic.category === "string" ? rawTopic.category.trim() : "General";
-  const href = typeof rawTopic.href === "string" && rawTopic.href.trim() ? rawTopic.href.trim() : `docs/index.html#${id}`;
+  const href = typeof rawTopic.href === "string" && rawTopic.href.trim() ? rawTopic.href.trim() : `docs.html#${id}`;
   const details = Array.isArray(rawTopic.details)
     ? rawTopic.details.filter((line) => typeof line === "string" && line.trim()).map((line) => line.trim())
     : [];
@@ -74,16 +74,18 @@ export async function loadHelpTopics(topicsUrl = DEFAULT_TOPICS_URL) {
 }
 
 // Every topic's own stored `href` (help-topics.json) predates a real,
-// working destination for most tools — some point at docs/index.html
-// (originally only ever reachable from under workbench/, since that's where
-// the page lived before it moved to common/docs/), others at
+// working destination for most tools — some point at docs.html (the page
+// itself moved twice: originally only ever reachable from under workbench/,
+// then to common/docs/, now flat at common/docs.html so it sits at the same
+// depth as every other common/ page and can share app-shell.js's own
+// tool-context path math instead of working around it), others at
 // "../{tool}/index.html#..." anchors that were never actually added to that
-// tool's markup. The account page's right-pane help browser
-// (undercroft/common/account.js) is now the one destination guaranteed to
-// exist and work from every tool, so this ignores the stored href entirely
-// and always builds a fresh link there — the full common/docs/index.html
-// page (linked from the account page's panel) is still there too for anyone
-// who wants to browse everything at once.
+// tool's markup. The account page's help browser (undercroft/common/
+// account.js) is now the one destination guaranteed to exist and work from
+// every tool, so this ignores the stored href entirely and always builds a
+// fresh link there — the full common/docs.html page (linked from the
+// account page's panel) is still there too for anyone who wants to browse
+// everything at once.
 function resolveHelpTopicHref(topic) {
   const base = resolveAccountHref(resolveToolContextPath());
   const separator = base.includes("?") ? "&" : "?";

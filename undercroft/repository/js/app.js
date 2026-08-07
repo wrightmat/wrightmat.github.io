@@ -15,7 +15,8 @@ import { extractOutline } from "./lib/journal-outline.js";
 import { toggleTaskLine, taskLineText, updateCheckboxLineText } from "./lib/journal-tasks.js";
 import { startEncounter, deterministicEncounterId } from "./lib/journal-encounter.js";
 import { attachWikiLinkAutocomplete } from "./lib/wiki-link-autocomplete.js";
-import { bindCollapsibleToggle } from "../../common/js/lib/collapsible.js";
+import { attachCodeBlockAutocomplete } from "./lib/code-block-autocomplete.js";
+import { createToolbarButtonGroup, createCollapsibleSection, createEmptyStateCard } from "../../common/js/lib/ui-components.js";
 import { initToolSettings } from "../../common/js/lib/tool-settings.js";
 import { el } from "../../common/js/lib/dom.js";
 
@@ -25,6 +26,9 @@ const TAG_DATALIST_ID = "repository-tag-datalist";
 const { status, undoStack, undo, redo } = initAppShell({
   namespace: "repository",
   storagePrefix: "undercroft.repository.undo",
+  leftPaneLabel: "Toggle page list",
+  rightPaneLabel: "Toggle page details",
+  settingsSlotAttr: "data-repository-settings-slot",
   onUndo: (entry) => {
     if (!entry) return null;
     applyPayloadSnapshot(entry.before);
@@ -38,6 +42,17 @@ const { status, undoStack, undo, redo } = initAppShell({
 });
 const dataManager = new DataManager({ baseUrl: resolveApiBase(), storagePrefix: "undercroft.repository" });
 initAuthControls({ root: document, status, dataManager });
+
+// The card itself (not a wrapper — unlike the other generator tools'
+// data-*-empty-state divs, this attribute lives directly on the card, same
+// as its sibling data-repository-editor) carries the empty-state attribute
+// this file's own editorEmptyEl below expects to find, so it's built and
+// swapped in for the plain mount marker before that query runs.
+{
+  const emptyCard = createEmptyStateCard({ message: "Select a page from the list, or create a new one." });
+  emptyCard.setAttribute("data-repository-editor-empty", "");
+  document.querySelector("[data-editor-empty-mount]")?.replaceWith(emptyCard);
+}
 
 const searchInput = document.querySelector("[data-repository-search]");
 const pageTreeEl = document.querySelector("[data-repository-page-tree]");
@@ -81,38 +96,77 @@ const toolSettings = initToolSettings({
   mountButton: (button) => settingsSlotEl?.appendChild(button),
 });
 
+// Adopts each section's existing static `[data-xxx-panel]` markup (its own
+// content stays hand-authored HTML — only the header+chevron wrapper is
+// JS-built) as the collapsible section's content; createCollapsibleSection's
+// own internal bindCollapsibleToggle replaces the old standalone calls this
+// block used to make directly.
+//
 // Outline defaults open regardless of content (it's navigation, not a
 // content-dependent section like Tags/Related/Backlinks below) — still
 // user-collapsible via the same toggle, just no programmatic re-collapsing.
-bindCollapsibleToggle(
-  document.querySelector("[data-repository-outline-toggle]"),
-  document.querySelector("[data-repository-outline-panel]"),
-  { collapsed: false, expandLabel: "Expand outline", collapseLabel: "Collapse outline" }
-);
+{
+  const outlineSection = createCollapsibleSection({
+    label: "Outline",
+    collapsed: false,
+    content: document.querySelector("[data-repository-outline-panel]"),
+  });
+  document.querySelector("[data-repository-outline-mount]")?.appendChild(outlineSection.section);
+}
 // Tags/Parent/Related/Backlinks start collapsed — each is opened
 // programmatically the moment it actually has something to show (see
 // renderTags/renderParent/renderRelated/renderBacklinks below), not left to
 // a fixed initial state.
-const setTagsCollapsed = bindCollapsibleToggle(
-  document.querySelector("[data-repository-tags-toggle]"),
-  document.querySelector("[data-repository-tags-panel]"),
-  { collapsed: true, expandLabel: "Expand tags", collapseLabel: "Collapse tags" }
-);
-const setParentCollapsed = bindCollapsibleToggle(
-  document.querySelector("[data-repository-parent-toggle]"),
-  document.querySelector("[data-repository-parent-panel]"),
-  { collapsed: true, expandLabel: "Expand parent", collapseLabel: "Collapse parent" }
-);
-const setRelatedCollapsed = bindCollapsibleToggle(
-  document.querySelector("[data-repository-related-toggle]"),
-  document.querySelector("[data-repository-related-panel]"),
-  { collapsed: true, expandLabel: "Expand related", collapseLabel: "Collapse related" }
-);
-const setBacklinksCollapsed = bindCollapsibleToggle(
-  document.querySelector("[data-repository-backlinks-toggle]"),
-  document.querySelector("[data-repository-backlinks-panel]"),
-  { collapsed: true, expandLabel: "Expand backlinks", collapseLabel: "Collapse backlinks" }
-);
+const tagsSection = createCollapsibleSection({
+  label: "Tags",
+  helpTopic: "repository.tags",
+  collapsed: true,
+  content: document.querySelector("[data-repository-tags-panel]"),
+});
+document.querySelector("[data-repository-tags-mount]")?.appendChild(tagsSection.section);
+const setTagsCollapsed = tagsSection.setCollapsed;
+const parentSection = createCollapsibleSection({
+  label: "Parent",
+  helpTopic: "repository.parent",
+  collapsed: true,
+  content: document.querySelector("[data-repository-parent-panel]"),
+});
+document.querySelector("[data-repository-parent-mount]")?.appendChild(parentSection.section);
+const setParentCollapsed = parentSection.setCollapsed;
+const relatedSection = createCollapsibleSection({
+  label: "Related",
+  collapsed: true,
+  content: document.querySelector("[data-repository-related-panel]"),
+});
+document.querySelector("[data-repository-related-mount]")?.appendChild(relatedSection.section);
+const setRelatedCollapsed = relatedSection.setCollapsed;
+const backlinksSection = createCollapsibleSection({
+  label: "Backlinks",
+  collapsed: true,
+  content: document.querySelector("[data-repository-backlinks-panel]"),
+});
+document.querySelector("[data-repository-backlinks-mount]")?.appendChild(backlinksSection.section);
+const setBacklinksCollapsed = backlinksSection.setCollapsed;
+
+// Built and inserted (in order) before the static toggle-mode button
+// (bespoke dual-icon-swap markup the shared factory doesn't model), so every
+// existing data-action selector below keeps working unchanged.
+{
+  const pageButtons = createToolbarButtonGroup([
+    { action: "undo", label: "Undo", attrs: { "data-action": "undo-page" } },
+    { action: "redo", label: "Redo", attrs: { "data-action": "redo-page" } },
+    { action: "new", label: "New Page", attrs: { "data-action": "new-page" } },
+    { action: "duplicate", variant: "outline-secondary", label: "Duplicate Page", disabled: true, attrs: { "data-action": "duplicate-page" } },
+    { action: "save", label: "Save Page", disabled: true, attrs: { "data-action": "save-page" } },
+    { action: "delete", label: "Delete Page", disabled: true, attrs: { "data-action": "delete-page" } },
+  ]);
+  const toggleModeButton = document.querySelector('[data-page-toolbar-mount] [data-action="toggle-mode"]');
+  if (toggleModeButton) {
+    toggleModeButton.before(...pageButtons);
+  } else {
+    document.querySelector("[data-page-toolbar-mount]")?.append(...pageButtons);
+  }
+}
 
 const undoButton = document.querySelector('[data-action="undo-page"]');
 const redoButton = document.querySelector('[data-action="redo-page"]');
@@ -468,6 +522,11 @@ function renderPreview() {
     interactiveEncounters: true,
     onStartEncounter: (creatures, blockIndex) => void handleStartEncounter(creatures, blockIndex),
     interactiveDice: true,
+    interactiveMacros: true,
+    // Same source Combat Tracker's own autoShowOnStart and this file's own
+    // handleStartEncounter use for the equivalent action — this GM's own
+    // active campaign, not a per-page setting.
+    groupContext: { groupId: dataManager.getActiveGroup()?.groupId || "" },
     dataManager,
   });
   previewEl.appendChild(node);
@@ -1172,6 +1231,10 @@ bodyTextarea?.addEventListener("change", () => commitFieldEdit());
 // directly. `entries` is read fresh on every keystroke (a callback, not a
 // snapshot) since it's reassigned once the page's own async load resolves.
 attachWikiLinkAutocomplete(bodyTextarea, { getEntries: () => entries });
+// `` `macro:`/`encounter:`/`dice:` `` autocomplete — same textarea, a
+// second independent attachment (each only ever reacts to its own trigger
+// syntax, so both listening on the same element causes no conflict).
+attachCodeBlockAutocomplete(bodyTextarea, { dataManager });
 
 // The browser's own back/forward buttons — without this, they fall through
 // to app-shell's page-level history (landing on whichever tool page was

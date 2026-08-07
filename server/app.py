@@ -1235,7 +1235,9 @@ def register_routes():
 
         query = parse_qs(urlsplit(request.handler.path).query)
         limit = query.get("limit", [None])[0]
-        payload = group_store.list_group_log(request.state, group_id, user, limit=limit)
+        types_raw = query.get("types", [None])[0]
+        entry_types = [t for t in types_raw.split(",") if t] if types_raw else None
+        payload = group_store.list_group_log(request.state, group_id, user, limit=limit, entry_types=entry_types)
         return json_response(payload)
 
     router.add("GET", r"^/groups/(?P<group_id>[^/]+)/log$", handle_group_log)
@@ -1298,12 +1300,15 @@ def register_routes():
 
         query = parse_qs(urlsplit(request.handler.path).query)
         limit = query.get("limit", [None])[0]
+        types_raw = query.get("types", [None])[0]
+        entry_types = [t for t in types_raw.split(",") if t] if types_raw else None
         payload = group_store.list_group_log(
             request.state,
             None,
             None,
             share_token=token,
             limit=limit,
+            entry_types=entry_types,
         )
         return json_response(payload)
 

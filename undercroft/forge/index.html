@@ -4,47 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Undercroft Forge</title>
-    <script>
-      (function () {
-        const storageKey = "undercroft.workbench.theme";
-        const THEMES = ["light", "system", "dark"];
-        const prefersDark = () =>
-          typeof window !== "undefined" &&
-          window.matchMedia &&
-          window.matchMedia("(prefers-color-scheme: dark)").matches;
-        const resolveTheme = (preference) => {
-          if (preference === "dark") return "dark";
-          if (preference === "light") return "light";
-          return prefersDark() ? "dark" : "light";
-        };
-        const apply = (value) => {
-          const preference = THEMES.includes(value) ? value : "system";
-          const resolved = resolveTheme(preference);
-          const root = document.documentElement;
-          const body = document.body;
-          if (root) {
-            root.dataset.themePreference = preference;
-            root.dataset.theme = resolved;
-            root.dataset.bsTheme = resolved;
-            root.style.colorScheme = resolved;
-          }
-          if (body) {
-            body.dataset.themePreference = preference;
-            body.dataset.theme = resolved;
-            body.dataset.bsTheme = resolved;
-            body.style.colorScheme = resolved;
-          }
-          return preference;
-        };
-        try {
-          const stored = localStorage.getItem(storageKey);
-          apply(stored);
-        } catch (error) {
-          apply("system");
-          console.warn("Unable to read theme preference", error);
-        }
-      })();
-    </script>
+    <script src="../common/js/theme-init.js"></script>
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
       rel="stylesheet"
@@ -56,180 +16,32 @@
   </head>
   <body class="bg-body text-body" data-undercroft-tool="forge">
     <div class="d-flex flex-column min-vh-100 workbench-app">
-      <header class="workbench-header border-bottom bg-body-tertiary">
-        <div class="workbench-header-grid pe-2 py-3">
-          <div></div>
-          <div class="d-flex align-items-center gap-3 w-100">
-            <div class="d-flex align-items-center gap-3">
-              <button
-                class="btn btn-outline-secondary d-flex align-items-center justify-content-center"
-                type="button"
-                data-pane-toggle="left"
-                aria-label="Toggle navigation pane"
-              >
-                <span class="iconify fs-5" data-icon="tabler:layout-sidebar-right" aria-hidden="true"></span>
-                <span class="visually-hidden">Toggle navigation pane</span>
-              </button>
-              <h1 class="h5 mb-0 d-flex align-items-center gap-2">
-                <nav data-undercroft-tool-nav aria-label="Undercroft tools"></nav>
-              </h1>
-            </div>
-            <div class="ms-auto d-flex align-items-center gap-3 flex-wrap">
-              <div data-auth-control class="d-flex">
-                <button class="btn btn-outline-secondary" type="button">Login / Register</button>
-              </div>
-              <div class="btn-group" role="group" aria-label="Theme toggle">
-                <button class="btn btn-outline-primary" type="button" data-theme-option="light" aria-label="Use light theme">
-                  <span class="iconify fs-5" data-icon="tabler:sun" aria-hidden="true"></span>
-                  <span class="visually-hidden">Light theme</span>
-                </button>
-                <button class="btn btn-outline-primary" type="button" data-theme-option="system">System</button>
-                <button class="btn btn-outline-primary" type="button" data-theme-option="dark" aria-label="Use dark theme">
-                  <span class="iconify fs-5" data-icon="tabler:moon" aria-hidden="true"></span>
-                  <span class="visually-hidden">Dark theme</span>
-                </button>
-              </div>
-              <button
-                class="btn btn-outline-secondary d-flex align-items-center justify-content-center"
-                type="button"
-                data-pane-toggle="right"
-                aria-label="Toggle details pane"
-              >
-                <span class="iconify fs-5" data-icon="tabler:adjustments-horizontal" aria-hidden="true"></span>
-                <span class="visually-hidden">Toggle details pane</span>
-              </button>
-            </div>
-          </div>
-          <div></div>
-        </div>
-      </header>
+      <div data-app-shell-header></div>
 
       <div class="d-flex flex-grow-1 workbench-shell">
-        <aside
-          class="border-end border-body-tertiary bg-body-tertiary shadow-theme flex-shrink-0 workbench-sidebar workbench-pane"
-          data-pane="left"
-          data-pane-collapsed-class="d-none"
-          data-pane-expanded-class="d-flex"
-          data-pane-initial="expanded"
-        >
-          <div class="workbench-pane-content d-flex flex-column gap-4 p-3 workbench-sticky-pane">
-            <div class="btn-toolbar justify-content-center" role="toolbar" aria-label="NPC actions">
-              <div class="btn-group" role="group">
-                <button
-                  class="btn btn-primary p-2"
-                  type="button"
-                  data-generate-npc
-                  data-bs-toggle="tooltip"
-                  data-bs-placement="bottom"
-                  data-bs-title="Generate NPC"
-                  aria-label="Generate NPC"
-                >
-                  <span class="iconify fs-5" data-icon="tabler:dice-5" aria-hidden="true"></span>
-                  <span class="visually-hidden">Generate NPC</span>
-                </button>
-                <button
-                  class="btn btn-outline-success p-2"
-                  type="button"
-                  data-save-npc
-                  disabled
-                  data-bs-toggle="tooltip"
-                  data-bs-placement="bottom"
-                  data-bs-title="Save"
-                  aria-label="Save"
-                >
-                  <span class="iconify fs-5" data-icon="tabler:device-floppy" aria-hidden="true"></span>
-                  <span class="visually-hidden">Save</span>
-                </button>
-                <button
-                  class="btn btn-outline-secondary p-2"
-                  type="button"
-                  data-export-npc
-                  disabled
-                  data-bs-toggle="tooltip"
-                  data-bs-placement="bottom"
-                  data-bs-title="Export JSON"
-                  aria-label="Export JSON"
-                >
-                  <span class="iconify fs-5" data-icon="tabler:file-export" aria-hidden="true"></span>
-                  <span class="visually-hidden">Export JSON</span>
-                </button>
-                <button
-                  class="btn btn-outline-danger p-2"
-                  type="button"
-                  data-delete-npc
-                  disabled
-                  data-bs-toggle="tooltip"
-                  data-bs-placement="bottom"
-                  data-bs-title="Delete"
-                  aria-label="Delete"
-                >
-                  <span class="iconify fs-5" data-icon="tabler:trash" aria-hidden="true"></span>
-                  <span class="visually-hidden">Delete</span>
-                </button>
-              </div>
-            </div>
-
-            <section class="d-flex flex-column gap-2" id="forge-generate">
-              <label class="form-label fw-semibold mb-0 d-flex align-items-center gap-2" for="forgeSystemSelect">
-                <span>System</span>
-                <span class="align-middle" data-help-topic="forge.generate" data-help-insert="replace"></span>
-              </label>
-              <select class="form-select" id="forgeSystemSelect" data-system-select></select>
-
-              <label class="form-label fw-semibold mb-0" for="forgeSettingSelect">Setting</label>
-              <select class="form-select" id="forgeSettingSelect" data-setting-select></select>
-
-              <label class="form-label fw-semibold mb-0" for="forgeLocationSelect">Location</label>
-              <select class="form-select" id="forgeLocationSelect" data-location-select></select>
-
-              <div class="d-flex flex-column gap-2" id="forge-overrides">
-                <label class="form-label fw-semibold mb-0 d-flex align-items-center gap-2" for="forgeSpeciesOverride">
-                  <span>Species</span>
-                  <span class="align-middle" data-help-topic="forge.overrides" data-help-insert="replace"></span>
-                </label>
-                <select class="form-select" id="forgeSpeciesOverride" data-species-override></select>
-
-                <label class="form-label fw-semibold mb-0" for="forgeArchetypeOverride">Archetype</label>
-                <select class="form-select" id="forgeArchetypeOverride" data-archetype-override></select>
-
-                <label class="form-label fw-semibold mb-0" for="forgeAlignmentOverride">Alignment</label>
-                <select class="form-select" id="forgeAlignmentOverride" data-alignment-override></select>
-
-                <label class="form-label fw-semibold mb-0" for="forgeGenderOverride">Gender</label>
-                <select class="form-select" id="forgeGenderOverride" data-gender-override></select>
-              </div>
-            </section>
-
-            <section class="pane-card mt-auto" data-json-section id="forge-json">
-              <button
-                class="btn btn-link w-100 d-flex justify-content-between align-items-center text-decoration-none px-0 py-1"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#forge-json-preview"
-                aria-expanded="false"
-                aria-controls="forge-json-preview"
-              >
-                <span class="text-uppercase fs-6 fw-semibold text-body-secondary">JSON Preview</span>
-                <span class="badge text-bg-secondary" data-npc-json-bytes>0 B</span>
-              </button>
-              <div class="collapse" id="forge-json-preview">
-                <div class="bg-body p-2 mt-2">
-                  <pre class="border rounded-3 p-2 bg-body small mb-0" data-npc-json-preview></pre>
-                </div>
-              </div>
-            </section>
+        <div data-pane-content="left">
+          <div class="btn-toolbar justify-content-center" role="toolbar" aria-label="NPC actions">
+            <div class="btn-group" role="group" data-npc-toolbar-mount></div>
           </div>
-        </aside>
+
+          <section class="d-flex flex-column gap-2" id="forge-generate">
+            <div data-field-mount="system-select"></div>
+            <div data-field-mount="setting-select"></div>
+            <div data-field-mount="location-select"></div>
+
+            <div class="d-flex flex-column gap-2" id="forge-overrides">
+              <div data-field-mount="species-override"></div>
+              <div data-field-mount="archetype-override"></div>
+              <div data-field-mount="alignment-override"></div>
+              <div data-field-mount="gender-override"></div>
+            </div>
+          </section>
+
+          <div class="mt-auto" id="forge-json" data-json-mount></div>
+        </div>
 
         <main class="workbench-main flex-grow-1 p-3 overflow-auto">
-          <div class="d-flex flex-column gap-3" data-npc-empty-state>
-            <div class="card shadow-theme">
-              <div class="card-body text-center text-body-secondary py-5">
-                <span class="iconify fs-1 d-block mb-2" data-icon="tabler:dice-5" aria-hidden="true"></span>
-                No NPC generated yet. Choose a Location and click Generate NPC.
-              </div>
-            </div>
-          </div>
+          <div class="d-flex flex-column gap-3" data-npc-empty-state></div>
 
           <div class="d-flex flex-column gap-3 d-none" data-npc-display>
             <div class="card shadow-theme">
@@ -290,30 +102,9 @@
           </div>
         </main>
 
-        <aside
-          class="border-start border-body-tertiary bg-body-tertiary shadow-theme flex-shrink-0 workbench-sidebar workbench-pane"
-          data-pane="right"
-          data-pane-collapsed-class="d-none"
-          data-pane-expanded-class="d-flex"
-          data-pane-initial="expanded"
-        >
-          <div class="workbench-pane-content d-flex flex-column gap-3 p-3 workbench-sticky-pane">
-            <section class="d-flex flex-column gap-3" data-identity-inspector>
-              <div class="d-flex align-items-center justify-content-between">
-                <div class="d-flex align-items-center gap-2">
-                  <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Component Properties</h2>
-                  <span class="align-middle" data-help-topic="forge.inspector" data-help-insert="replace"></span>
-                </div>
-                <button
-                  class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center collapsible-toggle"
-                  type="button"
-                  data-inspector-toggle
-                  aria-expanded="true"
-                >
-                  <span class="iconify" data-icon="tabler:chevron-down" aria-hidden="true"></span>
-                  <span class="visually-hidden" data-inspector-toggle-label>Collapse component properties</span>
-                </button>
-              </div>
+        <div data-pane-content="right">
+          <section class="d-flex flex-column gap-3" data-identity-inspector>
+              <div data-inspector-mount></div>
               <div class="d-flex flex-column gap-3" data-inspector-panel>
                 <div data-inspector-empty></div>
 
@@ -323,26 +114,12 @@
                   <span>Location Details</span>
                   <span class="align-middle" data-help-topic="forge.locations" data-help-insert="replace"></span>
                 </h3>
-                <button
-                  class="btn btn-outline-secondary p-2 flex-shrink-0"
-                  type="button"
-                  data-export-location-template
-                  data-bs-toggle="tooltip"
-                  data-bs-placement="bottom"
-                  data-bs-title="Export Press Template"
-                  aria-label="Export Press Template"
-                >
-                  <span class="iconify fs-5" data-icon="tabler:printer" aria-hidden="true"></span>
-                  <span class="visually-hidden">Export Press Template</span>
-                </button>
+                <span data-export-location-template-mount></span>
               </div>
               <div class="d-flex flex-column gap-2">
-                <label class="form-label fw-semibold mb-0" for="forgeLocationName">Name</label>
-                <input class="form-control" type="text" id="forgeLocationName" data-location-name readonly />
-                <label class="form-label fw-semibold mb-0" for="forgeLocationSystem">System</label>
-                <input class="form-control" type="text" id="forgeLocationSystem" data-location-system readonly />
-                <label class="form-label fw-semibold mb-0" for="forgeLocationSetting">Setting</label>
-                <input class="form-control" type="text" id="forgeLocationSetting" data-location-setting readonly />
+                <div data-field-mount="location-name"></div>
+                <div data-field-mount="location-system"></div>
+                <div data-field-mount="location-setting"></div>
               </div>
 
               <section class="d-flex flex-column gap-2" id="forge-species-weights">
@@ -396,38 +173,15 @@
                 <span class="align-middle" data-help-topic="forge.speciesProfileEditor" data-help-insert="replace"></span>
               </h3>
               <div class="d-flex flex-column gap-2">
-                <label class="form-label fw-semibold mb-0" for="forgeSpeciesLabel">Label</label>
-                <input class="form-control" type="text" id="forgeSpeciesLabel" data-species-label readonly />
-
-                <label class="form-label fw-semibold mb-0 d-flex align-items-center gap-2" for="forgeSpeciesNameMode">
-                  <span>Name Mode</span>
-                  <span class="align-middle" data-help-topic="forge.nameMode" data-help-insert="replace"></span>
-                </label>
-                <select class="form-select" id="forgeSpeciesNameMode" data-species-name-mode disabled>
-                  <option value="blend">Blended</option>
-                  <option value="synonym">Synonyms</option>
-                </select>
-
-                <label class="form-label fw-semibold mb-0" for="forgeSpeciesLastNameForm">Last Name Form</label>
-                <select class="form-select" id="forgeSpeciesLastNameForm" data-species-last-name-form disabled>
-                  <option value="none">None</option>
-                  <option value="family">Family</option>
-                  <option value="clan">Clan</option>
-                  <option value="patronymic">Patronymic</option>
-                </select>
+                <div data-field-mount="species-label"></div>
+                <div data-field-mount="species-name-mode"></div>
+                <div data-field-mount="species-last-name-form"></div>
               </div>
 
-              <div class="d-flex flex-column gap-1">
-                <label class="form-label fw-semibold mb-0 d-flex align-items-center gap-2">
-                  <span>First Names</span>
-                  <span class="align-middle" data-help-topic="forge.speciesProfileEditor" data-help-insert="replace"></span>
-                </label>
-                <textarea class="form-control form-control-sm font-monospace" rows="8" data-species-first-names readonly></textarea>
-              </div>
+              <div data-field-mount="species-first-names"></div>
 
-              <div class="d-flex flex-column gap-1" data-species-last-names-group>
-                <label class="form-label fw-semibold mb-0">Last Names</label>
-                <textarea class="form-control form-control-sm font-monospace" rows="8" data-species-last-names readonly></textarea>
+              <div data-species-last-names-group>
+                <div data-field-mount="species-last-names"></div>
               </div>
             </div>
 
@@ -438,8 +192,7 @@
                 </div>
               </div>
             </section>
-          </div>
-        </aside>
+        </div>
       </div>
     </div>
 

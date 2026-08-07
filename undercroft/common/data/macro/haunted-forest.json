@@ -1,0 +1,10 @@
+{
+  "id": "haunted-forest",
+  "name": "Haunted Forest",
+  "icon": "tabler:ghost",
+  "actions": [
+    { "type": "wled", "action": "preset", "target": "table-lights", "params": { "presetId": 1 } },
+    { "type": "soundboard", "action": "play", "params": { "clipId": "606ea752-f796-4f57-9d76-8d483b836c66", "broadcast": true, "loop": true } },
+    { "type": "gamelog", "action": "post", "params": { "message": "The wind picks up. Something is watching from the trees." } }
+  ]
+}

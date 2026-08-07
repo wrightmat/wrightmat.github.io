@@ -9,5 +9,5 @@
     "free": 5
   },
   "titleFields": ["name", "data.name"],
-  "metadataFields": ["system", "template"]
+  "metadataFields": ["systemIds", "template"]
 }

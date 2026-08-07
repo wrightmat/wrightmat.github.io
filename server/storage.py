@@ -320,6 +320,22 @@ def _backfill_flat_library_kinds(state: ServerState) -> None:
     existing_ids = {
         (row["kind"], row["id"]) for row in state.db.execute("SELECT kind, id FROM library_items")
     }
+    # Already-tracked rows that never got a `metadata` blob — this backfill
+    # path used to INSERT with no metadata column at all (only save_item()'s
+    # own path called _extract_metadata), so any kind/template/character
+    # discovered here instead of created through the app has no
+    # template/systemIds/schema/etc. in its list-response row, ever, even
+    # after this fix ships — until healed once here. Confirmed real bug: a
+    # character with no `template` in its list entry is exactly what
+    # Workbench's own picker filters out (see syncCharacterOptions), so
+    # Rook/The Red Lanterns/Octavian Hoff were invisible there regardless
+    # of owned/shared/public bucket. Recomputed from each file's own current
+    # content every startup (cheap, self-heals a hand-edited file too)
+    # rather than a one-shot flag.
+    missing_metadata_ids = {
+        (row["kind"], row["id"])
+        for row in state.db.execute("SELECT kind, id FROM library_items WHERE metadata IS NULL")
+    }
     for kind_dir in sorted(data_root.iterdir()):
         if not kind_dir.is_dir():
             continue
@@ -327,12 +343,22 @@ def _backfill_flat_library_kinds(state: ServerState) -> None:
         policy = load_kind_policy(state, kind)
         for entry in sorted(kind_dir.glob("*.json")):
             entry_id = entry.stem
-            if (kind, entry_id) in existing_ids:
+            is_new = (kind, entry_id) not in existing_ids
+            needs_metadata_heal = (kind, entry_id) in missing_metadata_ids
+            if not is_new and not needs_metadata_heal:
                 continue
             try:
                 payload = json.loads(entry.read_text(encoding="utf-8"))
             except (OSError, json.JSONDecodeError):
                 payload = {}
+            metadata = _extract_metadata(kind, payload, policy)
+            if not is_new:
+                if metadata:
+                    state.db.execute(
+                        "UPDATE library_items SET metadata = ? WHERE kind = ? AND id = ?",
+                        (metadata, kind, entry_id),
+                    )
+                continue
             title = _title_from_payload(kind, payload, policy) or entry_id
             # Each file's own on-disk mtime, not one shared "now" for the
             # whole batch — list_bucket() orders by modified_at DESC, so a
@@ -345,10 +371,10 @@ def _backfill_flat_library_kinds(state: ServerState) -> None:
             state.db.execute(
                 """
                 INSERT INTO library_items
-                    (kind, id, owner_id, title, is_public, filename, created_at, modified_at, last_accessed_at)
-                VALUES (?, ?, ?, ?, 1, ?, ?, ?, ?)
+                    (kind, id, owner_id, title, is_public, metadata, filename, created_at, modified_at, last_accessed_at)
+                VALUES (?, ?, ?, ?, 1, ?, ?, ?, ?, ?)
                 """,
-                (kind, entry_id, admin_id, title, entry.name, file_ts, file_ts, file_ts),
+                (kind, entry_id, admin_id, title, metadata, entry.name, file_ts, file_ts, file_ts),
             )
 
 

@@ -29,6 +29,11 @@ export function createMappingCustomFunctions({
   savingThrowSubtypes: SAVING_THROW_SUBTYPES,
   skills: SKILLS,
   sizes: SIZES,
+  alignments: ALIGNMENTS,
+  senses: SENSES,
+  speeds: SPEEDS,
+  damageTypes: DAMAGE_TYPES,
+  durations: DURATIONS,
 }) {
 // Best-effort text parsing for D&D Beyond's scraped "Core <Class> Traits"
 // values (plain descriptive strings, e.g. "D12 per Barbarian level" or
@@ -249,6 +254,48 @@ function formatSigned(value) {
   return `${sign}${value}`;
 }
 
+// DDB's `actions` bucket groups entries by source (race/class/feat/...),
+// same shape context.spells.{class,race,feat} already gets flattened for
+// (see collectRawSpells below) — one flat list, tagging isn't needed here
+// since attacksTable doesn't care which source an attack came from.
+function flattenActions(actions) {
+  if (!actions || typeof actions !== "object") return [];
+  return Object.values(actions).reduce((all, group) => (Array.isArray(group) ? all.concat(group) : all), []);
+}
+
+function formatActionDamage(dice) {
+  if (!dice) return null;
+  const base = typeof dice === "string" ? dice : dice.diceString || "";
+  return base || null;
+}
+
+// A small, stable, edition-core vocabulary (10 named 5e fighting styles) —
+// used only to recognize a feat by its exact PHB name for the
+// attacksPerAction/fightingStyle summary, not a sprawling per-item content
+// table the way weapon classification would be, so kept inline rather than
+// a new System field for this one lookup.
+const FIGHTING_STYLES = new Set([
+  "archery",
+  "blind fighting",
+  "defense",
+  "dueling",
+  "great weapon fighting",
+  "interception",
+  "protection",
+  "superior technique",
+  "thrown weapon fighting",
+  "two-weapon fighting",
+]);
+
+function determineFightingStyle(feats) {
+  if (!Array.isArray(feats)) return null;
+  const match = feats.find((feat) => {
+    const name = feat?.definition?.name || feat?.name;
+    return name ? FIGHTING_STYLES.has(name.toLowerCase()) : false;
+  });
+  return match?.definition?.name || match?.name || null;
+}
+
 function mapStats(statsArray) {
   if (!Array.isArray(statsArray)) return {};
   return statsArray.reduce((map, entry) => {
@@ -333,6 +380,23 @@ function getActiveModifiers(rawCharacter, options = {}) {
   });
 
   return activeGranted;
+}
+
+// True if any modifier matches one of the given subtypes AND type (e.g.
+// advantage/disadvantage on a save or skill) — same subtype-list-matching
+// convention as collectModifiers/determineProficiencyLevel, just a boolean
+// presence check instead of summing/maxing a numeric value. Used to attach
+// advantage/disadvantage directly to the ability/skill it actually applies
+// to (savingThrowsTable, buildSkillValues) instead of a separate generic
+// bucket — see proficienciesTable's own comment on why that bucket no
+// longer catches these at all.
+function hasModifierOfType(modifiers, subtypes, type) {
+  if (!Array.isArray(modifiers)) return false;
+  const normalized = (Array.isArray(subtypes) ? subtypes : [subtypes]).map((entry) => (entry || "").toLowerCase()).filter(Boolean);
+  if (!normalized.length) return false;
+  return modifiers.some(
+    (modifier) => (modifier.type || "").toLowerCase() === type && normalized.includes((modifier.subType || "").toLowerCase())
+  );
 }
 
 function collectModifiers(modifiers, subtype, type) {
@@ -443,11 +507,11 @@ function determineProficiencyLevel(modifiers, subtype) {
       return normalized.includes(modSubtype) || normalized.includes(cleanedSubtype);
     })
     .forEach((modifier) => {
-      if (modifier.type === "proficiency") level = Math.max(level, modifier.value ?? 1);
-      if (modifier.type === "expertise") level = Math.max(level, modifier.value ?? 2);
-      if (modifier.type === "half-proficiency") level = Math.max(level, modifier.value ?? 0.5);
+      if (modifier.type === "proficiency") level = Math.max(level, modifier.value ?? 3);
+      if (modifier.type === "expertise") level = Math.max(level, modifier.value ?? 4);
+      if (modifier.type === "half-proficiency") level = Math.max(level, modifier.value ?? 1);
       if (modifier.type === "half-proficiency-round-up") {
-        level = Math.max(level, modifier.value ?? 0.5);
+        level = Math.max(level, modifier.value ?? 2);
         roundUp = true;
       }
     });
@@ -456,9 +520,9 @@ function determineProficiencyLevel(modifiers, subtype) {
 
 function applyProficiency(level, proficiencyBonus, roundUp = false) {
   if (!level || !proficiencyBonus) return 0;
-  if (level === 3 || level === 1) return proficiencyBonus;
-  if (level === 4 || level === 2) return proficiencyBonus * 2;
-  if (level === 1 || level === 0.5) {
+  if (level === 3) return proficiencyBonus;
+  if (level === 4) return proficiencyBonus * 2;
+  if (level === 1 || level === 2) {
     const scaled = proficiencyBonus / 2;
     return roundUp ? Math.ceil(scaled) : Math.floor(scaled);
   }
@@ -486,6 +550,34 @@ function calculateAbilityScores(rawCharacter, modifiers) {
     scores[ability.name] = overrideFromModifier || base + bonus;
     return scores;
   }, {});
+}
+
+// Shared by skillsTable and sensesTable (passive Perception/Investigation/
+// Insight need the same computed skill values skillsTable itself exposes) —
+// a standalone function rather than sensesTable calling `this.skillsTable`,
+// since these are plain object-literal methods and nothing guarantees the
+// mapping engine invokes them in a way that preserves `this`.
+function buildSkillValues(rawCharacter) {
+  const modifiers = getActiveModifiers(rawCharacter);
+  const scores = calculateAbilityScores(rawCharacter, modifiers);
+  const totalLevel = getTotalLevelRaw(rawCharacter?.classes);
+  const proficiencyBonus = getProficiencyBonusRaw(totalLevel);
+
+  return SKILLS.map((skill) => {
+    const linkedAbility = ABILITIES[skill.stat];
+    const abilityModifier = Math.floor(((scores[linkedAbility.name] || 10) - 10) / 2);
+    const subtypes = [skill.name, `skill-${skill.name}`, `${linkedAbility.name}-ability-checks`, "ability-checks"];
+    const { level, roundUp } = determineProficiencyLevel(modifiers, subtypes);
+    const skillBonus = collectModifiers(modifiers, subtypes, "bonus");
+    return {
+      ...skill,
+      ability: linkedAbility.shortName,
+      value: abilityModifier + applyProficiency(level, proficiencyBonus, roundUp) + skillBonus,
+      proficiency: level,
+      advantage: hasModifierOfType(modifiers, subtypes, "advantage"),
+      disadvantage: hasModifierOfType(modifiers, subtypes, "disadvantage"),
+    };
+  });
 }
 
 function determineSpellcastingAbility(classes) {
@@ -598,6 +690,431 @@ return {
     return getProficiencyBonusRaw(getTotalLevelRaw(context.root?.classes));
   },
 
+  // The starting class (DDB's own `isStartingClass` flag), falling back to
+  // the first class entry for older exports that don't set it.
+  primaryClassName(context) {
+    const classes = Array.isArray(context.root?.classes) ? context.root.classes : [];
+    const primaryClass = classes.find((cls) => cls.isStartingClass) || classes[0] || {};
+    return primaryClass.definition?.name || "";
+  },
+
+  // Ported from ddb-parser.js's buildIdentity — level_monk (for Martial
+  // Arts-driven Unarmed Strike, see attacksTable) and level_multiclass
+  // (total level minus whatever's in the starting/primary class).
+  classLevelBreakdown(context) {
+    const classes = Array.isArray(context.root?.classes) ? context.root.classes : [];
+    const primaryClass = classes.find((cls) => cls.isStartingClass) || classes[0] || {};
+    const primaryClassName = (primaryClass.definition?.name || "").toLowerCase();
+    const totalLevel = getTotalLevelRaw(classes);
+    const monkLevels = classes
+      .filter((cls) => (cls.definition?.name || "").toLowerCase() === "monk")
+      .reduce((total, cls) => total + (cls.level || 0), 0);
+    const primaryLevels = classes
+      .filter((cls) => (cls.definition?.name || "").toLowerCase() === primaryClassName)
+      .reduce((sum, cls) => sum + (cls.level || 0), 0);
+    return { level_monk: monkLevels, level_multiclass: Math.max(totalLevel - primaryLevels, 0) };
+  },
+
+  // Ported from ddb-parser.js's buildFeats — a straight list, no
+  // classification needed (feat-granted proficiencies/bonuses already flow
+  // through proficienciesTable/the relevant ability-score paths via their
+  // own modifiers).
+  featsTable(context) {
+    const feats = Array.isArray(context.root?.feats) ? context.root.feats : [];
+    return feats.map((feat) => ({
+      name: feat.definition?.name || "Unknown Feat",
+      description: feat.definition?.description || "",
+      level: feat.requiredLevel || null,
+      limitedUse: feat.definition?.limitedUse || null,
+    }));
+  },
+
+  // Ported from ddb-parser.js's buildFeatures — class features (including
+  // subclass features), racial traits, and feat descriptions, combined and
+  // deduped by name (a feat and its granted feature can otherwise appear
+  // twice).
+  featuresTable(context) {
+    const rawCharacter = context.root;
+    const classes = Array.isArray(rawCharacter?.classes) ? rawCharacter.classes : [];
+    const classFeatures = classes
+      .flatMap((cls) => [...(cls.classFeatures || []), ...(cls.subclassDefinition?.classFeatures || [])])
+      .map((feature) => feature.definition)
+      .filter(Boolean);
+    const racialTraits = (rawCharacter?.race?.racialTraits || []).map((trait) => trait.definition).filter(Boolean);
+    const featFeatures = (rawCharacter?.feats || []).map((feat) => feat.definition).filter(Boolean);
+    const combined = [...classFeatures, ...racialTraits, ...featFeatures];
+    const seen = new Set();
+    return combined.reduce((list, feature) => {
+      const name = feature.name || feature.friendlySubtypeName;
+      if (!name || seen.has(name.toLowerCase())) return list;
+      seen.add(name.toLowerCase());
+      list.push({ name, description: feature.description || feature.snippet || "" });
+      return list;
+    }, []);
+  },
+
+  // Ported from ddb-parser.js's buildProficiencies — buckets every active
+  // modifier by its own type/subType strings (no hardcoded per-item
+  // tables). saves/skills/scores buckets are dropped versus the old
+  // script: savingThrowsTable/skillsTable already cover that ground with
+  // real per-item proficiency levels, so a flat name list here would just
+  // be a worse duplicate.
+  proficienciesTable(context) {
+    const modifiers = getActiveModifiers(context.root);
+    const buckets = { armor: [], weapons: [], tools: [], languages: [], defenses: [], senses: [], other: [] };
+
+    const defenseMap = new Map();
+    const addDefense = (entry) => {
+      const key = `${(entry.type || "").toLowerCase()}|${(entry.name || "").toLowerCase()}|${(entry.condition || "").toLowerCase()}`;
+      const existing = defenseMap.get(key);
+      if (!existing) {
+        defenseMap.set(key, entry);
+        buckets.defenses.push(entry);
+        return;
+      }
+      if (entry.value != null && (!existing.value || entry.value > existing.value)) existing.value = entry.value;
+    };
+
+    const knownSenseNames = new Set(SENSES.map((sense) => sense.name));
+
+    modifiers.forEach((modifier) => {
+      const subtype = (modifier.subType || "").toLowerCase();
+      const normalizedSubtype = subtype.startsWith("skill-") ? subtype.slice(6) : subtype;
+      const friendly = modifier.friendlySubtypeName || modifier.subType || "Unknown";
+      const modType = (modifier.type || "").toLowerCase();
+      const condition = modifier.restriction || null;
+
+      if (modifier.isGranted === false && !["proficiency", "language"].includes(modType)) return;
+
+      if (modType === "language") {
+        buckets.languages.push(friendly);
+        return;
+      }
+      // Advantage/disadvantage on initiative, a saving throw, or a skill/
+      // ability check is already exposed as its own flag on that specific
+      // thing's own table (initiativeTable/savingThrowsTable/
+      // buildSkillValues) — recognized and skipped here rather than also
+      // landing in "defenses" (the old script's own behavior, ported
+      // faithfully until now — but advantage/disadvantage was never really
+      // a "defense" the way resistance/immunity/vulnerability are, and
+      // duplicating it here just meant every advantage source was
+      // represented twice). A generic saving-throw *bonus* (not advantage)
+      // is the same story: savingThrowsTable's own generalSaveBonus already
+      // folds it into every ability's value. Only resistance/immunity/
+      // vulnerability are true defenses; anything else recognized-but-
+      // elsewhere is dropped, anything unrecognized falls through to
+      // "other" so it's still visible somewhere (e.g. advantage on attack
+      // rolls or death saves, which have no dedicated table of their own).
+      if (["advantage", "disadvantage"].includes(modType)) {
+        if (
+          subtype === "initiative" ||
+          subtype.endsWith("saving-throws") ||
+          normalizedSubtype === "ability-checks" ||
+          SKILLS.some((skill) => skill.name === normalizedSubtype) ||
+          ABILITIES.some((ability) => ability.name === normalizedSubtype)
+        ) {
+          return;
+        }
+        buckets.other.push(friendly);
+        return;
+      }
+      if (modType === "bonus" && subtype.includes("saving-throws")) return;
+      if (["resistance", "immunity", "vulnerability"].includes(modType)) {
+        addDefense({ name: friendly, type: modifier.type, condition });
+        return;
+      }
+      if (!modType.includes("proficiency")) {
+        buckets.other.push(friendly);
+        return;
+      }
+
+      if (subtype.includes("armor") || subtype === "shields") {
+        buckets.armor.push(friendly);
+        return;
+      }
+      // Saving throw / skill / ability-score proficiencies are dropped here
+      // (see this function's own comment above) — recognized and skipped
+      // rather than falling through to "other".
+      if (
+        subtype.endsWith("saving-throws") ||
+        normalizedSubtype === "ability-checks" ||
+        SKILLS.some((skill) => skill.name === normalizedSubtype) ||
+        ABILITIES.some((ability) => ability.name === normalizedSubtype)
+      ) {
+        return;
+      }
+      if (knownSenseNames.has(normalizedSubtype)) {
+        buckets.senses.push(friendly);
+        return;
+      }
+      if (
+        subtype.includes("tool") ||
+        subtype.includes("kit") ||
+        subtype.includes("suppl") ||
+        subtype.includes("instrument") ||
+        subtype.includes("gaming-set") ||
+        subtype.includes("vehicle") ||
+        modifier.entityTypeId === 2103445194
+      ) {
+        buckets.tools.push(friendly);
+        return;
+      }
+      if (subtype.includes("weapon")) {
+        buckets.weapons.push(friendly);
+        return;
+      }
+
+      buckets.other.push(friendly);
+    });
+
+    buckets.armor = Array.from(new Set(buckets.armor));
+    buckets.weapons = Array.from(new Set(buckets.weapons));
+    buckets.tools = Array.from(new Set(buckets.tools));
+    buckets.languages = Array.from(new Set(buckets.languages));
+    buckets.senses = Array.from(new Set(buckets.senses));
+    buckets.other = Array.from(new Set(buckets.other));
+    return buckets;
+  },
+
+  // Ported from ddb-parser.js's buildAttacks (equipped-weapon half) plus a
+  // synthesized Unarmed Strike (DDB doesn't supply one for non-Monk
+  // characters — every 5e character can make one regardless of class).
+  // Two real corrections versus the old script:
+  //  - Weapon proficiency/melee-ranged classification uses DDB's own
+  //    item.definition.categoryId (1=Simple, 2=Martial) and attackType
+  //    (1=Melee, 2=Ranged) directly — confirmed present on every weapon
+  //    item — instead of the old script's hardcoded WEAPONS.simple/
+  //    martial/ranged name lists. This also drops a real bug: the old
+  //    script granted martial-weapon proficiency to *any* ranged weapon,
+  //    including simple ones (isRanged && martial-weapons check).
+  //  - Damage type prefers DDB's own friendly strings — weapon items'
+  //    definition.damageType (already a string), and for spell-backed
+  //    displayAsAttack actions, that spell's own definition.modifiers
+  //    entry with type:"damage" (also a string — confirmed against a live
+  //    export: Hunter's Mark resolves to "Force" this way). Only a
+  //    non-spell action with *only* a numeric damageTypeId and no string
+  //    anywhere nearby falls back to the damageTypes System lookup.
+  attacksTable(context) {
+    const rawCharacter = context.root;
+    const modifiers = getActiveModifiers(rawCharacter);
+    const scores = calculateAbilityScores(rawCharacter, modifiers);
+    const dexMod = Math.floor(((scores.dexterity || 10) - 10) / 2);
+    const strMod = Math.floor(((scores.strength || 10) - 10) / 2);
+    const totalLevel = getTotalLevelRaw(rawCharacter?.classes);
+    const proficiencyBonus = getProficiencyBonusRaw(totalLevel);
+
+    const proficientSubtypes = modifiers
+      .filter((modifier) => modifier.type === "proficiency")
+      .map((modifier) => (modifier.subType || "").toLowerCase());
+    const isWeaponProficient = (definition) => {
+      const name = (definition.type || definition.name || "").toLowerCase();
+      if (!name) return false;
+      if (proficientSubtypes.some((subtype) => subtype === name || subtype === `${name}-weapons`)) return true;
+      const isMartial = definition.categoryId === 2;
+      if (!isMartial && proficientSubtypes.includes("simple-weapons")) return true;
+      if (isMartial && proficientSubtypes.includes("martial-weapons")) return true;
+      return false;
+    };
+
+    const resolveDamageTypeName = (rawName) => {
+      if (!rawName) return null;
+      const match = DAMAGE_TYPES.find((entry) => (entry.name || "").toLowerCase() === String(rawName).toLowerCase());
+      return match ? match.name : rawName;
+    };
+    const resolveDamageTypeById = (id) => {
+      if (id == null) return null;
+      const match = DAMAGE_TYPES.find((entry) => entry.id === id);
+      return match ? match.name : null;
+    };
+
+    // Spell name -> spell entry, for two things: deduping actions that are
+    // really just a spell (so a spell attack isn't listed twice), and
+    // resolving a spell-backed action's damage type via that spell's own
+    // string modifier instead of the numeric damageTypeId.
+    const spellsByName = new Map();
+    ["class", "race", "feat", "item"].forEach((bucket) => {
+      const entries = rawCharacter?.spells?.[bucket];
+      if (Array.isArray(entries)) {
+        entries.forEach((spell) => {
+          const name = spell?.definition?.name;
+          if (name) spellsByName.set(name.toLowerCase(), spell);
+        });
+      }
+    });
+    (rawCharacter?.classSpells || []).forEach((group) => {
+      (group?.spells || []).forEach((spell) => {
+        const name = spell?.definition?.name;
+        if (name && !spellsByName.has(name.toLowerCase())) spellsByName.set(name.toLowerCase(), spell);
+      });
+    });
+    const resolveSpellDamageType = (name) => {
+      const spell = spellsByName.get((name || "").toLowerCase());
+      const damageModifier = (spell?.definition?.modifiers || []).find((modifier) => modifier.type === "damage");
+      return damageModifier?.friendlySubtypeName || damageModifier?.subType || null;
+    };
+
+    const equipmentAttacks = (rawCharacter?.inventory || [])
+      .filter((item) => item.equipped && (item.definition?.attackType || item.definition?.damage))
+      .map((item) => {
+        const definition = item.definition || {};
+        const isRanged = definition.attackType === 2;
+        const isFinesse = Array.isArray(definition.properties)
+          ? definition.properties.some((prop) => (prop.name || "").toLowerCase() === "finesse")
+          : false;
+        const abilityMod = isRanged || (isFinesse && dexMod >= strMod) ? dexMod : strMod;
+        const proficiency = isWeaponProficient(definition) ? proficiencyBonus : 0;
+        const attackBonus =
+          (definition.attackBonus ?? 0) +
+          abilityMod +
+          proficiency +
+          collectModifiers(modifiers, "weapon-attacks", "bonus") +
+          collectModifiers(modifiers, isRanged ? "ranged-attacks" : "melee-attacks", "bonus");
+
+        const dice = definition.damage?.diceString || "";
+        const damage = dice ? `${dice}${abilityMod ? formatSigned(abilityMod) : ""}` : null;
+        const properties = Array.isArray(definition.properties)
+          ? definition.properties.map((prop) => prop.name).filter(Boolean)
+          : [];
+
+        return {
+          name: definition.name || "Attack",
+          range: definition.range ? `${definition.range} ft.` : null,
+          longRange: definition.longRange ? `${definition.longRange} ft.` : null,
+          attackBonus,
+          damage,
+          damageType: resolveDamageTypeName(definition.damageType),
+          notes: properties.join(", "),
+          description: definition.description || definition.snippet || "",
+        };
+      });
+
+    const spellNameSet = new Set(spellsByName.keys());
+    const actionAttacks = flattenActions(rawCharacter?.actions)
+      .filter((action) => action.displayAsAttack && !spellNameSet.has((action.name || "").toLowerCase()))
+      .map((action) => ({
+        name: action.name || "Attack",
+        range: action.range || action.attackTypeRange || "",
+        longRange: action.longRange || null,
+        attackBonus: action.fixedToHit ?? action.value ?? 0,
+        damage: formatActionDamage(action.dice),
+        damageType: resolveSpellDamageType(action.name) || resolveDamageTypeById(action.damageTypeId),
+        notes: "",
+        description: action.description || action.snippet || "",
+      }));
+
+    const monkLevels = (rawCharacter?.classes || [])
+      .filter((cls) => (cls.definition?.name || "").toLowerCase() === "monk")
+      .reduce((total, cls) => total + (cls.level || 0), 0);
+    const unarmedAbilityMod = monkLevels > 0 ? dexMod : strMod;
+    const unarmedStrike = {
+      name: "Unarmed Strike",
+      range: null,
+      longRange: null,
+      attackBonus: unarmedAbilityMod + proficiencyBonus,
+      damage: `1${formatSigned(unarmedAbilityMod)}`,
+      damageType: "Bludgeoning",
+      notes: "",
+      description: "",
+    };
+
+    const seen = new Set();
+    return [unarmedStrike, ...actionAttacks, ...equipmentAttacks].filter((attack) => {
+      const key = (attack.name || "Attack").toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  },
+
+  // Ported from ddb-parser.js's buildAttacking.
+  attackingTable(context) {
+    const modifiers = getActiveModifiers(context.root);
+    const extraAttacks = collectMaxModifier(modifiers, "extra-attacks", ["set", "set-base"]);
+    return { attacksPerAction: 1 + extraAttacks, fightingStyle: determineFightingStyle(context.root?.feats) };
+  },
+
+  // Ported from ddb-parser.js's buildSpellcasting — standalone
+  // ability/mod/attack-bonus/save-DC stats. Previously only computed
+  // internally (spells' own toHit/dc) via determineSpellcastingAbility,
+  // which already existed in this file; not exposed as its own field
+  // before now.
+  spellcastingTable(context) {
+    const rawCharacter = context.root;
+    const classes = Array.isArray(rawCharacter?.classes) ? rawCharacter.classes : [];
+    const ability = determineSpellcastingAbility(classes);
+    const modifiers = getActiveModifiers(rawCharacter);
+    const scores = calculateAbilityScores(rawCharacter, modifiers);
+    const modScore = ability ? scores[ability.name] ?? 10 : 10;
+    const abilityMod = Math.floor((modScore - 10) / 2);
+    const totalLevel = getTotalLevelRaw(classes);
+    const proficiencyBonus = getProficiencyBonusRaw(totalLevel);
+    return {
+      abilityId: ability?.id || null,
+      ability: ability?.shortName || null,
+      mod: formatSigned(abilityMod),
+      attack: formatSigned(abilityMod + proficiencyBonus),
+      save: 8 + proficiencyBonus + abilityMod,
+    };
+  },
+
+  // Ported from ddb-parser.js's buildLimitedUses, simplified against a live
+  // export rather than assumption: the old script treated Pact Magic as a
+  // single object with several possible key-name guesses
+  // (context.pactMagic.totalSlots/slots/maxSlots/...), because at the time
+  // it was written DDB's API apparently didn't return it in a simple shape.
+  // A real export today has `pactMagic` in exactly the same per-level
+  // `{level, used, available}` array shape as `spellSlots` — so both are
+  // read identically here, and the old script's `deriveSpellSlots`
+  // (computing slots from hardcoded full/half/third-caster level tables,
+  // for when DDB's own data was missing) is dropped as unnecessary: DDB
+  // supplies real slot data directly now. Generic limited-use pools
+  // (Ki points, Second Wind, feat-granted uses, ...) come from
+  // actions/features/feats' own limitedUse — reset type is a numeric code
+  // on those (durations lookup, confirmed live: resetType 2 = "Long
+  // Rest"), but already a friendly string on inventory-item limitedUse
+  // (e.g. "Consumable"), so only numbers get looked up.
+  limitedUsesTable(context) {
+    const rawCharacter = context.root;
+    const pools = [];
+
+    ["actions", "features", "feats"].forEach((key) => {
+      const entries = rawCharacter?.[key];
+      if (!Array.isArray(entries)) return;
+      entries.forEach((entry) => {
+        const limitedUse = entry.limitedUse || entry.definition?.limitedUse;
+        if (!limitedUse || !(limitedUse.maxUses || limitedUse.useProficiencyBonus)) return;
+        const reset =
+          typeof limitedUse.resetType === "number" ? DURATIONS[limitedUse.resetType] || null : limitedUse.resetType || null;
+        pools.push({
+          name: entry.name || entry.definition?.name || "Resource",
+          uses: limitedUse.maxUses || 0,
+          used: limitedUse.numberUsed || 0,
+          reset,
+        });
+      });
+    });
+
+    (rawCharacter?.spellSlots || []).forEach((slot) => {
+      const level = slot.level || 0;
+      const available = slot.available ?? 0;
+      const used = slot.used ?? 0;
+      const total = available + used;
+      if (!total) return;
+      pools.push({ name: `Level ${level} Spell Slots`, level, total, available, used, reset: "Long Rest" });
+    });
+
+    (rawCharacter?.pactMagic || []).forEach((slot) => {
+      const level = slot.level || 0;
+      const available = slot.available ?? 0;
+      const used = slot.used ?? 0;
+      const total = available + used;
+      if (!total) return;
+      pools.push({ name: "Pact Magic", level, total, available, used, reset: "Short Rest" });
+    });
+
+    return pools;
+  },
+
   abilitiesTable(context) {
     const modifiers = getActiveModifiers(context.root);
     const scores = calculateAbilityScores(context.root, modifiers);
@@ -675,33 +1192,135 @@ return {
 
     return ABILITIES.map((ability) => {
       const subtype = SAVING_THROW_SUBTYPES[ability.name];
+      const subtypes = [subtype, "saving-throws"];
       const abilityModifier = Math.floor(((scores[ability.name] || 10) - 10) / 2);
-      const { level, roundUp } = determineProficiencyLevel(modifiers, [subtype, "saving-throws"]);
+      const { level, roundUp } = determineProficiencyLevel(modifiers, subtypes);
       const savingThrowBonus = collectModifiers(modifiers, subtype, "bonus") + generalSaveBonus;
       const proficiencyValue = applyProficiency(level, proficiencyBonus, roundUp);
-      return { ...ability, value: abilityModifier + proficiencyValue + savingThrowBonus, proficiency: level };
+      return {
+        ...ability,
+        value: abilityModifier + proficiencyValue + savingThrowBonus,
+        proficiency: level,
+        advantage: hasModifierOfType(modifiers, subtypes, "advantage"),
+        disadvantage: hasModifierOfType(modifiers, subtypes, "disadvantage"),
+      };
     });
   },
 
   skillsTable(context) {
-    const modifiers = getActiveModifiers(context.root);
-    const scores = calculateAbilityScores(context.root, modifiers);
-    const totalLevel = getTotalLevelRaw(context.root?.classes);
+    return buildSkillValues(context.root);
+  },
+
+  // ALIGNMENTS entries (deriveLookupTables) carry `id` matching DDB's own
+  // alignmentId, `friendlyName` (the display name — `name` itself is a
+  // slug, same convention as every other lookup entry in this file).
+  alignmentTable(context) {
+    const alignmentId = context.root?.alignmentId;
+    const match = ALIGNMENTS.find((entry) => entry.id === alignmentId);
+    return match ? { name: match.friendlyName, shortName: match.shortName } : null;
+  },
+
+  // Ported from ddb-parser.js's buildInitiative — everyone technically CAN
+  // have an "initiative" proficiency/expertise modifier (e.g. the Alert
+  // feat's variants, or a subclass feature), hence the same
+  // determineProficiencyLevel/applyProficiency path saves/skills use, not
+  // just a flat Dex mod.
+  initiativeTable(context) {
+    const rawCharacter = context.root;
+    const modifiers = getActiveModifiers(rawCharacter);
+    const scores = calculateAbilityScores(rawCharacter, modifiers);
+    const totalLevel = getTotalLevelRaw(rawCharacter?.classes);
     const proficiencyBonus = getProficiencyBonusRaw(totalLevel);
 
-    return SKILLS.map((skill) => {
-      const linkedAbility = ABILITIES[skill.stat];
-      const abilityModifier = Math.floor(((scores[linkedAbility.name] || 10) - 10) / 2);
-      const subtypes = [skill.name, `skill-${skill.name}`, `${linkedAbility.name}-ability-checks`, "ability-checks"];
-      const { level, roundUp } = determineProficiencyLevel(modifiers, subtypes);
-      const skillBonus = collectModifiers(modifiers, subtypes, "bonus");
-      return {
-        ...skill,
-        ability: linkedAbility.shortName,
-        value: abilityModifier + applyProficiency(level, proficiencyBonus, roundUp) + skillBonus,
-        proficiency: level,
-      };
+    const dexModifier = Math.floor(((scores.dexterity || 10) - 10) / 2);
+    const { level, roundUp } = determineProficiencyLevel(modifiers, "initiative");
+    const bonus = collectModifiers(modifiers, ["initiative", "dexterity-ability-checks"], "bonus");
+
+    const value = dexModifier + applyProficiency(level, proficiencyBonus, roundUp) + bonus;
+    const advantage = modifiers.some((modifier) => modifier.subType === "initiative" && modifier.type === "advantage");
+    const disadvantage = modifiers.some((modifier) => modifier.subType === "initiative" && modifier.type === "disadvantage");
+    return { value, advantage, disadvantage };
+  },
+
+  // Ported from ddb-parser.js's buildSenses — passive Perception/
+  // Investigation/Insight (10 + the matching skill's already-computed
+  // value, via the shared buildSkillValues helper) plus every known-range
+  // sense (darkvision/blindsight/tremorsense/truesight, via SENSES —
+  // deriveLookupTables, matching sys.dnd5e.json's own `senses` field) from
+  // active modifiers, race-granted modifiers, and DDB's customSenses,
+  // deduped keeping the largest range per sense name.
+  sensesTable(context) {
+    const rawCharacter = context.root;
+    const modifiers = getActiveModifiers(rawCharacter);
+    const allowed = new Set(SENSES.map((sense) => sense.name));
+    const knownSenses = [];
+
+    const pushFromModifier = (modifier) => {
+      const normalized = modifier.subType.toLowerCase();
+      const baseSense = SENSES.find((sense) => sense.name === normalized) || { id: modifier.id, name: normalized };
+      knownSenses.push({ ...baseSense, range: modifier.fixedValue ?? modifier.value ?? null });
+    };
+
+    modifiers.filter((modifier) => modifier.subType && allowed.has(modifier.subType.toLowerCase())).forEach(pushFromModifier);
+
+    const raceModifiers = (rawCharacter?.race?.racialTraits || [])
+      .flatMap((trait) => trait.definition?.grantedModifiers || [])
+      .filter((modifier) => modifier.subType && allowed.has(modifier.subType.toLowerCase()));
+    raceModifiers.forEach(pushFromModifier);
+
+    const customSenses = rawCharacter?.customSenses || [];
+    customSenses.forEach((entry) => {
+      const baseSense = SENSES.find((sense) => sense.id === entry.senseId || sense.id === entry.id);
+      const name = (baseSense?.name || entry.name || "").toLowerCase();
+      if (!name) return;
+      knownSenses.push({ id: baseSense?.id || entry.id, name, range: entry.distance ?? entry.value ?? null });
     });
+
+    const deduped = {};
+    knownSenses.forEach((sense) => {
+      const current = deduped[sense.name];
+      if (!current || (sense.range ?? 0) > (current.range ?? 0)) deduped[sense.name] = sense;
+    });
+
+    const skillValues = buildSkillValues(rawCharacter).reduce((map, skill) => {
+      map[skill.name] = skill.value;
+      return map;
+    }, {});
+
+    const flattened = {
+      passives: {
+        perception: 10 + (skillValues.perception || 0),
+        investigation: 10 + (skillValues.investigation || 0),
+        insight: 10 + (skillValues.insight || 0),
+      },
+    };
+    Object.values(deduped).forEach((sense) => {
+      flattened[sense.name] = sense.range ?? null;
+    });
+    return flattened;
+  },
+
+  // Ported from ddb-parser.js's buildSpeeds — SPEEDS entries
+  // (deriveLookupTables, matching sys.dnd5e.json's own `speeds` field)
+  // carry `shortName` ("walking"/"burrowing"/...), the same suffix DDB's
+  // own `innate-speed-{shortName}` modifier subtype uses.
+  speedsTable(context) {
+    const rawCharacter = context.root;
+    const modifiers = getActiveModifiers(rawCharacter);
+    const baseSpeeds = rawCharacter?.race?.weightSpeeds?.normal || {};
+    const generalBonus = collectModifiers(modifiers, "speed", "bonus");
+    const walkSpeed = (baseSpeeds.walk || 0) + generalBonus;
+
+    return SPEEDS.reduce((speeds, speed) => {
+      const innateSubtype = `innate-speed-${speed.shortName || speed.name}`;
+      const base = (baseSpeeds[speed.name] || 0) + (speed.name === "walk" ? generalBonus : 0);
+      const innate = collectMaxModifier(modifiers, innateSubtype, ["set", "set-base"]);
+      const bonus = collectModifiers(modifiers, `${speed.name}-speed`, "bonus");
+      const hasInnate = modifiers.some((modifier) => modifier.subType === innateSubtype && ["set", "set-base"].includes(modifier.type));
+      const innateBase = innate || (hasInnate ? walkSpeed : 0);
+      speeds[speed.name] = Math.max(base, innateBase) + bonus;
+      return speeds;
+    }, {});
   },
 
   determineSize(context) {

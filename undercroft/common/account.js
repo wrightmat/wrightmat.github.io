@@ -8,7 +8,10 @@ import { confirmDelete } from "./js/lib/ownership.js";
 import { initShareModal } from "./js/lib/share-modal.js";
 import { disableForm } from "./js/lib/dom.js";
 
-const { status } = initAppShell({ namespace: "account" });
+const { status } = initAppShell({
+  namespace: "account",
+  leftPane: { size: "lg", initial: "expanded" },
+});
 const loomHref = resolveToolHref("loom", resolveToolContextPath());
 const dataManager = new DataManager({ baseUrl: resolveApiBase(), storagePrefix: "undercroft.workbench" });
 const auth = initAuthControls({ root: document, status, dataManager });
@@ -31,8 +34,11 @@ const elements = {
   ownedTypeSelect: document.querySelector("[data-admin-owned-type]"),
   ownedSortHeaders: Array.from(document.querySelectorAll("[data-admin-owned-sort]")),
   quickReference: document.querySelector("[data-quick-reference]"),
-  rightPane: document.querySelector('[data-pane="right"]'),
-  rightPaneToggle: document.querySelector('[data-pane-toggle="right"]'),
+  // Help & Documentation lives in the LEFT pane here (swapped with the
+  // campaign quick-reference, which moved to the right) — named for what's
+  // actually there now, not which physical side it happens to be.
+  leftPane: document.querySelector('[data-pane="left"]'),
+  leftPaneToggle: document.querySelector('[data-pane-toggle="left"]'),
   emailForm: document.querySelector("[data-admin-email-form]"),
   emailError: document.querySelector("[data-admin-email-error]"),
   emailInput: document.getElementById("admin-settings-email"),
@@ -915,20 +921,20 @@ if (elements.passwordForm) {
   });
 }
 
-// ===== Help topic browser (right pane) =======================================
+// ===== Help topic browser (left pane) =========================================
 // Admin is the one place every tool's inline (?) help triggers now deep-link
 // to (see common/js/lib/help.js) — this pane is what they land on, and it's
 // also just directly browsable/searchable on its own, independent of the
 // admin-gated content in the main panel (this pane isn't behind the sign-in
 // gate at all). The actual search/browse/detail wiring lives in
-// common/js/lib/help-browser.js, shared with the Dashboard's left-pane copy
-// (which adds pinning on top of the same module).
+// common/js/lib/help-browser.js, shared with the Dashboard's own copy (which
+// adds pinning on top of the same module).
 let helpBrowserApi = null;
 
 async function initHelpBrowser() {
   helpBrowserApi = await initHelpBrowserModule({
     topicsUrl: "data/help-topics.json",
-    pane: elements.rightPane ? { element: elements.rightPane, toggle: elements.rightPaneToggle } : null,
+    pane: elements.leftPane ? { element: elements.leftPane, toggle: elements.leftPaneToggle } : null,
   });
 }
 
