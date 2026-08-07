@@ -1106,6 +1106,32 @@ export class DataManager {
     });
   }
 
+  // A transient pointer broadcast (Orrery's click-to-ping map tool) —
+  // deliberately NOT createGroupLogEntry: a ping never touches the
+  // database/group log at all (see server/state.py's ServerState.
+  // pending_pings for why), it only ever exists in-memory server-side long
+  // enough for the /live/{groupId} SSE stream's "ping" kind to relay it to
+  // whoever's currently subscribed.
+  async postMapPing({ groupId = "", shareToken = "", position } = {}) {
+    const body = { position };
+    const token = shareToken ? String(shareToken) : "";
+    if (token) {
+      return this._request(`/groups/share/${encodeURIComponent(token)}/ping`, {
+        method: "POST",
+        body,
+        auth: true,
+      });
+    }
+    if (!groupId) {
+      throw new Error("Group id is required to ping the map");
+    }
+    return this._request(`/groups/${encodeURIComponent(groupId)}/ping`, {
+      method: "POST",
+      body,
+      auth: true,
+    });
+  }
+
   // "Show to table": one call does both halves of the one-click ask — make
   // sure the group can actually see this record (share_with_group is an
   // idempotent upsert, safe to call every time, not just the first), then

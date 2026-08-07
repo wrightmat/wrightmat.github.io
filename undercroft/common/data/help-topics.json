@@ -12,7 +12,8 @@
       "details": [
         "The left pane exposes navigation, palettes, and recent records. Use the sidebar toggle or the \"Layout\" button in the header to show or hide it.",
         "The center canvas adjusts to the active tool: system schema trees, template layout boards, or interactive character sheets.",
-        "The right pane hosts inspectors, metadata, and contextual utilities such as JSON previews or collaboration panels."],
+        "The right pane hosts inspectors, metadata, and contextual utilities such as JSON previews or collaboration panels."
+      ],
       "category": "Workbench Fundamentals",
       "href": "docs.html#workspace-overview"
     },
@@ -23,7 +24,8 @@
       "details": [
         "The theme buttons in the header persist your preference in local storage under the `undercroft.workbench.theme` key.",
         "System theme uses the browser's `prefers-color-scheme` media query. All panes recompute colors immediately when toggled.",
-        "Bootstrap tooltips and icons inherit the active theme for consistent contrast."],
+        "Bootstrap tooltips and icons inherit the active theme for consistent contrast."
+      ],
       "category": "Workbench Fundamentals",
       "href": "docs.html#workspace-theme"
     },
@@ -34,7 +36,8 @@
       "details": [
         "Each page registers a namespaced undo stack capped by the optional limit set in the app shell.",
         "Use Ctrl+Z / Cmd+Z to undo and Ctrl+Shift+Z / Cmd+Shift+Z to redo. Buttons in toolbars mirror the same behaviour.",
-        "Undo history is serialised to local storage so reloading restores the last working state, even when offline."],
+        "Undo history is serialised to local storage so reloading restores the last working state, even when offline."
+      ],
       "category": "Workbench Fundamentals",
       "href": "docs.html#workspace-undo"
     },
@@ -45,7 +48,8 @@
       "details": [
         "Palette entries mirror the canonical schema types defined in `TYPE_DEFS` and include icons, descriptions, and drag handles.",
         "Dropping a field onto the canvas assigns a stable node id and queues an undo entry so the action can be reverted.",
-        "Numeric fields expose additional constraints (min, max, step) once selected in the inspector."],
+        "Numeric fields expose additional constraints (min, max, step) once selected in the inspector."
+      ],
       "category": "System Editor",
       "href": "docs.html#system-palette"
     },
@@ -56,7 +60,8 @@
       "details": [
         "Inspector controls update the reactive system state; changes mark the draft dirty and emit status messages.",
         "The inspector honours tier restrictions—creator tier is required to persist systems to the server.",
-        "Computed expressions use the shared formula engine so templates and characters evaluate the same syntax."],
+        "Computed expressions use the shared formula engine so templates and characters evaluate the same syntax."
+      ],
       "category": "System Editor",
       "href": "docs.html#system-inspector"
     },
@@ -67,7 +72,8 @@
       "details": [
         "The content registry module checks the local cache, validates checksums, and flags missing assets in the UI.",
         "Use the \"New System\" modal to clone a builtin into your workspace with a custom id and version tag.",
-        "When a builtin asset is temporarily unavailable, a status badge surfaces the outage without blocking other work."],
+        "When a builtin asset is temporarily unavailable, a status badge surfaces the outage without blocking other work."
+      ],
       "category": "System Editor",
       "href": "docs.html#system-builtins"
     },
@@ -78,7 +84,8 @@
       "details": [
         "Component definitions share icon metadata from `COMPONENT_ICONS` so they stay consistent across tools.",
         "Dropping a component hydrates default styles, labels, and bindings that can be refined in the properties panel.",
-        "Repeaters and groups retain nested child components and expose quick actions for duplication or removal."],
+        "Repeaters and groups retain nested child components and expose quick actions for duplication or removal."
+      ],
       "category": "Template Builder",
       "href": "docs.html#template-library"
     },
@@ -89,7 +96,8 @@
       "details": [
         "Properties sync bidirectionally: editing inputs updates the live canvas immediately and records an undo snapshot.",
         "Binding pickers are populated from the active system schema via the shared `component-data` helpers.",
-        "Advanced sections toggle formatting, colour accents, and responsive behaviour without custom CSS."],
+        "Advanced sections toggle formatting, colour accents, and responsive behaviour without custom CSS."
+      ],
       "category": "Template Builder",
       "href": "docs.html#template-properties"
     },
@@ -127,7 +135,8 @@
       "details": [
         "When a template is selected the renderer builds component trees, preserving persistent ids for diffing and undo.",
         "Local drafts are saved in IndexedDB/localStorage namespaces scoped by the current authenticated user.",
-        "Saving pushes the draft to the API with ownership metadata so access tiers and share permissions stay intact."],
+        "Saving pushes the draft to the API with ownership metadata so access tiers and share permissions stay intact."
+      ],
       "category": "Character Sheet",
       "href": "docs.html#character-records"
     },
@@ -138,7 +147,8 @@
       "details": [
         "Use `/roll 2d6+3` in notes or click quick dice buttons to push results to the game log pane.",
         "Component formulas resolve bindings through the same evaluation pipeline as the system editor.",
-        "Roll history persists per-session so the log survives page reloads during an active play session."],
+        "Roll history persists per-session so the log survives page reloads during an active play session."
+      ],
       "category": "Character Sheet",
       "href": "docs.html#character-dice"
     },
@@ -149,7 +159,8 @@
       "details": [
         "The server enforces owner/admin checks before creating shares, and the record itself must already be saved — sharing an unsaved draft fails with a clear error rather than silently doing nothing.",
         "Share links carry randomly generated tokens stored alongside the content id; access is logged for auditing.",
-        "A record can be shared with a specific user OR with an entire Campaign Group at once — sharing with a group grants every current member access transparently, and stays current as membership changes. See Campaign Groups and Sharing Content with a Campaign for the full picture."],
+        "A record can be shared with a specific user OR with an entire Campaign Group at once — sharing with a group grants every current member access transparently, and stays current as membership changes. See Campaign Groups and Sharing Content with a Campaign for the full picture."
+      ],
       "category": "Collaboration",
       "href": "../common/account.html?help=collaboration.shares"
     },
@@ -160,7 +171,8 @@
       "details": [
         "Open a group row to see the Members picker. Click characters to add or remove them from the group.",
         "Hold Ctrl (Windows/Linux) or Cmd (macOS) to select multiple characters at once.",
-        "Changes save automatically once you adjust the selection."],
+        "Changes save automatically once you adjust the selection."
+      ],
       "category": "Collaboration",
       "href": "../loom/index.html?help=loom.groups.members"
     },
@@ -171,7 +183,8 @@
       "details": [
         "Tiers, low to high: Free, Player, GM, Creator, Admin. Each saved kind (Location, NPC, Monster, System, ...) declares its own read/write tier — most generator output is wide open, authoring-heavy kinds need Creator or higher.",
         "Tier metadata comes from the session token; anonymous users operate in read-only mode with local drafts only, saved to their own browser instead of the server.",
-        "Creating a Campaign Group requires GM tier or higher — running a game is what GM tier is for, distinct from Creator tier's focus on authoring reusable content (Systems, Templates) for others to use."],
+        "Creating a Campaign Group requires GM tier or higher — running a game is what GM tier is for, distinct from Creator tier's focus on authoring reusable content (Systems, Templates) for others to use."
+      ],
       "category": "Collaboration",
       "href": "../common/account.html?help=accounts.roles"
     },
@@ -183,7 +196,8 @@
         "Click \"Edit layout\" to add or remove widgets, and drag a widget's header to reorder it.",
         "GMs get a Combat Tracker widget for running initiative, HP, and conditions; anyone in the group sees a read-only live view of the same encounter.",
         "Your layout saves to this browser immediately, and syncs to your account too once you're signed in, so it follows you across devices.",
-        "Jump to any tool from the small home/switcher icons in the header — the Dashboard itself isn't in that list, since you're already on it."],
+        "Jump to any tool from the small home/switcher icons in the header — the Dashboard itself isn't in that list, since you're already on it."
+      ],
       "category": "Dashboard",
       "href": "../index.html?help=dashboard.widgets"
     },
@@ -194,7 +208,8 @@
       "details": [
         "Selections now live above the live preview in the center pane so source, template, size, and orientation stay visible while previewing.",
         "Tooltips use the shared Workbench help system; click the (?) badges to open full docs without cluttering the canvas.",
-        "Overlays stay enabled by default so trim and safe areas stay visible in both preview and print stacks."],
+        "Overlays stay enabled by default so trim and safe areas stay visible in both preview and print stacks."
+      ],
       "category": "Press",
       "href": "../press/index.html#press-flow"
     },
@@ -205,7 +220,8 @@
       "details": [
         "The Source, URL/ID, Template, Size, and Orientation inputs share the center-pane card under a collapsible header.",
         "Help badges next to the heading and Template label surface guidance without repeating copy in the layout.",
-        "After entering a source value, click Generate Print to pull live data into the preview and print stack."],
+        "After entering a source value, click Generate Print to pull live data into the preview and print stack."
+      ],
       "category": "Press",
       "href": "../press/index.html#press-selection"
     },
@@ -217,7 +233,8 @@
         "Use an official or homebrew URL/ID; content stays in the browser for layout mapping.",
         "You can paste a full URL or the numeric/slug ID from D&D Beyond; Workbench reads it locally for layout mapping.",
         "Use share links when possible to avoid permissions issues while you preview cards or sheets.",
-        "Click Generate Print to run the Undercroft D&D Beyond parser and load the character into the selected template."],
+        "Click Generate Print to run the Undercroft D&D Beyond parser and load the character into the selected template."
+      ],
       "category": "Press",
       "href": "../press/index.html#press-selection"
     },
@@ -580,7 +597,8 @@
       "details": [
         "Format and orientation dropdowns sit on their own rows so each choice stays visible while you scroll other inputs.",
         "Selections stay in the center pane above the preview, keeping template and size choices in view.",
-        "Changing templates resets the size and orientation dropdowns before rebuilding the preview and print stack."],
+        "Changing templates resets the size and orientation dropdowns before rebuilding the preview and print stack."
+      ],
       "category": "Press",
       "href": "../press/index.html#press-templates"
     },
@@ -615,7 +633,8 @@
       "details": [
         "Drop palette items directly onto the live preview; the layout outline updates in sync and selects the new component.",
         "Double-click a palette row to append it to the end of the current side when you do not want to drag.",
-        "Palette clones share a Sortable group with the layout so you can reorder items either in the outline or on the page."],
+        "Palette clones share a Sortable group with the layout so you can reorder items either in the outline or on the page."
+      ],
       "category": "Press",
       "href": "../press/index.html#press-palette"
     },
@@ -626,7 +645,8 @@
       "details": [
         "Changes are saved automatically to local storage.",
         "Valid JSON updates the preview immediately; invalid JSON is highlighted until corrected.",
-        "When source data is loaded, this panel switches to display the loaded payload instead of the sample JSON."],
+        "When source data is loaded, this panel switches to display the loaded payload instead of the sample JSON."
+      ],
       "category": "Press",
       "href": "../press/index.html#press-sample-data"
     },
@@ -649,7 +669,8 @@
       "details": [
         "Drop palette items into the preview page to add them where you want; the outline mirrors the order automatically.",
         "Reorder items in the layout list or directly on the canvas—both paths update the live preview and print stack.",
-        "Each side keeps its own layout; switch sides with the toggle above the preview to edit front and back separately."],
+        "Each side keeps its own layout; switch sides with the toggle above the preview to edit front and back separately."
+      ],
       "category": "Press",
       "href": "../press/index.html#press-layout"
     },
@@ -660,7 +681,8 @@
       "details": [
         "When a component is selected, the inspector enables inputs for text, sizing, color, visibility, and heading level.",
         "List components treat each line in the text area as a separate list item so you can build bullet lists quickly.",
-        "Toggles and sliders update the preview immediately, keeping the print stack synchronized with your changes."],
+        "Toggles and sliders update the preview immediately, keeping the print stack synchronized with your changes."
+      ],
       "category": "Press",
       "href": "../press/index.html#press-inspector"
     },
@@ -671,7 +693,8 @@
       "details": [
         "Overlays stay visible in preview and print; measure the 0.25in margins and confirm cut lines align across sides.",
         "Verify that dashed safe areas stay inside the inset guides and run a test sheet before bulk jobs.",
-        "Use system print dialogs with 100% scaling and flip on the long edge for duplex output."],
+        "Use system print dialogs with 100% scaling and flip on the long edge for duplex output."
+      ],
       "category": "Press",
       "href": "../press/index.html#press-printing"
     },
@@ -683,7 +706,8 @@
         "The Location determines Species weights and the two setting-specific Archetype entries (rolls 22-23) — everything else (Alignment, Gender, Attitude, and the 4D tables) is the same everywhere.",
         "Generate NPC rolls every attribute at once. Once generated, each Identity/4D value in the main pane has its own reroll button if you just want to redo one thing.",
         "Species, Archetype, Alignment, and Gender can each be fixed to a specific value instead of rolled — see the help on those selects below.",
-        "The character note is optional and separate — generate one afterward from the main pane if you want it."],
+        "The character note is optional and separate — generate one afterward from the main pane if you want it."
+      ],
       "category": "Forge",
       "href": "../forge/index.html#forge-generate"
     },
@@ -694,7 +718,8 @@
       "details": [
         "Each select defaults to \"Random\". Choosing a value there locks that one attribute for the next Generate NPC click — everything you didn't pick still rolls normally.",
         "Species and Archetype options come from the selected Location, since both are location-configured; Alignment and Gender are the same everywhere and don't change with Location.",
-        "These only affect the initial Generate NPC roll — the per-attribute reroll buttons on an already-generated NPC always roll fresh, ignoring whatever's picked here."],
+        "These only affect the initial Generate NPC roll — the per-attribute reroll buttons on an already-generated NPC always roll fresh, ignoring whatever's picked here."
+      ],
       "category": "Forge",
       "href": "../forge/index.html#forge-overrides"
     },
@@ -706,7 +731,8 @@
         "At 0, names never blend — every NPC gets a plain name from its own species. As the coefficient rises, blended names (a name shaped by two species at once) start happening, more often and more deeply the higher it goes.",
         "The same number also decides who a name blends with: at low values the blend partner is always this Location's single most common species; at high values it's a weighted-random pick from the whole population, so blending gets more varied as well as more frequent.",
         "It also decides how deep a blend goes: low values favor a light surface borrow (one species' name with a short flourish from another); high values favor a deeper blend where the name itself is genuinely shaped by both species.",
-        "At 1, blending always happens, the partner is always randomly drawn, and the deepest blend mode is always used — nothing here is ever a hard on/off switch, just more or less likely."],
+        "At 1, blending always happens, the partner is always randomly drawn, and the deepest blend mode is always used — nothing here is ever a hard on/off switch, just more or less likely."
+      ],
       "category": "Forge",
       "href": "../forge/index.html#forge-mixing-coefficient"
     },
@@ -718,7 +744,8 @@
         "In Blended mode, First Names (and Last Names, if this species has them) are example pools Forge studies the patterns of, producing new names that sound like they belong without ever handing back an exact line verbatim — more and more varied examples produce more varied results, so a pool of 20-30 real names per list works well.",
         "In Synonyms mode, the pool is drawn from directly instead — see the Name Mode help below for when to use it and why.",
         "Last Name Form only controls the label shown (Family, Clan, Patronymic) and whether a last name is generated at all — set it to None for species that only ever use a single name.",
-        "A profile saved here is reusable across every Location, not just the one you were editing from — Species Weights rows in any Location can select it."],
+        "A profile saved here is reusable across every Location, not just the one you were editing from — Species Weights rows in any Location can select it."
+      ],
       "category": "Forge",
       "href": "../forge/index.html#forge-manage-species"
     },
@@ -730,7 +757,8 @@
         "Use Blended for species whose names are an invented phonetic language (Elf, Dwarf, Tiefling, most humanoid species) — the shared sub-word patterns across the pool (endings, syllable clusters) are what make recombination sound plausible.",
         "Use Synonyms for species whose names are recognizable whole words in a shared thematic register instead (Changeling's Ashen/Doubt/Mirage, Warforged's Rivet/Piston/Bastion, Shifter's Wren/Briar/Talon) — recombining letters across words like that just produces garbage, since there's no shared phonetic pattern to learn. Synonyms mode instead treats the pool as a curated, closed vocabulary and draws directly from it.",
         "Synonyms-mode species never take part in cultural mixing, in either direction — a curated whole word can't be sensibly blended with another species' name, so a Synonyms-mode species is skipped both as a blend primary and as a possible blend partner, regardless of the Location's Mixing Coefficient.",
-        "This is a per-species setting, not per-Location — a species is either invented-phonetic or curated-vocabulary everywhere it's used."],
+        "This is a per-species setting, not per-Location — a species is either invented-phonetic or curated-vocabulary everywhere it's used."
+      ],
       "category": "Forge",
       "href": "../forge/index.html#forge-manage-species"
     },
@@ -741,7 +769,8 @@
       "details": [
         "Species, Archetype, Alignment, Gender, Age, Relationship, and Attitude all describe concrete facts about this specific NPC.",
         "Species and Archetype are location-configured, coming straight from the selected Location's own tables; Alignment, Gender, Age, Relationship, and Attitude are the same everywhere and never change with Location.",
-        "This is what changes most between locations and settings — the 4D attributes below never do."],
+        "This is what changes most between locations and settings — the 4D attributes below never do."
+      ],
       "category": "Forge",
       "href": "../forge/index.html#forge-identity"
     },
@@ -752,7 +781,8 @@
       "details": [
         "Description, Demeanor, Drive, and Direction are single-word improv prompts designed to stack: rolling the same table twice can produce interesting tension rather than a contradiction.",
         "Unlike Identity, these never vary by Location or game system — they're meant to work for any NPC in any setting.",
-        "Treat them as a starting point for roleplay, not a fixed personality description."],
+        "Treat them as a starting point for roleplay, not a fixed personality description."
+      ],
       "category": "Forge",
       "href": "../forge/index.html#forge-fourd"
     },
@@ -763,7 +793,8 @@
       "details": [
         "These aren't independent rolls: they're looked up by Archetype, so they update automatically whenever Archetype is generated or rerolled.",
         "Setting-specific archetypes (rolls 22-23) and Wildcard (roll 24) have no fixed identity, so no stat block exists for them — you'll see a note instead of numbers.",
-        "Only D&D5e is supported right now, matching the rest of Forge's Archetype table."],
+        "Only D&D5e is supported right now, matching the rest of Forge's Archetype table."
+      ],
       "category": "Forge",
       "href": "../forge/index.html#forge-stats"
     },
@@ -774,7 +805,8 @@
       "details": [
         "An NPC is complete without a note — every rolled value already stands on its own as the character record.",
         "Generate Note sends the rolled Identity (minus Name) and 4D values to Claude and fills this box with its response in a fixed format: Name (Alignment Gender Species Archetype). [2-3 sentences].",
-        "Whatever's in the box when you Save is what gets saved — write your own from scratch, or generate one and edit it."],
+        "Whatever's in the box when you Save is what gets saved — write your own from scratch, or generate one and edit it."
+      ],
       "category": "Forge",
       "href": "../forge/index.html#forge-note"
     },
@@ -785,7 +817,8 @@
       "details": [
         "Each row's select lists every species profile saved via Manage Species — create one there first if the species you want isn't listed yet, then it'll show up here.",
         "Weights are relative to each other, not percentages — they don't need to sum to 100 or any other fixed total, only to reflect roughly how common each species is here.",
-        "This population (combined with the Mixing Coefficient below) is what makes two locations both sound and feel different even though every other Identity/4D table is shared."],
+        "This population (combined with the Mixing Coefficient below) is what makes two locations both sound and feel different even though every other Identity/4D table is shared."
+      ],
       "category": "Forge",
       "href": "../forge/index.html#forge-species-weights"
     },
@@ -796,7 +829,8 @@
       "details": [
         "The archetype table is 2d12: rolls 2-21 and 24 (Wildcard) are fixed and never change regardless of location.",
         "Rolls 22 and 23 are reserved for setting-specific archetypes — enter whatever fits this location (a local guard title, a regional faction agent, etc.).",
-        "Leaving either blank falls back to a generic \"Setting Specific\" placeholder when that roll comes up."],
+        "Leaving either blank falls back to a generic \"Setting Specific\" placeholder when that roll comes up."
+      ],
       "category": "Forge",
       "href": "../forge/index.html#forge-archetype-overrides"
     },
@@ -807,7 +841,8 @@
       "details": [
         "Species and Location are reusable configuration (a Species Name Profile, a saved Location), so selecting either opens the same full editor as Manage Species / Manage Location.",
         "Every other Identity box (Name, Archetype, Alignment, Gender, Age, Relationship, Attitude) shows the complete table or profile data behind that roll, alongside this NPC's current rolled value.",
-        "Nothing shows here until something in Identity is selected."],
+        "Nothing shows here until something in Identity is selected."
+      ],
       "category": "Forge",
       "href": "../forge/index.html#forge-identity"
     },
@@ -818,7 +853,8 @@
       "details": [
         "Create one from Loom's Groups tab — requires GM tier or higher.",
         "Add players' characters to the roster from the same tab — this is what determines who can see the group's game log while signed in.",
-        "Every group gets a public share link (also from the Groups tab) so players without an account can watch the game log and claim an unclaimed character."],
+        "Every group gets a public share link (also from the Groups tab) so players without an account can watch the game log and claim an unclaimed character."
+      ],
       "category": "Campaigns",
       "href": "../common/account.html?help=campaign.groups"
     },
@@ -829,7 +865,8 @@
       "details": [
         "Only your OWN groups (ones you created) show up here — it lists exactly what Loom's Groups tab lists for you.",
         "Picking a group here is what \"Share with [active campaign]\" one-click buttons target, and which campaign the Dashboard's own widgets (Handout, Combat Tracker, ...) read from — no separate per-tool setup needed.",
-        "The selection is stored per-browser (not on the server against your account), so switching computers means picking it again."],
+        "The selection is stored per-browser (not on the server against your account), so switching computers means picking it again."
+      ],
       "category": "Campaigns",
       "href": "../common/account.html?help=campaign.active"
     },
@@ -840,7 +877,8 @@
       "details": [
         "Sharing with a group grants every current member access transparently — one action instead of sharing with each player individually, and it stays current as membership changes.",
         "Share dialogs across the suite (Loom's Library inspector, the account page's Owned Content tab, and per-tool inspectors) offer a one-click \"Share with [active campaign]\" button alongside the full user/group picker once you have an active campaign selected.",
-        "Shares carry \"view\" or \"edit\" permission — view is the right choice for almost everything shared with players."],
+        "Shares carry \"view\" or \"edit\" permission — view is the right choice for almost everything shared with players."
+      ],
       "category": "Campaigns",
       "href": "../common/account.html?help=campaign.sharing"
     },
@@ -853,7 +891,8 @@
         "Click the eye icon on the Handout's header to show it to your active campaign, and again to stop — the icon reflects whatever's actually visible right now, even after a reload.",
         "The record must already be SAVED first — showing something that only exists as an unsaved draft fails immediately with a clear error, rather than silently showing nothing to the table.",
         "Maps work the same way from a Map widget instead, or from Orrery's own signed-in menu — a map is always a plain link back into Orrery, never a card.",
-        "Whoever's watching sees it in Workbench's \"Now Showing\" panel, next to the Game Log — including anonymous players on the group's public share link."],
+        "Whoever's watching sees it in Workbench's \"Now Showing\" panel, next to the Game Log — including anonymous players on the group's public share link."
+      ],
       "category": "Campaigns",
       "href": "../common/account.html?help=campaign.spotlight"
     },
@@ -864,7 +903,8 @@
       "details": [
         "Shows automatically once Workbench has a group to follow: either a loaded character's own campaign, or — with no character loaded — your active campaign selection, so a GM/admin running the table (not playing a specific PC) still sees it.",
         "Dice rolled from a character sheet in that campaign post to the log automatically.",
-        "Anonymous visitors on a group's public share link see the same log (and Now Showing panel) with no account needed."],
+        "Anonymous visitors on a group's public share link see the same log (and Now Showing panel) with no account needed."
+      ],
       "category": "Campaigns",
       "href": "../common/account.html?help=campaign.gamelog"
     },
@@ -875,7 +915,8 @@
       "details": [
         "Save only lights up once you've actually changed something since loading — not on a fresh page load, and not right after saving.",
         "Delete is only enabled for maps you own (or have edit-level sharing on) — someone else's shared or public map stays view-only.",
-        "Anonymous (signed-out) saves stay local to your own browser, same as every other generator tool in the suite."],
+        "Anonymous (signed-out) saves stay local to your own browser, same as every other generator tool in the suite."
+      ],
       "category": "Orrery",
       "href": "../common/account.html?help=orrery.maps"
     },
@@ -886,7 +927,8 @@
       "details": [
         "Select a marker layer, then click empty space on the map to drop a new pin, or click an existing pin to select and edit it.",
         "A selected pin can be dragged directly on the map to reposition it, and its inspector lets you pick what kind of entity it references and which specific one.",
-        "On a real-world (tile) base map, pins are anchored to actual coordinates, so they stay in the right place as you pan and zoom — unlike a flat pixel position, which would drift out of place on zoom."],
+        "On a real-world (tile) base map, pins are anchored to actual coordinates, so they stay in the right place as you pan and zoom — unlike a flat pixel position, which would drift out of place on zoom."
+      ],
       "category": "Orrery",
       "href": "../common/account.html?help=orrery.markers"
     },
@@ -897,7 +939,8 @@
       "details": [
         "The map's own owner (or anyone with edit-level sharing) always sees every layer, unfiltered — Views only ever apply to someone else viewing a shared or public map.",
         "Each View lists which layers/groups it reveals and which account tiers can see it; leaving a View's tier list empty means it applies to every viewer tier.",
-        "If a map has no Views defined at all, every viewer sees every layer — Views are opt-in, not a default restriction."],
+        "If a map has no Views defined at all, every viewer sees every layer — Views are opt-in, not a default restriction."
+      ],
       "category": "Orrery",
       "href": "../common/account.html?help=orrery.views"
     },
@@ -908,7 +951,8 @@
       "details": [
         "Each select defaults to \"Random\". Choosing a value there locks that one axis for the next Generate Monster click — everything you didn't pick still resolves randomly.",
         "Combat Scaling, Signature Feature, and Locked Features work the same way — pin any of them to steer generation without hand-building the whole thing.",
-        "These only affect the initial Generate Monster roll — there's no per-attribute reroll on an already-generated monster the way Forge has; regenerate to try a new combination."],
+        "These only affect the initial Generate Monster roll — there's no per-attribute reroll on an already-generated monster the way Forge has; regenerate to try a new combination."
+      ],
       "category": "Crucible",
       "href": "../crucible/index.html#crucible-overrides"
     },
@@ -919,7 +963,8 @@
       "details": [
         "Each Combat Scaling level defines a base HP, AC, damage-per-round, attack bonus, save DC, and target Feature budget — pinning a level fixes all of those together, not just one stat.",
         "A Role's own mechanical tendencies (HP/AC bands, damage profile) multiply on top of whichever level is used, so two monsters at the same Combat Scaling can still come out noticeably different.",
-        "These levels are authored in Loom, not hardcoded — a System can define its own scale."],
+        "These levels are authored in Loom, not hardcoded — a System can define its own scale."
+      ],
       "category": "Crucible",
       "href": "../crucible/index.html#crucible-overrides"
     },
@@ -954,7 +999,8 @@
       "details": [
         "Locked Features are added before traversal runs and count against the budget immediately, the same as the Signature Feature — traversal then fills the remaining required/optional slots around them.",
         "Nothing stops you from locking features that don't share a recipe slot or synergy with each other — traversal still tries to build a coherent result around whatever you've pinned.",
-        "Leave this empty to let Crucible pick every feature itself, guided only by the Archetype's recipe and whatever Role/Creature Type you've set."],
+        "Leave this empty to let Crucible pick every feature itself, guided only by the Archetype's recipe and whatever Role/Creature Type you've set."
+      ],
       "category": "Crucible",
       "href": "../crucible/index.html#crucible-overrides"
     },
@@ -964,7 +1010,8 @@
       "summary": "The resolved Creature Type, Archetype, and Role for this monster, plus its Name — edit the Name directly; the rest comes from generation.",
       "details": [
         "Creature Type, Archetype, and Role are each either what you pinned in the overrides above, or a random eligible value if you left it blank — Identity shows whichever it ended up as.",
-        "The Name field is the only thing here you edit directly; regenerate the monster to get a new resolved Identity instead."],
+        "The Name field is the only thing here you edit directly; regenerate the monster to get a new resolved Identity instead."
+      ],
       "category": "Crucible",
       "href": "../crucible/index.html#crucible-identity"
     },
@@ -974,7 +1021,8 @@
       "summary": "The atomic building blocks selected for this monster — its Signature Feature plus everything traversal pulled in to fill the Archetype's recipe.",
       "details": [
         "Every feature shown here was chosen for synergy with what's already selected and for not conflicting with it — traversal never adds a feature that fights with one already picked.",
-        "This list is exactly what's saved with the monster — there's no separate hidden layer of mechanics behind it."],
+        "This list is exactly what's saved with the monster — there's no separate hidden layer of mechanics behind it."
+      ],
       "category": "Crucible",
       "href": "../crucible/index.html#crucible-features"
     },
@@ -984,7 +1032,8 @@
       "summary": "Shows which of the Archetype's recipe slots (signature, required, optional) got filled, and by which Feature — including any slot traversal couldn't fill.",
       "details": [
         "An Archetype's recipe is a signature slot plus required and optional slots, each expecting a Feature tagged for that slot and compatible with the resolved Role/Creature Type.",
-        "An unfulfilled optional slot isn't an error — it just means nothing compatible and synergistic was available, and the result is still a usable, honestly-labeled monster."],
+        "An unfulfilled optional slot isn't an error — it just means nothing compatible and synergistic was available, and the result is still a usable, honestly-labeled monster."
+      ],
       "category": "Crucible",
       "href": "../crucible/index.html#crucible-recipe"
     },
@@ -995,7 +1044,8 @@
       "details": [
         "HP and AC come from the Combat Scaling level's base values, adjusted by the Role's own HP/AC band multipliers — a Brute and a Skirmisher at the same Combat Scaling won't have identical stats.",
         "Ability scores favor whichever ability the Role's damage profile relies on (Strength for melee-leaning roles, Dexterity for ranged-leaning ones), with Constitution scaled to the HP band.",
-        "Initiative Bonus is the standard ability-modifier math on Dexterity — it's what the Combat Tracker's \"Roll Initiative\" button uses for this monster once it's added to an encounter."],
+        "Initiative Bonus is the standard ability-modifier math on Dexterity — it's what the Combat Tracker's \"Roll Initiative\" button uses for this monster once it's added to an encounter."
+      ],
       "category": "Crucible",
       "href": "../crucible/index.html#crucible-stats"
     },
@@ -1005,7 +1055,8 @@
       "summary": "Optional. Type your own note directly, or use Generate Note to have Claude write one from this monster's resolved Creature Type, Archetype, Role, and Features.",
       "details": [
         "A monster is complete without a note — every generated value already stands on its own as the record.",
-        "Generate Note sends the resolved axes and selected Features to Claude and fills this box with its response; whatever's in the box when you Save is what gets saved."],
+        "Generate Note sends the resolved axes and selected Features to Claude and fills this box with its response; whatever's in the box when you Save is what gets saved."
+      ],
       "category": "Crucible",
       "href": "../crucible/index.html#crucible-notes"
     },
@@ -1016,7 +1067,8 @@
       "details": [
         "Locked Features are added before traversal runs and spend from (or, if negative, refund into) the budget immediately, the same as the Signature Effect.",
         "Traversal then repeatedly adds whichever remaining feature has the strongest synergy with what's locked/selected so far and still fits the remaining budget — a zero-synergy feature is never pulled in automatically.",
-        "Leave this empty to let Vault pick everything itself, guided only by the resolved Properties and Signature Effect."],
+        "Leave this empty to let Vault pick everything itself, guided only by the resolved Properties and Signature Effect."
+      ],
       "category": "Vault",
       "href": "../vault/index.html#vault-generate"
     },
@@ -1040,7 +1092,8 @@
       "details": [
         "Each Property is either what you pinned in the overrides above, or a random eligible value if you left it blank.",
         "Whichever Property is picked as the Budget ceiling field (see that topic) sets the Feature budget's target ceiling; every other Property's chosen value spends from (or refunds into) that budget.",
-        "The Name field is the only thing here you edit directly; regenerate the effect to get a new resolved set of Properties instead."],
+        "The Name field is the only thing here you edit directly; regenerate the effect to get a new resolved set of Properties instead."
+      ],
       "category": "Vault",
       "href": "../vault/index.html#vault-identity"
     },
@@ -1051,7 +1104,8 @@
       "details": [
         "Add a Feature from the select below the list at any time; going over budget is allowed and shown as a warning in the Remaining figure rather than blocked outright.",
         "Every Feature shown was chosen for synergy with what's already selected and for not conflicting with it during generation — hand-adding one doesn't run that same check, so a manual add can introduce a conflict traversal would have avoided.",
-        "Target/Spent/Remaining recompute live on every add or remove, using the same budget math the automatic generator itself uses."],
+        "Target/Spent/Remaining recompute live on every add or remove, using the same budget math the automatic generator itself uses."
+      ],
       "category": "Vault",
       "href": "../vault/index.html#vault-features"
     },
@@ -1061,7 +1115,8 @@
       "summary": "Optional. Type your own note directly, or use Generate Note to have Claude write one from this effect's resolved Properties and Features.",
       "details": [
         "An effect is complete without a note — every generated value already stands on its own as the record.",
-        "Generate Note sends the resolved Properties and selected Features to Claude and fills this box with its response; whatever's in the box when you Save is what gets saved."],
+        "Generate Note sends the resolved Properties and selected Features to Claude and fills this box with its response; whatever's in the box when you Save is what gets saved."
+      ],
       "category": "Vault",
       "href": "../vault/index.html#vault-notes"
     },
@@ -1072,7 +1127,8 @@
       "details": [
         "Locked Features seed the traversal alongside (or instead of) the automatic random seed feature — traversal then repeatedly adds whichever remaining compatible feature has the strongest synergy with what's already selected.",
         "A zero-synergy feature is never pulled in automatically, the same restraint Crucible/Vault's own traversal applies — locking is the way to force one in regardless.",
-        "Leave this empty to let Sanctum pick every feature itself, guided only by the resolved Type/Purpose/Environment."],
+        "Leave this empty to let Sanctum pick every feature itself, guided only by the resolved Type/Purpose/Environment."
+      ],
       "category": "Sanctum",
       "href": "../sanctum/index.html#sanctum-overrides"
     },
@@ -1082,7 +1138,8 @@
       "summary": "The resolved Type, Purpose, and Environment for this Location, plus its Name — edit the Name directly; the rest comes from generation or the overrides above.",
       "details": [
         "Type and Purpose are each either what you pinned in the overrides above, or a random eligible value if you left it blank; Environment comes from the active System's own environment list, if it defines one.",
-        "The Name field is the only thing here you edit directly; regenerate the Location to get a new resolved Type/Purpose/Environment instead."],
+        "The Name field is the only thing here you edit directly; regenerate the Location to get a new resolved Type/Purpose/Environment instead."
+      ],
       "category": "Sanctum",
       "href": "../sanctum/index.html#sanctum-identity"
     },
@@ -1093,7 +1150,8 @@
       "details": [
         "Unlike Crucible/Vault, there's no recipe or budget here — one random compatible feature seeds the result, then the best-synergy, non-conflicting candidate is added repeatedly until a randomized target count is reached.",
         "A narrow, specific function (\"this place is a shop\") is modeled as a Feature, not a Type or Purpose — Type/Purpose stay broad, Features layer on the specifics.",
-        "This list is exactly what's saved with the Location — there's no separate hidden layer of mechanics behind it."],
+        "This list is exactly what's saved with the Location — there's no separate hidden layer of mechanics behind it."
+      ],
       "category": "Sanctum",
       "href": "../sanctum/index.html#sanctum-features"
     },
@@ -1104,7 +1162,8 @@
       "details": [
         "The automatic generator only ever populates these with Resources (1-3 for Assets, then 1-3 more for Needs, excluding whatever Assets already took) — linking a specific NPC/Monster/Effect instead is a manual step, done with the kind + entity pickers below each list.",
         "Assets and Needs share one row shape (kind, linked entity, label, description) and one add-row pattern, the same as Features — they're meant to feel like the same kind of list, not three different UIs.",
-        "This is deliberately not a full economy or ledger — Assets/Needs describe what a place has or lacks in broad strokes for a GM to use at the table, not a simulated inventory."],
+        "This is deliberately not a full economy or ledger — Assets/Needs describe what a place has or lacks in broad strokes for a GM to use at the table, not a simulated inventory."
+      ],
       "category": "Sanctum",
       "href": "../sanctum/index.html#sanctum-assets-needs"
     },
@@ -1115,7 +1174,8 @@
       "details": [
         "Parent is containment (a settlement's parent is its region) — the Parent select lists other Locations in the same Setting. Children are never stored directly; they're computed as whichever Locations list this one as their parent.",
         "Connected To is a peer link (a road, a tunnel) — it's bidirectional and only needs to be added from one side; the other Location shows the connection automatically.",
-        "Relationships always start empty on a freshly generated Location — set them deliberately once you know how this place fits into the rest of the Setting."],
+        "Relationships always start empty on a freshly generated Location — set them deliberately once you know how this place fits into the rest of the Setting."
+      ],
       "category": "Sanctum",
       "href": "../sanctum/index.html#sanctum-relationships"
     },
@@ -1125,7 +1185,8 @@
       "summary": "Optional. Type your own note directly, or use Generate Note to have Claude write one from this Location's resolved Identity and Features.",
       "details": [
         "A Location is complete without a note — every generated value already stands on its own as the record.",
-        "Generate Note sends the resolved Identity and selected Features to Claude and fills this box with its response; whatever's in the box when you Save is what gets saved."],
+        "Generate Note sends the resolved Identity and selected Features to Claude and fills this box with its response; whatever's in the box when you Save is what gets saved."
+      ],
       "category": "Sanctum",
       "href": "../sanctum/index.html#sanctum-notes"
     },
@@ -1135,7 +1196,8 @@
       "summary": "Read-only here — Locations, and their Setting/System, are authored in Sanctum. This panel just shows the currently selected Location's basics.",
       "details": [
         "Selecting a Location here only picks which one to generate NPCs from — to create a new Location, edit an existing one's Type/Purpose/Environment/Features, or manage its Setting, open Sanctum instead.",
-        "Species Weights, Mixing Coefficient, and Setting-Specific Archetypes below are the one part of a Location Forge itself still edits, since they're specifically about how Forge generates NPCs here."],
+        "Species Weights, Mixing Coefficient, and Setting-Specific Archetypes below are the one part of a Location Forge itself still edits, since they're specifically about how Forge generates NPCs here."
+      ],
       "category": "Forge",
       "href": "../forge/index.html#forge-manage-species"
     },
@@ -1145,7 +1207,8 @@
       "summary": "Select a node in the tree, then click a palette entry to add it as a child (object fields) or step (pipelines).",
       "details": [
         "The palette always adds to whatever's currently selected in the tree — select an Object or With node before clicking a palette entry to add a child field to it, or a Pipeline node to add a step to it.",
-        "Field/Custom/Pipeline entries add a new node under an Object; Map/Filter/Flatten/Group By/Sort entries (shown once a Pipeline node is selected) add a new step to it instead."],
+        "Field/Custom/Pipeline entries add a new node under an Object; Map/Filter/Flatten/Group By/Sort entries (shown once a Pipeline node is selected) add a new step to it instead."
+      ],
       "category": "Loom",
       "href": "../loom/index.html#loom-node-palette"
     },
@@ -1155,17 +1218,32 @@
       "summary": "With more than one grid cell selected, the Custom Properties editor applies whatever you set to every selected cell at once.",
       "details": [
         "There's no per-cell distinction shown while multiple cells are selected — every property edit here is applied identically across the whole selection.",
-        "Select a single cell instead if you need to see or edit that one cell's own values without affecting its neighbors."],
+        "Select a single cell instead if you need to see or edit that one cell's own values without affecting its neighbors."
+      ],
       "category": "Orrery",
       "href": "../orrery/index.html#orrery-selection"
     },
     {
       "id": "orrery.gridSelection",
       "title": "Adding Grid Cells to a Group",
-      "summary": "To add members to a Group, select grid cells on the map first, then come back here and click Add selected cells.",
+      "summary": "Selecting a Group makes its map cells directly clickable — click a cell to add it, or click-and-drag to sweep several in at once.",
       "details": [
-        "The Members list only ever adds whatever your most recent grid-cell selection on the map was — select cells first, then return to this panel.",
-        "\"Last selection\" shown here (layer name and cell count) is exactly what Add selected cells will add if you click it right now."],
+        "Click or drag directly on the grid while this group is selected — every cell you click or sweep over is added to this group immediately, no separate Add step. This only ever adds cells, never removes them — to remove one, use its own Remove button in the Members list below.",
+        "If the map has more than one grid layer and this group has no Fog of War link to one, a \"Paint on layer\" field appears here to pick which layer your clicks target.",
+        "The older select-then-add flow still works too: select grid cells on the map while a Layer (not a Group) is selected, then come back here and click Add selected cells — useful if you want to build up a selection before deciding which group it belongs to."
+      ],
+      "category": "Orrery",
+      "href": "../orrery/index.html#orrery-selection"
+    },
+    {
+      "id": "orrery.fogOfWar",
+      "title": "Fog of War",
+      "summary": "Fog of War hides every cell on this grid layer from non-owner viewers except whichever ones are in its Reveal Group — turning it on creates that Group empty, which is why nothing changes until you add cells to it.",
+      "details": [
+        "Add cells the same way as any Group: select grid cells on the map, then select the auto-created Group (named \"<Layer name> — Revealed\") in the left pane's Groups list and click Add selected cells.",
+        "You won't see the fog while editing here — the map's own owner always sees every cell unfiltered, same rule Views follow. Check it from the Dashboard's Map widget as a player, or a shared/public link, to see what a real viewer sees.",
+        "A Reveal Group with no members yet is exactly what \"Fog of War on, nothing revealed\" looks like — not a bug."
+      ],
       "category": "Orrery",
       "href": "../orrery/index.html#orrery-selection"
     },
@@ -1176,7 +1254,8 @@
       "details": [
         "A tag like group:Location puts this page under a \"Location\" group in the list on the left — group: names can contain a / to nest, e.g. group:Sessions/Arc 1.",
         "A tag like display:Important shows \"Important\" as a small pill next to this page's title in the list — a page can have more than one display: tag.",
-        "There's no separate place to configure this — the tag's own text is the whole instruction. Any other tag (prefixed or not) is just a normal freeform tag, filterable but otherwise inert."],
+        "There's no separate place to configure this — the tag's own text is the whole instruction. Any other tag (prefixed or not) is just a normal freeform tag, filterable but otherwise inert."
+      ],
       "category": "Repository",
       "href": "../repository/index.html#repository-tags"
     },
@@ -1187,7 +1266,8 @@
       "details": [
         "On (default): checking a task adds a date, like ✅ 2026-07-27, to the end of the line.",
         "Off: checking a task just marks it done — nothing is added to the line.",
-        "Unchecking a task always removes its date, regardless of this setting."],
+        "Unchecking a task always removes its date, regardless of this setting."
+      ],
       "category": "Repository",
       "href": "../repository/index.html#repository-tags"
     },
@@ -1197,7 +1277,8 @@
       "summary": "Set another page as this one's parent to nest it underneath that page in the list on the left.",
       "details": [
         "A page can have one parent. Setting one nests this page under it in the list on the left, however many levels deep.",
-        "This is different from a tag-based group or a Related link — it's a real parent/child relationship between two specific pages, not just a shared label or a loose reference."],
+        "This is different from a tag-based group or a Related link — it's a real parent/child relationship between two specific pages, not just a shared label or a loose reference."
+      ],
       "category": "Repository",
       "href": "../repository/index.html#repository-tags"
     }

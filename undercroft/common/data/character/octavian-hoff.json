@@ -1,9 +1,12 @@
 {
   "template": "tpl.5e.flex-basic",
-  "systemIds": ["sys.dnd5e"],
+  "systemIds": [
+    "sys.dnd5e"
+  ],
   "data": {},
   "kind": "character",
   "name": "Octavian Hoff",
+  "image": "https://www.dndbeyond.com/avatars/44651/45/1581111423-133639844.jpeg?width=150&height=150&fit=crop&quality=95&auto=webp",
   "identity": {
     "id": 133639844,
     "userId": 100499308,
@@ -1195,7 +1198,29 @@
   "decorations": {
     "avatarUrl": "https://www.dndbeyond.com/avatars/44651/45/1581111423-133639844.jpeg?width=150&height=150&fit=crop&quality=95&auto=webp",
     "frameAvatarUrl": null,
-    "backdropAvatarUrl": null
+    "backdropAvatarUrl": null,
+    "smallBackdropAvatarUrl": null,
+    "largeBackdropAvatarUrl": null,
+    "thumbnailBackdropAvatarUrl": null,
+    "defaultBackdrop": {
+      "backdropAvatarUrl": "https://www.dndbeyond.com/avatars/43993/212/638609651055893683.jpeg",
+      "smallBackdropAvatarUrl": "https://www.dndbeyond.com/avatars/43993/213/638609651058063721.jpeg",
+      "largeBackdropAvatarUrl": "https://www.dndbeyond.com/avatars/43993/214/638609651060453758.jpeg",
+      "thumbnailBackdropAvatarUrl": "https://www.dndbeyond.com/avatars/43993/215/638609651061853748.jpeg"
+    },
+    "avatarId": 44651045,
+    "portraitDecorationKey": null,
+    "frameAvatarDecorationKey": null,
+    "frameAvatarId": null,
+    "backdropAvatarDecorationKey": null,
+    "backdropAvatarId": null,
+    "smallBackdropAvatarDecorationKey": "",
+    "smallBackdropAvatarId": null,
+    "largeBackdropAvatarDecorationKey": "",
+    "largeBackdropAvatarId": null,
+    "thumbnailBackdropAvatarDecorationKey": "",
+    "thumbnailBackdropAvatarId": null,
+    "themeColor": null
   },
   "deathSaves": {
     "successes": null,

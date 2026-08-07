@@ -4,6 +4,7 @@
   "fields": {
     "kind": { "type": "field", "bind": "='character'" },
     "name": { "type": "field", "bind": "@name" },
+    "image": { "type": "field", "bind": "@decorations.avatarUrl" },
     "identity": {
       "type": "object",
       "fields": {
@@ -114,14 +115,7 @@
         "dm": { "type": "field", "bind": "@campaign.dmUsername" }
       }
     },
-    "decorations": {
-      "type": "object",
-      "fields": {
-        "avatarUrl": { "type": "field", "bind": "@decorations.avatarUrl" },
-        "frameAvatarUrl": { "type": "field", "bind": "@decorations.frameAvatarUrl" },
-        "backdropAvatarUrl": { "type": "field", "bind": "@decorations.backdropAvatarUrl" }
-      }
-    },
+    "decorations": { "type": "field", "bind": "@decorations" },
     "deathSaves": {
       "type": "object",
       "fields": {

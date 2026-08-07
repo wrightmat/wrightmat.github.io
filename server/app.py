@@ -284,6 +284,22 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
                         if newest:
                             last_seen[kind] = newest
                         continue
+                    if kind == "ping":
+                        # Ephemeral — see ServerState.pending_pings' own
+                        # comment. Same int-seq watermark shape as group_log
+                        # above (no library_items row/modified_at string to
+                        # watch), but read from the in-memory bucket instead
+                        # of a DB query.
+                        watermark = last_seen.get(kind, 0)
+                        newest = watermark
+                        for entry in self.server.state.get_ping_bucket(group_id):
+                            if not first_tick and entry["seq"] > watermark:
+                                changed.append({"kind": "ping", "position": entry.get("position"), "by": entry.get("by")})
+                            if entry["seq"] > newest:
+                                newest = entry["seq"]
+                        if newest:
+                            last_seen[kind] = newest
+                        continue
                     rows = self.server.state.db.execute(
                         "SELECT id, modified_at FROM library_items WHERE kind = ? ORDER BY modified_at DESC LIMIT 25",
                         (kind,),
@@ -592,6 +608,63 @@ def register_routes():
         return json_response({"ok": True, "clips": clips})
 
     router.add("POST", r"^/soundboard/clips/delete$", handle_soundboard_clip_delete)
+
+    # POST /token-library — a shared, GM-buildable library of map-token image
+    # links (Orrery marker tokens, Forge NPC/Crucible Monster portraits),
+    # same pattern as audio-clips.json/custom-fonts.json above: a flat,
+    # server-persisted JSON list anyone gm+ can add to, upserted by id,
+    # rather than a Library kind — there's no per-token ownership/sharing to
+    # model, just one shared catalog of externally-hosted image links (no
+    # upload, no file hosting by this app).
+    def resolve_token_library_path(state: ServerState) -> Path:
+        return state.root_dir / "undercroft" / "common" / "data" / "token-library.json"
+
+    def handle_token_library_save(request: Request) -> Response:
+        user = request.handler.current_user()
+        if not user:
+            raise AuthError("Authentication required")
+        if role_rank(user.tier) < role_rank("gm"):
+            raise AuthError("GM tier or higher required to add tokens")
+        payload = require_json(request)
+        token = payload.get("token", payload)
+        if not token or not isinstance(token, dict) or not token.get("id") or not token.get("url"):
+            return json_response({"error": "Invalid token payload"}, status=HTTPStatus.BAD_REQUEST)
+        path = resolve_token_library_path(request.state)
+        try:
+            existing = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+        except (json.JSONDecodeError, OSError):
+            existing = {}
+        tokens = existing.get("tokens") if isinstance(existing.get("tokens"), list) else []
+        tokens = [entry for entry in tokens if entry.get("id") != token.get("id")]
+        tokens.append(token)
+        serialized = json.dumps({"tokens": tokens}, indent=2, sort_keys=False)
+        path.write_text(f"{serialized}\n", encoding="utf-8")
+        return json_response({"ok": True, "tokens": tokens})
+
+    router.add("POST", r"^/token-library$", handle_token_library_save)
+
+    # POST /token-library/delete — same "no true HTTP DELETE" reasoning as
+    # /soundboard/clips/delete above.
+    def handle_token_library_delete(request: Request) -> Response:
+        user = request.handler.current_user()
+        if not user or user.tier != "admin":
+            raise AuthError("Admin only")
+        payload = require_json(request)
+        token_id = payload.get("id")
+        if not token_id:
+            return json_response({"error": "token id required"}, status=HTTPStatus.BAD_REQUEST)
+        path = resolve_token_library_path(request.state)
+        try:
+            existing = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+        except (json.JSONDecodeError, OSError):
+            existing = {}
+        tokens = existing.get("tokens") if isinstance(existing.get("tokens"), list) else []
+        tokens = [entry for entry in tokens if entry.get("id") != token_id]
+        serialized = json.dumps({"tokens": tokens}, indent=2, sort_keys=False)
+        path.write_text(f"{serialized}\n", encoding="utf-8")
+        return json_response({"ok": True, "tokens": tokens})
+
+    router.add("POST", r"^/token-library/delete$", handle_token_library_delete)
 
     # GET /google-fonts-metadata — shared by both Press's and Workbench's
     # Font pickers (common/js/lib/font-library.js), not Press-specific.
@@ -1262,6 +1335,20 @@ def register_routes():
 
     router.add("POST", r"^/groups/(?P<group_id>[^/]+)/log$", handle_group_log_post)
 
+    # A transient pointer-broadcast (Orrery's click-to-ping map tool) — see
+    # ServerState.pending_pings' own comment for why this never touches the
+    # database. Delivered to viewers through the existing /live/{groupId}
+    # SSE stream's "ping" kind, not a poll+re-fetch like every other kind.
+    def handle_group_ping_post(request: Request) -> Response:
+        user = require_user(request)
+        params = getattr(request, "params")
+        group_id = params["group_id"]
+        data = require_json(request)
+        group_store.record_group_ping(request.state, group_id, user, position=data.get("position"))
+        return json_response({"ok": True}, status=HTTPStatus.CREATED)
+
+    router.add("POST", r"^/groups/(?P<group_id>[^/]+)/ping$", handle_group_ping_post)
+
     def handle_group_share_link(request: Request) -> Response:
         user = require_user(request)
         params = getattr(request, "params")
@@ -1334,6 +1421,16 @@ def register_routes():
         return json_response(entry, status=HTTPStatus.CREATED)
 
     router.add("POST", r"^/groups/share/(?P<token>[^/]+)/log$", handle_group_share_log_post)
+
+    def handle_group_share_ping_post(request: Request) -> Response:
+        user = require_user(request)
+        params = getattr(request, "params")
+        token = params["token"]
+        data = require_json(request)
+        group_store.record_group_ping(request.state, None, user, share_token=token, position=data.get("position"))
+        return json_response({"ok": True}, status=HTTPStatus.CREATED)
+
+    router.add("POST", r"^/groups/share/(?P<token>[^/]+)/ping$", handle_group_share_ping_post)
 
     def handle_group_share_details(request: Request) -> Response:
         params = getattr(request, "params")

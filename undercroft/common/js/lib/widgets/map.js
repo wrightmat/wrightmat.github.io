@@ -15,12 +15,11 @@
 // supply is `isMarkerDraggable`, restricted to the viewer's own claimed
 // character's marker, per the confirmed permission model.
 import { BaseMapManager } from "../../../../orrery/js/lib/base-maps.js";
-import { renderMapLayers } from "../../../../orrery/js/lib/map-viewer.js";
-import { connectLiveStream } from "../live.js";
+import { renderMapLayers, createPingMarker } from "../../../../orrery/js/lib/map-viewer.js";
 import { resolveToolHref, resolveToolContextPath } from "../app-shell.js";
 import { resolveIsSpotlighted } from "../spotlight.js";
 import { el } from "../dom.js";
-import { createReliableInterval } from "../reliable-interval.js";
+import { watchMapForChanges, persistMarkerMove as persistMarkerMoveShared } from "../map-live-sync.js";
 
 // 10s (was 30s) — same reasoning as combat-tracker.js's own
 // POLL_INTERVAL_MS, kept a bit more conservative here since a map's own
@@ -68,8 +67,7 @@ export function initMapWidget(
   let baseMapSignature = "";
   let baseMapManager = null;
   let zoomPanel = null;
-  let liveStream = null;
-  let pollTimer = 0;
+  let watcher = null;
   let visible = false;
 
   // Same direct spotlightToGroup/clearSpotlight toggle Handout's own
@@ -236,17 +234,13 @@ export function initMapWidget(
   // in-memory `map` this widget last loaded — the GM could have changed the
   // map (new marker, layer visibility, ...) in the moments since, and a
   // stale full-object save would silently clobber that. Same reasoning as
-  // combat-tracker.js's writeThroughToCharacter.
+  // combat-tracker.js's writeThroughToCharacter. Delegates to
+  // map-live-sync.js's shared helper — Orrery's own authoring surface uses
+  // the exact same one for the same reason.
   async function persistMarkerMove(layerId, elementId, nextPosition) {
     try {
-      const result = await dataManager.get("map", mapId, { shareToken, preferLocal: false });
-      const freshMap = result.payload;
-      const freshElement = freshMap.layers
-        ?.find((entry) => entry.id === layerId)
-        ?.elements?.find((entry) => entry.id === elementId);
-      if (!freshElement) return;
-      freshElement.position = nextPosition;
-      await dataManager.save("map", mapId, freshMap);
+      const freshMap = await persistMarkerMoveShared({ dataManager, mapId, shareToken, layerId, elementId, nextPosition });
+      if (!freshMap) return;
       map = freshMap;
       renderLayers();
     } catch (error) {
@@ -254,41 +248,20 @@ export function initMapWidget(
     }
   }
 
-  // load() has three independent triggers (the initial call, the poll timer,
-  // and the live stream) that can overlap — an `await` inside means a second
-  // trigger firing before the first one finishes could reach the
-  // `if (!baseMapManager)` check while it's still unset, constructing a
-  // SECOND BaseMapManager (a second Leaflet map instance) on top of the
-  // first, whose own overlay silently keeps rendering its own copy of every
-  // marker underneath/alongside the one from whichever instance won last —
-  // a real "second marker" a viewer would see, with no code path that ever
-  // cleans up the orphaned instance. Single-flighting here (this wrapper)
-  // collapses any overlapping triggers onto one in-flight fetch+mount cycle,
-  // so the `if (!baseMapManager)` check can never race.
-  let loadPromise = null;
-  function load() {
-    if (!loadPromise) {
-      loadPromise = doLoad().finally(() => {
-        loadPromise = null;
-      });
-    }
-    return loadPromise;
-  }
-
-  async function doLoad() {
-    let nextMap;
-    try {
-      // preferLocal: false — this widget exists to watch someone ELSE's
-      // (the GM's) live map, same reasoning as combat-tracker.js's own
-      // encounter fetch: a locally cached copy from whenever this viewer
-      // last touched it (if ever) would defeat the live-update point of
-      // this widget entirely.
-      const result = await dataManager.get("map", mapId, { shareToken, preferLocal: false });
-      nextMap = result.payload;
-    } catch (error) {
-      if (!destroyed) renderError("Unable to load this map.");
-      return;
-    }
+  // onMapChanged has two independent triggers (the poll timer and the live
+  // stream) that can overlap — watchMapForChanges single-flights its own
+  // underlying fetch, but this handler itself still isn't reentrant-safe
+  // once inside the `!baseMapManager` branch: a second trigger arriving
+  // mid-construction could build a SECOND BaseMapManager (a second Leaflet
+  // map instance) on top of the first, whose own overlay would silently
+  // keep rendering its own copy of every marker underneath/alongside the
+  // one from whichever instance won last — a real "second marker" a viewer
+  // would see, with no code path that ever cleans up the orphaned instance.
+  // watchMapForChanges' own single-flighting is enough here since this
+  // handler has no further `await` inside it (unlike the old inline
+  // doLoad, which awaited its own fetch) — nothing can interleave partway
+  // through a single call.
+  function onMapChanged(nextMap) {
     if (destroyed || !nextMap) return;
     map = nextMap;
     onTitleChange?.(map.name || "");
@@ -324,24 +297,39 @@ export function initMapWidget(
     renderLayers();
   }
 
-  void load();
-  // createReliableInterval (not plain window.setInterval) — a Map popped out
-  // onto a physical second screen sits unfocused for the whole session;
-  // plain setInterval was confirmed to stall there until the window was
-  // manually refocused. See reliable-interval.js's own header.
-  pollTimer = createReliableInterval(() => void load(), POLL_INTERVAL_MS);
-  liveStream = connectLiveStream({ dataManager, groupId, kinds: ["map"], shareToken });
-  liveStream.subscribe("map", () => void load());
+  // watchMapForChanges owns the poll (createReliableInterval, not plain
+  // window.setInterval — a Map popped out onto a physical second screen
+  // sits unfocused for the whole session; plain setInterval was confirmed
+  // to stall there until the window was manually refocused, see
+  // reliable-interval.js's own header) plus the live-stream "wake sooner"
+  // subscription.
+  watcher = watchMapForChanges({
+    dataManager,
+    mapId,
+    shareToken,
+    groupId,
+    pollIntervalMs: POLL_INTERVAL_MS,
+    onChange: onMapChanged,
+    onError: () => {
+      if (!destroyed) renderError("Unable to load this map.");
+    },
+    // Orrery's click-to-ping tool — this widget IS the "table" a GM pings,
+    // so it only ever needs to render one, never send one.
+    onPing: ({ position, by }) => {
+      const overlay = baseMapManager?.getOverlayContainer();
+      if (!overlay || !map || !position) return;
+      overlay.appendChild(createPingMarker(baseMapManager, map, position, by || ""));
+    },
+  });
 
   return {
     refresh: () => {
-      void load();
+      watcher.refresh();
       void refreshVisibility();
     },
     destroy() {
       destroyed = true;
-      if (pollTimer) pollTimer.stop();
-      liveStream?.close();
+      watcher.stop();
       resizeObserver?.disconnect();
       baseMapManager?.current?.destroy?.();
       container.innerHTML = "";

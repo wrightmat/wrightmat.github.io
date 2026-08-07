@@ -22,8 +22,11 @@ const MACRO_CODE_PATTERN = /^macro:\s*(.+)$/i;
 // name — same "no fuzzy matching" convention journal-encounter.js's own
 // findMatch establishes; an author references a macro by whichever's more
 // convenient to type in a note, and an unmatched reference just fails
-// clearly (see runMacroReference below) rather than guessing.
-async function findMacro(dataManager, ref) {
+// clearly (see runMacroReference below) rather than guessing. Exported for
+// journal-kind-reference.js's own extractContentReferences, which resolves
+// a `macro:` block's own reference the exact same way when building the
+// Related panel's list.
+export async function findMacro(dataManager, ref) {
   const entries = await fetchKindEntriesWithIds(dataManager, "macro");
   const normalized = ref.trim().toLowerCase();
   const match = entries.find(({ id, entity }) => {

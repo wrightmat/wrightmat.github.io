@@ -32,6 +32,7 @@ import {
   generateNoteForRecord,
 } from "../../common/js/lib/generator-kit.js";
 import { confirmDelete } from "../../common/js/lib/ownership.js";
+import { createTokenImageField } from "../../common/js/lib/token-picker.js";
 import { initToolSettings } from "../../common/js/lib/tool-settings.js";
 
 let status = null;
@@ -131,6 +132,7 @@ const elements = {
   emptyState: document.querySelector("[data-monster-empty-state]"),
   display: document.querySelector("[data-monster-display]"),
   nameInput: document.querySelector("[data-monster-name]"),
+  imageMount: document.querySelector('[data-field-mount="monster-image"]'),
   identityFields: document.querySelector("[data-identity-fields]"),
   featureList: document.querySelector("[data-feature-list]"),
   recipeSummary: document.querySelector("[data-recipe-summary]"),
@@ -511,6 +513,27 @@ function renderMonster(record) {
   elements.emptyState?.classList.add("d-none");
   elements.display?.classList.remove("d-none");
   if (elements.nameInput) elements.nameInput.value = record.name || "";
+  // Rebuilt each render, like Identity below — image isn't read from the DOM
+  // at save time the way name/notes are (see buildRecordForSave); it commits
+  // straight to currentRecord.image on blur/library-pick instead, same as
+  // Forge's own NPC Image field.
+  if (elements.imageMount) {
+    elements.imageMount.innerHTML = "";
+    elements.imageMount.appendChild(
+      createTokenImageField({
+        id: "crucibleMonsterImage",
+        label: "Image",
+        value: record.image || "",
+        dataManager,
+        status,
+        onSelect: (url) => {
+          currentRecord.image = url;
+          dirtyGate.markDirty();
+          updateActionButtons();
+        },
+      })
+    );
+  }
   renderIdentity(record);
   renderFeatureList(record);
   renderRecipeSummary(record);

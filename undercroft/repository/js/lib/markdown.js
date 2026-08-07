@@ -30,6 +30,11 @@ import { parseEncounterBlock } from "./journal-encounter.js";
 // page's own id, so their execution is a caller-supplied callback instead —
 // see journal-macro.js's own header comment for why macros don't need that).
 import { applyMacroBlocks } from "./journal-macro.js";
+// Every OTHER Library kind's own `` `kindId:Name` `` inline code spans —
+// same treatment, but generic instead of one bespoke module per kind; see
+// journal-kind-reference.js's own header comment for why dice/encounter/
+// macro (and journal/kind) are excluded from it.
+import { applyKindReferenceBlocks } from "./journal-kind-reference.js";
 // `> [!type]` callout blockquotes — parsing/color-icon lookup lives in
 // journal-callouts.js (same split as journal-encounter.js's own
 // parseEncounterBlock: that module parses, this one renders); see
@@ -357,6 +362,14 @@ function applyCalloutStyling(container) {
 // commands, table-wide sound/handouts, ...) by clicking something in it.
 // `groupContext` is only needed for `` `macro:...` `` — see
 // journal-macro.js's own runMacroReference for what it's used for.
+// `validKindIds`/`kindLabels`/`onOpenReference` are for every OTHER kind's
+// own `` `kindId:Name` `` chip (journal-kind-reference.js) — `validKindIds`
+// a Set, `kindLabels` a {id: label} map (both from loadLibraryKinds(),
+// fetched once by the caller, never by this module itself — renderMarkdown
+// stays fully synchronous). Interactive unconditionally (unlike
+// interactiveEncounters/interactiveDice/interactiveMacros above) — opening
+// a reference is read-only, the same as clicking a wiki-link, not a GM-only
+// action like starting combat or firing a macro.
 export function renderMarkdown(
   rawBody,
   {
@@ -372,6 +385,9 @@ export function renderMarkdown(
     groupContext,
     dataManager,
     ensureWidget,
+    validKindIds,
+    kindLabels,
+    onOpenReference,
   } = {}
 ) {
   const container = document.createElement("div");
@@ -394,6 +410,7 @@ export function renderMarkdown(
   applyDiceRollers(container, { status, interactive: interactiveDice, dataManager });
   applyEncounterBlocks(container, { interactive: interactiveEncounters, onStartEncounter });
   applyMacroBlocks(container, { status, interactive: interactiveMacros, dataManager, groupContext, ensureWidget });
+  applyKindReferenceBlocks(container, { validKindIds, kindLabels, interactive: Boolean(onOpenReference), onOpenReference });
   applyCalloutStyling(container);
   // Off by default at this layer — Repository's own editor always opts in;
   // handout.js's player-facing rendering leaves this false so a checkbox on

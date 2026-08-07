@@ -1,6 +1,6 @@
 {
   "id": "3d80a46f-a9ae-46e0-bb27-357d99f3d280",
-  "name": "Test Map",
+  "name": "Eberron World Map",
   "baseMap": {
     "type": "tile",
     "settings": {
@@ -29,8 +29,8 @@
     "mode": "geo",
     "zoom": 7,
     "center": {
-      "lat": 7.2207996427109435,
-      "lng": -37.705078125
+      "lat": 10.001310360636928,
+      "lng": -38.44116210937501
     },
     "pan": {
       "x": 0,
@@ -51,7 +51,7 @@
       "elements": [],
       "settings": {
         "gridType": "square",
-        "cellSize": 50,
+        "cellSize": 2,
         "lineColor": "#0f172a"
       },
       "properties": {}
@@ -74,15 +74,16 @@
           "refId": "sharn",
           "label": "Sharn",
           "position": {
-            "lat": 7.36246686553575,
-            "lng": -40.75927734375
-          }
+            "lat": 7.38425782830926,
+            "lng": -40.732910156250014
+          },
+          "sizeCells": 4
         }
       ],
       "settings": {
-        "icon": "pin",
+        "icon": "bi-pin",
         "size": 24,
-        "color": "#0ea5e9"
+        "color": "#1fe03f"
       },
       "properties": {}
     }
@@ -91,5 +92,16 @@
   "views": [],
   "properties": {},
   "createdAt": "2026-07-24T01:04:48.683Z",
-  "updatedAt": "2026-07-24T03:01:22.482Z"
+  "updatedAt": "2026-08-07T14:06:31.625Z",
+  "measurement": {
+    "scale": 2.3,
+    "unit": "mi"
+  },
+  "initialView": {
+    "zoom": 4,
+    "pan": {
+      "x": 0,
+      "y": 0
+    }
+  }
 }

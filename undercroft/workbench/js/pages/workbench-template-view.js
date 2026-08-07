@@ -7632,18 +7632,14 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
   // generalControls' own Identity-section ternary instead, so it doesn't
   // need to be plucked out of anything.
   function createContainerLabelControl(component) {
-    const wrapper = document.createElement("div");
-    wrapper.className = "d-flex flex-column";
     const id = toId([component.uid, "Container", "label-input"]);
-    const label = document.createElement("label");
-    label.className = "form-label fw-semibold text-body-secondary";
-    label.setAttribute("for", id);
-    label.textContent = "Label";
-    const input = document.createElement("input");
-    input.className = "form-control";
-    input.type = "text";
-    input.id = id;
-    input.placeholder = "Displayed label, @path, or =formula";
+    const field = createFormFloatingField({
+      type: "text",
+      id,
+      label: "Label",
+      placeholder: "Displayed label, @path, or =formula",
+    });
+    const input = field.querySelector("input");
     input.value = component.formula ? `=${component.formula}` : component.label || "";
     const feedback = createFieldPreviewFeedback();
     feedback.update(input.value);
@@ -7660,8 +7656,8 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
       }, { rerenderCanvas: true });
       feedback.update(input.value);
     });
-    wrapper.append(label, input, feedback.element);
-    return wrapper;
+    field.appendChild(feedback.element);
+    return field;
   }
 
   function renderContainerInspector(component) {

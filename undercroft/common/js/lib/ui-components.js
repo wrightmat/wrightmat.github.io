@@ -13,6 +13,7 @@
 // established practice of tracking exactly this kind of extraction.
 
 import { bindCollapsibleToggle, setCollapsibleState } from "./collapsible.js";
+import { attachIconAutocomplete, getIconTokens } from "./icon-picker.js";
 import { bindCopyButton } from "./clipboard.js";
 import { createJsonPreviewRenderer } from "./json-preview.js";
 
@@ -586,6 +587,78 @@ export function createCompactField({
   }
 
   wrapper.append(labelRow, input);
+  return wrapper;
+}
+
+// A label + searchable icon input with a live preview swatch, wired to
+// icon-picker.js's attachIconAutocomplete (the same ddb-*/bi-* class
+// vocabulary and dropdown Press's own Icon component field uses — see
+// press/index.html's `data-inspector-icon-field` for the markup this
+// mirrors). Deliberately NOT the same factory as Press's own field: that one
+// resolves @binding/=formula preview values through the template's live
+// data context, which callers like Orrery's marker icon (a literal class
+// string, no binding concept) don't need. Commits on "change" (blur/Enter),
+// not every keystroke, since callers whose selection editor rebuilds its
+// whole DOM per change (Orrery) would lose focus on a live-keystroke commit.
+export function createIconPickerField({
+  id,
+  label = "Icon",
+  labelClass = "form-label mb-0",
+  value = "",
+  placeholder = "Search icons",
+  onSelect,
+} = {}) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "d-flex flex-column gap-2";
+
+  const labelEl = document.createElement("label");
+  labelEl.className = labelClass;
+  if (id) labelEl.htmlFor = id;
+  labelEl.textContent = label;
+
+  const group = document.createElement("div");
+  group.className = "input-group";
+  const previewWrap = document.createElement("span");
+  previewWrap.className = "input-group-text";
+  const preview = document.createElement("span");
+  preview.className = "press-icon-preview";
+  preview.setAttribute("aria-hidden", "true");
+  previewWrap.appendChild(preview);
+
+  const input = document.createElement("input");
+  input.className = "form-control";
+  input.type = "search";
+  input.placeholder = placeholder;
+  if (id) input.id = id;
+  input.value = value;
+
+  group.append(previewWrap, input);
+  wrapper.append(labelEl, group);
+
+  function updatePreview(nextValue) {
+    preview.innerHTML = "";
+    const tokens = getIconTokens(nextValue);
+    if (!tokens.length) return;
+    const icon = document.createElement("span");
+    const bootstrapToken = tokens.find((token) => token.startsWith("bi-"));
+    icon.className = bootstrapToken ? `bi ${bootstrapToken}` : tokens.join(" ");
+    preview.appendChild(icon);
+  }
+  updatePreview(value);
+
+  function commit(nextValue) {
+    updatePreview(nextValue);
+    onSelect?.(nextValue);
+  }
+
+  attachIconAutocomplete(input, {
+    onSelect: (selected) => {
+      input.value = selected;
+      commit(selected);
+    },
+  });
+  input.addEventListener("change", () => commit(input.value));
+
   return wrapper;
 }
 

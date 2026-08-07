@@ -17,8 +17,10 @@
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
       crossorigin=""
     />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" />
     <link rel="stylesheet" href="../common/css/shell.css" />
     <link rel="stylesheet" href="css/styles.css" />
+    <link rel="stylesheet" href="../common/css/ddb-icons.css" />
   </head>
   <body class="bg-body text-body" data-undercroft-tool="orrery">
     <div id="orrery-map" class="orrery-map" role="img" aria-label="Orrery map viewport"></div>
@@ -36,12 +38,6 @@
 
             <section class="d-flex flex-column gap-2">
               <div data-field-mount="map-select"></div>
-              <input
-                class="form-control form-control-sm"
-                id="orreryMapName"
-                data-map-name
-                placeholder="Map name"
-              />
             </section>
 
             <section class="d-flex flex-column gap-3">
@@ -100,6 +96,66 @@
                   <span class="visually-hidden">Zoom in</span>
                 </button>
               </div>
+              <span
+                class="d-inline-block"
+                tabindex="0"
+                data-measure-toggle-wrap
+                data-bs-toggle="tooltip"
+                data-bs-placement="top"
+                data-bs-title="Measure distance"
+              >
+                <button class="btn btn-outline-secondary btn-sm" type="button" data-measure-toggle aria-pressed="false">
+                  <span class="iconify" data-icon="tabler:ruler-2" aria-hidden="true"></span>
+                  <span class="visually-hidden">Measure distance</span>
+                </button>
+              </span>
+              <span class="small text-body-secondary d-none" data-measure-readout></span>
+              <span
+                class="d-inline-block"
+                tabindex="0"
+                data-draw-toggle-wrap
+                data-bs-toggle="tooltip"
+                data-bs-placement="top"
+                data-bs-title="Draw on the selected vector layer"
+              >
+                <button class="btn btn-outline-secondary btn-sm" type="button" data-draw-toggle aria-pressed="false">
+                  <span class="iconify" data-icon="tabler:pencil" aria-hidden="true"></span>
+                  <span class="visually-hidden">Draw</span>
+                </button>
+              </span>
+              <span
+                class="d-inline-block"
+                tabindex="0"
+                data-shape-toggle-wrap
+                data-bs-toggle="tooltip"
+                data-bs-placement="top"
+                data-bs-title="Draw an AoE shape on the selected vector layer"
+              >
+                <button class="btn btn-outline-secondary btn-sm" type="button" data-shape-toggle aria-pressed="false">
+                  <span class="iconify" data-icon="tabler:target" aria-hidden="true"></span>
+                  <span class="visually-hidden">AoE shape</span>
+                </button>
+              </span>
+              <select class="form-select form-select-sm w-auto d-none" data-shape-type aria-label="AoE shape type">
+                <option value="circle">Circle</option>
+                <option value="cone">Cone</option>
+                <option value="line">Line</option>
+                <option value="square">Square</option>
+              </select>
+              <span class="small text-body-secondary d-none" data-shape-readout></span>
+              <span
+                class="d-inline-block"
+                tabindex="0"
+                data-ping-toggle-wrap
+                data-bs-toggle="tooltip"
+                data-bs-placement="top"
+                data-bs-title="Click the map to ping"
+              >
+                <button class="btn btn-outline-secondary btn-sm" type="button" data-ping-toggle aria-pressed="false">
+                  <span class="iconify" data-icon="tabler:location" aria-hidden="true"></span>
+                  <span class="visually-hidden">Ping the map</span>
+                </button>
+              </span>
               <button class="btn btn-outline-secondary btn-sm" type="button" data-view-toggle aria-expanded="false">
                 <span class="iconify" data-icon="tabler:chevron-left" aria-hidden="true"></span>
                 <span class="visually-hidden">Expand view details</span>
@@ -126,98 +182,46 @@
               </dl>
             </div>
           </div>
+          <div class="position-absolute top-0 start-0 w-100 h-100 p-3 d-flex flex-column gap-3 d-none" data-map-empty-state></div>
         </main>
 
         <div data-pane-content="right">
             <section class="d-flex flex-column gap-3">
               <div class="d-flex align-items-center justify-content-between">
                 <div class="d-flex align-items-center gap-2">
-                  <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0">Base Map</h2>
+                  <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0">Map Properties</h2>
                   <span data-basemap-help-mount></span>
                 </div>
                 <span data-base-map-toggle-mount></span>
               </div>
-              <div class="d-flex flex-column gap-3" data-base-map-panel>
-                <div data-field-mount="base-map-type"></div>
+              <p class="small text-body-secondary mb-0 d-none" data-map-properties-empty-state>Select or create a map to edit its properties.</p>
+              <!-- data-map-properties-wrapper is the "is a real map loaded"
+                   gate (app.js's showMapEmptyState/hideMapEmptyState) — kept
+                   as a SEPARATE outer element from data-base-map-panel
+                   itself (not toggled directly) so it doesn't fight over the
+                   same d-none/hidden state the collapse toggle button
+                   already owns on the inner panel. -->
+              <div data-map-properties-wrapper>
+                <div class="d-flex flex-column gap-3" data-base-map-panel>
+                  <div data-field-mount="map-name"></div>
+                  <div data-field-mount="base-map-type"></div>
 
-                <div class="d-flex flex-column gap-2" data-base-map-settings="tile">
-                  <label class="form-label mb-0" for="base-map-tile-provider">Tile Provider</label>
-                  <input
-                    class="form-control form-control-sm orrery-provider-input"
-                    type="text"
-                    id="base-map-tile-provider"
-                    value="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                  />
-                  <label class="form-label mb-0" for="base-map-tile-quick-pick">Quick picks</label>
-                  <select class="form-select form-select-sm" id="base-map-tile-quick-pick" data-base-map-tile-quick-pick>
-                    <option value="">Select a tile provider</option>
-                    <option
-                      value="forgotten-realms"
-                      data-tile-url="https://loremaps.github.io/LoreMaps-Faerun-Tiles/Tiles/{z}/{x}/{y}.png"
-                      data-tile-max-zoom="6"
-                      data-tile-initial-zoom="3"
-                    >
-                      Forgotten Realms
-                    </option>
-                    <option
-                      value="eberron"
-                      data-tile-url="https://eberronmap.johnarcadian.com/worldbin/eberron/{z}/{x}/{y}.jpg"
-                      data-tile-max-zoom="7"
-                      data-tile-initial-zoom="2.75"
-                    >
-                      Eberron
-                    </option>
-                    <option
-                      value="sharn"
-                      data-tile-url="https://eberronmap.johnarcadian.com/worldbin/sharncityoftowers/{z}/{x}/{y}.jpg"
-                      data-tile-max-zoom="6"
-                      data-tile-initial-zoom="2"
-                    >
-                      Sharn: City of Towers
-                    </option>
-                    <option
-                      value="real-world"
-                      data-tile-url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                      data-tile-max-zoom="19"
-                      data-tile-initial-zoom="2"
-                    >
-                      Real World
-                    </option>
-                  </select>
-                </div>
-
-                <div class="d-flex flex-column gap-2" data-base-map-settings="image">
-                  <div data-field-mount="base-map-image-src"></div>
-                  <div class="d-flex gap-2">
-                    <input
-                      class="form-control"
-                      type="number"
-                      min="200"
-                      step="50"
-                      id="base-map-image-width"
-                      data-base-map-image-width
-                      placeholder="Width"
-                    />
-                    <input
-                      class="form-control"
-                      type="number"
-                      min="200"
-                      step="50"
-                      id="base-map-image-height"
-                      data-base-map-image-height
-                      placeholder="Height"
-                    />
+                  <div class="d-flex flex-column gap-2" data-base-map-settings="tile">
+                    <div data-field-mount="base-map-tile-provider"></div>
+                    <div data-field-mount="base-map-tile-quick-pick"></div>
                   </div>
-                </div>
 
-                <div class="d-flex flex-column gap-2" data-base-map-settings="canvas">
-                  <label class="form-label mb-0" for="base-map-canvas-background">Canvas Background</label>
-                  <input
-                    class="form-control form-control-color"
-                    type="color"
-                    id="base-map-canvas-background"
-                    data-base-map-canvas-background
-                  />
+                  <div class="d-flex flex-column gap-2" data-base-map-settings="image">
+                    <div data-field-mount="base-map-image-src"></div>
+                    <div data-field-mount="base-map-image-size"></div>
+                  </div>
+
+                  <div class="d-flex flex-column gap-2" data-base-map-settings="canvas">
+                    <div data-field-mount="base-map-canvas-background"></div>
+                  </div>
+
+                  <div data-field-mount="map-measurement"></div>
+                  <div data-field-mount="map-initial-view"></div>
                 </div>
               </div>
             </section>
@@ -234,12 +238,11 @@
                 </div>
               </div>
               <div class="d-flex flex-column gap-3" data-selection-panel id="orrery-selection">
+                <div class="btn-toolbar justify-content-center" role="toolbar" aria-label="Selection actions" data-selection-toolbar-mount></div>
                 <div class="pane-card">
-                  <div class="d-flex justify-content-between align-items-start mb-2">
-                    <div>
-                      <div class="h6 mb-0" data-selection-title>No selection</div>
-                    </div>
-                    <span class="badge text-bg-secondary text-uppercase" data-selection-type>None</span>
+                  <div class="d-flex align-items-start gap-2 mb-2">
+                    <span class="iconify fs-4 text-primary flex-shrink-0 d-none" data-selection-type-icon aria-hidden="true"></span>
+                    <div class="h6 mb-0" data-selection-title>No selection</div>
                   </div>
                   <div class="small text-body-secondary" data-selection-details>
                     Select a layer, group, view, or grid cell to inspect it.

@@ -12,6 +12,70 @@
   overflow: hidden;
 }
 
+/* Higher-specificity overrides required for both — same reason
+   .orrery-drawing needs them further down: .orrery-layer-item.is-draggable's
+   own `cursor: move` (set whenever a layer is selected and draggable, which
+   measuring/pinging don't prevent) and the grid layer's own `cursor: cell`
+   both sit deeper in the DOM than #orrery-map itself, so a plain
+   .orrery-map.orrery-measuring/-pinging rule alone loses to them for
+   anywhere the pointer is actually over one — confirmed as the actual cause
+   of "the cursor is the move cursor" during both tools. */
+.orrery-map.orrery-measuring,
+.orrery-map.orrery-measuring .orrery-layer-item,
+.orrery-map.orrery-measuring .orrery-layer-handle,
+.orrery-map.orrery-measuring .orrery-layer-grid-overlay.is-interactive,
+.orrery-map.orrery-shaping,
+.orrery-map.orrery-shaping .orrery-layer-item,
+.orrery-map.orrery-shaping .orrery-layer-handle,
+.orrery-map.orrery-shaping .orrery-layer-grid-overlay.is-interactive {
+  cursor: crosshair;
+}
+
+/* Plain arrow, not crosshair — pinging isn't a precision-targeting action
+   the way measuring is, and crosshair would read as "the same tool" as
+   Measure right next to it. */
+.orrery-map.orrery-pinging,
+.orrery-map.orrery-pinging .orrery-layer-item,
+.orrery-map.orrery-pinging .orrery-layer-handle,
+.orrery-map.orrery-pinging .orrery-layer-grid-overlay.is-interactive {
+  cursor: default;
+}
+
+.orrery-measure-line-overlay {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1040;
+}
+
+.orrery-measure-line-overlay line {
+  stroke: #f97316;
+  stroke-width: 2;
+  stroke-dasharray: 6 4;
+}
+
+.orrery-measure-line-overlay circle {
+  fill: #f97316;
+}
+
+/* A small inline pencil glyph, hotspot at its writing tip (2,22) — plain
+   `crosshair` reads as "select/measure," not "draw," and a bare cursor
+   keyword has no pencil equivalent. The higher-specificity selectors below
+   are required to win over .orrery-layer-item.is-draggable's own `cursor:
+   move` (set whenever the selected layer — which drawing requires — is
+   also draggable) and the grid layer's own `cursor: cell` — both sit deeper
+   in the DOM than #orrery-map itself, so a plain .orrery-map.orrery-drawing
+   rule alone loses to them for anywhere the pointer is actually over one. */
+.orrery-map.orrery-drawing,
+.orrery-map.orrery-drawing .orrery-layer-item,
+.orrery-map.orrery-drawing .orrery-layer-handle,
+.orrery-map.orrery-drawing .orrery-layer-grid-overlay.is-interactive {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M2 22 L4 15 L15 4 L20 9 L9 20 Z' fill='%23f97316' stroke='%231e293b' stroke-width='1'/%3E%3Cpath d='M15 4 L20 9 L18 11 L13 6 Z' fill='%231e293b'/%3E%3C/svg%3E")
+    2 22, crosshair;
+}
+
 .orrery-layer-overlay-host {
   position: absolute;
   inset: 0;
@@ -68,6 +132,10 @@
   cursor: cell;
 }
 
+.orrery-layer-grid-overlay.is-painting {
+  cursor: crosshair;
+}
+
 .orrery-layer-grid-selection {
   position: absolute;
   inset: 0;
@@ -90,6 +158,46 @@
   border-color: rgba(249, 115, 22, 0.9);
   background: rgba(249, 115, 22, 0.2);
   box-shadow: 0 0 0 1px rgba(249, 115, 22, 0.4);
+}
+
+.orrery-ping {
+  position: absolute;
+  width: 2rem;
+  height: 2rem;
+  margin-left: -1rem;
+  margin-top: -1rem;
+  border-radius: 50%;
+  border: 3px solid rgba(249, 115, 22, 0.9);
+  pointer-events: none;
+  z-index: 5;
+  animation: orrery-ping-fade 2s ease-out forwards;
+}
+
+.orrery-ping-label {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgba(249, 115, 22, 0.9);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes orrery-ping-fade {
+  0% {
+    transform: scale(0.4);
+    opacity: 1;
+  }
+  30% {
+    transform: scale(1.3);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
 }
 
 .orrery-layer-raster-overlay {
@@ -118,6 +226,35 @@
 
 .orrery-layer-marker-overlay.is-selected {
   box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.9);
+}
+
+.orrery-marker-label {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  pointer-events: none;
+  font-weight: 600;
+  line-height: 1;
+  color: #fff;
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.85),
+    0 -1px 2px rgba(0, 0, 0, 0.85),
+    1px 0 2px rgba(0, 0, 0, 0.85),
+    -1px 0 2px rgba(0, 0, 0, 0.85);
+}
+
+.orrery-marker-label--below {
+  top: calc(100% + 4px);
+}
+
+.orrery-marker-label--above {
+  bottom: calc(100% + 4px);
+}
+
+.orrery-marker-label--over {
+  top: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .orrery-layer-marker-container.is-interactive {
@@ -195,6 +332,20 @@
 .orrery-pane-list {
   max-height: 12rem;
   overflow: auto;
+}
+
+/* Bootstrap's own .list-group-item-action:hover is already a subtle,
+   theme-aware grey (var(--bs-tertiary-bg)) — .active defaults to a filled
+   var(--bs-primary) blue instead, a much louder jump for what's really
+   just "the currently selected row" in these three lists (Layers/Groups/
+   Views), not a call-to-action. Selected gets a step darker than hover
+   (--bs-secondary-bg, not --bs-tertiary-bg) so the two states stay visibly
+   distinct from each other, but both read as neutral grey, not "blue vs
+   grey." */
+.orrery-pane-list .list-group-item-action.active {
+  background-color: var(--bs-secondary-bg);
+  border-color: var(--bs-border-color);
+  color: var(--bs-body-color);
 }
 
 .orrery-provider-input {

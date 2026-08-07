@@ -38,6 +38,7 @@ import { buildLocationPressTemplate } from "./lib/press-export.js";
 import { createDirtyGate } from "../../common/js/lib/dirty-gate.js";
 import { abilityModifier } from "../../common/js/lib/dnd-rules.js";
 import { confirmDelete } from "../../common/js/lib/ownership.js";
+import { createTokenImageField } from "../../common/js/lib/token-picker.js";
 
 // Built and mounted before any of the querySelector("[data-*-npc]") lines
 // below, so every existing selector/disabled-state call site elsewhere in
@@ -155,6 +156,7 @@ const generateButton = document.querySelector("[data-generate-npc]");
 const npcEmptyState = document.querySelector("[data-npc-empty-state]");
 const npcDisplay = document.querySelector("[data-npc-display]");
 const identityFields = document.querySelector("[data-identity-fields]");
+const npcImageMount = document.querySelector('[data-field-mount="npc-image"]');
 const fourDFields = document.querySelector("[data-fourd-fields]");
 const statsFields = document.querySelector("[data-stats-fields]");
 // The whole Stats card (Identity/4D/Note each have their own sibling
@@ -614,6 +616,32 @@ function renderNpc(record) {
   if (!record) {
     jsonDataPanel.render();
     return;
+  }
+
+  // Its own small card rather than an IDENTITY_FIELD_DEFS entry — image
+  // isn't reroll-able like the rest of Identity, it's a picked/inherited
+  // link (see forge/js/lib/generator.js's `image` field and the Token
+  // Library picker, common/js/lib/token-picker.js). Rebuilt on every render
+  // like the rest of Identity/4D — safe because createTokenImageField only
+  // commits on blur/select, never mid-keystroke, so there's no cursor-jump
+  // risk the identity "input" listener below has to dodge.
+  if (npcImageMount) {
+    npcImageMount.innerHTML = "";
+    npcImageMount.appendChild(
+      createTokenImageField({
+        id: "forgeNpcImage",
+        label: "Image",
+        value: record.image || "",
+        dataManager,
+        status,
+        onSelect: (url) => {
+          currentRecord = { ...currentRecord, image: url };
+          dirtyGate.markDirty();
+          jsonDataPanel.render();
+          refreshActionButtons();
+        },
+      })
+    );
   }
 
   identityFields.innerHTML = "";
