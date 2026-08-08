@@ -20,6 +20,7 @@
 import { getIconTokens } from "../../../common/js/lib/icon-picker.js";
 import { resolveBinding } from "../../../common/js/lib/bindings.js";
 import { evaluateFormula } from "../../../common/js/lib/formula-engine.js";
+import { allowsDelete } from "../../../common/js/lib/ownership.js";
 import { resolveImageDimension } from "./base-maps.js";
 import { getDefaultView as getTypeDefaultView } from "./map-model.js";
 
@@ -872,6 +873,142 @@ export function resolveVisibleCells(baseMapManager, map, layer, { origin, rangeC
     results.push(createGridCellSelectionEntry(layer, coord));
   });
   return results;
+}
+
+// Relocated from app.js (was module-private, reading a closed-over
+// `state.map`) so the Dashboard widget's own player-driven marker drag
+// (map.js) snaps to the grid exactly the same way Orrery's own authoring
+// drag always has — confirmed real bug: the widget saved a token's raw
+// drop position with no snapping at all, a visibly different (and, per this
+// suite's own top-priority parity rule, wrong) feel from Orrery's. Same
+// "convert to true container-relative content-space, find the cell, convert
+// back" logic as resolveVisibleCells above, unchanged except `map` is now a
+// parameter instead of a closure.
+//
+// `position` (and therefore markerPositionToLocalPixel(position)) is
+// relative to the MARKER layer's own pan offset, not the container's true
+// corner (see getMarkerElementPixelPosition's own "offset.x + local.x" —
+// the marker layer's offset gets added back at RENDER time, meaning
+// whatever's stored here has to exclude it). The grid math below works in
+// true container-relative space (matching getGridOffset's own meaning), so
+// the marker layer's own offset has to be added back in before doing that
+// math, and subtracted back out before returning.
+export function snapMarkerPositionToGrid(baseMapManager, map, position, markerLayer) {
+  // Not filtered on visibility — hiding the grid's lines isn't a statement
+  // that it stops being the map's real cell size/scale (see
+  // findPrimaryGridLayer's own matching comment).
+  const gridLayer = (map.layers || []).find((entry) => entry.type === "grid");
+  if (!gridLayer) {
+    return position;
+  }
+  const markerOffset = markerLayer ? getMarkerLayerOffset(map, markerLayer) : { x: 0, y: 0 };
+  const localPixel = markerPositionToLocalPixel(baseMapManager, map, position);
+  const containerRelative = { x: localPixel.x + markerOffset.x, y: localPixel.y + markerOffset.y };
+  const gridOffset = getGridOffset(baseMapManager, map, gridLayer);
+  // containerRelative and gridOffset are both pure content-space
+  // (zoom-independent for non-tile maps), but getGridCoordFromPoint expects
+  // its point in the "hit-test" scale (see getGridHitTestScale's own
+  // comment) — multiplying by that same factor first is what makes its
+  // internal /hitScale step round-trip back to the right cell instead of
+  // double-dividing by zoom. getGridCellPixelRect's own OUTPUT needs no such
+  // adjustment — its cellSize is already content-space for non-tile maps
+  // (getGridLayoutScale is a flat 1 there), same as `rect`/`gridOffset`.
+  const hitScale = getGridHitTestScale(baseMapManager, map);
+  const relativePoint = { x: (containerRelative.x - gridOffset.x) * hitScale, y: (containerRelative.y - gridOffset.y) * hitScale };
+  const coord = getGridCoordFromPoint(baseMapManager, map, gridLayer, relativePoint);
+  const rect = getGridCellPixelRect(baseMapManager, map, gridLayer, coord);
+  const containerCenter = { x: rect.x + gridOffset.x + rect.width / 2, y: rect.y + gridOffset.y + rect.height / 2 };
+  const center = { x: containerCenter.x - markerOffset.x, y: containerCenter.y - markerOffset.y };
+  return localPixelToMarkerPosition(baseMapManager, map, center);
+}
+
+// Builds the interaction option set for a viewer WITHOUT full map access —
+// used identically by the Dashboard's Map widget (common/js/lib/widgets/
+// map.js, which is ALWAYS this restricted view — a player's dashboard never
+// gets full authoring) and by Orrery's own app.js (for a non-owner,
+// non-admin viewer reaching Orrery directly — see that file's own
+// currentUserHasFullMapAccess). ONE implementation, not two independently-
+// written copies that could (and did) drift apart — confirmed real
+// complaint: dragging felt "totally different" between the widget and
+// Orrery specifically because map.js used to carry its own bespoke copy of
+// this exact policy instead of sharing Orrery's.
+//
+// Only builds POLICY — what's draggable (a character-linked marker this
+// viewer owns or has edit access to, via characterOwnershipCatalog/
+// allowsDelete), what's wall-blocked, grid-snapping on drop, and the
+// locked-door check — never persistence. The two callers genuinely differ
+// there (the widget relays through a campaign groupId's live-sync; Orrery's
+// own view doesn't), so `onMarkerMoved(layer, markerElement,
+// snappedPosition)`/`onDoorToggled(layer, elementId)` only fire once this
+// policy has already approved the action — the caller's own job from there
+// is just to persist it (both already use the SAME map-live-sync.js
+// persistMarkerMove/persistElementUpdate under the hood) and refresh its
+// own view. `characterOwnershipCatalog` is a caller-refreshed
+// Map<characterId, {ownerId, ownerUsername, permissions}> (ownership.js's
+// refreshOwnershipCatalog) — this module never fetches anything itself, per
+// this file's own "everything caller-specific is a callback" philosophy.
+export function buildRestrictedMapOptions({
+  dataManager,
+  baseMapManager,
+  map,
+  characterOwnershipCatalog,
+  getCharacterPayload,
+  status,
+  onMarkerMoved,
+  onDoorToggled,
+  // (isDragging: boolean) => void — fired at marker-drag start/end. Lets
+  // the caller's own remote poll (watchMapForChanges) skip an incoming
+  // update while a drag is in progress, instead of applying it mid-gesture
+  // and rebuilding the marker layer's DOM out from under the pointer-
+  // capture driving that gesture. Confirmed real bug this fixes: a
+  // restricted viewer's drag would "pop" straight to the final position
+  // with no visible tracking during the gesture — because a poll landing
+  // mid-drag (the map's 10-20s poll interval easily overlaps an unhurried
+  // drag) tore out and rebuilt the very dot element being dragged; only its
+  // FINAL, post-poll position ever painted. Orrery's own full-access drag
+  // never hits this because a GM must already have `state.selection` set
+  // (the Marker Layer selected) to drag at all, and that same state already
+  // makes app.js's own poll guard skip incoming updates — a restricted
+  // viewer has no selection concept at all, so it needed its own signal.
+  onDragStateChange,
+}) {
+  const blockingSegments = resolveBlockingSegments(baseMapManager, map);
+  function isMarkerDraggable(layer, markerElement) {
+    if (markerElement.refKind !== "character" || !markerElement.refId) return false;
+    return allowsDelete(characterOwnershipCatalog, markerElement.refId, { dataManager });
+  }
+  // Doors only — never gated on anything selection-related, since a
+  // restricted viewer has no selection concept at all (renderMapLayers
+  // itself already only wires this hit-target for a door whose
+  // element.secret isn't set at all — see renderWallElement).
+  function onDoorClick(layer, elementId) {
+    const element = layer.elements?.find((entry) => entry.id === elementId);
+    if (!element) return;
+    if (element.locked) {
+      status?.show?.("This door is locked.", { type: "warning", timeout: 2000 });
+      return;
+    }
+    onDoorToggled?.(layer, elementId);
+  }
+  return {
+    hasFullAccess: false,
+    isMarkerDraggable,
+    onMarkerDragStart: () => onDragStateChange?.(true),
+    onMarkerDragEnd: (layer, markerElement, nextPosition) => {
+      onDragStateChange?.(false);
+      onMarkerMoved?.(layer, markerElement, snapMarkerPositionToGrid(baseMapManager, map, nextPosition, layer));
+    },
+    onDoorClick,
+    // Never passed for a full-access viewer — the GM must be able to freely
+    // drag any token through walls while setting up a scene. Only a
+    // restricted viewer's own-token drag is ever blocked. `blockingSegments`
+    // is computed once above (per renderMapLayers pass this options object
+    // backs), not recomputed on every pointermove — a confirmed real
+    // perf bug before this was fixed once, here, for both callers at once.
+    resolveMarkerMoveBlocked: (layer, markerElement, fromPixel, toPixel) =>
+      blockingSegments.some((segment) => segmentsIntersect(fromPixel, toPixel, segment.a, segment.b)),
+    getCharacterPayload,
+  };
 }
 
 // A marker's own Vision Range — the same Binding/Formula/Text precedence

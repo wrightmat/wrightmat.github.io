@@ -569,10 +569,28 @@ export function initHandoutWidget(
       void refresh();
       void refreshVisibility();
     },
-    destroy() {
+    // `removed` (dashboard.js's removeWidget passes true) — this instance's
+    // own spotlight (if any) needs clearing, or removing a currently-shown
+    // Handout orphans that spotlight entry as still "active" with no way to
+    // toggle it off again. Confirmed real bug this fixes: adding a NEW
+    // Handout for the same record after the old, spotlighted instance was
+    // removed this way found that orphaned entry via resolveIsSpotlighted
+    // and correctly showed "Show to Table" already ON — but since nothing
+    // ever posted a NEW spotlight entry, players' spotlight-inbox watcher
+    // had nothing new to notify about, so the toggle looked on but nobody
+    // was actually told. Same shape as clocks.js/browser.js/soundboard.js/
+    // calendar.js's own destroy(removed).
+    async destroy(removed) {
       destroyed = true;
       resizeObserver?.disconnect();
       renderTarget.innerHTML = "";
+      if (removed && visible && groupId) {
+        try {
+          await dataManager.clearSpotlight({ groupId, kind, id });
+        } catch (error) {
+          // Best-effort cleanup — nothing meaningful to do if this fails.
+        }
+      }
     },
   };
 }

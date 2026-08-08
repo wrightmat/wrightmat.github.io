@@ -21,6 +21,18 @@
       crossorigin=""
     />
     <link rel="stylesheet" href="common/css/shell.css" />
+    <!-- Marker/Icon-field glyph fonts (common/js/lib/icon-picker.js's own
+         getIconTokens only ever returns "bi-*"/"ddb-*" tokens — Iconify's
+         own runtime script below never covers those, only "tabler:*").
+         Confirmed real bug this fixes: a Marker layer's own icon (Orrery's
+         own map-viewer.js createMarkerDot) rendered fine in Orrery itself
+         (orrery/index.html loads both of these) but silently rendered as
+         nothing at all in the Dashboard's Map widget — same shared
+         rendering code, this page just never loaded the fonts it depends
+         on. Also covers any Press-rendered Handout content using an Icon
+         component field, for the same reason. -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" />
+    <link rel="stylesheet" href="common/css/ddb-icons.css" />
     <!-- Styles the .orrery-map-stage/-content/-image and
          .orrery-layer-*-overlay classes BaseMapManager builds internally —
          NOT the page-level .orrery-map class itself (position: fixed;

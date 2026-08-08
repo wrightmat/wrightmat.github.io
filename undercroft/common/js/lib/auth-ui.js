@@ -339,7 +339,12 @@ export function initAuthControls({
   async function refreshUserMenu(user) {
     let groups = [];
     try {
-      const result = await manager.listGroups();
+      // includeMemberGroups — this menu is "which campaigns can I select as
+      // my active context," which should include a campaign you were added
+      // to (a character you own became a member of someone else's group),
+      // not just ones you personally own. See data-manager.js's own
+      // listGroups comment for why this doesn't just become the default.
+      const result = await manager.listGroups({ includeMemberGroups: true });
       groups = Array.isArray(result?.groups) ? result.groups : [];
     } catch (error) {
       console.warn("Unable to load campaign groups", error);

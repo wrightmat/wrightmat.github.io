@@ -21,10 +21,11 @@ import { initWledWidget, resolveWledDeviceByAlias, normalizeWledDeviceList, save
 import { initBoardWidget } from "./common/js/lib/widgets/board.js";
 import { openContentPicker } from "./common/js/lib/widgets/content-picker.js";
 import { resolveGroupContext } from "./common/js/lib/widgets/group-context.js";
-import { watchSpotlight } from "./common/js/lib/spotlight-inbox.js";
-import { showSpotlightPrompt } from "./common/js/lib/widgets/spotlight-prompt.js";
+import { watchActiveSpotlights } from "./common/js/lib/spotlight-inbox.js";
+import { renderSpotlightPanel } from "./common/js/lib/widgets/spotlight-panel.js";
 import { resolveActiveSpotlightId, resolveIsSpotlighted } from "./common/js/lib/spotlight.js";
 import { createReliableInterval } from "./common/js/lib/reliable-interval.js";
+import { loadLibraryData } from "./common/js/lib/content-fetch.js";
 import { el } from "./common/js/lib/dom.js";
 
 // Every per-browser local copy of a Dashboard setting lives under this same
@@ -141,7 +142,11 @@ const WIDGET_CATALOG = [
         status: ctx.status,
         groupId: ctx.groupContext?.groupId || "",
         shareToken: ctx.groupContext?.shareToken || "",
-        onAcceptSpotlight: ctx.onAcceptSpotlight,
+        resolveKindIcon: ctx.resolveSpotlightKindIcon,
+        isSpotlightOnDashboard: ctx.isSpotlightOnDashboard,
+        onToggleSpotlight: ctx.onToggleSpotlight,
+        ensureTitleCached: ctx.ensureSpotlightTitleCached,
+        getCachedTitle: ctx.getCachedSpotlightTitle,
         setRightAction: ctx.setRightAction,
       }),
     renderInspector(container, { api, groupContext }) {
@@ -171,6 +176,10 @@ const WIDGET_CATALOG = [
     label: "Lighting (WLED)",
     icon: "tabler:bulb",
     multiple: true,
+    // Account-scoped device config (wledDevices, above) with no campaign/
+    // role concept at all, unlike Combat Tracker/Calendar/Soundboard below —
+    // tier alone is the right (and only meaningful) gate here.
+    canAdd: () => dataManager.meetsTier("gm"),
     // The known-devices LIST is account-wide (wledDevices, above — GM-tied,
     // not per-card), threaded straight from module scope rather than through
     // ctx (nothing else needs it, and every mount reads the current value at
@@ -301,7 +310,6 @@ const WIDGET_CATALOG = [
         groupId: ctx.groupContext?.groupId || "",
         shareToken: ctx.groupContext?.shareToken || ctx.shareParam || "",
         viewerTier: ctx.dataManager.getUserTier(),
-        pinnedCharacterId: ctx.layout.pinnedCharacterId,
         onTitleChange: ctx.setTitle,
         setHeaderAction: ctx.setHeaderAction,
         setRightAction: ctx.setRightAction,
@@ -348,6 +356,14 @@ const WIDGET_CATALOG = [
     id: "combat",
     label: "Combat tracker",
     icon: "tabler:swords",
+    // Tier OR campaign ownership — either qualifies. A gm+/creator+/admin
+    // account can always add one; so can a player-tier account that GMs
+    // their own active campaign (ctx.groupContext.access === "owner", the
+    // same role-based signal this catalog entry's own mode below already
+    // uses) — a mere player joining someone else's game can't. Matches this
+    // entry's own comment just below on why tier alone can't stand in for
+    // "am I GMing THIS campaign."
+    canAdd: () => dataManager.meetsTier("gm") || groupContext?.access === "owner",
     // GM vs player mode is which ROLE this viewer has in the active
     // CAMPAIGN (groupContext.access — "owner" means this viewer GMs this
     // specific group; group-context.js's own comment already names Combat
@@ -403,6 +419,9 @@ const WIDGET_CATALOG = [
     label: "Calendar",
     icon: "tabler:calendar-time",
     multiple: true,
+    // Tier OR campaign ownership — same rule/reasoning as Combat Tracker's
+    // own canAdd just above.
+    canAdd: () => dataManager.meetsTier("gm") || groupContext?.access === "owner",
     // Picks which Setting's calendar vocabulary (months, weekday names —
     // authored in Sanctum) this instance tracks a running day count
     // against. If the picked Setting has no `.calendar` defined, the widget
@@ -429,6 +448,9 @@ const WIDGET_CATALOG = [
     label: "Soundboard",
     icon: "tabler:music",
     multiple: true,
+    // Tier OR campaign ownership — same rule/reasoning as Combat Tracker's
+    // own canAdd above.
+    canAdd: () => dataManager.meetsTier("gm") || groupContext?.access === "owner",
     // No pickContentRef, and the widget itself never calls setContentRef —
     // clip definitions live in a shared, server-persisted library
     // (audio-clip-library.js) now, not per-instance, so there's nothing of
@@ -799,18 +821,20 @@ function persistWledDevices(devices) {
   });
 }
 
-function loadSeenSpotlightId(serverSettings) {
-  if (typeof serverSettings?.dashboardSeenSpotlightId === "string") return serverSettings.dashboardSeenSpotlightId;
-  const local = loadLocalSetting("seenSpotlightId");
-  return typeof local === "string" ? local : "";
-}
-
-// Which widget type a spotlighted library kind turns into on Accept.
+// Which widget type a spotlighted library kind turns into on Accept. Was
+// missing "journal" — handout.js's own HANDOUT_KINDS (its picker's real,
+// full list of spotlightable kinds) includes it alongside npc/location/
+// monster/effect, but it had no entry here at all. Confirmed real bug:
+// spotlighting a Journal page as a Handout produced a real `spotlight` log
+// entry same as any other kind, but acceptSpotlight below bailed silently
+// the instant `KIND_WIDGET_MAP[kind]` came back undefined — no prompt, no
+// Game Log toggle, no error, nothing.
 const KIND_WIDGET_MAP = {
   npc: "handout",
   location: "handout",
   monster: "handout",
   effect: "handout",
+  journal: "handout",
   encounter: "combat",
   map: "map",
   clock: "clock",
@@ -847,20 +871,103 @@ const TABLE_WIDGET_TYPES = new Set(["handout", "map", "clock", "combat", "browse
 // (Press-templated cards) has that same conflict — journal pages don't.
 const ZOOM_EXCLUDED_WIDGET_TYPES = new Set(["map"]);
 
-// The single accept path both the toast prompt (handleNewSpotlight) and the
-// Game Log widget's own inline Accept button call — "one accept path, two
-// places to trigger it," per the Dashboard rework plan.
+// Resource title lookup, shared by the spotlight panel's own tooltips and
+// the Game Log's per-entry detail text — one cache, not two independently-
+// fetched copies. Mirrors the exact fetch-once-cache-then-rerender shape
+// orrery/js/app.js and common/js/lib/widgets/map.js already use for their
+// own character-payload caches. Only meaningful for Library-backed kinds
+// (npc/location/monster/effect/journal/map/encounter — all real,
+// individually fetchable Library records); the four inline kinds (clock/
+// browser/calendar/soundboard) have no record to fetch at all, see
+// game-log.js's own inline-kind fallback for those.
+const titleCache = new Map(); // "kind:id" -> title string
+const pendingTitleFetches = new Set();
+function ensureTitleCached(kind, id, onLoaded) {
+  const key = `${kind}:${id}`;
+  if (!kind || !id || titleCache.has(key) || pendingTitleFetches.has(key)) return;
+  pendingTitleFetches.add(key);
+  loadLibraryData(`${kind}/${id}`, dataManager, groupContext?.shareToken || shareParam)
+    .then((payload) => {
+      titleCache.set(key, payload?.title || payload?.name || "");
+      pendingTitleFetches.delete(key);
+      onLoaded?.();
+    })
+    .catch(() => pendingTitleFetches.delete(key));
+}
+
+// Given {kind,id} from a spotlight's own payload, does THIS viewer already
+// have a matching widget on their own dashboard — the inverse question of
+// isInstanceSpotlighted below (which starts from a widget and asks "is it
+// currently the active spotlight"). Mirrors acceptSpotlight's own kind
+// branching exactly (same three cases: auto-discover, inline-follow, plain
+// contentRef-matched), since "am I showing this" and "would accepting this
+// be a no-op" are the same underlying question from opposite directions.
+function isSpotlightItemOnMyDashboard({ kind, id }) {
+  const widgetType = KIND_WIDGET_MAP[kind];
+  if (!widgetType) return false;
+  if (AUTO_DISCOVER_WIDGET_TYPES.has(widgetType)) {
+    return allWidgetTypes().includes(widgetType);
+  }
+  if (INLINE_FOLLOW_KINDS.has(kind)) {
+    return layout.widgets.some(
+      (instance) =>
+        instance.widgetType === widgetType &&
+        (instance.instanceId === id || (instance.contentRef?.followKind === kind && instance.contentRef?.followId === id))
+    );
+  }
+  if (widgetType === "map") {
+    // Map's own toolbar pickContentRef (pickLibraryContentRef) hands back a
+    // bare {id} — NOT {kind,id,templateId} like every other non-inline,
+    // non-auto-discover kind below. A GM's own directly-added map has
+    // contentRef.kind === undefined; matching on contentRef.kind here would
+    // wrongly report their own map as "not on my dashboard."
+    return layout.widgets.some((instance) => instance.widgetType === "map" && instance.contentRef?.id === id);
+  }
+  return layout.widgets.some(
+    (instance) => instance.widgetType === widgetType && instance.contentRef?.kind === kind && instance.contentRef?.id === id
+  );
+}
+
+// The "toggle off" half — finds and removes whatever widget instance
+// isSpotlightItemOnMyDashboard just confirmed exists, using the identical
+// matching rules. Combat (kind "encounter") is a deliberate exception: its
+// own widget (combat-tracker.js) has no per-instance visibility flag and no
+// `destroy(removed)` spotlight-clear at all — GM and player share the same
+// widget shape (mode decided live from groupContext.access), so removing it
+// wouldn't stop the encounter being shown to the table, which would read as
+// broken rather than "off." No safe generic action exists there.
+function removeSpotlightItemFromDashboard({ kind, id }) {
+  const widgetType = KIND_WIDGET_MAP[kind];
+  if (widgetType === "combat") {
+    status?.show("Remove the Combat Tracker widget itself to take this off your dashboard.", { type: "info", timeout: 3000 });
+    return;
+  }
+  const instance = layout.widgets.find((entry) => {
+    if (entry.widgetType !== widgetType) return false;
+    if (INLINE_FOLLOW_KINDS.has(kind)) {
+      return entry.instanceId === id || (entry.contentRef?.followKind === kind && entry.contentRef?.followId === id);
+    }
+    if (widgetType === "map") return entry.contentRef?.id === id;
+    return entry.contentRef?.kind === kind && entry.contentRef?.id === id;
+  });
+  if (instance) removeWidget(instance.instanceId);
+}
+
+// The single accept path both the spotlight panel and the Game Log widget's
+// own clickable icon call when a spotlighted item isn't yet on this
+// dashboard — "one accept path, multiple places to trigger it."
 function acceptSpotlight({ kind, id, templateId }) {
+  // Idempotent — a real two-way toggle (toggleSpotlightItem below) needs
+  // "accept something already accepted" to be a safe no-op, not a
+  // duplicate widget instance. Confirmed real gap before this: neither this
+  // function nor addWidget ever checked for an existing match.
+  if (isSpotlightItemOnMyDashboard({ kind, id })) return;
   const widgetType = KIND_WIDGET_MAP[kind];
   if (!widgetType || !findCatalogEntry(widgetType)) {
     status?.show("This can't be added to your dashboard yet.", { type: "info", timeout: 2500 });
     return;
   }
   if (AUTO_DISCOVER_WIDGET_TYPES.has(widgetType)) {
-    if (allWidgetTypes().includes(widgetType)) {
-      status?.show("Your dashboard will pick this up automatically.", { type: "info", timeout: 2500 });
-      return;
-    }
     addWidget(widgetType);
   } else if (INLINE_FOLLOW_KINDS.has(kind)) {
     // No Library record to reference here — `id` is the GM's own widget
@@ -874,41 +981,114 @@ function acceptSpotlight({ kind, id, templateId }) {
   status?.show("Added to your dashboard.", { type: "success", timeout: 2000 });
 }
 
-function handleGameLogAccept(entry) {
-  acceptSpotlight({
-    kind: String(entry?.payload?.kind || "").trim(),
-    id: String(entry?.payload?.id || "").trim(),
-    templateId: String(entry?.payload?.templateId || "").trim(),
-  });
+// Add-if-absent, remove-if-present — the click behavior both the spotlight
+// panel and the Game Log's per-entry icon share.
+function toggleSpotlightItem({ kind, id, templateId }) {
+  if (isSpotlightItemOnMyDashboard({ kind, id })) {
+    removeSpotlightItemFromDashboard({ kind, id });
+  } else {
+    acceptSpotlight({ kind, id, templateId });
+  }
 }
 
-function handleNewSpotlight(spotlight) {
-  // Persisted the moment it's surfaced (toast shown, or silently skipped
-  // below) — matches the setting's own "already surfaced" contract, not
-  // "already decided," so a reload doesn't re-show the same offer twice.
-  persistSetting("seenSpotlightId", "dashboardSeenSpotlightId", spotlight.entryId);
-  const widgetType = KIND_WIDGET_MAP[spotlight.kind];
-  if (!widgetType || !findCatalogEntry(widgetType)) return;
-  const label = SPOTLIGHT_KIND_LABELS[spotlight.kind] || "something";
-  showSpotlightPrompt({
-    label: `The GM is showing ${label} to the table.`,
-    onAccept: () => acceptSpotlight(spotlight),
+// Recomputes and redraws the persistent spotlight panel. Called with a
+// fresh array whenever the watcher below reports one (a new poll tick), or
+// with no argument at all to just recompute isOnDashboard/re-render against
+// whatever was last fetched (addWidget/removeWidget do this so a local
+// toggle reflects instantly, not just on the next poll).
+let lastActiveSpotlights = [];
+let knownActiveSpotlightKeys = new Set();
+function refreshSpotlightPanel(activeEntries) {
+  if (Array.isArray(activeEntries)) lastActiveSpotlights = activeEntries;
+  // A spotlight flagged data.hidden (combat-tracker.js's own hideFromTable
+  // — "run this encounter without showing it to the table," while staying
+  // findable for character-sheet.js's own initiative push) is deliberately
+  // invisible everywhere, not just to players — no icon, no flourish, full
+  // stop, per the confirmed intent behind that flag.
+  const items = lastActiveSpotlights
+    .filter((entry) => entry.payload?.data?.hidden !== true)
+    .map((entry) => {
+    const kind = String(entry.payload?.kind || "").trim();
+    const id = String(entry.payload?.id || "").trim();
+    const key = `${kind}:${id}`;
+    const widgetType = KIND_WIDGET_MAP[kind];
+    const catalogEntry = widgetType ? findCatalogEntry(widgetType) : null;
+    // Only Library-backed kinds have a record to fetch a title from at all
+    // — confirmed real bug: calling this unconditionally for an inline kind
+    // (clock/browser/calendar/soundboard, which spotlight by this widget's
+    // own instanceId, not a Library record id) fired a doomed
+    // GET /content/soundboard/<instanceId> every single poll, 404-ing
+    // forever since no such record has ever existed.
+    if (!INLINE_FOLLOW_KINDS.has(kind)) {
+      ensureTitleCached(kind, id, () => refreshSpotlightPanel());
+    }
+    return {
+      key,
+      kind,
+      id,
+      templateId: entry.payload?.templateId || "",
+      icon: catalogEntry?.icon || "tabler:sparkles",
+      title: titleCache.get(key) || SPOTLIGHT_KIND_LABELS[kind] || kind,
+      isOnDashboard: isSpotlightItemOnMyDashboard({ kind, id }),
+      isNew: Array.isArray(activeEntries) && !knownActiveSpotlightKeys.has(key),
+    };
   });
+  // Only advance the "known" baseline on a genuine poll result (an
+  // activeEntries array) — a no-arg recompute (after a local add/remove)
+  // must never itself mark anything "no longer new," or a flourish still
+  // mid-animation could be cut off by the very click that triggered it.
+  if (Array.isArray(activeEntries)) knownActiveSpotlightKeys = new Set(items.map((item) => item.key));
+  renderSpotlightPanel(items, { onToggle: toggleSpotlightItem, onClear: forceClearSpotlight, editing });
+}
+
+// The "little red X" escape hatch — force-clears a spotlight log entry
+// directly, bypassing the whole widget-instance/ownership question
+// entirely. Only shown (spotlight-panel.js) in edit mode, for exactly the
+// case toggleSpotlightItem/removeSpotlightItemFromDashboard can't already
+// handle cleanly: a STALE or orphaned spotlight — e.g. from before a given
+// widget type's own destroy(removed) learned to clear itself, or from a
+// kind this dashboard's normal add/remove machinery can't resolve to a
+// specific widget instance at all. Confirmed real need: an old encounter/
+// soundboard spotlight from earlier testing, left behind by a gap this
+// session's own destroy(removed) fixes don't retroactively cover, showed up
+// in the panel with no live widget anywhere to toggle it via.
+function forceClearSpotlight({ kind, id }) {
+  const groupId = groupContext?.groupId;
+  if (!groupId) return;
+  dataManager
+    .clearSpotlight({ groupId, kind, id })
+    .catch((error) => status?.show(error.message || "Unable to clear that.", { type: "error" }));
 }
 
 // Re-created whenever groupContext changes (boot, and onPinCharacter after a
 // campaign switch) — the log being watched depends on which group that is.
-let spotlightWatcher = null;
-function startSpotlightWatcher() {
-  spotlightWatcher?.destroy();
-  spotlightWatcher = watchSpotlight({
+// The baseline reset here is what keeps a campaign switch from flourishing
+// every already-active item on the new campaign's board as if it just
+// arrived.
+let spotlightPanelWatcher = null;
+function startSpotlightPanelWatcher() {
+  spotlightPanelWatcher?.destroy();
+  knownActiveSpotlightKeys = new Set();
+  lastActiveSpotlights = [];
+  spotlightPanelWatcher = watchActiveSpotlights({
     dataManager,
     groupId: groupContext?.groupId || "",
     shareToken: groupContext?.shareToken || shareParam,
-    lastSeenId: seenSpotlightId,
-    onNewSpotlight: handleNewSpotlight,
+    onChange: (active) => refreshSpotlightPanel(active),
   });
 }
+
+// Registered once (not re-added on every campaign switch — always reads
+// spotlightPanelWatcher fresh via closure) — reacts to THIS tab's own
+// dataManager.spotlightToGroup/clearSpotlight calls (data-manager.js's own
+// _emit) with an immediate re-fetch, instead of leaving the GM's own "show
+// to table" action waiting on the panel's own poll/live-stream cadence to
+// notice. Confirmed real complaint: a several-second gap between toggling a
+// widget's own visibility and the icon tray reflecting it read as "is this
+// even working."
+window.addEventListener("undercroft:spotlight-changed", () => {
+  spotlightPanelWatcher?.refresh();
+});
 
 const params = new URLSearchParams(window.location.search || "");
 const encounterParam = params.get("encounter") || "";
@@ -928,7 +1108,6 @@ let pinnedHelpTopics = [];
 // is showing/controlling is separate, per-instance state (see that widget's
 // own contentRef) — see wled.js's own header comment for the full split.
 let wledDevices = [];
-let seenSpotlightId = "";
 let selectedWidgetInstanceId = "";
 let editing = false;
 const mounted = new Map(); // instanceId -> { destroy() }
@@ -1148,7 +1327,16 @@ function buildCtx(instance, { setTitle, setHeaderAction, setRightAction } = {}) 
     encounterParam,
     shareParam,
     onPinCharacter,
-    onAcceptSpotlight: handleGameLogAccept,
+    onToggleSpotlight: toggleSpotlightItem,
+    // Deliberately no fallback icon here (unlike refreshSpotlightPanel's own
+    // resolution above) — undefined is exactly the signal game-log.js uses
+    // to know a kind isn't recognized and render its icon as plain/non-
+    // interactive instead of a dead click target (mirrors the old toast's
+    // own findCatalogEntry gate, which the log's Accept button never had).
+    resolveSpotlightKindIcon: (kind) => findCatalogEntry(KIND_WIDGET_MAP[kind])?.icon,
+    isSpotlightOnDashboard: isSpotlightItemOnMyDashboard,
+    ensureSpotlightTitleCached: ensureTitleCached,
+    getCachedSpotlightTitle: (kind, id) => titleCache.get(`${kind}:${id}`) || "",
     instanceId: instance?.instanceId || "",
     contentRef: instance?.contentRef || null,
     // Lets a widget with no Library kind of its own (Clock) persist its own
@@ -1967,6 +2155,9 @@ function removeWidget(instanceId) {
   cardElements.delete(instanceId);
   renderWidgetGrid();
   populateAddToolbar();
+  // Reflects a local removal (including the panel/log's own "toggle off")
+  // instantly, without waiting for the next poll tick.
+  refreshSpotlightPanel();
 }
 
 // `contentRef` lets a caller (acceptSpotlight, for Handout) hand a new widget
@@ -1993,6 +2184,9 @@ function addWidget(widgetType, contentRef = null) {
   mountWidget(instance);
   renderWidgetGrid();
   populateAddToolbar();
+  // Reflects a local addition (including the panel/log's own "toggle on")
+  // instantly, without waiting for the next poll tick.
+  refreshSpotlightPanel();
   return instance;
 }
 
@@ -2106,7 +2300,10 @@ function populateAddToolbar() {
   addToolbar.innerHTML = "";
   const present = allWidgetTypes();
   const available = WIDGET_CATALOG.filter(
-    (entry) => entry.addableFromToolbar !== false && (entry.multiple === true || !present.includes(entry.id))
+    (entry) =>
+      entry.addableFromToolbar !== false &&
+      (entry.multiple === true || !present.includes(entry.id)) &&
+      (!entry.canAdd || entry.canAdd())
   );
   available.forEach((entry) => {
     const button = document.createElement("button");
@@ -2228,25 +2425,26 @@ function applyEditingState() {
 async function onPinCharacter(characterId) {
   layout.pinnedCharacterId = characterId;
   persistLayout();
-  groupContext = await resolveGroupContext(dataManager, {
-    pinnedCharacterId: layout.pinnedCharacterId,
-    shareToken: shareParam,
-  });
-  // The pin changes which campaign these widgets should be looking at —
-  // re-render everything rather than tracking which widgets specifically
-  // depend on group context; the cost is negligible for a handful of cards.
+  // Pinning a character no longer touches groupContext (and so can't change
+  // the dashboard's own campaign-name header title, or which group's log the
+  // spotlight watcher follows) — see group-context.js's own
+  // resolveGroupContext comment: the header's Campaign dropdown is the sole
+  // source of truth for which campaign is active, independent of which
+  // character happens to be pinned here. Still re-renders, since the
+  // Character Sheet widget itself reads layout.pinnedCharacterId directly
+  // and needs to pick up the new one.
   renderWidgets();
-  // A computed (non-overridden) header title depends on groupContext too
-  // (campaign name) — refresh it the same way.
-  applyHeaderTitle();
-  // A campaign switch means a different group's log to watch.
-  startSpotlightWatcher();
 }
 
 editToggle?.addEventListener("click", () => {
   const enteringEdit = !editing;
   editing = !editing;
   applyEditingState();
+  // The panel's own per-icon "clear this" affordance only shows in edit
+  // mode (see refreshSpotlightPanel/spotlight-panel.js) — re-render so
+  // toggling edit mode shows/hides it immediately, not just on the next
+  // poll tick.
+  refreshSpotlightPanel();
   // Seed the input with the actual current (default) text so it reads as
   // real, easy-to-tweak content instead of starting blank behind a grey
   // placeholder — clearing it back to empty on blur/Enter still reverts to
@@ -2390,10 +2588,7 @@ async function boot() {
     // window whose only job is to display whatever's currently shown to the
     // table. See renderScreenView's own comment for why this still needs
     // groupContext resolved first.
-    groupContext = await resolveGroupContext(dataManager, {
-      pinnedCharacterId: layout.pinnedCharacterId,
-      shareToken: shareParam,
-    });
+    groupContext = await resolveGroupContext(dataManager, { shareToken: shareParam });
     renderScreenView();
     return;
   }
@@ -2401,7 +2596,6 @@ async function boot() {
   headerTitleOverride = loadHeaderTitle(serverSettings);
   pinnedHelpTopics = loadPinnedHelpTopics(serverSettings);
   wledDevices = loadWledDevices(serverSettings);
-  seenSpotlightId = loadSeenSpotlightId(serverSettings);
   applyBackground(background);
   void initHelpBrowser({
     root: document,
@@ -2422,18 +2616,34 @@ async function boot() {
     packLayout(layout.widgets, getColumnCount(), getRowCount());
     persistLayout();
   }
-  groupContext = await resolveGroupContext(dataManager, {
-    pinnedCharacterId: layout.pinnedCharacterId,
-    shareToken: shareParam,
-  });
+  groupContext = await resolveGroupContext(dataManager, { shareToken: shareParam });
   applyHeaderTitle();
   renderWidgets();
   populateAddToolbar();
-  startSpotlightWatcher();
+  startSpotlightPanelWatcher();
   // Activates the static data-bs-toggle="tooltip" markup (color picker,
   // reset button) — populateAddToolbar already covers its own dynamically
   // built buttons on its own.
   refreshTooltips(document);
+  // Picking a different campaign from the header's own Campaign dropdown
+  // while the Dashboard is already open (not landing here fresh after
+  // switching it elsewhere) needs to actually take effect live — the header
+  // selector is now the sole source of truth for groupContext (see
+  // group-context.js's own resolveGroupContext comment), not just a value
+  // read once at boot. Mirrors Workbench's own identical listener
+  // (workbench-character-view.js). Skipped entirely for shareToken sessions
+  // (an anonymous/share viewer has no header dropdown to change) and the
+  // screen-mirror mode (no chrome at all — see this function's own early
+  // return above).
+  if (!shareParam) {
+    window.addEventListener("workbench:active-group-changed", async () => {
+      groupContext = await resolveGroupContext(dataManager, { shareToken: shareParam });
+      applyHeaderTitle();
+      renderWidgets();
+      populateAddToolbar();
+      startSpotlightPanelWatcher();
+    });
+  }
 }
 
 // The welcome screen only makes sense pre-login — a full reload after

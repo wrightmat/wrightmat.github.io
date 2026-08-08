@@ -5,7 +5,7 @@
 // combat tracking is party/session-scoped, not character-scoped like
 // Workbench's view-switcher, and doesn't belong to any one existing tool —
 // see the Dashboard plan this widget was built for.
-import { resolveActiveSpotlightId } from "../spotlight.js";
+import { resolveActiveSpotlightId, resolveSpotlightData } from "../spotlight.js";
 import { disposeTooltips, refreshTooltips } from "../tooltips.js";
 import { resolveBinding, setAtBinding, findBindingByRole } from "../bindings.js";
 import { deriveConditionsVocabulary, renderTagBadges, renderTagDatalist, buildTagInputRow } from "./tag-editor.js";
@@ -182,7 +182,17 @@ export function initCombatTrackerWidget(
       return;
     }
     try {
-      const result = await dataManager.get("encounter", id, { shareToken });
+      // preferLocal: false — every other network read of an encounter in
+      // this file already does this (pollActiveEncounter,
+      // refreshCurrentEncounter, the macro runner's loadMacroEncounter); this
+      // one was the sole exception. Confirmed real bug: a GM's own tracker
+      // — including on a fresh page reload, since init() below calls this
+      // same function to resume whichever encounter is active — kept
+      // showing its last-known LOCAL copy indefinitely (initiative stuck at
+      // whatever it was before) whenever a player pushed initiative from
+      // their own character sheet, since that write only ever lands on the
+      // server + the player's own local cache, never the GM's.
+      const result = await dataManager.get("encounter", id, { shareToken, preferLocal: false });
       state.encounter = result.payload;
       const fields = await loadSystemFields(dataManager, state.encounter.systemId);
       state.combatBindings = deriveCombatBindings(fields);
@@ -480,11 +490,11 @@ export function initCombatTrackerWidget(
     void writeThroughToCharacter(combatant, { conditions: combatant.conditions });
   }
 
-  // Visibility ("Show to table") and combat state ("Start/Stop") are
-  // deliberately independent controls — starting combat defaults to also
-  // showing it (same "visible by default" convention as a new combatant's
-  // own `hidden: false`), but stopping combat doesn't hide it, and hiding
-  // doesn't stop combat. Each can be changed on its own afterward.
+  // Visibility ("Show to table") and combat state ("Start/Stop") are fully
+  // independent controls, with zero automatic coupling in either direction
+  // — starting combat no longer implicitly shows it, stopping doesn't hide
+  // it, and hiding doesn't stop combat. Each is only ever changed by its
+  // own explicit button.
   async function showToTable() {
     if (!state.encounter || state.announced) return;
     const active = dataManager.getActiveGroup();
@@ -500,6 +510,7 @@ export function initCombatTrackerWidget(
         groupId: active.groupId,
         contentType: "encounter",
         contentId: state.encounter.id,
+        data: { hidden: false },
       });
       state.announced = true;
       status?.show("Showing to the table.", { type: "success", timeout: 2000 });
@@ -509,12 +520,32 @@ export function initCombatTrackerWidget(
     }
   }
 
+  // Marks the spotlight `data.hidden` instead of clearing it outright (the
+  // old behavior — dataManager.clearSpotlight) — confirmed real bug that
+  // fixes: a fully-cleared encounter stopped being "the active encounter"
+  // for ANY purpose at all, including character-sheet.js's own
+  // pushInitiativeToActiveEncounter — a GM hiding combat from the table
+  // (a deliberate, supported thing to want — running a private encounter
+  // players still roll initiative into) broke initiative pushing entirely,
+  // not just table visibility. updateSpotlightData posts a
+  // `spotlight-update` entry, which resolveActiveSpotlights/
+  // resolveActiveSpotlightId already treat as equally "active" as the
+  // original `spotlight` entry (see spotlight.js's own comment) — the
+  // encounter stays findable, just flagged not-for-display. Player-facing
+  // rendering (this file's own resolveActiveEncounterId, the spotlight
+  // panel/Game Log in dashboard.js) is what actually checks the flag and
+  // hides accordingly.
   async function hideFromTable() {
     if (!state.encounter || !state.announced) return;
     const active = dataManager.getActiveGroup();
     if (active?.groupId) {
       try {
-        await dataManager.clearSpotlight({ groupId: active.groupId, kind: "encounter", id: state.encounter.id });
+        await dataManager.updateSpotlightData({
+          groupId: active.groupId,
+          kind: "encounter",
+          id: state.encounter.id,
+          data: { hidden: true },
+        });
         status?.show("Stopped showing to the table.", { type: "success", timeout: 2000 });
       } catch (error) {
         status?.show(error.message || "Unable to stop showing.", { type: "error" });
@@ -532,40 +563,23 @@ export function initCombatTrackerWidget(
     }
   }
 
-  // The *automatic* show-on-start below is deliberately silent (no toast) —
-  // same "just is visible, no prompt" convention as a new combatant's own
-  // `hidden: false` default. showToTable() (the manual eye-button click)
-  // does the identical spotlightToGroup call, just with a toast — no
-  // confirmation dialog either, matching every other widget's own visibility
-  // toggle (Handout/Map/Clock never confirm before showing).
-  async function autoShowOnStart() {
-    if (!state.encounter || state.announced) return;
-    const active = dataManager.getActiveGroup();
-    if (!active?.groupId) return;
-    try {
-      await dataManager.spotlightToGroup({
-        groupId: active.groupId,
-        contentType: "encounter",
-        contentId: state.encounter.id,
-      });
-      state.announced = true;
-      render();
-    } catch (error) {
-      status?.show(error.message || "Unable to show the encounter to the table.", { type: "error" });
-    }
-  }
-
   // Start places the turn indicator on the first combatant at round 1;
-  // Stop clears both (no turn indicator, no Round display) without
-  // touching visibility, so a GM can reset/restart combat mid-session
-  // without re-triggering (or losing) the table's view of the encounter.
-  async function startCombat() {
+  // Stop clears both (no turn indicator, no Round display). Deliberately
+  // touches nothing about visibility, in either direction — Start used to
+  // also auto-spotlight the encounter (a "visible by default" convenience),
+  // but per the user's own explicit call, active/started and visible/shown
+  // must be two fully independent toggles with zero automatic coupling
+  // either way — hitting both buttons is one extra click, in exchange for
+  // being able to run combat privately from turn 1 (not just after
+  // starting-then-hiding) or leave a hidden encounter shown from an earlier
+  // session while re-starting it. See showToTable/hideFromTable's own
+  // comment for the other half of this split.
+  function startCombat() {
     if (!state.encounter) return;
     state.encounter.started = true;
     state.encounter.round = 1;
     state.encounter.activeIndex = 0;
     markDirty();
-    await autoShowOnStart();
   }
 
   function stopCombat() {
@@ -578,7 +592,18 @@ export function initCombatTrackerWidget(
 
   async function resolveActiveEncounterId() {
     if (encounterId) return encounterId;
-    return resolveActiveSpotlightId(dataManager, { groupId, shareToken, kind: "encounter" });
+    const id = await resolveActiveSpotlightId(dataManager, { groupId, shareToken, kind: "encounter" });
+    if (!id) return "";
+    // A hidden encounter (see hideFromTable's own comment) is still the
+    // campaign's ACTIVE encounter — character-sheet.js's own initiative
+    // push needs to keep finding it regardless of visibility — but a
+    // player-mode tracker's own rendering must still respect "not shown to
+    // the table." Checking the resolved data here (not just
+    // resolveActiveSpotlightId's own id-only answer) is what makes that
+    // distinction: an id existing doesn't mean this viewer should see it.
+    const data = await resolveSpotlightData(dataManager, { groupId, shareToken, kind: "encounter", id });
+    if (data?.hidden === true) return "";
+    return id;
   }
 
   async function pollActiveEncounter() {
@@ -845,7 +870,7 @@ export function initCombatTrackerWidget(
       if (state.encounter.started) {
         stopCombat();
       } else {
-        void startCombat();
+        startCombat();
       }
     });
     const prevButton = iconButton("tabler:chevron-left", "Previous turn");
@@ -1233,11 +1258,30 @@ export function initCombatTrackerWidget(
   void init();
 
   return {
-    destroy() {
+    // `removed` (dashboard.js's removeWidget passes true) — this instance's
+    // own "show to table" spotlight, if it announced one, needs clearing.
+    // Confirmed real bug this fixes: unlike handout.js/map.js/clocks.js
+    // (each keyed by a single per-instance `visible` flag this widget has
+    // no equivalent of — GM/player share the same widget shape here, mode
+    // decided live from groupContext.access, not a per-instance toggle),
+    // this widget never cleared its own spotlight on removal at all — a GM
+    // removing their Combat Tracker widget while an encounter was shown left
+    // that encounter permanently stuck "active" in the group log, with no
+    // way to turn it off short of a server-side fix. `state.announced`
+    // (set by showToTable/cleared by hideFromTable, GM mode only) is this
+    // widget's own equivalent of that missing `visible` flag.
+    async destroy(removed) {
       state.destroyed = true;
       stopPolling();
       liveStream?.close();
       container.innerHTML = "";
+      if (removed && mode === "gm" && state.announced && state.encounter && groupId) {
+        try {
+          await dataManager.clearSpotlight({ groupId, kind: "encounter", id: state.encounter.id });
+        } catch (error) {
+          // Best-effort cleanup — nothing meaningful to do if this fails.
+        }
+      }
     },
   };
 }

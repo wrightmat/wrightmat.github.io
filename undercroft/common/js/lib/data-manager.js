@@ -949,17 +949,33 @@ export class DataManager {
     return payload;
   }
 
-  async listGroups({ refresh = false } = {}) {
+  // includeMemberGroups (opt-in) also lists groups you don't own but have a
+  // character added to (server's own ?scope=member — see groups.py's own
+  // list_groups) — what auth-ui.js's account-menu campaign selector wants
+  // ("which campaigns am I part of"), but NOT what Loom's own group-
+  // management tab wants (default scope, owner-only — that UI offers
+  // rename/delete/member-editing controls that only work on groups you
+  // actually own). Cached per-scope (a plain Map, not a single value) so
+  // one caller's broader request can never leak into the other's — every
+  // existing `this._groupCache = null` invalidation elsewhere in this class
+  // still works unchanged, since a falsy cache just gets rebuilt as a fresh
+  // Map here regardless of which scope asks for it first.
+  async listGroups({ refresh = false, includeMemberGroups = false } = {}) {
     if (!this.isAuthenticated()) {
       this._groupCache = null;
       return { groups: [] };
     }
-    if (!refresh && this._groupCache) {
-      return this._groupCache;
+    if (!(this._groupCache instanceof Map)) {
+      this._groupCache = new Map();
     }
-    const payload = await this._request("/groups", { method: "GET", auth: true });
+    const cacheKey = includeMemberGroups ? "member" : "owned";
+    if (!refresh && this._groupCache.has(cacheKey)) {
+      return this._groupCache.get(cacheKey);
+    }
+    const query = includeMemberGroups ? "?scope=member" : "";
+    const payload = await this._request(`/groups${query}`, { method: "GET", auth: true });
     const normalized = payload && typeof payload === "object" ? payload : { groups: [] };
-    this._groupCache = normalized;
+    this._groupCache.set(cacheKey, normalized);
     return normalized;
   }
 
@@ -1157,16 +1173,41 @@ export class DataManager {
       throw new Error("groupId, contentType, and contentId are required");
     }
     if (!skipShare) {
-      await this.shareWithGroup({ contentType, contentId, groupId, permissions: "view" });
+      // "map" and "encounter" are the spotlighted kinds a player is ever
+      // expected to write back to (their own character's token position —
+      // see map.js's own isMarkerDraggable/ownership check; their own
+      // combatant's initiative — see character-sheet.js's own
+      // pushInitiativeToActiveEncounter) — every other kind (npc, location,
+      // handout content, ...) is genuinely read-only for a player, so "view"
+      // stays correct there. Confirmed real bug (map, fixed first): a
+      // view-only share left save_item's own is_shared(require_edit:true)
+      // check failing for a player writing their own narrow update into a
+      // shared record, surfacing as "Edit not permitted" even after the
+      // client-side write itself was already correctly scoped to just that
+      // player's own data. Confirmed the identical bug for "encounter" —
+      // rolling initiative from a shown-to-table combat failed the exact
+      // same way, since only "map" had this carve-out.
+      const spotlightPermissions = contentType === "map" || contentType === "encounter" ? "edit" : "view";
+      await this.shareWithGroup({ contentType, contentId, groupId, permissions: spotlightPermissions });
       if (templateId) {
         await this.shareWithGroup({ contentType: "templates", contentId: templateId, groupId, permissions: "view" });
       }
     }
-    return this.createGroupLogEntry({
+    const result = await this.createGroupLogEntry({
       groupId,
       type: "spotlight",
       payload: { kind: contentType, id: contentId, templateId: templateId || undefined, data },
     });
+    // Lets anything watching THIS browser tab's own actions (dashboard.js's
+    // spotlight panel) refresh immediately instead of waiting for its own
+    // poll/live-stream round-trip — confirmed real complaint: a GM's own
+    // "show to table" toggle could take several seconds to show up in their
+    // own icon tray, reading as "is this even working." A live-stream event
+    // still has to round-trip through the server; this fires synchronously,
+    // in-page, the instant the action this tab itself took has actually
+    // succeeded.
+    this._emit("undercroft:spotlight-changed", { groupId, kind: contentType, id: contentId });
+    return result;
   }
 
   // Refreshes the `data` payload on an ALREADY-shown inline-kind spotlight
@@ -1207,7 +1248,12 @@ export class DataManager {
     }
     let payload;
     if (kind) payload = id ? { kind, id } : { kind };
-    return this.createGroupLogEntry({ groupId, shareToken, type: "spotlight-clear", payload });
+    const result = await this.createGroupLogEntry({ groupId, shareToken, type: "spotlight-clear", payload });
+    // See spotlightToGroup's own identical comment — same instant, in-page
+    // "this tab's own action just happened" signal, this time for turning
+    // something off.
+    this._emit("undercroft:spotlight-changed", { groupId, kind, id });
+    return result;
   }
 
   async fetchGroupShare(token) {

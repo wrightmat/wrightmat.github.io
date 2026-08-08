@@ -3,14 +3,18 @@ import { initAppShell } from "../../common/js/lib/app-shell.js";
 import { createJsonDataPanel, createIconButton, createToolbarButtonGroup, createCompactField, createButtonCheckGroup, createCheckField, createIconPickerField, createFormFloatingField, createEmptyStateCard } from "../../common/js/lib/ui-components.js";
 import { createFieldRow, createHalfWidthNumberField, createCollapsibleSection } from "../../common/js/lib/inspector-fields.js";
 import { exportRecordAsJson } from "../../common/js/lib/generator-kit.js";
-import { watchMapForChanges } from "../../common/js/lib/map-live-sync.js";
+import {
+  watchMapForChanges,
+  persistMarkerMove as persistMarkerMoveShared,
+  persistElementUpdate,
+} from "../../common/js/lib/map-live-sync.js";
 import { initAuthControls } from "../../common/js/lib/auth-ui.js";
 import { refreshTooltips, disposeTooltips } from "../../common/js/lib/tooltips.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
 import { fetchKindEntriesWithIds, loadLibraryKinds } from "../../common/js/lib/content-fetch.js";
 import { createTokenImageField } from "../../common/js/lib/token-picker.js";
 import { getIconTokens } from "../../common/js/lib/icon-picker.js";
-import { allowsDelete, refreshOwnershipCatalog, confirmDelete } from "../../common/js/lib/ownership.js";
+import { refreshOwnershipCatalog, confirmDelete, matchesOwner } from "../../common/js/lib/ownership.js";
 import { collectSystemFields } from "../../common/js/lib/system-schema.js";
 import { createBindingFormulaInput } from "../../common/js/lib/binding-field.js";
 import {
@@ -67,11 +71,11 @@ import {
   getMarkerLayerOffset,
   renderShapeElement,
   resolveMarkerVisionRangeCells,
-  resolveBlockingSegments,
-  segmentsIntersect,
   resolveVisibleCells,
   renderLightElement,
   resolveLightOrigin,
+  snapMarkerPositionToGrid as snapMarkerPositionToGridShared,
+  buildRestrictedMapOptions,
 } from "./lib/map-viewer.js";
 
 const state = {
@@ -181,6 +185,36 @@ let paintDragBefore = null;
 // placeholder's random, never-saved id fail ownership and stayed
 // disabled, which is why this was easy to miss testing as a non-admin).
 let mapIsLoaded = false;
+
+// True once state.map is a REAL, previously-saved server record (loaded via
+// loadMapById with a real id, or just successfully saved for the first
+// time) — false for a brand-new, never-saved map (createMapModel's own
+// randomId(), which never appears in mapCatalog at all since nothing was
+// ever fetched for it). currentUserHasFullMapAccess treats "not yet saved
+// anywhere" as full access unconditionally — confirmed real bug this fixes:
+// mapAllowsDelete's own safe "no catalog entry = restricted" default (dead
+// right for an existing map this viewer genuinely has no access to) also
+// fired for a map that simply doesn't exist as a record YET, hiding the
+// entire authoring UI — including the Save button needed to create it at
+// all — the instant anyone opened Orrery fresh or clicked New Map.
+let mapExistsOnServer = false;
+
+// Set by loadMapById — needed by the restricted-viewer marker-move/door-
+// toggle persistence below (persistRestrictedMarkerMove/onDoorClickRestricted),
+// the same anonymous share-link auth loadMapById itself already forwards to
+// dataManager.get.
+let currentShareToken = "";
+
+// Set true for the duration of a restricted viewer's marker drag
+// (buildRestrictedMapOptions' own onDragStateChange) — watchCurrentMap's
+// own onChange below skips an incoming poll/live-stream update while this
+// is true, the same way it already skips one whenever state.selection is
+// set (a GM must select the Marker Layer before dragging, which already
+// protects THEIR drag) — a restricted viewer has no selection concept at
+// all, so it needed its own signal. See buildRestrictedMapOptions' own
+// comment for the confirmed "drag pops straight to the final position
+// instead of tracking the cursor" bug this fixes.
+let isDraggingRestrictedMarker = false;
 
 const mapContainer = document.querySelector("#orrery-map");
 const baseMapManager = new BaseMapManager({
@@ -820,10 +854,28 @@ function applyMapSnapshot(snapshot) {
   setPanelFocus(false);
 }
 
-// Owner-or-admin, or a local/anonymous entry — same rule as Sanctum's
-// settingAllowsDelete/locationAllowsDelete and Loom's systemAllowsDelete.
+// Owner-or-admin, or a local/anonymous entry — deliberately NOT
+// ownership.js's own allowsDelete (which also treats a plain share-level
+// "edit" permission as sufficient, the right call for every other kind's
+// delete gate — Sanctum's settingAllowsDelete/locationAllowsDelete, Loom's
+// systemAllowsDelete, etc). A Map can no longer follow that pattern: every
+// map share is now unconditionally "edit" (server/shares.py's own
+// _normalize_permissions), purely so a player's own narrow, client-
+// restricted write-back (moving their own owned character's token — this
+// file's own isMarkerDraggableRestricted) is even possible at all — it no
+// longer signals "this person is a trusted co-author of the whole map."
+// Reusing allowsDelete here regressed exactly the bug this file's own
+// restricted marker-drag gate was built to fix: with every map share now
+// "edit," `allowsDelete` (and therefore currentUserHasFullMapAccess below,
+// which every restricted-viewer check branches on) returned true for ANY
+// campaign member, silently granting full authoring access — move any
+// marker, see the Delete Map button, everything — to a mere player.
 function mapAllowsDelete(id) {
-  return allowsDelete(mapCatalog, id, { dataManager });
+  if (dataManager?.getUserTier() === "admin") return true;
+  const metadata = mapCatalog.get(id);
+  if (!metadata) return false;
+  if (metadata.ownership === "local") return true;
+  return matchesOwner(metadata, { session: dataManager?.session });
 }
 
 // Same shape/reasoning as Sanctum's refreshSettingCatalog: ownership
@@ -835,13 +887,12 @@ async function refreshMapCatalog(ids) {
 
 // Tiered Views (state.map.views) only ever filter what a non-owner sees —
 // the map's own owner/editor always gets full, unfiltered access (they're
-// authoring it; Views are a presentation concern for viewers, same framing
-// as readTier/writeTier elsewhere). mapAllowsDelete already captures exactly
-// this "does the current user have full access to this map" check
-// (owner/admin/local/edit-shared), so it doubles as the edit-access gate
-// here too — this codebase already treats "edit" share permission as
-// full-access, same as every other kind's Delete-button gating.
+// authoring it; Views are a presentation concern for viewers). mapAllowsDelete
+// already captures exactly this "does the current user actually own this
+// map (or is admin)" check — see its own comment for why that's ownership-
+// only now, not the broader owner-or-edit-shared rule most other kinds use.
 function currentUserHasFullMapAccess() {
+  if (!mapExistsOnServer) return true;
   return mapAllowsDelete(state.map.id);
 }
 
@@ -863,62 +914,18 @@ function getVisibleLayerIds() {
   return computeVisibleLayerIds(state.map, getEffectiveViewerTier(), currentUserHasFullMapAccess());
 }
 
-// Snaps a marker's dropped/placed position to the nearest cell center of
-// the map's first visible grid layer, matching how every major VTT places
-// tokens by default. No-op (returns position unchanged) when the map has no
-// grid layer. `markerLayer` is the marker's OWN layer (both call sites
-// already have it) — required to correctly convert between coordinate
-// frames, see below.
-//
-// Must subtract/re-add the grid layer's own position offset around the
-// coord lookup — createGridLayerElement's own click-to-select hit test does
-// the same subtraction (see its own pointerdown handler in
-// lib/map-viewer.js) before calling getGridCoordFromPoint, since that
-// function (and getGridCellPixelRect) both work in "pixels from the grid's
-// OWN configured origin," not "pixels from the container's corner."
-//
-// `position` (and therefore markerPositionToLocalPixel(position)) is
-// relative to the MARKER layer's own pan offset, not the container's true
-// corner (see getMarkerElementPixelPosition's own "offset.x + local.x" —
-// the marker layer's offset gets added back at RENDER time, meaning
-// whatever's stored here has to exclude it). The grid math below works in
-// true container-relative space (matching getGridOffset's own meaning), so
-// the marker layer's own offset has to be added back in before doing that
-// math, and subtracted back out before returning — confirmed as a real,
-// consistent bug before this fix: any marker layer with a non-zero
-// Position X/Y of its own (dragging the WHOLE layer, not an individual
-// marker) snapped every marker on it to the wrong cell, off by however far
-// the marker layer itself had been panned. This is a DIFFERENT offset than
-// the earlier zoom-scale fix (getGridHitTestScale) — that one was about
-// zoom, this one is about mixing two layers' own, unrelated pan offsets
-// into one coordinate.
+// Snaps a marker's dropped/placed position to the nearest cell center —
+// relocated to lib/map-viewer.js (imported below as
+// snapMarkerPositionToGridShared, taking baseMapManager/map as explicit
+// parameters instead of this file's own closed-over state) so the
+// Dashboard's Map widget can call the exact same logic for a player's own
+// token drag, instead of saving an unsnapped raw position (confirmed real
+// bug — a visibly different, and per this suite's own top-priority parity
+// rule, wrong feel from Orrery's own drag). This thin wrapper just supplies
+// this file's own state/baseMapManager so the existing call sites below
+// don't all need editing.
 function snapMarkerPositionToGrid(position, markerLayer) {
-  // Not filtered on visibility — hiding the grid's lines isn't a statement
-  // that it stops being the map's real cell size/scale (see
-  // findPrimaryGridLayer's own matching comment below).
-  const gridLayer = state.map.layers.find((entry) => entry.type === "grid");
-  if (!gridLayer) {
-    return position;
-  }
-  const markerOffset = markerLayer ? getMarkerLayerOffset(state.map, markerLayer) : { x: 0, y: 0 };
-  const localPixel = markerPositionToLocalPixel(baseMapManager, state.map, position);
-  const containerRelative = { x: localPixel.x + markerOffset.x, y: localPixel.y + markerOffset.y };
-  const gridOffset = getGridOffset(baseMapManager, state.map, gridLayer);
-  // containerRelative and gridOffset are both pure content-space (zoom-
-  // independent for non-tile maps), but getGridCoordFromPoint expects its
-  // point in the "hit-test" scale (see getGridHitTestScale's own comment)
-  // — multiplying by that same factor first is what makes its internal
-  // /hitScale step round-trip back to the right cell instead of double-
-  // dividing by zoom. getGridCellPixelRect's own OUTPUT needs no such
-  // adjustment — its cellSize is already content-space for non-tile maps
-  // (getGridLayoutScale is a flat 1 there), same as `rect`/`gridOffset`.
-  const hitScale = getGridHitTestScale(baseMapManager, state.map);
-  const relativePoint = { x: (containerRelative.x - gridOffset.x) * hitScale, y: (containerRelative.y - gridOffset.y) * hitScale };
-  const coord = getGridCoordFromPoint(baseMapManager, state.map, gridLayer, relativePoint);
-  const rect = getGridCellPixelRect(baseMapManager, state.map, gridLayer, coord);
-  const containerCenter = { x: rect.x + gridOffset.x + rect.width / 2, y: rect.y + gridOffset.y + rect.height / 2 };
-  const center = { x: containerCenter.x - markerOffset.x, y: containerCenter.y - markerOffset.y };
-  return localPixelToMarkerPosition(baseMapManager, state.map, center);
+  return snapMarkerPositionToGridShared(baseMapManager, state.map, position, markerLayer);
 }
 
 // Same "convert to true container-relative content-space, snap, convert
@@ -1078,7 +1085,14 @@ function watchCurrentMap(id, shareToken = "") {
     // nobody's actively watching for changes twice as often as needed.
     pollIntervalMs: 20000,
     onChange: (nextMap) => {
-      if (!nextMap || nextMap.id !== state.map.id || isMapDirty() || state.selection.kind !== null || isEditingMapProperties()) {
+      if (
+        !nextMap ||
+        nextMap.id !== state.map.id ||
+        isMapDirty() ||
+        state.selection.kind !== null ||
+        isEditingMapProperties() ||
+        isDraggingRestrictedMarker
+      ) {
         return;
       }
       applyRemoteMapLayers(nextMap);
@@ -2545,19 +2559,119 @@ function primeCharacterPayloadCache() {
   });
 }
 
+// Which characters the current viewer has owner/admin/edit-shared access to
+// (allowsDelete's own established owner-or-admin-or-edit-shared rule — the
+// right rule for a CHARACTER, unlike mapAllowsDelete's own narrower
+// ownership-only rule for the map itself, see that function's own comment
+// for why those two had to diverge) — only ever consulted from the
+// restricted render path (see isMarkerDraggableRestricted/
+// renderRestrictedLayerOverlays below); the full-access path never reaches
+// this at all.
+// Confirmed real bug this fixes: with no per-marker check of any kind at
+// all, ANY signed-in visitor reaching Orrery's own authoring view — most
+// often a player following the Dashboard Map widget's own "Open in Orrery"
+// link, a surface this tool was never built assuming a non-owner would use
+// — could drag EVERY marker on the map, including characters they don't
+// own. Same "populate cache, fire-and-forget, re-render once it resolves"
+// shape as characterPayloadCache above, just for ownership instead of
+// vision-Binding data.
+let characterOwnershipCatalog = new Map();
+let characterOwnershipPromise = null;
+function primeCharacterOwnershipCatalog() {
+  if (characterOwnershipPromise || currentUserHasFullMapAccess()) return;
+  const ids = new Set();
+  (state.map.layers || []).forEach((layer) => {
+    if (layer.type !== "marker") return;
+    (layer.elements || []).forEach((marker) => {
+      if (marker.kind === "marker" && marker.refKind === "character" && marker.refId) {
+        ids.add(marker.refId);
+      }
+    });
+  });
+  if (!ids.size) return;
+  characterOwnershipPromise = refreshOwnershipCatalog(dataManager, "character", Array.from(ids))
+    .then((catalog) => {
+      characterOwnershipCatalog = catalog;
+      characterOwnershipPromise = null;
+      renderLayerOverlays();
+    })
+    .catch(() => {
+      characterOwnershipPromise = null;
+    });
+}
+
+// Supplying isMarkerDraggable at all (below) means lib/map-viewer.js's own
+// isInteractive fallback (`draggable = Boolean(options.isInteractive)`)
+// never runs for a marker layer — so the "this layer must actually be the
+// current selection" gate that fallback implements (renderMapLayers' own
+// isSelected, computed the same 4-way way there) has to be replicated here
+// too, or a full-access viewer would regress to EVERY marker on EVERY layer
+// being draggable at once, without even selecting the Marker Layer first —
+// a real behavior change, not just a fix.
+function isMarkerLayerSelected(layer) {
+  return (
+    (state.selection.kind === "layer" && state.selection.id === layer.id) ||
+    (state.selection.kind === "grid-cells" && state.selection.layerId === layer.id) ||
+    (state.selection.kind === "marker-element" && state.selection.layerId === layer.id) ||
+    (state.selection.kind === "vector-path" && state.selection.layerId === layer.id)
+  );
+}
+
+// Only ever used from the full-access render path now (renderLayerOverlays
+// below branches to a completely separate, restricted render for anyone
+// without full map access — see renderRestrictedLayerOverlays, which pulls
+// its own equivalent marker-drag policy from map-viewer.js's shared
+// buildRestrictedMapOptions instead of a second copy here) — so this only
+// has one job left: the GM/owner/admin can drag any marker on the
+// currently-selected layer, matching the tool's original behavior (must
+// select the Marker Layer first).
+function isMarkerDraggableForFullAccess(layer) {
+  return isMarkerLayerSelected(layer);
+}
+
 function renderLayerOverlays() {
   const overlay = baseMapManager.getOverlayContainer();
   if (!overlay) {
     return;
   }
+  // A restricted viewer's drag (beginMarkerDrag, map-viewer.js) tracks the
+  // cursor via direct style mutation on its own dot element, entirely
+  // outside this function — it needs nothing from a re-render until the
+  // gesture actually ends (onMarkerDragEnd handles that explicitly). ANY
+  // render triggered while a drag is in flight would rebuild the marker
+  // layer's DOM and tear out that exact dot out from under the pointer-
+  // capture driving the gesture — confirmed real bug, and more common than
+  // it sounds: the ownership-catalog/vision-payload caches below
+  // (primeCharacterOwnershipCatalog/primeCharacterPayloadCache) each kick
+  // off their own fire-and-forget fetch-then-render-again the FIRST time
+  // this runs after a fresh page load, i.e. almost exactly when a first,
+  // freshly-loaded test drag is most likely to be in progress — not just
+  // the remote poll (which isDraggingRestrictedMarker already guarded
+  // separately, but wasn't the only trigger). One guard here covers every
+  // trigger uniformly instead of chasing each one individually.
+  if (isDraggingRestrictedMarker) return;
+  const hasFullAccess = currentUserHasFullMapAccess();
+  // Everything below `[data-pane]`/the floating toolbar's authoring
+  // buttons (css/styles.css) is hidden by this class alone — see its own
+  // rules for the full list. Keyed off mapIsLoaded too so a fresh page load
+  // (mapCatalog not populated yet, hasFullAccess defaults false — see
+  // mapAllowsDelete) doesn't flash the restricted class before there's even
+  // a map to judge access against.
+  document.body.classList.toggle("orrery-restricted-viewer", mapIsLoaded && !hasFullAccess);
+  if (!hasFullAccess) {
+    renderRestrictedLayerOverlays(overlay);
+    return;
+  }
   primeCharacterPayloadCache();
+  primeCharacterOwnershipCatalog();
   syncOverlayInteractivity();
   const activeGroup =
     state.selection.kind === "group" ? state.map.groups.find((group) => group.id === state.selection.id) : null;
   const paintLayer = resolvePaintTargetLayer(activeGroup);
   renderMapLayers(overlay, baseMapManager, state.map, {
     viewerTier: getEffectiveViewerTier(),
-    hasFullAccess: currentUserHasFullMapAccess(),
+    hasFullAccess: true,
+    isMarkerDraggable: isMarkerDraggableForFullAccess,
     selection: state.selection,
     activeGroup,
     // Orrery's own authoring view needs to resolve vision Bindings too —
@@ -2784,6 +2898,87 @@ function renderLayerOverlays() {
       renderSelection();
     },
   });
+}
+
+// Restricted (non-owner, non-admin) viewer — no Layers/Groups/Views panel,
+// no toolbar tools, no click-to-select of anything at all (css/styles.css's
+// own .orrery-restricted-viewer rules hide every one of those UI surfaces —
+// see renderLayerOverlays' own toggle above). The interactive POLICY this
+// render path wires up (drag a character marker you own, open/close a
+// non-secret unlocked door, wall-aware blocking, grid-snap on drop) comes
+// straight from map-viewer.js's own buildRestrictedMapOptions — the SAME
+// function the Dashboard's own Map widget uses, not a second, independently
+// -written copy of the same rules (confirmed real complaint: the two used
+// to drift — dragging felt "totally different" between the widget and
+// Orrery precisely because each had its own bespoke implementation).
+// Deliberately a SEPARATE renderMapLayers call from the full-access one
+// above (not a conditionally-neutered version of it) — same "supply no
+// callback at all to opt a feature out" convention the widget's own map.js
+// already established, rather than scattering `restricted ? undefined :
+// ...` through every closure above.
+function renderRestrictedLayerOverlays(overlay) {
+  primeCharacterPayloadCache();
+  primeCharacterOwnershipCatalog();
+  renderMapLayers(overlay, baseMapManager, state.map, {
+    viewerTier: getEffectiveViewerTier(),
+    ...buildRestrictedMapOptions({
+      dataManager,
+      baseMapManager,
+      map: state.map,
+      characterOwnershipCatalog,
+      getCharacterPayload: getCachedCharacterPayload,
+      status,
+      onMarkerMoved: (layer, markerElement, snappedPosition) =>
+        void persistRestrictedMarkerMove(layer, markerElement, snappedPosition),
+      onDoorToggled: (layer, elementId) => void toggleDoorRestricted(layer.id, elementId),
+      onDragStateChange: (dragging) => {
+        isDraggingRestrictedMarker = dragging;
+      },
+    }),
+  });
+}
+
+// A restricted viewer's own writes need an IMMEDIATE, single-element persist
+// (map-live-sync.js's persistElementUpdate/persistMarkerMove: fresh fetch,
+// patch just this one element, save) — not this file's usual "mutate
+// state.map locally, wait for the GM to click Save" convention every other
+// edit here uses, since a restricted viewer never sees a Save button at all
+// (data-pane-content is hidden entirely, see css/styles.css). Both merge the
+// server's fresh response back in via applyRemoteMapLayers — the same "pick
+// up someone else's change" path this file's own poll (watchCurrentMap)
+// already uses.
+async function toggleDoorRestricted(layerId, elementId) {
+  try {
+    const freshMap = await persistElementUpdate({
+      dataManager,
+      mapId: state.map.id,
+      shareToken: currentShareToken,
+      layerId,
+      elementId,
+      patch: (freshElement) => {
+        freshElement.doorState = freshElement.doorState === "open" ? "closed" : "open";
+      },
+    });
+    if (freshMap) applyRemoteMapLayers(freshMap);
+  } catch (error) {
+    status.show(error.message || "Unable to open the door.", { type: "error" });
+  }
+}
+
+async function persistRestrictedMarkerMove(layer, markerElement, nextPosition) {
+  try {
+    const freshMap = await persistMarkerMoveShared({
+      dataManager,
+      mapId: state.map.id,
+      shareToken: currentShareToken,
+      layerId: layer.id,
+      elementId: markerElement.id,
+      nextPosition,
+    });
+    if (freshMap) applyRemoteMapLayers(freshMap);
+  } catch (error) {
+    status.show(error.message || "Unable to save your marker's new position.", { type: "error" });
+  }
 }
 
 function createSelectionSectionTitle(text) {
@@ -6410,6 +6605,7 @@ function setupMapEvents() {
 
   if (elements.newMapButton) {
     elements.newMapButton.addEventListener("click", () => {
+      mapExistsOnServer = false;
       applyMapSnapshot(JSON.stringify(createMapModel()));
       if (elements.mapSelect) elements.mapSelect.value = "";
       // A brand-new, never-edited map has nothing worth saving yet — same
@@ -6473,6 +6669,13 @@ function setupMapEvents() {
       try {
         await dataManager.save("map", state.map.id, state.map);
         status.show(`Saved "${name}".`, { type: "success", timeout: 2000 });
+        // Now a real record — currentUserHasFullMapAccess stops giving this
+        // map an unconditional pass and starts checking its real ownership
+        // (mapCatalog, refreshed below) instead, same as any other loaded
+        // map. Harmless either way for THIS save (the saver is the real
+        // owner per server/storage.py's own is_new_record ownership rule),
+        // but correct going forward if this same tab later reloads or polls.
+        mapExistsOnServer = true;
         // The in-memory map now exactly matches what's persisted — reset the
         // dirty baseline before populateMapSelect's own updateMapToolbarState
         // call (via refreshMapCatalog) re-evaluates Delete too.
@@ -6565,7 +6768,9 @@ function setupMapEvents() {
 // narrow spotlight exception (server/storage.py) grant read access to
 // exactly this map with no account.
 async function loadMapById(id, shareToken = "") {
+  currentShareToken = shareToken || "";
   if (!id) {
+    mapExistsOnServer = false;
     applyMapSnapshot(JSON.stringify(createMapModel()));
     markMapClean();
     watchCurrentMap(null);
@@ -6574,6 +6779,7 @@ async function loadMapById(id, shareToken = "") {
   if (!dataManager) return;
   try {
     const result = await dataManager.get("map", id, { shareToken });
+    mapExistsOnServer = true;
     applyMapSnapshot(JSON.stringify(result?.payload || createMapModel()));
     if (elements.mapSelect) elements.mapSelect.value = id;
     // Just-loaded state matches the stored record exactly — nothing to save

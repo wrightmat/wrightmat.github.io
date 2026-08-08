@@ -11,13 +11,23 @@
 // renderMapLayers, which is the whole opt-out mechanism — Orrery-only
 // concerns (grid-cell click-selection, "click empty space to place a new
 // marker," whole-layer drag, undo-stack recording) simply never run when
-// those options are absent. The one interactive affordance this widget does
-// supply is `isMarkerDraggable`, restricted to the viewer's own claimed
-// character's marker, per the confirmed permission model.
+// those options are absent. The interactive affordances this widget DOES
+// supply (drag a character marker you own, open/close a door) come from
+// map-viewer.js's own buildRestrictedMapOptions — the exact same policy
+// Orrery's own app.js uses for a non-owner viewer reaching Orrery directly.
+// This widget is ALWAYS that restricted view (a player's dashboard never
+// gets full authoring), which is why it always builds those options, never
+// the full-access ones. NOT gated on the dashboard's separate "pinned
+// character" concept at all — that's a different feature (which character a
+// widget like Character Summary/Combat Tracker is currently showing), and
+// previously, incorrectly, gated dragging here too: a player who owned a
+// character but hadn't explicitly pinned it via the Character Summary
+// widget saw zero drag controls for their own token, confirmed real bug.
 import { BaseMapManager } from "../../../../orrery/js/lib/base-maps.js";
-import { renderMapLayers, createPingMarker, resolveBlockingSegments, segmentsIntersect } from "../../../../orrery/js/lib/map-viewer.js";
+import { renderMapLayers, createPingMarker, buildRestrictedMapOptions } from "../../../../orrery/js/lib/map-viewer.js";
 import { resolveToolHref, resolveToolContextPath } from "../app-shell.js";
 import { resolveIsSpotlighted } from "../spotlight.js";
+import { refreshOwnershipCatalog } from "../ownership.js";
 import { el } from "../dom.js";
 import {
   watchMapForChanges,
@@ -40,7 +50,6 @@ export function initMapWidget(
     groupId = "",
     shareToken = "",
     viewerTier = "free",
-    pinnedCharacterId = "",
     onTitleChange,
     setHeaderAction,
     setRightAction,
@@ -73,6 +82,14 @@ export function initMapWidget(
   let zoomPanel = null;
   let watcher = null;
   let visible = false;
+  // Set true for the duration of a marker drag (buildRestrictedMapOptions'
+  // own onDragStateChange) — onMapChanged below skips an incoming poll/
+  // live-stream update while this is true, so it can't rebuild the marker
+  // layer's DOM (and tear out the very dot element being dragged) mid-
+  // gesture. See that function's own comment for the confirmed "drag pops
+  // straight to the final position instead of tracking the cursor" bug this
+  // fixes.
+  let isDraggingMarker = false;
 
   // Same direct spotlightToGroup/clearSpotlight toggle Handout's own
   // visibility button uses — no modal, just an eye icon. `LINK_ONLY_KINDS`
@@ -240,37 +257,46 @@ export function initMapWidget(
       });
   }
 
-  // Only this viewer's own claimed character's marker is draggable —
-  // everything else (NPCs, other players' characters) stays locked, per the
-  // confirmed permission model for this widget.
-  function isMarkerDraggable(layer, markerElement) {
-    return Boolean(
-      pinnedCharacterId && markerElement.refKind === "character" && markerElement.refId === pinnedCharacterId
-    );
+  // Ownership catalog for character markers actually placed on this map —
+  // same shape/lifecycle as Orrery's own app.js (refreshOwnershipCatalog is
+  // async, so this is fire-and-forget-then-re-render, not something
+  // isMarkerDraggable can await inline).
+  let characterOwnershipCatalog = new Map();
+  let characterOwnershipPromise = null;
+  function primeCharacterOwnershipCatalog() {
+    if (characterOwnershipPromise) return;
+    const ids = new Set();
+    (map?.layers || []).forEach((layer) => {
+      if (layer.type !== "marker") return;
+      (layer.elements || []).forEach((marker) => {
+        if (marker.kind === "marker" && marker.refKind === "character" && marker.refId) {
+          ids.add(marker.refId);
+        }
+      });
+    });
+    if (!ids.size) return;
+    characterOwnershipPromise = refreshOwnershipCatalog(dataManager, "character", Array.from(ids))
+      .then((catalog) => {
+        characterOwnershipCatalog = catalog;
+        characterOwnershipPromise = null;
+        renderLayers();
+      })
+      .catch(() => {
+        characterOwnershipPromise = null;
+      });
   }
 
-  // Doors only, and — unlike this widget's own isMarkerDraggable — NEVER
-  // gated on anything selection-related, since this widget has no selection
-  // concept at all (renderMapLayers itself already only wires this hit-
-  // target for a door whose element.secret isn't set at all, see
-  // renderWallElement — a secret door simply never reaches this handler).
-  function onDoorClick(layer, elementId) {
-    const element = layer.elements?.find((entry) => entry.id === elementId);
-    if (!element) return;
-    if (element.locked) {
-      status?.show("This door is locked.", { type: "warning", timeout: 2000 });
-      return;
-    }
-    void toggleDoor(layer.id, elementId);
-  }
-
-  async function toggleDoor(layerId, elementId) {
+  // Doors persist immediately (fresh fetch-patch-save via
+  // persistElementUpdate, same as a marker move below) — this widget has no
+  // Save button/local-dirty-state concept at all, unlike Orrery's own
+  // authoring surface.
+  async function toggleDoor(layer, elementId) {
     try {
       const freshMap = await persistElementUpdate({
         dataManager,
         mapId,
         shareToken,
-        layerId,
+        layerId: layer.id,
         elementId,
         patch: (freshElement) => {
           freshElement.doorState = freshElement.doorState === "open" ? "closed" : "open";
@@ -282,16 +308,6 @@ export function initMapWidget(
     } catch (error) {
       status?.show(error.message || "Unable to open the door.", { type: "error" });
     }
-  }
-
-  // Player-driven token movement only — the ONE place this widget lets a
-  // viewer move anything at all (their own pinned character's marker, per
-  // isMarkerDraggable above). Recomputed once per renderLayers() call (map
-  // itself only changes on that same cadence) and reused for every marker's
-  // own drag gesture, not per-frame.
-  function resolveMarkerMoveBlocked(layer, markerElement, fromPixel, toPixel) {
-    const blockingSegments = resolveBlockingSegments(baseMapManager, map);
-    return blockingSegments.some((segment) => segmentsIntersect(fromPixel, toPixel, segment.a, segment.b));
   }
 
   // Fires the fetch for every character-linked marker whose Vision Range is
@@ -317,19 +333,38 @@ export function initMapWidget(
   function renderLayers() {
     const overlay = baseMapManager?.getOverlayContainer();
     if (!overlay || !map) return;
+    // A drag tracks the cursor via direct style mutation on its own dot
+    // element (beginMarkerDrag, map-viewer.js), entirely outside this
+    // function — it needs nothing from a re-render until the gesture ends
+    // (onMarkerDragEnd handles that explicitly). ANY render triggered while
+    // a drag is in flight would rebuild the marker layer's DOM and tear out
+    // that exact dot from under the pointer-capture driving the gesture —
+    // confirmed real bug, and not just from the poll (onMapChanged's own
+    // isDraggingMarker guard already covered that): the ownership-catalog/
+    // vision-payload caches just below each kick off their own fire-and-
+    // forget fetch-then-render-again the FIRST time this runs after a
+    // fresh page load, i.e. almost exactly when a first, freshly-loaded
+    // test drag is most likely to be in progress. One guard here covers
+    // every trigger uniformly instead of chasing each one individually.
+    if (isDraggingMarker) return;
     primeCharacterPayloadCache();
+    primeCharacterOwnershipCatalog();
     renderMapLayers(overlay, baseMapManager, map, {
       viewerTier,
-      hasFullAccess: false,
-      isMarkerDraggable,
-      onMarkerDragEnd: (layer, markerElement, nextPosition) =>
-        void persistMarkerMove(layer.id, markerElement.id, nextPosition),
-      onDoorClick,
-      // Never passed from Orrery's own app.js — a GM must be able to freely
-      // drag any token through walls while setting up a scene. Only a
-      // player's own-token drag, here, is ever blocked.
-      resolveMarkerMoveBlocked,
-      getCharacterPayload: getCachedCharacterPayload,
+      ...buildRestrictedMapOptions({
+        dataManager,
+        baseMapManager,
+        map,
+        characterOwnershipCatalog,
+        getCharacterPayload: getCachedCharacterPayload,
+        status,
+        onMarkerMoved: (layer, markerElement, snappedPosition) =>
+          void persistMarkerMove(layer.id, markerElement.id, snappedPosition),
+        onDoorToggled: (layer, elementId) => void toggleDoor(layer, elementId),
+        onDragStateChange: (dragging) => {
+          isDraggingMarker = dragging;
+        },
+      }),
     });
   }
 
@@ -365,7 +400,11 @@ export function initMapWidget(
   // doLoad, which awaited its own fetch) — nothing can interleave partway
   // through a single call.
   function onMapChanged(nextMap) {
-    if (destroyed || !nextMap) return;
+    // isDraggingMarker — see buildRestrictedMapOptions' own onDragStateChange
+    // comment; applying an incoming update mid-drag would rebuild the
+    // marker layer's DOM out from under the pointer-capture driving that
+    // gesture.
+    if (destroyed || !nextMap || isDraggingMarker) return;
     map = nextMap;
     onTitleChange?.(map.name || "");
     if (!baseMapManager) {
@@ -430,12 +469,26 @@ export function initMapWidget(
       watcher.refresh();
       void refreshVisibility();
     },
-    destroy() {
+    // `removed` (dashboard.js's removeWidget passes true) — this instance's
+    // own spotlight (if any) needs clearing, same bug/fix as handout.js's
+    // own destroy(removed): without this, removing a currently-shown Map
+    // orphans that spotlight entry as still "active," so adding a fresh Map
+    // widget for the same record later finds it via resolveIsSpotlighted and
+    // shows "Show to Table" already ON even though nothing new was ever
+    // actually posted for players to be notified about.
+    async destroy(removed) {
       destroyed = true;
       watcher.stop();
       resizeObserver?.disconnect();
       baseMapManager?.current?.destroy?.();
       container.innerHTML = "";
+      if (removed && visible && groupId) {
+        try {
+          await dataManager.clearSpotlight({ groupId, kind: "map", id: mapId });
+        } catch (error) {
+          // Best-effort cleanup — nothing meaningful to do if this fails.
+        }
+      }
     },
   };
 }

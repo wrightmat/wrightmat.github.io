@@ -3,22 +3,9 @@
   "name": "Test Encounter",
   "groupId": "",
   "systemId": "sys.dnd5e",
-  "round": 1,
+  "round": 2,
   "activeIndex": 1,
   "combatants": [
-    {
-      "id": "200ef124-97a2-4c2a-be74-eb21ed123e01",
-      "name": "Murk Slick",
-      "refKind": "monster",
-      "refId": "mon_7e4c3358-5eaf-42e4-a2f3-f048e9d8a5de",
-      "initiative": 19,
-      "hp": 138,
-      "maxHp": 138,
-      "ac": 15,
-      "conditions": [],
-      "isPc": false,
-      "hidden": false
-    },
     {
       "id": "ae52579e-0551-4761-94c0-461e277ff75b",
       "name": "Glimmerwraith",
@@ -34,18 +21,18 @@
       "hidden": false
     },
     {
-      "id": "b6f11f23-8959-43da-9f62-f2710b0a98df",
-      "name": "Octavian Hoff",
+      "id": "74dab18f-253a-4a72-8c42-2d16dd468bfa",
+      "name": "Maris Wavedeep",
       "refKind": "character",
-      "refId": "octavian-hoff",
-      "initiative": 4,
-      "hp": 69,
-      "maxHp": 72,
-      "ac": 15,
+      "refId": "maris-wavedeep",
+      "initiative": 8,
+      "hp": 48,
+      "maxHp": 48,
+      "tempHp": 0,
+      "ac": 13,
       "conditions": [],
       "isPc": true,
-      "hidden": false,
-      "tempHp": 0
+      "hidden": false
     }
   ],
   "started": true

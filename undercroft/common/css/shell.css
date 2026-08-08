@@ -107,16 +107,131 @@ body[data-theme="dark"] .hover-lift:hover {
   z-index: 1050;
 }
 
-/* Dashboard's "show to table" accept prompt (spotlight-prompt.js) — bottom-
-   right, distinct from .status-root's bottom-center toasts so the two never
-   overlap. A higher z-index since a decision the user must act on outranks
-   an informational status toast. */
-.spotlight-prompt-toast {
+/* Dashboard's persistent "what's currently shown to the table" icon strip
+   (spotlight-panel.js) — bottom-right, distinct from .status-root's bottom-
+   center toasts so the two never overlap. Same slot the old one-at-a-time
+   accept-prompt toast used to occupy (retired — this is a live status
+   display, not a push notification: it reflects current truth, including
+   things being un-spotlighted, which the old toast structurally couldn't). */
+.spotlight-panel {
   position: fixed;
   right: 1.5rem;
   bottom: 1.5rem;
-  max-width: 20rem;
   z-index: 1060;
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* Positioned wrapper — lets the edit-mode "clear" badge sit in the icon's
+   own upper-right corner without the icon button itself needing to be a
+   positioning context (button padding/box-shadow stays exactly as it was
+   outside of edit mode). */
+.spotlight-panel-item {
+  position: relative;
+}
+
+.spotlight-panel-icon {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  border: 1px solid var(--bs-border-color);
+  background: var(--bs-body-bg);
+  color: var(--bs-body-color);
+  box-shadow: var(--bs-box-shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.15));
+  cursor: pointer;
+}
+
+/* Edit-mode-only escape hatch for a stale/orphaned spotlight — force-clears
+   it directly, bypassing the normal add/remove-a-widget toggle entirely.
+   See dashboard.js's own forceClearSpotlight for why this exists. */
+.spotlight-panel-clear {
+  position: absolute;
+  top: -0.25rem;
+  right: -0.25rem;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 999px;
+  border: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  line-height: 1;
+  color: var(--bs-danger);
+  background: var(--bs-body-bg);
+  box-shadow: 0 0 0 1px var(--bs-body-bg);
+}
+
+/* Shown to the table AND already on this viewer's own dashboard. */
+.spotlight-panel-icon--mine {
+  background: var(--bs-primary);
+  border-color: var(--bs-primary);
+  color: #fff;
+}
+
+/* Shown to the table, not yet added here — tap to accept. */
+.spotlight-panel-icon--available {
+  border-color: var(--bs-primary);
+  color: var(--bs-primary);
+}
+
+.spotlight-panel-icon.is-new {
+  animation: spotlight-panel-flourish 900ms ease-out;
+}
+
+@keyframes spotlight-panel-flourish {
+  0% {
+    transform: scale(0.4);
+    box-shadow: 0 0 0 0 rgba(var(--bs-primary-rgb), 0.6);
+  }
+  40% {
+    transform: scale(1.25);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 8px rgba(var(--bs-primary-rgb), 0);
+  }
+}
+
+/* Game Log's per-entry leading type icon (game-log.js) — small, inline,
+   distinct sizing from the panel's own larger floating icons above even
+   though both use the same --mine/--available state classes and the same
+   underlying Iconify token per kind. */
+.gamelog-entry-icon {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  flex-shrink: 0;
+  border: 1px solid var(--bs-border-color);
+  background: var(--bs-tertiary-bg);
+  color: var(--bs-body-color);
+}
+
+.gamelog-entry-icon.gamelog-entry-icon--clickable {
+  cursor: pointer;
+}
+
+.gamelog-entry-icon.spotlight-panel-icon--mine,
+.gamelog-entry-icon.spotlight-panel-icon--available {
+  box-shadow: none;
+}
+
+.gamelog-entry-icon--muted {
+  opacity: 0.5;
+}
+
+.gamelog-entry-meta {
+  font-size: 0.7rem;
+  white-space: nowrap;
 }
 
 .status-root > * {

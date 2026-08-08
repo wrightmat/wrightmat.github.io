@@ -92,6 +92,74 @@ export async function resolveActiveSpotlightId(dataManager, { groupId, shareToke
   return entry?.payload?.id || "";
 }
 
+// "Everything currently spotlighted, across every kind" — the full active
+// set, unlike every other resolver above (each scoped to one `kind`, or one
+// `(kind, id)`, since every existing caller already knows what it's asking
+// about). Needed specifically for spotlight-inbox.js's own catch-up scan
+// when a viewer first starts watching a group: without this, someone who
+// joins after the GM has already spotlighted, say, both a Map AND an NPC
+// handout would only ever learn about whichever ONE happens to be the
+// single most recent log entry — the other, still-active one stays
+// invisible unless they think to check the Game Log by hand (confirmed
+// real bug report, not hypothetical).
+//
+// Same "latest entry per key wins" reconstruction every resolver above
+// already does, just applied across every (kind,id) pair the fetched
+// window mentions at once instead of one at a time. `limit` defaults higher
+// than the single-target resolvers above (200 vs 100) — reconstructing
+// several independent keys' worth of history at once needs a wider window
+// than settling just one.
+export async function resolveActiveSpotlights(dataManager, { groupId, shareToken, limit = 200 } = {}) {
+  if (!dataManager || (!groupId && !shareToken)) return [];
+  let entries;
+  try {
+    const log = await dataManager.getGroupLog({ groupId, shareToken, limit, types: SPOTLIGHT_LOG_TYPES });
+    entries = Array.isArray(log?.entries) ? log.entries : [];
+  } catch (error) {
+    return [];
+  }
+  entries.sort((a, b) => (Date.parse(b.created_at) || 0) - (Date.parse(a.created_at) || 0));
+  // Walking newest-first: the FIRST entry seen for a given (kind,id) key is
+  // definitionally the latest one for it, so it alone decides whether that
+  // key is currently active — every older entry for the same key is
+  // skipped via `decided.has(key)`. A kind-wide clear (payload has `kind`
+  // but no `id`) retroactively decides every OLDER same-kind spotlight this
+  // loop hasn't reached yet as cleared too (clearedKinds), without touching
+  // any NEWER same-kind spotlight already resolved active above it. A
+  // global clear (no kind at all) stops the walk outright — nothing older
+  // than it could still be active.
+  const decided = new Map(); // "kind:id" -> true (active) | false (cleared)
+  const clearedKinds = new Set();
+  const active = [];
+  for (const entry of entries) {
+    if (entry?.type === "spotlight-clear") {
+      const clearKind = entry.payload?.kind;
+      const clearId = entry.payload?.id;
+      if (!clearKind) break; // Global clear — nothing older survives.
+      if (!clearId) {
+        clearedKinds.add(clearKind);
+        continue;
+      }
+      const key = `${clearKind}:${clearId}`;
+      if (!decided.has(key)) decided.set(key, false);
+      continue;
+    }
+    if (entry?.type !== "spotlight" && entry?.type !== "spotlight-update") continue;
+    const kind = String(entry.payload?.kind || "").trim();
+    const id = String(entry.payload?.id || "").trim();
+    if (!kind || !id) continue;
+    const key = `${kind}:${id}`;
+    if (decided.has(key)) continue;
+    if (clearedKinds.has(kind)) {
+      decided.set(key, false);
+      continue;
+    }
+    decided.set(key, true);
+    active.push(entry);
+  }
+  return active;
+}
+
 // "Is THIS SPECIFIC (kind, id) currently shown" — what every widget type
 // that can have multiple simultaneous instances of the same kind actually
 // needs (two different Handouts, two Maps, two Clocks — Clock's own kind is

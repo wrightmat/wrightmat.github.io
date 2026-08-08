@@ -553,6 +553,13 @@ export function initShareModal({ dataManager, status = null } = {}) {
     shareState.link = null;
     shareState.loading = true;
     shareState.eligibleUsers = null;
+    // Pre-select the permission a fresh share of THIS record will actually
+    // need — a Map needs "edit" for a player to move their own token, every
+    // other kind defaults to "view" as before. Still just a default; the GM
+    // can still pick the other option from the dropdown before submitting.
+    if (elements.sharePermission) {
+      elements.sharePermission.value = contentTypeFromBucket(record.bucket) === "map" ? "edit" : "view";
+    }
     renderShareModal();
     modal.show();
     void refreshShareEligibleUsers();
@@ -621,7 +628,13 @@ export function initShareModal({ dataManager, status = null } = {}) {
       const contentType = contentTypeFromBucket(shareState.record.bucket);
       elements.shareQuickButton.disabled = true;
       try {
-        await dataManager.shareWithGroup({ contentType, contentId: shareState.record.id, groupId: active.groupId, permissions: "view" });
+        // "map" is the one shareable kind a player is ever expected to write
+        // back to (their own character's token position — see map.js's own
+        // isMarkerDraggable/ownership check and data-manager.js's identical
+        // reasoning in spotlightToGroup) — every other kind stays "view"
+        // here, same as that other call site.
+        const quickSharePermissions = contentType === "map" ? "edit" : "view";
+        await dataManager.shareWithGroup({ contentType, contentId: shareState.record.id, groupId: active.groupId, permissions: quickSharePermissions });
         if (status) status.show(`Shared with ${active.name || "active campaign"}.`, { type: "success", timeout: 1800 });
       } catch (error) {
         console.error("Failed to share with active campaign", error);
