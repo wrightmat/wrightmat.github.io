@@ -1,9 +1,12 @@
 {
+  "id": "octavian-hoff",
   "template": "tpl.5e.flex-basic",
   "systemIds": [
     "sys.dnd5e"
   ],
   "data": {},
+  "url": "https://www.dndbeyond.com/characters/133639844",
+  "mapping": "ddb-character",
   "kind": "character",
   "name": "Octavian Hoff",
   "image": "https://www.dndbeyond.com/avatars/44651/45/1581111423-133639844.jpeg?width=150&height=150&fit=crop&quality=95&auto=webp",
@@ -553,16 +556,6 @@
       "isEquipped": false
     },
     {
-      "name": "Grappling Hook",
-      "quantity": 1,
-      "weight": 4,
-      "notes": "<p>As a Utilize action, you can throw the Grappling Hook at a railing, a ledge, or another catch within 50 feet of yourself, and the hook catches on if you succeed on a DC 13 Dexterity (Acrobatics) check. If you tied a Rope to the hook, you can then climb it.</p>",
-      "canAttune": false,
-      "isAttuned": false,
-      "canEquip": false,
-      "isEquipped": false
-    },
-    {
       "name": "Sprig of Mistletoe",
       "quantity": 1,
       "weight": 0,
@@ -573,10 +566,10 @@
       "isEquipped": false
     },
     {
-      "name": "Potion of Healing (Greater)",
+      "name": "Grappling Hook",
       "quantity": 1,
-      "weight": 0.5,
-      "notes": "<p>You regain 4d4 + 4 Hit Points when you drink this potion.</p>\r\n<p>Whatever its potency, the potion’s red liquid glimmers when agitated.</p>",
+      "weight": 4,
+      "notes": "<p>As a Utilize action, you can throw the Grappling Hook at a railing, a ledge, or another catch within 50 feet of yourself, and the hook catches on if you succeed on a DC 13 Dexterity (Acrobatics) check. If you tied a Rope to the hook, you can then climb it.</p>",
       "canAttune": false,
       "isAttuned": false,
       "canEquip": false,
@@ -593,13 +586,13 @@
       "isEquipped": false
     },
     {
-      "name": "Soul Coin",
+      "name": "Potion of Healing (Greater)",
       "quantity": 1,
-      "weight": 0,
-      "notes": "<p>Soul coins are about 5 inches across and about an inch thick, minted from infernal iron. Each coin weighs one-third of a pound, and is inscribed with Infernal writing and a spell that magically binds a single soul to the coin. Because each soul coin has a unique soul trapped within it, each has a story. A creature might have been imprisoned as a result of defaulting on a deal, while another might be the victim of a night hag’s curse.</p>\r\n<p><em><strong>Carrying Soul Coins.</strong></em> To hold a soul coin is to feel the soul bound within it &mdash; overcome with rage or fraught with despair.</p>\r\n<p>An evil creature can carry as many soul coins as it wishes (up to its maximum weight allowance). A non-evil creature can carry a number of soul coins equal to or less than its Constitution modifier without penalty. A non-evil creature carrying a number of soul coins greater than its Constitution modifier has disadvantage on its attack rolls, ability checks, and saving throws.</p>\r\n<p><em><strong>Using a Soul Coin.</strong></em> A soul coin has 3 charges. A creature carrying the coin can use its action to expend 1 charge from a soul coin and use it to do one of the following:</p>\r\n<p><strong>Drain Life.</strong> You siphon away some of the soul’s essence and gain 1d10 temporary hit points.</p>\r\n<p><strong>Query.</strong> You telepathically ask the soul a question and receive a brief telepathic response, which you can understand. The soul knows only what it knew in life, but it must answer you truthfully and to the best of its ability. The answer is no more than a sentence or two and might be cryptic.</p>\r\n<p><em><strong>Freeing a Soul.</strong></em> Casting a spell that removes a curse on a soul coin frees the soul trapped within it, as does expending all of the coin’s charges. The coin itself rusts from within and is destroyed once the soul is released. A freed soul travels to the realm of the god it served or the outer plane most closely tied to its alignment (DM’s choice). The souls of lawful evil creatures released from soul coins typically emerge from the River Styx as lemure devils.</p>\r\n<p>A soul can also be freed by destroying the coin that contains it. A soul coin has AC 19, 1 hit point for each charge it has remaining, and immunity to all damage except that which is dealt by a hellfire weapon or an infernal war machine’s furnace (see \"<a href=\"https://www.dndbeyond.com/sources/bgdia/infernal-war-machines#SoulFuel\">Soul Fuel</a>\").</p>\r\n<p>Freeing a soul from a soul coin is considered a good act, even if the soul belongs to an evil creature.</p>\r\n<p><em><strong>Hellish Currency.</strong></em> Soul coins are a currency of the Nine Hells and are highly valued by devils. The coins are used among the infernal hierarchy to barter for favors, bribe the unwilling, and reward the faithful for services rendered.</p>\r\n<p>Soul coins are created by Mammon and his greater devils on Minauros, the third layer of the Nine Hells, in a vast chamber where the captured souls of evil mortals are bound into the coins. These coins are then distributed throughout the Nine Hells to be used for goods and services, infernal deals, dark bargains, and bribes.</p>",
+      "weight": 0.5,
+      "notes": "<p>You regain 4d4 + 4 Hit Points when you drink this potion.</p>\r\n<p>Whatever its potency, the potion’s red liquid glimmers when agitated.</p>",
       "canAttune": false,
       "isAttuned": false,
-      "canEquip": true,
+      "canEquip": false,
       "isEquipped": false
     },
     {
@@ -793,6 +786,16 @@
       "isEquipped": false
     },
     {
+      "name": "Book",
+      "quantity": 1,
+      "weight": 5,
+      "notes": "<p>A Book contains fiction or nonfiction. If you consult an accurate nonfiction Book about its topic, you gain a +5 bonus to Intelligence (Arcana, History, Nature, or Religion) checks you make about that topic.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
+    },
+    {
       "name": "Waterskin",
       "quantity": 1,
       "weight": 5,
@@ -841,22 +844,12 @@
       "isAttuned": false,
       "canEquip": true,
       "isEquipped": false
-    },
-    {
-      "name": "Book",
-      "quantity": 1,
-      "weight": 5,
-      "notes": "<p>A Book contains fiction or nonfiction. If you consult an accurate nonfiction Book about its topic, you gain a +5 bonus to Intelligence (Arcana, History, Nature, or Religion) checks you make about that topic.</p>",
-      "canAttune": false,
-      "isAttuned": false,
-      "canEquip": false,
-      "isEquipped": false
     }
   ],
   "background": {
     "name": "Farmer",
     "description": "<p><strong>Ability Scores:</strong>&nbsp;Strength, Constitution, Wisdom<br /><strong>Feat:</strong>&nbsp;Tough<br /><strong>Skill Proficiencies:</strong> Animal Handling and Nature<br /><strong>Tool Proficiency:</strong>&nbsp;Carpenter's Tools<br /><strong>Equipment:</strong> <em>Choose A or B:</em> (A) Sickle, Carpenter's Tools, Healer's Kit, Iron Pot, Shovel, Traveler's Clothes, 30 GP; or (B) 50 GP</p>\r\n<p>You grew up close to the land. Years tending animals and cultivating the earth rewarded you with patience and good health. You have a keen appreciation for nature’s bounty alongside a healthy respect for nature’s wrath.</p>",
-    "feature": "Feat: Tough"
+    "feature": "Tough"
   },
   "feats": [
     {
@@ -931,7 +924,7 @@
     },
     {
       "name": "Favored Enemy",
-      "description": "<p>You always have the Hunter’s Mark spell prepared. You can cast it twice without expending a spell slot, and you regain all expended uses of this ability when you finish a Long Rest.</p>\r\n<p>The number of times you can cast the spell without a spell slot increases when you reach certain Ranger levels.</p>"
+      "description": "<p class=\"compendium-hr\">&nbsp;You always have the <em>Hunter’s Mark</em> spell prepared. You can cast it twice without expending a spell slot, and you regain all expended uses of this ability when you finish a Long Rest.</p>\r\n<p>The number of times you can cast the spell without a spell slot increases when you reach certain Ranger levels.</p>"
     },
     {
       "name": "Weapon Mastery",
@@ -1089,17 +1082,20 @@
     "other": [
       "Hit Points",
       "Subclass",
-      "Extra Attacks",
       "Speed",
       "Innate Speed (Climbing)",
       "Innate Speed (Swimming)",
       "Initiative",
       "Darkvision",
+      "Extra Attacks",
       "Magic",
-      "Ranged Weapon Attacks",
       "Hit Points per Level",
+      "Ranged Weapon Attacks",
       "Slow (Light Crossbow)",
-      "Nick (Dagger)"
+      "Slow (Light Crossbow (Wooden Bolts))",
+      "Nick (Dagger)",
+      "Nick (Dagger, Silver)",
+      "Nick (Dagger, Wooden)"
     ]
   },
   "attacks": [

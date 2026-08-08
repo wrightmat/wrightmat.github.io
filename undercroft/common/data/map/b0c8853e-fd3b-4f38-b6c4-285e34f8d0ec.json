@@ -27,14 +27,14 @@
   },
   "view": {
     "mode": "cartesian",
-    "zoom": 2.5855380203438734,
+    "zoom": 1,
     "center": {
       "lat": 0,
       "lng": 0
     },
     "pan": {
-      "x": 678.5,
-      "y": -5.5
+      "x": 7,
+      "y": 33
     }
   },
   "layers": [
@@ -97,8 +97,8 @@
           "image": "https://www.dndbeyond.com/avatars/54575/480/1581111423-159871601.jpeg?width=150&height=150&fit=crop&quality=95&auto=webp",
           "outlineColor": "#3f59d9",
           "position": {
-            "x": -875,
-            "y": -452
+            "x": -606,
+            "y": -259
           },
           "sizeCells": 1,
           "opacity": 1,
@@ -136,7 +136,7 @@
     "unit": "ft"
   },
   "createdAt": "2026-08-07T09:47:00.878Z",
-  "updatedAt": "2026-08-08T04:08:29.008Z",
+  "updatedAt": "2026-08-08T17:25:31.685Z",
   "initialView": {
     "zoom": 1,
     "pan": {

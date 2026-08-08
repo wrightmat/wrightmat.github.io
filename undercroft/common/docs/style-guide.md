@@ -282,6 +282,15 @@ follows the same interaction language: chevron-right closed, rotated open.
 > Undo, Redo → New/Add/Generate → Import → Save → Export → Print → Rename →
 > Duplicate → Delete
 
+**Button count:** a single toolbar cluster shouldn't grow past six buttons —
+confirmed real problem past that point: Workbench's left-pane toolbar started
+wrapping/scrolling once a seventh (Re-import) was added. Hitting the limit
+means designing an alternative *with the user* — a secondary toolbar, moving
+the new action to a more relevant location instead (a full-text button in
+whatever card it actually belongs to, as Re-import's own move to the
+Character card did), a dropdown of less-common actions, etc. — never just
+letting the cluster keep growing past six.
+
 **Color:**
 
 | Role | Class | Notes |

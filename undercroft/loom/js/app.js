@@ -15,7 +15,7 @@ import { initHelpSystem } from "../../common/js/lib/help.js";
 import { applyMapping } from "../../common/js/lib/mapping-engine.js";
 import { deriveLookupTables } from "../../common/js/lib/system-lookup-tables.js";
 import { createMappingCustomFunctions } from "../../common/js/lib/mapping-custom-functions.js";
-import { loadSourceDataRaw, loadLibraryKinds, fetchKindEntriesWithIds } from "../../common/js/lib/content-fetch.js";
+import { loadSourceDataRaw, loadLibraryKinds, fetchKindEntriesWithIds, mergeImportedCharacterData } from "../../common/js/lib/content-fetch.js";
 import { initShareModal } from "../../common/js/lib/share-modal.js";
 import { allowsDelete, confirmDelete } from "../../common/js/lib/ownership.js";
 import { createSortable } from "../../common/js/lib/dnd.js";
@@ -1325,28 +1325,37 @@ async function saveEntity(entity) {
   try {
     let data = entity.data;
     if (entity.kind === "character") {
-      // The DDB mapping only ever produces character *content* (identity,
-      // stats, abilities, ...) — it has no concept of which Workbench
-      // template/system(s) a character is assigned to, or the `data` bucket
-      // Workbench's own sheet fields write into (see
-      // workbench-character-view.js's persistDraft). A plain overwrite here
-      // (re-importing to refresh an existing character's DDB-sourced
-      // fields) would silently wipe that assignment, making the character
-      // vanish from Workbench's own picker — which filters on `template`
-      // being set — even though the record itself still exists and loads
-      // fine here in Loom. Preserve whatever the existing record already
-      // had for these keys; the fresh mapped content still wins for
-      // everything the mapping actually produces. systemIds (Assigned
-      // Systems), not the legacy singular `system` — that field is gone.
+      // content-fetch.js's own mergeImportedCharacterData preserves
+      // template/systemIds/data/url/mapping from whatever's already saved
+      // at this id — see its own comment for why a plain overwrite here
+      // (re-importing to refresh an existing character's mapped fields)
+      // would otherwise silently wipe Workbench's own template/system
+      // assignment, making the character vanish from Workbench's own
+      // picker (which filters on `template` being set) even though the
+      // record itself still exists and loads fine here in Loom.
       try {
         // preferLocal: false for the same reason loadLibraryEntry uses it —
         // this specifically needs the record actually on the server right
         // now, not a possibly-stale local cache from an earlier save.
         const existing = await dataManager.get("character", id, { preferLocal: false });
-        const prior = existing?.payload || {};
-        data = { template: prior.template, systemIds: prior.systemIds, data: prior.data, ...entity.data };
+        data = mergeImportedCharacterData(entity.data, existing?.payload);
       } catch (error) {
         // No existing record at this id — nothing to preserve, first import.
+      }
+      // Records exactly what this character would need to redo this same
+      // fetch+transform later without reopening Loom at all — Workbench's
+      // own "Re-import" button (workbench-character-view.js) shows up only
+      // when both are present, and passes them straight to content-fetch.js's
+      // reimportViaMapping. `mapping` alone (no `url`) happens when the
+      // mapping was applied to hand-pasted/edited Sample Data rather than a
+      // real fetch — nothing to re-fetch from, so `url` is deliberately left
+      // unset rather than storing an empty placeholder.
+      if (currentMappingId) {
+        data = { ...data, mapping: currentMappingId };
+      }
+      const sourceValue = (sourceValueInput?.value || "").trim();
+      if (sourceValue) {
+        data = { ...data, url: sourceValue };
       }
       // Every imported (or created) character needs at least one Assigned
       // System — without this, a brand-new DDB import (nothing to preserve

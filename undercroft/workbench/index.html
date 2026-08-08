@@ -181,6 +181,29 @@
                 <div class="card-body">
                   <div class="row g-3 align-items-end">
                     <div class="col-12 col-lg-4 col-xl-3" data-field-mount="character-select"></div>
+                    <!-- Full-text, not icon-only — deliberately NOT part of
+                         the left-pane icon toolbar (see style-guide.md's own
+                         "Button count" note: that toolbar was already at its
+                         six-button ceiling, and this belongs with the
+                         character picker it acts on anyway). Hidden by
+                         default; workbench-character-view.js's own
+                         syncCharacterActions shows it only for a character
+                         that actually has both url+mapping and the viewer
+                         has permission. -->
+                    <div class="col-12 col-lg-auto">
+                      <button
+                        class="btn btn-outline-secondary d-none"
+                        type="button"
+                        data-action="reimport-character"
+                        data-reimport-character
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="bottom"
+                        data-bs-title="Re-fetch this character from its original source."
+                      >
+                        <span class="iconify" data-icon="tabler:cloud-download" aria-hidden="true"></span>
+                        Re-import
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>

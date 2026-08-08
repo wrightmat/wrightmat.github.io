@@ -144,24 +144,41 @@ export async function loadDdbRawData(value) {
   return fetchDdbCharacter(id);
 }
 
+// Any named mapping definition (undercroft/loom/mappings/{id}.json), fetched
+// once per id and cached — a mapping doesn't change mid-session, and both
+// loadCharacterMappingDefinition below and reimportViaMapping (the "url"/
+// "mapping" re-import path — see that function's own comment) would
+// otherwise each re-fetch the same file repeatedly. A failed fetch is NOT
+// cached — a transient network blip shouldn't permanently poison every
+// later attempt for the rest of the page's lifetime.
+const mappingDefinitionCache = new Map();
+export function loadMappingDefinition(mappingId) {
+  const id = String(mappingId || "").trim();
+  if (!id) return Promise.reject(new Error("No mapping id given."));
+  if (!mappingDefinitionCache.has(id)) {
+    const url = new URL(`../../../loom/mappings/${id}.json`, import.meta.url);
+    const promise = fetch(url, { cache: "no-store" })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`Mapping "${id}" not found (${response.status}).`);
+        }
+        return parseJsonResponse(response, `${id}.json mapping`);
+      })
+      .catch((error) => {
+        mappingDefinitionCache.delete(id);
+        throw error;
+      });
+    mappingDefinitionCache.set(id, promise);
+  }
+  return mappingDefinitionCache.get(id);
+}
+
 // The ddb-character.json mapping definition is the single source of truth
 // for how a raw D&D Beyond character normalizes — authored and editable in
 // Loom, applied here so Press (and anything else) consumes the exact same
 // transformation instead of a separately maintained hand-written parser.
-// Fetched once and cached: it doesn't change mid-session, and every
-// character fetch would otherwise re-fetch the same definition file.
-let characterMappingPromise = null;
 function loadCharacterMappingDefinition() {
-  if (!characterMappingPromise) {
-    const url = new URL("../../../loom/mappings/ddb-character.json", import.meta.url);
-    characterMappingPromise = fetch(url, { cache: "no-store" }).then((response) => {
-      if (!response.ok) {
-        throw new Error(`Failed to load the character mapping definition (${response.status}).`);
-      }
-      return parseJsonResponse(response, "ddb-character.json mapping");
-    });
-  }
-  return characterMappingPromise;
+  return loadMappingDefinition("ddb-character");
 }
 
 // The System's fields don't change mid-session, so — same reasoning as
@@ -188,6 +205,75 @@ export async function loadDdbData(value, dataManager) {
   }
   const [definition, lookupTables] = await Promise.all([loadCharacterMappingDefinition(), loadDdbLookupTables(dataManager)]);
   return applyMapping(definition, raw, { lookupTables, customFunctions: createMappingCustomFunctions(lookupTables) });
+}
+
+// The general form of loadDdbData above — re-fetches `value` and re-applies
+// a mapping identified by id, rather than hardcoding ddb-character.json.
+// Backs the "Re-import" affordance on a character record that was originally
+// saved with top-level `url`/`mapping` fields (see loom/js/app.js's own
+// saveEntity, which is what sets them): re-running the exact same
+// fetch+transform this character was originally imported with, without
+// having to reopen Loom at all. Which underlying fetch mechanism to use
+// isn't stored separately — the mapping definition's own top-level
+// `$source` (e.g. "ddb") already declares that, so a mapping and the source
+// it expects can never drift apart from what's actually stored.
+// Lookup-table/custom-function context is only meaningful for the "ddb"
+// source today (loadDdbLookupTables' own dnd5e-specific tables, same as
+// loadDdbData's own identical assumption) — a future non-DDB character
+// mapping would need its own equivalent branch here.
+export async function reimportViaMapping(mappingId, value, dataManager) {
+  const trimmedId = String(mappingId || "").trim();
+  const trimmedValue = String(value || "").trim();
+  if (!trimmedId) throw new Error("No mapping recorded for this character.");
+  if (!trimmedValue) throw new Error("No source URL recorded for this character.");
+  const definition = await loadMappingDefinition(trimmedId);
+  const sourceId = definition?.$source;
+  if (!sourceId) {
+    throw new Error(`Mapping "${trimmedId}" has no declared source to fetch from.`);
+  }
+  const raw = await loadSourceDataRaw({ id: sourceId }, trimmedValue, dataManager);
+  const lookupTables = sourceId === "ddb" ? await loadDdbLookupTables(dataManager) : {};
+  const customFunctions = createMappingCustomFunctions(lookupTables);
+  return applyMapping(definition, raw, { lookupTables, customFunctions });
+}
+
+// A character mapping (ddb-character.json, or any future one) only ever
+// produces character *content* (identity, stats, abilities, ...) — it has
+// no concept of which Workbench template/system(s) a character is assigned
+// to, the `data` bucket Workbench's own sheet fields write into (see
+// workbench-character-view.js's persistDraft), or which source/mapping this
+// character itself came from. A plain overwrite — on first import, or a
+// later re-import refreshing an existing character's mapped fields — would
+// silently wipe all of that. Preserves whatever the existing record already
+// had for these keys; the fresh mapped content still wins for everything
+// the mapping actually produces. Shared by loom/js/app.js's own saveEntity
+// (which then explicitly re-sets url/mapping to whatever's currently loaded
+// in Loom's own UI, since those two are the one pair a fresh import DOES
+// mean to change) and Workbench's own "Re-import" handler (which doesn't —
+// a refresh keeps coming from the same place, so leaving them preserved
+// here is exactly right for that caller with no extra step needed).
+export function mergeImportedCharacterData(freshData, priorPayload) {
+  const prior = priorPayload || {};
+  return {
+    // Confirmed real bug this fixes: a Workbench-created (or otherwise
+    // already-embedding-its-own-id) character's top-level `id` field was
+    // never in this preserve list at all, and no mapping has ever produced
+    // one either (a mapping only ever sees the raw external source, which
+    // has no idea what filename/key this record is even saved under) — so
+    // any re-import silently DROPPED it outright, not just left it stale.
+    // Most Library-sourced characters never embed one in the first place
+    // (id is the filename/key they're fetched by — see
+    // workbench-character-view.js's own loadCharacter comment), in which
+    // case `prior.id` is simply undefined here and this is a no-op, exactly
+    // as before.
+    id: prior.id,
+    template: prior.template,
+    systemIds: prior.systemIds,
+    data: prior.data,
+    url: prior.url,
+    mapping: prior.mapping,
+    ...freshData,
+  };
 }
 
 export function normalizeSrdInput(value) {

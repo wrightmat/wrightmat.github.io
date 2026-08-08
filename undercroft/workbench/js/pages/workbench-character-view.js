@@ -38,6 +38,8 @@ import { initGameLogWidget, SPOTLIGHT_KIND_LABELS, SPOTLIGHT_KIND_ICONS, SPOTLIG
 import { createSpotlightPanel } from "../../../common/js/lib/widgets/spotlight-panel.js";
 import { watchActiveSpotlights } from "../../../common/js/lib/spotlight-inbox.js";
 import { createSpotlightTitleCache, resolveActiveSpotlightId } from "../../../common/js/lib/spotlight.js";
+import { reimportViaMapping, mergeImportedCharacterData } from "../../../common/js/lib/content-fetch.js";
+import { showConfirmModal } from "../../../common/js/lib/confirm-modal.js";
 
 // Relocated from the old standalone character.html/character.js — now one of
 // three views on Workbench's unified page (see js/pages/workbench.js), which
@@ -401,6 +403,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     newCharacterButton: document.querySelector('[data-action="new-character"]'),
     saveButton: document.querySelector('[data-action="save-character"]'),
     deleteCharacterButton: document.querySelector('[data-delete-character]'),
+    reimportCharacterButton: document.querySelector('[data-reimport-character]'),
     viewToggle: document.querySelector('[data-action="toggle-mode"]'),
     modeIndicator: document.querySelector("[data-mode-indicator]"),
     notesSection: document.querySelector("[data-notes-section]"),
@@ -682,6 +685,12 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     if (elements.deleteCharacterButton) {
       elements.deleteCharacterButton.addEventListener("click", () => {
         void deleteCurrentCharacter();
+      });
+    }
+
+    if (elements.reimportCharacterButton) {
+      elements.reimportCharacterButton.addEventListener("click", () => {
+        void reimportCurrentCharacter();
       });
     }
 
@@ -1167,6 +1176,39 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
         ? "You don't have permission to save this character."
         : "No changes to save.",
     });
+
+    // Only meaningful for a character that actually carries both
+    // (loom/js/app.js's own saveEntity sets them when a mapping produced the
+    // saved content — see mergeImportedCharacterData's own comment for why
+    // a hand-authored or hand-edited character never has either). Gated on
+    // character owner, campaign owner, or admin — deliberately wider than
+    // canEditRecord alone, since a campaign owner (the GM of the currently
+    // active campaign, gameLogContext.access === "owner") may not have an
+    // explicit edit-share on a player's own character at all, but re-import
+    // is exactly the kind of "keep the party's sheets current" action a GM
+    // should be able to do without needing one. The server's own
+    // is_owner()/is_shared(require_edit=True) check on the actual save
+    // still has final say either way — this only decides whether the button
+    // even shows.
+    if (elements.reimportCharacterButton) {
+      const isAdminForReimport = dataManager.getUserTier() === "admin";
+      const hasReimportSource = Boolean(state.draft?.url) && Boolean(state.draft?.mapping);
+      const hasReimportPermission =
+        isAdminForReimport || (draftHasId && userOwnsCharacter(state.draft.id)) || gameLogContext.access === "owner";
+      const showReimport =
+        draftHasId &&
+        hasReimportSource &&
+        hasReimportPermission &&
+        canWrite &&
+        !locked &&
+        state.mode === "edit" &&
+        document.body.dataset.workbenchView === "edit";
+      elements.reimportCharacterButton.classList.toggle("d-none", !showReimport);
+      updateToolbarButton(elements.reimportCharacterButton, {
+        disabled: !showReimport,
+        enabledTitle: "Re-fetch this character from its original source.",
+      });
+    }
 
     if (!elements.deleteCharacterButton) {
       return;
@@ -5564,6 +5606,165 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     status.show(`Deleted ${label}`, { type: "success", timeout: 2200 });
     if (button) {
       button.removeAttribute("aria-busy");
+    }
+  }
+
+  // Top-level keys mergeImportedCharacterData always preserves verbatim from
+  // the prior record (see that function's own comment) — diffing them would
+  // only ever report "no change" by construction, so they're excluded from
+  // the confirmation summary rather than padding it with guaranteed no-ops.
+  const REIMPORT_PRESERVED_KEYS = ["id", "template", "systemIds", "data", "url", "mapping"];
+
+  function isPlainObject(value) {
+    return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+  }
+
+  // Short, human-readable stand-in for a value in the confirmation list —
+  // never the raw value itself, which for a nested stats/identity object
+  // would be unreadable JSON. Arrays/objects report their own size instead
+  // of contents (e.g. "3 items" → "4 items") — enough to show something
+  // changed without trying to render arbitrary nested shapes as text.
+  function formatReimportValue(value) {
+    if (value === undefined) return "(none)";
+    if (value === null) return "null";
+    if (typeof value === "string") {
+      if (!value.trim()) return "(empty)";
+      return value.length > 40 ? `${value.slice(0, 37)}...` : value;
+    }
+    if (typeof value === "number" || typeof value === "boolean") return String(value);
+    if (Array.isArray(value)) return `${value.length} item${value.length === 1 ? "" : "s"}`;
+    if (isPlainObject(value)) return "(details)";
+    return String(value);
+  }
+
+  // Flat list of {path, before, after} for every leaf value that actually
+  // differs between two character payloads — recurses into plain objects
+  // (dotted path per nested field, e.g. "identity.level"), but treats an
+  // array, or any object vs. non-object shape mismatch, as ONE leaf (its
+  // own before/after summary via formatReimportValue), not exploded into
+  // every index — a reordered/resized array reads as one line ("3 items →
+  // 4 items"), not a confusing burst of index-by-index entries.
+  function diffCharacterFields(before, after, { skipKeys = [] } = {}) {
+    const changes = [];
+    function walk(a, b, path) {
+      if (a === b) return;
+      if (isPlainObject(a) && isPlainObject(b)) {
+        const keys = new Set([...Object.keys(a), ...Object.keys(b)]);
+        keys.forEach((key) => walk(a[key], b[key], path ? `${path}.${key}` : key));
+        return;
+      }
+      if (JSON.stringify(a) === JSON.stringify(b)) return;
+      changes.push({ path, before: formatReimportValue(a), after: formatReimportValue(b) });
+    }
+    const topKeys = new Set([...Object.keys(before || {}), ...Object.keys(after || {})]);
+    topKeys.forEach((key) => {
+      if (skipKeys.includes(key)) return;
+      walk((before || {})[key], (after || {})[key], key);
+    });
+    return changes;
+  }
+
+  // The confirm modal's own body — capped at a handful of list lines (a
+  // full DDB re-import can easily touch 30+ leaf fields) so the dialog
+  // stays readable instead of an unreadable wall of text; the total count
+  // up top still tells the whole story even when most of the list is
+  // summarized away. Every value comes from imported (external, untrusted)
+  // character data, so every piece goes through escapeHtml before landing
+  // in this innerHTML string — `change.path` is an internal field name
+  // (safe/static), but before/after are as untrusted as the rest.
+  function buildReimportChangesHtml(changes) {
+    if (!changes.length) {
+      return `<p class="text-body-secondary mb-0">No differences found between the current character and its source — nothing would actually change.</p>`;
+    }
+    const MAX_LINES = 8;
+    const shown = changes.slice(0, MAX_LINES);
+    const remaining = changes.length - shown.length;
+    const items = shown
+      .map(
+        (change) =>
+          `<li><code>${escapeHtml(change.path)}</code>: ${escapeHtml(change.before)} → ${escapeHtml(change.after)}</li>`
+      )
+      .join("");
+    const remainingLine =
+      remaining > 0
+        ? `<p class="text-body-secondary small mb-0 mt-2">…and ${remaining} more field${remaining === 1 ? "" : "s"}.</p>`
+        : "";
+    return `
+      <p class="mb-2">This will update <strong>${changes.length}</strong> field${changes.length === 1 ? "" : "s"}:</p>
+      <ul class="small mb-0">${items}</ul>
+      ${remainingLine}
+    `;
+  }
+
+  // "Seamless" per the user's own framing once confirmed — no separate
+  // preview screen, just re-runs exactly what Loom's own saveEntity would do
+  // (fetch `url` through `mapping`, merge via content-fetch.js's shared
+  // mergeImportedCharacterData) directly from the sheet, but stops for a
+  // confirm() first — this overwrites real character data, and the
+  // confirmation's own body is the diff computed above, not just a generic
+  // "are you sure?". Deliberately never touches state.draft/state.character,
+  // or even calls save, until AFTER that confirmation — canceling, or any
+  // failure along the way (the fetch, the mapping, the merge fetch, the save
+  // itself), leaves this editor showing exactly what it was showing before
+  // the click, per the user's own explicit "character just isn't updated"
+  // requirement.
+  async function reimportCurrentCharacter() {
+    const id = state.draft?.id;
+    const url = state.draft?.url;
+    const mapping = state.draft?.mapping;
+    if (!id || !url || !mapping) return;
+    const label = state.draft.name || characterCatalog.get(id)?.title || id;
+    const button = elements.reimportCharacterButton;
+    const resetButton = () => {
+      if (!button) return;
+      button.disabled = false;
+      button.classList.remove("disabled");
+      button.setAttribute("aria-disabled", "false");
+    };
+    if (button) {
+      button.disabled = true;
+      button.classList.add("disabled");
+      button.setAttribute("aria-disabled", "true");
+      button.setAttribute("aria-busy", "true");
+    }
+    try {
+      const freshData = await reimportViaMapping(mapping, url, dataManager);
+      // preferLocal: false — diff and merge against the record's real
+      // current state on the server, not this browser's own possibly-stale
+      // copy or any unsaved edits sitting in state.draft right now; a stale
+      // base here could silently clobber a change made elsewhere since this
+      // editor last loaded the character, and would show the wrong diff too.
+      // Same reasoning as Loom's own saveEntity.
+      const existing = await dataManager.get("character", id, { preferLocal: false });
+      const priorPayload = existing?.payload || {};
+      const merged = mergeImportedCharacterData(freshData, priorPayload);
+      const changes = diffCharacterFields(priorPayload, merged, { skipKeys: REIMPORT_PRESERVED_KEYS });
+      const confirmed = await showConfirmModal({
+        title: `Re-import "${label}"?`,
+        bodyHtml: `<p>This overwrites the character's current data with a fresh fetch from its original source.</p>${buildReimportChangesHtml(changes)}`,
+        confirmLabel: "Re-import",
+        cancelLabel: "Cancel",
+      });
+      if (!confirmed) {
+        status.show("Re-import cancelled.", { type: "info", timeout: 2000 });
+        resetButton();
+        return;
+      }
+      await dataManager.save("character", id, merged);
+      status.show(`Re-imported ${merged.name || label}.`, { type: "success", timeout: 2200 });
+      // loadCharacter's own syncCharacterActions call recomputes this
+      // button's disabled/hidden state fresh — nothing here needs to
+      // restore it manually on success, only aria-busy (see finally below).
+      await loadCharacter(id);
+    } catch (error) {
+      console.error("Character editor: unable to re-import character", error);
+      status.show(error?.message ? `Unable to re-import: ${error.message}` : "Unable to re-import this character.", {
+        type: "danger",
+        timeout: 4000,
+      });
+      resetButton();
+    } finally {
+      if (button) button.removeAttribute("aria-busy");
     }
   }
 
