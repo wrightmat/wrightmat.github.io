@@ -1,80 +1,72 @@
-// Watches a campaign group's log for a NEW spotlight entry (something a GM
-// "showed to table") and calls back once per genuinely-new one. Generalizes
-// the poll-newest-first-and-dedupe logic the retired now-showing.js widget
-// used to run on its own — the Dashboard now owns exactly one of these (not
-// one per widget) and fans the result out to both the accept-prompt toast
-// and the Game Log widget's own inline Accept button.
+// Watches a campaign group's log for the CURRENT set of active spotlights —
+// "what's shown to the table right now," kept live. Replaces this file's own
+// former watchSpotlight (a one-at-a-time, persisted-seen-id watcher built to
+// drive a push-notification toast) — retired along with that toast
+// (widgets/spotlight-prompt.js, deleted) in favor of a persistent status
+// panel (widgets/spotlight-panel.js) that needs full current truth, not a
+// diff-since-last-seen. That old design structurally couldn't report
+// something being un-spotlighted at all (it only ever reported NEW items);
+// this one doesn't have that gap, because it doesn't try to diff anything
+// itself — it just hands the caller the complete, freshly-resolved active
+// set on every poll and lets the caller (dashboard.js) do its own "what
+// changed" comparison against whatever it's showing.
 import { connectLiveStream } from "./live.js";
+import { resolveActiveSpotlights } from "./spotlight.js";
+import { createReliableInterval } from "./reliable-interval.js";
 
-const POLL_INTERVAL_MS = 30000;
+// 5s, plus a live-stream "wake sooner" nudge below — same cadence/mechanism
+// combat-tracker.js and the old watchSpotlight already established for this
+// exact class of problem (plain window.setInterval gets throttled in a
+// backgrounded/unfocused tab).
+const POLL_INTERVAL_MS = 5000;
 
-// `lastSeenId` seeds dedup from a caller-persisted id (dashboardSeenSpotlightId
-// in dashboard.js) so a page reload doesn't immediately re-report whatever
-// was already surfaced before the reload.
-export function watchSpotlight({ dataManager, groupId = "", shareToken = "", lastSeenId = "", onNewSpotlight } = {}) {
-  if (!dataManager || (!groupId && !shareToken) || typeof onNewSpotlight !== "function") {
+// watchActiveSpotlights({dataManager, groupId, shareToken, pollIntervalMs, onChange})
+// `onChange(activeEntries)` fires once immediately (on mount) and again on
+// every poll tick/live-stream nudge thereafter, always with the FULL current
+// active set (resolveActiveSpotlights' own return shape — raw log entries,
+// author included) — never filtered by author. This is a status display,
+// not an accept-or-dismiss prompt, so the caller seeing its own actions
+// reflected here too is correct, not noise.
+export function watchActiveSpotlights({
+  dataManager,
+  groupId = "",
+  shareToken = "",
+  pollIntervalMs = POLL_INTERVAL_MS,
+  onChange,
+} = {}) {
+  if (!dataManager || (!groupId && !shareToken) || typeof onChange !== "function") {
     return { destroy() {} };
   }
   let destroyed = false;
-  let pollTimer = 0;
-  let seenId = lastSeenId;
 
   async function refresh() {
     if (destroyed) return;
-    let entries;
     try {
-      // types filter — see spotlight.js's own SPOTLIGHT_LOG_TYPES comment:
-      // without it, this poll's own small `limit` window is just as
-      // susceptible to being crowded out by ordinary chat/roll entries (or
-      // a chatty inline-kind widget's own frequent spotlight-update
-      // refreshes) as the bug that filter fixed there — a genuinely-new
-      // "show to table" could silently never surface an accept prompt.
-      // "spotlight-update" itself is deliberately excluded here (unlike
-      // spotlight.js's own filter) — this poll only ever cares about a
-      // brand-new spotlight or a clear, never a data refresh on one already
-      // seen.
-      const log = await dataManager.getGroupLog({ groupId, shareToken, limit: 20, types: ["spotlight", "spotlight-clear"] });
-      entries = Array.isArray(log?.entries) ? log.entries : [];
+      const active = await resolveActiveSpotlights(dataManager, { groupId, shareToken });
+      if (!destroyed) onChange(active);
     } catch (error) {
-      return;
+      // Try again next tick — a transient fetch failure shouldn't tear this
+      // down, same as every other poller in this codebase.
     }
-    // The server returns entries oldest-first — sort newest-first before
-    // picking "the latest spotlight or clear," so a spotlight-clear posted
-    // after the last spotlight is what actually wins.
-    entries.sort((a, b) => (Date.parse(b.created_at) || 0) - (Date.parse(a.created_at) || 0));
-    const latest = entries.find((entry) => entry?.type === "spotlight" || entry?.type === "spotlight-clear");
-    if (!latest || latest.id === seenId) return;
-    seenId = latest.id;
-    if (latest.type === "spotlight-clear") return;
-    // Whoever posted this already has it — a GM spotlighting their own
-    // encounter (or anything else) shouldn't get an "accept this" prompt for
-    // their own action. Marked seen above either way, so it's never
-    // re-evaluated.
-    const viewerId = dataManager.session?.user?.id;
-    if (viewerId && latest.author?.id === viewerId) return;
-    const kind = String(latest.payload?.kind || "").trim();
-    const id = String(latest.payload?.id || "").trim();
-    if (!kind || !id) return;
-    onNewSpotlight({
-      entryId: latest.id,
-      kind,
-      id,
-      templateId: String(latest.payload?.templateId || "").trim(),
-    });
   }
 
   void refresh();
-  pollTimer = window.setInterval(() => void refresh(), POLL_INTERVAL_MS);
+  const pollTimer = createReliableInterval(() => void refresh(), pollIntervalMs);
 
-  // Wakes the existing 30s poll up sooner on a relevant change — see
-  // live.js's own comment; polling above keeps running unchanged either way.
+  // Wakes the poll up sooner on a relevant change — see live.js's own
+  // comment; polling above keeps running unchanged either way.
   const liveStream = connectLiveStream({ dataManager, groupId, kinds: ["group_log"], shareToken });
   liveStream.subscribe("group_log", () => void refresh());
 
   return {
+    // Exposed so a caller that already knows a change just happened (e.g.
+    // dashboard.js reacting to its own dataManager.spotlightToGroup/
+    // clearSpotlight call) can force an immediate re-fetch instead of
+    // waiting for the next poll tick or a live-stream round-trip.
+    refresh: () => void refresh(),
     destroy() {
       destroyed = true;
-      if (pollTimer) window.clearInterval(pollTimer);
+      pollTimer.stop();
       liveStream.close();
     },
   };

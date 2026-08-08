@@ -581,13 +581,21 @@ def is_shared(state: ServerState, kind: str, id_: str, user: Optional[User], req
         """,
         (kind, content_id, user.id),
     ).fetchone()
-    if row:
-        return True if not require_edit else row["permissions"] == "edit"
-    # No direct user share — check every group-targeted share on this record
-    # for one the user can actually access (owns the group, or owns a member
-    # character); a handful of rows per record at most, so a per-row Python
-    # check here is simpler and clearer than folding group-membership
-    # resolution into this query directly.
+    # A direct user share alone can grant access, but must NOT short-circuit
+    # the group check below when it exists without meeting require_edit —
+    # confirmed real bug: a user with an older *view* direct share and a
+    # separately-granted *edit* group share (e.g. a Map first shared to them
+    # individually, then later shared to the whole campaign at "edit" for
+    # player-driven token movement) was denied edit access entirely, because
+    # this used to return based on the direct share alone and never checked
+    # the group share at all once a direct row existed.
+    if row and (not require_edit or row["permissions"] == "edit"):
+        return True
+    # Check every group-targeted share on this record for one the user can
+    # actually access (owns the group, or owns a member character); a
+    # handful of rows per record at most, so a per-row Python check here is
+    # simpler and clearer than folding group-membership resolution into this
+    # query directly.
     group_rows = state.db.execute(
         """
         SELECT shared_with_group_id, permissions FROM shares
@@ -790,16 +798,26 @@ def _extract_metadata(kind: str, body: Dict[str, Any], policy: Optional[Dict[str
 
 
 def save_item(state: ServerState, kind: str, id_: str, body: Dict[str, Any], user: Optional[User]) -> Dict[str, Any]:
-    try:
-        ensure_write_role(state, kind, user)
-    except AuthError as exc:
-        raise AuthError(f"Your tier cannot create {kind} entries") from exc
     base_id = id_.replace(".json", "")
     existing_row = state.db.execute(
         "SELECT * FROM library_items WHERE kind = ? AND id = ?",
         (kind, base_id),
     ).fetchone()
     is_new_record = existing_row is None
+    if is_new_record:
+        # The kind-wide tier gate (writeTier, common/data/kind/{kind}.json)
+        # governs who may AUTHOR brand-new content of this kind — it must not
+        # also block an editor with explicit owner/share-edit access from
+        # updating a record that already exists. Confirmed real bug: a
+        # player-tier member with edit-share access to a GM's shared map,
+        # dragging their own character's token, was rejected with "Your tier
+        # cannot create map entries" (map's writeTier is "creator") even
+        # though they weren't creating anything — only new records need this
+        # check at all.
+        try:
+            ensure_write_role(state, kind, user)
+        except AuthError as exc:
+            raise AuthError(f"Your tier cannot create {kind} entries") from exc
     if not (is_owner(state, kind, id_, user) or is_shared(state, kind, id_, user, require_edit=True)):
         # creation allowed if record missing
         path = _record_path(state, kind, id_)
@@ -810,7 +828,19 @@ def save_item(state: ServerState, kind: str, id_: str, body: Dict[str, Any], use
     write_json(_record_path(state, kind, id_), body)
     now_ts = datetime.utcnow().isoformat()
     filename = _record_filename(id_)
-    owner_id = user.id if user else None
+    # Ownership only transfers via the dedicated, explicit /content/{kind}/
+    # {id}/owner route (update_owner) — never as a side effect of an
+    # ordinary save. Confirmed real, severe bug: this used to unconditionally
+    # set owner_id to whoever is CURRENTLY saving, even for an UPDATE to an
+    # EXISTING record the saver only has EDIT-SHARE access to (not
+    # ownership) — meaning any editor with edit permission on a record (a
+    # player with edit access to a GM's shared map, dragging their own
+    # token, is exactly this session's real trigger) silently stole
+    # ownership of the ENTIRE record the instant they saved it. Every
+    # ownership-gated check downstream (Delete button, "full map access" in
+    # Orrery, etc.) then correctly, but catastrophically, treated the new
+    # "owner" as legitimate, because the DATA was now wrong, not the checks.
+    owner_id = (user.id if user else None) if is_new_record else existing_row["owner_id"]
     policy = load_kind_policy(state, kind)
     title = _extract_title(kind, body, existing_row, policy)
     metadata = _extract_metadata(kind, body, policy)

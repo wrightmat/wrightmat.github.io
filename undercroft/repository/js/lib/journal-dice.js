@@ -13,7 +13,7 @@
 // rollExpression itself already knows how to tell the two apart.
 import { rollExpression } from "../../../common/js/lib/widgets/dice-roll.js";
 import { rollDiceExpression } from "../../../workbench/js/lib/dice.js";
-import { parseTableReferenceExpression, describeTableRow } from "./journal-tables.js";
+import { parseTableReferenceExpression, resolveTableReference, describeTableRow } from "./journal-tables.js";
 import { el } from "../../../common/js/lib/dom.js";
 
 const DICE_CODE_PATTERN = /^dice:\s*(.+)$/i;
@@ -30,6 +30,26 @@ function rollSilently(expression) {
     return rollDiceExpression(expression).total;
   } catch (error) {
     return 0;
+  }
+}
+
+// Same "starts already rolled, no toast" convention as rollSilently above,
+// just async (a table reference needs to fetch the referenced Journal page
+// — see this file's own top-of-file comment on why table refs couldn't just
+// reuse rollSilently directly). Confirmed real bug this fixes: the initial
+// table resolution used to go through rollExpression (dice-roll.js), which
+// always shows a status toast with the rolled result — meaning every viewer
+// who merely loaded a page (or had a spotlighted Handout render one) got an
+// unsolicited "roll result" toast the instant it appeared, not from any
+// action they took. The click-to-reroll handler in buildDiceRoller below
+// still goes through performRoll/rollExpression (and its toast) — that one
+// IS a deliberate action and should stay loud.
+async function resolveTableSilently(dataManager, tableRef) {
+  if (!dataManager) return null;
+  try {
+    return await resolveTableReference(dataManager, tableRef);
+  } catch (error) {
+    return null;
   }
 }
 
@@ -97,7 +117,10 @@ function buildDiceRoller(expression, { status, interactive, dataManager }) {
   }
 
   if (tableRef) {
-    void performRoll();
+    void (async () => {
+      const outcome = await resolveTableSilently(dataManager, tableRef);
+      valueEl.textContent = outcome ? describeTableRow(outcome.row) : "—";
+    })();
   }
   if (interactive) {
     button.title = tableRef ? `Click to reroll on "${tableRef.blockId}"` : `Click to roll ${expression}`;

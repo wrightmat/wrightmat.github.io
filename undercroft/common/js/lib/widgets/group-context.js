@@ -1,11 +1,27 @@
 // Shared "which campaign group am I looking at" resolution for Dashboard
 // widgets (Game Log, Now Showing, Combat Tracker's player mode) — mirrors
 // workbench-character-view.js's syncGameLogContext priority order exactly
-// (share token > the pinned character's own campaign membership > the
-// signed-in owner's active-group selection), just centralized once here
-// instead of duplicated per widget, since the Dashboard hosts several
-// widgets that all need the same answer.
-export async function resolveGroupContext(dataManager, { pinnedCharacterId = "", shareToken = "" } = {}) {
+// (share token > the signed-in user's own active-group selection, i.e. the
+// header's Campaign dropdown), just centralized once here instead of
+// duplicated per widget, since the Dashboard hosts several widgets that all
+// need the same answer.
+//
+// Deliberately does NOT fall back to a pinned/loaded character's own
+// campaign membership — that used to silently override the active-group
+// selection (confirmed real bug: the header could show "no campaign
+// selected" while the Dashboard was actually showing another campaign's
+// spotlights, because a character pinned to it belonged to that campaign;
+// picking a DIFFERENT campaign from the header then did nothing, since the
+// character-derived answer always won). Per the user's own call, the header
+// selector must be the single source of truth for "which table am I
+// watching" — a character's group membership only determines whether that
+// campaign is a legal choice there at all (listGroups' own member scope,
+// see auth-ui.js/groups.py), never an automatic, silent substitute for
+// actually choosing it. This also directly enables "opt in and out" and
+// "which of several campaigns, across several owned characters, am I
+// currently at" — neither is expressible if a pinned character's own
+// membership always wins.
+export async function resolveGroupContext(dataManager, { shareToken = "" } = {}) {
   if (shareToken) {
     try {
       const shared = await dataManager.fetchGroupShare(shareToken);
@@ -28,31 +44,40 @@ export async function resolveGroupContext(dataManager, { pinnedCharacterId = "",
     return null;
   }
 
-  if (pinnedCharacterId) {
+  const active = dataManager.getActiveGroup();
+  if (active?.groupId) {
+    // getActiveGroup() only ever returns whatever {groupId, name} was
+    // cached when the user picked it (auth-ui.js's own campaign selector)
+    // — no owner_id, so "access" can't be inferred from this alone.
+    // Assuming "owner" unconditionally used to be safe here, back when a
+    // group you don't own could never even be SELECTED as your active
+    // group at all — now that listGroups' own member scope (see
+    // data-manager.js) lets a mere MEMBER select a campaign they don't
+    // own too (added to it via a character they own, not something they
+    // created), that assumption is wrong: confirmed real bug, a
+    // player-tier member who selected a campaign they were added to (not
+    // one they own) got reported as "owner," exposing GM-only controls
+    // (a Map widget's own show/hide toggle) to them client-side — the
+    // server's own separate authorization still correctly rejected the
+    // actual action, but the button itself shouldn't have shown at all.
     try {
-      const payload = await dataManager.listCharacterGroups(pinnedCharacterId);
-      const groups = Array.isArray(payload?.groups) ? payload.groups : [];
-      const campaign =
-        groups.find((entry) => typeof entry?.type === "string" && entry.type.toLowerCase() === "campaign") ||
-        groups[0] ||
-        null;
-      if (campaign) {
-        const ownerId = campaign.owner_id ?? null;
+      const { groups } = await dataManager.listGroups({ includeMemberGroups: true });
+      const match = Array.isArray(groups) ? groups.find((entry) => entry.id === active.groupId) : null;
+      if (match) {
+        const ownerId = match.owner_id ?? null;
         const userId = dataManager.session?.user?.id ?? null;
         return {
-          groupId: campaign.id,
-          groupName: campaign.name || "",
+          groupId: active.groupId,
+          groupName: match.name || active.name || "",
           shareToken: "",
           access: ownerId === userId ? "owner" : "member",
         };
       }
     } catch (error) {
-      // Fall through to the active-group selector below.
+      // Falls through to the unconditional-owner shape below as a last
+      // resort, matching the pre-existing behavior, rather than breaking
+      // group access entirely over a failed lookup.
     }
-  }
-
-  const active = dataManager.getActiveGroup();
-  if (active?.groupId) {
     return { groupId: active.groupId, groupName: active.name || "", shareToken: "", access: "owner" };
   }
   return null;

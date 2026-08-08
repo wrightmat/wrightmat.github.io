@@ -663,18 +663,41 @@ def list_character_groups(state: ServerState, user: Optional[User], character_id
     return {"groups": groups}
 
 
-def list_groups(state: ServerState, owner: Optional[User]) -> Dict[str, Any]:
+def list_groups(state: ServerState, owner: Optional[User], scope: str = "owned") -> Dict[str, Any]:
     if not owner:
         raise AuthError("Authentication required")
-    rows = state.db.execute(
-        """
-        SELECT id, owner_id, name, type, created_at, modified_at
-        FROM groups
-        WHERE owner_id = ?
-        ORDER BY modified_at DESC
-        """,
-        (owner.id,),
-    ).fetchall()
+    if scope == "member":
+        # Owned groups PLUS any group where a character this user owns has
+        # been added as a member — e.g. a GM added the user's own character
+        # to their campaign. This is the account menu's "pick your active
+        # campaign" selector (auth-ui.js's own refreshUserMenu) — a
+        # read-only listing, so surfacing a group here you don't own is
+        # fine. Deliberately NOT the default scope: Loom's own group-
+        # management tab calls this same function with the default "owned"
+        # scope, which must stay owner-only — that UI offers rename/delete/
+        # member-editing controls _require_owner would reject for anything
+        # you don't own, so it should never even list those groups.
+        rows = state.db.execute(
+            """
+            SELECT DISTINCT g.id, g.owner_id, g.name, g.type, g.created_at, g.modified_at
+            FROM groups AS g
+            LEFT JOIN group_members AS gm ON gm.group_id = g.id AND gm.content_type = 'character'
+            LEFT JOIN library_items AS li ON li.id = gm.content_id AND li.kind = 'character'
+            WHERE g.owner_id = ? OR li.owner_id = ?
+            ORDER BY g.modified_at DESC
+            """,
+            (owner.id, owner.id),
+        ).fetchall()
+    else:
+        rows = state.db.execute(
+            """
+            SELECT id, owner_id, name, type, created_at, modified_at
+            FROM groups
+            WHERE owner_id = ?
+            ORDER BY modified_at DESC
+            """,
+            (owner.id,),
+        ).fetchall()
     group_ids = [row["id"] for row in rows]
     members_by_group = _fetch_group_members_batch(state, group_ids)
     share_links = get_share_links_batch(state, "group", group_ids)

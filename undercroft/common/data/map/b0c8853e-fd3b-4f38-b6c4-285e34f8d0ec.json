@@ -27,14 +27,14 @@
   },
   "view": {
     "mode": "cartesian",
-    "zoom": 1.25,
+    "zoom": 2.5855380203438734,
     "center": {
       "lat": 0,
       "lng": 0
     },
     "pan": {
-      "x": 109,
-      "y": -143
+      "x": 678.5,
+      "y": -5.5
     }
   },
   "layers": [
@@ -57,6 +57,75 @@
         "revealGroupId": ""
       },
       "properties": {}
+    },
+    {
+      "id": "ba31026c-2f45-4267-8bd5-8185e2a8fc6c",
+      "type": "marker",
+      "name": "Marker Layer",
+      "visible": true,
+      "opacity": 1,
+      "position": {
+        "x": 1095,
+        "y": 864
+      },
+      "elements": [
+        {
+          "id": "141b5aba-29e6-45ae-8b65-3dce88d01e58",
+          "kind": "marker",
+          "refKind": "character",
+          "refId": "octavian-hoff",
+          "label": "Octavian Hoff",
+          "image": "https://www.dndbeyond.com/avatars/44651/45/1581111423-133639844.jpeg?width=150&height=150&fit=crop&quality=95&auto=webp",
+          "outlineColor": "#3f59d9",
+          "position": {
+            "x": -529,
+            "y": -336
+          },
+          "sizeCells": 1,
+          "opacity": 1,
+          "overlayIcons": [],
+          "visionRangeBinding": "",
+          "visionRangeFormula": "",
+          "visionRangeText": "0"
+        },
+        {
+          "id": "13a1549e-09a1-4187-9862-0446c131ad3b",
+          "kind": "marker",
+          "refKind": "character",
+          "refId": "maris-wavedeep",
+          "label": "Maris Wavedeep",
+          "image": "https://www.dndbeyond.com/avatars/54575/480/1581111423-159871601.jpeg?width=150&height=150&fit=crop&quality=95&auto=webp",
+          "outlineColor": "#3f59d9",
+          "position": {
+            "x": -875,
+            "y": -452
+          },
+          "sizeCells": 1,
+          "opacity": 1,
+          "overlayIcons": [
+            {
+              "id": "f00e9145-77ed-41e9-8b2f-245231ad2b90",
+              "icon": "ddb-ability-charisma",
+              "color": "#1e293b",
+              "label": "ddb-ability-charisma"
+            }
+          ],
+          "visionRangeBinding": "",
+          "visionRangeFormula": "",
+          "visionRangeText": "0"
+        }
+      ],
+      "settings": {
+        "icon": "",
+        "size": 24,
+        "color": "#0ea5e9",
+        "outlineColor": "#0f172a",
+        "outlineWidth": 2,
+        "showLabels": false,
+        "labelPosition": "below",
+        "labelSize": 12
+      },
+      "properties": {}
     }
   ],
   "groups": [],
@@ -67,5 +136,12 @@
     "unit": "ft"
   },
   "createdAt": "2026-08-07T09:47:00.878Z",
-  "updatedAt": "2026-08-07T11:15:33.668Z"
+  "updatedAt": "2026-08-08T04:08:29.008Z",
+  "initialView": {
+    "zoom": 1,
+    "pan": {
+      "x": 0,
+      "y": 0
+    }
+  }
 }

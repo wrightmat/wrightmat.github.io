@@ -1239,7 +1239,11 @@ def register_routes():
 
     def handle_list_groups(request: Request) -> Response:
         user = require_user(request)
-        payload = group_store.list_groups(request.state, user)
+        from urllib.parse import parse_qs, urlsplit
+
+        query = parse_qs(urlsplit(request.handler.path).query)
+        scope = query.get("scope", ["owned"])[0]
+        payload = group_store.list_groups(request.state, user, scope=scope)
         return json_response(payload)
 
     router.add("GET", r"^/groups$", handle_list_groups)

@@ -61,14 +61,17 @@ export function clearGameLogView(scope) {
   }
 }
 
-// Exported so dashboard.js's spotlight-inbox toast can phrase its prompt the
-// same way this widget's own inline entry does — one label table, not two
-// copies that could drift apart.
+// Exported so dashboard.js's spotlight panel can phrase things the same way
+// this widget's own inline entry does — one label table, not two copies
+// that could drift apart. Also the fallback text whenever a real resource
+// title (fetched separately, see describeEntry/dashboard.js's own title
+// cache) isn't available yet or doesn't apply.
 export const SPOTLIGHT_KIND_LABELS = {
   npc: "an NPC",
   location: "a Location",
   monster: "a Monster",
   effect: "an Effect",
+  journal: "a Journal page",
   map: "a Map",
   encounter: "an Encounter",
   clock: "a Clock",
@@ -77,14 +80,83 @@ export const SPOTLIGHT_KIND_LABELS = {
   soundboard: "a soundboard",
 };
 
-function describeEntry(entry) {
+// Leading icon + whether it should be a clickable on/off toggle for every
+// entry type — `resolveKindIcon(kind)` (dashboard.js's own, threaded
+// through from initGameLogWidget below) returns undefined for a kind
+// KIND_WIDGET_MAP doesn't recognize, which is exactly the signal used here
+// to render a plain, non-interactive icon instead of a dead click target
+// (the old Accept button had no such gate at all — a real inconsistency
+// with the toast's own equivalent check, fixed here).
+function resolveEntryIcon(entry, resolveKindIcon) {
+  if (entry?.type === "message") {
+    return { icon: "tabler:message-circle", clickable: false };
+  }
+  if (entry?.type === "roll") {
+    return { icon: "tabler:dice-5", clickable: false };
+  }
   if (entry?.type === "spotlight") {
     const kind = String(entry.payload?.kind || "").trim();
-    const article = SPOTLIGHT_KIND_LABELS[kind] || (kind ? `a "${kind}"` : "something");
-    return `Showed ${article} to the table`;
+    const id = String(entry.payload?.id || "").trim();
+    const templateId = String(entry.payload?.templateId || "").trim();
+    const icon = kind ? resolveKindIcon?.(kind) : undefined;
+    return { icon: icon || "tabler:sparkles", clickable: Boolean(icon), kind, id, templateId };
+  }
+  if (entry?.type === "spotlight-clear") {
+    const kind = String(entry.payload?.kind || "").trim();
+    const icon = kind ? resolveKindIcon?.(kind) : undefined;
+    return { icon: icon || "tabler:eye-off", clickable: false, muted: true };
+  }
+  return { icon: "tabler:message-circle", clickable: false };
+}
+
+// `getCachedTitle(kind,id)`/`ensureTitleCached(kind,id,onLoaded)` — dashboard
+// .js's own shared title cache (fetch-once, cache, re-render-on-resolve,
+// same shape as the character-payload caches elsewhere in this suite).
+// Spotlight log entries never carry a title themselves (server/groups.py's
+// own payload validation only ever requires kind+id) — a real name for a
+// Library-backed kind needs that separate fetch. The four inline kinds
+// (clock/browser/calendar/soundboard) have no Library record to fetch at
+// all; clock/browser are the only two whose own spotlight `data` payload
+// happens to carry something nameable (a GM-set clock name, a raw URL) —
+// calendar/soundboard fall back to the generic label like before.
+function describeEntry(entry, { getCachedTitle, ensureTitleCached, onTitleLoaded } = {}) {
+  if (entry?.type === "spotlight") {
+    const kind = String(entry.payload?.kind || "").trim();
+    const id = String(entry.payload?.id || "").trim();
+    const genericArticle = SPOTLIGHT_KIND_LABELS[kind] || (kind ? `a "${kind}"` : "something");
+    let detail = "";
+    if (kind === "clock") {
+      detail = entry.payload?.data?.name || "";
+    } else if (kind === "browser") {
+      detail = entry.payload?.data?.url || "";
+    } else if (kind && id) {
+      detail = getCachedTitle?.(kind, id) || "";
+      if (!detail) ensureTitleCached?.(kind, id, onTitleLoaded);
+    }
+    return `Showed ${detail || genericArticle} to the table`;
   }
   if (entry?.type === "spotlight-clear") {
     return "Stopped showing to the table";
+  }
+  if (entry?.type === "roll") {
+    // A roll entry's own `message` is always empty — the real data lives in
+    // `payload.{label,expression,notation,total}` (dice-roll.js's own
+    // rollExpression). Mirrors Workbench's own richer log panel formatting
+    // (workbench-character-view.js's createGameLogEntryElement) instead of
+    // leaving this blank, which is what the old generic `entry?.message ||
+    // ""` fallback used to do for every single roll.
+    const payload = entry.payload || {};
+    const label = typeof payload.label === "string" ? payload.label.trim() : "";
+    const notation =
+      typeof payload.expression === "string" && payload.expression.trim()
+        ? payload.expression.trim()
+        : typeof payload.notation === "string" && payload.notation.trim()
+          ? payload.notation.trim()
+          : "";
+    const total = payload.total !== undefined && payload.total !== null ? payload.total : "";
+    let text = label && notation ? `${label} (${notation})` : label || notation || "Roll";
+    if (total || total === 0) text += ` → ${total}`;
+    return text;
   }
   return entry?.message || "";
 }
@@ -102,7 +174,18 @@ function formatTimestamp(value) {
 
 export function initGameLogWidget(
   container,
-  { dataManager, status, groupId = "", shareToken = "", onAcceptSpotlight, setRightAction } = {}
+  {
+    dataManager,
+    status,
+    groupId = "",
+    shareToken = "",
+    resolveKindIcon,
+    isSpotlightOnDashboard,
+    onToggleSpotlight,
+    ensureTitleCached,
+    getCachedTitle,
+    setRightAction,
+  } = {}
 ) {
   if (!container || !dataManager) {
     return { destroy() {} };
@@ -121,27 +204,48 @@ export function initGameLogWidget(
       .slice()
       .sort((a, b) => (Date.parse(b.created_at) || 0) - (Date.parse(a.created_at) || 0))
       .forEach((entry) => {
-        const row = el("div", "d-flex flex-column gap-1 small border-bottom pb-1 mb-1");
+        const visual = resolveEntryIcon(entry, resolveKindIcon);
+        const row = el("div", "d-flex align-items-start gap-2 small border-bottom pb-1 mb-1");
+
+        const iconEl = el(visual.clickable ? "button" : "span", "gamelog-entry-icon");
+        if (visual.clickable) {
+          iconEl.type = "button";
+          iconEl.classList.add("gamelog-entry-icon--clickable");
+          // Not gated on authorship — a GM's own spotlighted item is
+          // "on their dashboard" by construction (their own widget is what
+          // gets toggled), and toggling it off here is exactly as
+          // meaningful as doing it from the panel; keeping both surfaces
+          // consistent is the whole point of this rework.
+          const isOn = Boolean(isSpotlightOnDashboard?.({ kind: visual.kind, id: visual.id }));
+          iconEl.classList.add(isOn ? "spotlight-panel-icon--mine" : "spotlight-panel-icon--available");
+          iconEl.title = isOn ? "On your dashboard — click to remove" : "Click to add to your dashboard";
+          iconEl.addEventListener("click", () =>
+            onToggleSpotlight?.({ kind: visual.kind, id: visual.id, templateId: visual.templateId })
+          );
+        } else if (visual.muted) {
+          iconEl.classList.add("gamelog-entry-icon--muted");
+        }
+        const iconGlyph = el("span", "iconify");
+        iconGlyph.dataset.icon = visual.icon;
+        iconGlyph.setAttribute("aria-hidden", "true");
+        iconEl.appendChild(iconGlyph);
+        row.appendChild(iconEl);
+
+        const body = el("div", "d-flex flex-column gap-1 flex-grow-1");
         const line = el("div", "d-flex justify-content-between gap-2");
-        line.appendChild(el("span", null, describeEntry(entry)));
-        const meta = el("span", "text-body-secondary");
+        line.appendChild(
+          el(
+            "span",
+            null,
+            describeEntry(entry, { getCachedTitle, ensureTitleCached, onTitleLoaded: () => refreshNow() })
+          )
+        );
+        const meta = el("span", "text-body-secondary gamelog-entry-meta");
         meta.textContent = `${entry.author?.name || "System"} · ${formatTimestamp(entry.created_at)}`;
         line.appendChild(meta);
-        row.appendChild(line);
-        // Lets a player who scrolled past the toast (or missed it) still act
-        // on any spotlight entry from here — same acceptSpotlight path
-        // dashboard.js's toast prompt uses, just triggered from the log
-        // instead. Shown on every spotlight entry, not just the latest one —
-        // except whichever ones this viewer posted themselves (a GM doesn't
-        // need to "accept" their own show-to-table onto their own dashboard;
-        // same reasoning spotlight-inbox.js's toast already applies).
-        const isOwnEntry = Boolean(entry?.author?.id) && entry.author.id === dataManager.session?.user?.id;
-        if (entry?.type === "spotlight" && !isOwnEntry && typeof onAcceptSpotlight === "function") {
-          const acceptButton = el("button", "btn btn-outline-primary btn-sm align-self-start", "Accept");
-          acceptButton.type = "button";
-          acceptButton.addEventListener("click", () => onAcceptSpotlight(entry));
-          row.appendChild(acceptButton);
-        }
+        body.appendChild(line);
+        row.appendChild(body);
+
         list.appendChild(row);
       });
   }

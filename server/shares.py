@@ -18,9 +18,31 @@ ALL_USERS_ALIASES = {alias.lower(): ALL_USERS_SPECIAL for alias in ["all users",
 ALLOWED_PERMISSIONS = {"view", "edit"}
 
 
-def _normalize_permissions(value: str) -> str:
+def _normalize_permissions(value: str, content_type: str = "") -> str:
     normalized = (value or "").strip().lower()
-    return normalized if normalized in ALLOWED_PERMISSIONS else "view"
+    normalized = normalized if normalized in ALLOWED_PERMISSIONS else "view"
+    # Map and Encounter are the two shareable kinds a player is ever
+    # expected to write back to — moving their own owned character's token
+    # (map.js's own isMarkerDraggable/ownership check) or pushing their own
+    # combatant's initiative (character-sheet.js's own
+    # pushInitiativeToActiveEncounter) — save_item's own is_shared(
+    # require_edit=True) check is what actually enforces this server-side.
+    # A view-only share silently breaks that with no obvious cause from the
+    # UI, and this bug kept recurring from just ONE client call site
+    # (data-manager.js's spotlightToGroup) being fixed to default to "edit"
+    # while every OTHER share-creation path (the Share dialog's quick-share
+    # button, its manual add-form) kept defaulting to "view" — confirmed
+    # directly against the database for Map, twice, across two separate
+    # share actions, then confirmed again for Encounter (rolling initiative
+    # on a shown-to-table combat failed identically). Normalizing this once
+    # here, server-side, means no future or overlooked client call site can
+    # reintroduce the same bug for either kind; a GM who explicitly wants a
+    # read-only reference map/encounter can still keep the anonymous
+    # share-LINK flow (create_share_link, not routed through this function)
+    # at "view".
+    if normalize_kind(content_type) in ("map", "encounter"):
+        return "edit"
+    return normalized
 
 
 # "Share with All Users" is really just "make it public" — every Library kind
@@ -153,7 +175,7 @@ def share_with_user(
     user_row = state.db.execute("SELECT id FROM users WHERE username = ?", (username,)).fetchone()
     if not user_row:
         raise AuthError("User not found")
-    normalized_permissions = _normalize_permissions(permissions)
+    normalized_permissions = _normalize_permissions(permissions, content_type)
     state.db.execute(
         """
         INSERT INTO shares (content_type, content_id, shared_with_user_id, permissions)
@@ -215,7 +237,7 @@ def share_with_group(
     group_row = state.db.execute("SELECT id, name FROM groups WHERE id = ?", (group_id,)).fetchone()
     if not group_row or not _group_belongs_to(state, group_id, user):
         raise AuthError("Group not found")
-    normalized_permissions = _normalize_permissions(permissions)
+    normalized_permissions = _normalize_permissions(permissions, content_type)
     state.db.execute(
         """
         INSERT INTO shares (content_type, content_id, shared_with_group_id, permissions)

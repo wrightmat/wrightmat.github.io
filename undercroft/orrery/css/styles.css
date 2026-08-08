@@ -415,3 +415,50 @@
   height: 100%;
   background: var(--bs-body-bg);
 }
+
+/* Applied to <body> by app.js's own renderLayerOverlays whenever the
+   signed-in viewer isn't this map's owner/admin (currentUserHasFullMapAccess)
+   — confirmed real bug this fixes: Orrery's own authoring surface had no
+   access gating at all beyond marker-drag ownership, so a mere campaign
+   member reaching this page (most often via the Dashboard Map widget's own
+   "Open in Orrery" link) could still draw walls, place markers, delete the
+   map, or drag ANY marker regardless of who it belonged to. Hiding both
+   whole side panes covers every authoring control at once (the main
+   action toolbar — New/Undo/Redo/Save/Import/Export/Delete — the Map
+   picker, Layers/Groups/Views panels, and the whole right-hand Map
+   Properties/Selection inspector all live inside these two elements) —
+   so this doesn't need a parallel list of every individual button to keep
+   in sync by hand. Only the floating view panel's toolset (in <main>, not
+   one of these panes) needs its own explicit rule below. Pan/zoom
+   (BaseMapManager, an entirely separate system from any of this) is
+   deliberately untouched — always available regardless of access.
+
+   Targets [data-pane], NOT index.html's own [data-pane-content="left"/
+   "right"] markup — confirmed real bug: common/js/lib/app-shell.js's own
+   initAppShell (called by every tool page, including this one)
+   REPLACES that original element outright (buildPaneShell's own
+   mountEl.replaceWith(aside)) with a freshly built <aside data-pane="left"/
+   "right">, at boot, before this class is ever toggled — the attribute this
+   rule used to target no longer exists anywhere in the live DOM by the time
+   a real page has finished loading, so the rule silently matched nothing. */
+body.orrery-restricted-viewer [data-pane] {
+  display: none !important;
+}
+
+/* The floating view panel's zoom cluster stays (pan/zoom is always
+   available); every other tool toggle in it is an authoring control and
+   gets hidden the same way the side panes above do. */
+body.orrery-restricted-viewer [data-measure-toggle-wrap],
+body.orrery-restricted-viewer [data-measure-readout],
+body.orrery-restricted-viewer [data-draw-toggle-wrap],
+body.orrery-restricted-viewer [data-shape-toggle-wrap],
+body.orrery-restricted-viewer [data-shape-type],
+body.orrery-restricted-viewer [data-shape-readout],
+body.orrery-restricted-viewer [data-wall-toggle-wrap],
+body.orrery-restricted-viewer [data-wall-submode],
+body.orrery-restricted-viewer [data-wall-snap-toggle-wrap],
+body.orrery-restricted-viewer [data-light-toggle-wrap],
+body.orrery-restricted-viewer [data-light-readout],
+body.orrery-restricted-viewer [data-ping-toggle-wrap] {
+  display: none !important;
+}

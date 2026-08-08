@@ -77,7 +77,6 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
   const componentRollDirectives = new Map();
   const collapsedComponents = new Map();
   const diceQuickButtons = new Map();
-  const characterGroupCache = new Map();
   // Which tab is showing per Tabs-type Container, keyed by component.uid —
   // components are re-hydrated (deep-cloned) on every data change, so this
   // has to live outside the component object itself to survive re-renders.
@@ -1320,7 +1319,13 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       return;
     }
     try {
-      const { payload: encounter } = await dataManager.get("encounter", encounterId);
+      // preferLocal: false — this is a read-modify-write against the
+      // encounter's real current state (other combatants may have changed
+      // since this browser last touched it); a stale local copy here
+      // wouldn't just display wrong, it would silently clobber those other
+      // changes on save. Same bug, same fix, as combat-tracker.js's own
+      // selectEncounter.
+      const { payload: encounter } = await dataManager.get("encounter", encounterId, { preferLocal: false });
       const combatant = (encounter.combatants || []).find(
         (entry) => entry.refKind === "character" && entry.refId === state.draft.id
       );
@@ -2533,24 +2538,20 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     };
   }
 
-  async function refreshCharacterGroups(characterId) {
-    if (!characterId || !dataManager.isAuthenticated()) {
-      characterGroupCache.delete(characterId);
-      return [];
-    }
-    try {
-      const payload = await dataManager.listCharacterGroups(characterId);
-      const groups = Array.isArray(payload?.groups) ? payload.groups : [];
-      characterGroupCache.set(characterId, groups);
-      return groups;
-    } catch (error) {
-      console.warn("Character editor: unable to fetch character groups", error);
-      characterGroupCache.set(characterId, []);
-      return [];
-    }
-  }
-
-  async function syncGameLogContext({ force = false } = {}) {
+  // The active-campaign selector (the header's own Campaign dropdown,
+  // shared cross-tool via getActiveGroup/setActiveGroup) is the single
+  // source of truth for "which table am I watching" — see
+  // common/js/lib/widgets/group-context.js's own resolveGroupContext (the
+  // Dashboard-side mirror of this function) for the full reasoning. A
+  // loaded character's own campaign membership used to take priority over
+  // it — confirmed real bug this replaced: that silently overrode whatever
+  // the header showed (a user could pick a DIFFERENT campaign there and see
+  // nothing change), and had no way to express "I own characters in several
+  // campaigns, let me pick which table I'm at right now." A character's
+  // membership still determines whether a campaign is a legal choice in the
+  // dropdown at all (listGroups' own member scope) — it just never silently
+  // substitutes for actually choosing it.
+  async function syncGameLogContext() {
     const shareToken = state.shareToken || groupShareState.token || "";
     const shareGroupId = shareToken ? groupShareState.groupId || "" : "";
     if (shareToken && shareGroupId) {
@@ -2560,43 +2561,36 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       return;
     }
     if (!dataManager.isAuthenticated()) {
-      characterGroupCache.delete(state.draft?.id);
       clearGameLogContext();
       return;
     }
-    // A loaded character's own campaign membership takes priority — playing
-    // a specific PC should always follow that PC's table. Only falls
-    // through to the active-campaign selector below when there's no
-    // character-derived campaign to use (no character loaded at all, or one
-    // that isn't in any campaign group) — the common GM/admin case: running
-    // a table (and, per this session's spotlight feature, showing things to
-    // it) without necessarily having any one PC loaded in Workbench.
-    let campaign = null;
-    if (state.draft?.id) {
-      let memberships = characterGroupCache.get(state.draft.id);
-      if (force || memberships === undefined) {
-        memberships = await refreshCharacterGroups(state.draft.id);
-      }
-      const groups = Array.isArray(memberships) ? memberships : [];
-      campaign =
-        groups.find((entry) => typeof entry?.type === "string" && entry.type.toLowerCase() === "campaign") ||
-        groups[0] ||
-        null;
-    }
-    if (campaign) {
-      const ownerId = campaign.owner_id ?? null;
-      const userId = dataManager.session?.user?.id ?? null;
-      const access = ownerId === userId ? "owner" : "member";
-      setGameLogContext({ groupId: campaign.id, groupName: campaign.name || "", access });
-      return;
-    }
-    // The same shared, cross-tool selection every other tool's header
-    // exposes via its own Campaign dropdown (auth-ui.js/data-manager.js's
-    // getActiveGroup/setActiveGroup) — listGroups() (and so this) only ever
-    // includes groups the current user owns, so "owner" is always correct
-    // here, not just an assumption.
     const active = dataManager.getActiveGroup();
     if (active?.groupId) {
+      // Resolve real ownership rather than assuming "owner" unconditionally
+      // — listGroups' own member scope (see group-context.js's own
+      // resolveGroupContext, this function's Dashboard-side mirror) lets a
+      // mere MEMBER select a campaign they don't own too, and this file has
+      // its own GM-only controls gated on gameLogState's access (the
+      // spotlight "show to table" affordances) that shouldn't show for a
+      // non-owner even though the server-side check would still correctly
+      // reject the actual action.
+      try {
+        const { groups } = await dataManager.listGroups({ includeMemberGroups: true });
+        const match = Array.isArray(groups) ? groups.find((entry) => entry.id === active.groupId) : null;
+        if (match) {
+          const ownerId = match.owner_id ?? null;
+          const userId = dataManager.session?.user?.id ?? null;
+          setGameLogContext({
+            groupId: active.groupId,
+            groupName: match.name || active.name || "",
+            access: ownerId === userId ? "owner" : "member",
+          });
+          return;
+        }
+      } catch (error) {
+        // Falls through to the unconditional-owner shape below as a last
+        // resort, matching group-context.js's own identical fallback.
+      }
       setGameLogContext({ groupId: active.groupId, groupName: active.name || "", access: "owner" });
       return;
     }
@@ -2914,7 +2908,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       groupShareState.loading = false;
       renderGroupSharePanel();
       state.shareToken = shareToken;
-      void syncGameLogContext({ force: true });
+      void syncGameLogContext();
     }
   }
 
@@ -3145,7 +3139,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
         type: "success",
         timeout: 2000,
       });
-      await syncGameLogContext({ force: true });
+      await syncGameLogContext();
     } catch (error) {
       console.error("Character editor: failed to load character", error);
       const pruned = handleCharacterLoadFailure(id, error);
@@ -3155,7 +3149,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       const type = pruned ? "warning" : "error";
       status.show(message, { type, timeout: 2800 });
       syncCharacterToolbarVisibility();
-      await syncGameLogContext({ force: true });
+      await syncGameLogContext();
     }
 
     return true;
@@ -6388,11 +6382,11 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
 
   // Picking a different campaign from the header's Campaign dropdown while
   // Workbench is already open (not just landing here fresh after switching
-  // it elsewhere) should immediately follow it — same fallback
-  // syncGameLogContext already applies when there's no character-derived
-  // campaign to use.
+  // it elsewhere) should immediately follow it — the dropdown is now
+  // syncGameLogContext's sole source of truth for the signed-in-user case,
+  // not just a fallback.
   window.addEventListener("workbench:active-group-changed", () => {
-    void syncGameLogContext({ force: true });
+    void syncGameLogContext();
   });
 
   return {
