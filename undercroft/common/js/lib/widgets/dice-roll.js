@@ -15,6 +15,92 @@ import { rollDiceExpression } from "../../../../workbench/js/lib/dice.js";
 // imports from `repository/` for renderMarkdown (via handout.js), so this
 // isn't a new layering direction.
 import { parseTableReferenceExpression, resolveTableReference, describeTableRow } from "../../../../repository/js/lib/journal-tables.js";
+// The 3D dice overlay — see dice-overlay.js's own header for the full split
+// of responsibilities. Only wired into the plain-expression branch below
+// (table rolls have nothing to physically roll); every existing caller of
+// rollExpression picks this up for free.
+import { rollDiceOverlay } from "./dice-overlay.js";
+
+// Expressions eligible for the 3D overlay: a plain +/- sum of `NdM` groups
+// and flat numbers only — no keep/drop/reroll/explode/success comparators,
+// functions, variables, parentheses, or multiplication/division. Anything
+// outside that falls back to the ordinary non-visual roll below, since
+// dice-box has no way to physically show (say) "4d6, drop the lowest" — it
+// only knows how to roll a fixed pile of same/different-sided dice.
+const SIMPLE_TERM = "(?:\\d*d(?:\\d+|%)|\\d+)";
+const SIMPLE_EXPRESSION_PATTERN = new RegExp(`^\\s*[+-]?\\s*${SIMPLE_TERM}(?:\\s*[+-]\\s*${SIMPLE_TERM})*\\s*$`, "i");
+const SIMPLE_TERM_PATTERN = /[+-]?\s*(?:(\d*)d(\d+|%)|(\d+))/gi;
+// A generous but finite cap — dice-box can physically roll more than this,
+// but past a certain pile size the "watch them land" spectacle stops being
+// worth the load, so just skip straight to the toast.
+const MAX_OVERLAY_DICE = 100;
+
+// Pulls the ordered list of plain dice groups out of an expression already
+// confirmed to match SIMPLE_EXPRESSION_PATTERN. Safe to scan with a plain
+// regex (rather than re-parsing) specifically because that pattern rules out
+// everything that could make formula-engine.js's own parser evaluate dice
+// terms out of left-to-right source order (parentheses, functions,
+// multiplication/division) — so this always visits them in the exact order
+// the parser will.
+function extractSimpleDiceTerms(expression) {
+  const terms = [];
+  SIMPLE_TERM_PATTERN.lastIndex = 0;
+  let match;
+  while ((match = SIMPLE_TERM_PATTERN.exec(expression))) {
+    const [, countToken, sidesToken] = match;
+    if (sidesToken === undefined) {
+      continue; // a flat number term — nothing to roll
+    }
+    const count = countToken ? parseInt(countToken, 10) : 1;
+    const sides = sidesToken === "%" ? 100 : parseInt(sidesToken, 10);
+    if (!Number.isFinite(count) || count <= 0 || !Number.isFinite(sides) || sides <= 0) {
+      return null;
+    }
+    terms.push({ count, sides });
+  }
+  return terms;
+}
+
+// Wraps a flat queue of real dice-box values (already in the same
+// left-to-right order formula-engine.js's parser will ask for them) as a
+// `random()` function, so rollDiceExpression's own keep/drop/success
+// handling and detail/HTML formatting run completely untouched — the only
+// thing that changed is where the "random" numbers actually came from.
+// `(value - 1) / sides` is the exact input rollSingleDie's own
+// `Math.floor(random() * sides) + 1` needs to land back on `value`.
+function buildScriptedRandom(queue) {
+  return () => {
+    if (!queue.length) {
+      return Math.random(); // never expected — never let an internal bug block a roll
+    }
+    const { sides, value } = queue.shift();
+    return Math.min(0.999999, Math.max(0, (value - 1) / sides));
+  };
+}
+
+// Returns a rollDiceExpression-shaped result rolled physically via the 3D
+// overlay, or `null` if the expression isn't eligible or the overlay isn't
+// available right now — either way, the caller just falls back to
+// `rollDiceExpression(expression)` as if this never happened.
+async function tryOverlayRoll(expression, dataManager) {
+  if (!SIMPLE_EXPRESSION_PATTERN.test(expression)) {
+    return null;
+  }
+  const terms = extractSimpleDiceTerms(expression);
+  if (!terms || !terms.length) {
+    return null;
+  }
+  if (terms.reduce((sum, term) => sum + term.count, 0) > MAX_OVERLAY_DICE) {
+    return null;
+  }
+  const rolled = await rollDiceOverlay(terms, dataManager);
+  if (!rolled) {
+    return null;
+  }
+  const queue = [];
+  rolled.forEach(({ sides, values }) => values.forEach((value) => queue.push({ sides, value })));
+  return rollDiceExpression(expression, { random: buildScriptedRandom(queue) });
+}
 
 // Async now (a table reference needs to fetch the referencing Journal page)
 // — every existing caller needs `await`. Returns `null` if the expression
@@ -68,7 +154,7 @@ export async function rollExpression(
     }
   }
   try {
-    const result = rollDiceExpression(trimmed);
+    const result = (await tryOverlayRoll(trimmed, dataManager)) || rollDiceExpression(trimmed);
     const prefix = label ? `${label}: ` : "";
     status?.show(`${prefix}${trimmed} → ${result.total}`, { type: "success", timeout: 2200 });
     if (broadcast && dataManager && groupContext?.groupId) {

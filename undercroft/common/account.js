@@ -7,6 +7,13 @@ import { initHelpBrowser as initHelpBrowserModule } from "./js/lib/help-browser.
 import { confirmDelete } from "./js/lib/ownership.js";
 import { initShareModal } from "./js/lib/share-modal.js";
 import { disableForm } from "./js/lib/dom.js";
+import {
+  DICE_THEMES,
+  DICE_THEME_NAMES,
+  getThemeColorSupport,
+  getThemeDefaultColor,
+  previewDiceTheme,
+} from "./js/lib/widgets/dice-overlay.js";
 
 const { status } = initAppShell({
   namespace: "account",
@@ -48,6 +55,11 @@ const elements = {
   favoriteColorControl: document.querySelector("[data-favorite-color-control]"),
   favoriteColorInput: document.getElementById("admin-settings-favorite-color"),
   favoriteColorClear: document.querySelector("[data-favorite-color-clear]"),
+  diceThemeSelect: document.querySelector("[data-dice-theme-select]"),
+  diceColorControl: document.querySelector("[data-dice-color-control]"),
+  diceColorInput: document.getElementById("admin-settings-dice-color"),
+  diceColorReset: document.querySelector("[data-dice-color-reset]"),
+  dicePreview: document.querySelector("[data-dice-preview]"),
 };
 
 const TIER_OPTIONS = [
@@ -218,6 +230,79 @@ function populateSettings({ force = false } = {}) {
   }
   if (elements.favoriteColorInput && (force || document.activeElement !== elements.favoriteColorInput)) {
     void loadFavoriteColor();
+  }
+  if (elements.diceThemeSelect && (force || document.activeElement !== elements.diceColorInput)) {
+    void loadDiceSettings();
+  }
+}
+
+// Static — every option comes from dice-overlay.js's own curated
+// DICE_THEMES, not from anything user- or session-specific, so this only
+// ever needs to run once.
+function populateDiceThemeOptions() {
+  const select = elements.diceThemeSelect;
+  if (!select) {
+    return;
+  }
+  const fragment = document.createDocumentFragment();
+  DICE_THEMES.forEach(({ name, label }) => {
+    const option = document.createElement("option");
+    option.value = name;
+    option.textContent = label;
+    fragment.appendChild(option);
+  });
+  select.replaceChildren(fragment);
+}
+
+// Hides the whole color control for a theme dice-overlay.js's own
+// getThemeColorSupport says can't be tinted at all (see that function's own
+// header for the "color" vs "standard" material split) — no point showing
+// a control that would visibly do nothing. Unlike Favorite color below,
+// there's no "unset" state here: a colorable theme's swatch always shows a
+// real, already-meaningful value (the saved one, or the theme's own
+// getThemeDefaultColor) that the user can see and change, never a blank
+// left for something else to invent silently later — see dice-overlay.js's
+// own DICE_THEMES header for why that used to be a real crash.
+function refreshDiceColorVisibility(theme) {
+  elements.diceColorControl?.classList.toggle("d-none", !getThemeColorSupport(theme));
+}
+
+async function loadDiceSettings() {
+  if (!elements.diceThemeSelect || !dataManager.isAuthenticated()) {
+    return;
+  }
+  let theme = "default";
+  let themeColor = "";
+  try {
+    const settings = await dataManager.getUserSettings();
+    if (DICE_THEME_NAMES.includes(settings?.diceSettings?.theme)) {
+      theme = settings.diceSettings.theme;
+    }
+    if (typeof settings?.diceSettings?.themeColor === "string") {
+      themeColor = settings.diceSettings.themeColor;
+    }
+  } catch (error) {
+    // Falls through to the "default theme, its own default color" starting
+    // point below either way.
+  }
+  elements.diceThemeSelect.value = theme;
+  refreshDiceColorVisibility(theme);
+  if (elements.diceColorInput) {
+    elements.diceColorInput.value = themeColor || getThemeDefaultColor(theme);
+  }
+}
+
+async function saveDiceSettings() {
+  if (!dataManager.isAuthenticated()) {
+    return;
+  }
+  const theme = elements.diceThemeSelect?.value || "default";
+  const themeColor = getThemeColorSupport(theme) ? elements.diceColorInput?.value || "" : "";
+  try {
+    await dataManager.saveUserSettings({ diceSettings: { theme, themeColor } });
+    status?.show("Dice appearance saved", { type: "success", timeout: 1500 });
+  } catch (error) {
+    status?.show(error.message || "Unable to save your dice appearance.", { type: "error" });
   }
 }
 
@@ -912,6 +997,46 @@ if (elements.favoriteColorClear) {
       status?.show("Favorite color cleared", { type: "info", timeout: 1500 });
     } catch (error) {
       status?.show(error.message || "Unable to clear your favorite color.", { type: "error" });
+    }
+  });
+}
+
+populateDiceThemeOptions();
+
+if (elements.diceThemeSelect) {
+  elements.diceThemeSelect.addEventListener("change", () => {
+    const theme = elements.diceThemeSelect.value;
+    refreshDiceColorVisibility(theme);
+    // Switching themes always resets the swatch to THIS theme's own default
+    // color — never a blank, and never the previous theme's color carried
+    // over somewhere it was never chosen for.
+    if (elements.diceColorInput) {
+      elements.diceColorInput.value = getThemeDefaultColor(theme);
+    }
+    void saveDiceSettings();
+  });
+}
+
+if (elements.diceColorInput) {
+  elements.diceColorInput.addEventListener("change", () => void saveDiceSettings());
+}
+
+if (elements.diceColorReset) {
+  elements.diceColorReset.addEventListener("click", () => {
+    if (elements.diceColorInput) {
+      elements.diceColorInput.value = getThemeDefaultColor(elements.diceThemeSelect?.value || "default");
+    }
+    void saveDiceSettings();
+  });
+}
+
+if (elements.dicePreview) {
+  elements.dicePreview.addEventListener("click", async () => {
+    const theme = elements.diceThemeSelect?.value || "default";
+    const themeColor = getThemeColorSupport(theme) ? elements.diceColorInput?.value || "" : "";
+    const ok = await previewDiceTheme(theme, themeColor);
+    if (!ok) {
+      status?.show("Unable to preview that theme right now.", { type: "error" });
     }
   });
 }

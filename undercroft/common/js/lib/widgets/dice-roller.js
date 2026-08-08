@@ -13,12 +13,18 @@ import { rollExpression, QUICK_DICE, parseQuickDiceCounts, incrementDieInExpress
 // rollExpression above exactly like a plain numeric expression does, since
 // rollExpression already knows how to tell the two apart.
 import { listRollableTables, describeTableRow } from "../../../../repository/js/lib/journal-tables.js";
+import { preloadDiceOverlay } from "./dice-overlay.js";
 import { el } from "../dom.js";
 
 export function initDiceRollerWidget(container, { status, dataManager } = {}) {
   if (!container) {
     return { destroy() {} };
   }
+
+  // This widget being mounted at all means dice rolling is imminent-ish —
+  // warm up the 3D overlay (and the user's chosen theme, via dataManager)
+  // now instead of waiting for the first actual Roll click.
+  preloadDiceOverlay(dataManager);
 
   container.innerHTML = "";
   const wrap = el("div", "d-flex flex-column gap-2");

@@ -29,6 +29,7 @@ import { resolveBinding, setAtBinding, findRoleBoundField, findBindingByRole } f
 import { deriveConditionsVocabulary, renderTagBadges, renderTagDatalist, buildTagInputRow } from "./tag-editor.js";
 import { connectLiveStream } from "../live.js";
 import { rollExpression } from "./dice-roll.js";
+import { preloadDiceOverlay } from "./dice-overlay.js";
 import { resolveActiveSpotlightId } from "../spotlight.js";
 import { el } from "../dom.js";
 
@@ -79,6 +80,10 @@ export function initCharacterVitals(container, { dataManager, status, characterI
   if (!container || !dataManager || !characterId) {
     return { destroy() {} };
   }
+
+  // The Initiative roller lives on this widget — warm up the 3D overlay
+  // (and the user's chosen theme) now instead of on the first roll click.
+  preloadDiceOverlay(dataManager);
 
   let destroyed = false;
   let character = null;
@@ -205,7 +210,7 @@ export function initCharacterVitals(container, { dataManager, status, characterI
     const modifierValue = modifierEntry?.binding ? Number(resolveBinding(modifierEntry.binding, character)) || 0 : 0;
     const sides = Number(String(modifierEntry?.die || "d20").replace(/^d/i, "")) || 20;
     const expression = modifierValue ? `1d${sides} + ${modifierValue}` : `1d${sides}`;
-    const rolled = await rollExpression(expression, { status, label: modifierEntry?.name || "Initiative" });
+    const rolled = await rollExpression(expression, { status, label: modifierEntry?.name || "Initiative", dataManager });
     if (!rolled) return;
     lastInitiativeRoll = rolled;
     render();
