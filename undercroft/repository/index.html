@@ -59,13 +59,35 @@
           <div data-editor-empty-mount></div>
           <div class="d-none card shadow-theme h-100" data-repository-editor style="min-height: 0;">
             <div class="card-body d-flex flex-column gap-3" style="min-height: 0; overflow: hidden;">
-              <input
-                class="form-control form-control-lg border-0 bg-transparent px-0 flex-shrink-0"
-                type="text"
-                placeholder="Untitled page"
-                aria-label="Page title"
-                data-repository-title
-              />
+              <div class="d-flex align-items-center gap-2 flex-wrap flex-shrink-0">
+                <input
+                  class="form-control form-control-lg border-0 bg-transparent px-0"
+                  style="flex: 1 1 0%; min-width: 0;"
+                  type="text"
+                  placeholder="Untitled page"
+                  aria-label="Page title"
+                  data-repository-title
+                />
+                <!-- A lightweight markdown-formatting toolbar, NOT a
+                     rich-text/WYSIWYG editor — every button wraps/prefixes
+                     the textarea's own current selection with real Markdown
+                     syntax directly (see js/app.js's own
+                     applyMarkdownWrap/applyMarkdownLinePrefix/
+                     toggleBold/toggleHeadingLevel/insertCallout/
+                     createTablePickerPopover), so the page's body stays
+                     plain, valid Markdown the whole time. Sits beside the
+                     title (not its own full row) so Edit mode doesn't push
+                     the textarea down — .btn-toolbar's own flex-wrap lets
+                     the button groups drop below the title on a narrow
+                     window instead of overflowing. Hidden in View mode
+                     alongside the textarea itself (applyMode). -->
+                <div class="btn-toolbar flex-shrink-0" role="toolbar" aria-label="Formatting" data-repository-format-toolbar>
+                  <div class="btn-group" role="group" data-repository-format-style-mount></div>
+                  <div class="btn-group ms-1" role="group" data-repository-format-heading-mount></div>
+                  <div class="btn-group ms-1" role="group" data-repository-format-block-mount></div>
+                  <div class="btn-group ms-1" role="group" data-repository-format-insert-mount></div>
+                </div>
+              </div>
               <textarea
                 class="form-control font-monospace"
                 style="flex: 1 1 0; min-height: 0; resize: none"

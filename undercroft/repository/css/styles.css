@@ -13,12 +13,71 @@
   font-weight: 600;
 }
 
+/* Now a <button>, not a plain <div> — collapsible (see app.js's own
+   renderGroupNode) — so it needs its own reset (no default button
+   border/background) on top of the original label styling. */
 .repository-group-label {
   font-size: 0.7rem;
   text-transform: uppercase;
   font-weight: 600;
   color: var(--bs-secondary-color);
   padding: 0.5rem 0.25rem 0.125rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  width: 100%;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.repository-group-label:hover {
+  color: var(--bs-body-color);
+}
+
+.repository-group-label .iconify {
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+/* The Table toolbar button's own Word/Excel-style grid picker
+   (app.js's own createTablePickerPopover) — a single instance appended
+   directly to document.body (not the editor card) so its own absolute
+   positioning is never clipped by that card's `overflow: hidden`. */
+.repository-table-picker {
+  position: absolute;
+  z-index: 1200;
+  background: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+  box-shadow: var(--bs-box-shadow);
+  padding: 0.5rem;
+}
+
+.repository-table-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1.1rem);
+  grid-template-rows: repeat(6, 1.1rem);
+  gap: 2px;
+}
+
+.repository-table-picker-cell {
+  width: 1.1rem;
+  height: 1.1rem;
+  border: 1px solid var(--bs-border-color);
+  background: var(--bs-tertiary-bg);
+  border-radius: 2px;
+}
+
+.repository-table-picker-cell.is-active {
+  background: var(--bs-primary);
+  border-color: var(--bs-primary);
+}
+
+.repository-table-picker-label {
+  margin-top: 0.375rem;
+  white-space: nowrap;
 }
 
 .repository-preview h1,

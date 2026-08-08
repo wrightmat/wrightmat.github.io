@@ -17,9 +17,9 @@ import { startEncounter, deterministicEncounterId } from "./lib/journal-encounte
 import { extractContentReferences, findKindReferenceRecord, EXCLUDED_KINDS } from "./lib/journal-kind-reference.js";
 import { attachWikiLinkAutocomplete } from "./lib/wiki-link-autocomplete.js";
 import { attachCodeBlockAutocomplete } from "./lib/code-block-autocomplete.js";
-import { createToolbarButtonGroup, createCollapsibleSection, createEmptyStateCard } from "../../common/js/lib/ui-components.js";
+import { createToolbarButtonGroup, createCollapsibleSection, createEmptyStateCard, createIconButton } from "../../common/js/lib/ui-components.js";
 import { initToolSettings } from "../../common/js/lib/tool-settings.js";
-import { el } from "../../common/js/lib/dom.js";
+import { el, attachHoverDropdown } from "../../common/js/lib/dom.js";
 
 const KIND = "journal";
 const TAG_DATALIST_ID = "repository-tag-datalist";
@@ -61,6 +61,7 @@ const editorEmptyEl = document.querySelector("[data-repository-editor-empty]");
 const editorEl = document.querySelector("[data-repository-editor]");
 const titleInput = document.querySelector("[data-repository-title]");
 const bodyTextarea = document.querySelector("[data-repository-body]");
+const formatToolbarEl = document.querySelector("[data-repository-format-toolbar]");
 const previewEl = document.querySelector("[data-repository-preview]");
 const tagsBadgesEl = document.querySelector("[data-repository-tags-badges]");
 const tagsInputEl = document.querySelector("[data-repository-tags-input]");
@@ -316,11 +317,59 @@ function renderPageNode(pageNode, container, depth) {
     .forEach((child) => renderPageNode(child, container, depth + 1));
 }
 
-function renderGroupNode(node, container, depth) {
+// Persisted by the group's own full "group:" tag path (buildGroupTree's own
+// node.path, e.g. "Adventures" or "Adventures/Session 1") — stable across
+// reloads and re-renders regardless of sort order or which pages currently
+// happen to be in it. localStorage, not a server-side setting — same
+// per-browser-only convention every other collapse-state affordance in this
+// suite already uses (collapsible.js's own sections).
+const COLLAPSED_GROUPS_KEY = "undercroft.repository.collapsedGroups";
+function loadCollapsedGroups() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(COLLAPSED_GROUPS_KEY) || "[]");
+    return new Set(Array.isArray(parsed) ? parsed : []);
+  } catch (error) {
+    return new Set();
+  }
+}
+const collapsedGroups = loadCollapsedGroups();
+function saveCollapsedGroups() {
+  try {
+    localStorage.setItem(COLLAPSED_GROUPS_KEY, JSON.stringify(Array.from(collapsedGroups)));
+  } catch (error) {
+    // Local storage unavailable (private browsing, quota) — collapse state
+    // just won't persist past this session, same graceful degrade every
+    // other localStorage write in this suite already accepts.
+  }
+}
+
+// `forceExpanded` (true while a search query is active) ignores collapsed
+// state without touching it — a collapsed "Adventures" folder shouldn't
+// hide a page inside it that actually matches what was just searched for,
+// but toggling it while search is active still records the real persisted
+// state, which takes effect again the moment the search is cleared.
+function renderGroupNode(node, container, depth, forceExpanded) {
   if (node.label) {
-    const label = el("div", "repository-group-label", node.label);
-    label.style.paddingLeft = `${depth * 0.75}rem`;
-    container.appendChild(label);
+    const isCollapsed = !forceExpanded && collapsedGroups.has(node.path);
+    const header = el("button", "repository-group-label");
+    header.type = "button";
+    header.style.paddingLeft = `${depth * 0.75}rem`;
+    header.setAttribute("aria-expanded", isCollapsed ? "false" : "true");
+    const chevron = el("span", "iconify");
+    chevron.dataset.icon = isCollapsed ? "tabler:chevron-right" : "tabler:chevron-down";
+    chevron.setAttribute("aria-hidden", "true");
+    header.append(chevron, el("span", null, node.label));
+    header.addEventListener("click", () => {
+      if (collapsedGroups.has(node.path)) {
+        collapsedGroups.delete(node.path);
+      } else {
+        collapsedGroups.add(node.path);
+      }
+      saveCollapsedGroups();
+      renderPageTree();
+    });
+    container.appendChild(header);
+    if (isCollapsed) return;
   }
   node.pages
     .slice()
@@ -328,7 +377,7 @@ function renderGroupNode(node, container, depth) {
     .forEach((pageNode) => renderPageNode(pageNode, container, depth));
   Array.from(node.children.values())
     .sort((a, b) => a.label.localeCompare(b.label))
-    .forEach((child) => renderGroupNode(child, container, depth + 1));
+    .forEach((child) => renderGroupNode(child, container, depth + 1, forceExpanded));
 }
 
 // Deliberately just `entries` (persisted pages), never draftEntry — a
@@ -348,7 +397,7 @@ function renderPageTree() {
     return;
   }
   const tree = buildGroupTree(visible);
-  renderGroupNode(tree, pageTreeEl, 0);
+  renderGroupNode(tree, pageTreeEl, 0, Boolean(query));
 }
 
 function updateTagDatalist() {
@@ -429,6 +478,7 @@ function applyMode(mode) {
   currentMode = mode;
   const isView = mode === "view";
   bodyTextarea?.classList.toggle("d-none", isView);
+  formatToolbarEl?.classList.toggle("d-none", isView);
   previewEl?.classList.toggle("d-none", !isView);
   previewEl?.classList.toggle("d-flex", isView);
   // Showing the eye while in Edit mode (the icon describes what clicking
@@ -1271,6 +1321,651 @@ attachWikiLinkAutocomplete(bodyTextarea, { getEntries: () => entries });
 // second independent attachment (each only ever reacts to its own trigger
 // syntax, so both listening on the same element causes no conflict).
 attachCodeBlockAutocomplete(bodyTextarea, { dataManager });
+
+// --- Markdown formatting toolbar ---------------------------------------
+// A lightweight toolbar, not a rich-text/WYSIWYG editor — every button
+// inserts/wraps real Markdown syntax directly into the plain textarea (bold
+// wraps the selection in literal `**`, immediately, as text), so the page's
+// body is always valid, plain Markdown, never a parallel HTML
+// representation that would need converting back. TinyMCE (which the user
+// recalled having used before, and which searched for zero references
+// anywhere in this project) wasn't a fit for exactly this reason — it's an
+// HTML-output rich text editor at heart; getting clean Markdown back out of
+// one means fighting its own internal model rather than just writing the
+// syntax directly, which is all this actually needs to do.
+//
+// Every insertion goes through document.execCommand("insertText", ...)
+// rather than a raw textarea.value assignment — this is the one reliable
+// cross-browser way to programmatically insert text into a plain form
+// control while preserving the browser's own native undo/redo stack (a
+// direct .value= write does not; there is no modern replacement API for
+// this on a plain textarea, which is why every markdown-toolbar
+// implementation elsewhere — GitHub's own comment box included — still
+// relies on the same deprecated-but-universally-supported command). It also
+// fires the exact same "input" event real typing does, so this integrates
+// with bodyTextarea's own existing input listener (workingPayload sync,
+// Outline refresh, the app-level undo-stack commit) with no extra wiring at
+// all — from every one of those listeners' own perspective, this IS typing.
+function replaceTextareaSelection(textarea, start, end, text) {
+  textarea.focus();
+  textarea.setSelectionRange(start, end);
+  const inserted = typeof document.execCommand === "function" && document.execCommand("insertText", false, text);
+  if (!inserted) {
+    // execCommand unsupported/blocked — falls back to a direct value
+    // mutation and manually fires "input" so the rest of the pipeline still
+    // picks it up; loses native undo for this one edit, the same tradeoff
+    // every textarea-scripting approach outside execCommand has.
+    const value = textarea.value;
+    textarea.value = `${value.slice(0, start)}${text}${value.slice(end)}`;
+    textarea.dispatchEvent(new Event("input", { bubbles: true }));
+  }
+}
+
+// True when the current selection is exactly surrounded by `before`/`after`
+// — shared by applyMarkdownWrap (decides whether to unwrap instead of
+// wrap-again) and the toolbar's own button-active-state tracking below (a
+// button reflects the style actually in effect at the current selection,
+// not just what clicking it would do).
+function isSelectionWrapped(textarea, before, after = before) {
+  const { selectionStart, selectionEnd, value } = textarea;
+  const beforeStart = selectionStart - before.length;
+  const afterEnd = selectionEnd + after.length;
+  return (
+    beforeStart >= 0 &&
+    afterEnd <= value.length &&
+    value.slice(beforeStart, selectionStart) === before &&
+    value.slice(selectionEnd, afterEnd) === after
+  );
+}
+
+// Bold and Italic both use the SAME marker character (`*`) — 1 asterisk is
+// Italic, 2 is Bold, 3 is both at once — so unlike Strikethrough/Code below
+// (each its own distinct character), toggling one has to know the other's
+// current state rather than blindly checking/adding a fixed string.
+// Confirmed real bug this fixes: treating Italic as "exactly one `*`"
+// independently of Bold meant selecting the inner text of already-bold
+// `**text**` (whose own boundary chars ARE a single `*`, being the
+// innermost character of that doubled marker) read as "already italic"
+// too, and clicking Bold there stripped one asterisk from each side instead
+// of adding a third.
+function asteriskRunBefore(value, position) {
+  let count = 0;
+  for (let i = position - 1; i >= 0 && value[i] === "*"; i--) count++;
+  return count;
+}
+function asteriskRunAfter(value, position) {
+  let count = 0;
+  for (let i = position; i < value.length && value[i] === "*"; i++) count++;
+  return count;
+}
+// The shorter of the two sides' own full run — a well-formed selection has
+// matching runs on both sides, but this stays sane even against a malformed
+// one (an unmatched stray `*`) by never reporting more than what's actually
+// mirrored on both sides.
+function currentEmphasisRunLength(textarea) {
+  const { selectionStart, selectionEnd, value } = textarea;
+  return Math.min(asteriskRunBefore(value, selectionStart), asteriskRunAfter(value, selectionEnd));
+}
+function isBoldActive(textarea) {
+  return currentEmphasisRunLength(textarea) >= 2;
+}
+function isItalicActive(textarea) {
+  const run = currentEmphasisRunLength(textarea);
+  return run === 1 || run >= 3;
+}
+// Rewrites BOTH sides' existing run (whatever its real length actually is,
+// even if the two sides mismatch) to exactly `targetLength` asterisks, in
+// one atomic edit — the only reliable way to move between "italic" (1),
+// "bold" (2), and "both" (3) without the two toggles' own edits fighting
+// each other.
+function setEmphasisRunLength(textarea, targetLength) {
+  const { selectionStart, selectionEnd, value } = textarea;
+  const beforeRun = asteriskRunBefore(value, selectionStart);
+  const afterRun = asteriskRunAfter(value, selectionEnd);
+  const beforeStart = selectionStart - beforeRun;
+  const afterEnd = selectionEnd + afterRun;
+  const selected = value.slice(selectionStart, selectionEnd);
+  const marker = "*".repeat(Math.max(0, targetLength));
+  replaceTextareaSelection(textarea, beforeStart, afterEnd, `${marker}${selected}${marker}`);
+  textarea.setSelectionRange(beforeStart + marker.length, beforeStart + marker.length + selected.length);
+}
+// Toggles just the Bold "bit" of the current run, preserving Italic's own —
+// bold-off (2 or 3) drops it to (0 or 1); bold-off (0 or 1) raises it to
+// (2 or 3) — so Italic(1)+Bold-click → Both(3), Both(3)+Bold-click →
+// Italic(1), never losing track of the other style along the way.
+function toggleBold(textarea) {
+  const run = currentEmphasisRunLength(textarea);
+  const italicOn = run === 1 || run >= 3;
+  setEmphasisRunLength(textarea, (isBoldActive(textarea) ? 0 : 2) + (italicOn ? 1 : 0));
+}
+function toggleItalic(textarea) {
+  const run = currentEmphasisRunLength(textarea);
+  const boldOn = run >= 2;
+  setEmphasisRunLength(textarea, (boldOn ? 2 : 0) + (isItalicActive(textarea) ? 0 : 1));
+}
+
+// Wraps the current selection in `before`/`after` (Strikethrough/Code —
+// Bold/Italic use the dedicated emphasis functions above instead, since
+// those two can't be toggled independently of a fixed string) — toggles OFF
+// instead (unwraps) when isSelectionWrapped is already true, so clicking a
+// button on already-wrapped text undoes it rather than double-wrapping.
+// Empty selection wraps anyway and leaves the caret sitting between the
+// markers, ready to type.
+//
+// Only detects a selection that exactly spans the wrapped text itself (as
+// in the user's own "select text, click Bold" description) — a cursor
+// merely resting somewhere in the MIDDLE of a bolded word with nothing
+// selected won't register as wrapped, since that needs scanning outward
+// for an enclosing span rather than just checking the two boundaries
+// immediately next to the current selection. A deliberate scope limit for
+// a lightweight toolbar, not an oversight.
+function applyMarkdownWrap(textarea, before, after = before) {
+  const { selectionStart, selectionEnd, value } = textarea;
+  const selected = value.slice(selectionStart, selectionEnd);
+  if (isSelectionWrapped(textarea, before, after)) {
+    const beforeStart = selectionStart - before.length;
+    const afterEnd = selectionEnd + after.length;
+    replaceTextareaSelection(textarea, beforeStart, afterEnd, selected);
+    textarea.setSelectionRange(beforeStart, beforeStart + selected.length);
+    return;
+  }
+  replaceTextareaSelection(textarea, selectionStart, selectionEnd, `${before}${selected}${after}`);
+  if (selected) {
+    textarea.setSelectionRange(selectionStart + before.length, selectionStart + before.length + selected.length);
+  } else {
+    const caret = selectionStart + before.length;
+    textarea.setSelectionRange(caret, caret);
+  }
+}
+
+// The lines actually touched by the current selection (or just the current
+// line, for a collapsed cursor) — shared by applyMarkdownLinePrefix and its
+// own active-state check below.
+function selectedLineRange(textarea) {
+  const { selectionStart, selectionEnd, value } = textarea;
+  const lineStart = value.lastIndexOf("\n", selectionStart - 1) + 1;
+  const nextBreak = value.indexOf("\n", selectionEnd);
+  const lineEnd = nextBreak === -1 ? value.length : nextBreak;
+  return { lineStart, lineEnd, lines: value.slice(lineStart, lineEnd).split("\n") };
+}
+
+// True when every line touched by the current selection already starts
+// with its own prefixFor(index) — unlike applyMarkdownWrap's boundary-only
+// check above, this naturally covers a plain collapsed cursor anywhere on
+// the line too (a whole-line prefix has no "middle" to miss the way an
+// inline wrap does).
+function isSelectionLinePrefixed(textarea, prefixFor) {
+  const { lines } = selectedLineRange(textarea);
+  return lines.every((line, index) => line.startsWith(prefixFor(index)));
+}
+
+// Prefixes every line touched by the current selection (Heading/Quote/
+// Bullet list) — `prefixFor(lineIndex)` returns that line's own prefix
+// (numbered lists need an incrementing one; the rest return the same fixed
+// string every time). Toggles OFF (strips the prefix) if
+// isSelectionLinePrefixed is already true, same toggle idiom as
+// applyMarkdownWrap above.
+function applyMarkdownLinePrefix(textarea, prefixFor) {
+  const { lineStart, lineEnd, lines } = selectedLineRange(textarea);
+  const alreadyPrefixed = isSelectionLinePrefixed(textarea, prefixFor);
+  const nextText = alreadyPrefixed
+    ? lines.map((line, index) => line.slice(prefixFor(index).length)).join("\n")
+    : lines.map((line, index) => `${prefixFor(index)}${line}`).join("\n");
+  replaceTextareaSelection(textarea, lineStart, lineEnd, nextText);
+  textarea.setSelectionRange(lineStart, lineStart + nextText.length);
+}
+
+// Six standalone buttons (H1-H6), not one button prefixing a fixed "## " —
+// each is its own toggle, and clicking a DIFFERENT level than what's
+// currently on the line switches to it directly (H3 line + H2 click → H2,
+// not H2 stacked on top of H3), rather than needing two clicks (remove H3,
+// add H2). Only reports/sets a single consistent level across every
+// touched line — a selection spanning an H1 line and an H2 line reports 0
+// (no single level to reflect on any button, and a click sets every
+// touched line to the SAME clicked level uniformly).
+const HEADING_LINE_PATTERN = /^(#{1,6})\s/;
+function currentHeadingLevel(textarea) {
+  const { lines } = selectedLineRange(textarea);
+  let level = null;
+  for (const line of lines) {
+    const match = HEADING_LINE_PATTERN.exec(line);
+    const lineLevel = match ? match[1].length : 0;
+    if (level === null) level = lineLevel;
+    else if (level !== lineLevel) return 0;
+  }
+  return level || 0;
+}
+function setHeadingLevel(textarea, targetLevel) {
+  const { lineStart, lineEnd, lines } = selectedLineRange(textarea);
+  const nextLines = lines.map((line) => {
+    const stripped = line.replace(HEADING_LINE_PATTERN, "");
+    return targetLevel > 0 ? `${"#".repeat(targetLevel)} ${stripped}` : stripped;
+  });
+  const nextText = nextLines.join("\n");
+  replaceTextareaSelection(textarea, lineStart, lineEnd, nextText);
+  textarea.setSelectionRange(lineStart, lineStart + nextText.length);
+}
+function toggleHeadingLevel(textarea, level) {
+  setHeadingLevel(textarea, currentHeadingLevel(textarea) === level ? 0 : level);
+}
+
+// Bullet list, Checklist, and Numbered list are mutually exclusive
+// alternatives for what a line's own leading marker is, NOT independent
+// toggleable bits the way Bold/Italic are — but Checklist's own syntax
+// (GFM `- [ ] `/`- [x] `, the same convention journal-tasks.js's own
+// TASK_LINE_PATTERN already parses for the rendered preview's clickable
+// checkboxes) starts with the exact same `- ` a plain bullet does.
+// Confirmed real bug this fixes: Bullet list's own old isActive (a plain
+// startsWith("- ") check) read a checklist line as ALSO an active bullet
+// list, and clicking Bullet there stripped only the leading `- `, leaving
+// a broken `[ ] text` behind — the same class of bug Bold/Italic had via
+// their own shared `*` character, fixed here the same way: one shared model
+// that knows about every kind sharing the ambiguity, rather than each
+// button's own isolated prefix check.
+const CHECKLIST_LINE_PATTERN = /^[-*+]\s+\[[ xX]\]\s+/;
+const BULLET_LINE_PATTERN = /^[-*+]\s+/;
+const NUMBERED_LINE_PATTERN = /^\d+\.\s+/;
+
+// null (no consistent list marker), "bullet", "checklist", or "numbered" —
+// null whenever the touched lines don't all agree, same "report nothing
+// rather than guess" rule every other multi-line toggle above already uses.
+// Checked in this exact order since checklist's own pattern is a strict
+// superset of bullet's (every checklist line also matches BULLET_LINE_PATTERN).
+function currentListKind(textarea) {
+  const { lines } = selectedLineRange(textarea);
+  let kind;
+  for (const line of lines) {
+    let lineKind = null;
+    if (CHECKLIST_LINE_PATTERN.test(line)) lineKind = "checklist";
+    else if (BULLET_LINE_PATTERN.test(line)) lineKind = "bullet";
+    else if (NUMBERED_LINE_PATTERN.test(line)) lineKind = "numbered";
+    if (kind === undefined) kind = lineKind;
+    else if (kind !== lineKind) return null;
+  }
+  return kind || null;
+}
+
+function stripListMarker(line) {
+  if (CHECKLIST_LINE_PATTERN.test(line)) return line.replace(CHECKLIST_LINE_PATTERN, "");
+  if (BULLET_LINE_PATTERN.test(line)) return line.replace(BULLET_LINE_PATTERN, "");
+  if (NUMBERED_LINE_PATTERN.test(line)) return line.replace(NUMBERED_LINE_PATTERN, "");
+  return line;
+}
+
+// Rewrites every touched line to `targetKind` (or plain text for null),
+// stripping whatever marker (if any) was already there first — this is how
+// a checklist line cleanly becomes a plain bullet (or vice versa) in one
+// step, rather than each kind's own toggle only ever knowing how to add or
+// remove itself.
+function setListKind(textarea, targetKind) {
+  const { lineStart, lineEnd, lines } = selectedLineRange(textarea);
+  const stripped = lines.map(stripListMarker);
+  const nextLines = stripped.map((line, index) => {
+    if (targetKind === "bullet") return `- ${line}`;
+    if (targetKind === "checklist") return `- [ ] ${line}`;
+    if (targetKind === "numbered") return `${index + 1}. ${line}`;
+    return line;
+  });
+  const nextText = nextLines.join("\n");
+  replaceTextareaSelection(textarea, lineStart, lineEnd, nextText);
+  textarea.setSelectionRange(lineStart, lineStart + nextText.length);
+}
+
+function toggleListKind(textarea, kind) {
+  setListKind(textarea, currentListKind(textarea) === kind ? null : kind);
+}
+
+// Inserts `content` as its own standalone block — always preceded/followed
+// by a blank line unless one's already there — shared by the Horizontal
+// Rule button and the Table picker below, since both are block-level
+// elements that need real separation from surrounding text to render as
+// such in every Markdown implementation, regardless of where the cursor
+// happens to sit when the button's clicked. Not a toggle — there's no
+// "already a rule"/"already this exact table" state to detect or undo.
+function insertMarkdownBlock(textarea, content) {
+  const { selectionStart, selectionEnd, value } = textarea;
+  const before = value.slice(0, selectionStart);
+  const after = value.slice(selectionEnd);
+  const leading = before.length === 0 || before.endsWith("\n\n") ? "" : before.endsWith("\n") ? "\n" : "\n\n";
+  const trailing = after.length === 0 || after.startsWith("\n\n") ? "" : after.startsWith("\n") ? "\n" : "\n\n";
+  replaceTextareaSelection(textarea, selectionStart, selectionEnd, `${leading}${content}${trailing}`);
+  const caret = selectionStart + leading.length + content.length;
+  textarea.setSelectionRange(caret, caret);
+}
+function insertHorizontalRule(textarea) {
+  insertMarkdownBlock(textarea, "---");
+}
+
+// GFM table syntax — a header row, the required `---` separator row (one
+// cell per column, alignment-less), then `rows` blank body rows ready to
+// fill in.
+function buildMarkdownTable(columns, rows) {
+  const headerCells = Array.from({ length: columns }, (_, index) => `Header ${index + 1}`);
+  const separatorCells = Array.from({ length: columns }, () => "---");
+  const blankRow = `| ${Array.from({ length: columns }, () => " ").join(" | ")} |`;
+  return [`| ${headerCells.join(" | ")} |`, `| ${separatorCells.join(" | ")} |`, ...Array.from({ length: rows }, () => blankRow)].join(
+    "\n"
+  );
+}
+
+const TABLE_PICKER_MAX_COLS = 8;
+const TABLE_PICKER_MAX_ROWS = 6;
+
+// Word/Excel's own "Insert Table" grid picker, same interaction: hover
+// highlights a rectangle from the top-left cell out to the pointer, a
+// label reports the current "columns x rows," and a click commits that
+// size immediately — no separate confirm step, no dialog for a custom size
+// beyond the grid's own max (8x6 covers the overwhelming majority of real
+// use; a bigger table is one line easy enough to hand-edit afterward).
+// Built once per page load (not per click) and just shown/hidden — a real
+// popover element living in document.body (so its own fixed/absolute
+// positioning is never clipped by the editor card's own `overflow: hidden`)
+// rather than Bootstrap's own Popover component, which doesn't have a
+// clean way to host interactive content like this grid inside itself.
+function createTablePickerPopover(anchorButton, onPick) {
+  const popover = el("div", "repository-table-picker d-none");
+  const grid = el("div", "repository-table-picker-grid");
+  const cells = [];
+  for (let row = 0; row < TABLE_PICKER_MAX_ROWS; row++) {
+    for (let col = 0; col < TABLE_PICKER_MAX_COLS; col++) {
+      const cell = el("div", "repository-table-picker-cell");
+      cell.dataset.row = String(row);
+      cell.dataset.col = String(col);
+      grid.appendChild(cell);
+      cells.push(cell);
+    }
+  }
+  const label = el("div", "repository-table-picker-label small text-body-secondary text-center", "Insert table");
+  popover.append(grid, label);
+  document.body.appendChild(popover);
+
+  function highlight(rows, cols) {
+    cells.forEach((cell) => {
+      const active = Number(cell.dataset.row) < rows && Number(cell.dataset.col) < cols;
+      cell.classList.toggle("is-active", active);
+    });
+    label.textContent = rows && cols ? `${cols} × ${rows} table` : "Insert table";
+  }
+
+  function onOutsideClick(event) {
+    if (!popover.contains(event.target) && event.target !== anchorButton) close();
+  }
+  function onKeydown(event) {
+    if (event.key === "Escape") close();
+  }
+  function open() {
+    const rect = anchorButton.getBoundingClientRect();
+    popover.style.top = `${window.scrollY + rect.bottom + 4}px`;
+    popover.style.left = `${window.scrollX + rect.left}px`;
+    popover.classList.remove("d-none");
+    highlight(0, 0);
+    // Capture phase, and deferred past this same click via setTimeout — the
+    // click that OPENS this (on anchorButton) would otherwise immediately
+    // bubble up and satisfy this exact listener, closing it again in the
+    // same tick before the user ever sees it.
+    setTimeout(() => {
+      document.addEventListener("mousedown", onOutsideClick, true);
+      document.addEventListener("keydown", onKeydown, true);
+    }, 0);
+  }
+  function close() {
+    popover.classList.add("d-none");
+    document.removeEventListener("mousedown", onOutsideClick, true);
+    document.removeEventListener("keydown", onKeydown, true);
+  }
+  function toggle() {
+    if (popover.classList.contains("d-none")) open();
+    else close();
+  }
+
+  grid.addEventListener("mousemove", (event) => {
+    const cell = event.target.closest(".repository-table-picker-cell");
+    if (!cell) return;
+    highlight(Number(cell.dataset.row) + 1, Number(cell.dataset.col) + 1);
+  });
+  grid.addEventListener("mouseleave", () => highlight(0, 0));
+  grid.addEventListener("click", (event) => {
+    const cell = event.target.closest(".repository-table-picker-cell");
+    if (!cell) return;
+    onPick(Number(cell.dataset.col) + 1, Number(cell.dataset.row) + 1);
+    close();
+  });
+
+  return { toggle, close };
+}
+
+// `[label](url)` — wraps a selection as the link label, or inserts a
+// `link text` placeholder when nothing's selected; either way, leaves `url`
+// itself selected so pasting/typing a real address is the very next
+// keystroke, no separate prompt() step needed.
+function insertMarkdownLink(textarea) {
+  const { selectionStart, selectionEnd, value } = textarea;
+  const selected = value.slice(selectionStart, selectionEnd);
+  const label = selected || "link text";
+  replaceTextareaSelection(textarea, selectionStart, selectionEnd, `[${label}](url)`);
+  const urlStart = selectionStart + label.length + 3; // "[" + label + "]("
+  textarea.setSelectionRange(urlStart, urlStart + 3); // "url"
+}
+
+// journal-callouts.js's own documented syntax (`> [!type]fold Title` then
+// `>`-prefixed body) — this is literally the "eventual insert callout
+// toolbar button" that module's own resolveCalloutStyle comment already
+// anticipated. Defaults to `[!note]+` (foldable, open by default) — "our
+// standard optionally collapsible format," per the user's own framing; `+`
+// is what actually makes the fold affordance appear at all in View mode
+// (see that module's own header comment), and the type itself is left
+// selected afterward so overtyping "note" with "warning"/"tip"/any other
+// known type (or a custom one — Obsidian, and this suite's own parser,
+// both allow arbitrary types) is the very next keystroke. Reuses the
+// current line(s) as the callout's own body, same "operate on whatever
+// selectedLineRange finds" shape every block-level action above already
+// uses, rather than a bespoke insertion point.
+function insertCallout(textarea) {
+  const { lineStart, lineEnd, lines } = selectedLineRange(textarea);
+  const bodyLines = lines.some((line) => line.trim()) ? lines : ["Callout body"];
+  const template = [`> [!note]+ Title`, ...bodyLines.map((line) => `> ${line}`)].join("\n");
+  replaceTextareaSelection(textarea, lineStart, lineEnd, template);
+  const typeStart = lineStart + 4; // '> [!'
+  textarea.setSelectionRange(typeStart, typeStart + "note".length);
+}
+
+if (bodyTextarea) {
+  const styleGroup = document.querySelector("[data-repository-format-style-mount]");
+  const headingGroup = document.querySelector("[data-repository-format-heading-mount]");
+  const blockGroup = document.querySelector("[data-repository-format-block-mount]");
+  const insertGroup = document.querySelector("[data-repository-format-insert-mount]");
+
+  // {button, isActive(textarea)} for every TOGGLE-able button (Link and
+  // Callout aren't toggles — they insert/wrap once, there's no "already
+  // linked" state to reflect) — updateFormatToggleStates below walks this
+  // to keep every button's pressed/unpressed look in sync with wherever the
+  // cursor/selection actually is right now, not just what the last click did.
+  const toggleButtons = [];
+  function registerToggle(button, isActive) {
+    toggleButtons.push({ button, isActive });
+    return button;
+  }
+  function updateFormatToggleStates() {
+    toggleButtons.forEach(({ button, isActive }) => {
+      const active = isActive(bodyTextarea);
+      button.classList.toggle("active", active);
+      button.setAttribute("aria-pressed", active ? "true" : "false");
+    });
+    // Not a plain {button,isActive} toggle like the rest — its own icon has
+    // to change, not just an .active class — so it's called directly here
+    // rather than folded into the generic loop above.
+    updateHeadingPickerState();
+  }
+  // Every action handler runs the actual edit, then re-derives every
+  // button's state from the resulting (post-edit) selection — simpler and
+  // more obviously correct than each handler individually predicting what
+  // its own toggle should flip to.
+  function formatAction(fn) {
+    return () => {
+      fn();
+      updateFormatToggleStates();
+    };
+  }
+  function buildFormatButton({ icon, label, onClick, isActive }) {
+    const button = createIconButton({ icon, label, kind: "compact", onClick: formatAction(onClick) });
+    if (isActive) {
+      button.setAttribute("aria-pressed", "false");
+      registerToggle(button, isActive);
+    }
+    return button;
+  }
+
+  [
+    {
+      icon: "tabler:bold",
+      label: "Bold",
+      onClick: () => toggleBold(bodyTextarea),
+      isActive: (textarea) => isBoldActive(textarea),
+    },
+    {
+      icon: "tabler:italic",
+      label: "Italic",
+      onClick: () => toggleItalic(bodyTextarea),
+      isActive: (textarea) => isItalicActive(textarea),
+    },
+    {
+      icon: "tabler:strikethrough",
+      label: "Strikethrough",
+      onClick: () => applyMarkdownWrap(bodyTextarea, "~~"),
+      isActive: (textarea) => isSelectionWrapped(textarea, "~~"),
+    },
+    {
+      icon: "tabler:code",
+      label: "Inline code",
+      onClick: () => applyMarkdownWrap(bodyTextarea, "`"),
+      isActive: (textarea) => isSelectionWrapped(textarea, "`"),
+    },
+  ].forEach((config) => styleGroup?.appendChild(buildFormatButton(config)));
+
+  // Condensed into one hover-dropdown (six separate small buttons pushed
+  // the whole toolbar onto its own row, and only one level is ever active
+  // at once anyway) — same hover-opens Bootstrap-dropdown mechanism the
+  // header's own tool switcher/campaign menu already use
+  // (attachHoverDropdown, common/js/lib/dom.js), not a bespoke popover like
+  // the Table picker below (that one needs a custom hover-grid; a plain
+  // list of six items is exactly what a real dropdown menu already is).
+  // The toggle button's own icon mirrors whichever level is active on the
+  // current selection (a real H1-H6 glyph), or the generic "heading" glyph
+  // when none is — updated by updateHeadingPickerState, called from
+  // updateFormatToggleStates below alongside every other button's own
+  // active-state refresh.
+  const headingDropdown = el("div", "dropdown");
+  const headingToggle = createIconButton({ icon: "tabler:heading", label: "Heading", kind: "compact" });
+  headingToggle.classList.add("dropdown-toggle");
+  headingToggle.dataset.bsToggle = "dropdown";
+  // Bootstrap's own Popper positioning defaults to `position: absolute`
+  // within the normal DOM flow — which the editor card's own `overflow:
+  // hidden` (data-repository-editor's card-body, this dropdown's actual
+  // clipping ancestor) would cut off the moment the menu needs to extend
+  // past the card's own edge. `strategy: fixed` positions it relative to
+  // the viewport instead, the documented Bootstrap escape hatch for exactly
+  // this "clipped by an overflow:hidden ancestor" case — the tool
+  // switcher/campaign menu dropdowns elsewhere in this suite never needed
+  // this because the header they live in has no such clipping ancestor.
+  headingToggle.dataset.bsStrategy = "fixed";
+  headingToggle.setAttribute("aria-expanded", "false");
+  const headingMenu = el("ul", "dropdown-menu");
+  const headingItems = [];
+  for (let level = 1; level <= 6; level++) {
+    const item = document.createElement("button");
+    item.type = "button";
+    item.className = "dropdown-item d-flex align-items-center gap-2";
+    const itemIcon = el("span", "iconify");
+    itemIcon.dataset.icon = `tabler:h-${level}`;
+    itemIcon.setAttribute("aria-hidden", "true");
+    item.append(itemIcon, document.createTextNode(`Heading ${level}`));
+    item.addEventListener("click", () => {
+      toggleHeadingLevel(bodyTextarea, level);
+      updateFormatToggleStates();
+    });
+    const li = document.createElement("li");
+    li.appendChild(item);
+    headingMenu.appendChild(li);
+    headingItems.push({ item, level });
+  }
+  headingDropdown.append(headingToggle, headingMenu);
+  headingGroup?.appendChild(headingDropdown);
+  attachHoverDropdown(headingDropdown, headingToggle);
+  function updateHeadingPickerState() {
+    const level = currentHeadingLevel(bodyTextarea);
+    const icon = headingToggle.querySelector(".iconify");
+    if (icon) icon.dataset.icon = level ? `tabler:h-${level}` : "tabler:heading";
+    headingToggle.classList.toggle("active", Boolean(level));
+    headingToggle.setAttribute("aria-pressed", level ? "true" : "false");
+    headingItems.forEach(({ item, level: itemLevel }) => item.classList.toggle("active", itemLevel === level));
+  }
+
+  [
+    {
+      icon: "tabler:blockquote",
+      label: "Quote",
+      onClick: () => applyMarkdownLinePrefix(bodyTextarea, () => "> "),
+      isActive: (textarea) => isSelectionLinePrefixed(textarea, () => "> "),
+    },
+    {
+      icon: "tabler:list-check",
+      label: "Checklist",
+      onClick: () => toggleListKind(bodyTextarea, "checklist"),
+      isActive: (textarea) => currentListKind(textarea) === "checklist",
+    },
+    {
+      icon: "tabler:list",
+      label: "Bullet list",
+      onClick: () => toggleListKind(bodyTextarea, "bullet"),
+      isActive: (textarea) => currentListKind(textarea) === "bullet",
+    },
+    {
+      icon: "tabler:list-numbers",
+      label: "Numbered list",
+      onClick: () => toggleListKind(bodyTextarea, "numbered"),
+      isActive: (textarea) => currentListKind(textarea) === "numbered",
+    },
+    {
+      icon: "tabler:link",
+      label: "Link",
+      onClick: () => insertMarkdownLink(bodyTextarea),
+    },
+  ].forEach((config) => blockGroup?.appendChild(buildFormatButton(config)));
+
+  // No isActive — a rule isn't a span/line style with an "on" state to
+  // reflect, it's a one-shot insertion, same as Table/Callout below (moved
+  // here from the Block group for the same reason: it replaces the
+  // selection rather than augmenting it, same as everything else here).
+  insertGroup?.appendChild(
+    buildFormatButton({ icon: "tabler:minus", label: "Horizontal rule", onClick: () => insertHorizontalRule(bodyTextarea) })
+  );
+  // Not built via buildFormatButton — clicking Table doesn't perform an
+  // edit itself, it opens the grid picker below (createTablePickerPopover),
+  // which is the thing that actually inserts on a cell click.
+  const tableButton = createIconButton({ icon: "tabler:table", label: "Table", kind: "compact" });
+  insertGroup?.appendChild(tableButton);
+  const tablePicker = createTablePickerPopover(tableButton, (columns, rows) => {
+    insertMarkdownBlock(bodyTextarea, buildMarkdownTable(columns, rows));
+    updateFormatToggleStates();
+  });
+  tableButton.addEventListener("click", (event) => {
+    event.stopPropagation();
+    tablePicker.toggle();
+  });
+  insertGroup?.appendChild(
+    buildFormatButton({ icon: "tabler:message-2", label: "Callout", onClick: () => insertCallout(bodyTextarea) })
+  );
+
+  // Keeps every toggle button's pressed state in sync with wherever the
+  // cursor/selection actually is, not just immediately after a click —
+  // covers clicking around with the mouse, arrow-key navigation, and typing,
+  // matching how a real toolbar (Word, Google Docs) tracks this.
+  ["keyup", "mouseup", "click", "input"].forEach((eventName) => {
+    bodyTextarea.addEventListener(eventName, updateFormatToggleStates);
+  });
+  updateFormatToggleStates();
+  refreshTooltips();
+}
 
 // The browser's own back/forward buttons — without this, they fall through
 // to app-shell's page-level history (landing on whichever tool page was
