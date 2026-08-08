@@ -208,6 +208,7 @@ def _attach_member_status(members: Iterable[Dict[str, Any]], owner_id: Optional[
 def _serialize_group(row, members: List[Dict[str, Any]], share_link: Optional[Dict[str, Any]]) -> Dict[str, Any]:
     return {
         "id": row["id"],
+        "owner_id": row["owner_id"],
         "name": row["name"],
         "type": row["type"],
         "created_at": row["created_at"],

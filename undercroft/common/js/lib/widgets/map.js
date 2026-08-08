@@ -27,7 +27,7 @@ import { BaseMapManager } from "../../../../orrery/js/lib/base-maps.js";
 import { renderMapLayers, createPingMarker, buildRestrictedMapOptions } from "../../../../orrery/js/lib/map-viewer.js";
 import { resolveToolHref, resolveToolContextPath } from "../app-shell.js";
 import { resolveIsSpotlighted } from "../spotlight.js";
-import { refreshOwnershipCatalog } from "../ownership.js";
+import { createCharacterOwnershipPrimer } from "../ownership.js";
 import { el } from "../dom.js";
 import {
   watchMapForChanges,
@@ -258,13 +258,13 @@ export function initMapWidget(
   }
 
   // Ownership catalog for character markers actually placed on this map —
-  // same shape/lifecycle as Orrery's own app.js (refreshOwnershipCatalog is
-  // async, so this is fire-and-forget-then-re-render, not something
-  // isMarkerDraggable can await inline).
-  let characterOwnershipCatalog = new Map();
-  let characterOwnershipPromise = null;
+  // shared fetch-once-per-id-set primer (ownership.js's own
+  // createCharacterOwnershipPrimer) — same lifecycle Orrery's own app.js
+  // uses (the two used to each carry an independent, buggy copy of this;
+  // see that shared helper's own comment for the infinite-loop bug this
+  // replaced).
+  const characterOwnershipPrimer = createCharacterOwnershipPrimer(dataManager);
   function primeCharacterOwnershipCatalog() {
-    if (characterOwnershipPromise) return;
     const ids = new Set();
     (map?.layers || []).forEach((layer) => {
       if (layer.type !== "marker") return;
@@ -274,16 +274,7 @@ export function initMapWidget(
         }
       });
     });
-    if (!ids.size) return;
-    characterOwnershipPromise = refreshOwnershipCatalog(dataManager, "character", Array.from(ids))
-      .then((catalog) => {
-        characterOwnershipCatalog = catalog;
-        characterOwnershipPromise = null;
-        renderLayers();
-      })
-      .catch(() => {
-        characterOwnershipPromise = null;
-      });
+    characterOwnershipPrimer.prime(ids, () => renderLayers());
   }
 
   // Doors persist immediately (fresh fetch-patch-save via
@@ -355,7 +346,7 @@ export function initMapWidget(
         dataManager,
         baseMapManager,
         map,
-        characterOwnershipCatalog,
+        characterOwnershipCatalog: characterOwnershipPrimer.getCatalog(),
         getCharacterPayload: getCachedCharacterPayload,
         status,
         onMarkerMoved: (layer, markerElement, snappedPosition) =>

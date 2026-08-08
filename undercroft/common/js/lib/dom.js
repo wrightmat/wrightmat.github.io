@@ -53,6 +53,16 @@ export function attachHoverDropdown(dropdown, toggle, { hideDelay = 200 } = {}) 
   };
   const hideMenu = () => {
     getInstance()?.hide();
+    // Bootstrap's own hide() only clears the MENU's own open state (the
+    // .show class/aria-expanded) — it never blurs the toggle itself, so a
+    // mouse-driven close (as opposed to a real click or Escape, both of
+    // which already move focus/blur naturally) left the trigger's own
+    // :focus/:focus-visible ring visibly "stuck" highlighted after the menu
+    // had actually already closed. Confirmed real bug this fixes — every
+    // CSS rule keying off :focus/:focus-visible for this trigger (see
+    // shell.css's own .undercroft-tool-trigger) has no other way to know
+    // the interaction is over.
+    if (document.activeElement === toggle) toggle.blur();
   };
   // The trigger and menu are separate boxes with a small visual gap between
   // them — crossing it briefly leaves the pointer over neither, which would
@@ -75,4 +85,23 @@ export function attachHoverDropdown(dropdown, toggle, { hideDelay = 200 } = {}) 
       hideMenu();
     }
   });
+  // Force-closed (bypassing the hide delay entirely) whenever this tab stops
+  // being the one the user is looking at, or is about to be torn down —
+  // confirmed real bug this fixes: a page restored from the browser's
+  // back-forward cache resumes from whatever DOM state it was ACTUALLY in
+  // at the exact instant of navigating away, not a fresh reload. If the
+  // pending scheduleHide() timeout above simply hadn't fired yet at that
+  // instant (switching tabs/navigating away is exactly the kind of abrupt
+  // exit that cuts a mouseleave→200ms-later sequence short), the menu was
+  // still genuinely open in the snapshot bfcache preserved — reopening
+  // "for no reason" on return was that same still-open state finally
+  // becoming visible again, not a fresh bug on return.
+  const forceClose = () => {
+    cancelHide();
+    hideMenu();
+  };
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) forceClose();
+  });
+  window.addEventListener("pagehide", forceClose);
 }

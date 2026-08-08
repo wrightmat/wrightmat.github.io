@@ -122,6 +122,14 @@ body[data-theme="dark"] .hover-lift:hover {
   gap: 0.5rem;
 }
 
+/* Workbench's own "Now Showing" — same panel, laid out inline in normal flow
+   (centered in its own collapsible section) instead of floating. */
+.spotlight-panel.spotlight-panel--inline {
+  position: static;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
 /* Positioned wrapper — lets the edit-mode "clear" badge sit in the icon's
    own upper-right corner without the icon button itself needing to be a
    positioning context (button padding/box-shadow stays exactly as it was
@@ -178,6 +186,20 @@ body[data-theme="dark"] .hover-lift:hover {
 .spotlight-panel-icon--available {
   border-color: var(--bs-primary);
   color: var(--bs-primary);
+}
+
+/* Read-only host (Workbench's Now Showing) — no mine/available distinction,
+   since there's no per-viewer dashboard to be "on" here at all. Disabled
+   natively (not just visually) so it can't be focused/activated by keyboard
+   either. */
+.spotlight-panel-icon--shown {
+  color: var(--bs-body-color);
+  cursor: default;
+  opacity: 0.85;
+}
+
+.spotlight-panel-icon:disabled {
+  cursor: default;
 }
 
 .spotlight-panel-icon.is-new {
@@ -1295,57 +1317,16 @@ a.undercroft-tool-card:focus-visible {
   flex: 1 1 0;
 }
 
-/* Game Log widget — shared by Workbench's play view and the dashboard's
-   Game Log widget (common/js/lib/widgets/game-log.js). */
-.game-log-entries {
+/* Workbench's own Game Log section mounts the shared Game Log widget
+   (common/js/lib/widgets/game-log.js's initGameLogWidget) directly into
+   this container — the widget itself stays layout-agnostic (no fixed
+   height/scroll of its own, matching its plain look inside a Dashboard
+   widget card), so the fixed-height scroll box is this host's own concern,
+   same as the old hand-rolled markup it replaced used to provide. */
+[data-game-log-panel] {
   max-height: 32rem;
   min-height: 16rem;
   overflow-y: auto;
-  gap: 0.75rem;
-}
-
-.game-log-entry {
-  display: flex;
-  flex-direction: column;
-  gap: 0.125rem;
-  padding: 0.25rem 0;
-}
-
-.game-log-entry + .game-log-entry {
-  border-top: 1px solid var(--bs-border-color);
-  padding-top: 0.5rem;
-}
-
-.game-log-entry__summary {
-  display: flex;
-  flex-direction: column;
-  gap: 0.125rem;
-}
-
-.game-log-entry__meta {
-  font-size: 0.65rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.game-log-entry__meta time {
-  white-space: nowrap;
-}
-
-.game-log-roll-summary {
-  width: 100%;
-}
-
-.game-log-roll-expression {
-  font-size: 1rem;
-  font-weight: 600;
-  line-height: 1.2;
-}
-
-.game-log-roll-total {
-  font-size: 1rem;
-  font-weight: 600;
-  line-height: 1.2;
 }
 
 /* Generic labeled-field wrapper — a control plus a label positioned top/

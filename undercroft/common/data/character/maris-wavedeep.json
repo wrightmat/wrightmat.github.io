@@ -364,10 +364,10 @@
   "stats": {
     "hitPoints": {
       "max": 48,
-      "current": 45,
+      "current": 42,
       "temp": 0
     },
-    "armorClass": 12
+    "armorClass": 13
   },
   "currencies": {
     "cp": 0,

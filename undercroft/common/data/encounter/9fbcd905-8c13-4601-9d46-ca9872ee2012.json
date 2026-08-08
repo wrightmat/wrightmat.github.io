@@ -3,8 +3,8 @@
   "name": "Test Encounter",
   "groupId": "",
   "systemId": "sys.dnd5e",
-  "round": 2,
-  "activeIndex": 1,
+  "round": 3,
+  "activeIndex": 0,
   "combatants": [
     {
       "id": "ae52579e-0551-4761-94c0-461e277ff75b",
@@ -26,7 +26,7 @@
       "refKind": "character",
       "refId": "maris-wavedeep",
       "initiative": 8,
-      "hp": 48,
+      "hp": 42,
       "maxHp": 48,
       "tempHp": 0,
       "ac": 13,

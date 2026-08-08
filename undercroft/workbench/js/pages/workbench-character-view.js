@@ -34,14 +34,10 @@ import {
   resolveBindingFromContexts,
   buildSystemPreviewData,
 } from "../lib/component-data.js";
-import { loadLibraryData } from "../../../common/js/lib/content-fetch.js";
-import { resolveToolHref, resolveToolContextPath } from "../../../common/js/lib/app-shell.js";
-import { createTemplate, getFormatById, getPageSize } from "../../../press/js/templates.js";
-import {
-  applyAutoWidthCaps,
-  applyAutoFontSizing,
-  applyOverflowIndicators,
-} from "../../../press/js/template-renderer.js";
+import { initGameLogWidget, SPOTLIGHT_KIND_LABELS, SPOTLIGHT_KIND_ICONS, SPOTLIGHT_INLINE_KINDS } from "../../../common/js/lib/widgets/game-log.js";
+import { createSpotlightPanel } from "../../../common/js/lib/widgets/spotlight-panel.js";
+import { watchActiveSpotlights } from "../../../common/js/lib/spotlight-inbox.js";
+import { createSpotlightTitleCache, resolveActiveSpotlightId } from "../../../common/js/lib/spotlight.js";
 
 // Relocated from the old standalone character.html/character.js — now one of
 // three views on Workbench's unified page (see js/pages/workbench.js), which
@@ -82,25 +78,31 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
   // has to live outside the component object itself to survive re-renders.
   const containerActiveTabs = new Map();
 
-  const gameLogState = {
-    enabled: false,
-    groupId: "",
-    groupName: "",
-    shareToken: "",
-    entries: [],
-    localEntries: [],
-    loading: false,
-    sending: false,
-    error: "",
-    access: "none",
-    pollTimer: 0,
-  };
-
-  // Tracks the last spotlight log entry actually rendered, so the 30s game
-  // log poll (refreshGameLog) doesn't re-fetch and re-render the same
-  // entity/template on every tick — only when a genuinely new spotlight
-  // entry shows up.
-  let lastRenderedSpotlightEntryId = null;
+  // Lightweight replacement for what used to be a much richer gameLogState —
+  // the actual render/poll state now lives entirely inside the shared widget
+  // instances mounted below (gameLogWidget; nowShowingWatcher/
+  // nowShowingPanel), which are the Dashboard's own Game Log widget and
+  // spotlight panel, reused here rather than reimplemented (see this file's
+  // own setGameLogContext/clearGameLogContext for the (re)mount logic). This
+  // is just "which campaign, if any, is currently in view" — the one thing
+  // both need, resolved in exactly one place.
+  const gameLogContext = { groupId: "", groupName: "", shareToken: "", access: "none" };
+  // initGameLogWidget's own {refresh,destroy} instance — neither widget has
+  // an "update groupId" method, so a campaign change destroys and recreates
+  // it rather than mutating it in place.
+  let gameLogWidget = null;
+  // watchActiveSpotlights' own {refresh,destroy} instance driving the Now
+  // Showing panel's data; same (re)creation reasoning as gameLogWidget.
+  let nowShowingWatcher = null;
+  // Built once `elements.nowShowingContent` exists (a few lines below) —
+  // createSpotlightPanel needs a real container to mount into.
+  let nowShowingPanel = null;
+  let lastActiveNowShowingEntries = [];
+  let knownNowShowingKeys = new Set();
+  // The exact same fetch-once-cache-then-rerender title lookup dashboard.js's
+  // own spotlight panel/Game Log share — see spotlight.js's own
+  // createSpotlightTitleCache.
+  const spotlightTitleCache = createSpotlightTitleCache(dataManager, () => gameLogContext.shareToken);
 
   markCharacterClean();
 
@@ -424,16 +426,17 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     groupShareStatus: document.querySelector("[data-group-share-status]"),
     gameLogSection: document.querySelector("[data-game-log-section]"),
     gameLogPanel: document.querySelector("[data-game-log-panel]"),
-    gameLogEntries: document.querySelector("[data-game-log-entries]"),
-    gameLogForm: document.querySelector("[data-game-log-form]"),
-    gameLogInput: document.querySelector("[data-game-log-input]"),
     gameLogRefresh: document.querySelector("[data-game-log-refresh]"),
-    gameLogStatus: document.querySelector("[data-game-log-status]"),
     gameLogTitle: document.querySelector("[data-game-log-group]"),
     nowShowingSection: document.querySelector("[data-now-showing-section]"),
     nowShowingPanel: document.querySelector("[data-now-showing-panel]"),
     nowShowingContent: document.querySelector("[data-now-showing-content]"),
   };
+
+  // Mounted inline (floating: false) into this page's own layout, unlike
+  // the Dashboard's identical floating corner overlay — see
+  // spotlight-panel.js's own createSpotlightPanel.
+  nowShowingPanel = createSpotlightPanel({ container: elements.nowShowingContent, floating: false });
 
   // Builds and mounts each section's chevron toggle via the shared
   // ui-components.js factories, replacing the old bespoke
@@ -761,7 +764,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     applyGameLogCollapse(next);
   }
 
-  // Independent of setNowShowingVisible (further below) — that toggles the
+  // Independent of updateNowShowingVisibility (further below) — that toggles the
   // whole *section's* d-none based on whether there's an active spotlight
   // to show at all, while this toggles just the *panel* inside it, same as
   // Dice/Game Log's own manual collapse. The two are orthogonal: a
@@ -1177,7 +1180,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     // decided about permissions the last time a character loaded). Folding
     // "only in Edit view" into THIS check instead — reading
     // document.body.dataset.workbenchView directly, the same shared signal
-    // setNowShowingVisible's own comment already established — is the one
+    // updateNowShowingVisibility's own comment already established — is the one
     // owner. That still needs this function to actually re-run on every
     // view switch, not just the edit/play ones setMode itself covers —
     // confirmed real gap: switching from Edit to the Template tab never
@@ -1282,31 +1285,22 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     }
   }
 
-  // Unlike refreshNowShowing() (a single-slot "show whichever thing was
-  // broadcast most recently, of any kind" panel — deliberately kind-agnostic,
-  // same as spotlight-inbox.js's own "notify about anything new"), this
-  // needs the CURRENT state of specifically the "encounter" kind, same
-  // as common/js/lib/spotlight.js's own resolveActiveSpotlightEntry (that
-  // module isn't imported on this page, or this would just call it directly)
-  // — an encounter spotlighted earlier is still active even if the GM
-  // later ALSO shows an unrelated NPC/map card; only an encounter-kind
-  // spotlight/clear (or a kind-agnostic global clear) actually changes
-  // whether combat is still "on". Confirmed bug this fixes: taking the
-  // single latest entry across every kind meant showing any OTHER kind of
-  // card mid-combat silently broke "push initiative to active encounter"
-  // for every player, with no encounter-related action having happened at
-  // all. Returns "" if nothing's currently spotlighted, or the spotlighted
-  // thing isn't an encounter.
-  function resolveActiveEncounterId() {
-    const latest = gameLogState.entries.find((entry) => {
-      if (entry?.type === "spotlight") return entry.payload?.kind === "encounter";
-      if (entry?.type === "spotlight-clear") return !entry.payload?.kind || entry.payload.kind === "encounter";
-      return false;
-    });
-    if (!latest || latest.type === "spotlight-clear") {
+  // Delegates straight to common/js/lib/spotlight.js's own
+  // resolveActiveSpotlightId, kind-scoped to "encounter" — an encounter
+  // spotlighted earlier is still active even if the GM later ALSO shows an
+  // unrelated NPC/map card; only an encounter-kind spotlight/clear (or a
+  // kind-agnostic global clear) actually changes whether combat is still
+  // "on". Returns "" if nothing's currently spotlighted, the spotlighted
+  // thing isn't an encounter, or there's no active campaign at all.
+  async function resolveActiveEncounterId() {
+    if (!gameLogContext.groupId && !gameLogContext.shareToken) {
       return "";
     }
-    return String(latest.payload?.id || "").trim();
+    return resolveActiveSpotlightId(dataManager, {
+      groupId: gameLogContext.groupId,
+      shareToken: gameLogContext.shareToken,
+      kind: "encounter",
+    });
   }
 
   // Initiative is a one-way push, not a synced field (see the Initiative
@@ -1314,7 +1308,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
   // whatever active encounter this character is currently in, not the
   // character record itself, since initiative isn't persistent state.
   async function pushInitiativeToActiveEncounter(value) {
-    const encounterId = resolveActiveEncounterId();
+    const encounterId = await resolveActiveEncounterId();
     if (!encounterId || !state.draft?.id) {
       return;
     }
@@ -1786,714 +1780,176 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     elements.groupShareStatus.hidden = shouldHide;
   }
 
+  // Mounts the exact same Game Log widget the Dashboard uses
+  // (common/js/lib/widgets/game-log.js) into this section's own content area
+  // instead of a Dashboard widget card — no dashboard-toggle affordances
+  // (resolveKindIcon/isSpotlightOnDashboard/onToggleSpotlight all omitted),
+  // since Workbench has no per-viewer "dashboard" for a spotlight entry's
+  // icon to add/remove itself from; the widget's own fallback already
+  // renders those plain/non-interactive when no icon resolver is given (see
+  // its own resolveEntryIcon). No setRightAction either — this section's own
+  // header has no equivalent action slot, only the Refresh button below.
+  // Always mounted, even with an empty groupId/shareToken — the widget's own
+  // render() already shows "No active campaign — pick one from the header
+  // menu." for that case, so there's no separate "unmounted" state to model
+  // here at all, just "mounted against whatever the current campaign is (or
+  // isn't)."
+  function mountGameLog() {
+    gameLogWidget?.destroy();
+    gameLogWidget = initGameLogWidget(elements.gameLogPanel, {
+      dataManager,
+      status,
+      groupId: gameLogContext.groupId,
+      shareToken: gameLogContext.shareToken,
+    });
+  }
+
   function initGameLog() {
-    if (elements.gameLogForm) {
-      elements.gameLogForm.addEventListener("submit", (event) => {
-        event.preventDefault();
-        void submitGameLogMessage();
-      });
-    }
     if (elements.gameLogRefresh) {
       elements.gameLogRefresh.addEventListener("click", () => {
-        void refreshGameLog({ force: true });
+        void gameLogWidget?.refresh();
       });
     }
-    updateGameLogVisibility();
-    updateGameLogControls();
-    updateGameLogStatus();
   }
 
-  function gameLogCanPost() {
-    if (!gameLogState.enabled) {
-      return false;
-    }
-    if (!dataManager.isAuthenticated()) {
-      return false;
-    }
-    if (gameLogState.shareToken) {
-      return Boolean(gameLogState.groupId);
-    }
-    if (!gameLogState.groupId) {
-      return false;
-    }
-    if (gameLogState.access === "owner" || gameLogState.access === "member") {
-      return true;
-    }
-    return dataManager.getUserTier() === "admin";
-  }
-
-  function updateGameLogControls() {
-    const canPost = gameLogCanPost();
-    if (elements.gameLogForm) {
-      elements.gameLogForm.hidden = !canPost;
-    }
-    if (elements.gameLogInput) {
-      elements.gameLogInput.disabled = !canPost || gameLogState.sending;
-    }
-    if (elements.gameLogForm) {
-      const submit = elements.gameLogForm.querySelector('button[type="submit"]');
-      if (submit) {
-        submit.disabled = !canPost || gameLogState.sending;
-      }
-    }
-    if (elements.gameLogRefresh) {
-      const refreshDisabled = !gameLogState.enabled || gameLogState.loading;
-      elements.gameLogRefresh.disabled = refreshDisabled;
-      elements.gameLogRefresh.classList.toggle("disabled", refreshDisabled);
-      elements.gameLogRefresh.setAttribute("aria-disabled", refreshDisabled ? "true" : "false");
-    }
-  }
-
-  function updateGameLogVisibility() {
-    if (!elements.gameLogSection) {
-      return;
-    }
-    elements.gameLogSection.hidden = false;
-    elements.gameLogSection.classList.remove("d-none");
-    setGameLogCollapsed(gameLogPanelState.collapsed);
-    renderGameLogEntries();
-  }
-
-  function updateGameLogStatus() {
-    if (!elements.gameLogStatus) {
-      return;
-    }
-    let message = "";
-    elements.gameLogStatus.classList.remove("text-danger");
-    if (gameLogState.error) {
-      message = gameLogState.error;
-      elements.gameLogStatus.classList.add("text-danger");
-    } else if (gameLogState.enabled && !gameLogCanPost()) {
-      message = dataManager.isAuthenticated()
-        ? "You can view the log but cannot post to this group."
-        : "Sign in to chat with your group.";
-    }
-    elements.gameLogStatus.textContent = message;
-    elements.gameLogStatus.hidden = !message;
-  }
-
-  const SPOTLIGHT_KIND_LABELS = {
-    npc: "an NPC",
-    location: "a Location",
-    monster: "a Monster",
-    effect: "an Effect",
-    map: "a Map",
-    encounter: "an Encounter",
-  };
-
-  function describeSpotlightPayload(payload) {
-    const kind = typeof payload?.kind === "string" ? payload.kind.trim() : "";
-    const article = SPOTLIGHT_KIND_LABELS[kind] || (kind ? `a "${kind}"` : "something");
-    return `Showed ${article} to the table`;
-  }
-
-  function createGameLogEntryElement(entry) {
-    const container = document.createElement("article");
-    container.className = "game-log-entry";
-
-    const summary = document.createElement("div");
-    summary.className = "game-log-entry__summary";
-
-    if (entry?.type === "roll") {
-      container.classList.add("game-log-entry--roll");
-      const payload = entry && typeof entry.payload === "object" && entry.payload ? entry.payload : {};
-      const label = typeof payload.label === "string" ? payload.label.trim() : "";
-      const notation = typeof payload.expression === "string" && payload.expression.trim()
-        ? payload.expression.trim()
-        : typeof payload.notation === "string" && payload.notation.trim()
-          ? payload.notation.trim()
-          : "";
-      const total = payload.total !== undefined && payload.total !== null ? payload.total : "";
-
-      const summaryRow = document.createElement("div");
-      summaryRow.className = "game-log-roll-summary d-flex flex-wrap align-items-baseline justify-content-between gap-2";
-
-      const expressionEl = document.createElement("span");
-      expressionEl.className = "game-log-roll-expression";
-      if (label && notation) {
-        expressionEl.textContent = `${label} (${notation})`;
-      } else if (label) {
-        expressionEl.textContent = label;
-      } else if (notation) {
-        expressionEl.textContent = notation;
-      } else {
-        expressionEl.textContent = entry?.message || "Roll";
-      }
-      summaryRow.appendChild(expressionEl);
-
-      if (total || total === 0) {
-        const totalEl = document.createElement("span");
-        totalEl.className = "game-log-roll-total";
-        totalEl.textContent = total;
-        summaryRow.appendChild(totalEl);
-      }
-
-      summary.appendChild(summaryRow);
-    } else if (entry?.type === "spotlight") {
-      // A spotlight entry's own message is always empty (see
-      // server/groups.py's create_group_log_entry) — the payload
-      // ({kind, id, templateId}) is all there is, and the entity's real
-      // name/description already renders richly right next to the log in
-      // the Now-showing panel, so this line just needs to say something
-      // happened, not repeat that lookup here too.
-      container.classList.add("game-log-entry--spotlight");
-      const payload = entry && typeof entry.payload === "object" && entry.payload ? entry.payload : {};
-      summary.textContent = describeSpotlightPayload(payload);
-    } else if (entry?.type === "spotlight-clear") {
-      container.classList.add("game-log-entry--spotlight");
-      summary.textContent = "Stopped showing to the table";
-    } else {
-      container.classList.add("game-log-entry--message");
-      summary.textContent = entry?.message || "";
-    }
-
-    container.appendChild(summary);
-
-    const meta = document.createElement("div");
-    meta.className = "game-log-entry__meta text-body-secondary d-flex justify-content-between align-items-center gap-2 flex-wrap";
-    const author = document.createElement("span");
-    author.className = "game-log-entry__author";
-    author.textContent = entry?.author?.name || "System";
-    meta.appendChild(author);
-
-    if (entry?.created_at) {
-      const timestamp = document.createElement("time");
-      timestamp.className = "game-log-entry__timestamp";
-      timestamp.dateTime = entry.created_at;
-      timestamp.textContent = formatGameLogTimestamp(entry.created_at);
-      meta.appendChild(timestamp);
-    }
-
-    container.appendChild(meta);
-    return container;
-  }
-
-  function formatGameLogTimestamp(value) {
-    if (!value) {
-      return "";
-    }
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) {
-      return value;
-    }
-    try {
-      return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-    } catch (error) {
-      return date.toISOString();
-    }
-  }
-
-  function resolveGameLogTimestamp(entry) {
-    if (!entry || typeof entry !== "object") {
-      return 0;
-    }
-    if (typeof entry.__timestamp === "number") {
-      return entry.__timestamp;
-    }
-    if (entry.created_at) {
-      const created = Date.parse(entry.created_at);
-      if (!Number.isNaN(created)) {
-        return created;
-      }
-    }
-    if (entry.updated_at) {
-      const updated = Date.parse(entry.updated_at);
-      if (!Number.isNaN(updated)) {
-        return updated;
-      }
-    }
-    if (typeof entry.id === "number") {
-      return entry.id;
-    }
-    const numericId = parseInt(entry.id, 10);
-    if (!Number.isNaN(numericId)) {
-      return numericId;
-    }
-    return 0;
-  }
-
-  function sortGameLogEntriesDescending(a, b) {
-    return resolveGameLogTimestamp(b) - resolveGameLogTimestamp(a);
-  }
-
-  function renderGameLogEntries() {
-    if (!elements.gameLogEntries) {
-      return;
-    }
-    elements.gameLogEntries.innerHTML = "";
-    const combinedEntries = [];
-    if (gameLogState.entries.length) {
-      combinedEntries.push(...gameLogState.entries);
-    }
-    if (gameLogState.localEntries.length) {
-      combinedEntries.push(...gameLogState.localEntries);
-    }
-    if (!combinedEntries.length) {
-      const placeholder = document.createElement("p");
-      placeholder.className = "text-body-secondary small mb-0";
-      if (gameLogState.enabled && gameLogState.loading) {
-        placeholder.textContent = "Loading log…";
-      } else {
-        placeholder.textContent = "No log activity yet.";
-      }
-      elements.gameLogEntries.appendChild(placeholder);
-      return;
-    }
-    const fragment = document.createDocumentFragment();
-    combinedEntries.sort(sortGameLogEntriesDescending).forEach((entry) => {
-      fragment.appendChild(createGameLogEntryElement(entry));
-    });
-    elements.gameLogEntries.appendChild(fragment);
-  }
-
-  function stopGameLogPolling() {
-    if (gameLogState.pollTimer) {
-      window.clearInterval(gameLogState.pollTimer);
-      gameLogState.pollTimer = 0;
-    }
-  }
-
-  function startGameLogPolling() {
-    stopGameLogPolling();
-    if (!gameLogState.enabled) {
-      return;
-    }
-    gameLogState.pollTimer = window.setInterval(() => {
-      void refreshGameLog({ silent: true });
-    }, 30000);
-  }
-
+  // Resets to "no active campaign" — same shape as setGameLogContext below,
+  // just always landing on the empty case, so both funnel through one
+  // real remount decision (`changed`) rather than duplicating it.
   function clearGameLogContext() {
-    if (!gameLogState.enabled && !gameLogState.groupId && !gameLogState.shareToken) {
-      return;
-    }
-    stopGameLogPolling();
-    gameLogState.enabled = false;
-    gameLogState.groupId = "";
-    gameLogState.groupName = "";
-    gameLogState.shareToken = "";
-    gameLogState.access = "none";
-    gameLogState.entries = [];
-    gameLogState.error = "";
+    const changed = Boolean(gameLogContext.groupId || gameLogContext.shareToken) || !gameLogWidget;
+    gameLogContext.groupId = "";
+    gameLogContext.groupName = "";
+    gameLogContext.shareToken = "";
+    gameLogContext.access = "none";
     gameLogPanelState.collapsed = false;
     if (elements.gameLogTitle) {
       elements.gameLogTitle.textContent = "";
       elements.gameLogTitle.hidden = true;
     }
-    updateGameLogVisibility();
-    updateGameLogControls();
-    updateGameLogStatus();
+    if (changed) {
+      mountGameLog();
+      mountNowShowingWatcher();
+    }
   }
 
   function setGameLogContext({ groupId = "", shareToken = "", groupName = "", access = "none" } = {}) {
     const normalizedId = typeof groupId === "string" ? groupId.trim() : "";
     const normalizedToken = typeof shareToken === "string" ? shareToken.trim() : "";
     const normalizedAccess = typeof access === "string" ? access : "none";
-    const changed = normalizedId !== gameLogState.groupId || normalizedToken !== gameLogState.shareToken;
-    gameLogState.groupId = normalizedId;
-    gameLogState.shareToken = normalizedToken;
-    gameLogState.groupName = typeof groupName === "string" ? groupName.trim() : "";
-    gameLogState.access = normalizedAccess;
-    gameLogState.enabled = Boolean(normalizedId || normalizedToken);
-    if (elements.gameLogTitle) {
-      elements.gameLogTitle.textContent = gameLogState.groupName;
-      elements.gameLogTitle.hidden = !gameLogState.groupName;
-    }
-    if (!gameLogState.enabled) {
+    if (!normalizedId && !normalizedToken) {
       clearGameLogContext();
       return;
     }
-    if (changed) {
-      gameLogState.entries = [];
+    const changed = normalizedId !== gameLogContext.groupId || normalizedToken !== gameLogContext.shareToken;
+    gameLogContext.groupId = normalizedId;
+    gameLogContext.shareToken = normalizedToken;
+    gameLogContext.groupName = typeof groupName === "string" ? groupName.trim() : "";
+    gameLogContext.access = normalizedAccess;
+    if (elements.gameLogTitle) {
+      elements.gameLogTitle.textContent = gameLogContext.groupName;
+      elements.gameLogTitle.hidden = !gameLogContext.groupName;
     }
-    updateGameLogVisibility();
-    updateGameLogControls();
-    updateGameLogStatus();
     if (changed) {
-      void refreshGameLog({ silent: true });
+      mountGameLog();
+      mountNowShowingWatcher();
     }
-    startGameLogPolling();
   }
 
-  // "Now showing" — renders the latest `spotlight` game log entry (posted by
-  // common/js/lib/spotlight.js's "Show to table" modal, from Sanctum/Forge/
-  // Crucible/Vault) via Press's own template.createPage rendering, reused
-  // as-is rather than reimplemented here. Runs after every refreshGameLog
-  // poll (same 30s cadence the game log itself uses) since spotlight entries
-  // are just another entry type in the same log.
-  // Bootstrap's .d-flex/.d-none utility classes are both declared
-  // `!important`, so toggling between them (never the plain `hidden`
-  // attribute, which a `!important` `display` class silently defeats — the
-  // same landmine Press's own app.js documents for setElementVisible)
-  // avoids any display-property specificity conflict.
-  // Two independent conditions decide whether this section shows: an
-  // active spotlight (this function's own `visible` argument, computed
-  // from gameLogState) AND the current top-level view being Play/Edit —
-  // Now Showing has no place in the Template editor, where there's no
-  // "now" being played. workbench.js sets document.body.dataset.
-  // workbenchView on every view switch; this section no longer carries
+  // "Now Showing" — the exact same read-only icon strip Dashboard uses for
+  // its own floating spotlight panel (createSpotlightPanel,
+  // common/js/lib/widgets/spotlight-panel.js), mounted inline here instead,
+  // with `interactive: false`: Workbench has no per-viewer "dashboard" of
+  // its own for a click to add/remove something from, so every icon just
+  // reports what's currently shown, full stop — no click behavior, no
+  // mine/available distinction. Replaces the old single-slot rich preview
+  // (a Press-rendered card, or an "Open" link for Map/Encounter) with the
+  // FULL currently-active set, same as Dashboard's own panel — the richer
+  // per-entity preview and map/encounter deep links are gone, in exchange
+  // for the same simple, always-current status display every other surface
+  // in the suite now uses.
+  // Two independent conditions decide whether this section shows at all: an
+  // active spotlight AND the current top-level view being Play/Edit — Now
+  // Showing has no place in the Template editor, where there's no "now"
+  // being played. workbench.js sets document.body.dataset.workbenchView on
+  // every view switch; this section no longer carries
   // data-workbench-view-panel itself (removed from index.html), so this is
-  // the only thing gating it — one source of truth instead of two
-  // separate d-none togglers fighting over the same element.
-  function setNowShowingVisible(visible) {
+  // the only thing gating it. Bootstrap's .d-flex/.d-none utility classes are
+  // both declared `!important`, so toggling between them (never the plain
+  // `hidden` attribute, which a `!important` `display` class silently
+  // defeats) avoids any display-property specificity conflict.
+  function updateNowShowingVisibility(hasActive) {
     if (!elements.nowShowingSection) {
       return;
     }
     const viewAllows = document.body.dataset.workbenchView !== "template";
-    const shouldShow = Boolean(visible) && viewAllows;
+    const shouldShow = Boolean(hasActive) && viewAllows;
     elements.nowShowingSection.classList.toggle("d-none", !shouldShow);
     elements.nowShowingSection.classList.toggle("d-flex", shouldShow);
   }
 
-  function hideNowShowing() {
-    setNowShowingVisible(false);
-    if (elements.nowShowingContent) {
-      elements.nowShowingContent.innerHTML = "";
-    }
-  }
-
-  function renderNowShowingPlain(entity, label) {
-    if (!elements.nowShowingContent) {
-      return;
-    }
-    const card = document.createElement("div");
-    card.className = "border rounded-3 bg-body p-3 w-100";
-    const name = document.createElement("div");
-    name.className = "fw-semibold";
-    name.textContent = entity?.name || label || "Untitled";
-    card.appendChild(name);
-    if (entity?.description) {
-      const description = document.createElement("p");
-      description.className = "small text-body-secondary mb-0 mt-2";
-      description.textContent = entity.description;
-      card.appendChild(description);
-    }
-    elements.nowShowingContent.innerHTML = "";
-    elements.nowShowingContent.appendChild(card);
-  }
-
-  // Orrery maps have no print-card rendering of their own (see spotlight.js's
-  // LINK_ONLY_KINDS) — a map is a pannable spatial canvas, not a single-entity
-  // card Press can lay out. Spotlighting one just links back into Orrery
-  // itself with ?map=<id> (Orrery's own loadMapFromUrlParam loads it,
-  // read-only for anyone but its owner — see Orrery's getVisibleLayerIds/
-  // tiered Views). Opens in a new tab so the game log/Now-showing panel
-  // stays visible alongside the map.
-  function renderNowShowingMapLink(entity, id) {
-    if (!elements.nowShowingContent) {
-      return;
-    }
-    const card = document.createElement("div");
-    card.className = "border rounded-3 bg-body p-3 w-100 d-flex flex-column gap-2";
-    const name = document.createElement("div");
-    name.className = "fw-semibold";
-    name.textContent = entity?.name || "Map";
-    const link = document.createElement("a");
-    link.className = "btn btn-outline-primary btn-sm align-self-start";
-    const params = new URLSearchParams({ map: id });
-    // An authenticated group member already has real "shared with group"
-    // access to a spotlighted map (spotlightToGroup shares it, not just logs
-    // it) and needs nothing extra. An anonymous share-link visitor has no
-    // session at all, so the same share token this page itself was opened
-    // with has to travel along too — it's what get_item's narrow spotlight
-    // exception (server/storage.py) checks to grant read access to exactly
-    // the currently-spotlighted map, for someone with no account.
-    if (gameLogState.shareToken) {
-      params.set("share", gameLogState.shareToken);
-    }
-    link.href = `${resolveToolHref("orrery", resolveToolContextPath())}?${params.toString()}`;
-    link.target = "_blank";
-    link.rel = "noopener";
-    link.textContent = "Open map";
-    card.append(name, link);
-    elements.nowShowingContent.innerHTML = "";
-    elements.nowShowingContent.appendChild(card);
-  }
-
-  // An Encounter is a live, constantly-changing combat state, not a
-  // single-entity card Press can lay out — same reasoning as the map-link
-  // case above (see spotlight.js's LINK_ONLY_KINDS). Spotlighting one links
-  // to the suite Dashboard's Combat Tracker widget (?encounter=<id>) rather
-  // than fetching+rendering a static card; the widget itself re-polls the
-  // encounter record on its own interval once open.
-  function renderNowShowingEncounterLink(entity, id) {
-    if (!elements.nowShowingContent) {
-      return;
-    }
-    const card = document.createElement("div");
-    card.className = "border rounded-3 bg-body p-3 w-100 d-flex flex-column gap-2";
-    const name = document.createElement("div");
-    name.className = "fw-semibold";
-    name.textContent = entity?.name || "Encounter";
-    const link = document.createElement("a");
-    link.className = "btn btn-outline-primary btn-sm align-self-start";
-    const params = new URLSearchParams({ encounter: id });
-    if (gameLogState.shareToken) {
-      params.set("share", gameLogState.shareToken);
-    }
-    link.href = `${resolveToolHref("home", resolveToolContextPath())}?${params.toString()}`;
-    link.target = "_blank";
-    link.rel = "noopener";
-    link.textContent = "Open combat tracker";
-    card.append(name, link);
-    elements.nowShowingContent.innerHTML = "";
-    elements.nowShowingContent.appendChild(card);
-  }
-
-  // Renders one card through Press's real template.createPage — the exact
-  // function Press's own Grid View uses for a single-card render
-  // (singleCardIndex), so this gets identical output to what the GM sees in
-  // Press, not a second reimplementation. Card dimensions are authored in
-  // real inches (a print concept), so the result is wrapped and scaled down
-  // to fit this sidebar rather than shown at literal print size.
-  function renderNowShowingCard(templateRecord, entity) {
-    if (!elements.nowShowingContent) {
-      return;
-    }
-    const template = createTemplate(templateRecord);
-    const format = getFormatById(template);
-    const orientation = format?.defaultOrientation || "portrait";
-    const size = getPageSize(template, format?.id, orientation);
-    const side = template.sides?.[0] || "front";
-    const page = template.createPage(side, {
-      size,
-      format,
-      data: entity,
-      page: template.pages?.[side] || {},
-      singleCardIndex: 0,
-    });
-    const scaleWrapper = document.createElement("div");
-    scaleWrapper.style.transformOrigin = "top center";
-    scaleWrapper.style.overflow = "hidden";
-    scaleWrapper.appendChild(page);
-    elements.nowShowingContent.innerHTML = "";
-    elements.nowShowingContent.appendChild(scaleWrapper);
-    // Auto-width/font-size/overflow passes need real measured layout, so
-    // they only run once the page is actually attached and visible — same
-    // ordering constraint Press's own renderPreview/renderGridView follow.
-    applyAutoWidthCaps(page, { safeInsetIn: template.card?.safeInset ?? 0 });
-    applyAutoFontSizing(page);
-    applyOverflowIndicators(page);
-    const cardWidthPx = page.getBoundingClientRect().width;
-    const cardHeightPx = page.getBoundingClientRect().height;
-    const availableWidth = elements.nowShowingContent.clientWidth || cardWidthPx;
-    const scale = cardWidthPx > 0 ? Math.min(1, availableWidth / cardWidthPx) : 1;
-    if (scale < 1) {
-      scaleWrapper.style.transform = `scale(${scale})`;
-      scaleWrapper.style.width = `${cardWidthPx}px`;
-      scaleWrapper.style.height = `${cardHeightPx * scale}px`;
-    }
-  }
-
-  async function refreshNowShowing() {
-    if (!elements.nowShowingSection) {
-      return;
-    }
-    // gameLogState.entries is already sorted newest-first (see
-    // refreshGameLog) — the first spotlight-or-clear entry found here is
-    // whichever happened most recently, so a `spotlight-clear` posted after
-    // the last `spotlight` correctly wins and hides the panel instead of
-    // this re-showing a stale broadcast.
-    const latest = gameLogState.entries.find((entry) => entry?.type === "spotlight" || entry?.type === "spotlight-clear");
-    if (!latest || latest.type === "spotlight-clear") {
-      lastRenderedSpotlightEntryId = null;
-      hideNowShowing();
-      return;
-    }
-    if (latest.id === lastRenderedSpotlightEntryId) {
-      return;
-    }
-    lastRenderedSpotlightEntryId = latest.id;
-    const spotlight = latest.payload || {};
-    const kind = String(spotlight.kind || "").trim();
-    const id = String(spotlight.id || "").trim();
-    const templateId = String(spotlight.templateId || "").trim();
-    if (!kind || !id) {
-      hideNowShowing();
-      return;
-    }
-    setNowShowingVisible(true);
-    if (elements.nowShowingContent) {
-      elements.nowShowingContent.innerHTML = '<p class="text-body-secondary small mb-0">Loading…</p>';
-    }
-    let entity = null;
-    try {
-      // The share token matters here too, not just for the map-link case
-      // below: an anonymous share-link visitor has no session at all, so
-      // fetching even a plain-card/print-card spotlighted entity needs it to
-      // read anything the group doesn't also own publicly.
-      entity = await loadLibraryData(`${kind}/${id}`, dataManager, gameLogState.shareToken);
-    } catch (error) {
-      if (elements.nowShowingContent) {
-        elements.nowShowingContent.innerHTML =
-          '<p class="text-body-secondary small mb-0">Unable to load the spotlighted card.</p>';
-      }
-      return;
-    }
-    if (kind === "map") {
-      renderNowShowingMapLink(entity, id);
-      return;
-    }
-    if (!templateId) {
-      renderNowShowingPlain(entity, spotlight.label);
-      return;
-    }
-    try {
-      const { payload: templateRecord } = await dataManager.get("templates", templateId, {
-        shareToken: gameLogState.shareToken,
-      });
-      renderNowShowingCard(templateRecord, entity);
-    } catch (error) {
-      // A private/unshared template (or one that's since been deleted)
-      // shouldn't block showing the entity itself — fall back to plain.
-      renderNowShowingPlain(entity, spotlight.label);
-    }
-  }
-
-  async function refreshGameLog({ silent = false, force = false } = {}) {
-    if (!gameLogState.enabled || (!gameLogState.groupId && !gameLogState.shareToken)) {
-      return;
-    }
-    if (gameLogState.loading && !force) {
-      return;
-    }
-    gameLogState.loading = true;
-    updateGameLogControls();
-    if (elements.gameLogEntries) {
-      elements.gameLogEntries.setAttribute("aria-busy", "true");
-    }
-    try {
-      const payload = await dataManager.getGroupLog({
-        groupId: gameLogState.shareToken ? "" : gameLogState.groupId,
-        shareToken: gameLogState.shareToken,
-      });
-      const entries = Array.isArray(payload?.entries) ? payload.entries : [];
-      if (payload?.group?.name) {
-        gameLogState.groupName = String(payload.group.name);
-        if (elements.gameLogTitle) {
-          elements.gameLogTitle.textContent = gameLogState.groupName;
-          elements.gameLogTitle.hidden = !gameLogState.groupName;
+  function renderNowShowing(activeEntries) {
+    if (Array.isArray(activeEntries)) lastActiveNowShowingEntries = activeEntries;
+    // A spotlight flagged data.hidden (combat-tracker.js's own
+    // hideFromTable) is deliberately invisible everywhere, not just to
+    // players — same filter dashboard.js's own refreshSpotlightPanel applies.
+    const items = lastActiveNowShowingEntries
+      .filter((entry) => entry.payload?.data?.hidden !== true)
+      .map((entry) => {
+        const kind = String(entry.payload?.kind || "").trim();
+        const id = String(entry.payload?.id || "").trim();
+        const key = `${kind}:${id}`;
+        if (!SPOTLIGHT_INLINE_KINDS.has(kind)) {
+          spotlightTitleCache.ensure(kind, id, () => renderNowShowing());
         }
-      }
-      gameLogState.entries = entries;
-      gameLogState.entries.sort(sortGameLogEntriesDescending);
-      gameLogState.error = "";
-      renderGameLogEntries();
-      void refreshNowShowing();
-    } catch (error) {
-      console.error("Character editor: failed to load game log", error);
-      if (!silent) {
-        gameLogState.error = error?.message || "Unable to load the game log.";
-      }
-      renderGameLogEntries();
-    } finally {
-      gameLogState.loading = false;
-      if (elements.gameLogEntries) {
-        elements.gameLogEntries.setAttribute("aria-busy", "false");
-      }
-      updateGameLogControls();
-      updateGameLogStatus();
-    }
-  }
-
-  async function postGameLogEntry(type, message, payload) {
-    if (!gameLogCanPost()) {
-      updateGameLogStatus();
-      return null;
-    }
-    if (gameLogState.sending) {
-      return null;
-    }
-    gameLogState.sending = true;
-    updateGameLogControls();
-    try {
-      const entry = await dataManager.createGroupLogEntry({
-        groupId: gameLogState.shareToken ? "" : gameLogState.groupId,
-        shareToken: gameLogState.shareToken,
-        type,
-        message,
-        payload,
+        return {
+          key,
+          kind,
+          id,
+          templateId: entry.payload?.templateId || "",
+          icon: SPOTLIGHT_KIND_ICONS[kind] || "tabler:sparkles",
+          title: spotlightTitleCache.get(kind, id) || SPOTLIGHT_KIND_LABELS[kind] || kind,
+          isOnDashboard: false,
+          isNew: Array.isArray(activeEntries) && !knownNowShowingKeys.has(key),
+        };
       });
-      gameLogState.error = "";
-      return entry;
-    } catch (error) {
-      console.error("Character editor: unable to send game log entry", error);
-      gameLogState.error = error?.message || "Unable to send to the game log.";
-      updateGameLogStatus();
-      if (status) {
-        status.show(gameLogState.error, { type: "danger" });
-      }
-      return null;
-    } finally {
-      gameLogState.sending = false;
-      updateGameLogControls();
+    if (Array.isArray(activeEntries)) knownNowShowingKeys = new Set(items.map((item) => item.key));
+    updateNowShowingVisibility(items.length > 0);
+    nowShowingPanel.render(items, { interactive: false });
+  }
+
+  function mountNowShowingWatcher() {
+    nowShowingWatcher?.destroy();
+    lastActiveNowShowingEntries = [];
+    knownNowShowingKeys = new Set();
+    nowShowingWatcher = watchActiveSpotlights({
+      dataManager,
+      groupId: gameLogContext.groupId,
+      shareToken: gameLogContext.shareToken,
+      onChange: (active) => renderNowShowing(active),
+    });
+    // watchActiveSpotlights' own guard never calls onChange at all without a
+    // groupId/shareToken (it just hands back an inert {destroy(){}}) — clear
+    // whatever was showing before explicitly, since nothing else will.
+    if (!gameLogContext.groupId && !gameLogContext.shareToken) {
+      renderNowShowing([]);
     }
   }
 
-  function integrateGameLogEntry(entry) {
-    if (!entry || typeof entry !== "object") {
-      return;
-    }
-    const existing = gameLogState.entries.findIndex((item) => item && item.id === entry.id);
-    if (existing >= 0) {
-      gameLogState.entries[existing] = entry;
-    } else {
-      gameLogState.entries.push(entry);
-    }
-    gameLogState.entries.sort(sortGameLogEntriesDescending);
-    renderGameLogEntries();
-    updateGameLogStatus();
-  }
-
-  async function submitGameLogMessage() {
-    if (!elements.gameLogInput) {
-      return;
-    }
-    const value = elements.gameLogInput.value.trim();
-    if (!value) {
-      return;
-    }
-    const context = resolveCurrentCharacterContext();
-    const payload = context ? { character: context } : undefined;
-    const entry = await postGameLogEntry("message", value, payload);
-    if (entry) {
-      elements.gameLogInput.value = "";
-      integrateGameLogEntry(entry);
-      void refreshGameLog({ silent: true, force: true });
-    } else {
-      updateGameLogStatus();
-    }
-  }
-
-  function addLocalGameLogEntry({ type = "message", message = "", payload = null } = {}) {
-    const timestamp = Date.now();
-    const user = sessionUser();
-    const displayName =
-      (user && typeof user.display_name === "string" && user.display_name.trim())
-        ? user.display_name.trim()
-        : (user && typeof user.username === "string" && user.username.trim())
-          ? user.username.trim()
-          : "You";
-    const entry = {
-      id: `local-${timestamp}-${Math.random().toString(36).slice(2, 8)}`,
-      type,
-      message,
-      payload: payload || undefined,
-      created_at: new Date(timestamp).toISOString(),
-      author: { name: displayName },
-      local: true,
-      __timestamp: timestamp,
-    };
-    gameLogState.localEntries.push(entry);
-    if (gameLogState.localEntries.length > 100) {
-      gameLogState.localEntries.splice(0, gameLogState.localEntries.length - 100);
-    }
-    renderGameLogEntries();
-    updateGameLogStatus();
-  }
-
+  // Posting a plain chat message now goes entirely through the mounted Game
+  // Log widget's own form (initGameLogWidget builds and wires that itself) —
+  // this is the one kind of log entry Workbench still posts directly,
+  // because rolling dice isn't something the shared widget has any concept
+  // of initiating, only displaying (see game-log.js's own describeEntry
+  // "roll" case). Posts straight to the same dataManager.createGroupLogEntry
+  // endpoint the widget's own form uses, then asks the mounted widget to
+  // refresh so it shows up immediately rather than waiting for its own next
+  // poll tick/live-stream nudge.
+  // Silently does nothing without an active campaign — the roll result
+  // itself still renders inline wherever the dice roller shows it either
+  // way, so nothing is lost except a persistent log entry there's nowhere to
+  // put one.
   function recordGameLogRoll(result, { expression = "", label = "" } = {}) {
-    if (!result) {
+    if (!result || !dataManager.isAuthenticated() || (!gameLogContext.groupId && !gameLogContext.shareToken)) {
       return;
     }
     const context = resolveCurrentCharacterContext();
@@ -2501,24 +1957,21 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       expression: expression || result.expression || result.notation || "",
       notation: result.notation || expression || "",
       total: result.total,
-      detailHtml: result.detailHtml || undefined,
-      detailText: result.detailText || undefined,
-      dice: Array.isArray(result.dice) && result.dice.length ? result.dice : undefined,
       label: label || undefined,
       character: context || undefined,
     };
-    if (!gameLogCanPost()) {
-      addLocalGameLogEntry({ type: "roll", payload });
-      return;
-    }
-    void postGameLogEntry("roll", "", payload).then((entry) => {
-      if (entry) {
-        integrateGameLogEntry(entry);
-        void refreshGameLog({ silent: true, force: true });
-      } else if (gameLogState.enabled) {
-        void refreshGameLog({ silent: true, force: true });
-      }
-    });
+    dataManager
+      .createGroupLogEntry({
+        groupId: gameLogContext.shareToken ? "" : gameLogContext.groupId,
+        shareToken: gameLogContext.shareToken,
+        type: "roll",
+        message: "",
+        payload,
+      })
+      .then(() => gameLogWidget?.refresh())
+      .catch((error) => {
+        console.error("Character editor: unable to send roll to the game log", error);
+      });
   }
 
   function resolveCurrentCharacterContext() {
@@ -2555,7 +2008,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     const shareToken = state.shareToken || groupShareState.token || "";
     const shareGroupId = shareToken ? groupShareState.groupId || "" : "";
     if (shareToken && shareGroupId) {
-      const groupName = groupShareState.group?.name || gameLogState.groupName;
+      const groupName = groupShareState.group?.name || gameLogContext.groupName;
       const access = dataManager.isAuthenticated() ? "share" : "viewer";
       setGameLogContext({ groupId: shareGroupId, shareToken, groupName, access });
       return;
@@ -2570,7 +2023,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       // — listGroups' own member scope (see group-context.js's own
       // resolveGroupContext, this function's Dashboard-side mirror) lets a
       // mere MEMBER select a campaign they don't own too, and this file has
-      // its own GM-only controls gated on gameLogState's access (the
+      // its own GM-only controls gated on gameLogContext's access (the
       // spotlight "show to table" affordances) that shouldn't show for a
       // non-owner even though the server-side check would still correctly
       // reject the actual action.

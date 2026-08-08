@@ -14,7 +14,7 @@ import { initHelpSystem } from "../../common/js/lib/help.js";
 import { fetchKindEntriesWithIds, loadLibraryKinds } from "../../common/js/lib/content-fetch.js";
 import { createTokenImageField } from "../../common/js/lib/token-picker.js";
 import { getIconTokens } from "../../common/js/lib/icon-picker.js";
-import { refreshOwnershipCatalog, confirmDelete, matchesOwner } from "../../common/js/lib/ownership.js";
+import { refreshOwnershipCatalog, createCharacterOwnershipPrimer, confirmDelete, matchesOwner } from "../../common/js/lib/ownership.js";
 import { collectSystemFields } from "../../common/js/lib/system-schema.js";
 import { createBindingFormulaInput } from "../../common/js/lib/binding-field.js";
 import {
@@ -2572,13 +2572,17 @@ function primeCharacterPayloadCache() {
 // often a player following the Dashboard Map widget's own "Open in Orrery"
 // link, a surface this tool was never built assuming a non-owner would use
 // — could drag EVERY marker on the map, including characters they don't
-// own. Same "populate cache, fire-and-forget, re-render once it resolves"
-// shape as characterPayloadCache above, just for ownership instead of
-// vision-Binding data.
-let characterOwnershipCatalog = new Map();
-let characterOwnershipPromise = null;
+// own. Shared fetch-once-per-id-set primer (ownership.js's own
+// createCharacterOwnershipPrimer) — same lifecycle the Dashboard's own
+// map.js uses (the two used to each carry an independent, buggy copy of
+// this; see that shared helper's own comment for the infinite-loop bug this
+// replaced). The `currentUserHasFullMapAccess()` skip stays here, not in the
+// shared primer — a full-access GM never needs restricted-ownership data at
+// all, which is an Orrery-specific concern the Dashboard's own map.js
+// (always the restricted view) has no equivalent of.
+const characterOwnershipPrimer = createCharacterOwnershipPrimer(dataManager);
 function primeCharacterOwnershipCatalog() {
-  if (characterOwnershipPromise || currentUserHasFullMapAccess()) return;
+  if (currentUserHasFullMapAccess()) return;
   const ids = new Set();
   (state.map.layers || []).forEach((layer) => {
     if (layer.type !== "marker") return;
@@ -2588,16 +2592,7 @@ function primeCharacterOwnershipCatalog() {
       }
     });
   });
-  if (!ids.size) return;
-  characterOwnershipPromise = refreshOwnershipCatalog(dataManager, "character", Array.from(ids))
-    .then((catalog) => {
-      characterOwnershipCatalog = catalog;
-      characterOwnershipPromise = null;
-      renderLayerOverlays();
-    })
-    .catch(() => {
-      characterOwnershipPromise = null;
-    });
+  characterOwnershipPrimer.prime(ids, () => renderLayerOverlays());
 }
 
 // Supplying isMarkerDraggable at all (below) means lib/map-viewer.js's own
@@ -2925,7 +2920,7 @@ function renderRestrictedLayerOverlays(overlay) {
       dataManager,
       baseMapManager,
       map: state.map,
-      characterOwnershipCatalog,
+      characterOwnershipCatalog: characterOwnershipPrimer.getCatalog(),
       getCharacterPayload: getCachedCharacterPayload,
       status,
       onMarkerMoved: (layer, markerElement, snappedPosition) =>
