@@ -9,7 +9,10 @@ import { refreshTooltips, disposeTooltips } from "../../common/js/lib/tooltips.j
 import { initHelpSystem } from "../../common/js/lib/help.js";
 import { fetchKindEntriesWithIds, loadLibraryKinds } from "../../common/js/lib/content-fetch.js";
 import { createTokenImageField } from "../../common/js/lib/token-picker.js";
+import { getIconTokens } from "../../common/js/lib/icon-picker.js";
 import { allowsDelete, refreshOwnershipCatalog, confirmDelete } from "../../common/js/lib/ownership.js";
+import { collectSystemFields } from "../../common/js/lib/system-schema.js";
+import { createBindingFormulaInput } from "../../common/js/lib/binding-field.js";
 import {
   createGroup,
   createGridCell,
@@ -17,9 +20,13 @@ import {
   createLayerSettings,
   createMapModel,
   createMarkerElement,
+  createMarkerOverlayIcon,
   createVectorPathElement,
   createVectorShapeElement,
   AOE_SHAPE_TYPES,
+  createWallElement,
+  createLightElement,
+  WALL_TYPES,
   createView,
   updateBaseMapType,
   updateMapTimestamp,
@@ -59,6 +66,12 @@ import {
   createPingMarker,
   getMarkerLayerOffset,
   renderShapeElement,
+  resolveMarkerVisionRangeCells,
+  resolveBlockingSegments,
+  segmentsIntersect,
+  resolveVisibleCells,
+  renderLightElement,
+  resolveLightOrigin,
 } from "./lib/map-viewer.js";
 
 const state = {
@@ -113,6 +126,35 @@ let drawModeActive = false;
 // stay click-through while this is true, so a new one can be dropped
 // anywhere, including on top of an existing shape/path.
 let shapeModeActive = false;
+
+// Same reasoning as drawModeActive — walls/doors need to stay click-through
+// while a new one is being placed (setupWallTool), same "start anywhere,
+// including on top of an existing one" precedent, and precise vertex
+// placement near an existing wall's own endpoint is a common, expected case
+// (connecting two wall segments).
+let wallModeActive = false;
+// "wall" | "door" — which kind the NEXT placed element becomes; switching
+// mid-gesture cancels whatever's in progress rather than trying to
+// reconcile an ambiguous partial shape (see setupWallTool's own submode
+// change handler).
+let wallSubMode = "wall";
+// Whether the NEXT placed wall/door's own vertices snap to the grid as
+// they're clicked — defaults on (see createWallElement's own comment for
+// why: fog is only ever square-grid-cell granular anyway, and snapping
+// keeps walls straight/aligned to each other). Persists across gestures
+// within the session, same "sticky preference" shape as wallSubMode.
+let wallSnapEnabled = true;
+// { layer, points, preview, polyline } while a click-to-place-vertex
+// gesture is in progress; null otherwise. Module-scope (not local to
+// setupWallTool) so the capture-phase keydown handler and the pointermove/
+// dblclick handlers can all read/mutate the same in-progress state.
+let wallGesture = null;
+
+// Same reasoning as shapeModeActive — a placed Light must stay immediately
+// selectable/draggable even while the Light tool is still armed (matching
+// how a placed shape already works), so this does NOT gate the
+// click-through wiring the way drawModeActive/wallModeActive do.
+let lightModeActive = false;
 
 // Selecting a Group makes its target grid layer directly clickable —
 // single click adds one cell, click-and-drag paints a sweep — with no
@@ -485,6 +527,14 @@ const elements = {
   shapeToggleWrap: document.querySelector("[data-shape-toggle-wrap]"),
   shapeType: document.querySelector("[data-shape-type]"),
   shapeReadout: document.querySelector("[data-shape-readout]"),
+  wallToggle: document.querySelector("[data-wall-toggle]"),
+  wallToggleWrap: document.querySelector("[data-wall-toggle-wrap]"),
+  wallSubMode: document.querySelector("[data-wall-submode]"),
+  wallSnapToggle: document.querySelector("[data-wall-snap-toggle]"),
+  wallSnapToggleWrap: document.querySelector("[data-wall-snap-toggle-wrap]"),
+  lightToggle: document.querySelector("[data-light-toggle]"),
+  lightToggleWrap: document.querySelector("[data-light-toggle-wrap]"),
+  lightReadout: document.querySelector("[data-light-readout]"),
   pingToggle: document.querySelector("[data-ping-toggle]"),
   pingToggleWrap: document.querySelector("[data-ping-toggle-wrap]"),
   viewToggle: document.querySelector("[data-view-toggle]"),
@@ -764,6 +814,8 @@ function applyMapSnapshot(snapshot) {
   updateMeasureAvailability();
   updateDrawAvailability();
   updateShapeAvailability();
+  updateWallAvailability();
+  updateLightAvailability();
   renderAll();
   setPanelFocus(false);
 }
@@ -1133,6 +1185,8 @@ function setSelection(kind, id = null, extra = {}) {
   syncOverlayInteractivity();
   updateDrawAvailability();
   updateShapeAvailability();
+  updateWallAvailability();
+  updateLightAvailability();
   const shouldExpand =
     kind === "layer" || kind === "group" || kind === "grid-cells" || kind === "view" || kind === "marker-element" || kind === "vector-path";
   setPanelFocus(shouldExpand);
@@ -1308,6 +1362,26 @@ function duplicateLayerElement(element) {
       strokeWidth: element.strokeWidth,
     });
   }
+  if (element.kind === "wall") {
+    return createWallElement({
+      points: (element.points || []).map((point) => ({ ...point })),
+      wallType: element.wallType,
+      doorState: element.doorState,
+      secret: element.secret,
+      locked: element.locked,
+      strokeColor: element.strokeColor,
+      strokeWidth: element.strokeWidth,
+    });
+  }
+  if (element.kind === "light") {
+    return createLightElement({
+      origin: element.origin ? { ...element.origin } : undefined,
+      attachedMarkerId: element.attachedMarkerId,
+      rangeCells: element.rangeCells,
+      color: element.color,
+      opacity: element.opacity,
+    });
+  }
   if (element.kind === "cell") {
     // `key` is coord-derived (getGridCellKey), not an identity id — safe
     // (and correct) to carry over as-is, unlike `id` which createGridCell
@@ -1417,11 +1491,10 @@ function renderSelection() {
     elements.selectionClear.classList.toggle("d-none", selection.kind === null);
   }
   // Cleared unconditionally, then repopulated only by whichever selection
-  // kind's own render function actually uses it (currently
-  // renderLayerSelectionEditor, renderVectorShapeSelectionEditor,
-  // renderGroupSelectionEditor, and renderViewSelectionEditor) — marker
-  // and drawn-path selection still build a standalone inline Delete
-  // instead, and leave this empty.
+  // kind's own render function actually uses it (every kind now except a
+  // plain drawn path, which still builds a standalone inline Delete —
+  // renderVectorPathSelectionEditor's own delete-and-redraw-only shape has
+  // no other buttons to group it with).
   if (elements.selectionToolbar) {
     disposeTooltips(elements.selectionToolbar);
     elements.selectionToolbar.innerHTML = "";
@@ -1507,6 +1580,24 @@ function renderSelection() {
       renderVectorShapeSelectionEditor(layer, pathElement);
       return;
     }
+    if (layer && pathElement && pathElement.kind === "wall") {
+      elements.selectionTitle.textContent = pathElement.wallType === "door" ? "Door" : "Wall";
+      setSelectionTypeIcon(pathElement.wallType === "door" ? "tabler:door" : "tabler:wall");
+      if (elements.selectionDetails) {
+        elements.selectionDetails.textContent = `${layer.name} · ${pathElement.points?.length || 0} points`;
+      }
+      renderWallSelectionEditor(layer, pathElement);
+      return;
+    }
+    if (layer && pathElement && pathElement.kind === "light") {
+      elements.selectionTitle.textContent = "Light";
+      setSelectionTypeIcon("tabler:bulb");
+      if (elements.selectionDetails) {
+        elements.selectionDetails.textContent = `${layer.name} · ${pathElement.rangeCells} cell range`;
+      }
+      renderLightSelectionEditor(layer, pathElement);
+      return;
+    }
     if (layer && pathElement) {
       elements.selectionTitle.textContent = "Drawn Path";
       setSelectionTypeIcon("tabler:pencil");
@@ -1557,6 +1648,309 @@ function renderVectorPathSelectionEditor(layer, pathElement) {
     setSelection("layer", layer.id);
   });
   container.appendChild(deleteButton);
+}
+
+// No post-placement per-vertex editing (matches the plain-path editor's own
+// delete-and-redraw precedent just above — a wall's `points` array has no
+// single natural "position" field to expose the way a shape's one-point
+// origin does). GM-only surface — the GM always has full control regardless
+// of Secret/Locked, which only ever restrict the Dashboard widget's
+// player-facing click-to-toggle (see map.js's own onDoorClick).
+function renderWallSelectionEditor(layer, wallElement) {
+  if (!elements.selectionEditor) {
+    return;
+  }
+  const container = elements.selectionEditor;
+  disposeTooltips(container);
+  container.innerHTML = "";
+
+  function applyWallChange(label, apply) {
+    recordHistory(label, () => {
+      apply();
+      updateMapTimestamp(state.map);
+    });
+    renderSelection();
+    renderLayerOverlays();
+    renderJson();
+  }
+
+  const wallHelp = document.createElement("span");
+  wallHelp.className = "align-middle";
+  wallHelp.dataset.helpTopic = "orrery.walls";
+  wallHelp.dataset.helpInsert = "replace";
+  container.appendChild(wallHelp);
+  initHelpSystem({ root: container });
+
+  const typeField = createFormFloatingField({ type: "select", label: "Type" });
+  const typeSelect = typeField.querySelector("select");
+  [
+    { value: "wall", label: "Wall" },
+    { value: "door", label: "Door" },
+  ].forEach(({ value, label }) => {
+    const option = document.createElement("option");
+    option.value = value;
+    option.textContent = label;
+    typeSelect.appendChild(option);
+  });
+  typeSelect.value = WALL_TYPES.includes(wallElement.wallType) ? wallElement.wallType : "wall";
+  typeSelect.addEventListener("change", () => {
+    // doorState/secret/locked are never cleared when switching away from
+    // "door" — they just go inert, same "harmless defaults, never stripped"
+    // convention createWallElement itself establishes. Switching back to
+    // "door" later picks up wherever they were left.
+    applyWallChange("wall type", () => {
+      wallElement.wallType = typeSelect.value === "door" ? "door" : "wall";
+    });
+  });
+  container.appendChild(typeField);
+
+  const strokeColorField = createCompactField({
+    type: "color",
+    label: "Stroke color",
+    controlClass: "form-control form-control-color",
+  });
+  strokeColorField.querySelector("input").value = wallElement.strokeColor || layer.settings?.strokeColor || "#0f172a";
+  strokeColorField.querySelector("input").addEventListener("change", (event) => {
+    applyWallChange("wall stroke color", () => {
+      wallElement.strokeColor = event.target.value;
+    });
+  });
+
+  const strokeWidthField = createCommitOnBlurNumberField(
+    "Stroke width",
+    wallElement.strokeWidth || 3,
+    (value) => {
+      if (value === null) return;
+      applyWallChange("wall stroke width", () => {
+        wallElement.strokeWidth = Math.max(0, value);
+      });
+    },
+    { min: 0, step: 1 }
+  );
+  container.appendChild(createFieldRow([strokeColorField, strokeWidthField], { columns: 2 }));
+
+  const snapField = createCheckField({
+    id: `wall-snap-${wallElement.id}`,
+    label: "Snap to Grid",
+    switchStyle: true,
+  });
+  const snapInput = snapField.querySelector("input");
+  snapInput.checked = wallElement.snapToGrid !== false;
+  snapInput.addEventListener("change", () => {
+    applyWallChange("wall snap to grid", () => {
+      wallElement.snapToGrid = snapInput.checked;
+      // Same "toggling on re-aligns immediately" behavior as a shape's own
+      // Snap to Grid — a wall has no post-placement per-vertex drag, so this
+      // is the only way to align an already-drawn off-grid wall afterward
+      // without deleting and redrawing it.
+      if (snapInput.checked) {
+        wallElement.points = (wallElement.points || []).map((point) => snapShapeOriginToGrid(point, layer));
+      }
+    });
+  });
+  container.appendChild(snapField);
+
+  if (wallElement.wallType === "door") {
+    const secretField = createCheckField({ id: `wall-secret-${wallElement.id}`, label: "Secret", switchStyle: true });
+    const secretInput = secretField.querySelector("input");
+    secretInput.checked = Boolean(wallElement.secret);
+    secretInput.addEventListener("change", () => {
+      applyWallChange("door secret", () => {
+        wallElement.secret = secretInput.checked;
+      });
+    });
+    container.appendChild(secretField);
+
+    const lockedField = createCheckField({ id: `wall-locked-${wallElement.id}`, label: "Locked", switchStyle: true });
+    const lockedInput = lockedField.querySelector("input");
+    lockedInput.checked = Boolean(wallElement.locked);
+    lockedInput.addEventListener("change", () => {
+      applyWallChange("door locked", () => {
+        wallElement.locked = lockedInput.checked;
+      });
+    });
+    container.appendChild(lockedField);
+
+    const doorHelp = document.createElement("span");
+    doorHelp.className = "align-middle";
+    doorHelp.dataset.helpTopic = "orrery.doors";
+    doorHelp.dataset.helpInsert = "replace";
+    container.appendChild(doorHelp);
+    initHelpSystem({ root: container });
+  }
+
+  if (elements.selectionToolbar) {
+    const buttons = [];
+    if (wallElement.wallType === "door") {
+      buttons.push({
+        action: wallElement.doorState === "open" ? "close-door" : "open-door",
+        label: wallElement.doorState === "open" ? "Close Door" : "Open Door",
+        icon: wallElement.doorState === "open" ? "tabler:door-off" : "tabler:door",
+        onClick: () => {
+          applyWallChange("toggle door", () => {
+            wallElement.doorState = wallElement.doorState === "open" ? "closed" : "open";
+          });
+        },
+      });
+    }
+    buttons.push({
+      action: "delete",
+      label: wallElement.wallType === "door" ? "Delete Door" : "Delete Wall",
+      attrs: { "data-action": "delete-selected" },
+      onClick: () => {
+        recordHistory("delete wall", () => {
+          layer.elements = (layer.elements || []).filter((entry) => entry.id !== wallElement.id);
+          updateMapTimestamp(state.map);
+        });
+        setSelection("layer", layer.id);
+      },
+    });
+    createToolbarButtonGroup(buttons).forEach((button) => elements.selectionToolbar.appendChild(button));
+    refreshTooltips(elements.selectionToolbar);
+  }
+}
+
+function renderLightSelectionEditor(layer, lightElement) {
+  if (!elements.selectionEditor) {
+    return;
+  }
+  const container = elements.selectionEditor;
+  disposeTooltips(container);
+  container.innerHTML = "";
+
+  function applyLightChange(label, apply) {
+    recordHistory(label, () => {
+      apply();
+      updateMapTimestamp(state.map);
+    });
+    renderLayerOverlays();
+    renderJson();
+  }
+
+  const lightHelp = document.createElement("span");
+  lightHelp.className = "align-middle";
+  lightHelp.dataset.helpTopic = "orrery.lights";
+  lightHelp.dataset.helpInsert = "replace";
+  container.appendChild(lightHelp);
+  initHelpSystem({ root: container });
+
+  // Attach to Token — a light attached to a marker tracks that marker's
+  // live position every render instead of its own stored origin (see
+  // map-viewer.js's own resolveLightOrigin), moving with it as it's dragged
+  // — a torch a character carries. Lists every marker across every marker
+  // layer on the map, not just this one layer's own (a light and its
+  // carrier don't have to share a layer).
+  const attachField = createFormFloatingField({ type: "select", label: "Attach to Token" });
+  const attachSelect = attachField.querySelector("select");
+  const noneOption = document.createElement("option");
+  noneOption.value = "";
+  noneOption.textContent = "None (freestanding)";
+  attachSelect.appendChild(noneOption);
+  (state.map.layers || []).forEach((markerLayer) => {
+    if (markerLayer.type !== "marker") return;
+    (markerLayer.elements || []).forEach((marker) => {
+      if (marker.kind !== "marker") return;
+      const option = document.createElement("option");
+      option.value = marker.id;
+      option.textContent = marker.label || marker.refKind || "Marker";
+      attachSelect.appendChild(option);
+    });
+  });
+  attachSelect.value = lightElement.attachedMarkerId || "";
+  attachSelect.addEventListener("change", () => {
+    applyLightChange("light attach to token", () => {
+      lightElement.attachedMarkerId = attachSelect.value;
+    });
+  });
+  container.appendChild(attachField);
+
+  const useRealUnits = hasMapMeasurementConfigured();
+  const unitLabel = useRealUnits ? state.map.measurement.unit : "cells";
+  const toDisplay = (cells) => (useRealUnits ? cells * state.map.measurement.scale : cells);
+  const fromDisplay = (value) => (useRealUnits ? value / state.map.measurement.scale : value);
+
+  // Position X/Y — shown only while freestanding; while attached, position
+  // is derived from the host marker, not directly authored (mirrors how a
+  // live-Bound Workbench field's value display becomes read-only/derived
+  // rather than independently editable).
+  if (!lightElement.attachedMarkerId) {
+    const originPixel = markerPositionToLocalPixel(baseMapManager, state.map, lightElement.origin);
+    const positionRow = createFieldRow(
+      [
+        createCommitOnBlurNumberField("Position X", Math.round(originPixel.x), (value) => {
+          if (value === null) return;
+          applyLightChange("light position", () => {
+            const next = markerPositionToLocalPixel(baseMapManager, state.map, lightElement.origin);
+            lightElement.origin = localPixelToMarkerPosition(baseMapManager, state.map, { x: value, y: next.y });
+          });
+        }),
+        createCommitOnBlurNumberField("Position Y", Math.round(originPixel.y), (value) => {
+          if (value === null) return;
+          applyLightChange("light position", () => {
+            const next = markerPositionToLocalPixel(baseMapManager, state.map, lightElement.origin);
+            lightElement.origin = localPixelToMarkerPosition(baseMapManager, state.map, { x: next.x, y: value });
+          });
+        }),
+      ],
+      { columns: 2 }
+    );
+    container.appendChild(positionRow);
+  }
+
+  const rangeField = createCommitOnBlurNumberField(
+    `Range (${unitLabel})`,
+    Math.round(toDisplay(lightElement.rangeCells || 0)),
+    (value) => {
+      if (value === null) return;
+      applyLightChange("light range", () => {
+        lightElement.rangeCells = Math.max(0, fromDisplay(Math.round(value)));
+      });
+    },
+    { min: 0, step: 1 }
+  );
+  container.appendChild(createFieldRow([rangeField], { columns: 2 }));
+
+  const colorField = createCompactField({
+    type: "color",
+    label: "Color",
+    controlClass: "form-control form-control-color",
+  });
+  colorField.querySelector("input").value = lightElement.color || "#fbbf24";
+  colorField.querySelector("input").addEventListener("change", (event) => {
+    applyLightChange("light color", () => {
+      lightElement.color = event.target.value;
+    });
+  });
+
+  const opacityField = createCompactField({ type: "range", label: "Opacity", controlClass: "form-range", min: 0, max: 1, step: 0.05 });
+  const opacityInput = opacityField.querySelector("input");
+  opacityInput.value = Number.isFinite(lightElement.opacity) ? lightElement.opacity : 0.5;
+  opacityInput.addEventListener("change", () => {
+    const value = Number(opacityInput.value);
+    if (!Number.isFinite(value)) return;
+    applyLightChange("light opacity", () => {
+      lightElement.opacity = value;
+    });
+  });
+  container.appendChild(createFieldRow([colorField, opacityField], { columns: 2 }));
+
+  if (elements.selectionToolbar) {
+    createToolbarButtonGroup([
+      {
+        action: "delete",
+        label: "Delete light",
+        attrs: { "data-action": "delete-selected" },
+        onClick: () => {
+          recordHistory("delete light", () => {
+            layer.elements = (layer.elements || []).filter((entry) => entry.id !== lightElement.id);
+            updateMapTimestamp(state.map);
+          });
+          setSelection("layer", layer.id);
+        },
+      },
+    ]).forEach((button) => elements.selectionToolbar.appendChild(button));
+    refreshTooltips(elements.selectionToolbar);
+  }
 }
 
 // Same "select a placed thing, then Delete" pattern as a drawn path's own
@@ -2132,11 +2526,31 @@ function resolvePaintTargetLayer(group) {
   return remembered || gridLayers[0] || null;
 }
 
+// Fires the character-payload fetch for every character-linked marker whose
+// Vision Range is actually Bound/Formula, not just whichever one's own
+// inspector panel happens to be open right now — without this, a GM who
+// never happens to click a given marker's own inspector would silently
+// never see that marker's Auto-Reveal contribution resolve past its
+// literal-Text fallback. Fire-and-forget, cheap after the first pass
+// (ensureCharacterPayloadCached is itself a no-op once cached/in-flight).
+function primeCharacterPayloadCache() {
+  (state.map.layers || []).forEach((layer) => {
+    if (layer.type !== "marker") return;
+    (layer.elements || []).forEach((marker) => {
+      if (marker.kind !== "marker" || marker.refKind !== "character" || !marker.refId) return;
+      if ((marker.visionRangeBinding || "").trim() || (marker.visionRangeFormula || "").trim()) {
+        ensureCharacterPayloadCached(marker.refId, () => renderLayerOverlays());
+      }
+    });
+  });
+}
+
 function renderLayerOverlays() {
   const overlay = baseMapManager.getOverlayContainer();
   if (!overlay) {
     return;
   }
+  primeCharacterPayloadCache();
   syncOverlayInteractivity();
   const activeGroup =
     state.selection.kind === "group" ? state.map.groups.find((group) => group.id === state.selection.id) : null;
@@ -2146,6 +2560,10 @@ function renderLayerOverlays() {
     hasFullAccess: currentUserHasFullMapAccess(),
     selection: state.selection,
     activeGroup,
+    // Orrery's own authoring view needs to resolve vision Bindings too —
+    // both for its own live fog-preview tint and so the marker inspector's
+    // Binding field can display a resolved value once the record loads.
+    getCharacterPayload: getCachedCharacterPayload,
     onGridCellPointerDown: (layer, coord, event) => {
       const entry = createGridCellSelectionEntry(layer, coord);
       const isCtrl = event.metaKey || event.ctrlKey;
@@ -2232,29 +2650,97 @@ function renderLayerOverlays() {
     // selectShapeElementForDrag (no overlay rebuild — see its own comment)
     // since it might be about to be dragged; a plain path has no drag to
     // protect, so the regular setSelection is fine.
-    onVectorPathClick: drawModeActive
+    // "shape" or "light" — both use the lightweight selectShapeElementForDrag
+    // (no overlay rebuild) since either might be about to be dragged; a
+    // plain path has no drag to protect, so the regular setSelection is fine
+    // for that (walls get their own dedicated onWallDragEnd/
+    // onWallVertexDragEnd below instead of this callback).
+    //
+    // Gated by drawModeActive || wallModeActive (NOT shapeModeActive/
+    // lightModeActive — a placed shape/light must stay immediately
+    // selectable even while ITS OWN tool is still armed, see this block's
+    // own history a few lines up) — walls have no equivalent "click my own
+    // just-placed one" nuance (their own placement commits via double-
+    // click/Enter, not a drag-release), so there's no reason to keep other
+    // elements interactive while Wall mode is active.
+    onVectorPathClick: drawModeActive || wallModeActive
       ? undefined
       : (layer, elementId, event, kind) => {
-          if (kind === "shape") {
+          if (kind === "shape" || kind === "light") {
             selectShapeElementForDrag(layer, elementId);
           } else {
             setSelection("vector-path", elementId, { layerId: layer.id });
           }
         },
-    onShapeDragEnd: drawModeActive
+    // Shared by both AoE shapes and Lights — snapMarkerPositionToGrid isn't
+    // actually shape-specific, it only ever uses the layer's own generic
+    // getMarkerLayerOffset, so it snaps any layer's element position. A
+    // Light has no snapToGrid field of its own (unlike a shape) — the
+    // `!== false` default here means a dragged light always snaps, which is
+    // a reasonable default for a grid-based placement and not worth a
+    // dedicated per-light toggle.
+    //
+    // wallModeActive added to this gate (previously only drawModeActive) —
+    // confirmed as the actual cause of "a light gets selected instead of
+    // the wall being drawn": onVectorPathClick above was already correctly
+    // gated by wallModeActive, but this callback wasn't, so an
+    // already-selected light's own DRAG capability alone (independent of
+    // click-to-select) was still enough for its hit-target to intercept the
+    // pointerdown and call stopPropagation() before the Wall tool's own
+    // mapContainer handler ever saw it.
+    onShapeDragEnd: drawModeActive || wallModeActive
       ? undefined
       : (layer, elementId, nextOrigin) => {
-          const shapeElement = layer.elements?.find((entry) => entry.id === elementId);
-          if (!shapeElement) return;
+          const draggedElement = layer.elements?.find((entry) => entry.id === elementId);
+          if (!draggedElement) return;
           const before = JSON.stringify(state.map);
-          // snapMarkerPositionToGrid isn't actually marker-specific — it
-          // only ever uses the layer's own generic getMarkerLayerOffset, so
-          // it snaps any layer's element position, shape included.
-          shapeElement.origin = shapeElement.snapToGrid !== false ? snapShapeOriginToGrid(nextOrigin, layer) : nextOrigin;
+          draggedElement.origin = draggedElement.snapToGrid !== false ? snapShapeOriginToGrid(nextOrigin, layer) : nextOrigin;
           updateMapTimestamp(state.map);
           const after = JSON.stringify(state.map);
           if (before !== after) {
-            undoStack.push({ label: "move shape", before, after });
+            undoStack.push({ label: draggedElement.kind === "light" ? "move light" : "move shape", before, after });
+          }
+          renderLayerOverlays();
+          renderJson();
+        },
+    // Whole-wall drag — translates every point of the wall by the same
+    // delta (map-viewer.js's renderWallElement already computed the shifted
+    // points; this just re-snaps each one if the wall's own snapToGrid is
+    // on and commits). Gated by every OTHER placement tool too (not just
+    // wallModeActive/drawModeActive) — unlike a shape/light, a wall has no
+    // "click my own just-placed one" convenience to preserve (its own
+    // placement never commits via a single click the way a shape/light's
+    // does), so there's no reason to leave an existing wall interactive
+    // while placing a brand new shape or light near/over it either.
+    onWallDragEnd: drawModeActive || wallModeActive || shapeModeActive || lightModeActive
+      ? undefined
+      : (layer, elementId, nextPoints) => {
+          const wallElement = layer.elements?.find((entry) => entry.id === elementId);
+          if (!wallElement) return;
+          const before = JSON.stringify(state.map);
+          wallElement.points = wallElement.snapToGrid !== false ? nextPoints.map((point) => snapShapeOriginToGrid(point, layer)) : nextPoints;
+          updateMapTimestamp(state.map);
+          const after = JSON.stringify(state.map);
+          if (before !== after) {
+            undoStack.push({ label: "move wall", before, after });
+          }
+          renderLayerOverlays();
+          renderJson();
+        },
+    // Single-vertex drag (the handles shown when a wall is selected) — same
+    // snap/commit shape (and same gating reasoning) as onWallDragEnd, just
+    // for one point.
+    onWallVertexDragEnd: drawModeActive || wallModeActive || shapeModeActive || lightModeActive
+      ? undefined
+      : (layer, elementId, vertexIndex, nextPoint) => {
+          const wallElement = layer.elements?.find((entry) => entry.id === elementId);
+          if (!wallElement || !Array.isArray(wallElement.points) || !wallElement.points[vertexIndex]) return;
+          const before = JSON.stringify(state.map);
+          wallElement.points[vertexIndex] = wallElement.snapToGrid !== false ? snapShapeOriginToGrid(nextPoint, layer) : nextPoint;
+          updateMapTimestamp(state.map);
+          const after = JSON.stringify(state.map);
+          if (before !== after) {
+            undoStack.push({ label: "reshape wall", before, after });
           }
           renderLayerOverlays();
           renderJson();
@@ -2625,6 +3111,24 @@ function buildFogOfWarFields(layer) {
       });
     });
     wrapper.appendChild(groupField);
+
+    const autoRevealField = createCheckField({ id: `layer-auto-reveal-${layer.id}`, label: "Auto-Reveal from Character Vision", switchStyle: true });
+    const autoRevealInput = autoRevealField.querySelector("input");
+    autoRevealInput.checked = Boolean(layer.settings.autoRevealFromVision);
+    autoRevealInput.addEventListener("change", () => {
+      applyLayerSettingsChange("layer auto reveal from vision", () => {
+        layer.settings.autoRevealFromVision = autoRevealInput.checked;
+      });
+    });
+    const autoRevealRow = document.createElement("div");
+    autoRevealRow.className = "d-flex align-items-center justify-content-between gap-2";
+    const autoRevealHelp = document.createElement("span");
+    autoRevealHelp.className = "align-middle";
+    autoRevealHelp.dataset.helpTopic = "orrery.autoRevealVision";
+    autoRevealHelp.dataset.helpInsert = "replace";
+    autoRevealRow.append(autoRevealField, autoRevealHelp);
+    wrapper.appendChild(autoRevealRow);
+    initHelpSystem({ root: autoRevealRow });
 
     // Same range-slider shape as every other Opacity in this suite
     // (buildLayerOpacityField's own). Two independent sliders, not one —
@@ -3182,15 +3686,106 @@ function getLibraryKinds() {
   return libraryKindsPromise;
 }
 
+// A marker's own Vision Range can be Bound to a field on its linked
+// Character record (see createMarkerElement's own header comment) —
+// resolving a live Binding needs that record's real payload, which means a
+// fetch, but resolveRevealedCells/renderMapLayers are all synchronous
+// (called directly during DOM construction). Rather than making the whole
+// render pipeline async, this is a small synchronous, cache-backed lookup
+// (getCachedCharacterPayload) threaded through as a plain callback —
+// map-viewer.js's own resolveMarkerVisionRangeCells never fetches anything
+// itself, matching that module's own "everything caller-specific is a
+// callback" architecture. `ensureCharacterPayloadCached` is fire-and-forget:
+// call it during a render pass, it populates the cache and re-renders once
+// the fetch resolves — same "populate cache, re-render once it resolves"
+// shape as this file's own getLibraryKinds/libraryKindsPromise just above,
+// just per-character instead of once for the whole session.
+const characterPayloadCache = new Map();
+const pendingCharacterFetches = new Set();
+function getCachedCharacterPayload(refId) {
+  return characterPayloadCache.get(refId);
+}
+function ensureCharacterPayloadCached(refId, onLoaded) {
+  if (!refId || !dataManager || characterPayloadCache.has(refId) || pendingCharacterFetches.has(refId)) return;
+  pendingCharacterFetches.add(refId);
+  dataManager
+    .get("character", refId)
+    .then((result) => {
+      characterPayloadCache.set(refId, result?.payload || {});
+      pendingCharacterFetches.delete(refId);
+      onLoaded?.();
+    })
+    .catch(() => {
+      pendingCharacterFetches.delete(refId);
+    });
+}
+
+// The GM-facing "@field" autocomplete list for a marker's own Vision Range
+// Binding — walks refId's own linked Character -> its Template's own
+// `.schema` field -> that System's own field tree (collectSystemFields),
+// the same two-hop chain Workbench's character editor itself resolves a
+// loaded character's System through (character.template -> template.schema
+// -> system). Cached per Character refId (not recomputed every render) —
+// empty (never an error) when any hop is missing/unresolvable, so the
+// field just degrades to a plain literal-number/formula input with no
+// suggestions, same graceful-degradation contract as the payload cache
+// above.
+const characterSystemFieldsCache = new Map();
+const pendingCharacterSystemFieldsFetches = new Set();
+function getCachedCharacterSystemFields(refId) {
+  return characterSystemFieldsCache.get(refId) || [];
+}
+function ensureCharacterSystemFieldsCached(refId, characterPayload, onLoaded) {
+  if (!refId || !dataManager || !characterPayload) return;
+  if (characterSystemFieldsCache.has(refId) || pendingCharacterSystemFieldsFetches.has(refId)) return;
+  const templateId = characterPayload.template || "";
+  if (!templateId) {
+    characterSystemFieldsCache.set(refId, []);
+    return;
+  }
+  pendingCharacterSystemFieldsFetches.add(refId);
+  (async () => {
+    try {
+      const templateResult = await dataManager.get("templates", templateId);
+      const systemId = templateResult?.payload?.schema || "";
+      if (!systemId) {
+        characterSystemFieldsCache.set(refId, []);
+        return;
+      }
+      const systemResult = await dataManager.get("systems", systemId);
+      characterSystemFieldsCache.set(refId, collectSystemFields(systemResult?.payload || {}));
+    } catch (error) {
+      characterSystemFieldsCache.set(refId, []);
+    } finally {
+      pendingCharacterSystemFieldsFetches.delete(refId);
+      onLoaded?.();
+    }
+  })();
+}
+
 // A marker element optionally references a real Library entity of any kind
 // — the {refKind, refId, label} shape the architecture plan settled on so
 // Orrery maps can point at Sanctum Locations, Forge/Crucible NPCs and
 // Monsters, Vault Effects, etc. without either tool needing to know about
 // the other. Mirrors Sanctum's Assets/Needs "kind + entity" picker.
+//
+// This function is async (it awaits getLibraryKinds/populateEntitySelect/
+// refreshPreview before its final DOM appends), and a character-linked
+// marker's own ensureCharacterPayloadCached/ensureCharacterSystemFieldsCached
+// calls (below) each re-invoke renderSelection() — and therefore this whole
+// function again — once their own fetch resolves. Without a staleness guard,
+// two or three overlapping invocations each independently append their own
+// Position X/Y row and toolbar Delete button once their awaits resolve,
+// producing duplicates (confirmed bug: referencing a character produced
+// three Position X/Y rows and two extra Delete buttons — one invocation per
+// cache fetch). markerSelectionEditorRenderId lets only the most recent
+// invocation's tail actually mutate the live container/toolbar.
+let markerSelectionEditorRenderId = 0;
 async function renderMarkerElementSelectionEditor(layer, markerElement) {
   if (!elements.selectionEditor) {
     return;
   }
+  const renderId = ++markerSelectionEditorRenderId;
   const container = elements.selectionEditor;
   disposeTooltips(container);
   container.innerHTML = "";
@@ -3226,7 +3821,7 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
   // snapCellsToWholeUnit follows — a fractional token size isn't a real
   // VTT convention the way a fractional AoE range sometimes is.
   const sizeField = createCommitOnBlurNumberField(
-    "Size (grid squares)",
+    "Size (cells)",
     Number.isFinite(markerElement.sizeCells) && markerElement.sizeCells > 0 ? markerElement.sizeCells : 1,
     (value) => {
       if (value === null) return;
@@ -3236,7 +3831,61 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
     },
     { min: 1, step: 1 }
   );
-  container.appendChild(sizeField);
+
+  // Vision Range — Binding/Formula/Text, the same shared control (and the
+  // same "no invisible defaults, starts as an immediately-usable literal"
+  // convention) every other bindable field in this suite uses. Meaningful
+  // only when refKind==="character" and the grid layer's own Auto-Reveal
+  // toggle is on, but shown regardless — an inert field on a non-character
+  // marker is harmless, matching how a wall's own doorState stays
+  // harmlessly inert on a plain (non-door) wall. `@`-suggestions are
+  // restricted to numeric fields on the linked Character's own System
+  // (empty, not an error, when no character is linked or its System can't
+  // be resolved).
+  if (markerElement.refKind === "character" && markerElement.refId) {
+    ensureCharacterPayloadCached(markerElement.refId, () => renderSelection());
+    ensureCharacterSystemFieldsCached(markerElement.refId, getCachedCharacterPayload(markerElement.refId), () => renderSelection());
+  }
+  const visionRangeField = createBindingFormulaInput(markerElement, {
+    labelText: "Vision Range (cells)",
+    // Same compact "label above, form-control-sm" markup Size (its own
+    // row-mate, right above) already uses — the field looked like two
+    // different Bootstrap control conventions sitting side by side without
+    // this.
+    compact: true,
+    placeholder: "0, @senses.darkvision, or =@senses.darkvision + 1",
+    bindingKey: "visionRangeBinding",
+    formulaKey: "visionRangeFormula",
+    textKey: "visionRangeText",
+    allowedFieldCategories: ["number"],
+    systemFields: markerElement.refKind === "character" ? getCachedCharacterSystemFields(markerElement.refId) : [],
+    hasSchemaSelected: Boolean(markerElement.refKind === "character" && markerElement.refId),
+    // No helperText, and showEmptyFieldsHint off — a marker has no "select
+    // a system" step of its own anywhere nearby (unlike Workbench's
+    // template editor, where that hint's default wording makes sense), so
+    // both the explicit helper text and the shared control's own auto
+    // "Select a system to enable bindings." fallback read as out-of-place
+    // noise here.
+    showEmptyFieldsHint: false,
+    // Deliberately NOT applyMarkerElementChange — createBindingFormulaInput
+    // commits on every keystroke ("input", not blur/change — its own live
+    // Preview line and @-autocomplete need to update as you type), and
+    // applyMarkerElementChange's renderSelection() rebuilds this entire
+    // editor's DOM, which would steal focus out of this very input on every
+    // character typed. Same recordHistory+re-render shape, just without the
+    // inspector-panel rebuild (this field's own value display is already
+    // self-managing; the title/details text above doesn't depend on vision
+    // range).
+    onCommit: (mutator) => {
+      recordHistory("marker vision range", () => {
+        mutator(markerElement);
+        updateMapTimestamp(state.map);
+      });
+      renderLayerOverlays();
+      renderJson();
+    },
+  });
+  container.appendChild(createFieldRow([sizeField, visionRangeField], { columns: 2 }));
 
   // Per-marker override of the layer's own outline color (createMarkerDot
   // reads markerElement.outlineColor first, falling back to the layer
@@ -3255,20 +3904,24 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
       markerElement.outlineColor = event.target.value;
     });
   });
-  container.appendChild(outlineColorField);
 
-  const imageField = createTokenImageField({
-    label: "Image",
-    value: markerElement.image || "",
-    dataManager,
-    status,
-    onSelect: (url) => {
-      applyMarkerElementChange("marker image", () => {
-        markerElement.image = url;
-      });
-    },
+  // Same range-slider shape every other Opacity in this suite uses (0-1,
+  // step 0.05, form-range) — see the shape/light editors' own identical
+  // fields. Per-marker only, no layer-wide equivalent (createMarkerElement's
+  // own comment) — a token fading in/out (unconscious, hidden, ...) is a
+  // property of that one placed marker.
+  const opacityField = createCompactField({ type: "range", label: "Opacity", controlClass: "form-range", min: 0, max: 1, step: 0.05 });
+  const opacityInput = opacityField.querySelector("input");
+  opacityInput.value = Number.isFinite(markerElement.opacity) ? markerElement.opacity : 1;
+  opacityInput.addEventListener("change", () => {
+    const value = Number(opacityInput.value);
+    if (!Number.isFinite(value)) return;
+    applyMarkerElementChange("marker opacity", () => {
+      markerElement.opacity = value;
+    });
   });
-  container.appendChild(imageField);
+
+  container.appendChild(createFieldRow([outlineColorField, opacityField], { columns: 2 }));
 
   const referencesField = createFormFloatingField({ type: "select", label: "References" });
   const kindSelect = referencesField.querySelector("select");
@@ -3283,21 +3936,129 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
   entitySelect.disabled = true;
   container.appendChild(entityField);
 
-  const previewBox = document.createElement("div");
-  previewBox.className = "small text-body-secondary border rounded p-2";
-  previewBox.textContent = "No entity selected.";
-  container.appendChild(previewBox);
+  // Below Entity, not above — Image is very often auto-inherited FROM
+  // whichever entity gets picked (entitySelect's own "change" handler,
+  // below), so grouping it visually right after the picker it depends on
+  // reads more naturally than before it.
+  const imageField = createTokenImageField({
+    label: "Image",
+    value: markerElement.image || "",
+    dataManager,
+    status,
+    onSelect: (url) => {
+      applyMarkerElementChange("marker image", () => {
+        markerElement.image = url;
+      });
+    },
+  });
+  container.appendChild(imageField);
+
+  // Icon overlays (map-model.js's own createMarkerOverlayIcon, rendered by
+  // map-viewer.js's own createMarkerDot) — purely visual, no mechanical
+  // effect. Useful for any small indicator a GM wants to pin to a token
+  // (a condition, a quest marker, a turn-order cue, anything) — not
+  // conditions specifically, so nothing in this UI names them that. A
+  // marker can carry several at once, each independently removable/
+  // re-colorable. Picking an icon from the search field below adds it
+  // immediately (a fresh entry, default badge color) — no separate confirm
+  // step, matching how placing a marker/shape itself already has no
+  // confirm step either; color is set AFTER adding, per-chip, rather than
+  // as an upfront "choose a color, then pick an icon" two-step flow.
+  // Placed below Image, near the bottom of the panel — it's the least
+  // frequently touched marker field, so it doesn't need to sit above
+  // fields edited far more often.
+  //
+  // labelClass matches createTokenImageField's own Image label exactly
+  // ("form-label small text-body-secondary fw-semibold", overriding this
+  // field's own default "form-label mb-0") — the two sit right next to
+  // each other in this panel and should read as the same kind of label.
+  const addOverlayIconField = createIconPickerField({
+    label: "Icons",
+    labelClass: "form-label small text-body-secondary fw-semibold",
+    value: "",
+    onSelect: (value) => {
+      if (!value) return;
+      applyMarkerElementChange("marker add icon", () => {
+        markerElement.overlayIcons = [...(markerElement.overlayIcons || []), createMarkerOverlayIcon({ icon: value, label: value })];
+      });
+    },
+  });
+  container.appendChild(addOverlayIconField);
+
+  // Scrollable (not just a plain flex-wrap row) so a marker stacking many
+  // icons doesn't push Position X/Y and the toolbar further down the panel
+  // every time one's added — and collapsible (createCollapsibleSection, the
+  // same "Custom Properties" pattern used elsewhere in this file) since
+  // most markers carry zero or few icons most of the time.
+  const overlayIconsList = document.createElement("div");
+  overlayIconsList.className = "orrery-marker-icons-list d-flex flex-wrap gap-2";
+  if ((markerElement.overlayIcons || []).length) {
+    markerElement.overlayIcons.forEach((entry) => {
+      const chip = document.createElement("span");
+      chip.className = "d-inline-flex align-items-center gap-1 border rounded-pill ps-1 pe-1 py-1 small";
+      const colorInput = document.createElement("input");
+      colorInput.type = "color";
+      colorInput.value = entry.color || "#1e293b";
+      colorInput.className = "border-0 p-0";
+      colorInput.style.width = "1.1rem";
+      colorInput.style.height = "1.1rem";
+      colorInput.setAttribute("aria-label", "Badge color");
+      colorInput.addEventListener("change", (event) => {
+        applyMarkerElementChange("marker icon color", () => {
+          const target = (markerElement.overlayIcons || []).find((e) => e.id === entry.id);
+          if (target) target.color = event.target.value;
+        });
+      });
+      chip.appendChild(colorInput);
+      const iconTokens = getIconTokens(entry.icon);
+      if (iconTokens.length) {
+        const icon = document.createElement("span");
+        const bootstrapToken = iconTokens.find((token) => token.startsWith("bi-"));
+        icon.className = bootstrapToken ? `bi ${bootstrapToken}` : iconTokens.join(" ");
+        chip.appendChild(icon);
+      }
+      chip.appendChild(document.createTextNode(entry.label || entry.icon || "icon"));
+      const removeButton = document.createElement("button");
+      removeButton.type = "button";
+      removeButton.className = "btn-close";
+      removeButton.style.fontSize = "0.5rem";
+      removeButton.setAttribute("aria-label", "Remove icon");
+      removeButton.addEventListener("click", () => {
+        applyMarkerElementChange("marker remove icon", () => {
+          markerElement.overlayIcons = (markerElement.overlayIcons || []).filter((e) => e.id !== entry.id);
+        });
+      });
+      chip.appendChild(removeButton);
+      overlayIconsList.appendChild(chip);
+    });
+  } else {
+    const emptyState = document.createElement("div");
+    emptyState.className = "small text-body-secondary";
+    emptyState.textContent = "No icons yet.";
+    overlayIconsList.appendChild(emptyState);
+  }
+  const activeIconsSection = createCollapsibleSection("Active Icons", [overlayIconsList], {
+    defaultCollapsed: !(markerElement.overlayIcons || []).length,
+  });
+  // createCollapsibleSection's own heading always uses "fs-6" (this
+  // panel's normal section-heading size) — smaller here since "Active
+  // Icons" is a lightweight, glance-only list, not a peer of the panel's
+  // real named sections like Custom Properties. Below even .extra-small
+  // (0.75rem, common/css/shell.css's own smallest text utility) — a plain
+  // inline size since nothing in the shared utility scale goes smaller.
+  const activeIconsHeading = activeIconsSection.querySelector(".fs-6");
+  if (activeIconsHeading) {
+    activeIconsHeading.classList.remove("fs-6");
+    activeIconsHeading.style.fontSize = "0.7rem";
+  }
+  container.appendChild(activeIconsSection);
 
   async function refreshPreview() {
     if (!markerElement.refKind || !markerElement.refId || !dataManager) {
-      previewBox.textContent = "No entity selected.";
       return;
     }
     try {
       const result = await dataManager.get(markerElement.refKind, markerElement.refId);
-      const name = result?.payload?.name || markerElement.refId;
-      const description = result?.payload?.description || "";
-      previewBox.textContent = description ? `${name} — ${description}` : name;
       // A marker linked before its reference had an image (e.g. a Character
       // imported before the DDB mapping picked up `image`, or re-imported
       // later to add one) never gets a second chance at the entitySelect
@@ -3325,7 +4086,9 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
         }
       }
     } catch (error) {
-      previewBox.textContent = "Unable to load entity.";
+      // No preview box to report into anymore — a failed fetch here just
+      // means this pass skips the image/outline inheritance checks above,
+      // same as any other transient fetch failure elsewhere in this panel.
     }
   }
 
@@ -3370,6 +4133,15 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
   kindSelect.value = markerElement.refKind || "";
   await populateEntitySelect(markerElement.refKind, markerElement.refId);
   await refreshPreview();
+
+  // A newer invocation (triggered by one of the character-data cache
+  // fetches above resolving, or by a fresh selection change) already
+  // cleared and rebuilt the container while this one was awaiting — bail
+  // out rather than appending this stale invocation's own Position X/Y row
+  // and toolbar Delete button on top of the current one's.
+  if (renderId !== markerSelectionEditorRenderId) {
+    return;
+  }
 
   // Both handlers call renderSelection() (via applyMarkerElementChange)
   // rather than manually re-running populateEntitySelect/refreshPreview —
@@ -3480,19 +4252,27 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
     )
   );
 
-  const deleteButton = document.createElement("button");
-  deleteButton.type = "button";
-  deleteButton.className = "btn btn-outline-danger btn-sm";
-  deleteButton.textContent = "Delete Marker";
-  deleteButton.dataset.action = "delete-selected";
-  deleteButton.addEventListener("click", () => {
-    recordHistory("delete marker", () => {
-      layer.elements = (layer.elements || []).filter((entry) => entry.id !== markerElement.id);
-      updateMapTimestamp(state.map);
-    });
-    setSelection("layer", layer.id);
-  });
-  container.appendChild(deleteButton);
+  // Same shared icon-toolbar mount every other selection kind (wall, shape,
+  // light) already uses, not a standalone inline button — renderSelection()
+  // clears data-selection-toolbar-mount before every render, so only
+  // whichever selection kind is current populates it.
+  if (elements.selectionToolbar) {
+    createToolbarButtonGroup([
+      {
+        action: "delete",
+        label: "Delete marker",
+        attrs: { "data-action": "delete-selected" },
+        onClick: () => {
+          recordHistory("delete marker", () => {
+            layer.elements = (layer.elements || []).filter((entry) => entry.id !== markerElement.id);
+            updateMapTimestamp(state.map);
+          });
+          setSelection("layer", layer.id);
+        },
+      },
+    ]).forEach((button) => elements.selectionToolbar.appendChild(button));
+    refreshTooltips(elements.selectionToolbar);
+  }
 }
 
 function renderGridCellSelectionEditor(layer, selectedCells) {
@@ -4484,6 +5264,8 @@ function setupViewEvents() {
   setupMeasureTool();
   setupDrawTool();
   setupShapeTool();
+  setupWallTool();
+  setupLightTool();
   setupPingTool();
 }
 
@@ -4624,6 +5406,259 @@ function setupDrawTool() {
     window.addEventListener("pointermove", onMove);
     window.addEventListener("pointerup", onUp);
   });
+}
+
+// Same disabled-with-explanatory-tooltip pattern as updateDrawAvailability —
+// a wall/door lives in layer.elements just like a drawn path, so the same
+// "selected vector layer" prerequisite applies. No measurement-scale
+// requirement (unlike Shape) — a wall's length isn't authored in cells, it
+// traces real map geometry at whatever points the GM clicks.
+function updateWallAvailability() {
+  if (!elements.wallToggle) return;
+  const hasVectorLayer = Boolean(getSelectedVectorLayer());
+  elements.wallToggle.disabled = !hasVectorLayer;
+  const tooltipTarget = elements.wallToggleWrap || elements.wallToggle;
+  tooltipTarget.setAttribute(
+    "data-bs-title",
+    hasVectorLayer ? "Draw a wall or door on the selected vector layer" : "Select a vector layer to enable walls"
+  );
+  refreshTooltips(tooltipTarget.parentElement || document);
+  if (!hasVectorLayer && wallModeActive) {
+    wallModeActive = false;
+    elements.wallToggle.classList.remove("active");
+    elements.wallToggle.setAttribute("aria-pressed", "false");
+    mapContainer?.classList.remove("orrery-walling");
+    elements.wallSubMode?.classList.add("d-none");
+    elements.wallSnapToggleWrap?.classList.add("d-none");
+    teardownWallGesture();
+  }
+}
+
+// Tears down whatever's currently in progress (removes the live preview,
+// re-enables map pan/zoom) and clears wallGesture — used both for an
+// explicit cancel (Escape, switching sub-mode, turning the tool off) and a
+// successful commit (see commitWallGesture, which calls this after pushing
+// the finished element).
+function teardownWallGesture() {
+  wallGesture?.preview?.remove();
+  if (wallGesture) {
+    baseMapManager.setInteractionEnabled(true);
+  }
+  wallGesture = null;
+}
+
+function buildWallGesturePreview() {
+  const overlay = baseMapManager.getOverlayContainer();
+  const preview = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  preview.style.position = "absolute";
+  preview.style.inset = "0";
+  preview.style.width = "100%";
+  preview.style.height = "100%";
+  preview.style.overflow = "visible";
+  preview.style.pointerEvents = "none";
+  const polyline = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+  polyline.setAttribute("fill", "none");
+  polyline.setAttribute("stroke", wallGesture.layer.settings?.strokeColor || "#0f172a");
+  polyline.setAttribute("stroke-width", String(wallGesture.layer.settings?.strokeWidth || 3));
+  polyline.setAttribute("stroke-linecap", "round");
+  polyline.setAttribute("stroke-linejoin", "round");
+  polyline.setAttribute("stroke-dasharray", "6 4");
+  preview.appendChild(polyline);
+  overlay.appendChild(preview);
+  wallGesture.preview = preview;
+  wallGesture.polyline = polyline;
+}
+
+// Redraws the rubber-band preview — every already-placed vertex plus the
+// live cursor position (omitted when called from a non-pointer source, e.g.
+// Backspace, which just re-shows the committed vertices as they now stand).
+// The live cursor position is ALSO snapped when wallSnapEnabled (not just
+// the committed vertices resolveWallVertex already snaps) — this is what
+// makes snapping actually visible WHILE drawing, not just discoverable
+// after the fact by noticing a click landed on-grid: the rubber-band line's
+// own live endpoint visibly jumps to the nearest grid corner as the cursor
+// approaches it, the same live-snap feedback most polygon/wall tools give.
+// No layer-offset applied, matching setupDrawTool's own addPoint — same
+// (pre-existing, not introduced here) minor imprecision if the layer's own
+// manual position has been dragged off {0,0}; the final committed element
+// still renders correctly either way (createVectorLayerElement's own
+// rendering does apply the offset), only the live preview during placement
+// would be very slightly off in that specific case.
+function updateWallGesturePreview(pointerEvent) {
+  if (!wallGesture) return;
+  const overlay = baseMapManager.getOverlayContainer();
+  let cursorPosition = pointerEvent ? resolveClickPosition(baseMapManager, state.map, pointerEvent, overlay) : null;
+  if (cursorPosition && wallSnapEnabled) {
+    cursorPosition = snapShapeOriginToGrid(cursorPosition, wallGesture.layer);
+  }
+  const allPoints = cursorPosition ? [...wallGesture.points, cursorPosition] : wallGesture.points;
+  const pixelPoints = allPoints.map((point) => markerPositionToLocalPixel(baseMapManager, state.map, point));
+  wallGesture.polyline.setAttribute("points", pixelPoints.map((point) => `${point.x},${point.y}`).join(" "));
+}
+
+function commitWallGesture() {
+  if (!wallGesture || wallGesture.points.length < 2) {
+    teardownWallGesture();
+    return;
+  }
+  const { layer, points } = wallGesture;
+  recordHistory("draw wall", () => {
+    layer.elements = layer.elements || [];
+    layer.elements.push(
+      createWallElement({
+        points,
+        wallType: wallSubMode,
+        strokeColor: layer.settings?.strokeColor,
+        strokeWidth: layer.settings?.strokeWidth,
+        snapToGrid: wallSnapEnabled,
+      })
+    );
+    updateMapTimestamp(state.map);
+  });
+  teardownWallGesture();
+  renderLayerOverlays();
+  renderJson();
+}
+
+// Click-to-place-vertex wall/door placement — deliberately NOT Draw's own
+// continuous-drag-paint gesture (that samples a point on every pointermove,
+// producing a jittery many-point polyline from ordinary hand tremor — fine
+// for a decorative freehand annotation, actively bad for something that now
+// drives a real gameplay mechanic). Click adds a vertex, a dashed rubber-
+// band previews the next segment, double-click or Enter commits, Escape
+// cancels, Backspace undoes the last vertex. Door sub-mode auto-commits the
+// instant a 2nd vertex is placed — a door is always exactly one straight
+// segment, there's no reason to make the GM double-click for that case.
+function setupWallTool() {
+  if (!elements.wallToggle || !mapContainer) {
+    return;
+  }
+  updateWallAvailability();
+  wallSubMode = elements.wallSubMode?.value === "door" ? "door" : "wall";
+  // Syncs the button's visual .active state with wallSnapEnabled's own
+  // default (true) — the HTML's own aria-pressed="true" default has no
+  // matching .active class until this runs once.
+  elements.wallSnapToggle?.classList.toggle("active", wallSnapEnabled);
+
+  elements.wallToggle.addEventListener("click", () => {
+    if (elements.wallToggle.disabled) return;
+    wallModeActive = !wallModeActive;
+    elements.wallToggle.classList.toggle("active", wallModeActive);
+    elements.wallToggle.setAttribute("aria-pressed", wallModeActive ? "true" : "false");
+    mapContainer.classList.toggle("orrery-walling", wallModeActive);
+    elements.wallSubMode?.classList.toggle("d-none", !wallModeActive);
+    elements.wallSnapToggleWrap?.classList.toggle("d-none", !wallModeActive);
+    if (!wallModeActive) teardownWallGesture();
+    // Re-render so onVectorPathClick's own wallModeActive gate (see
+    // renderLayerOverlays) picks up the change immediately — same reasoning
+    // setupDrawTool's own toggle handler already documents.
+    renderLayerOverlays();
+  });
+
+  elements.wallSubMode?.addEventListener("change", () => {
+    wallSubMode = elements.wallSubMode.value === "door" ? "door" : "wall";
+    teardownWallGesture();
+  });
+
+  elements.wallSnapToggle?.addEventListener("click", () => {
+    wallSnapEnabled = !wallSnapEnabled;
+    elements.wallSnapToggle.classList.toggle("active", wallSnapEnabled);
+    elements.wallSnapToggle.setAttribute("aria-pressed", wallSnapEnabled ? "true" : "false");
+  });
+
+  // Resolves a raw click into a wall-vertex position — snapped to the
+  // nearest grid corner (snapShapeOriginToGrid, genuinely generic despite
+  // its own name — see createWallElement's own comment) when wallSnapEnabled,
+  // else the raw clicked point.
+  function resolveWallVertex(layer, event) {
+    const position = resolveClickPosition(baseMapManager, state.map, event, baseMapManager.getOverlayContainer());
+    if (!position) return null;
+    return wallSnapEnabled ? snapShapeOriginToGrid(position, layer) : position;
+  }
+
+  mapContainer.addEventListener("pointerdown", (event) => {
+    if (!wallModeActive || event.button !== 0) return;
+    const layer = getSelectedVectorLayer();
+    if (!layer) {
+      status.show("Select a vector layer first.", { type: "warning", timeout: 2000 });
+      return;
+    }
+    event.preventDefault();
+    if (!wallGesture) {
+      const position = resolveWallVertex(layer, event);
+      if (!position) return;
+      baseMapManager.setInteractionEnabled(false);
+      wallGesture = { layer, points: [position] };
+      buildWallGesturePreview();
+      updateWallGesturePreview(event);
+      return;
+    }
+    // The second press of a native double-click (event.detail is the
+    // browser's own rapid-click counter, standard on pointerdown/mousedown)
+    // is treated purely as "finish" — it doesn't add a redundant vertex at
+    // essentially the same spot the first press of that same double-click
+    // already placed. The paired native "dblclick" listener below then
+    // fires and commits whatever's already there.
+    if (event.detail >= 2) {
+      commitWallGesture();
+      return;
+    }
+    const position = resolveWallVertex(wallGesture.layer, event);
+    if (!position) return;
+    wallGesture.points.push(position);
+    updateWallGesturePreview(event);
+    if (wallSubMode === "door" && wallGesture.points.length >= 2) {
+      commitWallGesture();
+    }
+  });
+
+  mapContainer.addEventListener("pointermove", (event) => {
+    if (!wallGesture) return;
+    updateWallGesturePreview(event);
+  });
+
+  mapContainer.addEventListener("dblclick", (event) => {
+    if (!wallGesture) return;
+    event.preventDefault();
+    commitWallGesture();
+  });
+
+  // Capture phase, not the default bubble phase — this needs to run BEFORE
+  // (and be able to pre-empt, via stopImmediatePropagation) the global
+  // Escape/Backspace handler registered later in this file's own init
+  // sequence, regardless of which one happens to be registered first in
+  // source order. When no gesture is active, every key here is a no-op and
+  // the event falls through untouched to that global handler exactly as
+  // before this tool existed.
+  window.addEventListener(
+    "keydown",
+    (event) => {
+      if (!wallGesture) return;
+      if (event.key === "Escape") {
+        event.stopImmediatePropagation();
+        event.preventDefault();
+        teardownWallGesture();
+        return;
+      }
+      if (event.key === "Enter") {
+        event.stopImmediatePropagation();
+        event.preventDefault();
+        commitWallGesture();
+        return;
+      }
+      if (event.key === "Backspace") {
+        event.stopImmediatePropagation();
+        event.preventDefault();
+        wallGesture.points.pop();
+        if (!wallGesture.points.length) {
+          teardownWallGesture();
+        } else {
+          updateWallGesturePreview(null);
+        }
+      }
+    },
+    true
+  );
 }
 
 // Keeps the Shape toggle's enabled state and tooltip in sync with the same
@@ -4793,6 +5828,170 @@ function setupShapeTool() {
               strokeColor: layer.settings?.strokeColor,
               fillColor: layer.settings?.fillColor,
               strokeWidth: layer.settings?.strokeWidth,
+            })
+          );
+          updateMapTimestamp(state.map);
+        });
+        renderLayerOverlays();
+        renderJson();
+      }
+    }
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+  });
+}
+
+// Same disabled-with-explanatory-tooltip pattern as updateShapeAvailability
+// — a light's range is authored in cells, same measurement-scale
+// prerequisite. lightModeActive does NOT gate existing lights' own click-
+// through the way drawModeActive/wallModeActive do (see that variable's own
+// declaration comment) — a placed light stays immediately selectable/
+// draggable even while the tool is still armed, matching how a placed shape
+// already works.
+function updateLightAvailability() {
+  if (!elements.lightToggle) return;
+  const hasVectorLayer = Boolean(getSelectedVectorLayer());
+  const configured = hasMapMeasurementConfigured();
+  const available = hasVectorLayer && configured;
+  elements.lightToggle.disabled = !available;
+  const tooltipTarget = elements.lightToggleWrap || elements.lightToggle;
+  tooltipTarget.setAttribute(
+    "data-bs-title",
+    available
+      ? "Place a dynamic light on the selected vector layer"
+      : !hasVectorLayer
+        ? "Select a vector layer to enable dynamic lights"
+        : "Set Scale per cell and Scale unit (bottom of Map Properties) to enable dynamic lights"
+  );
+  refreshTooltips(tooltipTarget.parentElement || document);
+  if (!available && lightModeActive) {
+    lightModeActive = false;
+    elements.lightToggle.classList.remove("active");
+    elements.lightToggle.setAttribute("aria-pressed", "false");
+    mapContainer?.classList.remove("orrery-lighting");
+  }
+}
+
+// Reuses the Shape tool's own click-drag-commit gesture almost verbatim — a
+// light is geometrically a circle (origin + range), so there's no shape-type
+// picker, but the live preview reuses map-viewer.js's own renderLightElement
+// against a throwaway element, same "one place in the codebase that knows
+// how to turn this element's fields into an SVG primitive" reasoning
+// setupShapeTool's own preview already follows.
+function setupLightTool() {
+  if (!elements.lightToggle || !mapContainer) {
+    return;
+  }
+  updateLightAvailability();
+
+  elements.lightToggle.addEventListener("click", () => {
+    if (elements.lightToggle.disabled) return;
+    lightModeActive = !lightModeActive;
+    elements.lightToggle.classList.toggle("active", lightModeActive);
+    elements.lightToggle.setAttribute("aria-pressed", lightModeActive ? "true" : "false");
+    mapContainer.classList.toggle("orrery-lighting", lightModeActive);
+    renderLayerOverlays();
+  });
+
+  function setReadout(text) {
+    if (!elements.lightReadout) return;
+    elements.lightReadout.textContent = text || "";
+    elements.lightReadout.classList.toggle("d-none", !text);
+  }
+
+  mapContainer.addEventListener("pointerdown", (event) => {
+    if (!lightModeActive || event.button !== 0) return;
+    const layer = getSelectedVectorLayer();
+    if (!layer) {
+      status.show("Select a vector layer first.", { type: "warning", timeout: 2000 });
+      return;
+    }
+    event.preventDefault();
+    baseMapManager.setInteractionEnabled(false);
+    const overlay = baseMapManager.getOverlayContainer();
+    const origin = resolveClickPosition(baseMapManager, state.map, event, overlay);
+    if (!origin) {
+      baseMapManager.setInteractionEnabled(true);
+      return;
+    }
+    const startClientX = event.clientX;
+    const startClientY = event.clientY;
+    const offset = getMarkerLayerOffset(state.map, layer);
+
+    const preview = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    preview.style.position = "absolute";
+    preview.style.inset = "0";
+    preview.style.width = "100%";
+    preview.style.height = "100%";
+    preview.style.overflow = "visible";
+    preview.style.pointerEvents = "none";
+    overlay.appendChild(preview);
+
+    let rangeCells = 0;
+
+    function drawPreview() {
+      preview.innerHTML = "";
+      renderLightElement(
+        preview,
+        baseMapManager,
+        state.map,
+        layer,
+        {
+          id: "light-preview",
+          kind: "light",
+          origin,
+          attachedMarkerId: "",
+          rangeCells,
+          // A literal, not layer.settings?.fillColor (that's the vector
+          // layer's own SHAPE-fill default, blue #93c5fd, always truthy —
+          // confirmed as the actual cause of every new light inheriting
+          // blue instead of a light's own warm default). This is a plain
+          // object passed directly to renderLightElement, bypassing
+          // createLightElement's own factory default, so it needs its own
+          // explicit value matching that same default.
+          color: "#fbbf24",
+          opacity: 0.5,
+        },
+        offset,
+        {}
+      );
+    }
+    drawPreview();
+
+    function onMove(moveEvent) {
+      const dx = moveEvent.clientX - startClientX;
+      const dy = moveEvent.clientY - startClientY;
+      const cells = pixelsToCells(Math.hypot(dx, dy));
+      if (cells === null) {
+        setReadout("No grid layer to measure against.");
+        rangeCells = 0;
+        drawPreview();
+        return;
+      }
+      rangeCells = snapCellsToWholeUnit(cells);
+      const distance = Math.round(rangeCells * state.map.measurement.scale);
+      setReadout(`${distance} ${state.map.measurement.unit} (${rangeCells.toFixed(1)} cells)`);
+      drawPreview();
+    }
+
+    function onUp() {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      baseMapManager.setInteractionEnabled(true);
+      preview.remove();
+      setReadout("");
+      if (rangeCells > 0) {
+        recordHistory("place light", () => {
+          layer.elements = layer.elements || [];
+          layer.elements.push(
+            createLightElement({
+              origin,
+              rangeCells,
+              // color omitted — createLightElement's own default (amber/
+              // yellow) applies. NOT layer.settings?.fillColor (see the
+              // preview's own matching comment above for why that was
+              // wrong).
+              opacity: 0.5,
             })
           );
           updateMapTimestamp(state.map);

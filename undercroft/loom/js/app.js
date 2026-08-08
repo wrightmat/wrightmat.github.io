@@ -1348,6 +1348,21 @@ async function saveEntity(entity) {
       } catch (error) {
         // No existing record at this id — nothing to preserve, first import.
       }
+      // Every imported (or created) character needs at least one Assigned
+      // System — without this, a brand-new DDB import (nothing to preserve
+      // above, and the mapping itself never produces a systemIds field —
+      // see the comment above) would save with an empty array, invisible to
+      // anything keyed off Assigned Systems (character-sheet.js's own
+      // combat-binding lookup, Workbench's `@`-suggestion field list, ...).
+      // Gated on the currently loaded mapping's own declared `$source`
+      // ("ddb", ddb-character.json's root) rather than hardcoded
+      // unconditionally — a future non-DDB character mapping wouldn't
+      // inherit this default by accident; still explicit user data
+      // (`entity.data.systemIds`, if the mapping ever DOES start producing
+      // one) or a prior save's own preserved value always wins over this.
+      if ((!Array.isArray(data.systemIds) || !data.systemIds.length) && mappingDefinition?.$source === "ddb") {
+        data = { ...data, systemIds: ["sys.dnd5e"] };
+      }
     }
     await dataManager.save(entity.kind, id, data);
     status?.show(`Saved ${entity.kind}/${id}.json.`, { type: "success", timeout: 2000 });
@@ -3613,6 +3628,18 @@ if (librarySaveButton) {
       status?.show("Entity JSON isn't valid — fix it before saving.", { type: "error", timeout: 3000 });
       return;
     }
+    // Every character needs at least one Assigned System (systemIds) — the
+    // Systems checkbox list right above already writes straight into this
+    // same JSON textarea (see librarySystemList's own "change" handler), so
+    // this only ever fires if the GM saves a brand-new character without
+    // checking any of them first. Library's own generic newLibraryEntry()
+    // starts every kind blank, character included, so there's nothing
+    // upstream that already guarantees this the way saveEntity's own DDB-
+    // import default does (Mapping tool, above).
+    if (kind === "character" && (!Array.isArray(entity.systemIds) || !entity.systemIds.length)) {
+      status?.show("Check at least one Assigned System before saving a character.", { type: "warning", timeout: 3000 });
+      return;
+    }
     try {
       if (!dataManager) throw new Error("Not signed in");
       await dataManager.save(kind, id, entity);
@@ -5241,10 +5268,11 @@ async function init() {
 
   newMacroEditor();
 
-  // Deep link from the Dashboard's Macro board widget (macro-board.js) —
-  // clicking a macro while rearranging the layout lands here instead of
-  // running it for real, already on the Macros tab with that macro loaded,
-  // so editing it is one click away instead of a manual tab-and-select.
+  // Deep link from the Dashboard's Board widget (board.js's own
+  // renderMacroButtonCard) — clicking a macro-button card while rearranging
+  // the layout lands here instead of running it for real, already on the
+  // Macros tab with that macro loaded, so editing it is one click away
+  // instead of a manual tab-and-select.
   // Runs after updateLoomTabAvailability() above so the tab is already
   // visible for this session's tier by the time setLoomView fires.
   const deepLinkMacroId = new URLSearchParams(window.location.search).get("macro");

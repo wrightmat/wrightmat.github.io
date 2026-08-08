@@ -8,6 +8,20 @@
 // from the rest of the suite's `data-icon="tabler:*"` convention, since
 // this is specifically what Press's own Icon component already used and
 // this is a like-for-like port, not a reinterpretation.
+//
+// Tabler (Iconify) icons were added as a THIRD, opt-in source (see
+// ensureTablerIconNamesLoaded/TABLER_ICON_SOURCE below) for callers whose
+// own `icon` value is the suite-wide `tabler:*` data-icon convention
+// instead of a CSS class — Orrery/Dashboard's own chrome and content-icon
+// fields, not Press/Workbench's iconClass. `getAllIconOptions`/
+// `attachIconAutocomplete` both take an optional `sources` filter so a
+// caller can restrict to just one vocabulary (board.js passes
+// `sources: ["tabler"]`, since a bi-*/ddb-* suggestion would be a value its
+// own tabler:*-only render pipeline can't use at all) — the default (no
+// `sources` given) stays ddb+bi ONLY, unchanged from before this was added,
+// so Press/Workbench's own Icon component field (which can only ever
+// render a CSS-class icon) never starts suggesting a `tabler:*` value it
+// has no way to display.
 
 // Cosmetic grouping only, for the small gray label on the right of each
 // autocomplete row — reused from the categories ddb-icons.css's own
@@ -147,13 +161,82 @@ export function ensureBootstrapIconNamesLoaded(onLoaded) {
   bootstrapIconNamesPromise.then(onLoaded);
 }
 
-export function getAllIconOptions() {
-  const bootstrapOptions = bootstrapIconNames.map((name) => ({
-    group: "Bootstrap",
-    label: name,
-    value: `bi-${name}`,
-  }));
-  return [...ddbIconOptions, ...bootstrapOptions];
+// Tabler (Iconify) — fetched once, lazily, from Iconify's own public
+// collection API (no local copy of ~5,000+ icon names to keep in sync
+// with the CDN script's own version). Best-effort, same shape as
+// ensureBootstrapIconNamesLoaded: a failure here just means no Tabler
+// icons show up as suggestions, never a hard error. `value` is
+// `tabler:<name>` (this suite's own data-icon convention), NOT a `tabler-`
+// CSS class — never merged into ddbIconOptions/bootstrapIconNames, which
+// are both CSS-class vocabularies.
+const TABLER_ICON_SET_URL = "https://api.iconify.design/collection?prefix=tabler";
+let tablerIconNames = [];
+let tablerIconNamesPromise = null;
+export function ensureTablerIconNamesLoaded(onLoaded) {
+  if (!tablerIconNamesPromise) {
+    tablerIconNamesPromise = fetch(TABLER_ICON_SET_URL)
+      .then((response) => (response.ok ? response.json() : Promise.reject(new Error(`Tabler icon list unavailable (${response.status})`))))
+      .then((data) => {
+        // Iconify's collection response groups names under `categories`
+        // (an object of arrays) plus a flat `uncategorized` array for
+        // anything left over — merging both is what actually gets every
+        // icon the set has, not just the categorized subset.
+        const categorized = Object.values(data?.categories ?? {}).flat();
+        const uncategorized = Array.isArray(data?.uncategorized) ? data.uncategorized : [];
+        tablerIconNames = Array.from(new Set([...categorized, ...uncategorized])).sort();
+      })
+      .catch((error) => {
+        console.warn("Tabler icon list unavailable:", error);
+      });
+  }
+  tablerIconNamesPromise.then(onLoaded);
+}
+
+// `sources` (optional array of "ddb"/"bi"/"tabler") restricts which
+// vocabularies are searched — see this file's own header comment for why
+// the default (omitted) deliberately excludes "tabler".
+const DEFAULT_ICON_SOURCES = ["ddb", "bi"];
+export function getAllIconOptions({ sources = DEFAULT_ICON_SOURCES } = {}) {
+  const allowed = new Set(sources);
+  const options = [];
+  if (allowed.has("ddb")) options.push(...ddbIconOptions);
+  if (allowed.has("bi")) {
+    options.push(...bootstrapIconNames.map((name) => ({ group: "Bootstrap", label: name, value: `bi-${name}` })));
+  }
+  if (allowed.has("tabler")) {
+    options.push(...tablerIconNames.map((name) => ({ group: "Tabler", label: name, value: `tabler:${name}` })));
+  }
+  return options;
+}
+
+// One place that knows how to turn any of the three icon value shapes this
+// module searches (`ddb-*`/`bi-*` CSS classes, `tabler:*` Iconify data-icon)
+// into a rendered element — shared by the dropdown's own preview swatch
+// (renderIconAutocompleteOption) and any caller building a live preview of
+// the currently-committed value (ui-components.js's createIconPickerField),
+// so the "which shape is this and how do I render it" branch exists exactly
+// once.
+export function buildIconPreviewElement(value) {
+  const trimmed = String(value ?? "").trim();
+  if (!trimmed) return null;
+  if (trimmed.startsWith("tabler:")) {
+    const icon = document.createElement("span");
+    icon.className = "iconify";
+    icon.dataset.icon = trimmed;
+    // Iconify's own MutationObserver (loaded suite-wide) picks up a
+    // brand-new .iconify node automatically — .scan() is a defensive nudge
+    // on top of that for the moment right after this element is inserted,
+    // matching Press's own one existing use of it (app.js's own
+    // icon-preview refresh).
+    queueMicrotask(() => window.Iconify?.scan?.(icon.parentElement || icon));
+    return icon;
+  }
+  const tokens = getIconTokens(trimmed);
+  if (!tokens.length) return null;
+  const icon = document.createElement("span");
+  const bootstrapToken = tokens.find((token) => token.startsWith("bi-"));
+  icon.className = bootstrapToken ? `bi ${bootstrapToken}` : tokens.join(" ");
+  return icon;
 }
 
 function ensureIconAutocompleteContainer(input) {
@@ -180,14 +263,12 @@ function renderIconAutocompleteOption(option) {
   row.className = "list-group-item list-group-item-action d-flex align-items-center gap-2 py-1";
   const preview = document.createElement("span");
   preview.className = "press-icon-option__preview";
-  const icon = document.createElement("span");
-  // Bootstrap Icons needs the shared "bi" base class alongside "bi-{name}"
-  // (the base class supplies the icon font/pseudo-element plumbing, the
-  // per-icon class only sets which glyph) — same rule the icon component's
-  // own render logic applies; a ddb-* icon is a single self-contained class
-  // and needs nothing extra.
-  icon.className = option.value.startsWith("bi-") ? `bi ${option.value}` : option.value;
-  preview.appendChild(icon);
+  // buildIconPreviewElement (this module's own, below) handles all three
+  // value shapes ddb-*/bi-*/tabler: — a plain `icon.className = option.value`
+  // would render a raw "tabler:bolt" string as a (nonexistent) CSS class
+  // instead of an actual Iconify icon.
+  const icon = buildIconPreviewElement(option.value);
+  if (icon) preview.appendChild(icon);
   const label = document.createElement("span");
   label.className = "text-truncate";
   label.textContent = option.label;
@@ -201,13 +282,17 @@ function renderIconAutocompleteOption(option) {
 // Wires a text input up as a searchable icon picker: typing filters
 // getAllIconOptions() (label/value substring match), arrow keys navigate,
 // Enter/click selects. `onSelect(value)` is called with the chosen
-// "ddb-*"/"bi-*" class string — the caller owns what happens next (writing
-// it onto a node, re-rendering a preview, etc.), so this stays reusable
-// across Press's and Workbench's own different node/component shapes.
-export function attachIconAutocomplete(input, { onSelect } = {}) {
+// "ddb-*"/"bi-*"/"tabler:*" string — the caller owns what happens next
+// (writing it onto a node, re-rendering a preview, etc.), so this stays
+// reusable across Press's, Workbench's, and board.js's own different
+// node/component shapes. `sources` (optional, e.g. `["tabler"]`) restricts
+// which vocabularies are searched — see getAllIconOptions's own comment for
+// the default.
+export function attachIconAutocomplete(input, { onSelect, sources } = {}) {
   if (!input || typeof onSelect !== "function") return null;
   const container = ensureIconAutocompleteContainer(input);
   if (!container) return null;
+  const allowedSources = sources || DEFAULT_ICON_SOURCES;
   const MAX_ITEMS = 12;
   let items = [];
   let activeIndex = -1;
@@ -252,7 +337,7 @@ export function attachIconAutocomplete(input, { onSelect } = {}) {
     // they're what actually appears by default) rather than closing — same
     // "see the options right away on focus" behavior other autocompletes in
     // this suite already have.
-    const filtered = getAllIconOptions()
+    const filtered = getAllIconOptions({ sources: allowedSources })
       .filter((option) => {
         if (!normalized) return true;
         return option.label.toLowerCase().includes(normalized) || option.value.toLowerCase().includes(normalized);
@@ -287,12 +372,16 @@ export function attachIconAutocomplete(input, { onSelect } = {}) {
   input.addEventListener("input", update);
   input.addEventListener("focus", () => {
     update();
-    // Both lists are fetched lazily and may not have resolved yet the first
+    // Each list is fetched lazily and may not have resolved yet the first
     // time this field is used — re-run update() once each lands so the
     // dropdown (if still open) picks up the fuller list instead of staying
-    // stuck showing whatever was available first.
-    ensureDdbIconOptionsLoaded(update);
-    ensureBootstrapIconNamesLoaded(update);
+    // stuck showing whatever was available first. Only the ALLOWED sources'
+    // own loaders fire — a board.js field restricted to `["tabler"]` has no
+    // reason to also fetch the (unused) ddb/Bootstrap lists.
+    const sourceSet = new Set(allowedSources);
+    if (sourceSet.has("ddb")) ensureDdbIconOptionsLoaded(update);
+    if (sourceSet.has("bi")) ensureBootstrapIconNamesLoaded(update);
+    if (sourceSet.has("tabler")) ensureTablerIconNamesLoaded(update);
   });
   input.addEventListener("click", update);
   input.addEventListener("keydown", onKeyDown);

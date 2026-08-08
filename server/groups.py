@@ -76,7 +76,11 @@ def _require_owner(state: ServerState, group_id: str, owner: Optional[User]):
     ).fetchone()
     if not row:
         raise AuthError("Group not found")
-    if row["owner_id"] != owner.id:
+    # Admin-or-owner — same rule _resolve_group_access/user_can_access_group
+    # already enforce for read access to a group; this is the write-side
+    # (rename/delete/manage members/share link) equivalent, previously
+    # missing the admin bypass those two already had.
+    if row["owner_id"] != owner.id and owner.tier != "admin":
         raise AuthError("Access denied")
     return row
 
@@ -744,7 +748,7 @@ def delete_group(state: ServerState, owner: Optional[User], group_id: str) -> No
 
 
 def update_group_members(state: ServerState, owner: Optional[User], group_id: str, character_ids: Iterable[str]) -> Dict[str, Any]:
-    group_row = _require_owner(state, group_id, owner)
+    _require_owner(state, group_id, owner)
     normalized_ids = []
     seen = set()
     for raw in character_ids:
@@ -763,9 +767,13 @@ def update_group_members(state: ServerState, owner: Optional[User], group_id: st
         missing = [value for value in normalized_ids if value not in existing]
         if missing:
             raise AuthError("One or more characters could not be found")
-        for row in rows:
-            if row["owner_id"] != group_row["owner_id"]:
-                raise AuthError("Characters must be owned by this account to add to the group")
+        # No longer requires character.owner_id == group.owner_id — a
+        # campaign group's whole point is to hold the PLAYERS' characters,
+        # which the GM (this group's owner) doesn't own. _require_owner
+        # above already confirmed the caller is this group's owner (or an
+        # admin); that's the actual authorization boundary for "who may
+        # decide which characters belong to this group," not who owns each
+        # individual character.
     state.db.execute("DELETE FROM group_members WHERE group_id = ? AND content_type = 'character'", (group_id,))
     timestamp = datetime.utcnow().isoformat()
     for character_id in normalized_ids:

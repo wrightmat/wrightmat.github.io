@@ -166,6 +166,14 @@
               </div>
             </div>
             <div class="dashboard-grid" data-dashboard-grid></div>
+            <!-- Shown instead of the grid above for a not-signed-in visitor
+                 with nothing set up yet (dashboard.js's own
+                 shouldShowWelcomeScreen/renderWelcomeScreen) — a plain
+                 sibling, not something built INSIDE .dashboard-grid, so its
+                 content is never constrained by that element's own CSS Grid
+                 row-track sizing (grid-auto-rows: 6rem, meant for widget
+                 cards, far too short for a welcome message). -->
+            <div class="d-none flex-column gap-4" data-dashboard-welcome></div>
         </main>
         <div data-pane-content="right">
           <div class="d-flex flex-column gap-3 overflow-auto" data-widget-inspector>

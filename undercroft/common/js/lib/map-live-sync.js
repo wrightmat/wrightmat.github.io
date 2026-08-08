@@ -89,14 +89,29 @@ export function watchMapForChanges({
 // in the moments since it was last fetched, and a full-object save built
 // from a stale copy would silently clobber that. Same reasoning as
 // combat-tracker.js's own writeThroughToCharacter.
-export async function persistMarkerMove({ dataManager, mapId, shareToken = "", layerId, elementId, nextPosition }) {
+//
+// `patch` is either a plain object (shallow-merged onto the fresh element)
+// or a function `(freshElement) => void` (mutated in place) — the function
+// form exists for a toggle like a door's own doorState, which has to read
+// the CURRENT persisted value to flip correctly, not a possibly-stale local
+// copy (persistMarkerMove below always knows its own next value outright,
+// so it only ever needs the plain-object form).
+export async function persistElementUpdate({ dataManager, mapId, shareToken = "", layerId, elementId, patch }) {
   const result = await dataManager.get("map", mapId, { shareToken, preferLocal: false });
   const freshMap = result.payload;
   const freshElement = freshMap.layers
     ?.find((entry) => entry.id === layerId)
     ?.elements?.find((entry) => entry.id === elementId);
   if (!freshElement) return null;
-  freshElement.position = nextPosition;
+  if (typeof patch === "function") {
+    patch(freshElement);
+  } else {
+    Object.assign(freshElement, patch);
+  }
   await dataManager.save("map", mapId, freshMap);
   return freshMap;
+}
+
+export async function persistMarkerMove({ dataManager, mapId, shareToken = "", layerId, elementId, nextPosition }) {
+  return persistElementUpdate({ dataManager, mapId, shareToken, layerId, elementId, patch: { position: nextPosition } });
 }

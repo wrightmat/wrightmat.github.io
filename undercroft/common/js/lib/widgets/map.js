@@ -15,11 +15,15 @@
 // supply is `isMarkerDraggable`, restricted to the viewer's own claimed
 // character's marker, per the confirmed permission model.
 import { BaseMapManager } from "../../../../orrery/js/lib/base-maps.js";
-import { renderMapLayers, createPingMarker } from "../../../../orrery/js/lib/map-viewer.js";
+import { renderMapLayers, createPingMarker, resolveBlockingSegments, segmentsIntersect } from "../../../../orrery/js/lib/map-viewer.js";
 import { resolveToolHref, resolveToolContextPath } from "../app-shell.js";
 import { resolveIsSpotlighted } from "../spotlight.js";
 import { el } from "../dom.js";
-import { watchMapForChanges, persistMarkerMove as persistMarkerMoveShared } from "../map-live-sync.js";
+import {
+  watchMapForChanges,
+  persistMarkerMove as persistMarkerMoveShared,
+  persistElementUpdate,
+} from "../map-live-sync.js";
 
 // 10s (was 30s) — same reasoning as combat-tracker.js's own
 // POLL_INTERVAL_MS, kept a bit more conservative here since a map's own
@@ -209,6 +213,33 @@ export function initMapWidget(
     container.appendChild(el("p", "text-danger small mb-0", message));
   }
 
+  // Same synchronous, cache-backed lookup Orrery's own app.js keeps (see
+  // that file's own header comment on why a live Vision Range Binding can't
+  // just be fetched inline inside the synchronous render pipeline) — a
+  // separate instance here since this widget has its own dataManager/
+  // lifetime, but both ultimately resolve identically (map-viewer.js's own
+  // resolveMarkerVisionRangeCells/resolveBinding), so a player's own fog
+  // view matches the GM's.
+  const characterPayloadCache = new Map();
+  const pendingCharacterFetches = new Set();
+  function getCachedCharacterPayload(refId) {
+    return characterPayloadCache.get(refId);
+  }
+  function ensureCharacterPayloadCached(refId) {
+    if (!refId || characterPayloadCache.has(refId) || pendingCharacterFetches.has(refId)) return;
+    pendingCharacterFetches.add(refId);
+    dataManager
+      .get("character", refId)
+      .then((result) => {
+        characterPayloadCache.set(refId, result?.payload || {});
+        pendingCharacterFetches.delete(refId);
+        renderLayers();
+      })
+      .catch(() => {
+        pendingCharacterFetches.delete(refId);
+      });
+  }
+
   // Only this viewer's own claimed character's marker is draggable —
   // everything else (NPCs, other players' characters) stays locked, per the
   // confirmed permission model for this widget.
@@ -218,15 +249,87 @@ export function initMapWidget(
     );
   }
 
+  // Doors only, and — unlike this widget's own isMarkerDraggable — NEVER
+  // gated on anything selection-related, since this widget has no selection
+  // concept at all (renderMapLayers itself already only wires this hit-
+  // target for a door whose element.secret isn't set at all, see
+  // renderWallElement — a secret door simply never reaches this handler).
+  function onDoorClick(layer, elementId) {
+    const element = layer.elements?.find((entry) => entry.id === elementId);
+    if (!element) return;
+    if (element.locked) {
+      status?.show("This door is locked.", { type: "warning", timeout: 2000 });
+      return;
+    }
+    void toggleDoor(layer.id, elementId);
+  }
+
+  async function toggleDoor(layerId, elementId) {
+    try {
+      const freshMap = await persistElementUpdate({
+        dataManager,
+        mapId,
+        shareToken,
+        layerId,
+        elementId,
+        patch: (freshElement) => {
+          freshElement.doorState = freshElement.doorState === "open" ? "closed" : "open";
+        },
+      });
+      if (!freshMap) return;
+      map = freshMap;
+      renderLayers();
+    } catch (error) {
+      status?.show(error.message || "Unable to open the door.", { type: "error" });
+    }
+  }
+
+  // Player-driven token movement only — the ONE place this widget lets a
+  // viewer move anything at all (their own pinned character's marker, per
+  // isMarkerDraggable above). Recomputed once per renderLayers() call (map
+  // itself only changes on that same cadence) and reused for every marker's
+  // own drag gesture, not per-frame.
+  function resolveMarkerMoveBlocked(layer, markerElement, fromPixel, toPixel) {
+    const blockingSegments = resolveBlockingSegments(baseMapManager, map);
+    return blockingSegments.some((segment) => segmentsIntersect(fromPixel, toPixel, segment.a, segment.b));
+  }
+
+  // Fires the fetch for every character-linked marker whose Vision Range is
+  // actually Bound/Formula (a plain literal Text value needs no fetch at
+  // all — resolveMarkerVisionRangeCells only ever calls getCharacterPayload
+  // when there's a real binding/formula string to resolve). Fire-and-forget,
+  // same "populate cache, re-render once it resolves" shape as app.js's own
+  // — called every renderLayers() pass, but ensureCharacterPayloadCached
+  // itself is a no-op once cached/in-flight, so this is cheap after the
+  // first pass.
+  function primeCharacterPayloadCache() {
+    (map.layers || []).forEach((layer) => {
+      if (layer.type !== "marker") return;
+      (layer.elements || []).forEach((marker) => {
+        if (marker.kind !== "marker" || marker.refKind !== "character" || !marker.refId) return;
+        if ((marker.visionRangeBinding || "").trim() || (marker.visionRangeFormula || "").trim()) {
+          ensureCharacterPayloadCached(marker.refId);
+        }
+      });
+    });
+  }
+
   function renderLayers() {
     const overlay = baseMapManager?.getOverlayContainer();
     if (!overlay || !map) return;
+    primeCharacterPayloadCache();
     renderMapLayers(overlay, baseMapManager, map, {
       viewerTier,
       hasFullAccess: false,
       isMarkerDraggable,
       onMarkerDragEnd: (layer, markerElement, nextPosition) =>
         void persistMarkerMove(layer.id, markerElement.id, nextPosition),
+      onDoorClick,
+      // Never passed from Orrery's own app.js — a GM must be able to freely
+      // drag any token through walls while setting up a scene. Only a
+      // player's own-token drag, here, is ever blocked.
+      resolveMarkerMoveBlocked,
+      getCharacterPayload: getCachedCharacterPayload,
     });
   }
 

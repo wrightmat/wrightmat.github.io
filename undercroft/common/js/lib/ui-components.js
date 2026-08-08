@@ -13,7 +13,7 @@
 // established practice of tracking exactly this kind of extraction.
 
 import { bindCollapsibleToggle, setCollapsibleState } from "./collapsible.js";
-import { attachIconAutocomplete, getIconTokens } from "./icon-picker.js";
+import { attachIconAutocomplete, buildIconPreviewElement } from "./icon-picker.js";
 import { bindCopyButton } from "./clipboard.js";
 import { createJsonPreviewRenderer } from "./json-preview.js";
 
@@ -591,21 +591,26 @@ export function createCompactField({
 }
 
 // A label + searchable icon input with a live preview swatch, wired to
-// icon-picker.js's attachIconAutocomplete (the same ddb-*/bi-* class
-// vocabulary and dropdown Press's own Icon component field uses — see
+// icon-picker.js's attachIconAutocomplete — defaults to the ddb-*/bi-*
+// class vocabulary and dropdown Press's own Icon component field uses (see
 // press/index.html's `data-inspector-icon-field` for the markup this
-// mirrors). Deliberately NOT the same factory as Press's own field: that one
-// resolves @binding/=formula preview values through the template's live
-// data context, which callers like Orrery's marker icon (a literal class
-// string, no binding concept) don't need. Commits on "change" (blur/Enter),
-// not every keystroke, since callers whose selection editor rebuilds its
-// whole DOM per change (Orrery) would lose focus on a live-keystroke commit.
+// mirrors); pass `sources: ["tabler"]` (or any subset icon-picker.js's own
+// getAllIconOptions understands) to search a different vocabulary instead —
+// board.js's card icon field does this, since its own `icon` value is a
+// `tabler:*` Iconify identifier, not a CSS class. Deliberately NOT the same
+// factory as Press's own field: that one resolves @binding/=formula preview
+// values through the template's live data context, which callers like
+// Orrery's marker icon (a literal class/icon string, no binding concept)
+// don't need. Commits on "change" (blur/Enter), not every keystroke, since
+// callers whose selection editor rebuilds its whole DOM per change (Orrery,
+// board.js) would lose focus on a live-keystroke commit.
 export function createIconPickerField({
   id,
   label = "Icon",
   labelClass = "form-label mb-0",
   value = "",
   placeholder = "Search icons",
+  sources,
   onSelect,
 } = {}) {
   const wrapper = document.createElement("div");
@@ -635,23 +640,41 @@ export function createIconPickerField({
   group.append(previewWrap, input);
   wrapper.append(labelEl, group);
 
+  // buildIconPreviewElement (icon-picker.js's own) handles all three value
+  // shapes ddb-*/bi-*/tabler: — getIconTokens alone (the old body here)
+  // only ever recognized bi-*/ddb-*, so a tabler:* value silently rendered
+  // nothing at all.
   function updatePreview(nextValue) {
     preview.innerHTML = "";
-    const tokens = getIconTokens(nextValue);
-    if (!tokens.length) return;
-    const icon = document.createElement("span");
-    const bootstrapToken = tokens.find((token) => token.startsWith("bi-"));
-    icon.className = bootstrapToken ? `bi ${bootstrapToken}` : tokens.join(" ");
-    preview.appendChild(icon);
+    const icon = buildIconPreviewElement(nextValue);
+    if (icon) preview.appendChild(icon);
   }
   updatePreview(value);
 
+  // Guards against firing onSelect twice for one selection: clicking a
+  // dropdown row commits via attachIconAutocomplete's own onSelect below,
+  // but if the input still has focus with a dirty value (the user typed a
+  // search term before clicking a row — its native change-on-blur "dirty"
+  // flag is only set by real user edits, never by the input.value=selected
+  // assignment just below), and the caller's own onSelect synchronously
+  // tears down/rebuilds this field's container (as Orrery's marker overlay-
+  // icon picker does), removing the still-focused input from the DOM fires
+  // a native blur, which then fires a native "change" event on the same
+  // already-committed value — re-invoking the "change" listener further
+  // down for a value that was never actually re-typed. Tracking the last
+  // committed value and skipping a repeat no-op commit fixes this without
+  // suppressing any genuine reselection (a real new pick always differs
+  // from whatever was last committed).
+  let committedValue = value;
   function commit(nextValue) {
+    if (nextValue === committedValue) return;
+    committedValue = nextValue;
     updatePreview(nextValue);
     onSelect?.(nextValue);
   }
 
   attachIconAutocomplete(input, {
+    sources,
     onSelect: (selected) => {
       input.value = selected;
       commit(selected);

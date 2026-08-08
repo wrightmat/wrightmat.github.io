@@ -1055,18 +1055,20 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       return;
     }
     const options = Array.from(characterCatalog.values())
-      // Loom is the source of truth for characters now — a raw/imported
-      // Library character with no Template assigned isn't something
-      // Workbench can meaningfully open (there's nothing to bind fields
-      // against), so it stays hidden here until assigned one in Loom.
-      .filter((entry) => entry.id && entry.template)
+      // A raw/imported Library character (Loom's DDB import, most often)
+      // with no Template assigned used to stay hidden here entirely —
+      // "there's nothing to bind fields against" was true, but it also
+      // meant an imported character silently never showed up anywhere in
+      // Workbench, with no explanation. Now included, labeled "(No
+      // template)" — selecting one loads it straight into the "assign a
+      // template" prompt (renderCanvas's own createUntemplatedCharacterPrompt)
+      // instead of a sheet.
+      .filter((entry) => entry.id)
       .map((entry) => {
         const templateId = entry.template || "";
-        const templateLabel = templateId
-          ? templateCatalog.get(templateId)?.title || templateId
-          : "";
+        const templateLabel = templateId ? templateCatalog.get(templateId)?.title || templateId : "No template";
         const baseLabel = entry.title || entry.id;
-        const label = templateLabel ? `${baseLabel} (${templateLabel})` : baseLabel;
+        const label = `${baseLabel} (${templateLabel})`;
         return { value: entry.id, label, sortLabel: label.toLowerCase() };
       })
       .sort((a, b) => a.sortLabel.localeCompare(b.sortLabel, undefined, { sensitivity: "base" }));
@@ -3317,8 +3319,15 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       return;
     }
     if (!state.template?.id) {
+      // Two different reasons land here, worth telling apart: a character
+      // that has never had a template assigned at all (most often a raw
+      // Loom/DDB import — see syncCharacterOptions's own comment) gets an
+      // actionable prompt instead of the generic failure message, which
+      // otherwise reads as "something's broken" rather than "pick one".
       elements.canvasRoot.appendChild(
-        createCanvasPlaceholder("The linked template could not be loaded.", { variant: "root" })
+        state.draft.template
+          ? createCanvasPlaceholder("The linked template could not be loaded.", { variant: "root" })
+          : createUntemplatedCharacterPrompt()
       );
       refreshTooltips(elements.canvasRoot);
       syncModeIndicator();
@@ -3342,6 +3351,96 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     elements.canvasRoot.appendChild(fragment);
     refreshTooltips(elements.canvasRoot);
     syncModeIndicator();
+  }
+
+  // renderCanvas's own placeholder for a character with no `template` at
+  // all (as opposed to one whose linked template failed to load) — an
+  // actionable inline template picker, not just createCanvasPlaceholder's
+  // plain (and aria-hidden, deliberately non-interactive) text message.
+  // Most often reached for a raw Loom/DDB import, which has no concept of
+  // Workbench templates at all — see syncCharacterOptions's own comment.
+  function createUntemplatedCharacterPrompt() {
+    const wrap = document.createElement("div");
+    wrap.className = "workbench-drop-placeholder workbench-drop-placeholder--root d-flex flex-column align-items-center gap-2";
+    const message = document.createElement("div");
+    message.textContent = "This character has no template assigned yet — pick one to start its sheet.";
+    wrap.appendChild(message);
+
+    const row = document.createElement("div");
+    row.className = "d-flex gap-2 align-items-center";
+    // .workbench-drop-placeholder (the wrapper's own class, above) sets
+    // pointer-events: none suite-wide — correct for its usual job (a plain,
+    // decorative, aria-hidden empty-dropzone label), but it also silently
+    // disables the select/button below unless re-enabled here. Confirmed
+    // real bug otherwise: the dropdown never opened at all, since nothing
+    // inside a pointer-events:none ancestor receives pointer events
+    // regardless of its own styling.
+    row.style.pointerEvents = "auto";
+    const select = document.createElement("select");
+    select.className = "form-select form-select-sm";
+    select.style.maxWidth = "16rem";
+    select.setAttribute("aria-label", "Template");
+    const blank = document.createElement("option");
+    blank.value = "";
+    blank.textContent = "Select template";
+    select.appendChild(blank);
+    Array.from(templateCatalog.values())
+      .filter((entry) => entry.id)
+      .sort((a, b) => (a.title || a.id).localeCompare(b.title || b.id, undefined, { sensitivity: "base" }))
+      .forEach((entry) => {
+        const option = document.createElement("option");
+        option.value = entry.id;
+        option.textContent = entry.title || entry.id;
+        select.appendChild(option);
+      });
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "btn btn-sm btn-primary";
+    button.textContent = "Assign Template";
+    button.addEventListener("click", () => void assignTemplateToCharacter(select.value));
+    row.append(select, button);
+    wrap.appendChild(row);
+    return wrap;
+  }
+
+  // Wires an already-existing character (most often a template-less Loom/
+  // DDB import) up to a Workbench template — the one-time assignment
+  // startNewCharacter's own flow does for a brand-new character, just for a
+  // record that already exists. Loads the template, sets `draft.template`,
+  // and folds the template's own schema into `draft.systemIds` (union, not
+  // replace — an imported character may already carry its own Assigned
+  // Systems, e.g. Loom's DDB import tagging `sys.dnd5e`; this only ever
+  // ADDS to that set, matching Loom's own populateLibraryTemplateSelect
+  // behavior, never silently drops what's already there), then persists.
+  async function assignTemplateToCharacter(templateId) {
+    const trimmedTemplate = (templateId || "").trim();
+    if (!trimmedTemplate) {
+      status.show("Select a template first.", { type: "warning", timeout: 2000 });
+      return;
+    }
+    if (!state.draft?.id) {
+      return;
+    }
+    const templateMetadata = templateCatalog.get(trimmedTemplate);
+    if (!templateMetadata) {
+      status.show("Template metadata unavailable.", { type: "warning", timeout: 2200 });
+      return;
+    }
+    await loadTemplateById(trimmedTemplate);
+    if (state.template?.id !== trimmedTemplate) {
+      return;
+    }
+    state.draft.template = trimmedTemplate;
+    const schema = state.template?.schema || templateMetadata?.schema || "";
+    if (schema) {
+      const ids = new Set(Array.isArray(state.draft.systemIds) ? state.draft.systemIds : []);
+      ids.add(schema);
+      state.draft.systemIds = Array.from(ids);
+    }
+    await persistDraft({ silent: false });
+    renderCanvas();
+    renderPreview();
+    syncCharacterOptions();
   }
 
   // `nested: true` is passed for a Container zone child (see

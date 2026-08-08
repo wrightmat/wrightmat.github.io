@@ -1,8 +1,8 @@
 // The Dashboard Macro execution engine — runs a saved `macro` Library
 // record's own `actions` array in order, dispatching each action to
 // whichever widget module owns that action type. See the "macro" kind
-// (common/data/kind/macro.json) and the Macro board widget
-// (macro-board.js), the primary Phase 1 trigger surface.
+// (common/data/kind/macro.json) and the Board widget's own macro-button
+// cards (board.js), the primary trigger surface.
 //
 // Every action handler below is a standalone function taking
 // `(action, {dataManager, groupContext, status})` — none of them require a
@@ -14,7 +14,7 @@
 // content-addressed operations with nothing widget-instance-specific about
 // them (see spotlight.js's own resolveSpotlightData: any (kind,id) pair
 // works, posted by anyone).
-import { runWledMacroAction } from "./wled.js";
+import { runWledMacroAction, resolveWledDeviceByAlias, promptForWledAlias } from "./wled.js";
 import { runSoundboardMacroAction } from "./soundboard.js";
 import { runCombatMacroAction } from "./combat-tracker.js";
 import { runCharacterMacroAction } from "./character-sheet.js";
@@ -133,18 +133,38 @@ const ACTION_HANDLERS = {
 //
 // `ensureWidget(action)` (optional) is called once per action, before its
 // handler runs — dashboard.js's own ensureWidgetForMacroAction is what the
-// Macro board widget passes, giving the GM a live, on-screen control
-// surface (auto-added if missing) for the widget type an action just
-// touched — see soundboard.js's own runMacroAction for the type where this
-// actually matters (ephemeral in-browser playback state, not just "does a
+// Board widget passes, giving the GM a live, on-screen control surface
+// (auto-added if missing) for the widget type an action just touched — see
+// soundboard.js's own runMacroAction for the type where this actually
+// matters (ephemeral in-browser playback state, not just "does a
 // record/device already reflect this"). Its return value (a mounted
 // widget's own instance handle, or null) is handed to the action handler
 // as `widgetInstance`; every handler that doesn't care simply ignores it.
 // Left undefined entirely by callers with no widget grid to add to at all
 // (journal-macro.js's own Journal-triggered runs) — no behavior change
 // there, this whole mechanism is opt-in.
-export async function runMacro(macro, { dataManager, groupContext, status, wledDevices = [], ensureWidget } = {}) {
+//
+// `onWledDevicesChange` (optional) — called with the freshly-updated device
+// list whenever a missing alias gets resolved below, so a caller that keeps
+// its own live copy of the device list around (dashboard.js's own module
+// state, read by the WLED widget) doesn't go stale until a reload. The
+// resolved list is ALWAYS persisted durably regardless (promptForWledAlias's
+// own saveWledDevices call) — this callback is purely an optional "also
+// update my in-memory copy right now" convenience, never required for
+// correctness.
+export async function runMacro(macro, { dataManager, groupContext, status, wledDevices = [], ensureWidget, onWledDevicesChange } = {}) {
   const actions = Array.isArray(macro?.actions) ? macro.actions : [];
+  // Mutated in place as aliases get resolved below, so every remaining
+  // action in this same run (and the "already asked about this one" guard
+  // just below) sees the newly-aliased device immediately.
+  let devices = Array.isArray(wledDevices) ? wledDevices : [];
+  // One prompt per distinct alias per run, even if several actions in this
+  // macro reference the same still-unresolved alias (a "torches on, then
+  // off" pair, say) — not a full up-front scan of every action before any
+  // of them run, so a macro with only ONE unresolvable alias among several
+  // OTHER, perfectly fine actions still runs everything else instead of
+  // blocking the whole macro on it.
+  const askedAliases = new Set();
   for (const action of actions) {
     const handler = ACTION_HANDLERS[action?.type];
     if (!handler) {
@@ -153,6 +173,28 @@ export async function runMacro(macro, { dataManager, groupContext, status, wledD
         timeout: 3000,
       });
       continue;
+    }
+    // Checked here — right before dispatch, not in a separate up-front
+    // pass — so ANY caller of runMacro (Board widget cards, a Journal
+    // page's inline `` `macro:...` `` chip, anywhere else this ever gets
+    // called from) gets the same "alias it right now" popup for free,
+    // without needing its own copy of this check the way the old, now-
+    // retired Macro board widget did.
+    if (action?.type === "wled") {
+      const alias = String(action?.target || "").trim();
+      const key = alias.toLowerCase();
+      if (alias && !askedAliases.has(key) && !resolveWledDeviceByAlias(devices, alias)) {
+        askedAliases.add(key);
+        const updated = await promptForWledAlias({ dataManager, status, alias, devices });
+        if (updated) {
+          devices = updated;
+          onWledDevicesChange?.(devices);
+        }
+        // Cancelled, or nothing to pick from — devices stays as-is, and the
+        // handler call below fails with its own normal "No WLED device
+        // aliased ..." error, caught by the same try/catch every other
+        // action failure already goes through.
+      }
     }
     let widgetInstance = null;
     if (typeof ensureWidget === "function") {
@@ -163,12 +205,13 @@ export async function runMacro(macro, { dataManager, groupContext, status, wledD
       }
     }
     try {
-      await handler(action, { dataManager, groupContext, status, wledDevices, widgetInstance });
-      // One toast per successful step, in addition to the caller's own
-      // overall "Ran ..." summary (macro-board.js) — a multi-step macro like
-      // "Haunted Forest" (lights + music + a handout) otherwise gives no
-      // visible confirmation of which of its several real-world effects
-      // actually fired, only that the macro as a whole finished.
+      await handler(action, { dataManager, groupContext, status, wledDevices: devices, widgetInstance });
+      // One toast per successful step — none of this module's own callers
+      // (board.js's macro-button cards, journal-macro.js's inline chip) show
+      // an overall "Ran ..." summary of their own, so a multi-step macro
+      // like "Haunted Forest" (lights + music + a handout) would otherwise
+      // give no visible confirmation of which of its several real-world
+      // effects actually fired at all.
       status?.show?.(`✓ ${describeMacroAction(action)}`, { type: "success", timeout: 1800 });
     } catch (error) {
       // One bad step (an unreachable WLED device, an unresolved device
