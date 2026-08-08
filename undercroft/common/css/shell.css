@@ -1520,3 +1520,28 @@ a.undercroft-tool-card:focus-visible {
 .canvas-collapse-toggle .iconify {
   font-size: 1rem;
 }
+
+/* Fancy 3D dice — a full-viewport overlay dice-overlay.js appends to
+   document.body once per page and reuses for every roll. Above modals,
+   toasts, and everything else (see shell.css's own z-index ladder above,
+   topping out at 1400) since a roll can be triggered from inside any of
+   those; pointer-events stays off so it never blocks clicking through to
+   whatever's underneath it, including while dice are visibly settling. */
+.dice-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.dice-overlay.is-visible {
+  opacity: 1;
+}
+
+.dice-overlay canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}

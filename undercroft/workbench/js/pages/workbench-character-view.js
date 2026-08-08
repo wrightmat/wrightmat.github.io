@@ -28,6 +28,7 @@ import { evaluateFormula } from "../../../common/js/lib/formula-engine.js";
 import { resolveBinding, createLookupFn } from "../../../common/js/lib/bindings.js";
 import { rollDiceExpression } from "../lib/dice.js";
 import { QUICK_DICE, parseQuickDiceCounts, incrementDieInExpression } from "../../../common/js/lib/widgets/dice-roll.js";
+import { preloadDiceOverlay } from "../../../common/js/lib/widgets/dice-overlay.js";
 import {
   normalizeOptionEntries,
   resolveTabEntries,
@@ -48,6 +49,11 @@ import { showConfirmModal } from "../../../common/js/lib/confirm-modal.js";
 // "edit") exactly as before, just now driven by the outer view-tab switcher
 // via the returned setMode() instead of an in-page toggle-mode button.
 export async function initCharacterView({ status, undoStack, dataManager }) {
+  // This page's own Dice tool pane (see the QUICK_DICE wiring below) can
+  // roll at any time once it's open — warm up the 3D overlay (and the
+  // user's chosen theme) now instead of on the first roll click.
+  preloadDiceOverlay(dataManager);
+
   const templateCatalog = new Map();
   const characterCatalog = new Map();
   const systemCatalog = new Map();

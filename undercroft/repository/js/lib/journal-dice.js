@@ -12,6 +12,7 @@
 // table reference (journal-tables.js) instead of a numeric expression;
 // rollExpression itself already knows how to tell the two apart.
 import { rollExpression } from "../../../common/js/lib/widgets/dice-roll.js";
+import { preloadDiceOverlay } from "../../../common/js/lib/widgets/dice-overlay.js";
 import { rollDiceExpression } from "../../../workbench/js/lib/dice.js";
 import { parseTableReferenceExpression, resolveTableReference, describeTableRow } from "./journal-tables.js";
 import { el } from "../../../common/js/lib/dom.js";
@@ -136,6 +137,12 @@ function buildDiceRoller(expression, { status, interactive, dataManager }) {
 // turned `` `dice:1d4` `` into a plain <code>dice:1d4</code>; this just
 // finds those and swaps each one for a live roller, in place.
 export function applyDiceRollers(container, { status, interactive = false, dataManager } = {}) {
+  // Only interactive rollers can actually be clicked (see buildDiceRoller's
+  // own `if (interactive)` below) — a read-only render's silent starting
+  // values never touch the overlay, so there's nothing worth warming up.
+  if (interactive) {
+    preloadDiceOverlay(dataManager);
+  }
   container.querySelectorAll("code").forEach((codeEl) => {
     const match = DICE_CODE_PATTERN.exec(codeEl.textContent.trim());
     if (!match) return;
