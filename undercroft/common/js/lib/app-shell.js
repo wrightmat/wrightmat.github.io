@@ -16,14 +16,14 @@ const TOOL_DEFINITIONS = [
     id: "workbench",
     label: "Workbench",
     icon: "tabler:layout-dashboard",
-    summary: "Character sheet, template, and system editor.",
+    summary: "Character sheet and template editor.",
     built: true,
   },
   {
     id: "press",
     label: "Press",
     icon: "tabler:printer",
-    summary: "Printing utility for sheets, cards, and booklets.",
+    summary: "Printing utility.",
     built: true,
   },
   {
@@ -34,10 +34,10 @@ const TOOL_DEFINITIONS = [
     built: true,
   },
   {
-    id: "loom",
-    label: "Loom",
-    icon: "tabler:cloud-download",
-    summary: "Fetches and normalizes external content.",
+    id: "repository",
+    label: "Repository",
+    icon: "tabler:notebook",
+    summary: "Wiki-style campaign journal.",
     built: true,
   },
   {
@@ -69,10 +69,10 @@ const TOOL_DEFINITIONS = [
     built: true,
   },
   {
-    id: "repository",
-    label: "Repository",
-    icon: "tabler:notebook",
-    summary: "Campaign notes, lore, and wiki-style journal pages.",
+    id: "loom",
+    label: "Loom",
+    icon: "tabler:cloud-download",
+    summary: "Manage internal data and import external content.",
     built: true,
   },
 ];

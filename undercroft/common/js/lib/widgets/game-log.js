@@ -1,11 +1,11 @@
-// Compact Game Log widget for the Dashboard — talks to the same
-// getGroupLog/createGroupLogEntry endpoints Workbench's own (much richer)
-// game log panel already uses, but as a small, independent renderer rather
-// than a literal extraction of that page's tightly-coupled internal state
-// (gameLogState/elements.*, built for one page's DOM, not a mountable
-// widget). Same polling cadence (30s) and spotlight-entry phrasing.
+// Compact Game Log widget — mounted as a Dashboard widget card, and (as of
+// the Game Log/Now Showing parity pass) inline in Workbench's own
+// collapsible section too (workbench-character-view.js) — one real
+// implementation, not two independently-drifting copies of the same
+// getGroupLog/createGroupLogEntry-backed log.
 import { connectLiveStream } from "../live.js";
 import { el } from "../dom.js";
+import { resolveToolHref, resolveToolContextPath } from "../app-shell.js";
 
 const POLL_INTERVAL_MS = 30000;
 const CLEARED_WATERMARK_PREFIX = "undercroft.gamelog.clearedBefore.";
@@ -24,17 +24,23 @@ function watermarkKey(scope) {
 
 // server/groups.py stamps every entry's created_at via Python's
 // `datetime.utcnow().isoformat()` — a NAIVE string with no "Z"/offset
-// suffix, even though the instant it represents is UTC. JS's Date.parse
-// treats a zone-less ISO string as *local* time, not UTC — comparing that
-// straight against `new Date().toISOString()` (always proper, explicit UTC)
-// silently offsets by the browser's own UTC offset, which is exactly why a
-// freshly-set "clear before now" watermark could still leave recent-looking
-// entries visible (or hide ones that should stay). Appending "Z" when the
-// server's own naive format is detected fixes the comparison for both sides.
+// suffix, even though the instant it represents is UTC. JS's Date.parse (and
+// `new Date(...)`) both treat a zone-less ISO string as *local* time, not
+// UTC — appending "Z" when that naive shape is detected is what makes it
+// actually mean UTC, for every consumer, not just the watermark comparisons
+// below. Confirmed real bug this also fixes: formatTimestamp's own display
+// used to skip this normalization entirely, so every entry's shown time was
+// off by the viewer's own UTC offset (displaying the raw UTC clock digits,
+// unconverted, as if they were already local — which is exactly why it read
+// as "showing UTC" rather than merely "off by a few minutes").
+function normalizeTimestamp(value) {
+  if (!value) return "";
+  return /[zZ]|[+-]\d{2}:?\d{2}$/.test(value) ? value : `${value}Z`;
+}
+
 function parseTimestamp(value) {
   if (!value) return 0;
-  const iso = /[zZ]|[+-]\d{2}:?\d{2}$/.test(value) ? value : `${value}Z`;
-  return Date.parse(iso) || 0;
+  return Date.parse(normalizeTimestamp(value)) || 0;
 }
 
 function loadClearedWatermark(scope) {
@@ -80,6 +86,36 @@ export const SPOTLIGHT_KIND_LABELS = {
   soundboard: "a soundboard",
 };
 
+// One icon per spotlight kind — mirrors dashboard.js's own WIDGET_CATALOG
+// icon for whichever widget type that kind becomes there (handout/map/
+// combat/clock/browser/calendar/soundboard), kept as its own small table
+// rather than derived from the catalog itself: the catalog's own icon
+// doubles there as "is this kind even addable to a dashboard" (a widget
+// catalog entry existing at all), a question that only makes sense on the
+// Dashboard. A purely-display consumer with no such concept — Workbench's
+// own read-only "Now Showing" panel — just needs "what icon represents this
+// kind," full stop.
+export const SPOTLIGHT_KIND_ICONS = {
+  npc: "tabler:cards",
+  location: "tabler:cards",
+  monster: "tabler:cards",
+  effect: "tabler:cards",
+  journal: "tabler:cards",
+  encounter: "tabler:swords",
+  map: "tabler:map-2",
+  clock: "tabler:clock",
+  browser: "tabler:world",
+  calendar: "tabler:calendar-time",
+  soundboard: "tabler:music",
+};
+
+// The four kinds with no Library record to fetch a title from at all — they
+// spotlight by widget instanceId, not a `kind/id` Library path (see
+// dashboard.js's own INLINE_FOLLOW_KINDS, a Dashboard-specific superset
+// concept this happens to share every member with). Guards a title-cache
+// fetch attempt that would otherwise 404 forever, once per poll.
+export const SPOTLIGHT_INLINE_KINDS = new Set(["clock", "browser", "calendar", "soundboard"]);
+
 // Leading icon + whether it should be a clickable on/off toggle for every
 // entry type — `resolveKindIcon(kind)` (dashboard.js's own, threaded
 // through from initGameLogWidget below) returns undefined for a kind
@@ -109,6 +145,29 @@ function resolveEntryIcon(entry, resolveKindIcon) {
   return { icon: "tabler:message-circle", clickable: false };
 }
 
+// One entry per kind with a real "open the source record in its owning
+// tool" link — mirrors that kind's own widget-level "Open in X" header
+// action exactly (map.js's own "Open in Orrery" is the only one that exists
+// anywhere in the suite today: same URL shape, same same-tab navigation, no
+// target/rel). A kind with no entry here just renders as plain, non-linked
+// text — most notably every Handout kind (npc/location/monster/effect/
+// journal), none of which has an "Open in [owning tool]" affordance
+// anywhere yet to mirror.
+function resolveSpotlightLink(kind, id, shareToken) {
+  if (kind === "map") {
+    const params = new URLSearchParams({ map: id });
+    if (shareToken) params.set("share", shareToken);
+    return `${resolveToolHref("orrery", resolveToolContextPath())}?${params.toString()}`;
+  }
+  return "";
+}
+
+// Returns { before, detail, after, href } instead of a plain string — the
+// caller (renderEntries below) renders `detail` as a link when `href` is
+// non-empty, everything else as plain text either side of it. Only a
+// `spotlight` entry ever has a linkable `detail` (the spotlighted item's own
+// name); every other shape puts its whole sentence in `before` and leaves
+// `detail`/`href` empty.
 // `getCachedTitle(kind,id)`/`ensureTitleCached(kind,id,onLoaded)` — dashboard
 // .js's own shared title cache (fetch-once, cache, re-render-on-resolve,
 // same shape as the character-payload caches elsewhere in this suite).
@@ -119,7 +178,7 @@ function resolveEntryIcon(entry, resolveKindIcon) {
 // all; clock/browser are the only two whose own spotlight `data` payload
 // happens to carry something nameable (a GM-set clock name, a raw URL) —
 // calendar/soundboard fall back to the generic label like before.
-function describeEntry(entry, { getCachedTitle, ensureTitleCached, onTitleLoaded } = {}) {
+function describeEntry(entry, { getCachedTitle, ensureTitleCached, onTitleLoaded, shareToken } = {}) {
   if (entry?.type === "spotlight") {
     const kind = String(entry.payload?.kind || "").trim();
     const id = String(entry.payload?.id || "").trim();
@@ -133,18 +192,20 @@ function describeEntry(entry, { getCachedTitle, ensureTitleCached, onTitleLoaded
       detail = getCachedTitle?.(kind, id) || "";
       if (!detail) ensureTitleCached?.(kind, id, onTitleLoaded);
     }
-    return `Showed ${detail || genericArticle} to the table`;
+    return {
+      before: "Showed ",
+      detail: detail || genericArticle,
+      after: " to the table",
+      href: kind && id ? resolveSpotlightLink(kind, id, shareToken) : "",
+    };
   }
   if (entry?.type === "spotlight-clear") {
-    return "Stopped showing to the table";
+    return { before: "Stopped showing to the table", detail: "", after: "", href: "" };
   }
   if (entry?.type === "roll") {
     // A roll entry's own `message` is always empty — the real data lives in
     // `payload.{label,expression,notation,total}` (dice-roll.js's own
-    // rollExpression). Mirrors Workbench's own richer log panel formatting
-    // (workbench-character-view.js's createGameLogEntryElement) instead of
-    // leaving this blank, which is what the old generic `entry?.message ||
-    // ""` fallback used to do for every single roll.
+    // rollExpression).
     const payload = entry.payload || {};
     const label = typeof payload.label === "string" ? payload.label.trim() : "";
     const notation =
@@ -156,16 +217,19 @@ function describeEntry(entry, { getCachedTitle, ensureTitleCached, onTitleLoaded
     const total = payload.total !== undefined && payload.total !== null ? payload.total : "";
     let text = label && notation ? `${label} (${notation})` : label || notation || "Roll";
     if (total || total === 0) text += ` → ${total}`;
-    return text;
+    return { before: text, detail: "", after: "", href: "" };
   }
-  return entry?.message || "";
+  return { before: entry?.message || "", detail: "", after: "", href: "" };
 }
 
 function formatTimestamp(value) {
   if (!value) return "";
-  const date = new Date(value);
+  const date = new Date(normalizeTimestamp(value));
   if (Number.isNaN(date.getTime())) return value;
   try {
+    // No explicit timeZone option — defaults to the browser's own local
+    // zone, which is the whole point; `date` itself just has to actually
+    // represent the right UTC instant first (see normalizeTimestamp above).
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   } catch (error) {
     return date.toISOString();
@@ -233,13 +297,29 @@ export function initGameLogWidget(
 
         const body = el("div", "d-flex flex-column gap-1 flex-grow-1");
         const line = el("div", "d-flex justify-content-between gap-2");
-        line.appendChild(
-          el(
-            "span",
-            null,
-            describeEntry(entry, { getCachedTitle, ensureTitleCached, onTitleLoaded: () => refreshNow() })
-          )
-        );
+        const sentence = describeEntry(entry, {
+          getCachedTitle,
+          ensureTitleCached,
+          onTitleLoaded: () => refreshNow(),
+          shareToken,
+        });
+        const textEl = el("span");
+        if (sentence.before) textEl.appendChild(document.createTextNode(sentence.before));
+        if (sentence.detail) {
+          if (sentence.href) {
+            // No target/rel — same same-tab navigation as the source
+            // widget's own "Open in X" header action (see
+            // resolveSpotlightLink's own comment).
+            const link = document.createElement("a");
+            link.href = sentence.href;
+            link.textContent = sentence.detail;
+            textEl.appendChild(link);
+          } else {
+            textEl.appendChild(document.createTextNode(sentence.detail));
+          }
+        }
+        if (sentence.after) textEl.appendChild(document.createTextNode(sentence.after));
+        line.appendChild(textEl);
         const meta = el("span", "text-body-secondary gamelog-entry-meta");
         meta.textContent = `${entry.author?.name || "System"} · ${formatTimestamp(entry.created_at)}`;
         line.appendChild(meta);
@@ -283,8 +363,14 @@ export function initGameLogWidget(
     const wrap = el("div", "d-flex flex-column gap-2");
     const list = el("div");
     activeList = list;
-    wrap.appendChild(list);
 
+    // Posting form goes FIRST, above the entries list — confirmed real
+    // complaint: with the list on top, "Post a message" sank below however
+    // many entries were showing, and a GM/player who'd scrolled down to read
+    // older history had to scroll back up just to type. The newest entry is
+    // still the first thing in the list itself (renderEntries sorts
+    // newest-first), so nothing about reading order actually changes, only
+    // where the compose box sits relative to it.
     if (dataManager.isAuthenticated()) {
       const form = el("form", "d-flex gap-2");
       const input = el("input", "form-control form-control-sm");
@@ -308,6 +394,7 @@ export function initGameLogWidget(
       wrap.appendChild(form);
     }
 
+    wrap.appendChild(list);
     container.appendChild(wrap);
     void refresh(list);
   }

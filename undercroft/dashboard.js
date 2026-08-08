@@ -22,10 +22,9 @@ import { initBoardWidget } from "./common/js/lib/widgets/board.js";
 import { openContentPicker } from "./common/js/lib/widgets/content-picker.js";
 import { resolveGroupContext } from "./common/js/lib/widgets/group-context.js";
 import { watchActiveSpotlights } from "./common/js/lib/spotlight-inbox.js";
-import { renderSpotlightPanel } from "./common/js/lib/widgets/spotlight-panel.js";
-import { resolveActiveSpotlightId, resolveIsSpotlighted } from "./common/js/lib/spotlight.js";
+import { createSpotlightPanel } from "./common/js/lib/widgets/spotlight-panel.js";
+import { resolveActiveSpotlightId, resolveIsSpotlighted, createSpotlightTitleCache } from "./common/js/lib/spotlight.js";
 import { createReliableInterval } from "./common/js/lib/reliable-interval.js";
-import { loadLibraryData } from "./common/js/lib/content-fetch.js";
 import { el } from "./common/js/lib/dom.js";
 
 // Every per-browser local copy of a Dashboard setting lives under this same
@@ -873,27 +872,21 @@ const ZOOM_EXCLUDED_WIDGET_TYPES = new Set(["map"]);
 
 // Resource title lookup, shared by the spotlight panel's own tooltips and
 // the Game Log's per-entry detail text — one cache, not two independently-
-// fetched copies. Mirrors the exact fetch-once-cache-then-rerender shape
-// orrery/js/app.js and common/js/lib/widgets/map.js already use for their
-// own character-payload caches. Only meaningful for Library-backed kinds
-// (npc/location/monster/effect/journal/map/encounter — all real,
-// individually fetchable Library records); the four inline kinds (clock/
-// browser/calendar/soundboard) have no record to fetch at all, see
-// game-log.js's own inline-kind fallback for those.
-const titleCache = new Map(); // "kind:id" -> title string
-const pendingTitleFetches = new Set();
-function ensureTitleCached(kind, id, onLoaded) {
-  const key = `${kind}:${id}`;
-  if (!kind || !id || titleCache.has(key) || pendingTitleFetches.has(key)) return;
-  pendingTitleFetches.add(key);
-  loadLibraryData(`${kind}/${id}`, dataManager, groupContext?.shareToken || shareParam)
-    .then((payload) => {
-      titleCache.set(key, payload?.title || payload?.name || "");
-      pendingTitleFetches.delete(key);
-      onLoaded?.();
-    })
-    .catch(() => pendingTitleFetches.delete(key));
-}
+// fetched copies. Also shared, literally (not just in shape), with
+// Workbench's own read-only "Now Showing" panel — see spotlight.js's own
+// createSpotlightTitleCache. Only meaningful for Library-backed kinds (npc/
+// location/monster/effect/journal/map/encounter — all real, individually
+// fetchable Library records); the four inline kinds (clock/browser/calendar/
+// soundboard) have no record to fetch at all, see game-log.js's own
+// SPOTLIGHT_INLINE_KINDS.
+const spotlightTitleCache = createSpotlightTitleCache(dataManager, () => groupContext?.shareToken || shareParam);
+
+// The Dashboard's own floating "what's shown to the table" icon strip —
+// see spotlight-panel.js's own createSpotlightPanel for why this is a
+// factory now (Workbench mounts a second, independent, non-floating,
+// read-only instance of the exact same renderer for its own Now Showing
+// section) rather than the bare singleton this used to be.
+const spotlightPanel = createSpotlightPanel();
 
 // Given {kind,id} from a spotlight's own payload, does THIS viewer already
 // have a matching widget on their own dashboard — the inverse question of
@@ -930,16 +923,29 @@ function isSpotlightItemOnMyDashboard({ kind, id }) {
 
 // The "toggle off" half — finds and removes whatever widget instance
 // isSpotlightItemOnMyDashboard just confirmed exists, using the identical
-// matching rules. Combat (kind "encounter") is a deliberate exception: its
-// own widget (combat-tracker.js) has no per-instance visibility flag and no
-// `destroy(removed)` spotlight-clear at all — GM and player share the same
-// widget shape (mode decided live from groupContext.access), so removing it
-// wouldn't stop the encounter being shown to the table, which would read as
-// broken rather than "off." No safe generic action exists there.
+// matching rules. Combat (kind "encounter") only special-cases the GM: their
+// own Combat Tracker widget doubles as the thing announcing the encounter to
+// the table, so its own destroy(removed) (combat-tracker.js) clears the
+// spotlight for the WHOLE table the moment it's removed — too big a
+// surprise for what looks like a lightweight "take this off just my own
+// dashboard" toggle, so the GM has to use the widget's own Remove button
+// instead, where that consequence is unambiguous. A PLAYER's own Combat
+// Tracker instance has no such side effect (destroy(removed)'s
+// clearSpotlight branch is gated on mode === "gm", which a player's never
+// is) — removing theirs is exactly as safe and local as removing a Map,
+// confirmed real bug this fixes: this used to block everyone unconditionally,
+// so a player toggling combat off got the same "go remove the widget
+// yourself" refusal a GM's own genuinely-riskier action needs, for an
+// action that was actually perfectly safe for them.
 function removeSpotlightItemFromDashboard({ kind, id }) {
   const widgetType = KIND_WIDGET_MAP[kind];
   if (widgetType === "combat") {
-    status?.show("Remove the Combat Tracker widget itself to take this off your dashboard.", { type: "info", timeout: 3000 });
+    if (groupContext?.access === "owner") {
+      status?.show("Remove the Combat Tracker widget itself to take this off your dashboard.", { type: "info", timeout: 3000 });
+      return;
+    }
+    const combatInstance = layout.widgets.find((entry) => entry.widgetType === "combat");
+    if (combatInstance) removeWidget(combatInstance.instanceId);
     return;
   }
   const instance = layout.widgets.find((entry) => {
@@ -1020,7 +1026,7 @@ function refreshSpotlightPanel(activeEntries) {
     // GET /content/soundboard/<instanceId> every single poll, 404-ing
     // forever since no such record has ever existed.
     if (!INLINE_FOLLOW_KINDS.has(kind)) {
-      ensureTitleCached(kind, id, () => refreshSpotlightPanel());
+      spotlightTitleCache.ensure(kind, id, () => refreshSpotlightPanel());
     }
     return {
       key,
@@ -1028,7 +1034,7 @@ function refreshSpotlightPanel(activeEntries) {
       id,
       templateId: entry.payload?.templateId || "",
       icon: catalogEntry?.icon || "tabler:sparkles",
-      title: titleCache.get(key) || SPOTLIGHT_KIND_LABELS[kind] || kind,
+      title: spotlightTitleCache.get(kind, id) || SPOTLIGHT_KIND_LABELS[kind] || kind,
       isOnDashboard: isSpotlightItemOnMyDashboard({ kind, id }),
       isNew: Array.isArray(activeEntries) && !knownActiveSpotlightKeys.has(key),
     };
@@ -1038,7 +1044,22 @@ function refreshSpotlightPanel(activeEntries) {
   // must never itself mark anything "no longer new," or a flourish still
   // mid-animation could be cut off by the very click that triggered it.
   if (Array.isArray(activeEntries)) knownActiveSpotlightKeys = new Set(items.map((item) => item.key));
-  renderSpotlightPanel(items, { onToggle: toggleSpotlightItem, onClear: forceClearSpotlight, editing });
+  // Force-clear is a destructive, table-wide action (removes it from
+  // EVERYONE's view, not just this viewer's own dashboard) — gating it on
+  // `editing` alone was wrong: that flag just means "I'm customizing MY OWN
+  // dashboard layout," which any player can trivially turn on. Confirmed
+  // real bug: a plain player, in their own layout-edit mode, got the same
+  // "x" force-clear badge a GM does. Scoped to groupContext.access ===
+  // "owner" (the GM of THIS specific active campaign) — not
+  // dataManager.meetsTier("gm"), which every widget-add gate elsewhere uses
+  // instead: a gm-tier account who merely joined someone else's campaign as
+  // a player has no more business force-clearing that table's spotlights
+  // than any other player does.
+  spotlightPanel.render(items, {
+    onToggle: toggleSpotlightItem,
+    onClear: forceClearSpotlight,
+    editing: editing && groupContext?.access === "owner",
+  });
 }
 
 // The "little red X" escape hatch — force-clears a spotlight log entry
@@ -1335,8 +1356,8 @@ function buildCtx(instance, { setTitle, setHeaderAction, setRightAction } = {}) 
     // own findCatalogEntry gate, which the log's Accept button never had).
     resolveSpotlightKindIcon: (kind) => findCatalogEntry(KIND_WIDGET_MAP[kind])?.icon,
     isSpotlightOnDashboard: isSpotlightItemOnMyDashboard,
-    ensureSpotlightTitleCached: ensureTitleCached,
-    getCachedSpotlightTitle: (kind, id) => titleCache.get(`${kind}:${id}`) || "",
+    ensureSpotlightTitleCached: spotlightTitleCache.ensure,
+    getCachedSpotlightTitle: spotlightTitleCache.get,
     instanceId: instance?.instanceId || "",
     contentRef: instance?.contentRef || null,
     // Lets a widget with no Library kind of its own (Clock) persist its own

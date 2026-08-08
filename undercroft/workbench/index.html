@@ -230,15 +230,6 @@
               <div data-dice-mount></div>
               <div class="d-flex flex-column gap-3" data-dice-panel></div>
             </section>
-            <section
-              class="d-none flex-column gap-3"
-              data-now-showing-section
-            >
-              <div data-now-showing-mount></div>
-              <div data-now-showing-panel>
-                <div class="d-flex justify-content-center" data-now-showing-content></div>
-              </div>
-            </section>
             <section class="d-flex flex-column gap-3" data-workbench-view-panel="play edit" data-game-log-section>
               <div class="d-flex align-items-center justify-content-between">
                 <div class="d-flex flex-column">
@@ -266,21 +257,21 @@
                   <span data-game-log-toggle-mount></span>
                 </div>
               </div>
-              <div class="d-flex flex-column gap-3" data-game-log-panel>
-                <div class="border rounded-3 bg-body p-3 game-log-entries d-flex flex-column" data-game-log-entries aria-live="polite"></div>
-                <div class="text-body-secondary small" data-game-log-status hidden></div>
-                <form class="input-group input-group-sm" data-game-log-form novalidate>
-                  <label class="visually-hidden" for="game-log-message">Message</label>
-                  <input
-                    class="form-control"
-                    id="game-log-message"
-                    type="text"
-                    data-game-log-input
-                    placeholder="Share a note with your group…"
-                    autocomplete="off"
-                  />
-                  <button class="btn btn-primary" type="submit">Send</button>
-                </form>
+              <!-- Filled entirely by the shared Game Log widget
+                   (common/js/lib/widgets/game-log.js's initGameLogWidget) —
+                   it builds its own entries list + post form directly into
+                   this container, the same code the Dashboard's own Game Log
+                   widget uses, just mounted here instead of in a widget
+                   card. -->
+              <div class="d-flex flex-column gap-3" data-game-log-panel></div>
+            </section>
+            <section
+              class="d-none flex-column gap-3"
+              data-now-showing-section
+            >
+              <div data-now-showing-mount></div>
+              <div data-now-showing-panel>
+                <div class="d-flex justify-content-center" data-now-showing-content></div>
               </div>
             </section>
         </div>

@@ -283,14 +283,40 @@ export class DataManager {
     }
   }
 
+  // A true no-op (same groupId AND name already active) skips both the
+  // write AND the event entirely — confirmed real bug this fixes: several
+  // listeners of "workbench:active-group-changed" (dashboard.js's own full
+  // renderWidgets(), auth-ui.js's own resyncActiveGroup) can themselves,
+  // directly or indirectly, call setActiveGroup again in response to the
+  // very event that woke them — auth-ui.js's resyncActiveGroup in
+  // particular re-derives `name` from a fresh (cached) listGroups() call
+  // every time it runs and calls this again whenever that disagrees with
+  // whatever's currently stored, with no guard against calling it with the
+  // literal value already in effect. Previously, since this always fired
+  // the event unconditionally, that could re-trigger the exact same chain
+  // of listeners indefinitely — dashboard.js's own listener alone tears
+  // down and rebuilds every widget on the page each time (including their
+  // live-stream connections), which is likely why Character/Combat Tracker
+  // updates were landing late or not at all: their live-stream got torn
+  // down and reconnected mid-flight, over and over, rather than staying up
+  // long enough to actually receive anything. Also why `/list/character`
+  // was observed being hit several times a second — that request happens
+  // on every Character widget remount. Comparing here, once, at the single
+  // source of the event, is more robust than trying to make every current
+  // (and future) listener individually idempotent.
   setActiveGroup(groupId, name = "") {
     const storage = this._requireStorage();
+    const current = this.getActiveGroup();
     if (!groupId) {
+      if (!current) return null;
       storage.removeItem(DEFAULT_ACTIVE_GROUP_KEY);
       this._emit("workbench:active-group-changed", { groupId: null, name: "" });
       return null;
     }
     const entry = { groupId: String(groupId), name: name || "" };
+    if (current && current.groupId === entry.groupId && current.name === entry.name) {
+      return current;
+    }
     storage.setItem(DEFAULT_ACTIVE_GROUP_KEY, JSON.stringify(entry));
     this._emit("workbench:active-group-changed", entry);
     return entry;

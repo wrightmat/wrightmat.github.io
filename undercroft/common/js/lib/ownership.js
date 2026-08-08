@@ -74,6 +74,57 @@ export function confirmDelete({ label }) {
   return window.confirm(`Delete ${label}? This can't be undone.`);
 }
 
+// Fetch-once-per-id-set, re-render-once-resolved ownership catalog for
+// character-linked map markers — shared by the Dashboard's own map.js and
+// Orrery's app.js, which used to each carry an independent copy of this
+// exact "prime on every render pass, re-render once the fetch resolves"
+// shape. Confirmed real bug this fixes, present identically in BOTH copies:
+// the re-render triggered once a fetch resolved (needed, so newly-known
+// ownership actually takes effect — e.g. a marker becoming draggable) itself
+// called back into the SAME priming function, and since neither copy
+// tracked which id set it had already fetched, that immediately re-issued
+// the identical request — an unconditional infinite loop, bounded only by
+// network round-trip time (a live GET /list/character firing several times
+// a second on a local server, and starving the same page's other
+// in-flight work — live-stream delivery, other polls — of main-thread time
+// in the process). Only re-fetches when the actual SET of character ids
+// changes (a marker added/removed) — ownership/permissions themselves
+// aren't expected to change from render to render, and each caller's own
+// periodic full-map poll already re-renders (and so re-primes) on its own
+// cadence regardless.
+export function createCharacterOwnershipPrimer(dataManager) {
+  let catalog = new Map();
+  let pending = null;
+  let lastKey = null;
+
+  // `onResolved()` fires once, only after a genuinely NEW id set finishes
+  // fetching — never synchronously, so this is always safe to call from
+  // inside a render pass itself.
+  function prime(ids, onResolved) {
+    if (pending) return;
+    const idList = Array.from(new Set(Array.from(ids || []).filter(Boolean)));
+    if (!idList.length) return;
+    const key = idList.slice().sort().join(",");
+    if (key === lastKey) return;
+    pending = refreshOwnershipCatalog(dataManager, "character", idList)
+      .then((next) => {
+        catalog = next;
+        lastKey = key;
+        pending = null;
+        onResolved?.();
+      })
+      .catch(() => {
+        pending = null;
+      });
+  }
+
+  function getCatalog() {
+    return catalog;
+  }
+
+  return { prime, getCatalog };
+}
+
 export async function refreshOwnershipCatalog(dataManager, kind, ids) {
   const catalog = new Map();
   if (!dataManager || !ids?.length) return catalog;

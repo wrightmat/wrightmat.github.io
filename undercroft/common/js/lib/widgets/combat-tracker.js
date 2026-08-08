@@ -78,6 +78,13 @@ export function initCombatTrackerWidget(
     combatBindings: null,
     ownedEncounters: [],
     pollTimer: 0,
+    // GM mode's own safety-net sync sweep (see startGmCharacterSync) — a
+    // separate timer from pollTimer above, since the two modes never share
+    // an instance and gate on different things (player mode polls the
+    // active encounter itself; this re-syncs each PC combatant from its
+    // live character record, regardless of whether the live-stream
+    // subscription for it actually delivered).
+    gmSyncTimer: 0,
     destroyed: false,
     selectedCombatantId: "",
     // Loaded once and cached — renderGm() reads this synchronously so a
@@ -701,11 +708,25 @@ export function initCombatTrackerWidget(
       const value = findBindingByRole(state.combatBindings, "value");
       const tags = findBindingByRole(state.combatBindings, "tags");
       if (resource?.binding) {
-        const max = resource.maxPath ? resolveBinding(resource.maxPath, payload) : undefined;
-        if (typeof max === "number") {
-          combatant.maxHp = max;
-          const current = resolveBinding(resource.binding, payload);
-          combatant.hp = typeof current === "number" ? current : combatant.maxHp;
+        // Each of current/max/temp updates independently based on whether
+        // ITS OWN path resolves to a number — confirmed real bug this fixes:
+        // current HP used to only ever update when max ALSO resolved as a
+        // number (nested inside that same check), so a System with no
+        // maxPath configured for its resource binding at all — or one where
+        // max just failed to resolve for any reason — silently never
+        // reflected a player's own current-HP edit here either, even though
+        // current resolved fine on its own. Same "leave alone if
+        // unresolvable" fallback the AC/Conditions checks just below already
+        // use, not resolveCombatantStats' own zero-default (that function is
+        // for seeding a BRAND NEW combatant, where 0 is a reasonable
+        // "nothing configured" default — here, an existing combatant's
+        // already-known value should never get silently reset to 0 just
+        // because the character record briefly didn't resolve one field).
+        const current = resolveBinding(resource.binding, payload);
+        if (typeof current === "number") combatant.hp = current;
+        if (resource.maxPath) {
+          const max = resolveBinding(resource.maxPath, payload);
+          if (typeof max === "number") combatant.maxHp = max;
         }
         if (resource.tempPath) {
           const temp = resolveBinding(resource.tempPath, payload);
@@ -724,6 +745,48 @@ export function initCombatTrackerWidget(
     } catch (error) {
       // Character deleted/inaccessible — leave the combatant's existing
       // mirror alone rather than erroring the whole tracker.
+    }
+  }
+
+  // Safety-net sweep, not the primary update path — the live-stream
+  // subscription above is what makes an edit feel instant. A live-stream
+  // connection can silently miss an event (a backgrounded/throttled tab —
+  // browsers routinely deprioritize timers and can delay reconnects in an
+  // unfocused tab; the reconnect backoff itself climbs up to 15s after
+  // repeated failures; a connection torn down and recreated at the wrong
+  // moment) with nothing else ever noticing or retrying that specific
+  // missed change. Confirmed real gap: GM mode had NO fallback poll at all
+  // for character-driven combatant stats before this — every other poller
+  // in this file/suite (player mode's own pollActiveEncounter, Game Log,
+  // spotlight-inbox) already follows "live-stream wakes it up sooner, a
+  // plain poll guarantees it eventually happens regardless" — GM mode's
+  // character sync was the one exception, purely live-stream-or-never. This
+  // re-syncs every PC combatant from its live character record on a fixed
+  // cadence, independent of whether any live-stream event for it was ever
+  // received, giving character->encounter sync a bounded worst-case
+  // latency instead of an unbounded "maybe never."
+  async function syncAllCharacterCombatants() {
+    if (!state.encounter) return;
+    const characterIds = new Set(
+      state.encounter.combatants
+        .filter((combatant) => combatant.refKind === "character" && combatant.refId)
+        .map((combatant) => combatant.refId)
+    );
+    await Promise.all(Array.from(characterIds).map((id) => refreshCombatantFromCharacter(id)));
+  }
+
+  function startGmCharacterSync() {
+    stopGmCharacterSync();
+    void syncAllCharacterCombatants();
+    state.gmSyncTimer = createReliableInterval(() => {
+      void syncAllCharacterCombatants();
+    }, POLL_INTERVAL_MS);
+  }
+
+  function stopGmCharacterSync() {
+    if (state.gmSyncTimer) {
+      state.gmSyncTimer.stop();
+      state.gmSyncTimer = 0;
     }
   }
 
@@ -1248,6 +1311,7 @@ export function initCombatTrackerWidget(
         }
         render();
       }
+      startGmCharacterSync();
     } else {
       await pollActiveEncounter();
       startPolling();
@@ -1273,6 +1337,7 @@ export function initCombatTrackerWidget(
     async destroy(removed) {
       state.destroyed = true;
       stopPolling();
+      stopGmCharacterSync();
       liveStream?.close();
       container.innerHTML = "";
       if (removed && mode === "gm" && state.announced && state.encounter && groupId) {

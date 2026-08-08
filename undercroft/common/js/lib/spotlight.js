@@ -5,6 +5,7 @@
 // its own spotlight directly through dataManager.spotlightToGroup/
 // clearSpotlight (scoped to its own kind+id) — this module only reads that
 // state back, it doesn't post it.
+import { loadLibraryData } from "./content-fetch.js";
 
 // Same "category === print" filter Press's own listPrintTemplateEntries
 // applies (undercroft/press/js/templates.js) — kept as a small, standalone
@@ -220,5 +221,40 @@ export async function resolveIsSpotlighted(dataManager, { groupId, shareToken, k
 export async function resolveSpotlightData(dataManager, { groupId, shareToken, kind, id, limit = 100 } = {}) {
   const entry = await resolveActiveInstanceEntry(dataManager, { groupId, shareToken, kind, id, limit });
   return entry?.payload?.data ?? null;
+}
+
+// A spotlight log entry never carries a display title itself (server/
+// groups.py's own payload validation only ever requires kind+id) — a real
+// name for a Library-backed kind needs a separate fetch. Fetch-once, cache,
+// re-render-on-resolve: `ensure(kind, id, onLoaded)` kicks off (at most one)
+// fetch per key and calls `onLoaded` once it resolves; `get(kind, id)`
+// synchronously reads whatever's cached so far (empty string until it
+// resolves). Shared by dashboard.js's spotlight panel/Game Log and
+// Workbench's own read-only "Now Showing" panel — one cache/fetch
+// implementation, not two independently-drifting copies (both used to hand-rewrite
+// this exact fetch-once-cache-then-callback shape).
+// `getShareToken` is a getter, not a plain value — a caller's own active
+// share token can change after this cache is created (a campaign switch, a
+// share link resolving later), and every fetch should use whatever's current
+// at call time.
+export function createSpotlightTitleCache(dataManager, getShareToken) {
+  const titleCache = new Map();
+  const pendingFetches = new Set();
+  function ensure(kind, id, onLoaded) {
+    const key = `${kind}:${id}`;
+    if (!kind || !id || titleCache.has(key) || pendingFetches.has(key)) return;
+    pendingFetches.add(key);
+    loadLibraryData(`${kind}/${id}`, dataManager, getShareToken ? getShareToken() : "")
+      .then((payload) => {
+        titleCache.set(key, payload?.title || payload?.name || "");
+        pendingFetches.delete(key);
+        onLoaded?.();
+      })
+      .catch(() => pendingFetches.delete(key));
+  }
+  function get(kind, id) {
+    return titleCache.get(`${kind}:${id}`) || "";
+  }
+  return { ensure, get };
 }
 
