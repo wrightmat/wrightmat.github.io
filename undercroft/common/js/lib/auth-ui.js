@@ -125,9 +125,25 @@ export function initAuthControls({
   const manager = dataManager || new DataManager({ baseUrl: resolveApiBase() });
   const container = root.querySelector("[data-auth-control]");
   const modalElement = ensureModal();
-  const modal = window.bootstrap && typeof window.bootstrap.Modal === "function"
-    ? window.bootstrap.Modal.getOrCreateInstance(modalElement)
-    : null;
+  // Resolved fresh on every call, not once here — initAuthControls runs as
+  // part of each page's own module script, which (deliberately, per
+  // app-shell.js's own script-order comment) executes BEFORE Bootstrap's
+  // own deferred CDN <script> tag has necessarily finished. Caching a
+  // one-time `window.bootstrap ? ... : null` result at setup time meant
+  // that race being lost even once (more likely on a cold/uncached first
+  // load, which is exactly when this was reported: a fresh browser with
+  // nothing cached) permanently left this null — the Login/Register button
+  // still attached its click handler and ran openModal() on every click,
+  // but modal.show() was silently skipped forever after, with no console
+  // error at all. Same fix dom.js's own attachHoverDropdown already uses
+  // for the identical race on the account/tool-switcher dropdown: resolve
+  // the Bootstrap instance INSIDE the handler, where a real click can only
+  // ever happen well after Bootstrap has had time to load.
+  function getModal() {
+    return window.bootstrap && typeof window.bootstrap.Modal === "function"
+      ? window.bootstrap.Modal.getOrCreateInstance(modalElement)
+      : null;
+  }
   const title = modalElement.querySelector("[data-auth-title]");
   const views = Array.from(modalElement.querySelectorAll("[data-auth-view]"));
   const loginForm = modalElement.querySelector("[data-auth-login-form]");
@@ -156,6 +172,7 @@ export function initAuthControls({
   }
 
   function closeModal() {
+    const modal = getModal();
     if (modal) {
       modal.hide();
     }
@@ -163,6 +180,7 @@ export function initAuthControls({
 
   function openModal(view = "login") {
     showView(view);
+    const modal = getModal();
     if (modal) {
       modal.show();
     }
@@ -392,10 +410,11 @@ export function initAuthControls({
         if (result.message && status) {
           status.show(result.message, { type: "info", timeout: 2500 });
         }
-        showView("verify");
-        if (modal) {
-          modal.show();
-        }
+        // Same showView + modal.show() pair openModal itself does — this
+        // branch runs mid-registration, with the modal already open, but
+        // reuses openModal rather than a third inline copy of the now-lazy
+        // getModal() resolution.
+        openModal("verify");
         return;
       }
       if (result && result.message) {

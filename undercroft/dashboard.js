@@ -17,8 +17,8 @@ import { initBrowserWidget } from "./common/js/lib/widgets/browser.js";
 import { initCalendarWidget } from "./common/js/lib/widgets/calendar.js";
 import { initSoundboardWidget } from "./common/js/lib/widgets/soundboard.js";
 import { initDiceRollerWidget } from "./common/js/lib/widgets/dice-roller.js";
-import { initWledWidget, resolveWledDeviceByAlias, normalizeWledDeviceList } from "./common/js/lib/widgets/wled.js";
-import { initMacroBoardWidget } from "./common/js/lib/widgets/macro-board.js";
+import { initWledWidget, resolveWledDeviceByAlias, normalizeWledDeviceList, saveWledDevices } from "./common/js/lib/widgets/wled.js";
+import { initBoardWidget } from "./common/js/lib/widgets/board.js";
 import { openContentPicker } from "./common/js/lib/widgets/content-picker.js";
 import { resolveGroupContext } from "./common/js/lib/widgets/group-context.js";
 import { watchSpotlight } from "./common/js/lib/spotlight-inbox.js";
@@ -193,34 +193,45 @@ const WIDGET_CATALOG = [
       }),
   },
   {
-    id: "macroboard",
-    label: "Macros",
-    icon: "tabler:bolt",
-    // One board shows every saved macro (dataManager.list("macro", ...)) —
-    // no per-instance config of its own, same "multiple:false" shape as
-    // Character/Game Log/Combat. wledDevices/persistWledDevices threaded
-    // the same way the wled entry above does — the Macro board's own WLED-
-    // alias resolution prompt (see macro-board.js) needs the same
-    // account-wide device list, not a second copy of it.
+    id: "board",
+    label: "Board",
+    icon: "tabler:layout-kanban",
+    multiple: true,
+    // No Library kind of its own — like Clock, the whole board (name +
+    // buckets + cards) lives directly in this instance's own contentRef
+    // (see board.js's own header comment). Generalizes what used to be two
+    // separate widgets: a hand-curated reference/link board, and the old
+    // Macro board (now retired — a card whose whole text is one
+    // `` `macro:Name` `` reference renders as the same kind of big
+    // icon+color button that widget used to show).
     init: (container, ctx) =>
-      initMacroBoardWidget(container, {
+      initBoardWidget(container, {
+        contentRef: ctx.contentRef,
+        setContentRef: ctx.setContentRef,
+        setTitle: ctx.setTitle,
         dataManager: ctx.dataManager,
         status: ctx.status,
         groupContext: ctx.groupContext,
-        setTitle: ctx.setTitle,
-        wledDevices,
-        onWledDevicesChange: persistWledDevices,
+        instanceId: ctx.instanceId,
         // Auto-adds a live control surface (WLED/Soundboard/Combat) for
         // whatever a macro action just touched, if one isn't already on
         // this dashboard — see ensureWidgetForMacroAction's own comment.
         ensureWidget: ensureWidgetForMacroAction,
         // Live-read, not the mount-time snapshot — see buildCtx's own
-        // comment. Clicking a macro button while rearranging the layout
-        // makes no sense as "run the real macro" (lights/sound firing for
-        // real while you're just dragging cards around); macro-board.js
-        // checks this at click time to redirect to Loom's Macro editor
-        // instead.
+        // comment. Clicking a macro-button card while rearranging the
+        // layout makes no sense as "run the real macro" (lights/sound
+        // firing for real while you're just dragging cards around);
+        // board.js checks this at click time to redirect to Loom's Macro
+        // editor instead — same behavior the old Macro board widget had.
         isEditing: ctx.isEditing,
+        // Keeps this dashboard's own in-memory wledDevices (read by the WLED
+        // widget's own rendering) in sync the instant a macro-button card's
+        // click resolves an unconfigured alias via wled.js's own
+        // promptForWledAlias — otherwise an already-mounted WLED widget
+        // wouldn't reflect the new alias until a full reload. The alias
+        // itself is ALWAYS persisted durably regardless (saveWledDevices,
+        // called from inside the prompt) — this is purely a live-cache sync.
+        onWledDevicesChange: persistWledDevices,
       }),
   },
   {
@@ -714,7 +725,7 @@ function applyBackground(color) {
 }
 
 // "" means no override — falls back to the computed default (campaign name →
-// signed-in user's name → "Home") every time it's applied, so switching
+// signed-in user's name → "Welcome!") every time it's applied, so switching
 // campaigns (via onPinCharacter) or signing in later updates it live.
 function loadHeaderTitle(serverSettings) {
   if (typeof serverSettings?.dashboardHeaderTitle === "string") return serverSettings.dashboardHeaderTitle;
@@ -731,7 +742,10 @@ function computeDefaultHeaderTitle() {
   if (groupContext?.groupName) return groupContext.groupName;
   const username = dataManager.session?.user?.username;
   if (username) return username;
-  return "Home";
+  // No campaign, not signed in — the exact same condition
+  // shouldShowWelcomeScreen checks (that one also requires an empty
+  // layout), so this heading and the welcome cards below it always agree.
+  return "Welcome!";
 }
 
 function applyHeaderTitle() {
@@ -769,9 +783,20 @@ function loadWledDevices(serverSettings) {
   return normalizeWledDeviceList(loadLocalSetting("wledDevices"));
 }
 
+// Delegates to wled.js's own saveWledDevices rather than the generic
+// persistSetting helper every other Dashboard setting uses — that module
+// owns the exact two key strings ("undercroft.dashboard.wledDevices" local /
+// "dashboardWledDevices" server) this function's own literals used to
+// duplicate, and promptForWledAlias (wled.js, invoked from anywhere a macro
+// runs — see macro-runner.js's own runMacro) needs to write through that
+// exact same pair too. One canonical read/write path for this one setting,
+// not two independently-typed copies of the same key names that could
+// quietly drift apart.
 function persistWledDevices(devices) {
   wledDevices = Array.isArray(devices) ? devices : [];
-  persistSetting("wledDevices", "dashboardWledDevices", wledDevices);
+  void saveWledDevices(dataManager, wledDevices).catch((error) => {
+    status?.show(error.message || "Unable to sync your dashboard settings.", { type: "error" });
+  });
 }
 
 function loadSeenSpotlightId(serverSettings) {
@@ -934,16 +959,25 @@ document.querySelector("[data-dashboard-color-reset-mount]")?.appendChild(
     attrs: { "data-dashboard-color-reset": true },
   })
 );
-document.querySelector("[data-dashboard-screen-toggle-mount]")?.appendChild(
-  createIconButton({
-    icon: "tabler:device-tv",
-    label: "Open a live, read-only mirror of whatever's currently shown to the table — for a physical second screen/TV",
-    variant: "dark",
-    kind: "toolbar",
-    tooltipPlacement: "top",
-    attrs: { "data-dashboard-screen-toggle": true },
-  })
-);
+// GM-and-above only — a second screen/TV mirror is a table-running tool, not
+// something a player-tier account has any use for. Simply never mounted
+// below that tier, rather than mounted-but-hidden — screenViewButton (below)
+// ends up null for everyone else, and every other reference to it already
+// null-checks/optional-chains (updateScreenToggleState's own early return,
+// the click listener's `?.`), so nothing else needs to change to accommodate
+// that.
+if (dataManager.meetsTier("gm")) {
+  document.querySelector("[data-dashboard-screen-toggle-mount]")?.appendChild(
+    createIconButton({
+      icon: "tabler:device-tv",
+      label: "Open a live, read-only mirror of whatever's currently shown to the table — for a physical second screen/TV",
+      variant: "dark",
+      kind: "toolbar",
+      tooltipPlacement: "top",
+      attrs: { "data-dashboard-screen-toggle": true },
+    })
+  );
+}
 document.querySelector("[data-widget-inspector-toolbar-mount]")?.appendChild(
   createIconButton({
     icon: "tabler:trash",
@@ -961,6 +995,7 @@ const mainEl = document.querySelector("[data-dashboard-main]");
 const titleDisplay = document.querySelector("[data-dashboard-title-display]");
 const titleInput = document.querySelector("[data-dashboard-title-input]");
 const gridEl = document.querySelector("[data-dashboard-grid]");
+const welcomeEl = document.querySelector("[data-dashboard-welcome]");
 const editToggle = document.querySelector("[data-dashboard-edit-toggle]");
 const layoutTools = document.querySelector("[data-dashboard-layout-tools]");
 const addToolbar = document.querySelector("[data-dashboard-add-toolbar]");
@@ -1147,8 +1182,9 @@ function buildCtx(instance, { setTitle, setHeaderAction, setRightAction } = {}) 
     // widget that needs the CURRENT value at some later moment (a click
     // handler), not just its value at mount time — a plain closure over the
     // same `let editing`, so calling it always reads whatever's true right
-    // now regardless of when ctx was built. See macro-board.js's own use
-    // (deciding whether a macro button runs the macro or opens it in Loom).
+    // now regardless of when ctx was built. See board.js's own use
+    // (deciding whether a macro-button card runs the macro or opens it in
+    // Loom).
     isEditing: () => editing,
   };
 }
@@ -1623,6 +1659,89 @@ function renderScreenView() {
 //     non-empty target (no swap/overlap semantics — only genuinely open
 //     cells accept a drop); onEnd reads the target's own col/row dataset
 //     and writes it onto the instance, then re-renders.
+// True only for a genuinely fresh, never-signed-in, never-customized visit
+// — NOT just "not signed in" on its own, which would also cover an
+// anonymous visitor who's already built their own local-only dashboard
+// (layout.widgets loaded straight from local storage — see loadLayout).
+// That dashboard is exactly what "many of the tools are free and don't
+// require a login at all" means in practice; showing a marketing screen
+// over top of it every visit would be actively hostile to that use case.
+function shouldShowWelcomeScreen() {
+  return !dataManager.isAuthenticated() && layout.widgets.length === 0;
+}
+
+// Plain sibling content (welcomeEl, index.html), not widget cards inside
+// gridEl — see that element's own comment. Rebuilt fresh each time
+// renderWidgetGrid shows it; cheap enough (a handful of static cards) not
+// to bother diffing against whatever's already there.
+function renderWelcomeScreen() {
+  if (!welcomeEl) return;
+  welcomeEl.innerHTML = "";
+  welcomeEl.innerHTML = `
+    <div class="d-flex flex-column gap-2" style="max-width: 48rem;">
+      <p class="fs-5 mb-0">
+        Undercroft is a suite of connected tools for running and playing tabletop campaigns —
+        build character sheets and rules systems, manage your whole campaign library, draw and
+        run interactive maps, write your world's lore, print sheets and cards, and more, all
+        designed to work together instead of as separate apps.
+      </p>
+    </div>
+    <div class="row row-cols-1 row-cols-md-3 g-3" style="max-width: 64rem;">
+      <div class="col">
+        <div class="card h-100 shadow-theme">
+          <div class="card-body d-flex flex-column gap-2">
+            <span class="iconify fs-2 text-primary" data-icon="tabler:stack-2" aria-hidden="true"></span>
+            <h3 class="h6 mb-0">A connected toolbox</h3>
+            <p class="small text-body-secondary mb-0">
+              Workbench for character sheets, Loom for your campaign library, Orrery for maps,
+              Repository for journals, Press for printing — content made in one tool is
+              immediately usable in the others.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card h-100 shadow-theme">
+          <div class="card-body d-flex flex-column gap-2">
+            <span class="iconify fs-2 text-success" data-icon="tabler:lock-open" aria-hidden="true"></span>
+            <h3 class="h6 mb-0">Free to use, no account needed</h3>
+            <p class="small text-body-secondary mb-0">
+              Most tools work right now, right here — your work saves locally in this browser.
+              Registering is entirely optional, not a requirement to get started.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card h-100 shadow-theme">
+          <div class="card-body d-flex flex-column gap-2">
+            <span class="iconify fs-2 text-info" data-icon="tabler:users-group" aria-hidden="true"></span>
+            <h3 class="h6 mb-0">Why register anyway?</h3>
+            <p class="small text-body-secondary mb-0">
+              An account syncs your work across devices, lets you share your table's campaign
+              (game log, spotlighted content, live maps) with your players, and unlocks GM-tier
+              tools like the Combat Tracker and campaign groups.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <button type="button" class="btn btn-primary align-self-start" data-dashboard-welcome-auth>
+      Login / Register
+    </button>
+  `;
+  const ctaButton = welcomeEl.querySelector("[data-dashboard-welcome-auth]");
+  if (ctaButton) {
+    // Reuses the header's own auth control (app-shell.js's initAppShell +
+    // auth-ui.js's initAuthControls, already mounted by the time boot()
+    // reaches this) rather than a second, separate way to open the same
+    // modal.
+    ctaButton.addEventListener("click", () => {
+      document.querySelector("[data-auth-control] button")?.click();
+    });
+  }
+}
+
 // Called after every mount, add, remove, resize-release, and editing
 // toggle — always a full rebuild of the zone/anchor structure, but NEVER
 // re-mounts a widget's own card (see cardElements — the same DOM node just
@@ -1630,6 +1749,14 @@ function renderScreenView() {
 // over a reposition.
 function renderWidgetGrid() {
   if (!gridEl) return;
+  const showWelcome = shouldShowWelcomeScreen();
+  gridEl.classList.toggle("d-none", showWelcome);
+  if (welcomeEl) welcomeEl.classList.toggle("d-flex", showWelcome);
+  if (welcomeEl) welcomeEl.classList.toggle("d-none", !showWelcome);
+  if (showWelcome) {
+    renderWelcomeScreen();
+    return;
+  }
   const columnCount = getColumnCount();
   gridEl.style.setProperty("--dashboard-grid-columns", String(columnCount));
   const occupied = new Set(); // "col,row" for every cell any widget covers.
@@ -2047,10 +2174,11 @@ function applyEditingState() {
     // this is the opposite sense from Remove/setRightAction above — shown
     // only while NOT editing, hidden while editing rather than the reverse.
     gridEl.querySelectorAll("[data-map-zoom-panel]").forEach((panel) => panel.classList.toggle("d-none", editing));
-    // Macro board run buttons (macro-board.js) — the click BEHAVIOR already
-    // switches live via ctx.isEditing() (buildCtx), this just keeps the
-    // visible hint in sync so it doesn't read stale after a toggle with no
-    // other reason for macro-board.js to re-render.
+    // Board widget macro-button cards (board.js's own renderMacroButtonCard)
+    // — the click BEHAVIOR already switches live via ctx.isEditing()
+    // (buildCtx), this just keeps the visible hint in sync so it doesn't
+    // read stale after a toggle with no other reason for the widget itself
+    // to re-render.
     gridEl.querySelectorAll("[data-macro-run-button]").forEach((button) => {
       button.title = editing ? "Edit in Loom" : "Run macro";
     });
@@ -2307,5 +2435,19 @@ async function boot() {
   // built buttons on its own.
   refreshTooltips(document);
 }
+
+// The welcome screen only makes sense pre-login — a full reload after
+// successfully signing in FROM it (its own CTA, or the header's own
+// button) is the simplest, safest way to pick up the real experience
+// (computeDefaultWidgets, a real header title, group context, ...) through
+// the same boot() sequence every fresh load already goes through, rather
+// than trying to re-run pieces of it live. Checked via the welcome screen's
+// OWN current visibility (not a snapshot) — a normal logout, or an auth
+// change on an already-populated dashboard, needs no reaction here.
+window.addEventListener("undercroft:auth-changed", () => {
+  if (welcomeEl && !welcomeEl.classList.contains("d-none") && dataManager.isAuthenticated()) {
+    window.location.reload();
+  }
+});
 
 void boot();

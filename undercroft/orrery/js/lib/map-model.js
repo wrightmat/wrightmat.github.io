@@ -28,6 +28,18 @@ export function createLayerSettings(type) {
         revealGroupId: "",
         fogOpacity: 0.92,
         fogPreviewOpacity: 0.6,
+        // When on, resolveRevealedCells (map-viewer.js) additionally reveals
+        // cells within line-of-sight of any character-linked marker that has
+        // a nonzero resolved Vision Range (see createMarkerElement's own
+        // visionRangeBinding/visionRangeFormula/visionRangeText) — unioned
+        // with the manual reveal-Group cells above, wall-aware. Off by
+        // default: a map's fog can stay purely manual, same as it always
+        // has, unless the GM opts into auto-reveal. Light-based reveal has
+        // no equivalent toggle — a placed Light element always contributes
+        // to the reveal union whenever fogOfWar itself is on, since a
+        // light's whole purpose is to reveal; there'd be nothing left for it
+        // to do with this off.
+        autoRevealFromVision: false,
       };
     case "raster":
       // No default width/height — same "native size unless overridden"
@@ -169,7 +181,27 @@ export function createGridCell({ key, coord, gridType = "square" } = {}) {
 // user's own Favorite Color account setting the moment a Library entity is
 // linked (same copy-once-at-pick-time precedent as `image`/`label`), not
 // re-applied on every render.
-export function createMarkerElement({ refKind = "", refId = "", label = "", image = "", outlineColor = "", position, sizeCells = 1 } = {}) {
+// Vision range — the same "Binding / Formula / Text" shape every other
+// bindable field in this suite uses (see common/js/lib/binding-field.js's
+// own createBindingFormulaInput, and undercroft/common/docs/code-
+// conventions.md's Component Inspector standards): visionRangeFormula wins
+// if set, else visionRangeBinding (an "@dotted.path" into the linked
+// Character's own record — there is no cross-system standard field for
+// this, e.g. Darkvision, so it's always "whatever numeric field the GM
+// picks from that Character's own System," never a hardcoded name), else
+// the literal visionRangeText — see map-viewer.js's
+// resolveMarkerVisionRangeCells for the actual resolution order. Starts in
+// literal-Text mode ("0" = off) so a brand-new marker's Vision Range field
+// is immediately usable with no Binding setup required first, exactly like
+// a new Text component starts at a plain literal value in Workbench.
+// Meaningful only when refKind==="character" and Fog of War's own
+// autoRevealFromVision is on, but harmlessly inert otherwise — same "no
+// error/hidden state for an inapplicable field" precedent a wall's own
+// doorState follows on a plain (non-door) wall.
+export function createMarkerElement({
+  refKind = "", refId = "", label = "", image = "", outlineColor = "", position, sizeCells = 1, opacity = 1,
+  visionRangeBinding = "", visionRangeFormula = "", visionRangeText = "0",
+} = {}) {
   return {
     id: randomId(),
     kind: "marker",
@@ -180,6 +212,41 @@ export function createMarkerElement({ refKind = "", refId = "", label = "", imag
     outlineColor,
     position: position || { x: 0, y: 0 },
     sizeCells: Number.isFinite(sizeCells) && sizeCells > 0 ? sizeCells : 1,
+    // Per-marker, not per-layer — a token fading in/out (an unconscious or
+    // hidden creature, say) is a property of that ONE placed marker, not
+    // every marker on the layer, same "override, not a layer-wide setting"
+    // relationship outlineColor already has. 1 (fully opaque) is the real,
+    // concrete default — never left unset (createFieldRow's own opacity
+    // sliders throughout this file all follow the same "no invisible
+    // defaults" rule).
+    opacity: Number.isFinite(opacity) ? Math.min(1, Math.max(0, opacity)) : 1,
+    // Small status/condition badges (poisoned, prone, concentrating, ...) —
+    // a marker can carry several at once, the normal case in actual play
+    // (a creature is often more than one condition simultaneously), each
+    // its own createMarkerOverlayIcon entry (icon token + a badge color).
+    // Purely visual, map-viewer.js's own createMarkerDot renders them; no
+    // mechanical effect on vision/movement the way a wall/door's own state
+    // has.
+    overlayIcons: [],
+    visionRangeBinding,
+    visionRangeFormula,
+    visionRangeText,
+  };
+}
+
+// One condition/status badge on a marker (createMarkerElement's own
+// overlayIcons array) — same small-sub-record-with-its-own-id shape
+// createGridCell/createGroup already establish for this file's other
+// nested records, so each entry can be individually removed by id. `color`
+// is the badge's own background (a dark neutral default reads fine against
+// most token art without needing per-condition color-coding, but the GM
+// can still color-code if they want — e.g. red for damage-over-time).
+export function createMarkerOverlayIcon({ icon = "", color = "#1e293b", label = "" } = {}) {
+  return {
+    id: randomId(),
+    icon,
+    color: color || "#1e293b",
+    label,
   };
 }
 
@@ -252,6 +319,84 @@ export function createVectorShapeElement({
     strokeWidth: strokeWidth || 2,
     opacity: Number.isFinite(opacity) ? opacity : 0.5,
     snapToGrid: snapToGrid !== false,
+  };
+}
+
+// A wall OR a door — same element kind, distinguished by wallType, rather
+// than two parallel kinds duplicating the same vision/movement-blocking
+// logic (see map-viewer.js's resolveBlockingSegments, which treats a closed
+// door exactly like a wall and an open one as no obstruction at all). Lives
+// in the SAME layer.elements array a path/shape does, on a vector layer —
+// same reasoning createVectorShapeElement's own header comment already
+// gives for shapes: it inherits that layer's own stroke color/width
+// settings and the general select/delete editor machinery, no parallel data
+// shape needed. `points` is an arbitrary-length polyline in the SAME
+// position shape a path's own points use ({x,y}/{lat,lng}) — deliberately
+// NOT grid-cell-based (unlike a shape's sizeCells) since walls trace real
+// map geometry at any angle/length, not measured distances. A door is
+// authored as a simple 2-point segment; wallType==="wall" ignores
+// doorState/secret/locked entirely but still stores real, harmless
+// defaults for them rather than leaving them unset — same "no invisible
+// defaults" rule this file already follows throughout.
+export const WALL_TYPES = ["wall", "door"];
+
+export function createWallElement({
+  points = [], wallType = "wall", doorState = "closed", secret = false, locked = false,
+  strokeColor, strokeWidth, snapToGrid,
+} = {}) {
+  return {
+    id: randomId(),
+    kind: "wall",
+    points,
+    wallType: WALL_TYPES.includes(wallType) ? wallType : "wall",
+    doorState: doorState === "open" ? "open" : "closed",
+    secret: Boolean(secret),
+    locked: Boolean(locked),
+    // Heavier than a plain path's own 2px default — reads as structural
+    // even before any door-specific styling is layered on top.
+    strokeColor: strokeColor || "#0f172a",
+    strokeWidth: strokeWidth || 3,
+    // Defaults ON (unlike a shape's own snapToGrid, which also defaults on
+    // but for a softer reason) — a wall blocks both light and fog, and fog
+    // is only ever square-grid-cell granular anyway, so an off-grid wall
+    // buys no real precision while making it harder to keep straight/
+    // aligned with neighboring walls. setupWallTool's own placement gesture
+    // snaps each vertex through this same flag (reusing
+    // snapShapeOriginToGrid — genuinely generic, not shape-specific,
+    // despite the name); toggleable per-wall afterward via the inspector
+    // for the rare case an off-grid angle is actually wanted.
+    snapToGrid: snapToGrid !== false,
+  };
+}
+
+// A freestanding OR token-attached placed light — same element kind either
+// way, distinguished by attachedMarkerId. Freestanding: `origin` is the
+// light's own authored position, exactly like a shape's own origin.
+// Attached: origin is still stored (last-known position, a graceful
+// fallback if the host marker is later deleted so the light doesn't
+// vanish/error, just stops moving) but map-viewer.js's resolveLightOrigin
+// resolves the light's LIVE position from that marker instead every render
+// — e.g. a torch a player's character is carrying. rangeCells is grid
+// cells, same unit convention as a shape's own sizeCells. A light always
+// both glows AND reveals fog within its own wall-aware line-of-sight (see
+// resolveRevealedCells/renderLightElement) — there's no separate "cosmetic
+// only" mode, matching the user's own confirmed "dynamic lighting" scope.
+export function createLightElement({
+  origin, attachedMarkerId = "", rangeCells = 4, color = "#fbbf24", opacity = 0.5,
+} = {}) {
+  return {
+    id: randomId(),
+    kind: "light",
+    origin: origin || { x: 0, y: 0 },
+    attachedMarkerId,
+    rangeCells: Number.isFinite(rangeCells) && rangeCells > 0 ? rangeCells : 4,
+    // A warm amber/yellow (Tailwind's amber-400) — the default "torch"
+    // color, not a themed accent blue. Never falls back to the containing
+    // vector layer's own fillColor default (which IS blue,
+    // createLayerSettings("vector")'s own #93c5fd) — that's a shape-fill
+    // convention, not a sensible light-source default.
+    color: color || "#fbbf24",
+    opacity: Number.isFinite(opacity) ? opacity : 0.5,
   };
 }
 

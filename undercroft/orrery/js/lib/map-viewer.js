@@ -18,6 +18,8 @@
 // render with zero special-casing on the caller's part.
 
 import { getIconTokens } from "../../../common/js/lib/icon-picker.js";
+import { resolveBinding } from "../../../common/js/lib/bindings.js";
+import { evaluateFormula } from "../../../common/js/lib/formula-engine.js";
 import { resolveImageDimension } from "./base-maps.js";
 import { getDefaultView as getTypeDefaultView } from "./map-model.js";
 
@@ -179,7 +181,17 @@ export function resolveClickPosition(baseMapManager, map, event, referenceContai
 // actually moved the marker — a plain click-no-drag is a no-op here
 // (callers that also want "select on click" pass `onDragStart`, called
 // unconditionally before tracking begins).
-function beginMarkerDrag(event, baseMapManager, map, layer, markerElement, dotEl, onDragEnd) {
+//
+// `isMoveBlocked(fromPixel, toPixel)`, if supplied, is checked on EVERY
+// pointermove (not just at gesture end) — if the segment from the marker's
+// last unblocked position to the proposed next one crosses a blocking wall/
+// closed-door, that frame's move is simply skipped (dotEl stays at
+// lastPixel), producing a natural "stops at the wall" feel without full
+// vector-sliding geometry. Only ever passed by the Dashboard widget's own
+// player-token drag path (map.js's own resolveMarkerMoveBlocked) — Orrery's
+// own free-drag authoring surface never passes this, a GM must be able to
+// drag any token through walls while setting up a scene.
+function beginMarkerDrag(event, baseMapManager, map, layer, markerElement, dotEl, { onDragEnd, isMoveBlocked } = {}) {
   // Best-effort — see renderShapeElement's own matching try/catch for why
   // (some browsers throw InvalidStateError capturing in certain DOM
   // positions); the window-level pointermove/pointerup listeners below
@@ -199,7 +211,11 @@ function beginMarkerDrag(event, baseMapManager, map, layer, markerElement, dotEl
   const onMove = (moveEvent) => {
     const dx = (moveEvent.clientX - startX) / zoom;
     const dy = (moveEvent.clientY - startY) / zoom;
-    lastPixel = { x: startPixel.x + dx, y: startPixel.y + dy };
+    const candidatePixel = { x: startPixel.x + dx, y: startPixel.y + dy };
+    if (typeof isMoveBlocked === "function" && isMoveBlocked(lastPixel || startPixel, candidatePixel)) {
+      return;
+    }
+    lastPixel = candidatePixel;
     dotEl.style.left = `${lastPixel.x}px`;
     dotEl.style.top = `${lastPixel.y}px`;
   };
@@ -302,6 +318,11 @@ export function createMarkerDot(baseMapManager, map, layer, markerElement, optio
   // from a linked user's Favorite Color).
   dot.style.borderColor = markerElement.outlineColor || layer.settings?.outlineColor || "#0f172a";
   dot.style.borderWidth = `${Number.isFinite(layer.settings?.outlineWidth) ? layer.settings.outlineWidth : 2}px`;
+  // Per-marker only (no layer-wide equivalent, unlike outline color/width) —
+  // see createMarkerElement's own comment. Falls back to 1 only for a
+  // marker saved before this field existed; every marker placed since
+  // always stamps a real number here.
+  dot.style.opacity = String(Number.isFinite(markerElement.opacity) ? markerElement.opacity : 1);
   if (markerElement.image) {
     // Per-marker image supersedes the layer's flat color/icon dot entirely —
     // a portrait token, ringed with the layer's own color so it still reads
@@ -350,6 +371,34 @@ export function createMarkerDot(baseMapManager, map, layer, markerElement, optio
       dot.appendChild(label);
     }
   }
+  // Condition/status badges — see map-model.js's own createMarkerOverlayIcon.
+  // A row along the marker's own bottom edge (see .orrery-marker-overlay-icons'
+  // own CSS), sized off the SAME `size` this marker's own dot already
+  // computed above, so badges scale with the token/grid cell size instead
+  // of staying a fixed on-screen size regardless of zoom.
+  if (Array.isArray(markerElement.overlayIcons) && markerElement.overlayIcons.length) {
+    const badgeRow = document.createElement("div");
+    badgeRow.className = "orrery-marker-overlay-icons";
+    const badgeSize = Math.max(10, size * 0.32);
+    markerElement.overlayIcons.forEach((entry) => {
+      const badge = document.createElement("span");
+      badge.className = "orrery-marker-overlay-icon";
+      badge.style.width = `${badgeSize}px`;
+      badge.style.height = `${badgeSize}px`;
+      badge.style.background = entry.color || "#1e293b";
+      if (entry.label) badge.title = entry.label;
+      const iconTokens = getIconTokens(entry.icon);
+      if (iconTokens.length) {
+        const icon = document.createElement("span");
+        const bootstrapToken = iconTokens.find((token) => token.startsWith("bi-"));
+        icon.className = bootstrapToken ? `bi ${bootstrapToken}` : iconTokens.join(" ");
+        icon.style.fontSize = `${badgeSize * 0.65}px`;
+        badge.appendChild(icon);
+      }
+      badgeRow.appendChild(badge);
+    });
+    dot.appendChild(badgeRow);
+  }
   if (draggable) {
     dot.addEventListener("pointerdown", (event) => {
       if (event.button !== 0) {
@@ -358,7 +407,10 @@ export function createMarkerDot(baseMapManager, map, layer, markerElement, optio
       event.preventDefault();
       event.stopPropagation();
       options.onDragStart?.(dot);
-      beginMarkerDrag(event, baseMapManager, map, layer, markerElement, dot, options.onDragEnd);
+      beginMarkerDrag(event, baseMapManager, map, layer, markerElement, dot, {
+        onDragEnd: options.onDragEnd,
+        isMoveBlocked: options.isMoveBlocked,
+      });
     });
   }
   return dot;
@@ -430,6 +482,9 @@ export function createMarkerLayerElement(baseMapManager, map, layer, options = {
         draggable,
         onDragStart: options.onMarkerDragStart ? (dotEl) => options.onMarkerDragStart(layer, markerElement, dotEl) : undefined,
         onDragEnd: options.onMarkerDragEnd ? (nextPosition) => options.onMarkerDragEnd(layer, markerElement, nextPosition) : undefined,
+        isMoveBlocked: options.resolveMarkerMoveBlocked
+          ? (fromPixel, toPixel) => options.resolveMarkerMoveBlocked(layer, markerElement, fromPixel, toPixel)
+          : undefined,
       })
     );
   });
@@ -686,21 +741,349 @@ function createGridSelectionOverlay(baseMapManager, map, layer, selectedCells, o
   return overlay;
 }
 
-// Resolves a fog-of-war-enabled grid layer's revealed cells (the members of
-// its configured `revealGroupId` Group, reusing the exact same Group
-// membership/cell-rect machinery Groups already use for their own highlight
-// overlay — see getGroupCellsForLayer) — null when fog isn't enabled at all
-// (no filtering), an empty array when it's enabled but no reveal group is
-// configured yet or the group has no members (everything hidden).
-function resolveRevealedCells(map, layer) {
+// --- Walls / vision geometry ----------------------------------------------
+// The one genuinely novel piece of geometry code the walls/fog/doors/lights
+// feature needs — everything else in that feature is UI wiring around these
+// two primitives (plus resolveVisibleCells, defined further below once the
+// grid-coordinate helpers it needs are in scope).
+
+const VISION_EPSILON = 1e-6;
+
+// Standard parametric segment-vs-segment intersection test. p1p2 is the ray
+// under test (a vision ray to a cell center, or a proposed movement step);
+// p3p4 is one wall/closed-door segment (from resolveBlockingSegments below).
+// Returns true only for a genuine interior crossing — t and u both strictly
+// inside (0,1) with a small epsilon, so a ray that only touches a wall's own
+// endpoint (e.g. two wall segments sharing a vertex) doesn't count as
+// blocked.
+export function segmentsIntersect(p1, p2, p3, p4) {
+  const d1x = p2.x - p1.x;
+  const d1y = p2.y - p1.y;
+  const d2x = p4.x - p3.x;
+  const d2y = p4.y - p3.y;
+  const denom = d1x * d2y - d1y * d2x;
+  if (Math.abs(denom) < VISION_EPSILON) return false;
+  const t = ((p3.x - p1.x) * d2y - (p3.y - p1.y) * d2x) / denom;
+  const u = ((p3.x - p1.x) * d1y - (p3.y - p1.y) * d1x) / denom;
+  return t > VISION_EPSILON && t < 1 - VISION_EPSILON && u > VISION_EPSILON && u < 1 - VISION_EPSILON;
+}
+
+// Gathers every closed wall/door segment on the map, in true-container-space
+// local pixels (the SAME coordinate space markerPositionToLocalPixel +
+// getMarkerLayerOffset already produces for paths/shapes/markers — NOT the
+// grid div's own EXTENT-shifted space, see getGridBackgroundPosition's own
+// comment for that distinction). An open door contributes zero segments —
+// it's simply not a wall while open, not a special case downstream callers
+// need to know about. Deliberately NOT filtered by layer.visible — a hidden
+// "Walls" layer still blocks vision/movement, matching the existing
+// precedent that hiding grid LINES doesn't mean the grid stops being the
+// map's real scale reference (findPrimaryGridLayer/resolveShapePixelsPerCell
+// both ignore visibility for the same reason). Gathered once per caller
+// (vision computation, light-clipping, movement-blocking all call this once
+// and reuse the returned array) — never recomputed per-cell/per-frame.
+export function resolveBlockingSegments(baseMapManager, map) {
+  const segments = [];
+  (map.layers || []).forEach((layer) => {
+    if (layer.type !== "vector") return;
+    const offset = getMarkerLayerOffset(map, layer);
+    (layer.elements || []).forEach((element) => {
+      if (element.kind !== "wall") return;
+      if (element.wallType === "door" && element.doorState === "open") return;
+      const points = (element.points || []).map((point) => {
+        const local = markerPositionToLocalPixel(baseMapManager, map, point);
+        return { x: local.x + offset.x, y: local.y + offset.y };
+      });
+      for (let i = 0; i < points.length - 1; i += 1) {
+        segments.push({ a: points[i], b: points[i + 1] });
+      }
+    });
+  });
+  return segments;
+}
+
+// Which grid cells (on `layer`) are unobstructed and within `rangeCells` of
+// `origin` — the vision-source resolution both character auto-reveal and
+// light-reveal/light-clipping ultimately call. `origin` and
+// `blockingSegments` must already be in the SAME true-container-space local
+// pixels resolveBlockingSegments' own points use.
+//
+// Cell-CENTER-only ray testing (one ray per candidate cell), not full
+// shadowcasting/visibility-polygon construction — a deliberate simplicity
+// tradeoff: fog is already cell-granular (a binary revealed/not per cell,
+// not sub-cell precise), so this doesn't introduce a new class of
+// imprecision, just extends the existing one. Accepted caveat: a wall that
+// clips a cell's own corner without crossing the line to that cell's
+// CENTER can leave that one cell's classification "wrong" by this
+// algorithm's own definition — worst case, one row of cells immediately
+// adjacent to a wall. A cheap upgrade path if that ever proves visible in
+// play: sample 5 points per cell (center + 4 inset corners), "visible if
+// any sample is unobstructed" — not built now, not needed unless it's
+// actually a problem.
+//
+// Coordinate math verified directly against this codebase's OWN existing
+// working pattern for the exact same "true-container-space point <->
+// this-grid-layer's-own-cell-math-space" conversion — see app.js's own
+// snapMarkerPositionToGrid, the one other place in this file's ecosystem
+// that does this conversion. getGridOffset (NOT getGridBackgroundPosition —
+// that adds the grid DIV's own GRID_OVERLAY_EXTENT shift, which only
+// applies inside that div's own child coordinate space, not here) is
+// subtracted before calling getGridCoordFromPoint (which itself expects its
+// point pre-scaled by getGridHitTestScale — see that function's own
+// comment), and added back to each candidate cell's own pixel rect before
+// computing its center, or the whole thing silently breaks the moment a GM
+// manually drags this grid layer's own position away from {0,0}.
+export function resolveVisibleCells(baseMapManager, map, layer, { origin, rangeCells, blockingSegments } = {}) {
+  if (!origin || !Number.isFinite(rangeCells) || rangeCells <= 0) return [];
+  const cellSizePx = getGridCellSize(baseMapManager, map, layer);
+  if (!cellSizePx) return [];
+  const rangePx = rangeCells * cellSizePx;
+  const gridOffset = getGridOffset(baseMapManager, map, layer);
+  const hitScale = getGridHitTestScale(baseMapManager, map);
+  const relativeOrigin = {
+    x: (origin.x - gridOffset.x) * hitScale,
+    y: (origin.y - gridOffset.y) * hitScale,
+  };
+  const originCoord = getGridCoordFromPoint(baseMapManager, map, layer, relativeOrigin);
+  const cellRadius = Math.ceil(rangeCells) + 1;
+  const candidates = [];
+  if (getGridType(layer) === "hex") {
+    for (let q = -cellRadius; q <= cellRadius; q += 1) {
+      const rMin = Math.max(-cellRadius, -q - cellRadius);
+      const rMax = Math.min(cellRadius, -q + cellRadius);
+      for (let r = rMin; r <= rMax; r += 1) {
+        candidates.push({ q: originCoord.q + q, r: originCoord.r + r });
+      }
+    }
+  } else {
+    for (let col = originCoord.col - cellRadius; col <= originCoord.col + cellRadius; col += 1) {
+      for (let row = originCoord.row - cellRadius; row <= originCoord.row + cellRadius; row += 1) {
+        candidates.push({ col, row });
+      }
+    }
+  }
+  const segments = blockingSegments || [];
+  const results = [];
+  candidates.forEach((coord) => {
+    const rect = getGridCellPixelRect(baseMapManager, map, layer, coord);
+    const center = { x: rect.x + gridOffset.x + rect.width / 2, y: rect.y + gridOffset.y + rect.height / 2 };
+    const distance = Math.hypot(center.x - origin.x, center.y - origin.y);
+    if (distance > rangePx + cellSizePx / 2) return;
+    if (distance > 1 && segments.some((segment) => segmentsIntersect(origin, center, segment.a, segment.b))) return;
+    results.push(createGridCellSelectionEntry(layer, coord));
+  });
+  return results;
+}
+
+// A marker's own Vision Range — the same Binding/Formula/Text precedence
+// every other bindable field in this suite uses (common/js/lib/binding-
+// field.js's own createBindingFormulaInput; see createMarkerElement's own
+// header comment for why this is a Binding, not a hardcoded field name —
+// there's no cross-system standard "Darkvision" field). `getCharacterPayload`
+// is a SYNCHRONOUS, caller-supplied, cache-backed lookup (marker.refId) ->
+// payload|undefined — this module never fetches anything itself (see this
+// file's own top-of-file "everything caller-specific is a callback"
+// philosophy); Orrery's own app.js and the Dashboard's map.js widget each
+// keep their own small fetch-and-cache pair backing this parameter.
+export function resolveMarkerVisionRangeCells(marker, getCharacterPayload) {
+  const payload = typeof getCharacterPayload === "function" ? getCharacterPayload(marker.refId) : undefined;
+  if (payload) {
+    const formula = (marker.visionRangeFormula || "").trim();
+    if (formula) {
+      try {
+        const numeric = Number(evaluateFormula(formula, payload));
+        if (Number.isFinite(numeric)) return Math.max(0, numeric);
+      } catch (error) {
+        // Falls through to binding/text, same as Workbench's own
+        // resolveComponentValue — a broken formula degrades to the next
+        // precedence tier rather than breaking the fog render.
+      }
+    }
+    const binding = (marker.visionRangeBinding || "").trim();
+    if (binding.startsWith("@")) {
+      const numeric = Number(resolveBinding(binding, payload));
+      if (Number.isFinite(numeric)) return Math.max(0, numeric);
+    }
+  }
+  const literal = Number(marker.visionRangeText);
+  return Number.isFinite(literal) ? Math.max(0, literal) : 0;
+}
+
+// A light's EFFECTIVE position — its own stored `origin` for a freestanding
+// light, or (when `attachedMarkerId` is set) the live position of whichever
+// marker it's attached to, resolved fresh every call so a token-carried
+// torch tracks its host as it's dragged with zero extra sync/persistence
+// work (the marker's own position is already kept in sync by the ordinary
+// map poll/live-sync — this just reads it). Falls back to the light's own
+// last-known stored `origin` if the attached marker can't be found (e.g. it
+// was deleted) — a dangling attachment degrades to "stopped moving," never
+// an error/vanished light. Used by BOTH resolveRevealedCells' own
+// light-reveal loop and renderLightElement's own glow positioning, so a
+// light's visible glow and its actual fog-reveal contribution can never
+// independently drift apart.
+//
+// `containingLayer` (the light's own vector layer, for the freestanding
+// branch's own manual-position offset) is a caller-supplied parameter
+// rather than independently searched for — every real caller already has
+// it in scope (resolveRevealedCells' own light loop is iterating vector
+// layers; renderLightElement already receives `layer`), and a caller
+// building a THROWAWAY preview element not yet actually in `layer.elements`
+// (setupLightTool's own live placement preview) still needs the correct
+// offset — a self-search by element id would come up empty for exactly that
+// element and silently fall back to {0,0}, offsetting the live preview from
+// where the committed light will actually land on any layer with a
+// nonzero manual position.
+export function resolveLightOrigin(baseMapManager, map, containingLayer, light) {
+  if (light.attachedMarkerId) {
+    for (const layer of map.layers || []) {
+      if (layer.type !== "marker") continue;
+      const marker = (layer.elements || []).find((entry) => entry.id === light.attachedMarkerId);
+      if (!marker) continue;
+      const offset = getMarkerLayerOffset(map, layer);
+      const local = markerPositionToLocalPixel(baseMapManager, map, marker.position);
+      return { x: local.x + offset.x, y: local.y + offset.y };
+    }
+  }
+  const offset = getMarkerLayerOffset(map, containingLayer || {});
+  const local = markerPositionToLocalPixel(baseMapManager, map, light.origin);
+  return { x: local.x + offset.x, y: local.y + offset.y };
+}
+
+// Resolves a fog-of-war-enabled grid layer's revealed cells — the UNION of
+// up to three independent sources, null when fog isn't enabled at all (no
+// filtering):
+//   1. Manual — the configured revealGroupId Group's own members, reusing
+//      the exact same Group membership/cell-rect machinery Groups already
+//      use for their own highlight overlay (getGroupCellsForLayer). Always
+//      present, unchanged from before walls/vision existed.
+//   2. Character auto-reveal — gated by layer.settings.autoRevealFromVision;
+//      every character-linked marker (any marker layer, anywhere on the
+//      map) with a nonzero resolveMarkerVisionRangeCells contributes its
+//      own wall-aware visible-cell set.
+//   3. Lights — unconditional whenever fogOfWar is on (no separate toggle —
+//      a placed Light's whole purpose is to reveal); every `kind:"light"`
+//      element on any vector layer contributes its own wall-aware
+//      visible-cell set, resolved from its live position (resolveLightOrigin
+//      — tracks an attached marker if any).
+// `getCharacterPayload` (see this file's own resolveMarkerVisionRangeCells)
+// is threaded straight through from the caller — this function never
+// fetches anything itself.
+function resolveRevealedCells(baseMapManager, map, layer, { getCharacterPayload } = {}) {
   if (!layer.settings?.fogOfWar) {
     return null;
   }
-  const group = (map.groups || []).find((entry) => entry.id === layer.settings.revealGroupId);
-  if (!group) {
-    return [];
+  const manualGroup = (map.groups || []).find((entry) => entry.id === layer.settings.revealGroupId);
+  const manualCells = manualGroup ? getGroupCellsForLayer(manualGroup, layer) : [];
+  const byKey = new Map(manualCells.map((cell) => [cell.key, cell]));
+
+  // The manual reveal-Group cells above are the ORIGINAL, pre-vision-engine
+  // behavior — guaranteed to keep working (fog toggles on, shows/hides
+  // exactly what the GM painted) even if something in the newer wall/vision
+  // code throws for a data shape it didn't anticipate (a malformed wall's
+  // points, an unusual base map/zoom combination, ...). Without this, an
+  // exception anywhere in the auto-reveal/light loops below would propagate
+  // out of resolveRevealedCells entirely, aborting the whole grid layer's
+  // render (including createFogOverlay never being called at all) — the fog
+  // overlay simply not appearing, not a visibly "broken" error state, which
+  // is a much harder regression to notice/report than a wrong cell set
+  // would be.
+  try {
+    const blockingSegments = resolveBlockingSegments(baseMapManager, map);
+
+    if (layer.settings.autoRevealFromVision) {
+      (map.layers || []).forEach((markerLayer) => {
+        if (markerLayer.type !== "marker") return;
+        const markerOffset = getMarkerLayerOffset(map, markerLayer);
+        (markerLayer.elements || []).forEach((marker) => {
+          if (marker.kind !== "marker" || marker.refKind !== "character") return;
+          const rangeCells = resolveMarkerVisionRangeCells(marker, getCharacterPayload);
+          if (rangeCells <= 0) return;
+          const local = markerPositionToLocalPixel(baseMapManager, map, marker.position);
+          const origin = { x: local.x + markerOffset.x, y: local.y + markerOffset.y };
+          resolveVisibleCells(baseMapManager, map, layer, { origin, rangeCells, blockingSegments }).forEach((cell) =>
+            byKey.set(cell.key, cell)
+          );
+        });
+      });
+    }
+
+    (map.layers || []).forEach((vectorLayer) => {
+      if (vectorLayer.type !== "vector") return;
+      (vectorLayer.elements || []).forEach((element) => {
+        if (element.kind !== "light") return;
+        const origin = resolveLightOrigin(baseMapManager, map, vectorLayer, element);
+        resolveVisibleCells(baseMapManager, map, layer, { origin, rangeCells: element.rangeCells, blockingSegments }).forEach(
+          (cell) => byKey.set(cell.key, cell)
+        );
+      });
+    });
+  } catch (error) {
+    // Falls through to whatever manual cells were already collected above —
+    // see this try block's own header comment.
   }
-  return getGroupCellsForLayer(group, layer);
+
+  return Array.from(byKey.values());
+}
+
+// Shared by buildRevealedCellsMask AND createFogOverlay below (its own base/
+// hole rects need to match the SAME extent its caller's own fill rect
+// covers, or the mask's coordinate space and the thing it's masking
+// disagree on how big "everywhere" is). Module-level, not local to either
+// function — confirmed as a real bug otherwise: buildRevealedCellsMask's
+// own extraction originally left this declared ONLY inside itself, while
+// createFogOverlay (which also references it directly for its own `fill`
+// rect, unchanged since before that extraction) was left with no local
+// definition at all — a ReferenceError thrown on every fog-of-war render,
+// which (uncaught, inside renderMapLayers' own per-layer forEach) aborted
+// that whole render pass, silently skipping every layer after the grid one
+// in map.layers' own order — the actual cause of walls/lights also
+// disappearing the instant Fog of War was turned on, not just the fog
+// overlay itself never appearing.
+const FOG_MASK_EXTENT = 20000;
+
+// Builds a <mask> — shared between the grid layer's own fog overlay
+// (createFogOverlay below, offset = getGridBackgroundPosition, since that
+// mask lives inside the grid div's own GRID_OVERLAY_EXTENT-shifted
+// coordinate space) and a Light element's own wall-aware glow clip
+// (renderLightElement, offset = plain getGridOffset — its own SVG is a
+// sibling of the grid div, at true-container-space, NOT EXTENT-shifted,
+// same space createVectorLayerElement's path/shape rendering already uses).
+// Passing the offset in explicitly (rather than each caller recomputing it
+// inline) is what makes this one implementation correct for both coordinate
+// spaces instead of hardcoding the grid-only case.
+//
+// `invert` (default false): fog's own polarity — white base ("shows" by
+// default) with a BLACK hole punched at each given cell (that cell's fog is
+// ABSENT there, i.e. the real map shows through). `invert: true` (a light's
+// own glow clip) is the opposite — the glow should show ONLY within its own
+// visible-cell set, hidden everywhere else — so the base is black and the
+// given cells are punched WHITE instead. Using the non-inverted polarity for
+// a light was a confirmed real bug: in the ordinary no-obstruction case,
+// virtually every cell under the light's own circle counts as "visible," so
+// the fog-style mask punched black (hidden) holes across nearly the whole
+// glow, leaving almost nothing showing.
+function buildRevealedCellsMask(baseMapManager, map, layer, revealedCells, maskId, offset, { invert = false } = {}) {
+  const svgNS = "http://www.w3.org/2000/svg";
+  const mask = document.createElementNS(svgNS, "mask");
+  mask.setAttribute("id", maskId);
+  mask.setAttribute("maskUnits", "userSpaceOnUse");
+  const base = document.createElementNS(svgNS, "rect");
+  base.setAttribute("x", String(-FOG_MASK_EXTENT));
+  base.setAttribute("y", String(-FOG_MASK_EXTENT));
+  base.setAttribute("width", String(FOG_MASK_EXTENT * 2));
+  base.setAttribute("height", String(FOG_MASK_EXTENT * 2));
+  base.setAttribute("fill", invert ? "black" : "white");
+  mask.appendChild(base);
+  (revealedCells || []).forEach((cell) => {
+    const rect = getGridCellPixelRect(baseMapManager, map, layer, cell.coord);
+    const hole = document.createElementNS(svgNS, "rect");
+    hole.setAttribute("x", String(rect.x + offset.x));
+    hole.setAttribute("y", String(rect.y + offset.y));
+    hole.setAttribute("width", String(rect.width));
+    hole.setAttribute("height", String(rect.height));
+    hole.setAttribute("fill", invert ? "white" : "black");
+    mask.appendChild(hole);
+  });
+  return mask;
 }
 
 // A single opaque SVG rect, masked transparent over each revealed cell —
@@ -726,17 +1109,6 @@ function createFogOverlay(baseMapManager, map, layer, revealedCells, { ownerPrev
   svg.style.pointerEvents = "none";
   const maskId = ownerPreview ? `orrery-fog-mask-${layer.id}-owner` : `orrery-fog-mask-${layer.id}`;
   const defs = document.createElementNS(svgNS, "defs");
-  const mask = document.createElementNS(svgNS, "mask");
-  mask.setAttribute("id", maskId);
-  mask.setAttribute("maskUnits", "userSpaceOnUse");
-  const EXTENT = 20000;
-  const base = document.createElementNS(svgNS, "rect");
-  base.setAttribute("x", String(-EXTENT));
-  base.setAttribute("y", String(-EXTENT));
-  base.setAttribute("width", String(EXTENT * 2));
-  base.setAttribute("height", String(EXTENT * 2));
-  base.setAttribute("fill", "white");
-  mask.appendChild(base);
   // getGridBackgroundPosition, not plain getGridOffset — this svg is a
   // CHILD of createGridLayerElement's own `grid` div (shifted
   // GRID_OVERLAY_EXTENT pixels off the container's true corner, see that
@@ -749,23 +1121,14 @@ function createFogOverlay(baseMapManager, map, layer, revealedCells, { ownerPrev
   // visible viewport regardless (their own span dwarfs a 4000px error, so
   // they never looked broken the way a small, precisely-placed hole did).
   const offset = getGridBackgroundPosition(baseMapManager, map, layer);
-  (revealedCells || []).forEach((cell) => {
-    const rect = getGridCellPixelRect(baseMapManager, map, layer, cell.coord);
-    const hole = document.createElementNS(svgNS, "rect");
-    hole.setAttribute("x", String(rect.x + offset.x));
-    hole.setAttribute("y", String(rect.y + offset.y));
-    hole.setAttribute("width", String(rect.width));
-    hole.setAttribute("height", String(rect.height));
-    hole.setAttribute("fill", "black");
-    mask.appendChild(hole);
-  });
+  const mask = buildRevealedCellsMask(baseMapManager, map, layer, revealedCells, maskId, offset);
   defs.appendChild(mask);
   svg.appendChild(defs);
   const fill = document.createElementNS(svgNS, "rect");
-  fill.setAttribute("x", String(-EXTENT));
-  fill.setAttribute("y", String(-EXTENT));
-  fill.setAttribute("width", String(EXTENT * 2));
-  fill.setAttribute("height", String(EXTENT * 2));
+  fill.setAttribute("x", String(-FOG_MASK_EXTENT));
+  fill.setAttribute("y", String(-FOG_MASK_EXTENT));
+  fill.setAttribute("width", String(FOG_MASK_EXTENT * 2));
+  fill.setAttribute("height", String(FOG_MASK_EXTENT * 2));
   // Both independently configurable (layer.settings.fogOpacity/
   // fogPreviewOpacity, see createLayerSettings's own comment) — real fog
   // (non-owner viewers) defaults near-opaque; the owner's own preview
@@ -890,12 +1253,12 @@ export function createGridLayerElement(baseMapManager, map, layer, selectionStat
   // exact same mask (below) so fog stays visible as an authoring aid
   // without hiding anything real from them.
   if (!selectionState.hasFullAccess) {
-    const revealedCells = resolveRevealedCells(map, layer);
+    const revealedCells = resolveRevealedCells(baseMapManager, map, layer, { getCharacterPayload: selectionState.getCharacterPayload });
     if (revealedCells !== null) {
       grid.appendChild(createFogOverlay(baseMapManager, map, layer, revealedCells));
     }
   } else {
-    const revealedCells = resolveRevealedCells(map, layer);
+    const revealedCells = resolveRevealedCells(baseMapManager, map, layer, { getCharacterPayload: selectionState.getCharacterPayload });
     if (revealedCells !== null) {
       grid.appendChild(createFogOverlay(baseMapManager, map, layer, revealedCells, { ownerPreview: true }));
     }
@@ -1201,6 +1564,532 @@ export function renderShapeElement(svg, baseMapManager, map, layer, element, off
   }
 }
 
+// A wall OR a door (same element, distinguished by wallType — see
+// map-model.js's own createWallElement). Whole-wall drag-to-move
+// (options.onWallDragEnd) and per-vertex drag-to-reshape handles
+// (options.onWallVertexDragEnd, shown only while selected) — same
+// temp-preview-redraw-per-move technique renderShapeElement's own drag
+// already uses (this function calling itself against a throwaway
+// shifted-points element), just duplicated rather than extracted into a
+// shared helper (see that function's own "deliberately its own drag
+// implementation" reasoning, same tradeoff here).
+//
+// THREE independent hit-targets:
+//   1. Authoring select + whole-wall drag (GM, Orrery's own app.js) — same
+//      wide invisible-stroke convention every other vector element uses,
+//      gated on `isSelected`/layer-selection via options.onPathClick/
+//      onWallDragEnd.
+//   2. Per-vertex handles — small circles at each point, shown only when
+//      THIS wall is the current selection (not just its layer), each
+//      independently draggable. Appended AFTER the whole-wall hit-target so
+//      they sit on top in paint order and win the pointer hit-test for
+//      clicks landing near a vertex.
+//   3. Player click-to-toggle (the Dashboard widget) — a genuinely separate
+//      callback (options.onDoorClick), NOT gated on layer selection at all,
+//      since the widget has no selection/layer-selection concept
+//      whatsoever (map.js never passes one) — wiring this through the
+//      selection-gated onPathClick would mean it silently never fires for
+//      players.
+function renderWallElement(svg, baseMapManager, map, layer, element, offset, options) {
+  const svgNS = "http://www.w3.org/2000/svg";
+  const pixelPoints = (element.points || []).map((point) => {
+    const local = markerPositionToLocalPixel(baseMapManager, map, point);
+    return { x: local.x + offset.x, y: local.y + offset.y };
+  });
+  if (pixelPoints.length < 2) return;
+  const isSelected = options.selectedElementId === element.id;
+  const pointsAttr = pixelPoints.map((point) => `${point.x},${point.y}`).join(" ");
+  const isDoor = element.wallType === "door";
+  const isSecret = isDoor && element.secret;
+  // A secret door renders EXACTLY like a plain wall for a non-full-access
+  // viewer (no tick, no distinguishing anything) — the GM alone sees the
+  // truth, same "owner preview" asymmetry Fog of War's own real-vs-preview
+  // opacity split already establishes elsewhere in this file.
+  const revealDoorStyling = isDoor && (!isSecret || options.hasFullAccess);
+
+  // Everything static (visible line + door decorations) lives in one <g>,
+  // hidden as a single unit during a drag (see the hit-target's own
+  // drawDragPreview below) rather than removing/re-adding individual pieces
+  // — a wall can have several decoration nodes (tick, lock glyph), and
+  // toggling one wrapper's display is simpler and less error-prone than
+  // tracking each piece separately the way a shape (with only ever one
+  // `visible` node) gets away with.
+  const wrapper = document.createElementNS(svgNS, "g");
+
+  const visible = document.createElementNS(svgNS, "polyline");
+  visible.setAttribute("points", pointsAttr);
+  visible.setAttribute("fill", "none");
+  visible.setAttribute("stroke", isSelected ? "#f97316" : element.strokeColor || "#0f172a");
+  visible.setAttribute("stroke-width", String(element.strokeWidth || 3));
+  visible.setAttribute("stroke-linecap", "round");
+  visible.setAttribute("stroke-linejoin", "round");
+  visible.classList.add("orrery-layer-wall");
+  wrapper.appendChild(visible);
+
+  if (revealDoorStyling) {
+    // A short perpendicular "leaf" tick at the door's own midpoint — reads
+    // as a door regardless of exact stroke color/length. Uses the door's
+    // FIRST segment for direction (a door is normally authored as a single
+    // 2-point segment; a multi-point "door" — unusual, not disallowed —
+    // still gets a reasonable tick off its first leg).
+    const a = pixelPoints[0];
+    const b = pixelPoints[1];
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const length = Math.hypot(dx, dy) || 1;
+    const midX = (a.x + b.x) / 2;
+    const midY = (a.y + b.y) / 2;
+    const perpX = (-dy / length) * 10;
+    const perpY = (dx / length) * 10;
+    const tick = document.createElementNS(svgNS, "line");
+    tick.setAttribute("x1", String(midX - perpX));
+    tick.setAttribute("y1", String(midY - perpY));
+    tick.setAttribute("x2", String(midX + perpX));
+    tick.setAttribute("y2", String(midY + perpY));
+    tick.setAttribute("stroke", "#92400e");
+    tick.setAttribute("stroke-width", "3");
+    tick.style.pointerEvents = "none";
+    // Secret (GM-only view) gets an additional dash pattern so the GM can
+    // tell "secret door" apart from "ordinary door" while authoring — this
+    // branch only ever runs when options.hasFullAccess is already true (see
+    // revealDoorStyling above), never for a player.
+    if (isSecret) {
+      tick.setAttribute("stroke-dasharray", "3 2");
+    }
+    wrapper.appendChild(tick);
+
+    // A small padlock glyph, centered directly ON the door's own midpoint
+    // (overlapping the tick — deliberate, this is the primary "this door is
+    // locked" indicator, not a secondary decoration off to the side) — the
+    // one persistent, always-on-the-map indicator that a door is locked,
+    // rather than something a player only discovers by clicking it and
+    // getting a toast. Shown under the exact same visibility rule as the
+    // tick itself (revealDoorStyling) — a secret+locked door still shows
+    // nothing at all to a non-GM viewer.
+    if (element.locked) {
+      const lockGroup = document.createElementNS(svgNS, "g");
+      lockGroup.style.pointerEvents = "none";
+      const shackle = document.createElementNS(svgNS, "path");
+      shackle.setAttribute("d", `M ${midX - 2.5} ${midY - 1} A 2.5 3 0 0 1 ${midX + 2.5} ${midY - 1}`);
+      shackle.setAttribute("fill", "none");
+      shackle.setAttribute("stroke", "#dc2626");
+      shackle.setAttribute("stroke-width", "1.5");
+      const body = document.createElementNS(svgNS, "rect");
+      body.setAttribute("x", String(midX - 4));
+      body.setAttribute("y", String(midY - 1));
+      body.setAttribute("width", "8");
+      body.setAttribute("height", "6");
+      body.setAttribute("rx", "1");
+      body.setAttribute("fill", "#dc2626");
+      lockGroup.append(shackle, body);
+      wrapper.appendChild(lockGroup);
+    }
+  }
+
+  // Player click-to-toggle — a secret door never gets this hit-target at
+  // all (not just "clicking does nothing," it genuinely never registers a
+  // handler), matching "a player doesn't even know it's there." Lives in
+  // the wrapper too (never interactive during a GM-side drag anyway, since
+  // onDoorClick and onWallDragEnd are never both supplied by the same
+  // caller — see this function's own header comment).
+  if (isDoor && !isSecret && typeof options.onDoorClick === "function") {
+    const doorHit = document.createElementNS(svgNS, "polyline");
+    doorHit.setAttribute("points", pointsAttr);
+    doorHit.setAttribute("fill", "none");
+    doorHit.setAttribute("stroke", "transparent");
+    doorHit.setAttribute("stroke-width", String((element.strokeWidth || 3) + 14));
+    doorHit.setAttribute("stroke-linecap", "round");
+    doorHit.setAttribute("stroke-linejoin", "round");
+    doorHit.style.pointerEvents = "stroke";
+    doorHit.style.cursor = "pointer";
+    doorHit.addEventListener("pointerdown", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      options.onDoorClick(element.id, event);
+    });
+    wrapper.appendChild(doorHit);
+  }
+
+  // Authoring select + whole-wall drag — same wide invisible-stroke
+  // convention every other vector element's hit-target uses.
+  const canDragWall = typeof options.onWallDragEnd === "function";
+  if (typeof options.onPathClick === "function" || canDragWall) {
+    const hit = document.createElementNS(svgNS, "polyline");
+    hit.setAttribute("points", pointsAttr);
+    hit.setAttribute("fill", "none");
+    hit.setAttribute("stroke", "transparent");
+    hit.setAttribute("stroke-width", String((element.strokeWidth || 3) + 14));
+    hit.setAttribute("stroke-linecap", "round");
+    hit.setAttribute("stroke-linejoin", "round");
+    hit.style.pointerEvents = "stroke";
+    hit.style.cursor = canDragWall ? "move" : "pointer";
+    hit.addEventListener("pointerdown", (event) => {
+      if (event.button !== 0) return;
+      event.preventDefault();
+      event.stopPropagation();
+      options.onPathClick?.(element.id, event, element.kind);
+      if (!canDragWall) return;
+      try {
+        hit.setPointerCapture(event.pointerId);
+      } catch (error) {
+        // Ignored — see renderShapeElement's own matching try/catch.
+      }
+      const startX = event.clientX;
+      const startY = event.clientY;
+      const zoom = isTileBaseMap(map) ? 1 : getNonTileZoom(baseMapManager);
+      let lastDelta = null;
+      baseMapManager.setInteractionEnabled(false);
+      wrapper.style.display = "none";
+      const overlayHost = baseMapManager.getOverlayContainer();
+      let preview = null;
+      function drawDragPreview(dx, dy) {
+        preview?.remove();
+        preview = document.createElementNS(svgNS, "svg");
+        preview.style.position = "absolute";
+        preview.style.inset = "0";
+        preview.style.width = "100%";
+        preview.style.height = "100%";
+        preview.style.overflow = "visible";
+        preview.style.pointerEvents = "none";
+        const shiftedPoints = element.points.map((point) => {
+          const local = markerPositionToLocalPixel(baseMapManager, map, point);
+          return localPixelToMarkerPosition(baseMapManager, map, { x: local.x + dx, y: local.y + dy });
+        });
+        renderWallElement(preview, baseMapManager, map, layer, { ...element, points: shiftedPoints }, offset, {
+          selectedElementId: element.id,
+        });
+        overlayHost.appendChild(preview);
+      }
+      drawDragPreview(0, 0);
+      const onMove = (moveEvent) => {
+        lastDelta = { x: (moveEvent.clientX - startX) / zoom, y: (moveEvent.clientY - startY) / zoom };
+        drawDragPreview(lastDelta.x, lastDelta.y);
+      };
+      const onUp = (upEvent) => {
+        try {
+          hit.releasePointerCapture(upEvent.pointerId);
+        } catch (error) {
+          // Ignored — capture above may never have actually been acquired.
+        }
+        window.removeEventListener("pointermove", onMove);
+        window.removeEventListener("pointerup", onUp);
+        baseMapManager.setInteractionEnabled(true);
+        preview?.remove();
+        wrapper.style.display = "";
+        if (lastDelta) {
+          const nextPoints = element.points.map((point) => {
+            const local = markerPositionToLocalPixel(baseMapManager, map, point);
+            return localPixelToMarkerPosition(baseMapManager, map, { x: local.x + lastDelta.x, y: local.y + lastDelta.y });
+          });
+          options.onWallDragEnd(element.id, nextPoints);
+        }
+      };
+      window.addEventListener("pointermove", onMove);
+      window.addEventListener("pointerup", onUp);
+    });
+    wrapper.appendChild(hit);
+  }
+
+  svg.appendChild(wrapper);
+
+  // Per-vertex reshape handles — only while THIS wall is the current
+  // selection (not just its layer), same "you have to actually select it
+  // first" convention every other post-placement editing affordance in this
+  // suite already follows. Appended directly to `svg` (siblings of
+  // `wrapper`, not children of it) so hiding `wrapper` during the WHOLE-wall
+  // drag above doesn't also hide these — each handle manages its own
+  // visibility during ITS OWN drag instead.
+  if (isSelected && typeof options.onWallVertexDragEnd === "function") {
+    pixelPoints.forEach((point, index) => {
+      const handle = document.createElementNS(svgNS, "circle");
+      handle.setAttribute("cx", String(point.x));
+      handle.setAttribute("cy", String(point.y));
+      handle.setAttribute("r", "6");
+      handle.setAttribute("fill", "#f97316");
+      handle.setAttribute("stroke", "#fff");
+      handle.setAttribute("stroke-width", "1.5");
+      handle.style.pointerEvents = "fill";
+      handle.style.cursor = "grab";
+      handle.addEventListener("pointerdown", (event) => {
+        if (event.button !== 0) return;
+        event.preventDefault();
+        event.stopPropagation();
+        try {
+          handle.setPointerCapture(event.pointerId);
+        } catch (error) {
+          // Ignored — see renderShapeElement's own matching try/catch.
+        }
+        const startX = event.clientX;
+        const startY = event.clientY;
+        const zoom = isTileBaseMap(map) ? 1 : getNonTileZoom(baseMapManager);
+        let lastDelta = null;
+        baseMapManager.setInteractionEnabled(false);
+        handle.style.cursor = "grabbing";
+        wrapper.style.display = "none";
+        const overlayHost = baseMapManager.getOverlayContainer();
+        let preview = null;
+        function drawVertexDragPreview(dx, dy) {
+          preview?.remove();
+          preview = document.createElementNS(svgNS, "svg");
+          preview.style.position = "absolute";
+          preview.style.inset = "0";
+          preview.style.width = "100%";
+          preview.style.height = "100%";
+          preview.style.overflow = "visible";
+          preview.style.pointerEvents = "none";
+          const nextPoints = element.points.map((originalPoint, i) => {
+            if (i !== index) return originalPoint;
+            const local = markerPositionToLocalPixel(baseMapManager, map, originalPoint);
+            return localPixelToMarkerPosition(baseMapManager, map, { x: local.x + dx, y: local.y + dy });
+          });
+          // No onWallVertexDragEnd passed here — this is a throwaway,
+          // non-interactive preview (pointer-events:none on the whole svg
+          // already), and passing even a no-op would make renderWallElement
+          // build REAL handle circles with their own real pointerdown
+          // listeners on top of it, which could pick up and start a SECOND,
+          // conflicting drag gesture if the cursor happens to pass over one
+          // while THIS drag is already in progress. Just the moving vertex
+          // itself is enough visual feedback.
+          renderWallElement(preview, baseMapManager, map, layer, { ...element, points: nextPoints }, offset, {
+            selectedElementId: element.id,
+          });
+          overlayHost.appendChild(preview);
+        }
+        drawVertexDragPreview(0, 0);
+        const onMove = (moveEvent) => {
+          lastDelta = { x: (moveEvent.clientX - startX) / zoom, y: (moveEvent.clientY - startY) / zoom };
+          drawVertexDragPreview(lastDelta.x, lastDelta.y);
+        };
+        const onUp = (upEvent) => {
+          try {
+            handle.releasePointerCapture(upEvent.pointerId);
+          } catch (error) {
+            // Ignored — capture above may never have actually been acquired.
+          }
+          window.removeEventListener("pointermove", onMove);
+          window.removeEventListener("pointerup", onUp);
+          baseMapManager.setInteractionEnabled(true);
+          preview?.remove();
+          wrapper.style.display = "";
+          handle.style.cursor = "grab";
+          if (lastDelta) {
+            const originalPoint = element.points[index];
+            const local = markerPositionToLocalPixel(baseMapManager, map, originalPoint);
+            const nextPoint = localPixelToMarkerPosition(baseMapManager, map, { x: local.x + lastDelta.x, y: local.y + lastDelta.y });
+            options.onWallVertexDragEnd(element.id, index, nextPoint);
+          }
+        };
+        window.addEventListener("pointermove", onMove);
+        window.addEventListener("pointerup", onUp);
+      });
+      svg.appendChild(handle);
+    });
+  }
+}
+
+// A freestanding OR token-attached placed light. Position is always
+// resolved via resolveLightOrigin (tracks an attached marker's live
+// position when set; the passed-in `offset` — this layer's own manual
+// position, same as every other vector element uses — is deliberately
+// unused here, since resolveLightOrigin already resolves the correct final
+// position itself either way, and re-adding this parameter's offset on top
+// would double-apply it).
+//
+// The glow is masked to THIS LIGHT'S OWN wall-aware line-of-sight cell set
+// — never the grid layer's whole unioned reveal set. If it clipped against
+// the shared union, a light would visibly leak into a cell revealed by an
+// unrelated source (e.g. a character standing in the next room) even with a
+// wall directly between them. Applies unconditionally, whether or not Fog
+// of War is even toggled on for the grid layer — a light's wall-shaping is
+// a physical-correctness question ("does the glow pass through a wall"),
+// not a hidden-information one, so every viewer (including the GM) sees
+// the same clipped shape.
+export function renderLightElement(svg, baseMapManager, map, layer, element, offset, options) {
+  const origin = resolveLightOrigin(baseMapManager, map, layer, element);
+  const { x: cx, y: cy } = origin;
+  const pixelsPerCell = resolveShapePixelsPerCell(baseMapManager, map);
+  const radiusPx = Math.max(0, (element.rangeCells || 0) * pixelsPerCell);
+  const isSelected = options.selectedElementId === element.id;
+  const svgNS = "http://www.w3.org/2000/svg";
+
+  const defs = document.createElementNS(svgNS, "defs");
+  const gradientId = `orrery-light-gradient-${element.id}`;
+  const gradient = document.createElementNS(svgNS, "radialGradient");
+  gradient.setAttribute("id", gradientId);
+  const near = document.createElementNS(svgNS, "stop");
+  near.setAttribute("offset", "0%");
+  near.setAttribute("stop-color", element.color || "#fbbf24");
+  near.setAttribute("stop-opacity", String(Number.isFinite(element.opacity) ? element.opacity : 0.5));
+  const far = document.createElementNS(svgNS, "stop");
+  far.setAttribute("offset", "100%");
+  far.setAttribute("stop-color", element.color || "#fbbf24");
+  far.setAttribute("stop-opacity", "0");
+  gradient.append(near, far);
+  defs.appendChild(gradient);
+
+  const visible = document.createElementNS(svgNS, "circle");
+  visible.setAttribute("cx", String(cx));
+  visible.setAttribute("cy", String(cy));
+  visible.setAttribute("r", String(radiusPx));
+  visible.setAttribute("fill", `url(#${gradientId})`);
+  visible.style.pointerEvents = "none";
+
+  // findPrimaryGridLayer's own inline equivalent (map.layers.find(l =>
+  // l.type==="grid")) — this map's scale reference for converting
+  // element.rangeCells into a real segment-intersection test, regardless of
+  // whether Fog of War is on for that layer or it's even visible (same "a
+  // grid's own visibility doesn't affect whether it's still the map's real
+  // scale reference" precedent resolveShapePixelsPerCell/findPrimaryGridLayer
+  // already establish elsewhere). No grid layer at all: nothing to clip
+  // against or measure cells in, so the glow just renders unclipped.
+  const gridLayer = (map.layers || []).find((entry) => entry.type === "grid");
+  if (gridLayer) {
+    const blockingSegments = resolveBlockingSegments(baseMapManager, map);
+    const visibleCells = resolveVisibleCells(baseMapManager, map, gridLayer, {
+      origin,
+      rangeCells: element.rangeCells,
+      blockingSegments,
+    });
+    const maskId = `orrery-light-mask-${element.id}`;
+    // getGridOffset, NOT getGridBackgroundPosition — this light's own SVG
+    // is a sibling of the grid div (part of its own vector layer's overlay,
+    // true-container-space, same as every path/shape/marker), NOT a child
+    // of the grid div's own GRID_OVERLAY_EXTENT-shifted coordinate space
+    // (see buildRevealedCellsMask's own header comment for why the two
+    // callers need different offsets despite sharing the same hole-punching
+    // logic).
+    const maskOffset = getGridOffset(baseMapManager, map, gridLayer);
+    // invert: true — buildRevealedCellsMask's own DEFAULT polarity (white
+    // base, black holes at the given cells) is built for FOG's use: fog
+    // SHOWS everywhere except the given (revealed) cells. A light's own
+    // glow needs the OPPOSITE — it should show ONLY within its own visible
+    // cells, hidden everywhere else. Using the uninverted mask here was a
+    // confirmed real bug: in the common no-obstruction case, virtually
+    // every cell under the glow's own circle is "visible," so the
+    // (uninverted) mask punched black holes across nearly the ENTIRE
+    // circle, hiding almost all of it — "the light shows while dragging
+    // (before this mask is even attached to anything) but disappears the
+    // instant it's dropped and actually rendered through this path."
+    const mask = buildRevealedCellsMask(baseMapManager, map, gridLayer, visibleCells, maskId, maskOffset, { invert: true });
+    defs.appendChild(mask);
+    visible.setAttribute("mask", `url(#${maskId})`);
+  }
+  svg.appendChild(defs);
+
+  if (isSelected) {
+    const ring = document.createElementNS(svgNS, "circle");
+    ring.setAttribute("cx", String(cx));
+    ring.setAttribute("cy", String(cy));
+    ring.setAttribute("r", String(radiusPx));
+    ring.setAttribute("fill", "none");
+    // The light's own color, not a fixed accent blue (unlike a selected
+    // shape's own ring, which deliberately stays a fixed color since a
+    // shape's stroke is a separate, independently-configured field) — a
+    // light has no separate "outline" concept, so the selection indicator
+    // reads more naturally in the same hue as the light itself.
+    ring.setAttribute("stroke", element.color || "#fbbf24");
+    ring.setAttribute("stroke-width", "2");
+    ring.setAttribute("stroke-dasharray", "6 4");
+    ring.style.pointerEvents = "none";
+    svg.appendChild(ring);
+  }
+  svg.appendChild(visible);
+
+  // An attached light's position is derived from its host marker, not
+  // independently draggable — the only way to move it is to move the
+  // marker (or detach it via the inspector's own Attach to Token picker
+  // first). Gated here, not by whether the caller happens to pass
+  // onShapeDragEnd, since app.js's own renderLayerOverlays wires that
+  // callback identically for every shape/light regardless of attachment.
+  const canDrag = !element.attachedMarkerId && typeof options.onShapeDragEnd === "function";
+  if (typeof options.onPathClick === "function" || canDrag) {
+    // A plain (unmasked, ungraded) circle — the light's own glow shape
+    // above isn't a reliable hit-target (a radial gradient fading to 0
+    // opacity, and potentially wall-masked with real holes cut out of it,
+    // both mean parts of the visible glow don't register pointer events
+    // the way a flat-filled shape does). Same "clone geometry, make it
+    // transparent-but-hit-testable" idea renderShapeElement's own hit-target
+    // uses, just built fresh rather than cloning `visible` (which carries
+    // the mask/gradient fill this hit-target deliberately doesn't want).
+    //
+    // Deliberately its OWN drag implementation, not a shared extraction
+    // with renderShapeElement's nearly-identical block — duplicated here
+    // rather than risking a refactor of that already-working, delicate
+    // gesture code (setPointerCapture, zoom correction, temp-preview-
+    // redraw-per-move) under this feature's own time constraints. Same
+    // overall shape: select-on-pointerdown, drag optional, commit only if
+    // the pointer actually moved, temporary preview redrawn per move via
+    // this exact function calling itself.
+    const hit = document.createElementNS(svgNS, "circle");
+    hit.setAttribute("cx", String(cx));
+    hit.setAttribute("cy", String(cy));
+    hit.setAttribute("r", String(radiusPx));
+    hit.setAttribute("fill", "transparent");
+    hit.style.pointerEvents = "fill";
+    hit.style.cursor = canDrag ? "move" : "pointer";
+    hit.addEventListener("pointerdown", (event) => {
+      if (event.button !== 0) return;
+      event.preventDefault();
+      event.stopPropagation();
+      options.onPathClick?.(element.id, event, element.kind);
+      if (!canDrag) return;
+      try {
+        hit.setPointerCapture(event.pointerId);
+      } catch (error) {
+        // Ignored — see renderShapeElement's own matching try/catch.
+      }
+      const startX = event.clientX;
+      const startY = event.clientY;
+      const zoom = isTileBaseMap(map) ? 1 : getNonTileZoom(baseMapManager);
+      let lastDelta = null;
+      baseMapManager.setInteractionEnabled(false);
+      visible.remove();
+      const overlayHost = baseMapManager.getOverlayContainer();
+      let preview = null;
+      function drawDragPreview(dx, dy) {
+        preview?.remove();
+        preview = document.createElementNS(svgNS, "svg");
+        preview.style.position = "absolute";
+        preview.style.inset = "0";
+        preview.style.width = "100%";
+        preview.style.height = "100%";
+        preview.style.overflow = "visible";
+        preview.style.pointerEvents = "none";
+        const previewOrigin = localPixelToMarkerPosition(baseMapManager, map, { x: cx + dx, y: cy + dy });
+        renderLightElement(preview, baseMapManager, map, layer, { ...element, attachedMarkerId: "", origin: previewOrigin }, offset, {
+          selectedElementId: element.id,
+        });
+        overlayHost.appendChild(preview);
+      }
+      drawDragPreview(0, 0);
+      const onMove = (moveEvent) => {
+        lastDelta = { x: (moveEvent.clientX - startX) / zoom, y: (moveEvent.clientY - startY) / zoom };
+        drawDragPreview(lastDelta.x, lastDelta.y);
+      };
+      const onUp = (upEvent) => {
+        try {
+          hit.releasePointerCapture(upEvent.pointerId);
+        } catch (error) {
+          // Ignored — capture above may never have actually been acquired.
+        }
+        window.removeEventListener("pointermove", onMove);
+        window.removeEventListener("pointerup", onUp);
+        baseMapManager.setInteractionEnabled(true);
+        preview?.remove();
+        svg.appendChild(visible);
+        if (lastDelta) {
+          const nextLocalPixel = { x: cx + lastDelta.x, y: cy + lastDelta.y };
+          const nextOrigin = localPixelToMarkerPosition(baseMapManager, map, nextLocalPixel);
+          options.onShapeDragEnd(element.id, nextOrigin);
+        }
+      };
+      window.addEventListener("pointermove", onMove);
+      window.addEventListener("pointerup", onUp);
+    });
+    svg.appendChild(hit);
+  }
+}
+
 export function createVectorLayerElement(baseMapManager, map, layer, options = {}) {
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.classList.add("orrery-layer-vector-overlay");
@@ -1214,6 +2103,14 @@ export function createVectorLayerElement(baseMapManager, map, layer, options = {
   (layer.elements || []).forEach((element) => {
     if (element.kind === "shape") {
       renderShapeElement(svg, baseMapManager, map, layer, element, offset, options);
+      return;
+    }
+    if (element.kind === "wall") {
+      renderWallElement(svg, baseMapManager, map, layer, element, offset, options);
+      return;
+    }
+    if (element.kind === "light") {
+      renderLightElement(svg, baseMapManager, map, layer, element, offset, options);
       return;
     }
     if (element.kind !== "path" || !Array.isArray(element.points) || !element.points.length) {
@@ -1413,6 +2310,11 @@ export function renderMapLayers(overlay, baseMapManager, map, options = {}) {
         paintMode: isPaintTarget,
         onPointerPaint: isPaintTarget && options.onGridCellPaint ? (coord, event) => options.onGridCellPaint(layer, coord, event) : undefined,
         onPointerPaintEnd: isPaintTarget ? options.onGridCellPaintEnd : undefined,
+        // Threaded straight through to resolveRevealedCells' own
+        // character-vision auto-reveal loop — see resolveMarkerVisionRangeCells's
+        // own header comment for why this has to be a synchronous,
+        // cache-backed callback rather than a fetch this module does itself.
+        getCharacterPayload: options.getCharacterPayload,
       });
     } else if (layer.type === "raster") {
       element = createRasterLayerElement(layer, renderState);
@@ -1424,6 +2326,9 @@ export function renderMapLayers(overlay, baseMapManager, map, options = {}) {
         onEmptyClick: options.onMarkerLayerEmptyClick ? (position, event) => options.onMarkerLayerEmptyClick(layer, position, event) : undefined,
         onMarkerDragStart: options.onMarkerDragStart,
         onMarkerDragEnd: options.onMarkerDragEnd,
+        // Never passed from Orrery's own app.js — see beginMarkerDrag's own
+        // header comment for why free GM authoring must stay unrestricted.
+        resolveMarkerMoveBlocked: options.resolveMarkerMoveBlocked,
       });
     } else {
       element = createVectorLayerElement(baseMapManager, map, layer, {
@@ -1459,6 +2364,25 @@ export function renderMapLayers(overlay, baseMapManager, map, options = {}) {
         // does). Same isSelected gate as onPathClick — a shape only becomes
         // draggable once its own layer is selected from the left pane.
         onShapeDragEnd: isSelected && options.onShapeDragEnd ? (elementId, nextOrigin) => options.onShapeDragEnd(layer, elementId, nextOrigin) : undefined,
+        // Doors only, and NEVER gated on isSelected — the Dashboard widget
+        // (the only real caller of this) has no layer-selection concept at
+        // all (it never passes `selection`), so an isSelected gate here
+        // would mean door-click-to-open silently never fires for a player.
+        onDoorClick: options.onDoorClick ? (elementId, event) => options.onDoorClick(layer, elementId, event) : undefined,
+        // Threaded through so renderWallElement can decide whether to
+        // reveal a secret door's own distinguishing tick (GM/owner only —
+        // see createFogOverlay's own identical ownerPreview asymmetry).
+        hasFullAccess: options.hasFullAccess ?? false,
+        // Whole-wall drag + per-vertex handles — same isSelected gate as
+        // onShapeDragEnd (a wall only becomes draggable/reshapeable once its
+        // own layer is selected from the left pane); handles themselves are
+        // additionally gated on THIS wall being the current selection
+        // (renderWallElement's own isSelected check), not just the layer.
+        onWallDragEnd: isSelected && options.onWallDragEnd ? (elementId, nextPoints) => options.onWallDragEnd(layer, elementId, nextPoints) : undefined,
+        onWallVertexDragEnd:
+          isSelected && options.onWallVertexDragEnd
+            ? (elementId, vertexIndex, nextPoint) => options.onWallVertexDragEnd(layer, elementId, vertexIndex, nextPoint)
+            : undefined,
       });
     }
     if (element) {

@@ -1248,6 +1248,54 @@
       "href": "../orrery/index.html#orrery-selection"
     },
     {
+      "id": "orrery.walls",
+      "title": "Walls & Doors",
+      "summary": "Click each vertex to draw a wall; double-click or Enter to finish. A wall blocks both token movement and fog-of-war vision.",
+      "details": [
+        "Click adds a vertex, with a dashed line previewing the next segment. Double-click or Enter finishes the wall; Escape cancels the whole thing; Backspace removes just the last vertex placed.",
+        "Switch to Door in the type picker before drawing to place a door instead — a door always commits as soon as its 2nd point is placed, no double-click needed.",
+        "A wall's shape is set entirely by the placement gesture — there's no post-placement vertex editing, only Delete and redraw."
+      ],
+      "category": "Orrery",
+      "href": "../orrery/index.html#orrery-selection"
+    },
+    {
+      "id": "orrery.doors",
+      "title": "Secret & Locked Doors",
+      "summary": "Secret makes a door render exactly like a plain wall to non-GM viewers; Locked lets players see it's a door but not open it.",
+      "details": [
+        "Secret and Locked are independent — a door can be either, both, or neither.",
+        "You (the GM) always retain full control via the inspector's Open/Close Door button regardless of either flag — Secret/Locked only ever restrict what a player can do by clicking the door themselves on the Dashboard's Map widget.",
+        "A secret door looks identical to a plain wall for anyone without full map access, with no click response at all — only your own view shows a small tick marking it as a door."
+      ],
+      "category": "Orrery",
+      "href": "../orrery/index.html#orrery-selection"
+    },
+    {
+      "id": "orrery.lights",
+      "title": "Dynamic Lights",
+      "summary": "A placed light both glows AND unveils fog-of-war within its own radius, wall-aware — like a torch, not just a cosmetic effect.",
+      "details": [
+        "Range, Color, and Opacity are all editable after placement in the inspector.",
+        "A light's glow never shines through a wall — it's clipped to the same wall-aware visibility it uses to reveal fog, independent of whether Fog of War is even turned on for the grid layer.",
+        "Attach a light to a token (its own inspector field) to have it move with that marker — a torch a character is carrying — instead of staying at a fixed point on the map."
+      ],
+      "category": "Orrery",
+      "href": "../orrery/index.html#orrery-selection"
+    },
+    {
+      "id": "orrery.autoRevealVision",
+      "title": "Auto-Reveal from Character Vision",
+      "summary": "Automatically unveils fog-of-war around any character-linked marker with a nonzero Vision Range, wall-aware, as it moves.",
+      "details": [
+        "Only affects markers that both reference a Character and have a Vision Range set directly on the marker itself (in that marker's own inspector) — it's never inherited from the Character record automatically.",
+        "Vision Range can be a plain number, or Bound/a Formula against a field on that marker's own linked Character (e.g. a numeric Darkvision-equivalent stat, if that Character's System defines one).",
+        "Works alongside manually-painted reveal cells and any placed Lights — all three sources union together into what's currently visible."
+      ],
+      "category": "Orrery",
+      "href": "../orrery/index.html#orrery-selection"
+    },
+    {
       "id": "repository.tags",
       "title": "Tags, Groups, & Display Pills",
       "summary": "Tags are plain freeform text, but two prefixes are meaningful to the page list on the left: group: and display:.",

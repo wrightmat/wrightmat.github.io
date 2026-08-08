@@ -1,0 +1,1036 @@
+{
+  "kind": "character",
+  "name": "Ghomuth",
+  "image": "https://www.dndbeyond.com/avatars/57495/323/1581111423-117384722.jpeg?width=150&height=150&fit=crop&quality=95&auto=webp",
+  "identity": {
+    "id": 117384722,
+    "userId": 110628680,
+    "username": "Percellophane",
+    "name": "Ghomuth",
+    "race": "Locathah",
+    "class": "Barbarian",
+    "level": 6,
+    "levels": {
+      "level_monk": 0,
+      "level_multiclass": 0
+    },
+    "inspiration": false,
+    "classes": [
+      {
+        "name": "Barbarian",
+        "level": 6,
+        "subclass": "Path of the Zealot"
+      }
+    ]
+  },
+  "proficiency": 3,
+  "alignment": {
+    "name": "Lawful Neutral",
+    "shortName": "LN"
+  },
+  "initiative": {
+    "value": 2,
+    "advantage": false,
+    "disadvantage": false
+  },
+  "senses": {
+    "passives": {
+      "perception": 13,
+      "investigation": 8,
+      "insight": 10
+    }
+  },
+  "speeds": {
+    "walk": 40,
+    "burrow": 0,
+    "climb": 0,
+    "fly": 0,
+    "swim": 30
+  },
+  "conditions": [],
+  "abilities": [
+    {
+      "id": 1,
+      "name": "strength",
+      "friendlyName": "Strength",
+      "shortName": "STR",
+      "score": 25,
+      "modifier": 7
+    },
+    {
+      "id": 2,
+      "name": "dexterity",
+      "friendlyName": "Dexterity",
+      "shortName": "DEX",
+      "score": 14,
+      "modifier": 2
+    },
+    {
+      "id": 3,
+      "name": "constitution",
+      "friendlyName": "Constitution",
+      "shortName": "CON",
+      "score": 16,
+      "modifier": 3
+    },
+    {
+      "id": 4,
+      "name": "intelligence",
+      "friendlyName": "Intelligence",
+      "shortName": "INT",
+      "score": 7,
+      "modifier": -2
+    },
+    {
+      "id": 5,
+      "name": "wisdom",
+      "friendlyName": "Wisdom",
+      "shortName": "WIS",
+      "score": 10,
+      "modifier": 0
+    },
+    {
+      "id": 6,
+      "name": "charisma",
+      "friendlyName": "Charisma",
+      "shortName": "CHA",
+      "score": 8,
+      "modifier": -1
+    }
+  ],
+  "saves": [
+    {
+      "id": 1,
+      "name": "strength",
+      "friendlyName": "Strength",
+      "shortName": "STR",
+      "value": 10,
+      "proficiency": 3,
+      "advantage": true,
+      "disadvantage": false
+    },
+    {
+      "id": 2,
+      "name": "dexterity",
+      "friendlyName": "Dexterity",
+      "shortName": "DEX",
+      "value": 2,
+      "proficiency": 0,
+      "advantage": true,
+      "disadvantage": false
+    },
+    {
+      "id": 3,
+      "name": "constitution",
+      "friendlyName": "Constitution",
+      "shortName": "CON",
+      "value": 6,
+      "proficiency": 3,
+      "advantage": true,
+      "disadvantage": false
+    },
+    {
+      "id": 4,
+      "name": "intelligence",
+      "friendlyName": "Intelligence",
+      "shortName": "INT",
+      "value": -2,
+      "proficiency": 0,
+      "advantage": true,
+      "disadvantage": false
+    },
+    {
+      "id": 5,
+      "name": "wisdom",
+      "friendlyName": "Wisdom",
+      "shortName": "WIS",
+      "value": 0,
+      "proficiency": 0,
+      "advantage": true,
+      "disadvantage": false
+    },
+    {
+      "id": 6,
+      "name": "charisma",
+      "friendlyName": "Charisma",
+      "shortName": "CHA",
+      "value": -1,
+      "proficiency": 0,
+      "advantage": true,
+      "disadvantage": false
+    }
+  ],
+  "skills": [
+    {
+      "id": 3,
+      "name": "acrobatics",
+      "friendlyName": "Acrobatics",
+      "stat": 1,
+      "ability": "DEX",
+      "value": 2,
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 11,
+      "name": "animal-handling",
+      "friendlyName": "Animal Handling",
+      "stat": 4,
+      "ability": "WIS",
+      "value": 3,
+      "proficiency": 3,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 6,
+      "name": "arcana",
+      "friendlyName": "Arcana",
+      "stat": 3,
+      "ability": "INT",
+      "value": -2,
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 2,
+      "name": "athletics",
+      "friendlyName": "Athletics",
+      "stat": 0,
+      "ability": "STR",
+      "value": 10,
+      "proficiency": 3,
+      "advantage": true,
+      "disadvantage": false
+    },
+    {
+      "id": 16,
+      "name": "deception",
+      "friendlyName": "Deception",
+      "stat": 5,
+      "ability": "CHA",
+      "value": -1,
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 7,
+      "name": "history",
+      "friendlyName": "History",
+      "stat": 3,
+      "ability": "INT",
+      "value": -2,
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 12,
+      "name": "insight",
+      "friendlyName": "Insight",
+      "stat": 4,
+      "ability": "WIS",
+      "value": 0,
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 17,
+      "name": "intimidation",
+      "friendlyName": "Intimidation",
+      "stat": 5,
+      "ability": "CHA",
+      "value": 2,
+      "proficiency": 3,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 8,
+      "name": "investigation",
+      "friendlyName": "Investigation",
+      "stat": 3,
+      "ability": "INT",
+      "value": -2,
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 13,
+      "name": "medicine",
+      "friendlyName": "Medicine",
+      "stat": 4,
+      "ability": "WIS",
+      "value": 3,
+      "proficiency": 3,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 9,
+      "name": "nature",
+      "friendlyName": "Nature",
+      "stat": 3,
+      "ability": "INT",
+      "value": 1,
+      "proficiency": 3,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 14,
+      "name": "perception",
+      "friendlyName": "Perception",
+      "stat": 4,
+      "ability": "WIS",
+      "value": 3,
+      "proficiency": 3,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 18,
+      "name": "performance",
+      "friendlyName": "Performance",
+      "stat": 5,
+      "ability": "CHA",
+      "value": -1,
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 19,
+      "name": "persuasion",
+      "friendlyName": "Persuasion",
+      "stat": 5,
+      "ability": "CHA",
+      "value": -1,
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 10,
+      "name": "religion",
+      "friendlyName": "Religion",
+      "stat": 3,
+      "ability": "INT",
+      "value": -2,
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 4,
+      "name": "sleight-of-hand",
+      "friendlyName": "Sleight of Hand",
+      "stat": 1,
+      "ability": "DEX",
+      "value": 2,
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 5,
+      "name": "stealth",
+      "friendlyName": "Stealth",
+      "stat": 1,
+      "ability": "DEX",
+      "value": 2,
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 15,
+      "name": "survival",
+      "friendlyName": "Survival",
+      "stat": 4,
+      "ability": "WIS",
+      "value": 3,
+      "proficiency": 3,
+      "advantage": false,
+      "disadvantage": false
+    }
+  ],
+  "stats": {
+    "hitPoints": {
+      "max": 65,
+      "current": 47,
+      "temp": 0
+    },
+    "armorClass": 6
+  },
+  "currencies": {
+    "cp": 0,
+    "sp": 0,
+    "ep": 0,
+    "gp": 52,
+    "pp": 0
+  },
+  "inventory": [
+    {
+      "name": "Potion of Fire Giant Strength",
+      "quantity": 1,
+      "weight": 0,
+      "notes": "<p>When you drink this potion, your Strength score changes to 25&nbsp;for 1 hour. The potion has no effect on you if your Strength is equal to or greater than that score.</p>\r\n<p>This potion's transparent liquid has floating in it a sliver of fingernail from a fire giant.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
+    },
+    {
+      "name": "Shield",
+      "quantity": 1,
+      "weight": 6,
+      "notes": "<p>Shields require the Utilize action to Don or Doff. You gain the Armor Class benefit of a Shield only if you have training with it.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": true,
+      "isEquipped": true
+    },
+    {
+      "name": "Handaxe",
+      "quantity": 1,
+      "weight": 2,
+      "notes": "<p>Proficiency with a Handaxe allows you to add your proficiency bonus to the attack roll for any attack you make with it.</p>\r\n<div class=\"mastery-container\"><hr />\r\n<p>This weapon has the following mastery property. To use this property, you must have a feature that lets you use it.</p>\r\n<p><strong><em>Vex.</em></strong> If you hit a creature with this weapon and deal damage to the creature, you have Advantage on your next attack roll against that creature before the end of your next turn.</p>\r\n</div>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": true,
+      "isEquipped": true
+    },
+    {
+      "name": "Handaxe",
+      "quantity": 1,
+      "weight": 2,
+      "notes": "<p>Proficiency with a Handaxe allows you to add your proficiency bonus to the attack roll for any attack you make with it.</p>\r\n<div class=\"mastery-container\"><hr />\r\n<p>This weapon has the following mastery property. To use this property, you must have a feature that lets you use it.</p>\r\n<p><strong><em>Vex.</em></strong> If you hit a creature with this weapon and deal damage to the creature, you have Advantage on your next attack roll against that creature before the end of your next turn.</p>\r\n</div>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": true,
+      "isEquipped": true
+    },
+    {
+      "name": "Javelin",
+      "quantity": 4,
+      "weight": 8,
+      "notes": "<p>Proficiency with a Javelin allows you to add your proficiency bonus to the attack roll for any attack you make with it.</p>\r\n<div class=\"mastery-container\"><hr />\r\n<p>This weapon has the following mastery property. To use this property, you must have a feature that lets you use it.</p>\r\n<p><em><strong>Slow.</strong></em> If you hit a creature with this weapon and deal damage to it, you can reduce its Speed by 10 feet until the start of your next turn. If the creature is hit more than once by weapons that have this property, the Speed reduction doesn’t exceed 10 feet.</p>\r\n</div>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": true,
+      "isEquipped": false
+    },
+    {
+      "name": "Quarterstaff",
+      "quantity": 1,
+      "weight": 4,
+      "notes": "<p>Proficiency with a Quarterstaff allows you to add your proficiency bonus to the attack roll for any attack you make with it.</p>\r\n<div class=\"mastery-container\"><hr />\r\n<p>This weapon has the following mastery property. To use this property, you must have a feature that lets you use it.</p>\r\n<p><strong><em>Topple.</em></strong> If you hit a creature with this weapon, you can force the creature to make a Constitution saving throw (DC 8 plus the ability modifier used to make the attack roll and your Proficiency Bonus). On a failed save, the creature has the Prone condition.</p>\r\n</div>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": true,
+      "isEquipped": false
+    },
+    {
+      "name": "Greataxe",
+      "quantity": 1,
+      "weight": 7,
+      "notes": "<p>Proficiency with a Greataxe allows you to add your proficiency bonus to the attack roll for any attack you make with it.</p>\r\n<div class=\"mastery-container\"><hr />\r\n<p>This weapon has the following mastery property. To use this property, you must have a feature that lets you use it.</p>\r\n<p><em><strong>Cleave.</strong></em> If you hit a creature with a melee attack roll using this weapon, you can make a melee attack roll with the weapon against a second creature within 5 feet of the first that is also within your reach. On a hit, the second creature takes the weapon’s damage, but don’t add your ability modifier to that damage unless that modifier is negative. You can make this extra attack only once per turn.</p>\r\n</div>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": true,
+      "isEquipped": true
+    },
+    {
+      "name": "Maul",
+      "quantity": 1,
+      "weight": 10,
+      "notes": "<p>Proficiency with a Maul allows you to add your proficiency bonus to the attack roll for any attack you make with it.</p>\r\n<div class=\"mastery-container\"><hr />\r\n<p>This weapon has the following mastery property. To use this property, you must have a feature that lets you use it.</p>\r\n<p><strong><em>Topple.</em></strong> If you hit a creature with this weapon, you can force the creature to make a Constitution saving throw (DC 8 plus the ability modifier used to make the attack roll and your Proficiency Bonus). On a failed save, the creature has the Prone condition.</p>\r\n</div>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": true,
+      "isEquipped": true
+    },
+    {
+      "name": "Trident",
+      "quantity": 1,
+      "weight": 4,
+      "notes": "<p>Proficiency with a Trident allows you to add your proficiency bonus to the attack roll for any attack you make with it.</p>\r\n<div class=\"mastery-container\"><hr />\r\n<p>This weapon has the following mastery property. To use this property, you must have a feature that lets you use it.</p>\r\n<p><strong><em>Topple.</em></strong> If you hit a creature with this weapon, you can force the creature to make a Constitution saving throw (DC 8 plus the ability modifier used to make the attack roll and your Proficiency Bonus). On a failed save, the creature has the Prone condition.</p>\r\n</div>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": true,
+      "isEquipped": true
+    },
+    {
+      "name": "Backpack",
+      "quantity": 1,
+      "weight": 5,
+      "notes": "<p>A backpack is a leather pack carried on the back, typically with straps to secure it. A backpack can hold&nbsp;1 cubic foot/ 30 pounds of gear.</p>\r\n<p>You can also strap items, such as a bedroll or a coil of rope, to the outside of a backpack.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": true,
+      "isEquipped": true
+    },
+    {
+      "name": "Clothes, Traveler's",
+      "quantity": 1,
+      "weight": 4,
+      "notes": "<p>This set of clothes could consist of boots, a wool skirt or breeches, a sturdy belt, a shirt (perhaps with a vest or jacket), and an ample cloak with a hood.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
+    },
+    {
+      "name": "Hunting Trap",
+      "quantity": 1,
+      "weight": 25,
+      "notes": "<p>When you use your action to set it, this trap forms a saw-toothed steel ring that snaps shut when a creature steps on a pressure plate in the center. The trap is affixed by a heavy chain to an immobile object, such as a tree or a spike driven into the ground. A creature that steps on the plate must succeed on a DC 13 Dexterity saving throw or take 1d4 piercing damage and stop moving. Thereafter, until the creature breaks free of the trap, its movement is limited by the length of the chain (typically 3 feet long). A creature can use its action to make a DC 13 Strength check, freeing itself or another creature within its reach on a success. Each failed check deals 1 piercing damage to the trapped creature.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
+    },
+    {
+      "name": "Pouch",
+      "quantity": 1,
+      "weight": 1,
+      "notes": "<p>A cloth or leather pouch can hold 1/5 cubic foot/ 6 pounds of gear - or up to 20 sling bullets or 50 blowgun needles, among other things. A compartmentalized pouch for holding spell components is called a component pouch.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": true,
+      "isEquipped": false
+    },
+    {
+      "name": "Bedroll",
+      "quantity": 1,
+      "weight": 7,
+      "notes": "<p>You never know where you’re going to sleep, and a bedroll helps you get better sleep in a hayloft or on the cold ground. A bedroll consists of bedding and a blanket thin enough to be rolled up and tied. In an emergency, it can double as a stretcher.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
+    },
+    {
+      "name": "Mess Kit",
+      "quantity": 1,
+      "weight": 1,
+      "notes": "<p>This tin box contains a cup and simple cutlery. The box clamps together, and one side can be used as a cooking pan and the other as a plate or shallow bowl.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
+    },
+    {
+      "name": "Rations (1 day)",
+      "quantity": 10,
+      "weight": 20,
+      "notes": "<p>Rations consist of dry foods suitable for extended travel, including jerky, dried fruit, hardtack, and nuts.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
+    },
+    {
+      "name": "Rope, Hempen (50 feet)",
+      "quantity": 1,
+      "weight": 10,
+      "notes": "<p>Rope,&nbsp;has 2 hit points and can be burst with a DC 17 Strength check.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
+    },
+    {
+      "name": "Tinderbox",
+      "quantity": 1,
+      "weight": 1,
+      "notes": "<p>This small container holds flint, fire steel, and tinder (usually dry cloth soaked in light oil) used to kindle a fire. Using it to light a torch -- or anything else with abundant, exposed fuel -- takes an action. Lighting any other fire takes 1 minute.</p>\r\n<p>&nbsp;</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
+    },
+    {
+      "name": "Torch",
+      "quantity": 10,
+      "weight": 10,
+      "notes": "<p>A torch burns for 1 hour, providing bright light in a 20-foot radius and dim light for an additional 20 feet. If you make a melee attack with a burning torch and hit, it deals 1 fire damage.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
+    },
+    {
+      "name": "Waterskin",
+      "quantity": 1,
+      "weight": 5,
+      "notes": "<p>A waterskin can hold&nbsp;4 pints of liquid.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
+    }
+  ],
+  "background": {
+    "name": "Soldier",
+    "description": "<p><strong>Ability Scores:</strong>&nbsp;Strength, Dexterity, Constitution<br /><strong>Feat:</strong>&nbsp;Savage Attacker<br /><strong>Skill Proficiencies:</strong> Athletics and Intimidation<br /><strong>Tool Proficiency:</strong>&nbsp;<em>Choose one kind of Gaming Set</em><br /><strong>Equipment:</strong> <em>Choose A or B:</em> (A) Spear, Shortbow, 20 Arrows, Gaming Set (same as above), Healer's Kit, Quiver, Traveler's Clothes, 14 GP; or (B) 50 GP</p>\r\n<p>You began training for war as soon as you reached adulthood and carry precious few memories of life before you took up arms. Battle is in your blood. Sometimes you catch yourself reflexively performing the basic fighting exercises you learned first. Eventually, you put that training to use on the battlefield, protecting the realm by waging war.</p>",
+    "feature": "Savage Attacker"
+  },
+  "feats": [
+    {
+      "name": "Weapon Mastery",
+      "description": "<p>Your training with weapons allows you to use the mastery properties of two kinds of Simple or Martial Melee weapons of your choice, such as Greataxes and Handaxes. Whenever you finish a Long Rest, you can practice weapon drills and change one of those weapon choices.</p>\r\n<p>When you reach certain Barbarian levels, you gain the ability to use the mastery properties of more kinds of weapons, as shown in the Weapon Mastery column of the Barbarian Features table.</p>",
+      "level": null,
+      "limitedUse": null
+    },
+    {
+      "name": "4: Weapon Mastery",
+      "description": "<p>Your training with weapons allows you to use the mastery properties of another kind of Simple or Martial Melee weapons of your choice, such as Greataxes and Handaxes. Whenever you finish a Long Rest, you can practice weapon drills and change one of your chosen weapon choices.</p>\r\n<p>When you reach certain Barbarian levels, you gain the ability to use the mastery properties of more kinds of weapons, as shown in the Weapon Mastery column of the Barbarian Features table.</p>",
+      "level": null,
+      "limitedUse": null
+    },
+    {
+      "name": "Savage Attacker",
+      "description": "<p><em>Origin Feat</em></p>\r\n<p>You’ve trained to deal particularly damaging strikes. Once per turn when you hit a target with a weapon, you can roll the weapon’s damage dice twice and use either roll against the target.</p>",
+      "level": null,
+      "limitedUse": null
+    },
+    {
+      "name": "Sentinel",
+      "description": "<p><em>General Feat (Prerequisite: Level 4+, Strength or Dexterity 13+)</em></p>\r\n<p>You gain the following benefits.</p>\r\n<p><em><strong>Ability Score Increase.</strong></em> Increase your Strength or Dexterity score by 1, to a maximum of 20.</p>\r\n<p><em><strong> Guardian.</strong></em> Immediately after a creature within 5 feet of you takes the Disengage action or hits a target other than you with an attack, you can make an Opportunity Attack against that creature.</p>\r\n<p><em><strong> Halt.</strong></em> When you hit a creature with an Opportunity Attack, the creature’s Speed becomes 0 for the rest of the current turn.</p>",
+      "level": null,
+      "limitedUse": null
+    },
+    {
+      "name": "Soldier Ability Score Improvements",
+      "description": "<p>The Soldier Background allows you to choose between Strength, Dexterity, and Constitution. Increase one of these scores by 2 and another one by 1, or increase all three by 1. None of these increases can raise a score above 20.</p>",
+      "level": null,
+      "limitedUse": null
+    },
+    {
+      "name": "Dark Bargain",
+      "description": "<p>At your GM's discretion, you can take a Dark Bargain.</p>",
+      "level": null,
+      "limitedUse": null
+    }
+  ],
+  "features": [
+    {
+      "name": "Divine Fury",
+      "description": "<p>You can channel divine power into your strikes. On each of your turns while your Rage is active, the first creature you hit with a weapon or an Unarmed Strike takes extra damage equal to 1d6 plus half your Barbarian level (round down). The extra damage is Necrotic or Radiant; you choose the type each time you deal the damage.</p>"
+    },
+    {
+      "name": "Warrior of the Gods",
+      "description": "<p>A divine entity helps ensure you can continue the fight. You have a pool of four d12s that you can spend to heal yourself. As a Bonus Action, you can expend dice from the pool, roll them, and regain a number of Hit Points equal to the roll’s total.</p>\r\n<p>Your pool regains all expended dice when you finish a Long Rest.</p>\r\n<p>The pool’s maximum number of dice increases by one when you reach Barbarian levels 6 (5 dice), 12 (6 dice), and 17 (7 dice).</p>"
+    },
+    {
+      "name": "Fanatical Focus",
+      "description": "<p>Once per active Rage, if you fail a saving throw, you can reroll it with a bonus equal to your Rage Damage bonus, and you must use the new roll.</p>"
+    },
+    {
+      "name": "Zealous Presence",
+      "description": "<p>As a Bonus Action, you unleash a battle cry infused with divine energy. Up to ten other creatures of your choice within 60 feet of you gain Advantage on attack rolls and saving throws until the start of your next turn.</p>\r\n<p>Once you use this feature, you can’t use it again until you finish a Long Rest unless you expend a use of your Rage (no action required) to restore your use of it.</p>"
+    },
+    {
+      "name": "Rage of the Gods",
+      "description": "<p>When you activate your Rage, you can assume the form of a divine warrior. This form lasts for 1 minute or until you drop to 0 Hit Points. Once you use this feature, you can’t do so again until you finish a Long Rest.</p>\r\n<p>While in this form, you gain the benefits below.</p>\r\n<p><strong><em>Flight.</em></strong> You have a Fly Speed equal to your Speed and can hover.</p>\r\n<p><strong><em>Resistance.</em></strong> You have Resistance to Necrotic, Psychic, and Radiant damage.</p>\r\n<p><strong><em>Revivification.</em></strong> When a creature within 30 feet of you would drop to 0 Hit Points, you can take a Reaction to expend a use of your Rage to instead change the target’s Hit Points to a number equal to your Barbarian level.</p>"
+    },
+    {
+      "name": "Rage",
+      "description": "<p>You can imbue yourself with a primal power called Rage, a force that grants you extraordinary might and resilience. You can enter it as a Bonus Action if you aren’t wearing Heavy armor.</p>\r\n<p>You can enter your Rage the number of times shown for your Barbarian level in the Rages column of the Barbarian Features table. You regain one expended use when you finish a Short Rest, and you regain all expended uses when you finish a Long Rest.</p>\r\n<p>While active, your Rage follows the rules below.</p>\r\n<p><strong><em>Damage Resistance.</em></strong> You have Resistance to Bludgeoning, Piercing, and Slashing damage.</p>\r\n<p><strong><em>Rage Damage.</em></strong> When you make an attack using Strength&mdash;with either a weapon or an Unarmed Strike&mdash;and deal damage to the target, you gain a bonus to the damage that increases as you gain levels as a Barbarian, as shown in the Rage Damage column of the Barbarian Features table.</p>\r\n<p><strong><em>Strength Advantage.</em></strong> You have Advantage on Strength checks and Strength saving throws.</p>\r\n<p><strong><em>No Concentration or Spells.</em></strong> You can’t maintain Concentration, and you can’t cast spells.</p>\r\n<p><strong><em>Duration.</em></strong> The Rage lasts until the end of your next turn, and it ends early if you don Heavy armor or have the Incapacitated condition. If your Rage is still active on your next turn, you can extend the Rage for another round by doing one of the following:</p>\r\n<ul>\r\n<li>Make an attack roll against an enemy.</li>\r\n<li>Force an enemy to make a saving throw.</li>\r\n<li>Take a Bonus Action to extend your Rage.</li>\r\n</ul>\r\n<p>Each time the Rage is extended, it lasts until the end of your next turn. You can maintain a Rage for up to 10 minutes.</p>"
+    },
+    {
+      "name": "Unarmored Defense",
+      "description": "<p>While you aren’t wearing any armor, your base Armor Class equals 10 plus your Dexterity and Constitution modifiers. You can use a Shield and still gain this benefit.</p>"
+    },
+    {
+      "name": "Weapon Mastery",
+      "description": "<p>Your training with weapons allows you to use the mastery properties of two kinds of Simple or Martial Melee weapons of your choice. Whenever you finish a Long Rest, you can practice weapon drills and change one of those weapon choices.</p>\r\n<p>When you reach certain Barbarian levels, you gain the ability to use the mastery properties of more kinds of weapons, as shown in the Weapon Mastery column of the Barbarian Features table.</p>"
+    },
+    {
+      "name": "Danger Sense",
+      "description": "<p>You gain an uncanny sense of when things aren’t as they should be, giving you an edge when you dodge perils. You have Advantage on Dexterity saving throws unless you have the Incapacitated condition.</p>"
+    },
+    {
+      "name": "Reckless Attack",
+      "description": "<p>You can throw aside all concern for defense to attack with increased ferocity. When you make your first attack roll on your turn, you can decide to attack recklessly. Doing so gives you Advantage on attack rolls using Strength until the start of your next turn, but attack rolls against you have Advantage during that time.</p>"
+    },
+    {
+      "name": "Barbarian Subclass",
+      "description": "<p>You gain a Barbarian subclass of your choice. A subclass is a specialization that grants you features at certain Barbarian levels. For the rest of your career, you gain each of your subclass’s features that are of your Barbarian level or lower.</p>"
+    },
+    {
+      "name": "Primal Knowledge",
+      "description": "<p>You gain proficiency in another skill of your choice from the skill list available to Barbarians at level 1.</p>\r\n<p>In addition, while your Rage is active, you can channel primal power when you attempt certain tasks; whenever you make an ability check using one of the following skills, you can make it as a Strength check even if it normally uses a different ability: Acrobatics, Intimidation, Perception, Stealth, or Survival. When you use this ability, your Strength represents primal power coursing through you, honing your agility, bearing, and senses.</p>"
+    },
+    {
+      "name": "Ability Score Improvement",
+      "description": "<p>You gain the Ability Score Improvement feat or another feat of your choice for which you qualify. You gain this feature again at Barbarian levels 8, 12, and 16.</p>"
+    },
+    {
+      "name": "Extra Attack",
+      "description": "<p>You can attack twice instead of once whenever you take the Attack action on your turn.</p>"
+    },
+    {
+      "name": "Fast Movement",
+      "description": "<p>Your speed increases by 10 feet while you aren’t wearing Heavy armor.</p>"
+    },
+    {
+      "name": "Feral Instinct",
+      "description": "<p>Your instincts are so honed that you have Advantage on Initiative rolls.</p>"
+    },
+    {
+      "name": "Instinctive Pounce",
+      "description": "<p>As part of the Bonus Action you take to enter your Rage, you can move up to half your Speed.</p>"
+    },
+    {
+      "name": "8: Ability Score Improvement",
+      "description": "<p>You gain the Ability Score Improvement feat or another feat of your choice for which you qualify. You gain this feature again at Barbarian levels 12 and 16.</p>"
+    },
+    {
+      "name": "Brutal Strike",
+      "description": "<p>If you use Reckless Attack, you can forgo any Advantage on one Strength-based attack roll of your choice on your turn. The chosen attack roll mustn’t have Disadvantage. If the chosen attack roll hits, the target takes an extra 1d10 damage of the same type dealt by the weapon or Unarmed Strike, and you can cause one Brutal Strike effect of your choice. You have the following effect options.</p>\r\n<p><strong><em>Forceful Blow.</em></strong> The target is pushed 15 feet straight away from you. You can then move up to half your Speed straight toward the target without provoking Opportunity Attacks.</p>\r\n<p><strong><em>Hamstring Blow.</em></strong> The target’s Speed is reduced by 15 feet until the start of your next turn. A target can be affected by only one Hamstring Blow at a time&mdash;the most recent one.</p>"
+    },
+    {
+      "name": "Relentless Rage",
+      "description": "<p>Your Rage can keep you fighting despite grievous wounds. If you drop to 0 Hit Points while your Rage is active and don’t die outright, you can make a DC 10 Constitution saving throw. If you succeed, your Hit Points instead change to a number equal to twice your Barbarian level.</p>\r\n<p>Each time you use this feature after the first, the DC increases by 5. When you finish a Short or Long Rest, the DC resets to 10.</p>"
+    },
+    {
+      "name": "12: Ability Score Improvement",
+      "description": "<p>You gain the Ability Score Improvement feat or another feat of your choice for which you qualify. You gain this feature again at Barbarian level 16.</p>"
+    },
+    {
+      "name": "Improved Brutal Strike",
+      "description": "<p>You have honed new ways to attack furiously. The following effects are now among your Brutal Strike options.</p>\r\n<p><strong><em>Staggering Blow.</em></strong> The target has Disadvantage on the next saving throw it makes, and it can’t make Opportunity Attacks until the start of your next turn.</p>\r\n<p><strong><em>Sundering Blow.</em></strong> Before the start of your next turn, the next attack roll made by another creature against the target gains a +5 bonus to the roll. An attack roll can gain only one Sundering Blow bonus.</p>"
+    },
+    {
+      "name": "Persistent Rage",
+      "description": "<p>When you roll Initiative, you can regain all expended uses of Rage. After you regain uses of Rage in this way, you can’t do so again until you finish a Long Rest.</p>\r\n<p>In addition, your Rage is so fierce that it now lasts for 10 minutes without you needing to do anything to extend it from round to round. Your Rage ends early if you have the Unconscious condition (not just the Incapacitated condition) or don Heavy armor.</p>"
+    },
+    {
+      "name": "16: Ability Score Improvement",
+      "description": "<p>You gain the Ability Score Improvement feat or another feat of your choice for which you qualify.</p>"
+    },
+    {
+      "name": "Indomitable Might",
+      "description": "<p>If your total for a Strength check or Strength saving throw is less than your Strength score, you can use that score in place of the total.</p>"
+    },
+    {
+      "name": "Epic Boon",
+      "description": "<p>You gain an Epic Boon feat or another feat of your choice for which you qualify.</p>"
+    },
+    {
+      "name": "Primal Champion",
+      "description": "<p>You embody primal power. Your Strength and Constitution scores increase by 4, and their maximum is now 25.</p>"
+    },
+    {
+      "name": "Core Barbarian Traits",
+      "description": "<p>As a Level 1 Character:</p>\r\n<ul>\r\n<li>Gain all the traits in the Core Barbarian Traits table.</li>\r\n<li>Gain the Barbarian’s level 1 features.</li>\r\n</ul>\r\n<table class=\"table-compendium table--left-all\" style=\"--sb-table-row-bg-hover: #b3d3df; --sb-table-row-bg-dark: #d7e8ee; --sb-table-row-bg-light: #f1f7f9; --dark-sb-table-row-bg-light: #5e7982; --dark-sb-table-row-bg-dark: #5c7f8c; --dark-sb-table-row-bg-hover: #78a2b0;\"><caption>Core Barbarian Traits</caption>\r\n<tbody>\r\n<tr>\r\n<th>Primary Ability</th>\r\n<td>Strength</td>\r\n</tr>\r\n<tr>\r\n<th>Hit Point Die</th>\r\n<td>D12 per Barbarian level</td>\r\n</tr>\r\n<tr>\r\n<th>Saving Throw Proficiencies</th>\r\n<td>Strength and Constitution</td>\r\n</tr>\r\n<tr>\r\n<th>Skill Proficiencies</th>\r\n<td><em>Choose 2:</em> Animal Handling, Athletics, Intimidation, Nature, Perception, or Survival</td>\r\n</tr>\r\n<tr>\r\n<th>Weapon Proficiencies</th>\r\n<td>Simple and Martial weapons</td>\r\n</tr>\r\n<tr>\r\n<th>Armor Training</th>\r\n<td>Light and Medium armor and Shields</td>\r\n</tr>\r\n<tr>\r\n<th>Starting Equipment</th>\r\n<td><em>Choose A or B:</em> (A) Greataxe, 4 Handaxes, Explorer’s Pack, and 15 GP; or (B) 75 GP</td>\r\n</tr>\r\n</tbody>\r\n</table>"
+    },
+    {
+      "name": "4: Weapon Mastery",
+      "description": "<p>Your training with weapons allows you to use the mastery properties of two kinds of Simple or Martial Melee weapons of your choice, such as Greataxes and Handaxes. Whenever you finish a Long Rest, you can practice weapon drills and change one of those weapon choices.</p>\r\n<p>When you reach certain Barbarian levels, you gain the ability to use the mastery properties of more kinds of weapons, as shown in the Weapon Mastery column of the Barbarian Features table.</p>"
+    },
+    {
+      "name": "10: Weapon Mastery",
+      "description": "<p>Your training with weapons allows you to use the mastery properties of another kind of Simple or Martial Melee weapons of your choice. Whenever you finish a Long Rest, you can practice weapon drills and change one of your chosen weapon choices.</p>"
+    },
+    {
+      "name": "Ability Score Increase",
+      "description": "<p>Your Strength score increases by 2 and your Dexterity score increases by 1.</p>"
+    },
+    {
+      "name": "Age",
+      "description": "<p>Locathah mature to adulthood by the age of 10 but have been known to live up to 80 years.</p>"
+    },
+    {
+      "name": "Alignment",
+      "description": "<p>Most locathah are true neutral or have some aspect of neutrality in their alignment. They tend toward good, coming from a culture where compassion for the downtrodden is a commonality.</p>"
+    },
+    {
+      "name": "Natural Armor",
+      "description": "<p>You have tough, scaly skin. When you aren’t wearing armor, your AC is 12 + your Dexterity modifier. You can use your natural armor to determine your AC if the armor you wear would leave you with a lower AC. A shield’s benefits apply as normal while you use your natural armor.</p>"
+    },
+    {
+      "name": "Observant and Athletic",
+      "description": "<p>You have proficiency in the Athletics and Perception skills.</p>"
+    },
+    {
+      "name": "Leviathan Will",
+      "description": "<p>You have advantage on saving throws against being charmed, frightened, paralyzed, poisoned, stunned, or put to sleep.</p>"
+    },
+    {
+      "name": "Limited Amphibiousness",
+      "description": "<p>You can breathe air and water, but you need to be submerged at least once every 4 hours to avoid suffocating.</p>"
+    },
+    {
+      "name": "Size",
+      "description": "<p>Locathah stand between 5 and 6 feet tall and average about 150 pounds. Your size is Medium.</p>"
+    },
+    {
+      "name": "Speed",
+      "description": "<p>Your base walking speed is 30 feet, and you have a swim speed of 30 feet.</p>"
+    },
+    {
+      "name": "Languages",
+      "description": "<p>You can speak, read, and write Aquan and Common.</p>"
+    },
+    {
+      "name": "Savage Attacker",
+      "description": "<p><em>Origin Feat</em></p>\r\n<p>You’ve trained to deal particularly damaging strikes. Once per turn when you hit a target with a weapon, you can roll the weapon’s damage dice twice and use either roll against the target.</p>"
+    },
+    {
+      "name": "Sentinel",
+      "description": "<p><em>General Feat (Prerequisite: Level 4+, Strength or Dexterity 13+)</em></p>\r\n<p>You gain the following benefits.</p>\r\n<p><em><strong>Ability Score Increase.</strong></em> Increase your Strength or Dexterity score by 1, to a maximum of 20.</p>\r\n<p><em><strong> Guardian.</strong></em> Immediately after a creature within 5 feet of you takes the Disengage action or hits a target other than you with an attack, you can make an Opportunity Attack against that creature.</p>\r\n<p><em><strong> Halt.</strong></em> When you hit a creature with an Opportunity Attack, the creature’s Speed becomes 0 for the rest of the current turn.</p>"
+    },
+    {
+      "name": "Soldier Ability Score Improvements",
+      "description": "<p>The Soldier Background allows you to choose between Strength, Dexterity, and Constitution. Increase one of these scores by 2 and another one by 1, or increase all three by 1. None of these increases can raise a score above 20.</p>"
+    },
+    {
+      "name": "Dark Bargain",
+      "description": "<p>At your GM's discretion, you can take a Dark Bargain.</p>"
+    }
+  ],
+  "proficiencies": {
+    "armor": [
+      "Light Armor",
+      "Medium Armor",
+      "Shields"
+    ],
+    "weapons": [
+      "Simple Weapons",
+      "Martial Weapons"
+    ],
+    "tools": [
+      "Quoits"
+    ],
+    "languages": [
+      "Common",
+      "Aquan"
+    ],
+    "defenses": [
+      {
+        "name": "Bludgeoning",
+        "type": "resistance",
+        "condition": null
+      },
+      {
+        "name": "Piercing",
+        "type": "resistance",
+        "condition": null
+      },
+      {
+        "name": "Slashing",
+        "type": "resistance",
+        "condition": null
+      }
+    ],
+    "senses": [],
+    "other": [
+      "Strength Score",
+      "Dexterity Score",
+      "Unarmored Armor Class",
+      "Subclass",
+      "Extra Attacks",
+      "Speed",
+      "Melee Weapon Attacks",
+      "Strength Ability Checks",
+      "Cleave (Greataxe)",
+      "Cleave (Greataxe, Silver)",
+      "Topple (Trident)",
+      "Topple (Trident, Silver)",
+      "Topple (Trident, Wooden)",
+      "Topple (Maul)"
+    ]
+  },
+  "attacks": [
+    {
+      "name": "Unarmed Strike",
+      "range": null,
+      "longRange": null,
+      "attackBonus": 10,
+      "damage": "1+7",
+      "damageType": "Bludgeoning",
+      "notes": "",
+      "description": ""
+    },
+    {
+      "name": "Warrior of the Gods: Expend Dice",
+      "range": {
+        "range": null,
+        "longRange": null,
+        "aoeType": null,
+        "aoeSize": null,
+        "hasAoeSpecialDescription": false,
+        "minimumRange": null
+      },
+      "longRange": null,
+      "attackBonus": 0,
+      "damage": "1d12",
+      "damageType": null,
+      "notes": "",
+      "description": "<p>A divine entity helps ensure you can continue the fight. You have a pool of four d12s that you can spend to heal yourself. As a Bonus Action, you can expend dice from the pool, roll them, and regain a number of Hit Points equal to the roll&rsquo;s total.</p>\r\n<p>Your pool regains all expended dice when you finish a Long Rest.</p>\r\n<p>The pool&rsquo;s maximum number of dice increases by one when you reach Barbarian levels 6 (5 dice), 12 (6 dice), and 17 (7 dice).</p>"
+    },
+    {
+      "name": "Divine Fury (Necrotic)",
+      "range": {
+        "range": null,
+        "longRange": null,
+        "aoeType": null,
+        "aoeSize": null,
+        "hasAoeSpecialDescription": false,
+        "minimumRange": null
+      },
+      "longRange": null,
+      "attackBonus": 0,
+      "damage": "1d6 + 3",
+      "damageType": "Necrotic",
+      "notes": "",
+      "description": "<p>You can channel divine power into your strikes. On each of your turns while your Rage is active, the first creature you hit with a weapon or an Unarmed Strike takes extra damage equal to 1d6 plus half your Barbarian level (round down). The extra damage is Necrotic or Radiant; you choose the type each time you deal the damage.</p>"
+    },
+    {
+      "name": "Divine Fury (Radiant)",
+      "range": {
+        "range": null,
+        "longRange": null,
+        "aoeType": null,
+        "aoeSize": null,
+        "hasAoeSpecialDescription": false,
+        "minimumRange": null
+      },
+      "longRange": null,
+      "attackBonus": 0,
+      "damage": "1d6 + 3",
+      "damageType": "Thunder",
+      "notes": "",
+      "description": "<p>You can channel divine power into your strikes. On each of your turns while your Rage is active, the first creature you hit with a weapon or an Unarmed Strike takes extra damage equal to 1d6 plus half your Barbarian level (round down). The extra damage is Necrotic or Radiant; you choose the type each time you deal the damage.</p>"
+    },
+    {
+      "name": "Handaxe",
+      "range": "20 ft.",
+      "longRange": "60 ft.",
+      "attackBonus": 10,
+      "damage": "1d6+7",
+      "damageType": "Slashing",
+      "notes": "Light, Thrown, Vex",
+      "description": "<p>Proficiency with a Handaxe allows you to add your proficiency bonus to the attack roll for any attack you make with it.</p>\r\n<div class=\"mastery-container\"><hr />\r\n<p>This weapon has the following mastery property. To use this property, you must have a feature that lets you use it.</p>\r\n<p><strong><em>Vex.</em></strong> If you hit a creature with this weapon and deal damage to the creature, you have Advantage on your next attack roll against that creature before the end of your next turn.</p>\r\n</div>"
+    },
+    {
+      "name": "Greataxe",
+      "range": "5 ft.",
+      "longRange": "5 ft.",
+      "attackBonus": 10,
+      "damage": "1d12+7",
+      "damageType": "Slashing",
+      "notes": "Heavy, Two-Handed, Cleave",
+      "description": "<p>Proficiency with a Greataxe allows you to add your proficiency bonus to the attack roll for any attack you make with it.</p>\r\n<div class=\"mastery-container\"><hr />\r\n<p>This weapon has the following mastery property. To use this property, you must have a feature that lets you use it.</p>\r\n<p><em><strong>Cleave.</strong></em> If you hit a creature with a melee attack roll using this weapon, you can make a melee attack roll with the weapon against a second creature within 5 feet of the first that is also within your reach. On a hit, the second creature takes the weapon’s damage, but don’t add your ability modifier to that damage unless that modifier is negative. You can make this extra attack only once per turn.</p>\r\n</div>"
+    },
+    {
+      "name": "Maul",
+      "range": "5 ft.",
+      "longRange": "5 ft.",
+      "attackBonus": 10,
+      "damage": "2d6+7",
+      "damageType": "Bludgeoning",
+      "notes": "Heavy, Two-Handed, Topple",
+      "description": "<p>Proficiency with a Maul allows you to add your proficiency bonus to the attack roll for any attack you make with it.</p>\r\n<div class=\"mastery-container\"><hr />\r\n<p>This weapon has the following mastery property. To use this property, you must have a feature that lets you use it.</p>\r\n<p><strong><em>Topple.</em></strong> If you hit a creature with this weapon, you can force the creature to make a Constitution saving throw (DC 8 plus the ability modifier used to make the attack roll and your Proficiency Bonus). On a failed save, the creature has the Prone condition.</p>\r\n</div>"
+    },
+    {
+      "name": "Trident",
+      "range": "20 ft.",
+      "longRange": "60 ft.",
+      "attackBonus": 10,
+      "damage": "1d8+7",
+      "damageType": "Piercing",
+      "notes": "Thrown, Versatile, Topple",
+      "description": "<p>Proficiency with a Trident allows you to add your proficiency bonus to the attack roll for any attack you make with it.</p>\r\n<div class=\"mastery-container\"><hr />\r\n<p>This weapon has the following mastery property. To use this property, you must have a feature that lets you use it.</p>\r\n<p><strong><em>Topple.</em></strong> If you hit a creature with this weapon, you can force the creature to make a Constitution saving throw (DC 8 plus the ability modifier used to make the attack roll and your Proficiency Bonus). On a failed save, the creature has the Prone condition.</p>\r\n</div>"
+    }
+  ],
+  "attacking": {
+    "attacksPerAction": 2,
+    "fightingStyle": null
+  },
+  "spellcasting": {
+    "abilityId": null,
+    "ability": null,
+    "mod": "+0",
+    "attack": "+3",
+    "save": 11
+  },
+  "limitedUses": [],
+  "campaign": {
+    "id": 2994388,
+    "name": "A Merry Band of Gaymers",
+    "dm": "wrighmat"
+  },
+  "decorations": {
+    "avatarUrl": "https://www.dndbeyond.com/avatars/57495/323/1581111423-117384722.jpeg?width=150&height=150&fit=crop&quality=95&auto=webp",
+    "frameAvatarUrl": null,
+    "backdropAvatarUrl": null,
+    "smallBackdropAvatarUrl": null,
+    "largeBackdropAvatarUrl": null,
+    "thumbnailBackdropAvatarUrl": null,
+    "defaultBackdrop": {
+      "backdropAvatarUrl": "https://www.dndbeyond.com/avatars/43993/182/638609648307312605.jpeg",
+      "smallBackdropAvatarUrl": "https://www.dndbeyond.com/avatars/43993/183/638609648310742595.jpeg",
+      "largeBackdropAvatarUrl": "https://www.dndbeyond.com/avatars/43993/184/638609648313422594.jpeg",
+      "thumbnailBackdropAvatarUrl": "https://www.dndbeyond.com/avatars/43993/185/638609648315282593.jpeg"
+    },
+    "avatarId": 57495323,
+    "portraitDecorationKey": null,
+    "frameAvatarDecorationKey": null,
+    "frameAvatarId": null,
+    "backdropAvatarDecorationKey": null,
+    "backdropAvatarId": null,
+    "smallBackdropAvatarDecorationKey": "",
+    "smallBackdropAvatarId": null,
+    "largeBackdropAvatarDecorationKey": "",
+    "largeBackdropAvatarId": null,
+    "thumbnailBackdropAvatarDecorationKey": "",
+    "thumbnailBackdropAvatarId": null,
+    "themeColor": null
+  },
+  "deathSaves": {
+    "successes": 0,
+    "failures": 0,
+    "stabilized": false
+  },
+  "notes": {
+    "allies": null,
+    "backstory": "Velum - npc cleric\n\nfrom dark sea",
+    "enemies": null,
+    "organizations": "",
+    "personalPossessions": "a trophy from an animal you killed",
+    "otherHoldings": null,
+    "otherNotes": "weeks working on weapons: \nweek 1: done\nweek 2: done\nweek 3: done\nweek 4: done\nWeek 5: done\nWeek 6: done\nWeek 7: done\nWeek 8: done\nWeek 9\nWeek10:\n"
+  },
+  "traits": {
+    "age": null,
+    "eyes": null,
+    "hair": null,
+    "skin": null,
+    "height": null,
+    "weight": null,
+    "faith": null,
+    "appearance": null,
+    "bonds": "My family, clan, or tribe is the most important thing in my life, even when they are far from me.",
+    "flaws": "I am slow to trust members of other races, tribes, and societies.",
+    "ideals": "Honor. If I dishonor myself, I dishonor my whole clan. (Lawful)",
+    "personalityTraits": "I once ran twenty-five miles without stopping to warn to my clan of an approaching orc horde. I’d do it again if I had to.\nI have a lesson for every situation, drawn from observing nature.",
+    "size": "Medium"
+  },
+  "spells": [],
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "id": "ghomuth",
+  "data": {},
+  "template": "tpl.5e.flex-basic"
+}

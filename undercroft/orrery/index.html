@@ -146,6 +146,50 @@
               <span
                 class="d-inline-block"
                 tabindex="0"
+                data-wall-toggle-wrap
+                data-bs-toggle="tooltip"
+                data-bs-placement="top"
+                data-bs-title="Draw a wall or door on the selected vector layer"
+              >
+                <button class="btn btn-outline-secondary btn-sm" type="button" data-wall-toggle aria-pressed="false">
+                  <span class="iconify" data-icon="tabler:wall" aria-hidden="true"></span>
+                  <span class="visually-hidden">Wall / Door</span>
+                </button>
+              </span>
+              <select class="form-select form-select-sm w-auto d-none" data-wall-submode aria-label="Wall or door">
+                <option value="wall">Wall</option>
+                <option value="door">Door</option>
+              </select>
+              <span
+                class="d-inline-block d-none"
+                tabindex="0"
+                data-wall-snap-toggle-wrap
+                data-bs-toggle="tooltip"
+                data-bs-placement="top"
+                data-bs-title="Snap wall vertices to the grid"
+              >
+                <button class="btn btn-outline-secondary btn-sm" type="button" data-wall-snap-toggle aria-pressed="true">
+                  <span class="iconify" data-icon="tabler:magnet" aria-hidden="true"></span>
+                  <span class="visually-hidden">Snap to grid</span>
+                </button>
+              </span>
+              <span
+                class="d-inline-block"
+                tabindex="0"
+                data-light-toggle-wrap
+                data-bs-toggle="tooltip"
+                data-bs-placement="top"
+                data-bs-title="Place a dynamic light on the selected vector layer"
+              >
+                <button class="btn btn-outline-secondary btn-sm" type="button" data-light-toggle aria-pressed="false">
+                  <span class="iconify" data-icon="tabler:bulb" aria-hidden="true"></span>
+                  <span class="visually-hidden">Dynamic light</span>
+                </button>
+              </span>
+              <span class="small text-body-secondary d-none" data-light-readout></span>
+              <span
+                class="d-inline-block"
+                tabindex="0"
                 data-ping-toggle-wrap
                 data-bs-toggle="tooltip"
                 data-bs-placement="top"

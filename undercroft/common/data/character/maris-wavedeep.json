@@ -1,0 +1,1341 @@
+{
+  "kind": "character",
+  "name": "Maris Wavedeep",
+  "image": "https://www.dndbeyond.com/avatars/54575/480/1581111423-159871601.jpeg?width=150&height=150&fit=crop&quality=95&auto=webp",
+  "identity": {
+    "id": 159871601,
+    "userId": 109793170,
+    "username": "cardinal460",
+    "name": "Maris Wavedeep",
+    "race": "Triton",
+    "class": "Warlock",
+    "level": 5,
+    "levels": {
+      "level_monk": 0,
+      "level_multiclass": 0
+    },
+    "inspiration": false,
+    "classes": [
+      {
+        "name": "Warlock",
+        "level": 5,
+        "subclass": "The Fathomless (TCoE)"
+      }
+    ]
+  },
+  "proficiency": 3,
+  "alignment": {
+    "name": "Neutral Good",
+    "shortName": "NG"
+  },
+  "initiative": {
+    "value": 2,
+    "advantage": false,
+    "disadvantage": false
+  },
+  "senses": {
+    "passives": {
+      "perception": 9,
+      "investigation": 14,
+      "insight": 9
+    },
+    "darkvision": 60
+  },
+  "speeds": {
+    "walk": 30,
+    "burrow": 0,
+    "climb": 0,
+    "fly": 0,
+    "swim": 40
+  },
+  "conditions": [],
+  "abilities": [
+    {
+      "id": 1,
+      "name": "strength",
+      "friendlyName": "Strength",
+      "shortName": "STR",
+      "score": 10,
+      "modifier": 0
+    },
+    {
+      "id": 2,
+      "name": "dexterity",
+      "friendlyName": "Dexterity",
+      "shortName": "DEX",
+      "score": 14,
+      "modifier": 2
+    },
+    {
+      "id": 3,
+      "name": "constitution",
+      "friendlyName": "Constitution",
+      "shortName": "CON",
+      "score": 14,
+      "modifier": 2
+    },
+    {
+      "id": 4,
+      "name": "intelligence",
+      "friendlyName": "Intelligence",
+      "shortName": "INT",
+      "score": 12,
+      "modifier": 1
+    },
+    {
+      "id": 5,
+      "name": "wisdom",
+      "friendlyName": "Wisdom",
+      "shortName": "WIS",
+      "score": 9,
+      "modifier": -1
+    },
+    {
+      "id": 6,
+      "name": "charisma",
+      "friendlyName": "Charisma",
+      "shortName": "CHA",
+      "score": 18,
+      "modifier": 4
+    }
+  ],
+  "saves": [
+    {
+      "id": 1,
+      "name": "strength",
+      "friendlyName": "Strength",
+      "shortName": "STR",
+      "value": 0,
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 2,
+      "name": "dexterity",
+      "friendlyName": "Dexterity",
+      "shortName": "DEX",
+      "value": 2,
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 3,
+      "name": "constitution",
+      "friendlyName": "Constitution",
+      "shortName": "CON",
+      "value": 2,
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 4,
+      "name": "intelligence",
+      "friendlyName": "Intelligence",
+      "shortName": "INT",
+      "value": 1,
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 5,
+      "name": "wisdom",
+      "friendlyName": "Wisdom",
+      "shortName": "WIS",
+      "value": 2,
+      "proficiency": 3,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 6,
+      "name": "charisma",
+      "friendlyName": "Charisma",
+      "shortName": "CHA",
+      "value": 7,
+      "proficiency": 3,
+      "advantage": false,
+      "disadvantage": false
+    }
+  ],
+  "skills": [
+    {
+      "id": 3,
+      "name": "acrobatics",
+      "friendlyName": "Acrobatics",
+      "stat": 1,
+      "ability": "DEX",
+      "value": 2,
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 11,
+      "name": "animal-handling",
+      "friendlyName": "Animal Handling",
+      "stat": 4,
+      "ability": "WIS",
+      "value": -1,
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 6,
+      "name": "arcana",
+      "friendlyName": "Arcana",
+      "stat": 3,
+      "ability": "INT",
+      "value": 4,
+      "proficiency": 3,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 2,
+      "name": "athletics",
+      "friendlyName": "Athletics",
+      "stat": 0,
+      "ability": "STR",
+      "value": 0,
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 16,
+      "name": "deception",
+      "friendlyName": "Deception",
+      "stat": 5,
+      "ability": "CHA",
+      "value": 4,
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 7,
+      "name": "history",
+      "friendlyName": "History",
+      "stat": 3,
+      "ability": "INT",
+      "value": 4,
+      "proficiency": 3,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 12,
+      "name": "insight",
+      "friendlyName": "Insight",
+      "stat": 4,
+      "ability": "WIS",
+      "value": -1,
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 17,
+      "name": "intimidation",
+      "friendlyName": "Intimidation",
+      "stat": 5,
+      "ability": "CHA",
+      "value": 7,
+      "proficiency": 3,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 8,
+      "name": "investigation",
+      "friendlyName": "Investigation",
+      "stat": 3,
+      "ability": "INT",
+      "value": 4,
+      "proficiency": 3,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 13,
+      "name": "medicine",
+      "friendlyName": "Medicine",
+      "stat": 4,
+      "ability": "WIS",
+      "value": -1,
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 9,
+      "name": "nature",
+      "friendlyName": "Nature",
+      "stat": 3,
+      "ability": "INT",
+      "value": 4,
+      "proficiency": 3,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 14,
+      "name": "perception",
+      "friendlyName": "Perception",
+      "stat": 4,
+      "ability": "WIS",
+      "value": -1,
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 18,
+      "name": "performance",
+      "friendlyName": "Performance",
+      "stat": 5,
+      "ability": "CHA",
+      "value": 7,
+      "proficiency": 3,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 19,
+      "name": "persuasion",
+      "friendlyName": "Persuasion",
+      "stat": 5,
+      "ability": "CHA",
+      "value": 7,
+      "proficiency": 3,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 10,
+      "name": "religion",
+      "friendlyName": "Religion",
+      "stat": 3,
+      "ability": "INT",
+      "value": 4,
+      "proficiency": 3,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 4,
+      "name": "sleight-of-hand",
+      "friendlyName": "Sleight of Hand",
+      "stat": 1,
+      "ability": "DEX",
+      "value": 2,
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 5,
+      "name": "stealth",
+      "friendlyName": "Stealth",
+      "stat": 1,
+      "ability": "DEX",
+      "value": 2,
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 15,
+      "name": "survival",
+      "friendlyName": "Survival",
+      "stat": 4,
+      "ability": "WIS",
+      "value": 2,
+      "proficiency": 3,
+      "advantage": false,
+      "disadvantage": false
+    }
+  ],
+  "stats": {
+    "hitPoints": {
+      "max": 48,
+      "current": 48,
+      "temp": 0
+    },
+    "armorClass": 13
+  },
+  "currencies": {
+    "cp": 0,
+    "sp": 0,
+    "ep": 0,
+    "gp": 23,
+    "pp": 0
+  },
+  "inventory": [
+    {
+      "name": "Leather",
+      "quantity": 1,
+      "weight": 10,
+      "notes": "<p>The breastplate and shoulder protectors of this armor are made of leather that has been stiffened by being boiled in oil. The rest of the armor is made of softer and more flexible materials.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": true,
+      "isEquipped": true
+    },
+    {
+      "name": "Dagger",
+      "quantity": 1,
+      "weight": 1,
+      "notes": "<p>Proficiency with a Dagger allows you to add your proficiency bonus to the attack roll for any attack you make with it.</p>\r\n<div class=\"mastery-container\"><hr />\r\n<p>This weapon has the following mastery property. To use this property, you must have a feature that lets you use it.</p>\r\n<p><strong><em>Nick.</em></strong> When you make the extra attack of the Light property, you can make it as part of the Attack action instead of as a Bonus Action. You can make this extra attack only once per turn.</p>\r\n</div>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": true,
+      "isEquipped": false
+    },
+    {
+      "name": "Dagger",
+      "quantity": 1,
+      "weight": 1,
+      "notes": "<p>Proficiency with a Dagger allows you to add your proficiency bonus to the attack roll for any attack you make with it.</p>\r\n<div class=\"mastery-container\"><hr />\r\n<p>This weapon has the following mastery property. To use this property, you must have a feature that lets you use it.</p>\r\n<p><strong><em>Nick.</em></strong> When you make the extra attack of the Light property, you can make it as part of the Attack action instead of as a Bonus Action. You can make this extra attack only once per turn.</p>\r\n</div>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": true,
+      "isEquipped": false
+    },
+    {
+      "name": "Sickle",
+      "quantity": 1,
+      "weight": 2,
+      "notes": "<p>Proficiency with a Sickle allows you to add your proficiency bonus to the attack roll for any attack you make with it.</p>\r\n<div class=\"mastery-container\"><hr />\r\n<p>This weapon has the following mastery property. To use this property, you must have a feature that lets you use it.</p>\r\n<p><strong><em>Nick.</em></strong> When you make the extra attack of the Light property, you can make it as part of the Attack action instead of as a Bonus Action. You can make this extra attack only once per turn.</p>\r\n</div>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": true,
+      "isEquipped": false
+    },
+    {
+      "name": "Trident",
+      "quantity": 1,
+      "weight": 4,
+      "notes": "<p>Proficiency with a Trident allows you to add your proficiency bonus to the attack roll for any attack you make with it.</p>\r\n<div class=\"mastery-container\"><hr />\r\n<p>This weapon has the following mastery property. To use this property, you must have a feature that lets you use it.</p>\r\n<p><strong><em>Topple.</em></strong> If you hit a creature with this weapon, you can force the creature to make a Constitution saving throw (DC 8 plus the ability modifier used to make the attack roll and your Proficiency Bonus). On a failed save, the creature has the Prone condition.</p>\r\n</div>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": true,
+      "isEquipped": true
+    },
+    {
+      "name": "Parchment",
+      "quantity": 10,
+      "weight": 0,
+      "notes": "<p>One sheet of Parchment can hold about 250 handwritten words.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
+    },
+    {
+      "name": "Backpack",
+      "quantity": 1,
+      "weight": 5,
+      "notes": "<p>A Backpack holds up to 30 pounds within 1 cubic foot. It can also serve as a saddlebag.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": true,
+      "isEquipped": false
+    },
+    {
+      "name": "Calligrapher's Supplies",
+      "quantity": 1,
+      "weight": 5,
+      "notes": "<p><strong>Ability:</strong> Dexterity <br /><strong>Utilize:</strong> Write text with impressive flourishes that guard against forgery (DC 15) <br /><strong>Craft:</strong> Ink, Spell Scroll</p>\r\n<hr />\r\n<p>If you have proficiency with a tool, add your Proficiency Bonus to any ability check you make that uses the tool. If you have proficiency in a skill that’s used with that check, you have Advantage on the check too.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
+    },
+    {
+      "name": "Robe",
+      "quantity": 1,
+      "weight": 4,
+      "notes": "<p>A Robe has vocational or ceremonial significance. Some events and locations admit only people wearing a Robe bearing certain colors or symbols.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
+    },
+    {
+      "name": "Book",
+      "quantity": 1,
+      "weight": 5,
+      "notes": "<p>A Book contains fiction or nonfiction. If you consult an accurate nonfiction Book about its topic, you gain a +5 bonus to Intelligence (Arcana, History, Nature, or Religion) checks you make about that topic.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
+    },
+    {
+      "name": "Book",
+      "quantity": 1,
+      "weight": 5,
+      "notes": "<p>A Book contains fiction or nonfiction. If you consult an accurate nonfiction Book about its topic, you gain a +5 bonus to Intelligence (Arcana, History, Nature, or Religion) checks you make about that topic.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
+    },
+    {
+      "name": "Holy Symbol",
+      "quantity": 1,
+      "weight": 0,
+      "notes": "<p>A Holy Symbol takes one of the forms in the Holy Symbol table and is bejeweled or painted to channel divine magic. A Cleric or Paladin can use a Holy Symbol as a Spellcasting Focus.</p>\r\n<p>The table indicates whether a Holy Symbol needs to be held, worn, or borne on fabric (such as a tabard or banner) or a Shield.</p>\r\n<table class=\"table-compendium table--left-first\" style=\"--sb-table-row-bg-hover: #b3d3df; --sb-table-row-bg-dark: #d7e8ee; --sb-table-row-bg-light: #f1f7f9; --dark-sb-table-row-bg-light: #5e7982; --dark-sb-table-row-bg-dark: #5c7f8c; --dark-sb-table-row-bg-hover: #78a2b0;\"><caption>\r\n<h5 id=\"HolySymbols\" class=\"compendium-hr quick-menu-exclude\">Holy Symbols</h5>\r\n</caption>\r\n<thead>\r\n<tr>\r\n<th>Symbol</th>\r\n<th>Weight</th>\r\n<th>Cost</th>\r\n</tr>\r\n</thead>\r\n<tbody>\r\n<tr>\r\n<td>Amulet (worn or held)</td>\r\n<td>1 lb.</td>\r\n<td>5 GP</td>\r\n</tr>\r\n<tr>\r\n<td>Emblem (borne on fabric or a Shield)</td>\r\n<td>&mdash;</td>\r\n<td>5 GP</td>\r\n</tr>\r\n<tr>\r\n<td>Reliquary (held)</td>\r\n<td>2 lb.</td>\r\n<td>5 GP</td>\r\n</tr>\r\n</tbody>\r\n</table>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
+    },
+    {
+      "name": "Orb",
+      "quantity": 1,
+      "weight": 3,
+      "notes": "<p>An Arcane Focus is bejeweled or carved to channel arcane magic. A Sorcerer, Warlock, or Wizard can use such an item as a Spellcasting Focus.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
+    },
+    {
+      "name": "Bedroll",
+      "quantity": 1,
+      "weight": 7,
+      "notes": "<p>You never know where you’re going to sleep, and a bedroll helps you get better sleep in a hayloft or on the cold ground. A bedroll consists of bedding and a blanket thin enough to be rolled up and tied. In an emergency, it can double as a stretcher.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
+    },
+    {
+      "name": "Mess Kit",
+      "quantity": 1,
+      "weight": 1,
+      "notes": "<p>This tin box contains a cup and simple cutlery. The box clamps together, and one side can be used as a cooking pan and the other as a plate or shallow bowl.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
+    },
+    {
+      "name": "Rations (1 day)",
+      "quantity": 10,
+      "weight": 20,
+      "notes": "<p>Rations consist of dry foods suitable for extended travel, including jerky, dried fruit, hardtack, and nuts.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
+    },
+    {
+      "name": "Rope, Hempen (50 feet)",
+      "quantity": 1,
+      "weight": 10,
+      "notes": "<p>Rope,&nbsp;has 2 hit points and can be burst with a DC 17 Strength check.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
+    },
+    {
+      "name": "Tinderbox",
+      "quantity": 1,
+      "weight": 1,
+      "notes": "<p>This small container holds flint, fire steel, and tinder (usually dry cloth soaked in light oil) used to kindle a fire. Using it to light a torch -- or anything else with abundant, exposed fuel -- takes an action. Lighting any other fire takes 1 minute.</p>\r\n<p>&nbsp;</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
+    },
+    {
+      "name": "Torch",
+      "quantity": 10,
+      "weight": 10,
+      "notes": "<p>A torch burns for 1 hour, providing bright light in a 20-foot radius and dim light for an additional 20 feet. If you make a melee attack with a burning torch and hit, it deals 1 fire damage.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
+    },
+    {
+      "name": "Waterskin",
+      "quantity": 1,
+      "weight": 5,
+      "notes": "<p>A waterskin can hold&nbsp;4 pints of liquid.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
+    },
+    {
+      "name": "Oil",
+      "quantity": 10,
+      "weight": 10,
+      "notes": "<p>You can douse a creature, object, or space with Oil or use it as fuel, as detailed below.</p>\r\n<p><strong><em>Dousing a Creature or an Object.</em></strong> When you take the Attack action, you can replace one of your attacks with throwing an Oil flask. Target one creature or object within 20 feet of yourself. The target must succeed on a Dexterity saving throw (DC 8 plus your Dexterity modifier and Proficiency Bonus) or be covered in oil. If the target takes Fire damage before the oil dries (after 1 minute), the target takes an extra 5 Fire damage from burning oil.</p>\r\n<p><strong><em>Dousing a Space.</em></strong> You can take the Utilize action to pour an Oil flask on level ground to cover a 5-foot-square area within 5 feet of yourself. If lit, the oil burns until the end of the turn 2 rounds from when the oil was lit (or 12 seconds) and deals 5 Fire damage to any creature that enters the area or ends its turn there. A creature can take this damage only once per turn.</p>\r\n<p><strong><em>Fuel.</em></strong> Oil serves as fuel for Lamps and Lanterns. Once lit, a flask of Oil burns for 6 hours in a Lamp or Lantern. That duration doesn’t need to be consecutive; you can extinguish the burning Oil (as a Utilize action) and rekindle it again until it has burned for a total of 6 hours.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
+    },
+    {
+      "name": "Parchment",
+      "quantity": 10,
+      "weight": 0,
+      "notes": "<p>One sheet of Parchment can hold about 250 handwritten words.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
+    },
+    {
+      "name": "Tinderbox",
+      "quantity": 1,
+      "weight": 1,
+      "notes": "<p>A Tinderbox is a small container holding flint, fire steel, and tinder (usually dry cloth soaked in light oil) used to kindle a fire. Using it to light a Candle, Lamp, Lantern, or Torch&mdash;or anything else with exposed fuel&mdash;takes a Bonus Action. Lighting any other fire takes 1 minute.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
+    },
+    {
+      "name": "Book",
+      "quantity": 1,
+      "weight": 5,
+      "notes": "<p>A Book contains fiction or nonfiction. If you consult an accurate nonfiction Book about its topic, you gain a +5 bonus to Intelligence (Arcana, History, Nature, or Religion) checks you make about that topic.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
+    },
+    {
+      "name": "Lamp",
+      "quantity": 1,
+      "weight": 1,
+      "notes": "<p>A Lamp burns Oil as fuel to cast Bright Light in a 15-foot radius and Dim Light for an additional 30 feet.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
+    },
+    {
+      "name": "Ink Pen",
+      "quantity": 1,
+      "weight": 0,
+      "notes": "<p>Using Ink, an Ink Pen is used to write or draw.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
+    },
+    {
+      "name": "Ink",
+      "quantity": 1,
+      "weight": 0,
+      "notes": "<p>Ink comes in a 1-ounce bottle, which provides enough ink to write about 500 pages.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
+    }
+  ],
+  "background": {
+    "name": "Noble",
+    "description": "<p><strong>Ability Scores:</strong>&nbsp;Strength, Intelligence, Charisma<br /><strong>Feat:</strong>&nbsp;Skilled<br /><strong>Skill Proficiencies:</strong> History and Persuasion<br /><strong>Tool Proficiency:</strong>&nbsp;<em>Choose one kind of Gaming Set</em><br /><strong>Equipment:</strong> <em>Choose A or B:</em> (A) Gaming Set (same as above), Fine Clothes, Perfume, 29 GP; or (B) 50 GP</p>\r\n<p>You were raised in a castle, surrounded by wealth, power, and privilege. Your family of minor aristocrats ensured that you received a first-class education, some of which you appreciated and some of which you resented. Your time in the castle, especially the many hours you spent observing your family at court, also taught you a great deal about leadership.</p>",
+    "feature": "Skilled"
+  },
+  "feats": [
+    {
+      "name": "Ability Score Improvement",
+      "description": "<p><em>General Feat (Prerequisite: Level 4+)</em></p>\r\n<p>Increase one ability score of your choice by 2, or increase two ability scores of your choice by 1. This feat can’t increase an ability score above 20.</p>\r\n<p><em><strong>Repeatable.</strong></em> You can take this feat more than once.</p>",
+      "level": null,
+      "limitedUse": null
+    },
+    {
+      "name": "Noble Ability Score Improvements",
+      "description": "<p>The Noble Background allows you to choose between Strength, Intelligence, and Charisma. Increase one of these scores by 2 and another one by 1, or increase all three by 1. None of these increases can raise a score above 20.</p>",
+      "level": null,
+      "limitedUse": null
+    },
+    {
+      "name": "Skilled",
+      "description": "<p><em>Origin Feat</em></p>\r\n<p>You gain proficiency in any combination of three skills or tools of your choice.</p>\r\n<p><em><strong>Repeatable.</strong></em> You can take this feat more than once.</p>",
+      "level": null,
+      "limitedUse": null
+    },
+    {
+      "name": "Skilled",
+      "description": "<p><em>Origin Feat</em></p>\r\n<p>You gain proficiency in any combination of three skills or tools of your choice.</p>\r\n<p><em><strong>Repeatable.</strong></em> You can take this feat more than once.</p>",
+      "level": null,
+      "limitedUse": null
+    },
+    {
+      "name": "Tough",
+      "description": "<p><em>Origin Feat</em></p>\r\n<p>Your Hit Point maximum increases by an amount equal to twice your character level when you gain this feat. Whenever you gain a character level thereafter, your Hit Point maximum increases by an additional 2 Hit Points.</p>",
+      "level": null,
+      "limitedUse": null
+    },
+    {
+      "name": "Dark Bargain",
+      "description": "<p>At your GM's discretion, you can take a Dark Bargain.</p>",
+      "level": null,
+      "limitedUse": null
+    }
+  ],
+  "features": [
+    {
+      "name": "Expanded Spell List",
+      "description": "<p><em>3rd-level Fathomless feature </em></p>\r\n<p>The Fathomless lets you choose from an expanded list of spells when you learn a warlock spell. The following spells are added to the warlock spell list for you.</p>\r\n<h5 id=\"LurkerExpandedSpells\" class=\"Table-Styles_Table-Title\">Fathomless Expanded Spells</h5>\r\n<table class=\"compendium-left-aligned-table\">\r\n<thead>\r\n<tr>\r\n<th>Spell Level</th>\r\n<th>Spells</th>\r\n</tr>\r\n</thead>\r\n<tbody>\r\n<tr>\r\n<td>1st</td>\r\n<td>&nbsp;create or destroy water,&nbsp;thunderwave</td>\r\n</tr>\r\n<tr>\r\n<td>2nd</td>\r\n<td>&nbsp;&nbsp;gust of wind, silence</td>\r\n</tr>\r\n<tr>\r\n<td>3rd</td>\r\n<td>&nbsp;&nbsp;lightning bolt, sleet storm</td>\r\n</tr>\r\n<tr>\r\n<td>4th</td>\r\n<td>&nbsp;&nbsp;control water, summon elemental&nbsp;(water only; a spell in <a title=\"chapter 3\" href=\"https://www.dndbeyond.com/sources/tcoe/magical-miscellany#SummonElemental\">chapter 3</a>)</td>\r\n</tr>\r\n<tr>\r\n<td>5th</td>\r\n<td>&nbsp;&nbsp;Bigby’s hand (appears as a tentacle), cone of cold</td>\r\n</tr>\r\n</tbody>\r\n</table>"
+    },
+    {
+      "name": "Tentacle of the Deeps",
+      "description": "<p><em>3rd-level Fathomless feature </em></p>\r\n<p>You can magically summon a spectral tentacle that strikes at your foes. As a bonus action, you create a 10-foot-long tentacle at a point you can see within 60 feet of you. The tentacle lasts for 1 minute or until you use this feature to create another tentacle.</p>\r\n<p>When you create the tentacle, you can make a melee spell attack against one creature within 10 feet of it. On a hit, the target takes 1d8 cold damage, and its speed is reduced by 10 feet until the start of your next turn. When you reach 10th level in this class, the damage increases to 2d8.</p>\r\n<p>As a bonus action on your turn, you can move the tentacle up to 30 feet and repeat the attack. You can summon the tentacle a number of times equal to your proficiency bonus, and you regain all expended uses when you finish a long rest.</p>"
+    },
+    {
+      "name": "Gift of the Sea",
+      "description": "<p><em>3rd-level Fathomless feature </em></p>\r\n<p>You gain a swimming speed of 40 feet, and you can breathe underwater.</p>"
+    },
+    {
+      "name": "Oceanic Soul",
+      "description": "<p><em>6th-level Fathomless feature </em></p>\r\n<p>You are now even more at home in the depths. You gain resistance to cold damage. In addition, when you are fully submerged, any creature that is also fully submerged can understand your speech, and you can understand theirs.</p>"
+    },
+    {
+      "name": "Guardian Coil",
+      "description": "<p><em>6th-level Fathomless feature </em></p>\r\n<p>Your Tentacle of the Deeps can defend you and others, interposing itself between them and harm. When you or a creature you can see takes damage while within 10 feet of the tentacle, you can use your reaction to choose one of those creatures and reduce the damage to that creature by 1d8. When you reach 10th level in this class, the damage reduced by the tentacle increases to 2d8.</p>"
+    },
+    {
+      "name": "Grasping Tentacles",
+      "description": "<p><em>10th-level Fathomless feature </em></p>\r\n<p>You learn the spell Evard’s black tentacles. It counts as a warlock spell for you, but it doesn’t count against the number of spells you know. You can also cast it once without a spell slot, and you regain the ability to do so when you finish a long rest.</p>\r\n<p>Whenever you cast this spell, your patron’s magic bolsters you, granting you a number of temporary hit points equal to your warlock level. Moreover, damage can’t break your concentration on this spell.</p>"
+    },
+    {
+      "name": "Fathomless Plunge",
+      "description": "<p><em>14th-level Fathomless feature </em></p>\r\n<p>You can magically open temporary conduits to watery destinations. As an action, you can teleport yourself and up to five other willing creatures that you can see within 30 feet of you. Amid a whirl of tentacles, you all vanish and then reappear up to 1 mile away in a body of water you’ve seen (pond size or larger) or within 30 feet of it, each of you appearing in an unoccupied space within 30 feet of the others.</p>\r\n<p>Once you use this feature, you can’t use it again until you finish a short or long rest.</p>"
+    },
+    {
+      "name": "Core Warlock Traits",
+      "description": "<p>As a Level 1 Character:</p>\r\n<ul>\r\n<li>Gain all the traits in the Core Warlock Traits table.</li>\r\n<li>Gain the Warlock’s level 1 features.</li>\r\n</ul>\r\n<table class=\"table-compendium table--left-all\" style=\"--sb-table-row-bg-hover: #b3d3df; --sb-table-row-bg-dark: #d7e8ee; --sb-table-row-bg-light: #f1f7f9; --dark-sb-table-row-bg-light: #5e7982; --dark-sb-table-row-bg-dark: #5c7f8c; --dark-sb-table-row-bg-hover: #78a2b0;\"><caption>Core Warlock Traits</caption>\r\n<thead></thead>\r\n<tbody>\r\n<tr>\r\n<th>Primary Ability</th>\r\n<td>Charisma</td>\r\n</tr>\r\n<tr>\r\n<th>Hit Point Die</th>\r\n<td>D8 per Warlock level</td>\r\n</tr>\r\n<tr>\r\n<th>Saving Throw Proficiencies</th>\r\n<td>Wisdom and Charisma</td>\r\n</tr>\r\n<tr>\r\n<th>Skill Proficiencies</th>\r\n<td><em>Choose 2:</em> Arcana, Deception, History, Intimidation, Investigation, Nature, or Religion</td>\r\n</tr>\r\n<tr>\r\n<th>Weapon Proficiencies</th>\r\n<td>Simple weapons</td>\r\n</tr>\r\n<tr>\r\n<th>Armor Training</th>\r\n<td>Light armor</td>\r\n</tr>\r\n<tr>\r\n<th>Starting Equipment</th>\r\n<td><em>Choose A or B:</em> (A) Leather Armor, Sickle, 2 Daggers, Arcane Focus (orb), Book (occult lore), Scholar’s Pack, and 15 GP; or (B) 100 GP</td>\r\n</tr>\r\n</tbody>\r\n</table>"
+    },
+    {
+      "name": "Eldritch Invocations",
+      "description": "<p>You have unearthed Eldritch Invocations, pieces of forbidden knowledge that imbue you with an abiding magical ability or other lessons. You gain one invocation of your choice, such as Pact of the Tome. Invocations are described in the &ldquo;Eldritch Invocation Options&rdquo; section.</p>\r\n<p><strong><em>Prerequisites.</em></strong> If an invocation has a prerequisite, you must meet it to learn that invocation. For example, if an invocation requires you to be a level 5+ Warlock, you can select the invocation once you reach Warlock level 5.</p>\r\n<p><strong><em>Replacing and Gaining Invocations.</em></strong> Whenever you gain a Warlock level, you can replace one of your invocations with another one for which you qualify. You can’t replace an invocation if it’s a prerequisite for another invocation that you have.</p>\r\n<p>When you gain certain Warlock levels, you gain more invocations of your choice, as shown in the Invocations column of the Warlock Features table.</p>\r\n<p>You can’t pick the same invocation more than once unless its description says otherwise.</p>"
+    },
+    {
+      "name": "Pact Magic",
+      "description": "<p>Through occult ceremony, you have formed a pact with a mysterious entity to gain magical powers. The entity is a voice in the shadows&mdash;its identity unclear&mdash;but its boon to you is concrete: the ability to cast spells.</p>\r\n<p><strong><em>Cantrips.</em></strong> You know two Warlock cantrips of your choice. Whenever you gain a Warlock level, you can replace one of your cantrips from this feature with another Warlock cantrip of your choice.</p>\r\n<p>When you reach Warlock levels 4 and 10, you learn another Warlock cantrip of your choice, as shown in the Cantrips column of the Warlock Features table.</p>\r\n<p><strong><em>Spell Slots.</em></strong> The Warlock Features table shows how many spell slots you have to cast your Warlock spells of levels 1&ndash;5. The table also shows the level of those slots, all of which are the same level. You regain all expended Pact Magic spell slots when you finish a Short or Long Rest.</p>\r\n<p>For example, when you’re a level 5 Warlock, you have two level 3 spell slots. To cast the level 1 spell Witch Bolt, you must spend one of those slots, and you cast it as a level 3 spell.</p>\r\n<p><strong><em>Prepared Spells of Level 1+.</em></strong> You prepare the list of level 1+ spells that are available for you to cast with this feature. To start, choose two level 1 Warlock spells.</p>\r\n<p>The number of spells on your list increases as you gain Warlock levels, as shown in the Prepared Spells column of the Warlock Features table. Whenever that number increases, choose additional Warlock spells until the number of spells on your list matches the number in the table. The chosen spells must be of a level no higher than what’s shown in the table’s Slot Level column for your level. When you reach level 6, for example, you learn a new Warlock spell, which can be of levels 1&ndash;3.</p>\r\n<p>If another Warlock feature gives you spells that you always have prepared, those spells don’t count against the number of spells you can prepare with this feature, but those spells otherwise count as Warlock spells for you.</p>\r\n<p><strong><em>Changing Your Prepared Spells.</em></strong> Whenever you gain a Warlock level, you can replace one spell on your list with another Warlock spell of an eligible level.</p>\r\n<p><strong><em>Spellcasting Ability.</em></strong> Charisma is the spellcasting ability for your Warlock spells.</p>\r\n<p><strong><em>Spellcasting Focus.</em></strong> You can use an Arcane Focus as a Spellcasting Focus for your Warlock spells.</p>"
+    },
+    {
+      "name": "Magical Cunning",
+      "description": "<p>You can perform an esoteric rite for 1 minute. At the end of it, you regain expended Pact Magic spell slots but no more than a number equal to half your maximum (round up). Once you use this feature, you can’t do so again until you finish a Long Rest.</p>"
+    },
+    {
+      "name": "Warlock Subclass",
+      "description": "<p>You gain a Warlock subclass of your choice. A subclass is a specialization that grants you features at certain Warlock levels. For the rest of your career, you gain each of your subclass’s features that are of your Warlock level or lower.</p>"
+    },
+    {
+      "name": "Ability Score Improvement",
+      "description": "<p>You gain the Ability Score Improvement feat or another feat of your choice for which you qualify. You gain this feature again at Warlock levels 8, 12, and 16.</p>"
+    },
+    {
+      "name": "8: Ability Score Improvement",
+      "description": "<p>You gain the Ability Score Improvement feat or another feat of your choice for which you qualify. You gain this feature again at Warlock levels 12 and 16.</p>"
+    },
+    {
+      "name": "Contact Patron",
+      "description": "<p>In the past, you usually contacted your patron through intermediaries. Now you can communicate directly; you always have the Contact Other Plane spell prepared. With this feature, you can cast the spell without expending a spell slot to contact your patron, and you automatically succeed on the spell’s saving throw.</p>\r\n<p>Once you cast the spell with this feature, you can’t do so in this way again until you finish a Long Rest.</p>"
+    },
+    {
+      "name": "Mystic Arcanum",
+      "description": "<p>Your patron grants you a magical secret called an arcanum. Choose one level 6 Warlock spell as this arcanum.</p>\r\n<p>You can cast your arcanum spell once without expending a spell slot, and you must finish a Long Rest before you can cast it in this way again.</p>\r\n<p>As shown in the Warlock Features table, you gain another Warlock spell of your choice that can be cast in this way when you reach Warlock levels 13 (level 7 spell), 15 (level 8 spell), and 17 (level 9 spell). You regain all uses of your Mystic Arcanum when you finish a Long Rest.</p>\r\n<p>Whenever you gain a Warlock level, you can replace one of your arcanum spells with another Warlock spell of the same level.</p>"
+    },
+    {
+      "name": "12: Ability Score Improvement",
+      "description": "<p>You gain the Ability Score Improvement feat or another feat of your choice for which you qualify. You gain this feature again at Warlock level 16.</p>"
+    },
+    {
+      "name": "16: Ability Score Improvement",
+      "description": "<p>You gain the Ability Score Improvement feat or another feat of your choice for which you qualify.</p>"
+    },
+    {
+      "name": "Epic Boon",
+      "description": "<p>You gain an Epic Boon feat or another feat of your choice for which you qualify.</p>"
+    },
+    {
+      "name": "Eldritch Master",
+      "description": "<p>When you use your Magical Cunning feature, you regain all your expended Pact Magic spell slots.</p>"
+    },
+    {
+      "name": "Eldritch Invocation Options",
+      "description": "<p>Eldritch Invocation options appear in alphabetical order.</p>\r\n<hr />\r\n<h5 id=\"AgonizingBlast\" class=\"compendium-hr\">Agonizing Blast</h5>\r\n<p><em>Prerequisite: Level 2+ Warlock, a Warlock Cantrip That Deals Damage</em></p>\r\n<p>Choose one of your known Warlock cantrips that deals damage. You can add your Charisma modifier to that spell’s damage rolls.</p>\r\n<p><strong><em>Repeatable.</em></strong> You can gain this invocation more than once. Each time you do so, choose a different eligible cantrip.</p>\r\n<hr />\r\n<h5 id=\"ArmorofShadows\" class=\"compendium-hr\">Armor of Shadows</h5>\r\n<p>You can cast Mage Armor on yourself without expending a spell slot.</p>\r\n<hr />\r\n<h5 id=\"AscendantStep\" class=\"compendium-hr\">Ascendant Step</h5>\r\n<p><em>Prerequisite: Level 5+ Warlock</em></p>\r\n<p>You can cast Levitate on yourself without expending a spell slot.</p>\r\n<hr />\r\n<h5 id=\"DevilsSight\" class=\"compendium-hr\">Devil’s Sight</h5>\r\n<p><em>Prerequisite: Level 2+ Warlock</em></p>\r\n<p>You can see normally in Dim Light and Darkness&mdash;both magical and nonmagical&mdash;within 120 feet of yourself.</p>\r\n<hr />\r\n<h5 id=\"DevouringBlade\" class=\"compendium-hr\">Devouring Blade</h5>\r\n<p><em>Prerequisite: Level 12+ Warlock, Thirsting Blade Invocation</em></p>\r\n<p>The Extra Attack of your Thirsting Blade invocation confers two extra attacks rather than one.</p>\r\n<hr />\r\n<h5 id=\"EldritchMind\" class=\"compendium-hr\">Eldritch Mind</h5>\r\n<p>You have Advantage on Constitution saving throws that you make to maintain Concentration.</p>\r\n<hr />\r\n<h5 id=\"EldritchSmite\" class=\"compendium-hr\">Eldritch Smite</h5>\r\n<p><em>Prerequisite: Level 5+ Warlock, Pact of the Blade Invocation</em></p>\r\n<p>Once per turn when you hit a creature with your pact weapon, you can expend a Pact Magic spell slot to deal an extra 1d8 Force damage to the target, plus another 1d8 per level of the spell slot, and you can give the target the Prone condition if it is Huge or smaller.</p>\r\n<hr />\r\n<h5 id=\"EldritchSpear\" class=\"compendium-hr\">Eldritch Spear</h5>\r\n<p><em>Prerequisite: Level 2+ Warlock, a Warlock Cantrip That Deals Damage</em></p>\r\n<p>Choose one of your known Warlock cantrips that deals damage and has a range of 10+ feet. When you cast that spell, its range increases by a number of feet equal to 30 times your Warlock level.</p>\r\n<p><strong><em>Repeatable.</em></strong> You can gain this invocation more than once. Each time you do so, choose a different eligible cantrip.</p>\r\n<hr />\r\n<h5 id=\"FiendishVigor\" class=\"compendium-hr\">Fiendish Vigor</h5>\r\n<p><em>Prerequisite: Level 2+ Warlock</em></p>\r\n<p>You can cast False Life on yourself without expending a spell slot. When you cast the spell with this feature, you don’t roll the die for the Temporary Hit Points; you automatically get the highest number on the die.</p>\r\n<hr />\r\n<h5 id=\"GazeofTwoMinds\" class=\"compendium-hr\">Gaze of Two Minds</h5>\r\n<p><em>Prerequisite: Level 5+ Warlock</em></p>\r\n<p>You can use a Bonus Action to touch a willing creature and perceive through its senses until the end of your next turn. As long as the creature is on the same plane of existence as you, you can take a Bonus Action on subsequent turns to maintain this connection, extending the duration until the end of your next turn. The connection ends if you don’t maintain it in this way.</p>\r\n<p>While perceiving through the other creature’s senses, you benefit from any special senses possessed by that creature, and you can cast spells as if you were in your space or the other creature’s space if the two of you are within 60 feet of each other.</p>\r\n<hr />\r\n<h5 id=\"GiftoftheDepths\" class=\"compendium-hr\">Gift of the Depths</h5>\r\n<p><em>Prerequisite: Level 5+ Warlock</em></p>\r\n<p>You can breathe underwater, and you gain a Swim Speed equal to your Speed.</p>\r\n<p>You can also cast Water Breathing once without expending a spell slot. You regain the ability to cast it in this way again when you finish a Long Rest.</p>\r\n<hr />\r\n<h5 id=\"GiftoftheProtectors\" class=\"compendium-hr\">Gift of the Protectors</h5>\r\n<p><em>Prerequisite: Level 9+ Warlock, Pact of the Tome Invocation</em></p>\r\n<p>A new page appears in your <em>Book of Shadows</em> when you conjure it. With your permission, a creature can take an action to write its name on that page, which can contain a number of names equal to your Charisma modifier (minimum of one name).</p>\r\n<p>When any creature whose name is on the page is reduced to 0 Hit Points but not killed outright, the creature magically drops to 1 Hit Point instead. Once this magic is triggered, no creature can benefit from it until you finish a Long Rest.</p>\r\n<p>As a Magic action, you can erase a name on the page by touching it.</p>\r\n<hr />\r\n<h5 id=\"InvestmentoftheChainMaster\" class=\"compendium-hr\">Investment of the Chain Master</h5>\r\n<p><em>Prerequisite: Level 5+ Warlock, Pact of the Chain Invocation</em></p>\r\n<p>When you cast Find Familiar, you infuse the summoned familiar with a measure of your eldritch power, granting the creature the following benefits.</p>\r\n<p><strong><em>Aerial or Aquatic.</em></strong> The familiar gains either a Fly Speed or a Swim Speed (your choice) of 40 feet.</p>\r\n<p><strong><em>Quick Attack.</em></strong> As a Bonus Action, you can command the familiar to take the Attack action.</p>\r\n<p><strong><em>Necrotic or Radiant Damage.</em></strong> Whenever the familiar deals Bludgeoning, Piercing, or Slashing damage, you can make it deal Necrotic or Radiant damage instead.</p>\r\n<p><strong><em>Your Save DC.</em></strong> If the familiar forces a creature to make a saving throw, it uses your spell save DC.</p>\r\n<p><strong><em>Resistance.</em></strong> When the familiar takes damage, you can take a Reaction to grant it Resistance against that damage.</p>\r\n<hr />\r\n<h5 id=\"LessonsoftheFirstOnes\" class=\"compendium-hr\">Lessons of the First Ones</h5>\r\n<p><em>Prerequisite: Level 2+ Warlock</em></p>\r\n<p>You have received knowledge from an elder entity of the multiverse, allowing you to gain one Origin feat of your choice.</p>\r\n<p><strong><em>Repeatable.</em></strong> You can gain this invocation more than once. Each time you do so, choose a different Origin feat.</p>\r\n<hr />\r\n<h5 id=\"Lifedrinker\" class=\"compendium-hr\">Lifedrinker</h5>\r\n<p><em>Prerequisite: Level 9+ Warlock, Pact of the Blade Invocation</em></p>\r\n<p>Once per turn when you hit a creature with your pact weapon, you can deal an extra 1d6 Necrotic, Psychic, or Radiant damage (your choice) to the creature, and you can expend one of your Hit Point Dice to roll it and regain a number of Hit Points equal to the roll plus your Constitution modifier (minimum of 1 Hit Point).</p>\r\n<hr />\r\n<h5 id=\"MaskofManyFaces\" class=\"compendium-hr\">Mask of Many Faces</h5>\r\n<p><em>Prerequisite: Level 2+ Warlock</em></p>\r\n<p>You can cast Disguise Self without expending a spell slot.</p>\r\n<hr />\r\n<h5 id=\"MasterofMyriadForms\" class=\"compendium-hr\">Master of Myriad Forms</h5>\r\n<p><em>Prerequisite: Level 5+ Warlock</em></p>\r\n<p>You can cast Alter Self without expending a spell slot.</p>\r\n<hr />\r\n<h5 id=\"MistyVisions\" class=\"compendium-hr\">Misty Visions</h5>\r\n<p><em>Prerequisite: Level 2+ Warlock</em></p>\r\n<p>You can cast Silent Image without expending a spell slot.</p>\r\n<hr />\r\n<h5 id=\"OnewithShadows\" class=\"compendium-hr\">One with Shadows</h5>\r\n<p><em>Prerequisite: Level 5+ Warlock</em></p>\r\n<p>While you’re in an area of Dim Light or Darkness, you can cast Invisibility on yourself without expending a spell slot.</p>\r\n<hr />\r\n<h5 id=\"OtherworldlyLeap\" class=\"compendium-hr\">Otherworldly Leap</h5>\r\n<p><em>Prerequisite: Level 2+ Warlock</em></p>\r\n<p>You can cast Jump on yourself without expending a spell slot.</p>\r\n<hr />\r\n<h5 id=\"PactoftheBlade\" class=\"compendium-hr\">Pact of the Blade</h5>\r\n<p>As a Bonus Action, you can conjure a pact weapon in your hand&mdash;a Simple or Martial Melee weapon of your choice with which you bond&mdash;or create a bond with a magic weapon you touch; you can’t bond with a magic weapon if someone else is attuned to it or another Warlock is bonded with it. Until the bond ends, you have proficiency with the weapon, and you can use it as a Spellcasting Focus.</p>\r\n<p>Whenever you attack with the bonded weapon, you can use your Charisma modifier for the attack and damage rolls instead of using Strength or Dexterity; and you can cause the weapon to deal Necrotic, Psychic, or Radiant damage or its normal damage type.</p>\r\n<p>Your bond with the weapon ends if you use this feature’s Bonus Action again, if the weapon is more than 5 feet away from you for 1 minute or more, or if you die. A conjured weapon disappears when the bond ends.</p>\r\n<hr />\r\n<h5 id=\"PactoftheChain\" class=\"compendium-hr\">Pact of the Chain</h5>\r\n<p>You learn the Find Familiar spell and can cast it as a Magic action without expending a spell slot.</p>\r\n<p>When you cast the spell, you choose one of the normal forms for your familiar or one of the following special forms: Imp, Pseudodragon, Quasit, Skeleton, Slaad Tadpole, Sphinx of Wonder, Sprite, or Venomous Snake.</p>\r\n<p>Additionally, when you take the Attack action, you can forgo one of your own attacks to allow your familiar to make one attack of its own with its Reaction.</p>\r\n<hr />\r\n<h5 id=\"PactoftheTome\" class=\"compendium-hr\">Pact of the Tome</h5>\r\n<p>Stitching together strands of shadow, you conjure forth a book in your hand at the end of a Short or Long Rest. This <em>Book of Shadows</em> (you determine its appearance) contains eldritch magic that only you can access, granting you the benefits below. The book disappears if you conjure another book with this feature or if you die.</p>\r\n<p><strong><em>Cantrips and Rituals.</em></strong> When the book appears, choose three cantrips, and choose two level 1 spells that have the Ritual tag. The spells can be from any class’s spell list, and they must be spells you don’t already have prepared. While the book is on your person, you have the chosen spells prepared, and they function as Warlock spells for you.</p>\r\n<p><strong><em>Spellcasting Focus.</em></strong> You can use the book as a Spellcasting Focus.</p>\r\n<hr />\r\n<h5 id=\"RepellingBlast\" class=\"compendium-hr\">Repelling Blast</h5>\r\n<p><em>Prerequisite: Level 2+ Warlock, a Warlock Cantrip That Deals Damage via an Attack Roll</em></p>\r\n<p>Choose one of your known Warlock cantrips that requires an attack roll. When you hit a Large or smaller creature with that cantrip, you can push the creature up to 10 feet straight away from you.</p>\r\n<p><strong><em>Repeatable.</em></strong> You can gain this invocation more than once. Each time you do so, choose a different eligible cantrip.</p>\r\n<hr />\r\n<h5 id=\"ThirstingBlade\" class=\"compendium-hr\">Thirsting Blade</h5>\r\n<p><em>Prerequisite: Level 5+ Warlock, Pact of the Blade Invocation</em></p>\r\n<p>You gain the Extra Attack feature for your pact weapon only. With that feature, you can attack twice with the weapon instead of once when you take the Attack action on your turn.</p>\r\n<hr />\r\n<h5 id=\"VisionsofDistantRealms\" class=\"compendium-hr\">Visions of Distant Realms</h5>\r\n<p><em>Prerequisite: Level 9+ Warlock</em></p>\r\n<p>You can cast Arcane Eye without expending a spell slot.</p>\r\n<hr />\r\n<h5 id=\"WhispersoftheGrave\" class=\"compendium-hr\">Whispers of the Grave</h5>\r\n<p><em>Prerequisite: Level 7+ Warlock</em></p>\r\n<p>You can cast Speak with Dead without expending a spell slot.</p>\r\n<hr />\r\n<h5 id=\"WitchSight\" class=\"compendium-hr\">Witch Sight</h5>\r\n<p><em>Prerequisite: Level 15+ Warlock</em></p>\r\n<p>You have Truesight with a range of 30 feet.</p>"
+    },
+    {
+      "name": "Mystic Arcanum (Level 6 Spell)",
+      "description": "<p>Your patron grants you a magical secret called an arcanum. Choose one level 6 Warlock spell as this arcanum.</p>\r\n<p>You can cast your arcanum spell once without expending a spell slot, and you must finish a Long Rest before you can cast it in this way again. You regain all uses of your Mystic Arcanum when you finish a Long Rest.</p>"
+    },
+    {
+      "name": "Mystic Arcanum (Level 7 Spell)",
+      "description": "<p>Your patron grants you a magical secret called an arcanum. Choose one level 7 Warlock spell as this arcanum.</p>\r\n<p>You can cast your arcanum spell once without expending a spell slot, and you must finish a Long Rest before you can cast it in this way again. You regain all uses of your Mystic Arcanum when you finish a Long Rest.</p>"
+    },
+    {
+      "name": "Mystic Arcanum (Level 8 Spell)",
+      "description": "<p>Your patron grants you a magical secret called an arcanum. Choose one level 8 Warlock spell as this arcanum.</p>\r\n<p>You can cast your arcanum spell once without expending a spell slot, and you must finish a Long Rest before you can cast it in this way again. You regain all uses of your Mystic Arcanum when you finish a Long Rest.</p>"
+    },
+    {
+      "name": "Mystic Arcanum (Level 9 Spell)",
+      "description": "<p>Your patron grants you a magical secret called an arcanum. Choose one level 9 Warlock spell as this arcanum.</p>\r\n<p>You can cast your arcanum spell once without expending a spell slot, and you must finish a Long Rest before you can cast it in this way again. You regain all uses of your Mystic Arcanum when you finish a Long Rest.</p>"
+    },
+    {
+      "name": "Ability Score Increases",
+      "description": "<p>When determining your character’s ability scores, increase one score by 2 and increase a different score by 1, or increase three different scores by 1. Follow this rule regardless of the method you use to determine the scores, such as rolling or point buy. The &ldquo;Quick Build&rdquo; section for your character’s class offers suggestions on which scores to increase. You can follow those suggestions or ignore them, but you can’t raise any of your scores above 20.</p>"
+    },
+    {
+      "name": "Languages",
+      "description": "<p>Your character can speak, read, and write Common and one other language that you and your DM agree is appropriate for the character. The <em><a title=\"Player’s Handbook\" href=\"https://www.dndbeyond.com/sources/phb\">Player’s Handbook</a></em> offers a list of languages to choose from. The DM is free to modify that list for a campaign.</p>"
+    },
+    {
+      "name": "Creature Type",
+      "description": "<p>You are a Humanoid.</p>"
+    },
+    {
+      "name": "Size",
+      "description": "<p>You are Medium.</p>"
+    },
+    {
+      "name": "Speed",
+      "description": "<p>Your walking speed is 30 feet, and you have a swimming speed equal to your walking speed.</p>"
+    },
+    {
+      "name": "Amphibious",
+      "description": "<p>You can breathe air and water.</p>"
+    },
+    {
+      "name": "Control Air and Water",
+      "description": "<p>You can cast fog cloud with this trait. Starting at 3rd level, you can cast the gust of wind spell with this trait. Starting at 5th level, you can also cast the water walk spell with it. Once you cast any of these spells with this trait, you can’t cast that spell with it again until you finish a long rest. You can also cast these spells using any spell slots you have of the appropriate level.</p>\r\n<p>Intelligence, Wisdom, or Charisma is your spellcasting ability for these spells when you cast them with this trait (choose when you select this race).</p>"
+    },
+    {
+      "name": "Darkvision",
+      "description": "<p>You can see in dim light within 60 feet of you as if it were bright light and in darkness as if it were dim light. You discern colors in that darkness only as shades of gray.</p>"
+    },
+    {
+      "name": "Emissary of the Sea",
+      "description": "<p>You can communicate simple ideas to any Beast, Elemental, or Monstrosity that has a swimming speed. It can understand your words, though you have no special ability to understand it in return.</p>"
+    },
+    {
+      "name": "Guardian of the Depths",
+      "description": "<p>Adapted to the frigid ocean depths, you have resistance to cold damage.</p>"
+    },
+    {
+      "name": "Noble Ability Score Improvements",
+      "description": "<p>The Noble Background allows you to choose between Strength, Intelligence, and Charisma. Increase one of these scores by 2 and another one by 1, or increase all three by 1. None of these increases can raise a score above 20.</p>"
+    },
+    {
+      "name": "Skilled",
+      "description": "<p><em>Origin Feat</em></p>\r\n<p>You gain proficiency in any combination of three skills or tools of your choice.</p>\r\n<p><em><strong>Repeatable.</strong></em> You can take this feat more than once.</p>"
+    },
+    {
+      "name": "Tough",
+      "description": "<p><em>Origin Feat</em></p>\r\n<p>Your Hit Point maximum increases by an amount equal to twice your character level when you gain this feat. Whenever you gain a character level thereafter, your Hit Point maximum increases by an additional 2 Hit Points.</p>"
+    },
+    {
+      "name": "Dark Bargain",
+      "description": "<p>At your GM's discretion, you can take a Dark Bargain.</p>"
+    }
+  ],
+  "proficiencies": {
+    "armor": [
+      "Light Armor"
+    ],
+    "weapons": [
+      "Simple Weapons"
+    ],
+    "tools": [
+      "Dragonchess Set",
+      "Navigator's Tools"
+    ],
+    "languages": [
+      "Deep Speech",
+      "Common"
+    ],
+    "defenses": [
+      {
+        "name": "Cold",
+        "type": "resistance",
+        "condition": null
+      }
+    ],
+    "senses": [],
+    "other": [
+      "Innate Speed (Swimming)",
+      "Darkvision",
+      "Subclass",
+      "Enable Pact Weapon",
+      "Charisma Score",
+      "Bonus Damage",
+      "Hit Points per Level"
+    ]
+  },
+  "attacks": [
+    {
+      "name": "Unarmed Strike",
+      "range": null,
+      "longRange": null,
+      "attackBonus": 3,
+      "damage": "1+0",
+      "damageType": "Bludgeoning",
+      "notes": "",
+      "description": ""
+    },
+    {
+      "name": "Tentacle of the Deeps: Attack",
+      "range": {
+        "range": 10,
+        "longRange": null,
+        "aoeType": null,
+        "aoeSize": null,
+        "hasAoeSpecialDescription": false,
+        "minimumRange": null
+      },
+      "longRange": null,
+      "attackBonus": 0,
+      "damage": "1d8",
+      "damageType": "Cold",
+      "notes": "",
+      "description": "<p><em>3rd-level Fathomless feature</em></p>\r\n<p>You can magically summon a spectral tentacle that strikes at your foes. As a bonus action, you create a 10-foot-long tentacle at a point you can see within 60 feet of you. The tentacle lasts for 1 minute or until you use this feature to create another tentacle.</p>\r\n<p>When you create the tentacle, you can make a melee spell attack against one creature within 10 feet of it. On a hit, the target takes 1d8 cold damage, and its speed is reduced by 10 feet until the start of your next turn. When you reach 10th level in this class, the damage increases to 2d8.</p>\r\n<p>As a bonus action on your turn, you can move the tentacle up to 30 feet and repeat the attack. You can summon the tentacle a number of times equal to your proficiency bonus, and you regain all expended uses when you finish a long rest.</p>"
+    },
+    {
+      "name": "Trident",
+      "range": "20 ft.",
+      "longRange": "60 ft.",
+      "attackBonus": 0,
+      "damage": "1d8",
+      "damageType": "Piercing",
+      "notes": "Thrown, Versatile, Topple",
+      "description": "<p>Proficiency with a Trident allows you to add your proficiency bonus to the attack roll for any attack you make with it.</p>\r\n<div class=\"mastery-container\"><hr />\r\n<p>This weapon has the following mastery property. To use this property, you must have a feature that lets you use it.</p>\r\n<p><strong><em>Topple.</em></strong> If you hit a creature with this weapon, you can force the creature to make a Constitution saving throw (DC 8 plus the ability modifier used to make the attack roll and your Proficiency Bonus). On a failed save, the creature has the Prone condition.</p>\r\n</div>"
+    }
+  ],
+  "attacking": {
+    "attacksPerAction": 1,
+    "fightingStyle": null
+  },
+  "spellcasting": {
+    "abilityId": 6,
+    "ability": "CHA",
+    "mod": "+4",
+    "attack": "+7",
+    "save": 15
+  },
+  "limitedUses": [],
+  "campaign": {
+    "id": 2994388,
+    "name": "A Merry Band of Gaymers",
+    "dm": "wrighmat"
+  },
+  "decorations": {
+    "avatarUrl": "https://www.dndbeyond.com/avatars/54575/480/1581111423-159871601.jpeg?width=150&height=150&fit=crop&quality=95&auto=webp",
+    "frameAvatarUrl": null,
+    "backdropAvatarUrl": null,
+    "smallBackdropAvatarUrl": null,
+    "largeBackdropAvatarUrl": null,
+    "thumbnailBackdropAvatarUrl": null,
+    "defaultBackdrop": {
+      "backdropAvatarUrl": "https://www.dndbeyond.com/avatars/43993/224/638609652095595639.jpeg",
+      "smallBackdropAvatarUrl": "https://www.dndbeyond.com/avatars/43993/225/638609652097585653.jpeg",
+      "largeBackdropAvatarUrl": "https://www.dndbeyond.com/avatars/43993/226/638609652100415663.jpeg",
+      "thumbnailBackdropAvatarUrl": "https://www.dndbeyond.com/avatars/44658/135/638634728832732853.jpeg"
+    },
+    "avatarId": 54575480,
+    "portraitDecorationKey": null,
+    "frameAvatarDecorationKey": null,
+    "frameAvatarId": null,
+    "backdropAvatarDecorationKey": null,
+    "backdropAvatarId": null,
+    "smallBackdropAvatarDecorationKey": "",
+    "smallBackdropAvatarId": null,
+    "largeBackdropAvatarDecorationKey": "",
+    "largeBackdropAvatarId": null,
+    "thumbnailBackdropAvatarDecorationKey": "",
+    "thumbnailBackdropAvatarId": null,
+    "themeColor": null
+  },
+  "deathSaves": {
+    "successes": null,
+    "failures": null,
+    "stabilized": false
+  },
+  "notes": {
+    "allies": null,
+    "backstory": "Maris Wavedeep is the beloved youngest daughter of the esteemed Wavedeep family and revered Adeusan prophet. With her bubbly personality, passionate beliefs, and favored blessings, Maris is on a mission to share the beauty of her faith with the rest of the seas and, someday, all of Eberron.\n\nNow hailing from the Northern Sea, Maris and the rest of the Wavedeep family have been in the area for a few generations. Previously, her ancestors, along with a number of other families, lived much more like their fellow Merfolk from the Thunder Sea. Their pod was relatively nomadic, following the guidance of the ocean itself and traveling to protect and contain volatile manifest zones deep in the ocean. One day, the pod travelled farther than normal, leaving the Thunder Sea and searching for a manifest zone deep in the heart of the Northern Sea. While searching, though, Maris’s great great-grandparents heard a beautiful, resonating voice speak to them: a god who referred to himself as Adeus. Very quickly, the entire pod felt no more desire to leave the region or continue its search for manifest zones. A higher purpose called for their adoration, and they settled down right where they were in obedience.\n\nOver time, they built a city there in the heart of the Northern Sea. Their religion developed along with their new home. The Wavedeep family, being the first to hear their god’s words, grew in influence and became true nobility of the area. When Maris was born, a daughter bearing the same red colored eyes as their god, they knew they had been truly blessed and that she would grow to be a powerful prophet.\n\nMaris is deeply enthusiastic about her faith and is blessed enough to be deemed the Chosen of Adeus. His voice desires for the rest of the world to know of his benevolence and power, and Maris is honored to serve her mission.\n\n-\n\nUnbeknownst to all of them, Adeus is no real god. He’s an aboleth, a creature that psychically controlled the pod and has worn down their city’s mental defenses over decades. Its only desire is for more power and more people to give it the worship it believes it deserves. Maris is unwittingly in a Warlock pact with the creature under the guise of divine service. Through this, she can hear its voice and messages far beyond their traditional boundaries, even with its influence spreading as it grows stronger.",
+    "enemies": null,
+    "organizations": "Priestess and Prophet of the Church of Adeus",
+    "personalPossessions": null,
+    "otherHoldings": null,
+    "otherNotes": null
+  },
+  "traits": {
+    "age": 23,
+    "eyes": "Red",
+    "hair": "Sea Green",
+    "skin": "Teal/Blue (Orange color on fins and some scales)",
+    "height": "5’7”",
+    "weight": 170,
+    "faith": "Adeusan",
+    "appearance": null,
+    "bonds": "Maris has traveled to Tidecrown with her best friend and fellow missionary.\n\nShe cares for her parents deeply.\n\nMaris, also, has a strong love and respect for everyone from her home city. ",
+    "flaws": "Maris has low wisdom in general, finding herself unfortunately susceptible to everything from very casual deceit to full-on mind control. \n\nShe is dense and stubborn in her faith, even in the face of proof otherwise.\n\nMaris is spoiled. She is naïve and knows a very comfortable life.",
+    "ideals": "All people deserve to know the love and joy that comes through worship, and I will bring my god the praise he deserves.\n\nAll must come to faith willingly. Deceit and/or manipulation are always unethical, even in non-religious circumstances. \n\nThere is always goodness in the world. Most people are kind-hearted and all should be given the benefit of the doubt.",
+    "personalityTraits": "Bubbly, friendly, enthusiastic, naïve, stubborn",
+    "size": "Medium"
+  },
+  "spells": [
+    {
+      "level": 0,
+      "spells": [
+        {
+          "name": "Eldritch Blast",
+          "level": 0,
+          "prepared": false,
+          "castingTime": "A",
+          "range": {
+            "origin": "Ranged",
+            "rangeValue": 120,
+            "aoeType": null,
+            "aoeValue": null
+          },
+          "school": "Evocation",
+          "source": "class",
+          "concentration": false,
+          "ritual": false,
+          "components": [
+            "V",
+            "S"
+          ],
+          "toHit": 7,
+          "dc": null,
+          "effect": "Damage",
+          "duration": " (Instantaneous)"
+        },
+        {
+          "name": "Thunderclap",
+          "level": 0,
+          "prepared": false,
+          "castingTime": "A",
+          "range": {
+            "origin": "Self",
+            "rangeValue": null,
+            "aoeType": "Emanation",
+            "aoeValue": 5
+          },
+          "school": "Evocation",
+          "source": "class",
+          "concentration": false,
+          "ritual": false,
+          "components": [
+            "S"
+          ],
+          "toHit": null,
+          "dc": 15,
+          "effect": "Damage",
+          "duration": " (Instantaneous)"
+        },
+        {
+          "name": "Mage Hand",
+          "level": 0,
+          "prepared": false,
+          "castingTime": "A",
+          "range": {
+            "origin": "Ranged",
+            "rangeValue": 30,
+            "aoeType": null,
+            "aoeValue": null
+          },
+          "school": "Conjuration",
+          "source": "class",
+          "concentration": false,
+          "ritual": false,
+          "components": [
+            "V",
+            "S"
+          ],
+          "toHit": null,
+          "dc": null,
+          "effect": "Utility",
+          "duration": "1 Minute (Time)"
+        }
+      ]
+    },
+    {
+      "level": 1,
+      "spells": [
+        {
+          "name": "False Life",
+          "level": 1,
+          "prepared": false,
+          "castingTime": "A",
+          "range": {
+            "origin": "Self",
+            "rangeValue": 0,
+            "aoeType": null,
+            "aoeValue": null
+          },
+          "school": "Necromancy",
+          "source": "class",
+          "concentration": false,
+          "ritual": false,
+          "components": [
+            "V",
+            "S",
+            "M"
+          ],
+          "toHit": null,
+          "dc": null,
+          "effect": "Buff",
+          "duration": " (Instantaneous)"
+        },
+        {
+          "name": "Fog Cloud",
+          "level": 1,
+          "prepared": false,
+          "castingTime": "A",
+          "range": {
+            "origin": "Ranged",
+            "rangeValue": 120,
+            "aoeType": "Sphere",
+            "aoeValue": 20
+          },
+          "school": "Conjuration",
+          "source": "race",
+          "concentration": true,
+          "ritual": false,
+          "components": [
+            "V",
+            "S"
+          ],
+          "toHit": null,
+          "dc": null,
+          "effect": "Control",
+          "duration": "1 Hour (Concentration)"
+        },
+        {
+          "name": "Witch Bolt",
+          "level": 1,
+          "prepared": false,
+          "castingTime": "A",
+          "range": {
+            "origin": "Ranged",
+            "rangeValue": 60,
+            "aoeType": null,
+            "aoeValue": null
+          },
+          "school": "Evocation",
+          "source": "class",
+          "concentration": true,
+          "ritual": false,
+          "components": [
+            "V",
+            "S",
+            "M"
+          ],
+          "toHit": 7,
+          "dc": null,
+          "effect": "Damage",
+          "duration": "1 Minute (Concentration)"
+        },
+        {
+          "name": "Arms of Hadar",
+          "level": 1,
+          "prepared": false,
+          "castingTime": "A",
+          "range": {
+            "origin": "Self",
+            "rangeValue": null,
+            "aoeType": "Emanation",
+            "aoeValue": 10
+          },
+          "school": "Conjuration",
+          "source": "class",
+          "concentration": false,
+          "ritual": false,
+          "components": [
+            "V",
+            "S"
+          ],
+          "toHit": null,
+          "dc": 15,
+          "effect": "Damage",
+          "duration": " (Instantaneous)"
+        },
+        {
+          "name": "Armor of Agathys",
+          "level": 1,
+          "prepared": false,
+          "castingTime": "BA",
+          "range": {
+            "origin": "Self",
+            "rangeValue": null,
+            "aoeType": null,
+            "aoeValue": null
+          },
+          "school": "Abjuration",
+          "source": "class",
+          "concentration": false,
+          "ritual": false,
+          "components": [
+            "V",
+            "S",
+            "M"
+          ],
+          "toHit": null,
+          "dc": null,
+          "effect": "Damage",
+          "duration": "1 Hour (Time)"
+        },
+        {
+          "name": "Hellish Rebuke",
+          "level": 1,
+          "prepared": false,
+          "castingTime": "R",
+          "range": {
+            "origin": "Ranged",
+            "rangeValue": 60,
+            "aoeType": null,
+            "aoeValue": null
+          },
+          "school": "Evocation",
+          "source": "class",
+          "concentration": false,
+          "ritual": false,
+          "components": [
+            "V",
+            "S"
+          ],
+          "toHit": null,
+          "dc": 15,
+          "effect": "Damage",
+          "duration": " (Instantaneous)"
+        }
+      ]
+    },
+    {
+      "level": 2,
+      "spells": [
+        {
+          "name": "Gust of Wind",
+          "level": 2,
+          "prepared": false,
+          "castingTime": "A",
+          "range": {
+            "origin": "Self",
+            "rangeValue": 0,
+            "aoeType": null,
+            "aoeValue": null
+          },
+          "school": "Evocation",
+          "source": "race",
+          "concentration": true,
+          "ritual": false,
+          "components": [
+            "V",
+            "S",
+            "M"
+          ],
+          "toHit": null,
+          "dc": 15,
+          "effect": "Control",
+          "duration": "1 Minute (Concentration)"
+        },
+        {
+          "name": "Misty Step",
+          "level": 2,
+          "prepared": false,
+          "castingTime": "BA",
+          "range": {
+            "origin": "Self",
+            "rangeValue": 0,
+            "aoeType": null,
+            "aoeValue": null
+          },
+          "school": "Conjuration",
+          "source": "class",
+          "concentration": false,
+          "ritual": false,
+          "components": [
+            "V"
+          ],
+          "toHit": null,
+          "dc": null,
+          "effect": "Teleportation",
+          "duration": " (Instantaneous)"
+        }
+      ]
+    },
+    {
+      "level": 3,
+      "spells": [
+        {
+          "name": "Water Walk",
+          "level": 3,
+          "prepared": false,
+          "castingTime": "A",
+          "range": {
+            "origin": "Ranged",
+            "rangeValue": 30,
+            "aoeType": null,
+            "aoeValue": null
+          },
+          "school": "Transmutation",
+          "source": "race",
+          "concentration": false,
+          "ritual": true,
+          "components": [
+            "V",
+            "S",
+            "M"
+          ],
+          "toHit": null,
+          "dc": null,
+          "effect": "Movement",
+          "duration": "1 Hour (Time)"
+        },
+        {
+          "name": "Hunger of Hadar",
+          "level": 3,
+          "prepared": false,
+          "castingTime": "A",
+          "range": {
+            "origin": "Ranged",
+            "rangeValue": 150,
+            "aoeType": "Sphere",
+            "aoeValue": 20
+          },
+          "school": "Conjuration",
+          "source": "class",
+          "concentration": true,
+          "ritual": false,
+          "components": [
+            "V",
+            "S",
+            "M"
+          ],
+          "toHit": null,
+          "dc": 15,
+          "effect": "Damage",
+          "duration": "1 Minute (Concentration)"
+        }
+      ]
+    }
+  ],
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "id": "maris-wavedeep",
+  "data": {},
+  "template": "tpl.5e.flex-basic"
+}

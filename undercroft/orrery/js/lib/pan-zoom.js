@@ -1,5 +1,11 @@
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
+// See handleWheel's own comment for why this needs to be magnitude-based
+// rather than a flat per-event step. Bumped up from the initial 0.001 —
+// that made a mouse-wheel notch feel right but left trackpad pinch/scroll
+// feeling too slow.
+const WHEEL_ZOOM_SENSITIVITY = 0.0014;
+
 export class PanZoomController {
   constructor({ container, content, view, onChange, minZoom = 0.25, maxZoom = 4 } = {}) {
     if (!container || !content) {
@@ -28,8 +34,38 @@ export class PanZoomController {
     this.pinchStartCenter = null;
     this.activePointers = new Map();
     this.enabled = true;
+    this.settleTimeout = null;
     this.applyTransform();
     this.bindEvents();
+  }
+
+  // See styles.css's own comment on .orrery-map-content.is-interacting —
+  // GPU-layer promotion (will-change: transform) is only wanted WHILE a
+  // gesture is actively moving the map; leaving it on permanently trades
+  // away crisp final rendering for a smoothness benefit that's only
+  // needed mid-gesture. beginInteraction is idempotent (safe to call on
+  // every wheel/pointermove event, not just the first).
+  beginInteraction() {
+    if (this.settleTimeout) {
+      clearTimeout(this.settleTimeout);
+      this.settleTimeout = null;
+    }
+    this.content.classList.add("is-interacting");
+  }
+
+  // Debounced rather than fired immediately on gesture-end — a wheel
+  // gesture has no discrete "end" event of its own (just a burst of
+  // individual wheel events), so this gets called after EVERY wheel event
+  // too, each call pushing the actual removal back out until the events
+  // stop arriving.
+  scheduleSettle(delay = 200) {
+    if (this.settleTimeout) {
+      clearTimeout(this.settleTimeout);
+    }
+    this.settleTimeout = setTimeout(() => {
+      this.settleTimeout = null;
+      this.content.classList.remove("is-interacting");
+    }, delay);
   }
 
   bindEvents() {
@@ -38,7 +74,24 @@ export class PanZoomController {
         return;
       }
       event.preventDefault();
-      const zoomFactor = event.deltaY > 0 ? 0.9 : 1.1;
+      this.beginInteraction();
+      this.scheduleSettle();
+      // Scaled by the event's own deltaY magnitude rather than a flat
+      // per-event factor. A real mouse wheel fires a few large-delta events
+      // per physical click/notch (deltaY ~100), but a trackpad's pinch/
+      // scroll gesture — delivered to the browser as wheel events (ctrl+
+      // wheel on Windows precision touchpads, fractional deltaY on Mac) —
+      // fires many small-delta events in rapid succession as the fingers
+      // move. A flat ±10% PER EVENT compounds across dozens of those events
+      // into a very fast zoom, while a mouse's few discrete notches stay
+      // reasonable — exactly the reported "pinch zooms very fast, the
+      // buttons zoom slowly" mismatch. Exponential scaling by deltaY keeps
+      // the perceived zoom RATE tied to actual scroll/gesture distance,
+      // consistent regardless of how many events the browser splits a
+      // gesture into. WHEEL_ZOOM_SENSITIVITY is tuned so a single mouse-
+      // wheel notch (deltaY ~100) still zooms by ~10%, matching the old
+      // flat-factor feel for that case.
+      const zoomFactor = Math.exp(-event.deltaY * WHEEL_ZOOM_SENSITIVITY);
       const nextZoom = clamp(this.view.zoom * zoomFactor, this.minZoom, this.maxZoom);
       if (nextZoom === this.view.zoom) {
         return;
@@ -59,6 +112,7 @@ export class PanZoomController {
       if (this.container.setPointerCapture) {
         this.container.setPointerCapture(event.pointerId);
       }
+      this.beginInteraction();
       if (this.activePointers.size === 1) {
         this.isPanning = true;
         this.isPinching = false;
@@ -116,6 +170,7 @@ export class PanZoomController {
       if (this.activePointers.size === 0) {
         this.isPanning = false;
         this.container.classList.remove("is-panning");
+        this.scheduleSettle();
       }
     };
 
@@ -194,6 +249,11 @@ export class PanZoomController {
       this.startPoint = null;
       this.startPan = null;
       this.container.classList.remove("is-panning");
+      if (this.settleTimeout) {
+        clearTimeout(this.settleTimeout);
+        this.settleTimeout = null;
+      }
+      this.content.classList.remove("is-interacting");
     }
   }
 
@@ -245,6 +305,10 @@ export class PanZoomController {
   }
 
   destroy() {
+    if (this.settleTimeout) {
+      clearTimeout(this.settleTimeout);
+      this.settleTimeout = null;
+    }
     this.container.removeEventListener("wheel", this.handleWheel);
     this.container.removeEventListener("pointerdown", this.handlePointerDown);
     this.container.removeEventListener("pointermove", this.handlePointerMove);

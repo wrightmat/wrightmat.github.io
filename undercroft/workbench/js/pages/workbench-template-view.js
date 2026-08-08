@@ -36,12 +36,13 @@ import {
 } from "../../../common/js/lib/inspector-fields.js";
 import { createColorPickerField } from "../../../common/js/lib/color-picker.js";
 import { renderTextContent, resolveImageUrl, renderImageContent, renderIconContent, renderContainerContent, renderInputContent, renderLinearTrackContent, renderCircularTrackContent, renderSelectGroupContent, renderToggleContent, toggleStateEntryFromRaw, excludeToggleWrapperColors } from "../lib/component-renderers.js";
-import { collectSystemFields, categorizeFieldType } from "../lib/system-schema.js";
-import { attachFormulaAutocomplete } from "../../../common/js/lib/formula-autocomplete.js";
+import { collectSystemFields, categorizeFieldType } from "../../../common/js/lib/system-schema.js";
 import { evaluateFormula } from "../../../common/js/lib/formula-engine.js";
 import { createLookupFn } from "../../../common/js/lib/bindings.js";
-import { resolveFieldTypeMeta } from "../lib/field-type-meta.js";
-import { listFormulaFunctionMetadata } from "../../../common/js/lib/formula-metadata.js";
+import {
+  createBindingFormulaInput as createSharedBindingFormulaInput,
+  notifyBindingFieldsReady,
+} from "../../../common/js/lib/binding-field.js";
 import {
   normalizeBindingValue,
   resolveBindingFromContexts,
@@ -85,9 +86,6 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
 
   const templateCatalog = new Map();
   const systemCatalog = new Map();
-  const BINDING_FIELDS_EVENT = "template:binding-fields-ready";
-
-  const FORMULA_FUNCTIONS = listFormulaFunctionMetadata();
 
   function getComponentBindingCategories(component) {
     if (!component || typeof component !== "object") {
@@ -271,14 +269,10 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
   }
 
   function emitBindingFieldsReady(schemaId = "") {
-    if (typeof window === "undefined" || typeof window.dispatchEvent !== "function") {
-      return;
-    }
-    const detail = {
+    notifyBindingFieldsReady({
       schemaId: schemaId || "",
       count: Array.isArray(state.bindingFields) ? state.bindingFields.length : 0,
-    };
-    window.dispatchEvent(new CustomEvent(BINDING_FIELDS_EVENT, { detail }));
+    });
   }
 
   const elements = {};
@@ -6306,6 +6300,15 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     ];
   }
 
+  // Thin adapter over the shared common/js/lib/binding-field.js control
+  // (relocated there so Orrery's own marker Vision Range field could reuse
+  // the exact same Binding/Formula/Text input instead of a smaller
+  // duplicate) — same signature as before this relocation, so none of this
+  // file's own ~11 call sites need to change. Injects this page's own
+  // change-commit path (updateComponent), live field list (state.
+  // bindingFields — read fresh via a callback, not a snapshot, so a field
+  // left open while the System selection changes elsewhere still sees the
+  // new list), and sample-data preview evaluators.
   function createBindingFormulaInput(
     component,
     {
@@ -6328,233 +6331,28 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
       afterCommit = null,
     } = {}
   ) {
-    // form-floating, matching Press's own Binding/Text field exactly — a
-    // real Bootstrap floating label needs input/label as direct children,
-    // input before label (Bootstrap's shrink-on-focus CSS is a general
-    // sibling selector, so nothing else needs to sit between them).
-    // .form-floating is itself position:relative, so the suggestions
-    // dropdown below still positions correctly with no extra wrapper.
-    const wrapper = document.createElement("div");
-    wrapper.className = "form-floating";
-    const id = toId([component.uid, "binding-formula"]);
-
-    const allowedFieldCategories = Array.isArray(categoryOverride) && categoryOverride.length
-      ? categoryOverride.map((category) => String(category).toLowerCase())
-      : getComponentBindingCategories(component);
-
-    const input = document.createElement("input");
-    input.className = "form-control";
-    input.type = "text";
-    input.id = id;
-    const resolvedPlaceholder =
-      placeholder !== null && placeholder !== undefined
-        ? placeholder
-        : supportsFormula
-        ? "@attributes.score or =sum(@attributes.strength, @attributes.dexterity)"
-        : "@attributes.score";
-    input.placeholder = resolvedPlaceholder || "";
-    input.autocomplete = "off";
-    input.spellcheck = false;
-    input.value = getBindingEditorValue(component, { bindingKey, formulaKey, textKey });
-    input.setAttribute("aria-autocomplete", "list");
-
-    const label = document.createElement("label");
-    label.className = "fw-semibold";
-    label.setAttribute("for", id);
-    label.textContent = labelText;
-
-    const suggestions = document.createElement("div");
-    suggestions.className = "list-group position-absolute top-100 start-0 w-100 shadow-sm bg-body border mt-1 d-none";
-    suggestions.id = `${id}-suggestions`;
-    suggestions.setAttribute("role", "listbox");
-    suggestions.style.zIndex = "1300";
-    suggestions.style.fontSize = "0.8125rem";
-    suggestions.style.maxHeight = "16rem";
-    suggestions.style.overflowY = "auto";
-    input.setAttribute("aria-controls", suggestions.id);
-
-    const feedback = createFieldPreviewFeedback();
-    feedback.update(input.value, { supportsBinding, supportsFormula });
-
-    wrapper.append(input, label, suggestions, feedback.element);
-
-    const MAX_SUGGESTIONS = 12;
-    let listeningForUpdates = false;
-
-    const handleBindingFieldsReady = () => {
-      if (document.activeElement === input) {
-        autocomplete.update();
-      }
-    };
-
-    function getFieldSuggestions(query = "") {
-      if (!supportsBinding) {
-        return [];
-      }
-      const normalized = query.trim().toLowerCase();
-      const entries = Array.isArray(state.bindingFields) ? state.bindingFields : [];
-      const typed = entries.filter((entry) => fieldMatchesCategories(entry, allowedFieldCategories));
-      const filtered = normalized
-        ? typed.filter((entry) => {
-            const path = entry.path?.toLowerCase?.() || "";
-            const labelText = entry.label?.toLowerCase?.() || "";
-            return path.includes(normalized) || labelText.includes(normalized);
-          })
-        : typed;
-      return filtered.slice(0, MAX_SUGGESTIONS).map((entry) => {
-        const category = entry.category || categorizeFieldType(entry.type);
-        return {
-          type: "field",
-          path: entry.path,
-          display: `@${entry.path}`,
-          description: entry.label && entry.label !== entry.path ? entry.label : "",
-          fieldType: entry.type || "",
-          fieldCategory: category || "",
-        };
-      });
-    }
-
-    function getFunctionSuggestions(query = "") {
-      if (!supportsFormula) {
-        return [];
-      }
-      const normalized = query.trim().toLowerCase();
-      const entries = normalized
-        ? FORMULA_FUNCTIONS.filter((fn) => fn.name.toLowerCase().startsWith(normalized))
-        : FORMULA_FUNCTIONS;
-      return entries.slice(0, MAX_SUGGESTIONS).map((fn) => ({
-        type: "function",
-        name: fn.name,
-        display: fn.signature,
-        description: fn.name,
-      }));
-    }
-
-    function commitValue(raw) {
-      const source = typeof raw === "string" ? raw : "";
-      const trimmed = source.trim();
-      let result = { type: "empty", value: "" };
-      updateComponent(
-        component.uid,
-        (draft) => {
-          if (!trimmed) {
-            if (bindingKey) {
-              draft[bindingKey] = "";
-            }
-            if (supportsFormula && formulaKey) {
-              draft[formulaKey] = "";
-            }
-            if (textKey) {
-              draft[textKey] = "";
-            }
-            result = { type: "empty", value: "" };
-          } else if (supportsFormula && trimmed.startsWith("=")) {
-            const expression = trimmed.slice(1).trim();
-            if (formulaKey) {
-              draft[formulaKey] = expression;
-            }
-            if (bindingKey) {
-              draft[bindingKey] = "";
-            }
-            if (textKey) {
-              draft[textKey] = "";
-            }
-            result = { type: "formula", value: expression };
-          } else if (textKey && !trimmed.startsWith("@")) {
-            // Plain literal text (textKey configured, and this isn't a
-            // binding path either) — the case createBindingFormulaInput
-            // never handled before: everyone else's field is purely a
-            // binding-path selector, where a bare value like a number is
-            // still meant for bindingKey (see Track's Segments), not a
-            // literal-text concept at all.
-            draft[textKey] = trimmed;
-            if (bindingKey) {
-              draft[bindingKey] = "";
-            }
-            if (supportsFormula && formulaKey) {
-              draft[formulaKey] = "";
-            }
-            result = { type: "text", value: trimmed };
-          } else {
-            if (bindingKey) {
-              draft[bindingKey] = supportsBinding ? trimmed : "";
-            }
-            if (supportsFormula && formulaKey) {
-              draft[formulaKey] = "";
-            }
-            if (textKey) {
-              draft[textKey] = "";
-            }
-            result = { type: "binding", value: trimmed };
-          }
-          if (typeof afterCommit === "function") {
-            afterCommit({ draft, raw: source, trimmed, result });
-          }
-        },
-        { rerenderCanvas: true }
-      );
-    }
-
-    const autocomplete = attachFormulaAutocomplete(input, {
-      container: suggestions,
+    const allowedFieldCategories =
+      Array.isArray(categoryOverride) && categoryOverride.length
+        ? categoryOverride.map((category) => String(category).toLowerCase())
+        : getComponentBindingCategories(component);
+    return createSharedBindingFormulaInput(component, {
       supportsBinding,
-      supportsFunctions: supportsFormula,
-      getFieldItems: (query) => getFieldSuggestions(query),
-      getFunctionItems: (query) => getFunctionSuggestions(query),
-      resolveFieldMeta: resolveFieldTypeMeta,
-      maxItems: MAX_SUGGESTIONS,
-      applySuggestion: ({ applyDefault }) => {
-        applyDefault();
-        commitValue(input.value);
-        feedback.update(input.value, { supportsBinding, supportsFormula });
-      },
+      supportsFormula,
+      labelText,
+      placeholder,
+      bindingKey,
+      formulaKey,
+      textKey,
+      allowedFieldCategories,
+      helperText,
+      afterCommit,
+      idSeed: toId([component.uid, "binding-formula"]),
+      getSystemFields: () => state.bindingFields,
+      hasSchemaSelected: Boolean(state.template?.schema),
+      onCommit: (mutator) => updateComponent(component.uid, mutator, { rerenderCanvas: true }),
+      evaluateFormulaPreview: (expression) => evaluatePreviewFormulaDetailed(expression),
+      resolveBindingPreview: (binding) => resolvePreviewBindingValue(binding),
     });
-
-    input.addEventListener("input", () => {
-      commitValue(input.value);
-      autocomplete.update();
-      feedback.update(input.value, { supportsBinding, supportsFormula });
-    });
-
-    input.addEventListener("focus", () => {
-      if (!listeningForUpdates) {
-        window.addEventListener(BINDING_FIELDS_EVENT, handleBindingFieldsReady);
-        listeningForUpdates = true;
-      }
-      autocomplete.update();
-    });
-
-    input.addEventListener("click", () => {
-      autocomplete.update();
-    });
-
-    input.addEventListener("blur", () => {
-      setTimeout(() => {
-        autocomplete.close();
-        if (listeningForUpdates) {
-          window.removeEventListener(BINDING_FIELDS_EVENT, handleBindingFieldsReady);
-          listeningForUpdates = false;
-        }
-      }, 120);
-    });
-
-    if (helperText) {
-      const helper = document.createElement("div");
-      helper.className = "form-text text-body-secondary";
-      helper.textContent = helperText;
-      wrapper.appendChild(helper);
-    }
-
-    if (supportsBinding && !state.bindingFields.length) {
-      const helper = document.createElement("div");
-      helper.className = "form-text text-body-secondary";
-      helper.textContent = state.template?.schema
-        ? "No fields available for this system yet."
-        : "Select a system to enable bindings.";
-      wrapper.appendChild(helper);
-    }
-
-    return wrapper;
   }
 
   // form-floating for all three — matching Press's own compact "small

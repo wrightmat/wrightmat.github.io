@@ -27,7 +27,15 @@
 .orrery-map.orrery-shaping,
 .orrery-map.orrery-shaping .orrery-layer-item,
 .orrery-map.orrery-shaping .orrery-layer-handle,
-.orrery-map.orrery-shaping .orrery-layer-grid-overlay.is-interactive {
+.orrery-map.orrery-shaping .orrery-layer-grid-overlay.is-interactive,
+.orrery-map.orrery-walling,
+.orrery-map.orrery-walling .orrery-layer-item,
+.orrery-map.orrery-walling .orrery-layer-handle,
+.orrery-map.orrery-walling .orrery-layer-grid-overlay.is-interactive,
+.orrery-map.orrery-lighting,
+.orrery-map.orrery-lighting .orrery-layer-item,
+.orrery-map.orrery-lighting .orrery-layer-handle,
+.orrery-map.orrery-lighting .orrery-layer-grid-overlay.is-interactive {
   cursor: crosshair;
 }
 
@@ -257,6 +265,42 @@
   transform: translate(-50%, -50%);
 }
 
+/* Marker icon overlay badges — a small row along the marker's own bottom
+   edge, overflowing slightly outside its circular border the same way a
+   VTT token's own status/condition icons typically sit astride its edge
+   rather than being squeezed fully inside it. Not restricted to conditions
+   — any small indicator a GM wants to pin to a token. Per-badge size/
+   background color are inline (map-viewer.js's own createMarkerDot) since
+   both vary per marker/icon; only the shared layout lives here. */
+.orrery-marker-overlay-icons {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translate(-50%, 50%);
+  display: flex;
+  gap: 2px;
+  pointer-events: none;
+}
+
+.orrery-marker-overlay-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid #fff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
+  color: #fff;
+  line-height: 1;
+}
+
+/* The marker inspector's own "Icons" collapsible section — capped height so
+   a marker carrying many icons scrolls internally rather than pushing
+   Position X/Y and the toolbar further down the panel. */
+.orrery-marker-icons-list {
+  max-height: 8rem;
+  overflow-y: auto;
+}
+
 .orrery-layer-marker-container.is-interactive {
   cursor: crosshair;
 }
@@ -285,8 +329,22 @@
   left: 50%;
   top: 50%;
   transform-origin: center;
-  will-change: transform;
   user-select: none;
+}
+
+/* will-change: transform is applied here (not statically) — see
+   pan-zoom.js's PanZoomController.beginInteraction/scheduleSettle. Left on
+   permanently, it promotes this whole subtree (base map image + every
+   marker/icon/wall overlay) to a GPU-composited layer that's rasterized
+   ONCE and then stretched via the compositor on every scale() change —
+   which is what made markers/icons look blurry when zoomed in, regardless
+   of how high-res their own source images actually were: the browser was
+   magnifying an already-rasterized texture, not re-sampling the originals.
+   Toggling it on only during an active pan/zoom gesture keeps that GPU
+   fast-path for smooth interaction, then removing it once the gesture
+   settles lets the browser repaint the layer crisply at the final scale. */
+.orrery-map-content.is-interacting {
+  will-change: transform;
 }
 
 .orrery-map-image {

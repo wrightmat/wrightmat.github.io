@@ -910,15 +910,148 @@ export async function fetchWledDevices(dataManager) {
   }
 }
 
-// Exported so a macro-authoring/resolution UI (the Macro board's own
-// "no device aliased ..." prompt) can check ahead of time, not just react
-// to a thrown error after the fact.
+// Exported so a macro-authoring/resolution UI (promptForWledAlias below,
+// and macro-runner.js's own per-action check) can check ahead of time, not
+// just react to a thrown error after the fact.
 export function resolveWledDeviceByAlias(devices, alias) {
   const normalized = (alias || "").trim().toLowerCase();
   if (!normalized) return null;
   return (Array.isArray(devices) ? devices : []).find(
     (device) => (device.alias || "").trim().toLowerCase() === normalized
   ) || null;
+}
+
+// The write half of fetchWledDevices above — same two keys, same local-
+// always/server-when-signed-in shape, so a device list saved from ANY
+// caller (dashboard.js's own device manager, or promptForWledAlias below,
+// invoked from a macro running anywhere: a Board widget card, a Journal
+// page's inline `` `macro:...` `` chip viewed directly in Repository, a
+// Handout) is readable by every other caller regardless of which one wrote
+// it. dashboard.js's own persistWledDevices calls this too, rather than
+// keeping a second, independently-typed copy of the same two key strings
+// that could quietly drift out of sync with these.
+export async function saveWledDevices(dataManager, devices) {
+  const normalized = normalizeWledDeviceList(devices);
+  try {
+    localStorage.setItem(WLED_DEVICES_LOCAL_KEY, JSON.stringify(normalized));
+  } catch (error) {
+    // Local storage may be unavailable (private browsing, quota) — the
+    // server sync below (when signed in) still gives this a home.
+  }
+  if (dataManager?.isAuthenticated?.()) {
+    await dataManager.saveUserSettings({ [WLED_DEVICES_SERVER_KEY]: normalized });
+  }
+  return normalized;
+}
+
+const ALIAS_PROMPT_MODAL_ID = "undercroft-wled-alias-modal";
+
+function ensureAliasPromptModal() {
+  let modal = document.getElementById(ALIAS_PROMPT_MODAL_ID);
+  if (modal) return modal;
+  const wrapper = document.createElement("div");
+  wrapper.innerHTML = `
+    <div class="modal fade" id="${ALIAS_PROMPT_MODAL_ID}" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5">Alias a WLED device</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body d-flex flex-column gap-2">
+            <p class="small text-body-secondary mb-0" data-wled-alias-message></p>
+            <select class="form-select" data-wled-alias-select></select>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-primary" data-wled-alias-confirm>Save &amp; continue</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  const element = wrapper.firstElementChild;
+  document.body.appendChild(element);
+  return element;
+}
+
+// Prompts to map ONE unresolved alias to a known device, persists the
+// updated device list (saveWledDevices above — durable regardless of which
+// page/widget triggered this), and resolves to the updated list — or null
+// if the GM cancelled, or there's nothing saved to pick from at all. Shared
+// by every macro-running surface (macro-runner.js's own runMacro is the one
+// caller today, checked once per distinct alias per run — see its own
+// comment) so a macro referencing an unconfigured device alias never just
+// fails with no way to fix it in the moment: the GM aliases it right here
+// and the macro keeps going.
+export async function promptForWledAlias({ dataManager, status, alias, devices }) {
+  const deviceList = normalizeWledDeviceList(devices);
+  if (!deviceList.length) {
+    status?.show?.(
+      `No WLED device aliased "${alias}", and none saved to pick from yet — add one in the WLED widget first.`,
+      { type: "warning", timeout: 4000 }
+    );
+    return null;
+  }
+  const modalElement = ensureAliasPromptModal();
+  const modal =
+    window.bootstrap && typeof window.bootstrap.Modal === "function"
+      ? window.bootstrap.Modal.getOrCreateInstance(modalElement)
+      : null;
+  const messageEl = modalElement.querySelector("[data-wled-alias-message]");
+  const select = modalElement.querySelector("[data-wled-alias-select]");
+  const confirmButton = modalElement.querySelector("[data-wled-alias-confirm]");
+  if (messageEl) {
+    messageEl.textContent = `This macro references a WLED device aliased "${alias}", which isn't set up yet. Pick which saved device it should mean:`;
+  }
+  if (select) {
+    select.innerHTML = "";
+    deviceList.forEach((device) => {
+      const option = document.createElement("option");
+      option.value = device.ip;
+      option.textContent = device.label || device.ip;
+      select.appendChild(option);
+    });
+  }
+  return new Promise((resolve) => {
+    let settled = false;
+    const finish = (result) => {
+      if (settled) return;
+      settled = true;
+      confirmButton?.removeEventListener("click", onConfirm);
+      modalElement.removeEventListener("hidden.bs.modal", onHidden);
+      resolve(result);
+    };
+    const onConfirm = () => {
+      const device = deviceList.find((entry) => entry.ip === select?.value);
+      if (!device) {
+        finish(null);
+        return;
+      }
+      const updated = deviceList.map((entry) => (entry.ip === device.ip ? { ...entry, alias } : entry));
+      modal?.hide();
+      void saveWledDevices(dataManager, updated)
+        .then(() => finish(updated))
+        .catch((error) => {
+          // Still resolved for THIS run even if the persist failed —
+          // better to let the macro keep going than block it on a save
+          // error the GM can't do anything about mid-scene.
+          status?.show?.(error?.message || "Unable to save that alias.", { type: "error" });
+          finish(updated);
+        });
+    };
+    const onHidden = () => finish(null);
+    confirmButton?.addEventListener("click", onConfirm);
+    modalElement.addEventListener("hidden.bs.modal", onHidden);
+    if (modal) {
+      modal.show();
+    } else {
+      // No Bootstrap JS on the page (shouldn't happen anywhere in this
+      // suite, but stay defensive rather than silently doing nothing) —
+      // same fallback shape content-picker.js's own openContentPicker uses.
+      finish(null);
+    }
+  });
 }
 
 export async function runWledMacroAction(action, { wledDevices = [], widgetInstance } = {}) {

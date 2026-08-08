@@ -385,6 +385,7 @@ export function renderMarkdown(
     groupContext,
     dataManager,
     ensureWidget,
+    onWledDevicesChange,
     validKindIds,
     kindLabels,
     onOpenReference,
@@ -409,7 +410,7 @@ export function renderMarkdown(
   applyWikiLinkStyling(container, { onNavigate });
   applyDiceRollers(container, { status, interactive: interactiveDice, dataManager });
   applyEncounterBlocks(container, { interactive: interactiveEncounters, onStartEncounter });
-  applyMacroBlocks(container, { status, interactive: interactiveMacros, dataManager, groupContext, ensureWidget });
+  applyMacroBlocks(container, { status, interactive: interactiveMacros, dataManager, groupContext, ensureWidget, onWledDevicesChange });
   applyKindReferenceBlocks(container, { validKindIds, kindLabels, interactive: Boolean(onOpenReference), onOpenReference });
   applyCalloutStyling(container);
   // Off by default at this layer — Repository's own editor always opts in;

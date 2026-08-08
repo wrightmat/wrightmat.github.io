@@ -37,7 +37,7 @@ export async function findMacro(dataManager, ref) {
   return match ? { id: match.id, ...(match.entity && typeof match.entity === "object" ? match.entity : {}) } : null;
 }
 
-export async function runMacroReference(ref, { dataManager, groupContext, status, ensureWidget } = {}) {
+export async function runMacroReference(ref, { dataManager, groupContext, status, ensureWidget, onWledDevicesChange } = {}) {
   if (!dataManager) return;
   const macro = await findMacro(dataManager, ref);
   if (!macro) {
@@ -71,7 +71,11 @@ export async function runMacroReference(ref, { dataManager, groupContext, status
   // has no widget grid to add to at all — runMacro()'s own per-action
   // standalone fallbacks (each action handler's own module-level runner)
   // are what still make the macro's real-world effects happen there.
-  await runMacro(macro, { dataManager, groupContext, status, wledDevices, ensureWidget });
+  // onWledDevicesChange (optional) — see macro-runner.js's own runMacro
+  // header comment; only meaningful for a caller that keeps its own live
+  // copy of the device list around (dashboard.js's Board widget wiring),
+  // left undefined everywhere else with no such copy to keep in sync.
+  await runMacro(macro, { dataManager, groupContext, status, wledDevices, ensureWidget, onWledDevicesChange });
 }
 
 // Inline styles (not just a CSS class) for the same reason markdown.js's
@@ -97,7 +101,7 @@ function styleAsChip(button, interactive) {
 // commands, broadcasting sound/handouts to the table, ...) is a GM-only
 // action, same reasoning journal-encounter.js's own chip withholds
 // starting combat from a player viewing a shown-to-the-table page.
-function buildMacroChip(ref, { status, interactive, dataManager, groupContext, ensureWidget }) {
+function buildMacroChip(ref, { status, interactive, dataManager, groupContext, ensureWidget, onWledDevicesChange }) {
   const button = el("button", "repository-macro-chip");
   button.type = "button";
   styleAsChip(button, interactive);
@@ -107,7 +111,9 @@ function buildMacroChip(ref, { status, interactive, dataManager, groupContext, e
   button.append(icon, el("span", null, `Macro: ${ref}`));
   if (interactive) {
     button.title = `Click to run "${ref}"`;
-    button.addEventListener("click", () => void runMacroReference(ref, { dataManager, groupContext, status, ensureWidget }));
+    button.addEventListener("click", () =>
+      void runMacroReference(ref, { dataManager, groupContext, status, ensureWidget, onWledDevicesChange })
+    );
   }
   return button;
 }
@@ -115,12 +121,12 @@ function buildMacroChip(ref, { status, interactive, dataManager, groupContext, e
 // Runs after marked+DOMPurify — CommonMark's own backtick syntax already
 // turned `` `macro: Haunted Forest` `` into a plain <code>...</code>; this
 // just finds those and swaps each one for a chip, in place.
-export function applyMacroBlocks(container, { status, interactive = false, dataManager, groupContext, ensureWidget } = {}) {
+export function applyMacroBlocks(container, { status, interactive = false, dataManager, groupContext, ensureWidget, onWledDevicesChange } = {}) {
   container.querySelectorAll("code").forEach((codeEl) => {
     const match = MACRO_CODE_PATTERN.exec(codeEl.textContent.trim());
     if (!match) return;
     const ref = match[1].trim();
     if (!ref) return;
-    codeEl.replaceWith(buildMacroChip(ref, { status, interactive, dataManager, groupContext, ensureWidget }));
+    codeEl.replaceWith(buildMacroChip(ref, { status, interactive, dataManager, groupContext, ensureWidget, onWledDevicesChange }));
   });
 }
