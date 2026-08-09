@@ -1,0 +1,15 @@
+{
+  "id": "res.glyph-of-warding-kundarak",
+  "name": "Glyph of Warding (House Kundarak)",
+  "systemIds": ["sys.dnd5e"],
+  "settingIds": ["eberron"],
+  "description": "House Kundarak inscribes a glyph of warding to guard a vault, door, or valuable — the same magic behind their reputation as Khorvaire's premier vault-keepers.",
+  "category": "service",
+  "house": "kundarak",
+  "price": "20 gp",
+  "tags": {
+    "locationTypes": [],
+    "locationPurposes": ["commerce"],
+    "environments": []
+  }
+}

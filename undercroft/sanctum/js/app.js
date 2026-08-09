@@ -80,6 +80,12 @@ createToolbarButtonGroup([
 ]).forEach((button) => document.querySelector("[data-setting-toolbar-mount]")?.appendChild(button));
 createToolbarButtonGroup([
   { action: "generate", icon: "tabler:map-2", label: "Generate Location", primary: true, attrs: { "data-generate-location": true } },
+  // Generates and SAVES a whole connected set of rooms in one action (see
+  // handleGenerateDungeon) — unlike Generate Location, which only ever
+  // produces one unsaved record for the GM to review/rename/Save
+  // themselves, this bulk action can't pause for a name per room, so it
+  // auto-names and saves everything immediately.
+  { action: "generate", icon: "tabler:stack-2", label: "Generate Dungeon", attrs: { "data-generate-dungeon": true } },
   { action: "save", label: "Save", disabled: true, attrs: { "data-save-location": true } },
   { action: "export", label: "Export JSON", disabled: true, attrs: { "data-export-location": true } },
   { action: "delete", label: "Delete Location", disabled: true, attrs: { "data-delete-location": true } },
@@ -128,6 +134,13 @@ mountField(
     dataAttr: "data-locked-features", helpTopic: "sanctum.lockedFeatures", size: 4,
   })
 );
+mountField(
+  "dungeon-room-count",
+  createCompactField({
+    type: "number", id: "sanctumDungeonRoomCount", label: "Dungeon Room Count", labelClass: "form-label fw-semibold mb-0", controlClass: "form-control",
+    dataAttr: "data-dungeon-room-count", helpTopic: "sanctum.dungeonRoomCount", min: 1, step: 1, value: "5",
+  })
+);
 mountField("location-name", createCompactField({ type: "text", id: "sanctumLocationName", label: "Name", labelClass: "form-label fw-semibold mb-0", controlClass: "form-control", dataAttr: "data-location-name", placeholder: "Unnamed" }));
 mountField("identity-type", createCompactField({ type: "select", id: "sanctumIdentityType", label: "Type", dataAttr: "data-identity-type" }));
 mountField("identity-purpose", createCompactField({ type: "select", id: "sanctumIdentityPurpose", label: "Purpose", dataAttr: "data-identity-purpose" }));
@@ -153,6 +166,8 @@ const elements = {
   purposeOverride: document.querySelector("[data-purpose-override]"),
   environmentOverride: document.querySelector("[data-environment-override]"),
   lockedFeatures: document.querySelector("[data-locked-features]"),
+  dungeonRoomCount: document.querySelector("[data-dungeon-room-count]"),
+  generateDungeonButton: document.querySelector("[data-generate-dungeon]"),
   parentSelect: document.querySelector("[data-parent-select]"),
   connectedToList: document.querySelector("[data-connected-to-list]"),
   addConnectionSelect: document.querySelector("[data-add-connection-select]"),
@@ -911,9 +926,18 @@ function renderReferenceList(container, entries, onRemove) {
   container.innerHTML = "";
   entries.forEach((entry, index) => {
     const entity = findById(entityListForKind(entry.kind), entry.refId);
+    const description = entry.description || referenceDescription(entry.kind, entry.refId);
+    // A Resource's own `price` (a documented freeform-JSON convention, not a
+    // schema field — see code-conventions.md) is worth surfacing right here,
+    // so a Shop-Feature Location's Asset list shows cost at a glance instead
+    // of requiring the GM to open the Resource record itself. Folded into
+    // the shared description text rather than a new createListRow column —
+    // Features/NPCs/Monsters/Effects share this same row primitive and have
+    // no price concept, so it's not a slot worth adding there.
+    const price = entry.kind === "resource" ? entity?.price : null;
     const row = createListRow({
       title: `${entry.label || referenceLabel(entry.kind, entry.refId)} (${entry.kind})`,
-      description: entry.description || referenceDescription(entry.kind, entry.refId),
+      description: price ? [description, `Price: ${price}`].filter(Boolean).join(" — ") : description,
       onRemove: () => onRemove(index),
       removeLabel: "Remove",
       onSelect: (row) => selectInspectorEntry(row, entity || entry),
@@ -971,7 +995,7 @@ function renderConnectedToList(record) {
 }
 
 // Children are never stored — always computed from the Setting's location
-// list by filtering on parentId, exactly like Forge's settingId filtering.
+// list by filtering on parentId, exactly like Forge's settingIds filtering.
 function renderChildrenList(record) {
   if (!elements.childrenList) return;
   elements.childrenList.innerHTML = "";
@@ -1003,7 +1027,7 @@ function buildLocationSnapshot() {
     name: elements.nameInput?.value.trim() || "",
     notes: elements.notesText?.value || "",
     systemIds: currentSystemId() ? [currentSystemId()] : [],
-    settingId: currentSettingId || elements.settingSelect?.value || null,
+    settingIds: (currentSettingId || elements.settingSelect?.value) ? [currentSettingId || elements.settingSelect.value] : [],
     parentId: elements.parentSelect?.value || null,
     ...collectNpcConfigFromForm(),
   };
@@ -1107,6 +1131,81 @@ function handleGenerate() {
   }
 }
 
+// Generates a parent Location (the dungeon as a whole) plus a series of
+// child Locations (rooms) and saves all of it immediately — every piece
+// here is an existing Sanctum primitive (generateLocation/
+// createLocationRecord run once per room, parentId/connectedTo are already
+// real Location relationship fields), just orchestrated in a loop rather
+// than the single-record flow Generate Location's own button uses. Type/
+// Purpose left blank in the current overrides naturally randomizes fresh
+// per room (generateLocation's own existing behavior for a blank
+// override) — an explicit override, if the GM set one, applies to every
+// room the same way it would to a single Generate Location click, which is
+// an intentional consequence of it being a deliberate pin, not a bug.
+async function handleGenerateDungeon() {
+  const settingId = currentSettingId || elements.settingSelect?.value;
+  if (!settingId) {
+    status?.show("Select or save a Setting first.", { type: "warning", timeout: 2500 });
+    return;
+  }
+  if (!dataManager) return;
+  const roomCount = Math.max(1, Math.floor(Number(elements.dungeonRoomCount?.value) || 5));
+  if (elements.generateDungeonButton) elements.generateDungeonButton.disabled = true;
+  try {
+    const genOptions = {
+      systemId: currentSystemId() || null,
+      settingId,
+      typeId: elements.typeOverride?.value || "",
+      purposeId: elements.purposeOverride?.value || "",
+      environment: elements.environmentOverride?.value || "",
+      environmentPropertyType,
+      lockedFeatureIds: readLockedFeatureIds(),
+    };
+
+    const parentRecord = createLocationRecord(
+      generateLocation(locationTypes, locationPurposes, features, resources, genOptions),
+      null
+    );
+    parentRecord.name = "Dungeon";
+    await dataManager.save("location", parentRecord.id, toPressExportShape(parentRecord));
+
+    const rooms = [];
+    for (let index = 0; index < roomCount; index += 1) {
+      const room = createLocationRecord(
+        generateLocation(locationTypes, locationPurposes, features, resources, genOptions),
+        null
+      );
+      room.name = `Room ${index + 1}`;
+      room.parentId = parentRecord.id;
+      if (rooms.length) {
+        // Branching-tree layout: mostly connects to the room just placed
+        // (a snaking path), occasionally branches back to an earlier one —
+        // simple to reason about, and swappable for a different layout
+        // algorithm later without touching room generation at all.
+        const connectToPrevious = rooms.length === 1 || Math.random() < 0.6;
+        const targetIndex = connectToPrevious ? rooms.length - 1 : Math.floor(Math.random() * (rooms.length - 1));
+        room.connectedTo = [rooms[targetIndex].id];
+      }
+      await dataManager.save("location", room.id, toPressExportShape(room));
+      rooms.push(room);
+    }
+
+    status?.show(`Generated a dungeon with ${roomCount} room${roomCount === 1 ? "" : "s"}.`, {
+      type: "success",
+      timeout: 2500,
+    });
+    await reloadLocationsForSetting(settingId);
+    if (elements.locationSelect) elements.locationSelect.value = parentRecord.id;
+    currentLocationId = parentRecord.id;
+    renderLocation(parentRecord);
+    markLocationClean();
+  } catch (error) {
+    status?.show(`Unable to generate dungeon: ${error.message}`, { type: "error", timeout: 4000 });
+  } finally {
+    if (elements.generateDungeonButton) elements.generateDungeonButton.disabled = false;
+  }
+}
+
 async function handleSave() {
   if (!currentRecord || !dataManager) return;
   const settingId = currentSettingId || elements.settingSelect?.value;
@@ -1121,11 +1220,15 @@ async function handleSave() {
   }
   currentRecord.name = name;
   currentRecord.notes = elements.notesText?.value || "";
-  // systemIds (plural) is the only System-association field — matches every
-  // other Library kind's convention (and what Loom's generic "Assigned
-  // Systems" checkboxes read), rather than a separate singular systemId.
+  // systemIds/settingIds (both plural) are the only System/Setting
+  // association fields — matches every other Library kind's convention (and
+  // what Loom's generic "Assigned Systems"/"Assigned Settings" checkboxes
+  // read), rather than a separate singular systemId/settingId. A Location
+  // only ever belongs to whichever one Setting is currently selected in this
+  // editor, so the array always holds exactly one entry today — plural just
+  // future-proofs a place reachable from more than one Setting.
   currentRecord.systemIds = currentSystemId() ? [currentSystemId()] : [];
-  currentRecord.settingId = settingId;
+  currentRecord.settingIds = settingId ? [settingId] : [];
   currentRecord.parentId = elements.parentSelect?.value || null;
   Object.assign(currentRecord, collectNpcConfigFromForm());
   const id = currentLocationId || slugify(name);
@@ -1289,6 +1392,7 @@ async function init() {
   initCollapsibles();
 
   elements.generateButton?.addEventListener("click", handleGenerate);
+  elements.generateDungeonButton?.addEventListener("click", () => void handleGenerateDungeon());
   elements.saveButton?.addEventListener("click", handleSave);
   elements.exportButton?.addEventListener("click", handleExport);
   elements.generateNoteButton?.addEventListener("click", handleGenerateNote);

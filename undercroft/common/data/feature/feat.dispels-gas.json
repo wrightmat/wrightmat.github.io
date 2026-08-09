@@ -1,0 +1,18 @@
+{
+  "id": "feat.dispels-gas",
+  "name": "Dispels Gas or Vapors",
+  "systemIds": ["sys.dnd5e"],
+  "description": "Clears fog, smoke, poisonous gas, or similar vapors from the area.",
+  "mechanics": {
+    "type": "passive",
+    "text": "This effect disperses gas, smoke, or vapor clouds within its area."
+  },
+  "budgetCost": 1,
+  "tags": {
+    "categories": ["spell"],
+    "propertyHints": ["utility", "cleansing", "environment"]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

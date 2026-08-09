@@ -9,9 +9,11 @@
   cursor: grabbing;
 }
 
-/* Marks whichever property row the Property Inspector (right pane) is
-   currently showing — set/cleared in js/app.js's selectSystemPropertyRow. */
-[data-system-row-selected="true"] {
+/* Marks whichever property row a Property Inspector (right pane) is
+   currently showing — set/cleared in common/js/lib/property-schema-
+   editor.js's createPropertyInspector (selectRow), shared by both the
+   Systems tab and the Groups tab's own Property Inspector. */
+[data-property-row-selected="true"] {
   outline: 2px solid var(--bs-primary);
   outline-offset: 1px;
 }

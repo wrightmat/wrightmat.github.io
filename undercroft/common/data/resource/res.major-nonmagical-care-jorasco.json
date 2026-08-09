@@ -1,0 +1,15 @@
+{
+  "id": "res.major-nonmagical-care-jorasco",
+  "name": "Major Non-magical Care (House Jorasco)",
+  "systemIds": ["sys.dnd5e"],
+  "settingIds": ["eberron"],
+  "description": "Extended bedside care at a House Jorasco enclave — mundane nursing over days, not a single spell.",
+  "category": "service",
+  "house": "jorasco",
+  "price": "1 gp per day",
+  "tags": {
+    "locationTypes": [],
+    "locationPurposes": ["commerce"],
+    "environments": []
+  }
+}

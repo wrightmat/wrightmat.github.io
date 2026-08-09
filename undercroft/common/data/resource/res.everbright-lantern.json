@@ -1,0 +1,14 @@
+{
+  "id": "res.everbright-lantern",
+  "name": "Everbright Lantern",
+  "systemIds": ["sys.dnd5e"],
+  "settingIds": ["eberron"],
+  "description": "A House Cannith creation resembling a normal bullseye lantern, but lit by an Eberron dragonshard instead of fuel — used as street lighting across Khorvaire's cities as often as it's carried.",
+  "category": "wondrous-item",
+  "price": "212 gp",
+  "tags": {
+    "locationTypes": [],
+    "locationPurposes": ["commerce"],
+    "environments": []
+  }
+}

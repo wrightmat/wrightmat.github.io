@@ -34,6 +34,21 @@ function matchesCategory(feature) {
   return categories.includes("spell") || categories.includes("item");
 }
 
+// A Feature with no `tags.propertyHints` (most of them) or a class with no
+// `allowedFeatureTags` (a non-caster, or a System with no "classes" field at
+// all) is unconstrained — the same "no tag means universal" convention used
+// everywhere else in this suite. Only an actual populated, non-overlapping
+// pair excludes a Feature: e.g. a Wizard whose own `allowedFeatureTags`
+// includes "illusion"/"ritual"/... can take a Feature tagged
+// `["illusion","advanced"]` (they share "illusion"), but not one tagged only
+// `["healing","revival","divine"]` (Revive — no overlap).
+function matchesClass(feature, allowedFeatureTags) {
+  if (!Array.isArray(allowedFeatureTags) || !allowedFeatureTags.length) return true;
+  const hints = feature.tags?.propertyHints;
+  if (!Array.isArray(hints) || !hints.length) return true;
+  return hints.some((tag) => allowedFeatureTags.includes(tag));
+}
+
 function synergyScore(feature, selected) {
   const selectedIds = new Set(selected.map((entry) => entry.id));
   let score = 0;
@@ -200,11 +215,19 @@ export function generateEffect(allFeatures, propertyTypes, options = {}) {
     signatureFeatureId = "",
     lockedFeatureIds = [],
     propertyOverrides = {},
+    // The active System's own class vocabulary is read entirely by the
+    // caller (vault/js/app.js, via getSystemClasses) and passed in as this
+    // one class's own allowedFeatureTags — this module has no hardcoded
+    // notion of "Wizard"/"Cleric" any more than it has one of "Rarity", the
+    // same "zero hardcoded System knowledge" guarantee as everywhere else
+    // in Vault. null/undefined (no class selected, or the System has no
+    // "classes" field at all) means unconstrained.
+    allowedFeatureTags = null,
     random = Math.random,
   } = options;
 
   const eligibleFeatures = allFeatures.filter(
-    (feature) => matchesSystem(feature, systemId) && matchesCategory(feature)
+    (feature) => matchesSystem(feature, systemId) && matchesCategory(feature) && matchesClass(feature, allowedFeatureTags)
   );
   // propertyTypes belongs to one already-chosen System record (fetched by
   // the caller), not a merged cross-system list — no systemId filter needed.

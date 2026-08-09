@@ -13,7 +13,7 @@
   "parentId": null,
   "connectedTo": [],
   "notes": "",
-  "settingId": "eberron",
+  "settingIds": ["eberron"],
   "mixingCoefficient": 0.65,
   "speciesWeights": [
     {

@@ -1,0 +1,14 @@
+{
+  "id": "res.feather-token-eberron",
+  "name": "Feather Token (Eberron)",
+  "systemIds": ["sys.dnd5e"],
+  "settingIds": ["eberron"],
+  "description": "A small metal disk — House Orien's own are shaped like unicorns and inscribed with their sigil — that carries a falling wearer safely to the ground before its magic is spent. Common enough to be inexpensive around the heights of Sharn.",
+  "category": "wondrous-item",
+  "price": "80 gp",
+  "tags": {
+    "locationTypes": [],
+    "locationPurposes": ["commerce"],
+    "environments": []
+  }
+}

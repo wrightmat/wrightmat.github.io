@@ -1,0 +1,18 @@
+{
+  "id": "feat.save-ends",
+  "name": "Effect Ends on Successful Save",
+  "systemIds": ["sys.dnd5e"],
+  "description": "An affected creature can repeat its saving throw at the end of each of its turns, ending the effect on itself on a success.",
+  "mechanics": {
+    "type": "passive",
+    "text": "An affected creature repeats the saving throw at the end of each of its turns, ending the effect on a success."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "categories": ["spell"],
+    "propertyHints": ["conditional", "duration"]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

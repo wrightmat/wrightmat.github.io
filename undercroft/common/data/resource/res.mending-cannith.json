@@ -1,0 +1,15 @@
+{
+  "id": "res.mending-cannith",
+  "name": "Mending (House Cannith)",
+  "systemIds": ["sys.dnd5e"],
+  "settingIds": ["eberron"],
+  "description": "A House Cannith artificer casts mending for hire — quick repairs to a broken item, a staple of their trade.",
+  "category": "service",
+  "house": "cannith",
+  "price": "5 gp",
+  "tags": {
+    "locationTypes": [],
+    "locationPurposes": ["commerce"],
+    "environments": []
+  }
+}

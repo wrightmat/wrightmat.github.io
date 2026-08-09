@@ -1,0 +1,18 @@
+{
+  "id": "feat.obscure-heavy",
+  "name": "Heavily Obscures Area",
+  "systemIds": ["sys.dnd5e"],
+  "description": "Thick fog, smoke, or darkness fills the area, granting it the heavily obscured condition.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The effect's area becomes heavily obscured for its duration."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "categories": ["spell"],
+    "propertyHints": ["control", "obscurement"]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

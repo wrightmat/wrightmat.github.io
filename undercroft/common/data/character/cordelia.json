@@ -1335,5 +1335,6 @@
   ],
   "systemIds": [
     "sys.dnd5e"
-  ]
+  ],
+  "template": "tpl.5e.flex-basic"
 }

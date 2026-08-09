@@ -15,27 +15,44 @@
 /* Higher-specificity overrides required for both — same reason
    .orrery-drawing needs them further down: .orrery-layer-item.is-draggable's
    own `cursor: move` (set whenever a layer is selected and draggable, which
-   measuring/pinging don't prevent) and the grid layer's own `cursor: cell`
-   both sit deeper in the DOM than #orrery-map itself, so a plain
-   .orrery-map.orrery-measuring/-pinging rule alone loses to them for
-   anywhere the pointer is actually over one — confirmed as the actual cause
-   of "the cursor is the move cursor" during both tools. */
+   measuring/pinging don't prevent), the grid layer's own `cursor: cell`,
+   AND .orrery-map-stage's own `cursor: grab` (PanZoomController's pan
+   surface for an image/canvas base map — see its own rule further down)
+   all sit deeper in the DOM than #orrery-map itself, so a plain
+   .orrery-map.orrery-measuring/-pinging rule alone loses to any of them for
+   anywhere the pointer is actually over one. .orrery-map-stage specifically
+   is what a Draw/Shape/Measure gesture's own temporary preview (pointer-
+   events: none, so clicks/drags pass straight through to whatever's
+   underneath) sits on top of for its entire duration — confirmed as the
+   actual cause of "the cursor is right until you start dragging, then
+   turns into the pan hand" for every one of these tools on an image/canvas
+   map (tile/Leaflet maps don't have this element at all; Leaflet manages
+   its own drag cursor class dynamically instead of a static CSS rule). */
 .orrery-map.orrery-measuring,
 .orrery-map.orrery-measuring .orrery-layer-item,
 .orrery-map.orrery-measuring .orrery-layer-handle,
 .orrery-map.orrery-measuring .orrery-layer-grid-overlay.is-interactive,
+.orrery-map.orrery-measuring .orrery-map-stage,
 .orrery-map.orrery-shaping,
 .orrery-map.orrery-shaping .orrery-layer-item,
 .orrery-map.orrery-shaping .orrery-layer-handle,
 .orrery-map.orrery-shaping .orrery-layer-grid-overlay.is-interactive,
+.orrery-map.orrery-shaping .orrery-map-stage,
 .orrery-map.orrery-walling,
 .orrery-map.orrery-walling .orrery-layer-item,
 .orrery-map.orrery-walling .orrery-layer-handle,
 .orrery-map.orrery-walling .orrery-layer-grid-overlay.is-interactive,
+.orrery-map.orrery-walling .orrery-map-stage,
 .orrery-map.orrery-lighting,
 .orrery-map.orrery-lighting .orrery-layer-item,
 .orrery-map.orrery-lighting .orrery-layer-handle,
-.orrery-map.orrery-lighting .orrery-layer-grid-overlay.is-interactive {
+.orrery-map.orrery-lighting .orrery-layer-grid-overlay.is-interactive,
+.orrery-map.orrery-lighting .orrery-map-stage,
+.orrery-map.orrery-drawing,
+.orrery-map.orrery-drawing .orrery-layer-item,
+.orrery-map.orrery-drawing .orrery-layer-handle,
+.orrery-map.orrery-drawing .orrery-layer-grid-overlay.is-interactive,
+.orrery-map.orrery-drawing .orrery-map-stage {
   cursor: crosshair;
 }
 
@@ -45,8 +62,27 @@
 .orrery-map.orrery-pinging,
 .orrery-map.orrery-pinging .orrery-layer-item,
 .orrery-map.orrery-pinging .orrery-layer-handle,
-.orrery-map.orrery-pinging .orrery-layer-grid-overlay.is-interactive {
+.orrery-map.orrery-pinging .orrery-layer-grid-overlay.is-interactive,
+.orrery-map.orrery-pinging .orrery-map-stage {
   cursor: default;
+}
+
+/* The Dashboard Map widget's own player toolbar — same Draw/Shape/Measure
+   crosshair as Orrery's own tool-mode classes above, just scoped via a data
+   attribute on viewerHost instead of the .orrery-map class that widget
+   deliberately doesn't carry (see that file's own header comment on why).
+   Still needs .orrery-map-stage listed explicitly for the exact same
+   reason Orrery's own rules do — its `cursor: grab` is deeper in the DOM
+   than viewerHost, so an ancestor-only rule alone would lose to it the
+   moment an active gesture's own pointer-events:none preview lets clicks
+   fall through to the stage underneath. */
+[data-map-tool-active="draw"],
+[data-map-tool-active="draw"] .orrery-map-stage,
+[data-map-tool-active="shape"],
+[data-map-tool-active="shape"] .orrery-map-stage,
+[data-map-tool-active="measure"],
+[data-map-tool-active="measure"] .orrery-map-stage {
+  cursor: crosshair;
 }
 
 .orrery-measure-line-overlay {
@@ -66,22 +102,6 @@
 
 .orrery-measure-line-overlay circle {
   fill: #f97316;
-}
-
-/* A small inline pencil glyph, hotspot at its writing tip (2,22) — plain
-   `crosshair` reads as "select/measure," not "draw," and a bare cursor
-   keyword has no pencil equivalent. The higher-specificity selectors below
-   are required to win over .orrery-layer-item.is-draggable's own `cursor:
-   move` (set whenever the selected layer — which drawing requires — is
-   also draggable) and the grid layer's own `cursor: cell` — both sit deeper
-   in the DOM than #orrery-map itself, so a plain .orrery-map.orrery-drawing
-   rule alone loses to them for anywhere the pointer is actually over one. */
-.orrery-map.orrery-drawing,
-.orrery-map.orrery-drawing .orrery-layer-item,
-.orrery-map.orrery-drawing .orrery-layer-handle,
-.orrery-map.orrery-drawing .orrery-layer-grid-overlay.is-interactive {
-  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M2 22 L4 15 L15 4 L20 9 L9 20 Z' fill='%23f97316' stroke='%231e293b' stroke-width='1'/%3E%3Cpath d='M15 4 L20 9 L18 11 L13 6 Z' fill='%231e293b'/%3E%3C/svg%3E")
-    2 22, crosshair;
 }
 
 .orrery-layer-overlay-host {

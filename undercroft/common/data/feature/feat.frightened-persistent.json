@@ -1,0 +1,18 @@
+{
+  "id": "feat.frightened-persistent",
+  "name": "Inflicts Persistent Frightened",
+  "systemIds": ["sys.dnd5e"],
+  "description": "A failed save leaves the target frightened for the spell's full duration, rather than just one round.",
+  "mechanics": {
+    "type": "active",
+    "text": "A target that fails its saving throw against this effect is frightened for the effect's full duration."
+  },
+  "budgetCost": 4,
+  "tags": {
+    "categories": ["spell"],
+    "propertyHints": ["status", "frightened"]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": ["feat.frightened"]
+}

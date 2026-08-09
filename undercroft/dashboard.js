@@ -17,6 +17,7 @@ import { initBrowserWidget } from "./common/js/lib/widgets/browser.js";
 import { initCalendarWidget } from "./common/js/lib/widgets/calendar.js";
 import { initSoundboardWidget } from "./common/js/lib/widgets/soundboard.js";
 import { initDiceRollerWidget } from "./common/js/lib/widgets/dice-roller.js";
+import { initCalculatorWidget } from "./common/js/lib/widgets/calculator.js";
 import { initWledWidget, resolveWledDeviceByAlias, normalizeWledDeviceList, saveWledDevices } from "./common/js/lib/widgets/wled.js";
 import { initBoardWidget } from "./common/js/lib/widgets/board.js";
 import { openContentPicker } from "./common/js/lib/widgets/content-picker.js";
@@ -168,7 +169,24 @@ const WIDGET_CATALOG = [
     id: "diceroller",
     label: "Dice roller",
     icon: "tabler:dice-5",
-    init: (container, ctx) => initDiceRollerWidget(container, { status: ctx.status, dataManager: ctx.dataManager }),
+    init: (container, ctx) => initDiceRollerWidget(container, { status: ctx.status, dataManager: ctx.dataManager, groupContext: ctx.groupContext }),
+  },
+  {
+    id: "calculator",
+    label: "Calculator",
+    icon: "tabler:calculator",
+    // contentRef holds this instance's own Setting scope + rollable-table
+    // references (see calculator.js) — the same generic per-instance slot
+    // every widget type gets, threaded through automatically by buildCtx.
+    init: (container, ctx) =>
+      initCalculatorWidget(container, {
+        status: ctx.status,
+        dataManager: ctx.dataManager,
+        groupContext: ctx.groupContext,
+        contentRef: ctx.contentRef,
+        setContentRef: ctx.setContentRef,
+        setHeaderContent: ctx.setHeaderContent,
+      }),
   },
   {
     id: "wled",
@@ -1339,7 +1357,7 @@ function createWidgetCard(instance, label) {
   return { card, header, resizeHandle, mount, removeButton, titleEl, leftGroup, rightGroup };
 }
 
-function buildCtx(instance, { setTitle, setHeaderAction, setRightAction } = {}) {
+function buildCtx(instance, { setTitle, setHeaderAction, setHeaderContent, setRightAction } = {}) {
   return {
     dataManager,
     status,
@@ -1367,6 +1385,7 @@ function buildCtx(instance, { setTitle, setHeaderAction, setRightAction } = {}) 
     setContentRef: (next) => updateInstanceContentRef(instance?.instanceId, next),
     setTitle: setTitle || (() => {}),
     setHeaderAction: setHeaderAction || (() => {}),
+    setHeaderContent: setHeaderContent || (() => {}),
     setRightAction: setRightAction || (() => {}),
     // True only inside the second-screen mirror window (renderScreenView) —
     // every widget type that has its own "show to table" visibility toggle
@@ -1632,6 +1651,20 @@ function mountWidget(instance, { screenMode: isScreenCard = false } = {}) {
     headerActionEl = button;
     refreshTooltips(header);
   };
+  // Same left-of-header slot as setHeaderAction, but for a widget that needs
+  // to mount an actual control (a <select>, not a fixed icon-button shape) —
+  // Calculator's own Type select is the first user of this. Appended AFTER
+  // the title (reads "Calculator [Type ▾]"), pass null/undefined to clear.
+  let headerContentEl = null;
+  const setHeaderContent = (element) => {
+    if (headerContentEl) {
+      headerContentEl.remove();
+      headerContentEl = null;
+    }
+    if (!element) return;
+    leftGroup.appendChild(element);
+    headerContentEl = element;
+  };
   // The right-side counterpart — always inserted into rightGroup BEFORE
   // Remove (not header directly: see createWidgetCard's own comment — header
   // is justify-content-between, which spreads space between EVERY adjacent
@@ -1695,6 +1728,7 @@ function mountWidget(instance, { screenMode: isScreenCard = false } = {}) {
   const ctx = buildCtx(instance, {
     setTitle,
     setHeaderAction: isScreenCard ? () => {} : setHeaderAction,
+    setHeaderContent: isScreenCard ? () => {} : setHeaderContent,
     setRightAction: isScreenCard ? () => {} : setRightAction,
   });
   if (isHandout) ctx.plainMountContainer = plainMountEl;

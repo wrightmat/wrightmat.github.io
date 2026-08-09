@@ -1,0 +1,6 @@
+{
+  "kind": "setting",
+  "systemIds": ["sys.dnd5e"],
+  "name": "Spelljammer",
+  "description": "Spelljammer is a Dungeons & Dragons campaign setting of interplanetary and interplanar seafaring — magically-powered spelljamming ships carry crews between the crystal spheres of Wildspace and beyond, through the Astral Plane's Phlogiston. It reframes the same core D&D rules around ship-to-ship combat, alien crews, and voyages between worlds rather than replacing them with a separate ruleset."
+}

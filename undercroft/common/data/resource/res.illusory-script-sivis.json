@@ -1,0 +1,15 @@
+{
+  "id": "res.illusory-script-sivis",
+  "name": "Illusory Script (House Sivis)",
+  "systemIds": ["sys.dnd5e"],
+  "settingIds": ["eberron"],
+  "description": "House Sivis notaries write a document under illusory script for hire — unreadable to anyone but the intended recipient, part of their monopoly on written communication.",
+  "category": "service",
+  "house": "sivis",
+  "price": "15 gp",
+  "tags": {
+    "locationTypes": [],
+    "locationPurposes": ["commerce"],
+    "environments": []
+  }
+}

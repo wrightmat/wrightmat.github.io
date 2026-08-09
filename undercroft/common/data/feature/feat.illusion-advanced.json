@@ -1,0 +1,18 @@
+{
+  "id": "feat.illusion-advanced",
+  "name": "Adjustable Illusion",
+  "systemIds": ["sys.dnd5e"],
+  "description": "The illusion can be actively controlled and altered for its duration, rather than being fixed at the moment of casting.",
+  "mechanics": {
+    "type": "active",
+    "text": "As an action, the caster can change the illusion's form, sound, or details within the limits of the original casting."
+  },
+  "budgetCost": 3,
+  "tags": {
+    "categories": ["spell"],
+    "propertyHints": ["illusion", "advanced"]
+  },
+  "synergizesWith": ["feat.illusion-simple"],
+  "dependsOn": [],
+  "conflictsWith": []
+}

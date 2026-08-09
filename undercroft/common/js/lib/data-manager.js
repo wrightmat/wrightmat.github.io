@@ -617,6 +617,17 @@ export class DataManager {
       method,
       headers,
       body: payload,
+      // The server sends no Cache-Control on ordinary /content GETs (only
+      // the SSE stream route sets one) — without this, a browser's own HTTP
+      // cache heuristics can serve a STALE response for a repeated GET to
+      // the exact same URL (e.g. map-live-sync.js's poll re-fetching
+      // `/content/map/{id}` every 10-20s), which looked exactly like a
+      // save "not taking effect" until a hard refresh forced revalidation.
+      // Every caller of this DataManager always wants the real current
+      // state (its own preferLocal option already covers the "it's fine to
+      // reuse a local copy" case at the app level), so this is safe to
+      // apply unconditionally rather than only for GET.
+      cache: "no-store",
     });
     const text = await response.text();
     let data = null;
@@ -629,6 +640,23 @@ export class DataManager {
     }
     if (!response.ok) {
       const message = data && data.error ? data.error : response.statusText;
+      if (response.status >= 500) {
+        // A 5xx means an uncaught exception on the server (a Python
+        // traceback's own str(), e.g. a raw "[WinError 5] Access is
+        // denied: ...\.tmp -> ...json" from a transient file-lock
+        // collision) — not a client mistake, and not something a user can
+        // act on by reading it. Every existing call site across the suite
+        // just does `status.show(error.message)` on catch with no
+        // per-site handling of this case, so the fix belongs here, once:
+        // log the real detail to the console for whoever's debugging, and
+        // let `error.message` be a clean, generic string instead.
+        console.warn(`DataManager: server error on ${method} ${path}`, message);
+        const error = new Error("Something went wrong on the server. Please try again.");
+        error.status = response.status;
+        error.payload = data;
+        error.serverMessage = message;
+        throw error;
+      }
       const error = new Error(message || `Request failed with status ${response.status}`);
       error.status = response.status;
       error.payload = data;
@@ -1015,13 +1043,23 @@ export class DataManager {
     return payload;
   }
 
-  async updateGroup({ id, name } = {}) {
+  async updateGroup({ id, name, systemId, settingId, templateId, properties } = {}) {
     if (!id) {
       throw new Error("Group id is required");
     }
+    const body = {};
+    if (name !== undefined) body.name = name;
+    if (systemId !== undefined) body.system_id = systemId;
+    if (settingId !== undefined) body.setting_id = settingId;
+    // The campaign's own "Party Data" template (Workbench's no-character
+    // mode) — independent of any one Character's own `template` field.
+    if (templateId !== undefined) body.template_id = templateId;
+    // The Group Properties SCHEMA (Loom's own Group tab) — not a value
+    // write, see updateGroupPropertyValue below for that.
+    if (properties !== undefined) body.properties = properties;
     const payload = await this._request(`/groups/${encodeURIComponent(id)}`, {
       method: "POST",
-      body: name !== undefined ? { name } : {},
+      body,
       auth: true,
     });
     this._groupCache = null;
@@ -1052,6 +1090,26 @@ export class DataManager {
     });
     this._groupCache = null;
     return payload;
+  }
+
+  // Writes ONE Group Property value — deliberately NOT this.save("group", id,
+  // ...), which requires owner/edit-share access a plain party member
+  // rarely has. The server's own bespoke endpoint checks that SPECIFIC
+  // property's own `public` flag instead (see server/groups.py's
+  // update_group_property_value) — this is the write path
+  // common/js/lib/group-live-sync.js's persistGroupPropertyValue calls.
+  async updateGroupPropertyValue({ id, key, value } = {}) {
+    if (!id) {
+      throw new Error("Group id is required");
+    }
+    if (!key) {
+      throw new Error("Property key is required");
+    }
+    return this._request(`/groups/${encodeURIComponent(id)}/properties/${encodeURIComponent(key)}`, {
+      method: "POST",
+      body: { value },
+      auth: true,
+    });
   }
 
   async listCharacterGroups(id) {

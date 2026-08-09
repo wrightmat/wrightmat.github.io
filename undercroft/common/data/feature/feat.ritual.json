@@ -1,0 +1,18 @@
+{
+  "id": "feat.ritual",
+  "name": "Ritual",
+  "systemIds": ["sys.dnd5e"],
+  "description": "The spell can be cast as a ritual, adding 10 minutes to the casting time in exchange for not expending a spell slot.",
+  "mechanics": {
+    "type": "passive",
+    "text": "This spell can be cast as a ritual, taking 10 minutes longer but not consuming a spell slot."
+  },
+  "budgetCost": 1,
+  "tags": {
+    "categories": ["spell"],
+    "propertyHints": ["ritual"]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

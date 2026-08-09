@@ -1,0 +1,14 @@
+{
+  "id": "res.dragonshard-siberys-large",
+  "name": "Siberys Dragonshard, Large",
+  "systemIds": ["sys.dnd5e"],
+  "settingIds": ["eberron"],
+  "description": "An amber crystal with swirling golden veins, fallen from the Ring of Siberys — rare in Khorvaire but found in significant fields on Xen'drik. Larger shards may be required for eldritch machines or the creation of legendary items and artifacts.",
+  "category": "wondrous-item",
+  "price": "8d8x200 gp",
+  "tags": {
+    "locationTypes": [],
+    "locationPurposes": ["commerce", "resource"],
+    "environments": []
+  }
+}

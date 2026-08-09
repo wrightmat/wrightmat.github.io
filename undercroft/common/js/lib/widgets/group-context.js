@@ -30,6 +30,8 @@ export async function resolveGroupContext(dataManager, { shareToken = "" } = {})
         return {
           groupId: group.id,
           groupName: group.name || "",
+          systemId: group.system_id || "",
+          settingId: group.setting_id || "",
           shareToken,
           access: dataManager.isAuthenticated() ? "share" : "viewer",
         };
@@ -69,6 +71,8 @@ export async function resolveGroupContext(dataManager, { shareToken = "" } = {})
         return {
           groupId: active.groupId,
           groupName: match.name || active.name || "",
+          systemId: match.system_id || "",
+          settingId: match.setting_id || "",
           shareToken: "",
           access: ownerId === userId ? "owner" : "member",
         };
@@ -78,7 +82,7 @@ export async function resolveGroupContext(dataManager, { shareToken = "" } = {})
       // resort, matching the pre-existing behavior, rather than breaking
       // group access entirely over a failed lookup.
     }
-    return { groupId: active.groupId, groupName: active.name || "", shareToken: "", access: "owner" };
+    return { groupId: active.groupId, groupName: active.name || "", systemId: "", settingId: "", shareToken: "", access: "owner" };
   }
   return null;
 }

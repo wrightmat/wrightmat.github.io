@@ -17,6 +17,16 @@ function matchesSystem(entity, systemId) {
   return !ids.length || ids.includes(systemId);
 }
 
+// Same convention as matchesSystem — a Resource with no settingIds (or an
+// empty array) is universally available; a non-empty array restricts it to
+// exactly those Settings (e.g. Eberron-flavored goods/services shouldn't
+// show up when generating a Location in a different Setting).
+function matchesSetting(entity, settingId) {
+  if (!settingId) return true;
+  const ids = Array.isArray(entity.settingIds) ? entity.settingIds : [];
+  return !ids.length || ids.includes(settingId);
+}
+
 // A feature with no categories tag is treated as universally compatible (the
 // suite-wide "no tag means unconstrained" convention); otherwise it must claim
 // "location".
@@ -170,7 +180,9 @@ export function generateLocation(locationTypes, locationPurposes, features, reso
   );
   const eligibleResources = resources.filter(
     (resource) =>
-      matchesSystem(resource, systemId) && matchesLocationTags(resource, resolvedTypeId, resolvedPurposeId, resolvedEnvironment)
+      matchesSystem(resource, systemId) &&
+      matchesSetting(resource, settingId) &&
+      matchesLocationTags(resource, resolvedTypeId, resolvedPurposeId, resolvedEnvironment)
   );
 
   const lockedFeatures = lockedFeatureIds.map((id) => eligibleFeatures.find((entry) => entry.id === id)).filter(Boolean);
@@ -192,7 +204,7 @@ export function generateLocation(locationTypes, locationPurposes, features, reso
 
   return {
     systemIds: systemId ? [systemId] : [],
-    settingId,
+    settingIds: settingId ? [settingId] : [],
     typeId: resolvedTypeId || null,
     purposeId: resolvedPurposeId || null,
     environment: resolvedEnvironment || null,

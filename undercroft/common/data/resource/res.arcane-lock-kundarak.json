@@ -1,0 +1,15 @@
+{
+  "id": "res.arcane-lock-kundarak",
+  "name": "Arcane Lock (House Kundarak)",
+  "systemIds": ["sys.dnd5e"],
+  "settingIds": ["eberron"],
+  "description": "House Kundarak casts arcane lock on a door, chest, or portal for hire — the foundation of their reputation as Khorvaire's premier vault-keepers.",
+  "category": "service",
+  "house": "kundarak",
+  "price": "20 gp",
+  "tags": {
+    "locationTypes": [],
+    "locationPurposes": ["commerce"],
+    "environments": []
+  }
+}

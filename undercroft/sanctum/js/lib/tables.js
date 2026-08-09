@@ -63,8 +63,21 @@ export async function listSettingsForSystem(dataManager, systemId) {
   return listKindForSystem(dataManager, "setting", systemId);
 }
 
+// `settingIds` is a plural array (same "empty/absent = universal, non-empty =
+// restricted" convention as systemIds) — but unlike a Resource's optional
+// scoping, a Location with an EMPTY settingIds genuinely belongs to no
+// Setting yet (there's no "universal Location"), so this deliberately checks
+// `includes` only, not the empty-array-matches-everything shortcut
+// matchesSetting (generator.js) uses for Resources. Falls back to a
+// pre-migration scalar `settingId` for any not-yet-resaved record — same
+// precedent as the `system` → `systemIds` character migration.
 export async function listLocationsForSetting(dataManager, settingId) {
   if (!settingId) return [];
   const entries = await fetchKindEntriesWithIds(dataManager, "location");
-  return entries.filter((entry) => entry.entity.settingId === settingId).map((entry) => ({ id: entry.id, ...entry.entity }));
+  return entries
+    .filter((entry) => {
+      const ids = Array.isArray(entry.entity.settingIds) ? entry.entity.settingIds : entry.entity.settingId ? [entry.entity.settingId] : [];
+      return ids.includes(settingId);
+    })
+    .map((entry) => ({ id: entry.id, ...entry.entity }));
 }

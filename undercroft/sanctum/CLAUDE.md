@@ -70,6 +70,23 @@ in the suite (`matchesSystem`-style: empty array or `includes(systemId)`) behave
 identically regardless of kind. There is no separate `systemId` field anywhere —
 an earlier pass introduced one before this was corrected; don't reintroduce it.
 
+A Location also carries a plural `settingIds` array — which Setting(s) it belongs to
+— using the exact same "empty/absent = universal, non-empty = restricted" convention
+as `systemIds`, for the same reason: Loom's generic "Assigned Settings" checkboxes
+(a sibling to "Assigned Systems") write into this field with zero kind-specific code,
+and any consumer filters it the same `matchesSetting`-style way regardless of kind. In
+practice a Location only ever belongs to whichever one Setting is currently selected
+in Sanctum's own editor, so the array holds exactly one entry today — plural just
+future-proofs a place reachable from more than one Setting. `resource` entries can
+also carry `settingIds` (e.g. an Eberron Dragonmarked-house service scoped only to
+the Eberron Setting) — unlike Location, an empty/absent array on a Resource means
+universally available, checked via `matchesSetting()` in `js/lib/generator.js`
+alongside the existing `matchesSystem()`/`matchesLocationTags()` filters. There is no
+separate singular `settingId` field going forward — a handful of pre-migration
+records may still carry the old scalar on disk, so any code reading this field falls
+back to treating a lone `settingId` as `[settingId]` (same precedent as the
+`system` → `systemIds` character migration), but never writes it back out.
+
 ---
 
 ## Conceptual Architecture
@@ -103,11 +120,10 @@ See `js/lib/generator.js` for the concrete implementation.
 ### Relationships
 
 - **`parentId`** — containment (a settlement's parent is its region). A single scalar,
-  resolved client-side by filtering the current Setting's location list — the same
-  convention `location.settingId` itself already uses; no DB relation table or server
-  route, consistent with every other cross-record reference in this codebase.
-  "Children" are never stored, always computed (locations in this Setting whose
-  `parentId` equals mine).
+  resolved client-side by filtering the current Setting's location list; no DB relation
+  table or server route, consistent with every other cross-record reference in this
+  codebase. "Children" are never stored, always computed (locations in this Setting
+  whose `parentId` equals mine).
 - **`connectedTo`** — peer links (a road, a tunnel), a plain id array checked
   bidirectionally by any consumer (A connects to B if either lists the other) — the
   same convention Vault's `synergizesWith` uses, so an author only writes the link

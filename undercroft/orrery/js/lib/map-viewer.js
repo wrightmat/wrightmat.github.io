@@ -192,7 +192,7 @@ export function resolveClickPosition(baseMapManager, map, event, referenceContai
 // player-token drag path (map.js's own resolveMarkerMoveBlocked) — Orrery's
 // own free-drag authoring surface never passes this, a GM must be able to
 // drag any token through walls while setting up a scene.
-function beginMarkerDrag(event, baseMapManager, map, layer, markerElement, dotEl, { onDragEnd, isMoveBlocked } = {}) {
+function beginMarkerDrag(event, baseMapManager, map, layer, markerElement, dotEl, { onDragEnd, isMoveBlocked, onClick } = {}) {
   // Best-effort — see renderShapeElement's own matching try/catch for why
   // (some browsers throw InvalidStateError capturing in certain DOM
   // positions); the window-level pointermove/pointerup listeners below
@@ -234,6 +234,14 @@ function beginMarkerDrag(event, baseMapManager, map, layer, markerElement, dotEl
       const localPixel = { x: lastPixel.x - offset.x, y: lastPixel.y - offset.y };
       const nextPosition = localPixelToMarkerPosition(baseMapManager, map, localPixel);
       onDragEnd?.(nextPosition);
+    } else {
+      // The pointer never actually moved — a plain click/tap, not a drag.
+      // Distinct from onDragEnd (never fires for a no-op gesture, per this
+      // function's own header comment) so a caller can tell "select/edit
+      // this marker" apart from "the marker just got moved." Passes dotEl
+      // through so a caller (a click-to-edit popover) can anchor its own UI
+      // to the actual on-screen marker, not just know which one was clicked.
+      onClick?.(dotEl);
     }
   };
   window.addEventListener("pointermove", onMove);
@@ -411,6 +419,7 @@ export function createMarkerDot(baseMapManager, map, layer, markerElement, optio
       beginMarkerDrag(event, baseMapManager, map, layer, markerElement, dot, {
         onDragEnd: options.onDragEnd,
         isMoveBlocked: options.isMoveBlocked,
+        onClick: options.onClick,
       });
     });
   }
@@ -486,6 +495,7 @@ export function createMarkerLayerElement(baseMapManager, map, layer, options = {
         isMoveBlocked: options.resolveMarkerMoveBlocked
           ? (fromPixel, toPixel) => options.resolveMarkerMoveBlocked(layer, markerElement, fromPixel, toPixel)
           : undefined,
+        onClick: options.onMarkerClicked ? (dotEl) => options.onMarkerClicked(layer, markerElement, dotEl) : undefined,
       })
     );
   });
@@ -956,6 +966,14 @@ export function buildRestrictedMapOptions({
   status,
   onMarkerMoved,
   onDoorToggled,
+  // (layer, markerElement) => void — fired for a plain click (no movement)
+  // on a marker this viewer is actually allowed to drag (same
+  // isMarkerDraggable gate below, checked here too so a marker the viewer
+  // doesn't control silently does nothing on click, same as it already does
+  // today). Lets a restricted viewer open an icon/color editor for their own
+  // token the same way they can already move it, without granting anything
+  // for a marker that isn't theirs.
+  onMarkerClicked,
   // (isDragging: boolean) => void — fired at marker-drag start/end. Lets
   // the caller's own remote poll (watchMapForChanges) skip an incoming
   // update while a drag is in progress, instead of applying it mid-gesture
@@ -997,6 +1015,24 @@ export function buildRestrictedMapOptions({
     onMarkerDragEnd: (layer, markerElement, nextPosition) => {
       onDragStateChange?.(false);
       onMarkerMoved?.(layer, markerElement, snapMarkerPositionToGrid(baseMapManager, map, nextPosition, layer));
+    },
+    onMarkerClicked: (layer, markerElement, dotEl) => {
+      // Confirmed critical bug this fixes: onMarkerDragStart (above) fires
+      // unconditionally on every pointerdown, including a plain click that
+      // never actually moves — only onMarkerDragEnd used to clear it back
+      // to false. A click-to-open (the icon/color popover) therefore left
+      // onDragStateChange's own isDraggingMarker permanently stuck true,
+      // which silently disables EVERY future render for the rest of the
+      // page's life (renderLayers' own `if (isDraggingMarker) return`
+      // guard, map.js) — not just for this marker: polling/live-stream
+      // updates, other players' moves, everything, until a hard refresh
+      // reset the flag. Exactly why a whole map widget could look
+      // "completely stopped updating" after nothing more than clicking a
+      // token once.
+      onDragStateChange?.(false);
+      if (isMarkerDraggable(layer, markerElement)) {
+        onMarkerClicked?.(layer, markerElement, dotEl);
+      }
     },
     onDoorClick,
     // Never passed for a full-access viewer — the GM must be able to freely
@@ -2463,6 +2499,7 @@ export function renderMapLayers(overlay, baseMapManager, map, options = {}) {
         onEmptyClick: options.onMarkerLayerEmptyClick ? (position, event) => options.onMarkerLayerEmptyClick(layer, position, event) : undefined,
         onMarkerDragStart: options.onMarkerDragStart,
         onMarkerDragEnd: options.onMarkerDragEnd,
+        onMarkerClicked: options.onMarkerClicked,
         // Never passed from Orrery's own app.js — see beginMarkerDrag's own
         // header comment for why free GM authoring must stay unrestricted.
         resolveMarkerMoveBlocked: options.resolveMarkerMoveBlocked,
@@ -2494,13 +2531,26 @@ export function renderMapLayers(overlay, baseMapManager, map, options = {}) {
         // shape stays visible until the drag is dropped" — the thing on
         // screen the whole time was the freshly re-rendered copy, which
         // none of that drag-hiding code ever touched.
-        onPathClick: isSelected && options.onVectorPathClick ? (elementId, event, kind) => options.onVectorPathClick(layer, elementId, event, kind) : undefined,
+        // isSelected OR options.isVectorLayerInteractive(layer) — the second
+        // half exists for a caller with no layer-selection concept at all
+        // (the Dashboard widget, same reasoning onDoorClick below never
+        // gates on isSelected either): it opts a SPECIFIC layer into
+        // clickability without needing Orrery's own "select the layer from
+        // the left pane first" flow. Per-element ownership (can THIS viewer
+        // actually act on THIS element) is left entirely to the callback
+        // itself — this only controls whether a hit target exists at all.
+        onPathClick:
+          (isSelected || options.isVectorLayerInteractive?.(layer)) && options.onVectorPathClick
+            ? (elementId, event, kind) => options.onVectorPathClick(layer, elementId, event, kind)
+            : undefined,
         // AoE shapes only — drawn paths have no drag-to-move (they're
         // terrain-style annotations, rarely repositioned after drawing;
         // shapes are transient tactical indicators, meant to move as combat
-        // does). Same isSelected gate as onPathClick — a shape only becomes
-        // draggable once its own layer is selected from the left pane.
-        onShapeDragEnd: isSelected && options.onShapeDragEnd ? (elementId, nextOrigin) => options.onShapeDragEnd(layer, elementId, nextOrigin) : undefined,
+        // does). Same gate as onPathClick just above.
+        onShapeDragEnd:
+          (isSelected || options.isVectorLayerInteractive?.(layer)) && options.onShapeDragEnd
+            ? (elementId, nextOrigin) => options.onShapeDragEnd(layer, elementId, nextOrigin)
+            : undefined,
         // Doors only, and NEVER gated on isSelected — the Dashboard widget
         // (the only real caller of this) has no layer-selection concept at
         // all (it never passes `selection`), so an isSelected gate here

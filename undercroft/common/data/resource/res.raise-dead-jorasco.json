@@ -1,0 +1,15 @@
+{
+  "id": "res.raise-dead-jorasco",
+  "name": "Raise Dead (House Jorasco)",
+  "systemIds": ["sys.dnd5e"],
+  "settingIds": ["eberron"],
+  "description": "House Jorasco's highest-tier healers cast raise dead for hire — expensive, and only for the recently deceased.",
+  "category": "service",
+  "house": "jorasco",
+  "price": "750 gp",
+  "tags": {
+    "locationTypes": [],
+    "locationPurposes": ["commerce"],
+    "environments": []
+  }
+}

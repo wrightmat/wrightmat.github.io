@@ -1,0 +1,18 @@
+{
+  "id": "feat.move-action",
+  "name": "Movable with Action",
+  "systemIds": ["sys.dnd5e"],
+  "description": "Once created, the effect can be relocated by spending an action to redirect it.",
+  "mechanics": {
+    "type": "active",
+    "text": "As an action, the caster can move this effect's area or point of origin."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "categories": ["spell"],
+    "propertyHints": ["utility", "movement"]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

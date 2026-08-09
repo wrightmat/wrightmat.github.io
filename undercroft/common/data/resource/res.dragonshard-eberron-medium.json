@@ -1,0 +1,14 @@
+{
+  "id": "res.dragonshard-eberron-medium",
+  "name": "Eberron Dragonshard, Medium",
+  "systemIds": ["sys.dnd5e"],
+  "settingIds": ["eberron"],
+  "description": "A rosy crystal veined with crimson, refined into a glowing dust that can fuel almost any act of magic — substituting for any spell component with a cost. Found in shallow soil, most abundantly in jungle environments like Q'barra and Xen'drik.",
+  "category": "wondrous-item",
+  "price": "4d4x10 gp",
+  "tags": {
+    "locationTypes": [],
+    "locationPurposes": ["commerce", "resource"],
+    "environments": []
+  }
+}

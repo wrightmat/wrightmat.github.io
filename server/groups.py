@@ -1,12 +1,12 @@
 from __future__ import annotations
 
+import copy
 import json
 import secrets
 from datetime import datetime
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 from .auth import AuthError, User
-from .roles import role_rank
 from .shares import (
     content_exists,
     create_share_link,
@@ -19,14 +19,23 @@ from .shares import (
 from .state import ServerState
 
 _GROUP_ID_PREFIX = "grp_"
-# Groups aren't a Library kind (no kind-registry file, no readTier/writeTier
-# entry — see server/storage.py's library_items/load_kind_policy system).
+# A Group IS a Library kind now (undercroft/common/data/kind/group.json,
+# library_items row + undercroft/common/data/group/{id}.json flat file —
+# same generic model System/Character/Map already use; see
+# storage.py's _migrate_groups_to_library_items for the one-time migration
+# off the old bespoke `groups` table). `storage` is imported lazily inside
+# each function below rather than at module level — storage.py itself
+# imports a handful of functions FROM this module (accessible_group_ids,
+# user_can_access_group, get_active_spotlights), so a top-level import on
+# both sides would cycle; storage.py's own side of that already made its
+# imports of this module function-local for the same reason.
+#
 # GM tier, not Creator: Creator is about authoring reusable CONTENT (Systems,
 # Templates, ...) for others to use, while a Campaign Group is a GM's own
 # session-running tool — setting one up is exactly what "being a GM" means,
-# not a content-authoring action. Unlike every Library kind, this was
-# previously not gated at all.
-_CREATE_GROUP_MIN_TIER = "gm"
+# not a content-authoring action. This is expressed as group.json's own
+# writeTier: "gm" (enforced generically by storage.save_item's
+# ensure_write_role), not a bespoke check here.
 
 # Spotlight kinds whose entire "content" is inline in the spotlight log entry
 # itself (a `data` payload — undercroft/common/js/lib/data-manager.js's own
@@ -53,7 +62,9 @@ _INLINE_SPOTLIGHT_KINDS = {"browser", "clock", "calendar", "soundboard"}
 def _generate_group_id(state: ServerState) -> str:
     while True:
         candidate = f"{_GROUP_ID_PREFIX}{secrets.token_hex(6)}"
-        row = state.db.execute("SELECT 1 FROM groups WHERE id = ?", (candidate,)).fetchone()
+        row = state.db.execute(
+            "SELECT 1 FROM library_items WHERE kind = 'group' AND id = ?", (candidate,)
+        ).fetchone()
         if not row:
             return candidate
 
@@ -63,17 +74,52 @@ def _normalize_group_type(raw: Optional[str]) -> str:
     return value or "campaign"
 
 
-def _require_owner(state: ServerState, group_id: str, owner: Optional[User]):
-    if not owner:
-        raise AuthError("Authentication required")
-    row = state.db.execute(
-        """
-        SELECT id, owner_id, name, type, created_at, modified_at
-        FROM groups
-        WHERE id = ?
-        """,
+def _load_group_row(state: ServerState, group_id: str) -> Optional[Dict[str, Any]]:
+    """The Group-document-shaped equivalent of the old `SELECT * FROM groups
+    WHERE id = ?` — a Group is a generic Library kind now (a library_items
+    row for owner_id/timestamps, plus its own JSON file for everything else
+    — see storage.py's _migrate_groups_to_library_items), so this reads both
+    and reshapes them back into the exact field names every caller in this
+    file already expects (name/system_id/setting_id, not the JSON's own
+    title/systemId/settingId) so nothing downstream of this function has to
+    change. `properties`/`property_values` (the new Group Properties
+    mechanism) are included here too, for _serialize_group and the new
+    property-value endpoints to read straight off this same row. Returns
+    None if no such group exists, same as a missing SELECT row would.
+    """
+    from . import storage
+
+    meta_row = state.db.execute(
+        "SELECT owner_id, created_at, modified_at FROM library_items WHERE kind = 'group' AND id = ?",
         (group_id,),
     ).fetchone()
+    if not meta_row:
+        return None
+    try:
+        payload = storage.load_item_raw(state, "group", group_id)
+    except FileNotFoundError:
+        payload = {}
+    if not isinstance(payload, dict):
+        payload = {}
+    return {
+        "id": group_id,
+        "owner_id": meta_row["owner_id"],
+        "name": payload.get("title") or group_id,
+        "type": payload.get("type") or "campaign",
+        "system_id": payload.get("systemId"),
+        "setting_id": payload.get("settingId"),
+        "template_id": payload.get("templateId"),
+        "properties": payload.get("properties") or [],
+        "property_values": payload.get("propertyValues") or {},
+        "created_at": meta_row["created_at"],
+        "modified_at": meta_row["modified_at"],
+    }
+
+
+def _require_owner(state: ServerState, group_id: str, owner: Optional[User]) -> Dict[str, Any]:
+    if not owner:
+        raise AuthError("Authentication required")
+    row = _load_group_row(state, group_id)
     if not row:
         raise AuthError("Group not found")
     # Admin-or-owner — same rule _resolve_group_access/user_can_access_group
@@ -206,11 +252,25 @@ def _attach_member_status(members: Iterable[Dict[str, Any]], owner_id: Optional[
 
 
 def _serialize_group(row, members: List[Dict[str, Any]], share_link: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+    # `row["system_id"]`/`row["setting_id"]` — verified actually present in
+    # every caller's own SELECT (not assumed), per this project's own
+    # established caution around _serialize_group previously shipping with a
+    # field silently missing from its returned dict. `properties`/
+    # `propertyValues` (the Group Properties mechanism — see
+    # _load_group_row) are optional on `row` since not every caller loads
+    # the full document (e.g. list_character_groups' own lighter query never
+    # needs them) — default to the same "no properties defined yet" shape a
+    # brand-new group's own JSON file already starts with.
     return {
         "id": row["id"],
         "owner_id": row["owner_id"],
         "name": row["name"],
         "type": row["type"],
+        "system_id": row["system_id"] if "system_id" in row.keys() else None,
+        "setting_id": row["setting_id"] if "setting_id" in row.keys() else None,
+        "template_id": row["template_id"] if "template_id" in row.keys() else None,
+        "properties": row["properties"] if "properties" in row.keys() else [],
+        "propertyValues": row["property_values"] if "property_values" in row.keys() else {},
         "created_at": row["created_at"],
         "modified_at": row["modified_at"],
         "share_link": share_link,
@@ -254,6 +314,35 @@ def _serialize_log_entries(rows: Iterable) -> List[Dict[str, Any]]:
     return entries
 
 
+def _load_group_access_row(state: ServerState, group_id: str) -> Optional[Dict[str, Any]]:
+    """Lightweight group lookup for access-control checks — owner_id/name/
+    type only, read straight off library_items (the `title` column, plus
+    `type` from its own denormalized `metadata` — see group.json's
+    metadataFields) without ever touching the group's JSON file. Distinct
+    from the fuller _load_group_row (which does read the file, for anything
+    that actually needs system_id/settingId/properties) since this sits on
+    the hot path for every single game log read/post.
+    """
+    row = state.db.execute(
+        "SELECT owner_id, title, metadata FROM library_items WHERE kind = 'group' AND id = ?",
+        (group_id,),
+    ).fetchone()
+    if not row:
+        return None
+    metadata: Dict[str, Any] = {}
+    if row["metadata"]:
+        try:
+            metadata = json.loads(row["metadata"])
+        except json.JSONDecodeError:
+            metadata = {}
+    return {
+        "id": group_id,
+        "owner_id": row["owner_id"],
+        "name": row["title"] or group_id,
+        "type": metadata.get("type") or "campaign",
+    }
+
+
 def _resolve_group_access(
     state: ServerState,
     group_id: Optional[str],
@@ -275,14 +364,7 @@ def _resolve_group_access(
         share_mode = True
     if not resolved_id:
         raise AuthError("Group not found")
-    row = state.db.execute(
-        """
-        SELECT id, owner_id, name, type
-        FROM groups
-        WHERE id = ?
-        """,
-        (resolved_id,),
-    ).fetchone()
+    row = _load_group_access_row(state, resolved_id)
     if not row:
         raise AuthError("Group not found")
     if row["type"] and row["type"].lower() != "campaign":
@@ -319,7 +401,9 @@ def user_can_access_group(state: ServerState, group_id: str, user: Optional[User
     """
     if not user or not group_id:
         return False
-    row = state.db.execute("SELECT owner_id FROM groups WHERE id = ?", (group_id,)).fetchone()
+    row = state.db.execute(
+        "SELECT owner_id FROM library_items WHERE kind = 'group' AND id = ?", (group_id,)
+    ).fetchone()
     if not row:
         return False
     if user.tier == "admin" or row["owner_id"] == user.id:
@@ -347,7 +431,12 @@ def accessible_group_ids(state: ServerState, user: Optional[User]) -> List[str]:
     """
     if not user:
         return []
-    owned = [row["id"] for row in state.db.execute("SELECT id FROM groups WHERE owner_id = ?", (user.id,))]
+    owned = [
+        row["id"]
+        for row in state.db.execute(
+            "SELECT id FROM library_items WHERE kind = 'group' AND owner_id = ?", (user.id,)
+        )
+    ]
     member_of = [
         row["group_id"]
         for row in state.db.execute(
@@ -573,8 +662,12 @@ def create_group_log_entry(
         """,
         (row["id"], normalized_type, user.id, user.username or "", text or None, payload_data, timestamp),
     )
+    # Same "bump the group's own modified_at on log activity" behavior the
+    # old `groups` table always had (used for list_groups' own recency
+    # sort) — now targeting library_items directly, same as
+    # update_group_members' identical comment on this same pattern.
     state.db.execute(
-        "UPDATE groups SET modified_at = ? WHERE id = ?",
+        "UPDATE library_items SET modified_at = ? WHERE kind = 'group' AND id = ?",
         (timestamp, row["id"]),
     )
     state.db.commit()
@@ -627,12 +720,15 @@ def list_character_groups(state: ServerState, user: Optional[User], character_id
     if not character_row:
         raise AuthError("Character not found")
     owner_id = character_row["owner_id"]
+    # `g` here is library_items filtered to kind='group' — a Group is a
+    # generic Library kind now (see _load_group_row's own comment), not a
+    # dedicated `groups` table to JOIN against.
     if owner_id != user.id and user.tier != "admin":
         ownership = state.db.execute(
             """
             SELECT g.owner_id
             FROM group_members AS gm
-            JOIN groups AS g ON g.id = gm.group_id
+            JOIN library_items AS g ON g.kind = 'group' AND g.id = gm.group_id
             WHERE gm.content_type = 'character' AND gm.content_id = ? AND g.owner_id = ?
             LIMIT 1
             """,
@@ -642,9 +738,9 @@ def list_character_groups(state: ServerState, user: Optional[User], character_id
             raise AuthError("Access denied")
     rows = state.db.execute(
         """
-        SELECT g.id, g.name, g.type, g.owner_id
+        SELECT g.id, g.title, g.metadata, g.owner_id
         FROM group_members AS gm
-        JOIN groups AS g ON g.id = gm.group_id
+        JOIN library_items AS g ON g.kind = 'group' AND g.id = gm.group_id
         WHERE gm.content_type = 'character' AND gm.content_id = ?
         ORDER BY g.modified_at DESC
         """,
@@ -653,15 +749,52 @@ def list_character_groups(state: ServerState, user: Optional[User], character_id
     groups: List[Dict[str, Any]] = []
     for row in rows:
         if user.tier == "admin" or row["owner_id"] == user.id or owner_id == user.id:
+            metadata: Dict[str, Any] = {}
+            if row["metadata"]:
+                try:
+                    metadata = json.loads(row["metadata"])
+                except json.JSONDecodeError:
+                    metadata = {}
             groups.append(
                 {
                     "id": row["id"],
-                    "name": row["name"],
-                    "type": row["type"],
+                    "name": row["title"] or row["id"],
+                    "type": metadata.get("type") or "campaign",
                     "owner_id": row["owner_id"],
                 }
             )
     return {"groups": groups}
+
+
+def _access_row_to_group_fields(row) -> Dict[str, Any]:
+    """Shapes a library_items(+metadata) row into the same field names
+    _serialize_group expects (name/type/system_id/setting_id) — used by list
+    views, which (like every other kind's own list_bucket/list_owned_content)
+    read only the cheap library_items/metadata columns, never the full JSON
+    file, to avoid an N-file-reads cost for what's usually a short list.
+    Deliberately omits properties/propertyValues (not in metadataFields, so
+    not available this way at all) — _serialize_group already defaults those
+    to []/{} when absent, which is correct here: a list view has no need for
+    a group's full Properties schema+values, only get_item (a single group)
+    does.
+    """
+    metadata: Dict[str, Any] = {}
+    if row["metadata"]:
+        try:
+            metadata = json.loads(row["metadata"])
+        except json.JSONDecodeError:
+            metadata = {}
+    return {
+        "id": row["id"],
+        "owner_id": row["owner_id"],
+        "name": row["title"] or row["id"],
+        "type": metadata.get("type") or "campaign",
+        "system_id": metadata.get("systemId"),
+        "setting_id": metadata.get("settingId"),
+        "template_id": metadata.get("templateId"),
+        "created_at": row["created_at"],
+        "modified_at": row["modified_at"],
+    }
 
 
 def list_groups(state: ServerState, owner: Optional[User], scope: str = "owned") -> Dict[str, Any]:
@@ -677,14 +810,16 @@ def list_groups(state: ServerState, owner: Optional[User], scope: str = "owned")
         # management tab calls this same function with the default "owned"
         # scope, which must stay owner-only — that UI offers rename/delete/
         # member-editing controls _require_owner would reject for anything
-        # you don't own, so it should never even list those groups.
+        # you don't own, so it should never even list those groups. `g` is
+        # library_items filtered to kind='group' — see _load_group_row's own
+        # comment on why there's no dedicated `groups` table any more.
         rows = state.db.execute(
             """
-            SELECT DISTINCT g.id, g.owner_id, g.name, g.type, g.created_at, g.modified_at
-            FROM groups AS g
+            SELECT DISTINCT g.id, g.owner_id, g.title, g.metadata, g.created_at, g.modified_at
+            FROM library_items AS g
             LEFT JOIN group_members AS gm ON gm.group_id = g.id AND gm.content_type = 'character'
             LEFT JOIN library_items AS li ON li.id = gm.content_id AND li.kind = 'character'
-            WHERE g.owner_id = ? OR li.owner_id = ?
+            WHERE g.kind = 'group' AND (g.owner_id = ? OR li.owner_id = ?)
             ORDER BY g.modified_at DESC
             """,
             (owner.id, owner.id),
@@ -692,82 +827,251 @@ def list_groups(state: ServerState, owner: Optional[User], scope: str = "owned")
     else:
         rows = state.db.execute(
             """
-            SELECT id, owner_id, name, type, created_at, modified_at
-            FROM groups
-            WHERE owner_id = ?
+            SELECT id, owner_id, title, metadata, created_at, modified_at
+            FROM library_items
+            WHERE kind = 'group' AND owner_id = ?
             ORDER BY modified_at DESC
             """,
             (owner.id,),
         ).fetchall()
-    group_ids = [row["id"] for row in rows]
+    group_fields = [_access_row_to_group_fields(row) for row in rows]
+    group_ids = [fields["id"] for fields in group_fields]
     members_by_group = _fetch_group_members_batch(state, group_ids)
     share_links = get_share_links_batch(state, "group", group_ids)
     groups: List[Dict[str, Any]] = []
-    for row in rows:
-        members = _attach_member_status(members_by_group.get(row["id"], []), row["owner_id"])
-        share_link = share_links.get(row["id"])
-        groups.append(_serialize_group(row, members, share_link))
+    for fields in group_fields:
+        members = _attach_member_status(members_by_group.get(fields["id"], []), fields["owner_id"])
+        share_link = share_links.get(fields["id"])
+        groups.append(_serialize_group(fields, members, share_link))
     return {"groups": groups}
 
 
+# Party Inventory — every campaign's starting Group Property, seeded once
+# at create_group, upgraded once more in update_group the first time a
+# System actually gets assigned (see that function's own comment for why
+# create_group itself can never mirror a System — Loom's "New Group"
+# dialog only ever collects a name), and backfilled onto every
+# pre-existing campaign by storage.py's own migration. No hardcoded
+# per-system item shape (see this project's own standing "avoid hardcoding
+# in Undercroft tools" convention) — mirrors whatever the associated
+# System's own top-level "inventory" field already looks like (the exact
+# convention a Character's own Inventory already follows for that System),
+# verbatim, so a Repeater bound to "@group.inventory" behaves identically
+# to one bound to "@inventory" on that System's own characters. Falls back
+# to a minimal generic Name/Quantity shape only for a System with no such
+# field of its own (or no System chosen yet).
+_GENERIC_INVENTORY_PROPERTY: Dict[str, Any] = {
+    "key": "inventory",
+    "label": "Inventory",
+    "type": "array",
+    "item": {
+        "type": "object",
+        "label": "Item",
+        "displayField": "inventory[].name",
+        "children": [
+            {"type": "string", "key": "inventory[].name", "label": "Item Name", "required": True},
+            {"type": "number", "key": "inventory[].quantity", "label": "Quantity", "minimum": 0},
+        ],
+    },
+}
+
+
+def _find_system_inventory_field(system_payload: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """Same candidate-set walk common/js/lib/system-schema.js's own
+    collectSystemFields uses (system.fields / system.schema.fields /
+    system.definition.fields, whichever exists) — just far enough to find
+    ONE top-level field by key, not the full recursive flatten that module
+    needs for binding autocomplete."""
+    candidate_sets: List[List[Any]] = []
+    fields = system_payload.get("fields")
+    if isinstance(fields, list):
+        candidate_sets.append(fields)
+    elif isinstance(fields, dict):
+        candidate_sets.append(list(fields.values()))
+    schema = system_payload.get("schema")
+    if isinstance(schema, dict):
+        schema_fields = schema.get("fields")
+        if isinstance(schema_fields, list):
+            candidate_sets.append(schema_fields)
+        elif isinstance(schema_fields, dict):
+            candidate_sets.append(list(schema_fields.values()))
+    definition = system_payload.get("definition")
+    if isinstance(definition, dict):
+        definition_fields = definition.get("fields")
+        if isinstance(definition_fields, list):
+            candidate_sets.append(definition_fields)
+        elif isinstance(definition_fields, dict):
+            candidate_sets.append(list(definition_fields.values()))
+    for fields_list in candidate_sets:
+        for field in fields_list:
+            if isinstance(field, dict) and field.get("key") == "inventory":
+                return field
+    return None
+
+
+def _default_inventory_property(state: ServerState, system_id: Optional[str]) -> Dict[str, Any]:
+    from . import storage
+
+    field = None
+    if system_id:
+        try:
+            system_payload = storage.load_item_raw(state, "system", system_id)
+        except FileNotFoundError:
+            system_payload = None
+        if isinstance(system_payload, dict):
+            field = _find_system_inventory_field(system_payload)
+    property_field = copy.deepcopy(field) if field else copy.deepcopy(_GENERIC_INVENTORY_PROPERTY)
+    # Public by design, not left to the usual GM-decides-per-property
+    # default — the whole point of a Party Inventory is that any party
+    # member can add/remove/edit items, same as D&D Beyond's own party
+    # inventory this feature was originally modeled on.
+    property_field["public"] = True
+    return property_field
+
+
 def create_group(state: ServerState, owner: Optional[User], name: str, type_: Optional[str] = None) -> Dict[str, Any]:
+    from . import storage
+
     if not owner:
         raise AuthError("Authentication required")
-    if role_rank(owner.tier) < role_rank(_CREATE_GROUP_MIN_TIER):
-        raise AuthError("GM tier or higher required to create a campaign group")
     label = (name or "").strip()
     if not label:
         raise AuthError("Group name is required")
     group_id = _generate_group_id(state)
     normalized_type = _normalize_group_type(type_)
-    timestamp = datetime.utcnow().isoformat()
-    state.db.execute(
-        """
-        INSERT INTO groups (id, owner_id, name, type, created_at, modified_at)
-        VALUES (?, ?, ?, ?, ?, ?)
-        """,
-        (group_id, owner.id, label, normalized_type, timestamp, timestamp),
-    )
-    state.db.commit()
-    row = state.db.execute(
-        "SELECT id, owner_id, name, type, created_at, modified_at FROM groups WHERE id = ?",
-        (group_id,),
-    ).fetchone()
+    payload = {
+        "id": group_id,
+        "title": label,
+        "type": normalized_type,
+        "systemId": None,
+        "settingId": None,
+        "templateId": None,
+        # No System exists yet at creation time (Loom's own "New Group"
+        # dialog only ever collects a name — see _default_inventory_property's
+        # own comment), so this always starts as the generic fallback shape;
+        # update_group below upgrades it to match whatever System the GM
+        # assigns next, as long as it's still untouched.
+        "properties": [_default_inventory_property(state, None)],
+        "propertyValues": {},
+    }
+    # storage.save_item's own ensure_write_role (group.json's own
+    # writeTier: "gm") enforces the "GM tier or higher" rule that used to be
+    # a bespoke check here — Group is a generic Library kind now, so
+    # kind-wide creation gating is exactly what that shared mechanism
+    # already does for every other kind, no bespoke duplicate needed.
+    storage.save_item(state, "group", group_id, payload, owner)
+    row = _load_group_row(state, group_id)
     members: List[Dict[str, Any]] = []
     return _serialize_group(row, _attach_member_status(members, owner.id), None)
 
 
-def update_group(state: ServerState, owner: Optional[User], group_id: str, name: Optional[str] = None) -> Dict[str, Any]:
+def update_group(
+    state: ServerState,
+    owner: Optional[User],
+    group_id: str,
+    name: Optional[str] = None,
+    system_id: Optional[str] = None,
+    setting_id: Optional[str] = None,
+    template_id: Optional[str] = None,
+    properties: Optional[List[Dict[str, Any]]] = None,
+) -> Dict[str, Any]:
+    from . import storage
+
     row = _require_owner(state, group_id, owner)
-    updates: Dict[str, Any] = {}
+    previous_system_id = row["system_id"]
+    updated = False
     if name is not None:
         label = name.strip()
         if not label:
             raise AuthError("Group name is required")
-        updates["name"] = label
-    if not updates:
-        members = _attach_member_status(_fetch_group_members(state, group_id), row["owner_id"])
-        share_link = get_share_link(state, "group", group_id)
-        return _serialize_group(row, members, share_link)
-    updates["modified_at"] = datetime.utcnow().isoformat()
-    assignments = ", ".join(f"{column} = ?" for column in updates)
-    params = list(updates.values())
-    params.append(group_id)
-    state.db.execute(f"UPDATE groups SET {assignments} WHERE id = ?", params)
-    state.db.commit()
-    refreshed = state.db.execute(
-        "SELECT id, owner_id, name, type, created_at, modified_at FROM groups WHERE id = ?",
-        (group_id,),
-    ).fetchone()
-    members = _attach_member_status(_fetch_group_members(state, group_id), refreshed["owner_id"])
+        row["name"] = label
+        updated = True
+    if system_id is not None:
+        # Blank clears it (a campaign that stops declaring a System falls
+        # back to Section 2's next tier — the character's own systemIds,
+        # then the standard 7) — matches this project's "optional fields
+        # start absent, no forced backfill" convention.
+        row["system_id"] = system_id.strip() or None
+        updated = True
+    if setting_id is not None:
+        # Same "blank clears it" convention as system_id above.
+        row["setting_id"] = setting_id.strip() or None
+        updated = True
+    if template_id is not None:
+        # Same "blank clears it" convention — the campaign's own "Party
+        # Data" template (Workbench's own no-character mode), independent
+        # of a Character's own `metadata.template`.
+        row["template_id"] = template_id.strip() or None
+        updated = True
+    if properties is not None:
+        # The Group Properties SCHEMA (Loom's own Group tab, same
+        # PROPERTY_TYPES/row editor as System's own Properties) — GM-only,
+        # consistent with the rest of this function already being owner-
+        # gated via _require_owner above. No shape validation here, same
+        # "trust the editor, not the wire" convention System's own fields
+        # save follows (storage.save_item never validates a kind's own
+        # payload shape either) — a malformed entry just doesn't do
+        # anything useful client-side, it can't corrupt anything else.
+        row["properties"] = properties if isinstance(properties, list) else []
+        updated = True
+    # The Party Inventory property starts as a generic placeholder (no
+    # System exists yet at create_group time) — the first time a GM
+    # actually assigns a System to this campaign, upgrade it to mirror
+    # that System's own "inventory" field, but ONLY if it's still exactly
+    # the untouched placeholder. Runs after both system_id and properties
+    # may have already been applied above (a single combined Loom save
+    # sends both together), so this always sees the final state rather
+    # than a value about to be overwritten by the properties branch above.
+    # A GM who already customized it (renamed columns, added fields, ...)
+    # keeps their own version untouched, same as it would if they'd picked
+    # the System first and customized Inventory afterward.
+    if not previous_system_id and row["system_id"]:
+        current_properties = row["properties"] if isinstance(row["properties"], list) else []
+        inventory_index = next(
+            (i for i, p in enumerate(current_properties) if isinstance(p, dict) and p.get("key") == "inventory"),
+            None,
+        )
+        if inventory_index is not None and current_properties[inventory_index] == _default_inventory_property(state, None):
+            current_properties[inventory_index] = _default_inventory_property(state, row["system_id"])
+            row["properties"] = current_properties
+            updated = True
+    if updated:
+        # Re-saves the WHOLE document (fetched fresh by _require_owner just
+        # above, in this same request) — propertyValues always passes
+        # through untouched here (this function only ever changes the
+        # Properties SCHEMA, never a value), so renaming a group or editing
+        # its Properties never clobbers value data a player may be
+        # concurrently writing via the separate property-value endpoint.
+        payload = {
+            "id": group_id,
+            "title": row["name"],
+            "type": row["type"],
+            "systemId": row["system_id"],
+            "settingId": row["setting_id"],
+            "templateId": row["template_id"],
+            "properties": row["properties"],
+            "propertyValues": row["property_values"],
+        }
+        storage.save_item(state, "group", group_id, payload, owner)
+        row = _load_group_row(state, group_id)
+    members = _attach_member_status(_fetch_group_members(state, group_id), row["owner_id"])
     share_link = get_share_link(state, "group", group_id)
-    return _serialize_group(refreshed, members, share_link)
+    return _serialize_group(row, members, share_link)
 
 
 def delete_group(state: ServerState, owner: Optional[User], group_id: str) -> None:
+    from . import storage
+
     _require_owner(state, group_id, owner)
-    state.db.execute("DELETE FROM groups WHERE id = ?", (group_id,))
-    state.db.execute("DELETE FROM share_links WHERE content_type = ? AND content_id = ?", ("group", group_id))
+    # Clears the group's own library_items row + JSON file, and (same as
+    # every other kind) its shares/share_links rows. group_members/
+    # group_logs have no FK-cascade to rely on (this codebase never enables
+    # SQLite FK enforcement, so the old `groups` table's own ON DELETE
+    # CASCADE never actually fired either), so they're cleaned up
+    # explicitly here, matching delete_item's own explicit-cleanup style.
+    storage.delete_item(state, "group", group_id, owner)
+    state.db.execute("DELETE FROM group_members WHERE group_id = ?", (group_id,))
+    state.db.execute("DELETE FROM group_logs WHERE group_id = ?", (group_id,))
     state.db.commit()
 
 
@@ -808,18 +1112,81 @@ def update_group_members(state: ServerState, owner: Optional[User], group_id: st
             """,
             (group_id, character_id, timestamp),
         )
+    # Touches library_items.modified_at directly (not a full storage.save_item
+    # call — nothing about the group's own JSON document changed here, just
+    # its membership) — this is also what the "group" live-stream kind polls
+    # against (server/app.py's _handle_live_stream watches library_items.
+    # modified_at per kind), so a membership change is picked up the same
+    # way a document change would be.
     state.db.execute(
-        "UPDATE groups SET modified_at = ? WHERE id = ?",
+        "UPDATE library_items SET modified_at = ? WHERE kind = 'group' AND id = ?",
         (timestamp, group_id),
     )
     state.db.commit()
-    refreshed = state.db.execute(
-        "SELECT id, owner_id, name, type, created_at, modified_at FROM groups WHERE id = ?",
-        (group_id,),
-    ).fetchone()
+    refreshed = _load_group_row(state, group_id)
     members = _attach_member_status(_fetch_group_members(state, group_id), refreshed["owner_id"])
     share_link = get_share_link(state, "group", group_id)
     return _serialize_group(refreshed, members, share_link)
+
+
+# Group Properties — a value write (e.g. a player adding a party inventory
+# item) is a fundamentally different permission shape than everything else
+# in this file: the caller may be neither the group's owner nor an
+# edit-shared collaborator, yet still be allowed to write ONE specific
+# property whose schema marks it `public` (the GM's own per-property
+# checkbox, set via Loom's Group Properties editor — see PROPERTY_TYPES/
+# property-schema-editor.js). storage.save_item's generic owner-or-edit-
+# share gate has no way to express "this one field, for this one class of
+# caller" — hence this bespoke endpoint/permission-check pair instead of
+# routing property values through the generic /content/group/{id} route
+# Loom's own document edits (create_group/update_group) already use.
+def update_group_property_value(state: ServerState, user: Optional[User], group_id: str, key: str, value: Any) -> Dict[str, Any]:
+    from . import storage
+
+    if not user:
+        raise AuthError("Authentication required")
+    key = (key or "").strip()
+    if not key:
+        raise AuthError("Property key is required")
+    row = _load_group_row(state, group_id)
+    if not row:
+        raise AuthError("Group not found")
+    is_owner_or_admin = user.tier == "admin" or row["owner_id"] == user.id
+    if not is_owner_or_admin:
+        if not user_can_access_group(state, group_id, user):
+            raise AuthError("Access denied")
+        schema = row["properties"] if isinstance(row["properties"], list) else []
+        prop = next((p for p in schema if isinstance(p, dict) and p.get("key") == key), None)
+        if not prop or not prop.get("public"):
+            raise AuthError("This property isn't editable by players")
+    # Fetch-fresh immediately before mutating (not the `row` above, which
+    # only exists for the permission check) — same concurrency-safety
+    # reasoning as every fetch-fresh/mutate/save write in
+    # common/js/lib/map-live-sync.js, just server-side: another writer
+    # (the GM renaming the group, or another player editing a different
+    # property) could have saved in between.
+    payload = storage.load_item_raw(state, "group", group_id)
+    if not isinstance(payload, dict):
+        payload = {}
+    property_values = payload.get("propertyValues")
+    if not isinstance(property_values, dict):
+        property_values = {}
+    property_values[key] = value
+    payload["propertyValues"] = property_values
+    storage.write_item_raw(state, "group", group_id, payload)
+    # write_item_raw deliberately skips library_items entirely (it has no
+    # ownership/tier check to make that safe generically) — bump
+    # modified_at here by hand, the same one-line touch update_group_members
+    # above already does, so the "group" live-stream kind (server/app.py's
+    # _handle_live_stream, which polls library_items.modified_at per kind)
+    # notices this write.
+    timestamp = datetime.utcnow().isoformat()
+    state.db.execute(
+        "UPDATE library_items SET modified_at = ? WHERE kind = 'group' AND id = ?",
+        (timestamp, group_id),
+    )
+    state.db.commit()
+    return {"ok": True, "key": key, "value": value, "propertyValues": property_values}
 
 
 def get_group_share_details(state: ServerState, token: str) -> Dict[str, Any]:
@@ -828,14 +1195,7 @@ def get_group_share_details(state: ServerState, token: str) -> Dict[str, Any]:
         raise AuthError("Invalid or expired share link")
     touch_share_link(state, token)
     group_id = info["content_id"]
-    row = state.db.execute(
-        """
-        SELECT id, owner_id, name, type, created_at, modified_at
-        FROM groups
-        WHERE id = ?
-        """,
-        (group_id,),
-    ).fetchone()
+    row = _load_group_row(state, group_id)
     if not row:
         raise AuthError("Group not found")
     members = _attach_member_status(_fetch_group_members(state, group_id), row["owner_id"])
@@ -846,6 +1206,9 @@ def get_group_share_details(state: ServerState, token: str) -> Dict[str, Any]:
             "id": row["id"],
             "name": row["name"],
             "type": row["type"],
+            "system_id": row["system_id"],
+            "setting_id": row["setting_id"],
+            "template_id": row["template_id"],
         },
         "members": members,
         "available": available,
@@ -859,10 +1222,7 @@ def claim_group_character(state: ServerState, token: str, character_id: str, use
     if not info or info.get("content_type") != "group":
         raise AuthError("Invalid or expired share link")
     group_id = info["content_id"]
-    group_row = state.db.execute(
-        "SELECT id, owner_id, name FROM groups WHERE id = ?",
-        (group_id,),
-    ).fetchone()
+    group_row = _load_group_access_row(state, group_id)
     if not group_row:
         raise AuthError("Group not found")
     membership = state.db.execute(

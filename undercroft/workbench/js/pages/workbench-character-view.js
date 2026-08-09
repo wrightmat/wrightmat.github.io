@@ -27,8 +27,10 @@ import { loadCustomFonts, DEFAULT_FONT_FAMILY } from "../../../common/js/lib/fon
 import { evaluateFormula } from "../../../common/js/lib/formula-engine.js";
 import { resolveBinding, createLookupFn } from "../../../common/js/lib/bindings.js";
 import { rollDiceExpression } from "../lib/dice.js";
-import { QUICK_DICE, parseQuickDiceCounts, incrementDieInExpression } from "../../../common/js/lib/widgets/dice-roll.js";
+import { rollExpression, resolveQuickDice, parseQuickDiceCounts, incrementDieInExpression, extractSystemRolls, rollSystemMove, extractSystemSymbolDice } from "../../../common/js/lib/widgets/dice-roll.js";
+import { rollSymbolDicePool, formatSymbolPoolResult } from "../lib/symbol-dice.js";
 import { preloadDiceOverlay } from "../../../common/js/lib/widgets/dice-overlay.js";
+import { setElementVisible } from "../../../common/js/lib/dom.js";
 import {
   normalizeOptionEntries,
   resolveTabEntries,
@@ -39,8 +41,15 @@ import { initGameLogWidget, SPOTLIGHT_KIND_LABELS, SPOTLIGHT_KIND_ICONS, SPOTLIG
 import { createSpotlightPanel } from "../../../common/js/lib/widgets/spotlight-panel.js";
 import { watchActiveSpotlights } from "../../../common/js/lib/spotlight-inbox.js";
 import { createSpotlightTitleCache, resolveActiveSpotlightId } from "../../../common/js/lib/spotlight.js";
-import { reimportViaMapping, mergeImportedCharacterData } from "../../../common/js/lib/content-fetch.js";
+import {
+  reimportViaMapping,
+  mergeImportedCharacterData,
+  listCharacterMappings,
+  loadMappingDefinition,
+  SOURCES,
+} from "../../../common/js/lib/content-fetch.js";
 import { showConfirmModal } from "../../../common/js/lib/confirm-modal.js";
+import { watchGroupForChanges, persistGroupPropertyValue } from "../../../common/js/lib/group-live-sync.js";
 
 // Relocated from the old standalone character.html/character.js — now one of
 // three views on Workbench's unified page (see js/pages/workbench.js), which
@@ -49,13 +58,18 @@ import { showConfirmModal } from "../../../common/js/lib/confirm-modal.js";
 // "edit") exactly as before, just now driven by the outer view-tab switcher
 // via the returned setMode() instead of an in-page toggle-mode button.
 export async function initCharacterView({ status, undoStack, dataManager }) {
-  // This page's own Dice tool pane (see the QUICK_DICE wiring below) can
+  // This page's own Dice tool pane (see the quick-dice wiring below) can
   // roll at any time once it's open — warm up the 3D overlay (and the
   // user's chosen theme) now instead of on the first roll click.
   preloadDiceOverlay(dataManager);
 
   const templateCatalog = new Map();
   const characterCatalog = new Map();
+  // Accessible campaigns (owned + member, same scope the header's own
+  // active-campaign selector and syncGameLogContext already use) — offered
+  // in the character picker's own "Campaigns" optgroup (see
+  // syncCharacterOptions) for Party Data mode (loadGroupPartyView).
+  const groupCatalog = new Map();
   const systemCatalog = new Map();
   const systemDefinitionCache = new Map();
 
@@ -68,12 +82,35 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     template: null,
     components: [],
     character: null,
-    draft: null,
+    // {} rather than null when nothing's loaded (Party Data mode — see
+    // loadGroupPartyView — leaves this at {} too, never a real character) —
+    // standardizing on one "empty" sentinel avoids the one place `null` vs
+    // `{}` actually changed behavior (characterAllowsEdits).
+    draft: {},
     characterOrigin: null,
     systemDefinition: null,
     systemPreviewData: {},
     viewLocked: false,
     shareToken: "",
+    // The active campaign's own Group Properties (party inventory, etc.) —
+    // { groupId, isOwner, schema, values } — merged into the binding
+    // context under a "group" key (see getBindingContext) so a template
+    // field bound to e.g. "group.partyInventory" resolves exactly like an
+    // ordinary "@inventory" binding does. null whenever no campaign is
+    // active, same as gameLogContext's own "none" case. Never written into
+    // `draft` itself — that's what gets persisted as the Character's own
+    // saved JSON, and group data has no business being part of it.
+    groupContext: null,
+    // True only when loadGroupPartyView explicitly set up this session — NOT
+    // the same thing as "groupContext is populated", which happens ambiently
+    // for ANY active campaign (e.g. right after page load, purely so Game
+    // Log/Now Showing can follow it) whether or not the user ever asked to
+    // see that campaign's own Party Data. Anything that means "are we
+    // showing Party Data right now" (the canvas placeholder copy, the
+    // character picker's own selected value, the Notes storage key) has to
+    // check this, not groupContext, or it flashes/restores Party Data state
+    // no one actually chose this session.
+    partyMode: false,
   };
 
   let lastSavedCharacterSignature = null;
@@ -81,6 +118,28 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
   const componentRollDirectives = new Map();
   const collapsedComponents = new Map();
   const diceQuickButtons = new Map();
+  // Section 5's quick-dice source for this page's Dice pane — the active
+  // campaign Group's own System wins over this character's own Assigned
+  // Systems (Section 2), else the standard 7. Starts at the standard-7
+  // default so the panel has buttons immediately; refreshDiceAndMoveButtons()
+  // (called at the end of updateSystemContext, once group/System context is
+  // actually known) resolves the real answer and rebuilds them.
+  let activeQuickDice = resolveQuickDice({});
+  const moveButtons = new Map();
+  // Section 1.3/4's named Rolls/Moves for this page's Dice pane — same
+  // active-System resolution as activeQuickDice above (both come from the
+  // same resolved systemDefinition, see refreshDiceAndMoveButtons), empty
+  // until that resolves. A System with no "rolls" array field at all (most
+  // Systems, still, even after this phase) just never shows this row.
+  let activeSystemRolls = [];
+  // Section 1.4/3.4's Tier-3 symbol dice (Phase 5) — mutually exclusive with
+  // the standard quick-dice/expression/Moves UI above: a System that deals
+  // in narrative dice pools (Genesys) has no numeric expression worth typing
+  // at all, so its presence swaps the whole panel over to the stepper below
+  // rather than just adding to it. Same "starts empty, resolved alongside
+  // activeQuickDice/activeSystemRolls in refreshDiceAndMoveButtons" pattern.
+  let activeSymbolDice = [];
+  const symbolPoolCounts = new Map();
   // Which tab is showing per Tabs-type Container, keyed by component.uid —
   // components are re-hydrated (deep-cloned) on every data change, so this
   // has to live outside the component object itself to survive re-renders.
@@ -94,11 +153,16 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
   // own setGameLogContext/clearGameLogContext for the (re)mount logic). This
   // is just "which campaign, if any, is currently in view" — the one thing
   // both need, resolved in exactly one place.
-  const gameLogContext = { groupId: "", groupName: "", shareToken: "", access: "none" };
+  const gameLogContext = { groupId: "", groupName: "", shareToken: "", systemId: "", access: "none" };
   // initGameLogWidget's own {refresh,destroy} instance — neither widget has
   // an "update groupId" method, so a campaign change destroys and recreates
   // it rather than mutating it in place.
   let gameLogWidget = null;
+  // watchGroupForChanges' own {refresh,stop,noteLocalWrite} instance driving
+  // state.groupContext's live data — same (re)creation reasoning as
+  // gameLogWidget, remounted alongside it in setGameLogContext/
+  // clearGameLogContext whenever the active campaign actually changes.
+  let groupWatcher = null;
   // watchActiveSpotlights' own {refresh,destroy} instance driving the Now
   // Showing panel's data; same (re)creation reasoning as gameLogWidget.
   let nowShowingWatcher = null;
@@ -219,11 +283,19 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
   // real top-level name) — confirmed safe to change: the one real character
   // record's `data` bucket was empty, so nothing was actually relying on
   // the old scoping.
-  function getValueAtPath(pathSegments) {
+  // Generic, context-agnostic versions of what used to be hard-rooted
+  // directly against state.draft — getValueAtPath/setValueAtPath below are
+  // now thin wrappers around these for the (still default, still by far the
+  // most common) Character case; group.* bindings (see getBindingContext/
+  // updateGroupBinding) read/write against state.groupContext.values
+  // through these exact same two functions instead, so there's one
+  // implementation of "walk/write a dotted path into a plain object," not
+  // two.
+  function getValueAtContext(context, pathSegments) {
     if (!Array.isArray(pathSegments) || !pathSegments.length) {
       return undefined;
     }
-    let cursor = state.draft;
+    let cursor = context;
     for (const segment of pathSegments) {
       if (!cursor || typeof cursor !== "object" || !(segment in cursor)) {
         return undefined;
@@ -233,14 +305,11 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     return cursor;
   }
 
-  function setValueAtPath(pathSegments, value) {
-    if (!Array.isArray(pathSegments) || !pathSegments.length) {
+  function setValueAtContext(context, pathSegments, value) {
+    if (!Array.isArray(pathSegments) || !pathSegments.length || !context) {
       return false;
     }
-    if (!state.draft) {
-      return false;
-    }
-    let cursor = state.draft;
+    let cursor = context;
     for (let index = 0; index < pathSegments.length - 1; index += 1) {
       const key = pathSegments[index];
       if (!cursor[key] || typeof cursor[key] !== "object") {
@@ -261,6 +330,31 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     }
     cursor[lastKey] = value;
     return true;
+  }
+
+  function getValueAtPath(pathSegments) {
+    return getValueAtContext(state.draft, pathSegments);
+  }
+
+  function setValueAtPath(pathSegments, value) {
+    if (!state.draft) {
+      return false;
+    }
+    return setValueAtContext(state.draft, pathSegments, value);
+  }
+
+  // Merges the active campaign's own Group Properties into the SAME
+  // context a plain "@inventory"-style binding already resolves against,
+  // under a "group" key — so "@group.partyInventory.quantity" walks through
+  // the exact same resolveBinding/getValueAtPath machinery as any other
+  // field, no new binding vocabulary needed. A derived, read-only view,
+  // rebuilt on demand — never written into `state.draft` itself, which is
+  // exactly what gets persisted as the Character's own saved JSON (group
+  // data has no business ending up inside it). The shallow spread is cheap
+  // (a character record's own top-level key count is small — this is not a
+  // deep clone of the whole record).
+  function getBindingContext() {
+    return { ...state.draft, group: state.groupContext?.values || {} };
   }
 
   // No longer autosaves on every change — Edit view is dirty-gated like
@@ -393,11 +487,19 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       dataAttr: "data-character-select", helpTopic: "character.records", helpPlacement: "right",
     })
   );
-  mountField("new-character-id", createCompactField({ type: "text", id: "new-character-id", label: "Character ID", dataAttr: "data-new-character-id", name: "id", required: true, placeholder: "e.g. cha.my-hero" }));
   mountField("new-character-name", createCompactField({ type: "text", id: "new-character-name", label: "Character Name", dataAttr: "data-new-character-name", name: "name", required: true, placeholder: "e.g. Elandra" }));
   mountField(
     "new-character-template",
     createCompactField({ type: "select", id: "new-character-template", label: "Template", controlClass: "form-select", dataAttr: "data-new-character-template", name: "template", required: true })
+  );
+  mountField(
+    "import-character-mapping",
+    createCompactField({ type: "select", id: "import-character-mapping", label: "Import Mapping", controlClass: "form-select", dataAttr: "data-import-character-mapping", name: "mapping", required: true })
+  );
+  mountField("import-character-name", createCompactField({ type: "text", id: "import-character-name", label: "Character Name", dataAttr: "data-import-character-name", name: "name", required: true, placeholder: "e.g. Elandra" }));
+  mountField(
+    "import-character-template",
+    createCompactField({ type: "select", id: "import-character-template", label: "Template", controlClass: "form-select", dataAttr: "data-import-character-template", name: "template", required: true })
   );
 
   const elements = {
@@ -407,6 +509,21 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     redoButton: document.querySelector('[data-action="redo-character"]'),
     exportButton: document.querySelector('[data-action="export-character"]'),
     newCharacterButton: document.querySelector('[data-action="new-character"]'),
+    addCharacterModeBlank: document.querySelector('[data-add-character-mode="blank"]'),
+    addCharacterModeImport: document.querySelector('[data-add-character-mode="import"]'),
+    addCharacterSubmitBlank: document.querySelector('[data-add-character-submit="blank"]'),
+    addCharacterSubmitImport: document.querySelector('[data-add-character-submit="import"]'),
+    importCharacterForm: document.querySelector("[data-import-character-form]"),
+    importCharacterStage1: document.querySelector("[data-import-stage-1]"),
+    importCharacterStage2: document.querySelector("[data-import-stage-2]"),
+    importCharacterMapping: document.querySelector("[data-import-character-mapping]"),
+    importCharacterValue: document.querySelector("[data-import-character-value]"),
+    importCharacterValueLabel: document.querySelector("[data-import-character-value-label]"),
+    importCharacterFetchButton: document.querySelector("[data-import-character-fetch]"),
+    importCharacterStatus: document.querySelector("[data-import-character-status]"),
+    importCharacterName: document.querySelector("[data-import-character-name]"),
+    importCharacterTemplate: document.querySelector("[data-import-character-template]"),
+    importCharacterSubmit: document.querySelector("[data-import-character-submit]"),
     saveButton: document.querySelector('[data-action="save-character"]'),
     deleteCharacterButton: document.querySelector('[data-delete-character]'),
     reimportCharacterButton: document.querySelector('[data-reimport-character]'),
@@ -427,7 +544,6 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     rightPaneToggle: document.querySelector('[data-pane-toggle="right"]'),
     characterToolbar: document.querySelector('[data-character-toolbar]'),
     newCharacterForm: document.querySelector("[data-new-character-form]"),
-    newCharacterId: document.querySelector("[data-new-character-id]"),
     newCharacterName: document.querySelector("[data-new-character-name]"),
     newCharacterTemplate: document.querySelector("[data-new-character-template]"),
     groupShareSection: document.querySelector("[data-group-share-section]"),
@@ -553,6 +669,13 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
   setNowShowingCollapsed(false);
   setGameLogCollapsed(false);
 
+  // Single modal shared by both the "blank" and "import" ways to add a
+  // character — a mode toggle inside it swaps which form/footer-button is
+  // shown (see setAddCharacterMode). This used to be two separate toolbar
+  // buttons/modals, but that pushed the toolbar past the six-button limit
+  // (style-guide.md's "Button count" rule) the moment Import Character was
+  // added, so Import folded into the existing New Character entry point
+  // instead of getting its own toolbar slot.
   let newCharacterModalInstance = null;
   if (window.bootstrap && typeof window.bootstrap.Modal === "function") {
     const modalElement = document.getElementById("new-character-modal");
@@ -588,6 +711,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
   bindUiEvents();
   loadTemplateRecords();
   loadCharacterRecords();
+  void refreshGroupsForPicker();
   syncModeIndicator();
   renderCanvas();
   renderPreview();
@@ -606,9 +730,15 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     if (elements.characterSelect) {
       elements.characterSelect.addEventListener("change", async () => {
         const selectedId = elements.characterSelect.value;
-        if (selectedId) {
-          await loadCharacter(selectedId);
+        if (!selectedId) return;
+        // "group:<id>" values are this picker's own Campaigns optgroup (see
+        // syncCharacterOptions) — Party Data mode, no character involved.
+        if (selectedId.startsWith("group:")) {
+          const option = elements.characterSelect.selectedOptions?.[0];
+          await loadGroupPartyView(selectedId.slice(6), option?.dataset.groupName || "");
+          return;
         }
+        await loadCharacter(selectedId);
       });
     }
 
@@ -682,9 +812,42 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       });
     }
 
-    if (elements.newCharacterId) {
-      elements.newCharacterId.addEventListener("input", () => {
-        elements.newCharacterId.setCustomValidity("");
+    if (elements.addCharacterModeBlank) {
+      elements.addCharacterModeBlank.addEventListener("click", () => {
+        setAddCharacterMode("blank");
+      });
+    }
+
+    if (elements.addCharacterModeImport) {
+      elements.addCharacterModeImport.addEventListener("click", () => {
+        setAddCharacterMode("import");
+      });
+    }
+
+    if (elements.importCharacterMapping) {
+      elements.importCharacterMapping.addEventListener("change", () => {
+        void applyImportValuePlaceholder();
+      });
+    }
+
+    if (elements.importCharacterFetchButton) {
+      elements.importCharacterFetchButton.addEventListener("click", () => {
+        void handleImportFetch();
+      });
+    }
+
+    if (elements.importCharacterTemplate) {
+      elements.importCharacterTemplate.addEventListener("change", () => {
+        if (elements.importCharacterSubmit) {
+          elements.importCharacterSubmit.disabled = !elements.importCharacterTemplate.value;
+        }
+      });
+    }
+
+    if (elements.importCharacterForm) {
+      elements.importCharacterForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        await createImportedCharacterFromForm();
       });
     }
 
@@ -979,6 +1142,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     resetSystemContext();
     if (!systemId) {
       renderCanvas();
+      void refreshDiceAndMoveButtons();
       return;
     }
     try {
@@ -991,6 +1155,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       console.warn("Character editor: unable to prepare system context", error);
     }
     renderCanvas();
+    void refreshDiceAndMoveButtons();
   }
 
   function normalizeCharacterRecord(record = {}, current = {}) {
@@ -1089,12 +1254,32 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
         return { value: entry.id, label, sortLabel: label.toLowerCase() };
       })
       .sort((a, b) => a.sortLabel.localeCompare(b.sortLabel, undefined, { sensitivity: "base" }));
+    // Campaigns (Party Data mode, loadGroupPartyView) — a separate optgroup,
+    // "group:<id>" values so they can never collide with a real character
+    // id in this same select's value space. groupName is stashed on the
+    // option itself (not re-derived from groupCatalog) so the change
+    // handler has it on hand without a second lookup.
+    const groupOptions = Array.from(groupCatalog.values())
+      .filter((entry) => entry.id)
+      .map((entry) => ({
+        value: `group:${entry.id}`,
+        label: `${entry.name} (Party Data)`,
+        sortLabel: entry.name.toLowerCase(),
+        group: "Campaigns",
+        dataset: { groupName: entry.name },
+      }))
+      .sort((a, b) => a.sortLabel.localeCompare(b.sortLabel, undefined, { sensitivity: "base" }));
     populateSelect(
       elements.characterSelect,
-      options.map(({ value, label }) => ({ value, label })),
+      [...options.map(({ value, label }) => ({ value, label })), ...groupOptions],
       { placeholder: "Select character" }
     );
-    const value = state.draft?.id || "";
+    // state.partyMode, not state.groupContext — groupContext is populated
+    // ambiently for ANY active campaign (see its own comment on state),
+    // whether or not the user ever asked to see that campaign's Party Data;
+    // using it here would show a campaign "selected" on a fresh page load
+    // that nobody actually picked.
+    const value = state.draft?.id || (state.partyMode && state.groupContext ? `group:${state.groupContext.groupId}` : "");
     elements.characterSelect.value = value;
   }
 
@@ -1289,7 +1474,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       return;
     }
     const expression = elements.diceExpression.value || "";
-    const counts = parseQuickDiceCounts(expression);
+    const counts = parseQuickDiceCounts(expression, activeQuickDice);
     diceQuickButtons.forEach((button, die) => {
       const count = counts[die] || 0;
       const baseLabel = button.dataset.label || button.textContent.trim();
@@ -1308,7 +1493,17 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
   }
 
 
-  function executeDiceRoll(expression, { label = "", updateInput = true } = {}) {
+  // Routed through dice-roll.js's shared rollExpression (not rollDiceExpression
+  // directly) so this page's own roll buttons — the Dice tool pane AND every
+  // ability/save/attack/roller-formula button (createRollOverlayButton →
+  // handleComponentRoll → here) — get the 3D overlay for eligible plain
+  // expressions, matching every other roll-and-report call site in the
+  // suite. This was the confirmed Phase-2 gap: `preloadDiceOverlay` was
+  // already called on this page, but nothing on it ever actually triggered
+  // the overlay. `context` still threads through to rollDiceExpression's own
+  // `@path` substitution for formula-driven buttons — see rollExpression's
+  // own comment for why that's safe with the overlay path.
+  async function executeDiceRoll(expression, { label = "", updateInput = true } = {}) {
     const trimmed = typeof expression === "string" ? expression.trim() : "";
     if (!trimmed) {
       status.show("Enter a dice expression like 2d6 + 3.", { type: "info", timeout: 2000 });
@@ -1319,18 +1514,18 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       syncQuickDiceButtons();
     }
     openToolsPane();
-    try {
-      const result = rollDiceExpression(trimmed, { context: state.draft || {} });
-      const notation = result.notation || trimmed;
-      const prefix = label ? `${label}: ` : "";
-      status.show(`${prefix}${notation} → ${result.total}`, { type: "success", timeout: 2200 });
-      recordGameLogRoll(result, { expression: trimmed, label });
-      return result;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Unable to roll dice.";
-      status.show(message, { type: "danger", timeout: 2400 });
-      return null;
+    const rolled = await rollExpression(trimmed, {
+      status,
+      label,
+      dataManager,
+      dice: activeQuickDice,
+      context: getBindingContext(),
+    });
+    if (!rolled || rolled.isTable) {
+      return rolled;
     }
+    recordGameLogRoll(rolled.result, { expression: trimmed, label });
+    return rolled.result;
   }
 
   // Delegates straight to common/js/lib/spotlight.js's own
@@ -1382,12 +1577,12 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     }
   }
 
-  function handleComponentRoll(expression, label, component) {
+  async function handleComponentRoll(expression, label, component) {
     if (!expression) {
       return;
     }
     const text = typeof label === "string" && label.trim() ? label.trim() : "";
-    const result = executeDiceRoll(expression, { label: text, updateInput: true });
+    const result = await executeDiceRoll(expression, { label: text, updateInput: true });
     if (result && component?.id === "initiative") {
       void pushInitiativeToActiveEncounter(result.total);
     }
@@ -1416,7 +1611,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       }
       const expression = expressions[index] || expressions[0];
       index = (index + 1) % expressions.length;
-      handleComponentRoll(expression, label, component);
+      void handleComponentRoll(expression, label, component);
     });
     container.appendChild(button);
     return container;
@@ -1445,31 +1640,36 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     form.className = "d-flex flex-column gap-3";
     form.setAttribute("data-dice-form", "");
 
+    // Everything below except the symbol-pool section (built further down)
+    // is the "standard" numeric-dice UI — grouped in its own container so
+    // refreshDiceAndMoveButtons can hide the whole thing at once for a
+    // System whose dice are all Tier-3 symbol dice (Section 1.4/3.4).
+    const standardSection = document.createElement("div");
+    standardSection.className = "d-flex flex-column gap-3";
+    standardSection.setAttribute("data-dice-standard-section", "");
+    form.appendChild(standardSection);
+
     const quickGrid = document.createElement("div");
     quickGrid.className = "dice-quick-grid";
     quickGrid.setAttribute("data-dice-quick", "");
-    QUICK_DICE.forEach((die) => {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "btn btn-outline-secondary btn-sm";
-      button.setAttribute("data-dice-button", die);
-      button.textContent = die;
-      quickGrid.appendChild(button);
-    });
+    // Die buttons themselves are populated by renderDiceQuickButtons() below,
+    // not here — they depend on activeQuickDice (Section 5's resolved
+    // System dice), which isn't known yet the first time this markup is
+    // built.
     const clearButton = document.createElement("button");
     clearButton.type = "button";
     clearButton.className = "btn btn-outline-secondary btn-sm";
     clearButton.setAttribute("data-dice-clear", "");
     clearButton.textContent = "Clear";
     quickGrid.appendChild(clearButton);
-    form.appendChild(quickGrid);
+    standardSection.appendChild(quickGrid);
 
     const inputId = "dice-expression";
     const label = document.createElement("label");
     label.className = "visually-hidden";
     label.setAttribute("for", inputId);
     label.textContent = "Dice expression";
-    form.appendChild(label);
+    standardSection.appendChild(label);
 
     const inputGroup = document.createElement("div");
     inputGroup.className = "input-group";
@@ -1489,32 +1689,149 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     rollButton.textContent = "Roll";
     inputGroup.appendChild(rollButton);
 
-    form.appendChild(inputGroup);
+    standardSection.appendChild(inputGroup);
+
+    // Named Rolls/Moves (Section 1.3/4) — a curated button per System-
+    // defined roll, in its OWN row below the expression input/Roll button,
+    // not mixed in with the quick-dice grid above: a quick-dice button only
+    // ever edits the expression string (nothing rolls until Roll is
+    // clicked), while a Move button is a one-click roller in its own right —
+    // visually grouping it with the input it has nothing to do with was
+    // confusing. Populated by renderMoveButtons() below; hidden entirely
+    // (not just empty) for the common case of a System with no "rolls"
+    // field.
+    const movesRow = document.createElement("div");
+    movesRow.className = "dice-quick-grid";
+    movesRow.setAttribute("data-dice-moves", "");
+    standardSection.appendChild(movesRow);
+
+    // Tier-3 symbol-dice pool (Section 1.4/3.4/6.3, Phase 5) — a +/- stepper
+    // per symbol die instead of a text expression, since there's no
+    // sensible way to type "assemble this ad hoc pool" as a formula string.
+    // Hidden entirely (not just empty) unless the active System declares
+    // any symbol dice; populated/toggled by refreshDiceAndMoveButtons and
+    // renderSymbolPool below, not here — activeSymbolDice isn't known yet
+    // the first time this markup is built.
+    const symbolSection = document.createElement("div");
+    symbolSection.className = "d-flex flex-column gap-2";
+    symbolSection.setAttribute("data-dice-symbol-section", "");
+    // NOT `.hidden` — see setElementVisible's own comment (dom.js) for why
+    // that silently does nothing on a `d-flex` element.
+    setElementVisible(symbolSection, false);
+
+    const symbolLabel = document.createElement("span");
+    symbolLabel.className = "small text-body-secondary";
+    symbolLabel.textContent = "Dice Pool";
+    symbolSection.appendChild(symbolLabel);
+
+    const symbolSteppers = document.createElement("div");
+    symbolSteppers.className = "d-flex flex-column gap-2";
+    symbolSteppers.setAttribute("data-dice-symbol-steppers", "");
+    symbolSection.appendChild(symbolSteppers);
+
+    const symbolRollButton = document.createElement("button");
+    symbolRollButton.type = "button";
+    symbolRollButton.className = "btn btn-primary";
+    symbolRollButton.setAttribute("data-dice-symbol-roll", "");
+    symbolRollButton.textContent = "Roll pool";
+    symbolSection.appendChild(symbolRollButton);
+
+    const symbolResult = document.createElement("div");
+    symbolResult.className = "small text-body-secondary";
+    symbolResult.setAttribute("data-dice-symbol-result", "");
+    symbolSection.appendChild(symbolResult);
+
+    form.appendChild(symbolSection);
     elements.dicePanel.appendChild(form);
 
     elements.diceForm = form;
     elements.diceExpression = input;
-    elements.diceQuickButtons = form.querySelectorAll("[data-dice-button]");
+    elements.diceStandardSection = standardSection;
+    elements.diceMovesRow = movesRow;
+    elements.diceQuickGrid = quickGrid;
     elements.diceClearButton = form.querySelector("[data-dice-clear]");
+    elements.diceSymbolSection = symbolSection;
+    elements.diceSymbolSteppers = symbolSteppers;
+    elements.diceSymbolResult = symbolResult;
+    symbolRollButton.addEventListener("click", () => void executeSymbolPoolRoll());
     return true;
   }
 
-  function initDiceRoller() {
-    if (!ensureDicePanelMarkup()) {
+  // (Re)builds the Moves button row from activeSystemRolls — same "static
+  // chrome once, rebuild the buttons whenever the resolved data changes"
+  // split renderDiceQuickButtons below already uses, since both come from
+  // the same async System-resolution in refreshDiceAndMoveButtons.
+  function renderMoveButtons() {
+    if (!elements.diceMovesRow) {
       return;
     }
-    diceQuickButtons.clear();
-    Array.from(elements.diceQuickButtons || []).forEach((button) => {
-      const die = (button.getAttribute("data-dice-button") || "").toLowerCase();
-      if (!die || !QUICK_DICE.includes(die)) {
-        return;
+    moveButtons.forEach((button) => button.remove());
+    moveButtons.clear();
+    // NOT `.hidden` — `.dice-quick-grid`'s own `display: grid` (an author
+    // rule, no `!important` even needed) always beats the `[hidden]`
+    // UA-stylesheet rule regardless of specificity, so it silently never
+    // actually collapsed. See dom.js's own setElementVisible.
+    setElementVisible(elements.diceMovesRow, activeSystemRolls.length > 0, "grid");
+    activeSystemRolls.forEach((move, index) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "btn btn-outline-primary btn-sm";
+      button.textContent = move.label;
+      button.setAttribute("aria-label", `Roll ${move.label}`);
+      if (move.expression) {
+        button.title = move.expression;
       }
-      diceQuickButtons.set(die, button);
-      const label = button.textContent.trim();
+      button.addEventListener("click", () => void executeSystemMove(move));
+      moveButtons.set(index, button);
+      elements.diceMovesRow.appendChild(button);
+    });
+  }
+
+  // Rolls a System-defined Move (Section 1.3/4) and posts it to the Game
+  // Log exactly like executeDiceRoll's own plain rolls do — recordGameLogRoll
+  // gains an optional `verdict` string here (see game-log.js's own
+  // describeEntry) so anyone else watching the log sees "Partial Success",
+  // not just the raw total.
+  async function executeSystemMove(move) {
+    openToolsPane();
+    const rolled = await rollSystemMove(move, {
+      status,
+      dataManager,
+      dice: activeQuickDice,
+      context: getBindingContext(),
+    });
+    if (!rolled || rolled.isTable) {
+      return;
+    }
+    recordGameLogRoll(rolled.result, {
+      expression: move.expression,
+      label: move.label,
+      verdict: rolled.verdict?.label || undefined,
+    });
+  }
+
+  // (Re)builds the quick-dice buttons from activeQuickDice — called once by
+  // initDiceRoller on first mount, and again by refreshDiceAndMoveButtons
+  // whenever the resolved active System's dice change (Section 5), since
+  // group/System context resolves asynchronously, after the panel's own
+  // static chrome (ensureDicePanelMarkup) is already built.
+  function renderDiceQuickButtons() {
+    if (!elements.diceQuickGrid) {
+      return;
+    }
+    diceQuickButtons.forEach((button) => button.remove());
+    diceQuickButtons.clear();
+    activeQuickDice.forEach((die) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "btn btn-outline-secondary btn-sm";
+      button.setAttribute("data-dice-button", die.id);
+      const label = die.label || die.id;
+      button.textContent = label;
       button.dataset.label = label;
       button.setAttribute("aria-label", `Add ${label}`);
       button.addEventListener("click", () => {
-        const next = incrementDieInExpression(die, elements.diceExpression.value || "");
+        const next = incrementDieInExpression(die.id, elements.diceExpression.value || "");
         elements.diceExpression.value = next;
         try {
           elements.diceExpression.focus({ preventScroll: true });
@@ -1523,7 +1840,133 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
         }
         syncQuickDiceButtons();
       });
+      diceQuickButtons.set(die.id, button);
+      elements.diceQuickGrid.insertBefore(button, elements.diceClearButton);
     });
+    syncQuickDiceButtons();
+  }
+
+  // (Re)builds the symbol-pool steppers from activeSymbolDice — same
+  // "static chrome once, rebuild the controls whenever the resolved data
+  // changes" split renderDiceQuickButtons already uses. Counts persist
+  // across re-renders/rolls (not reset to 0) so a pool stays "loaded"
+  // between rolls the way a physical dice pool would (e.g. rerolling after
+  // spending a Destiny Point) — only navigating away and back, or the
+  // active System itself changing, clears symbolPoolCounts.
+  function renderSymbolPool() {
+    if (!elements.diceSymbolSteppers) {
+      return;
+    }
+    elements.diceSymbolSteppers.innerHTML = "";
+    activeSymbolDice.forEach((die) => {
+      const row = document.createElement("div");
+      row.className = "d-flex align-items-center gap-2";
+
+      const label = document.createElement("span");
+      label.className = "small flex-grow-1";
+      label.textContent = die.label;
+      row.appendChild(label);
+
+      const minus = document.createElement("button");
+      minus.type = "button";
+      minus.className = "btn btn-outline-secondary btn-sm";
+      minus.textContent = "−";
+      minus.setAttribute("aria-label", `Remove one ${die.label}`);
+      row.appendChild(minus);
+
+      const countSpan = document.createElement("span");
+      countSpan.className = "text-center";
+      countSpan.style.minWidth = "1.5rem";
+      countSpan.textContent = String(symbolPoolCounts.get(die.id) || 0);
+      row.appendChild(countSpan);
+
+      const plus = document.createElement("button");
+      plus.type = "button";
+      plus.className = "btn btn-outline-secondary btn-sm";
+      plus.textContent = "+";
+      plus.setAttribute("aria-label", `Add one ${die.label}`);
+      row.appendChild(plus);
+
+      minus.addEventListener("click", () => {
+        const next = Math.max(0, (symbolPoolCounts.get(die.id) || 0) - 1);
+        symbolPoolCounts.set(die.id, next);
+        countSpan.textContent = String(next);
+      });
+      plus.addEventListener("click", () => {
+        const next = (symbolPoolCounts.get(die.id) || 0) + 1;
+        symbolPoolCounts.set(die.id, next);
+        countSpan.textContent = String(next);
+      });
+
+      elements.diceSymbolSteppers.appendChild(row);
+    });
+  }
+
+  // Rolls the current symbol-pool stepper counts (Section 1.4/3.4, Phase 5)
+  // via the dedicated symbol-dice engine — never rollExpression/
+  // rollDiceExpression, since a symbol pool has no numeric total to
+  // compute. Posts to the Game Log via recordGameLogRoll's own `verdict`
+  // slot (already rendered by game-log.js's describeEntry) carrying the
+  // formatted symbol result, with no numeric total shown alongside it.
+  async function executeSymbolPoolRoll() {
+    openToolsPane();
+    const diceById = new Map(activeSymbolDice.map((die) => [die.id.toLowerCase(), die]));
+    const poolCounts = activeSymbolDice
+      .map((die) => ({ dieId: die.id, count: symbolPoolCounts.get(die.id) || 0 }))
+      .filter((entry) => entry.count > 0);
+    if (!poolCounts.length) {
+      status.show("Add at least one die to the pool first.", { type: "info", timeout: 2000 });
+      return;
+    }
+    const rolled = rollSymbolDicePool(poolCounts, { diceById });
+    const text = formatSymbolPoolResult(rolled.net);
+    if (elements.diceSymbolResult) {
+      elements.diceSymbolResult.textContent = text;
+    }
+    status.show(text, { type: "success", timeout: 2600 });
+    recordGameLogRoll(
+      { notation: poolCounts.map((entry) => `${entry.count} ${entry.dieId}`).join(" + ") },
+      { label: "Symbol Pool", verdict: text }
+    );
+  }
+
+  // Re-resolves activeQuickDice, activeSystemRolls, AND activeSymbolDice
+  // (Section 2's group-then-character priority, shared by all three) and
+  // rebuilds every row against the new answer — called from
+  // updateSystemContext once the character's own System is known, and
+  // needs its own group-context lookup since updateSystemContext only
+  // resolves the character's own System, not the active campaign Group's.
+  async function refreshDiceAndMoveButtons() {
+    const groupSystemId = gameLogContext.systemId || "";
+    const characterSystemId = Array.isArray(state.draft?.systemIds) ? state.draft.systemIds[0] : "";
+    const resolvedSystemId = groupSystemId || characterSystemId || "";
+    const systemDefinition = resolvedSystemId ? await fetchSystemDefinition(resolvedSystemId).catch(() => null) : null;
+    activeQuickDice = resolveQuickDice({ systemDefinition });
+    activeSystemRolls = extractSystemRolls(systemDefinition);
+    activeSymbolDice = extractSystemSymbolDice(systemDefinition);
+    renderDiceQuickButtons();
+    renderMoveButtons();
+    renderSymbolPool();
+    // A System with any Tier-3 symbol dice replaces the numeric UI wholesale
+    // (Section 1.4/3.4) — there's no meaningful hybrid, since a narrative
+    // dice-pool System has no numeric expression worth typing at all.
+    //
+    // NOT `.hidden` — both sections carry `d-flex`, and Bootstrap's own
+    // `.d-flex { display: flex !important; }` always beats the `[hidden]`
+    // UA-stylesheet rule regardless of specificity, so the "hidden" side
+    // never actually collapsed: Roll and Roll pool could both show at once
+    // for a plain-numeric System (e.g. Daggerheart) that has zero symbol
+    // dice. See dom.js's own setElementVisible for the real fix.
+    const symbolMode = activeSymbolDice.length > 0;
+    setElementVisible(elements.diceStandardSection, !symbolMode, "flex");
+    setElementVisible(elements.diceSymbolSection, symbolMode, "flex");
+  }
+
+  function initDiceRoller() {
+    if (!ensureDicePanelMarkup()) {
+      return;
+    }
+    renderDiceQuickButtons();
 
     if (elements.diceClearButton) {
       elements.diceClearButton.setAttribute("aria-label", "Clear dice expression");
@@ -1550,7 +1993,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       elements.diceForm.addEventListener("submit", (event) => {
         event.preventDefault();
         const expression = elements.diceExpression ? elements.diceExpression.value || "" : "";
-        executeDiceRoll(expression, { updateInput: false });
+        void executeDiceRoll(expression, { updateInput: false });
       });
     }
 
@@ -1604,6 +2047,31 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     } finally {
       refreshNewCharacterTemplateOptions(selected);
     }
+  }
+
+  // Populates groupCatalog for the character picker's own "Campaigns"
+  // optgroup — includeMemberGroups: true is the same scope
+  // syncGameLogContext's own dataManager.listGroups call already uses (owned
+  // + campaigns you're merely a member of, via a character you own), and
+  // dataManager's own request-level cache means this doesn't cost a second
+  // real fetch when that call already ran this session.
+  async function refreshGroupsForPicker() {
+    if (!dataManager.isAuthenticated()) {
+      groupCatalog.clear();
+      syncCharacterOptions();
+      return;
+    }
+    try {
+      const { groups } = await dataManager.listGroups({ includeMemberGroups: true });
+      groupCatalog.clear();
+      (Array.isArray(groups) ? groups : []).forEach((group) => {
+        if (!group?.id) return;
+        groupCatalog.set(group.id, { id: group.id, name: group.name || group.id, templateId: group.template_id || "" });
+      });
+    } catch (error) {
+      console.warn("Character editor: unable to list campaigns", error);
+    }
+    syncCharacterOptions();
   }
 
   async function loadCharacterRecords() {
@@ -1852,6 +2320,49 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     });
   }
 
+  // (Re)subscribes state.groupContext to the active campaign's own Group
+  // Properties — remounted alongside the Game Log widget above, off the
+  // exact same gameLogContext this file already resolves (see
+  // syncGameLogContext), rather than re-running that same group/access
+  // resolution a second time. `isOwner` is captured once here rather than
+  // re-derived per binding read since it only ever changes when this whole
+  // function re-runs (i.e., when the active campaign itself changes).
+  function mountGroupPropertyContext() {
+    groupWatcher?.stop();
+    groupWatcher = null;
+    if (!gameLogContext.groupId) {
+      state.groupContext = null;
+      renderCanvas();
+      return;
+    }
+    const groupId = gameLogContext.groupId;
+    state.groupContext = {
+      groupId,
+      isOwner: gameLogContext.access === "owner",
+      schema: [],
+      values: {},
+    };
+    groupWatcher = watchGroupForChanges({
+      dataManager,
+      groupId,
+      shareToken: gameLogContext.shareToken,
+      onChange: (payload) => {
+        // The active campaign may have already moved on by the time this
+        // resolves (a poll/live-stream tick landing after the GM/player
+        // switched campaigns) — discard rather than repopulating the WRONG
+        // group's data.
+        if (!state.groupContext || state.groupContext.groupId !== groupId) return;
+        state.groupContext.schema = Array.isArray(payload?.properties) ? payload.properties : [];
+        state.groupContext.values =
+          payload?.propertyValues && typeof payload.propertyValues === "object" ? payload.propertyValues : {};
+        renderCanvas();
+      },
+      onError: (error) => {
+        console.error("Group property sync error", error);
+      },
+    });
+  }
+
   function initGameLog() {
     if (elements.gameLogRefresh) {
       elements.gameLogRefresh.addEventListener("click", () => {
@@ -1868,6 +2379,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     gameLogContext.groupId = "";
     gameLogContext.groupName = "";
     gameLogContext.shareToken = "";
+    gameLogContext.systemId = "";
     gameLogContext.access = "none";
     gameLogPanelState.collapsed = false;
     if (elements.gameLogTitle) {
@@ -1877,10 +2389,11 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     if (changed) {
       mountGameLog();
       mountNowShowingWatcher();
+      mountGroupPropertyContext();
     }
   }
 
-  function setGameLogContext({ groupId = "", shareToken = "", groupName = "", access = "none" } = {}) {
+  function setGameLogContext({ groupId = "", shareToken = "", groupName = "", systemId = "", access = "none" } = {}) {
     const normalizedId = typeof groupId === "string" ? groupId.trim() : "";
     const normalizedToken = typeof shareToken === "string" ? shareToken.trim() : "";
     const normalizedAccess = typeof access === "string" ? access : "none";
@@ -1892,6 +2405,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     gameLogContext.groupId = normalizedId;
     gameLogContext.shareToken = normalizedToken;
     gameLogContext.groupName = typeof groupName === "string" ? groupName.trim() : "";
+    gameLogContext.systemId = typeof systemId === "string" ? systemId.trim() : "";
     gameLogContext.access = normalizedAccess;
     if (elements.gameLogTitle) {
       elements.gameLogTitle.textContent = gameLogContext.groupName;
@@ -1900,6 +2414,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     if (changed) {
       mountGameLog();
       mountNowShowingWatcher();
+      mountGroupPropertyContext();
     }
   }
 
@@ -1996,7 +2511,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
   // itself still renders inline wherever the dice roller shows it either
   // way, so nothing is lost except a persistent log entry there's nowhere to
   // put one.
-  function recordGameLogRoll(result, { expression = "", label = "" } = {}) {
+  function recordGameLogRoll(result, { expression = "", label = "", verdict = "" } = {}) {
     if (!result || !dataManager.isAuthenticated() || (!gameLogContext.groupId && !gameLogContext.shareToken)) {
       return;
     }
@@ -2006,6 +2521,10 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       notation: result.notation || expression || "",
       total: result.total,
       label: label || undefined,
+      // A System-defined Move's own matched band/compare label (Section
+      // 1.3/4, e.g. "Partial Success") — optional, absent for a plain
+      // roll. See game-log.js's own describeEntry "roll" case.
+      verdict: verdict || undefined,
       character: context || undefined,
     };
     dataManager
@@ -2058,7 +2577,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     if (shareToken && shareGroupId) {
       const groupName = groupShareState.group?.name || gameLogContext.groupName;
       const access = dataManager.isAuthenticated() ? "share" : "viewer";
-      setGameLogContext({ groupId: shareGroupId, shareToken, groupName, access });
+      setGameLogContext({ groupId: shareGroupId, shareToken, groupName, systemId: groupShareState.group?.system_id || "", access });
       return;
     }
     if (!dataManager.isAuthenticated()) {
@@ -2084,6 +2603,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
           setGameLogContext({
             groupId: active.groupId,
             groupName: match.name || active.name || "",
+            systemId: match.system_id || "",
             access: ownerId === userId ? "owner" : "member",
           });
           return;
@@ -2092,7 +2612,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
         // Falls through to the unconditional-owner shape below as a last
         // resort, matching group-context.js's own identical fallback.
       }
-      setGameLogContext({ groupId: active.groupId, groupName: active.name || "", access: "owner" });
+      setGameLogContext({ groupId: active.groupId, groupName: active.name || "", systemId: "", access: "owner" });
       return;
     }
     clearGameLogContext();
@@ -2485,6 +3005,81 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     await loadTemplateById(templateId);
   }
 
+  // Workbench's "Party Data" mode — the exact same Template/Component/
+  // Binding engine as a Character's own sheet, just rooted at a Group
+  // instead of a character: state.draft stays {} throughout, and every
+  // component in the campaign's own Party Template is expected to bind only
+  // to @group.* paths — those already read/write/permission-check correctly
+  // with no character present (getBindingContext/updateGroupBinding, built
+  // earlier this session; unrelated to this function). Setting this
+  // campaign active (dataManager.setActiveGroup) makes picking it here
+  // equivalent to picking it in the header's own campaign selector — Now
+  // Showing/Game Log deliberately follow along, the same way they would for
+  // any other explicit campaign choice; syncGameLogContext (unchanged)
+  // resolves ownership/access and, via setGameLogContext, remounts
+  // mountGroupPropertyContext for us — no separate group-context resolution
+  // needed here.
+  async function loadGroupPartyView(groupId, groupName = "") {
+    if (!groupId || !dataManager) {
+      return;
+    }
+    state.character = null;
+    state.draft = {};
+    state.characterOrigin = null;
+    state.template = null;
+    state.components = [];
+    collapsedComponents.clear();
+    resetSystemContext();
+    // state.mode is deliberately left untouched — same as loadCharacter,
+    // which never resets it either, so switching to Party Data while
+    // already in Edit mode stays in Edit mode instead of silently dropping
+    // to view. A caller that specifically wants view mode (deleteCurrentCharacter's
+    // own fallback) sets state.mode itself before calling this.
+    state.partyMode = true;
+    componentCounter = 0;
+    currentNotesKey = "";
+    state.shareToken = "";
+    if (elements.characterSelect) {
+      elements.characterSelect.value = `group:${groupId}`;
+    }
+    markCharacterClean();
+    dataManager.setActiveGroup(groupId, groupName);
+    await syncGameLogContext();
+    renderCanvas();
+    renderPreview();
+    syncModeIndicator();
+    syncCharacterActions();
+    syncNotesEditor();
+    let templateId = "";
+    try {
+      // preferLocal: false — same "this is the authoritative editor, never
+      // trust a stale local cache" reasoning as loadCharacter/loadTemplateById
+      // below use for their own fetches.
+      const result = await dataManager.get("group", groupId, { preferLocal: false });
+      templateId = result?.payload?.templateId || "";
+    } catch (error) {
+      console.error("Character editor: failed to load campaign", error);
+      status.show("Unable to load this campaign", { type: "error", timeout: 2500 });
+      return;
+    }
+    // The active campaign may have already moved on by the time this
+    // resolves (the GM/player picked a different campaign or character
+    // while the fetch above was in flight) — discard rather than loading
+    // the WRONG campaign's template over whatever's now actually selected.
+    if (gameLogContext.groupId !== groupId) {
+      return;
+    }
+    if (!templateId) {
+      elements.canvasRoot?.replaceChildren(
+        createCanvasPlaceholder("This campaign has no Party Template assigned — pick one in Loom's Group tab.", {
+          variant: "root",
+        })
+      );
+      return;
+    }
+    await loadTemplateById(templateId);
+  }
+
   async function fetchTemplatePayload(metadata) {
     if (!metadata) {
       return null;
@@ -2576,7 +3171,12 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
         source: origin,
       });
     }
-    if (state.draft) {
+    // `state.draft?.id` (not just `state.draft`) — Party Data mode (see
+    // loadGroupPartyView) leaves `state.draft` at the standard {} "no
+    // character" sentinel, which is truthy; without this check, loading a
+    // campaign's Party Template would incidentally write a stray `template`
+    // key into that otherwise-empty draft.
+    if (state.draft?.id) {
       state.draft.template = template.id;
     }
     void updateSystemContext(template.schema);
@@ -2588,6 +3188,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     if (!id) {
       return;
     }
+    state.partyMode = false;
     state.shareToken = shareToken || "";
     try {
       const metadata = characterCatalog.get(id);
@@ -2691,7 +3292,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
 
     if (state.draft && state.draft.id === id) {
       state.character = null;
-      state.draft = null;
+      state.draft = {};
       state.characterOrigin = null;
       state.template = null;
       state.components = [];
@@ -2805,10 +3406,19 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       className: "",
     });
     elements.canvasRoot.innerHTML = "";
-    if (!state.draft?.id) {
-      elements.canvasRoot.appendChild(
-        createCanvasPlaceholder("Select a character to view the sheet.", { variant: "root" })
-      );
+    if (!state.draft?.id && !state.template?.id) {
+      // state.partyMode (NOT the mere presence of state.groupContext, which
+      // populates ambiently for any active campaign regardless of whether
+      // Party Data was ever actually chosen — see its own comment on state)
+      // means loadGroupPartyView is active for a campaign with no Party
+      // Template assigned — a more specific, actionable message than the
+      // generic "pick something" one below (also covers the brief render
+      // that happens before that function's own template lookup resolves).
+      const message =
+        state.partyMode && state.groupContext
+          ? "This campaign has no Party Template assigned yet — pick one in Loom's Group tab."
+          : "Select a character or campaign to view a sheet.";
+      elements.canvasRoot.appendChild(createCanvasPlaceholder(message, { variant: "root" }));
       refreshTooltips(elements.canvasRoot);
       syncModeIndicator();
       return;
@@ -3094,9 +3704,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
         return resolveComponentValue(comp, fallback);
       },
       editable(comp) {
-        return itemContext
-          ? Boolean(comp.binding) && (state.mode === "edit" || isRepeaterItemNodeEditableInPlay(comp, itemContext.item))
-          : isEditable(comp);
+        return isRepeaterCellEditable(comp, itemContext);
       },
       onChange(comp, value) {
         writeValue(comp, value);
@@ -3253,6 +3861,16 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     if (!pathSegments) {
       return;
     }
+    // A Repeater bound to "@group.partyInventory" computes a path rooted at
+    // ["group", "partyInventory", ...] — same "group" first-segment
+    // convention updateBinding itself checks, routed the exact same way
+    // (see updateGroupBinding's own comment for why this can't just reuse
+    // setValueAtPath/applyBindingValue: those mutate state.draft, which
+    // group data must never end up inside).
+    if (pathSegments[0] === "group") {
+      updateGroupBinding(pathSegments.slice(1), value);
+      return;
+    }
     const previousValue = cloneValue(getValueAtPath(pathSegments));
     const nextValue = cloneValue(value);
     if (valuesEqual(previousValue, nextValue)) {
@@ -3314,6 +3932,13 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     if (!pathSegments) {
       return;
     }
+    // Same "group" first-segment routing as setRepeaterItemValue — a tab
+    // binding like "@group.resources.{item}.current" must reach
+    // updateGroupBinding, not state.draft.
+    if (pathSegments[0] === "group") {
+      updateGroupBinding(pathSegments.slice(1), value);
+      return;
+    }
     const previousValue = cloneValue(getValueAtPath(pathSegments));
     const nextValue = cloneValue(value);
     if (valuesEqual(previousValue, nextValue)) {
@@ -3366,7 +3991,11 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
   function resolveItemContextValue(itemContext, raw) {
     if (itemContext?.kind === "tab") {
       const pathSegments = resolveTabItemPath(raw, itemContext.key);
-      return pathSegments ? getValueAtPath(pathSegments) : undefined;
+      // getBindingContext() is state.draft plus a "group" key — reading
+      // through it here (rather than getValueAtPath/state.draft directly)
+      // is what makes "@group.resources.{item}.current" resolvable, same
+      // reasoning as setTabItemValue's write-side routing above.
+      return pathSegments ? getValueAtContext(getBindingContext(), pathSegments) : undefined;
     }
     return resolveRepeaterItemValue(itemContext?.item, raw);
   }
@@ -3961,9 +4590,15 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     // mode always allows it, same as every other field's own gating; a
     // Repeater with no binding at all has nothing to write to, so it's
     // excluded regardless of mode.
+    // Adding/removing a whole row is this Repeater's OWN top-level binding
+    // (component.binding, e.g. "@group.partyInventory"), unlike a single
+    // cell's item-relative one — same group-permission reasoning as
+    // isRepeaterCellEditable, checked directly against component.binding
+    // here instead since there's no itemContext at this level.
     const canManage =
       Boolean(component.allowAddRemove) &&
       Boolean(component.binding) &&
+      !isGroupBindingBlocked(component?.binding) &&
       (state.mode === "edit" || isComponentEditableInPlay(component));
     const handleAddItem = () => {
       writeRepeaterItems(component, itemContext, [...items, createBlankRepeaterItem(itemColumns)]);
@@ -4022,7 +4657,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
   // once Text/Image/Container needed the identical logic rather than each
   // re-implementing the same dataContext switch.
   function resolveContextFormula(formula, itemContext) {
-    const dataContext = itemContext ? (itemContext.item && typeof itemContext.item === "object" ? itemContext.item : {}) : state.draft || {};
+    const dataContext = itemContext ? (itemContext.item && typeof itemContext.item === "object" ? itemContext.item : {}) : getBindingContext();
     try {
       return evaluateFormulaWithLookup(formula, dataContext, itemContext ? {} : { rollDice: rollDiceExpression });
     } catch (error) {
@@ -4043,7 +4678,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
           return resolveItemContextValue(itemContext, raw);
         }
         const path = resolveBindingPath(raw);
-        return path ? getValueAtPath(path) : undefined;
+        return path ? getValueAtContext(getBindingContext(), path) : undefined;
       },
       evaluateFormula(formula) {
         return resolveContextFormula(formula, itemContext);
@@ -4062,7 +4697,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
           return resolveItemContextValue(itemContext, raw);
         }
         const path = resolveBindingPath(raw);
-        return path ? getValueAtPath(path) : undefined;
+        return path ? getValueAtContext(getBindingContext(), path) : undefined;
       },
       evaluateFormula(formula) {
         return resolveContextFormula(formula, itemContext);
@@ -4118,7 +4753,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
           return resolved != null ? resolved : "";
         }
         const path = resolveBindingPath(trimmed);
-        const resolved = path ? getValueAtPath(path) : undefined;
+        const resolved = path ? getValueAtContext(getBindingContext(), path) : undefined;
         return resolved != null ? resolved : "";
       },
       getZones(comp) {
@@ -4243,7 +4878,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     const formula = typeof component.segmentFormula === "string" ? component.segmentFormula.trim() : "";
     if (formula) {
       try {
-        const result = evaluateFormulaWithLookup(formula, state.draft || {}, { rollDice: rollDiceExpression });
+        const result = evaluateFormulaWithLookup(formula, getBindingContext(), { rollDice: rollDiceExpression });
         const numeric = Number(result);
         if (Number.isFinite(numeric) && numeric > 0) return Math.round(numeric);
       } catch (error) {
@@ -4254,7 +4889,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     if (binding) {
       const path = resolveBindingPath(binding);
       if (path) {
-        const resolved = Number(getValueAtPath(path));
+        const resolved = Number(getValueAtContext(getBindingContext(), path));
         if (Number.isFinite(resolved) && resolved > 0) return Math.round(resolved);
       } else {
         const numeric = Number(binding);
@@ -4278,9 +4913,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
         return { segments, active };
       },
       editable(comp) {
-        return itemContext
-          ? Boolean(comp.binding) && (state.mode === "edit" || isRepeaterItemNodeEditableInPlay(comp, itemContext.item))
-          : isEditable(comp);
+        return isRepeaterCellEditable(comp, itemContext);
       },
       onChange(comp, value) {
         if (itemContext) {
@@ -4322,9 +4955,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
         return comp.multiple ? activeValues.includes(normalizedOption) : normalizedOption === activeValues;
       },
       editable(comp) {
-        return itemContext
-          ? Boolean(comp.binding) && (state.mode === "edit" || isRepeaterItemNodeEditableInPlay(comp, itemContext.item))
-          : isEditable(comp);
+        return isRepeaterCellEditable(comp, itemContext);
       },
       onSelect(comp, optionValue) {
         const setValue = (next) => {
@@ -4391,6 +5022,12 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       // Toggle unless someone deliberately turns it on.
       editable(comp) {
         if (componentHasFormula(comp) || isComponentLocked(comp)) {
+          return false;
+        }
+        // Same "@group.*" permission gate as isEditable/isRepeaterCellEditable
+        // — checked against the enclosing Repeater's own binding when
+        // nested, otherwise this Toggle's own binding directly.
+        if (isGroupBindingBlocked(itemContext ? itemContext.repeaterComponent?.binding : comp?.binding)) {
           return false;
         }
         if (state.mode === "edit") {
@@ -4671,7 +5308,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     const formula = typeof component.visibilityFormula === "string" ? component.visibilityFormula.trim() : "";
     if (formula) {
       try {
-        return Boolean(evaluateFormulaWithLookup(formula, state.draft || {}, { rollDice: rollDiceExpression }));
+        return Boolean(evaluateFormulaWithLookup(formula, getBindingContext(), { rollDice: rollDiceExpression }));
       } catch (error) {
         console.warn("Character editor: unable to evaluate visibility formula", error);
         return true;
@@ -4697,7 +5334,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     const formula = typeof component.collapsibleFormula === "string" ? component.collapsibleFormula.trim() : "";
     if (formula) {
       try {
-        return Boolean(evaluateFormulaWithLookup(formula, state.draft || {}, { rollDice: rollDiceExpression }));
+        return Boolean(evaluateFormulaWithLookup(formula, getBindingContext(), { rollDice: rollDiceExpression }));
       } catch (error) {
         console.warn("Character editor: unable to evaluate collapsible formula", error);
         return false;
@@ -4719,7 +5356,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     const formula = typeof component.readOnlyFormula === "string" ? component.readOnlyFormula.trim() : "";
     if (formula) {
       try {
-        return Boolean(evaluateFormulaWithLookup(formula, state.draft || {}, { rollDice: rollDiceExpression }));
+        return Boolean(evaluateFormulaWithLookup(formula, getBindingContext(), { rollDice: rollDiceExpression }));
       } catch (error) {
         console.warn("Character editor: unable to evaluate locked formula", error);
         return false;
@@ -4789,7 +5426,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     const formula = typeof template[`${prop}Formula`] === "string" ? template[`${prop}Formula`].trim() : "";
     if (formula) {
       try {
-        const result = evaluateFormulaWithLookup(formula, state.draft || {}, { rollDice: rollDiceExpression });
+        const result = evaluateFormulaWithLookup(formula, getBindingContext(), { rollDice: rollDiceExpression });
         if (typeof result === "string" && result.trim()) return result.trim();
       } catch (error) {
         console.warn(`Character editor: unable to evaluate template ${prop} formula`, error);
@@ -4810,7 +5447,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       const formula = typeof component[keys.formula] === "string" ? component[keys.formula].trim() : "";
       if (formula) {
         try {
-          const result = evaluateFormulaWithLookup(formula, state.draft || {}, { rollDice: rollDiceExpression });
+          const result = evaluateFormulaWithLookup(formula, getBindingContext(), { rollDice: rollDiceExpression });
           if (typeof result === "string" && result.trim()) {
             if (!overridden) overridden = { ...component };
             overridden[colorProp] = result.trim();
@@ -4890,6 +5527,29 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     return Boolean(node.editableInPlay);
   }
 
+  // Shared by every item-template node type that supports real editing
+  // (Input, Track, Select Group) — same "@group.*" permission gate as
+  // isEditable's own, just checked against the ENCLOSING Repeater's own
+  // top-level binding (itemContext.repeaterComponent) rather than the
+  // cell's own binding, since a cell inside a repeater row is always
+  // resolved item-relatively ("@name", never "@group.name" — see
+  // resolveRepeaterItemValue) even when the repeater itself is bound to
+  // "@group.partyInventory". Without this, state.mode === "edit" would let
+  // a character's own owner edit another campaign member's non-public
+  // group data just by opening their own sheet in Edit mode.
+  function isRepeaterCellEditable(comp, itemContext) {
+    if (!itemContext) {
+      return isEditable(comp);
+    }
+    if (!comp.binding) {
+      return false;
+    }
+    if (isGroupBindingBlocked(itemContext.repeaterComponent?.binding)) {
+      return false;
+    }
+    return state.mode === "edit" || isRepeaterItemNodeEditableInPlay(comp, itemContext.item);
+  }
+
   // Same idea as resolveComponentColors, but for a Repeater item-template
   // node — evaluated against the current item as the data context (same
   // "relative to the item, not the top-level draft" distinction
@@ -4950,7 +5610,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     const formula = typeof component.editableInPlayFormula === "string" ? component.editableInPlayFormula.trim() : "";
     if (formula) {
       try {
-        return Boolean(evaluateFormulaWithLookup(formula, state.draft || {}, { rollDice: rollDiceExpression }));
+        return Boolean(evaluateFormulaWithLookup(formula, getBindingContext(), { rollDice: rollDiceExpression }));
       } catch (error) {
         console.warn("Character editor: unable to evaluate editable-in-play formula", error);
         return false;
@@ -4971,6 +5631,19 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       return false;
     }
     if (isComponentLocked(component)) {
+      return false;
+    }
+    // A component bound to "@group.*" carries its own, separate permission
+    // gate (Loom's own per-property "Public" flag) underneath whatever this
+    // component's own Editable-in-Play authoring settings say — even in
+    // Edit mode (normally unconditionally editable just below, since
+    // that's the character's own owner editing their own sheet) a
+    // group-scoped field this viewer isn't the group owner for and isn't
+    // marked public stays read-only, so the UI never shows something
+    // interactive that updateGroupBinding is just going to reject anyway.
+    // Editing a Character's own sheet doesn't imply GM-level authority over
+    // whatever campaign it happens to be in.
+    if (isGroupBindingBlocked(component?.binding)) {
       return false;
     }
     if (state.mode === "edit") {
@@ -5013,7 +5686,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     if (componentHasFormula(component)) {
       const collected = new Set();
       try {
-        const dataContext = state.draft || {};
+        const dataContext = getBindingContext();
         const result = evaluateFormulaWithLookup(component.formula, dataContext, {
           onRoll: (notation) => {
             if (typeof notation === "string") {
@@ -5260,12 +5933,80 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     if (!normalizedBinding || typeof normalizedBinding !== "string" || !normalizedBinding.trim().startsWith("@")) {
       return undefined;
     }
-    return resolveBinding(normalizedBinding, state.draft || {});
+    return resolveBinding(normalizedBinding, getBindingContext());
+  }
+
+  // Whether the CURRENT viewer may write `topLevelKey` — the group's own
+  // owner (GM) can always edit any property; anyone else only if that
+  // SPECIFIC property's own schema marks it `public` (set via Loom's Group
+  // Properties editor). No campaign active at all means nothing is
+  // editable, same as any other "@group.*" binding resolving to nothing.
+  function isGroupPropertyEditable(topLevelKey) {
+    if (!state.groupContext) return false;
+    if (state.groupContext.isOwner) return true;
+    const schema = Array.isArray(state.groupContext.schema) ? state.groupContext.schema : [];
+    const property = schema.find((entry) => entry && entry.key === topLevelKey);
+    return Boolean(property?.public);
+  }
+
+  // Shared by every editability check below (isEditable, isRepeaterCellEditable,
+  // a Repeater's own canManage, Toggle's bespoke editable()) — true only
+  // when `binding` actually resolves to a "@group.*" path this viewer
+  // ISN'T allowed to write. A non-group binding, or one this viewer can
+  // write, is never blocked here.
+  function isGroupBindingBlocked(binding) {
+    const path = resolveBindingPath(binding);
+    return Boolean(path && path[0] === "group" && !isGroupPropertyEditable(path[1]));
+  }
+
+  // The write path for a "@group.*" binding — deliberately NOT routed
+  // through setValueAtPath/applyBindingValue (those mutate state.draft,
+  // which is exactly what gets persisted as the Character's own saved
+  // JSON; group data must never end up inside it). Optimistically updates
+  // state.groupContext.values for instant UI feedback, then persists via
+  // the server's own narrow, per-property-permission endpoint (see
+  // persistGroupPropertyValue's own comment for why this can't just be a
+  // generic content save). No undo-stack integration, matching this
+  // suite's existing precedent for other auto-saved/shared state (a
+  // player's own Map drawings have no undo either) — Workbench's own undo
+  // stack is scoped to THIS character's draft, which group data was never
+  // part of.
+  function updateGroupBinding(groupPathSegments, value) {
+    if (!state.groupContext || !groupPathSegments.length) {
+      return;
+    }
+    const topLevelKey = groupPathSegments[0];
+    if (!isGroupPropertyEditable(topLevelKey)) {
+      status?.show("You don't have permission to edit this.", { type: "warning", timeout: 2200 });
+      return;
+    }
+    if (!state.groupContext.values || typeof state.groupContext.values !== "object") {
+      state.groupContext.values = {};
+    }
+    const values = state.groupContext.values;
+    const previousValue = cloneValue(getValueAtContext(values, groupPathSegments));
+    const nextValue = cloneValue(value);
+    if (valuesEqual(previousValue, nextValue)) {
+      return;
+    }
+    setValueAtContext(values, groupPathSegments, nextValue);
+    renderCanvas();
+    renderPreview();
+    const groupId = state.groupContext.groupId;
+    void persistGroupPropertyValue({ dataManager, groupId, key: topLevelKey, value: values[topLevelKey] })
+      .then(() => groupWatcher?.noteLocalWrite())
+      .catch((error) => {
+        status?.show(error?.message || "Unable to save that change.", { type: "danger" });
+      });
   }
 
   function updateBinding(binding, value) {
     const pathSegments = resolveBindingPath(binding);
     if (!pathSegments) {
+      return;
+    }
+    if (pathSegments[0] === "group") {
+      updateGroupBinding(pathSegments.slice(1), value);
       return;
     }
     const previousValue = cloneValue(getValueAtPath(pathSegments));
@@ -5337,17 +6078,34 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
   }
 
   function openNewCharacterDialog() {
-    if (elements.newCharacterForm && elements.newCharacterName && elements.newCharacterTemplate) {
-      const defaultTemplate = state.template?.id || elements.newCharacterTemplate.value || "";
-      prepareNewCharacterForm(defaultTemplate);
-      if (newCharacterModalInstance) {
-        newCharacterModalInstance.show();
-        return;
-      }
-      createNewCharacterPromptFallback();
+    if (elements.newCharacterForm && elements.newCharacterName && elements.newCharacterTemplate && newCharacterModalInstance) {
+      setAddCharacterMode("blank");
+      newCharacterModalInstance.show();
       return;
     }
     createNewCharacterPromptFallback();
+  }
+
+  // Toggles between the modal's two panels — a blank New Character form and
+  // the Import Character one — sharing a single toolbar entry point/modal
+  // instead of each getting its own toolbar button (see the comment on
+  // newCharacterModalInstance above for why).
+  function setAddCharacterMode(mode) {
+    const isImport = mode === "import";
+    elements.addCharacterModeBlank?.classList.toggle("btn-primary", !isImport);
+    elements.addCharacterModeBlank?.classList.toggle("btn-outline-primary", isImport);
+    elements.addCharacterModeImport?.classList.toggle("btn-primary", isImport);
+    elements.addCharacterModeImport?.classList.toggle("btn-outline-primary", !isImport);
+    elements.newCharacterForm?.classList.toggle("d-none", isImport);
+    elements.importCharacterForm?.classList.toggle("d-none", !isImport);
+    elements.addCharacterSubmitBlank?.classList.toggle("d-none", isImport);
+    elements.addCharacterSubmitImport?.classList.toggle("d-none", !isImport);
+    if (isImport) {
+      void activateImportMode();
+    } else {
+      const defaultTemplate = state.template?.id || elements.newCharacterTemplate?.value || "";
+      prepareNewCharacterForm(defaultTemplate);
+    }
   }
 
   function prepareNewCharacterForm(defaultTemplate = "") {
@@ -5356,14 +6114,6 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     }
     elements.newCharacterForm.reset();
     elements.newCharacterForm.classList.remove("was-validated");
-    if (elements.newCharacterId) {
-      elements.newCharacterId.setCustomValidity("");
-      let generatedId = "";
-      do {
-        generatedId = generateCharacterId("character");
-      } while (generatedId && characterCatalog.has(generatedId));
-      elements.newCharacterId.value = generatedId;
-    }
     refreshNewCharacterTemplateOptions(defaultTemplate);
     if (elements.newCharacterTemplate && defaultTemplate) {
       elements.newCharacterTemplate.value = defaultTemplate;
@@ -5380,28 +6130,8 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       await createNewCharacterPromptFallback();
       return;
     }
-    const idInput = elements.newCharacterId;
-    const id = (idInput?.value || "").trim();
-    if (idInput) {
-      idInput.setCustomValidity("");
-    }
     const name = (elements.newCharacterName.value || "").trim();
     const templateId = (elements.newCharacterTemplate.value || "").trim();
-    if (!id) {
-      elements.newCharacterForm?.classList.add("was-validated");
-      status.show("Provide an ID for the new character.", { type: "warning", timeout: 2000 });
-      idInput?.focus();
-      idInput?.select();
-      return;
-    }
-    if (characterCatalog.has(id)) {
-      if (idInput) {
-        idInput.setCustomValidity("Character ID already exists.");
-        idInput.reportValidity();
-      }
-      status.show("Character ID already exists. Choose another one.", { type: "warning", timeout: 2400 });
-      return;
-    }
     if (!name) {
       elements.newCharacterForm?.classList.add("was-validated");
       status.show("Provide a name for the new character.", { type: "warning", timeout: 2000 });
@@ -5410,6 +6140,14 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     if (!templateId) {
       elements.newCharacterForm?.classList.add("was-validated");
       status.show("Select a template for the new character.", { type: "warning", timeout: 2000 });
+      return;
+    }
+    let id = "";
+    do {
+      id = generateCharacterId(name);
+    } while (id && characterCatalog.has(id));
+    if (!id) {
+      status.show("Unable to generate a character ID. Try again.", { type: "error", timeout: 2400 });
       return;
     }
     const created = await startNewCharacter({ id, name, templateId });
@@ -5543,6 +6281,295 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     return true;
   }
 
+  // --- Import Character (player-facing mapping import) ---------------------
+  // Combines Loom's own mapping/fetch engine (reimportViaMapping — the exact
+  // one-call "load the mapping definition, fetch the right source, apply the
+  // mapping" function Re-import above already uses) with this file's own
+  // "New Character" draft-building pattern (startNewCharacter above), so a
+  // player can import their own character without ever needing Loom access.
+  // The mapping picker only offers mappings a GM has tagged "Character" in
+  // Loom's own Import tab ($dataType — see listCharacterMappings in
+  // content-fetch.js), never the sub-entity ones (backgrounds/classes/
+  // species/...) Loom's own multi-entity Import tab consumes.
+  //
+  // Two-stage modal: Stage 1 picks a mapping + fetches a URL/id; Stage 2
+  // (revealed only once Fetch succeeds) confirms id/name/Template. No
+  // window.prompt fallback like New Character's own — a multi-step fetch-
+  // then-confirm flow has no reasonable prompt-chain equivalent, so this
+  // simply requires the Bootstrap modal to be present.
+  let pendingImport = null;
+
+  // There's no Data Source control in this modal (Workbench never lets a
+  // player edit $source — Loom is the only place a mapping's $source can be
+  // set at all), so this just derives the URL/ID field's placeholder and
+  // label from the chosen mapping's own $source, same metadata Loom's own
+  // SOURCES-driven fields use.
+  async function applyImportValuePlaceholder() {
+    const mappingId = elements.importCharacterMapping?.value || "";
+    if (!mappingId) {
+      if (elements.importCharacterValue) elements.importCharacterValue.placeholder = "";
+      if (elements.importCharacterValueLabel) elements.importCharacterValueLabel.textContent = "Character ID or URL";
+      return;
+    }
+    let definition = null;
+    try {
+      definition = await loadMappingDefinition(mappingId);
+    } catch (error) {
+      console.warn("Import Character: unable to load mapping definition", error);
+    }
+    const sourceId = definition?.$source || "";
+    const active = SOURCES.find((entry) => entry.id === sourceId) || SOURCES[0] || null;
+    if (elements.importCharacterValue) {
+      elements.importCharacterValue.placeholder = active?.placeholder || "";
+    }
+    if (elements.importCharacterValueLabel) {
+      elements.importCharacterValueLabel.textContent = active?.valueLabel || "Character ID or URL";
+    }
+  }
+
+  async function activateImportMode() {
+    if (!elements.importCharacterForm) {
+      status.show("Import isn't available in this browser.", { type: "warning", timeout: 2500 });
+      return;
+    }
+    pendingImport = null;
+    elements.importCharacterForm.reset();
+    elements.importCharacterForm.classList.remove("was-validated");
+    elements.importCharacterStage1?.classList.remove("d-none");
+    elements.importCharacterStage2?.classList.add("d-none");
+    if (elements.importCharacterSubmit) elements.importCharacterSubmit.disabled = true;
+    if (elements.importCharacterStatus) elements.importCharacterStatus.textContent = "";
+    if (elements.importCharacterMapping) {
+      elements.importCharacterMapping.innerHTML = "";
+      const loading = document.createElement("option");
+      loading.value = "";
+      loading.textContent = "Loading…";
+      elements.importCharacterMapping.appendChild(loading);
+    }
+    let mappings = [];
+    try {
+      mappings = await listCharacterMappings();
+    } catch (error) {
+      console.warn("Import Character: unable to list mappings", error);
+    }
+    if (elements.importCharacterMapping) {
+      elements.importCharacterMapping.innerHTML = "";
+      const blank = document.createElement("option");
+      blank.value = "";
+      blank.textContent = mappings.length ? "Select what to import…" : "No character imports available yet";
+      elements.importCharacterMapping.appendChild(blank);
+      mappings.forEach((entry) => {
+        const option = document.createElement("option");
+        option.value = entry.id;
+        option.textContent = entry.description || entry.id;
+        elements.importCharacterMapping.appendChild(option);
+      });
+    }
+    await applyImportValuePlaceholder();
+  }
+
+  // Mirrors refreshNewCharacterTemplateOptions above, but filtered by System
+  // when the mapping's own $source implies one — today every mapping-driven
+  // source (ddb/srd) is D&D-5e-specific (see content-fetch.js's own
+  // DND5E_SYSTEM_ID comment, the same hardcoded assumption
+  // reimportViaMapping's own lookup-table resolution already relies on) —
+  // not a new, more general "mapping declares its System" mechanism, since
+  // no such field exists in the mapping schema today.
+  function refreshImportTemplateOptions(sourceId) {
+    if (!elements.importCharacterTemplate) return;
+    const impliedSchema = sourceId === "ddb" || sourceId === "srd" ? "sys.dnd5e" : "";
+    const options = Array.from(templateCatalog.values())
+      .filter((entry) => entry.id)
+      .filter((entry) => !impliedSchema || entry.schema === impliedSchema)
+      .map((entry) => ({ value: entry.id, label: entry.title || entry.id }))
+      .sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: "base" }));
+    populateSelect(elements.importCharacterTemplate, options, { placeholder: "Select template" });
+  }
+
+  async function handleImportFetch() {
+    const mappingId = elements.importCharacterMapping?.value || "";
+    const sourceValue = (elements.importCharacterValue?.value || "").trim();
+    if (elements.importCharacterStatus) elements.importCharacterStatus.textContent = "";
+    if (!mappingId) {
+      status.show("Select what to import.", { type: "warning", timeout: 2000 });
+      return;
+    }
+    if (!sourceValue) {
+      status.show("Enter a character ID or URL.", { type: "warning", timeout: 2000 });
+      return;
+    }
+    if (elements.importCharacterFetchButton) elements.importCharacterFetchButton.disabled = true;
+    if (elements.importCharacterStatus) elements.importCharacterStatus.textContent = "Fetching…";
+    try {
+      const mappedData = await reimportViaMapping(mappingId, sourceValue, dataManager);
+      // Defensive, not the primary filter — the picker already only offers
+      // $dataType: "character" mappings (listCharacterMappings), but a
+      // mistagged mapping shouldn't be able to silently save garbage.
+      if (!mappedData || mappedData.kind !== "character") {
+        if (elements.importCharacterStatus) elements.importCharacterStatus.textContent = "";
+        status.show("This mapping doesn't produce a character.", { type: "error", timeout: 3500 });
+        return;
+      }
+      const suggestedName = (mappedData.name || "").trim() || "Imported Character";
+      let suggestedId = "";
+      do {
+        suggestedId = generateCharacterId(suggestedName);
+      } while (suggestedId && characterCatalog.has(suggestedId));
+      pendingImport = { mappedData, mappingId, sourceValue, id: suggestedId };
+      if (elements.importCharacterName) {
+        elements.importCharacterName.value = suggestedName;
+      }
+      const mappingDefinition = await loadMappingDefinition(mappingId).catch(() => null);
+      refreshImportTemplateOptions(mappingDefinition?.$source || "");
+      elements.importCharacterStage2?.classList.remove("d-none");
+      // Create Character stays disabled until Stage 2's Template select has a
+      // value (see the importCharacterTemplate change listener) — Template is
+      // the one piece of Stage 2 data the player has no other way to set.
+      // No "Fetched X" status text here — Stage 2 revealing the (editable)
+      // Character Name field already shows the same information.
+      if (elements.importCharacterStatus) elements.importCharacterStatus.textContent = "";
+      if (elements.importCharacterName) {
+        elements.importCharacterName.focus();
+        elements.importCharacterName.select();
+      }
+    } catch (error) {
+      console.error("Import Character: fetch failed", error);
+      if (elements.importCharacterStatus) elements.importCharacterStatus.textContent = "";
+      status.show(error.message || "Unable to fetch that character.", { type: "error", timeout: 3500 });
+    } finally {
+      if (elements.importCharacterFetchButton) elements.importCharacterFetchButton.disabled = false;
+    }
+  }
+
+  async function createImportedCharacterFromForm() {
+    if (!pendingImport) {
+      status.show("Fetch a character before creating it.", { type: "warning", timeout: 2200 });
+      return;
+    }
+    let id = pendingImport.id || "";
+    const name = (elements.importCharacterName?.value || "").trim();
+    const templateId = (elements.importCharacterTemplate?.value || "").trim();
+    if (id && characterCatalog.has(id)) {
+      // The auto-generated id collided with one created after Fetch ran
+      // (e.g. another tab) — regenerate rather than asking the player to
+      // fix an id they never see.
+      do {
+        id = generateCharacterId(name || "character");
+      } while (id && characterCatalog.has(id));
+      pendingImport.id = id;
+    }
+    if (!id) {
+      status.show("Unable to generate a character ID. Try fetching again.", { type: "error", timeout: 2400 });
+      return;
+    }
+    if (!name) {
+      elements.importCharacterForm?.classList.add("was-validated");
+      status.show("Provide a name for the imported character.", { type: "warning", timeout: 2000 });
+      return;
+    }
+    if (!templateId) {
+      elements.importCharacterForm?.classList.add("was-validated");
+      status.show("Select a template for the imported character.", { type: "warning", timeout: 2000 });
+      return;
+    }
+    const created = await startImportedCharacter({
+      id,
+      name,
+      templateId,
+      mappedData: pendingImport.mappedData,
+      mappingId: pendingImport.mappingId,
+      sourceValue: pendingImport.sourceValue,
+    });
+    if (!created) {
+      return;
+    }
+    pendingImport = null;
+    if (newCharacterModalInstance) {
+      newCharacterModalInstance.hide();
+    }
+    if (elements.importCharacterForm) {
+      elements.importCharacterForm.reset();
+      elements.importCharacterForm.classList.remove("was-validated");
+    }
+  }
+
+  async function startImportedCharacter({ id, name, templateId, mappedData, mappingId, sourceValue }) {
+    const trimmedName = (name || "").trim();
+    const trimmedTemplate = (templateId || "").trim();
+    const trimmedId = (id || "").trim();
+    if (!trimmedId || !trimmedName || !trimmedTemplate) {
+      return false;
+    }
+    const templateMetadata = templateCatalog.get(trimmedTemplate);
+    if (!templateMetadata) {
+      status.show("Template metadata unavailable.", { type: "warning", timeout: 2200 });
+      return false;
+    }
+    if (state.template?.id !== trimmedTemplate) {
+      await loadTemplateById(trimmedTemplate);
+      if (state.template?.id !== trimmedTemplate) {
+        return false;
+      }
+    }
+    if (characterCatalog.has(trimmedId)) {
+      status.show("Character ID already exists. Choose another one.", { type: "warning", timeout: 2400 });
+      return false;
+    }
+    const initialSchema = state.template?.schema || templateMetadata?.schema || "";
+    // mergeImportedCharacterData(mappedData, null) — the exact same function
+    // Loom's own saveEntity uses for a first-time save (no prior record):
+    // every prior.* key it would otherwise preserve resolves to undefined
+    // and drops out on serialization, leaving effectively {...mappedData}.
+    // id/template/systemIds/mapping/url/data are then layered on top —
+    // spread after, so they always win over anything mappedData itself
+    // happens to carry under those same keys — same fields
+    // startNewCharacter/saveEntity both set for a freshly created character.
+    const merged = mergeImportedCharacterData(mappedData, null);
+    const draft = {
+      ...merged,
+      id: trimmedId,
+      title: trimmedName,
+      template: trimmedTemplate,
+      systemIds: initialSchema ? [initialSchema] : [],
+      mapping: mappingId,
+      url: sourceValue,
+      data: { name: trimmedName },
+      state: { timers: {}, log: [] },
+    };
+    state.character = cloneCharacter(draft);
+    state.draft = cloneCharacter(draft);
+    state.characterOrigin = "local";
+    state.mode = "edit";
+    const user = sessionUser();
+    registerCharacterRecord({
+      id: trimmedId,
+      title: trimmedName,
+      template: trimmedTemplate,
+      source: "local",
+      ownership: user ? "owned" : "local",
+      ownerId: user?.id ?? null,
+      ownerUsername: user?.username ?? "",
+      ownerTier: user?.tier ?? "",
+    });
+    if (elements.characterSelect) {
+      elements.characterSelect.value = trimmedId;
+    }
+    await persistDraft({ silent: true });
+    syncNotesEditor();
+    renderCanvas();
+    renderPreview();
+    syncModeIndicator();
+    syncCharacterActions();
+    state.shareToken = "";
+    clearGameLogContext();
+    // url/mapping are already set on the saved character above, so the
+    // existing Re-import button (workbench-character-view.js's own
+    // reimportCurrentCharacter, gated purely on ownership) works on it
+    // immediately with no further wiring needed anywhere.
+    status.show(`Imported ${trimmedName}`, { type: "success", timeout: 2000 });
+    return true;
+  }
+
   async function deleteCurrentCharacter() {
     const id = state.draft?.id;
     if (!id) {
@@ -5589,26 +6616,41 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     }
     removeCharacterRecord(id);
     state.character = null;
-    state.draft = null;
-    state.template = null;
-    state.components = [];
-    collapsedComponents.clear();
-    resetSystemContext();
     state.characterOrigin = null;
-    state.mode = "view";
     componentCounter = 0;
     currentNotesKey = "";
-    if (elements.characterSelect) {
-      elements.characterSelect.value = "";
-    }
     state.shareToken = "";
     markCharacterClean();
-    syncNotesEditor();
-    renderCanvas();
-    renderPreview();
-    syncModeIndicator();
-    syncCharacterActions();
-    clearGameLogContext();
+    // The campaign itself didn't go away just because this one character
+    // did — fall back into its own Party Data view (loadGroupPartyView
+    // already handles "no Party Template assigned" gracefully) rather than
+    // a fully blank screen. Only a genuinely characterless AND campaignless
+    // session resets everything, matching the previous behavior exactly.
+    if (gameLogContext.groupId) {
+      // Post-delete conventionally lands back in view mode, same as the
+      // fully-blank branch below — loadGroupPartyView itself deliberately
+      // never touches state.mode (see its own comment), so that has to
+      // happen here instead.
+      state.mode = "view";
+      await loadGroupPartyView(gameLogContext.groupId, gameLogContext.groupName);
+    } else {
+      state.draft = {};
+      state.template = null;
+      state.components = [];
+      collapsedComponents.clear();
+      resetSystemContext();
+      state.mode = "view";
+      state.partyMode = false;
+      if (elements.characterSelect) {
+        elements.characterSelect.value = "";
+      }
+      syncNotesEditor();
+      renderCanvas();
+      renderPreview();
+      syncModeIndicator();
+      syncCharacterActions();
+      clearGameLogContext();
+    }
     status.show(`Deleted ${label}`, { type: "success", timeout: 2200 });
     if (button) {
       button.removeAttribute("aria-busy");
@@ -5893,17 +6935,23 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     if (elements.viewToggle) {
       const icon = elements.viewToggle.querySelector("[data-mode-icon]");
       const label = elements.viewToggle.querySelector("[data-mode-label]");
-      const hasCharacter = Boolean(state.draft?.id);
-      const locked = state.viewLocked || !hasCharacter;
+      // Edit mode also has to be reachable with no character loaded — Party
+      // Data mode (loadGroupPartyView) renders a Template with no character
+      // at all, and its group-bound fields need Edit mode to be selectable
+      // for a GM to freely edit them (isGroupBindingBlocked/
+      // isGroupPropertyEditable are the actual permission gate; this is just
+      // whether the toggle is reachable at all).
+      const hasContent = Boolean(state.draft?.id) || Boolean(state.template?.id);
+      const locked = state.viewLocked || !hasContent;
       let tooltipTitle = "";
-      if (!hasCharacter) {
-        tooltipTitle = "Select a character to enable editing.";
+      if (!hasContent) {
+        tooltipTitle = "Select a character or campaign to enable editing.";
       } else if (state.viewLocked) {
         tooltipTitle = "Group characters are view-only until claimed.";
       } else {
         tooltipTitle = state.mode === "edit" ? "Switch to view mode" : "Switch to edit mode";
       }
-      const isEditing = hasCharacter && !state.viewLocked && state.mode === "edit";
+      const isEditing = hasContent && !state.viewLocked && state.mode === "edit";
       elements.viewToggle.disabled = locked;
       elements.viewToggle.classList.toggle("disabled", locked);
       elements.viewToggle.setAttribute("aria-disabled", locked ? "true" : "false");
@@ -5952,7 +7000,12 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
   }
 
   function getNotesStorageKey() {
-    const id = state.draft?.id || "session";
+    // Party Data mode (no character) keys Notes by campaign instead of the
+    // generic "session" bucket, so switching between different campaigns'
+    // Party Data doesn't collide/overwrite a shared Notes entry. Checks
+    // state.partyMode, not just state.groupContext's presence — see its own
+    // comment on state for why those two aren't the same thing.
+    const id = state.draft?.id || (state.partyMode && state.groupContext ? `party:${state.groupContext.groupId}` : "session");
     return `undercroft.workbench.character.notes.${id}`;
   }
 

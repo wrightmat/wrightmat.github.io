@@ -43,3 +43,13 @@ Caught live, not by review: the Heritage field's `binding` (`@heritage`, the cha
 Every other field in both templates deliberately used a plural System-field name distinct from the singular character-field name (`backgrounds`/`background`, `playbooks`/`playbook`, `vices`/`vice`, `armorTypes`/`armor`, `loadTiers`/`load`, `traumaConditions`/`trauma`, `crewPlaybooks`/`crewPlaybook`, `crewReputationTags`/`reputation`) specifically to avoid this — Heritage was the one field that missed it. Fixed by renaming the System field `heritage` → `heritages` (`sys.bitd.json`) and updating the Heritage Input's `sourceBinding` to match (`tpl.bitd.character.json`) — no character data needed fixing, since a character's own already-saved `heritage` value was never the corrupted part, just what it was colliding with.
 
 **Rule of thumb for any future System**: a component's `binding` (writes to/reads from the character) and `sourceBinding` (reads a choice list from the System) must never share the same key name. This isn't validated or warned about anywhere in the editor — it fails silently and only shows up once a real value is set, which is exactly what made it easy to miss during initial authoring and confusing to diagnose after the fact.
+
+## Addendum: dice vocabulary (2026-08)
+
+`sys.bitd.json` gained a `"dice"`-keyed Array field (one value, `actionDie`,
+`sides: 6` with a `faceMap` remapping 1-6 to Blades' own 1-3/4-5/6 labeling in
+its Extra properties JSON) per the suite-wide dice-vocabulary convention — see
+`code-conventions.md`'s "Dice" section. Deliberately just the one die: Blades'
+whole resolution model is a d6 pool, unlike D&D's spread across d4-d100, so
+its quick-dice palette is correctly narrower than the standard 7, not an
+oversight.

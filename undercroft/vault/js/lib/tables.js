@@ -70,3 +70,34 @@ export async function getSystemPropertyTypes(dataManager, systemId, budgetCeilin
     return [];
   }
 }
+
+// A System's own casting classes (Wizard, Cleric, ...) — an ordinary array
+// field with the conventional key "classes" (already used by DDB-import
+// lookups, `common/data/system/sys.dnd5e.json`), NOT a generator-property
+// field (its values carry no cost/targetBudget, so isGeneratorPropertyField
+// above correctly never picks it up). A class's own `allowedFeatureTags`
+// (matched against a Feature's `tags.propertyHints` by matchesClass,
+// `vault/js/lib/generator.js`) lives in that value's Extra properties (JSON)
+// catch-all, same as every other one-off per-value field in this suite —
+// absent on most classes (a non-caster like Fighter has nothing to
+// restrict) and absent entirely on any System with no "classes" field at
+// all (most Systems), in which case Vault simply never shows the Casting
+// Class selector.
+export async function getSystemClasses(dataManager, systemId) {
+  if (!dataManager || !systemId) return [];
+  try {
+    const result = await dataManager.get("systems", systemId, { preferLocal: false });
+    const fields = Array.isArray(result?.payload?.fields) ? result.payload.fields : [];
+    const field = fields.find((entry) => entry?.type === "array" && entry.key === "classes");
+    const values = Array.isArray(field?.values) ? field.values : [];
+    return values
+      .filter((value) => value && typeof value.name === "string" && value.name)
+      .map((value) => ({
+        id: slugify(value.name),
+        label: value.name,
+        allowedFeatureTags: Array.isArray(value.allowedFeatureTags) ? value.allowedFeatureTags : null,
+      }));
+  } catch (error) {
+    return [];
+  }
+}

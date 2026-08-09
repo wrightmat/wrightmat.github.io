@@ -249,11 +249,19 @@ export async function listSettingsForSystem(dataManager, systemId) {
     .map((entry) => ({ id: entry.id, name: entry.entity.name || entry.id }));
 }
 
+// `settingIds` is a plural array now (Sanctum's own `listLocationsForSetting`
+// in `sanctum/js/lib/tables.js` has the identical migration and identical
+// reasoning — this is a second, independent copy, must stay in lockstep).
+// Falls back to a pre-migration scalar `settingId` for any not-yet-resaved
+// record.
 export async function listLocationsForSetting(dataManager, settingId) {
   if (!settingId) return [];
   const entries = await fetchKindEntriesWithIds(dataManager, "location");
   return entries
-    .filter((entry) => entry.entity.settingId === settingId)
+    .filter((entry) => {
+      const ids = Array.isArray(entry.entity.settingIds) ? entry.entity.settingIds : entry.entity.settingId ? [entry.entity.settingId] : [];
+      return ids.includes(settingId);
+    })
     .map((entry) => ({ id: entry.id, name: entry.entity.name || entry.id }));
 }
 

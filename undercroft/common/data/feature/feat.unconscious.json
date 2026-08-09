@@ -1,0 +1,18 @@
+{
+  "id": "feat.unconscious",
+  "name": "Inflicts Unconscious",
+  "systemIds": ["sys.dnd5e"],
+  "description": "A failed save renders the target unconscious.",
+  "mechanics": {
+    "type": "active",
+    "text": "A target that fails its saving throw against this effect falls unconscious."
+  },
+  "budgetCost": 10,
+  "tags": {
+    "categories": ["spell"],
+    "propertyHints": ["status", "unconscious"]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

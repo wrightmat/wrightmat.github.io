@@ -21,45 +21,75 @@ import { parseTableReferenceExpression, resolveTableReference, describeTableRow 
 // rollExpression picks this up for free.
 import { rollDiceOverlay } from "./dice-overlay.js";
 
-// Expressions eligible for the 3D overlay: a plain +/- sum of `NdM` groups
-// and flat numbers only — no keep/drop/reroll/explode/success comparators,
-// functions, variables, parentheses, or multiplication/division. Anything
-// outside that falls back to the ordinary non-visual roll below, since
-// dice-box has no way to physically show (say) "4d6, drop the lowest" — it
-// only knows how to roll a fixed pile of same/different-sided dice.
-const SIMPLE_TERM = "(?:\\d*d(?:\\d+|%)|\\d+)";
-const SIMPLE_EXPRESSION_PATTERN = new RegExp(`^\\s*[+-]?\\s*${SIMPLE_TERM}(?:\\s*[+-]\\s*${SIMPLE_TERM})*\\s*$`, "i");
-const SIMPLE_TERM_PATTERN = /[+-]?\s*(?:(\d*)d(\d+|%)|(\d+))/gi;
+// Expressions eligible for the 3D overlay: a plain +/- sum of `NdM` groups,
+// flat numbers, and registered named-die terms (Section 1.1's System.dice,
+// e.g. "hopeDie", "2 hopeDie") only — no keep/drop/reroll/explode/success
+// comparators, functions, variables, parentheses, or multiplication/
+// division. Anything outside that falls back to the ordinary non-visual
+// roll below, since dice-box has no way to physically show (say) "4d6, drop
+// the lowest" — it only knows how to roll a fixed pile of same/different-
+// sided dice. A named-die term can only be recognized against the caller's
+// own `dice` list, not a fixed regex, so eligibility is now checked
+// term-by-term inside extractSimpleDiceTerms itself rather than a
+// standalone whole-string pattern test — returning `null` from it IS "not
+// eligible."
+//
+// Only a die's numeric `sides` is used here — a Tier-3 symbol die (Phase 5,
+// an array of face objects instead of a number) has nothing this overlay
+// path can roll, so a term naming one safely falls through to "not simple"
+// via the `typeof sides === "number"` guard below, same as any other
+// ineligible term.
+function extractSimpleDiceTerms(expression, dice = []) {
+  const diceById = new Map();
+  (Array.isArray(dice) ? dice : []).forEach((die) => {
+    if (die && typeof die.id === "string" && die.id) {
+      diceById.set(die.id.toLowerCase(), die);
+    }
+  });
+  const terms = [];
+  let cursor = 0;
+  const length = expression.length;
+  while (cursor < length) {
+    const signMatch = /^\s*[+-]?\s*/.exec(expression.slice(cursor));
+    cursor += signMatch[0].length;
+    if (cursor >= length) break;
+    const rest = expression.slice(cursor);
+    const numericMatch = /^(\d*)d(\d+|%)/i.exec(rest);
+    if (numericMatch) {
+      const count = numericMatch[1] ? parseInt(numericMatch[1], 10) : 1;
+      const sides = numericMatch[2] === "%" ? 100 : parseInt(numericMatch[2], 10);
+      if (!Number.isFinite(count) || count <= 0 || !Number.isFinite(sides) || sides <= 0) {
+        return null;
+      }
+      terms.push({ count, sides });
+      cursor += numericMatch[0].length;
+      continue;
+    }
+    const namedMatch = /^(\d*)\s*([A-Za-z_][A-Za-z0-9_]*)/.exec(rest);
+    if (namedMatch) {
+      const namedDie = diceById.get(namedMatch[2].toLowerCase());
+      const count = namedMatch[1] ? parseInt(namedMatch[1], 10) : 1;
+      if (!namedDie || typeof namedDie.sides !== "number" || namedDie.sides <= 0 || !Number.isFinite(count) || count <= 0) {
+        return null;
+      }
+      terms.push({ count, sides: namedDie.sides, dieId: namedDie.id, color: namedDie.color, themeOverride: namedDie.themeOverride });
+      cursor += namedMatch[0].length;
+      continue;
+    }
+    const flatNumberMatch = /^\d+/.exec(rest);
+    if (flatNumberMatch) {
+      cursor += flatNumberMatch[0].length; // a flat number term — nothing to roll
+      continue;
+    }
+    return null; // anything else (function call, paren, comparator, ...) — not simple
+  }
+  return terms;
+}
+
 // A generous but finite cap — dice-box can physically roll more than this,
 // but past a certain pile size the "watch them land" spectacle stops being
 // worth the load, so just skip straight to the toast.
 const MAX_OVERLAY_DICE = 100;
-
-// Pulls the ordered list of plain dice groups out of an expression already
-// confirmed to match SIMPLE_EXPRESSION_PATTERN. Safe to scan with a plain
-// regex (rather than re-parsing) specifically because that pattern rules out
-// everything that could make formula-engine.js's own parser evaluate dice
-// terms out of left-to-right source order (parentheses, functions,
-// multiplication/division) — so this always visits them in the exact order
-// the parser will.
-function extractSimpleDiceTerms(expression) {
-  const terms = [];
-  SIMPLE_TERM_PATTERN.lastIndex = 0;
-  let match;
-  while ((match = SIMPLE_TERM_PATTERN.exec(expression))) {
-    const [, countToken, sidesToken] = match;
-    if (sidesToken === undefined) {
-      continue; // a flat number term — nothing to roll
-    }
-    const count = countToken ? parseInt(countToken, 10) : 1;
-    const sides = sidesToken === "%" ? 100 : parseInt(sidesToken, 10);
-    if (!Number.isFinite(count) || count <= 0 || !Number.isFinite(sides) || sides <= 0) {
-      return null;
-    }
-    terms.push({ count, sides });
-  }
-  return terms;
-}
 
 // Wraps a flat queue of real dice-box values (already in the same
 // left-to-right order formula-engine.js's parser will ask for them) as a
@@ -82,11 +112,8 @@ function buildScriptedRandom(queue) {
 // overlay, or `null` if the expression isn't eligible or the overlay isn't
 // available right now — either way, the caller just falls back to
 // `rollDiceExpression(expression)` as if this never happened.
-async function tryOverlayRoll(expression, dataManager) {
-  if (!SIMPLE_EXPRESSION_PATTERN.test(expression)) {
-    return null;
-  }
-  const terms = extractSimpleDiceTerms(expression);
+async function tryOverlayRoll(expression, dataManager, dice = []) {
+  const terms = extractSimpleDiceTerms(expression, dice);
   if (!terms || !terms.length) {
     return null;
   }
@@ -99,7 +126,11 @@ async function tryOverlayRoll(expression, dataManager) {
   }
   const queue = [];
   rolled.forEach(({ sides, values }) => values.forEach((value) => queue.push({ sides, value })));
-  return rollDiceExpression(expression, { random: buildScriptedRandom(queue) });
+  // `dice` must also reach this fallback parse — a named-die term (e.g.
+  // "hopeDie") only resolves through the SAME dice map the overlay term
+  // extraction above just used; omitting it here would throw "Unexpected
+  // token 'hopeDie'" even after a successful physical roll.
+  return rollDiceExpression(expression, { random: buildScriptedRandom(queue), dice });
 }
 
 // Async now (a table reference needs to fetch the referencing Journal page)
@@ -120,9 +151,18 @@ async function tryOverlayRoll(expression, dataManager) {
 // renders identically in the Game Log/second-screen wherever roll entries
 // are already handled. Table rolls aren't broadcast this way yet — not
 // needed for the Dice Roller macro action this was added for.
+//
+// `context` (optional, default `{}`) is passed straight through to
+// rollDiceExpression's own `@path` variable substitution — needed by
+// Workbench's ability/save/attack roller buttons, whose formulas reference
+// the live character draft (e.g. `1d20 + @abilities.strength.modifier`).
+// SIMPLE_EXPRESSION_PATTERN already rejects anything containing `@`, so an
+// expression that needs `context` never matches the overlay-eligible path
+// and always falls through to the plain rollDiceExpression call below —
+// `tryOverlayRoll` itself never needs `context`.
 export async function rollExpression(
   expression,
-  { status, label = "", dataManager, groupContext = null, broadcast = false } = {}
+  { status, label = "", dataManager, groupContext = null, broadcast = false, dice = [], context = {} } = {}
 ) {
   const trimmed = String(expression || "").trim();
   const tableRef = parseTableReferenceExpression(trimmed);
@@ -154,7 +194,7 @@ export async function rollExpression(
     }
   }
   try {
-    const result = (await tryOverlayRoll(trimmed, dataManager)) || rollDiceExpression(trimmed);
+    const result = (await tryOverlayRoll(trimmed, dataManager, dice)) || rollDiceExpression(trimmed, { dice, context });
     const prefix = label ? `${label}: ` : "";
     status?.show(`${prefix}${trimmed} → ${result.total}`, { type: "success", timeout: 2200 });
     if (broadcast && dataManager && groupContext?.groupId) {
@@ -186,41 +226,186 @@ export async function rollExpression(
   }
 }
 
+// Section 2's shared "which System's dice are in effect right now" resolver
+// — the active campaign Group's own System (Section 1.2's Group.systemId)
+// wins first, then the character's own first Assigned System, else `null`
+// (meaning: fall back to the standard 7, Section 4's read-time default).
+// Only ever reachable for an authenticated dataManager with a real saved
+// System record — D&D (and any System with no `dice` array at all) simply
+// returns a payload with no usable `dice`, which resolveQuickDice below
+// already treats the same as "no System resolved."
+export async function resolveActiveDice({ dataManager, groupContext = null, character = null } = {}) {
+  const characterSystemIds = Array.isArray(character?.systemIds)
+    ? character.systemIds
+    : character?.system
+      ? [character.system]
+      : [];
+  const systemId = groupContext?.systemId || characterSystemIds[0] || "";
+  if (!systemId || !dataManager) {
+    return null;
+  }
+  try {
+    const result = await dataManager.get("systems", systemId, { preferLocal: false });
+    return result?.payload || null;
+  } catch (error) {
+    return null;
+  }
+}
+
 export const QUICK_DICE = ["d4", "d6", "d8", "d10", "d12", "d20", "d100"];
 
-// How many of each QUICK_DICE die already appear in `expression` — drives
-// each quick button's "× N" active state.
-export function parseQuickDiceCounts(expression) {
-  const counts = Object.fromEntries(QUICK_DICE.map((die) => [die, 0]));
+// Normalized {id, label, sides} shape of the array above — kept as a
+// SEPARATE export rather than changing QUICK_DICE itself, since
+// code-block-autocomplete.js's own QUICK_DICE import (Journal text
+// suggestions, no System/group context available there) stays on the plain
+// string form unchanged.
+const STANDARD_DICE = QUICK_DICE.map((id) => ({
+  id,
+  label: id,
+  sides: id === "d100" ? 100 : Number(id.slice(1)),
+}));
+
+// A System's own dice (Section 1.1) aren't a new property type or a
+// separate top-level array — they're an ordinary Enum-mode Array property
+// with the reserved key "dice" (same "just another array field, discovered
+// by a fixed marker" shape combat-tracker.js's own Role-marker convention
+// already uses, just keyed by the field's own `key` instead of a per-value
+// column, since there's only ever one dice vocabulary per System). Each
+// value's `name` is the die's id (what expressions reference — e.g.
+// "hopeDie") AND its display label, same as every other Enum value in this
+// app (Ancestries' "Clank", Rarity's options, ...) — no separate label
+// field. `sides`/`color`/`themeOverride`/`faceMap` live in that value's own
+// Extra properties (JSON) catch-all, exactly like Modifier's own `die`
+// property does today — nothing new for Loom's array editor to support.
+export function extractSystemDice(systemDefinition) {
+  const fields = Array.isArray(systemDefinition?.fields) ? systemDefinition.fields : [];
+  const diceField = fields.find((field) => field?.type === "array" && field.key === "dice");
+  const values = Array.isArray(diceField?.values) ? diceField.values : [];
+  return (
+    values
+      .filter((value) => value && typeof value.name === "string" && value.name)
+      // A Tier-3 symbol die (Phase 5 — `sides` is an array of face objects,
+      // e.g. Genesys's Boost/Setback/Ability/..., not a number) has no
+      // numeric face count to roll through this engine at all:
+      // rollSingleDie's `Math.floor(Number(sides))` on an array is `NaN`,
+      // silently producing garbage rolls rather than throwing. Excluded
+      // here — not just from the 3D overlay (extractSimpleDiceTerms already
+      // guards that) but from quick-dice buttons and named-die expression
+      // resolution entirely — until Phase 5 ships the dedicated symbol-pool
+      // stepper UI/roller these dice actually need. A die with `sides: "F"`
+      // (Fudge/Fate) is fine and stays included — rollSingleDie already
+      // handles that case correctly, just without the 3D overlay.
+      .filter((value) => typeof value.sides === "number" || value.sides === "F")
+      .map((value) => ({
+        id: value.name,
+        label: value.name,
+        sides: value.sides,
+        color: value.color,
+        themeOverride: value.themeOverride,
+        faceMap: value.faceMap || null,
+      }))
+  );
+}
+
+// A System's Tier-3 symbol dice (Phase 5, Section 1.4/3.4) — the SAME
+// "dice"-keyed Array field extractSystemDice reads, just the inverse
+// filter: entries whose `sides` is a non-empty array of face-symbol
+// objects, since a numeric-sided or Fudge die has nothing to do with a
+// symbol pool. Consumed only by the dedicated stepper UI (Section 6.3) and
+// rollSymbolDicePool (workbench/js/lib/symbol-dice.js) — never by
+// quick-dice buttons or named-die expression resolution.
+export function extractSystemSymbolDice(systemDefinition) {
+  const fields = Array.isArray(systemDefinition?.fields) ? systemDefinition.fields : [];
+  const diceField = fields.find((field) => field?.type === "array" && field.key === "dice");
+  const values = Array.isArray(diceField?.values) ? diceField.values : [];
+  return values
+    .filter((value) => value && typeof value.name === "string" && value.name && Array.isArray(value.sides) && value.sides.length)
+    .map((value) => ({
+      id: value.name,
+      label: value.name,
+      sides: value.sides,
+      themeOverride: value.themeOverride,
+    }));
+}
+
+// Section 5's quick-dice source: a resolved System's own dice (Section 1.1)
+// when it declares any, else the standard 7 — this is what makes a
+// campaign's System (or a character's own) win over the fixed default for
+// quick-dice buttons, while a System with no "dice" array field at all
+// (every System that hasn't opted in, including D&D) is byte-identical to
+// today.
+export function resolveQuickDice({ systemDefinition } = {}) {
+  const dice = extractSystemDice(systemDefinition);
+  return dice.length ? dice : STANDARD_DICE;
+}
+
+// A die id doubling as literal NdM dice notation (e.g. "d20") resolves via
+// the engine's own reserved bare-`d` grammar — no named-die lookup needed.
+// Anything else (e.g. "hopeDie") only resolves through a System's own
+// `dice` map (Section 1.1's named-die resolution) and needs `N id` grammar
+// instead of `NdM`. Every STANDARD_DICE entry has the numeric-notation
+// shape; a System's own named dice generally won't.
+function numericNotationSides(id) {
+  const match = /^d(\d+)$/i.exec(id || "");
+  return match ? match[1] : null;
+}
+
+function escapeForRegex(text) {
+  return String(text).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+// How many of each die in `diceList` already appear in `expression` — drives
+// each quick button's "× N" active state. `diceList` is whatever
+// resolveQuickDice returned for the currently active System — id-keyed so a
+// non-numeric-suffix id like "hopeDie" works identically to "d20".
+export function parseQuickDiceCounts(expression, diceList = STANDARD_DICE) {
+  const counts = Object.fromEntries(diceList.map((die) => [die.id, 0]));
   if (typeof expression !== "string" || !expression) {
     return counts;
   }
-  const regex = /(\d*)d(4|6|8|10|12|20|100)(?!\d)/gi;
-  let match;
-  while ((match = regex.exec(expression)) !== null) {
-    const quantity = match[1] ? parseInt(match[1], 10) : 1;
-    const die = `d${match[2]}`.toLowerCase();
-    if (Number.isFinite(quantity) && counts[die] !== undefined) {
-      counts[die] += quantity;
+  diceList.forEach((die) => {
+    const sides = numericNotationSides(die.id);
+    const pattern = sides
+      ? new RegExp(`(?:^|[^A-Za-z0-9_])(\\d*)d${sides}(?!\\d)`, "gi")
+      : new RegExp(`(?:^|[^A-Za-z0-9_])(\\d*)\\s*${escapeForRegex(die.id)}(?![A-Za-z0-9_])`, "gi");
+    let match;
+    let total = 0;
+    while ((match = pattern.exec(expression)) !== null) {
+      const quantity = match[1] ? parseInt(match[1], 10) : 1;
+      if (Number.isFinite(quantity)) {
+        total += quantity;
+      }
+      if (match.index === pattern.lastIndex) {
+        pattern.lastIndex += 1; // guard against a zero-width match looping forever
+      }
     }
-  }
+    counts[die.id] = total;
+  });
   return counts;
 }
 
-// Clicking a quick-dice button (e.g. "d6") either bumps an existing count of
-// that die at the start of the expression, bumps the first occurrence
-// anywhere in it, or appends a fresh `1d<sides>` term — whichever applies.
+// Clicking a quick-dice button either bumps an existing count of that die at
+// the start of the expression, bumps the first occurrence anywhere in it, or
+// appends a fresh term — whichever applies. `die` is a die's own id, either
+// plain numeric notation ("d20") or a System's own named-die id ("hopeDie").
 export function incrementDieInExpression(die, expression = "") {
-  const sides = die.slice(1);
-  const patternStart = new RegExp(`^(\\s*)(\\d*)d${sides}(?!\\d)`, "i");
+  const sides = numericNotationSides(die);
+  const escapedId = escapeForRegex(die);
+  const buildTerm = (count) => (sides ? `${count}d${sides}` : `${count} ${die}`);
+
+  const patternStart = sides
+    ? new RegExp(`^(\\s*)(\\d*)d${sides}(?!\\d)`, "i")
+    : new RegExp(`^(\\s*)(\\d*)\\s*${escapedId}(?![A-Za-z0-9_])`, "i");
   if (patternStart.test(expression)) {
     return expression.replace(patternStart, (match, leading, count) => {
       const base = parseInt(count || "1", 10);
       const next = Number.isFinite(base) ? base + 1 : 2;
-      return `${leading}${next}d${sides}`;
+      return `${leading}${buildTerm(next)}`;
     });
   }
-  const pattern = new RegExp(`([^A-Za-z0-9_])(\\d*)d${sides}(?!\\d)`, "i");
+  const pattern = sides
+    ? new RegExp(`([^A-Za-z0-9_])(\\d*)d${sides}(?!\\d)`, "i")
+    : new RegExp(`([^A-Za-z0-9_])(\\d*)\\s*${escapedId}(?![A-Za-z0-9_])`, "i");
   let replaced = false;
   const updated = expression.replace(pattern, (match, prefix, count) => {
     if (replaced) {
@@ -229,17 +414,192 @@ export function incrementDieInExpression(die, expression = "") {
     const base = parseInt(count || "1", 10);
     const next = Number.isFinite(base) ? base + 1 : 2;
     replaced = true;
-    return `${prefix}${next}d${sides}`;
+    return `${prefix}${buildTerm(next)}`;
   });
   if (replaced) {
     return updated;
   }
   const trimmed = expression.trim();
   if (!trimmed) {
-    return `1d${sides}`;
+    return buildTerm(1);
   }
   if (/[+\-*/(]$/.test(trimmed)) {
-    return `${expression} 1d${sides}`;
+    return `${expression} ${buildTerm(1)}`;
   }
-  return `${trimmed} + 1d${sides}`;
+  return `${trimmed} + ${buildTerm(1)}`;
+}
+
+// A System's own named Rolls/Moves (Section 1.3) — same convention as dice
+// (extractSystemDice above): an ordinary Enum-mode Array property with the
+// reserved key "rolls", not a new property type or a dedicated Loom UI.
+// Unlike a die's id, a Move is never typed into an expression box, only
+// clicked as a button — so its value's `name` can just be a normal,
+// human-readable label ("Action Roll", "Duality Roll") with no
+// identifier-safety compromise the way a die's shared id/label had to
+// accept. `expression`/`resultMode`/`bands`/`compare` live in that value's
+// Extra properties (JSON), same home dice's sides/color/faceMap already
+// use for one-off per-value metadata.
+export function extractSystemRolls(systemDefinition) {
+  const fields = Array.isArray(systemDefinition?.fields) ? systemDefinition.fields : [];
+  const rollsField = fields.find((field) => field?.type === "array" && field.key === "rolls");
+  const values = Array.isArray(rollsField?.values) ? rollsField.values : [];
+  return values
+    .filter(
+      (value) => value && typeof value.name === "string" && value.name && typeof value.expression === "string" && value.expression
+    )
+    .map((value) => ({
+      label: value.name,
+      expression: value.expression,
+      resultMode: value.resultMode === "compare" ? "compare" : "band",
+      bands: Array.isArray(value.bands) ? value.bands : [],
+      compare: value.compare && typeof value.compare === "object" ? value.compare : null,
+    }));
+}
+
+// A tally band (`{ tally: { gte|lte|eq } }`) matches against the tally
+// count from a `t`-modifier'd dice group (Section 3.3) — independent of
+// which specific dice group produced it, since a Move's expression only
+// ever has one meaningful tally in practice (Blades' whole-pool crit rule).
+// A range band (`{ min?, max? }`) matches the roll's own total instead. All
+// given bounds on whichever kind of band it is must hold — an absent bound
+// is unconstrained on that side.
+function matchesTallyBand(count, tallySpec) {
+  if (typeof count !== "number" || !tallySpec) {
+    return false;
+  }
+  if (typeof tallySpec.gte === "number" && !(count >= tallySpec.gte)) return false;
+  if (typeof tallySpec.lte === "number" && !(count <= tallySpec.lte)) return false;
+  if (typeof tallySpec.eq === "number" && !(count === tallySpec.eq)) return false;
+  return true;
+}
+
+function matchesRangeBand(total, band) {
+  if (typeof total !== "number") {
+    return false;
+  }
+  if (typeof band.min === "number" && !(total >= band.min)) return false;
+  if (typeof band.max === "number" && !(total <= band.max)) return false;
+  return true;
+}
+
+// Checked in order, first match wins (Section 1.3) — list special/crit
+// conditions before the general range bands that would otherwise also
+// match the same total. Returns the matched band's label, or `null` if
+// nothing matched (a Move's bands don't have to exhaustively cover every
+// possible total — an unmatched roll still has a real total, just no named
+// verdict for it).
+function evaluateBands(bands, result) {
+  if (!Array.isArray(bands) || !bands.length) {
+    return null;
+  }
+  const diceDetails = Array.isArray(result?.dice) ? result.dice : [];
+  const firstTally = diceDetails.find((detail) => detail?.tally)?.tally || null;
+  for (const band of bands) {
+    if (band?.tally) {
+      if (firstTally && matchesTallyBand(firstTally.count, band.tally)) {
+        return band.label || null;
+      }
+      continue;
+    }
+    if (matchesRangeBand(result?.total, band)) {
+      return band.label || null;
+    }
+  }
+  return null;
+}
+
+// Compare mode (Daggerheart's Hope-vs-Fear duality roll) — reads each named
+// die's own total out of `result.dice` by matching `compare.a`/`compare.b`
+// against each dice-group's own `notation` (a named die's notation is
+// literally its own id, e.g. "hopeDie" — see workbench/js/lib/dice.js's
+// parseDice), no engine changes needed: rollDiceExpression's existing
+// per-group breakdown already carries this. Returns `null` if either named
+// die isn't actually present in the roll's own dice breakdown (e.g. the
+// Move's `expression` doesn't reference the id `compare.a`/`compare.b`
+// name — a Move-authoring mistake, not a runtime error worth crashing on).
+function evaluateCompare(compareSpec, result) {
+  if (!compareSpec || !compareSpec.a || !compareSpec.b) {
+    return null;
+  }
+  const diceDetails = Array.isArray(result?.dice) ? result.dice : [];
+  const a = diceDetails.find((detail) => detail?.notation === compareSpec.a);
+  const b = diceDetails.find((detail) => detail?.notation === compareSpec.b);
+  if (!a || !b || typeof a.total !== "number" || typeof b.total !== "number") {
+    return null;
+  }
+  if (a.total > b.total) return { winner: "a", label: compareSpec.aLabel || "" };
+  if (b.total > a.total) return { winner: "b", label: compareSpec.bLabel || "" };
+  return { winner: "tie", label: compareSpec.tieLabel || "" };
+}
+
+function evaluateMoveVerdict(move, result) {
+  if (move?.resultMode === "compare") {
+    const outcome = evaluateCompare(move.compare, result);
+    return outcome && outcome.label ? { mode: "compare", label: outcome.label, winner: outcome.winner } : null;
+  }
+  const label = evaluateBands(move?.bands, result);
+  return label ? { mode: "band", label } : null;
+}
+
+// Rolls a System-defined Move (Section 1.3/4) — the exact same
+// rollExpression every other roll goes through (3D overlay, `@path`
+// context substitution, and named dice all just work unmodified), plus
+// this Move's own band/compare interpretation layered on top. `label` is
+// always overridden to this Move's own label, so the roll's own toast
+// reads "Action Roll: 2d6+3 → 8" consistently regardless of what the
+// caller passed. A matched verdict fires its own follow-up toast (this
+// app's own status root already supports more than one toast on screen —
+// see shell.css's own comment on why .status-root centers rather than
+// stacks-in-place) rather than trying to rewrite rollExpression's own
+// already-shown toast text.
+//
+// `broadcast`/`groupContext` are handled HERE, not passed through to the
+// inner rollExpression call — rollExpression's own broadcast payload has
+// no concept of a Move's verdict, and passing both through would double-
+// post. A caller with its own richer log-posting already built (Workbench's
+// own recordGameLogRoll, which also attaches character context) should
+// leave both false/unset here and post the returned result itself, exactly
+// like it already does for a plain roll — this built-in broadcast exists
+// for a caller with no such helper of its own (the Dashboard Character
+// widget). Same payload shape rollExpression's own broadcast already uses,
+// plus `verdict`.
+//
+// Returns rollExpression's own result shape plus `verdict` (`null` if
+// nothing matched) — `null`/`isTable` results pass through unchanged,
+// since a Move is never a table reference and a failed roll has nothing to
+// evaluate.
+export async function rollSystemMove(move, { broadcast = false, groupContext = null, dataManager, ...rollOptions } = {}) {
+  const rolled = await rollExpression(move.expression, { ...rollOptions, dataManager, label: move.label });
+  if (!rolled || rolled.isTable) {
+    return rolled;
+  }
+  const verdict = evaluateMoveVerdict(move, rolled.result);
+  if (verdict?.label) {
+    rollOptions.status?.show(`${move.label}: ${verdict.label}`, { type: "info", timeout: 2600 });
+  }
+  if (broadcast && dataManager && groupContext?.groupId) {
+    void dataManager
+      .createGroupLogEntry({
+        groupId: groupContext.groupId,
+        type: "roll",
+        message: "",
+        payload: {
+          expression: move.expression,
+          notation: rolled.result?.notation || move.expression,
+          total: rolled.total,
+          detailHtml: rolled.result?.detailHtml || undefined,
+          detailText: rolled.result?.detailText || undefined,
+          dice: Array.isArray(rolled.result?.dice) && rolled.result.dice.length ? rolled.result.dice : undefined,
+          label: move.label || undefined,
+          verdict: verdict?.label || undefined,
+        },
+      })
+      .catch(() => {
+        // Best-effort — the roll itself already succeeded and was reported
+        // locally above; a failed broadcast just means nobody else sees it
+        // in the Game Log this time (matches rollExpression's own
+        // identical broadcast failure handling).
+      });
+  }
+  return { ...rolled, verdict };
 }

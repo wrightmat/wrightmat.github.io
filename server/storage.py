@@ -5,6 +5,7 @@ import json
 import os
 import platform
 import sqlite3
+import time
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -12,8 +13,7 @@ from typing import Any, Dict, List, Optional
 import re
 
 from .auth import AuthError, User
-from .groups import accessible_group_ids, get_active_spotlights, user_can_access_group
-from .kinds import load_kind_policy, normalize_kind
+from .kinds import invalidate_kind_policy, load_kind_policy, normalize_kind
 from .roles import role_rank
 from .shares import resolve_share_token, touch_share_link
 from .state import ServerState
@@ -89,8 +89,7 @@ def init_storage_db(state: ServerState) -> None:
             shared_with_group_id TEXT,
             permissions TEXT DEFAULT 'view',
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (shared_with_user_id) REFERENCES users(id) ON DELETE CASCADE,
-            FOREIGN KEY (shared_with_group_id) REFERENCES groups(id) ON DELETE CASCADE
+            FOREIGN KEY (shared_with_user_id) REFERENCES users(id) ON DELETE CASCADE
         )
         """
     )
@@ -109,19 +108,17 @@ def init_storage_db(state: ServerState) -> None:
         )
         """
     )
-    conn.execute(
-        """
-        CREATE TABLE IF NOT EXISTS groups (
-            id TEXT PRIMARY KEY,
-            owner_id INTEGER NOT NULL,
-            name TEXT NOT NULL,
-            type TEXT NOT NULL DEFAULT 'campaign',
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            modified_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
-        )
-        """
-    )
+    # No CREATE TABLE for `groups` any more — a Group is now an ordinary
+    # Library kind (library_items row + undercroft/common/data/group/{id}.json
+    # flat file), exactly like System/Character/Map, created the first time
+    # anyone saves one via the generic content route. The bespoke table only
+    # still exists (as `_legacy_groups`, see _migrate_groups_to_library_items)
+    # on a database that had real campaigns before this migration shipped.
+    # `shared_with_group_id`/`group_id` below are plain TEXT references to a
+    # group's id string, not FK-enforced against anything — same
+    # already-established "polymorphic reference, checked in application
+    # code, not the schema" pattern this same `shares` table already uses for
+    # its own content_id column.
     conn.execute(
         """
         CREATE TABLE IF NOT EXISTS group_members (
@@ -129,8 +126,7 @@ def init_storage_db(state: ServerState) -> None:
             content_type TEXT NOT NULL,
             content_id TEXT NOT NULL,
             added_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            PRIMARY KEY (group_id, content_type, content_id),
-            FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE
+            PRIMARY KEY (group_id, content_type, content_id)
         )
         """
     )
@@ -145,11 +141,38 @@ def init_storage_db(state: ServerState) -> None:
             message TEXT,
             payload TEXT,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE,
             FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE SET NULL
         )
         """
     )
+    # Must run before any index creation below: on a pre-existing database,
+    # every CREATE TABLE IF NOT EXISTS above is a no-op against whatever
+    # shape that table already has on disk (shares missing
+    # shared_with_group_id, or still carrying its old FK against `groups`),
+    # so building an index — or, further below, migrating `groups` itself —
+    # against a stale shape would fail or silently target the wrong table.
+    # A fresh install already has every final shape from the CREATE TABLE
+    # statements above, so all of these just no-op there.
+    _migrate_groups_table_add_system_id(conn)
+    _migrate_groups_table_add_setting_id(conn)
+    _migrate_shares_table_for_group_targets(conn)
+    # Group is being migrated onto the same generic library_items/flat-JSON
+    # model System/Character/Map already use (see _migrate_groups_to_library_
+    # items's own comment) — group_members/shares/group_logs stay relational
+    # (they're membership facts and an event log, not part of Group's own
+    # document), but their FK against the old bespoke `groups` table has to
+    # go, since library_items' primary key is the composite (kind, id), not
+    # a bare unique id an FK could point at. SQLite can't ALTER TABLE DROP a
+    # FK constraint, so each of these does the same rename/recreate/copy/drop
+    # rebuild `_migrate_shares_table_for_group_targets` above already
+    # demonstrates. FK enforcement is never turned on for this connection
+    # (no PRAGMA foreign_keys anywhere in this codebase), so none of this
+    # changes any enforced behavior today — it's schema hygiene so a stale
+    # constraint text doesn't reference a table that's about to be renamed
+    # away, and so turning enforcement on later wouldn't break silently.
+    _migrate_shares_drop_groups_fk(conn)
+    _migrate_group_members_drop_groups_fk(conn)
+    _migrate_group_logs_drop_groups_fk(conn)
     conn.execute("CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(session_token)")
     conn.execute("CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id)")
     conn.execute("CREATE INDEX IF NOT EXISTS idx_shares_content ON shares(content_type, content_id)")
@@ -158,7 +181,6 @@ def init_storage_db(state: ServerState) -> None:
         "CREATE INDEX IF NOT EXISTS idx_share_links_content ON share_links(content_type, content_id)"
     )
     conn.execute("CREATE INDEX IF NOT EXISTS idx_share_links_token ON share_links(token)")
-    conn.execute("CREATE INDEX IF NOT EXISTS idx_groups_owner ON groups(owner_id)")
     conn.execute(
         "CREATE INDEX IF NOT EXISTS idx_group_members_group ON group_members(group_id)"
     )
@@ -173,13 +195,6 @@ def init_storage_db(state: ServerState) -> None:
     )
     conn.execute("CREATE INDEX IF NOT EXISTS idx_library_items_kind_owner ON library_items(kind, owner_id)")
     conn.execute("CREATE INDEX IF NOT EXISTS idx_library_items_kind_public ON library_items(kind, is_public)")
-    # Must run before the two partial indexes below: on a pre-existing
-    # database, CREATE TABLE IF NOT EXISTS shares (above) is a no-op against
-    # the already-existing old-shape table (no shared_with_group_id column
-    # yet), so creating an index against that column would fail until this
-    # migration has actually rebuilt the table. A fresh install already has
-    # the new shape from CREATE TABLE IF NOT EXISTS, so this just no-ops.
-    _migrate_shares_table_for_group_targets(conn)
     # Two partial unique indexes (one per target column) rather than one
     # combined UNIQUE — SQLite treats NULLs as distinct from each other in a
     # UNIQUE constraint, so a single UNIQUE(content_type, content_id,
@@ -205,8 +220,53 @@ def init_storage_db(state: ServerState) -> None:
     )
     conn.execute("CREATE INDEX IF NOT EXISTS idx_shares_group ON shares(shared_with_group_id)")
     _migrate_legacy_buckets_to_library_items(conn)
+    _migrate_groups_to_library_items(state, conn)
+    _migrate_seed_group_inventory_property(state, conn)
     _backfill_flat_library_kinds(state)
+    _drop_dead_legacy_tables(conn)
     conn.commit()
+
+
+def _groups_table_exists(conn: sqlite3.Connection) -> bool:
+    # `groups` no longer has a CREATE TABLE IF NOT EXISTS of its own (Group is
+    # a generic Library kind now — see _migrate_groups_to_library_items) — it
+    # only still exists on a database that had real campaigns before this
+    # migration shipped, until that migration renames it to `_legacy_groups`.
+    # A fresh install never creates it at all, so every migration below that
+    # still touches it by name has to check first instead of assuming it's
+    # there (PRAGMA table_info on a nonexistent table silently returns
+    # nothing rather than erroring, but a bare ALTER TABLE does not).
+    row = conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='groups'").fetchone()
+    return row is not None
+
+
+def _migrate_groups_table_add_system_id(conn: sqlite3.Connection) -> None:
+    # Idempotent add-column migration for databases created before a Group
+    # could declare its own System (Section 1.2 of the System-Defined Dice
+    # plan) — `groups` predates `system_id` entirely on any pre-existing
+    # database. A nullable column needs no full table rebuild (unlike
+    # _migrate_shares_table_for_group_targets's NOT NULL relaxation below) —
+    # a plain ALTER TABLE ADD COLUMN is safe and cheap to run on every
+    # startup once the column already exists.
+    if not _groups_table_exists(conn):
+        return
+    columns = {row["name"] for row in conn.execute("PRAGMA table_info(groups)")}
+    if "system_id" in columns:
+        return
+    conn.execute("ALTER TABLE groups ADD COLUMN system_id TEXT")
+
+
+def _migrate_groups_table_add_setting_id(conn: sqlite3.Connection) -> None:
+    # Same idempotent add-column migration as system_id above, for a Group's
+    # own Setting (lets widgets like the Dashboard's Calculator scope
+    # System-authored, per-Setting data — e.g. Travel Means — the same way
+    # Group.systemId already scopes dice).
+    if not _groups_table_exists(conn):
+        return
+    columns = {row["name"] for row in conn.execute("PRAGMA table_info(groups)")}
+    if "setting_id" in columns:
+        return
+    conn.execute("ALTER TABLE groups ADD COLUMN setting_id TEXT")
 
 
 def _migrate_shares_table_for_group_targets(conn: sqlite3.Connection) -> None:
@@ -223,6 +283,12 @@ def _migrate_shares_table_for_group_targets(conn: sqlite3.Connection) -> None:
     if not columns or "shared_with_group_id" in columns:
         return
     conn.execute("ALTER TABLE shares RENAME TO _legacy_shares")
+    # No FK on shared_with_group_id even here — a group is a generic Library
+    # kind now (see _migrate_groups_to_library_items), so there is no
+    # `groups(id)` for this brand-new column to reference in the first
+    # place; this used to add that FK and a later migration
+    # (_migrate_shares_drop_groups_fk) would immediately remove it again on
+    # the very same startup for anyone old enough to hit this branch at all.
     conn.execute(
         """
         CREATE TABLE shares (
@@ -233,8 +299,7 @@ def _migrate_shares_table_for_group_targets(conn: sqlite3.Connection) -> None:
             shared_with_group_id TEXT,
             permissions TEXT DEFAULT 'view',
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (shared_with_user_id) REFERENCES users(id) ON DELETE CASCADE,
-            FOREIGN KEY (shared_with_group_id) REFERENCES groups(id) ON DELETE CASCADE
+            FOREIGN KEY (shared_with_user_id) REFERENCES users(id) ON DELETE CASCADE
         )
         """
     )
@@ -260,6 +325,224 @@ def _migrate_shares_table_for_group_targets(conn: sqlite3.Connection) -> None:
         """
     )
     conn.execute("DROP TABLE _legacy_shares")
+
+
+def _table_references_groups(conn: sqlite3.Connection, table_name: str) -> bool:
+    # Whether `table_name`'s CURRENT on-disk schema still carries a
+    # `REFERENCES groups(` clause — used by the three rebuilds just below to
+    # decide whether they still have work to do. A CREATE TABLE IF NOT
+    # EXISTS never reconciles an existing table's schema against a changed
+    # statement text, so this has to inspect what's actually there rather
+    # than assume the CREATE TABLE statements earlier in this file reflect
+    # reality on an upgraded database.
+    row = conn.execute(
+        "SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (table_name,)
+    ).fetchone()
+    return bool(row and row["sql"] and "REFERENCES groups(" in row["sql"])
+
+
+def _migrate_shares_drop_groups_fk(conn: sqlite3.Connection) -> None:
+    # Rebuilds `shares` one more time, dropping shared_with_group_id's FK
+    # against the old bespoke `groups` table — see this function's own call
+    # site comment in init_storage_db for why. Runs independently of
+    # _migrate_shares_table_for_group_targets above: that one only fires for
+    # a database missing shared_with_group_id entirely, while THIS one fires
+    # for anyone who already has that column (with the old FK) from any
+    # earlier version of this schema, which by now is most upgraded
+    # databases. Same rename/recreate/copy/drop shape, just dropping one FK
+    # clause instead of adding a column.
+    if not _table_references_groups(conn, "shares"):
+        return
+    conn.execute("ALTER TABLE shares RENAME TO _legacy_shares2")
+    conn.execute(
+        """
+        CREATE TABLE shares (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            content_type TEXT NOT NULL,
+            content_id TEXT NOT NULL,
+            shared_with_user_id INTEGER,
+            shared_with_group_id TEXT,
+            permissions TEXT DEFAULT 'view',
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (shared_with_user_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+        """
+    )
+    conn.execute(
+        """
+        INSERT INTO shares (id, content_type, content_id, shared_with_user_id, shared_with_group_id, permissions, created_at)
+        SELECT id, content_type, content_id, shared_with_user_id, shared_with_group_id, permissions, created_at
+        FROM _legacy_shares2
+        """
+    )
+    conn.execute("DROP TABLE _legacy_shares2")
+
+
+def _migrate_group_members_drop_groups_fk(conn: sqlite3.Connection) -> None:
+    # Same rebuild as _migrate_shares_drop_groups_fk above, for
+    # group_members.group_id's own FK against the old `groups` table.
+    if not _table_references_groups(conn, "group_members"):
+        return
+    conn.execute("ALTER TABLE group_members RENAME TO _legacy_group_members")
+    conn.execute(
+        """
+        CREATE TABLE group_members (
+            group_id TEXT NOT NULL,
+            content_type TEXT NOT NULL,
+            content_id TEXT NOT NULL,
+            added_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (group_id, content_type, content_id)
+        )
+        """
+    )
+    conn.execute(
+        """
+        INSERT INTO group_members (group_id, content_type, content_id, added_at)
+        SELECT group_id, content_type, content_id, added_at
+        FROM _legacy_group_members
+        """
+    )
+    conn.execute("DROP TABLE _legacy_group_members")
+
+
+def _migrate_group_logs_drop_groups_fk(conn: sqlite3.Connection) -> None:
+    # Same rebuild again, for group_logs.group_id's own FK against the old
+    # `groups` table (author_id's own FK against `users` is untouched).
+    if not _table_references_groups(conn, "group_logs"):
+        return
+    conn.execute("ALTER TABLE group_logs RENAME TO _legacy_group_logs")
+    conn.execute(
+        """
+        CREATE TABLE group_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            group_id TEXT NOT NULL,
+            entry_type TEXT NOT NULL,
+            author_id INTEGER,
+            author_name TEXT,
+            message TEXT,
+            payload TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE SET NULL
+        )
+        """
+    )
+    conn.execute(
+        """
+        INSERT INTO group_logs (id, group_id, entry_type, author_id, author_name, message, payload, created_at)
+        SELECT id, group_id, entry_type, author_id, author_name, message, payload, created_at
+        FROM _legacy_group_logs
+        """
+    )
+    conn.execute("DROP TABLE _legacy_group_logs")
+
+
+def _migrate_groups_to_library_items(state: ServerState, conn: sqlite3.Connection) -> None:
+    # One-time (idempotent) migration of the old bespoke `groups` table onto
+    # the exact same generic library_items/flat-JSON-file model every other
+    # Library kind (System, Character, Map, ...) already uses — Group has no
+    # principled reason to have ever worked differently, it just predates
+    # this suite's own generic content-kind convention. `group_members`/
+    # `group_logs` (relational membership facts / an append-only event log,
+    # not part of Group's own document) are untouched by this — they keep
+    # referencing a group by the exact same id string, which this migration
+    # preserves unchanged, so neither of those tables needs its own rows
+    # rewritten. A fresh install never creates a `groups` table at all (see
+    # its CREATE TABLE's own removal above), so this is a no-op there.
+    if not _groups_table_exists(conn):
+        return
+    rows = conn.execute("SELECT * FROM groups").fetchall()
+    group_root = state.root_dir / "undercroft" / "common" / "data" / "group"
+    group_root.mkdir(parents=True, exist_ok=True)
+    row_columns = rows[0].keys() if rows else []
+    for row in rows:
+        group_id = row["id"]
+        system_id = row["system_id"] if "system_id" in row_columns else None
+        setting_id = row["setting_id"] if "setting_id" in row_columns else None
+        payload = {
+            "id": group_id,
+            "title": row["name"],
+            "type": row["type"] or "campaign",
+            "systemId": system_id or None,
+            "settingId": setting_id or None,
+            # The new mechanism this whole migration exists to enable —
+            # every pre-existing group simply starts with none defined yet,
+            # same as a System's own `fields` would for a brand-new System.
+            "properties": [],
+            "propertyValues": {},
+        }
+        write_json(group_root / f"{group_id}.json", payload)
+        metadata_fields = {
+            key: value
+            for key, value in {"type": payload["type"], "systemId": payload["systemId"], "settingId": payload["settingId"]}.items()
+            if value is not None
+        }
+        conn.execute(
+            """
+            INSERT OR IGNORE INTO library_items
+                (kind, id, owner_id, title, is_public, metadata, filename,
+                 created_at, modified_at, last_accessed_at)
+            VALUES ('group', ?, ?, ?, 0, ?, ?, ?, ?, ?)
+            """,
+            (
+                group_id,
+                row["owner_id"],
+                row["name"],
+                json.dumps(metadata_fields) if metadata_fields else None,
+                f"{group_id}.json",
+                row["created_at"],
+                row["modified_at"],
+                row["modified_at"],
+            ),
+        )
+    conn.execute("ALTER TABLE groups RENAME TO _legacy_groups")
+
+
+def _migrate_seed_group_inventory_property(state: ServerState, conn: sqlite3.Connection) -> None:
+    """Backfills the "inventory" Group Property (server/groups.py's own
+    create_group/update_group seed it going forward — see
+    _default_inventory_property's own comment) onto every campaign that
+    predates that convention. Idempotent by construction, not a one-shot
+    flag: a group already carrying an "inventory" key (auto-seeded before,
+    or one a GM defined by hand under that exact same key) is skipped every
+    run, so this is a no-op after the first group is actually backfilled.
+    """
+    from . import groups as groups_module
+
+    rows = conn.execute("SELECT id FROM library_items WHERE kind = 'group'").fetchall()
+    for row in rows:
+        group_id = row["id"]
+        try:
+            payload = load_item_raw(state, "group", group_id)
+        except FileNotFoundError:
+            continue
+        if not isinstance(payload, dict):
+            continue
+        properties = payload.get("properties")
+        if not isinstance(properties, list):
+            properties = []
+        if any(isinstance(p, dict) and p.get("key") == "inventory" for p in properties):
+            continue
+        properties.append(groups_module._default_inventory_property(state, payload.get("systemId")))
+        payload["properties"] = properties
+        write_item_raw(state, "group", group_id, payload)
+
+
+_DEAD_LEGACY_TABLES = ("_legacy_characters", "_legacy_templates", "_legacy_systems", "_legacy_groups")
+
+
+def _drop_dead_legacy_tables(conn: sqlite3.Connection) -> None:
+    # _migrate_legacy_buckets_to_library_items/_migrate_groups_to_library_items
+    # (below/above) rename the old bespoke tables to _legacy_{name} rather
+    # than dropping them outright, but every idempotency check in both
+    # functions keys off the ORIGINAL table name ("characters"/"templates"/
+    # "systems"/"groups"), never the renamed one — so once a table has been
+    # renamed away it is permanently dead weight in the database file:
+    # nothing in this codebase ever reads a _legacy_* table again. Safe to
+    # actually drop it here instead of leaving it around forever.
+    existing = {row[0] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+    for table in _DEAD_LEGACY_TABLES:
+        if table in existing:
+            conn.execute(f"DROP TABLE {table}")
 
 
 def _migrate_legacy_buckets_to_library_items(conn: sqlite3.Connection) -> None:
@@ -378,6 +661,85 @@ def _backfill_flat_library_kinds(state: ServerState) -> None:
             )
 
 
+def _admin_user_id(state: ServerState) -> Optional[int]:
+    row = state.db.execute("SELECT id FROM users WHERE tier = 'admin' ORDER BY id LIMIT 1").fetchone()
+    return row["id"] if row else None
+
+
+def _ensure_library_item_indexed(state: ServerState, kind: str, id_: str) -> None:
+    # Self-heals a single missing library_items row for a file that already
+    # exists on disk. Without a row, is_owner/is_shared/is_public below all
+    # treat the record as absent and get_item() denies access outright — so a
+    # file added outside save_item() (hand-authored JSON, seeded/imported
+    # content) used to be genuinely inaccessible until the next server
+    # restart re-ran _backfill_flat_library_kinds() at startup. This heals it
+    # on the very next read instead. Cheap: one row lookup per call, and only
+    # touches disk/writes a row on the (rare, one-time) miss.
+    base_id = id_.replace(".json", "")
+    existing = state.db.execute(
+        "SELECT 1 FROM library_items WHERE kind = ? AND id = ?", (kind, base_id)
+    ).fetchone()
+    if existing:
+        return
+    path = _record_path(state, kind, base_id)
+    if not path.exists():
+        return
+    policy = load_kind_policy(state, kind)
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        payload = {}
+    title = _title_from_payload(kind, payload, policy) or base_id
+    metadata = _extract_metadata(kind, payload, policy)
+    file_ts = datetime.utcfromtimestamp(path.stat().st_mtime).isoformat()
+    state.db.execute(
+        """
+        INSERT INTO library_items
+            (kind, id, owner_id, title, is_public, metadata, filename, created_at, modified_at, last_accessed_at)
+        VALUES (?, ?, ?, ?, 1, ?, ?, ?, ?, ?)
+        ON CONFLICT(kind, id) DO NOTHING
+        """,
+        (kind, base_id, _admin_user_id(state), title, metadata, path.name, file_ts, file_ts, file_ts),
+    )
+    state.db.commit()
+
+
+def _sync_library_kind_directory(state: ServerState, kind: str) -> None:
+    # Same self-heal as _ensure_library_item_indexed, but scoped to every
+    # file in one kind's own directory at once — run before list_bucket()'s
+    # own library_items query so a freshly-added file (not just a
+    # freshly-*read* one) shows up in listings without a restart too.
+    # O(files in this one kind's directory), not O(entire data tree) like the
+    # startup backfill, so it's safe to run on every list call.
+    kind_dir = library_kind_root(state, kind)
+    if not kind_dir.exists():
+        return
+    existing_ids = {row["id"] for row in state.db.execute("SELECT id FROM library_items WHERE kind = ?", (kind,))}
+    entries = [entry for entry in kind_dir.glob("*.json") if entry.stem not in existing_ids]
+    if not entries:
+        return
+    policy = load_kind_policy(state, kind)
+    admin_id = _admin_user_id(state)
+    for entry in entries:
+        try:
+            payload = json.loads(entry.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            payload = {}
+        title = _title_from_payload(kind, payload, policy) or entry.stem
+        metadata = _extract_metadata(kind, payload, policy)
+        file_ts = datetime.utcfromtimestamp(entry.stat().st_mtime).isoformat()
+        state.db.execute(
+            """
+            INSERT INTO library_items
+                (kind, id, owner_id, title, is_public, metadata, filename, created_at, modified_at, last_accessed_at)
+            VALUES (?, ?, ?, ?, 1, ?, ?, ?, ?, ?)
+            ON CONFLICT(kind, id) DO NOTHING
+            """,
+            (kind, entry.stem, admin_id, title, metadata, entry.name, file_ts, file_ts, file_ts),
+        )
+    state.db.commit()
+
+
 def library_kind_root(state: ServerState, kind: str) -> Path:
     return state.root_dir / "undercroft" / "common" / "data" / kind
 
@@ -401,7 +763,29 @@ def write_json(path: Path, payload: Any) -> None:
     temp_path = path.with_suffix(path.suffix + ".tmp")
     with file_lock(temp_path, "w") as handle:
         json.dump(payload, handle, indent=2, ensure_ascii=False)
-    temp_path.replace(path)
+    _replace_with_retry(temp_path, path)
+
+
+# This repo lives inside a live-synced Nextcloud folder — on Windows, renaming
+# a file onto an existing destination (the atomic-write pattern above) can
+# transiently fail with WinError 5 ("Access is denied") when the sync client
+# briefly opens the just-changed file (without FILE_SHARE_DELETE) to
+# hash/queue it for upload at the exact instant this replace runs. Confirmed
+# real: intermittent "[WinError 5] ... .tmp -> ...json" toasts on ordinary
+# saves (e.g. an encounter's own combat state) with no other explanation —
+# the lock is always brief, so a short retry loop resolves it silently
+# instead of surfacing a raw OS exception as a save-failure toast.
+def _replace_with_retry(source: Path, destination: Path, attempts: int = 6, initial_delay: float = 0.05) -> None:
+    delay = initial_delay
+    for attempt in range(attempts):
+        try:
+            source.replace(destination)
+            return
+        except OSError:
+            if attempt == attempts - 1:
+                raise
+            time.sleep(delay)
+            delay *= 2
 
 
 def _parse_metadata(path: Path, line_limit: int = 20) -> Dict[str, str]:
@@ -470,6 +854,7 @@ def list_bucket(state: ServerState, kind: str, user: Optional[User]) -> Dict[str
             files.append(item)
         return {"files": files}
 
+    _sync_library_kind_directory(state, kind)
     ensure_read_role(state, kind, user)
     public = _flatten_metadata_rows(
         [
@@ -530,7 +915,12 @@ def list_bucket(state: ServerState, kind: str, user: Optional[User]) -> Dict[str
         # latter set is precomputed in Python via accessible_group_ids since
         # that resolution isn't a plain SQL join. A record could in principle
         # match both, so duplicates are deduped afterward rather than tried
-        # to be avoided in the query itself.
+        # to be avoided in the query itself. Imported here, not at module
+        # level — groups.py now itself imports this module's get_item/
+        # save_item/load_json/write_json (Group is a generic Library kind
+        # now too), and a top-level import on both sides would cycle.
+        from .groups import accessible_group_ids
+
         group_ids = accessible_group_ids(state, user)
         group_placeholders = ",".join("?" for _ in group_ids) if group_ids else "NULL"
         shared_rows = [
@@ -595,7 +985,9 @@ def is_shared(state: ServerState, kind: str, id_: str, user: Optional[User], req
     # actually access (owns the group, or owns a member character); a
     # handful of rows per record at most, so a per-row Python check here is
     # simpler and clearer than folding group-membership resolution into this
-    # query directly.
+    # query directly. Local import — see list_bucket's own comment on why.
+    from .groups import user_can_access_group
+
     group_rows = state.db.execute(
         """
         SELECT shared_with_group_id, permissions FROM shares
@@ -653,6 +1045,7 @@ def get_item(
 ) -> Dict[str, Any]:
     ensure_read_role(state, kind, user)
     base_id = id_.replace(".json", "")
+    _ensure_library_item_indexed(state, kind, base_id)
     token_info = resolve_share_token(state, share_token or "") if share_token else None
     share_granted = False
     if token_info:
@@ -662,14 +1055,21 @@ def get_item(
             share_granted = True
             touch_share_link(state, token_info.get("token", ""))
         elif token_type == "group" and kind == "character" and token_target:
+            # `g` and `li` are the SAME library_items table, joined against
+            # itself under two aliases — a group's own row (kind='group') for
+            # its owner_id, and the target character's row (kind='character')
+            # for its own. Group is a generic Library kind now too (see
+            # _migrate_groups_to_library_items), so there's no separate
+            # `groups` table to join against any more.
             row = state.db.execute(
                 """
                 SELECT g.owner_id AS group_owner_id,
                        li.owner_id AS character_owner_id
-                FROM groups AS g
+                FROM library_items AS g
                 JOIN group_members AS gm ON gm.group_id = g.id
                 LEFT JOIN library_items AS li ON li.kind = 'character' AND li.id = gm.content_id
-                WHERE g.id = ?
+                WHERE g.kind = 'group'
+                  AND g.id = ?
                   AND gm.content_type = 'character'
                   AND gm.content_id = ?
                 """,
@@ -690,7 +1090,10 @@ def get_item(
             # client-side in spotlight.js) — the entity itself, or its
             # templateId — and nothing else. Deliberately narrow: this is not
             # "share this group's members' content", it's "whatever's
-            # currently being projected to the table right now."
+            # currently being projected to the table right now." Local
+            # import — see list_bucket's own comment on why.
+            from .groups import get_active_spotlights
+
             normalized_kind = normalize_kind(kind)
             for spotlight in get_active_spotlights(state, token_target):
                 spotlight_kind = normalize_kind(str(spotlight.get("kind") or ""))
@@ -720,6 +1123,27 @@ def get_item(
     # being real-time, so batching it via flush_pending_touches() is free.
     state.record_touch(kind, base_id)
     return payload
+
+
+def load_item_raw(state: ServerState, kind: str, id_: str) -> Dict[str, Any]:
+    """Loads a kind's JSON payload directly from disk with NO ownership/
+    sharing/tier checks and no last-accessed touch — for server-side callers
+    (groups.py's own Group document access, mainly) that have already done
+    their own authorization and just need the raw content. Not a
+    general-purpose "read any kind" escape hatch for request handlers — real
+    HTTP reads always go through get_item above."""
+    return load_json(_record_path(state, kind, id_))
+
+
+def write_item_raw(state: ServerState, kind: str, id_: str, payload: Dict[str, Any]) -> None:
+    """Writes a kind's JSON payload directly to disk with NO ownership/
+    sharing/tier checks, and does NOT touch library_items at all (unlike
+    save_item, which also upserts title/metadata/modified_at there) — for a
+    caller whose OWN permission model doesn't fit save_item's coarse
+    owner-or-edit-share gate (groups.py's per-property value writes, where a
+    plain party member with neither may still write ONE property marked
+    `public`) and who will do its own library_items bookkeeping afterward."""
+    write_json(_record_path(state, kind, id_), payload)
 
 
 def flush_pending_touches(state: ServerState) -> int:
@@ -860,6 +1284,8 @@ def save_item(state: ServerState, kind: str, id_: str, body: Dict[str, Any], use
         (kind, base_id, owner_id, title, is_public_value, metadata, filename, now_ts, now_ts),
     )
     state.db.commit()
+    if normalize_kind(kind) == "kind":
+        invalidate_kind_policy(state, base_id)
     return {"ok": True, "bucket": kind, "id": id_}
 
 

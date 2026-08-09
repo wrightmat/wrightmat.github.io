@@ -20,6 +20,14 @@ export function createLocationRecord(generated, existingId) {
     // not always a fresh generator.js output, so every Sanctum-owned array/scalar
     // needs a safe fallback rather than assuming it's always present.
     systemIds: [],
+    // Plural, same "empty/absent = universal, non-empty = restricted"
+    // convention as systemIds — a Location could in principle belong to more
+    // than one Setting (a place reachable from two different worlds). A
+    // pre-migration record may still carry the old scalar `settingId`;
+    // callers normalize that on read (see `resolveSettingIds` in
+    // sanctum/js/app.js) rather than this schema silently upgrading it, so a
+    // loaded-but-unsaved record doesn't look dirty just from being viewed.
+    settingIds: [],
     typeId: null,
     purposeId: null,
     environment: null,
