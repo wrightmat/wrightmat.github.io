@@ -204,8 +204,8 @@ function describeEntry(entry, { getCachedTitle, ensureTitleCached, onTitleLoaded
   }
   if (entry?.type === "roll") {
     // A roll entry's own `message` is always empty — the real data lives in
-    // `payload.{label,expression,notation,total}` (dice-roll.js's own
-    // rollExpression).
+    // `payload.{label,expression,notation,total,verdict}` (dice-roll.js's
+    // own rollExpression/rollSystemMove).
     const payload = entry.payload || {};
     const label = typeof payload.label === "string" ? payload.label.trim() : "";
     const notation =
@@ -217,6 +217,11 @@ function describeEntry(entry, { getCachedTitle, ensureTitleCached, onTitleLoaded
     const total = payload.total !== undefined && payload.total !== null ? payload.total : "";
     let text = label && notation ? `${label} (${notation})` : label || notation || "Roll";
     if (total || total === 0) text += ` → ${total}`;
+    // A System-defined Move's own matched band/compare label (Section
+    // 1.3/4, e.g. "Partial Success") — absent for a plain roll, which
+    // already reads fine without it.
+    const verdict = typeof payload.verdict === "string" ? payload.verdict.trim() : "";
+    if (verdict) text += ` — ${verdict}`;
     return { before: text, detail: "", after: "", href: "" };
   }
   return { before: entry?.message || "", detail: "", after: "", href: "" };

@@ -7,6 +7,8 @@ import {
   watchMapForChanges,
   persistMarkerMove as persistMarkerMoveShared,
   persistElementUpdate,
+  persistNewElement,
+  removeElement,
 } from "../../common/js/lib/map-live-sync.js";
 import { initAuthControls } from "../../common/js/lib/auth-ui.js";
 import { refreshTooltips, disposeTooltips } from "../../common/js/lib/tooltips.js";
@@ -100,6 +102,7 @@ const { status, undoStack, undo, redo } = initAppShell({
       return null;
     }
     applyMapSnapshot(entry.before);
+    autoSaveHistoryEntry(entry);
     return { message: entry.label ? `Undid ${entry.label}` : "Undid last action" };
   },
   onRedo: (entry) => {
@@ -107,6 +110,7 @@ const { status, undoStack, undo, redo } = initAppShell({
       return null;
     }
     applyMapSnapshot(entry.after);
+    autoSaveHistoryEntry(entry);
     return { message: entry.label ? `Redid ${entry.label}` : "Redid last action" };
   },
 });
@@ -130,6 +134,17 @@ let drawModeActive = false;
 // stay click-through while this is true, so a new one can be dropped
 // anywhere, including on top of an existing shape/path.
 let shapeModeActive = false;
+
+// One shared "pencil color" for both Draw and Shape (a shape's fillColor
+// AND strokeColor both come from this single value — see setupShapeTool's
+// own comment), matching the Dashboard Map widget's identical single
+// drawColor concept (common/js/lib/widgets/map.js) rather than each tool
+// reading a per-layer default from layer.settings — a player placing a
+// drawing/shape via the widget has no "selected vector layer" to read
+// defaults from at all, so a shared toolbar swatch is the only model that
+// works the same in both places. Persists across gestures within the
+// session, same "sticky preference" shape as wallSnapEnabled above.
+let drawColor = "#0f172a";
 
 // Same reasoning as drawModeActive — walls/doors need to stay click-through
 // while a new one is being placed (setupWallTool), same "start anywhere,
@@ -561,6 +576,8 @@ const elements = {
   shapeToggleWrap: document.querySelector("[data-shape-toggle-wrap]"),
   shapeType: document.querySelector("[data-shape-type]"),
   shapeReadout: document.querySelector("[data-shape-readout]"),
+  drawColor: document.querySelector("[data-draw-color]"),
+  drawColorWrap: document.querySelector("[data-draw-color-wrap]"),
   wallToggle: document.querySelector("[data-wall-toggle]"),
   wallToggleWrap: document.querySelector("[data-wall-toggle-wrap]"),
   wallSubMode: document.querySelector("[data-wall-submode]"),
@@ -975,8 +992,34 @@ function snapShapeOriginToGrid(position, shapeLayer) {
 // through — and again right after a successful save.
 let mapCleanSnapshot = null;
 
+// Marker position/image/outlineColor are auto-saved independently and
+// immediately (see onMarkerDragEnd/applyMarkerElementChange below) — this
+// strips those three fields from every marker element before comparing, so
+// the Save button/beforeunload warning only ever reflects genuinely-unsaved
+// wall/map-setting/layer-design work, never a marker field that's already
+// persisted. `null` passes through unchanged (preserves the existing
+// "no clean snapshot yet = dirty" behavior below).
+function normalizeForDirtyCheck(mapJson) {
+  if (mapJson === null) return null;
+  let map;
+  try {
+    map = JSON.parse(mapJson);
+  } catch (error) {
+    return mapJson;
+  }
+  (map.layers || []).forEach((layer) => {
+    if (layer.type !== "marker") return;
+    (layer.elements || []).forEach((element) => {
+      delete element.position;
+      delete element.image;
+      delete element.outlineColor;
+    });
+  });
+  return JSON.stringify(map);
+}
+
 function isMapDirty() {
-  return mapCleanSnapshot !== JSON.stringify(state.map);
+  return normalizeForDirtyCheck(mapCleanSnapshot) !== normalizeForDirtyCheck(JSON.stringify(state.map));
 }
 
 function markMapClean() {
@@ -1041,6 +1084,14 @@ function applyRemoteMapLayers(nextMap) {
   if (baseMapChanged) {
     baseMapManager.setBaseMap(state.map.baseMap, state.map.view);
   }
+  // The left-pane layer LIST, not just the map's own overlay rendering —
+  // confirmed real bug this fixes: a remote change that adds a brand-new
+  // layer (a player's first Draw/Shape auto-creating a vector layer via
+  // persistPlayerDrawing) rendered its contents on the map fine via
+  // renderLayerOverlays() alone, but never appeared as a pickable entry in
+  // this list until something else (selecting a different layer) happened
+  // to trigger a render of it.
+  renderLayers();
   renderLayerOverlays();
   // Re-baseline "clean" against the map as it now stands (this function is
   // only ever called from behind an !isMapDirty() check, so state.map
@@ -1162,6 +1213,154 @@ function recordHistory(label, applyChange) {
   if (before !== after) {
     undoStack.push({ label, before, after });
   }
+}
+
+// Which recordHistory label corresponds to which per-marker field being
+// auto-saved (see onMarkerDragEnd/applyMarkerElementChange below) — used
+// only to make a GM's own Undo/Redo of one of these three specific actions
+// also propagate immediately to the server, same as the action itself
+// already does, rather than leaving other viewers looking at a stale value
+// until the GM happens to click Save.
+const MARKER_AUTO_SAVE_FIELD_BY_LABEL = {
+  "move marker": "position",
+  "marker image": "image",
+  "marker outline color": "outlineColor",
+};
+
+// Locates WHICH marker element a before/after snapshot pair changed a given
+// field on — recordHistory only records the label plus full before/after
+// map JSON, not which element was touched, so undo/redo has to work that out
+// itself before it can know what to re-persist.
+function findChangedMarkerElement(beforeJson, afterJson, field) {
+  let before;
+  let after;
+  try {
+    before = JSON.parse(beforeJson);
+    after = JSON.parse(afterJson);
+  } catch (error) {
+    return null;
+  }
+  for (const layer of after.layers || []) {
+    if (layer.type !== "marker") continue;
+    const beforeLayer = (before.layers || []).find((entry) => entry.id === layer.id);
+    for (const element of layer.elements || []) {
+      const beforeElement = beforeLayer?.elements?.find((entry) => entry.id === element.id);
+      if (JSON.stringify(beforeElement?.[field]) !== JSON.stringify(element[field])) {
+        return { layerId: layer.id, elementId: element.id };
+      }
+    }
+  }
+  return null;
+}
+
+// recordHistory labels whose action ADDS a brand-new element (Draw/Shape's
+// own commit, see setupDrawTool/setupShapeTool below) rather than changing
+// an existing one's field — same auto-save-this-specific-action idea as
+// MARKER_AUTO_SAVE_FIELD_BY_LABEL just above, but Undo/Redo of these means
+// re-syncing the element's very EXISTENCE on the server (create it back /
+// delete it again), not re-sending one field's value.
+const DRAW_SHAPE_AUTO_SAVE_LABELS = new Set(["draw path", "place shape"]);
+
+// Same "diff before/after to find what changed" strategy as
+// findChangedMarkerElement just above, but for an element ADDED to a
+// layer's own elements array instead of an existing element's field
+// changing — Draw/Shape only ever add exactly one element per commit, so
+// "present in after, absent from that same layer in before" uniquely
+// identifies it.
+function findAddedElement(beforeJson, afterJson) {
+  let before;
+  let after;
+  try {
+    before = JSON.parse(beforeJson);
+    after = JSON.parse(afterJson);
+  } catch (error) {
+    return null;
+  }
+  for (const layer of after.layers || []) {
+    const beforeLayer = (before.layers || []).find((entry) => entry.id === layer.id);
+    const beforeIds = new Set((beforeLayer?.elements || []).map((entry) => entry.id));
+    const added = (layer.elements || []).find((entry) => !beforeIds.has(entry.id));
+    if (added) return { layerId: layer.id, elementId: added.id };
+  }
+  return null;
+}
+
+// Patches JUST one element into (or out of) mapCleanSnapshot's own copy of
+// one layer — called right after a Draw/Shape creation is auto-saved (or
+// after Undo/Redo re-syncs that same creation the other way), so the Save
+// button only ever reflects genuinely-batched wall/light/layer-settings
+// work afterward, same reasoning normalizeForDirtyCheck's marker-field
+// stripping already follows. Deliberately NOT a full markMapClean() here:
+// that snapshots the WHOLE map, which would also launder any OTHER already-
+// pending local edit (an unsaved wall, say) as "clean" just because it
+// happened to be sitting in state.map at this same moment — patching only
+// the one synced element avoids that.
+function syncCleanSnapshotForElement(layerId, elementId, element) {
+  if (!mapCleanSnapshot) return;
+  let clean;
+  try {
+    clean = JSON.parse(mapCleanSnapshot);
+  } catch (error) {
+    return;
+  }
+  const layer = clean.layers?.find((entry) => entry.id === layerId);
+  if (!layer) return;
+  layer.elements = (layer.elements || []).filter((entry) => entry.id !== elementId);
+  if (element) layer.elements.push(element);
+  mapCleanSnapshot = JSON.stringify(clean);
+  updateMapToolbarState();
+}
+
+// Re-persists a marker field, or re-syncs a Draw/Shape creation's very
+// existence, immediately after Undo/Redo restores it — the action itself
+// (drag-end/icon-and-color field commits, or a freshly-drawn stroke/shape's
+// own commit) already auto-saves the moment it happens; without this,
+// undoing one of those actions would revert the GM's own screen but leave
+// every other viewer looking at the un-undone value/element until the next
+// unrelated Save.
+function autoSaveHistoryEntry(entry) {
+  if (!entry || !mapExistsOnServer) return;
+  if (DRAW_SHAPE_AUTO_SAVE_LABELS.has(entry.label)) {
+    const found = findAddedElement(entry.before, entry.after);
+    if (!found) return;
+    const layer = state.map.layers?.find((candidate) => candidate.id === found.layerId);
+    // Present in the CURRENT (post-applyMapSnapshot) map: we just redid the
+    // creation, so re-add it server-side. Absent: we just undid it, so
+    // delete it server-side instead — the map's own state already tells us
+    // which direction this was without needing an explicit undo/redo flag.
+    const element = layer?.elements?.find((candidate) => candidate.id === found.elementId);
+    const persistCall = element
+      ? persistNewElement({ dataManager, mapId: state.map.id, shareToken: currentShareToken, layerId: found.layerId, element })
+      : removeElement({ dataManager, mapId: state.map.id, shareToken: currentShareToken, layerId: found.layerId, elementId: found.elementId });
+    void persistCall
+      .then(() => {
+        syncCleanSnapshotForElement(found.layerId, found.elementId, element || null);
+        mapWatcher?.noteLocalWrite();
+      })
+      .catch((error) => {
+        status?.show(error?.message || "Unable to save that change.", { type: "danger" });
+      });
+    return;
+  }
+  const field = MARKER_AUTO_SAVE_FIELD_BY_LABEL[entry.label];
+  if (!field) return;
+  const found = findChangedMarkerElement(entry.before, entry.after, field);
+  if (!found) return;
+  const layer = state.map.layers?.find((candidate) => candidate.id === found.layerId);
+  const element = layer?.elements?.find((candidate) => candidate.id === found.elementId);
+  if (!element) return;
+  void persistElementUpdate({
+    dataManager,
+    mapId: state.map.id,
+    shareToken: currentShareToken,
+    layerId: found.layerId,
+    elementId: found.elementId,
+    patch: { [field]: element[field] },
+  })
+    .then(() => mapWatcher?.noteLocalWrite())
+    .catch((error) => {
+      status?.show(error?.message || "Unable to save that change.", { type: "danger" });
+    });
 }
 
 function setSelection(kind, id = null, extra = {}) {
@@ -1648,6 +1847,26 @@ function renderVectorPathSelectionEditor(layer, pathElement) {
   hint.className = "text-body-secondary small mb-0";
   hint.textContent = "Delete this stroke, or turn Draw mode back on to add more.";
   container.appendChild(hint);
+
+  // Just one color — a freehand path has no meaningful fill (it's an open
+  // line, not a closed shape), same "one primary color" model the toolbar's
+  // own drawColor swatch and the Dashboard Map widget's drawing popover
+  // both already use (no separate "outline" concept for a plain stroke).
+  const colorField = createCompactField({
+    type: "color",
+    label: "Color",
+    controlClass: "form-control form-control-color",
+  });
+  colorField.querySelector("input").value = pathElement.strokeColor || "#0f172a";
+  colorField.querySelector("input").addEventListener("change", (event) => {
+    recordHistory("path color", () => {
+      pathElement.strokeColor = event.target.value;
+      updateMapTimestamp(state.map);
+    });
+    renderLayerOverlays();
+    renderJson();
+  });
+  container.appendChild(colorField);
 
   const deleteButton = document.createElement("button");
   deleteButton.type = "button";
@@ -2722,6 +2941,26 @@ function renderLayerOverlays() {
       const after = JSON.stringify(state.map);
       if (before !== after) {
         undoStack.push({ label: "move marker", before, after });
+        // VTT-like immediacy: a moved token saves itself the instant the
+        // drag ends, same as a restricted (non-owner) viewer's own marker
+        // drag already does via this exact helper — no need to wait for the
+        // GM's own separate Save button, which stays reserved for walls/
+        // lights/layer settings/map settings (see isMapDirty's own field
+        // exclusion for why this doesn't also light up Save).
+        if (mapExistsOnServer) {
+          void persistElementUpdate({
+            dataManager,
+            mapId: state.map.id,
+            shareToken: currentShareToken,
+            layerId: layer.id,
+            elementId: markerElement.id,
+            patch: { position: markerElement.position },
+          })
+            .then(() => mapWatcher?.noteLocalWrite())
+            .catch((error) => {
+              status?.show(error?.message || "Unable to save that move.", { type: "danger" });
+            });
+        }
       }
       // Deferred until drag-end, same as bindLayerDrag's whole-layer drag: a
       // full renderLayerOverlays() mid-drag would replace dotEl in the DOM
@@ -3991,6 +4230,25 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
     renderSelection();
     renderLayerOverlays();
     renderJson();
+    // Icon/color, like a marker's own position, save themselves the instant
+    // they're changed — see MARKER_AUTO_SAVE_FIELD_BY_LABEL's own comment.
+    // Every other marker field this function handles (label, opacity, vision
+    // range, overlay icons) stays on the regular batched Save flow.
+    const autoSaveField = MARKER_AUTO_SAVE_FIELD_BY_LABEL[label];
+    if (autoSaveField && mapExistsOnServer) {
+      void persistElementUpdate({
+        dataManager,
+        mapId: state.map.id,
+        shareToken: currentShareToken,
+        layerId: layer.id,
+        elementId: markerElement.id,
+        patch: { [autoSaveField]: markerElement[autoSaveField] },
+      })
+        .then(() => mapWatcher?.noteLocalWrite())
+        .catch((error) => {
+          status?.show(error?.message || "Unable to save that change.", { type: "danger" });
+        });
+    }
   }
 
   const labelField = createFormFloatingField({ type: "text", label: "Label", placeholder: "Label" });
@@ -5470,30 +5728,65 @@ function getSelectedVectorLayer() {
   return layer?.type === "vector" ? layer : null;
 }
 
-// Keeps the Draw toggle's enabled state and tooltip in sync with whether a
-// vector layer is currently selected — same disabled-with-explanatory-
-// tooltip pattern as updateMeasureAvailability/Ping's own updateToggleAvailability.
-// Confirmed as a real bug before this: the toggle used to stay visually
-// "active" after a failed draw attempt (no vector layer selected), even
-// though nothing was actually drawable — clicking it only showed a toast,
-// it never reflected in the button's own state, so the button kept lying
-// about whether drawing would work.
+// Draw no longer requires a vector layer to already be selected — see
+// ensureDrawableVectorLayer's own comment below — so this has nothing left
+// to disable/explain. Kept (rather than deleting every call site) since
+// selection changes/map loads already call it unconditionally; a no-op
+// here is simpler than pruning those call sites for a toggle that's always
+// enabled anyway.
 function updateDrawAvailability() {
   if (!elements.drawToggle) return;
-  const hasVectorLayer = Boolean(getSelectedVectorLayer());
-  elements.drawToggle.disabled = !hasVectorLayer;
+  elements.drawToggle.disabled = false;
   const tooltipTarget = elements.drawToggleWrap || elements.drawToggle;
-  tooltipTarget.setAttribute(
-    "data-bs-title",
-    hasVectorLayer ? "Draw on the selected vector layer" : "Select a vector layer to enable drawing"
-  );
+  tooltipTarget.setAttribute("data-bs-title", "Draw on the map");
   refreshTooltips(tooltipTarget.parentElement || document);
-  if (!hasVectorLayer && drawModeActive) {
-    drawModeActive = false;
-    elements.drawToggle.classList.remove("active");
-    elements.drawToggle.setAttribute("aria-pressed", "false");
-    mapContainer?.classList.remove("orrery-drawing");
-  }
+}
+
+// Returns the currently-selected vector layer, auto-creating (and
+// selecting) a new one first if none is selected — matching the Dashboard
+// Map widget's own findOrCreateVectorLayer (map-live-sync.js), which
+// likewise never requires a caller to have picked a layer first.
+// Same create-and-select shape as the "Add vector layer" toolbar button
+// itself (setupLayerEvents) — reusing that exact pattern rather than a
+// bespoke lighter-weight insert, so a layer created this way looks and
+// behaves identically to one the GM added on purpose.
+function ensureDrawableVectorLayer() {
+  const existing = getSelectedVectorLayer();
+  if (existing) return existing;
+  let layer = null;
+  recordHistory("add vector layer", () => {
+    layer = createLayer({ type: "vector" });
+    state.map.layers.push(layer);
+    updateMapTimestamp(state.map);
+  });
+  renderLayers();
+  renderLayerOverlays();
+  renderJson();
+  setSelection("layer", layer.id);
+  return layer;
+}
+
+// Toggles Draw mode plus every piece of UI that tracks it (button state,
+// cursor class, the shared drawColor swatch's visibility, re-rendering so
+// onVectorPathClick's own drawModeActive gate picks up the change) — used
+// both by the toggle button's own click handler and by setupDrawTool's
+// single-shot auto-disarm after a stroke completes, so the two never drift
+// out of sync with each other the way separately hand-toggling each piece
+// twice already almost did.
+function setDrawModeActive(active) {
+  drawModeActive = active;
+  elements.drawToggle?.classList.toggle("active", drawModeActive);
+  elements.drawToggle?.setAttribute("aria-pressed", drawModeActive ? "true" : "false");
+  mapContainer?.classList.toggle("orrery-drawing", drawModeActive);
+  updateDrawColorVisibility();
+  renderLayerOverlays();
+}
+
+// The shared drawColor swatch only makes sense while Draw or Shape is
+// actually armed — same "only show a tool's own contextual control while
+// it's active" precedent as the Shape Type select (elements.shapeType).
+function updateDrawColorVisibility() {
+  elements.drawColorWrap?.classList.toggle("d-none", !(drawModeActive || shapeModeActive));
 }
 
 // Freehand drawing on the currently-selected vector layer — replaces the
@@ -5513,29 +5806,21 @@ function setupDrawTool() {
 
   elements.drawToggle.addEventListener("click", () => {
     if (elements.drawToggle.disabled) return;
-    drawModeActive = !drawModeActive;
-    elements.drawToggle.classList.toggle("active", drawModeActive);
-    elements.drawToggle.setAttribute("aria-pressed", drawModeActive ? "true" : "false");
-    mapContainer.classList.toggle("orrery-drawing", drawModeActive);
-    // Re-render so onVectorPathClick's own drawModeActive gate (see
+    // Re-renders so onVectorPathClick's own drawModeActive gate (see
     // renderLayerOverlays) picks up the change immediately — otherwise a
     // layer selected before toggling Draw would keep its stale
     // click-to-select/click-through wiring until the next unrelated
     // re-render.
-    renderLayerOverlays();
+    setDrawModeActive(!drawModeActive);
+  });
+
+  elements.drawColor?.addEventListener("input", () => {
+    drawColor = elements.drawColor.value;
   });
 
   mapContainer.addEventListener("pointerdown", (event) => {
     if (!drawModeActive || event.button !== 0) return;
-    const layer = getSelectedVectorLayer();
-    if (!layer) {
-      // Shouldn't normally be reachable — the toggle disables itself the
-      // instant there's no vector layer selected (updateDrawAvailability) —
-      // kept as a defensive fallback for a selection change landing between
-      // that check and this click.
-      status.show("Select a vector layer first.", { type: "warning", timeout: 2000 });
-      return;
-    }
+    const layer = ensureDrawableVectorLayer();
     event.preventDefault();
     baseMapManager.setInteractionEnabled(false);
     const overlay = baseMapManager.getOverlayContainer();
@@ -5550,7 +5835,7 @@ function setupDrawTool() {
     preview.style.pointerEvents = "none";
     const polyline = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
     polyline.setAttribute("fill", "none");
-    polyline.setAttribute("stroke", layer.settings?.strokeColor || "#0f172a");
+    polyline.setAttribute("stroke", drawColor);
     polyline.setAttribute("stroke-width", String(layer.settings?.strokeWidth || 2));
     polyline.setAttribute("stroke-linecap", "round");
     polyline.setAttribute("stroke-linejoin", "round");
@@ -5573,24 +5858,51 @@ function setupDrawTool() {
       baseMapManager.setInteractionEnabled(true);
       preview.remove();
       if (points.length > 1) {
+        let createdElement = null;
         recordHistory("draw path", () => {
           layer.elements = layer.elements || [];
-          layer.elements.push(
-            // Stroke-only by default (no layer.settings.fillColor passed
-            // through) — an open freehand polyline's implicit closing
-            // segment (last point back to first) almost never produces a
-            // sensible fill shape, unlike the old single hardcoded closed
-            // triangle this replaced.
-            createVectorPathElement({
-              points,
-              strokeColor: layer.settings?.strokeColor,
-              strokeWidth: layer.settings?.strokeWidth,
-            })
-          );
+          // Stroke-only (no fillColor passed through) — an open freehand
+          // polyline's implicit closing segment (last point back to
+          // first) almost never produces a sensible fill shape, unlike
+          // the old single hardcoded closed triangle this replaced.
+          createdElement = createVectorPathElement({
+            points,
+            strokeColor: drawColor,
+            strokeWidth: layer.settings?.strokeWidth,
+          });
+          layer.elements.push(createdElement);
           updateMapTimestamp(state.map);
         });
-        renderLayerOverlays();
         renderJson();
+        // Single-shot — placing one stroke disarms the tool, matching the
+        // Dashboard Map widget's identical behavior (setActiveTool's own
+        // re-toggle in handleToolPointerDown) rather than staying armed for
+        // another click to immediately start a second one with no way to
+        // just stop. setDrawModeActive already re-renders.
+        setDrawModeActive(false);
+        // VTT-like immediacy, same as a marker move (onMarkerDragEnd) — a
+        // freshly-drawn stroke saves itself immediately rather than waiting
+        // for the GM's own Save button, matching the Dashboard Map widget's
+        // own Draw tool (which has no Save button at all). Undo/Redo of
+        // this same action re-syncs the server the other way — see
+        // DRAW_SHAPE_AUTO_SAVE_LABELS/autoSaveHistoryEntry's own comment.
+        if (mapExistsOnServer && createdElement) {
+          const savedElement = createdElement;
+          void persistNewElement({
+            dataManager,
+            mapId: state.map.id,
+            shareToken: currentShareToken,
+            layerId: layer.id,
+            element: savedElement,
+          })
+            .then(() => {
+              syncCleanSnapshotForElement(layer.id, savedElement.id, savedElement);
+              mapWatcher?.noteLocalWrite();
+            })
+            .catch((error) => {
+              status?.show(error?.message || "Unable to save your drawing.", { type: "danger" });
+            });
+        }
       }
     };
     window.addEventListener("pointermove", onMove);
@@ -5598,30 +5910,16 @@ function setupDrawTool() {
   });
 }
 
-// Same disabled-with-explanatory-tooltip pattern as updateDrawAvailability —
-// a wall/door lives in layer.elements just like a drawn path, so the same
-// "selected vector layer" prerequisite applies. No measurement-scale
-// requirement (unlike Shape) — a wall's length isn't authored in cells, it
-// traces real map geometry at whatever points the GM clicks.
+// No longer requires a selected vector layer — see ensureDrawableVectorLayer's
+// own comment, same as Draw/Shape. No measurement-scale requirement either
+// (unlike Shape/Light) — a wall's length isn't authored in cells, it traces
+// real map geometry at whatever points the GM clicks.
 function updateWallAvailability() {
   if (!elements.wallToggle) return;
-  const hasVectorLayer = Boolean(getSelectedVectorLayer());
-  elements.wallToggle.disabled = !hasVectorLayer;
+  elements.wallToggle.disabled = false;
   const tooltipTarget = elements.wallToggleWrap || elements.wallToggle;
-  tooltipTarget.setAttribute(
-    "data-bs-title",
-    hasVectorLayer ? "Draw a wall or door on the selected vector layer" : "Select a vector layer to enable walls"
-  );
+  tooltipTarget.setAttribute("data-bs-title", "Draw a wall or door");
   refreshTooltips(tooltipTarget.parentElement || document);
-  if (!hasVectorLayer && wallModeActive) {
-    wallModeActive = false;
-    elements.wallToggle.classList.remove("active");
-    elements.wallToggle.setAttribute("aria-pressed", "false");
-    mapContainer?.classList.remove("orrery-walling");
-    elements.wallSubMode?.classList.add("d-none");
-    elements.wallSnapToggleWrap?.classList.add("d-none");
-    teardownWallGesture();
-  }
 }
 
 // Tears down whatever's currently in progress (removes the live preview,
@@ -5768,11 +6066,11 @@ function setupWallTool() {
 
   mapContainer.addEventListener("pointerdown", (event) => {
     if (!wallModeActive || event.button !== 0) return;
-    const layer = getSelectedVectorLayer();
-    if (!layer) {
-      status.show("Select a vector layer first.", { type: "warning", timeout: 2000 });
-      return;
-    }
+    // Only actually resolved/created on the FIRST vertex of a gesture — see
+    // ensureDrawableVectorLayer's own comment. Every later vertex of this
+    // same gesture already has wallGesture.layer to use instead (below),
+    // so this call just harmlessly returns the same now-selected layer.
+    const layer = ensureDrawableVectorLayer();
     event.preventDefault();
     if (!wallGesture) {
       const position = resolveWallVertex(layer, event);
@@ -5851,35 +6149,37 @@ function setupWallTool() {
   );
 }
 
-// Keeps the Shape toggle's enabled state and tooltip in sync with the same
-// two prerequisites Draw and Measure each already gate on individually — a
-// selected vector layer (a shape lives in layer.elements just like a drawn
-// path) and a configured grid scale/unit (a shape's size is authored in
-// cells and converted to a real distance the same way Measure's own readout
-// is). Same pattern as updateDrawAvailability/updateMeasureAvailability.
+// Keeps the Shape toggle's enabled state and tooltip in sync with a
+// configured grid scale/unit (a shape's size is authored in cells and
+// converted to a real distance the same way Measure's own readout is) —
+// same single prerequisite the widget's own shapeButtonEl gates on
+// (refreshToolAvailability, common/js/lib/widgets/map.js). No longer
+// requires a selected vector layer — see ensureDrawableVectorLayer's own
+// comment, same as Draw.
 function updateShapeAvailability() {
   if (!elements.shapeToggle) return;
-  const hasVectorLayer = Boolean(getSelectedVectorLayer());
-  const configured = hasMapMeasurementConfigured();
-  const available = hasVectorLayer && configured;
+  const available = hasMapMeasurementConfigured();
   elements.shapeToggle.disabled = !available;
   const tooltipTarget = elements.shapeToggleWrap || elements.shapeToggle;
   tooltipTarget.setAttribute(
     "data-bs-title",
-    available
-      ? "Draw an AoE shape on the selected vector layer"
-      : !hasVectorLayer
-        ? "Select a vector layer to enable AoE shapes"
-        : "Set Scale per cell and Scale unit (bottom of Map Properties) to enable AoE shapes"
+    available ? "Draw an AoE shape" : "Set Scale per cell and Scale unit (bottom of Map Properties) to enable AoE shapes"
   );
   refreshTooltips(tooltipTarget.parentElement || document);
   if (!available && shapeModeActive) {
-    shapeModeActive = false;
-    elements.shapeToggle.classList.remove("active");
-    elements.shapeToggle.setAttribute("aria-pressed", "false");
-    mapContainer?.classList.remove("orrery-shaping");
-    elements.shapeType?.classList.add("d-none");
+    setShapeModeActive(false);
   }
+}
+
+// Same reasoning as setDrawModeActive just above.
+function setShapeModeActive(active) {
+  shapeModeActive = active;
+  elements.shapeToggle?.classList.toggle("active", shapeModeActive);
+  elements.shapeToggle?.setAttribute("aria-pressed", shapeModeActive ? "true" : "false");
+  mapContainer?.classList.toggle("orrery-shaping", shapeModeActive);
+  elements.shapeType?.classList.toggle("d-none", !shapeModeActive);
+  updateDrawColorVisibility();
+  renderLayerOverlays();
 }
 
 // AoE measurement shapes (Circle/Cone/Line/Square) onto the selected vector
@@ -5900,17 +6200,12 @@ function setupShapeTool() {
 
   elements.shapeToggle.addEventListener("click", () => {
     if (elements.shapeToggle.disabled) return;
-    shapeModeActive = !shapeModeActive;
-    elements.shapeToggle.classList.toggle("active", shapeModeActive);
-    elements.shapeToggle.setAttribute("aria-pressed", shapeModeActive ? "true" : "false");
-    mapContainer.classList.toggle("orrery-shaping", shapeModeActive);
-    elements.shapeType?.classList.toggle("d-none", !shapeModeActive);
     // Same reasoning as setupDrawTool's own click handler — a re-render
     // picks up the orrery-shaping cursor class and the Shape Type picker's
     // own visibility toggle immediately. Existing shapes stay selectable/
     // draggable regardless of this toggle now (see onVectorPathClick/
     // onShapeDragEnd's own comment) — only NEW placement gates on it.
-    renderLayerOverlays();
+    setShapeModeActive(!shapeModeActive);
   });
 
   function setReadout(text) {
@@ -5921,13 +6216,7 @@ function setupShapeTool() {
 
   mapContainer.addEventListener("pointerdown", (event) => {
     if (!shapeModeActive || event.button !== 0) return;
-    const layer = getSelectedVectorLayer();
-    if (!layer) {
-      // Shouldn't normally be reachable — same defensive fallback reasoning
-      // as setupDrawTool's own equivalent check.
-      status.show("Select a vector layer first.", { type: "warning", timeout: 2000 });
-      return;
-    }
+    const layer = ensureDrawableVectorLayer();
     event.preventDefault();
     baseMapManager.setInteractionEnabled(false);
     const overlay = baseMapManager.getOverlayContainer();
@@ -5969,8 +6258,11 @@ function setupShapeTool() {
           angleDeg,
           spreadDeg: 53,
           widthCells: 1,
-          strokeColor: layer.settings?.strokeColor,
-          fillColor: layer.settings?.fillColor,
+          // One shared color for fill AND stroke (see drawColor's own
+          // declaration comment) — a shape no longer has a distinct
+          // "outline" concept, matching the widget's identical unification.
+          strokeColor: drawColor,
+          fillColor: drawColor,
           strokeWidth: layer.settings?.strokeWidth,
         },
         offset,
@@ -6003,27 +6295,47 @@ function setupShapeTool() {
       preview.remove();
       setReadout("");
       if (sizeCells > 0) {
+        let createdElement = null;
         recordHistory("place shape", () => {
           layer.elements = layer.elements || [];
-          layer.elements.push(
-            createVectorShapeElement({
-              shapeType,
-              // Snap to Grid defaults on (createVectorShapeElement's own
-              // snapToGrid default) — new shapes land pre-snapped so the
-              // toggle's initial checked state actually matches what just
-              // happened, not a stale claim about an unsnapped placement.
-              origin: snapShapeOriginToGrid(origin, layer),
-              sizeCells,
-              angleDeg,
-              strokeColor: layer.settings?.strokeColor,
-              fillColor: layer.settings?.fillColor,
-              strokeWidth: layer.settings?.strokeWidth,
-            })
-          );
+          createdElement = createVectorShapeElement({
+            shapeType,
+            // Snap to Grid defaults on (createVectorShapeElement's own
+            // snapToGrid default) — new shapes land pre-snapped so the
+            // toggle's initial checked state actually matches what just
+            // happened, not a stale claim about an unsnapped placement.
+            origin: snapShapeOriginToGrid(origin, layer),
+            sizeCells,
+            angleDeg,
+            strokeColor: drawColor,
+            fillColor: drawColor,
+            strokeWidth: layer.settings?.strokeWidth,
+          });
+          layer.elements.push(createdElement);
           updateMapTimestamp(state.map);
         });
-        renderLayerOverlays();
         renderJson();
+        // Single-shot — see the Draw tool's own identical comment above.
+        setShapeModeActive(false);
+        // VTT-like immediacy — see the Draw tool's own identical comment
+        // above.
+        if (mapExistsOnServer && createdElement) {
+          const savedElement = createdElement;
+          void persistNewElement({
+            dataManager,
+            mapId: state.map.id,
+            shareToken: currentShareToken,
+            layerId: layer.id,
+            element: savedElement,
+          })
+            .then(() => {
+              syncCleanSnapshotForElement(layer.id, savedElement.id, savedElement);
+              mapWatcher?.noteLocalWrite();
+            })
+            .catch((error) => {
+              status?.show(error?.message || "Unable to save that shape.", { type: "danger" });
+            });
+        }
       }
     }
     window.addEventListener("pointermove", onMove);
@@ -6038,20 +6350,18 @@ function setupShapeTool() {
 // declaration comment) — a placed light stays immediately selectable/
 // draggable even while the tool is still armed, matching how a placed shape
 // already works.
+// No longer requires a selected vector layer — see ensureDrawableVectorLayer's
+// own comment, same as Draw/Shape/Wall. Still requires a configured grid
+// scale/unit (a light's range is authored in cells), same single
+// prerequisite Shape gates on.
 function updateLightAvailability() {
   if (!elements.lightToggle) return;
-  const hasVectorLayer = Boolean(getSelectedVectorLayer());
-  const configured = hasMapMeasurementConfigured();
-  const available = hasVectorLayer && configured;
+  const available = hasMapMeasurementConfigured();
   elements.lightToggle.disabled = !available;
   const tooltipTarget = elements.lightToggleWrap || elements.lightToggle;
   tooltipTarget.setAttribute(
     "data-bs-title",
-    available
-      ? "Place a dynamic light on the selected vector layer"
-      : !hasVectorLayer
-        ? "Select a vector layer to enable dynamic lights"
-        : "Set Scale per cell and Scale unit (bottom of Map Properties) to enable dynamic lights"
+    available ? "Place a dynamic light" : "Set Scale per cell and Scale unit (bottom of Map Properties) to enable dynamic lights"
   );
   refreshTooltips(tooltipTarget.parentElement || document);
   if (!available && lightModeActive) {
@@ -6091,11 +6401,7 @@ function setupLightTool() {
 
   mapContainer.addEventListener("pointerdown", (event) => {
     if (!lightModeActive || event.button !== 0) return;
-    const layer = getSelectedVectorLayer();
-    if (!layer) {
-      status.show("Select a vector layer first.", { type: "warning", timeout: 2000 });
-      return;
-    }
+    const layer = ensureDrawableVectorLayer();
     event.preventDefault();
     baseMapManager.setInteractionEnabled(false);
     const overlay = baseMapManager.getOverlayContainer();

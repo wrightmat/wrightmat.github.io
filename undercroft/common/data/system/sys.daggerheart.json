@@ -1173,6 +1173,41 @@
           "feature": "Oathbreaker's Fury: deals +1d8 damage but marks a Stress."
         }
       ]
+    },
+    {
+      "type": "array",
+      "key": "dice",
+      "label": "Dice",
+      "values": [
+        { "name": "d4", "sides": 4 },
+        { "name": "d6", "sides": 6 },
+        { "name": "d8", "sides": 8 },
+        { "name": "d10", "sides": 10 },
+        { "name": "d12", "sides": 12 },
+        { "name": "d20", "sides": 20 },
+        { "name": "d100", "sides": 100 },
+        { "name": "hopeDie", "sides": 12, "color": "#f5c542" },
+        { "name": "fearDie", "sides": 12, "color": "#5c4ee5" }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "rolls",
+      "label": "Rolls",
+      "values": [
+        {
+          "name": "Duality Roll",
+          "expression": "hopeDie + fearDie",
+          "resultMode": "compare",
+          "compare": {
+            "a": "hopeDie",
+            "b": "fearDie",
+            "aLabel": "Roll with Hope",
+            "bLabel": "Roll with Fear",
+            "tieLabel": "Critical Success"
+          }
+        }
+      ]
     }
   ],
   "importers": []

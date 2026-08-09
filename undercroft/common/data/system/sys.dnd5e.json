@@ -25,13 +25,16 @@
           "entityId": "barbarian"
         },
         {
-          "name": "Bard"
+          "name": "Bard",
+          "allowedFeatureTags": ["buff", "debuff", "illusion", "charm", "control", "healing", "utility", "status", "combat", "ritual"]
         },
         {
-          "name": "Cleric"
+          "name": "Cleric",
+          "allowedFeatureTags": ["healing", "revival", "divine", "status", "buff", "utility", "light", "protection", "ritual"]
         },
         {
-          "name": "Druid"
+          "name": "Druid",
+          "allowedFeatureTags": ["healing", "revival", "divine", "nature", "terrain", "utility", "control", "movement", "poisoned", "ritual"]
         },
         {
           "name": "Fighter"
@@ -40,22 +43,31 @@
           "name": "Monk"
         },
         {
-          "name": "Paladin"
+          "name": "Paladin",
+          "allowedFeatureTags": ["healing", "divine", "buff", "combat", "status", "revival", "protection", "aura", "ritual"]
         },
         {
-          "name": "Ranger"
+          "name": "Ranger",
+          "allowedFeatureTags": ["utility", "movement", "terrain", "poisoned", "nature", "buff", "control", "combat", "ritual"]
         },
         {
           "name": "Rogue"
         },
         {
-          "name": "Sorcerer"
+          "name": "Sorcerer",
+          "allowedFeatureTags": ["elemental", "fire", "lightning", "cold", "status", "control", "combat", "buff", "utility", "illusion", "ritual"]
         },
         {
-          "name": "Warlock"
+          "name": "Warlock",
+          "allowedFeatureTags": ["control", "status", "debuff", "dark", "curse", "buff", "illusion", "persistent", "duration", "ritual"]
         },
         {
-          "name": "Wizard"
+          "name": "Wizard",
+          "allowedFeatureTags": ["illusion", "utility", "control", "movement", "fire", "status", "buff", "combat", "elemental", "duration", "disruption", "ritual"]
+        },
+        {
+          "name": "Artificer",
+          "allowedFeatureTags": ["utility", "healing", "buff", "control", "disruption", "status", "construct", "restoration", "tech", "warding", "elemental", "ritual"]
         }
       ]
     },
@@ -2023,6 +2035,85 @@
           "charisma": 14,
           "armorClass": 15,
           "hitPoints": 65
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "dice",
+      "label": "Dice",
+      "values": [
+        { "name": "d4", "sides": 4 },
+        { "name": "d6", "sides": 6 },
+        { "name": "d8", "sides": 8 },
+        { "name": "d10", "sides": 10 },
+        { "name": "d12", "sides": 12 },
+        { "name": "d20", "sides": 20 },
+        { "name": "d100", "sides": 100 }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "rolls",
+      "label": "Rolls",
+      "values": [
+        {
+          "name": "d20 Test",
+          "expression": "1d20",
+          "resultMode": "band",
+          "bands": [
+            { "min": 20, "max": 20, "label": "Critical Success" },
+            { "min": 1, "max": 1, "label": "Critical Failure" }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "travelMeans",
+      "label": "Travel Means",
+      "values": [
+        { "name": "On Foot", "speedMph": 3, "hoursPerDay": 8 },
+        { "name": "By Horse", "speedMph": 6, "hoursPerDay": 8 },
+        { "name": "By Sailing Ship", "speedMph": 10, "hoursPerDay": 24, "fare": { "flat": { "amount": 1, "unit": "sp", "perMiles": 15 } } },
+        {
+          "name": "Magebred Coach",
+          "speedMph": 7,
+          "hoursPerDay": 8,
+          "settingIds": ["eberron"],
+          "fare": { "flat": { "amount": 4, "unit": "cp", "perMiles": 5 } }
+        },
+        {
+          "name": "Elemental Galleon",
+          "speedMph": 12,
+          "hoursPerDay": 24,
+          "settingIds": ["eberron"],
+          "fare": {
+            "first": { "amount": 6, "unit": "sp", "perMiles": 15 },
+            "second": { "amount": 2, "unit": "sp", "perMiles": 15 },
+            "steerage": { "amount": 5, "unit": "cp", "perMiles": 15 }
+          }
+        },
+        {
+          "name": "Airship",
+          "speedMph": 20,
+          "hoursPerDay": 24,
+          "settingIds": ["eberron"],
+          "fare": {
+            "first": { "amount": 10, "unit": "sp", "perMiles": 20 },
+            "second": { "amount": 5, "unit": "sp", "perMiles": 20 }
+          }
+        },
+        {
+          "name": "Lightning Rail",
+          "speedMph": 30,
+          "hoursPerDay": 24,
+          "settingIds": ["eberron"],
+          "fare": {
+            "first": { "amount": 6, "unit": "sp", "perMiles": 15 },
+            "second": { "amount": 2, "unit": "sp", "perMiles": 15 },
+            "steerage": { "amount": 5, "unit": "cp", "perMiles": 15 }
+          }
         }
       ]
     }

@@ -1,0 +1,18 @@
+{
+  "id": "feat.stunned",
+  "name": "Inflicts Stunned",
+  "systemIds": ["sys.dnd5e"],
+  "description": "A failed save leaves the target stunned.",
+  "mechanics": {
+    "type": "active",
+    "text": "A target that fails its saving throw against this effect is stunned."
+  },
+  "budgetCost": 8,
+  "tags": {
+    "categories": ["spell"],
+    "propertyHints": ["status", "stunned"]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

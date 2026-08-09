@@ -1,0 +1,35 @@
+{
+  "id": "grp_99a8c58a67a1",
+  "title": "Test Campaign",
+  "type": "campaign",
+  "systemId": "sys.daggerheart",
+  "settingId": null,
+  "properties": [
+    {
+      "type": "array",
+      "key": "inventory",
+      "label": "Inventory",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Item"
+        },
+        {
+          "type": "number",
+          "key": "quantity",
+          "label": "Quantity",
+          "minimum": 0
+        },
+        {
+          "type": "string",
+          "key": "notes",
+          "label": "Notes"
+        }
+      ],
+      "public": true
+    }
+  ],
+  "propertyValues": {}
+}

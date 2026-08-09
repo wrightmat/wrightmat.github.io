@@ -1264,7 +1264,20 @@ def register_routes():
         group_id = params["group_id"]
         data = require_json(request)
         name = data.get("name")
-        group = group_store.update_group(request.state, user, group_id, name=name)
+        system_id = data.get("system_id")
+        setting_id = data.get("setting_id")
+        template_id = data.get("template_id")
+        properties = data.get("properties")
+        group = group_store.update_group(
+            request.state,
+            user,
+            group_id,
+            name=name,
+            system_id=system_id,
+            setting_id=setting_id,
+            template_id=template_id,
+            properties=properties,
+        )
         return json_response(group)
 
     router.add("POST", r"^/groups/(?P<group_id>[^/]+)$", handle_update_group)
@@ -1294,6 +1307,22 @@ def register_routes():
         return json_response(group)
 
     router.add("POST", r"^/groups/(?P<group_id>[^/]+)/members$", handle_update_group_members)
+
+    # A Group Property VALUE write (e.g. a player adding a party inventory
+    # item) — deliberately NOT the generic /content/group/{id} route Loom's
+    # own document edits use, since that route's owner-or-edit-share gate
+    # can't express "this one player, for this one property the GM marked
+    # public" (see group_store.update_group_property_value's own comment).
+    def handle_update_group_property(request: Request) -> Response:
+        user = require_user(request)
+        params = getattr(request, "params")
+        group_id = params["group_id"]
+        key = params["key"]
+        data = require_json(request)
+        result = group_store.update_group_property_value(request.state, user, group_id, key, data.get("value"))
+        return json_response(result)
+
+    router.add("POST", r"^/groups/(?P<group_id>[^/]+)/properties/(?P<key>[^/]+)$", handle_update_group_property)
 
     def handle_character_groups(request: Request) -> Response:
         user = require_user(request)

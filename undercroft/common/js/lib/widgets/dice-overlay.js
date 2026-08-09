@@ -137,14 +137,19 @@ async function resolveDiceSettings(dataManager) {
   return diceSettingsPromise;
 }
 
+function createOverlayContainer(id) {
+  const container = document.createElement("div");
+  container.id = id;
+  container.className = "dice-overlay";
+  document.body.appendChild(container);
+  return container;
+}
+
 function ensureOverlayElement() {
   if (overlayEl && document.body.contains(overlayEl)) {
     return overlayEl;
   }
-  overlayEl = document.createElement("div");
-  overlayEl.id = `dice-overlay-${Math.random().toString(36).slice(2, 8)}`;
-  overlayEl.className = "dice-overlay";
-  document.body.appendChild(overlayEl);
+  overlayEl = createOverlayContainer(`dice-overlay-${Math.random().toString(36).slice(2, 8)}`);
   return overlayEl;
 }
 
@@ -171,8 +176,7 @@ function ensureOverlayElement() {
 // "color"-material theme (Default, Gemstone, Rock, Rust, Smooth); passing
 // nothing at all when there's genuinely no color to give (a non-colorable
 // theme) avoids the same trap the other way around.
-async function buildBox(theme, themeColor) {
-  const container = ensureOverlayElement();
+async function buildBox(container, theme, themeColor) {
   const { default: DiceBox } = await import(/* @vite-ignore */ MODULE_URL);
   const box = new DiceBox(`#${container.id}`, {
     assetPath: ASSET_PATH,
@@ -200,12 +204,50 @@ async function loadBox(dataManager) {
   }
   boxPromise = (async () => {
     const settings = await resolveDiceSettings(dataManager);
-    return buildBox(settings.theme, settings.themeColor);
+    return buildBox(ensureOverlayElement(), settings.theme, settings.themeColor);
   })();
   boxPromise.catch(() => {
     boxPromise = null;
   });
   return boxPromise;
+}
+
+// A small pool of SECONDARY DiceBox instances, one per distinct
+// (theme, themeColor) combination ever needed for a multi-color roll (see
+// rollDiceOverlay below) — built once per key and reused forever, on its
+// own dedicated overlay container so it can roll at the same time as the
+// main box or another color's box, none of them touching a shared box's
+// live config mid-flight. Same "build once, cache, never rebuild"
+// discipline loadBox already follows, for the identical reason: dice-box
+// has no dispose(), and repeatedly constructing fresh instances for the
+// same look is what caused the documented WASM-singleton corruption bug
+// referenced in buildBox's own comment. UNVERIFIED: whether dice-box's own
+// physics engine can actually run more than one instance on the same page
+// at once at all — if a second instance's `.init()` or `.roll()`
+// destabilizes the FIRST (main) box too, this pool needs to go away
+// entirely, back to the fully-sequential single-shared-box version (see
+// git history / this module's own prior revision).
+const colorBoxEntries = new Map();
+let colorBoxSequence = 0;
+
+async function loadColorBoxEntry(theme, themeColor) {
+  const key = `${theme}|${themeColor || ""}`;
+  if (colorBoxEntries.has(key)) {
+    return colorBoxEntries.get(key);
+  }
+  const promise = (async () => {
+    colorBoxSequence += 1;
+    const container = createOverlayContainer(
+      `dice-overlay-color-${colorBoxSequence}-${Math.random().toString(36).slice(2, 8)}`
+    );
+    const box = await buildBox(container, theme, themeColor);
+    return { box, container, hideTimer: null };
+  })();
+  colorBoxEntries.set(key, promise);
+  promise.catch(() => {
+    colorBoxEntries.delete(key);
+  });
+  return promise;
 }
 
 async function showAndRoll(box, notations) {
@@ -217,6 +259,25 @@ async function showAndRoll(box, notations) {
   container.classList.add("is-visible");
   const result = await box.roll(notations);
   scheduleHide(box);
+  return result;
+}
+
+// Same job as showAndRoll above, but for one of the pooled secondary
+// entries (its own container/box/hideTimer, not the module-level main-box
+// state) so several of these can be visible and lingering independently at
+// the same time.
+async function showAndRollOnEntry(entry, notations) {
+  if (entry.hideTimer) {
+    clearTimeout(entry.hideTimer);
+    entry.hideTimer = null;
+  }
+  entry.container.classList.add("is-visible");
+  const result = await entry.box.roll(notations);
+  entry.hideTimer = setTimeout(() => {
+    entry.hideTimer = null;
+    entry.container.classList.remove("is-visible");
+    setTimeout(() => entry.box.clear(), 200);
+  }, LINGER_MS);
   return result;
 }
 
@@ -281,16 +342,70 @@ function scheduleHide(box) {
   }, LINGER_MS);
 }
 
-// `terms`: [{ count, sides }, ...] — plain positive dice groups only, no
-// modifiers/keep-drop/reroll/explode (dice-roll.js only calls this once it
-// has already confirmed the expression is that simple). `dataManager` is
-// optional and only used to resolve the user's chosen theme/color (see
-// resolveDiceSettings) — omitting it just means the plain default look.
-// Resolves to an array of `{ sides, values: [...] }` in the SAME order as
-// `terms`, one entry per requested group, or `null` if the overlay couldn't
-// be loaded or the result couldn't be confidently matched back up —
-// callers must treat `null` as "fall back to the ordinary non-visual
-// roll", never as an error.
+// Rolls one physical box.roll() call for `terms` via `rollNotations`
+// (either showAndRoll on the main box, or showAndRollOnEntry on a pooled
+// color-box entry — see rollDiceOverlay below) and buckets the settled
+// values back per requested group, in `terms` order. Returns `null` (never
+// throws) if the result can't be confidently matched back up, same
+// contract as rollDiceOverlay itself.
+async function rollTermBatch(rollNotations, terms) {
+  const notations = terms.map((term) => `${term.count}d${term.sides}`);
+  const rolled = await rollNotations(notations);
+  const dice = Array.isArray(rolled) ? rolled : Array.isArray(rolled?.dice) ? rolled.dice : [];
+  // dice-box tags each die with which requested group it belongs to via
+  // `groupId` (0-based, matching the `notations` array order) — bucket by
+  // that when present. Older/unexpected shapes without a numeric groupId
+  // fall back to "resolved in request order", which is exactly right for
+  // a single `roll()` call.
+  const hasGroupId = dice.length > 0 && dice.every((die) => typeof die.groupId === "number");
+  const buckets = terms.map(() => []);
+  if (hasGroupId) {
+    dice.forEach((die) => {
+      buckets[die.groupId]?.push(Number(die.value));
+    });
+  } else {
+    let cursor = 0;
+    terms.forEach((term, index) => {
+      buckets[index] = dice.slice(cursor, cursor + term.count).map((die) => Number(die.value));
+      cursor += term.count;
+    });
+  }
+  const expectedTotal = terms.reduce((sum, term) => sum + term.count, 0);
+  const actualTotal = buckets.reduce((sum, bucket) => sum + bucket.length, 0);
+  if (actualTotal !== expectedTotal || buckets.some((bucket) => bucket.some((value) => !Number.isFinite(value)))) {
+    return null;
+  }
+  return buckets;
+}
+
+// `terms`: [{ count, sides, color?, themeOverride? }, ...] — plain positive
+// dice groups only, no modifiers/keep-drop/reroll/explode (dice-roll.js only
+// calls this once it has already confirmed the expression is that simple).
+// `color`/`themeOverride` come from a System's own named die (Section 1.1,
+// e.g. Daggerheart's hopeDie/fearDie) — `dataManager` is optional and only
+// used to resolve the user's chosen base theme/color (see
+// resolveDiceSettings). Resolves to an array of `{ sides, values: [...] }`
+// in the SAME order as `terms`, one entry per requested group, or `null` if
+// the overlay couldn't be loaded or the result couldn't be confidently
+// matched back up — callers must treat `null` as "fall back to the ordinary
+// non-visual roll", never as an error.
+//
+// A single box.roll() call CANNOT mix a plain "NdM" string with a per-die
+// color/theme override in the same array — confirmed broken empirically (a
+// mixed array throws inside dice-box's own WorldFacade internals with no
+// usable error). Firing a second `roll()` call on the SAME box before the
+// first one's promise settles is ALSO confirmed broken — it appears to
+// cancel/overwrite the in-flight roll outright rather than adding to it
+// (tested: only the last-fired group's dice ever actually appeared).
+//
+// A roll with just ONE distinct look (colored or not) always uses the one
+// persistent main box — zero new risk, identical to today's behavior. A
+// roll spanning MULTIPLE distinct colors/themes instead gives each group
+// its own pooled secondary box (loadColorBoxEntry above) and rolls all of
+// them at once via Promise.all, so e.g. Daggerheart's Hope/Fear duality
+// roll can land together instead of the fully-sequential version's visible
+// stagger. UNVERIFIED: whether dice-box's physics engine tolerates more
+// than one simultaneously-active instance on the same page at all.
 export async function rollDiceOverlay(terms, dataManager) {
   if (typeof window === "undefined" || !Array.isArray(terms) || !terms.length) {
     return null;
@@ -299,34 +414,66 @@ export async function rollDiceOverlay(terms, dataManager) {
     return null;
   }
   try {
-    const box = await loadBox(dataManager);
-    const notations = terms.map((term) => `${term.count}d${term.sides}`);
-    const rolled = await showAndRoll(box, notations);
-    const dice = Array.isArray(rolled) ? rolled : Array.isArray(rolled?.dice) ? rolled.dice : [];
-    // dice-box tags each die with which requested group it belongs to via
-    // `groupId` (0-based, matching the `notations` array order) — bucket by
-    // that when present. Older/unexpected shapes without a numeric groupId
-    // fall back to "resolved in request order", which is exactly right for
-    // a single `roll()` call.
-    const hasGroupId = dice.length > 0 && dice.every((die) => typeof die.groupId === "number");
-    const buckets = terms.map(() => []);
-    if (hasGroupId) {
-      dice.forEach((die) => {
-        buckets[die.groupId]?.push(Number(die.value));
-      });
-    } else {
-      let cursor = 0;
-      terms.forEach((term, index) => {
-        buckets[index] = dice.slice(cursor, cursor + term.count).map((die) => Number(die.value));
-        cursor += term.count;
-      });
+    const baseSettings = await resolveDiceSettings(dataManager);
+    const groupKeyOf = (term) => (term.color || term.themeOverride ? `${term.themeOverride || ""} ${term.color || ""}` : "");
+    const orderedKeys = [];
+    const groups = new Map();
+    terms.forEach((term, index) => {
+      const key = groupKeyOf(term);
+      if (!groups.has(key)) {
+        groups.set(key, []);
+        orderedKeys.push(key);
+      }
+      groups.get(key).push(index);
+    });
+
+    if (orderedKeys.length === 1) {
+      // One look for the whole roll (colored or not) — the persistent main
+      // box, switching its config only if this one look isn't the base.
+      const key = orderedKeys[0];
+      const box = await loadBox(dataManager);
+      const [themeOverride, color] = key ? key.split(" ") : ["", ""];
+      if (key) {
+        await box.updateConfig({
+          theme: themeOverride || baseSettings.theme,
+          themeColor: color || baseSettings.themeColor || undefined,
+        });
+      }
+      const buckets = await rollTermBatch((notations) => showAndRoll(box, notations), terms);
+      if (key) {
+        await box.updateConfig({
+          theme: baseSettings.theme,
+          themeColor: baseSettings.themeColor || undefined,
+        });
+      }
+      if (!buckets) {
+        return null;
+      }
+      return terms.map((term, index) => ({ sides: term.sides, values: buckets[index] }));
     }
-    const expectedTotal = terms.reduce((sum, term) => sum + term.count, 0);
-    const actualTotal = buckets.reduce((sum, bucket) => sum + bucket.length, 0);
-    if (actualTotal !== expectedTotal || buckets.some((bucket) => bucket.some((value) => !Number.isFinite(value)))) {
+
+    // Multiple distinct looks — one dedicated pooled box per group, all
+    // rolled at once.
+    const resultsByIndex = new Array(terms.length);
+    const rollPromises = orderedKeys.map(async (key) => {
+      const indexes = groups.get(key);
+      const groupTerms = indexes.map((index) => terms[index]);
+      const [themeOverride, color] = key ? key.split(" ") : [baseSettings.theme, baseSettings.themeColor];
+      const entry = await loadColorBoxEntry(themeOverride || baseSettings.theme, color || baseSettings.themeColor);
+      const buckets = await rollTermBatch((notations) => showAndRollOnEntry(entry, notations), groupTerms);
+      if (!buckets) {
+        return false;
+      }
+      indexes.forEach((termIndex, i) => {
+        resultsByIndex[termIndex] = buckets[i];
+      });
+      return true;
+    });
+    const outcomes = await Promise.all(rollPromises);
+    if (outcomes.some((ok) => !ok) || resultsByIndex.some((bucket) => bucket === undefined)) {
       return null;
     }
-    return terms.map((term, index) => ({ sides: term.sides, values: buckets[index] }));
+    return terms.map((term, index) => ({ sides: term.sides, values: resultsByIndex[index] }));
   } catch (error) {
     overlayEl?.classList.remove("is-visible");
     return null;

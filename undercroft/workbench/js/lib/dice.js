@@ -136,15 +136,46 @@ function createRoll(value, { fromExplosion = false, depth = 0 } = {}) {
     success: false,
     failure: false,
     critical: null,
+    displayLabel: null,
   };
 }
 
+// Sets roll.displayLabel from a System die's faceMap (e.g. Blades' d6
+// {"1":"1-3", ...}) when the rolled value has an entry — display-only, never
+// touches roll.value, so arithmetic/keep/drop/success/tally are unaffected.
+function applyFaceMap(roll, faceMap) {
+  if (!faceMap) {
+    return;
+  }
+  const label = faceMap[String(roll.value)];
+  if (label !== undefined) {
+    roll.displayLabel = label;
+  }
+}
+
+// Counts how many of the ORIGINAL (pre-discard) rolled+exploded dice satisfy
+// a comparator, independent of keep/drop entirely — this is what makes
+// "count all 6s across the whole pool even though only one was kept" (e.g.
+// Blades in the Dark's crit rule) possible.
+function applyTally(rawResults, comparator) {
+  const count = rawResults.reduce(
+    (total, roll) => total + (evaluateComparator(roll.value, comparator) ? 1 : 0),
+    0
+  );
+  return { count, comparator };
+}
+
 class DiceParser {
-  constructor(input, { random = Math.random } = {}) {
+  constructor(input, { random = Math.random, dice = null } = {}) {
     this.input = input;
     this.length = input.length;
     this.index = 0;
     this.random = typeof random === "function" ? random : Math.random;
+    // Map<lowercased id, dieDefinition> of a System's named dice (Section
+    // 1.1's `System.dice`), e.g. Daggerheart's hopeDie/fearDie — empty for
+    // every caller that doesn't pass one, so plain numeric notation is
+    // completely unaffected.
+    this.dice = dice instanceof Map ? dice : new Map();
   }
 
   parse() {
@@ -262,6 +293,15 @@ class DiceParser {
         this.consume();
         return this.parseDice(numberToken.value, numberToken.start);
       }
+      if (/[A-Za-z_]/.test(this.peek())) {
+        const identifierStart = this.index;
+        const identifier = this.readIdentifier();
+        const namedDie = this.dice.get(identifier.toLowerCase());
+        if (namedDie) {
+          return this.parseDice(numberToken.value, numberToken.start, namedDie);
+        }
+        this.index = identifierStart;
+      }
       return {
         type: "number",
         value: numberToken.value,
@@ -278,6 +318,10 @@ class DiceParser {
       this.skipWhitespace();
       if (this.peek() === "(") {
         return this.parseFunction(identifier);
+      }
+      const namedDie = this.dice.get(identifier.toLowerCase());
+      if (namedDie) {
+        return this.parseDice(1, start, namedDie);
       }
       throw new Error(`Unexpected token '${identifier}' in dice expression`);
     }
@@ -385,24 +429,30 @@ class DiceParser {
     return { operator, target: sign * numberToken.value };
   }
 
-  parseDice(count, startIndex) {
-    this.skipWhitespace();
-    const sidesChar = this.peek();
-    if (!sidesChar) {
-      throw new Error("Dice expression is missing sides value");
-    }
+  parseDice(count, startIndex, namedDie = null) {
     let sides;
-    if (sidesChar === "%") {
-      this.consume();
-      sides = 100;
-    } else if (sidesChar.toLowerCase() === "f") {
-      this.consume();
-      sides = "F";
-    } else if (/\d/.test(sidesChar)) {
-      const numberToken = this.readNumber();
-      sides = numberToken.value;
+    if (namedDie) {
+      // A registered System die's `sides` is already resolved data, not
+      // notation to parse — skip straight to modifiers.
+      sides = namedDie.sides;
     } else {
-      throw new Error("Dice expression has invalid sides value");
+      this.skipWhitespace();
+      const sidesChar = this.peek();
+      if (!sidesChar) {
+        throw new Error("Dice expression is missing sides value");
+      }
+      if (sidesChar === "%") {
+        this.consume();
+        sides = 100;
+      } else if (sidesChar.toLowerCase() === "f") {
+        this.consume();
+        sides = "F";
+      } else if (/\d/.test(sidesChar)) {
+        const numberToken = this.readNumber();
+        sides = numberToken.value;
+      } else {
+        throw new Error("Dice expression has invalid sides value");
+      }
     }
 
     const options = {
@@ -413,6 +463,7 @@ class DiceParser {
       success: null,
       criticalSuccess: null,
       criticalFailure: null,
+      tally: null,
     };
 
     while (true) {
@@ -455,6 +506,11 @@ class DiceParser {
         }
         throw new Error("Unexpected 'c' modifier in dice expression");
       }
+      if (char === "t") {
+        this.consume();
+        options.tally = this.parseComparator();
+        continue;
+      }
       if (char === ">" || char === "<" || char === "=" || char === "!") {
         options.success = this.parseComparator();
         continue;
@@ -462,8 +518,11 @@ class DiceParser {
       break;
     }
 
-    const notation = this.input.slice(startIndex, this.index).trim();
-    return this.evaluateDice({ count, sides, options, notation });
+    // A named die's own id, not synthesized NdM notation — this is what lets
+    // Section 1.3's "compare" mode find each die's own total by name in
+    // result.dice (see rollDiceExpression's return value).
+    const notation = namedDie ? namedDie.id : this.input.slice(startIndex, this.index).trim();
+    return this.evaluateDice({ count, sides, options, notation, faceMap: namedDie?.faceMap || null });
   }
 
   parseKeepDrop({ sides, defaultType }) {
@@ -558,7 +617,7 @@ class DiceParser {
     return roll;
   }
 
-  evaluateDice({ count, sides, options, notation }) {
+  evaluateDice({ count, sides, options, notation, faceMap = null }) {
     const diceCount = clampDiceCount(count);
     if (diceCount === 0) {
       return {
@@ -569,6 +628,7 @@ class DiceParser {
           rolls: [],
           total: 0,
           success: null,
+          tally: null,
         },
       };
     }
@@ -579,15 +639,25 @@ class DiceParser {
       const roll = createRoll(initial);
       this.applyReroll(roll, sides, options.reroll);
       const extras = this.applyExplosion(roll, sides, options.explode);
+      if (faceMap) {
+        applyFaceMap(roll, faceMap);
+        extras.forEach((extra) => applyFaceMap(extra, faceMap));
+      }
       results.push(roll);
       extras.forEach((extra) => {
         results.push(extra);
       });
     }
 
+    // Snapshot BEFORE applyDrop/applyKeep mark anything discarded — the `t`
+    // tally modifier counts against the whole original pool regardless of
+    // what got kept/dropped (Section 3.3).
+    const rawResults = results.map((roll) => ({ ...roll }));
+
     this.applyDrop(results, options.drop);
     this.applyKeep(results, options.keep);
     const success = this.applySuccess(results, sides, options);
+    const tally = options.tally ? applyTally(rawResults, options.tally) : null;
     const total = success
       ? success.net
       : results.filter((roll) => !roll.discarded).reduce((sum, roll) => sum + roll.value, 0);
@@ -600,6 +670,7 @@ class DiceParser {
         rolls: results,
         total,
         success,
+        tally,
       },
     };
   }
@@ -761,7 +832,9 @@ function collectDiceDetails(node, target = []) {
 
 function formatRollValue(roll) {
   let text = "";
-  if (roll.history.length) {
+  if (roll.displayLabel != null) {
+    text = String(roll.displayLabel);
+  } else if (roll.history.length) {
     text = [...roll.history, roll.value].join("→");
   } else if (roll.penetrating && roll.penetratedValue !== null) {
     text = `${roll.rawValue}→${roll.penetratedValue}`;
@@ -888,7 +961,10 @@ function buildDetailText(ast) {
   return diceParts.join("; ");
 }
 
-export function rollDiceExpression(expression, { context = {}, random = Math.random } = {}) {
+// `dice` is a System's own dice array (Section 1.1's `System.dice`, e.g.
+// Daggerheart's hopeDie/fearDie) — optional and empty by default, so every
+// existing caller that doesn't pass it sees no behavior change whatsoever.
+export function rollDiceExpression(expression, { context = {}, random = Math.random, dice = [] } = {}) {
   if (typeof expression !== "string") {
     throw new Error("Enter a dice expression like 2d6 + 3.");
   }
@@ -896,8 +972,16 @@ export function rollDiceExpression(expression, { context = {}, random = Math.ran
   if (!trimmed) {
     throw new Error("Enter a dice expression like 2d6 + 3.");
   }
+  const diceMap = new Map();
+  if (Array.isArray(dice)) {
+    dice.forEach((die) => {
+      if (die && typeof die.id === "string" && die.id) {
+        diceMap.set(die.id.toLowerCase(), die);
+      }
+    });
+  }
   const substituted = substituteVariables(trimmed, context);
-  const parser = new DiceParser(substituted, { random });
+  const parser = new DiceParser(substituted, { random, dice: diceMap });
   const ast = parser.parse();
   if (!isFiniteNumber(ast.value)) {
     throw new Error("Dice expression produced an invalid result.");

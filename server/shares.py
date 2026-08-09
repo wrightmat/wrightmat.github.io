@@ -88,12 +88,18 @@ def list_shares(state: ServerState, content_type: str, content_id: str, user: Us
         """,
         (content_type, content_id),
     ).fetchall()
+    # Group is a generic Library kind now (library_items row, no more
+    # bespoke `groups` table — see server/groups.py's own comment on this),
+    # so this joins library_items filtered to kind='group' the same way
+    # every group-id lookup in groups.py itself does; `title` is aliased to
+    # `group_name` so every caller of this function keeps reading the same
+    # field name it always has.
     group_rows = state.db.execute(
         """
-        SELECT shares.id, groups.id AS group_id, groups.name AS group_name, shares.permissions
-        FROM shares JOIN groups ON groups.id = shares.shared_with_group_id
+        SELECT shares.id, groups.id AS group_id, groups.title AS group_name, shares.permissions
+        FROM shares JOIN library_items AS groups ON groups.kind = 'group' AND groups.id = shares.shared_with_group_id
         WHERE shares.content_type = ? AND shares.content_id = ?
-        ORDER BY groups.name COLLATE NOCASE
+        ORDER BY groups.title COLLATE NOCASE
         """,
         (content_type, content_id),
     ).fetchall()
@@ -137,8 +143,10 @@ def list_shareable_targets(state: ServerState, content_type: str, user: Optional
     all_users_entry = {"type": "user", "username": ALL_USERS_DISPLAY, "tier": "", "special": ALL_USERS_SPECIAL}
     groups: List[Dict[str, str]] = []
     if user:
+        # Same generic library_items lookup as everywhere else — see
+        # list_shares' own comment above.
         group_rows = state.db.execute(
-            "SELECT id, name FROM groups WHERE owner_id = ? ORDER BY name COLLATE NOCASE",
+            "SELECT id, title AS name FROM library_items WHERE kind = 'group' AND owner_id = ? ORDER BY title COLLATE NOCASE",
             (user.id,),
         ).fetchall()
         groups = [{"type": "group", "id": row["id"], "name": row["name"]} for row in group_rows]
@@ -216,7 +224,9 @@ def _group_belongs_to(state: ServerState, group_id: str, user: User) -> bool:
     # id of.
     if user.tier == "admin":
         return True
-    row = state.db.execute("SELECT owner_id FROM groups WHERE id = ?", (group_id,)).fetchone()
+    row = state.db.execute(
+        "SELECT owner_id FROM library_items WHERE kind = 'group' AND id = ?", (group_id,)
+    ).fetchone()
     return bool(row) and row["owner_id"] == user.id
 
 
@@ -234,7 +244,9 @@ def share_with_group(
     # confusingly) when a viewer tries to actually fetch it.
     if not content_exists(state, content_type, content_id):
         raise AuthError("Save this record before sharing it")
-    group_row = state.db.execute("SELECT id, name FROM groups WHERE id = ?", (group_id,)).fetchone()
+    group_row = state.db.execute(
+        "SELECT id, title AS name FROM library_items WHERE kind = 'group' AND id = ?", (group_id,)
+    ).fetchone()
     if not group_row or not _group_belongs_to(state, group_id, user):
         raise AuthError("Group not found")
     normalized_permissions = _normalize_permissions(permissions, content_type)

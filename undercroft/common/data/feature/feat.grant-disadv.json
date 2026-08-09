@@ -1,0 +1,18 @@
+{
+  "id": "feat.grant-disadv",
+  "name": "Grants Disadvantage on Next Attack",
+  "systemIds": ["sys.dnd5e"],
+  "description": "A target affected by this effect has disadvantage on its next attack roll.",
+  "mechanics": {
+    "type": "passive",
+    "text": "An affected target's next attack roll is made with disadvantage."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "categories": ["spell"],
+    "propertyHints": ["debuff", "combat"]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

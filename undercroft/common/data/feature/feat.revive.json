@@ -1,0 +1,18 @@
+{
+  "id": "feat.revive",
+  "name": "Revives from Death",
+  "systemIds": ["sys.dnd5e"],
+  "description": "The effect can restore a recently deceased creature to life.",
+  "mechanics": {
+    "type": "active",
+    "text": "This effect returns a creature that has died within the last minute to life, with 1 hit point."
+  },
+  "budgetCost": 16,
+  "tags": {
+    "categories": ["spell"],
+    "propertyHints": ["healing", "revival", "divine"]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

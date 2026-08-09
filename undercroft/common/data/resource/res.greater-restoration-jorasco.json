@@ -1,0 +1,15 @@
+{
+  "id": "res.greater-restoration-jorasco",
+  "name": "Greater Restoration (House Jorasco)",
+  "systemIds": ["sys.dnd5e"],
+  "settingIds": ["eberron"],
+  "description": "A House Jorasco healer casts greater restoration for hire, reversing exhaustion or a more severe magical affliction.",
+  "category": "service",
+  "house": "jorasco",
+  "price": "150 gp",
+  "tags": {
+    "locationTypes": [],
+    "locationPurposes": ["commerce"],
+    "environments": []
+  }
+}

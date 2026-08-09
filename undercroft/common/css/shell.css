@@ -104,7 +104,13 @@ body[data-theme="dark"] .hover-lift:hover {
   justify-content: center;
   padding: 0 1rem;
   pointer-events: none;
-  z-index: 1050;
+  /* Above .dice-overlay's own 2000 (see that rule's comment) — a roll's own
+     result toast needs to stay readable over the dice that produced it,
+     confirmed as a real visibility problem once dice-overlay.js actually
+     shipped (the toast used to sit at the bottom of this file's z-index
+     ladder, under everything, back when nothing on the page could render
+     on top of a toast in the first place). */
+  z-index: 2100;
 }
 
 /* Dashboard's persistent "what's currently shown to the table" icon strip
@@ -661,7 +667,7 @@ a.undercroft-tool-card:focus-visible {
 
 /* Marks whichever widget card the Widget Inspector (right pane) is currently
    showing — set/cleared in dashboard.js's selectWidget. Same convention as
-   Loom's Property Inspector ([data-system-row-selected="true"]). A neutral
+   Loom's Property Inspector ([data-property-row-selected="true"]). A neutral
    grey (not a theme accent color) so it stays visible regardless of the
    dashboard's own user-chosen background color. */
 [data-widget-selected="true"] {
@@ -1522,11 +1528,15 @@ a.undercroft-tool-card:focus-visible {
 }
 
 /* Fancy 3D dice — a full-viewport overlay dice-overlay.js appends to
-   document.body once per page and reuses for every roll. Above modals,
-   toasts, and everything else (see shell.css's own z-index ladder above,
-   topping out at 1400) since a roll can be triggered from inside any of
-   those; pointer-events stays off so it never blocks clicking through to
-   whatever's underneath it, including while dice are visibly settling. */
+   document.body once per page and reuses for every roll (plus one more per
+   distinct color needed for a multi-color roll — see that file's own
+   loadColorBoxEntry). Above modals and everything else in this file's own
+   z-index ladder (topping out at 1400) since a roll can be triggered from
+   inside any of those; pointer-events stays off so it never blocks
+   clicking through to whatever's underneath it, including while dice are
+   visibly settling. The one exception is .status-root's own toasts, kept
+   ABOVE this layer (see that rule's own comment) — the roll's own result
+   toast needs to stay readable over the dice that produced it. */
 .dice-overlay {
   position: fixed;
   inset: 0;

@@ -172,11 +172,32 @@
                       <div class="col-12" data-field-mount="mapping-select"></div>
                     </div>
                     <div class="row g-3 align-items-start">
+                      <div class="col-12 d-flex flex-column gap-2">
+                        <label class="form-label fw-semibold mb-0 d-flex align-items-center gap-2" for="loomMappingDescription">
+                          <span>Description</span>
+                          <span class="align-middle" data-help-topic="loom.mappingDescription" data-help-insert="replace"></span>
+                        </label>
+                        <input class="form-control" type="text" id="loomMappingDescription" data-mapping-description placeholder="e.g. D&amp;D Beyond Character" />
+                      </div>
+                    </div>
+                    <div class="row g-3 align-items-start">
                       <div class="col-12 col-lg-6 d-flex flex-column gap-2">
                         <label class="form-label fw-semibold mb-0" for="loomSourceSelect">Data Source</label>
                         <select class="form-select" id="loomSourceSelect" data-source-select></select>
                       </div>
                       <div class="col-12 col-lg-6 d-flex flex-column gap-2">
+                        <label class="form-label fw-semibold mb-0 d-flex align-items-center gap-2" for="loomDataTypeSelect">
+                          <span>Data Type</span>
+                          <span class="align-middle" data-help-topic="loom.mappingDataType" data-help-insert="replace"></span>
+                        </label>
+                        <select class="form-select" id="loomDataTypeSelect" data-data-type-select>
+                          <option value="character">Character</option>
+                          <option value="other">Other</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="row g-3 align-items-start">
+                      <div class="col-12 d-flex flex-column gap-2">
                         <div data-source-value-label-row></div>
                         <div class="input-group">
                           <input class="form-control" type="text" id="loomSourceValue" data-source-value placeholder="" />
@@ -238,12 +259,15 @@
                     <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0">Library</h2>
                     <span class="align-middle" data-help-topic="loom.library" data-help-insert="replace"></span>
                   </div>
-                  <div class="d-flex flex-column gap-3" data-library-panel>
+                  <p class="text-body-secondary mb-0" data-library-empty>
+                    Select an item from the left pane, or pick a Type and create a new one.
+                  </p>
+                  <div class="d-flex flex-column gap-3 d-none" data-library-panel>
                     <div data-field-mount="library-id"></div>
-                    <div class="d-flex flex-column gap-1" data-library-system-section>
-                      <label class="form-label fw-semibold mb-0">Assigned Systems</label>
-                      <div class="d-flex flex-column gap-1 border rounded-3 p-2" data-library-system-list></div>
-                    </div>
+                    <div data-library-system-mount></div>
+                    <div class="d-flex flex-column gap-1 border rounded-3 p-2" data-library-system-list></div>
+                    <div data-library-setting-mount></div>
+                    <div class="d-flex flex-column gap-1 border rounded-3 p-2" data-library-setting-list></div>
                     <div class="d-flex flex-column gap-1" data-library-template-section hidden>
                       <div data-field-mount="library-template-select"></div>
                     </div>
@@ -265,7 +289,10 @@
                     <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0">Systems</h2>
                     <span class="align-middle" data-help-topic="loom.systems" data-help-insert="replace"></span>
                   </div>
-                  <div class="d-flex flex-column gap-3" data-systems-panel>
+                  <p class="text-body-secondary mb-0" data-systems-empty>
+                    Select a system from the left pane, or create a new one.
+                  </p>
+                  <div class="d-flex flex-column gap-3 d-none" data-systems-panel>
                     <div class="row g-3">
                       <div class="col-12 col-md-4" data-field-mount="system-id"></div>
                       <div class="col-12 col-md-4" data-field-mount="system-title"></div>
@@ -298,7 +325,10 @@
                     <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0">Macros</h2>
                     <span class="align-middle" data-help-topic="loom.macros" data-help-insert="replace"></span>
                   </div>
-                  <div class="d-flex flex-column gap-3" data-macros-panel>
+                  <p class="text-body-secondary mb-0" data-macros-empty>
+                    Select a macro from the left pane, or create a new one.
+                  </p>
+                  <div class="d-flex flex-column gap-3 d-none" data-macros-panel>
                     <div class="row g-3">
                       <div class="col-12 col-md-3" data-field-mount="macro-id"></div>
                       <div class="col-12 col-md-6" data-field-mount="macro-name"></div>
@@ -329,7 +359,14 @@
                     Select a group from the left pane, or create a new one.
                   </p>
                   <div class="d-flex flex-column gap-3 d-none" data-loom-group-form>
-                    <div data-field-mount="group-name"></div>
+                    <div class="row g-3">
+                      <div class="col-12 col-md-4" data-field-mount="group-name"></div>
+                      <div class="col-12 col-md-4" data-field-mount="group-system"></div>
+                      <div class="col-12 col-md-4" data-field-mount="group-setting"></div>
+                    </div>
+                    <div class="row g-3">
+                      <div class="col-12 col-md-4" data-field-mount="group-template"></div>
+                    </div>
                     <div class="d-flex flex-column gap-1">
                       <label class="form-label fw-semibold mb-0 d-flex align-items-center gap-2">
                         <span>Characters in group</span>
@@ -342,15 +379,19 @@
                       ></div>
                       <div class="text-body-secondary small" data-loom-group-members-empty>No characters available to add.</div>
                     </div>
-                    <div class="d-flex flex-column gap-2">
-                      <span class="badge text-bg-secondary align-self-start" data-loom-group-share-badge></span>
-                      <div class="d-flex flex-wrap gap-2">
-                        <button class="btn btn-outline-primary btn-sm" type="button" data-loom-group-share-generate>Generate link</button>
-                        <button class="btn btn-outline-secondary btn-sm" type="button" data-loom-group-share-copy hidden>Copy link</button>
-                        <button class="btn btn-outline-danger btn-sm" type="button" data-loom-group-share-disable hidden>Disable link</button>
+                    <section class="d-flex flex-column gap-2">
+                      <div class="d-flex align-items-center justify-content-between gap-2">
+                        <h3 class="fs-6 fw-semibold text-body-secondary mb-0 d-flex align-items-center gap-2">
+                          <span>Properties</span>
+                          <span class="align-middle" data-help-topic="loom.groupProperties" data-help-insert="replace"></span>
+                        </h3>
+                        <span data-loom-group-add-property-mount></span>
                       </div>
-                      <div class="text-body-secondary small" data-loom-group-share-status></div>
-                    </div>
+                      <div
+                        class="d-flex flex-column gap-2 border rounded-3 p-2"
+                        data-loom-group-property-rows
+                      ></div>
+                    </section>
                   </div>
                 </section>
               </div>
@@ -403,46 +444,89 @@
             <div data-inspector>
               <p class="small text-body-secondary">Select a node in the tree to edit its properties.</p>
             </div>
-            <hr class="border-body-tertiary opacity-50 my-2" />
           </div>
           <div class="d-flex flex-column gap-3" data-loom-view-panel="library" hidden>
-            <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Library Item</h2>
-            <p class="small text-body-secondary mb-0" data-loom-library-table-inspector-empty>
-              Select an item from the Library Contents list to see its details.
-            </p>
-            <div class="d-flex flex-column gap-2 d-none" data-loom-library-table-inspector-details>
-              <div>
-                <span class="text-body-secondary small d-block">Created</span>
-                <span data-loom-library-table-created></span>
+            <div data-loom-library-type-mount></div>
+            <div class="d-flex flex-column gap-2" data-loom-library-type-list>
+              <p class="small text-body-secondary mb-0" data-loom-library-table-type-empty>
+                Select a type from the Library Contents list to see its access.
+              </p>
+              <div class="d-flex flex-column gap-2 d-none" data-loom-library-table-type-details>
+                <div>
+                  <span class="text-body-secondary small d-block">Viewable by</span>
+                  <span data-loom-library-table-read-tier></span>
+                </div>
+                <div>
+                  <span class="text-body-secondary small d-block">Editable by</span>
+                  <span data-loom-library-table-write-tier></span>
+                </div>
               </div>
-              <div>
-                <span class="text-body-secondary small d-block">Last accessed</span>
-                <span data-loom-library-table-accessed></span>
-              </div>
-              <div>
-                <span class="text-body-secondary small d-block">Owner</span>
-                <span data-loom-library-table-owner></span>
-              </div>
-              <div class="text-body-secondary small" data-loom-library-table-share-summary>Loading access…</div>
-              <button class="btn btn-outline-primary btn-sm align-self-start" type="button" data-loom-library-table-share>
-                Share
-              </button>
             </div>
-            <hr class="border-body-tertiary opacity-50 my-2" />
+
+            <div data-loom-library-item-mount></div>
+            <div class="d-flex flex-column gap-2" data-loom-library-item-list>
+              <p class="small text-body-secondary mb-0" data-loom-library-table-inspector-empty>
+                Select an item from the Library Contents list to see its details.
+              </p>
+              <div class="d-flex flex-column gap-2 d-none" data-loom-library-table-inspector-details>
+                <div>
+                  <span class="text-body-secondary small d-block">Created</span>
+                  <span data-loom-library-table-created></span>
+                </div>
+                <div>
+                  <span class="text-body-secondary small d-block">Last accessed</span>
+                  <span data-loom-library-table-accessed></span>
+                </div>
+                <div>
+                  <span class="text-body-secondary small d-block">Owner</span>
+                  <select class="form-select form-select-sm w-auto" data-loom-library-table-owner aria-label="Change owner"></select>
+                </div>
+                <div class="text-body-secondary small" data-loom-library-table-share-summary>Loading access…</div>
+                <button class="btn btn-outline-primary btn-sm align-self-start" type="button" data-loom-library-table-share>
+                  Share
+                </button>
+              </div>
+            </div>
           </div>
           <div class="d-flex flex-column gap-3" data-loom-view-panel="systems" hidden>
-            <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Property Inspector</h2>
-            <p class="small text-body-secondary mb-0" data-system-inspector-empty>
-              Select a property from the list to edit it here — a second, more spacious way to edit the same
-              property, not a separate one.
-            </p>
-            <div class="d-flex flex-column gap-3 d-none" data-system-inspector-details>
-              <div class="btn-toolbar justify-content-center overflow-x-auto" role="toolbar" aria-label="Property actions">
-                <div class="btn-group" role="group" aria-label="Property actions" data-property-inspector-toolbar-mount></div>
+            <div data-system-inspector-mount></div>
+            <div class="d-flex flex-column gap-3" data-system-inspector-content>
+              <p class="small text-body-secondary mb-0" data-system-inspector-empty>
+                Select a property from the list to edit it here — a second, more spacious way to edit the same
+                property, not a separate one.
+              </p>
+              <div class="d-flex flex-column gap-3 d-none" data-system-inspector-details>
+                <div class="btn-toolbar justify-content-center overflow-x-auto" role="toolbar" aria-label="Property actions">
+                  <div class="btn-group" role="group" aria-label="Property actions" data-property-inspector-toolbar-mount></div>
+                </div>
+                <div class="d-flex flex-column gap-2" data-system-inspector-fields></div>
               </div>
-              <div class="d-flex flex-column gap-2" data-system-inspector-fields></div>
             </div>
-            <hr class="border-body-tertiary opacity-50 my-2" />
+          </div>
+          <div class="d-flex flex-column gap-3" data-loom-view-panel="groups" hidden>
+            <div data-loom-group-inspector-mount></div>
+            <div class="d-flex flex-column gap-3" data-loom-group-inspector-content>
+              <p class="small text-body-secondary mb-0" data-loom-group-inspector-empty>
+                Select a property from the list to edit it here — a second, more spacious way to edit the same
+                property, not a separate one.
+              </p>
+              <div class="d-flex flex-column gap-3 d-none" data-loom-group-inspector-details>
+                <div class="btn-toolbar justify-content-center overflow-x-auto" role="toolbar" aria-label="Property actions">
+                  <div class="btn-group" role="group" aria-label="Property actions" data-loom-group-property-inspector-toolbar-mount></div>
+                </div>
+                <div class="d-flex flex-column gap-2" data-loom-group-inspector-fields></div>
+              </div>
+            </div>
+            <div data-loom-group-share-mount></div>
+            <div class="d-flex flex-column gap-2" data-loom-group-share-list>
+              <span class="badge text-bg-secondary align-self-start" data-loom-group-share-badge></span>
+              <div class="d-flex flex-wrap gap-2">
+                <button class="btn btn-outline-primary btn-sm" type="button" data-loom-group-share-generate>Generate link</button>
+                <button class="btn btn-outline-secondary btn-sm" type="button" data-loom-group-share-copy hidden>Copy link</button>
+                <button class="btn btn-outline-danger btn-sm" type="button" data-loom-group-share-disable hidden>Disable link</button>
+              </div>
+              <div class="text-body-secondary small" data-loom-group-share-status></div>
+            </div>
           </div>
         </div>
       </div>

@@ -52,6 +52,18 @@ def load_kind_policy(state: ServerState, kind: str) -> Dict[str, Any]:
     return dict(policy)
 
 
+def invalidate_kind_policy(state: ServerState, kind: str) -> None:
+    # `kind` itself is a Library kind (common/data/kind/kind.json entries),
+    # so editing another kind's policy through the app goes through the same
+    # save_item() as any other content — but load_kind_policy()'s cache never
+    # got popped on that write, so a policy change (e.g. who may author a new
+    # System) silently kept enforcing the old tier until the process
+    # restarted. Called from save_item() whenever the saved record's own kind
+    # is "kind", targeting the id that was just written (the policy that
+    # actually changed), not a blanket cache clear.
+    state.kind_policy_cache.pop(normalize_kind(kind), None)
+
+
 def _read_kind_policy(state: ServerState, normalized_kind: str) -> Dict[str, Any]:
     path = kind_registry_path(state, normalized_kind)
     if not path.exists():

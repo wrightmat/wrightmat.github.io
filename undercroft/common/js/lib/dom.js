@@ -11,6 +11,23 @@ export function el(tag, className, text) {
   return node;
 }
 
+// Plain `element.hidden = value` silently does nothing on an element that
+// also carries an explicit CSS `display` (Bootstrap's `.d-flex` — declared
+// `!important` — or even a plain, non-important custom class like
+// `.dice-quick-grid`'s own `display: grid`): the `[hidden]` UA-stylesheet
+// rule always loses to an author-origin rule regardless of specificity or
+// `!important` (origin+importance is resolved before specificity in the
+// cascade), so the element never actually collapses. Setting `display`
+// inline with `!important` is the one thing guaranteed to win over both
+// cases — same bug/fix as press/js/app.js's own local `setElementVisible`
+// and loom/js/app.js's inline equivalent, promoted here now that a third
+// and fourth caller need the identical fix (dice-roller.js,
+// workbench-character-view.js) rather than growing a fifth copy.
+export function setElementVisible(element, visible, displayValue = "flex") {
+  if (!element) return;
+  element.style.setProperty("display", visible ? displayValue : "none", "important");
+}
+
 export function disableForm(form, disabled) {
   if (!form) return;
   Array.from(form.elements).forEach((element) => {

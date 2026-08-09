@@ -1,0 +1,15 @@
+{
+  "id": "res.courier-service-orien",
+  "name": "Courier Service (House Orien)",
+  "systemIds": ["sys.dnd5e"],
+  "settingIds": ["eberron"],
+  "description": "House Orien's own couriers carry a package or message along their network of trade roads and rail lines, priced by distance.",
+  "category": "service",
+  "house": "orien",
+  "price": "1 sp per mile",
+  "tags": {
+    "locationTypes": [],
+    "locationPurposes": ["commerce"],
+    "environments": []
+  }
+}

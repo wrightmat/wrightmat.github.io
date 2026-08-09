@@ -1,0 +1,54 @@
+{
+  "id": "grp_df59c3cc1c2d",
+  "title": "A Merry Band of Gaymers",
+  "type": "campaign",
+  "systemId": "sys.dnd5e",
+  "settingId": "eberron",
+  "templateId": "tpl.d-d-party",
+  "properties": [
+    {
+      "type": "array",
+      "key": "inventory",
+      "label": "Inventory",
+      "public": true,
+      "item": {
+        "type": "object",
+        "label": "Item",
+        "displayField": "inventory[].name",
+        "children": [
+          {
+            "type": "string",
+            "key": "inventory[].name",
+            "label": "Item Name",
+            "required": true
+          },
+          {
+            "type": "number",
+            "key": "inventory[].quantity",
+            "label": "Quantity",
+            "minimum": 0
+          },
+          {
+            "type": "number",
+            "key": "inventory[].weight",
+            "label": "Weight (lb)",
+            "minimum": 0
+          },
+          {
+            "type": "string",
+            "key": "inventory[].notes",
+            "label": "Notes"
+          }
+        ]
+      }
+    }
+  ],
+  "propertyValues": {
+    "inventory": [
+      {
+        "name": "Test",
+        "qty": 1
+      }
+    ]
+  }
+}

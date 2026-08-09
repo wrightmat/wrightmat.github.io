@@ -1,0 +1,972 @@
+{
+  "id": "cha_8c3f03c4-f2c1-409e-9e99-9284fb43d64c",
+  "template": "tpl.5e.flex-basic",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "data": {
+    "name": "Ouss"
+  },
+  "url": "https://www.dndbeyond.com/characters/13828546",
+  "mapping": "ddb-character",
+  "kind": "character",
+  "name": "Ouss",
+  "image": "https://www.dndbeyond.com/avatars/17/921/636378851716447403.jpeg?width=150&height=150&fit=crop&quality=95&auto=webp",
+  "identity": {
+    "id": 13828546,
+    "userId": 100499308,
+    "username": "wrighmat",
+    "name": "Ouss",
+    "race": "Aarakocra",
+    "class": "Monk",
+    "level": 9,
+    "levels": {
+      "level_monk": 9,
+      "level_multiclass": 0
+    },
+    "inspiration": false,
+    "classes": [
+      {
+        "name": "Monk",
+        "level": 9,
+        "subclass": "Way of the Four Elements"
+      }
+    ]
+  },
+  "proficiency": 4,
+  "alignment": {
+    "name": "Chaotic Evil",
+    "shortName": "CE"
+  },
+  "initiative": {
+    "value": 4,
+    "advantage": true,
+    "disadvantage": false
+  },
+  "senses": {
+    "passives": {
+      "perception": 12,
+      "investigation": 10,
+      "insight": 12
+    }
+  },
+  "speeds": {
+    "walk": 25,
+    "burrow": 0,
+    "climb": 0,
+    "fly": 50,
+    "swim": 0
+  },
+  "conditions": [],
+  "abilities": [
+    {
+      "id": 1,
+      "name": "strength",
+      "friendlyName": "Strength",
+      "shortName": "STR",
+      "score": 12,
+      "modifier": 1
+    },
+    {
+      "id": 2,
+      "name": "dexterity",
+      "friendlyName": "Dexterity",
+      "shortName": "DEX",
+      "score": 18,
+      "modifier": 4
+    },
+    {
+      "id": 3,
+      "name": "constitution",
+      "friendlyName": "Constitution",
+      "shortName": "CON",
+      "score": 14,
+      "modifier": 2
+    },
+    {
+      "id": 4,
+      "name": "intelligence",
+      "friendlyName": "Intelligence",
+      "shortName": "INT",
+      "score": 10,
+      "modifier": 0
+    },
+    {
+      "id": 5,
+      "name": "wisdom",
+      "friendlyName": "Wisdom",
+      "shortName": "WIS",
+      "score": 15,
+      "modifier": 2
+    },
+    {
+      "id": 6,
+      "name": "charisma",
+      "friendlyName": "Charisma",
+      "shortName": "CHA",
+      "score": 8,
+      "modifier": -1
+    }
+  ],
+  "saves": [
+    {
+      "id": 1,
+      "name": "strength",
+      "friendlyName": "Strength",
+      "shortName": "STR",
+      "value": 5,
+      "proficiency": 3,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 2,
+      "name": "dexterity",
+      "friendlyName": "Dexterity",
+      "shortName": "DEX",
+      "value": 8,
+      "proficiency": 3,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 3,
+      "name": "constitution",
+      "friendlyName": "Constitution",
+      "shortName": "CON",
+      "value": 2,
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 4,
+      "name": "intelligence",
+      "friendlyName": "Intelligence",
+      "shortName": "INT",
+      "value": 0,
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 5,
+      "name": "wisdom",
+      "friendlyName": "Wisdom",
+      "shortName": "WIS",
+      "value": 2,
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 6,
+      "name": "charisma",
+      "friendlyName": "Charisma",
+      "shortName": "CHA",
+      "value": -1,
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
+    }
+  ],
+  "skills": [
+    {
+      "id": 3,
+      "name": "acrobatics",
+      "friendlyName": "Acrobatics",
+      "stat": 1,
+      "ability": "DEX",
+      "value": 8,
+      "proficiency": 3,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 11,
+      "name": "animal-handling",
+      "friendlyName": "Animal Handling",
+      "stat": 4,
+      "ability": "WIS",
+      "value": 2,
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 6,
+      "name": "arcana",
+      "friendlyName": "Arcana",
+      "stat": 3,
+      "ability": "INT",
+      "value": 0,
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 2,
+      "name": "athletics",
+      "friendlyName": "Athletics",
+      "stat": 0,
+      "ability": "STR",
+      "value": 5,
+      "proficiency": 3,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 16,
+      "name": "deception",
+      "friendlyName": "Deception",
+      "stat": 5,
+      "ability": "CHA",
+      "value": -1,
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 7,
+      "name": "history",
+      "friendlyName": "History",
+      "stat": 3,
+      "ability": "INT",
+      "value": 0,
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 12,
+      "name": "insight",
+      "friendlyName": "Insight",
+      "stat": 4,
+      "ability": "WIS",
+      "value": 2,
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 17,
+      "name": "intimidation",
+      "friendlyName": "Intimidation",
+      "stat": 5,
+      "ability": "CHA",
+      "value": -1,
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 8,
+      "name": "investigation",
+      "friendlyName": "Investigation",
+      "stat": 3,
+      "ability": "INT",
+      "value": 0,
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 13,
+      "name": "medicine",
+      "friendlyName": "Medicine",
+      "stat": 4,
+      "ability": "WIS",
+      "value": 2,
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 9,
+      "name": "nature",
+      "friendlyName": "Nature",
+      "stat": 3,
+      "ability": "INT",
+      "value": 0,
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 14,
+      "name": "perception",
+      "friendlyName": "Perception",
+      "stat": 4,
+      "ability": "WIS",
+      "value": 2,
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 18,
+      "name": "performance",
+      "friendlyName": "Performance",
+      "stat": 5,
+      "ability": "CHA",
+      "value": -1,
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 19,
+      "name": "persuasion",
+      "friendlyName": "Persuasion",
+      "stat": 5,
+      "ability": "CHA",
+      "value": -1,
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 10,
+      "name": "religion",
+      "friendlyName": "Religion",
+      "stat": 3,
+      "ability": "INT",
+      "value": 0,
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 4,
+      "name": "sleight-of-hand",
+      "friendlyName": "Sleight of Hand",
+      "stat": 1,
+      "ability": "DEX",
+      "value": 4,
+      "proficiency": 0,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 5,
+      "name": "stealth",
+      "friendlyName": "Stealth",
+      "stat": 1,
+      "ability": "DEX",
+      "value": 8,
+      "proficiency": 3,
+      "advantage": false,
+      "disadvantage": false
+    },
+    {
+      "id": 15,
+      "name": "survival",
+      "friendlyName": "Survival",
+      "stat": 4,
+      "ability": "WIS",
+      "value": 6,
+      "proficiency": 3,
+      "advantage": false,
+      "disadvantage": false
+    }
+  ],
+  "stats": {
+    "hitPoints": {
+      "max": 66,
+      "current": 66,
+      "temp": 0
+    },
+    "armorClass": 14
+  },
+  "currencies": {
+    "cp": 0,
+    "sp": 0,
+    "ep": 0,
+    "gp": 660,
+    "pp": 0
+  },
+  "inventory": [
+    {
+      "name": "Spear of Warning",
+      "quantity": 1,
+      "weight": 3,
+      "notes": "<p>This magic weapon warns you of danger. While the weapon is on your person, you have advantage on initiative rolls. In addition, you and any of your companions within 30 feet of you can’t be surprised, except when incapacitated by something other than nonmagical sleep. The weapon magically awakens you and your companions within range if any of you are sleeping naturally when comb<span class=\"No-Break\">at begins.</span></p>",
+      "canAttune": true,
+      "isAttuned": true,
+      "canEquip": true,
+      "isEquipped": true
+    },
+    {
+      "name": "Spear of Warning",
+      "quantity": 1,
+      "weight": 3,
+      "notes": "<p>This magic weapon warns you of danger. While the weapon is on your person, you have advantage on initiative rolls. In addition, you and any of your companions within 30 feet of you can’t be surprised, except when incapacitated by something other than nonmagical sleep. The weapon magically awakens you and your companions within range if any of you are sleeping naturally when comb<span class=\"No-Break\">at begins.</span></p>",
+      "canAttune": true,
+      "isAttuned": false,
+      "canEquip": true,
+      "isEquipped": false
+    },
+    {
+      "name": "Charlatan's Die",
+      "quantity": 1,
+      "weight": 0,
+      "notes": "<p>Whenever you roll this six-sided die, you can control which number it rolls.</p>",
+      "canAttune": true,
+      "isAttuned": true,
+      "canEquip": true,
+      "isEquipped": true
+    },
+    {
+      "name": "Cloak of Many Fashions",
+      "quantity": 1,
+      "weight": 0,
+      "notes": "<p>While wearing this cloak, you can take a Bonus Action to change the style, color, and apparent quality of the garment. The cloak’s weight doesn’t change. Regardless of its appearance, the cloak can’t be anything but a cloak. Although it can duplicate the appearance of other magic cloaks, it doesn’t gain their magical properties.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": true,
+      "isEquipped": false
+    },
+    {
+      "name": "Perfume of Bewitching",
+      "quantity": 1,
+      "weight": 0,
+      "notes": "<p>This tiny vial contains magic perfume, enough for one use. You can use an action to apply the perfume to yourself, and its effect lasts 1 hour. For the duration, you have advantage on all Charisma checks directed at humanoids of challenge rating 1 or lower. Those subjected to the perfume’s effect are not aware that they’ve been influenced<span class=\"No-Break\">&nbsp;by magic.</span></p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": true,
+      "isEquipped": false
+    },
+    {
+      "name": "Map of the Planes",
+      "quantity": 1,
+      "weight": 0,
+      "notes": "<p>This map depicts the linkages between the planes of existence.&nbsp;&nbsp; Referencing it grants advantage on Intelligence checks related to knowledge of planar travel and the ways in which planes are connected.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": true,
+      "isEquipped": false
+    },
+    {
+      "name": "Dart",
+      "quantity": 16,
+      "weight": 4,
+      "notes": "<p>Proficiency with a Dart allows you to add your proficiency bonus to the attack roll for any attack you make with it.</p>\r\n<div class=\"mastery-container\"><hr />\r\n<p>This weapon has the following mastery property. To use this property, you must have a feature that lets you use it.</p>\r\n<p><strong><em>Vex.</em></strong> If you hit a creature with this weapon and deal damage to the creature, you have Advantage on your next attack roll against that creature before the end of your next turn.</p>\r\n</div>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": true,
+      "isEquipped": true
+    },
+    {
+      "name": "Backpack",
+      "quantity": 1,
+      "weight": 5,
+      "notes": "<p>A backpack is a leather pack carried on the back, typically with straps to secure it. A backpack can hold&nbsp;1 cubic foot/ 30 pounds of gear.</p>\r\n<p>You can also strap items, such as a bedroll or a coil of rope, to the outside of a backpack.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": true,
+      "isEquipped": false
+    },
+    {
+      "name": "Bedroll",
+      "quantity": 1,
+      "weight": 7,
+      "notes": "<p>You never know where you’re going to sleep, and a bedroll helps you get better sleep in a hayloft or on the cold ground. A bedroll consists of bedding and a blanket thin enough to be rolled up and tied. In an emergency, it can double as a stretcher.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
+    },
+    {
+      "name": "Clothes, Traveler's",
+      "quantity": 1,
+      "weight": 4,
+      "notes": "<p>This set of clothes could consist of boots, a wool skirt or breeches, a sturdy belt, a shirt (perhaps with a vest or jacket), and an ample cloak with a hood.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
+    },
+    {
+      "name": "Hunting Trap",
+      "quantity": 1,
+      "weight": 25,
+      "notes": "<p>When you use your action to set it, this trap forms a saw-toothed steel ring that snaps shut when a creature steps on a pressure plate in the center. The trap is affixed by a heavy chain to an immobile object, such as a tree or a spike driven into the ground. A creature that steps on the plate must succeed on a DC 13 Dexterity saving throw or take 1d4 piercing damage and stop moving. Thereafter, until the creature breaks free of the trap, its movement is limited by the length of the chain (typically 3 feet long). A creature can use its action to make a DC 13 Strength check, freeing itself or another creature within its reach on a success. Each failed check deals 1 piercing damage to the trapped creature.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
+    },
+    {
+      "name": "Mess Kit",
+      "quantity": 1,
+      "weight": 1,
+      "notes": "<p>This tin box contains a cup and simple cutlery. The box clamps together, and one side can be used as a cooking pan and the other as a plate or shallow bowl.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
+    },
+    {
+      "name": "Rations (1 day)",
+      "quantity": 10,
+      "weight": 20,
+      "notes": "<p>Rations consist of dry foods suitable for extended travel, including jerky, dried fruit, hardtack, and nuts.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
+    },
+    {
+      "name": "Rope, Hempen (50 feet)",
+      "quantity": 1,
+      "weight": 10,
+      "notes": "<p>Rope,&nbsp;has 2 hit points and can be burst with a DC 17 Strength check.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
+    },
+    {
+      "name": "Tinderbox",
+      "quantity": 1,
+      "weight": 1,
+      "notes": "<p>This small container holds flint, fire steel, and tinder (usually dry cloth soaked in light oil) used to kindle a fire. Using it to light a torch -- or anything else with abundant, exposed fuel -- takes an action. Lighting any other fire takes 1 minute.</p>\r\n<p>&nbsp;</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
+    },
+    {
+      "name": "Torch",
+      "quantity": 9,
+      "weight": 9,
+      "notes": "<p>A torch burns for 1 hour, providing bright light in a 20-foot radius and dim light for an additional 20 feet. If you make a melee attack with a burning torch and hit, it deals 1 fire damage.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
+    },
+    {
+      "name": "Waterskin",
+      "quantity": 1,
+      "weight": 5,
+      "notes": "<p>A waterskin can hold&nbsp;4 pints of liquid.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
+    },
+    {
+      "name": "Dynamite (Stick)",
+      "quantity": 19,
+      "weight": 19,
+      "notes": "<p class=\"Core-Styles_Core-Body\">As an action, a creature can light a stick of dynamite and throw it at a point up to 60 feet away. Each creature within 5 feet of that point must make a DC 12 Dexterity saving throw, taking 3d6 bludgeoning damage on a failed save, or half as much damage on a succe<span class=\"No-Break\">ssful one.</span></p>\r\n<p class=\"Core-Styles_Core-Body\">A character can bind sticks of dynamite together so they explode at the same time. Each additional stick increases the damage by 1d6 (to a maximum of 10d6) and the burst radius by 5 feet (to a maximum of<span class=\"No-Break\">&nbsp;20 feet).</span></p>\r\n<p class=\"Core-Styles_Core-Body\">Dynamite can be rigged with a longer fuse to explode after a set amount of time, usually 1 to 6 rounds. Roll initiative for the dynamite. After the set number of rounds goes by, the dynamite explodes on that i<span class=\"No-Break\">nitiative.</span></p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false
+    }
+  ],
+  "background": {
+    "name": "Outlander",
+    "description": "<p>You grew up in the wilds, far from the comforts of town and technology. You’ve witnessed the migration of herds larger than forests, survived weather more extreme than any city-dweller could comprehend, and enjoyed the solitude of being the only thinking creature for miles in any direction. The wilds are in your blood, whether you were a nomad, an explorer, a recluse, a hunter-gatherer, or even a marauder. Even in places where you don’t know the specific features of the terrain, you know the ways of the wild.</p>\r\n<hr />\r\n<p><strong>Skill Proficiencies:</strong> Athletics, Survival</p>\r\n<p><strong>Tool Proficiencies:</strong> One type of musical instrument</p>\r\n<p><strong>Languages:</strong> One of your choice</p>\r\n<p><strong>Equipment:</strong> A staff, a hunting trap, a trophy from an animal you killed, a set of traveler’s clothes, and a pouch containing 10 gp</p>\r\n<hr />\r\n<h5 class=\"compendium-hr\">Origin</h5>\r\n<p>You’ve been to strange places and seen things that others cannot begin to fathom. Consider some of the distant lands you have visited, and how they impacted you. You can roll on the following table to determine your occupation during your time in the wild, or choose one that best fits your character.</p>\r\n<table class=\"compendium-left-aligned-table\">\r\n<thead>\r\n<tr>\r\n<th>d10</th>\r\n<th style=\"text-align: left;\">Origin</th>\r\n</tr>\r\n</thead>\r\n<tbody>\r\n<tr>\r\n<td>1</td>\r\n<td>Forester</td>\r\n</tr>\r\n<tr>\r\n<td>2</td>\r\n<td>Trapper</td>\r\n</tr>\r\n<tr>\r\n<td>3</td>\r\n<td>Homesteader</td>\r\n</tr>\r\n<tr>\r\n<td>4</td>\r\n<td>Guide</td>\r\n</tr>\r\n<tr>\r\n<td>5</td>\r\n<td>Exile or outcast</td>\r\n</tr>\r\n<tr>\r\n<td>6</td>\r\n<td>Bounty hunter</td>\r\n</tr>\r\n<tr>\r\n<td>7</td>\r\n<td>Pilgrim</td>\r\n</tr>\r\n<tr>\r\n<td>8</td>\r\n<td>Tribal nomad</td>\r\n</tr>\r\n<tr>\r\n<td>9</td>\r\n<td>Hunter-gatherer</td>\r\n</tr>\r\n<tr>\r\n<td>10</td>\r\n<td>Tribal marauder</td>\r\n</tr>\r\n</tbody>\r\n</table>\r\n<hr />\r\n<h5 class=\"compendium-hr\">Feature: Wanderer</h5>\r\n<p>You have an excellent memory for maps and geography, and you can always recall the general layout of terrain, settlements, and other features around you. In addition, you can find food and fresh water for yourself and up to five other people each day, provided that the land offers berries, small game, water, and so forth.</p>",
+    "feature": "Wanderer"
+  },
+  "feats": [
+    {
+      "name": "Lucky",
+      "description": "<p>You have inexplicable luck that seems to kick in at just the right moment.</p>\r\n<ul>\r\n<li>You have 3 luck points. Whenever you make an attack roll, an ability check, or a saving throw, you can spend one luck point to roll an additional d20. You can choose to spend one of your luck points after you roll the die, but before the outcome is determined. You choose which of the d20s is used for the attack roll, ability check, or saving throw.</li>\r\n<li>You can also spend one luck point when an attack roll is made against you. Roll a d20, and then choose whether the attack uses the attacker's roll or yours. If more than one creature spends a luck point to influence the outcome of a roll, the points cancel each other out; no additional dice are rolled.</li>\r\n<li>You regain your expended luck points when you finish a long rest.</li>\r\n</ul>",
+      "level": null,
+      "limitedUse": null
+    }
+  ],
+  "features": [
+    {
+      "name": "Disciple of the Elements",
+      "description": "<p class=\"Core-Styles_Core-Body\">When you choose this tradition at 3rd level, you learn magical disciplines that harness the power of the four elements. A discipline requires you to spend ki points each time you use it.</p>\r\n<p class=\"Core-Styles_Core-Body\">You know the Elemental Attunement discipline and one other elemental discipline of your choice, which are detailed in the &ldquo;Elemental Disciplines&rdquo; section below. You learn one additional elemental discipline of your choice at 6th, 11th, and 17th level.</p>\r\n<p class=\"Core-Styles_Core-Body\">Whenever you learn a new elemental discipline, you can also replace one elemental discipline that you already know with a different discipline.</p>\r\n<h5 class=\"Core-Styles_Core-Body\"><span class=\"Serif-Character-Style_Inline-Subhead-Serif\">Casting Elemental Spells</span></h5>\r\n<p class=\"Core-Styles_Core-Body\">Some elemental disciplines allow you to cast spells. See the <span style=\"color: #47d18c;\"><a style=\"color: #47d18c;\" title=\"Spellcasting\" href=\"https://www.dndbeyond.com/compendium/rules/basic-rules/spellcasting\">Spellcasting</a></span> section&nbsp;for the general rules of spellcasting. To cast one of these spells, you use its casting time and other rules, but you don’t need to provide material components for it.</p>\r\n<p class=\"Core-Styles_Core-Body\">Once you reach 5th level in this class, you can spend additional ki points to increase the level of an elemental discipline spell that you cast, provided that the spell has an enhanced effect at a higher level, as <span class=\"Serif-Character-Style_Italic-Serif\">burning hands</span> does. The spell’s level increases by 1 for each additional ki point you spend. For example, if you are a 5th-level monk and use Sweeping Cinder Strike to cast <span class=\"Serif-Character-Style_Italic-Serif\">burning hands</span>, you can spend 3 ki points to cast it as a 2nd-level spell (the discipline’s base cost of 2 ki points plus 1).</p>\r\n<p class=\"Core-Styles_Core-Body\">The maximum number of ki points you can spend to cast a spell in this way (including its base ki point cost and any additional ki points you spend to increase its level) is determined by your monk level, as shown in the Spells and Ki Points table.</p>\r\n<h5 class=\"Table-Styles_Table-Title\">Spells and Ki Points</h5>\r\n<table id=\"table010\" class=\"Table TableOverride-3\"><colgroup></colgroup>\r\n<thead>\r\n<tr class=\"Table _idGenTableRowColumn-3\">\r\n<th class=\"Table Table-Header\">\r\n<p class=\"Table-Styles_Header--for-Table-Cell-Style- ParaOverride-3\"><strong>Monk Levels</strong></p>\r\n</th>\r\n<th class=\"Table Table-Header _idGenCellOverride-1\">\r\n<p class=\"Table-Styles_Header--for-Table-Cell-Style- ParaOverride-3\"><strong>Maximum Ki Points for a Spell</strong></p>\r\n</th>\r\n</tr>\r\n</thead>\r\n<tbody>\r\n<tr class=\"Table _idGenTableRowColumn-4\">\r\n<td class=\"Table Table-Body _idGenCellOverride-2\">\r\n<p class=\"Table-Styles_Table-Body--for-Table-Cell-Style- ParaOverride-3\">5th&ndash;8th</p>\r\n</td>\r\n<td class=\"Table Table-Body _idGenCellOverride-2\">\r\n<p class=\"Table-Styles_Table-Body--for-Table-Cell-Style- ParaOverride-3\">3</p>\r\n</td>\r\n</tr>\r\n<tr class=\"Table _idGenTableRowColumn-5\">\r\n<td class=\"Table Table-Body\">\r\n<p class=\"Table-Styles_Table-Body--for-Table-Cell-Style- ParaOverride-3\">9th&ndash;12th</p>\r\n</td>\r\n<td class=\"Table Table-Body\">\r\n<p class=\"Table-Styles_Table-Body--for-Table-Cell-Style- ParaOverride-3\">4</p>\r\n</td>\r\n</tr>\r\n<tr class=\"Table _idGenTableRowColumn-4\">\r\n<td class=\"Table Table-Body\">\r\n<p class=\"Table-Styles_Table-Body--for-Table-Cell-Style- ParaOverride-3\">13th&ndash;16th</p>\r\n</td>\r\n<td class=\"Table Table-Body\">\r\n<p class=\"Table-Styles_Table-Body--for-Table-Cell-Style- ParaOverride-3\">5</p>\r\n</td>\r\n</tr>\r\n<tr class=\"Table _idGenTableRowColumn-5\">\r\n<td class=\"Table Table-Body\">\r\n<p class=\"Table-Styles_Table-Body--for-Table-Cell-Style- ParaOverride-3\">17th&ndash;20th</p>\r\n</td>\r\n<td class=\"Table Table-Body\">\r\n<p class=\"Table-Styles_Table-Body--for-Table-Cell-Style- ParaOverride-3\">6</p>\r\n</td>\r\n</tr>\r\n</tbody>\r\n</table>"
+    },
+    {
+      "name": "Elemental Disciplines",
+      "description": "<p class=\"compendium-hr\">The elemental disciplines are presented in alphabetical order. If a discipline requires a level, you must be that level in this class to learn the discipline.</p>"
+    },
+    {
+      "name": "Unarmored Defense",
+      "description": "<p class=\"compendium-hr\">Beginning at 1st level, while you are wearing no armor and not wielding a shield, your AC equals 10 + your Dexterity modifier + your Wisdom modifier.</p>"
+    },
+    {
+      "name": "Martial Arts",
+      "description": "<p class=\"compendium-hr\">At 1st level, your practice of martial arts gives you mastery of combat styles that use unarmed strikes and monk weapons, which are shortswords and any simple melee weapons that don’t have the two-handed or heavy property.</p>\r\n<p class=\"Core-Styles_Core-Body-Last--to-apply-extra-space-\">You gain the following benefits while you are unarmed or wielding only monk weapons and you aren’t wearing armor or wielding a shield:</p>\r\n<ul>\r\n<li class=\"Core-Styles_Core-Bulleted\">You can use Dexterity instead of Strength for the attack and damage rolls of your unarmed strikes and monk weapons.</li>\r\n<li class=\"Core-Styles_Core-Bulleted\">You can roll a d4 in place of the normal damage of your unarmed strike or monk weapon. This die changes as you gain monk levels, as shown in the Martial Arts column of the Monk table.</li>\r\n<li class=\"Core-Styles_Core-Bulleted-Last\">When you use the Attack action with an unarmed strike or a monk weapon on your turn, you can make one unarmed strike as a bonus action. For example, if you take the Attack action and attack with a quarterstaff, you can also make an unarmed strike as a bonus action, assuming you haven’t already taken a bonus action this turn.</li>\r\n</ul>\r\n<p class=\"Core-Styles_Core-Body\">Certain monasteries use specialized forms of the monk weapons. For example, you might use a club that is two lengths of wood connected by a short chain (called a nunchaku) or a sickle with a shorter, straighter blade (called a kama). Whatever name you use for a monk weapon, you can use the game statistics provided for the weapon in the <a title=\"Weapons\" href=\"https://www.dndbeyond.com/compendium/rules/basic-rules/equipment#Weapons\">Weapons</a> section.</p>"
+    },
+    {
+      "name": "Ki",
+      "description": "<p>Starting at 2nd level, your training allows you to harness the mystic energy of ki. Your access to this energy is represented by a number of ki points. Your monk level determines the number of points you have, as shown in the Ki Points column of the Monk table.</p>\r\n<p>You can spend these points to fuel various ki features. You start knowing three such features: <strong>Flurry of Blows</strong>, <strong>Patient Defense</strong>, and <strong>Step of the Wind</strong>. You learn more ki features as you gain levels in this class.</p>\r\n<p>When you spend a ki point, it is unavailable until you finish a short or long rest, at the end of which you draw all of your expended ki back into yourself. You must spend at least 30 minutes of the rest meditating to regain your ki points.</p>\r\n<p>Some of your ki features require your target to make a saving throw to resist the feature’s effects. The saving throw DC is calculated as follows:</p>\r\n<p style=\"text-align: center;\"><strong>Ki save DC</strong> = 8 + your proficiency bonus + your Wisdom modifier</p>\r\n<p><strong>Flurry of Blows&nbsp;<br /></strong> Immediately after you take the Attack action on your turn, you can spend 1 ki point to make two unarmed strikes as a bonus action.</p>\r\n<p><strong>Patient Defense<br /></strong> You can spend 1 ki point to take the Dodge action as a bonus action on your turn.</p>\r\n<p><strong>Step of the Wind<br /></strong> You can spend 1 ki point to take the Disengage or Dash action as a bonus action on your turn, and your jump distance is doubled for the turn.</p>"
+    },
+    {
+      "name": "Unarmored Movement",
+      "description": "<p class=\"Core-Styles_Core-Body\">Starting at 2nd level, your speed increases by 10 feet while you are not wearing armor or wielding a shield. This bonus increases when you reach certain monk levels, as shown in the Monk table.</p>\r\n<p class=\"Core-Styles_Core-Body\">At 9th level, you gain the ability to move along vertical surfaces and across liquids on your turn without falling during the move.</p>"
+    },
+    {
+      "name": "Monastic Tradition",
+      "description": "<p class=\"Core-Styles_Core-Body\">When you reach 3rd level, you commit yourself to a monastic tradition: the Way of the Open Hand, detailed at the end of the class description or one from another source. Your tradition grants you features at 3rd level and again at 6th, 11th, and 17th level.</p>"
+    },
+    {
+      "name": "Deflect Missiles",
+      "description": "<p class=\"Core-Styles_Core-Body\">Starting at 3rd level, you can use your reaction to deflect or catch the missile when you are hit by a ranged weapon attack. When you do so, the damage you take from the attack is reduced by 1d10 + your Dexterity modifier + your monk level.</p>\r\n<p class=\"Core-Styles_Core-Body\">If you reduce the damage to 0, you can catch the missile if it is small enough for you to hold in one hand and you have at least one hand free. If you catch a missile in this way, you can spend 1 ki point to make a ranged attack with the weapon or piece of ammunition you just caught, as part of the same reaction. You make this attack with proficiency, regardless of your weapon proficiencies, and the missile counts as a monk weapon for the attack, which has a normal range of 20 feet and a long range of 60 feet.</p>"
+    },
+    {
+      "name": "Ability Score Improvement",
+      "description": "<p class=\"Core-Styles_Core-Body\">When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can’t increase an ability score above 20 using this feature.</p>\r\n<p class=\"Core-Styles_Core-Body\">Using the optional feats rule, you can forgo taking this feature to take a feat of your choice instead.</p>"
+    },
+    {
+      "name": "Slow Fall",
+      "description": "<p class=\"Core-Styles_Core-Body\">Beginning at 4th level, you can use your reaction when you fall to reduce any falling damage you take by an amount equal to five times your monk level.</p>"
+    },
+    {
+      "name": "Extra Attack",
+      "description": "<p class=\"Core-Styles_Core-Body\">Beginning at 5th level, you can attack twice, instead of once, whenever you take the Attack action on your turn.</p>"
+    },
+    {
+      "name": "Stunning Strike",
+      "description": "<p class=\"Core-Styles_Core-Body\">Starting at 5th level, you can interfere with the flow of ki in an opponent’s body. When you hit another creature with a melee weapon attack, you can spend 1 ki point to attempt a stunning strike. The target must succeed on a Constitution saving throw or be stunned until the end of your next turn.</p>"
+    },
+    {
+      "name": "Ki-Empowered Strikes",
+      "description": "<p class=\"Core-Styles_Core-Body\">Starting at 6th level, your unarmed strikes count as magical for the purpose of overcoming resistance and immunity to nonmagical attacks and damage.</p>"
+    },
+    {
+      "name": "Evasion",
+      "description": "<p class=\"Core-Styles_Core-Body\">At 7th level, your instinctive agility lets you dodge out of the way of certain area effects, such as a blue dragon’s lightning breath or a <span class=\"Serif-Character-Style_Italic-Serif\">fireball</span> spell. When you are subjected to an effect that allows you to make a Dexterity saving throw to take only half damage, you instead take no damage if you succeed on the saving throw, and only half damage if you fail.</p>"
+    },
+    {
+      "name": "Stillness of Mind",
+      "description": "<p class=\"Core-Styles_Core-Body\">Starting at 7th level, you can use your action to end one effect on yourself that is causing you to be charmed or frightened.</p>"
+    },
+    {
+      "name": "Purity of Body",
+      "description": "<p class=\"Core-Styles_Core-Body\">At 10th level, your mastery of the ki flowing through you makes you immune to disease and poison.</p>"
+    },
+    {
+      "name": "Tongue of the Sun and Moon",
+      "description": "<p class=\"Core-Styles_Core-Body\">Starting at 13th level, you learn to touch the ki of other minds so that you understand all spoken languages. Moreover, any creature that can understand a language can understand what you say.</p>"
+    },
+    {
+      "name": "Diamond Soul",
+      "description": "<p class=\"Core-Styles_Core-Body\">Beginning at 14th level, your mastery of ki grants you proficiency in all saving throws.</p>\r\n<p class=\"Core-Styles_Core-Body\">Additionally, whenever you make a saving throw and fail, you can spend 1 ki point to reroll it and take the second result.</p>"
+    },
+    {
+      "name": "Timeless Body",
+      "description": "<p class=\"Core-Styles_Core-Body\">At 15th level, your ki sustains you so that you suffer none of the frailty of old age, and you can’t be aged magically. You can still die of old age, however. In addition, you no longer need food or water.</p>"
+    },
+    {
+      "name": "Empty Body",
+      "description": "<p class=\"Core-Styles_Core-Body\">Beginning at 18th level, you can use your action to spend 4 ki points to become invisible for 1 minute. During that time, you also have resistance to all damage but force damage.</p>\r\n<p class=\"Core-Styles_Core-Body\">Additionally, you can spend 8 ki points to cast the <span class=\"Serif-Character-Style_Italic-Serif\">astral projection</span> spell, without needing material components. When you do so, you can’t take any other creatures with you.</p>"
+    },
+    {
+      "name": "Perfect Self",
+      "description": "<p class=\"Core-Styles_Core-Body\">At 20th level, when you roll for initiative and have no ki points remaining, you regain 4 ki points.</p>"
+    },
+    {
+      "name": "Unarmored Movement Improvement",
+      "description": "<p class=\"Core-Styles_Core-Body\">At 9th level, you gain the ability to move along vertical surfaces and across liquids on your turn without falling during your move.</p>"
+    },
+    {
+      "name": "Proficiencies",
+      "description": "<p><strong><span class=\"Serif-Character-Style_Bold-Serif\">Armor: </span></strong>None<br /><strong><span class=\"Serif-Character-Style_Bold-Serif\">Weapons: </span></strong>Simple weapons, shortswords<br /><strong><span class=\"Serif-Character-Style_Bold-Serif\">Tools: </span></strong>Choose one type of artisan’s tools or one musical instrument<br /><strong><span class=\"Serif-Character-Style_Bold-Serif\">Saving Throws: </span></strong>Strength, Dexterity<br /><strong><span class=\"Serif-Character-Style_Bold-Serif\">Skills:</span></strong> Choose two from Acrobatics, Athletics, History, Insight, Religion, and Stealth</p>"
+    },
+    {
+      "name": "Hit Points",
+      "description": "<p><strong><span class=\"Serif-Character-Style_Bold-Serif\">Hit Dice:</span></strong> 1d8 per monk level<br /><strong><span class=\"Serif-Character-Style_Bold-Serif\">Hit Points at 1st Level:</span></strong> 8 + your Constitution modifier<br /><strong><span class=\"Serif-Character-Style_Bold-Serif\">Hit Points at Higher Levels:</span></strong> 1d8 (or 5) + your Constitution modifier per monk level after 1st</p>"
+    },
+    {
+      "name": "Equipment",
+      "description": "<p>You start with the following equipment, in addition to the equipment granted by your background:</p>\r\n<ul>\r\n<li>(a) a shortsword or (b) any simple weapon</li>\r\n<li>(a) a dungeoneer’s pack or (b) an explorer’s pack</li>\r\n<li>10 darts</li>\r\n</ul>"
+    },
+    {
+      "name": "Flight",
+      "description": "<p>You have a flying speed of 50 feet. To use this speed, you can’t be wearing medium or heavy armor.</p>"
+    },
+    {
+      "name": "Talons",
+      "description": "<p>Your talons are natural weapons, which you can use to make unarmed strikes. If you hit with them, you deal slashing damage equal to 1d4 + your Strength modifier, instead of the bludgeoning damage normal for an unarmed strike.</p>"
+    },
+    {
+      "name": "Ability Score Increase",
+      "description": "<p>Your Dexterity score increases by 2, and your Wisdom score increases by 1.</p>"
+    },
+    {
+      "name": "Languages",
+      "description": "<p>You can speak, read, and write Common, Aarakocra, and Auran.</p>"
+    },
+    {
+      "name": "Age",
+      "description": "<p>Aarakocra reach maturity by age 3. Compared to humans, aarakocra don’t usually live longer than 30 years.</p>"
+    },
+    {
+      "name": "Alignment",
+      "description": "<p>Most aarakocra are good and rarely choose sides when it comes to law and chaos. Tribal leaders and warriors might be lawful, while explorers and adventurers might tend toward chaotic.</p>"
+    },
+    {
+      "name": "Size",
+      "description": "<p>Aarakocra are about 5 feet tall. They have thin, lightweight bodies that weigh between 80 and 100 pounds. Your size is Medium.</p>"
+    },
+    {
+      "name": "Speed",
+      "description": "<p>Your base walking speed is 25 feet.</p>"
+    },
+    {
+      "name": "Lucky",
+      "description": "<p>You have inexplicable luck that seems to kick in at just the right moment.</p>\r\n<ul>\r\n<li>You have 3 luck points. Whenever you make an attack roll, an ability check, or a saving throw, you can spend one luck point to roll an additional d20. You can choose to spend one of your luck points after you roll the die, but before the outcome is determined. You choose which of the d20s is used for the attack roll, ability check, or saving throw.</li>\r\n<li>You can also spend one luck point when an attack roll is made against you. Roll a d20, and then choose whether the attack uses the attacker's roll or yours. If more than one creature spends a luck point to influence the outcome of a roll, the points cancel each other out; no additional dice are rolled.</li>\r\n<li>You regain your expended luck points when you finish a long rest.</li>\r\n</ul>"
+    }
+  ],
+  "proficiencies": {
+    "armor": [],
+    "weapons": [
+      "Simple Weapons"
+    ],
+    "tools": [
+      "Tinker's Tools",
+      "Flute"
+    ],
+    "languages": [
+      "Aarakocra",
+      "Auran",
+      "Common",
+      "Elvish"
+    ],
+    "defenses": [],
+    "senses": [],
+    "other": [
+      "Slashing",
+      "Dexterity Score",
+      "Wisdom Score",
+      "Unarmored Armor Class",
+      "Unarmored Movement",
+      "Subclass",
+      "Choose an Ability Score",
+      "Extra Attacks",
+      "Shortsword"
+    ]
+  },
+  "attacks": [
+    {
+      "name": "Unarmed Strike",
+      "range": null,
+      "longRange": null,
+      "attackBonus": 8,
+      "damage": "1+4",
+      "damageType": "Bludgeoning",
+      "notes": "",
+      "description": ""
+    },
+    {
+      "name": "Talons",
+      "range": {
+        "range": 5,
+        "longRange": null,
+        "aoeType": null,
+        "aoeSize": null,
+        "hasAoeSpecialDescription": false,
+        "minimumRange": null
+      },
+      "longRange": null,
+      "attackBonus": 0,
+      "damage": "1d4",
+      "damageType": "Slashing",
+      "notes": "",
+      "description": "<p>Your talons are natural weapons, which you can use to make unarmed strikes. If you hit with them, you deal slashing damage equal to 1d4 + your Strength modifier, instead of the bludgeoning damage normal for an unarmed strike.</p>"
+    },
+    {
+      "name": "Flurry of Blows",
+      "range": {
+        "range": null,
+        "longRange": null,
+        "aoeType": null,
+        "aoeSize": null,
+        "hasAoeSpecialDescription": false,
+        "minimumRange": null
+      },
+      "longRange": null,
+      "attackBonus": 0,
+      "damage": null,
+      "damageType": "Bludgeoning",
+      "notes": "",
+      "description": "After you take the Attack action on your turn, you can spend 1 ki point to make two unarmed strikes as a bonus action."
+    },
+    {
+      "name": "Deflect Missiles",
+      "range": {
+        "range": null,
+        "longRange": null,
+        "aoeType": null,
+        "aoeSize": null,
+        "hasAoeSpecialDescription": false,
+        "minimumRange": null
+      },
+      "longRange": null,
+      "attackBonus": 0,
+      "damage": "1d10 + 9",
+      "damageType": null,
+      "notes": "",
+      "description": "<p class=\"Core-Styles_Core-Body\">Starting at 3rd level, you can use your reaction to deflect or catch the missile when you are hit by a ranged weapon attack. When you do so, the damage you take from the attack is reduced by 1d10 + your Dexterity modifier + your monk level.</p>\r\n<p class=\"Core-Styles_Core-Body\">If you reduce the damage to 0, you can catch the missile if it is small enough for you to hold in one hand and you have at least one hand free. If you catch a missile in this way, you can spend 1 ki point to make a ranged attack with the weapon or piece of ammunition you just caught, as part of the same reaction. You make this attack with proficiency, regardless of your weapon proficiencies, and the missile counts as a monk weapon for the attack, which has a normal range of 20 feet and a long range of 60 feet.</p>"
+    },
+    {
+      "name": "Deflect Missiles Attack",
+      "range": {
+        "range": 20,
+        "longRange": 60,
+        "aoeType": null,
+        "aoeSize": null,
+        "hasAoeSpecialDescription": false,
+        "minimumRange": null
+      },
+      "longRange": null,
+      "attackBonus": 0,
+      "damage": null,
+      "damageType": null,
+      "notes": "",
+      "description": "If you reduce damage to 0 and have a free hand, you can spend 1 ki point to make a ranged attack (as with a monk weapon)."
+    },
+    {
+      "name": "Fist of Unbroken Air",
+      "range": {
+        "range": 30,
+        "longRange": null,
+        "aoeType": null,
+        "aoeSize": null,
+        "hasAoeSpecialDescription": false,
+        "minimumRange": null
+      },
+      "longRange": null,
+      "attackBonus": 0,
+      "damage": "3d10",
+      "damageType": "Bludgeoning",
+      "notes": "",
+      "description": "<p>You can create a blast of compressed air that strikes like a mighty fist. As an action, you can spend 2 ki points and choose a creature within 30 feet of you. That creature must make a Strength saving throw. On a failed save, the creature takes 3d10 bludgeoning damage, plus an extra 1d10 bludgeoning damage for each additional ki point you spend, and you can push the creature up to 20 feet away from you and knock it [condition]prone[/condition]. On a successful save, the creature takes half as much damage, and you don&rsquo;t push it or kn<span class=\"No-Break\">ock it [condition]prone[/condition].</span></p>"
+    },
+    {
+      "name": "Spear of Warning",
+      "range": "20 ft.",
+      "longRange": "60 ft.",
+      "attackBonus": 5,
+      "damage": "1d6+1",
+      "damageType": "Piercing",
+      "notes": "Thrown, Versatile, Sap",
+      "description": "<p>This magic weapon warns you of danger. While the weapon is on your person, you have advantage on initiative rolls. In addition, you and any of your companions within 30 feet of you can’t be surprised, except when incapacitated by something other than nonmagical sleep. The weapon magically awakens you and your companions within range if any of you are sleeping naturally when comb<span class=\"No-Break\">at begins.</span></p>"
+    },
+    {
+      "name": "Dart",
+      "range": "20 ft.",
+      "longRange": "60 ft.",
+      "attackBonus": 8,
+      "damage": "1d4+4",
+      "damageType": "Piercing",
+      "notes": "Finesse, Thrown, Vex",
+      "description": "<p>Proficiency with a Dart allows you to add your proficiency bonus to the attack roll for any attack you make with it.</p>\r\n<div class=\"mastery-container\"><hr />\r\n<p>This weapon has the following mastery property. To use this property, you must have a feature that lets you use it.</p>\r\n<p><strong><em>Vex.</em></strong> If you hit a creature with this weapon and deal damage to the creature, you have Advantage on your next attack roll against that creature before the end of your next turn.</p>\r\n</div>"
+    }
+  ],
+  "attacking": {
+    "attacksPerAction": 2,
+    "fightingStyle": null
+  },
+  "spellcasting": {
+    "abilityId": null,
+    "ability": null,
+    "mod": "+0",
+    "attack": "+4",
+    "save": 12
+  },
+  "limitedUses": [],
+  "campaign": {},
+  "decorations": {
+    "avatarUrl": "https://www.dndbeyond.com/avatars/17/921/636378851716447403.jpeg?width=150&height=150&fit=crop&quality=95&auto=webp",
+    "frameAvatarUrl": null,
+    "backdropAvatarUrl": null,
+    "smallBackdropAvatarUrl": null,
+    "largeBackdropAvatarUrl": null,
+    "thumbnailBackdropAvatarUrl": null,
+    "defaultBackdrop": {
+      "backdropAvatarUrl": "https://www.dndbeyond.com/avatars/61/522/636453154644283609.jpeg",
+      "smallBackdropAvatarUrl": "https://www.dndbeyond.com/avatars/61/523/636453154644752281.jpeg",
+      "largeBackdropAvatarUrl": "https://www.dndbeyond.com/avatars/61/524/636453154645377290.jpeg",
+      "thumbnailBackdropAvatarUrl": "https://www.dndbeyond.com/avatars/61/525/636453154645689772.jpeg"
+    },
+    "avatarId": 17921,
+    "portraitDecorationKey": "344",
+    "frameAvatarDecorationKey": null,
+    "frameAvatarId": null,
+    "backdropAvatarDecorationKey": null,
+    "backdropAvatarId": null,
+    "smallBackdropAvatarDecorationKey": "",
+    "smallBackdropAvatarId": null,
+    "largeBackdropAvatarDecorationKey": "",
+    "largeBackdropAvatarId": null,
+    "thumbnailBackdropAvatarDecorationKey": "",
+    "thumbnailBackdropAvatarId": null,
+    "themeColor": null
+  },
+  "deathSaves": {
+    "successes": 0,
+    "failures": 0,
+    "stabilized": false
+  },
+  "notes": {
+    "allies": "Elves",
+    "backstory": "Born atop a vast floating mountain in the Elemental Plane of Air, a child of a small aarakocra tribe, Ouss was raised as a warrior of peace. He spent his childhood meditating and defending his tribe from the earth elementals that recurrently held great threat to his people.\n\nOne still night, perched upon the highest peak, of the highest rock, in isolated meditation, his mind found itself in eternal darkness. Confused and trapped for what seemed like eternity; time, life, his surroundings stolen from him. Ouss witnessed a holy vision of infinity itself. As if no time passed, he awoke from his haunting stupor, barely unable to comprehend this unnerving journey beyond the skyless valleys of reality itself.\n\nHe gazed upon his homeland with emotional paralysis. All that he knew, that he loved, was now meaningless and numb to him. It was not time that was stolen from him, in this mysterious vision, it was his spirit.\n\nA few monotonous moons passed. No longer feeling connection to his home and family, upon reaching adulthood at age 3, he attempted to end his life. One last breath, he plummeted through the layers of fog that blanketed the unknown world beneath. Falling...falling...darkness.\n\nOuss awoke. An endless, alien panorama before him. He found himself somehow alive in strange continent of a land he soon learned to be Faerun of the material plane.\n\nA year passed in isolation, terrified of sinking back into the infinite abyss, he stayed far from the familiar practice of meditation. One warm dawn, an Elvish traveler discovered the lost aarakocra and convinced him to find home at a nearby monastery which specialized in elemental energy. Over six months, Ouss rediscovered himself training under the guidance of monks in the ways of ki.\n\nAfter all, only elemental good can truly destroy elemental evil.",
+    "enemies": "Earth elementals, and all other evil elementals",
+    "organizations": null,
+    "personalPossessions": "Sigil-marked arm wraps that cause unarmed damage to be Force type (rather than Bludgeoning)",
+    "otherHoldings": null,
+    "otherNotes": "When last ki point is used, roll and recover 1d4-1 ki points. So if anything more than a 1 is rolled, you'll have more ki to use. This can continue indefinitely."
+  },
+  "traits": {
+    "age": 8,
+    "eyes": "Blue",
+    "hair": "Feathers: red, orange, yellow",
+    "skin": "",
+    "height": "5' (20' wingspan) ",
+    "weight": 90,
+    "faith": "Akadi, the Queen of Air (and Aerdrie Faenya as an Elvish aspect)",
+    "appearance": null,
+    "bonds": "I suffer awful visions of a coming disaster and will do anything to prevent it.",
+    "flaws": "I am slow to trust members of other races, tribes, and societies.",
+    "ideals": "Nature. The natural world is more important than all the constructs of civilization. (Neutral)",
+    "personalityTraits": "I’m always picking things up, absently fiddling with them, and sometimes accidentally breaking them.",
+    "size": "Medium"
+  },
+  "spells": [
+    {
+      "level": 1,
+      "spells": [
+        {
+          "name": "Burning Hands",
+          "level": 1,
+          "prepared": false,
+          "castingTime": "A",
+          "range": {
+            "origin": "Self",
+            "rangeValue": 0,
+            "aoeType": "Cone",
+            "aoeValue": 15
+          },
+          "school": "Evocation",
+          "source": "class",
+          "concentration": false,
+          "ritual": false,
+          "components": [
+            "V",
+            "S"
+          ],
+          "toHit": null,
+          "dc": 12,
+          "effect": "Damage",
+          "duration": " (Instantaneous)"
+        }
+      ]
+    }
+  ],
+  "title": "Ouss",
+  "state": {
+    "timers": {},
+    "log": []
+  }
+}

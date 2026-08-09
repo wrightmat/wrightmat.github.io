@@ -28,8 +28,9 @@
 import { resolveBinding, setAtBinding, findRoleBoundField, findBindingByRole } from "../bindings.js";
 import { deriveConditionsVocabulary, renderTagBadges, renderTagDatalist, buildTagInputRow } from "./tag-editor.js";
 import { connectLiveStream } from "../live.js";
-import { rollExpression } from "./dice-roll.js";
+import { rollExpression, resolveActiveDice, extractSystemDice } from "./dice-roll.js";
 import { preloadDiceOverlay } from "./dice-overlay.js";
+import { resolveGroupContext } from "./group-context.js";
 import { resolveActiveSpotlightId } from "../spotlight.js";
 import { el } from "../dom.js";
 
@@ -91,6 +92,12 @@ export function initCharacterVitals(container, { dataManager, status, characterI
   let conditionsVocabulary = null;
   let tempHpFallback; // only used when the System has no tempPath binding — ephemeral, not persisted
   let lastInitiativeRoll = null;
+  // Section 2's active-System resolution — the active campaign Group's own
+  // System (if any) wins over this character's own Assigned Systems for
+  // Initiative's dice. Empty until loadActiveDice resolves (see load()
+  // below); an empty array is exactly "no named dice," so rollExpression's
+  // named-die lookup is simply unused until this is populated.
+  let activeDice = [];
 
   // Every field on this card writes through with its own fetch-modify-save
   // round trip against the character record (see persistBinding below) — if
@@ -210,7 +217,12 @@ export function initCharacterVitals(container, { dataManager, status, characterI
     const modifierValue = modifierEntry?.binding ? Number(resolveBinding(modifierEntry.binding, character)) || 0 : 0;
     const sides = Number(String(modifierEntry?.die || "d20").replace(/^d/i, "")) || 20;
     const expression = modifierValue ? `1d${sides} + ${modifierValue}` : `1d${sides}`;
-    const rolled = await rollExpression(expression, { status, label: modifierEntry?.name || "Initiative", dataManager });
+    const rolled = await rollExpression(expression, {
+      status,
+      label: modifierEntry?.name || "Initiative",
+      dataManager,
+      dice: activeDice,
+    });
     if (!rolled) return;
     lastInitiativeRoll = rolled;
     render();
@@ -349,7 +361,22 @@ export function initCharacterVitals(container, { dataManager, status, characterI
     const systemId = Array.isArray(character.systemIds) ? character.systemIds[0] : character.system;
     await loadSystemContext(systemId);
     if (destroyed) return;
+    await loadActiveDice();
+    if (destroyed) return;
     render();
+  }
+
+  // Resolves which System's own dice (if any) currently govern this
+  // character's Initiative roll — the active campaign Group's System first
+  // (Section 2), then this character's own Assigned Systems. A System's
+  // Rolls/Moves and any Tier-3 symbol dice are NOT surfaced here — they're a
+  // System-level dice-rolling concept, not a combat-binding one, so they
+  // live in the Dashboard's Dice Roller widget (dice-roller.js) instead,
+  // alongside Workbench's own equivalent Dice pane.
+  async function loadActiveDice() {
+    const groupContext = await resolveGroupContext(dataManager, { shareToken }).catch(() => null);
+    const systemDefinition = await resolveActiveDice({ dataManager, groupContext, character }).catch(() => null);
+    activeDice = extractSystemDice(systemDefinition);
   }
 
   void load();

@@ -1,0 +1,9 @@
+{
+  "id": "group",
+  "label": "Group",
+  "plural": "Groups",
+  "icon": "tabler:users",
+  "readTier": "free",
+  "writeTier": "gm",
+  "metadataFields": ["type", "systemId", "settingId", "templateId"]
+}

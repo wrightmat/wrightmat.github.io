@@ -17,6 +17,30 @@ const CORS_PROXY = "https://corsproxy.io/?url=";
 // below already has for ddb-character.json.
 const DND5E_SYSTEM_ID = "sys.dnd5e";
 
+// The two mapping-driven sources Loom's own Import tab (and Workbench's
+// player-facing Import Character flow) offer a picker for — narrower than
+// loadSourceData/loadSourceDataRaw's own dispatch below, which also handles
+// "library"/"json"/"manual" for other pickers (Press's own source picker)
+// that have no mapping/$source concept at all. Extracted from Loom's local
+// SOURCES array (identical shape/values) so both tools share one list
+// instead of two copies that could drift.
+export const SOURCES = [
+  {
+    id: "ddb",
+    label: "D&D Beyond",
+    valueLabel: "Character ID or URL",
+    placeholder: "e.g. 123456789, or https://www.dndbeyond.com/classes/2190875-barbarian",
+    helpTopic: "loom.source.ddb",
+  },
+  {
+    id: "srd",
+    label: "5e API",
+    valueLabel: "API Endpoint or URL",
+    placeholder: "e.g. /api/2024/classes/barbarian",
+    helpTopic: "loom.source.srd",
+  },
+];
+
 // The browser's own SyntaxError for malformed JSON only ever gives a
 // position/line/column — never which fetch it came from. Every
 // response.json() call in this
@@ -171,6 +195,44 @@ export function loadMappingDefinition(mappingId) {
     mappingDefinitionCache.set(id, promise);
   }
   return mappingDefinitionCache.get(id);
+}
+
+// Every saved mapping's own filename (sans extension) — mappings are served
+// as a plain static directory listing (server.config.json's own
+// "loom-mappings" mount), not a Library kind, so this is a bare GET rather
+// than dataManager.list(...). Extracted from Loom's own local listMappings()
+// (identical implementation) so Workbench's player-facing Import Character
+// flow (listCharacterMappings below) can share it instead of duplicating
+// this fetch.
+export async function listAvailableMappings() {
+  try {
+    const response = await fetch("/list/loom-mappings");
+    if (!response.ok) return [];
+    const payload = await response.json();
+    return (payload.files || []).map((entry) => entry.filename).filter(Boolean);
+  } catch (error) {
+    return [];
+  }
+}
+
+// Every mapping a GM has tagged "Character" in Loom's own Import tab
+// ($dataType — see enterMappingMode/the Save handler in loom/js/app.js) —
+// what Workbench's player-facing "Import Character" picker offers, so a
+// player only ever sees mappings meant to produce a standalone character,
+// never the sub-entity ones (backgrounds/classes/species/...) Loom's own
+// multi-entity Import tab consumes. loadMappingDefinition's own promise
+// cache means a mapping fetched here to check its $dataType costs nothing
+// extra when the same mapping gets loaded again moments later to actually
+// run the import.
+export async function listCharacterMappings() {
+  const ids = await listAvailableMappings();
+  const definitions = await Promise.all(
+    ids.map((id) => loadMappingDefinition(id).catch(() => null))
+  );
+  return ids
+    .map((id, index) => ({ id, definition: definitions[index] }))
+    .filter((entry) => entry.definition?.$dataType === "character")
+    .map((entry) => ({ id: entry.id, description: entry.definition.$description || "" }));
 }
 
 // The ddb-character.json mapping definition is the single source of truth

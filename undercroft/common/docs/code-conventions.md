@@ -105,6 +105,192 @@ surface" section below for the concrete rule this specific failure produced.
   (`content-fetch.js`'s `loadCharacterMappingDefinition`/
   `loadSystemLookupTables` pattern), not re-fetched on every call.
 
+## Dice (`workbench/js/lib/dice.js`, `common/js/lib/widgets/dice-roll.js`)
+
+Added 2026-08 alongside the 3D dice overlay. Three additive engine primitives
+in `rollDiceExpression`/`DiceParser`, all backward-compatible (a caller that
+passes none of this sees byte-identical behavior to before):
+
+- **Named dice** — an optional `dice` array param (`{id, sides, faceMap,
+  color, themeOverride}[]`), converted to a lowercased-key `Map` and threaded
+  into the parser. A registered id resolves as an implicit `1d<sides>`
+  (`hopeDie`, `2 hopeDie`) alongside ordinary `NdM` notation in the same
+  expression — a die whose own id happens to look like plain notation (`d20`)
+  still resolves via the engine's existing bare-`d` grammar, never the named
+  path, so it's indistinguishable from today's behavior.
+- **`faceMap`** — a named die's optional display-only relabeling
+  (`{"1":"1-3", ...}`), applied to `roll.displayLabel` at roll time. Never
+  touches `roll.value` — keep/drop/success/tally all still see the real
+  number.
+- **`t` (tally) modifier** — `4d6kh1t>=6` counts how many of the *original*
+  rolled+exploded dice satisfy a comparator, independent of what keep/drop
+  discarded. Parsed identically to the existing `c`-prefixed comparators.
+
+**A System's own dice are not a Library kind, a new Property type, or a
+separate top-level array** — they're an ordinary Enum-mode Array property
+with the reserved key `"dice"`, read by `extractSystemDice()`
+(`dice-roll.js`). This is the same "one conventional key, no dedicated
+authoring UI" shape Sanctum's Environment lookup already uses (see
+`sanctum/CLAUDE.md`: "`Environment`... is a value from the active System's
+`"environment"`-keyed generator-property field... there is no separate
+'propertyTypes' concept") — not invented fresh for dice. Each value's `name`
+IS the die's id (what expressions reference, e.g. `"hopeDie"`) and its
+display label, same as every other Enum value in the suite; `sides`/`color`/
+`themeOverride`/`faceMap` live in that value's existing "Extra properties
+(JSON)" catch-all, the same home `VALUE_COLUMNS`'s own comment
+(`loom/js/app.js`) already assigns to one-off per-field metadata like a
+Modifier value's own `die` property. A System with no `"dice"` field rolls
+the fixed standard 7 (`resolveQuickDice`'s `STANDARD_DICE` fallback).
+
+`resolveActiveDice({dataManager, groupContext, character})` is the shared
+priority resolver (active campaign Group's own `systemId` first, then the
+character's own first Assigned System, else the standard 7) — the active
+campaign Group is a real schema field now too (`groups.system_id`,
+nullable, server-side in `server/groups.py`/`server/storage.py`), following
+this doc's existing `{ preferLocal: false }` convention for the System
+fetch since it's a rules/config lookup. Dashboard's Dice Roller widget and
+Character Sheet's Initiative roller call it directly; Workbench's Dice pane
+(`refreshDiceQuickButtons`) applies the same priority order but through its
+own pre-existing `fetchSystemDefinition` cache (handles builtins/local
+fallback, which `resolveActiveDice`'s plain `dataManager.get` doesn't) rather
+than a second, weaker fetch path — same resolution order, not a second
+implementation of it.
+
+**A System's named Rolls/Moves follow the identical convention** — an
+ordinary Enum-mode Array property with the reserved key `"rolls"`, read by
+`extractSystemRolls()`. Unlike a die, a Move's `name` is only ever a
+human-readable label (e.g. "Duality Roll") shown on a button, never typed
+into an expression, so there's no identifier-safety constraint on it.
+`expression`/`resultMode` (`"band"` or `"compare"`)/`bands`/`compare` live in
+the same Extra-properties-JSON catch-all dice values use. `rollSystemMove()`
+wraps `rollExpression()` (so overlay/context/named dice all just work) and
+evaluates the matched band/compare verdict afterward — checked in order,
+first match wins for bands; compare mode reads two named dice's own totals
+out of the roll's own dice breakdown by matching `notation`.
+
+**Rolls/Moves and symbol dice live in the two dice-ROLLING surfaces only —
+Workbench's Dice pane and Dashboard's standalone Dice Roller widget
+(`dice-roller.js`) — never in a Character/vitals widget.** Dashboard's
+Character widget (`character-sheet.js`) is scoped to a character's
+combat-bound Role fields (resource/value/tags/modifier — see its own header
+comment) and stays that way; Rolls/symbol dice are a System-level
+dice-rolling concept with no connection to those Role bindings, so bolting
+them onto that widget would mix two unrelated concerns onto one card. The
+one exception is Initiative's own roll (a `modifier`-role field), which
+stays on the Character widget because it IS a combat-bound field, not a
+System-wide Roll.
+
+**Tier-3 symbol dice** (Genesys-style: a die whose `sides` is an array of
+`{symbols: [...]}` face objects instead of a number) live in the very same
+`"dice"`-keyed array field — `extractSystemDice()` filters them OUT
+(`typeof sides === "number" || sides === "F"` only), and the inverse
+resolver `extractSystemSymbolDice()` filters them IN. They're deliberately
+unreachable from `rollDiceExpression`/the text-expression input — a symbol
+pool has no numeric total, so there's no meaningful `ast.value` for the
+numeric AST to produce. Rolled instead via the standalone
+`rollSymbolDicePool()` (`workbench/js/lib/symbol-dice.js`), which tallies
+raw symbol counts across the pool and cancels success/failure and
+advantage/threat 1:1 (triumph/despair never cancel), formatted by
+`formatSymbolPoolResult()`. Both dice-rolling surfaces (Workbench's Dice
+pane, Dashboard's Dice Roller) show a dedicated "Dice Pool" +/- stepper per
+symbol die instead of the normal quick-dice grid/expression form/Moves row
+whenever the active System's dice are all symbol dice — never both at once.
+No 3D overlay support for symbol dice yet — unlike numeric dice, how
+dice-box would report which face landed for a non-numeric die is
+unverified, so this stays toast/text-only until a real spike confirms it.
+
+**Layout order (both Workbench's Dice pane and Dashboard's Dice Roller) is
+fixed: [Clear (icon-only, red, `tabler:eraser`) → dice buttons (grey,
+`btn-outline-secondary`)] → [expression input + Roll button] → [Moves
+buttons (blue, `btn-outline-primary`), hidden entirely when the System has
+no Rolls] → [symbol-pool section, mutually exclusive with everything
+above].** Moves are a SEPARATE row below the input/Roll button, not mixed
+into the quick-dice grid above it — a quick-dice button only edits the
+expression string (nothing rolls until Roll is clicked), while a Move
+button is a one-click roller in its own right, so grouping them together
+read as misleading.
+
+**Never toggle visibility with the plain `.hidden` property on an element
+that has (or inherits) an author CSS rule setting `display`** — Bootstrap's
+`.d-flex`/`.d-grid`/etc. utility classes (declared `!important`), or even a
+plain non-`!important` custom class like `.dice-quick-grid`'s own
+`display: grid`. The `[hidden]` rule lives in the user-agent stylesheet, and
+CSS cascade resolves origin+importance BEFORE specificity — any author-origin
+rule always wins over a user-agent-origin one regardless of `!important` or
+specificity, so `.hidden = true` silently does nothing and the element keeps
+rendering. This is a real bug that shipped once already (a Dashboard widget
+briefly showed both "Roll" and "Roll pool" at once for a System with zero
+symbol dice, since both containers carry `d-flex`) — use
+`setElementVisible(element, visible, displayValue)` (`common/js/lib/dom.js`)
+instead, which sets/clears `element.style.display` with `"important"`
+priority. Plain unstyled elements (no author `display` rule) are unaffected
+and `.hidden` works fine on those. Press's (`setElementVisible`, local copy)
+and Loom's (`populateLibrarySystemCheckboxes`, inline) own independent
+discoveries of this exact bug predate this shared version — check for
+existing precedent like this before repeating a bug the codebase already
+paid to learn about.
+
+**The reserved-key Array field pattern generalizes past dice/Rolls** — a
+System's Travel Means (walking pace, horseback, an Eberron airship) use the
+identical convention under the key `"travelMeans"`, read by
+`extractSystemTravelMeans()` (`common/js/lib/travel-means.js`). A value's
+`speedMph`/`hoursPerDay`/`fare` live in its own Extra properties (JSON), same
+as a die's `sides`/`color`. The one addition this introduces: a travel-means
+*value* can also carry `settingIds` (the same convention Resources use, see
+below, applied per-value instead of per-record) so a System can define means
+that only make sense in one of its own Settings (Eberron's Lightning Rail)
+alongside means that work everywhere it's used (On Foot) — checked by
+`extractSystemTravelMeans`'s own filter, not a new mechanism. Consumed today by the Dashboard's Calculator widget
+(`common/js/lib/widgets/calculator.js`) — a general-purpose widget built to
+host more than one calculator Type over time via its Type select ("Travel
+Time" and "Dice Probability" today; a third is a new render function plus
+one more `<option>`). Travel Time is also the reference example for NOT
+hardcoding weather/random-encounter tables: a single per-widget-instance
+"Daily macro" config field (e.g. `dice:[[Encounters#^encounter-table]]`)
+just rolls whatever GM-authored rollable Journal table reference
+(`[[Page#^blockId]]`, already fully wired end to end via `rollExpression`)
+or plain expression it's given, once per day of the computed trip, and
+prints each day's result — rather than another reserved System field or
+hardcoded JS table. Weather itself isn't part of this widget at all (it
+doesn't belong to a *trip*) — it's just an ordinary Board macro button
+pointed at `dice:[[Weather#^random-weather-table]]`. Reach for the Daily
+macro pattern first for anything that's really "the GM's own campaign
+content," as opposed to System-wide game data. Any future
+System-scoped-but-optionally-Setting-scoped vocabulary should still reach
+for the reserved-key three-part shape (reserved field key + Extra-JSON
+per-value data + optional per-value `settingIds`) before inventing something
+new — Daily macro's job is only GM-authored *content references*, not
+System-wide *data*.
+
+## Resource conventions (`common/data/resource/*.json`)
+
+A Resource's payload is freeform JSON (the `resource` kind file declares no
+field schema — the real editor is Loom's generic Entity JSON textarea), so
+these are conventions, not enforced fields:
+
+- **`price`** — a plain human-readable string (`"20 gp"`, `"1 sp per mile"`,
+  `"4d4x10 gp"` for a randomly-priced commodity), not a structured number —
+  Sanctum deliberately isn't a ledger (see `sanctum/CLAUDE.md`'s "Out of
+  Scope"), so this is display-only flavor a GM reads, not something any code
+  sums or validates. Shown automatically next to a Resource's label wherever
+  it's referenced as a Location's Asset/Need (`renderReferenceList`,
+  `sanctum/js/app.js`).
+- **`category`** — a plain descriptive string (`"adventuring-gear"`,
+  `"service"`, `"wondrous-item"`) for a human skimming the Resource list.
+  Not read by any filter — Resource generation-matching only ever uses
+  `tags.locationTypes`/`tags.locationPurposes`/`tags.environments` (see
+  `matchesLocationTags`, `sanctum/js/lib/generator.js`) and the
+  `systemIds`/`settingIds` scoping below, the same as every other kind.
+- **`house`** — which Eberron Dragonmarked house offers a service Resource
+  (`"kundarak"`, `"sivis"`, `"orien"`, ...), purely descriptive, same
+  no-code-reads-it status as `category`.
+- **`settingIds`** — same convention as `systemIds` (empty/absent = every
+  Setting, non-empty = restricted to those) — checked by `matchesSetting()`
+  in `sanctum/js/lib/generator.js` alongside the existing
+  `matchesSystem()`/`matchesLocationTags()` filters, so an Eberron-specific
+  Resource (a Dragonmarked-house service, an Eberron-only magic item) never
+  surfaces when generating a Location under a different Setting.
+
 ## Event naming
 
 Some cross-module events use an `undercroft:*` prefix; others a leftover

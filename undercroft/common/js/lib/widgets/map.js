@@ -24,15 +24,37 @@
 // character but hadn't explicitly pinned it via the Character Summary
 // widget saw zero drag controls for their own token, confirmed real bug.
 import { BaseMapManager } from "../../../../orrery/js/lib/base-maps.js";
-import { renderMapLayers, createPingMarker, buildRestrictedMapOptions } from "../../../../orrery/js/lib/map-viewer.js";
+import {
+  renderMapLayers,
+  createPingMarker,
+  buildRestrictedMapOptions,
+  resolveClickPosition,
+  getGridCellSize,
+  markerPositionToLocalPixel,
+  renderShapeElement,
+} from "../../../../orrery/js/lib/map-viewer.js";
+import {
+  createVectorPathElement,
+  createVectorShapeElement,
+  createMarkerOverlayIcon,
+  AOE_SHAPE_TYPES,
+} from "../../../../orrery/js/lib/map-model.js";
 import { resolveToolHref, resolveToolContextPath } from "../app-shell.js";
 import { resolveIsSpotlighted } from "../spotlight.js";
-import { createCharacterOwnershipPrimer } from "../ownership.js";
+import { createCharacterOwnershipPrimer, matchesOwner, refreshOwnershipCatalog } from "../ownership.js";
 import { el } from "../dom.js";
+import { getIconTokens } from "../icon-picker.js";
+// Same icon-picker/overlay-icon shape Orrery's own marker inspector uses for
+// a token's badge icons — reused as-is rather than a second, player-scoped
+// copy. No image field here on purpose — a player can recolor/re-icon their
+// own token, not replace its portrait.
+import { createIconPickerField } from "../ui-components.js";
 import {
   watchMapForChanges,
   persistMarkerMove as persistMarkerMoveShared,
   persistElementUpdate,
+  persistPlayerDrawing,
+  removeElement,
 } from "../map-live-sync.js";
 
 // 10s (was 30s) — same reasoning as combat-tracker.js's own
@@ -91,6 +113,537 @@ export function initMapWidget(
   // fixes.
   let isDraggingMarker = false;
 
+  // Player toolbar tool state — instance-scoped (not local to
+  // buildZoomPanel) since the panel itself gets rebuilt whenever the base
+  // map changes (onMapChanged's own zoomPanel = null reset); a tool a
+  // viewer already had armed shouldn't silently disarm just because an
+  // unrelated base-map edit landed. One at a time, unlike Orrery's own
+  // independent per-tool booleans — a GM's own toolbar never enforced
+  // mutual exclusion either, but a player toolbar with two tools armed at
+  // once (a click ambiguously either pings or starts measuring) is a worse
+  // experience for less benefit, and costs nothing extra to prevent here.
+  let activeTool = null; // null | "ping" | "measure" | "draw" | "shape"
+
+  // One shared "pencil color" for both Draw and Shape (a shape's fillColor
+  // AND strokeColor both come from this single value — there's no separate
+  // "outline" concept, a drawn path/shape only ever has one visible color)
+  // — matching Orrery's own identical drawColor concept (orrery/js/app.js),
+  // rather than each tool hardcoding its own default. Instance-scoped, same
+  // "survives a zoomPanel rebuild" reasoning as activeTool above.
+  let drawColor = "#0f172a";
+
+  // Same primary-grid-layer/scale-unit math as Orrery's own
+  // findPrimaryGridLayer/pixelsToCells/hasMapMeasurementConfigured
+  // (app.js) — small enough, and app.js isn't a shared lib module other
+  // files import from, that porting the algorithm here directly is more
+  // appropriate than reaching into Orrery's own page script.
+  function findPrimaryGridLayer() {
+    return (map?.layers || []).find((entry) => entry.type === "grid") || null;
+  }
+  function pixelsToCells(pixelDistance) {
+    const gridLayer = findPrimaryGridLayer();
+    if (!gridLayer) return null;
+    const cellSizePx = getGridCellSize(baseMapManager, map, gridLayer);
+    if (!cellSizePx) return null;
+    return pixelDistance / cellSizePx;
+  }
+  function hasMapMeasurementConfigured() {
+    return Number.isFinite(map?.measurement?.scale) && map.measurement.scale > 0 && Boolean(map?.measurement?.unit);
+  }
+
+  // AoE shape sizes generally fall in whole real-world-unit increments —
+  // identical to Orrery's own snapCellsToWholeUnit (app.js). No-op if the
+  // map has no usable scale to round against.
+  function snapCellsToWholeUnit(cells) {
+    const scale = map?.measurement?.scale;
+    if (!Number.isFinite(scale) || scale <= 0) return cells;
+    return Math.round(cells * scale) / scale;
+  }
+
+  // Rebuilt fresh by buildZoomPanel every time the base map changes — these
+  // `let`s (not consts captured once) are what let the persistent
+  // viewerHost-level pointerdown handler below always read the CURRENT
+  // buttons/readouts, not stale ones from a since-discarded panel.
+  let pingButtonEl = null;
+  let measureButtonEl = null;
+  let measureReadoutEl = null;
+  let drawButtonEl = null;
+  let shapeButtonEl = null;
+  let shapeTypeSelectEl = null;
+  let shapeReadoutEl = null;
+  let drawColorInputEl = null;
+
+  function setMeasureReadout(text) {
+    if (!measureReadoutEl) return;
+    measureReadoutEl.textContent = text || "";
+    measureReadoutEl.classList.toggle("d-none", !text);
+  }
+  function setShapeReadout(text) {
+    if (!shapeReadoutEl) return;
+    shapeReadoutEl.textContent = text || "";
+    shapeReadoutEl.classList.toggle("d-none", !text);
+  }
+
+  // One at a time (see activeTool's own declaration comment) — clicking an
+  // already-active tool's button disarms it, matching every toggle button
+  // elsewhere in this suite.
+  function setActiveTool(tool) {
+    activeTool = activeTool === tool ? null : tool;
+    pingButtonEl?.classList.toggle("active", activeTool === "ping");
+    pingButtonEl?.setAttribute("aria-pressed", activeTool === "ping" ? "true" : "false");
+    measureButtonEl?.classList.toggle("active", activeTool === "measure");
+    measureButtonEl?.setAttribute("aria-pressed", activeTool === "measure" ? "true" : "false");
+    drawButtonEl?.classList.toggle("active", activeTool === "draw");
+    drawButtonEl?.setAttribute("aria-pressed", activeTool === "draw" ? "true" : "false");
+    shapeButtonEl?.classList.toggle("active", activeTool === "shape");
+    shapeButtonEl?.setAttribute("aria-pressed", activeTool === "shape" ? "true" : "false");
+    shapeTypeSelectEl?.classList.toggle("d-none", activeTool !== "shape");
+    // Same "only show a tool's own contextual control while it's active"
+    // rule as the Shape Type select just above — Draw and Shape share this
+    // one swatch (see drawColor's own declaration comment).
+    drawColorInputEl?.classList.toggle("d-none", activeTool !== "draw" && activeTool !== "shape");
+    if (activeTool !== "measure") setMeasureReadout("");
+    if (activeTool !== "shape") setShapeReadout("");
+    // Crosshair cursor while Draw/Shape/Measure is armed — same cursor,
+    // same tools, as Orrery's own toolbar (orrery/css/styles.css's
+    // [data-map-tool-active] rules, scoped this way since viewerHost
+    // deliberately doesn't carry Orrery's own .orrery-map class).
+    if (activeTool) {
+      viewerHost.dataset.mapToolActive = activeTool;
+    } else {
+      delete viewerHost.dataset.mapToolActive;
+    }
+  }
+
+  // Called on every buildZoomPanel AND every onMapChanged (not just when the
+  // panel itself gets rebuilt) — a GM configuring Scale/Unit mid-session
+  // shouldn't leave Measure/Shape stuck disabled until some unrelated
+  // base-map edit happens to rebuild the panel.
+  function refreshToolAvailability() {
+    const configured = hasMapMeasurementConfigured();
+    if (measureButtonEl) {
+      measureButtonEl.disabled = !configured;
+      measureButtonEl.title = configured ? "Measure distance" : "Ask the GM to set a map scale to enable measuring";
+    }
+    if (shapeButtonEl) {
+      shapeButtonEl.disabled = !configured;
+      shapeButtonEl.title = configured ? "Draw an AoE shape" : "Ask the GM to set a map scale to enable AoE shapes";
+    }
+    if (!configured && (activeTool === "measure" || activeTool === "shape")) {
+      setActiveTool(activeTool);
+    }
+  }
+
+  // Screen-pixel distance -> "X ft (Y cells)" — identical math to Orrery's
+  // own formatDistance (app.js), just reading this widget's own `map`.
+  function formatMeasuredDistance(pixelDistance) {
+    const cells = pixelsToCells(pixelDistance);
+    if (cells === null) return "No grid layer to measure against.";
+    const distance = cells * map.measurement.scale;
+    return `${distance.toFixed(1)} ${map.measurement.unit} (${cells.toFixed(1)} cells)`;
+  }
+
+  // A screen-space (position: fixed) ruler line, appended to <body> rather
+  // than the map overlay — identical to Orrery's own createMeasureLine,
+  // reusing its exact `.orrery-measure-line-overlay` CSS class (already
+  // loaded on this page).
+  function createMeasureLine(startX, startY) {
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("class", "orrery-measure-line-overlay");
+    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    line.setAttribute("x1", String(startX));
+    line.setAttribute("y1", String(startY));
+    line.setAttribute("x2", String(startX));
+    line.setAttribute("y2", String(startY));
+    svg.appendChild(line);
+    const startDot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    startDot.setAttribute("cx", String(startX));
+    startDot.setAttribute("cy", String(startY));
+    startDot.setAttribute("r", "4");
+    svg.appendChild(startDot);
+    document.body.appendChild(svg);
+    return {
+      update(endX, endY) {
+        line.setAttribute("x2", String(endX));
+        line.setAttribute("y2", String(endY));
+      },
+      remove() {
+        svg.remove();
+      },
+    };
+  }
+
+  // Fetch-fresh/append/save, same immediacy as a marker move — this widget
+  // has no Save button/local-dirty-state concept at all. Resolves (creating
+  // if needed) an ordinary vector layer itself, so this widget never needs
+  // to know or track that layer's id.
+  async function persistDrawing(element) {
+    try {
+      const freshMap = await persistPlayerDrawing({ dataManager, mapId, shareToken, element });
+      if (!freshMap) return;
+      map = freshMap;
+      watcher?.noteLocalWrite();
+      renderLayers();
+    } catch (error) {
+      status?.show(error.message || "Unable to save your drawing.", { type: "error" });
+    }
+  }
+
+  // Tags a player-placed path/shape with who drew it (id first, username as
+  // a fallback — same two-step match ownership.js's own matchesOwner uses
+  // for every other kind of record in the suite) — `createVectorPathElement`/
+  // `createVectorShapeElement` don't declare these fields, but nothing stops
+  // a plain extra property on the returned object.
+  function tagAsOwnDrawing(element) {
+    element.authorId = dataManager.session?.user?.id ?? null;
+    element.authorUsername = dataManager.session?.user?.username || "";
+    return element;
+  }
+  function isOwnDrawing(element) {
+    const userId = dataManager.session?.user?.id;
+    const username = dataManager.session?.user?.username;
+    if (userId != null && element.authorId === userId) return true;
+    return Boolean(username) && element.authorUsername === username;
+  }
+
+  // The map's OWN owner (the GM, in the common case) can also manage any
+  // player's drawing/shape, not just their own — fetched once via the same
+  // generic ownership.js helper every other kind of record's owner-check
+  // already uses (kind-agnostic: `map` works exactly like `character`
+  // does). Deliberately matchesOwner()/admin-tier ONLY, not allowsDelete()'s
+  // broader "or an edit-permission share" rule — every campaign member
+  // already holds an edit share on a spotlighted map (that's what lets
+  // players save their OWN marker moves/drawings at all), so allowsDelete()
+  // would let any player manage any other player's drawing too, not just
+  // the GM. Confirmed real bug this fixes: a GM viewing this same widget
+  // (not full Orrery) couldn't drag/delete a player-authored shape at all.
+  let mapOwnerMetadata = null;
+  async function loadMapOwnership() {
+    const catalog = await refreshOwnershipCatalog(dataManager, "map", [mapId]);
+    mapOwnerMetadata = catalog.get(mapId) || null;
+  }
+  void loadMapOwnership();
+  function isMapOwnerOrAdmin() {
+    if (dataManager.getUserTier?.() === "admin") return true;
+    if (!mapOwnerMetadata) return false;
+    if (mapOwnerMetadata.ownership === "local") return true;
+    return matchesOwner(mapOwnerMetadata, { session: dataManager.session });
+  }
+  function canManageDrawing(element) {
+    return isOwnDrawing(element) || isMapOwnerOrAdmin();
+  }
+
+  // Fetch-fresh/filter-out/save — a player deleting their own drawing.
+  async function removeDrawing(layer, elementId) {
+    try {
+      const freshMap = await removeElement({ dataManager, mapId, shareToken, layerId: layer.id, elementId });
+      if (!freshMap) return;
+      map = freshMap;
+      watcher?.noteLocalWrite();
+      renderLayers();
+    } catch (error) {
+      status?.show(error.message || "Unable to delete that.", { type: "error" });
+    }
+  }
+
+  // One color swatch (no separate "outline" concept — a drawing/shape has
+  // just one visible color, same drawColor unification the toolbar's own
+  // picker follows) + (shapes only) opacity, plus a small red × to delete —
+  // anchored BELOW the actual clicked shape/path (event.target is the
+  // invisible "hit" element map-viewer.js draws directly over the visible
+  // geometry, so its own bounding rect matches what's on screen), same
+  // below-anchor idiom openMarkerEditor already uses off its own dotEl.
+  // Confirmed real complaint with the older click-point anchor (event.
+  // clientX/Y directly): it landed the popover square on top of whatever
+  // was just clicked, which for a shape is typically its own visible
+  // center — right where you'd want to actually SEE it while editing.
+  // Explicit `width` below is load-bearing, not cosmetic: `.orrery-floating-
+  // panel` also sets `right: 1.5rem` (its own default corner-docked
+  // position) — leaving width unset alongside an explicit `left` here made
+  // the browser stretch the box to fill the whole gap between them, which
+  // is why this used to render as a huge, nearly page-wide bar instead of a
+  // small popover.
+  function openDrawingEditor(layer, element, event) {
+    closeMarkerEditor();
+    const popover = el("div", "orrery-floating-panel d-flex flex-column gap-1 p-1");
+    popover.style.position = "fixed";
+    popover.style.width = "4.5rem";
+    popover.style.zIndex = "1040";
+    const hostRect = viewerHost.getBoundingClientRect();
+    const targetRect = event?.target?.getBoundingClientRect?.();
+    const top = targetRect ? targetRect.bottom + 4 : (event?.clientY ?? hostRect.top) + 4;
+    const left = targetRect ? targetRect.left : (event?.clientX ?? hostRect.left) - 24;
+    popover.style.top = `${top}px`;
+    popover.style.left = `${Math.max(hostRect.left + 4, Math.min(left, hostRect.right - 76))}px`;
+
+    const colorInput = document.createElement("input");
+    colorInput.type = "color";
+    colorInput.className = "form-control form-control-color p-0";
+    colorInput.style.width = "1.5rem";
+    colorInput.style.height = "1.5rem";
+    colorInput.style.flexShrink = "0";
+    colorInput.title = "Color";
+    colorInput.setAttribute("aria-label", "Color");
+    colorInput.value = element.strokeColor || element.fillColor || "#0f172a";
+    colorInput.addEventListener("change", () => {
+      // A shape's fillColor and strokeColor stay locked together (one
+      // shared color, see drawColor's own declaration comment); a path has
+      // no meaningful fillColor to update at all.
+      const patch =
+        element.kind === "shape"
+          ? { strokeColor: colorInput.value, fillColor: colorInput.value }
+          : { strokeColor: colorInput.value };
+      void persistElementFields(layer, element.id, patch);
+    });
+
+    const topRow = el("div", "d-flex align-items-center gap-1");
+    topRow.appendChild(colorInput);
+
+    const deleteButton = document.createElement("button");
+    deleteButton.type = "button";
+    deleteButton.className = "btn btn-outline-danger btn-sm ms-auto d-inline-flex align-items-center justify-content-center p-0 lh-1";
+    deleteButton.style.width = "1.5rem";
+    deleteButton.style.height = "1.5rem";
+    deleteButton.style.flexShrink = "0";
+    deleteButton.title = "Delete";
+    deleteButton.setAttribute("aria-label", "Delete");
+    deleteButton.textContent = "×";
+    deleteButton.addEventListener("click", () => {
+      closeMarkerEditor();
+      void removeDrawing(layer, element.id);
+    });
+    topRow.appendChild(deleteButton);
+    popover.appendChild(topRow);
+
+    // Opacity only exists on a shape's own data (createVectorShapeElement) —
+    // a drawn path has no such field, same as Orrery's own inspector never
+    // shows one for a path either.
+    if (element.kind === "shape") {
+      const opacityInput = document.createElement("input");
+      opacityInput.type = "range";
+      opacityInput.className = "form-range";
+      opacityInput.min = "0";
+      opacityInput.max = "1";
+      opacityInput.step = "0.05";
+      opacityInput.title = "Opacity";
+      opacityInput.setAttribute("aria-label", "Opacity");
+      opacityInput.value = Number.isFinite(element.opacity) ? element.opacity : 0.5;
+      opacityInput.addEventListener("change", () => {
+        void persistElementField(layer, element.id, "opacity", Number(opacityInput.value));
+      });
+      popover.appendChild(opacityInput);
+    }
+
+    viewerHost.appendChild(popover);
+    markerEditorPopover = popover;
+    document.addEventListener("pointerdown", onOutsidePointerDown, true);
+  }
+
+  // One persistent listener on viewerHost (never rebuilt, unlike zoomPanel)
+  // covering every tool — mirrors Orrery's own mapContainer-level
+  // pointerdown listeners for these exact four tools. A marker's own dot
+  // already calls stopPropagation() on its pointerdown (map-viewer.js's
+  // createMarkerDot), so dragging/clicking a token never reaches this
+  // handler at all — no conflict between the two.
+  function handleToolPointerDown(event) {
+    if (event.button !== 0 || !baseMapManager || !map) return;
+    if (activeTool === "ping") {
+      if (!groupId) {
+        status?.show("No active campaign to ping in.", { type: "warning", timeout: 2500 });
+        return;
+      }
+      const overlay = baseMapManager.getOverlayContainer();
+      if (!overlay) return;
+      const position = resolveClickPosition(baseMapManager, map, event, overlay);
+      if (!position) return;
+      // Rendered locally right away, same reasoning as Orrery's own
+      // setupPingTool — the full SSE round-trip is a lot of links to depend
+      // on for feedback on your OWN click.
+      overlay.appendChild(createPingMarker(baseMapManager, map, position, dataManager.session?.user?.username || "You"));
+      void dataManager.postMapPing({ groupId, position }).catch((error) => {
+        status?.show(error.message || "Unable to send ping.", { type: "error", timeout: 3000 });
+      });
+      return;
+    }
+    if (activeTool === "measure") {
+      event.preventDefault();
+      baseMapManager.setInteractionEnabled(false);
+      const startX = event.clientX;
+      const startY = event.clientY;
+      const measureLine = createMeasureLine(startX, startY);
+      const onMove = (moveEvent) => {
+        const dx = moveEvent.clientX - startX;
+        const dy = moveEvent.clientY - startY;
+        measureLine.update(moveEvent.clientX, moveEvent.clientY);
+        setMeasureReadout(formatMeasuredDistance(Math.hypot(dx, dy)));
+      };
+      const onUp = () => {
+        baseMapManager.setInteractionEnabled(true);
+        measureLine.remove();
+        window.removeEventListener("pointermove", onMove);
+        window.removeEventListener("pointerup", onUp);
+      };
+      window.addEventListener("pointermove", onMove);
+      window.addEventListener("pointerup", onUp);
+      return;
+    }
+    if (activeTool === "draw") {
+      event.preventDefault();
+      baseMapManager.setInteractionEnabled(false);
+      const overlay = baseMapManager.getOverlayContainer();
+      const points = [];
+      const preview = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      preview.style.position = "absolute";
+      preview.style.inset = "0";
+      preview.style.width = "100%";
+      preview.style.height = "100%";
+      preview.style.overflow = "visible";
+      preview.style.pointerEvents = "none";
+      const polyline = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+      polyline.setAttribute("fill", "none");
+      polyline.setAttribute("stroke", drawColor);
+      polyline.setAttribute("stroke-width", "2");
+      polyline.setAttribute("stroke-linecap", "round");
+      polyline.setAttribute("stroke-linejoin", "round");
+      preview.appendChild(polyline);
+      overlay.appendChild(preview);
+      const addPoint = (pointerEvent) => {
+        const position = resolveClickPosition(baseMapManager, map, pointerEvent, overlay);
+        if (!position) return;
+        points.push(position);
+        const pixelPoints = points.map((point) => markerPositionToLocalPixel(baseMapManager, map, point));
+        polyline.setAttribute("points", pixelPoints.map((point) => `${point.x},${point.y}`).join(" "));
+      };
+      addPoint(event);
+      const onMove = (moveEvent) => addPoint(moveEvent);
+      const onUp = () => {
+        window.removeEventListener("pointermove", onMove);
+        window.removeEventListener("pointerup", onUp);
+        baseMapManager.setInteractionEnabled(true);
+        preview.remove();
+        if (points.length > 1) {
+          void persistDrawing(tagAsOwnDrawing(createVectorPathElement({ points, strokeColor: drawColor })));
+          // Single-shot — placing one stroke disarms the tool, same as
+          // Shape below, rather than staying armed for another click to
+          // immediately start a second one with no way to just stop.
+          setActiveTool("draw");
+        }
+      };
+      window.addEventListener("pointermove", onMove);
+      window.addEventListener("pointerup", onUp);
+      return;
+    }
+    if (activeTool === "shape") {
+      event.preventDefault();
+      baseMapManager.setInteractionEnabled(false);
+      const overlay = baseMapManager.getOverlayContainer();
+      const origin = resolveClickPosition(baseMapManager, map, event, overlay);
+      if (!origin) {
+        baseMapManager.setInteractionEnabled(true);
+        return;
+      }
+      const shapeType = AOE_SHAPE_TYPES.includes(shapeTypeSelectEl?.value) ? shapeTypeSelectEl.value : "circle";
+      const startClientX = event.clientX;
+      const startClientY = event.clientY;
+      // No target layer yet (the target vector layer only gets resolved/
+      // created server-side, at commit time, by persistPlayerDrawing) —
+      // getMarkerLayerOffset needs SOME layer shape to read a position
+      // offset from, but every vector layer's own default position is
+      // {x:0,y:0} (map-model.js's createLayer) and nothing here ever lets a
+      // player author a layer with a non-zero one, so a plain zero offset is
+      // exactly as correct as fetching the real (also-zero) layer would be.
+      const offset = { x: 0, y: 0 };
+      const preview = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      preview.style.position = "absolute";
+      preview.style.inset = "0";
+      preview.style.width = "100%";
+      preview.style.height = "100%";
+      preview.style.overflow = "visible";
+      preview.style.pointerEvents = "none";
+      overlay.appendChild(preview);
+      let sizeCells = 0;
+      let angleDeg = 0;
+      // One shared color for fill AND stroke (drawColor — see its own
+      // declaration comment): a shape has no separate "outline" concept.
+      // Not read from any layer's own settings — renderShapeElement's own
+      // `layer` parameter is never actually referenced inside it (confirmed
+      // by reading it: every stroke/fill/width comes from the element
+      // passed in, 4th argument), and a player-placed shape has no
+      // "selected vector layer" to read defaults from in the first place
+      // (unlike Orrery's own GM tool).
+      const strokeColor = drawColor;
+      const fillColor = drawColor;
+      const strokeWidth = 2;
+      function drawPreview() {
+        preview.innerHTML = "";
+        renderShapeElement(
+          preview,
+          baseMapManager,
+          map,
+          null,
+          {
+            id: "shape-preview",
+            kind: "shape",
+            shapeType,
+            origin,
+            sizeCells,
+            angleDeg,
+            spreadDeg: 53,
+            widthCells: 1,
+            strokeColor,
+            fillColor,
+            strokeWidth,
+          },
+          offset,
+          {}
+        );
+      }
+      drawPreview();
+      const onMove = (moveEvent) => {
+        const dx = moveEvent.clientX - startClientX;
+        const dy = moveEvent.clientY - startClientY;
+        const cells = pixelsToCells(Math.hypot(dx, dy));
+        if (cells === null) {
+          setShapeReadout("No grid layer to measure against.");
+          sizeCells = 0;
+          drawPreview();
+          return;
+        }
+        sizeCells = snapCellsToWholeUnit(cells);
+        angleDeg = (Math.atan2(dy, dx) * 180) / Math.PI;
+        const distance = Math.round(sizeCells * map.measurement.scale);
+        setShapeReadout(`${distance} ${map.measurement.unit} (${sizeCells.toFixed(1)} cells)`);
+        drawPreview();
+      };
+      const onUp = () => {
+        window.removeEventListener("pointermove", onMove);
+        window.removeEventListener("pointerup", onUp);
+        baseMapManager.setInteractionEnabled(true);
+        preview.remove();
+        setShapeReadout("");
+        if (sizeCells > 0) {
+          void persistDrawing(
+            tagAsOwnDrawing(
+              createVectorShapeElement({
+                shapeType,
+                origin,
+                sizeCells,
+                angleDeg,
+                strokeColor,
+                fillColor,
+                strokeWidth,
+              })
+            )
+          );
+          // Single-shot — see the Draw tool's own identical comment above.
+          setActiveTool("shape");
+        }
+      };
+      window.addEventListener("pointermove", onMove);
+      window.addEventListener("pointerup", onUp);
+    }
+  }
+
   // Same direct spotlightToGroup/clearSpotlight toggle Handout's own
   // visibility button uses — no modal, just an eye icon. `LINK_ONLY_KINDS`
   // already covers "map" (spotlight.js) since a map is a link back into
@@ -138,13 +691,31 @@ export function initMapWidget(
 
   void refreshVisibility();
 
+  // Shared shape for every player tool toggle below (Ping, Measure, Draw,
+  // Shape) — same outline-secondary sizing as the zoom buttons, with the
+  // .active/aria-pressed toggle-button convention Orrery's own toolbar
+  // already uses for these exact tools.
+  function createToolToggleButton({ icon, label }) {
+    const button = el("button", "btn btn-outline-secondary");
+    button.type = "button";
+    button.setAttribute("aria-pressed", "false");
+    button.setAttribute("aria-label", label);
+    button.title = label;
+    const iconEl = el("span", "iconify");
+    iconEl.dataset.icon = icon;
+    iconEl.setAttribute("aria-hidden", "true");
+    button.appendChild(iconEl);
+    return button;
+  }
+
   // Same zoom in/out/reset controls as Orrery's own floating panel
   // (orrery/index.html's data-zoom-in/-out/-reset, wired in orrery/js/app.js
-  // to these exact BaseMapManager methods) — just the zoom cluster itself,
-  // not Orrery's draggable/collapsible panel chrome, which has no room to
-  // mean anything in an 18rem-tall widget. Hidden while the Dashboard is in
-  // edit mode (data-map-zoom-panel — see dashboard.js's own
-  // applyEditingState) so it doesn't clutter the layout-editing view.
+  // to these exact BaseMapManager methods), plus the Ping/Measure toggles
+  // added alongside them below — just the compact cluster itself, not
+  // Orrery's draggable/collapsible panel chrome, which has no room to mean
+  // anything in an 18rem-tall widget. Hidden while the Dashboard is in edit
+  // mode (data-map-zoom-panel — see dashboard.js's own applyEditingState)
+  // so it doesn't clutter the layout-editing view.
   function buildZoomPanel() {
     // Reuses Orrery's own `.orrery-floating-panel` class (orrery/css/styles.css,
     // already loaded on this page) rather than a bare `.btn-group` — that
@@ -187,6 +758,91 @@ export function initMapWidget(
     zoomInButton.appendChild(zoomInIcon);
     zoomInButton.addEventListener("click", () => baseMapManager?.zoomBy(0.25));
     buttonGroup.append(zoomOutButton, zoomResetButton, zoomInButton);
+
+    // Ping/Measure/Draw/Shape — same four tools, same icons/tooltips as
+    // Orrery's own toolbar (index.html's data-ping-toggle/-measure-toggle/
+    // -draw-toggle/-shape-toggle), just this widget's own compact
+    // toggle-button shape above instead of Orrery's larger wrapped/
+    // tooltipped span markup. One armed at a time — see setActiveTool.
+    const toolGroup = el("div", "btn-group btn-group-sm mt-1");
+    toolGroup.setAttribute("role", "group");
+    toolGroup.setAttribute("aria-label", "Map tools");
+
+    pingButtonEl = createToolToggleButton({ icon: "tabler:location", label: "Ping the map" });
+    pingButtonEl.addEventListener("click", () => setActiveTool("ping"));
+
+    measureButtonEl = createToolToggleButton({ icon: "tabler:ruler-2", label: "Measure distance" });
+    measureButtonEl.addEventListener("click", () => {
+      if (measureButtonEl.disabled) return;
+      setActiveTool("measure");
+    });
+
+    drawButtonEl = createToolToggleButton({ icon: "tabler:pencil", label: "Draw" });
+    drawButtonEl.addEventListener("click", () => setActiveTool("draw"));
+
+    shapeButtonEl = createToolToggleButton({ icon: "tabler:target", label: "Draw an AoE shape" });
+    shapeButtonEl.addEventListener("click", () => {
+      if (shapeButtonEl.disabled) return;
+      setActiveTool("shape");
+    });
+
+    toolGroup.append(pingButtonEl, measureButtonEl, drawButtonEl, shapeButtonEl);
+    panel.appendChild(toolGroup);
+
+    // Color swatch + Shape type, one row — the swatch shown while either
+    // Draw or Shape is armed, the select only for Shape (see setActiveTool's
+    // own toggles above), but grouped together in the DOM/layout regardless
+    // so Shape's own picker always lands directly right of the color it'll
+    // use, matching Orrery's own toolbar ordering (index.html).
+    const toolOptionsRow = el("div", "d-flex align-items-center gap-1 mt-1");
+
+    // Shared Draw/Shape color swatch — same drawColor concept as Orrery's
+    // own toolbar (index.html's data-draw-color).
+    drawColorInputEl = document.createElement("input");
+    drawColorInputEl.type = "color";
+    drawColorInputEl.className = "form-control form-control-color form-control-sm flex-shrink-0 p-1 d-none";
+    drawColorInputEl.title = "Drawing color";
+    drawColorInputEl.setAttribute("aria-label", "Drawing color");
+    drawColorInputEl.value = drawColor;
+    drawColorInputEl.addEventListener("input", () => {
+      drawColor = drawColorInputEl.value;
+    });
+    toolOptionsRow.appendChild(drawColorInputEl);
+
+    // AoE shape type — same 4 options as Orrery's own data-shape-type
+    // select, shown only while the Shape tool is armed.
+    shapeTypeSelectEl = document.createElement("select");
+    shapeTypeSelectEl.className = "form-select form-select-sm flex-grow-1 d-none";
+    shapeTypeSelectEl.setAttribute("aria-label", "AoE shape type");
+    [
+      ["circle", "Circle"],
+      ["cone", "Cone"],
+      ["line", "Line"],
+      ["square", "Square"],
+    ].forEach(([value, label]) => {
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = label;
+      shapeTypeSelectEl.appendChild(option);
+    });
+    toolOptionsRow.appendChild(shapeTypeSelectEl);
+    panel.appendChild(toolOptionsRow);
+
+    measureReadoutEl = el("span", "small text-body-secondary d-block mt-1 d-none");
+    panel.appendChild(measureReadoutEl);
+    shapeReadoutEl = el("span", "small text-body-secondary d-block mt-1 d-none");
+    panel.appendChild(shapeReadoutEl);
+
+    // Re-apply whichever tool (if any) was already armed before this panel
+    // got rebuilt — activeTool itself survives a rebuild (instance-scoped),
+    // but the fresh buttons above all start unpressed until this runs.
+    if (activeTool) {
+      const armed = activeTool;
+      activeTool = null;
+      setActiveTool(armed);
+    }
+    refreshToolAvailability();
+
     return panel;
   }
 
@@ -224,6 +880,11 @@ export function initMapWidget(
       ? new ResizeObserver(() => baseMapManager?.getMap?.()?.invalidateSize?.())
       : null;
   resizeObserver?.observe(viewerHost);
+  // Registered once, on the persistent viewerHost — not inside
+  // buildZoomPanel, which gets discarded/rebuilt whenever the base map
+  // changes. See handleToolPointerDown's own comment for why this never
+  // conflicts with marker dragging/clicking.
+  viewerHost.addEventListener("pointerdown", handleToolPointerDown);
 
   function renderError(message) {
     container.innerHTML = "";
@@ -295,10 +956,176 @@ export function initMapWidget(
       });
       if (!freshMap) return;
       map = freshMap;
+      watcher?.noteLocalWrite();
       renderLayers();
     } catch (error) {
       status?.show(error.message || "Unable to open the door.", { type: "error" });
     }
+  }
+
+  // A small popover for re-icon/re-coloring a marker the viewer controls —
+  // opened by a plain click (not a drag) on that marker, same
+  // isMarkerDraggable ownership gate buildRestrictedMapOptions already makes
+  // for dragging it (see onMarkerClicked below). Appended to viewerHost, a
+  // sibling of the overlay renderLayers() rebuilds on every poll/live-stream
+  // update — not a child of it — so an incoming update while this is open
+  // doesn't tear it out from under the viewer.
+  let markerEditorPopover = null;
+  function closeMarkerEditor() {
+    markerEditorPopover?.remove();
+    markerEditorPopover = null;
+    document.removeEventListener("pointerdown", onOutsidePointerDown, true);
+  }
+  function onOutsidePointerDown(event) {
+    if (markerEditorPopover && !markerEditorPopover.contains(event.target)) {
+      closeMarkerEditor();
+    }
+  }
+  // Same fetch-fresh/patch/save immediacy as a marker drag/door toggle —
+  // this widget has no Save button/local-dirty-state concept at all. Field-
+  // agnostic and element-kind-agnostic on purpose: used for a marker's own
+  // outlineColor/overlayIcons (the click-to-edit popover) AND a player-owned
+  // shape's own origin (drag-to-move) — both are just "patch one field on
+  // one element," nothing marker-specific about the mechanism itself.
+  async function persistElementField(layer, elementId, field, value) {
+    return persistElementFields(layer, elementId, { [field]: value });
+  }
+  // Same fetch-fresh/patch/save shape as persistElementField, generalized to
+  // a multi-key patch object — used for the drawing color swatch, which
+  // writes fillColor AND strokeColor together (one shared color, see
+  // drawColor's own declaration comment) as a single round trip rather than
+  // two sequential fetch-fresh/save calls racing each other.
+  async function persistElementFields(layer, elementId, patch) {
+    try {
+      const freshMap = await persistElementUpdate({
+        dataManager,
+        mapId,
+        shareToken,
+        layerId: layer.id,
+        elementId,
+        patch,
+      });
+      if (!freshMap) return;
+      map = freshMap;
+      watcher?.noteLocalWrite();
+      renderLayers();
+    } catch (error) {
+      status?.show(error.message || "Unable to save that change.", { type: "error" });
+    }
+  }
+  // Re-reads the layer/marker from the CURRENT `map` (post-persistElementField,
+  // which already replaced it) and rebuilds the popover in place — needed
+  // for overlayIcons specifically, since each add/remove has to build its
+  // next array off the latest server-confirmed list, not whatever was
+  // captured in this popover's own closure when it first opened (two
+  // additions in a row would otherwise each compute from the SAME stale
+  // starting array and silently drop one of them).
+  function reopenMarkerEditor(layerId, elementId, dotEl) {
+    const freshLayer = map?.layers?.find((entry) => entry.id === layerId);
+    const freshMarker = freshLayer?.elements?.find((entry) => entry.id === elementId);
+    if (freshLayer && freshMarker) openMarkerEditor(freshLayer, freshMarker, dotEl);
+  }
+
+  // Color + icons only — no image field. A player can recolor/re-icon their
+  // own token the same way they can already move it, but replacing its
+  // portrait is map-design work, not a quick in-play touch-up. Kept as
+  // compact as possible: no field labels beyond a title attribute, a single
+  // small color swatch, and one icon-add input with existing badges shown
+  // as small removable chips below it only when there are any.
+  function openMarkerEditor(layer, markerElement, dotEl) {
+    closeMarkerEditor();
+    const popover = el("div", "orrery-floating-panel d-flex flex-column gap-1 p-1");
+    popover.style.position = "fixed";
+    // Wider than the bare minimum the color swatch + icon input need —
+    // the icon search dropdown's own width is tied to its parent's (w-100,
+    // icon-picker.js), so a narrow popover meant a narrow, hard-to-read
+    // results list too.
+    popover.style.width = "16rem";
+    popover.style.zIndex = "1040";
+    const rect = dotEl?.getBoundingClientRect?.();
+    const hostRect = viewerHost.getBoundingClientRect();
+    const top = rect ? rect.bottom + 4 : hostRect.top + 4;
+    const left = rect ? Math.min(rect.left, hostRect.right - 264) : hostRect.left + 4;
+    popover.style.top = `${top}px`;
+    popover.style.left = `${Math.max(hostRect.left + 4, left)}px`;
+
+    // One row: color swatch, icon picker directly beside it. No visible
+    // labels — tooltips (native `title`, same as every other control in
+    // these compact popovers) carry that instead, per the "as compact as
+    // possible" brief.
+    const mainRow = el("div", "d-flex align-items-center gap-1");
+    const colorInput = document.createElement("input");
+    colorInput.type = "color";
+    colorInput.className = "form-control form-control-color p-0";
+    colorInput.style.width = "1.5rem";
+    colorInput.style.height = "1.5rem";
+    colorInput.style.flexShrink = "0";
+    colorInput.title = "Outline color";
+    colorInput.setAttribute("aria-label", "Outline color");
+    colorInput.value = markerElement.outlineColor || layer.settings?.outlineColor || "#0f172a";
+    colorInput.addEventListener("change", () => {
+      void persistElementField(layer, markerElement.id, "outlineColor", colorInput.value);
+    });
+    mainRow.appendChild(colorInput);
+
+    // createIconPickerField's own wrapper is label-on-top; only its inner
+    // `.input-group` (preview + search input) is reused here so it can sit
+    // directly beside the color swatch in one row instead — the label
+    // itself is simply never appended anywhere, `title`/aria-label below
+    // carry its meaning instead.
+    const iconField = createIconPickerField({
+      onSelect: (value) => {
+        if (!value) return;
+        const nextIcons = [...(markerElement.overlayIcons || []), createMarkerOverlayIcon({ icon: value, label: value })];
+        void persistElementField(layer, markerElement.id, "overlayIcons", nextIcons).then(() =>
+          reopenMarkerEditor(layer.id, markerElement.id, dotEl)
+        );
+      },
+    });
+    const iconGroup = iconField.querySelector(".input-group");
+    iconGroup.classList.add("flex-grow-1");
+    const iconInput = iconGroup.querySelector("input");
+    iconInput.title = "Add icon";
+    iconInput.setAttribute("aria-label", "Add icon");
+    mainRow.appendChild(iconGroup);
+    popover.appendChild(mainRow);
+
+    if ((markerElement.overlayIcons || []).length) {
+      const chipRow = el("div", "d-flex flex-wrap gap-1");
+      markerElement.overlayIcons.forEach((entry) => {
+        const chip = el("span", "d-inline-flex align-items-center gap-1 border rounded-pill ps-1 pe-1 small");
+        const iconTokens = getIconTokens(entry.icon);
+        if (iconTokens.length) {
+          const iconEl = document.createElement("span");
+          const bootstrapToken = iconTokens.find((token) => token.startsWith("bi-"));
+          iconEl.className = bootstrapToken ? `bi ${bootstrapToken}` : iconTokens.join(" ");
+          chip.appendChild(iconEl);
+        }
+        const removeButton = document.createElement("button");
+        removeButton.type = "button";
+        removeButton.className = "btn-close";
+        removeButton.style.width = "0.5rem";
+        removeButton.style.height = "0.5rem";
+        removeButton.setAttribute("aria-label", "Remove icon");
+        removeButton.addEventListener("click", () => {
+          const nextIcons = (markerElement.overlayIcons || []).filter((icon) => icon.id !== entry.id);
+          void persistElementField(layer, markerElement.id, "overlayIcons", nextIcons).then(() =>
+            reopenMarkerEditor(layer.id, markerElement.id, dotEl)
+          );
+        });
+        chip.appendChild(removeButton);
+        chipRow.appendChild(chip);
+      });
+      popover.appendChild(chipRow);
+    }
+
+    viewerHost.appendChild(popover);
+    markerEditorPopover = popover;
+    // Capture phase — a click on the marker's own dot that opened this
+    // popover has already fired by the time this listener is attached
+    // (openMarkerEditor runs synchronously from that same click), so it
+    // never immediately closes itself.
+    document.addEventListener("pointerdown", onOutsidePointerDown, true);
   }
 
   // Fires the fetch for every character-linked marker whose Vision Range is
@@ -342,6 +1169,29 @@ export function initMapWidget(
     primeCharacterOwnershipCatalog();
     renderMapLayers(overlay, baseMapManager, map, {
       viewerTier,
+      // Every vector layer opts into click/drag for a restricted viewer —
+      // there's no dedicated "Player Drawings" layer anymore (a drawing/
+      // shape just lands on whichever ordinary vector layer Draw/Shape
+      // resolve via persistPlayerDrawing, same as any GM-authored one).
+      // Harmless for a GM's own decorative shapes too: per-element
+      // ownership (can THIS viewer actually act on THIS one drawing) is
+      // checked inside onVectorPathClick/onShapeDragEnd below, not here —
+      // this only controls whether a hit target exists at all. Walls/lights
+      // stay non-interactive regardless (createVectorLayerElement only
+      // wires their own onWallDragEnd off isSelected, which this widget
+      // never sets or passes a handler for).
+      isVectorLayerInteractive: () => true,
+      onVectorPathClick: (layer, elementId, event) => {
+        if (activeTool) return; // mid-placement — a click here is the NEXT point/shape, not a selection
+        const element = layer.elements?.find((entry) => entry.id === elementId);
+        if (!element || !canManageDrawing(element)) return;
+        openDrawingEditor(layer, element, event);
+      },
+      onShapeDragEnd: (layer, elementId, nextOrigin) => {
+        const element = layer.elements?.find((entry) => entry.id === elementId);
+        if (!element || !canManageDrawing(element)) return;
+        void persistElementField(layer, elementId, "origin", nextOrigin);
+      },
       ...buildRestrictedMapOptions({
         dataManager,
         baseMapManager,
@@ -352,6 +1202,7 @@ export function initMapWidget(
         onMarkerMoved: (layer, markerElement, snappedPosition) =>
           void persistMarkerMove(layer.id, markerElement.id, snappedPosition),
         onDoorToggled: (layer, elementId) => void toggleDoor(layer, elementId),
+        onMarkerClicked: (layer, markerElement, dotEl) => openMarkerEditor(layer, markerElement, dotEl),
         onDragStateChange: (dragging) => {
           isDraggingMarker = dragging;
         },
@@ -371,6 +1222,7 @@ export function initMapWidget(
       const freshMap = await persistMarkerMoveShared({ dataManager, mapId, shareToken, layerId, elementId, nextPosition });
       if (!freshMap) return;
       map = freshMap;
+      watcher?.noteLocalWrite();
       renderLayers();
     } catch (error) {
       status?.show(error.message || "Unable to save your marker's new position.", { type: "error" });
@@ -427,6 +1279,10 @@ export function initMapWidget(
       zoomPanel = buildZoomPanel();
       viewerHost.appendChild(zoomPanel);
     }
+    // Also covers the case where the panel WASN'T rebuilt this pass (base
+    // map unchanged) — a GM configuring Scale/Unit mid-session shouldn't
+    // leave Measure stuck disabled until some unrelated base-map edit.
+    refreshToolAvailability();
     renderLayers();
   }
 
@@ -471,6 +1327,8 @@ export function initMapWidget(
       destroyed = true;
       watcher.stop();
       resizeObserver?.disconnect();
+      viewerHost.removeEventListener("pointerdown", handleToolPointerDown);
+      closeMarkerEditor();
       baseMapManager?.current?.destroy?.();
       container.innerHTML = "";
       if (removed && visible && groupId) {

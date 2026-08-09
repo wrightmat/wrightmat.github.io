@@ -1,0 +1,18 @@
+{
+  "id": "feat.obscure-light",
+  "name": "Lightly Obscures Area",
+  "systemIds": ["sys.dnd5e"],
+  "description": "A haze, mist, or dim light fills the area, granting it the lightly obscured condition.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The effect's area becomes lightly obscured for its duration."
+  },
+  "budgetCost": 1,
+  "tags": {
+    "categories": ["spell"],
+    "propertyHints": ["utility", "obscurement"]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,14 @@
+{
+  "id": "res.tindertwig",
+  "name": "Tindertwig",
+  "systemIds": ["sys.dnd5e"],
+  "settingIds": ["eberron"],
+  "description": "A tiny wooden stick tipped with an alchemical substance that ignites automatically when struck against something rough — quicker and easier than flint and steel.",
+  "category": "adventuring-gear",
+  "price": "1 gp",
+  "tags": {
+    "locationTypes": [],
+    "locationPurposes": ["commerce"],
+    "environments": []
+  }
+}

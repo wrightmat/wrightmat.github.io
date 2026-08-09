@@ -15,30 +15,34 @@ import { initHelpSystem } from "../../common/js/lib/help.js";
 import { applyMapping } from "../../common/js/lib/mapping-engine.js";
 import { deriveLookupTables } from "../../common/js/lib/system-lookup-tables.js";
 import { createMappingCustomFunctions } from "../../common/js/lib/mapping-custom-functions.js";
-import { loadSourceDataRaw, loadLibraryKinds, fetchKindEntriesWithIds, mergeImportedCharacterData } from "../../common/js/lib/content-fetch.js";
+import {
+  loadSourceDataRaw,
+  loadLibraryKinds,
+  fetchKindEntriesWithIds,
+  mergeImportedCharacterData,
+  listAvailableMappings,
+  SOURCES,
+} from "../../common/js/lib/content-fetch.js";
 import { initShareModal } from "../../common/js/lib/share-modal.js";
 import { allowsDelete, confirmDelete } from "../../common/js/lib/ownership.js";
+import { roleRank } from "../../common/js/lib/data-manager.js";
 import { createSortable } from "../../common/js/lib/dnd.js";
 import { loadClipLibrary, getAllClips } from "../../common/js/lib/audio-clip-library.js";
 import { MACRO_ACTION_CATALOG } from "../../common/js/lib/widgets/macro-action-catalog.js";
 import { HANDOUT_KINDS, KIND_LABELS as HANDOUT_KIND_LABELS } from "../../common/js/lib/widgets/handout.js";
+import {
+  PROPERTY_TYPES,
+  renderPropertyRow,
+  initPropertySortable,
+  wirePropertyContainerEvents,
+  applyPropertyType,
+  collectFieldFromRow,
+  collectProperties,
+  createPropertyInspector,
+} from "../../common/js/lib/property-schema-editor.js";
 
-const SOURCES = [
-  {
-    id: "ddb",
-    label: "D&D Beyond",
-    valueLabel: "Character ID or URL",
-    placeholder: "e.g. 123456789, or https://www.dndbeyond.com/classes/2190875-barbarian",
-    helpTopic: "loom.source.ddb",
-  },
-  {
-    id: "srd",
-    label: "5e API",
-    valueLabel: "API Endpoint or URL",
-    placeholder: "e.g. /api/2024/classes/barbarian",
-    helpTopic: "loom.source.srd",
-  },
-];
+// SOURCES now imported from content-fetch.js (shared with Workbench's own
+// player-facing Import Character picker) — see that module's own comment.
 
 // Built and mounted before any of this file's many querySelector("[data-*]")
 // lines below (undo/redo/mapping consts here, library/system/macro consts
@@ -172,6 +176,15 @@ document.querySelector("[data-macro-add-action-mount]")?.appendChild(
     attrs: { "data-macro-add-action": true },
   })
 );
+document.querySelector("[data-loom-group-add-property-mount]")?.appendChild(
+  createIconButton({
+    icon: "tabler:plus",
+    label: "Add Property",
+    className: "p-1",
+    attrs: { "data-loom-group-add-property": true },
+  })
+);
+const loomGroupAddPropertyButton = document.querySelector("[data-loom-group-add-property]");
 
 // Property Inspector toolbar (right pane) — New/Delete/Duplicate/Required
 // Property. Built directly via createIconButton rather than
@@ -218,6 +231,48 @@ if (propertyInspectorToolbarMount) {
   );
 }
 
+// Group's own Property Inspector toolbar (right pane) — same shape as
+// Systems' above, scoped to Group Properties.
+const groupPropertyInspectorToolbarMount = document.querySelector(
+  "[data-loom-group-property-inspector-toolbar-mount]"
+);
+if (groupPropertyInspectorToolbarMount) {
+  groupPropertyInspectorToolbarMount.append(
+    createIconButton({
+      icon: "tabler:file-plus",
+      label: "New Property",
+      variant: "outline-primary",
+      kind: "toolbar",
+      tooltipPlacement: "top",
+      attrs: { "data-loom-group-inspector-new": true },
+    }),
+    createIconButton({
+      icon: "tabler:trash",
+      label: "Delete Property",
+      variant: "outline-danger",
+      kind: "toolbar",
+      tooltipPlacement: "top",
+      attrs: { "data-loom-group-inspector-delete": true },
+    }),
+    createIconButton({
+      icon: "tabler:copy",
+      label: "Duplicate Property",
+      variant: "outline-secondary",
+      kind: "toolbar",
+      tooltipPlacement: "top",
+      attrs: { "data-loom-group-inspector-duplicate": true },
+    }),
+    createIconButton({
+      icon: "tabler:asterisk",
+      label: "Mark as Required",
+      variant: "outline-secondary",
+      kind: "toolbar",
+      tooltipPlacement: "top",
+      attrs: { "data-loom-group-inspector-required": true, "aria-pressed": "false" },
+    })
+  );
+}
+
 // replaceWith, not appendChild — see press/js/app.js's mountInspectorField
 // for why: an appended-into wrapper stays an empty-but-in-flow flex item
 // even while its field is conditionally hidden, silently spending a full
@@ -251,6 +306,17 @@ const stepPalette = document.querySelector("[data-step-palette]");
 const sampleDataInput = document.querySelector("[data-sample-data-input]");
 const sampleDataApplyButton = document.querySelector("[data-sample-data-apply]");
 const sourceSelect = document.querySelector("[data-source-select]");
+// Purely a categorization tag on the mapping itself ($dataType, see
+// enterMappingMode/the Save handler below) — unlike sourceSelect, it never
+// locks (a GM can freely retag a mapping's data type at any time) and has
+// no bearing on how Fetch behaves. Controls which mappings Workbench's own
+// player-facing "Import Character" flow offers.
+const dataTypeSelect = document.querySelector("[data-data-type-select]");
+// A friendly name shown in place of this mapping's own raw id in
+// Workbench's player-facing "Import Character" picker (content-fetch.js's
+// listCharacterMappings) — same "stamp at save time" handling as
+// dataTypeSelect above, no live dirty-tracking wiring needed.
+const mappingDescriptionInput = document.querySelector("[data-mapping-description]");
 const sourceValueInput = document.querySelector("[data-source-value]");
 const sourceValueLabelRow = document.querySelector("[data-source-value-label-row]");
 const sourceFetchButton = document.querySelector("[data-source-fetch]");
@@ -335,8 +401,23 @@ mountField("system-title", createCompactField({ type: "text", id: "loomSystemTit
 mountField("system-version", createCompactField({ type: "text", id: "loomSystemVersion", label: "Version", labelClass: "form-label fw-semibold mb-0", dataAttr: "data-system-version" }));
 
 const libraryIdInput = document.querySelector("[data-library-id]");
-const librarySystemSection = document.querySelector("[data-library-system-section]");
+// Assigned Systems/Settings are collapsible for the same reason every other
+// Loom section is (Selection/Entities/Data/Mapping Tree above) — adopts its
+// own pre-existing static list div as content, same pattern as those.
 const librarySystemList = document.querySelector("[data-library-system-list]");
+const librarySystemSection = createCollapsibleSection({
+  label: "Assigned Systems",
+  collapsed: true,
+  content: librarySystemList,
+}).section;
+document.querySelector("[data-library-system-mount]")?.appendChild(librarySystemSection);
+const librarySettingList = document.querySelector("[data-library-setting-list]");
+const librarySettingSection = createCollapsibleSection({
+  label: "Assigned Settings",
+  collapsed: true,
+  content: librarySettingList,
+}).section;
+document.querySelector("[data-library-setting-mount]")?.appendChild(librarySettingSection);
 const libraryTemplateSection = document.querySelector("[data-library-template-section]");
 const libraryTemplateSelect = document.querySelector("[data-library-template-select]");
 const libraryJsonTextarea = document.querySelector("[data-library-json]");
@@ -344,6 +425,13 @@ const libraryJsonError = document.querySelector("[data-library-json-error]");
 const libraryNewButton = document.querySelector("[data-library-new]");
 const librarySaveButton = document.querySelector("[data-library-save]");
 const libraryDeleteButton = document.querySelector("[data-library-delete]");
+// Same "Select a ..." gating as Systems/Macros above.
+const libraryEmpty = document.querySelector("[data-library-empty]");
+const libraryPanel = document.querySelector("[data-library-panel]");
+function setLibraryFormVisible(visible) {
+  if (libraryEmpty) libraryEmpty.hidden = visible;
+  if (libraryPanel) libraryPanel.classList.toggle("d-none", !visible);
+}
 
 mountField("system-select", createCompactField({ type: "select", id: "loomSystemSelect", label: "System", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-system-select" }));
 
@@ -357,6 +445,16 @@ const systemSaveButton = document.querySelector("[data-system-save]");
 const systemDuplicateButton = document.querySelector("[data-system-duplicate]");
 const systemDeleteButton = document.querySelector("[data-system-delete]");
 const systemAddPropertyButton = document.querySelector("[data-system-add-property]");
+// Gated behind a "Select a system..." message, same convention as Groups/
+// Users — hidden until a system is loaded or New is explicitly clicked (see
+// newSystemEditor/loadSystemIntoEditor below), not shown by default just
+// because a blank draft exists in the form underneath.
+const systemsEmpty = document.querySelector("[data-systems-empty]");
+const systemsPanel = document.querySelector("[data-systems-panel]");
+function setSystemFormVisible(visible) {
+  if (systemsEmpty) systemsEmpty.hidden = visible;
+  if (systemsPanel) systemsPanel.classList.toggle("d-none", !visible);
+}
 // Read-only, live "the whole record as it'll be saved" view — see
 // buildSystemPayload/renderSystemJsonPreview below. Built via the shared
 // ui-components.js factory (pilot migration) instead of hand-written markup
@@ -371,9 +469,9 @@ document.querySelector("[data-system-json-mount]")?.appendChild(systemJsonPanelI
 // whichever property row is currently selected in the Properties list above,
 // for anyone who finds that list's single-row-per-property layout cramped or
 // confusing. Deliberately NOT a replacement for that list — every field here
-// proxies the selected row's own real input (see initSystemInspector), so
-// editing in either place is the exact same edit, just through a different
-// control.
+// proxies the selected row's own real input (see createPropertyInspector,
+// common/js/lib/property-schema-editor.js), so editing in either place is
+// the exact same edit, just through a different control.
 const systemInspectorEmpty = document.querySelector("[data-system-inspector-empty]");
 const systemInspectorDetails = document.querySelector("[data-system-inspector-details]");
 const systemInspectorFields = document.querySelector("[data-system-inspector-fields]");
@@ -381,6 +479,18 @@ const systemInspectorNewButton = document.querySelector("[data-system-inspector-
 const systemInspectorDeleteButton = document.querySelector("[data-system-inspector-delete]");
 const systemInspectorDuplicateButton = document.querySelector("[data-system-inspector-duplicate]");
 const systemInspectorRequiredButton = document.querySelector("[data-system-inspector-required]");
+// Collapsible, same convention as every other right-pane/Loom section — see
+// the Group Property Inspector's identical wrapping further down. Expanded
+// by default: unlike Assigned Systems/Settings/Share link, this was never
+// collapsed before it became a collapsible section, so nothing changes for
+// anyone with the tab already open.
+const systemInspectorContent = document.querySelector("[data-system-inspector-content]");
+const systemInspectorSection = createCollapsibleSection({
+  label: "Property Inspector",
+  collapsed: false,
+  content: systemInspectorContent,
+}).section;
+document.querySelector("[data-system-inspector-mount]")?.appendChild(systemInspectorSection);
 
 // Macros tab — its own dedicated authoring UI (mirrors the Systems tab
 // above: a select of existing records + New/Save/Delete, editing one at a
@@ -403,22 +513,21 @@ const macroAddActionButton = document.querySelector("[data-macro-add-action]");
 const macroNewButton = document.querySelector("[data-macro-new]");
 const macroSaveButton = document.querySelector("[data-macro-save]");
 const macroDeleteButton = document.querySelector("[data-macro-delete]");
-let selectedSystemPropertyRow = null;
+// Same "Select a ..." gating as Systems above.
+const macrosEmpty = document.querySelector("[data-macros-empty]");
+const macrosPanel = document.querySelector("[data-macros-panel]");
+function setMacroFormVisible(visible) {
+  if (macrosEmpty) macrosEmpty.hidden = visible;
+  if (macrosPanel) macrosPanel.classList.toggle("d-none", !visible);
+}
 
 // The set of function names never depends on which lookup tables the
 // factory closes over — an empty stand-in is enough just to enumerate them.
 const CUSTOM_FUNCTION_NAMES = Object.keys(createMappingCustomFunctions({}));
-// The type control is a single icon button that cycles through these on
-// click (see renderSystemPropertyRow) rather than a dropdown, so a row's
-// whole first line — including this button — can double as a drag handle
-// for reordering (a plain <select> would eat the drag gesture instead).
-const PROPERTY_TYPES = [
-  { value: "string", label: "String", icon: "tabler:letter-case" },
-  { value: "number", label: "Number", icon: "tabler:hash" },
-  { value: "boolean", label: "Boolean", icon: "tabler:toggle-left" },
-  { value: "object", label: "Object", icon: "tabler:braces" },
-  { value: "array", label: "Array", icon: "tabler:brackets" },
-];
+// PROPERTY_TYPES, and the whole Properties row editor (type-cycling,
+// drag-to-reorder, nested Sub-fields/Record fields, value lists) now live in
+// common/js/lib/property-schema-editor.js, shared with the Group Properties
+// editor below — see that module's own header comment.
 
 let mappingDefinition = null;
 let selectedNode = null;
@@ -1080,15 +1189,21 @@ if (treeContainer) {
 }
 
 // --- Workflow mode: a mapping with a fixed $source (already saved/loaded)
-// locks the Data Source dropdown to that source and favors the Entities pane;
-// a brand-new mapping (no $source yet) leaves Data Source selectable and
-// favors the Mapping Tree instead. Input/Output stays expanded either way.
-// This only fires on actual mode transitions (load/new/first-save), not on
-// every small edit, so it doesn't fight the user's own manual collapse/expand.
+// favors the Entities pane; a brand-new mapping (no $source yet) favors the
+// Mapping Tree instead. Input/Output stays expanded either way. This only
+// fires on actual mode transitions (load/new/first-save), not on every
+// small edit, so it doesn't fight the user's own manual collapse/expand.
+//
+// Data Source itself is never disabled — Loom is the only place a mapping's
+// $source can be edited at all (Workbench's own player-facing Import
+// Character flow has no such control, see content-fetch.js), so locking it
+// here once set would make a mistagged mapping's $source permanently
+// unfixable short of hand-editing its JSON file. applySourceSelection just
+// reflects the mapping's own current value; the Save handler below now
+// always stamps whatever's currently selected, not only when unset.
 
-function applySourceLock(source) {
+function applySourceSelection(source) {
   if (!sourceSelect) return;
-  sourceSelect.disabled = Boolean(source);
   if (source) sourceSelect.value = source;
   const active = SOURCES.find((entry) => entry.id === sourceSelect.value) || SOURCES[0];
   if (sourceValueInput) sourceValueInput.placeholder = active.placeholder;
@@ -1097,7 +1212,14 @@ function applySourceLock(source) {
 
 function enterMappingMode(definition) {
   const source = definition && typeof definition === "object" ? definition.$source : null;
-  applySourceLock(source || null);
+  applySourceSelection(source || null);
+  if (mappingDescriptionInput) {
+    mappingDescriptionInput.value = (definition && typeof definition === "object" && definition.$description) || "";
+  }
+  if (dataTypeSelect) {
+    const dataType = definition && typeof definition === "object" ? definition.$dataType : null;
+    dataTypeSelect.value = dataType === "character" ? "character" : "other";
+  }
   treeSetCollapsed(Boolean(source));
   entitiesSetCollapsed(!source);
   ioSetCollapsed(false);
@@ -1517,6 +1639,9 @@ if (loomViewTabsContainer) {
 // the suite's data-administration surface, tier-gated per tab below) --------
 mountField("groups-select", createCompactField({ type: "select", id: "loomGroupsSelect", label: "Group", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-loom-groups-select" }));
 mountField("group-name", createCompactField({ type: "text", id: "loomGroupName", label: "Name", labelClass: "form-label fw-semibold mb-0", dataAttr: "data-loom-group-name" }));
+mountField("group-system", createCompactField({ type: "select", id: "loomGroupSystem", label: "System", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-loom-group-system", helpTopic: "loom.groupSystem" }));
+mountField("group-setting", createCompactField({ type: "select", id: "loomGroupSetting", label: "Setting", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-loom-group-setting", helpTopic: "loom.groupSetting" }));
+mountField("group-template", createCompactField({ type: "select", id: "loomGroupTemplate", label: "Party Template", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-loom-group-template", helpTopic: "loom.groupTemplate" }));
 mountField(
   "users-tier-filter",
   createCompactField({ type: "select", id: "loomUsersTierFilter", label: "Tier", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select form-select-sm", dataAttr: "data-loom-users-tier-filter" })
@@ -1545,6 +1670,10 @@ const loomGroupsSelect = document.querySelector("[data-loom-groups-select]");
 const loomGroupEmpty = document.querySelector("[data-loom-group-empty]");
 const loomGroupForm = document.querySelector("[data-loom-group-form]");
 const loomGroupNameInput = document.querySelector("[data-loom-group-name]");
+const loomGroupSystemSelect = document.querySelector("[data-loom-group-system]");
+const loomGroupSettingSelect = document.querySelector("[data-loom-group-setting]");
+const loomGroupTemplateSelect = document.querySelector("[data-loom-group-template]");
+const loomGroupPropertyRows = document.querySelector("[data-loom-group-property-rows]");
 const loomGroupMembersList = document.querySelector("[data-loom-group-members]");
 const loomGroupMembersEmpty = document.querySelector("[data-loom-group-members-empty]");
 const loomGroupShareBadge = document.querySelector("[data-loom-group-share-badge]");
@@ -1555,6 +1684,40 @@ const loomGroupShareStatus = document.querySelector("[data-loom-group-share-stat
 const loomGroupNewButton = document.querySelector("[data-loom-group-new]");
 const loomGroupSaveButton = document.querySelector("[data-loom-group-save]");
 const loomGroupDeleteButton = document.querySelector("[data-loom-group-delete]");
+
+// Property Inspector (right pane) — same mechanism as Systems' own, see
+// createPropertyInspector below. Collapsible, same as Systems' own; expanded
+// by default for the same "wasn't collapsed before this became a
+// collapsible section" reasoning.
+const groupInspectorEmpty = document.querySelector("[data-loom-group-inspector-empty]");
+const groupInspectorDetails = document.querySelector("[data-loom-group-inspector-details]");
+const groupInspectorFields = document.querySelector("[data-loom-group-inspector-fields]");
+const groupInspectorNewButton = document.querySelector("[data-loom-group-inspector-new]");
+const groupInspectorDeleteButton = document.querySelector("[data-loom-group-inspector-delete]");
+const groupInspectorDuplicateButton = document.querySelector("[data-loom-group-inspector-duplicate]");
+const groupInspectorRequiredButton = document.querySelector("[data-loom-group-inspector-required]");
+const groupInspectorContent = document.querySelector("[data-loom-group-inspector-content]");
+const groupInspectorSection = createCollapsibleSection({
+  label: "Property Inspector",
+  collapsed: false,
+  content: groupInspectorContent,
+}).section;
+document.querySelector("[data-loom-group-inspector-mount]")?.appendChild(groupInspectorSection);
+
+// Share link (right pane, below Property Inspector) — same static controls
+// as before, just moved out of the main pane into a collapsible section,
+// same convention as Assigned Systems/Settings above (an existing static
+// content div adopted as-is). Expanded by default, unlike Assigned Systems/
+// Settings — a campaign's share link is the one thing on this tab a GM
+// reaches for right after picking a group, not a rarely-needed detail.
+const loomGroupShareList = document.querySelector("[data-loom-group-share-list]");
+const loomGroupShareSection = createCollapsibleSection({
+  label: "Share link",
+  collapsed: false,
+  content: loomGroupShareList,
+}).section;
+document.querySelector("[data-loom-group-share-mount]")?.appendChild(loomGroupShareSection);
+
 const loomUsersTierFilter = document.querySelector("[data-loom-users-tier-filter]");
 const loomUsersSelect = document.querySelector("[data-loom-users-select]");
 const loomUsersEmpty = document.querySelector("[data-loom-users-empty]");
@@ -1579,7 +1742,33 @@ const LOOM_TIER_OPTIONS = [
   { value: "admin", label: "Admin" },
 ];
 
-const loomGroupsState = { items: [], loading: false, stale: true, selectedId: "", cleanName: null };
+const loomGroupsState = {
+  items: [],
+  loading: false,
+  stale: true,
+  selectedId: "",
+  cleanName: null,
+  cleanSystemId: null,
+  cleanSettingId: null,
+  cleanTemplateId: null,
+  // JSON.stringify of the loaded group's own `properties` schema — same
+  // "clean baseline snapshot, compare on demand" shape as cleanName/
+  // cleanSystemId/cleanSettingId above, just for the Properties editor
+  // (common/js/lib/property-schema-editor.js) instead of a plain field.
+  cleanPropertiesJson: null,
+};
+// Populated once per Groups-tab session (systems don't change while this tab
+// is open) rather than re-fetched on every loomRenderGroupDetail call — same
+// "load list, then render selection against it" split loomOwnedCharacters
+// already uses for the member picker.
+let loomGroupSystemsCatalog = [];
+// Same "load once per Groups-tab session" shape as loomGroupSystemsCatalog,
+// sourced from the same listAllSettings() the "Assigned Settings" checkbox
+// section (populateLibrarySettingCheckboxes) already uses — not filtered to
+// the Group's own selected System, deliberately: a mismatched System/Setting
+// pairing is an authoring concern for the GM to notice, not something this
+// picker enforces.
+let loomGroupSettingsCatalog = [];
 const loomUsersState = { items: [], selectedTier: "", selectedUsername: "", clean: null, mode: "view" };
 // Populated alongside loomLoadGroups() — the Groups tab's member picker needs
 // the signed-in user's own saved characters (same shape Admin's Owned Content
@@ -2017,9 +2206,104 @@ function loomRenderGroupsSelect() {
   loomRenderGroupDetail();
 }
 
+// The shared row editor (common/js/lib/property-schema-editor.js) is
+// undo/dirty-tracking-agnostic — unlike Systems (which plugs into Loom's
+// whole-tab undo stack, see systemPropertyCtx), the Groups tab has no undo
+// stack of its own at all (member checkboxes already auto-save immediately,
+// with no undo either), so this just re-renders/marks the tab dirty via the
+// exact same loomUpdateGroupsToolbarState() every other Group field change
+// already calls.
+const groupPropertyCtx = {
+  runChange: (fn) => {
+    fn();
+    loomUpdateGroupsToolbarState();
+  },
+  refreshTooltips,
+  initHelpSystem,
+  get status() {
+    return status;
+  },
+  get dataManager() {
+    return dataManager;
+  },
+  // No filterSystemId — a Group Property's own Library-linked values aren't
+  // scoped to any one System the way a System's own Properties are to
+  // itself (that System IS the thing being edited); every entity of the
+  // chosen Library kind is offered here regardless of the group's own
+  // assigned System.
+  //
+  // "Public" — the one Group-only addition Systems has no equivalent of
+  // (no System/Character field has a party-wide "who may edit this value"
+  // concept; a Character's own fields are always editable by that
+  // character's own owner). Only added to TOP-LEVEL property rows (this
+  // row's own parent is the top-level container, not a nested Sub-fields/
+  // Record-fields container) — nested sub-fields inherit their parent's
+  // flag rather than getting their own, same as this suite's other
+  // "permission lives on the whole field, not each of its pieces"
+  // precedents.
+  extraRowControls: (row, field) => {
+    if (row.parentElement !== loomGroupPropertyRows) return;
+    const firstLine = row.firstElementChild;
+    const removeButton = firstLine?.querySelector("[data-property-remove]");
+    if (!removeButton) return;
+    const publicButton = document.createElement("button");
+    publicButton.type = "button";
+    publicButton.className = `btn btn-sm flex-shrink-0 ${field.public ? "btn-primary" : "btn-outline-secondary"}`;
+    publicButton.setAttribute("data-property-public", "");
+    publicButton.setAttribute("aria-pressed", field.public ? "true" : "false");
+    publicButton.setAttribute("data-bs-toggle", "tooltip");
+    publicButton.setAttribute("data-bs-placement", "top");
+    publicButton.setAttribute("data-bs-title", "Public — any party member can edit this property's value");
+    publicButton.setAttribute("aria-label", "Public");
+    publicButton.innerHTML = '<span class="iconify" data-icon="tabler:users" aria-hidden="true"></span>';
+    publicButton.addEventListener("click", () => {
+      groupPropertyCtx.runChange(() => {
+        const pressed = publicButton.getAttribute("aria-pressed") === "true";
+        publicButton.setAttribute("aria-pressed", pressed ? "false" : "true");
+        publicButton.classList.toggle("btn-primary", !pressed);
+        publicButton.classList.toggle("btn-outline-secondary", pressed);
+      });
+    });
+    firstLine.insertBefore(publicButton, removeButton);
+    refreshTooltips(row);
+  },
+};
+
+// Same as collectFieldFromRow, plus merging this row's own "Public" toggle
+// state back in — collectFieldFromRow itself has no idea that concept
+// exists (it's a Group-only addition, see groupPropertyCtx's own comment),
+// so this reads it straight off the row's button right after, the one place
+// that both the field object and its own DOM row are still both in hand
+// together. Assigned as groupPropertyCtx.collectField below so the Property
+// Inspector's own Duplicate button (createPropertyInspector, common/js/lib/
+// property-schema-editor.js) preserves Public the same way Save already
+// does, not just top-level collectGroupProperties.
+function collectGroupFieldFromRow(row) {
+  const field = collectFieldFromRow(row, groupPropertyCtx);
+  const publicButton = row.firstElementChild?.querySelector("[data-property-public]");
+  if (publicButton) field.public = publicButton.getAttribute("aria-pressed") === "true";
+  return field;
+}
+
+function collectGroupProperties() {
+  if (!loomGroupPropertyRows) return [];
+  return Array.from(loomGroupPropertyRows.children).map(collectGroupFieldFromRow).filter((field) => field.key);
+}
+
+function loomRenderGroupPropertyRows(properties) {
+  if (!loomGroupPropertyRows) return;
+  loomGroupPropertyRows.innerHTML = "";
+  (properties || []).forEach((field) => renderPropertyRow(field, loomGroupPropertyRows, groupPropertyCtx));
+}
+
 function loomCanSaveGroup() {
   if (!loomGroupsState.selectedId || loomGroupsState.cleanName === null) return false;
-  return (loomGroupNameInput?.value || "").trim() !== loomGroupsState.cleanName;
+  const nameChanged = (loomGroupNameInput?.value || "").trim() !== loomGroupsState.cleanName;
+  const systemChanged = (loomGroupSystemSelect?.value || "") !== (loomGroupsState.cleanSystemId || "");
+  const settingChanged = (loomGroupSettingSelect?.value || "") !== (loomGroupsState.cleanSettingId || "");
+  const templateChanged = (loomGroupTemplateSelect?.value || "") !== (loomGroupsState.cleanTemplateId || "");
+  const propertiesChanged = JSON.stringify(collectGroupProperties()) !== (loomGroupsState.cleanPropertiesJson ?? "[]");
+  return nameChanged || systemChanged || settingChanged || templateChanged || propertiesChanged;
 }
 
 function loomUpdateGroupsToolbarState() {
@@ -2057,6 +2341,157 @@ function loomUpdateGroupShareDisplay(group, nextLink) {
   }
 }
 
+// Options for the Group System select — "None" (falls through to each
+// character's own Assigned System, then the standard 7) plus every System
+// listAllSystems() knows about, same catalog the Systems tab itself lists
+// from. Rebuilds the whole option list each time (cheap, and simplest way to
+// stay in sync with loomGroupSystemsCatalog without a separate diffing pass)
+// then restores whichever value loomRenderGroupDetail sets afterward.
+function loomPopulateGroupSystemSelect() {
+  if (!loomGroupSystemSelect) return;
+  const previous = loomGroupSystemSelect.value;
+  loomGroupSystemSelect.innerHTML = "";
+  const blank = document.createElement("option");
+  blank.value = "";
+  blank.textContent = "None";
+  loomGroupSystemSelect.appendChild(blank);
+  loomGroupSystemsCatalog.forEach((system) => {
+    const option = document.createElement("option");
+    option.value = system.id;
+    option.textContent = system.title || system.id;
+    loomGroupSystemSelect.appendChild(option);
+  });
+  if (Array.from(loomGroupSystemSelect.options).some((option) => option.value === previous)) {
+    loomGroupSystemSelect.value = previous;
+  }
+}
+
+// Byte-for-byte parallel to loomPopulateGroupSystemSelect above, sourced
+// from loomGroupSettingsCatalog (listAllSettings()) instead.
+function loomPopulateGroupSettingSelect() {
+  if (!loomGroupSettingSelect) return;
+  const previous = loomGroupSettingSelect.value;
+  loomGroupSettingSelect.innerHTML = "";
+  const blank = document.createElement("option");
+  blank.value = "";
+  blank.textContent = "None";
+  loomGroupSettingSelect.appendChild(blank);
+  loomGroupSettingsCatalog.forEach((setting) => {
+    const option = document.createElement("option");
+    option.value = setting.id;
+    option.textContent = setting.title || setting.id;
+    loomGroupSettingSelect.appendChild(option);
+  });
+  if (Array.from(loomGroupSettingSelect.options).some((option) => option.value === previous)) {
+    loomGroupSettingSelect.value = previous;
+  }
+}
+
+// Same System-filtered Template list populateLibraryTemplateSelect already
+// builds for a Character's own `template` field — adapted for a Group's
+// singular `systemId` instead of a `systemIds` array (a Group only ever has
+// one assigned System, unlike a Character's Assigned Systems list). Unlike
+// that function, picking a Template here does NOT fold its schema back into
+// the Group's own System — the System select above is Group's own
+// independent, explicit field (it already drives Party Inventory's own
+// System-matching), not something a Template pick should silently change.
+// Re-fetched fresh (not cached) each time a Group is selected or its System
+// changes, matching populateLibraryTemplateSelect's own "always current"
+// convention.
+async function loomPopulateGroupTemplateSelect(systemId, currentTemplateId) {
+  if (!loomGroupTemplateSelect) return;
+  const previous = currentTemplateId !== undefined ? currentTemplateId || "" : loomGroupTemplateSelect.value;
+  loomGroupTemplateSelect.innerHTML = "";
+  const blank = document.createElement("option");
+  blank.value = "";
+  blank.textContent = "No template assigned";
+  loomGroupTemplateSelect.appendChild(blank);
+  if (!dataManager) return;
+  try {
+    const { remote } = await dataManager.list("templates", { refresh: true, includeLocal: false });
+    const entries = dataManager.collectListEntries(remote, ["owned", "shared", "public", "items"]);
+    entries
+      // Print templates (category: "print") have nothing to do with "which
+      // Workbench Template does this campaign's Party Data render" — same
+      // exclusion populateLibraryTemplateSelect already applies.
+      .filter((entry) => (entry.category || "character") === "character")
+      .filter((entry) => !systemId || (entry.schema || entry.system) === systemId)
+      .forEach((entry) => {
+        const option = document.createElement("option");
+        option.value = entry.id;
+        option.textContent = entry.title || entry.id;
+        loomGroupTemplateSelect.appendChild(option);
+      });
+  } catch (error) {
+    status?.show(`Unable to list templates: ${error.message}`, { type: "error", timeout: 4000 });
+  }
+  if (Array.from(loomGroupTemplateSelect.options).some((option) => option.value === previous)) {
+    loomGroupTemplateSelect.value = previous;
+  }
+}
+
+// Reads the System filter from the SELECT's own live value (not
+// group.system_id) so a not-yet-saved System choice narrows this list
+// immediately, the same way any other unsaved edit previews live — see the
+// loomGroupSystemSelect "change" listener below, which calls this directly
+// instead of the full loomRenderGroupDetail (which would otherwise stomp the
+// live selection back to the saved value).
+function loomRenderGroupMembersList(group) {
+  if (!loomGroupMembersList) return;
+  const members = Array.isArray(group?.members) ? group.members.filter((member) => member.content_type === "character") : [];
+  loomGroupMembersList.innerHTML = "";
+  const memberMap = new Map();
+  members.forEach((member) => memberMap.set(member.content_id, member));
+  const seenIds = new Set();
+  const rows = [];
+  // A Group with its own System narrows "available to add" down to
+  // characters assigned to that same System — leaving the Group's System
+  // unset (the common case for a brand-new campaign) shows everyone, same
+  // as before this filter existed. Characters already added stay visible
+  // regardless (see the memberMap.forEach fallback below) — this only
+  // affects what's offered to ADD, never removes an existing member.
+  const groupSystemId = loomGroupSystemSelect?.value || "";
+  loomOwnedCharacters.forEach((character) => {
+    if (groupSystemId) {
+      const characterSystemIds = Array.isArray(character.systemIds)
+        ? character.systemIds
+        : character.system
+          ? [character.system]
+          : [];
+      if (!characterSystemIds.includes(groupSystemId)) return;
+    }
+    let label = loomFormatGroupCharacterLabel({ ...character, id: character.id });
+    if (character.missing) label = `${label} (not found)`;
+    rows.push({ id: character.id, label, checked: memberMap.has(character.id) });
+    if (memberMap.has(character.id)) seenIds.add(character.id);
+  });
+  memberMap.forEach((member, id) => {
+    if (seenIds.has(id)) return;
+    let label = loomFormatGroupCharacterLabel({ ...member, id });
+    if (member.missing) {
+      label = `${label} (not found)`;
+    } else if (member.is_claimed) {
+      const ownerLabel = member.owner_username ? member.owner_username : "claimed";
+      label = `${label} (claimed by ${ownerLabel})`;
+    } else {
+      label = `${label} (available)`;
+    }
+    rows.push({ id, label, checked: true });
+  });
+  if (loomGroupMembersEmpty) loomGroupMembersEmpty.hidden = rows.length > 0;
+  rows.forEach((row) => {
+    const checkboxId = `loom-group-member-${row.id}`;
+    const wrapper = document.createElement("div");
+    wrapper.className = "form-check";
+    wrapper.innerHTML = `
+      <input class="form-check-input" type="checkbox" value="${escapeHtml(row.id)}" id="${escapeHtml(checkboxId)}" data-loom-group-member-checkbox ${row.checked ? "checked" : ""} />
+      <label class="form-check-label small" for="${escapeHtml(checkboxId)}">${escapeHtml(row.label)}</label>
+    `;
+    loomGroupMembersList.appendChild(wrapper);
+  });
+  void initHelpSystem({ root: loomGroupMembersList.parentElement });
+}
+
 function loomRenderGroupDetail() {
   const group = loomFindGroup(loomGroupsState.selectedId);
   const hasGroup = Boolean(group);
@@ -2064,53 +2499,58 @@ function loomRenderGroupDetail() {
   if (loomGroupForm) loomGroupForm.classList.toggle("d-none", !hasGroup);
   if (!hasGroup) {
     loomGroupsState.cleanName = null;
+    loomGroupsState.cleanSystemId = null;
+    loomGroupsState.cleanSettingId = null;
+    loomGroupsState.cleanTemplateId = null;
+    loomGroupsState.cleanPropertiesJson = null;
+    if (loomGroupPropertyRows) loomGroupPropertyRows.innerHTML = "";
+    groupPropertyInspector.selectRow(null);
     loomUpdateGroupsToolbarState();
     return;
   }
   if (loomGroupNameInput) loomGroupNameInput.value = group.name || "";
   loomGroupsState.cleanName = (group.name || "").trim();
+  if (loomGroupSystemSelect) loomGroupSystemSelect.value = group.system_id || "";
+  loomGroupsState.cleanSystemId = group.system_id || "";
+  if (loomGroupSettingSelect) loomGroupSettingSelect.value = group.setting_id || "";
+  loomGroupsState.cleanSettingId = group.setting_id || "";
+  loomGroupsState.cleanTemplateId = group.template_id || "";
+  void loomPopulateGroupTemplateSelect(group.system_id, group.template_id);
 
-  const members = Array.isArray(group?.members) ? group.members.filter((member) => member.content_type === "character") : [];
-  if (loomGroupMembersList) {
-    loomGroupMembersList.innerHTML = "";
-    const memberMap = new Map();
-    members.forEach((member) => memberMap.set(member.content_id, member));
-    const seenIds = new Set();
-    const rows = [];
-    loomOwnedCharacters.forEach((character) => {
-      let label = loomFormatGroupCharacterLabel({ ...character, id: character.id });
-      if (character.missing) label = `${label} (not found)`;
-      rows.push({ id: character.id, label, checked: memberMap.has(character.id) });
-      if (memberMap.has(character.id)) seenIds.add(character.id);
-    });
-    memberMap.forEach((member, id) => {
-      if (seenIds.has(id)) return;
-      let label = loomFormatGroupCharacterLabel({ ...member, id });
-      if (member.missing) {
-        label = `${label} (not found)`;
-      } else if (member.is_claimed) {
-        const ownerLabel = member.owner_username ? member.owner_username : "claimed";
-        label = `${label} (claimed by ${ownerLabel})`;
-      } else {
-        label = `${label} (available)`;
-      }
-      rows.push({ id, label, checked: true });
-    });
-    if (loomGroupMembersEmpty) loomGroupMembersEmpty.hidden = rows.length > 0;
-    rows.forEach((row) => {
-      const checkboxId = `loom-group-member-${row.id}`;
-      const wrapper = document.createElement("div");
-      wrapper.className = "form-check";
-      wrapper.innerHTML = `
-        <input class="form-check-input" type="checkbox" value="${escapeHtml(row.id)}" id="${escapeHtml(checkboxId)}" data-loom-group-member-checkbox ${row.checked ? "checked" : ""} />
-        <label class="form-check-label small" for="${escapeHtml(checkboxId)}">${escapeHtml(row.label)}</label>
-      `;
-      loomGroupMembersList.appendChild(wrapper);
-    });
-    void initHelpSystem({ root: loomGroupMembersList.parentElement });
-  }
+  loomRenderGroupMembersList(group);
 
   loomUpdateGroupShareDisplay(group);
+  loomUpdateGroupsToolbarState();
+  // Properties (the full schema) aren't part of the lightweight list-view
+  // payload above — list_groups' own server-side row shaping deliberately
+  // skips a kind's full JSON body for a LIST response (same reason
+  // list_bucket/list_owned_content never include one either, to avoid an
+  // N-file-reads cost). Fetched separately, via the exact same generic
+  // content route (`dataManager.get("group", id)`) Loom's own raw-JSON
+  // Library editor already uses for every kind, once this specific group
+  // becomes the one being edited.
+  void loomLoadGroupProperties(group.id);
+}
+
+async function loomLoadGroupProperties(groupId) {
+  let properties = [];
+  try {
+    const result = await dataManager.get("group", groupId, { preferLocal: false });
+    properties = Array.isArray(result?.payload?.properties) ? result.payload.properties : [];
+  } catch (error) {
+    console.error("Failed to load group properties", error);
+    if (status) status.show(error.message || "Unable to load this group's Properties.", { type: "danger" });
+  }
+  // The GM may have already clicked a different group (or navigated away)
+  // by the time this resolves — a stale response landing after that would
+  // otherwise silently repopulate the Properties editor for the WRONG group.
+  if (loomGroupsState.selectedId !== groupId) return;
+  loomRenderGroupPropertyRows(properties);
+  // Rebuilt from scratch above — whatever was selected before (if anything)
+  // is now a detached DOM node, same reasoning as System's own
+  // loadSystemIntoEditor/applySystemSnapshot resets.
+  groupPropertyInspector.selectRow(null);
+  loomGroupsState.cleanPropertiesJson = JSON.stringify(properties);
   loomUpdateGroupsToolbarState();
 }
 
@@ -2131,12 +2571,18 @@ async function loomLoadGroups({ refresh = false } = {}) {
   if (shouldRefresh) loomRenderGroupsMessage("Loading groups…");
   loomGroupsState.loading = true;
   try {
-    const [groupsPayload, ownedPayload] = await Promise.all([
+    const [groupsPayload, ownedPayload, systems, settings] = await Promise.all([
       dataManager.listGroups({ refresh: shouldRefresh }),
       dataManager.listOwnedContent({ refresh: shouldRefresh }),
+      listAllSystems(),
+      listAllSettings(),
     ]);
     const groups = Array.isArray(groupsPayload?.groups) ? groupsPayload.groups : [];
     loomOwnedCharacters = (ownedPayload?.items || []).filter((item) => item.bucket === "character");
+    loomGroupSystemsCatalog = Array.isArray(systems) ? systems : [];
+    loomPopulateGroupSystemSelect();
+    loomGroupSettingsCatalog = Array.isArray(settings) ? settings : [];
+    loomPopulateGroupSettingSelect();
     loomGroupsState.items = groups;
     loomGroupsState.stale = false;
     loomRenderGroupsSelect();
@@ -2162,6 +2608,45 @@ if (loomGroupsSelect) {
 
 if (loomGroupNameInput) {
   loomGroupNameInput.addEventListener("input", loomUpdateGroupsToolbarState);
+}
+
+if (loomGroupSystemSelect) {
+  loomGroupSystemSelect.addEventListener("change", () => {
+    loomUpdateGroupsToolbarState();
+    // Re-render just the member list against the live (possibly unsaved)
+    // selection — NOT the full loomRenderGroupDetail, which would reset this
+    // very select back to the saved group.system_id.
+    loomRenderGroupMembersList(loomFindGroup(loomGroupsState.selectedId));
+    // Cascades to the Template list the same way (a different System means
+    // a different, possibly empty, set of matching Templates) — keeps
+    // whatever's currently typed/selected in the Template select if it's
+    // still a valid option for the new System, same "preserve the live
+    // unsaved value" reasoning as the member-list re-render above.
+    void loomPopulateGroupTemplateSelect(loomGroupSystemSelect.value || "");
+  });
+}
+
+if (loomGroupSettingSelect) {
+  // No member-list re-render needed — Setting has no bearing on which
+  // characters are offered (that's System-scoped only), unlike System above.
+  loomGroupSettingSelect.addEventListener("change", loomUpdateGroupsToolbarState);
+}
+
+if (loomGroupTemplateSelect) {
+  loomGroupTemplateSelect.addEventListener("change", loomUpdateGroupsToolbarState);
+}
+
+// Delegated add/remove-property/sub-field/record-field/value handling for
+// the Group Properties editor — same shared-module wiring Systems uses
+// (systemPropertyCtx/wirePropertyContainerEvents above), just bound to
+// groupPropertyCtx instead. One persistent instance, same "never recreated,
+// only its children are" reasoning as Systems' own equivalent call.
+wirePropertyContainerEvents(loomGroupPropertyRows, groupPropertyCtx);
+
+if (loomGroupAddPropertyButton) {
+  loomGroupAddPropertyButton.addEventListener("click", () => {
+    groupPropertyCtx.runChange(() => renderPropertyRow({}, loomGroupPropertyRows, groupPropertyCtx));
+  });
 }
 
 if (loomGroupNewButton) {
@@ -2198,18 +2683,43 @@ if (loomGroupSaveButton) {
     const group = loomFindGroup(loomGroupsState.selectedId);
     if (!group) return;
     const newName = (loomGroupNameInput?.value || "").trim();
-    if (!newName || newName === loomGroupsState.cleanName) return;
+    const newSystemId = loomGroupSystemSelect?.value || "";
+    const newSettingId = loomGroupSettingSelect?.value || "";
+    const newTemplateId = loomGroupTemplateSelect?.value || "";
+    const newProperties = collectGroupProperties();
+    if (!newName) return;
+    if (
+      newName === loomGroupsState.cleanName &&
+      newSystemId === (loomGroupsState.cleanSystemId || "") &&
+      newSettingId === (loomGroupsState.cleanSettingId || "") &&
+      newTemplateId === (loomGroupsState.cleanTemplateId || "") &&
+      JSON.stringify(newProperties) === (loomGroupsState.cleanPropertiesJson ?? "[]")
+    )
+      return;
     loomGroupSaveButton.disabled = true;
     if (loomGroupNameInput) loomGroupNameInput.disabled = true;
+    if (loomGroupSystemSelect) loomGroupSystemSelect.disabled = true;
+    if (loomGroupSettingSelect) loomGroupSettingSelect.disabled = true;
+    if (loomGroupTemplateSelect) loomGroupTemplateSelect.disabled = true;
     try {
-      await dataManager.updateGroup({ id: group.id, name: newName });
-      if (status) status.show("Group name saved.", { type: "success", timeout: 1600 });
+      await dataManager.updateGroup({
+        id: group.id,
+        name: newName,
+        systemId: newSystemId,
+        settingId: newSettingId,
+        templateId: newTemplateId,
+        properties: newProperties,
+      });
+      if (status) status.show("Group saved.", { type: "success", timeout: 1600 });
       await loomLoadGroups({ refresh: true });
     } catch (error) {
-      console.error("Unable to rename group", error);
-      if (status) status.show(error.message || "Unable to rename group", { type: "danger" });
+      console.error("Unable to save group", error);
+      if (status) status.show(error.message || "Unable to save group", { type: "danger" });
     } finally {
       if (loomGroupNameInput) loomGroupNameInput.disabled = false;
+      if (loomGroupSystemSelect) loomGroupSystemSelect.disabled = false;
+      if (loomGroupSettingSelect) loomGroupSettingSelect.disabled = false;
+      if (loomGroupTemplateSelect) loomGroupTemplateSelect.disabled = false;
       loomUpdateGroupsToolbarState();
     }
   });
@@ -2246,10 +2756,31 @@ if (loomGroupMembersList) {
     );
     const checkboxes = Array.from(loomGroupMembersList.querySelectorAll("[data-loom-group-member-checkbox]"));
     checkboxes.forEach((input) => (input.disabled = true));
+    // A not-yet-saved System choice (the dropdown, staged until the Save
+    // button is clicked) drives this list's own live filter — member
+    // checkboxes auto-save immediately and independently of that Save
+    // button, via the reload below, which otherwise re-renders the whole
+    // detail panel from the server's last-SAVED group and silently discards
+    // the staged choice, resetting the filter to "show everyone."
+    const pendingSystemId = loomGroupSystemSelect?.value || "";
+    // Same reasoning applies to an unsaved pending Setting choice.
+    const pendingSettingId = loomGroupSettingSelect?.value || "";
     try {
       await dataManager.updateGroupMembers({ id: group.id, characterIds: selected });
       if (status) status.show("Group updated.", { type: "success", timeout: 1400 });
       await loomLoadGroups({ refresh: true });
+      const refreshed = loomFindGroup(loomGroupsState.selectedId);
+      let needsToolbarUpdate = false;
+      if (loomGroupSystemSelect && refreshed && pendingSystemId !== (refreshed.system_id || "")) {
+        loomGroupSystemSelect.value = pendingSystemId;
+        loomRenderGroupMembersList(refreshed);
+        needsToolbarUpdate = true;
+      }
+      if (loomGroupSettingSelect && refreshed && pendingSettingId !== (refreshed.setting_id || "")) {
+        loomGroupSettingSelect.value = pendingSettingId;
+        needsToolbarUpdate = true;
+      }
+      if (needsToolbarUpdate) loomUpdateGroupsToolbarState();
     } catch (error) {
       console.error("Unable to update group members", error);
       if (status) status.show(error.message || "Unable to update group", { type: "danger" });
@@ -2367,10 +2898,44 @@ mountField(
 
 const loomLibraryTableTypeSelect = document.querySelector("[data-loom-library-table-type]");
 const loomLibraryTableSelect = document.querySelector("[data-loom-library-table-select]");
+// Library Type is gated on the Type FILTER select alone (loomLibraryTableState
+// .selectedType) — it shows the instant a type is picked, before any
+// specific item is. Library Item stays gated on an actual selected item (it
+// has nothing to show without one: no created/accessed/owner/share data
+// exists for "a kind" in the abstract).
+const loomLibraryTypeEmpty = document.querySelector("[data-loom-library-table-type-empty]");
+const loomLibraryTypeDetails = document.querySelector("[data-loom-library-table-type-details]");
 const loomLibraryInspectorEmpty = document.querySelector("[data-loom-library-table-inspector-empty]");
 const loomLibraryInspectorDetails = document.querySelector("[data-loom-library-table-inspector-details]");
+// "Library Type" (kind-level policy — Viewable/Editable by) and "Library
+// Item" (this one record's own Created/Owner/Share) are collapsible for the
+// same reason nearly every right-pane section in the suite is — adopts each
+// pre-existing static list div as content, same pattern as Assigned
+// Systems/Settings above. Unlike those, these two sections themselves are
+// always present (not gated behind a "select something" swap) — only their
+// CONTENT is: each one's own list still opens with an empty "Select a ..."
+// message (data-loom-library-table-type-empty/-inspector-empty) that gives
+// way to real details once something's picked, same convention as the
+// center-pane's own gating. Both start collapsed; loomRenderLibraryTypeInspector/
+// loomRenderLibraryInspector below auto-expand (never auto-collapse — a
+// manual re-collapse after inspecting stays collapsed, this only ever opens
+// it for you) the moment there's something worth showing.
+const loomLibraryTypeSection = createCollapsibleSection({
+  label: "Library Type",
+  collapsed: true,
+  content: document.querySelector("[data-loom-library-type-list]"),
+});
+document.querySelector("[data-loom-library-type-mount]")?.appendChild(loomLibraryTypeSection.section);
+const loomLibraryItemSection = createCollapsibleSection({
+  label: "Library Item",
+  collapsed: true,
+  content: document.querySelector("[data-loom-library-item-list]"),
+});
+document.querySelector("[data-loom-library-item-mount]")?.appendChild(loomLibraryItemSection.section);
 const loomLibraryInspectorCreated = document.querySelector("[data-loom-library-table-created]");
 const loomLibraryInspectorAccessed = document.querySelector("[data-loom-library-table-accessed]");
+const loomLibraryInspectorReadTier = document.querySelector("[data-loom-library-table-read-tier]");
+const loomLibraryInspectorWriteTier = document.querySelector("[data-loom-library-table-write-tier]");
 const loomLibraryInspectorOwner = document.querySelector("[data-loom-library-table-owner]");
 const loomLibraryInspectorShareSummary = document.querySelector("[data-loom-library-table-share-summary]");
 const loomLibraryInspectorShareButton = document.querySelector("[data-loom-library-table-share]");
@@ -2389,6 +2954,17 @@ const loomLibraryTableState = {
   activeKind: "",
 };
 let loomLibraryKindLabels = new Map();
+// Each kind's own writeTier (common/data/kind/{id}.json) — the real, correct
+// per-kind ownership-eligibility policy the server's own update_owner()
+// enforces, read fresh alongside loomLibraryKindLabels rather than the
+// account.js page's own WRITE_ROLE_REQUIREMENTS (which only ever covered
+// the 3 legacy buckets, not every Library kind Loom's own browse table
+// spans). See loomTierMeetsOwnerRequirement below.
+let loomLibraryKindWriteTiers = new Map();
+// This kind's own readTier — same source, shown alongside writeTier in the
+// inspector so a Creator can see at a glance who can view vs. edit this
+// kind of content, without having to go look up its kind.json.
+let loomLibraryKindReadTiers = new Map();
 
 function loomLibraryTypeLabel(bucket) {
   return loomLibraryKindLabels.get(bucket) || bucket;
@@ -2477,11 +3053,91 @@ async function loomRenderLibraryShareSummary(item) {
   }
 }
 
+// Same "does this candidate's tier clear the bar" check account.js's own
+// tierMeetsOwnerRequirement makes, but sourced from this kind's own real
+// writeTier policy (loomLibraryKindWriteTiers, populated in
+// loomLoadLibraryTable) instead of a hardcoded 3-bucket table — every kind
+// Loom's own Library browse table spans gets a correct answer this way, not
+// just character/template/system. No policy on record for a kind (a custom
+// creator-defined kind with no kind.json, or the value simply absent) means
+// unconstrained — same "absent = universal" convention used everywhere else
+// in this suite.
+function loomTierMeetsOwnerRequirement(tier, bucket) {
+  const requirement = loomLibraryKindWriteTiers.get(bucket);
+  return !requirement || roleRank(tier) >= roleRank(requirement);
+}
+
+function loomDescribeOwnerOption(username, tier) {
+  const base = `${username} (${loomFormatTier(tier)})`;
+  return dataManager?.session?.user?.username === username ? `${base} (You)` : base;
+}
+
+// Mirrors account.js's own buildOwnerOptions exactly (current owner first,
+// then — admin sessions only — every other tier-eligible user), just
+// scoped to whichever single item is selected here instead of one row per
+// item in a table.
+function loomBuildOwnerOptions(bucket, currentOwner) {
+  const options = [];
+  const seen = new Set();
+  const ownerUsername = currentOwner?.username || "";
+  if (ownerUsername) {
+    options.push({ value: ownerUsername, label: loomDescribeOwnerOption(ownerUsername, currentOwner.tier) });
+    seen.add(ownerUsername);
+  }
+  if (!isLoomAdminSession()) return options;
+  const current = dataManager?.session?.user;
+  if (current?.username && !seen.has(current.username) && loomTierMeetsOwnerRequirement(current.tier, bucket)) {
+    options.push({ value: current.username, label: loomDescribeOwnerOption(current.username, current.tier) });
+    seen.add(current.username);
+  }
+  loomUsersState.items
+    .filter((user) => user?.username && loomTierMeetsOwnerRequirement(user.tier, bucket))
+    .sort((a, b) => a.username.localeCompare(b.username, undefined, { sensitivity: "base" }))
+    .forEach((user) => {
+      if (seen.has(user.username)) return;
+      options.push({ value: user.username, label: loomDescribeOwnerOption(user.username, user.tier) });
+      seen.add(user.username);
+    });
+  return options;
+}
+
+// The kind's own policy (common/data/kind/{id}.json), not any one item's own
+// sharing — "who can see/edit ANY item of this kind" vs. Share's own "who
+// can see/edit THIS ONE item" in Library Item below. Gated on the Type
+// filter select alone, so it appears the instant a type is picked in the
+// left pane, before any specific item is — the Library Item section below
+// is the one that needs an actual selected item. Defaults match the
+// server's own load_kind_policy() fallback for a kind with no kind.json on
+// disk.
+// Tracks the PREVIOUS hasType/hasItem, not just the current one — this
+// function re-runs on every Library table refresh, not only when the
+// selection actually changes (loomRenderLibraryTableSelect calls it
+// unconditionally), so auto-expanding only on the false→true edge is what
+// keeps a manual re-collapse (while the same type/item is still selected)
+// from being silently undone the next time the table happens to refresh.
+let loomLibraryTypeWasSelected = false;
+function loomRenderLibraryTypeInspector() {
+  const bucket = loomLibraryTableState.selectedType;
+  const hasType = Boolean(bucket);
+  if (loomLibraryTypeEmpty) loomLibraryTypeEmpty.hidden = hasType;
+  if (loomLibraryTypeDetails) loomLibraryTypeDetails.classList.toggle("d-none", !hasType);
+  if (hasType && !loomLibraryTypeWasSelected) loomLibraryTypeSection.setCollapsed(false);
+  loomLibraryTypeWasSelected = hasType;
+  if (!hasType) return;
+  if (loomLibraryInspectorReadTier) loomLibraryInspectorReadTier.textContent = loomFormatTier(loomLibraryKindReadTiers.get(bucket) || "free");
+  if (loomLibraryInspectorWriteTier) loomLibraryInspectorWriteTier.textContent = loomFormatTier(loomLibraryKindWriteTiers.get(bucket) || "admin");
+}
+
+// Same false→true edge tracking as loomLibraryTypeWasSelected above.
+let loomLibraryItemWasSelected = false;
 function loomRenderLibraryInspector() {
+  loomRenderLibraryTypeInspector();
   const item = loomFindLibraryItem(loomLibraryTableState.selectedKey);
   const hasItem = Boolean(item);
   if (loomLibraryInspectorEmpty) loomLibraryInspectorEmpty.hidden = hasItem;
   if (loomLibraryInspectorDetails) loomLibraryInspectorDetails.classList.toggle("d-none", !hasItem);
+  if (hasItem && !loomLibraryItemWasSelected) loomLibraryItemSection.setCollapsed(false);
+  loomLibraryItemWasSelected = hasItem;
   if (!hasItem) {
     void loomRenderLibraryShareSummary(null);
     return;
@@ -2489,14 +3145,63 @@ function loomRenderLibraryInspector() {
   if (loomLibraryInspectorCreated) loomLibraryInspectorCreated.textContent = loomFormatTimestamp(item.created_at, "Unknown");
   if (loomLibraryInspectorAccessed) loomLibraryInspectorAccessed.textContent = loomFormatTimestamp(item.last_accessed_at, "Never");
   if (loomLibraryInspectorOwner) {
-    const ownerTier = item.owner_tier ? loomFormatTier(item.owner_tier) : "";
-    loomLibraryInspectorOwner.textContent = item.owner_username
-      ? ownerTier
-        ? `${item.owner_username} (${ownerTier})`
-        : item.owner_username
-      : "Unassigned";
+    const currentOwner = { username: item.owner_username || "", tier: item.owner_tier || "" };
+    const options = loomBuildOwnerOptions(item.bucket, currentOwner);
+    loomLibraryInspectorOwner.innerHTML = "";
+    if (!options.length) {
+      const option = document.createElement("option");
+      option.value = "";
+      option.textContent = "Unassigned";
+      loomLibraryInspectorOwner.appendChild(option);
+    } else {
+      options.forEach(({ value, label }) => {
+        const option = document.createElement("option");
+        option.value = value;
+        option.textContent = label;
+        loomLibraryInspectorOwner.appendChild(option);
+      });
+    }
+    loomLibraryInspectorOwner.value = currentOwner.username;
+    // Only an admin session can actually change ownership (the server hard-
+    // enforces this too — see update_owner()) — a non-admin, or an item
+    // with nothing else to switch to, sees a locked single-option select,
+    // same convention account.js's own row-level dropdown uses.
+    loomLibraryInspectorOwner.disabled = !isLoomAdminSession() || options.length <= 1;
   }
   void loomRenderLibraryShareSummary(item);
+}
+
+if (loomLibraryInspectorOwner) {
+  loomLibraryInspectorOwner.addEventListener("change", async () => {
+    const item = loomFindLibraryItem(loomLibraryTableState.selectedKey);
+    if (!item) return;
+    const previousUsername = item.owner_username || "";
+    const selected = loomLibraryInspectorOwner.value;
+    if (!selected || selected === previousUsername) {
+      loomLibraryInspectorOwner.value = previousUsername;
+      return;
+    }
+    // Same window.confirm pattern as every other significant/hard-to-undo
+    // action in Loom (deleting a user/group/macro/system, above) — changing
+    // an owner isn't destructive, but it does immediately hand this item's
+    // edit/delete rights to someone else, so it deserves the same pause.
+    const itemLabel = item.label || item.id;
+    if (!window.confirm(`Change the owner of "${itemLabel}" from ${previousUsername || "Unassigned"} to ${selected}?`)) {
+      loomLibraryInspectorOwner.value = previousUsername;
+      return;
+    }
+    loomLibraryInspectorOwner.disabled = true;
+    try {
+      await dataManager.updateContentOwner(item.bucket, item.id, selected);
+      if (status) status.show(`Owner changed to ${selected}.`, { type: "success", timeout: 2000 });
+      await loomLoadLibraryTable({ refresh: true });
+    } catch (error) {
+      loomLibraryInspectorOwner.value = previousUsername;
+      if (status) status.show(error.message || "Unable to change owner", { type: "danger" });
+    } finally {
+      loomLibraryInspectorOwner.disabled = !isLoomAdminSession();
+    }
+  });
 }
 
 function loomRenderLibraryTableSelect() {
@@ -2545,10 +3250,17 @@ async function loomLoadLibraryTable({ refresh = false } = {}) {
     loomLibraryTableShowMessage("Loading content…");
   }
   loomLibraryTableState.loading = true;
+  // The Owner dropdown (loomBuildOwnerOptions) needs the full user list —
+  // admin-only, same as the Owner control itself, so this is a no-op for
+  // any non-admin session. Loaded here (not only when the Users tab is
+  // visited) so it's already populated before the inspector needs it.
+  if (isLoomAdminSession()) void loomLoadUsers();
   try {
     if (!loomLibraryKindLabels.size) {
       const kinds = await loadLibraryKinds();
       loomLibraryKindLabels = new Map(kinds.map((kind) => [kind.id, kind.label || kind.id]));
+      loomLibraryKindWriteTiers = new Map(kinds.map((kind) => [kind.id, kind.writeTier || ""]));
+      loomLibraryKindReadTiers = new Map(kinds.map((kind) => [kind.id, kind.readTier || ""]));
     }
     const payload = await dataManager.listOwnedContent({ scope: "all", refresh: shouldRefresh });
     const items = Array.isArray(payload?.items) ? payload.items : [];
@@ -2652,6 +3364,36 @@ async function listAllSystems() {
   return Array.from(merged.values()).sort((a, b) => (a.title || "").localeCompare(b.title || ""));
 }
 
+// Same shape as listAllSystems, minus the builtins merge — Settings have no
+// builtin/shipped-as-a-static-file concept (unlike sys.dnd5e), they're
+// always real saved "setting" Library records, authored in Sanctum.
+async function listAllSettings() {
+  if (!dataManager) return [];
+  const merged = new Map();
+  try {
+    const listing = await dataManager.list("setting", { refresh: true });
+    const remoteEntries = dataManager.collectListEntries(listing.remote, ["items", "owned", "shared", "public"]);
+    remoteEntries.forEach((entry) =>
+      merged.set(entry.id, {
+        id: entry.id,
+        title: entry.title || entry.name || entry.id,
+        ownerId: entry.owner_id ?? entry.ownerId ?? null,
+        ownerUsername: entry.owner_username || entry.ownerUsername || "",
+        isPublic: Boolean(entry.is_public),
+        permissions: typeof entry.permissions === "string" ? entry.permissions.toLowerCase() : "",
+      })
+    );
+    (listing.local || []).forEach((entry) => {
+      if (!merged.has(entry.id)) {
+        merged.set(entry.id, { id: entry.id, title: entry.payload?.name || entry.payload?.title || entry.id, ownership: "local" });
+      }
+    });
+  } catch (error) {
+    // fall through with whatever's already merged
+  }
+  return Array.from(merged.values()).sort((a, b) => (a.title || "").localeCompare(b.title || ""));
+}
+
 // Owner-or-admin, same rule as everywhere else this session (Workbench's
 // Template/Character delete gating): a System can be deleted by an admin
 // regardless of ownership, or by whichever user actually owns it. Systems
@@ -2744,6 +3486,44 @@ async function populateLibrarySystemCheckboxes(selectedIds) {
       <label class="form-check-label small" for="${escapeHtml(checkboxId)}">${escapeHtml(system.title)}</label>
     `;
     librarySystemList.appendChild(row);
+  });
+}
+
+// Byte-for-byte parallel to populateLibrarySystemCheckboxes above — a
+// Setting entity can't be assigned to itself, same reasoning as System.
+async function populateLibrarySettingCheckboxes(selectedIds) {
+  if (!librarySettingList) return;
+  const isSettingKind = loomLibraryTableState.activeKind === "setting";
+  if (librarySettingSection) {
+    if (isSettingKind) {
+      librarySettingSection.style.setProperty("display", "none", "important");
+    } else {
+      librarySettingSection.style.removeProperty("display");
+    }
+  }
+  if (isSettingKind) {
+    librarySettingList.innerHTML = "";
+    return;
+  }
+  librarySettingList.innerHTML = "";
+  const ids = new Set(Array.isArray(selectedIds) ? selectedIds : []);
+  const settings = await listAllSettings();
+  if (!settings.length) {
+    const p = document.createElement("p");
+    p.className = "small text-body-secondary mb-0";
+    p.textContent = "No Settings saved yet — create one in Sanctum.";
+    librarySettingList.appendChild(p);
+    return;
+  }
+  settings.forEach((setting) => {
+    const checkboxId = `library-setting-${setting.id}`;
+    const row = document.createElement("div");
+    row.className = "form-check";
+    row.innerHTML = `
+      <input class="form-check-input" type="checkbox" value="${escapeHtml(setting.id)}" id="${escapeHtml(checkboxId)}" data-library-setting-checkbox ${ids.has(setting.id) ? "checked" : ""} />
+      <label class="form-check-label small" for="${escapeHtml(checkboxId)}">${escapeHtml(setting.title)}</label>
+    `;
+    librarySettingList.appendChild(row);
   });
 }
 
@@ -3252,7 +4032,8 @@ function applyMacroSnapshot(snapshot) {
   renderMacroActionsEditor();
 }
 
-function newMacroEditor() {
+// See newSystemEditor's own comment on `reveal` — same reasoning here.
+function newMacroEditor({ reveal = true } = {}) {
   // Same "typeable only before the first save" id rule as Systems — once a
   // macro exists, its id is how a shared record and any future reference to
   // it stay stable.
@@ -3264,6 +4045,7 @@ function newMacroEditor() {
   if (macroIconInput) macroIconInput.value = "";
   macroEditorActions = [];
   renderMacroActionsEditor();
+  if (reveal) setMacroFormVisible(true);
   markClean("macro");
 }
 
@@ -3275,6 +4057,7 @@ async function loadMacroIntoEditor(id) {
     // entry silently winning over the current server file would mean a
     // resave here reverts whatever's actually on the server.
     const result = await dataManager.get("macro", id, { preferLocal: false });
+    setMacroFormVisible(true);
     const payload = result.payload || {};
     if (macroIdInput) {
       macroIdInput.value = payload.id || id;
@@ -3426,10 +4209,12 @@ function applyLibrarySnapshot(snapshot) {
   if (loomLibraryTableSelect) loomLibraryTableSelect.value = loomLibraryTableState.selectedKey;
   loomRenderLibraryInspector();
   populateLibrarySystemCheckboxes(currentLibraryEntity()?.systemIds);
+  populateLibrarySettingCheckboxes(currentLibraryEntity()?.settingIds);
   populateLibraryTemplateSelect(currentLibraryEntity());
 }
 
-function newLibraryEntry() {
+// See newSystemEditor's own comment on `reveal` — same reasoning here.
+function newLibraryEntry({ reveal = true } = {}) {
   // Only a not-yet-saved entity gets a typeable Id — once it exists, the id
   // is how everything else (Systems' Assigned entries, Templates, share
   // records) refers to it, so changing it later would silently break those
@@ -3440,7 +4225,9 @@ function newLibraryEntry() {
   }
   if (libraryJsonTextarea) libraryJsonTextarea.value = "{}";
   populateLibrarySystemCheckboxes([]);
+  populateLibrarySettingCheckboxes([]);
   populateLibraryTemplateSelect({});
+  if (reveal) setLibraryFormVisible(true);
   markClean("library");
 }
 
@@ -3458,12 +4245,14 @@ async function loadLibraryEntry(kind, id) {
     // don't carry this risk, since nothing gets written back from them.
     const entity = (await dataManager?.get(kind, id, { preferLocal: false }))?.payload;
     if (!entity) throw new Error("Not found");
+    setLibraryFormVisible(true);
     if (libraryIdInput) {
       libraryIdInput.value = id;
       libraryIdInput.disabled = true;
     }
     if (libraryJsonTextarea) libraryJsonTextarea.value = JSON.stringify(entity, null, 2);
     await populateLibrarySystemCheckboxes(entity.systemIds);
+    await populateLibrarySettingCheckboxes(entity.settingIds);
     await populateLibraryTemplateSelect(entity);
     await refreshLibraryEntryCatalog(kind);
     markClean("library");
@@ -3495,6 +4284,8 @@ async function loadLibraryEntry(kind, id) {
     // Any other failure (auth, network, ...) still isn't a reason to leave
     // stale id/state from whatever was loaded before — set the id so a
     // manual Delete at least has the right target, same as the success path.
+    // Reveals the panel too, since that Delete button lives inside it.
+    setLibraryFormVisible(true);
     if (libraryIdInput) {
       libraryIdInput.value = id;
       libraryIdInput.disabled = true;
@@ -3552,6 +4343,23 @@ if (librarySystemList) {
       entity.systemIds = Array.from(ids);
       libraryJsonTextarea.value = JSON.stringify(entity, null, 2);
       populateLibraryTemplateSelect(entity);
+    });
+  });
+}
+
+// Byte-for-byte parallel to the Assigned Systems handler above.
+if (librarySettingList) {
+  librarySettingList.addEventListener("change", (event) => {
+    const checkbox = event.target.closest("[data-library-setting-checkbox]");
+    if (!checkbox) return;
+    recordUndoableChange("library", () => {
+      const entity = currentLibraryEntity();
+      if (!entity) return;
+      const ids = new Set(Array.isArray(entity.settingIds) ? entity.settingIds : []);
+      if (checkbox.checked) ids.add(checkbox.value);
+      else ids.delete(checkbox.value);
+      entity.settingIds = Array.from(ids);
+      libraryJsonTextarea.value = JSON.stringify(entity, null, 2);
     });
   });
 }
@@ -3753,618 +4561,70 @@ if (libraryDeleteButton) {
 // (Modifier's die) doesn't get its own dedicated column — that's authored
 // directly in the value's "Extra properties" JSON catch-all instead, the
 // same as any other field-specific property (see below).
-const VALUE_COLUMNS = [
-  { key: "binding", label: "Binding", type: "string", placeholder: "@path" },
-  // `wide` (flex-grow instead of a fixed narrow width — see
-  // renderSystemValueRow) is Description-only: every other column is a
-  // short token (a number, an @path, a short id) that fits a fixed few
-  // rem; Description is prose, the same reason Extra JSON already grows.
-  { key: "description", label: "Description", type: "string", placeholder: "Description", wide: true },
-  { key: "shortName", label: "Short name", type: "string", placeholder: "Short name" },
-  { key: "sourceId", label: "Source ID", type: "number", placeholder: "Source ID" },
-  { key: "sourceField", label: "Source field", type: "string", placeholder: "e.g. conditions" },
-  { key: "cost", label: "Cost", type: "number", placeholder: "Cost" },
-  {
-    key: "role",
-    label: "Role",
-    type: "select",
-    placeholder: "Role",
-    options: [
-      { value: "", label: "—" },
-      { value: "resource", label: "Resource" },
-      { value: "value", label: "Value" },
-      { value: "tags", label: "Tags" },
-      { value: "modifier", label: "Modifier" },
-    ],
+// The shared row editor (common/js/lib/property-schema-editor.js) is
+// undo/dirty-tracking-agnostic — this `ctx` is what plugs it into Loom's own
+// whole-tab undo stack for the Systems tab specifically (SNAPSHOT_HANDLERS.
+// system/recordUndoableChange/the Property Inspector below), exactly
+// reproducing what used to be hardcoded inline before this editor was
+// extracted into that shared module. Getters (not plain properties) for
+// status/dataManager/filterSystemId since those module-level bindings are
+// only assigned later, during init — a plain property captured here at
+// module-eval time would freeze in at `null`.
+const systemPropertyCtx = {
+  runChange: (fn) => recordUndoableChange("system", fn),
+  refreshTooltips,
+  initHelpSystem,
+  get status() {
+    return status;
   },
-  { key: "targetBudget", label: "Target budget", type: "number", placeholder: "Budget" },
-];
-
-function fieldValueColumnState(field) {
-  const values = Array.isArray(field.values) ? field.values : [];
-  const anyValueHas = (key) => values.some((entry) => entry && typeof entry === "object" && entry[key] !== undefined);
-  const state = {};
-  VALUE_COLUMNS.forEach((column) => {
-    state[column.key] = anyValueHas(column.key);
-  });
-  state.libraryLinked = Boolean(field.entityKind) || anyValueHas("entityId");
-  return state;
-}
-
-// Drag-to-reorder for Properties/Sub-fields/Record fields rows uses the same
-// SortableJS wrapper Press's layout/canvas lists already use (see
-// common/js/lib/dnd.js) instead of hand-rolled HTML5 drag events, so it gets
-// the same clear drop-zone feedback for free: a ghost placeholder marks
-// exactly where the row will land, and siblings animate out of the way live
-// as the cursor moves — a plain top/bottom border indicator couldn't match
-// that. No `group` option is set, so — unlike Press's palette/canvas, which
-// deliberately move items between lists — a row can only reorder among its
-// own siblings; SortableJS won't let it drop into a different container.
-// `filter` + `preventOnFilter: false` excludes actual form controls (typing,
-// checkboxes, Required/Remove/Add-*) from starting a drag, so those keep
-// working normally — dragging can still start from the type icon or any
-// other dead space in the row's first line.
-function initSystemPropertySortable(container) {
-  if (!container) return;
-  // SortableJS is a deferred CDN script, and this file's own <script
-  // type="module"> tag is deliberately placed BEFORE it in index.html (see
-  // that file's own comment) so this page's JS never waits on the CDN to
-  // load — which means `Sortable` genuinely doesn't exist yet the first
-  // time this runs (the very first Properties list, rendered synchronously
-  // during this module's own top-level init). Every deferred/module script
-  // still runs synchronously back-to-back before yielding to any timer, so
-  // a setTimeout(0) retry is guaranteed to land after Sortable.min.js has
-  // finished executing, unlike a plain "give up" no-op.
-  if (typeof Sortable === "undefined") {
-    window.setTimeout(() => initSystemPropertySortable(container), 0);
-    return;
-  }
-  createSortable(container, {
-    // dnd.js's DEFAULT_OPTIONS sets handle: "[data-sortable-handle]" for
-    // Press's dedicated-grip-icon lists — nothing here has that attribute,
-    // so left unset, no element could ever start a drag. `handle: null`
-    // opts back out (same as Press's own non-handle call sites), leaving
-    // `filter` below as the only restriction on where a drag can start.
-    handle: null,
-    filter: "input, select, textarea, button:not([data-property-type])",
-    preventOnFilter: false,
-    onStart: () => {
-      const handler = SNAPSHOT_HANDLERS.system;
-      systemDragBeforeSnapshot = !isApplyingHistory && undoStack && handler ? handler.create() : null;
-    },
-    onEnd: () => {
-      const handler = SNAPSHOT_HANDLERS.system;
-      if (systemDragBeforeSnapshot && handler) {
-        const after = handler.create();
-        if (!snapshotsEqual(systemDragBeforeSnapshot, after)) {
-          undoStack.push({ type: "system", before: systemDragBeforeSnapshot, after });
-        }
+  get dataManager() {
+    return dataManager;
+  },
+  get filterSystemId() {
+    return (systemIdInput?.value || "").trim();
+  },
+  captureDragSnapshot: () =>
+    !isApplyingHistory && undoStack && SNAPSHOT_HANDLERS.system ? SNAPSHOT_HANDLERS.system.create() : null,
+  commitDragSnapshot: (before) => {
+    const handler = SNAPSHOT_HANDLERS.system;
+    if (before && handler) {
+      const after = handler.create();
+      if (!snapshotsEqual(before, after)) {
+        undoStack.push({ type: "system", before, after });
       }
-      systemDragBeforeSnapshot = null;
-      updateToolbarState();
-    },
-  });
-}
-// Undo/redo snapshot taken at drag start (see initSystemPropertySortable) —
-// SortableJS has already performed the DOM move by the time onEnd fires, so
-// recordUndoableChange's own before/action/after pattern doesn't fit here
-// (there's no "action" left to run; the mutation already happened).
-let systemDragBeforeSnapshot = null;
+    }
+    updateToolbarState();
+  },
+  // Property Inspector integration (createPropertyInspector, instantiated
+  // as systemPropertyInspector below) — a caller with no such panel simply
+  // omits these three and nothing fires. Referencing systemPropertyInspector
+  // here before its own declaration further down is safe: these arrow
+  // functions only ever run later, from a click/input event, by which point
+  // the whole module has finished evaluating.
+  onRowSelected: (row) => systemPropertyInspector.selectRow(row),
+  onRowChanged: (row) => {
+    if (row === systemPropertyInspector.selectedRow) systemPropertyInspector.refresh();
+  },
+  onRowRemoved: (row) => {
+    if (row === systemPropertyInspector.selectedRow) systemPropertyInspector.selectRow(null);
+  },
+};
 
-// Shared by the type button's own click-to-cycle handler (renderSystemPropertyRow)
-// and the Property Inspector's Type <select> (initSystemInspector) — both just
-// need to "set this row's type to this exact value," they differ only in how
-// they land on that value (cycle to the next one vs. pick one directly).
-// Pulled out so neither has to duplicate the button's attribute bookkeeping.
-function applySystemPropertyType(row, typeButton, value) {
-  const meta = PROPERTY_TYPES.find((entry) => entry.value === value) || PROPERTY_TYPES[0];
-  typeButton.dataset.value = meta.value;
-  typeButton.querySelector(".iconify")?.setAttribute("data-icon", meta.icon);
-  typeButton.setAttribute("aria-label", `Property type: ${meta.label} — click to change, drag to reorder`);
-  typeButton.setAttribute("data-bs-title", `${meta.label} — click to change type, drag to reorder`);
-  refreshTooltips(row);
-  row._syncTypeSections?.();
-}
-
+// Thin, name-preserving wrappers around the shared editor, bound to
+// systemPropertyCtx above and defaulting to this tab's own top-level
+// container — every pre-existing call site elsewhere in this file keeps
+// working completely unchanged after the extraction into a shared module.
 function renderSystemPropertyRow(field = {}, container = systemPropertyRows) {
-  if (!container) return null;
-  const row = document.createElement("div");
-  row.className = "border rounded-3 p-2 d-flex flex-column gap-2";
-  // Kept so collectFieldFromRow can merge its output back over this instead
-  // of reconstructing the field from only the inputs below — any property
-  // this editor has no dedicated control for (a single field's own stat
-  // block, or anything not yet promoted to a structured input) survives a
-  // save untouched instead of being silently dropped. See
-  // common/docs/code-audit.md's Loom System editor fix.
-  row._originalField = field;
-  const currentTypeMeta = PROPERTY_TYPES.find((entry) => entry.value === field.type) || PROPERTY_TYPES[0];
-  const arrayMode = field.item ? "item" : "values";
-  const columnState = fieldValueColumnState(field);
-  // Custom-built rather than Bootstrap's .form-check/.form-check-inline —
-  // those assume a stacked layout and carry their own ~1rem right margin on
-  // top of this row's own flex `gap`, which is exactly the wasted space
-  // that pushed this row into a horizontal scrollbar. A plain flex pair
-  // (gap-1 between input/label, extra-small text) packs the same 9 options
-  // measurably tighter with no loss of the click target or help icon.
-  const optionCheckbox = (key, label, topicId, extraAttr = "") => {
-    const inputId = `system-prop-${key}-${Math.random().toString(36).slice(2)}`;
-    return `
-    <div class="form-check form-check-inline mb-0 text-nowrap flex-shrink-0">
-      <input class="form-check-input" type="checkbox" ${extraAttr} id="${inputId}" data-property-option="${key}" />
-      <label class="form-check-label extra-small" for="${inputId}">
-        ${label}
-        <span class="align-middle" data-help-topic="${topicId}" data-help-insert="replace"></span>
-      </label>
-    </div>
-  `;
-  };
-  row.innerHTML = `
-    <div class="d-flex align-items-center gap-2">
-      <button
-        type="button"
-        class="btn btn-outline-secondary btn-sm flex-shrink-0"
-        style="cursor: grab;"
-        data-property-type
-        data-value="${currentTypeMeta.value}"
-        data-bs-toggle="tooltip"
-        data-bs-placement="top"
-        data-bs-title="${currentTypeMeta.label} — click to change type, drag to reorder"
-        aria-label="Property type: ${currentTypeMeta.label} — click to change, drag to reorder"
-      >
-        <span class="iconify" data-icon="${currentTypeMeta.icon}" aria-hidden="true"></span>
-      </button>
-      <input class="form-control form-control-sm" style="max-width: 8rem;" placeholder="key (e.g. abilities.strength)" value="${escapeHtml(field.key || "")}" data-property-key />
-      <input class="form-control form-control-sm flex-grow-1" style="min-width: 5rem;" placeholder="Label" value="${escapeHtml(field.label || "")}" data-property-label />
-      <select class="form-select form-select-sm flex-shrink-0" style="max-width: 8rem;" data-property-array-mode hidden>
-        <option value="values"${arrayMode === "values" ? " selected" : ""}>Enum</option>
-        <option value="item"${arrayMode === "item" ? " selected" : ""}>Records</option>
-      </select>
-      <input class="form-control form-control-sm flex-shrink-0" style="max-width: 6rem;" placeholder="Default" value="${escapeHtml(field.default ?? "")}" data-property-default hidden />
-      <input class="form-control form-control-sm flex-shrink-0" style="max-width: 4.5rem;" type="number" placeholder="Min" value="${field.minimum ?? ""}" data-property-minimum hidden />
-      <input class="form-control form-control-sm flex-shrink-0" style="max-width: 4.5rem;" type="number" placeholder="Max" value="${field.maximum ?? ""}" data-property-maximum hidden />
-      <button
-        class="btn btn-sm flex-shrink-0 ${field.required ? "btn-primary" : "btn-outline-secondary"}"
-        type="button"
-        data-property-required
-        aria-pressed="${field.required ? "true" : "false"}"
-        data-bs-toggle="tooltip"
-        data-bs-placement="top"
-        data-bs-title="Required"
-        aria-label="Required"
-      >
-        <span class="iconify" data-icon="tabler:asterisk" aria-hidden="true"></span>
-      </button>
-      <button class="btn btn-outline-danger btn-sm flex-shrink-0" type="button" data-property-remove aria-label="Remove property">
-        <span class="iconify" data-icon="tabler:trash" aria-hidden="true"></span>
-      </button>
-    </div>
-    <div class="d-flex flex-nowrap overflow-x-auto gap-2 align-items-center pb-1" data-system-array-options hidden>
-      ${optionCheckbox("binding", "Binding", "loom.systemValueBinding", columnState.binding ? "checked" : "")}
-      ${optionCheckbox("description", "Description", "loom.systemValueDescription", columnState.description ? "checked" : "")}
-      ${optionCheckbox("libraryLinked", "Library", "loom.systemValueLibraryLinked", columnState.libraryLinked ? "checked" : "")}
-      ${optionCheckbox("shortName", "Short name", "loom.systemValueShortName", columnState.shortName ? "checked" : "")}
-      ${optionCheckbox("sourceId", "Source ID", "loom.systemValueSourceId", columnState.sourceId ? "checked" : "")}
-      ${optionCheckbox("sourceField", "Source field", "loom.systemValueSourceField", columnState.sourceField ? "checked" : "")}
-      ${optionCheckbox("cost", "Cost", "loom.systemValueCost", columnState.cost ? "checked" : "")}
-      ${optionCheckbox("role", "Role", "loom.systemValueRole", columnState.role ? "checked" : "")}
-      ${optionCheckbox("targetBudget", "Budget", "loom.systemValueTargetBudget", columnState.targetBudget ? "checked" : "")}
-    </div>
-    <div class="d-flex flex-column gap-2 ps-3 border-start" data-system-object-section hidden>
-      <div class="d-flex align-items-center justify-content-between gap-2">
-        <span class="small fw-semibold text-body-secondary">Sub-fields</span>
-        <button class="btn btn-outline-secondary btn-sm p-1" type="button" data-system-add-child aria-label="Add sub-field">
-          <span class="iconify" data-icon="tabler:plus" aria-hidden="true"></span>
-        </button>
-      </div>
-      <div class="d-flex flex-column gap-2" data-system-children></div>
-    </div>
-    <div class="d-flex flex-column gap-2 ps-3 border-start" data-system-array-section hidden>
-      <input class="form-control form-control-sm" style="max-width: 9rem;" placeholder="Library kind" value="${escapeHtml(field.entityKind || "")}" data-property-entity-kind data-system-library-kind hidden />
-      <div class="d-flex flex-column gap-1" data-system-values-section hidden>
-        <div class="d-flex align-items-center justify-content-between gap-2">
-          <label class="small text-body-secondary mb-0">Allowed values</label>
-          <button class="btn btn-outline-secondary btn-sm p-1" type="button" data-system-add-value aria-label="Add value">
-            <span class="iconify" data-icon="tabler:plus" aria-hidden="true"></span>
-          </button>
-        </div>
-        <div class="d-flex flex-column gap-1" data-system-value-rows></div>
-      </div>
-      <div class="d-flex flex-column gap-2" data-system-item-section hidden>
-        <div class="row g-2 align-items-center">
-          <div class="col-6">
-            <input class="form-control form-control-sm" placeholder="Record label" value="${escapeHtml(field.item?.label || "")}" data-item-label />
-          </div>
-          <div class="col-6">
-            <input class="form-control form-control-sm" placeholder="Display field key (e.g. inventory[].name)" value="${escapeHtml(field.item?.displayField || "")}" data-item-display-field />
-          </div>
-        </div>
-        <div class="d-flex align-items-center justify-content-between gap-2">
-          <span class="small text-body-secondary">Record fields</span>
-          <button class="btn btn-outline-secondary btn-sm p-1" type="button" data-system-add-item-child aria-label="Add record field">
-            <span class="iconify" data-icon="tabler:plus" aria-hidden="true"></span>
-          </button>
-        </div>
-        <div class="d-flex flex-column gap-2" data-system-item-children></div>
-      </div>
-    </div>
-  `;
-  container.appendChild(row);
-  // initHelpSystem's one call at page init (see the bottom of this file)
-  // only scans whatever's already in the DOM at that moment — this row is
-  // built well after that, so its help-topic spans (array options, combat
-  // bindings) would otherwise sit inert forever, never turning into an
-  // actual clickable icon. Cheap to call per-row: loadHelpTopics caches the
-  // fetch, and initHelpSystem itself skips anything already attached.
-  void initHelpSystem({ root: row });
-  // Same reasoning as initHelpSystem above — the type toggle's tooltip (and
-  // Required's) needs a live Bootstrap Tooltip instance, which the one
-  // page-init refreshTooltips(document) call never reaches for a row built
-  // this long after load.
-  refreshTooltips(row);
-
-  const requiredButton = row.querySelector("[data-property-required]");
-  requiredButton.addEventListener("click", () => {
-    recordUndoableChange("system", () => {
-      const pressed = requiredButton.getAttribute("aria-pressed") === "true";
-      requiredButton.setAttribute("aria-pressed", pressed ? "false" : "true");
-      requiredButton.classList.toggle("btn-primary", !pressed);
-      requiredButton.classList.toggle("btn-outline-secondary", pressed);
-    });
-  });
-
-  // Bootstrap's own utility classes are `!important` (the same "hidden +
-  // d-none" workaround used throughout this codebase), so both need toggling
-  // together — see setLoomView for the same pattern at the tab level.
-  const typeButton = row.querySelector("[data-property-type]");
-  const arrayOptions = row.querySelector("[data-system-array-options]");
-  const defaultInput = row.querySelector("[data-property-default]");
-  const minInput = row.querySelector("[data-property-minimum]");
-  const maxInput = row.querySelector("[data-property-maximum]");
-  const objectSection = row.querySelector("[data-system-object-section]");
-  const arraySection = row.querySelector("[data-system-array-section]");
-  const arrayModeSelect = row.querySelector("[data-property-array-mode]");
-  const valuesSection = row.querySelector("[data-system-values-section]");
-  const itemSection = row.querySelector("[data-system-item-section]");
-  const libraryKindWrap = row.querySelector("[data-system-library-kind]");
-  const entityKindInput = row.querySelector("[data-property-entity-kind]");
-  const valueRowsContainer = row.querySelector("[data-system-value-rows]");
-
-  const showHide = (el, show) => {
-    el.hidden = !show;
-    el.classList.toggle("d-none", !show);
-  };
-
-  const syncTypeSections = () => {
-    const currentType = typeButton.dataset.value;
-    const isObject = currentType === "object";
-    const isArray = currentType === "array";
-    const isScalar = ["string", "number", "boolean"].includes(currentType);
-    showHide(objectSection, isObject);
-    showHide(arraySection, isArray);
-    showHide(arrayOptions, isArray);
-    arrayModeSelect.hidden = !isArray;
-    defaultInput.hidden = !isScalar;
-    minInput.hidden = currentType !== "number";
-    maxInput.hidden = currentType !== "number";
-  };
-  // Stashed so the Property Inspector (a separate, later-defined set of
-  // functions — see initSystemInspector) can trigger this same row's section
-  // visibility after setting a type from its own <select>, without needing
-  // access to this closure's other locals. Same technique already used for
-  // row._originalField/row._originalValue elsewhere in this file.
-  row._syncTypeSections = syncTypeSections;
-  const syncArrayModeSections = () => {
-    const isValues = arrayModeSelect.value === "values";
-    showHide(valuesSection, isValues);
-    showHide(itemSection, !isValues);
-  };
-  // Re-applies every value row's column visibility to match this field's own
-  // current option checkboxes — called on load and whenever an option is
-  // toggled, so a field's rows always reflect what's actually enabled for it
-  // rather than needing a full re-render.
-  const syncValueColumns = () => {
-    const state = {};
-    VALUE_COLUMNS.forEach((column) => {
-      state[column.key] = row.querySelector(`[data-property-option="${column.key}"]`)?.checked ?? false;
-    });
-    state.libraryLinked = row.querySelector('[data-property-option="libraryLinked"]')?.checked ?? false;
-    showHide(libraryKindWrap, state.libraryLinked);
-    Array.from(valueRowsContainer.children).forEach((valueRow) => applyValueRowColumns(valueRow, state));
-  };
-  // Click cycles to the next type in PROPERTY_TYPES (wrapping around) rather
-  // than opening a dropdown — see PROPERTY_TYPES' own comment for why. A
-  // plain click never triggers the drag handlers below (those need real
-  // pointer movement past a browser threshold first), so both interactions
-  // coexist on the same element without conflict.
-  typeButton.addEventListener("click", () => {
-    recordUndoableChange("system", () => {
-      const currentIndex = PROPERTY_TYPES.findIndex((entry) => entry.value === typeButton.dataset.value);
-      const next = PROPERTY_TYPES[(currentIndex + 1) % PROPERTY_TYPES.length];
-      applySystemPropertyType(row, typeButton, next.value);
-    });
-  });
-  arrayModeSelect.addEventListener("change", syncArrayModeSections);
-  row.querySelectorAll("[data-property-option]").forEach((checkbox) => checkbox.addEventListener("change", syncValueColumns));
-  syncTypeSections();
-  syncArrayModeSections();
-
-  const childrenContainer = row.querySelector("[data-system-children]");
-  (field.children || []).forEach((child) => renderSystemPropertyRow(child, childrenContainer));
-  initSystemPropertySortable(childrenContainer);
-
-  const itemChildrenContainer = row.querySelector("[data-system-item-children]");
-  (field.item?.children || []).forEach((child) => renderSystemPropertyRow(child, itemChildrenContainer));
-  initSystemPropertySortable(itemChildrenContainer);
-
-  // A values entry can link straight to a real Library entity of the
-  // declared Library kind, instead of just being a hand-typed display
-  // string — this is what lets a System stay the source of truth for the
-  // roster (names, order, which ones are still just placeholders) while
-  // pointing directly at real data once it exists, rather than duplicating
-  // it. Re-populated whenever the Library kind changes.
-  (Array.isArray(field.values) ? field.values : []).forEach((entry) => {
-    const valueRow = renderSystemValueRow(entry, valueRowsContainer);
-    const entityId = typeof entry === "object" && entry !== null ? entry.entityId || "" : "";
-    populateValueEntitySelect(valueRow.querySelector("[data-value-entity-select]"), field.entityKind, entityId);
-  });
-  syncValueColumns();
-  entityKindInput.addEventListener("change", () => {
-    const kind = entityKindInput.value.trim();
-    Array.from(valueRowsContainer.children).forEach((valueRow) => {
-      const select = valueRow.querySelector("[data-value-entity-select]");
-      populateValueEntitySelect(select, kind, select?.value || "");
-    });
-  });
-
-  return row;
+  return renderPropertyRow(field, container, systemPropertyCtx);
 }
-
-// Shows/hides one value row's optional columns to match its field's current
-// option checkboxes (see syncValueColumns above) — called on initial render
-// and again live whenever a checkbox is toggled.
-function applyValueRowColumns(valueRow, state) {
-  VALUE_COLUMNS.forEach((column) => {
-    const wrap = valueRow.querySelector(`[data-value-column="${column.key}"]`);
-    if (wrap) {
-      wrap.hidden = !state[column.key];
-      wrap.classList.toggle("d-none", !state[column.key]);
-    }
-  });
-  const entitySelect = valueRow.querySelector("[data-value-entity-select]");
-  if (entitySelect) {
-    entitySelect.hidden = !state.libraryLinked;
-    entitySelect.classList.toggle("d-none", !state.libraryLinked);
-  }
+function initSystemPropertySortable(container) {
+  return initPropertySortable(container, systemPropertyCtx);
 }
-
-function renderSystemValueRow(entry = {}, container) {
-  if (!container) return null;
-  const name = typeof entry === "string" ? entry : entry?.name || "";
-  const source = typeof entry === "object" && entry !== null ? entry : {};
-  // Kept so collectFieldFromRow's value collection can merge its output back
-  // over this instead of reconstructing from scratch — same reasoning as
-  // row._originalField above.
-  const columnInputs = VALUE_COLUMNS.map((column) => {
-    const currentValue = source[column.key] ?? "";
-    const control =
-      column.type === "select"
-        ? `<select class="form-select form-select-sm" style="width: 7rem;" data-value-column-input="${column.key}">
-            ${(column.options || [])
-              .map(
-                (option) =>
-                  `<option value="${escapeHtml(option.value)}"${option.value === currentValue ? " selected" : ""}>${escapeHtml(option.label)}</option>`
-              )
-              .join("")}
-          </select>`
-        : `<input
-            class="form-control form-control-sm"
-            style="${column.wide ? "min-width: 12rem;" : "width: 6rem;"}"
-            type="${column.type === "number" ? "number" : "text"}"
-            placeholder="${column.placeholder}"
-            value="${escapeHtml(currentValue)}"
-            data-value-column-input="${column.key}"
-          />`;
-    return `<div class="${column.wide ? "flex-grow-1" : "flex-shrink-0"}" data-value-column="${column.key}" hidden>${control}</div>`;
-  }).join("");
-  // Anything beyond the columns above (a field-specific stat block like
-  // combatScaling's hitPoints/armorClass/..., or anything not yet promoted
-  // to a structured input) isn't worth a bespoke input per property — new
-  // ones get added often enough (see common/docs/lookup-tables-migration.md)
-  // that hardcoding a fixed list here would just recreate the same "unknown
-  // property silently dropped" bug for the next one. Shown/edited as one
-  // JSON object instead.
-  const extra = { ...source };
-  delete extra.name;
-  delete extra.entityId;
-  VALUE_COLUMNS.forEach((column) => delete extra[column.key]);
-  const extraJson = Object.keys(extra).length ? JSON.stringify(extra) : "";
-  const row = document.createElement("div");
-  row.className = "d-flex align-items-center gap-2";
-  row.dataset.systemValueRow = "";
-  row._originalValue = entry;
-  row.innerHTML = `
-    <input class="form-control form-control-sm flex-shrink-0" style="width: 9rem;" placeholder="Name" value="${escapeHtml(name)}" data-value-name />
-    ${columnInputs}
-    <select class="form-select form-select-sm flex-shrink-0" style="width: 9rem;" data-value-entity-select hidden>
-      <option value="">Not in Library yet</option>
-    </select>
-    <input class="form-control form-control-sm font-monospace flex-grow-1" style="min-width: 6rem;" placeholder="Extra JSON" value="${escapeHtml(extraJson)}" data-value-extra />
-    <button class="btn btn-outline-danger btn-sm flex-shrink-0" type="button" data-remove-value aria-label="Remove value">
-      <span class="iconify" data-icon="tabler:trash" aria-hidden="true"></span>
-    </button>
-  `;
-  container.appendChild(row);
-  return row;
+function applySystemPropertyType(row, typeButton, value) {
+  return applyPropertyType(row, typeButton, value, systemPropertyCtx);
 }
-
-// Sequential (not concurrent) fetches — Systems editing is a low-frequency
-// admin action over small lists (a handful of classes/species), not worth
-// the added complexity of mapWithConcurrency used elsewhere for larger
-// batches.
-async function populateValueEntitySelect(select, entityKind, currentValue) {
-  if (!select) return;
-  select.innerHTML = "";
-  const blank = document.createElement("option");
-  blank.value = "";
-  blank.textContent = "Not in Library yet";
-  select.appendChild(blank);
-  if (!entityKind || !dataManager) return;
-  const systemId = (systemIdInput?.value || "").trim();
-  let ids = [];
-  try {
-    const { remote } = await dataManager.list(entityKind, { refresh: true, includeLocal: false });
-    ids = dataManager.collectListEntries(remote, ["owned", "shared", "public", "items"]).map((entry) => entry.id);
-  } catch (error) {
-    return;
-  }
-  for (const id of ids) {
-    let entity = null;
-    try {
-      entity = (await dataManager.get(entityKind, id))?.payload;
-    } catch (error) {
-      continue;
-    }
-    const systemIds = Array.isArray(entity?.systemIds) ? entity.systemIds : [];
-    if (systemId && !systemIds.includes(systemId)) continue;
-    const option = document.createElement("option");
-    option.value = id;
-    option.textContent = entity?.name || id;
-    select.appendChild(option);
-  }
-  if (currentValue && Array.from(select.options).some((option) => option.value === currentValue)) {
-    select.value = currentValue;
-  }
-}
-
-function collectValueRow(valueRow, options) {
-  const name = valueRow.querySelector("[data-value-name]")?.value.trim() || "";
-  if (!name) return null;
-  const extraRaw = valueRow.querySelector("[data-value-extra]")?.value.trim() || "";
-  let extra = {};
-  if (extraRaw) {
-    try {
-      extra = JSON.parse(extraRaw);
-    } catch (error) {
-      status?.show(`"${name}"'s extra properties aren't valid JSON — saved without them.`, {
-        type: "warning",
-        timeout: 4000,
-      });
-    }
-  }
-  // Merge over the original entry (see renderSystemValueRow) so anything not
-  // covered by a column input or the extra-JSON box — a field-specific stat
-  // this editor doesn't know about yet — still survives.
-  const original = valueRow._originalValue && typeof valueRow._originalValue === "object" ? valueRow._originalValue : {};
-  const value = { ...original, ...extra, name };
-  delete value.entityId;
-  VALUE_COLUMNS.forEach((column) => {
-    delete value[column.key];
-    if (!options[column.key]) return;
-    const raw = valueRow.querySelector(`[data-value-column-input="${column.key}"]`)?.value ?? "";
-    if (raw === "") return;
-    value[column.key] = column.type === "number" ? Number(raw) : raw;
-  });
-  if (options.libraryLinked) {
-    const entityId = valueRow.querySelector("[data-value-entity-select]")?.value || "";
-    if (entityId) value.entityId = entityId;
-  }
-  return value;
-}
-
-function collectFieldFromRow(row) {
-  const key = row.querySelector("[data-property-key]").value.trim();
-  const label = row.querySelector("[data-property-label]").value.trim();
-  const type = row.querySelector("[data-property-type]").dataset.value;
-  const defaultRaw = row.querySelector("[data-property-default]").value;
-  const minimum = row.querySelector("[data-property-minimum]").value;
-  const maximum = row.querySelector("[data-property-maximum]").value;
-  const required = row.querySelector("[data-property-required]").getAttribute("aria-pressed") === "true";
-
-  // Start from the original field (see renderSystemPropertyRow) so any
-  // property this editor has no dedicated control for survives a save
-  // untouched, instead of a bare `{ type, key, label }` silently discarding
-  // it — the bug this whole merge exists to fix. Every property the UI DOES
-  // control below is explicitly deleted first so unchecking/clearing it in
-  // the UI actually takes effect rather than the stale original winning.
-  // `category` is dropped entirely — nothing in the suite reads a System
-  // field's own `category` (Workbench's field categorization is derived from
-  // `type` instead, see system-schema.js's categorizeFieldType), so it was
-  // dead data with a UI input; removed rather than carried forward.
-  const field = { ...(row._originalField || {}), type, key, label };
-  delete field.category;
-  delete field.default;
-  delete field.required;
-  delete field.minimum;
-  delete field.maximum;
-  delete field.children;
-  delete field.item;
-  delete field.entityKind;
-  delete field.values;
-  // Legacy properties from before this editor's fixes — stripped so old data
-  // doesn't linger once re-saved. setsBudgetCeiling moved to Vault's own
-  // Budget ceiling field tool preference; currentHp/maxHp/tempHp/armorClass/
-  // conditions/initiativeModifier were the old "combat-bindings" type's fixed
-  // slots; combatBindings was this editor's own later marker checkbox for
-  // the same field, since removed — the field is now found purely by its
-  // values carrying a Role (see the Role/Binding columns below and
-  // common/js/lib/bindings.js's findRoleBoundField), no marker needed.
-  delete field.setsBudgetCeiling;
-  delete field.currentHp;
-  delete field.maxHp;
-  delete field.tempHp;
-  delete field.armorClass;
-  delete field.conditions;
-  delete field.initiativeModifier;
-  delete field.combatBindings;
-
-  if (defaultRaw !== "") field.default = defaultRaw;
-  if (required) field.required = true;
-  if (type === "number") {
-    if (minimum !== "") field.minimum = Number(minimum);
-    if (maximum !== "") field.maximum = Number(maximum);
-  }
-  if (type === "object") {
-    const children = collectFieldsFromContainer(row.querySelector("[data-system-children]"));
-    if (children.length) field.children = children;
-  }
-  if (type === "array") {
-    const arrayMode = row.querySelector("[data-property-array-mode]")?.value || "values";
-    const options = {};
-    VALUE_COLUMNS.forEach((column) => {
-      options[column.key] = row.querySelector(`[data-property-option="${column.key}"]`)?.checked ?? false;
-    });
-    options.libraryLinked = row.querySelector('[data-property-option="libraryLinked"]')?.checked ?? false;
-    if (arrayMode === "item") {
-      const item = { type: "object" };
-      const itemLabel = row.querySelector("[data-item-label]")?.value.trim();
-      const displayField = row.querySelector("[data-item-display-field]")?.value.trim();
-      if (itemLabel) item.label = itemLabel;
-      if (displayField) item.displayField = displayField;
-      const children = collectFieldsFromContainer(row.querySelector("[data-system-item-children]"));
-      if (children.length) item.children = children;
-      field.item = item;
-    } else {
-      if (options.libraryLinked) {
-        const entityKind = row.querySelector("[data-property-entity-kind]")?.value.trim() || "";
-        if (entityKind) field.entityKind = entityKind;
-      }
-      const valueRows = Array.from(row.querySelector("[data-system-value-rows]")?.children || []);
-      const values = valueRows.map((valueRow) => collectValueRow(valueRow, options)).filter(Boolean);
-      if (values.length) field.values = values;
-    }
-  }
-  return field;
-}
-
-function collectFieldsFromContainer(container) {
-  if (!container) return [];
-  return Array.from(container.children)
-    .map((row) => collectFieldFromRow(row))
-    .filter((field) => field.key);
-}
-
 function collectSystemProperties() {
-  return collectFieldsFromContainer(systemPropertyRows);
+  return collectProperties(systemPropertyRows, systemPropertyCtx);
 }
 
 // The one place that assembles a full System record from the editor's
@@ -4449,341 +4709,69 @@ function applySystemSnapshot(snapshot) {
   // Undo/redo rebuilds every row from scratch — whatever was selected before
   // is now a detached DOM node representing (at best) the same logical
   // property, not a meaningful selection to keep pointing at.
-  selectSystemPropertyRow(null);
+  systemPropertyInspector.selectRow(null);
 }
 
 // --- Property Inspector (right pane) ---------------------------------------
 // A second, more spacious editing surface for whichever property row is
 // currently selected in the Properties list — the list itself is untouched,
-// this is purely additive. Every control here proxies the selected row's own
-// real input: it reads that input's current value, and on interaction writes
-// back to it and dispatches the same native event that input already
-// listens for (see renderSystemPropertyRow's wireUndoTracking hookup and its
-// syncTypeSections/syncArrayModeSections/syncValueColumns) — so editing here
-// IS editing the row, not a separate copy of its data that could drift out
-// of sync. Type is the one exception (see createInspectorTypeSelect) since
-// the row's own Type control is a click-to-cycle button with no "set to
-// exactly this value" event of its own to proxy.
+// this is purely additive. Shared factory (common/js/lib/property-schema-
+// editor.js's createPropertyInspector) — Group's own Properties tab gets the
+// exact same mechanism below (New/Delete/Duplicate/Required toolbar, per-
+// type field proxies, Up/Down keyboard navigation), not a hand-duplicated
+// second copy.
 
-function selectSystemPropertyRow(row) {
-  if (selectedSystemPropertyRow === row) return;
-  if (selectedSystemPropertyRow) selectedSystemPropertyRow.removeAttribute("data-system-row-selected");
-  selectedSystemPropertyRow = row || null;
-  if (selectedSystemPropertyRow) selectedSystemPropertyRow.setAttribute("data-system-row-selected", "true");
-  refreshSystemInspector();
+function isLoomViewActive(view) {
+  return document.querySelector("[data-loom-view-tab].active")?.dataset.loomViewTab === view;
 }
 
-function updateSystemInspectorToolbar() {
-  const hasRow = Boolean(selectedSystemPropertyRow?.isConnected);
-  if (systemInspectorDeleteButton) systemInspectorDeleteButton.disabled = !hasRow;
-  if (systemInspectorDuplicateButton) systemInspectorDuplicateButton.disabled = !hasRow;
-  if (systemInspectorRequiredButton) {
-    systemInspectorRequiredButton.disabled = !hasRow;
-    const pressed =
-      hasRow && selectedSystemPropertyRow.querySelector("[data-property-required]")?.getAttribute("aria-pressed") === "true";
-    systemInspectorRequiredButton.setAttribute("aria-pressed", pressed ? "true" : "false");
-    systemInspectorRequiredButton.classList.toggle("btn-primary", pressed);
-    systemInspectorRequiredButton.classList.toggle("btn-outline-secondary", !pressed);
-  }
-}
-
-// Skips rebuilding the fields list while the user is actively typing in one
-// of its own text/number inputs — rebuilding would yank the input out from
-// under their cursor. Safe to skip: the row itself already has the correct
-// value (this exact control just wrote it there via its own input/change
-// proxy), so nothing else needs to move. Selects/checkboxes/buttons have no
-// caret to protect, so a change to one of those always rebuilds immediately
-// — that's what keeps section visibility (Default/Min/Max, Array options,
-// Library kind, ...) correct as Type/Array Mode/Library-linked change.
-function shouldSkipSystemInspectorRebuild() {
-  const active = document.activeElement;
-  if (!systemInspectorFields || !systemInspectorFields.contains(active)) return false;
-  if (active.tagName === "TEXTAREA") return true;
-  if (active.tagName === "INPUT" && (active.type === "text" || active.type === "number")) return true;
-  return false;
-}
-
-function inspectorFieldWrap(labelText, controlEl) {
-  const wrap = document.createElement("div");
-  wrap.className = "d-flex flex-column gap-1";
-  const label = document.createElement("label");
-  label.className = "form-label fw-semibold mb-0 small";
-  label.textContent = labelText;
-  wrap.appendChild(label);
-  wrap.appendChild(controlEl);
-  return wrap;
-}
-
-function createInspectorTextProxy(row, selector, type = "text") {
-  const source = row.querySelector(selector);
-  const input = document.createElement("input");
-  input.className = "form-control form-control-sm";
-  input.type = type;
-  if (source) {
-    input.value = source.value;
-    input.placeholder = source.placeholder || "";
-  }
-  // focusin (not focus — needs to bubble to wireUndoTracking's delegated
-  // listener on systemPropertyRows) captures the "before" undo snapshot the
-  // same way a real click into the row's own input would.
-  input.addEventListener("focus", () => source?.dispatchEvent(new Event("focusin", { bubbles: true })));
-  input.addEventListener("input", () => {
-    if (!source) return;
-    source.value = input.value;
-    source.dispatchEvent(new Event("input", { bubbles: true }));
-  });
-  input.addEventListener("change", () => {
-    if (!source) return;
-    source.value = input.value;
-    source.dispatchEvent(new Event("change", { bubbles: true }));
-  });
-  return input;
-}
-
-function createInspectorSelectProxy(row, selector, options) {
-  const source = row.querySelector(selector);
-  const select = document.createElement("select");
-  select.className = "form-select form-select-sm";
-  options.forEach((option) => {
-    const opt = document.createElement("option");
-    opt.value = option.value;
-    opt.textContent = option.label;
-    select.appendChild(opt);
-  });
-  select.value = source?.value ?? options[0]?.value ?? "";
-  select.addEventListener("change", () => {
-    if (!source) return;
-    source.value = select.value;
-    source.dispatchEvent(new Event("change", { bubbles: true }));
-  });
-  return select;
-}
-
-function createInspectorCheckboxField(row, selector, labelText, topicId) {
-  const source = row.querySelector(selector);
-  const wrap = document.createElement("div");
-  wrap.className = "form-check mb-0";
-  const input = document.createElement("input");
-  input.className = "form-check-input";
-  input.type = "checkbox";
-  const inputId = `system-inspector-check-${Math.random().toString(36).slice(2)}`;
-  input.id = inputId;
-  input.checked = Boolean(source?.checked);
-  input.addEventListener("change", () => {
-    if (!source) return;
-    source.checked = input.checked;
-    source.dispatchEvent(new Event("change", { bubbles: true }));
-  });
-  const label = document.createElement("label");
-  label.className = "form-check-label small";
-  label.htmlFor = inputId;
-  label.textContent = labelText;
-  wrap.appendChild(input);
-  wrap.appendChild(label);
-  if (topicId) {
-    const help = document.createElement("span");
-    help.className = "align-middle";
-    help.dataset.helpTopic = topicId;
-    help.dataset.helpInsert = "replace";
-    wrap.appendChild(help);
-  }
-  return wrap;
-}
-
-// Type has no dedicated "set to exactly this value" event to proxy on the
-// row (its own control is a click-to-cycle button — see
-// applySystemPropertyType), so this is the one field built by hand instead
-// of via one of the generic proxy helpers above.
-function createInspectorTypeSelect(row) {
-  const typeButton = row.querySelector("[data-property-type]");
-  const select = document.createElement("select");
-  select.className = "form-select form-select-sm";
-  PROPERTY_TYPES.forEach((entry) => {
-    const opt = document.createElement("option");
-    opt.value = entry.value;
-    opt.textContent = entry.label;
-    select.appendChild(opt);
-  });
-  select.value = typeButton?.dataset.value || PROPERTY_TYPES[0].value;
-  select.addEventListener("change", () => {
-    if (!typeButton) return;
-    recordUndoableChange("system", () => applySystemPropertyType(row, typeButton, select.value));
-    // Nothing was dispatched on the row for the generic "reflect row edits
-    // into the inspector" listeners to catch (see applySystemPropertyType),
-    // so this rebuilds directly — needed to show/hide Default/Min/Max/Array
-    // Mode/options for the new type.
-    refreshSystemInspector();
-  });
-  return select;
-}
-
-const SYSTEM_INSPECTOR_ARRAY_OPTIONS = [
-  ["binding", "Binding", "loom.systemValueBinding"],
-  ["description", "Description", "loom.systemValueDescription"],
-  ["libraryLinked", "Library", "loom.systemValueLibraryLinked"],
-  ["shortName", "Short name", "loom.systemValueShortName"],
-  ["sourceId", "Source ID", "loom.systemValueSourceId"],
-  ["sourceField", "Source field", "loom.systemValueSourceField"],
-  ["cost", "Cost", "loom.systemValueCost"],
-  ["role", "Role", "loom.systemValueRole"],
-  ["targetBudget", "Budget", "loom.systemValueTargetBudget"],
-];
-
-function buildSystemInspectorFields(row) {
-  const fragment = document.createDocumentFragment();
-  const currentType = row.querySelector("[data-property-type]")?.dataset.value || "string";
-  const isScalar = ["string", "number", "boolean"].includes(currentType);
-  const isArray = currentType === "array";
-
-  fragment.appendChild(inspectorFieldWrap("Type", createInspectorTypeSelect(row)));
-  fragment.appendChild(inspectorFieldWrap("Key", createInspectorTextProxy(row, "[data-property-key]")));
-  fragment.appendChild(inspectorFieldWrap("Label", createInspectorTextProxy(row, "[data-property-label]")));
-
-  if (isScalar) {
-    fragment.appendChild(inspectorFieldWrap("Default", createInspectorTextProxy(row, "[data-property-default]")));
-  }
-  if (currentType === "number") {
-    const minMaxRow = document.createElement("div");
-    minMaxRow.className = "row g-2";
-    const minCol = document.createElement("div");
-    minCol.className = "col-6";
-    minCol.appendChild(inspectorFieldWrap("Minimum", createInspectorTextProxy(row, "[data-property-minimum]", "number")));
-    const maxCol = document.createElement("div");
-    maxCol.className = "col-6";
-    maxCol.appendChild(inspectorFieldWrap("Maximum", createInspectorTextProxy(row, "[data-property-maximum]", "number")));
-    minMaxRow.appendChild(minCol);
-    minMaxRow.appendChild(maxCol);
-    fragment.appendChild(minMaxRow);
-  }
-
-  if (isArray) {
-    fragment.appendChild(
-      inspectorFieldWrap(
-        "Array Mode",
-        createInspectorSelectProxy(row, "[data-property-array-mode]", [
-          { value: "values", label: "Enum" },
-          { value: "item", label: "Records" },
-        ])
-      )
-    );
-    const optionsWrap = document.createElement("div");
-    optionsWrap.className = "d-flex flex-column gap-1";
-    const optionsLabel = document.createElement("span");
-    optionsLabel.className = "form-label fw-semibold mb-0 small";
-    optionsLabel.textContent = "Array Value Options";
-    optionsWrap.appendChild(optionsLabel);
-    const checkboxGrid = document.createElement("div");
-    checkboxGrid.className = "d-flex flex-wrap gap-2";
-    SYSTEM_INSPECTOR_ARRAY_OPTIONS.forEach(([key, label, topicId]) => {
-      checkboxGrid.appendChild(createInspectorCheckboxField(row, `[data-property-option="${key}"]`, label, topicId));
-    });
-    optionsWrap.appendChild(checkboxGrid);
-    fragment.appendChild(optionsWrap);
-
-    if (row.querySelector('[data-property-option="libraryLinked"]')?.checked) {
-      fragment.appendChild(inspectorFieldWrap("Library kind", createInspectorTextProxy(row, "[data-property-entity-kind]")));
-    }
-  }
-
-  return fragment;
-}
-
-function refreshSystemInspector() {
-  if (!systemInspectorEmpty || !systemInspectorDetails || !systemInspectorFields) return;
-  if (selectedSystemPropertyRow && !selectedSystemPropertyRow.isConnected) selectedSystemPropertyRow = null;
-  const row = selectedSystemPropertyRow;
-  updateSystemInspectorToolbar();
-  systemInspectorEmpty.hidden = Boolean(row);
-  systemInspectorDetails.classList.toggle("d-none", !row);
-  if (!row) return;
-  if (shouldSkipSystemInspectorRebuild()) return;
-  systemInspectorFields.innerHTML = "";
-  systemInspectorFields.appendChild(buildSystemInspectorFields(row));
-  void initHelpSystem({ root: systemInspectorFields });
-}
-
-systemInspectorNewButton?.addEventListener("click", () => {
-  const container = selectedSystemPropertyRow?.parentElement || systemPropertyRows;
-  if (!container) return;
-  let newRow;
-  recordUndoableChange("system", () => {
-    newRow = renderSystemPropertyRow({}, container);
-    if (selectedSystemPropertyRow?.parentElement === container) selectedSystemPropertyRow.after(newRow);
-  });
-  if (newRow) selectSystemPropertyRow(newRow);
+const systemPropertyInspector = createPropertyInspector({
+  ctx: systemPropertyCtx,
+  rowsContainer: systemPropertyRows,
+  emptyEl: systemInspectorEmpty,
+  detailsEl: systemInspectorDetails,
+  fieldsEl: systemInspectorFields,
+  newButton: systemInspectorNewButton,
+  deleteButton: systemInspectorDeleteButton,
+  duplicateButton: systemInspectorDuplicateButton,
+  requiredButton: systemInspectorRequiredButton,
+  isActive: () => isLoomViewActive("systems"),
 });
 
-systemInspectorDeleteButton?.addEventListener("click", () => {
-  if (!selectedSystemPropertyRow) return;
-  const row = selectedSystemPropertyRow;
-  recordUndoableChange("system", () => row.remove());
-  selectSystemPropertyRow(null);
+const groupPropertyInspector = createPropertyInspector({
+  ctx: groupPropertyCtx,
+  rowsContainer: loomGroupPropertyRows,
+  emptyEl: groupInspectorEmpty,
+  detailsEl: groupInspectorDetails,
+  fieldsEl: groupInspectorFields,
+  newButton: groupInspectorNewButton,
+  deleteButton: groupInspectorDeleteButton,
+  duplicateButton: groupInspectorDuplicateButton,
+  requiredButton: groupInspectorRequiredButton,
+  isActive: () => isLoomViewActive("groups"),
 });
 
-systemInspectorDuplicateButton?.addEventListener("click", () => {
-  if (!selectedSystemPropertyRow) return;
-  const sourceRow = selectedSystemPropertyRow;
-  const container = sourceRow.parentElement;
-  if (!container) return;
-  let newRow;
-  recordUndoableChange("system", () => {
-    const field = collectFieldFromRow(sourceRow);
-    if (field.key) field.key = `${field.key}_copy`;
-    newRow = renderSystemPropertyRow(field, container);
-    sourceRow.after(newRow);
-  });
-  if (newRow) selectSystemPropertyRow(newRow);
-});
+// Group Properties had no right-pane panel of its own before this — wired
+// here (rather than inline on the groupPropertyCtx object literal above)
+// since groupPropertyInspector doesn't exist yet at that point in the file.
+groupPropertyCtx.onRowSelected = (row) => groupPropertyInspector.selectRow(row);
+groupPropertyCtx.onRowChanged = (row) => {
+  if (row === groupPropertyInspector.selectedRow) groupPropertyInspector.refresh();
+};
+groupPropertyCtx.onRowRemoved = (row) => {
+  if (row === groupPropertyInspector.selectedRow) groupPropertyInspector.selectRow(null);
+};
+// Preserves Public across the Inspector's own Duplicate button — see
+// collectGroupFieldFromRow's own comment.
+groupPropertyCtx.collectField = collectGroupFieldFromRow;
 
-systemInspectorRequiredButton?.addEventListener("click", () => {
-  selectedSystemPropertyRow?.querySelector("[data-property-required]")?.click();
-});
-
-// Up/Down walks the Properties list in the same top-to-bottom order it's
-// rendered in — querySelectorAll returns matches in document order, so this
-// flattens the nesting for free: from an Object property, Down lands on its
-// first Sub-field next, exactly like a tree view. Doesn't wrap past either
-// end (matches a plain listbox, not a carousel).
-function systemPropertyRowList() {
-  return systemPropertyRows ? Array.from(systemPropertyRows.querySelectorAll(".border.rounded-3")) : [];
-}
-
-function moveSystemPropertySelection(direction) {
-  const rows = systemPropertyRowList();
-  if (!rows.length) return;
-  const currentIndex = selectedSystemPropertyRow ? rows.indexOf(selectedSystemPropertyRow) : -1;
-  const nextIndex = currentIndex === -1 ? (direction > 0 ? 0 : rows.length - 1) : currentIndex + direction;
-  if (nextIndex < 0 || nextIndex >= rows.length) return;
-  selectSystemPropertyRow(rows[nextIndex]);
-  rows[nextIndex].scrollIntoView({ block: "nearest" });
-}
-
-function isLoomSystemsViewActive() {
-  return document.querySelector("[data-loom-view-tab].active")?.dataset.loomViewTab === "systems";
-}
-
-// Only steals Up/Down when they'd otherwise do nothing useful where focus
-// currently is — not while it's on a <select> (native option-cycling) or a
-// number input (native increment/decrement), and not anywhere outside the
-// Properties list/Inspector entirely (e.g. the System Title field, or a
-// completely different tab where a stale selection might still be set from
-// an earlier visit to Systems).
-document.addEventListener("keydown", (event) => {
-  if (event.key !== "ArrowUp" && event.key !== "ArrowDown") return;
-  if (!selectedSystemPropertyRow || !isLoomSystemsViewActive()) return;
-  const active = document.activeElement;
-  if (active && active !== document.body) {
-    if (active.tagName === "SELECT") return;
-    if (active.tagName === "INPUT" && active.type === "number") return;
-    const withinRelevantArea =
-      systemPropertyRows?.contains(active) || systemInspectorDetails?.contains(active);
-    if (!withinRelevantArea) return;
-  }
-  event.preventDefault();
-  moveSystemPropertySelection(event.key === "ArrowDown" ? 1 : -1);
-});
-
-function newSystemEditor() {
+// `reveal` defaults to true (an explicit New click, a select reset to
+// blank, or Delete's own "stay in a fresh draft" flow — all real user
+// actions that should show the form) — the one caller that suppresses it is
+// the page-load init below, which primes this editor's own state without
+// yet showing anything, matching Groups/Users' own default "nothing
+// selected yet" state.
+function newSystemEditor({ reveal = true } = {}) {
   // Only a not-yet-saved System gets a typeable Id — once it exists, the id
   // is how Library entities' Assigned Systems and Templates refer to it, so
   // changing it later would silently break those references.
@@ -4795,7 +4783,8 @@ function newSystemEditor() {
   if (systemVersionInput) systemVersionInput.value = "0.1";
   editingSystemImporters = [];
   if (systemPropertyRows) systemPropertyRows.innerHTML = "";
-  selectSystemPropertyRow(null);
+  systemPropertyInspector.selectRow(null);
+  if (reveal) setSystemFormVisible(true);
   markClean("system");
 }
 
@@ -4808,6 +4797,7 @@ async function loadSystemIntoEditor(id) {
     // this one was fixed) instead of what's actually on the server. Same
     // reasoning as combat-tracker.js's System reads.
     const result = await dataManager.get("systems", id, { preferLocal: false });
+    setSystemFormVisible(true);
     const payload = result.payload || {};
     if (systemIdInput) {
       systemIdInput.value = payload.id || id;
@@ -4820,7 +4810,7 @@ async function loadSystemIntoEditor(id) {
       systemPropertyRows.innerHTML = "";
       (payload.fields || []).forEach((field) => renderSystemPropertyRow(field));
     }
-    selectSystemPropertyRow(null);
+    systemPropertyInspector.selectRow(null);
     markClean("system");
   } catch (error) {
     status?.show(`Unable to load system: ${error.message}`, { type: "error", timeout: 4000 });
@@ -4895,78 +4885,14 @@ wireUndoTracking(systemPropertyRows, "system", {
 // it only needs wiring once.
 initSystemPropertySortable(systemPropertyRows);
 
-if (systemPropertyRows) {
-  systemPropertyRows.addEventListener("click", (event) => {
-    const removeButton = event.target.closest("[data-property-remove]");
-    if (removeButton) {
-      const rowToRemove = removeButton.closest("div.border");
-      recordUndoableChange("system", () => rowToRemove?.remove());
-      if (rowToRemove === selectedSystemPropertyRow) selectSystemPropertyRow(null);
-      return;
-    }
-    const addChildButton = event.target.closest("[data-system-add-child]");
-    if (addChildButton) {
-      const target = addChildButton.closest("[data-system-object-section]")?.querySelector("[data-system-children]");
-      if (target) recordUndoableChange("system", () => renderSystemPropertyRow({}, target));
-      return;
-    }
-    const addItemChildButton = event.target.closest("[data-system-add-item-child]");
-    if (addItemChildButton) {
-      const target = addItemChildButton
-        .closest("[data-system-item-section]")
-        ?.querySelector("[data-system-item-children]");
-      if (target) recordUndoableChange("system", () => renderSystemPropertyRow({}, target));
-      return;
-    }
-    const addValueButton = event.target.closest("[data-system-add-value]");
-    if (addValueButton) {
-      const propertyRow = addValueButton.closest(".border.rounded-3");
-      const arraySection = addValueButton.closest("[data-system-array-section]");
-      const target = arraySection?.querySelector("[data-system-value-rows]");
-      const entityKind = arraySection?.querySelector("[data-property-entity-kind]")?.value.trim() || "";
-      if (target) {
-        recordUndoableChange("system", () => {
-          const valueRow = renderSystemValueRow({}, target);
-          populateValueEntitySelect(valueRow.querySelector("[data-value-entity-select]"), entityKind, "");
-          const state = {};
-          VALUE_COLUMNS.forEach((column) => {
-            state[column.key] = propertyRow?.querySelector(`[data-property-option="${column.key}"]`)?.checked ?? false;
-          });
-          state.libraryLinked = propertyRow?.querySelector('[data-property-option="libraryLinked"]')?.checked ?? false;
-          applyValueRowColumns(valueRow, state);
-        });
-      }
-      return;
-    }
-    const removeValueButton = event.target.closest("[data-remove-value]");
-    if (removeValueButton) {
-      recordUndoableChange("system", () => removeValueButton.closest("[data-system-value-row]")?.remove());
-      return;
-    }
-    // Nothing above matched — an ordinary click somewhere in a property row
-    // (its own dead space, the type button, Required, a checkbox, ...)
-    // selects that row for the Property Inspector. Works at any nesting
-    // depth since this listener is on the top-level container and every
-    // click bubbles up to it regardless of how deep the row actually is.
-    const clickedRow = event.target.closest(".border.rounded-3");
-    if (clickedRow) {
-      selectSystemPropertyRow(clickedRow);
-      refreshSystemInspector();
-    }
-  });
-  // Reflects edits made directly in a row (typing Key/Label, toggling
-  // Required, checking an array option, ...) into the Inspector, but only
-  // when that row is the one currently selected there — see
-  // refreshSystemInspector's own comment for why this is safe to call
-  // unconditionally (it no-ops while the user is actively typing inside the
-  // inspector itself).
-  systemPropertyRows.addEventListener("input", (event) => {
-    if (event.target.closest(".border.rounded-3") === selectedSystemPropertyRow) refreshSystemInspector();
-  });
-  systemPropertyRows.addEventListener("change", (event) => {
-    if (event.target.closest(".border.rounded-3") === selectedSystemPropertyRow) refreshSystemInspector();
-  });
-}
+// Delegated add/remove-property/sub-field/record-field/value handling, plus
+// (via systemPropertyCtx's own onRowSelected/onRowChanged/onRowRemoved)
+// Property Inspector selection/refresh — all now the shared editor's own
+// common/js/lib/property-schema-editor.js implementation, see that module's
+// own header for why every recordUndoableChange("system", ...) call that
+// used to be inline here is unchanged in effect, just routed through
+// systemPropertyCtx.runChange instead.
+wirePropertyContainerEvents(systemPropertyRows, systemPropertyCtx);
 
 if (systemSaveButton) {
   systemSaveButton.addEventListener("click", async () => {
@@ -5016,21 +4942,13 @@ if (systemDeleteButton) {
 }
 
 // --- Mapping load/save -------------------------------------------------
-
-async function listMappings() {
-  try {
-    const response = await fetch("/list/loom-mappings");
-    if (!response.ok) return [];
-    const payload = await response.json();
-    return (payload.files || []).map((entry) => entry.filename).filter(Boolean);
-  } catch (error) {
-    return [];
-  }
-}
+// listAvailableMappings now imported from content-fetch.js (shared with
+// Workbench's own player-facing Import Character picker, via
+// listCharacterMappings) — see that module's own comment.
 
 async function populateMappingSelect() {
   if (!mappingSelect) return;
-  const names = await listMappings();
+  const names = await listAvailableMappings();
   mappingSelect.innerHTML = "";
   const blank = document.createElement("option");
   blank.value = "";
@@ -5130,8 +5048,17 @@ if (saveButton) {
       status?.show("Nothing to save yet.", { type: "warning", timeout: 2000 });
       return;
     }
-    if (!mappingDefinition.$source && sourceSelect && !sourceSelect.disabled) {
+    // Unconditional — Data Source is never disabled/locked (see
+    // applySourceSelection's own comment), so whatever's currently selected
+    // always wins on save, the same as Data Type below.
+    if (sourceSelect) {
       mappingDefinition.$source = sourceSelect.value;
+    }
+    if (dataTypeSelect) {
+      mappingDefinition.$dataType = dataTypeSelect.value;
+    }
+    if (mappingDescriptionInput) {
+      mappingDefinition.$description = mappingDescriptionInput.value.trim();
     }
     let id = currentMappingId;
     if (!id) {
@@ -5270,12 +5197,17 @@ async function init() {
   rerenderAll();
   loadRecentSaves();
 
-  newLibraryEntry();
+  // reveal: false on all three — this just primes each editor's own blank-
+  // draft state so it's ready the instant something is picked; the panel
+  // itself stays behind its "Select a ..." message (see setSystemFormVisible
+  // and its Macro/Library equivalents) until a real user action (a select
+  // change, New, or a deep link below) explicitly reveals it.
+  newLibraryEntry({ reveal: false });
 
   await populateSystemSelect();
-  newSystemEditor();
+  newSystemEditor({ reveal: false });
 
-  newMacroEditor();
+  newMacroEditor({ reveal: false });
 
   // Deep link from the Dashboard's Board widget (board.js's own
   // renderMacroButtonCard) — clicking a macro-button card while rearranging

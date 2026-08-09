@@ -1,6 +1,8 @@
 {
   "type": "object",
   "$source": "ddb",
+  "$dataType": "character",
+  "$description": "D&D Beyond Character",
   "fields": {
     "kind": { "type": "field", "bind": "='character'" },
     "name": { "type": "field", "bind": "@name" },

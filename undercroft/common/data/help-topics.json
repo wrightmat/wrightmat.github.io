@@ -288,6 +288,29 @@
       "href": "../press/index.html#press-selection"
     },
     {
+      "id": "loom.mappingDescription",
+      "title": "Mapping Description",
+      "summary": "A friendly name shown in Workbench's own player-facing \"Import Character\" picker, instead of this mapping's own filename/id.",
+      "details": [
+        "Optional — an untitled mapping falls back to showing its raw id in that picker.",
+        "Only matters for mappings marked Data Type \"Character\" below (see Mapping Data Type) — that's the only picker this description shows up in."
+      ],
+      "category": "Loom",
+      "href": "../loom/index.html#loom-selection"
+    },
+    {
+      "id": "loom.mappingDataType",
+      "title": "Mapping Data Type",
+      "summary": "Marks whether this mapping produces a full, standalone character — controls whether players can pick it in Workbench's own \"Import Character\" flow.",
+      "details": [
+        "\"Character\" mappings (e.g. ddb-character) show up in Workbench's player-facing Import Character picker, letting any signed-in player import their own character directly, without needing Loom access.",
+        "\"Other\" is everything else — backgrounds, classes, species, subclasses, monsters, and any mapping meant for this Import tab's own multi-entity Save flow rather than a standalone character.",
+        "Purely a categorization tag — it doesn't affect how this mapping fetches or maps data, only which picker offers it."
+      ],
+      "category": "Loom",
+      "href": "../loom/index.html#loom-selection"
+    },
+    {
       "id": "loom.source.ddb",
       "title": "D&D Beyond ID or URL",
       "summary": "A bare number or character sheet URL fetches a live character; a classes/backgrounds/species page URL fetches that content instead.",
@@ -404,6 +427,7 @@
       "details": [
         "The asterisk button toggles Required; the trash button removes the property entirely.",
         "Default is applied when a new record is created. Minimum/Maximum only apply to Number properties.",
+        "This System's own physical dice (e.g. Daggerheart's Hope/Fear, Blades in the Dark's labeled d6) aren't a separate property type — they're an ordinary Array property with the reserved Key \"dice\": each value's Name is the die's id (what dice expressions reference by name, e.g. \"2 hopeDie\") and its Extra properties (JSON) box carries `sides` (a number, or \"F\" for a Fudge/Fate die) and, optionally, `faceMap` (remaps specific rolled values to a display label, e.g. a d6 showing \"1-3\"/\"4-5\"/\"6\" instead of the raw digit) and `color`. A System with no \"dice\" property rolls the standard 7 (d4/d6/d8/d10/d12/d20/d100).",
         "Object properties can have Sub-fields (their own nested properties, e.g. an Abilities object containing Strength/Dexterity/etc.).",
         "Array properties are either Enum — a fixed, System-defined list of values shared by every record (e.g. Rarity) — or Records — a repeating set of sub-fields whose shape (not values) is System-defined, so each record has its own actual items (e.g. an Inventory of Name/Quantity/Weight rows), with a Display field marking which sub-field represents each row.",
         "Enum values' options row only enables the columns a value actually needs — see 'Array value options' for what each one does.",
@@ -412,6 +436,41 @@
       ],
       "category": "Loom",
       "href": "../loom/index.html#loom-systems"
+    },
+    {
+      "id": "loom.groupSystem",
+      "title": "Group System",
+      "summary": "The System this campaign runs — its dice and vocabulary become the default for everyone playing in it.",
+      "details": [
+        "Once set, this System's own dice (see 'System Dice') take priority over any individual character's own Assigned Systems for quick-dice buttons and rolls made in this campaign's context.",
+        "The Characters in group list below only shows characters assigned to this System once one is set — leave System blank to allow any character regardless of its own Assigned Systems.",
+        "Leaving this blank falls back to each character's own first Assigned System, and finally to the standard 7 dice (d4/d6/d8/d10/d12/d20/d100) for a character with no System at all."
+      ],
+      "category": "Loom",
+      "href": "../loom/index.html#loom-groups"
+    },
+    {
+      "id": "loom.groupSetting",
+      "title": "Group Setting",
+      "summary": "The Setting this campaign takes place in — used as the default for Setting-scoped System data, like the Dashboard's Calculator widget's Travel Means.",
+      "details": [
+        "Optional — a campaign doesn't need a Setting the way it needs a System; leave this blank for a homebrew or generic campaign with no specific Setting.",
+        "A widget that reads Setting-scoped data (e.g. Travel Means, which can define means only available in one Setting) uses this as its own default unless a specific widget instance overrides it."
+      ],
+      "category": "Loom",
+      "href": "../loom/index.html#loom-groups"
+    },
+    {
+      "id": "loom.groupTemplate",
+      "title": "Party Template",
+      "summary": "The Workbench Template this campaign's own Party Data view renders — lets a GM view/edit Group Properties directly, no character required.",
+      "details": [
+        "Filtered to Templates built for this campaign's own System (set System above first); leave System blank to see every Template.",
+        "Author this Template's components bound only to @group.* paths (e.g. a Repeater on @group.inventory) — it's rendered with no character loaded, so any binding that isn't group-scoped just resolves empty.",
+        "Once set, this campaign appears under Campaigns in Workbench's own character picker — selecting it there shows this Template with Edit mode already available, and every change writes straight through, no Save button involved."
+      ],
+      "category": "Loom",
+      "href": "../loom/index.html#loom-groups"
     },
     {
       "id": "loom.systemArrayOptions",
@@ -1128,6 +1187,18 @@
         "Locked Features seed the traversal alongside (or instead of) the automatic random seed feature — traversal then repeatedly adds whichever remaining compatible feature has the strongest synergy with what's already selected.",
         "A zero-synergy feature is never pulled in automatically, the same restraint Crucible/Vault's own traversal applies — locking is the way to force one in regardless.",
         "Leave this empty to let Sanctum pick every feature itself, guided only by the resolved Type/Purpose/Environment."
+      ],
+      "category": "Sanctum",
+      "href": "../sanctum/index.html#sanctum-overrides"
+    },
+    {
+      "id": "sanctum.dungeonRoomCount",
+      "title": "Dungeon Room Count",
+      "summary": "How many rooms Generate Dungeon creates and connects, alongside a parent Location representing the dungeon as a whole.",
+      "details": [
+        "Generate Dungeon creates one parent Location (the dungeon) plus this many child Locations (rooms), each generated the same way a single Generate Location click would — respecting any Type/Purpose/Environment overrides and Locked Features pinned above.",
+        "Rooms are wired together via Connected To in a branching path (each new room connects to a randomly-chosen earlier one, favoring the most recent) so the result reads as a snaking layout with occasional side branches, not a single straight corridor.",
+        "Unlike Generate Location, this action saves everything immediately (it can't pause per room for you to type a name) — rooms are auto-named and fully editable afterward, the same as any other Location."
       ],
       "category": "Sanctum",
       "href": "../sanctum/index.html#sanctum-overrides"

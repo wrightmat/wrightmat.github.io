@@ -15,6 +15,13 @@ import { confirmDelete } from "../ownership.js";
 import { loadSystemFields, deriveCombatBindings, resolveCombatantStats } from "./combat-bindings.js";
 import { uniquifyCombatantName } from "./combatant-naming.js";
 import { createReliableInterval } from "../reliable-interval.js";
+// The shared dice engine — see dice-roll.js's own identical import path.
+// Not rollExpression's overlay/toast wrapper: this rolls potentially many
+// non-character combatants' initiative in one Promise.all batch, which a
+// single shared 3D overlay canvas isn't designed to show all at once, so
+// this stays a plain, silent roll same as before — just no longer its own
+// third, independently-duplicated Math.random() implementation.
+import { rollDiceExpression } from "../../../../workbench/js/lib/dice.js";
 
 // 5s (was 15s) — a physical second-screen display wants combat to feel
 // live, and single-window background polling is now confirmed reliable
@@ -373,10 +380,6 @@ export function initCombatTrackerWidget(
     markDirty();
   }
 
-  function rollDie(sides = 20) {
-    return Math.floor(Math.random() * sides) + 1;
-  }
-
   // Players roll their own characters' initiative on their sheet (the
   // template's own Initiative field/roller — see tpl.5e.flex-basic.json),
   // so this only touches non-character combatants: monster/npc combatants
@@ -406,7 +409,7 @@ export function initCombatTrackerWidget(
             // Fall back to +0 — see comment above.
           }
         }
-        combatant.initiative = rollDie(sides) + modifier;
+        combatant.initiative = rollDiceExpression(`1d${sides}`).total + modifier;
       })
     );
     markDirty();
@@ -1481,7 +1484,7 @@ export async function runCombatMacroAction(action, { dataManager, groupContext, 
               // Fall back to +0 — same as the live widget's own version.
             }
           }
-          combatant.initiative = Math.floor(Math.random() * sides) + 1 + modifier;
+          combatant.initiative = rollDiceExpression(`1d${sides}`).total + modifier;
         })
       );
     }

@@ -27,14 +27,14 @@
   },
   "view": {
     "mode": "cartesian",
-    "zoom": 1,
+    "zoom": 1.7276104548213267,
     "center": {
       "lat": 0,
       "lng": 0
     },
     "pan": {
-      "x": 7,
-      "y": 33
+      "x": 0,
+      "y": 0
     }
   },
   "layers": [
@@ -79,7 +79,7 @@
           "outlineColor": "#3f59d9",
           "position": {
             "x": -529,
-            "y": -336
+            "y": -375
           },
           "sizeCells": 1,
           "opacity": 1,
@@ -98,18 +98,11 @@
           "outlineColor": "#3f59d9",
           "position": {
             "x": -606,
-            "y": -259
+            "y": -298
           },
           "sizeCells": 1,
           "opacity": 1,
-          "overlayIcons": [
-            {
-              "id": "f00e9145-77ed-41e9-8b2f-245231ad2b90",
-              "icon": "ddb-ability-charisma",
-              "color": "#1e293b",
-              "label": "ddb-ability-charisma"
-            }
-          ],
+          "overlayIcons": [],
           "visionRangeBinding": "",
           "visionRangeFormula": "",
           "visionRangeText": "0"
@@ -126,6 +119,24 @@
         "labelSize": 12
       },
       "properties": {}
+    },
+    {
+      "id": "9a17607e-4f01-4fe8-a597-167e17dba66a",
+      "type": "vector",
+      "name": "Player Drawings",
+      "visible": true,
+      "opacity": 1,
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "elements": [],
+      "settings": {
+        "strokeColor": "#0f172a",
+        "fillColor": "#93c5fd",
+        "strokeWidth": 2
+      },
+      "properties": {}
     }
   ],
   "groups": [],
@@ -136,7 +147,7 @@
     "unit": "ft"
   },
   "createdAt": "2026-08-07T09:47:00.878Z",
-  "updatedAt": "2026-08-08T17:25:31.685Z",
+  "updatedAt": "2026-08-09T07:37:28.111Z",
   "initialView": {
     "zoom": 1,
     "pan": {

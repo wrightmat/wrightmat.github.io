@@ -9,7 +9,7 @@ import {
   createEmptyStateCard,
   createCompactField,
 } from "../../common/js/lib/ui-components.js";
-import { listFeaturesForSystem, getSystemPropertyTypes } from "./lib/tables.js";
+import { listFeaturesForSystem, getSystemPropertyTypes, getSystemClasses } from "./lib/tables.js";
 import { generateEffect, computeBudget } from "./lib/generator.js";
 import { createEffectRecord, toPressExportShape } from "./lib/effect-schema.js";
 import { generateEffectNote } from "./lib/llm-note.js";
@@ -24,11 +24,17 @@ import {
 } from "../../common/js/lib/generator-kit.js";
 import { confirmDelete } from "../../common/js/lib/ownership.js";
 import { initToolSettings } from "../../common/js/lib/tool-settings.js";
+import { setElementVisible } from "../../common/js/lib/dom.js";
 
 let status = null;
 let dataManager = null;
 let features = [];
 let propertyTypes = [];
+// The active System's own casting classes (Wizard, Cleric, ...) — empty for
+// any System with no "classes" field at all (most Systems), in which case
+// the Casting Class select stays hidden entirely (see
+// populateCastingClassSelect).
+let classes = [];
 let currentRecord = null;
 // Tracks whether the record as last successfully saved differs from a live
 // snapshot — built from currentRecord (feature add/remove already patches it
@@ -74,6 +80,12 @@ function mountField(key, element) {
   mount.replaceWith(element);
 }
 mountField("system-select", createCompactField({ type: "select", id: "vaultSystemSelect", label: "System", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-system-select" }));
+// Hidden entirely for a System with no "classes" field (most Systems) —
+// see populateCastingClassSelect. Casting Class narrows which Features are
+// eligible (matchesClass, lib/generator.js) the same way a locked Signature
+// Effect narrows the pick, so it's positioned right before the Property
+// overrides that also constrain generation.
+mountField("casting-class-select", createCompactField({ type: "select", id: "vaultCastingClassSelect", label: "Casting Class", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-casting-class-select" }));
 mountField("signature-feature-override", createCompactField({ type: "select", id: "vaultSignatureOverride", label: "Signature Effect", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-signature-feature-override" }));
 mountField(
   "locked-features",
@@ -86,6 +98,7 @@ mountField("effect-name", createCompactField({ type: "text", id: "vaultEffectNam
 
 const elements = {
   systemSelect: document.querySelector("[data-system-select]"),
+  castingClassSelect: document.querySelector("[data-casting-class-select]"),
   propertyOverridesContainer: document.querySelector("[data-property-overrides]"),
   signatureOverride: document.querySelector("[data-signature-feature-override]"),
   lockedFeatures: document.querySelector("[data-locked-features]"),
@@ -265,14 +278,46 @@ function populateAddFeatureSelect() {
 async function reloadReferenceData() {
   const systemId = currentSystemId();
   const budgetCeilingField = getBudgetCeilingFieldPreference(systemId);
-  [features, propertyTypes] = await Promise.all([
+  [features, propertyTypes, classes] = await Promise.all([
     listFeaturesForSystem(dataManager, systemId),
     getSystemPropertyTypes(dataManager, systemId, budgetCeilingField),
+    getSystemClasses(dataManager, systemId),
   ]);
   populatePropertyOverrides();
+  populateCastingClassSelect();
   populateOverrideSelect(elements.signatureOverride, features, "Random");
   populateLockedFeaturesSelect();
   populateAddFeatureSelect();
+}
+
+// Optional override, blank = "Any class" (unconstrained) — same convention
+// as Signature Effect/property overrides. Hidden entirely (not just empty)
+// for a System with no "classes" field at all, matching how the Symbol Dice
+// stepper only shows up for a System that actually declares one.
+function populateCastingClassSelect() {
+  if (!elements.castingClassSelect) return;
+  const wrapper = elements.castingClassSelect.parentElement;
+  if (!classes.length) {
+    setElementVisible(wrapper, false);
+    elements.castingClassSelect.innerHTML = "";
+    return;
+  }
+  setElementVisible(wrapper, true, "flex");
+  const previous = elements.castingClassSelect.value;
+  elements.castingClassSelect.innerHTML = "";
+  const blank = document.createElement("option");
+  blank.value = "";
+  blank.textContent = "Any class";
+  elements.castingClassSelect.appendChild(blank);
+  classes.forEach((entry) => {
+    const option = document.createElement("option");
+    option.value = entry.id;
+    option.textContent = entry.label;
+    elements.castingClassSelect.appendChild(option);
+  });
+  if (classes.some((entry) => entry.id === previous)) {
+    elements.castingClassSelect.value = previous;
+  }
 }
 
 function featureLabel(id) {
@@ -468,11 +513,13 @@ function renderEffect(record) {
 
 function handleGenerate() {
   try {
+    const selectedClass = classes.find((entry) => entry.id === elements.castingClassSelect?.value);
     const generated = generateEffect(features, propertyTypes, {
       systemId: currentSystemId() || null,
       signatureFeatureId: elements.signatureOverride?.value || "",
       lockedFeatureIds: readLockedFeatureIds(),
       propertyOverrides: readPropertyOverrides(),
+      allowedFeatureTags: selectedClass?.allowedFeatureTags || null,
     });
     const record = createEffectRecord(generated);
     dirtyGate.markDirty();

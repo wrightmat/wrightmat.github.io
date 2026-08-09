@@ -1,0 +1,15 @@
+{
+  "id": "res.teleportation-circle-orien",
+  "name": "Teleportation Circle (House Orien)",
+  "systemIds": ["sys.dnd5e"],
+  "settingIds": ["eberron"],
+  "description": "House Orien maintains a network of permanent teleportation circles between major cities — a one-time, flat-fee trip rather than an ongoing travel means (see the System's own Travel Means for Orien's Lightning Rail and Magebred Coach fares).",
+  "category": "service",
+  "house": "orien",
+  "price": "2500 gp",
+  "tags": {
+    "locationTypes": [],
+    "locationPurposes": ["commerce"],
+    "environments": []
+  }
+}

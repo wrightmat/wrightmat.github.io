@@ -1,0 +1,15 @@
+{
+  "id": "res.mail-service-orien",
+  "name": "Mail Service (House Orien)",
+  "systemIds": ["sys.dnd5e"],
+  "settingIds": ["eberron"],
+  "description": "House Orien's standard mail service, slower and cheaper than a dedicated courier, priced by distance.",
+  "category": "service",
+  "house": "orien",
+  "price": "1 cp per mile",
+  "tags": {
+    "locationTypes": [],
+    "locationPurposes": ["commerce"],
+    "environments": []
+  }
+}

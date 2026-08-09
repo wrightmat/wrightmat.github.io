@@ -1,0 +1,109 @@
+{
+  "id": "sys.genesys",
+  "title": "Genesys",
+  "version": "0.1",
+  "fields": [
+    {
+      "type": "string",
+      "key": "name",
+      "label": "Name",
+      "required": true
+    },
+    {
+      "type": "array",
+      "key": "dice",
+      "label": "Dice",
+      "values": [
+        {
+          "name": "boostDie",
+          "themeOverride": "genesys",
+          "sides": [
+            { "symbols": [] },
+            { "symbols": [] },
+            { "symbols": ["success"] },
+            { "symbols": ["success", "advantage"] },
+            { "symbols": ["advantage", "advantage"] },
+            { "symbols": ["advantage"] }
+          ]
+        },
+        {
+          "name": "setbackDie",
+          "themeOverride": "genesys",
+          "sides": [
+            { "symbols": [] },
+            { "symbols": [] },
+            { "symbols": ["failure"] },
+            { "symbols": ["failure"] },
+            { "symbols": ["threat"] },
+            { "symbols": ["threat"] }
+          ]
+        },
+        {
+          "name": "abilityDie",
+          "themeOverride": "genesys",
+          "sides": [
+            { "symbols": [] },
+            { "symbols": ["success"] },
+            { "symbols": ["success"] },
+            { "symbols": ["success", "success"] },
+            { "symbols": ["advantage"] },
+            { "symbols": ["advantage"] },
+            { "symbols": ["success", "advantage"] },
+            { "symbols": ["advantage", "advantage"] }
+          ]
+        },
+        {
+          "name": "difficultyDie",
+          "themeOverride": "genesys",
+          "sides": [
+            { "symbols": [] },
+            { "symbols": ["failure"] },
+            { "symbols": ["failure", "failure"] },
+            { "symbols": ["threat"] },
+            { "symbols": ["threat"] },
+            { "symbols": ["threat"] },
+            { "symbols": ["failure", "threat"] },
+            { "symbols": ["threat", "threat"] }
+          ]
+        },
+        {
+          "name": "proficiencyDie",
+          "themeOverride": "genesys",
+          "sides": [
+            { "symbols": [] },
+            { "symbols": ["success"] },
+            { "symbols": ["success"] },
+            { "symbols": ["success", "success"] },
+            { "symbols": ["success", "success"] },
+            { "symbols": ["advantage"] },
+            { "symbols": ["success", "advantage"] },
+            { "symbols": ["success", "advantage"] },
+            { "symbols": ["success", "advantage"] },
+            { "symbols": ["advantage", "advantage"] },
+            { "symbols": ["advantage", "advantage"] },
+            { "symbols": ["success", "triumph"] }
+          ]
+        },
+        {
+          "name": "challengeDie",
+          "themeOverride": "genesys",
+          "sides": [
+            { "symbols": [] },
+            { "symbols": ["failure"] },
+            { "symbols": ["failure"] },
+            { "symbols": ["failure", "failure"] },
+            { "symbols": ["failure", "failure"] },
+            { "symbols": ["threat"] },
+            { "symbols": ["failure", "threat"] },
+            { "symbols": ["failure", "threat"] },
+            { "symbols": ["threat", "threat"] },
+            { "symbols": ["threat", "threat"] },
+            { "symbols": ["threat", "threat"] },
+            { "symbols": ["failure", "despair"] }
+          ]
+        }
+      ]
+    }
+  ],
+  "importers": []
+}

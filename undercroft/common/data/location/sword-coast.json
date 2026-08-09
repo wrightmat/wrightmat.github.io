@@ -3,7 +3,7 @@
   "systemIds": [
     "sys.dnd5e"
   ],
-  "settingId": "forgotten-realms",
+  "settingIds": ["forgotten-realms"],
   "name": "Sword Coast",
   "mixingCoefficient": 0.2,
   "speciesWeights": [

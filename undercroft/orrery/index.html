@@ -84,126 +84,148 @@
 
         <main class="flex-grow-1 position-relative workbench-main" data-map-main>
           <div class="orrery-floating-panel shadow-theme" data-view-panel>
-            <div class="d-flex align-items-center gap-2 orrery-view-handle" data-view-handle>
-              <div class="btn-group btn-group-sm" role="group" aria-label="Map zoom controls">
-                <button class="btn btn-outline-secondary" type="button" data-zoom-out>
-                  <span class="iconify" data-icon="tabler:zoom-out" aria-hidden="true"></span>
-                  <span class="visually-hidden">Zoom out</span>
-                </button>
-                <button class="btn btn-outline-secondary" type="button" data-zoom-reset>Reset</button>
-                <button class="btn btn-outline-secondary" type="button" data-zoom-in>
-                  <span class="iconify" data-icon="tabler:zoom-in" aria-hidden="true"></span>
-                  <span class="visually-hidden">Zoom in</span>
+            <div class="d-flex flex-column gap-1 orrery-view-handle" data-view-handle>
+              <div class="d-flex align-items-center gap-2 flex-wrap">
+                <div class="btn-group btn-group-sm" role="group" aria-label="Map zoom controls">
+                  <button class="btn btn-outline-secondary" type="button" data-zoom-out>
+                    <span class="iconify" data-icon="tabler:zoom-out" aria-hidden="true"></span>
+                    <span class="visually-hidden">Zoom out</span>
+                  </button>
+                  <button class="btn btn-outline-secondary" type="button" data-zoom-reset>Reset</button>
+                  <button class="btn btn-outline-secondary" type="button" data-zoom-in>
+                    <span class="iconify" data-icon="tabler:zoom-in" aria-hidden="true"></span>
+                    <span class="visually-hidden">Zoom in</span>
+                  </button>
+                </div>
+                <span
+                  class="d-inline-block"
+                  tabindex="0"
+                  data-ping-toggle-wrap
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="top"
+                  data-bs-title="Click the map to ping"
+                >
+                  <button class="btn btn-outline-secondary btn-sm" type="button" data-ping-toggle aria-pressed="false">
+                    <span class="iconify" data-icon="tabler:location" aria-hidden="true"></span>
+                    <span class="visually-hidden">Ping the map</span>
+                  </button>
+                </span>
+                <span
+                  class="d-inline-block"
+                  tabindex="0"
+                  data-measure-toggle-wrap
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="top"
+                  data-bs-title="Measure distance"
+                >
+                  <button class="btn btn-outline-secondary btn-sm" type="button" data-measure-toggle aria-pressed="false">
+                    <span class="iconify" data-icon="tabler:ruler-2" aria-hidden="true"></span>
+                    <span class="visually-hidden">Measure distance</span>
+                  </button>
+                </span>
+                <span
+                  class="d-inline-block"
+                  tabindex="0"
+                  data-draw-toggle-wrap
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="top"
+                  data-bs-title="Draw on the map"
+                >
+                  <button class="btn btn-outline-secondary btn-sm" type="button" data-draw-toggle aria-pressed="false">
+                    <span class="iconify" data-icon="tabler:pencil" aria-hidden="true"></span>
+                    <span class="visually-hidden">Draw</span>
+                  </button>
+                </span>
+                <span
+                  class="d-inline-block"
+                  tabindex="0"
+                  data-shape-toggle-wrap
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="top"
+                  data-bs-title="Draw an AoE shape"
+                >
+                  <button class="btn btn-outline-secondary btn-sm" type="button" data-shape-toggle aria-pressed="false">
+                    <span class="iconify" data-icon="tabler:target" aria-hidden="true"></span>
+                    <span class="visually-hidden">AoE shape</span>
+                  </button>
+                </span>
+                <span
+                  class="d-inline-block"
+                  tabindex="0"
+                  data-wall-toggle-wrap
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="top"
+                  data-bs-title="Draw a wall or door"
+                >
+                  <button class="btn btn-outline-secondary btn-sm" type="button" data-wall-toggle aria-pressed="false">
+                    <span class="iconify" data-icon="tabler:wall" aria-hidden="true"></span>
+                    <span class="visually-hidden">Wall / Door</span>
+                  </button>
+                </span>
+                <span
+                  class="d-inline-block"
+                  tabindex="0"
+                  data-light-toggle-wrap
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="top"
+                  data-bs-title="Place a dynamic light"
+                >
+                  <button class="btn btn-outline-secondary btn-sm" type="button" data-light-toggle aria-pressed="false">
+                    <span class="iconify" data-icon="tabler:bulb" aria-hidden="true"></span>
+                    <span class="visually-hidden">Dynamic light</span>
+                  </button>
+                </span>
+                <button class="btn btn-outline-secondary btn-sm ms-auto" type="button" data-view-toggle aria-expanded="false">
+                  <span class="iconify" data-icon="tabler:chevron-left" aria-hidden="true"></span>
+                  <span class="visually-hidden">Expand view details</span>
                 </button>
               </div>
-              <span
-                class="d-inline-block"
-                tabindex="0"
-                data-measure-toggle-wrap
-                data-bs-toggle="tooltip"
-                data-bs-placement="top"
-                data-bs-title="Measure distance"
-              >
-                <button class="btn btn-outline-secondary btn-sm" type="button" data-measure-toggle aria-pressed="false">
-                  <span class="iconify" data-icon="tabler:ruler-2" aria-hidden="true"></span>
-                  <span class="visually-hidden">Measure distance</span>
-                </button>
-              </span>
-              <span class="small text-body-secondary d-none" data-measure-readout></span>
-              <span
-                class="d-inline-block"
-                tabindex="0"
-                data-draw-toggle-wrap
-                data-bs-toggle="tooltip"
-                data-bs-placement="top"
-                data-bs-title="Draw on the selected vector layer"
-              >
-                <button class="btn btn-outline-secondary btn-sm" type="button" data-draw-toggle aria-pressed="false">
-                  <span class="iconify" data-icon="tabler:pencil" aria-hidden="true"></span>
-                  <span class="visually-hidden">Draw</span>
-                </button>
-              </span>
-              <span
-                class="d-inline-block"
-                tabindex="0"
-                data-shape-toggle-wrap
-                data-bs-toggle="tooltip"
-                data-bs-placement="top"
-                data-bs-title="Draw an AoE shape on the selected vector layer"
-              >
-                <button class="btn btn-outline-secondary btn-sm" type="button" data-shape-toggle aria-pressed="false">
-                  <span class="iconify" data-icon="tabler:target" aria-hidden="true"></span>
-                  <span class="visually-hidden">AoE shape</span>
-                </button>
-              </span>
-              <select class="form-select form-select-sm w-auto d-none" data-shape-type aria-label="AoE shape type">
-                <option value="circle">Circle</option>
-                <option value="cone">Cone</option>
-                <option value="line">Line</option>
-                <option value="square">Square</option>
-              </select>
-              <span class="small text-body-secondary d-none" data-shape-readout></span>
-              <span
-                class="d-inline-block"
-                tabindex="0"
-                data-wall-toggle-wrap
-                data-bs-toggle="tooltip"
-                data-bs-placement="top"
-                data-bs-title="Draw a wall or door on the selected vector layer"
-              >
-                <button class="btn btn-outline-secondary btn-sm" type="button" data-wall-toggle aria-pressed="false">
-                  <span class="iconify" data-icon="tabler:wall" aria-hidden="true"></span>
-                  <span class="visually-hidden">Wall / Door</span>
-                </button>
-              </span>
-              <select class="form-select form-select-sm w-auto d-none" data-wall-submode aria-label="Wall or door">
-                <option value="wall">Wall</option>
-                <option value="door">Door</option>
-              </select>
-              <span
-                class="d-inline-block d-none"
-                tabindex="0"
-                data-wall-snap-toggle-wrap
-                data-bs-toggle="tooltip"
-                data-bs-placement="top"
-                data-bs-title="Snap wall vertices to the grid"
-              >
-                <button class="btn btn-outline-secondary btn-sm" type="button" data-wall-snap-toggle aria-pressed="true">
-                  <span class="iconify" data-icon="tabler:magnet" aria-hidden="true"></span>
-                  <span class="visually-hidden">Snap to grid</span>
-                </button>
-              </span>
-              <span
-                class="d-inline-block"
-                tabindex="0"
-                data-light-toggle-wrap
-                data-bs-toggle="tooltip"
-                data-bs-placement="top"
-                data-bs-title="Place a dynamic light on the selected vector layer"
-              >
-                <button class="btn btn-outline-secondary btn-sm" type="button" data-light-toggle aria-pressed="false">
-                  <span class="iconify" data-icon="tabler:bulb" aria-hidden="true"></span>
-                  <span class="visually-hidden">Dynamic light</span>
-                </button>
-              </span>
-              <span class="small text-body-secondary d-none" data-light-readout></span>
-              <span
-                class="d-inline-block"
-                tabindex="0"
-                data-ping-toggle-wrap
-                data-bs-toggle="tooltip"
-                data-bs-placement="top"
-                data-bs-title="Click the map to ping"
-              >
-                <button class="btn btn-outline-secondary btn-sm" type="button" data-ping-toggle aria-pressed="false">
-                  <span class="iconify" data-icon="tabler:location" aria-hidden="true"></span>
-                  <span class="visually-hidden">Ping the map</span>
-                </button>
-              </span>
-              <button class="btn btn-outline-secondary btn-sm" type="button" data-view-toggle aria-expanded="false">
-                <span class="iconify" data-icon="tabler:chevron-left" aria-hidden="true"></span>
-                <span class="visually-hidden">Expand view details</span>
-              </button>
+              <div class="d-flex align-items-center gap-2 flex-wrap">
+                <span
+                  class="d-inline-block d-none"
+                  tabindex="0"
+                  data-draw-color-wrap
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="top"
+                  data-bs-title="Drawing color"
+                >
+                  <input
+                    class="form-control form-control-color form-control-sm p-1"
+                    type="color"
+                    data-draw-color
+                    value="#0f172a"
+                    aria-label="Drawing color"
+                  />
+                </span>
+                <select class="form-select form-select-sm w-auto d-none" data-shape-type aria-label="AoE shape type">
+                  <option value="circle">Circle</option>
+                  <option value="cone">Cone</option>
+                  <option value="line">Line</option>
+                  <option value="square">Square</option>
+                </select>
+                <select class="form-select form-select-sm w-auto d-none" data-wall-submode aria-label="Wall or door">
+                  <option value="wall">Wall</option>
+                  <option value="door">Door</option>
+                </select>
+                <span
+                  class="d-inline-block d-none"
+                  tabindex="0"
+                  data-wall-snap-toggle-wrap
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="top"
+                  data-bs-title="Snap wall vertices to the grid"
+                >
+                  <button class="btn btn-outline-secondary btn-sm" type="button" data-wall-snap-toggle aria-pressed="true">
+                    <span class="iconify" data-icon="tabler:magnet" aria-hidden="true"></span>
+                    <span class="visually-hidden">Snap to grid</span>
+                  </button>
+                </span>
+              </div>
+              <div class="d-flex align-items-center gap-2 flex-wrap">
+                <span class="small text-body-secondary d-none" data-measure-readout></span>
+                <span class="small text-body-secondary d-none" data-shape-readout></span>
+                <span class="small text-body-secondary d-none" data-light-readout></span>
+              </div>
             </div>
             <div class="orrery-view-details mt-2 d-none" data-view-details>
               <dl class="mb-0 small">
