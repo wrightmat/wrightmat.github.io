@@ -3,8 +3,8 @@
 // was previously a local, unexported function there) so a second tool
 // (Orrery's own marker Vision Range field) could reuse the exact same
 // control instead of a smaller, narrower duplicate. See
-// undercroft/common/docs/code-conventions.md's Component Inspector
-// standards and the project's own "Binding / Text vs Source" convention —
+// undercroft/README.md's Code Conventions section, Component Inspector
+// standards, and the project's own "Binding / Text vs Source" convention —
 // exactly two field concepts populate a component from external data, and
 // this is the one shared implementation of the Binding/Text (here extended
 // with Formula) half.

@@ -366,9 +366,12 @@ def get_share_links_batch(state: ServerState, content_type: str, content_ids: Li
 
 
 def resolve_share_token(state: ServerState, token: str) -> Optional[Dict[str, str]]:
+    # Pure read — called from get_item, an unlocked route (router.py's
+    # Route.unlocked) — see ServerState.read_db's own comment on why this is
+    # safe without any lock.
     if not token:
         return None
-    row = state.db.execute(
+    row = state.read_db.execute(
         """
         SELECT content_type, content_id, permissions
         FROM share_links
@@ -387,11 +390,16 @@ def resolve_share_token(state: ServerState, token: str) -> Optional[Dict[str, st
 
 
 def touch_share_link(state: ServerState, token: str) -> None:
+    # Called from get_item (unlocked) — a real write, so it explicitly takes
+    # state.lock and uses the write connection (state.db) itself instead of
+    # relying on an outer caller to already hold the lock, same pattern as
+    # get_user_by_session's own write branches.
     if not token:
         return
     timestamp = datetime.utcnow().isoformat()
-    state.db.execute(
-        "UPDATE share_links SET last_accessed_at = ? WHERE token = ?",
-        (timestamp, token),
-    )
-    state.db.commit()
+    with state.lock:
+        state.db.execute(
+            "UPDATE share_links SET last_accessed_at = ? WHERE token = ?",
+            (timestamp, token),
+        )
+        state.db.commit()

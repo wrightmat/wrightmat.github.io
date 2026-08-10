@@ -29,6 +29,47 @@ def _tune_connection(db: sqlite3.Connection) -> None:
     db.execute("PRAGMA synchronous=NORMAL")
 
 
+def _open_read_connection(path: str) -> sqlite3.Connection:
+    # One thread's own dedicated connection, used ONLY for reads on routes
+    # audited to be write-free on their own (see router.py's Route.unlocked,
+    # do_GET's own comment, and ServerState.read_db's property below). A
+    # single connection object shared across threads was the first version of
+    # this — confirmed real, serious bug: even though sqlite3.threadsafety ==
+    # 3 in this environment (SQLite's own C library, compiled "serialized",
+    # genuinely safe for concurrent multi-threaded use of one connection),
+    # the Python sqlite3 DB-API wrapper around it is NOT — a real 16-thread
+    # concurrency stress test against a shared read connection produced
+    # actual `InterfaceError: bad parameter or other API misuse` failures.
+    # One connection per thread (see the read_db property, which lazily opens
+    # and caches exactly one of these per thread via threading.local) sidesteps
+    # that entirely: each connection object is only ever touched by the one
+    # thread that owns it. Cheap to do — SQLite connections are lightweight,
+    # especially in WAL mode where readers never block each other or the
+    # writer.
+    #
+    # PRAGMA query_only is a cheap belt-and-suspenders guard: if an unaudited
+    # write ever gets routed through one of these by mistake, it fails loudly
+    # (OperationalError) instead of silently racing the real write connection
+    # (ServerState.db) below.
+    #
+    # isolation_level=None (autocommit) is NOT optional here — confirmed a
+    # real, nasty failure mode without it: Python's sqlite3 driver still
+    # implicitly opens a transaction before an INSERT/UPDATE/DELETE even on a
+    # query_only connection, and since the statement itself then fails, that
+    # transaction is never closed. Every subsequent SELECT on this connection
+    # then silently runs inside that same still-open transaction's frozen
+    # snapshot — permanently stale reads with no further error, until
+    # something calls commit()/rollback(). Autocommit mode never opens that
+    # implicit transaction in the first place, so a rejected write attempt
+    # (which should never happen, but see the comment above) fails once and
+    # leaves every later read on this same connection unaffected, instead of
+    # quietly breaking them all for the rest of the process's life.
+    connection = sqlite3.connect(path, check_same_thread=False, isolation_level=None)
+    connection.row_factory = sqlite3.Row
+    connection.execute("PRAGMA query_only = ON")
+    return connection
+
+
 @dataclass
 class ServerState:
     config_loader: ConfigLoader
@@ -52,6 +93,16 @@ class ServerState:
     # every call (some request paths call it more than once). Cleared in
     # reload() below since root_dir can change there.
     kind_policy_cache: Dict[str, Dict[str, object]] = field(default_factory=dict)
+    # storage.py#_sync_library_kind_directory's gate: the directory mtime a
+    # given kind's library_items rows were last confirmed to match. A file
+    # added/removed outside save_item() (hand-authored JSON, seeded/imported
+    # content) changes its kind directory's own mtime, so comparing against
+    # this cached value turns "re-scan that whole directory on every single
+    # list_bucket()/get_item() call" (confirmed real perf regression — a full
+    # directory enumeration per request, especially slow against this repo's
+    # Nextcloud-synced folder) into "one cheap stat() call when nothing
+    # changed." Cleared in reload() below since root_dir can change there.
+    library_kind_synced_mtimes: Dict[str, float] = field(default_factory=dict)
     # Ephemeral per-group "ping" events (map pointer clicks) — deliberately
     # NOT persisted to the database or the library_items table at all: a
     # ping is a transient pointer-broadcast, not a saved record, and routing
@@ -65,6 +116,20 @@ class ServerState:
     pending_pings: Dict[str, list] = field(default_factory=dict)
     pings_lock: threading.Lock = field(default_factory=threading.Lock)
     ping_seq: int = 0
+    # Backing fields for the read_db property below — not meant to be read or
+    # set directly by anything outside this class. _read_local holds one
+    # lazily-opened connection per thread (see _open_read_connection's own
+    # comment on why this can't be a single shared connection).
+    _read_db_path: str = field(default="", repr=False)
+    _read_local: threading.local = field(default_factory=threading.local, repr=False, compare=False)
+
+    @property
+    def read_db(self) -> sqlite3.Connection:
+        connection = getattr(self._read_local, "connection", None)
+        if connection is None:
+            connection = _open_read_connection(self._read_db_path)
+            self._read_local.connection = connection
+        return connection
 
     @classmethod
     def from_loader(cls, loader: ConfigLoader) -> "ServerState":
@@ -81,6 +146,7 @@ class ServerState:
             mounts=mounts,
             lock=lock,
             root_dir=loader.path.resolve().parent,
+            _read_db_path=str(config.database.path),
         )
 
     def reload(self, new_config: ServerConfig | None = None) -> None:
@@ -92,10 +158,21 @@ class ServerState:
                 self.db = sqlite3.connect(str(new_config.database.path), check_same_thread=False)
                 self.db.row_factory = sqlite3.Row
                 _tune_connection(self.db)
+                self._read_db_path = str(new_config.database.path)
+                # Every thread's own cached read connection (see the read_db
+                # property) still points at the OLD file — a fresh
+                # threading.local means the next state.read_db access on any
+                # thread lazily opens a new connection against the new path
+                # instead of reusing a stale one. The old per-thread
+                # connections are simply dropped, not explicitly closed —
+                # this only runs on a rare, admin-triggered config change,
+                # not a hot path worth the bookkeeping to close them all.
+                self._read_local = threading.local()
             self.config = new_config
             self.mounts = dict(new_config.mounts)
             self.root_dir = self.config_loader.path.resolve().parent
             self.kind_policy_cache = {}
+            self.library_kind_synced_mtimes = {}
 
     def get_mount(self, name: str) -> MountConfig:
         try:

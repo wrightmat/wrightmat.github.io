@@ -1,0 +1,36 @@
+{
+  "id": "grp_390470607ff6",
+  "title": "Test Genesys Campaign",
+  "type": "campaign",
+  "systemId": "sys.genesys",
+  "settingId": null,
+  "templateId": null,
+  "properties": [
+    {
+      "key": "inventory",
+      "label": "Inventory",
+      "type": "array",
+      "public": true,
+      "item": {
+        "type": "object",
+        "label": "Item",
+        "displayField": "inventory[].name",
+        "children": [
+          {
+            "type": "string",
+            "key": "inventory[].name",
+            "label": "Item Name",
+            "required": true
+          },
+          {
+            "type": "number",
+            "key": "inventory[].quantity",
+            "label": "Quantity",
+            "minimum": 0
+          }
+        ]
+      }
+    }
+  ],
+  "propertyValues": {}
+}

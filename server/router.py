@@ -12,16 +12,23 @@ class Route:
     method: str
     pattern: Pattern[str]
     handler: Handler
+    # False (default) preserves every existing route's behavior exactly:
+    # do_GET/do_POST wrap the handler in ServerState.lock, the one shared
+    # mutex serializing all DB access. True marks a route whose handler (and
+    # everything it calls) has been specifically audited to route reads
+    # through ServerState.read_db and writes through ServerState.lock/db
+    # itself — see app.py's do_GET and ServerState.read_db's own comment.
+    unlocked: bool = False
 
 
 class Router:
     def __init__(self) -> None:
         self._routes: Dict[str, list[Route]] = {}
 
-    def add(self, method: str, pattern: str, handler: Handler) -> None:
+    def add(self, method: str, pattern: str, handler: Handler, unlocked: bool = False) -> None:
         compiled = re.compile(pattern)
         bucket = self._routes.setdefault(method.upper(), [])
-        bucket.append(Route(method=method.upper(), pattern=compiled, handler=handler))
+        bucket.append(Route(method=method.upper(), pattern=compiled, handler=handler, unlocked=unlocked))
 
     def match(self, method: str, path: str) -> Optional[Tuple[Route, Dict[str, str]]]:
         routes = self._routes.get(method.upper(), [])

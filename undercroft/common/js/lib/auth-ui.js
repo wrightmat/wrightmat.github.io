@@ -112,7 +112,7 @@ function setError(element, message) {
 
 // Exported so the tool-side copies of this same function (Forge/Loom/
 // Sanctum/Workbench's dice.js/character-view.js) can share one implementation
-// instead of re-defining it — see common/docs/code-audit.md.
+// instead of re-defining it — see undercroft/README.md's Code Conventions section.
 export function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
 }
@@ -218,11 +218,47 @@ export function initAuthControls({
     container.appendChild(button);
   }
 
+  // Resolves each distinct system_id/setting_id across `groups` to its real
+  // title/name once (deduped — campaigns commonly share the same System),
+  // for the small-print line renderUserMenu shows under a campaign's name.
+  // Best-effort per id: a deleted/inaccessible record just falls back to
+  // showing its own raw id, the same "id when the name can't be resolved"
+  // convention already used suite-wide (e.g. forge/js/lib/tables.js's own
+  // `entry.entity.name || entry.id`) rather than silently dropping the line.
+  async function resolveTitles(bucket, ids) {
+    const map = new Map();
+    await Promise.all(
+      Array.from(ids).map(async (id) => {
+        try {
+          const result = await manager.get(bucket, id);
+          map.set(id, result?.payload?.title || result?.payload?.name || id);
+        } catch (error) {
+          map.set(id, id);
+        }
+      })
+    );
+    return map;
+  }
+
+  async function resolveGroupContextLabels(groups) {
+    const systemIds = new Set();
+    const settingIds = new Set();
+    groups.forEach((group) => {
+      if (group.system_id) systemIds.add(group.system_id);
+      if (group.setting_id) settingIds.add(group.setting_id);
+    });
+    const [systemTitles, settingTitles] = await Promise.all([
+      resolveTitles("system", systemIds),
+      resolveTitles("setting", settingIds),
+    ]);
+    return { systemTitles, settingTitles };
+  }
+
   // One dropdown for everything "who/what context am I in" — a user has to
   // be signed in to be in a campaign anyway, so the campaign selector lives
   // inside the same menu as account/logout rather than as a second,
   // separately-toggled control next to it.
-  function renderUserMenu(user, groups) {
+  function renderUserMenu(user, groups, contextLabels = { systemTitles: new Map(), settingTitles: new Map() }) {
     if (!container) return;
     container.innerHTML = "";
     const active = manager.getActiveGroup();
@@ -232,11 +268,25 @@ export function initAuthControls({
     const groupItems = groups
       .map((group) => {
         const isActive = activeStillExists && group.id === active.groupId;
+        // System first, Setting second — matches _serialize_group's/
+        // updateGroup's own {systemId, settingId} field order elsewhere in
+        // the suite. Either alone is fine (just that one label); neither
+        // assigned means no sub-line at all, not an empty one.
+        const contextParts = [
+          group.system_id ? contextLabels.systemTitles.get(group.system_id) || group.system_id : "",
+          group.setting_id ? contextLabels.settingTitles.get(group.setting_id) || group.setting_id : "",
+        ].filter(Boolean);
+        const contextLine = contextParts.length
+          ? `<div class="text-body-secondary" style="font-size: 0.7rem;">${escapeHtml(contextParts.join(" · "))}</div>`
+          : "";
         return `
           <li>
             <div class="d-flex align-items-center">
               <button class="dropdown-item flex-grow-1${isActive ? " active" : ""}" type="button" data-campaign-select="${escapeHtml(group.id)}">
-                ${escapeHtml(group.name)}
+                <div class="d-flex flex-column align-items-start lh-sm">
+                  <span>${escapeHtml(group.name)}</span>
+                  ${contextLine}
+                </div>
               </button>
               ${
                 isActive
@@ -350,8 +400,12 @@ export function initAuthControls({
       console.warn("Unable to load campaign groups", error);
     }
     resyncActiveGroup(groups);
+    const contextLabels = await resolveGroupContextLabels(groups).catch(() => ({
+      systemTitles: new Map(),
+      settingTitles: new Map(),
+    }));
     if (sessionUser()?.username === user.username) {
-      renderUserMenu(user, groups);
+      renderUserMenu(user, groups, contextLabels);
     }
   }
 

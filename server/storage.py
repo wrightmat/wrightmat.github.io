@@ -666,78 +666,67 @@ def _admin_user_id(state: ServerState) -> Optional[int]:
     return row["id"] if row else None
 
 
-def _ensure_library_item_indexed(state: ServerState, kind: str, id_: str) -> None:
-    # Self-heals a single missing library_items row for a file that already
-    # exists on disk. Without a row, is_owner/is_shared/is_public below all
-    # treat the record as absent and get_item() denies access outright — so a
-    # file added outside save_item() (hand-authored JSON, seeded/imported
-    # content) used to be genuinely inaccessible until the next server
-    # restart re-ran _backfill_flat_library_kinds() at startup. This heals it
-    # on the very next read instead. Cheap: one row lookup per call, and only
-    # touches disk/writes a row on the (rare, one-time) miss.
-    base_id = id_.replace(".json", "")
-    existing = state.db.execute(
-        "SELECT 1 FROM library_items WHERE kind = ? AND id = ?", (kind, base_id)
-    ).fetchone()
-    if existing:
-        return
-    path = _record_path(state, kind, base_id)
-    if not path.exists():
-        return
-    policy = load_kind_policy(state, kind)
-    try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        payload = {}
-    title = _title_from_payload(kind, payload, policy) or base_id
-    metadata = _extract_metadata(kind, payload, policy)
-    file_ts = datetime.utcfromtimestamp(path.stat().st_mtime).isoformat()
-    state.db.execute(
-        """
-        INSERT INTO library_items
-            (kind, id, owner_id, title, is_public, metadata, filename, created_at, modified_at, last_accessed_at)
-        VALUES (?, ?, ?, ?, 1, ?, ?, ?, ?, ?)
-        ON CONFLICT(kind, id) DO NOTHING
-        """,
-        (kind, base_id, _admin_user_id(state), title, metadata, path.name, file_ts, file_ts, file_ts),
-    )
-    state.db.commit()
-
-
 def _sync_library_kind_directory(state: ServerState, kind: str) -> None:
-    # Same self-heal as _ensure_library_item_indexed, but scoped to every
-    # file in one kind's own directory at once — run before list_bucket()'s
-    # own library_items query so a freshly-added file (not just a
-    # freshly-*read* one) shows up in listings without a restart too.
-    # O(files in this one kind's directory), not O(entire data tree) like the
-    # startup backfill, so it's safe to run on every list call.
+    # Self-heals library_items rows for files that exist on disk but aren't
+    # indexed yet — content added outside save_item() (hand-authored JSON,
+    # seeded/imported files) used to be invisible in listings, and outright
+    # denied by get_item() (is_owner/is_shared/is_public all treat a rowless
+    # record as absent), until the next server restart re-ran
+    # _backfill_flat_library_kinds() at startup.
+    #
+    # Gated on the kind directory's own mtime (one cheap stat() call) so the
+    # actual glob+query only runs when something on disk has actually
+    # changed since this kind was last synced — adding or removing a file
+    # changes its parent directory's mtime, editing an existing tracked
+    # file's own contents does not, which is exactly the distinction that
+    # matters here. Confirmed real regression running this unconditionally
+    # on every single list_bucket()/get_item() call: a full directory
+    # enumeration on every request, measurably slow against this repo's
+    # Nextcloud-synced data folder (same sync-client overhead write_json's
+    # own WinError-5 retry comment already documents). On an unchanged
+    # directory this is now just one stat() call.
+    # Called from list_bucket()/get_item(), both `unlocked` routes (see
+    # router.py's Route.unlocked) — the existence check below reads via
+    # state.read_db (safe lock-free), but the actual insert is a real write,
+    # so it goes through state.db under state.lock explicitly, same as
+    # get_user_by_session's own write branches.
     kind_dir = library_kind_root(state, kind)
-    if not kind_dir.exists():
+    try:
+        current_mtime = kind_dir.stat().st_mtime
+    except OSError:
         return
-    existing_ids = {row["id"] for row in state.db.execute("SELECT id FROM library_items WHERE kind = ?", (kind,))}
+    if state.library_kind_synced_mtimes.get(kind) == current_mtime:
+        return
+    existing_ids = {
+        row["id"] for row in state.read_db.execute("SELECT id FROM library_items WHERE kind = ?", (kind,))
+    }
     entries = [entry for entry in kind_dir.glob("*.json") if entry.stem not in existing_ids]
-    if not entries:
-        return
-    policy = load_kind_policy(state, kind)
-    admin_id = _admin_user_id(state)
-    for entry in entries:
-        try:
-            payload = json.loads(entry.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
-            payload = {}
-        title = _title_from_payload(kind, payload, policy) or entry.stem
-        metadata = _extract_metadata(kind, payload, policy)
-        file_ts = datetime.utcfromtimestamp(entry.stat().st_mtime).isoformat()
-        state.db.execute(
-            """
-            INSERT INTO library_items
-                (kind, id, owner_id, title, is_public, metadata, filename, created_at, modified_at, last_accessed_at)
-            VALUES (?, ?, ?, ?, 1, ?, ?, ?, ?, ?)
-            ON CONFLICT(kind, id) DO NOTHING
-            """,
-            (kind, entry.stem, admin_id, title, metadata, entry.name, file_ts, file_ts, file_ts),
-        )
-    state.db.commit()
+    if entries:
+        policy = load_kind_policy(state, kind)
+        with state.lock:
+            admin_id = _admin_user_id(state)
+            for entry in entries:
+                try:
+                    payload = json.loads(entry.read_text(encoding="utf-8"))
+                except (OSError, json.JSONDecodeError):
+                    payload = {}
+                title = _title_from_payload(kind, payload, policy) or entry.stem
+                metadata = _extract_metadata(kind, payload, policy)
+                file_ts = datetime.utcfromtimestamp(entry.stat().st_mtime).isoformat()
+                state.db.execute(
+                    """
+                    INSERT INTO library_items
+                        (kind, id, owner_id, title, is_public, metadata, filename, created_at, modified_at, last_accessed_at)
+                    VALUES (?, ?, ?, ?, 1, ?, ?, ?, ?, ?)
+                    ON CONFLICT(kind, id) DO NOTHING
+                    """,
+                    (kind, entry.stem, admin_id, title, metadata, entry.name, file_ts, file_ts, file_ts),
+                )
+            state.db.commit()
+    # Recorded even when `entries` was empty — an empty result still proves
+    # this mtime was fully checked, so the next call with the same mtime can
+    # skip straight past the guard above again.
+    state.library_kind_synced_mtimes[kind] = current_mtime
 
 
 def library_kind_root(state: ServerState, kind: str) -> Path:
@@ -859,7 +848,7 @@ def list_bucket(state: ServerState, kind: str, user: Optional[User]) -> Dict[str
     public = _flatten_metadata_rows(
         [
             dict(row)
-            for row in state.db.execute(
+            for row in state.read_db.execute(
                 """
                 SELECT li.*, u.username AS owner_username, u.tier AS owner_tier
                 FROM library_items li
@@ -881,7 +870,7 @@ def list_bucket(state: ServerState, kind: str, user: Optional[User]) -> Dict[str
         owned = _flatten_metadata_rows(
             [
                 dict(row)
-                for row in state.db.execute(
+                for row in state.read_db.execute(
                     """
                     SELECT li.*, u.username AS owner_username, u.tier AS owner_tier
                     FROM library_items li
@@ -898,7 +887,7 @@ def list_bucket(state: ServerState, kind: str, user: Optional[User]) -> Dict[str
         owned = _flatten_metadata_rows(
             [
                 dict(row)
-                for row in state.db.execute(
+                for row in state.read_db.execute(
                     """
                     SELECT li.*, u.username AS owner_username, u.tier AS owner_tier
                     FROM library_items li
@@ -925,7 +914,7 @@ def list_bucket(state: ServerState, kind: str, user: Optional[User]) -> Dict[str
         group_placeholders = ",".join("?" for _ in group_ids) if group_ids else "NULL"
         shared_rows = [
             dict(row)
-            for row in state.db.execute(
+            for row in state.read_db.execute(
                 f"""
                 SELECT li.*, s.permissions, u.username AS owner_username, u.tier AS owner_tier
                 FROM library_items li
@@ -947,11 +936,18 @@ def list_bucket(state: ServerState, kind: str, user: Optional[User]) -> Dict[str
 
 
 def is_owner(state: ServerState, kind: str, id_: str, user: Optional[User]) -> bool:
+    # Pure read — called from both unlocked routes (get_item/list_bucket) and
+    # still-locked write paths (save_item/delete_item, via do_POST). read_db
+    # is safe either way: a POST handler's own writes via state.db haven't
+    # committed yet at the point this runs (this check always precedes the
+    # actual write in every caller), and once committed, WAL mode's normal
+    # multi-connection semantics mean read_db sees it immediately on its next
+    # query — no staleness, just no lock needed to get there.
     if not user:
         return False
     if str(getattr(user, "tier", "")).lower() == "admin":
         return True
-    row = state.db.execute(
+    row = state.read_db.execute(
         "SELECT owner_id FROM library_items WHERE kind = ? AND id = ?",
         (kind, id_.replace(".json", "")),
     ).fetchone()
@@ -961,10 +957,12 @@ def is_owner(state: ServerState, kind: str, id_: str, user: Optional[User]) -> b
 
 
 def is_shared(state: ServerState, kind: str, id_: str, user: Optional[User], require_edit: bool = False) -> bool:
+    # Pure read — see is_owner's own comment on why read_db is safe from
+    # both unlocked and still-locked callers.
     if not user:
         return False
     content_id = id_.replace(".json", "")
-    row = state.db.execute(
+    row = state.read_db.execute(
         """
         SELECT permissions FROM shares
         WHERE content_type = ? AND content_id = ? AND shared_with_user_id = ?
@@ -988,7 +986,7 @@ def is_shared(state: ServerState, kind: str, id_: str, user: Optional[User], req
     # query directly. Local import — see list_bucket's own comment on why.
     from .groups import user_can_access_group
 
-    group_rows = state.db.execute(
+    group_rows = state.read_db.execute(
         """
         SELECT shared_with_group_id, permissions FROM shares
         WHERE content_type = ? AND content_id = ? AND shared_with_group_id IS NOT NULL
@@ -1006,7 +1004,9 @@ def is_shared(state: ServerState, kind: str, id_: str, user: Optional[User], req
 
 
 def is_public(state: ServerState, kind: str, id_: str) -> bool:
-    row = state.db.execute(
+    # Pure read — see is_owner's own comment on why read_db is safe from
+    # both unlocked and still-locked callers.
+    row = state.read_db.execute(
         "SELECT is_public FROM library_items WHERE kind = ? AND id = ?",
         (kind, id_.replace(".json", "")),
     ).fetchone()
@@ -1045,7 +1045,7 @@ def get_item(
 ) -> Dict[str, Any]:
     ensure_read_role(state, kind, user)
     base_id = id_.replace(".json", "")
-    _ensure_library_item_indexed(state, kind, base_id)
+    _sync_library_kind_directory(state, kind)
     token_info = resolve_share_token(state, share_token or "") if share_token else None
     share_granted = False
     if token_info:
@@ -1061,7 +1061,7 @@ def get_item(
             # for its own. Group is a generic Library kind now too (see
             # _migrate_groups_to_library_items), so there's no separate
             # `groups` table to join against any more.
-            row = state.db.execute(
+            row = state.read_db.execute(
                 """
                 SELECT g.owner_id AS group_owner_id,
                        li.owner_id AS character_owner_id

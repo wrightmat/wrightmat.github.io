@@ -370,11 +370,12 @@ function buildThemeToggleButton(option, ariaLabel, hiddenLabelText, icon) {
 // control mount, theme toggle group — replacing what used to be ~47 lines of
 // byte-identical hand-copied markup duplicated across every tool's own
 // index.html. Purely additive: only runs when a page opts in with a
-// `<div data-app-shell-header></div>` mount point; pages that still carry
-// their own literal <header> markup (not yet migrated) are left completely
-// alone. Deliberately NOT touching the theme-flash-prevention inline
-// <script> or the CDN <link>/<script> tags in each page's own <head> — both
-// must run/load synchronously before first paint, which building them here
+// `<div data-app-shell-header></div>` mount point — every page in the suite
+// has that mount today (no page carries its own literal <header> markup any
+// more), but the function still just no-ops safely on one that doesn't.
+// Deliberately NOT touching the theme-flash-prevention inline <script> or
+// the CDN <link>/<script> tags in each page's own <head> — both must
+// run/load synchronously before first paint, which building them here
 // (after this module has loaded and executed) cannot provide.
 function buildAppShellHeader(root, { leftPaneLabel, rightPaneLabel, settingsSlotAttr }) {
   const mount = root.querySelector("[data-app-shell-header]");

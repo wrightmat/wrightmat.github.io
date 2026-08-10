@@ -24,9 +24,10 @@ export function createLocationRecord(generated, existingId) {
     // convention as systemIds — a Location could in principle belong to more
     // than one Setting (a place reachable from two different worlds). A
     // pre-migration record may still carry the old scalar `settingId`;
-    // callers normalize that on read (see `resolveSettingIds` in
-    // sanctum/js/app.js) rather than this schema silently upgrading it, so a
-    // loaded-but-unsaved record doesn't look dirty just from being viewed.
+    // callers normalize that on read (see `listLocationsForSetting` in
+    // common/js/lib/content-fetch.js) rather than this schema silently
+    // upgrading it, so a loaded-but-unsaved record doesn't look dirty just
+    // from being viewed.
     settingIds: [],
     typeId: null,
     purposeId: null,

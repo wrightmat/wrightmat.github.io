@@ -5,7 +5,7 @@
 // and loom/mappings/ddb-character.json's/ddb-monster.json's `lookup('table',
 // key)` calls need zero changes; only the *source* of the data changes, from
 // a hardcoded module to the System record edited in Loom. See
-// common/docs/lookup-tables-migration.md and common/docs/code-audit.md.
+// undercroft/README.md's Code Conventions section for the full disposition.
 //
 // This is the one place that has to know "sys.dnd5e's `conditions` field is
 // lookup-tables.js's old CONDITIONS table" etc. — unavoidable, appropriately

@@ -1,0 +1,162 @@
+{
+  "id": "tpl.genesys.test",
+  "title": "Genesys — Test Sheet (Dice QA)",
+  "version": "0.1",
+  "schema": "sys.genesys",
+  "description": "Minimal dummy character sheet for testing the Genesys symbol-dice rolling pipeline (Rolls/symbol-dice pool stepper + 3D overlay) — not a real character sheet, just enough fields to have a usable test character.",
+  "type": "sheet",
+  "baseFontFamily": "",
+  "defaults": {
+    "fontColor": "#ffffff"
+  },
+  "backgroundColor": "",
+  "backgroundColorBinding": "",
+  "backgroundColorFormula": "",
+  "borderStyle": "",
+  "borderColor": "",
+  "borderColorBinding": "",
+  "borderColorFormula": "",
+  "borderWidth": null,
+  "borderSides": null,
+  "components": [
+    {
+      "type": "input",
+      "id": "g-name",
+      "label": "Name",
+      "name": "Name",
+      "binding": "@name",
+      "variant": "text"
+    },
+    {
+      "type": "input",
+      "id": "g-career",
+      "label": "Career",
+      "name": "Career",
+      "binding": "@career",
+      "variant": "text"
+    },
+    {
+      "type": "container",
+      "id": "g-characteristics",
+      "label": "Characteristics",
+      "name": "Characteristics",
+      "containerType": "grid",
+      "columns": 3,
+      "rows": 2,
+      "gap": 16,
+      "zones": {
+        "grid-0-0": [
+          {
+            "type": "input",
+            "id": "g-char-brawn",
+            "label": "Brawn",
+            "name": "Brawn",
+            "binding": "@characteristics.brawn",
+            "variant": "number"
+          }
+        ],
+        "grid-0-1": [
+          {
+            "type": "input",
+            "id": "g-char-agility",
+            "label": "Agility",
+            "name": "Agility",
+            "binding": "@characteristics.agility",
+            "variant": "number"
+          }
+        ],
+        "grid-0-2": [
+          {
+            "type": "input",
+            "id": "g-char-intellect",
+            "label": "Intellect",
+            "name": "Intellect",
+            "binding": "@characteristics.intellect",
+            "variant": "number"
+          }
+        ],
+        "grid-1-0": [
+          {
+            "type": "input",
+            "id": "g-char-cunning",
+            "label": "Cunning",
+            "name": "Cunning",
+            "binding": "@characteristics.cunning",
+            "variant": "number"
+          }
+        ],
+        "grid-1-1": [
+          {
+            "type": "input",
+            "id": "g-char-willpower",
+            "label": "Willpower",
+            "name": "Willpower",
+            "binding": "@characteristics.willpower",
+            "variant": "number"
+          }
+        ],
+        "grid-1-2": [
+          {
+            "type": "input",
+            "id": "g-char-presence",
+            "label": "Presence",
+            "name": "Presence",
+            "binding": "@characteristics.presence",
+            "variant": "number"
+          }
+        ]
+      }
+    },
+    {
+      "type": "container",
+      "id": "g-derived",
+      "label": "Derived Stats",
+      "name": "Derived Stats",
+      "containerType": "grid",
+      "columns": 3,
+      "rows": 1,
+      "gap": 16,
+      "zones": {
+        "grid-0-0": [
+          {
+            "type": "input",
+            "id": "g-wound",
+            "label": "Wound Threshold",
+            "name": "Wound Threshold",
+            "binding": "@woundThreshold",
+            "variant": "number"
+          }
+        ],
+        "grid-0-1": [
+          {
+            "type": "input",
+            "id": "g-strain",
+            "label": "Strain Threshold",
+            "name": "Strain Threshold",
+            "binding": "@strainThreshold",
+            "variant": "number"
+          }
+        ],
+        "grid-0-2": [
+          {
+            "type": "input",
+            "id": "g-soak",
+            "label": "Soak Value",
+            "name": "Soak Value",
+            "binding": "@soakValue",
+            "variant": "number"
+          }
+        ]
+      }
+    },
+    {
+      "type": "input",
+      "id": "g-notes",
+      "label": "Notes",
+      "name": "Notes",
+      "binding": "@notes",
+      "variant": "textarea",
+      "rows": 4
+    }
+  ]
+}

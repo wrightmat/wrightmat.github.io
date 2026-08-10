@@ -54,6 +54,12 @@ export const CLOCK_MACRO_ACTIONS = {
   hide: { label: "Hide from table" },
   advance: { label: "Advance / retreat", params: ["delta"] },
   set: { label: "Set filled segments", params: ["filled"] },
+  // Unlike the other actions above (which only ever act on whichever clock
+  // is ALREADY visible — see dashboard.js's own findActiveWidgetInstance),
+  // "create" is allowed to add a widget when none exists yet at all; see
+  // dashboard.js's own ensureLiveWidgetInstance for the resolution this
+  // relies on. Handled identically to "show" once a target instance exists.
+  create: { label: "Create new & show" },
 };
 
 // 5s (was 30s) — same reasoning as combat-tracker.js's own POLL_INTERVAL_MS:
@@ -328,7 +334,7 @@ export function initClockWidget(
   // "show" action run twice in a row is a no-op the second time, not a hide.
   async function runMacroAction(action) {
     const params = action?.params || {};
-    if (action?.action === "show") {
+    if (action?.action === "show" || action?.action === "create") {
       if (!visible) await toggleVisibility();
       return;
     }

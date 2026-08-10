@@ -286,7 +286,8 @@ export function createFormulaToggleField(labelText, {
 // static per-group headings use (press/index.html's data-inspector-*-group
 // divs). Press can't call this function — its inspector is static HTML +
 // imperative JS show/hide, a different architecture kept as-is on purpose
-// (see common/docs/code-conventions.md's inspector standards) — so the two
+// (see undercroft/README.md's Code Conventions section, Component Inspector
+// standards) — so the two
 // tools can't share one runtime code path here. What they DO share: this
 // exact class string, the section name list and order (Text, Colors, Border,
 // Behavior, Advanced), and the same createCollapseToggleButton primitive

@@ -9,8 +9,9 @@
 //
 // Written to replace the same hand-typed HTML block (and matching, separate
 // JS wiring call) that used to be duplicated across every tool's own
-// index.html/app.js — see common/docs/code-audit.md for this codebase's
-// established practice of tracking exactly this kind of extraction.
+// index.html/app.js — see undercroft/README.md's Code Conventions section
+// for this codebase's established practice of tracking exactly this kind of
+// extraction.
 
 import { bindCollapsibleToggle, setCollapsibleState } from "./collapsible.js";
 import { attachIconAutocomplete, buildIconPreviewElement } from "./icon-picker.js";
@@ -20,7 +21,8 @@ import { createJsonPreviewRenderer } from "./json-preview.js";
 // One tooltipped icon button — the single most-repeated primitive in the
 // suite (162 hand-written instances measured across all 9 tools' index.html
 // files before this module existed). Two established shapes exist suite-wide
-// (see common/docs/style-guide.md's "Toolbar Buttons" section) — `kind`
+// (see undercroft/README.md's UI & Style Conventions section, "Toolbar
+// Buttons") — `kind`
 // picks between them:
 //   - "compact" (default) — small inline actions (JSON copy buttons,
 //     collapsible chevron toggles, per-row actions): `btn-sm
@@ -246,7 +248,8 @@ export function createJsonDataPanel({
 
 // A left-pane action toolbar cluster (~20 instances suite-wide — New/Save/
 // Export/Delete and friends). `action` picks the icon/color preset per
-// common/docs/style-guide.md's "Toolbar Buttons" color table; anything not
+// undercroft/README.md's UI & Style Conventions section, "Toolbar Buttons"
+// color table; anything not
 // in ACTION_PRESETS falls back to a plain secondary-outline button, so this
 // still works for a toolbar with an odd one out. Pass `icon`/`variant` to
 // override a preset's default icon/color for a tool-specific case (e.g.

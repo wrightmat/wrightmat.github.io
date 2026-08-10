@@ -494,6 +494,31 @@ export async function fetchKindEntriesWithIds(dataManager, kind) {
   return entries.filter(Boolean);
 }
 
+// Every Location belonging to `settingId` — shared by Sanctum (its own
+// Location editor) and Forge (its Location picker for NPC generation), which
+// used to each carry an identical, independently-maintained copy of this
+// exact function. `settingIds` is a plural array (same "empty/absent =
+// universal, non-empty = restricted" convention as systemIds); unlike a
+// Resource's optional scoping, a Location with an EMPTY settingIds
+// genuinely belongs to no Setting yet, so this deliberately checks
+// `includes` only, not an empty-array-matches-everything shortcut. Falls
+// back to a pre-migration scalar `settingId` for any not-yet-resaved record
+// — same precedent as the `system` → `systemIds` character migration.
+export async function listLocationsForSetting(dataManager, settingId) {
+  if (!settingId) return [];
+  const entries = await fetchKindEntriesWithIds(dataManager, "location");
+  return entries
+    .filter((entry) => {
+      const ids = Array.isArray(entry.entity.settingIds)
+        ? entry.entity.settingIds
+        : entry.entity.settingId
+          ? [entry.entity.settingId]
+          : [];
+      return ids.includes(settingId);
+    })
+    .map((entry) => ({ id: entry.id, name: entry.entity.name || entry.id }));
+}
+
 // `value` is "kind/id" for a single saved entry, or "kind/*" (or bare "kind")
 // for every entry of that kind — mirroring loadSrdData's list-endpoint
 // expansion so a "whole directory" selection produces one array, letting

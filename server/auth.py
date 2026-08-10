@@ -274,11 +274,21 @@ def _parse_expiry(value: Any) -> Optional[datetime]:
 
 
 def get_user_by_session(state: ServerState, token: Optional[str]) -> Optional[User]:
+    # Runs on EVERY request (current_user(), called at the top of nearly
+    # every route handler) — including routes marked unlocked (router.py's
+    # Route.unlocked) that no longer hold state.lock around their whole
+    # handler. The SELECT below reads via state.read_db (safe for concurrent,
+    # lock-free access from any number of threads — see that connection's
+    # own comment); the two UPDATE branches still write via state.db, each
+    # explicitly wrapped in state.lock here since they can no longer assume
+    # an outer caller already holds it. state.lock is an RLock, so this is
+    # exactly as safe to call from a route that DOES still hold it (reentrant
+    # reacquisition, not a deadlock) as from one that doesn't.
     normalized = _normalize_session_token(token)
     if not normalized:
         return None
     try:
-        row = state.db.execute(
+        row = state.read_db.execute(
             """
             SELECT users.id, users.email, users.username, users.tier, sessions.expires_at
             FROM sessions JOIN users ON users.id = sessions.user_id
@@ -296,18 +306,20 @@ def get_user_by_session(state: ServerState, token: Optional[str]) -> Optional[Us
         # A malformed expires_at is treated the same as an expired one —
         # deactivated here too, so a corrupted row self-heals into a normal
         # "please log in again" instead of crashing on every future request.
-        state.db.execute("UPDATE sessions SET is_active = 0 WHERE session_token = ?", (normalized,))
-        state.db.commit()
+        with state.lock:
+            state.db.execute("UPDATE sessions SET is_active = 0 WHERE session_token = ?", (normalized,))
+            state.db.commit()
         return None
-    state.db.execute(
-        "UPDATE sessions SET last_accessed_at = ?, expires_at = ? WHERE session_token = ?",
-        (
-            datetime.utcnow().isoformat(),
-            (datetime.utcnow() + timedelta(days=state.config.options.session_ttl_days)).isoformat(),
-            normalized,
-        ),
-    )
-    state.db.commit()
+    with state.lock:
+        state.db.execute(
+            "UPDATE sessions SET last_accessed_at = ?, expires_at = ? WHERE session_token = ?",
+            (
+                datetime.utcnow().isoformat(),
+                (datetime.utcnow() + timedelta(days=state.config.options.session_ttl_days)).isoformat(),
+                normalized,
+            ),
+        )
+        state.db.commit()
     return User(id=row["id"], email=row["email"], username=row["username"], tier=row["tier"])
 
 

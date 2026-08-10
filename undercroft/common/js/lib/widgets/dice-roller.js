@@ -23,8 +23,9 @@ import {
   extractSystemRolls,
   extractSystemSymbolDice,
   rollSystemMove,
+  rollSymbolPoolExpression,
 } from "./dice-roll.js";
-import { rollSymbolDicePool, formatSymbolPoolResult } from "../../../../workbench/js/lib/symbol-dice.js";
+import { formatSymbolPoolResult } from "../../../../workbench/js/lib/symbol-dice.js";
 // Rollable Journal tables — listRollableTables/describeTableRow feed this
 // widget's own autocomplete and result line; the actual roll goes through
 // rollExpression above exactly like a plain numeric expression does, since
@@ -261,7 +262,7 @@ export function initDiceRollerWidget(container, { status, dataManager, groupCont
     setElementVisible(symbolSection, symbolMode, "flex");
   }
 
-  function executeSymbolPoolRoll() {
+  async function executeSymbolPoolRoll() {
     const diceById = new Map(activeSymbolDice.map((die) => [die.id.toLowerCase(), die]));
     const poolCounts = activeSymbolDice
       .map((die) => ({ dieId: die.id, count: symbolPoolCounts.get(die.id) || 0 }))
@@ -270,7 +271,7 @@ export function initDiceRollerWidget(container, { status, dataManager, groupCont
       status?.show("Add at least one die to the pool first.", { type: "info", timeout: 2000 });
       return;
     }
-    const rolled = rollSymbolDicePool(poolCounts, { diceById });
+    const rolled = await rollSymbolPoolExpression(poolCounts, { diceById, dataManager });
     resultLine.textContent = formatSymbolPoolResult(rolled.net);
   }
   symbolRollButton.addEventListener("click", executeSymbolPoolRoll);

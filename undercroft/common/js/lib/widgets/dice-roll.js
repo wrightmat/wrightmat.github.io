@@ -19,7 +19,11 @@ import { parseTableReferenceExpression, resolveTableReference, describeTableRow 
 // of responsibilities. Only wired into the plain-expression branch below
 // (table rolls have nothing to physically roll); every existing caller of
 // rollExpression picks this up for free.
-import { rollDiceOverlay } from "./dice-overlay.js";
+import { rollDiceOverlay, rollSymbolDiceOverlay } from "./dice-overlay.js";
+// Tier-3 symbol-dice pool engine (Section 1.4/3.4) — rollSymbolPoolExpression
+// below is this file's own "try the overlay, else fall back" wrapper around
+// it, mirroring rollExpression's own relationship with rollDiceExpression.
+import { rollSymbolDicePool, buildSymbolPoolFromDiceBoxValues } from "../../../../workbench/js/lib/symbol-dice.js";
 
 // Expressions eligible for the 3D overlay: a plain +/- sum of `NdM` groups,
 // flat numbers, and registered named-die terms (Section 1.1's System.dice,
@@ -312,8 +316,16 @@ export function extractSystemDice(systemDefinition) {
 // filter: entries whose `sides` is a non-empty array of face-symbol
 // objects, since a numeric-sided or Fudge die has nothing to do with a
 // symbol pool. Consumed only by the dedicated stepper UI (Section 6.3) and
-// rollSymbolDicePool (workbench/js/lib/symbol-dice.js) — never by
-// quick-dice buttons or named-die expression resolution.
+// rollSymbolDicePool/rollSymbolPoolExpression below.
+//
+// `diceBoxType` (optional, e.g. sys.genesys.json's own boostDie ->
+// "boost") is which name this die rolls as in its vendored theme's own
+// theme.config.json `diceAvailable` list — the ONLY thing that makes a
+// symbol die eligible for the 3D overlay at all (see
+// rollSymbolPoolExpression's own tryOverlaySymbolPool). A symbol die with
+// no `diceBoxType` (any System without a matching vendored theme yet) just
+// always rolls via the plain Math.random pool, same as before this field
+// existed.
 export function extractSystemSymbolDice(systemDefinition) {
   const fields = Array.isArray(systemDefinition?.fields) ? systemDefinition.fields : [];
   const diceField = fields.find((field) => field?.type === "array" && field.key === "dice");
@@ -324,8 +336,63 @@ export function extractSystemSymbolDice(systemDefinition) {
       id: value.name,
       label: value.name,
       sides: value.sides,
+      color: value.color,
       themeOverride: value.themeOverride,
+      diceBoxType: value.diceBoxType || null,
     }));
+}
+
+// Same "physically roll it, fall back to the ordinary Math.random pool if
+// not eligible or unavailable" contract as tryOverlayRoll above, for a
+// Tier-3 symbol-dice pool instead of a numeric expression. Eligibility is
+// ALL-or-nothing across the whole requested pool, not per-die — a mix of
+// physically-rolled and simulated dice in the same pool would be more
+// confusing on screen than just falling back to the plain roll entirely.
+async function tryOverlaySymbolPool(poolCounts, diceById, dataManager) {
+  const entries = (Array.isArray(poolCounts) ? poolCounts : [])
+    .map(({ dieId, count }) => ({
+      die: diceById?.get?.(String(dieId || "").toLowerCase()),
+      count: Math.max(0, Math.floor(Number(count) || 0)),
+    }))
+    .filter((entry) => entry.count > 0);
+  if (!entries.length) {
+    return null;
+  }
+  if (entries.some(({ die }) => !die || typeof die.diceBoxType !== "string" || !die.diceBoxType)) {
+    return null;
+  }
+  const totalCount = entries.reduce((sum, { count }) => sum + count, 0);
+  if (totalCount > MAX_OVERLAY_DICE) {
+    return null;
+  }
+  const terms = entries.map(({ die, count }) => ({
+    count,
+    dieId: die.id,
+    dieBoxType: die.diceBoxType,
+    color: die.color,
+    themeOverride: die.themeOverride,
+  }));
+  const rolled = await rollSymbolDiceOverlay(terms, dataManager);
+  if (!rolled) {
+    return null;
+  }
+  const flatEntries = [];
+  rolled.forEach(({ dieId, values }) => values.forEach((value) => flatEntries.push({ dieId, value })));
+  return buildSymbolPoolFromDiceBoxValues(flatEntries);
+}
+
+// `poolCounts`/`diceById` are the exact shapes workbench-character-view.js's
+// and dice-roller.js's own symbol-pool steppers already build for
+// rollSymbolDicePool — both callers just swap that call for this one.
+// Returns the same `{rolls, counts, net}` shape either way (real physics or
+// Math.random) — formatSymbolPoolResult (symbol-dice.js) doesn't care which
+// path produced it. `.catch(() => null)` mirrors buildScriptedRandom's own
+// "never let an internal bug block a roll" philosophy — an overlay-path
+// failure here just means this particular roll falls back silently, exactly
+// like every other overlay entry point already does.
+export async function rollSymbolPoolExpression(poolCounts, { diceById, dataManager } = {}) {
+  const overlayResult = await tryOverlaySymbolPool(poolCounts, diceById, dataManager).catch(() => null);
+  return overlayResult || rollSymbolDicePool(poolCounts, { diceById });
 }
 
 // Section 5's quick-dice source: a resolved System's own dice (Section 1.1)

@@ -2258,14 +2258,15 @@ function addWidget(widgetType, contentRef = null) {
 // encounter) — matching the user's own "Haunted Forest" example.
 const MACRO_ACTION_WIDGET_TYPES = { wled: "wled", soundboard: "soundboard", combat: "combat" };
 
-// Clock/Calendar have no "ensure/add" story at all — unlike WLED/Soundboard/
-// Combat (one meaningful instance, or a clearly-resolvable target), a macro
-// targeting "whichever clock is shown to the table" can't sensibly conjure
-// one into existence (which of possibly several would it even mean?). This
-// only ever finds an already-mounted, already-visible instance of that type
-// — see clocks.js/calendar.js's own isVisible() — returning null (a clear
-// "nothing shown right now" error from macro-runner.js's own handler) when
-// none qualifies, rather than guessing.
+// Backs Clock/Calendar's own show/hide/advance/set actions — unlike WLED/
+// Soundboard/Combat (one meaningful instance, or a clearly-resolvable
+// target), those four can't sensibly conjure a Clock/Calendar into existence
+// (which of possibly several would it even mean?), so this only ever finds
+// an already-mounted, already-visible instance of that type — see
+// clocks.js/calendar.js's own isVisible() — returning null (a clear "nothing
+// shown right now" error from macro-runner.js's own handler) when none
+// qualifies, rather than guessing. "create" is the one action exempted from
+// this restriction — see ensureLiveWidgetInstance just below.
 function findActiveWidgetInstance(widgetType) {
   const candidates = layout.widgets.filter((widget) => widget.widgetType === widgetType);
   for (const widget of candidates) {
@@ -2273,6 +2274,32 @@ function findActiveWidgetInstance(widgetType) {
     if (api && typeof api.isVisible === "function" && api.isVisible()) return api;
   }
   return null;
+}
+
+// "create" is the one Clock/Calendar action that's allowed to add a widget —
+// see ensureWidgetForMacroAction's own comment on why show/hide/advance/set
+// stay restricted to whatever's already visible. Reuses whatever's already
+// visible (a no-op "create" is harmless, same as running "show" twice), else
+// the first already-mounted-but-hidden instance of that type if one exists
+// (nothing ambiguous about reusing the only candidate — the "which of
+// possibly several" problem only applies when picking among MULTIPLE), else
+// adds a brand new one. Calendar's own contentRef needs a Setting picked
+// before it can be added at all (unlike Clock, which needs nothing) — see
+// pickCalendarContentRef; a cancelled picker means "create" simply does
+// nothing; makeLiveWidgetMacroAction's own null-widgetInstance check reports
+// that the same way a truly-missing widget always has.
+async function ensureLiveWidgetInstance(widgetType) {
+  const active = findActiveWidgetInstance(widgetType);
+  if (active) return active;
+  const mountedCandidate = layout.widgets.find((widget) => widget.widgetType === widgetType && mounted.get(widget.instanceId));
+  if (mountedCandidate) return mounted.get(mountedCandidate.instanceId) || null;
+  let contentRef = null;
+  if (widgetType === "calendar") {
+    contentRef = await pickCalendarContentRef(dataManager);
+    if (!contentRef) return null;
+  }
+  const instance = addWidget(widgetType, contentRef);
+  return instance ? mounted.get(instance.instanceId) || null : null;
 }
 
 // Passed into runMacro (macro-runner.js) as `ensureWidget`, called once per
@@ -2294,8 +2321,11 @@ function findActiveWidgetInstance(widgetType) {
 // runMacroAction (returned from initSoundboardWidget, called by
 // runSoundboardMacroAction) for how macro playback gets routed through
 // whichever Soundboard widget instance actually ends up existing instead.
-function ensureWidgetForMacroAction(action) {
+async function ensureWidgetForMacroAction(action) {
   if (action?.type === "clock" || action?.type === "calendar") {
+    if (action?.action === "create") {
+      return ensureLiveWidgetInstance(action.type);
+    }
     return findActiveWidgetInstance(action.type);
   }
   const catalogId = MACRO_ACTION_WIDGET_TYPES[action?.type];

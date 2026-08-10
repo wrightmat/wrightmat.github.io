@@ -928,7 +928,8 @@ function renderReferenceList(container, entries, onRemove) {
     const entity = findById(entityListForKind(entry.kind), entry.refId);
     const description = entry.description || referenceDescription(entry.kind, entry.refId);
     // A Resource's own `price` (a documented freeform-JSON convention, not a
-    // schema field — see code-conventions.md) is worth surfacing right here,
+    // schema field — see undercroft/README.md's Code Conventions section) is
+    // worth surfacing right here,
     // so a Shop-Feature Location's Asset list shows cost at a glance instead
     // of requiring the GM to open the Resource record itself. Folded into
     // the shared description text rather than a new createListRow column —

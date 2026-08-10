@@ -17,6 +17,7 @@
         {
           "name": "boostDie",
           "themeOverride": "genesys",
+          "diceBoxType": "boost",
           "sides": [
             { "symbols": [] },
             { "symbols": [] },
@@ -29,6 +30,7 @@
         {
           "name": "setbackDie",
           "themeOverride": "genesys",
+          "diceBoxType": "setback",
           "sides": [
             { "symbols": [] },
             { "symbols": [] },
@@ -41,6 +43,7 @@
         {
           "name": "abilityDie",
           "themeOverride": "genesys",
+          "diceBoxType": "ability",
           "sides": [
             { "symbols": [] },
             { "symbols": ["success"] },
@@ -55,6 +58,7 @@
         {
           "name": "difficultyDie",
           "themeOverride": "genesys",
+          "diceBoxType": "difficulty",
           "sides": [
             { "symbols": [] },
             { "symbols": ["failure"] },
@@ -69,6 +73,7 @@
         {
           "name": "proficiencyDie",
           "themeOverride": "genesys",
+          "diceBoxType": "proficiency",
           "sides": [
             { "symbols": [] },
             { "symbols": ["success"] },
@@ -87,6 +92,7 @@
         {
           "name": "challengeDie",
           "themeOverride": "genesys",
+          "diceBoxType": "challenge",
           "sides": [
             { "symbols": [] },
             { "symbols": ["failure"] },
@@ -104,6 +110,5 @@
         }
       ]
     }
-  ],
-  "importers": []
+  ]
 }

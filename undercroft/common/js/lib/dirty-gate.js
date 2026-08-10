@@ -3,7 +3,7 @@
 // loaded). Extracted from Crucible's original inline lastSavedSnapshot/
 // buildRecordForSave/isRecordDirty pattern — the one place this was actually
 // implemented; Forge and Vault never got it and their Save buttons stayed
-// enabled indefinitely. See common/docs/code-audit.md.
+// enabled indefinitely. See undercroft/README.md's Code Conventions section.
 //
 // `buildSnapshot` should return the exact JSON-serializable shape that will
 // actually be saved (post any export-shape transform), synced from live

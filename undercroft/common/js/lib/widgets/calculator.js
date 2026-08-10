@@ -26,6 +26,16 @@ import { resolveActiveDice, rollExpression } from "./dice-roll.js";
 import { extractSystemTravelMeans, computeFareCopper, formatCopperAsCurrency } from "../travel-means.js";
 import { fetchKindEntriesWithIds } from "../content-fetch.js";
 import { describeTableRow } from "../../../../repository/js/lib/journal-tables.js";
+import { loadCombatScalingLevels } from "../combat-scaling.js";
+import {
+  extractLevels,
+  collectTierNames,
+  computePartyXpBudget,
+  computeMonsterXp,
+  resolveVerdict,
+  autoFillRosterFromGroup,
+} from "../calculator-modes/encounter-xp.js";
+import { computeCharacterTotalWeight, resolveWeightUnitLabel } from "../calculator-modes/inventory-weight.js";
 // Same `` `macro:`/`encounter:`/`dice:`/`kindId:` `` and `[[Page Title]]`
 // filtered autocomplete dropdowns Board's own "Add a card" input attaches
 // (board.js) — reused as-is rather than duplicated, so the Daily macro
@@ -45,6 +55,8 @@ const PACE_NOTES = {
 const MODE_OPTIONS = [
   { id: "traveltime", label: "Travel Time" },
   { id: "diceprob", label: "Dice Probability" },
+  { id: "encounterxp", label: "Encounter Difficulty & XP" },
+  { id: "inventoryweight", label: "Inventory Weight" },
 ];
 
 // Same `` `dice:` `` prefix convention journal-dice.js/journal-kind-reference.js
@@ -155,11 +167,20 @@ export function initCalculatorWidget(
 
   // Persisted per-instance: which calculator Type is showing, which Setting
   // scopes the travel-means list (see travel-means.js's own per-value
-  // settingIds), and the optional daily-macro reference — everything else
-  // (distance/pace/means/hours/dice pool) is a fresh calculation each time,
-  // not persisted, same as the Dice Roller widget's own expression input
-  // isn't.
-  let config = { mode: "traveltime", settingId: "", dailyMacro: "", dailyMacroChance: 100, ...(contentRef || {}) };
+  // settingIds), the optional daily-macro reference, and Inventory Weight's
+  // own scope/character pick — everything else (distance/pace/means/hours/
+  // dice pool, and Encounter XP's own roster/tier/monster selections) is a
+  // fresh calculation each time, not persisted, same as the Dice Roller
+  // widget's own expression input isn't.
+  let config = {
+    mode: "traveltime",
+    settingId: "",
+    dailyMacro: "",
+    dailyMacroChance: 100,
+    inventoryScope: "character",
+    pinnedCharacterId: "",
+    ...(contentRef || {}),
+  };
   function persistConfig(patch) {
     config = { ...config, ...patch };
     setContentRef?.(config);
@@ -170,6 +191,13 @@ export function initCalculatorWidget(
   // {id, payload} shape attachWikiLinkAutocomplete's own getEntries expects
   // (board.js's loadReferenceData builds the identical list the same way).
   let journalEntriesForAutocomplete = [];
+
+  // --- Encounter Difficulty & XP state ---------------------------------
+  let encounterRoster = []; // [{level, count}]
+  let encounterMonsters = []; // [{id, count}]
+  let encounterLevels = []; // extractLevels(systemDefinition)
+  let encounterTierNames = [];
+  let encounterCombatScalingLevels = [];
 
   container.innerHTML = "";
   const wrap = el("div", "d-flex flex-column gap-2");
@@ -344,7 +372,111 @@ export function initCalculatorWidget(
 
   diceProbSection.append(poolRow, probSummary, probChart);
 
-  wrap.append(travelSection, diceProbSection);
+  // --- Encounter Difficulty & XP ------------------------------------------
+  const encounterSection = el("div", "d-flex flex-column gap-2");
+
+  const rosterRowsWrap = el("div", "d-flex flex-column gap-1");
+  const addRosterRowButton = el("button", "btn btn-outline-secondary btn-sm", "Add level");
+  addRosterRowButton.type = "button";
+  const autoFillButton = el("button", "btn btn-outline-secondary btn-sm", "Auto-fill from campaign roster");
+  autoFillButton.type = "button";
+  const rosterButtonsRow = el("div", "d-flex gap-2 flex-wrap");
+  rosterButtonsRow.append(addRosterRowButton, autoFillButton);
+
+  const tierRow = el("div", "d-flex align-items-center gap-2");
+  tierRow.appendChild(el("span", "small text-body-secondary flex-grow-1", "Difficulty tier"));
+  const tierSelect = document.createElement("select");
+  tierSelect.className = "form-select form-select-sm";
+  tierSelect.style.maxWidth = "10rem";
+  tierRow.appendChild(tierSelect);
+  const tierUnavailableNotice = el(
+    "div",
+    "small text-body-secondary fst-italic",
+    'This System has no Levels/XP Thresholds configured — add a "levels" field via Loom\'s System Properties editor.'
+  );
+
+  const monsterPickerRow = el("div", "d-flex align-items-center gap-2 flex-wrap");
+  const monsterSelect = document.createElement("select");
+  monsterSelect.className = "form-select form-select-sm";
+  monsterSelect.style.maxWidth = "12rem";
+  const monsterCountInput = document.createElement("input");
+  monsterCountInput.type = "number";
+  monsterCountInput.className = "form-control form-control-sm";
+  monsterCountInput.style.maxWidth = "5rem";
+  monsterCountInput.min = "1";
+  monsterCountInput.value = "1";
+  const addMonsterButton = el("button", "btn btn-outline-secondary btn-sm", "Add");
+  addMonsterButton.type = "button";
+  monsterPickerRow.append(monsterSelect, monsterCountInput, addMonsterButton);
+  const monsterUnavailableNotice = el(
+    "div",
+    "small text-body-secondary fst-italic",
+    "This System has no Combat Scaling data — set it up in Crucible's Settings, or add a combatScaling field to this System."
+  );
+  const monsterRowsWrap = el("div", "d-flex flex-column gap-1");
+
+  const encounterCalculateButton = el("button", "btn btn-primary btn-sm align-self-start", "Calculate");
+  encounterCalculateButton.type = "button";
+  const encounterResultBox = el("div", "d-flex flex-column gap-1 small");
+
+  encounterSection.append(
+    el("div", "small fw-semibold", "Party roster"),
+    rosterRowsWrap,
+    rosterButtonsRow,
+    tierRow,
+    tierUnavailableNotice,
+    el("div", "small fw-semibold", "Monsters"),
+    monsterRowsWrap,
+    monsterPickerRow,
+    monsterUnavailableNotice,
+    encounterCalculateButton,
+    encounterResultBox
+  );
+
+  // --- Inventory Weight ----------------------------------------------------
+  const inventorySection = el("div", "d-flex flex-column gap-2");
+
+  const scopeRow = el("div", "d-flex align-items-center gap-2");
+  scopeRow.appendChild(el("span", "small text-body-secondary flex-grow-1", "Scope"));
+  const scopeSelect = document.createElement("select");
+  scopeSelect.className = "form-select form-select-sm";
+  scopeSelect.style.maxWidth = "12rem";
+  [
+    ["character", "This character"],
+    ["campaign", "Entire campaign"],
+  ].forEach(([value, label]) => {
+    const option = document.createElement("option");
+    option.value = value;
+    option.textContent = label;
+    scopeSelect.appendChild(option);
+  });
+  scopeRow.appendChild(scopeSelect);
+
+  const characterPickerRow = el("div", "d-flex align-items-center gap-2");
+  characterPickerRow.appendChild(el("span", "small text-body-secondary flex-grow-1", "Character"));
+  const characterSelect = document.createElement("select");
+  characterSelect.className = "form-select form-select-sm";
+  characterPickerRow.appendChild(characterSelect);
+
+  const includeCurrencyRow = el("div", "form-check");
+  const includeCurrencyCheckbox = document.createElement("input");
+  includeCurrencyCheckbox.type = "checkbox";
+  includeCurrencyCheckbox.className = "form-check-input";
+  includeCurrencyCheckbox.id = `calculator-inventory-include-currency-${Math.random().toString(36).slice(2)}`;
+  includeCurrencyCheckbox.checked = true;
+  const includeCurrencyLabel = document.createElement("label");
+  includeCurrencyLabel.className = "form-check-label small";
+  includeCurrencyLabel.htmlFor = includeCurrencyCheckbox.id;
+  includeCurrencyLabel.textContent = "Include currency weight";
+  includeCurrencyRow.append(includeCurrencyCheckbox, includeCurrencyLabel);
+
+  const inventoryCalculateButton = el("button", "btn btn-primary btn-sm align-self-start", "Calculate");
+  inventoryCalculateButton.type = "button";
+  const inventoryResultBox = el("div", "d-flex flex-column gap-1 small");
+
+  inventorySection.append(scopeRow, characterPickerRow, includeCurrencyRow, inventoryCalculateButton, inventoryResultBox);
+
+  wrap.append(travelSection, diceProbSection, encounterSection, inventorySection);
   container.appendChild(wrap);
 
   // --- Wiring: shared / mode switching --------------------------------------
@@ -355,8 +487,13 @@ export function initCalculatorWidget(
     // whole section already covers it — no separate toggle needed.
     setElementVisible(travelSection, mode === "traveltime", "flex");
     setElementVisible(diceProbSection, mode === "diceprob", "flex");
+    setElementVisible(encounterSection, mode === "encounterxp", "flex");
+    setElementVisible(inventorySection, mode === "inventoryweight", "flex");
+    if (mode === "encounterxp") void loadEncounterData();
+    if (mode === "inventoryweight") void loadInventoryOptions();
   }
-  modeSelect.value = config.mode === "diceprob" ? "diceprob" : "traveltime";
+  const VALID_MODE_IDS = MODE_OPTIONS.map((option) => option.id);
+  modeSelect.value = VALID_MODE_IDS.includes(config.mode) ? config.mode : "traveltime";
   modeSelect.addEventListener("change", () => {
     persistConfig({ mode: modeSelect.value });
     renderMode();
@@ -623,6 +760,327 @@ export function initCalculatorWidget(
     });
   }
   calcProbButton.addEventListener("click", renderDiceProbability);
+
+  // --- Wiring: Encounter Difficulty & XP -------------------------------------
+
+  function renderRosterRows() {
+    rosterRowsWrap.innerHTML = "";
+    encounterRoster.forEach((entry, index) => {
+      const row = el("div", "d-flex align-items-center gap-2");
+      row.appendChild(el("span", "small text-body-secondary", "Level"));
+      const levelInput = document.createElement("input");
+      levelInput.type = "number";
+      levelInput.className = "form-control form-control-sm";
+      levelInput.style.maxWidth = "5rem";
+      levelInput.min = "1";
+      levelInput.value = String(entry.level);
+      levelInput.addEventListener("change", () => {
+        entry.level = Math.max(1, Math.round(Number(levelInput.value)) || 1);
+      });
+      row.appendChild(levelInput);
+      row.appendChild(el("span", "small text-body-secondary", "×"));
+      const countInput = document.createElement("input");
+      countInput.type = "number";
+      countInput.className = "form-control form-control-sm";
+      countInput.style.maxWidth = "5rem";
+      countInput.min = "1";
+      countInput.value = String(entry.count);
+      countInput.addEventListener("change", () => {
+        entry.count = Math.max(1, Math.round(Number(countInput.value)) || 1);
+      });
+      row.appendChild(countInput);
+      const removeButton = el("button", "btn btn-outline-danger btn-sm", "Remove");
+      removeButton.type = "button";
+      removeButton.addEventListener("click", () => {
+        encounterRoster.splice(index, 1);
+        renderRosterRows();
+      });
+      row.appendChild(removeButton);
+      rosterRowsWrap.appendChild(row);
+    });
+  }
+  addRosterRowButton.addEventListener("click", () => {
+    encounterRoster.push({ level: 1, count: 1 });
+    renderRosterRows();
+  });
+
+  autoFillButton.addEventListener("click", async () => {
+    const { roster, skipped } = await autoFillRosterFromGroup(dataManager, groupContext?.groupId);
+    encounterRoster = roster;
+    renderRosterRows();
+    if (skipped > 0) {
+      status?.show(
+        `${skipped} campaign member${skipped === 1 ? "" : "s"} have no resolvable level and were skipped — add them manually if needed.`,
+        { type: "info", timeout: 3500 }
+      );
+    } else if (!roster.length) {
+      status?.show("No campaign members with a resolvable level were found.", { type: "info", timeout: 2500 });
+    }
+  });
+
+  function renderMonsterRows() {
+    monsterRowsWrap.innerHTML = "";
+    encounterMonsters.forEach((entry, index) => {
+      const level = encounterCombatScalingLevels.find((candidate) => candidate.id === entry.id);
+      const row = el("div", "d-flex align-items-center gap-2");
+      row.appendChild(el("span", "small flex-grow-1", `${level?.name || entry.id} × ${entry.count}`));
+      const removeButton = el("button", "btn btn-outline-danger btn-sm", "Remove");
+      removeButton.type = "button";
+      removeButton.addEventListener("click", () => {
+        encounterMonsters.splice(index, 1);
+        renderMonsterRows();
+      });
+      row.appendChild(removeButton);
+      monsterRowsWrap.appendChild(row);
+    });
+  }
+  addMonsterButton.addEventListener("click", () => {
+    if (!monsterSelect.value) return;
+    const count = Math.max(1, Math.round(Number(monsterCountInput.value)) || 1);
+    const existing = encounterMonsters.find((entry) => entry.id === monsterSelect.value);
+    if (existing) {
+      existing.count += count;
+    } else {
+      encounterMonsters.push({ id: monsterSelect.value, count });
+    }
+    renderMonsterRows();
+  });
+
+  function labelForTier(tier) {
+    return tier.charAt(0).toUpperCase() + tier.slice(1);
+  }
+
+  async function loadEncounterData() {
+    const systemDefinition = await resolveActiveDice({ dataManager, groupContext }).catch(() => null);
+    encounterLevels = extractLevels(systemDefinition);
+    encounterTierNames = collectTierNames(encounterLevels);
+    tierSelect.innerHTML = "";
+    encounterTierNames.forEach((tier) => {
+      const option = document.createElement("option");
+      option.value = tier;
+      option.textContent = labelForTier(tier);
+      tierSelect.appendChild(option);
+    });
+    const hasTiers = encounterTierNames.length > 0;
+    setElementVisible(tierRow, hasTiers, "flex");
+    setElementVisible(tierUnavailableNotice, !hasTiers);
+
+    const systemId = groupContext?.systemId || "";
+    // Reuses Crucible's OWN configured preference (crucible-settings bucket)
+    // rather than a second, separately maintained setting — see
+    // combat-scaling.js's own comment on why. A GM who's already configured
+    // Crucible's Combat scaling field gets correct monster XP here with
+    // nothing further to set up.
+    const combatScalingField = dataManager?.getLocal?.("crucible-settings", systemId)?.combatScalingField || undefined;
+    encounterCombatScalingLevels = systemId ? await loadCombatScalingLevels(dataManager, systemId, combatScalingField) : [];
+    monsterSelect.innerHTML = "";
+    encounterCombatScalingLevels.forEach((level) => {
+      const option = document.createElement("option");
+      option.value = level.id;
+      option.textContent = level.name;
+      monsterSelect.appendChild(option);
+    });
+    const hasMonsters = encounterCombatScalingLevels.length > 0;
+    setElementVisible(monsterPickerRow, hasMonsters, "flex");
+    setElementVisible(monsterUnavailableNotice, !hasMonsters);
+
+    autoFillButton.disabled = !groupContext?.groupId;
+    renderMonsterRows();
+  }
+
+  function computeEncounter() {
+    const monsterResult = computeMonsterXp(encounterMonsters, encounterCombatScalingLevels);
+    const lines = [`Total monster XP: ${monsterResult.total.toLocaleString()}`];
+    if (monsterResult.missingXp.length) {
+      lines.push(`No XP value for: ${monsterResult.missingXp.join(", ")}`);
+    }
+    if (encounterTierNames.length && tierSelect.value) {
+      const selectedBudget = computePartyXpBudget(encounterRoster, encounterLevels, tierSelect.value);
+      if (selectedBudget.missingLevels.length) {
+        lines.push(`Party budget unavailable — no Levels data for level(s) ${selectedBudget.missingLevels.join(", ")}.`);
+      } else {
+        lines.push(`Party ${labelForTier(tierSelect.value)} budget: ${selectedBudget.total.toLocaleString()} XP`);
+      }
+      const verdict = resolveVerdict(encounterRoster, encounterLevels, encounterTierNames, monsterResult.total);
+      if (verdict) {
+        const verdictBudget = computePartyXpBudget(encounterRoster, encounterLevels, verdict);
+        lines.push(
+          `This encounter is ${labelForTier(verdict)} for this party ` +
+            `(${monsterResult.total.toLocaleString()} XP vs. a ${labelForTier(verdict)} budget of ${verdictBudget.total.toLocaleString()} XP).`
+        );
+      } else {
+        lines.push("This encounter is below this party's easiest defined budget, or level data is incomplete.");
+      }
+    }
+    encounterResultBox.innerHTML = "";
+    lines.forEach((line) => encounterResultBox.appendChild(el("div", "", line)));
+  }
+  encounterCalculateButton.addEventListener("click", computeEncounter);
+
+  // --- Wiring: Inventory Weight -----------------------------------------
+
+  function updateInventoryScopeVisibility() {
+    setElementVisible(characterPickerRow, scopeSelect.value !== "campaign", "flex");
+  }
+  scopeSelect.value = config.inventoryScope === "campaign" ? "campaign" : "character";
+  scopeSelect.addEventListener("change", () => {
+    persistConfig({ inventoryScope: scopeSelect.value });
+    updateInventoryScopeVisibility();
+  });
+  characterSelect.addEventListener("change", () => {
+    persistConfig({ pinnedCharacterId: characterSelect.value });
+  });
+
+  async function loadInventoryOptions() {
+    const campaignOption = scopeSelect.querySelector('option[value="campaign"]');
+    if (campaignOption) campaignOption.disabled = !groupContext?.groupId;
+    if (!groupContext?.groupId && scopeSelect.value === "campaign") {
+      scopeSelect.value = "character";
+      persistConfig({ inventoryScope: "character" });
+    }
+    updateInventoryScopeVisibility();
+
+    characterSelect.innerHTML = "";
+    const blankOption = document.createElement("option");
+    blankOption.value = "";
+    blankOption.textContent = "Pick a character…";
+    characterSelect.appendChild(blankOption);
+    if (!dataManager) return;
+    let entries = [];
+    try {
+      if (dataManager.isAuthenticated?.()) {
+        const listing = await dataManager.list("character", { refresh: true });
+        const remote = dataManager.collectListEntries(listing.remote, ["owned"]);
+        const remoteIds = new Set(remote.map((entry) => entry.id));
+        const local = (dataManager.listLocalEntries("character") || []).filter((entry) => !remoteIds.has(entry.id));
+        entries = [...remote, ...local];
+      } else {
+        entries = dataManager.listLocalEntries("character") || [];
+      }
+    } catch (error) {
+      entries = [];
+    }
+    entries.forEach((entry) => {
+      const option = document.createElement("option");
+      option.value = entry.id;
+      option.textContent = entry.title || entry.name || entry.payload?.name || entry.id;
+      characterSelect.appendChild(option);
+    });
+    if (config.pinnedCharacterId && entries.some((entry) => entry.id === config.pinnedCharacterId)) {
+      characterSelect.value = config.pinnedCharacterId;
+    }
+  }
+
+  function characterDisplayName(payload, fallbackId) {
+    return payload?.identity?.name || payload?.name || fallbackId;
+  }
+
+  async function computeInventoryWeight() {
+    const systemDefinition = await resolveActiveDice({ dataManager, groupContext }).catch(() => null);
+    const includeCurrency = includeCurrencyCheckbox.checked;
+    const unit = resolveWeightUnitLabel(systemDefinition);
+    inventoryResultBox.innerHTML = "";
+
+    if (scopeSelect.value === "campaign") {
+      if (!groupContext?.groupId || !dataManager) {
+        status?.show("No campaign selected.", { type: "info", timeout: 2000 });
+        return;
+      }
+      inventoryResultBox.appendChild(el("div", "text-body-secondary", "Loading campaign roster…"));
+      let group = null;
+      try {
+        group = await dataManager.get("group", groupContext.groupId, { preferLocal: false });
+      } catch (error) {
+        group = null;
+      }
+      const memberIds = Array.isArray(group?.payload?.members)
+        ? group.payload.members.filter((member) => member.content_type === "character").map((member) => member.content_id)
+        : [];
+      // allSettled, not all — one broken member reference must not blank the
+      // whole result; it's listed under "Could not load" below instead.
+      const results = await Promise.allSettled(memberIds.map((id) => dataManager.get("character", id)));
+      inventoryResultBox.innerHTML = "";
+
+      const table = document.createElement("table");
+      table.className = "table table-sm mb-0";
+      const thead = document.createElement("thead");
+      const headRow = document.createElement("tr");
+      ["Character", "Inventory", "Currency", "Total"].forEach((label, index) => {
+        const th = document.createElement("th");
+        th.textContent = label;
+        if (index > 0) th.className = "text-end";
+        headRow.appendChild(th);
+      });
+      thead.appendChild(headRow);
+      const tbody = document.createElement("tbody");
+      table.append(thead, tbody);
+
+      let grandTotal = 0;
+      let anyCurrencyWeight = false;
+      const failed = [];
+      results.forEach((result, index) => {
+        if (result.status !== "fulfilled" || !result.value?.payload) {
+          failed.push(memberIds[index]);
+          return;
+        }
+        const payload = result.value.payload;
+        const totals = computeCharacterTotalWeight(payload, systemDefinition, { includeCurrency });
+        if (totals.currencyWeightAvailable) anyCurrencyWeight = true;
+        grandTotal += totals.total;
+        const row = document.createElement("tr");
+        const nameCell = document.createElement("td");
+        nameCell.textContent = characterDisplayName(payload, memberIds[index]);
+        row.appendChild(nameCell);
+        [totals.inventoryWeight, totals.currencyWeight, totals.total].forEach((value) => {
+          const cell = document.createElement("td");
+          cell.className = "text-end";
+          cell.textContent = value.toLocaleString();
+          row.appendChild(cell);
+        });
+        tbody.appendChild(row);
+      });
+
+      inventoryResultBox.appendChild(table);
+      inventoryResultBox.appendChild(el("div", "fw-semibold", `Grand total: ${grandTotal.toLocaleString()} ${unit}`));
+      if (includeCurrency && !anyCurrencyWeight) {
+        inventoryResultBox.appendChild(el("div", "text-body-secondary small", "This System's currency has no weight data."));
+      }
+      if (failed.length) {
+        inventoryResultBox.appendChild(el("div", "text-danger small", `Could not load: ${failed.join(", ")}`));
+      }
+      return;
+    }
+
+    const characterId = characterSelect.value;
+    if (!characterId || !dataManager) {
+      status?.show("Pick a character.", { type: "info", timeout: 2000 });
+      return;
+    }
+    let payload = null;
+    try {
+      const result = await dataManager.get("character", characterId);
+      payload = result?.payload || null;
+    } catch (error) {
+      payload = null;
+    }
+    if (!payload) {
+      inventoryResultBox.appendChild(el("div", "text-danger small", "Unable to load that character."));
+      return;
+    }
+    const totals = computeCharacterTotalWeight(payload, systemDefinition, { includeCurrency });
+    inventoryResultBox.appendChild(el("div", "", `Inventory: ${totals.inventoryWeight.toLocaleString()} ${unit}`));
+    if (includeCurrency) {
+      if (totals.currencyWeightAvailable) {
+        inventoryResultBox.appendChild(el("div", "", `Currency: ${totals.currencyWeight.toLocaleString()} ${unit}`));
+      } else {
+        inventoryResultBox.appendChild(el("div", "text-body-secondary small", "This System's currency has no weight data."));
+      }
+    }
+    inventoryResultBox.appendChild(el("div", "fw-semibold", `Total: ${totals.total.toLocaleString()} ${unit}`));
+  }
+  inventoryCalculateButton.addEventListener("click", () => {
+    void computeInventoryWeight();
+  });
 
   renderMode();
   renderDiceProbability();

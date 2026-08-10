@@ -199,7 +199,12 @@ export async function runMacro(macro, { dataManager, groupContext, status, wledD
     let widgetInstance = null;
     if (typeof ensureWidget === "function") {
       try {
-        widgetInstance = ensureWidget(action);
+        // Awaited — Clock/Calendar's own "create" action (dashboard.js's own
+        // ensureWidgetForMacroAction) needs to await a Setting picker before
+        // it can add a Calendar widget at all; every other action type's
+        // ensureWidget resolution stays synchronous under the hood, and
+        // awaiting a plain (non-Promise) value is a no-op.
+        widgetInstance = await ensureWidget(action);
       } catch (error) {
         // Best-effort — the action itself still runs standalone below.
       }

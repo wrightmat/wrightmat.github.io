@@ -348,8 +348,16 @@ function scheduleHide(box) {
 // values back per requested group, in `terms` order. Returns `null` (never
 // throws) if the result can't be confidently matched back up, same
 // contract as rollDiceOverlay itself.
-async function rollTermBatch(rollNotations, terms) {
-  const notations = terms.map((term) => `${term.count}d${term.sides}`);
+// `shape.buildNotation(term)` builds this term's notation string (a plain
+// numeric term's own `${count}d${sides}`, or a symbolic term's own
+// `${count}d${dieBoxType}` — see rollSymbolDiceOverlay), `shape.extractValue
+// (die)` pulls this die's raw value out of dice-box's own per-die object,
+// `shape.isValidValue(value)` decides whether that value counts as a real
+// settled result (a symbolic die's "" blank face is valid; a numeric die's
+// NaN is not) — everything else about matching settled dice back to the
+// term that requested them is identical either way.
+async function rollTermBatch(rollNotations, terms, shape) {
+  const notations = terms.map(shape.buildNotation);
   const rolled = await rollNotations(notations);
   const dice = Array.isArray(rolled) ? rolled : Array.isArray(rolled?.dice) ? rolled.dice : [];
   // dice-box tags each die with which requested group it belongs to via
@@ -361,34 +369,42 @@ async function rollTermBatch(rollNotations, terms) {
   const buckets = terms.map(() => []);
   if (hasGroupId) {
     dice.forEach((die) => {
-      buckets[die.groupId]?.push(Number(die.value));
+      buckets[die.groupId]?.push(shape.extractValue(die));
     });
   } else {
     let cursor = 0;
     terms.forEach((term, index) => {
-      buckets[index] = dice.slice(cursor, cursor + term.count).map((die) => Number(die.value));
+      buckets[index] = dice.slice(cursor, cursor + term.count).map(shape.extractValue);
       cursor += term.count;
     });
   }
   const expectedTotal = terms.reduce((sum, term) => sum + term.count, 0);
   const actualTotal = buckets.reduce((sum, bucket) => sum + bucket.length, 0);
-  if (actualTotal !== expectedTotal || buckets.some((bucket) => bucket.some((value) => !Number.isFinite(value)))) {
+  if (actualTotal !== expectedTotal || buckets.some((bucket) => bucket.some((value) => !shape.isValidValue(value)))) {
     return null;
   }
   return buckets;
 }
 
-// `terms`: [{ count, sides, color?, themeOverride? }, ...] — plain positive
+// Shared by rollDiceOverlay (plain numeric dice) and rollSymbolDiceOverlay
+// (Genesys-style symbolic dice) below — both need the identical "pick a
+// look, then pick a box for it" logic; only how a term becomes a notation
+// string and how a settled die's raw value is read/validated differs (see
+// rollTermBatch's own `shape` param) — everything about WHICH box(es) get
+// used stays exactly one implementation.
+//
+// `terms`: [{ count, color?, themeOverride?, ... }, ...] — plain positive
 // dice groups only, no modifiers/keep-drop/reroll/explode (dice-roll.js only
-// calls this once it has already confirmed the expression is that simple).
-// `color`/`themeOverride` come from a System's own named die (Section 1.1,
-// e.g. Daggerheart's hopeDie/fearDie) — `dataManager` is optional and only
-// used to resolve the user's chosen base theme/color (see
-// resolveDiceSettings). Resolves to an array of `{ sides, values: [...] }`
-// in the SAME order as `terms`, one entry per requested group, or `null` if
-// the overlay couldn't be loaded or the result couldn't be confidently
-// matched back up — callers must treat `null` as "fall back to the ordinary
-// non-visual roll", never as an error.
+// calls either public wrapper once it has already confirmed the expression/
+// pool is that simple). `color`/`themeOverride` come from a System's own
+// named die (Section 1.1, e.g. Daggerheart's hopeDie/fearDie, or a Tier-3
+// symbol die's own `themeOverride: "genesys"`) — `dataManager` is optional
+// and only used to resolve the user's chosen base theme/color (see
+// resolveDiceSettings). Resolves to an array of `shape.shapeResult(term,
+// values)` entries in the SAME order as `terms`, one per requested group, or
+// `null` if the overlay couldn't be loaded or the result couldn't be
+// confidently matched back up — callers must treat `null` as "fall back to
+// the ordinary non-visual roll", never as an error.
 //
 // A single box.roll() call CANNOT mix a plain "NdM" string with a per-die
 // color/theme override in the same array — confirmed broken empirically (a
@@ -406,7 +422,7 @@ async function rollTermBatch(rollNotations, terms) {
 // roll can land together instead of the fully-sequential version's visible
 // stagger. UNVERIFIED: whether dice-box's physics engine tolerates more
 // than one simultaneously-active instance on the same page at all.
-export async function rollDiceOverlay(terms, dataManager) {
+async function rollGroupedOverlay(terms, dataManager, shape) {
   if (typeof window === "undefined" || !Array.isArray(terms) || !terms.length) {
     return null;
   }
@@ -439,7 +455,7 @@ export async function rollDiceOverlay(terms, dataManager) {
           themeColor: color || baseSettings.themeColor || undefined,
         });
       }
-      const buckets = await rollTermBatch((notations) => showAndRoll(box, notations), terms);
+      const buckets = await rollTermBatch((notations) => showAndRoll(box, notations), terms, shape);
       if (key) {
         await box.updateConfig({
           theme: baseSettings.theme,
@@ -449,7 +465,7 @@ export async function rollDiceOverlay(terms, dataManager) {
       if (!buckets) {
         return null;
       }
-      return terms.map((term, index) => ({ sides: term.sides, values: buckets[index] }));
+      return terms.map((term, index) => shape.shapeResult(term, buckets[index]));
     }
 
     // Multiple distinct looks — one dedicated pooled box per group, all
@@ -460,7 +476,7 @@ export async function rollDiceOverlay(terms, dataManager) {
       const groupTerms = indexes.map((index) => terms[index]);
       const [themeOverride, color] = key ? key.split(" ") : [baseSettings.theme, baseSettings.themeColor];
       const entry = await loadColorBoxEntry(themeOverride || baseSettings.theme, color || baseSettings.themeColor);
-      const buckets = await rollTermBatch((notations) => showAndRollOnEntry(entry, notations), groupTerms);
+      const buckets = await rollTermBatch((notations) => showAndRollOnEntry(entry, notations), groupTerms, shape);
       if (!buckets) {
         return false;
       }
@@ -473,9 +489,48 @@ export async function rollDiceOverlay(terms, dataManager) {
     if (outcomes.some((ok) => !ok) || resultsByIndex.some((bucket) => bucket === undefined)) {
       return null;
     }
-    return terms.map((term, index) => ({ sides: term.sides, values: resultsByIndex[index] }));
+    return terms.map((term, index) => shape.shapeResult(term, resultsByIndex[index]));
   } catch (error) {
     overlayEl?.classList.remove("is-visible");
     return null;
   }
+}
+
+// `terms`: [{ count, sides, color?, themeOverride? }, ...]. Resolves to an
+// array of `{ sides, values: [...] }` — see rollGroupedOverlay's own header
+// for everything about how the roll actually happens.
+export async function rollDiceOverlay(terms, dataManager) {
+  return rollGroupedOverlay(terms, dataManager, {
+    buildNotation: (term) => `${term.count}d${term.sides}`,
+    extractValue: (die) => Number(die.value),
+    isValidValue: Number.isFinite,
+    shapeResult: (term, values) => ({ sides: term.sides, values }),
+  });
+}
+
+// `terms`: [{ count, dieId, dieBoxType, color?, themeOverride? }, ...] — a
+// Tier-3 symbol die's own vendored-theme name (sys.genesys.json's own
+// `diceBoxType: "boost"`/`"setback"`/... — the theme.config.json
+// `diceAvailable` entry this die rolls as) in place of a numeric `sides`.
+// Resolves to an array of `{ dieId, values: [...] }`, one entry per
+// requested die group — `values` are each individual die's RAW dice-box
+// `.value`: a string, an array of two strings (a face carrying two
+// symbols), or "" (a blank face). Confirmed against dice-box's own source
+// (its Dice.js sets `d.value = meshFaceIds[d.dieType][picked.faceId]` for a
+// custom die, i.e. a direct lookup into its theme's own colliderFaceMap) —
+// the resolved symbol content already, not a face index, so there is
+// nothing further to translate here; workbench/js/lib/symbol-dice.js's own
+// buildSymbolPoolFromDiceBoxValues is what turns these raw values into the
+// same `{rolls, counts, net}` shape rollSymbolDicePool's Math.random path
+// already produces.
+export async function rollSymbolDiceOverlay(terms, dataManager) {
+  return rollGroupedOverlay(terms, dataManager, {
+    buildNotation: (term) => `${term.count}d${term.dieBoxType}`,
+    extractValue: (die) => die.value,
+    // A blank face's "" is a perfectly real, valid result for a symbol die
+    // (see sys.genesys.json's own `{ "symbols": [] }` faces) — unlike a
+    // numeric roll's NaN, it must NOT be treated as a failed/unmatched die.
+    isValidValue: (value) => typeof value === "string" || Array.isArray(value),
+    shapeResult: (term, values) => ({ dieId: term.dieId, values }),
+  });
 }
