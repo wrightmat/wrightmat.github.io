@@ -29,6 +29,12 @@ export const CALENDAR_MACRO_ACTIONS = {
   hide: { label: "Hide from table" },
   advanceDay: { label: "Advance / retreat days", params: ["delta"] },
   advanceTime: { label: "Advance / retreat minutes", params: ["minutes"] },
+  // See Clock's own CLOCK_MACRO_ACTIONS.create for why this one, alone
+  // among these, is allowed to add a widget when none exists yet — here
+  // that also means prompting for a Setting via dashboard.js's own
+  // pickCalendarContentRef when there's no existing Calendar of any
+  // visibility to reuse.
+  create: { label: "Create new & show" },
 };
 
 // 5s — same cadence Clock/Browser's own follower/GM polls use.
@@ -478,7 +484,7 @@ export function initCalendarWidget(
   // findActiveWidgetInstance, driven by isVisible() below).
   async function runMacroAction(action) {
     const params = action?.params || {};
-    if (action?.action === "show") {
+    if (action?.action === "show" || action?.action === "create") {
       if (!visible) await toggleVisibility();
       return;
     }

@@ -399,16 +399,19 @@ def user_can_access_group(state: ServerState, group_id: str, user: Optional[User
     instead of raising) so shares.py can reuse it to resolve "does this user
     have access via this group" for a share that targets the group itself.
     """
+    # Pure read — called (via storage.py's is_shared) from both unlocked
+    # routes and still-locked write paths. See is_owner's own comment
+    # (storage.py) on why read_db is safe from either.
     if not user or not group_id:
         return False
-    row = state.db.execute(
+    row = state.read_db.execute(
         "SELECT owner_id FROM library_items WHERE kind = 'group' AND id = ?", (group_id,)
     ).fetchone()
     if not row:
         return False
     if user.tier == "admin" or row["owner_id"] == user.id:
         return True
-    membership = state.db.execute(
+    membership = state.read_db.execute(
         """
         SELECT 1
         FROM group_members AS gm
@@ -429,17 +432,19 @@ def accessible_group_ids(state: ServerState, user: Optional[User]) -> List[str]:
     bucket for group-targeted shares (a SQL-side per-row access check isn't
     practical there, so this precomputes the accessible set once instead).
     """
+    # Pure read — called (via storage.py's list_bucket) from an unlocked
+    # route. See is_owner's own comment (storage.py) on why read_db is safe.
     if not user:
         return []
     owned = [
         row["id"]
-        for row in state.db.execute(
+        for row in state.read_db.execute(
             "SELECT id FROM library_items WHERE kind = 'group' AND owner_id = ?", (user.id,)
         )
     ]
     member_of = [
         row["group_id"]
-        for row in state.db.execute(
+        for row in state.read_db.execute(
             """
             SELECT DISTINCT gm.group_id
             FROM group_members AS gm
@@ -518,7 +523,9 @@ def get_active_spotlights(state: ServerState, group_id: str, limit: int = 200) -
     not full unbounded history" tradeoff resolveIsSpotlighted's own default
     `limit` makes client-side; a GM realistically never has anywhere close
     to this many simultaneously-relevant show/hide toggles outstanding."""
-    rows = state.db.execute(
+    # Pure read — only ever called from storage.py's get_item, an unlocked
+    # route. See is_owner's own comment (storage.py) on why read_db is safe.
+    rows = state.read_db.execute(
         """
         SELECT entry_type, payload
         FROM group_logs

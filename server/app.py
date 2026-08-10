@@ -205,11 +205,11 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
     # different place the same token has to travel from.
     #
     # The one hard constraint: server.state.lock (see do_GET's own comment
-    # on it) is a single lock shared by literally every request this server
-    # handles — a loop that blocked while holding it would freeze the whole
-    # server for every user, not just this connection. So the lock is only
-    # ever held for the brief "check what changed" query each tick, released
-    # before writing to the socket or sleeping.
+    # on it) still serializes every write and every not-yet-audited GET route
+    # this server handles — a loop that blocked while holding it would freeze
+    # all of those for every user, not just this connection. So the lock is
+    # only ever held for the brief "check what changed" query each tick,
+    # released before writing to the socket or sleeping.
     def _handle_live_stream(self, group_id: str, query: Dict[str, list]) -> None:
         token = (query.get("token", [""])[0] or "").strip()
         # Every other DB touch in this class (do_GET/do_POST's own handler
@@ -343,17 +343,29 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
             request.params = params  # type: ignore[attr-defined]
             try:
                 # ThreadingHTTPServer runs each request on its own thread, but
-                # every route shares one sqlite3.Connection (check_same_thread
-                # =False only disables Python's same-thread check — it does
-                # not make concurrent statement execution on that connection
-                # safe). Every Library-kind read now touches the DB too (the
-                # last_accessed_at stamp in get_item), so a page firing several
-                # concurrent GETs (e.g. Press loading "all backgrounds") could
-                # crash with a sqlite threading error. This lock serializes
-                # request handling — coarse-grained, but this is a small dev
-                # server, not something needing real read concurrency.
-                with self.server.state.lock:
+                # every route used to share one sqlite3.Connection
+                # (check_same_thread=False only disables Python's same-thread
+                # check — it does not make concurrent statement execution on
+                # that connection safe), so this lock used to serialize EVERY
+                # request, unconditionally — confirmed as a real page-load
+                # bottleneck: a page firing a dozen-plus concurrent GETs (e.g.
+                # Workbench populating its character/template/system
+                # catalogs) had them all queue up and execute one at a time,
+                # each waiting on the last one's full round trip, even though
+                # none of them actually needed to.
+                #
+                # route.unlocked (see router.py's Route) marks a handler
+                # specifically audited to route every read through
+                # ServerState.read_db (safe for concurrent, lock-free access
+                # — see that connection's own comment) and every write
+                # through ServerState.lock/db itself, so it no longer needs
+                # this blanket lock at all. Every other route is unaudited —
+                # it keeps the exact original behavior, unchanged.
+                if route.unlocked:
                     result = route.handler(request)
+                else:
+                    with self.server.state.lock:
+                        result = route.handler(request)
                 self.respond(result)
                 return
             except AuthError as exc:
@@ -447,7 +459,11 @@ def register_routes():
         payload = list_bucket(request.state, bucket, user)
         return json_response(payload)
 
-    router.add("GET", r"^/list/(?P<bucket>[^/]+)$", handle_list)
+    # unlocked=True — see router.py's Route.unlocked and do_GET's own comment.
+    # list_bucket (storage.py) and everything it calls (is_owner/is_shared/
+    # is_public, accessible_group_ids, _sync_library_kind_directory) has been
+    # audited to read via state.read_db and write via state.lock/db itself.
+    router.add("GET", r"^/list/(?P<bucket>[^/]+)$", handle_list, unlocked=True)
 
     # GET /content/{bucket}/{id}
     def handle_get_content(request: Request) -> Response:
@@ -466,7 +482,11 @@ def register_routes():
         payload = get_item(request.state, bucket, id_, user, share_token=share_token or None)
         return json_response(payload)
 
-    router.add("GET", r"^/content/(?P<bucket>[^/]+)/(?P<id>[^/]+)$", handle_get_content)
+    # unlocked=True — see handle_list's own comment just above; get_item
+    # (storage.py) and everything it calls (is_owner/is_shared/is_public,
+    # resolve_share_token, user_can_access_group, get_active_spotlights,
+    # _sync_library_kind_directory) has been audited the same way.
+    router.add("GET", r"^/content/(?P<bucket>[^/]+)/(?P<id>[^/]+)$", handle_get_content, unlocked=True)
 
     # GET /content/builtins
     def handle_content_builtins(request: Request) -> Response:

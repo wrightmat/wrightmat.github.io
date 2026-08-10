@@ -1,15 +1,25 @@
 # Agent Guidelines for Project: Undercroft
 
 ## Project Overview
-- The 'workbench' directory hosts the Universal TTRPG Character Sheet prototype (Undercroft: Workbench). Key folders:
-  - Entry point: `index.html` — a single unified page with a Template/Play/Edit view switcher (`js/pages/workbench.js` orchestrates; `js/pages/workbench-template-view.js`/`workbench-character-view.js` hold each view's logic). The old separate `template.html`/`character.html`/`system.html` pages were retired; System authoring now lives in Undercroft Loom, not Workbench.
-  - `js/`: vanilla JavaScript ES modules (no frameworks) for runtime, editors, data access, and utilities.
-  - `css/`: contains a single stylesheet (`styles.css`) for any custom rules that Bootstrap cannot express (kept to bare minimum).
-  - `data/`: schemas, templates, and characters data consumed by the editors.
-  - `docs/`, `ROADMAP.md`, and `COLLABORATION.md`: planning and collaboration artifacts.
+- Undercroft is a suite of TTRPG tools, each living in its own subfolder under
+  this directory with the same shape: `index.html` (entry point), `js/`
+  (vanilla ES modules — page orchestration, editors, data access, utilities),
+  `css/styles.css` (tool-specific rules Bootstrap can't express, kept
+  minimal). The suite's shared layer lives in `common/` (`js/lib/` for
+  cross-tool utilities, `data/` for the kind registry and shared content,
+  `css/shell.css` for shared layout).
+- Built tools today: Workbench (character sheets + the live Play view), Loom
+  (the generic Library/System editor, and where external content gets
+  imported via mappings), Crucible, Forge, Sanctum, Vault (generators),
+  Orrery (map builder), Press (print/export), Repository (campaign journal).
+  See `undercroft/README.md` for what each one does and how they share
+  accounts, content, and campaigns — that's the up-to-date suite reference,
+  not this file.
+- Workbench's own entry point is a single unified page with a Template/Play/Edit
+  view switcher (`js/pages/workbench.js` orchestrates; `js/pages/workbench-template-view.js`/`workbench-character-view.js`
+  hold each view's logic). System authoring lives in Loom, not Workbench.
 - The "admin" tool was retired. Account settings and per-user owned-content browsing now live at the flat page `common/account.html` (+ `common/account.js`), reachable via "Account Settings" in the merged signed-in menu (`common/js/lib/auth-ui.js`) rather than the cross-tool switcher — it isn't a distinct tool. Suite-wide data administration (user tiers, Campaign Groups, cross-owner Library management/sharing) lives in Loom, tier-gated per tab (GM tier and up).
-- The 'server' directory hosts the shared Python server used for all projects, including this one.
-- Other directories to be added later as additional tools are developed under this suite.
+- The 'server' directory hosts the shared Python server used by the whole suite.
 
 ## Core Principles
 1. **No Redundancy** – Extend or generalise existing behaviour instead of duplicating functions or styles.

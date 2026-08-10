@@ -3,7 +3,7 @@
 // Sanctum's settingAllowsDelete/locationAllowsDelete, Orrery's
 // mapAllowsDelete, Press's templateAllowsDelete, Workbench's
 // templateOwnerMatchesCurrentUser), each of which had a comment admitting it
-// copied one of the others. See common/docs/code-audit.md.
+// copied one of the others. See undercroft/README.md's Code Conventions section.
 //
 // Two shapes are supported because two call patterns exist in the suite:
 //   - most tools keep a `Map` of ownership metadata (id -> {ownerId,

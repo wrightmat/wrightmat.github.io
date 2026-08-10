@@ -545,7 +545,6 @@ let dataManager = null;
 // `lookup()` calls resolve blank until then.
 let ddbLookupContext = { lookupTables: {}, customFunctions: createMappingCustomFunctions({}) };
 let shareModal = null;
-let editingSystemImporters = [];
 let undoStack = null;
 let status = null;
 let lastMappedResult = null;
@@ -3878,10 +3877,10 @@ function renderMacroTargetField(targetKind, action, onChange) {
 }
 
 // The Macros tab's own in-progress action list — source of truth while
-// editing, the same role editingSystemImporters plays for the Systems tab
-// (collectSystemProperties reads the DOM instead, since Properties nest
-// arbitrarily deep; a flat actions array has no such need). newMacroEditor/
-// loadMacroIntoEditor/applyMacroSnapshot all reset this before re-rendering.
+// editing (unlike the Systems tab's own Properties, which nest arbitrarily
+// deep and so read straight from the DOM instead via collectSystemProperties;
+// a flat actions array has no such need). newMacroEditor/loadMacroIntoEditor/
+// applyMacroSnapshot all reset this before re-rendering.
 let macroEditorActions = [];
 
 function updateMacroAction(index, patch) {
@@ -4638,7 +4637,6 @@ function buildSystemPayload() {
     title: (systemTitleInput?.value || "").trim() || id,
     version: (systemVersionInput?.value || "").trim() || "0.1",
     fields: collectSystemProperties(),
-    importers: editingSystemImporters,
   };
 }
 
@@ -4781,7 +4779,6 @@ function newSystemEditor({ reveal = true } = {}) {
   }
   if (systemTitleInput) systemTitleInput.value = "";
   if (systemVersionInput) systemVersionInput.value = "0.1";
-  editingSystemImporters = [];
   if (systemPropertyRows) systemPropertyRows.innerHTML = "";
   systemPropertyInspector.selectRow(null);
   if (reveal) setSystemFormVisible(true);
@@ -4805,7 +4802,6 @@ async function loadSystemIntoEditor(id) {
     }
     if (systemTitleInput) systemTitleInput.value = payload.title || "";
     if (systemVersionInput) systemVersionInput.value = payload.version || "";
-    editingSystemImporters = Array.isArray(payload.importers) ? payload.importers : [];
     if (systemPropertyRows) {
       systemPropertyRows.innerHTML = "";
       (payload.fields || []).forEach((field) => renderSystemPropertyRow(field));

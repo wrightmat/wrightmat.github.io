@@ -6,7 +6,13 @@
 // Sanctum is now the sole authoring surface for setting/location (Loom's old
 // Places panel is retired), so every read here must see the signed-in user's own
 // private/unpublished records, not just public ones — dataManager-backed throughout.
-import { fetchKindEntriesWithIds } from "../../../common/js/lib/content-fetch.js";
+import { fetchKindEntriesWithIds, listLocationsForSetting } from "../../../common/js/lib/content-fetch.js";
+
+// Re-exported so undercroft/sanctum/js/app.js's own import (from this file)
+// keeps working unchanged — the implementation moved to content-fetch.js
+// since Forge's own copy was byte-identical (both list Locations for a
+// Setting, both need the same pre-migration scalar-settingId fallback).
+export { listLocationsForSetting };
 
 async function listKindForSystem(dataManager, kind, systemId) {
   const entries = await fetchKindEntriesWithIds(dataManager, kind);
@@ -63,21 +69,3 @@ export async function listSettingsForSystem(dataManager, systemId) {
   return listKindForSystem(dataManager, "setting", systemId);
 }
 
-// `settingIds` is a plural array (same "empty/absent = universal, non-empty =
-// restricted" convention as systemIds) — but unlike a Resource's optional
-// scoping, a Location with an EMPTY settingIds genuinely belongs to no
-// Setting yet (there's no "universal Location"), so this deliberately checks
-// `includes` only, not the empty-array-matches-everything shortcut
-// matchesSetting (generator.js) uses for Resources. Falls back to a
-// pre-migration scalar `settingId` for any not-yet-resaved record — same
-// precedent as the `system` → `systemIds` character migration.
-export async function listLocationsForSetting(dataManager, settingId) {
-  if (!settingId) return [];
-  const entries = await fetchKindEntriesWithIds(dataManager, "location");
-  return entries
-    .filter((entry) => {
-      const ids = Array.isArray(entry.entity.settingIds) ? entry.entity.settingIds : entry.entity.settingId ? [entry.entity.settingId] : [];
-      return ids.includes(settingId);
-    })
-    .map((entry) => ({ id: entry.id, ...entry.entity }));
-}

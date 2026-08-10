@@ -331,27 +331,32 @@
         {
           "name": "Copper",
           "cost": 1,
-          "shortName": "cp"
+          "shortName": "cp",
+          "weight": 0.001
         },
         {
           "name": "Silver",
           "cost": 10,
-          "shortName": "sp"
+          "shortName": "sp",
+          "weight": 0.01
         },
         {
           "name": "Electrum",
           "cost": 50,
-          "shortName": "ep"
+          "shortName": "ep",
+          "weight": 0.05
         },
         {
           "name": "Gold",
           "cost": 100,
-          "shortName": "gp"
+          "shortName": "gp",
+          "weight": 0.1
         },
         {
           "name": "Platinum",
           "cost": 1000,
-          "shortName": "pp"
+          "shortName": "pp",
+          "weight": 0.001
         }
       ]
     },
@@ -1046,6 +1051,33 @@
           "xp": 155000,
           "targetBudget": 64
         }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "levels",
+      "label": "Levels",
+      "values": [
+        { "name": "Level 1", "level": 1, "xpToLevel": 0, "easy": 25, "medium": 50, "hard": 75, "deadly": 100 },
+        { "name": "Level 2", "level": 2, "xpToLevel": 300, "easy": 50, "medium": 100, "hard": 150, "deadly": 200 },
+        { "name": "Level 3", "level": 3, "xpToLevel": 900, "easy": 75, "medium": 150, "hard": 225, "deadly": 400 },
+        { "name": "Level 4", "level": 4, "xpToLevel": 2700, "easy": 125, "medium": 250, "hard": 375, "deadly": 500 },
+        { "name": "Level 5", "level": 5, "xpToLevel": 6500, "easy": 250, "medium": 500, "hard": 750, "deadly": 1100 },
+        { "name": "Level 6", "level": 6, "xpToLevel": 14000, "easy": 300, "medium": 600, "hard": 900, "deadly": 1400 },
+        { "name": "Level 7", "level": 7, "xpToLevel": 23000, "easy": 350, "medium": 750, "hard": 1100, "deadly": 1700 },
+        { "name": "Level 8", "level": 8, "xpToLevel": 34000, "easy": 450, "medium": 900, "hard": 1400, "deadly": 2100 },
+        { "name": "Level 9", "level": 9, "xpToLevel": 48000, "easy": 550, "medium": 1100, "hard": 1600, "deadly": 2400 },
+        { "name": "Level 10", "level": 10, "xpToLevel": 64000, "easy": 600, "medium": 1200, "hard": 1900, "deadly": 2800 },
+        { "name": "Level 11", "level": 11, "xpToLevel": 85000, "easy": 800, "medium": 1600, "hard": 2400, "deadly": 3600 },
+        { "name": "Level 12", "level": 12, "xpToLevel": 100000, "easy": 1000, "medium": 2000, "hard": 3000, "deadly": 4500 },
+        { "name": "Level 13", "level": 13, "xpToLevel": 120000, "easy": 1100, "medium": 2200, "hard": 3400, "deadly": 5100 },
+        { "name": "Level 14", "level": 14, "xpToLevel": 140000, "easy": 1250, "medium": 2500, "hard": 3800, "deadly": 5700 },
+        { "name": "Level 15", "level": 15, "xpToLevel": 165000, "easy": 1400, "medium": 2800, "hard": 4300, "deadly": 6400 },
+        { "name": "Level 16", "level": 16, "xpToLevel": 195000, "easy": 1600, "medium": 3200, "hard": 4800, "deadly": 7200 },
+        { "name": "Level 17", "level": 17, "xpToLevel": 225000, "easy": 2000, "medium": 3900, "hard": 5900, "deadly": 8800 },
+        { "name": "Level 18", "level": 18, "xpToLevel": 265000, "easy": 2100, "medium": 4200, "hard": 6300, "deadly": 9500 },
+        { "name": "Level 19", "level": 19, "xpToLevel": 305000, "easy": 2400, "medium": 4900, "hard": 7300, "deadly": 10900 },
+        { "name": "Level 20", "level": 20, "xpToLevel": 355000, "easy": 2800, "medium": 5700, "hard": 8500, "deadly": 12700 }
       ]
     },
     {
@@ -2118,7 +2150,6 @@
       ]
     }
   ],
-  "importers": [],
   "preview": {
     "inventory": [
       {

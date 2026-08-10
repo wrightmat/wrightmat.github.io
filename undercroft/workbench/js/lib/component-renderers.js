@@ -478,6 +478,33 @@ export function renderInputContent(component, ctx) {
   const decorate = (el, meta) => {
     if (typeof ctx.decorate === "function") ctx.decorate(el, component, meta);
   };
+
+  // Guard against binding this Input to array/object-shaped data (e.g. a
+  // System's own "inventory" field with no Repeater built for it yet).
+  // Confirmed real data-loss bug, not hypothetical: every variant below
+  // eventually turns resolvedValue into a single string (explicit
+  // String(resolvedValue), or handing it straight to input.value, which the
+  // DOM itself coerces via toString()) — an array of objects silently
+  // became the literal text "[object Object],[object Object]", and the next
+  // keystroke's input handler wrote that string straight back over the real
+  // array. Checkbox is the one legitimate exception — its own variant
+  // branch below already expects, and correctly round-trips, an array of
+  // selected values.
+  if (variant !== "checkbox" && resolvedValue !== null && typeof resolvedValue === "object") {
+    const warning = document.createElement("div");
+    warning.className = "text-danger small fst-italic";
+    warning.textContent = "This field is bound to list/object data — use a Repeater instead of an Input for this binding.";
+    decorate(warning);
+    return createLabeledField({
+      component,
+      control: warning,
+      labelText,
+      labelTag: "label",
+      labelClasses: INPUT_LABEL_CLASSES,
+      applyFormatting: applyTextFormatting,
+    });
+  }
+
   // Bootstrap's .form-control/.form-select/.form-check-label set their own
   // explicit (non-inherited) color/background — an ancestor's inline
   // color/background-color, even a real one, never reaches these elements

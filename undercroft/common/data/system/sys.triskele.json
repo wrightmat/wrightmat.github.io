@@ -267,6 +267,5 @@
         { "name": "Prone", "description": "At a disadvantage in melee until you stand back up." }
       ]
     }
-  ],
-  "importers": []
+  ]
 }

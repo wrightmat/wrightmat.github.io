@@ -35,6 +35,13 @@ export const VALUE_COLUMNS = [
   { key: "sourceId", label: "Source ID", type: "number", placeholder: "Source ID" },
   { key: "sourceField", label: "Source field", type: "string", placeholder: "e.g. conditions" },
   { key: "cost", label: "Cost", type: "number", placeholder: "Cost" },
+  // Added for the Inventory Weight calculator's currency-weight lookup
+  // (common/js/lib/calculator-modes/inventory-weight.js) — e.g. sys.dnd5e's
+  // `currency` field values, lb-per-coin. Optional like every other column
+  // here (fieldValueColumnState below only surfaces it once some value on
+  // the field actually sets it), so this adds nothing to array fields that
+  // aren't currency-shaped.
+  { key: "weight", label: "Weight", type: "number", placeholder: "Weight" },
   {
     key: "role",
     label: "Role",
@@ -225,6 +232,7 @@ export function renderPropertyRow(field = {}, container, ctx = {}) {
       ${optionCheckbox("sourceId", "Source ID", "loom.systemValueSourceId", columnState.sourceId ? "checked" : "")}
       ${optionCheckbox("sourceField", "Source field", "loom.systemValueSourceField", columnState.sourceField ? "checked" : "")}
       ${optionCheckbox("cost", "Cost", "loom.systemValueCost", columnState.cost ? "checked" : "")}
+      ${optionCheckbox("weight", "Weight", "loom.systemValueWeight", columnState.weight ? "checked" : "")}
       ${optionCheckbox("role", "Role", "loom.systemValueRole", columnState.role ? "checked" : "")}
       ${optionCheckbox("targetBudget", "Budget", "loom.systemValueTargetBudget", columnState.targetBudget ? "checked" : "")}
     </div>
@@ -841,6 +849,7 @@ const INSPECTOR_ARRAY_VALUE_OPTIONS = [
   ["sourceId", "Source ID", "loom.systemValueSourceId"],
   ["sourceField", "Source field", "loom.systemValueSourceField"],
   ["cost", "Cost", "loom.systemValueCost"],
+  ["weight", "Weight", "loom.systemValueWeight"],
   ["role", "Role", "loom.systemValueRole"],
   ["targetBudget", "Budget", "loom.systemValueTargetBudget"],
 ];

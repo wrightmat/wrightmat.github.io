@@ -5,7 +5,13 @@
 // use but still needs to resolve at import time). Reusing it in place here
 // rather than duplicating a second dice parser.
 import { rollDiceExpression } from "../../../workbench/js/lib/dice.js";
-import { fetchLibraryEntry, fetchKindEntriesWithIds } from "../../../common/js/lib/content-fetch.js";
+import { fetchLibraryEntry, fetchKindEntriesWithIds, listLocationsForSetting } from "../../../common/js/lib/content-fetch.js";
+
+// Re-exported so undercroft/forge/js/app.js's own import (from this file)
+// keeps working unchanged — the implementation moved to content-fetch.js
+// since Sanctum's own copy was byte-identical (both list Locations for a
+// Setting, both need the same pre-migration scalar-settingId fallback).
+export { listLocationsForSetting };
 
 // Gender (d8, Male x3 / Female x3 / Androgynous x1 / Non-Binary x1) is a
 // genuinely uniform die roll with a fixed face->outcome mapping — CLAUDE.md
@@ -245,22 +251,6 @@ export async function listSettingsForSystem(dataManager, systemId) {
       // Crucible's listKindForSystem.
       const ids = Array.isArray(entry.entity.systemIds) ? entry.entity.systemIds : [];
       return !ids.length || ids.includes(systemId);
-    })
-    .map((entry) => ({ id: entry.id, name: entry.entity.name || entry.id }));
-}
-
-// `settingIds` is a plural array now (Sanctum's own `listLocationsForSetting`
-// in `sanctum/js/lib/tables.js` has the identical migration and identical
-// reasoning — this is a second, independent copy, must stay in lockstep).
-// Falls back to a pre-migration scalar `settingId` for any not-yet-resaved
-// record.
-export async function listLocationsForSetting(dataManager, settingId) {
-  if (!settingId) return [];
-  const entries = await fetchKindEntriesWithIds(dataManager, "location");
-  return entries
-    .filter((entry) => {
-      const ids = Array.isArray(entry.entity.settingIds) ? entry.entity.settingIds : entry.entity.settingId ? [entry.entity.settingId] : [];
-      return ids.includes(settingId);
     })
     .map((entry) => ({ id: entry.id, name: entry.entity.name || entry.id }));
 }

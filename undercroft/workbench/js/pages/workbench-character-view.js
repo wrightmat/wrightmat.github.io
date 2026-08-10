@@ -27,8 +27,8 @@ import { loadCustomFonts, DEFAULT_FONT_FAMILY } from "../../../common/js/lib/fon
 import { evaluateFormula } from "../../../common/js/lib/formula-engine.js";
 import { resolveBinding, createLookupFn } from "../../../common/js/lib/bindings.js";
 import { rollDiceExpression } from "../lib/dice.js";
-import { rollExpression, resolveQuickDice, parseQuickDiceCounts, incrementDieInExpression, extractSystemRolls, rollSystemMove, extractSystemSymbolDice } from "../../../common/js/lib/widgets/dice-roll.js";
-import { rollSymbolDicePool, formatSymbolPoolResult } from "../lib/symbol-dice.js";
+import { rollExpression, resolveQuickDice, parseQuickDiceCounts, incrementDieInExpression, extractSystemRolls, rollSystemMove, extractSystemSymbolDice, rollSymbolPoolExpression } from "../../../common/js/lib/widgets/dice-roll.js";
+import { formatSymbolPoolResult } from "../lib/symbol-dice.js";
 import { preloadDiceOverlay } from "../../../common/js/lib/widgets/dice-overlay.js";
 import { setElementVisible } from "../../../common/js/lib/dom.js";
 import {
@@ -50,6 +50,7 @@ import {
 } from "../../../common/js/lib/content-fetch.js";
 import { showConfirmModal } from "../../../common/js/lib/confirm-modal.js";
 import { watchGroupForChanges, persistGroupPropertyValue } from "../../../common/js/lib/group-live-sync.js";
+import { collectSystemFields } from "../../../common/js/lib/system-schema.js";
 
 // Relocated from the old standalone character.html/character.js — now one of
 // three views on Workbench's unified page (see js/pages/workbench.js), which
@@ -673,8 +674,9 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
   // character — a mode toggle inside it swaps which form/footer-button is
   // shown (see setAddCharacterMode). This used to be two separate toolbar
   // buttons/modals, but that pushed the toolbar past the six-button limit
-  // (style-guide.md's "Button count" rule) the moment Import Character was
-  // added, so Import folded into the existing New Character entry point
+  // (undercroft/README.md's UI & Style Conventions section, "Button count"
+  // rule) the moment Import Character was added, so Import folded into the
+  // existing New Character entry point
   // instead of getting its own toolbar slot.
   let newCharacterModalInstance = null;
   if (window.bootstrap && typeof window.bootstrap.Modal === "function") {
@@ -1918,7 +1920,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       status.show("Add at least one die to the pool first.", { type: "info", timeout: 2000 });
       return;
     }
-    const rolled = rollSymbolDicePool(poolCounts, { diceById });
+    const rolled = await rollSymbolPoolExpression(poolCounts, { diceById, dataManager });
     const text = formatSymbolPoolResult(rolled.net);
     if (elements.diceSymbolResult) {
       elements.diceSymbolResult.textContent = text;
@@ -3652,8 +3654,25 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
 
   function renderComponentContent(component) {
     switch (component.type) {
-      case "input":
+      case "input": {
+        // A binding that resolves to an array (a System's own "inventory"-
+        // style field authored straight onto an Input, with no dedicated
+        // Repeater template built for it) used to reach renderInputComponent
+        // and silently corrupt itself the moment it was typed into (see
+        // component-renderers.js's own array/object guard, added first as
+        // the immediate stop-the-bleeding fix). This is the real fallback:
+        // a generic rows-of-columns editor instead of a read-only warning.
+        // Only intercepts Input — Repeater already handles its own array
+        // data correctly and is never routed through here.
+        const variant = (component.variant || "text").toLowerCase();
+        if (variant !== "checkbox") {
+          const resolvedValue = resolveComponentValue(component, component.value ?? "");
+          if (Array.isArray(resolvedValue)) {
+            return renderCollectionComponent(component, resolvedValue);
+          }
+        }
         return renderInputComponent(component);
+      }
       case "repeater":
         return renderRepeaterComponent(component);
       case "image":
@@ -4643,6 +4662,192 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     });
     if (canManage) {
       wrapper.appendChild(createRepeaterAddButton(handleAddItem));
+    }
+    return wrapper;
+  }
+
+  // Column plan for renderCollectionComponent — derived primarily from
+  // whatever keys actually appear across the array's own row objects (works
+  // even with zero System metadata, the common case: the user's real
+  // inventory arrays have no `item` declaration and still need this to
+  // work). If the bound field's own System declaration also has
+  // `item.children`, collectSystemFields already flattens that into
+  // "path[].subkey" entries (the same lookup Binding/Formula autocomplete
+  // uses) — folded in here purely to contribute a nicer label or a
+  // number-vs-text hint for a key with no data yet, never to require
+  // authoring metadata that most fields don't have. A row that's a bare
+  // primitive (a plain string/number array, no object rows at all) collapses
+  // to one synthetic "value" column representing the row itself.
+  function resolveCollectionColumns(component, items) {
+    const dataKeys = [];
+    const seenKeys = new Set();
+    let sawObjectItem = false;
+    items.forEach((item) => {
+      if (item && typeof item === "object" && !Array.isArray(item)) {
+        sawObjectItem = true;
+        Object.keys(item).forEach((key) => {
+          if (!seenKeys.has(key)) {
+            seenKeys.add(key);
+            dataKeys.push(key);
+          }
+        });
+      }
+    });
+    const pathSegments = resolveBindingPath(component.binding);
+    const arrayPath = pathSegments ? pathSegments.join(".") : "";
+    const itemFieldPrefix = `${arrayPath}[].`;
+    const itemFields =
+      arrayPath && state.systemDefinition
+        ? collectSystemFields(state.systemDefinition).filter((entry) => entry.path.startsWith(itemFieldPrefix))
+        : [];
+    itemFields.forEach((entry) => {
+      const key = entry.path.slice(itemFieldPrefix.length);
+      if (key && !seenKeys.has(key)) {
+        seenKeys.add(key);
+        dataKeys.push(key);
+      }
+    });
+    if (!sawObjectItem && !itemFields.length) {
+      const numericOnly = items.length > 0 && items.every((item) => typeof item === "number");
+      return [{ key: "value", label: component.label || component.name || "Value", numeric: numericOnly, primitive: true }];
+    }
+    return dataKeys.map((key) => {
+      const match = itemFields.find((entry) => entry.path === `${itemFieldPrefix}${key}`);
+      const numericFromData = items.some((item) => item && typeof item === "object" && typeof item[key] === "number");
+      return {
+        key,
+        label: (match && match.label) || key,
+        numeric: numericFromData || Boolean(match && match.category === "number"),
+        primitive: false,
+      };
+    });
+  }
+
+  function getCollectionCellValue(item, column) {
+    if (column.primitive) {
+      return item;
+    }
+    return item && typeof item === "object" ? item[column.key] : undefined;
+  }
+
+  function setCollectionCellValue(item, column, value) {
+    if (column.primitive) {
+      return value;
+    }
+    const next = item && typeof item === "object" && !Array.isArray(item) ? { ...item } : {};
+    next[column.key] = value;
+    return next;
+  }
+
+  // A freshly added row starts with every known column defaulted (blank
+  // string / 0), not a bare {} — unlike a Repeater's own item template
+  // (createBlankRepeaterItem), this editor has no item-template nodes of its
+  // own to fall back on for "how should an empty cell render," so the
+  // columns computed above are the only source of truth for what the new
+  // row should even contain.
+  function createBlankCollectionItem(columns) {
+    if (columns.length === 1 && columns[0].primitive) {
+      return columns[0].numeric ? 0 : "";
+    }
+    const blank = {};
+    columns.forEach((column) => {
+      blank[column.key] = column.numeric ? 0 : "";
+    });
+    return blank;
+  }
+
+  function renderCollectionRow(component, columns, item, index, items, writeItems, editable) {
+    const row = document.createElement("div");
+    row.className = "d-flex align-items-center gap-2 flex-wrap";
+    columns.forEach((column) => {
+      const currentValue = getCollectionCellValue(item, column);
+      if (!editable) {
+        const text = document.createElement("div");
+        text.className = "form-control-plaintext form-control-sm flex-grow-1 py-0";
+        text.textContent = currentValue === null || currentValue === undefined ? "" : String(currentValue);
+        row.appendChild(text);
+        return;
+      }
+      const input = document.createElement("input");
+      input.className = "form-control form-control-sm flex-grow-1";
+      input.type = column.numeric ? "number" : "text";
+      input.placeholder = column.label;
+      input.setAttribute("aria-label", column.label);
+      input.value = currentValue === null || currentValue === undefined ? "" : currentValue;
+      // Unique per cell, not just per component — every other Input's
+      // dataset.bindingPath is the component's own single binding, fine
+      // when a component owns exactly one value. Here one component owns a
+      // whole array of cells; without a per-cell key, restoreActiveField
+      // (see updateBinding's own focus-preservation) would re-match the
+      // FIRST cell in this component after every keystroke instead of the
+      // one actually being typed into, since every cell would otherwise
+      // share the identical dataset.bindingPath the component's own binding
+      // already carries.
+      input.dataset.bindingPath = `${component.binding || component.uid || ""}::${index}::${column.key}`;
+      input.addEventListener("input", () => {
+        const raw = input.value;
+        let nextValue = raw;
+        if (column.numeric) {
+          if (raw === "") {
+            nextValue = null;
+          } else {
+            const parsed = Number(raw);
+            nextValue = Number.isNaN(parsed) ? raw : parsed;
+          }
+        }
+        const nextItems = items.slice();
+        nextItems[index] = setCollectionCellValue(item, column, nextValue);
+        writeItems(nextItems);
+      });
+      row.appendChild(input);
+    });
+    if (editable) {
+      row.appendChild(
+        createIconButton({
+          icon: "tabler:trash",
+          label: "Remove item",
+          variant: "outline-danger",
+          onClick: () => {
+            writeItems(items.filter((_, i) => i !== index));
+          },
+        })
+      );
+    }
+    return row;
+  }
+
+  // Fallback editor for an Input-typed component whose binding resolves to
+  // an array with no Repeater built for it — see renderComponentContent's
+  // "input" case, the only caller. Deliberately simpler than a real
+  // Repeater (no item-template authoring, no orientation/column-count
+  // options): this exists so a bare array binding is never a dead end or a
+  // silent data-corruption trap, not to replace authoring a proper Repeater
+  // for anything that deserves one.
+  function renderCollectionComponent(component, items) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "d-flex flex-column gap-2";
+    const labelText = component.label || component.name;
+    if (labelText) {
+      const heading = document.createElement("div");
+      heading.className = "fw-semibold text-body-secondary";
+      heading.textContent = labelText;
+      wrapper.appendChild(heading);
+    }
+    const editable = isEditable(component) && Boolean(component.binding);
+    const columns = resolveCollectionColumns(component, items);
+    const writeItems = (nextItems) => updateBinding(component.binding, nextItems);
+    if (!items.length) {
+      wrapper.appendChild(createCanvasPlaceholder("No items.", { variant: "compact" }));
+      if (editable) {
+        wrapper.appendChild(createRepeaterAddButton(() => writeItems([createBlankCollectionItem(columns)])));
+      }
+      return wrapper;
+    }
+    items.forEach((item, index) => {
+      wrapper.appendChild(renderCollectionRow(component, columns, item, index, items, writeItems, editable));
+    });
+    if (editable) {
+      wrapper.appendChild(createRepeaterAddButton(() => writeItems([...items, createBlankCollectionItem(columns)])));
     }
     return wrapper;
   }
@@ -5776,7 +5981,8 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
   }
 
   // A Source binding means specifically "a choices list from the System
-  // record" (Binding/Text vs Source vocabulary — code-conventions.md), so
+  // record" (Binding/Text vs Source vocabulary — undercroft/README.md's Code
+  // Conventions section), so
   // this resolves DIRECTLY against the System's own field schema
   // (state.systemDefinition.fields), not through the generic
   // resolveSourceBindingValue/systemPreviewData machinery every plain

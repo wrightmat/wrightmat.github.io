@@ -12,7 +12,8 @@
 // value's own Extra properties (JSON) catch-all — exactly like a die's
 // `sides`/`color`/`faceMap` do. `settingIds` on a value is the SAME
 // convention `common/data/resource/*.json` entries use (see
-// code-conventions.md's "Resource conventions") applied at the per-value
+// undercroft/README.md's Code Conventions section, "Resource conventions")
+// applied at the per-value
 // level instead of the whole-record level, since a System can define travel
 // means that only make sense in one of its Settings (Eberron's Lightning
 // Rail) alongside means that apply everywhere it's used (On Foot).
