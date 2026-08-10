@@ -7,11 +7,25 @@
   "activeIndex": 0,
   "combatants": [
     {
+      "id": "7863cf1b-1ab8-401b-abcf-0de9bc6516e9",
+      "name": "Deep One Priest",
+      "refKind": "monster",
+      "refId": "deep-one-priest",
+      "initiative": 17,
+      "hp": 120,
+      "maxHp": 120,
+      "tempHp": 0,
+      "ac": 14,
+      "conditions": [],
+      "isPc": false,
+      "hidden": false
+    },
+    {
       "id": "ae52579e-0551-4761-94c0-461e277ff75b",
       "name": "Glimmerwraith",
       "refKind": "monster",
       "refId": "mon_3e8000d1-8757-42f9-bb89-d692f75d1beb",
-      "initiative": 16,
+      "initiative": 15,
       "hp": 162,
       "maxHp": 162,
       "tempHp": 0,
@@ -35,5 +49,5 @@
       "hidden": false
     }
   ],
-  "started": true
+  "started": false
 }

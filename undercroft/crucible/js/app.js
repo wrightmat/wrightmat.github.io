@@ -34,6 +34,7 @@ import {
 import { confirmDelete } from "../../common/js/lib/ownership.js";
 import { createTokenImageField } from "../../common/js/lib/token-picker.js";
 import { initToolSettings } from "../../common/js/lib/tool-settings.js";
+import { abilityModifier } from "../../common/js/lib/dnd-rules.js";
 
 let status = null;
 let dataManager = null;
@@ -333,7 +334,7 @@ function renderIdentity(record) {
   if (!elements.identityFields) return;
   elements.identityFields.innerHTML = "";
   const rows = [
-    ["Creature Type", findById(creatureTypes, record.creatureTypeId)?.name || record.creatureTypeId],
+    ["Creature Type", findById(creatureTypes, record.type)?.name || record.type],
     ["Archetype", findById(archetypes, record.archetypeId)?.name || record.archetypeId],
     ["Role", findById(roles, record.roleId)?.name || record.roleId],
     ["Signature Feature", record.signatureFeatureId ? featureLabel(record.signatureFeatureId) : "(unfulfilled)"],
@@ -424,17 +425,66 @@ function renderRecipeSummary(record) {
   });
 }
 
-function statField(label, value) {
+// Same blend-in-until-interacted editable idiom as Forge's own
+// buildFieldCard (forge/js/app.js) — borrowed deliberately (see
+// crucible/css/styles.css's own .crucible-inline-edit) so both tools'
+// generated-record editing feels the same. `data-editable-stat` (not
+// Forge's own `data-editable-field`) so the two tools' delegated input
+// listeners can never cross-match if their markup is ever combined.
+// `compact` gives the small square number-box (abilities, Challenge/AC/HP/
+// Save DC); non-compact gives a full-width labeled row (the freeform list
+// fields — Resistances/Immunities/Senses).
+function buildStatCard({ key, label, value, compact = true, colClass = "col-4 col-md-2", suffix = "" }) {
   const col = document.createElement("div");
-  col.className = "col-6 col-md-3";
+  col.className = colClass;
+  const box = document.createElement("div");
   const labelEl = document.createElement("div");
-  labelEl.className = "small text-body-secondary text-uppercase";
   labelEl.textContent = label;
-  const valueEl = document.createElement("div");
-  valueEl.className = "fw-semibold";
-  valueEl.textContent = value;
-  col.append(labelEl, valueEl);
+  const input = document.createElement("input");
+  input.type = "text";
+  input.value = value ?? "";
+  input.dataset.editableStat = key;
+  input.setAttribute("aria-label", `Edit ${label}`);
+
+  if (compact) {
+    box.className = "d-flex flex-column align-items-center justify-content-center text-center border rounded-3 p-1 h-100";
+    labelEl.className = "text-uppercase text-body-secondary";
+    labelEl.style.fontSize = "0.65rem";
+    input.className = "crucible-inline-edit small fw-semibold text-center";
+    input.style.width = "3rem";
+    const valueRow = document.createElement("div");
+    valueRow.className = "d-flex align-items-center justify-content-center gap-1";
+    valueRow.appendChild(input);
+    if (suffix) {
+      const suffixEl = document.createElement("span");
+      suffixEl.className = "small text-body-secondary";
+      suffixEl.dataset.editableStatSuffix = key;
+      suffixEl.textContent = suffix;
+      valueRow.appendChild(suffixEl);
+    }
+    box.append(labelEl, valueRow);
+  } else {
+    box.className = "d-flex flex-column gap-1 border rounded-3 p-2 h-100";
+    labelEl.className = "small text-uppercase text-body-secondary";
+    input.className = "crucible-inline-edit fw-semibold";
+    box.append(labelEl, input);
+  }
+  col.appendChild(box);
   return col;
+}
+
+function abilityModifierText(score) {
+  const modifier = abilityModifier(score);
+  return `(${modifier >= 0 ? "+" : ""}${modifier})`;
+}
+
+// Comma-joined for both display and editing — the same convention this
+// session's own Fantasy Statblocks/DDB monster mapping work already
+// settled on for these same fields (damageResistances/damageImmunities/
+// senses as plain string arrays); split back into an array on write-back
+// below (statsFields' own "input" listener).
+function joinListValue(list) {
+  return Array.isArray(list) && list.length ? list.join(", ") : "";
 }
 
 function renderStats(record) {
@@ -447,19 +497,43 @@ function renderStats(record) {
 
   const abilities = stats.abilities || {};
   const hitPoints = stats.hitPoints || {};
-  const rows = [
-    ["Challenge", stats.challengeRating || "—"],
-    ["Armor Class", stats.armorClass ?? "—"],
-    ["Hit Points", hitPoints.max != null ? `${hitPoints.current ?? hitPoints.max}/${hitPoints.max}` : "—"],
-    ["Save DC", stats.saveDC ?? "—"],
-    // Whichever ability keys the active System actually defines (see
-    // abilityFieldDefs above) — not a fixed STR/DEX/CON/INT/WIS/CHA list.
-    ...abilityFieldDefs.map(({ key, label }) => [label, abilities[key] ?? "—"]),
-  ];
-  if (stats.damageResistances?.length) rows.push(["Resistances", stats.damageResistances.join(", ")]);
-  if (stats.damageImmunities?.length) rows.push(["Immunities", stats.damageImmunities.join(", ")]);
-  if (stats.senses?.length) rows.push(["Senses", stats.senses.join(", ")]);
-  rows.forEach(([label, value]) => elements.statsFields.appendChild(statField(label, value)));
+
+  // Row 1: every ability the active System defines (see abilityFieldDefs
+  // above) together — col-4 col-md-2 is the same compact-grid sizing
+  // Forge's own buildFieldCard uses for its number boxes, 6-per-row at
+  // md+, so a standard 6-ability System fills exactly one row.
+  abilityFieldDefs.forEach(({ key, label }) => {
+    elements.statsFields.appendChild(
+      buildStatCard({
+        key: `ability:${key}`,
+        label,
+        value: abilities[key] ?? "",
+        suffix: abilityModifierText(abilities[key] ?? 10),
+      })
+    );
+  });
+
+  // Row 2: everything else compact enough for a number box.
+  [
+    ["challengeRating", "Challenge", stats.challengeRating ?? ""],
+    ["armorClass", "Armor Class", stats.armorClass ?? ""],
+    ["currentHp", "Current HP", hitPoints.current ?? hitPoints.max ?? ""],
+    ["maxHp", "Max HP", hitPoints.max ?? ""],
+    ["saveDC", "Save DC", stats.saveDC ?? ""],
+  ].forEach(([key, label, value]) => {
+    elements.statsFields.appendChild(buildStatCard({ key, label, value }));
+  });
+
+  // Wide rows: freeform lists, always rendered (even empty) now that
+  // they're editable — a blank Resistances field is how a GM adds one that
+  // wasn't rolled, same as any other stat.
+  [
+    ["damageResistances", "Resistances", joinListValue(stats.damageResistances)],
+    ["damageImmunities", "Immunities", joinListValue(stats.damageImmunities)],
+    ["senses", "Senses", joinListValue(stats.senses)],
+  ].forEach(([key, label, value]) => {
+    elements.statsFields.appendChild(buildStatCard({ key, label, value, compact: false, colClass: "col-12" }));
+  });
 
   (stats.actions || []).forEach((action) => {
     const row = document.createElement("div");
@@ -562,9 +636,10 @@ async function handleGenerate() {
     });
     const { stats } = await deriveStats({
       systemId,
+      combatScalingField: getCombatScalingFieldPreference(systemId),
       combatScalingId: elements.combatScalingOverride?.value || "",
       role: findById(roles, generated.roleId),
-      creatureType: findById(creatureTypes, generated.creatureTypeId),
+      creatureType: findById(creatureTypes, generated.type),
       features: generated.featureIds.map((id) => findById(features, id)).filter(Boolean),
       dataManager,
     });
@@ -627,7 +702,7 @@ async function handleGenerateNote() {
     // it from suggesting one.
     buildRequestBody: (record) => ({
       name: record.name || "",
-      creatureType: findById(creatureTypes, record.creatureTypeId)?.name || record.creatureTypeId,
+      creatureType: findById(creatureTypes, record.type)?.name || record.type,
       archetype: findById(archetypes, record.archetypeId)?.name || record.archetypeId,
       role: findById(roles, record.roleId)?.name || record.roleId,
       signatureFeature: record.signatureFeatureId ? featureLabel(record.signatureFeatureId) : "",
@@ -723,6 +798,43 @@ async function init() {
   // some unrelated re-render happened to call updateActionButtons() again.
   elements.nameInput?.addEventListener("input", updateActionButtons);
   elements.notesText?.addEventListener("input", updateActionButtons);
+
+  // Typing directly into a Stats field keeps currentRecord in sync the same
+  // way Forge's own statsFields listener does (forge/js/app.js) — writes
+  // straight into currentRecord.stats without a full renderStats() re-run
+  // (which would jump the cursor mid-keystroke), and relies on
+  // updateActionButtons' own live dirtyGate.isDirty() diffing rather than
+  // an explicit markDirty() call, same reasoning Forge's version documents.
+  elements.statsFields?.addEventListener("input", (event) => {
+    const input = event.target.closest("[data-editable-stat]");
+    if (!input || !currentRecord?.stats) return;
+    const key = input.dataset.editableStat;
+    const stats = currentRecord.stats;
+    if (key.startsWith("ability:")) {
+      const abilityKey = key.slice("ability:".length);
+      const numericValue = Number(input.value) || 0;
+      currentRecord = { ...currentRecord, stats: { ...stats, abilities: { ...(stats.abilities || {}), [abilityKey]: numericValue } } };
+      const suffixEl = elements.statsFields.querySelector(`[data-editable-stat-suffix="${key}"]`);
+      if (suffixEl) suffixEl.textContent = abilityModifierText(numericValue);
+    } else if (key === "currentHp" || key === "maxHp") {
+      const numericValue = Number(input.value) || 0;
+      const hpKey = key === "currentHp" ? "current" : "max";
+      currentRecord = { ...currentRecord, stats: { ...stats, hitPoints: { ...(stats.hitPoints || {}), [hpKey]: numericValue } } };
+    } else if (key === "armorClass" || key === "saveDC") {
+      currentRecord = { ...currentRecord, stats: { ...stats, [key]: Number(input.value) || 0 } };
+    } else if (key === "damageResistances" || key === "damageImmunities" || key === "senses") {
+      const list = input.value
+        .split(",")
+        .map((entry) => entry.trim())
+        .filter(Boolean);
+      currentRecord = { ...currentRecord, stats: { ...stats, [key]: list } };
+    } else {
+      // challengeRating, or any other plain string stat.
+      currentRecord = { ...currentRecord, stats: { ...stats, [key]: input.value } };
+    }
+    jsonDataPanel.render();
+    updateActionButtons();
+  });
 
   document.querySelector("[data-json-mount]")?.appendChild(jsonDataPanel.section);
 

@@ -196,6 +196,10 @@
                         <div data-source-value-label-row></div>
                         <div class="input-group">
                           <input class="form-control" type="text" id="loomSourceValue" data-source-value placeholder="" />
+                          <!-- Shown instead of the text input above (see SOURCES' own `file: true`
+                               flag, content-fetch.js) only for a source whose value is a File, not
+                               typed text — currently just Fantasy Statblocks' own markdown upload. -->
+                          <input class="form-control d-none" type="file" id="loomSourceFile" data-source-file accept=".md" />
                           <button class="btn btn-outline-secondary" type="button" data-source-fetch>Fetch</button>
                         </div>
                       </div>

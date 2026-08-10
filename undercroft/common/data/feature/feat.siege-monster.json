@@ -1,0 +1,26 @@
+{
+  "id": "feat.siege-monster",
+  "name": "Siege Monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature deals double damage to objects and structures.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature deals double damage to objects and structures."
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

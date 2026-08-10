@@ -34,8 +34,17 @@
           "bind": "@armor_class"
         },
         "hitPoints": {
-          "type": "field",
-          "bind": "@hit_points"
+          "type": "object",
+          "fields": {
+            "max": {
+              "type": "field",
+              "bind": "@hit_points"
+            },
+            "current": {
+              "type": "field",
+              "bind": "@hit_points"
+            }
+          }
         },
         "hitDice": {
           "type": "field",
@@ -46,8 +55,11 @@
           "bind": "@hit_points_roll"
         },
         "speed": {
-          "type": "field",
-          "bind": "@speed"
+          "type": "custom",
+          "fn": "formatSpeedFromObject",
+          "args": {
+            "path": "speed"
+          }
         },
         "abilities": {
           "type": "object",
@@ -77,6 +89,10 @@
               "bind": "@charisma"
             }
           }
+        },
+        "initiativeBonus": {
+          "type": "field",
+          "bind": "=floor((@dexterity - 10) / 2)"
         },
         "proficiencies": {
           "type": "pipeline",

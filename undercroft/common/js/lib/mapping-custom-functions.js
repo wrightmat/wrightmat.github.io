@@ -587,6 +587,53 @@ function determineSpellcastingAbility(classes) {
   return ABILITIES.find((entry) => entry.id === caster.definition?.spellCastingAbilityId) || null;
 }
 
+// A D&D Beyond monster's specialTraitsDescription/actionsDescription (see
+// content-fetch.js's own fetchDdbMonster — confirmed against a real live
+// fetch) are raw HTML, not structured data: one `<p>` per trait/action, the
+// name bolded (`<strong>Name.</strong>`, sometimes also wrapped in `<em>` —
+// an action's own `<em>` sometimes continues past the name to also wrap a
+// type label like "Melee Weapon Attack:", which is why this only anchors on
+// the closing `</strong>`, not on where any surrounding `<em>` happens to
+// end). Uses the DOM (this module only ever runs in a browser) to decode
+// entities/strip nested tags (dice-notation `<span>`s, etc.) rather than a
+// hand-rolled entity table, which real HTML content will eventually break.
+function stripHtmlToText(html) {
+  const el = document.createElement("div");
+  el.innerHTML = html;
+  return (el.textContent || "").replace(/\s+/g, " ").trim();
+}
+
+// A `<p>` with no leading bolded name is a CONTINUATION of the previous
+// trait's own description, not a new entry — confirmed against real data
+// (Gray Ooze's own "Corrode Metal" trait splits across two `<p>` tags,
+// the second with no name at all).
+function parseDdbHtmlTraitBlocks(html) {
+  const text = typeof html === "string" ? html : "";
+  if (!text.trim()) return [];
+  const paragraphs = text.match(/<p>[\s\S]*?<\/p>/g) || [];
+  const entries = [];
+  paragraphs.forEach((raw) => {
+    const inner = raw.replace(/^<p>/, "").replace(/<\/p>$/, "");
+    const match = inner.match(/^\s*(?:<em>)?\s*<strong>([^<]+)<\/strong>\s*/);
+    if (match) {
+      entries.push({
+        name: stripHtmlToText(match[1]),
+        description: stripHtmlToText(inner.slice(match[0].length)),
+      });
+      return;
+    }
+    const continuation = stripHtmlToText(inner);
+    if (!continuation) return;
+    const previous = entries[entries.length - 1];
+    if (previous) {
+      previous.description = previous.description ? `${previous.description}\n\n${continuation}` : continuation;
+    } else {
+      entries.push({ name: "", description: continuation });
+    }
+  });
+  return entries;
+}
+
 // --- Registered custom functions (referenced by name from mapping JSON) ---
 
 return {
@@ -594,6 +641,72 @@ return {
   // root/parent entity's name instead of the current context's own name.
   slug(context, args) {
     return slugify(resolvePath(context, args?.path || "name"));
+  },
+
+  // `args.path` names which raw HTML field to parse (e.g.
+  // "specialTraitsDescription"/"actionsDescription") — see
+  // parseDdbHtmlTraitBlocks above for the actual parsing. Returns
+  // [{name, description}, ...], the same shape 5e-api-monster.json's own
+  // traits/actions already use.
+  ddbParseHtmlTraits(context, args) {
+    return parseDdbHtmlTraitBlocks(resolvePath(context, args?.path || ""));
+  },
+
+  // D&D Beyond's own monster-service payload carries no System reference at
+  // all (there's only ever one game system a DDB monster could belong to) —
+  // a monster imported through ddb-monster.json previously saved with no
+  // `systemIds`, invisible to anything that filters by System. Fixed,
+  // hardcoded "sys.dnd5e" — the DDB-import pipeline is inherently D&D-5e-
+  // specific already (see content-fetch.js's own DND5E_SYSTEM_ID constant,
+  // same reasoning).
+  ddbMonsterSystemIds() {
+    return ["sys.dnd5e"];
+  },
+
+  // D&D Beyond's own monster-service `movements` (confirmed via a real live
+  // fetch, content-fetch.js's fetchDdbMonster) is `[{movementId, speed,
+  // notes}, ...]` — resolved here into a single free-text string ("30 ft.,
+  // swim 30 ft.") instead, matching Fantasy Statblocks' own native `speed`
+  // shape (a plain string) and Crucible's own total non-use of this field
+  // (confirmed nothing in crucible/js/lib/stats.js or generator.js reads
+  // `speed` at all today) — there's no structured consumer anywhere in this
+  // suite forcing a keyed-object shape the way a CHARACTER's own speed
+  // (this file's own speedsTable, ddb-character.json's `{walk:30,
+  // swim:30, ...}`) has, so the
+  // simplest, most-directly-displayable shape wins. `walk` renders bare (no
+  // "walk" prefix), matching standard 5e stat-block phrasing; every other
+  // mode is prefixed by its own resolved name. Resolves each entry's own
+  // `movementId` through the SAME `speeds` lookup table `lookup('speeds',
+  // ...)` formula calls already use (`env.lookupTables`, not `args` — this
+  // needs the live table, not a fixed path).
+  ddbFormatSpeed(context, args, env) {
+    const movements = resolvePath(context, args?.path || "movements");
+    const speedsTable = Array.isArray(env?.lookupTables?.speeds) ? env.lookupTables.speeds : [];
+    const nameForId = (id) => speedsTable.find((entry) => entry.id === id)?.name || "";
+    return (Array.isArray(movements) ? movements : [])
+      .map((entry) => {
+        if (!entry || !entry.speed) return "";
+        const name = nameForId(entry.movementId);
+        return name && name !== "walk" ? `${name} ${entry.speed} ft.` : `${entry.speed} ft.`;
+      })
+      .filter(Boolean)
+      .join(", ");
+  },
+
+  // The 5e API's own raw `speed` (confirmed via a real live fetch) is a
+  // keyed object of already-unit-suffixed strings — `{walk: "30 ft.", swim:
+  // "30 ft."}` — reformatted into the same single free-text string
+  // ddbFormatSpeed above produces, for the same reasons (no structured
+  // consumer anywhere forces a keyed-object shape for a MONSTER's speed;
+  // Fantasy Statblocks' own native shape already is a plain string).
+  formatSpeedFromObject(context, args) {
+    const raw = resolvePath(context, args?.path || "speed");
+    if (typeof raw === "string") return raw;
+    if (!raw || typeof raw !== "object") return "";
+    return Object.entries(raw)
+      .filter(([, value]) => value)
+      .map(([type, value]) => (type === "walk" ? String(value) : `${type} ${value}`))
+      .join(", ");
   },
 
   // `args.path` defaults to "descLines" (ddb-content-parser.js's paragraph
@@ -609,6 +722,68 @@ return {
     return typeof value === "string" ? value : "";
   },
 
+  // Fantasy Statblocks' own `saves`/`skillsaves` (Obsidian's plugin, see
+  // content-fetch.js's loadFantasyStatblockData) are each a YAML list of
+  // single-key maps — `- Con: 5`, `- Arcana: 4` — the key name itself
+  // varying per entry (an ability abbreviation, or a skill name), so nothing
+  // in the mapping engine's declarative primitives can read "whatever the
+  // one key on this object happens to be." `args.path` names which raw
+  // field to read; returns [{name, value}, ...], the same shape
+  // ddb-monster.json's own savingThrows/skills already use.
+  fantasyStatblockKeyedList(context, args) {
+    const list = resolvePath(context, args?.path || "");
+    return (Array.isArray(list) ? list : [])
+      .map((entry) => {
+        const key = entry && typeof entry === "object" ? Object.keys(entry)[0] : undefined;
+        return key ? { name: key, value: entry[key] } : null;
+      })
+      .filter(Boolean);
+  },
+
+  // Fantasy Statblocks bundles passive Perception into the same free-text
+  // `senses` string as darkvision/blindsight/etc (e.g. "darkvision 120 ft.,
+  // passive Perception 13") — no separate field, confirmed across all 3
+  // reference examples. Splits it into this suite's own common standard
+  // shape: `senses` as an array of plain strings (matching Crucible's own
+  // stats.senses), `passivePerception` pulled out as its own number.
+  // `args.path` defaults to "senses". ddb-monster.json's `with`-node/
+  // ddbAbilitiesObject pairing is the precedent for reading this shared
+  // result back into two sibling output fields without recomputing it.
+  fantasyStatblockSenses(context, args) {
+    const raw = String(resolvePath(context, args?.path || "senses") || "");
+    const senses = [];
+    let passivePerception = null;
+    raw
+      .split(",")
+      .map((part) => part.trim())
+      .filter(Boolean)
+      .forEach((part) => {
+        const match = part.match(/passive perception\s+(\d+)/i);
+        if (match) {
+          passivePerception = Number(match[1]);
+        } else {
+          senses.push(part);
+        }
+      });
+    return { senses, passivePerception };
+  },
+
+  // Fantasy Statblocks' own `damage_resistances`/`damage_vulnerabilities`
+  // (confirmed) and `damage_immunities`/`condition_immunities` (never seen
+  // in the 3 reference examples, mapped defensively on the same assumed
+  // convention as the two confirmed fields) are each a single free-text
+  // string, comma-separated when more than one applies (e.g.
+  // "cold, fire") — split and trimmed into a plain string array, matching
+  // Crucible's own damageResistances/damageImmunities shape.
+  fantasyStatblockSplitList(context, args) {
+    const raw = resolvePath(context, args?.path || "");
+    if (Array.isArray(raw)) return raw.map((entry) => String(entry).trim()).filter(Boolean);
+    return String(raw || "")
+      .split(",")
+      .map((entry) => entry.trim())
+      .filter(Boolean);
+  },
+
   ddbHitDie(context) {
     return parseHitDie(context.coreTraits?.hitPointDie);
   },
@@ -619,6 +794,29 @@ return {
 
   ddbSavingThrows(context) {
     return parseAbilityRefs(context.coreTraits?.savingThrowProficiencies);
+  },
+
+  // A D&D Beyond MONSTER's own `stats` (confirmed via a real live fetch,
+  // content-fetch.js's fetchDdbMonster) is `[{statId, name, value}, ...]` —
+  // an array keyed by DDB's own numeric statId, not the character-sheet
+  // shape any of the ddb* functions above assume. Reshapes it into the
+  // keyed-object form `{strength, dexterity, ...}` this suite's own common
+  // monster-stats standard uses (matches Crucible's own stats.abilities —
+  // see crucible/js/lib/stats.js), keyed by the SAME ability names
+  // system-lookup-tables.js's own `abilities` table already exposes
+  // (sys.dnd5e.json's own ability field keys, e.g. "dexterity"). `args.path`
+  // defaults to "stats"; ddb-monster.json's own `initiativeBonus` field
+  // reads this same object back via a `with` binding rather than
+  // recomputing it, since a formula bind can only ever see the RAW input
+  // context, never a sibling output field still being built.
+  ddbAbilitiesObject(context, args) {
+    const entries = resolvePath(context, args?.path || "stats");
+    const result = {};
+    (Array.isArray(entries) ? entries : []).forEach((entry) => {
+      const ability = ABILITIES.find((candidate) => candidate.id === entry?.statId);
+      if (ability?.name) result[ability.name] = entry?.value;
+    });
+    return result;
   },
 
   ddbPrimaryAbility(context) {

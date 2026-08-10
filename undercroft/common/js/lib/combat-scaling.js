@@ -47,6 +47,11 @@ export async function loadCombatScalingLevels(dataManager, systemId, combatScali
     return (field.values || []).map((value, index) => ({
       id: value.id || slugify(value.name) || `combat-scaling-${index}`,
       name: value.name || value.label || String(value.id || index),
+      // The real, portable display value (e.g. "1/2") — distinct from `id`
+      // above, which is only ever an internal slug/matching key never meant
+      // to be shown to a user. Falls back the same "always something usable"
+      // way id/name do, for a value that doesn't author one.
+      shortName: value.shortName || value.name || value.id || String(index),
       ...value,
     }));
   } catch (error) {

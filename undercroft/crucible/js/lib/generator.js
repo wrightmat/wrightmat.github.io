@@ -160,7 +160,16 @@ export function generateMonster(allCreatureTypes, allArchetypes, allRoles, allFe
 
   return {
     systemIds: systemId ? [systemId] : [],
-    creatureTypeId: creatureType.id,
+    // "type", not "creatureTypeId" — the stored value (e.g. "ooze") is a
+    // description, not an opaque id, and this suite's own DDB/Fantasy
+    // Statblocks monster-import mappings both already call the same concept
+    // "type" (see ddb-monster.json/fantasy-statblocks-monster.json). Kept
+    // as a top-level field (not nested in `stats` like those two) since
+    // this is still Crucible's own generation-axis reference, same
+    // "produced fresh at generation time" category as archetypeId/roleId
+    // right below it — only its NAME changed, matching the user's own
+    // explicit ask, not its place in the schema.
+    type: creatureType.id,
     archetypeId: archetype.id,
     roleId: role.id,
     signatureFeatureId: signatureFeature ? signatureFeature.id : null,

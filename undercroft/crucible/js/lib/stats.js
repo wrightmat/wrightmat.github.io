@@ -120,16 +120,28 @@ function buildActions(features, damagePerRound, attackBonus, damageTypeList) {
 }
 
 /**
- * deriveStats({ systemId, combatScalingId, role, creatureType, features, dataManager, random })
+ * deriveStats({ systemId, combatScalingField, combatScalingId, role, creatureType, features, dataManager, random })
  *
  * `role`/`creatureType` are the already-resolved records (same ones
  * generateMonster resolved), `features` the already-resolved selected
  * feature records. Every input degrades gracefully: a System with no
  * combatScaling/damageTypes data still produces a bare-minimum stat block
  * instead of an error.
+ *
+ * `combatScalingField` (optional) is the GM's own configured Combat Scaling
+ * field preference (crucible/js/app.js's own getCombatScalingFieldPreference)
+ * — previously never threaded through here at all, so this function always
+ * silently fell back to loadCombatScalingLevels' own hardcoded
+ * "combatScaling" default regardless of what the GM had actually configured
+ * in Settings. Harmless while every System's own field really was called
+ * "combatScaling"; a real, visible bug (Challenge always showing unset) the
+ * moment sys.dnd5e.json's own field got its real name, "challengeRating" —
+ * reloadReferenceData's own call already passed this correctly, this one
+ * didn't.
  */
 export async function deriveStats({
   systemId,
+  combatScalingField = "",
   combatScalingId = "",
   role = null,
   creatureType = null,
@@ -138,7 +150,7 @@ export async function deriveStats({
   random = Math.random,
 }) {
   const [levels, damageTypeList, abilityFieldDefs] = await Promise.all([
-    loadCombatScalingLevels(dataManager, systemId),
+    loadCombatScalingLevels(dataManager, systemId, combatScalingField || undefined),
     loadDamageTypesPropertyType(dataManager, systemId),
     loadAbilityFieldDefs(dataManager, systemId),
   ]);
@@ -170,7 +182,12 @@ export async function deriveStats({
 
   return {
     stats: {
-      challengeRating: level?.id || null,
+      // shortName, not id — id is only ever an internal slug (e.g.
+      // "cr-1-2"), never meant to be shown to a GM. shortName is the real,
+      // portable CR value (e.g. "1/2") — see combat-scaling.js's own
+      // shortName fallback for why it's always populated regardless of
+      // whether the active System's own combat-scaling field authors one.
+      challengeRating: level?.shortName || null,
       armorClass,
       // { max, current } — the shape every kind's stats.hitPoints uses now
       // (see undercroft/common/js/lib/widgets/combat-tracker.js#addCombatant).

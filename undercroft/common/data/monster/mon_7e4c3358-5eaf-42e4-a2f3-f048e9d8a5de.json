@@ -3,7 +3,7 @@
   "systemIds": [
     "sys.dnd5e"
   ],
-  "creatureTypeId": "ooze",
+  "type": "ooze",
   "archetypeId": "ambusher",
   "roleId": "controller",
   "signatureFeatureId": "feat.ambush-camouflage",

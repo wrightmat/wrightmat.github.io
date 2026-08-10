@@ -1,0 +1,29 @@
+{
+  "id": "feat.regeneration",
+  "name": "Regeneration",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature regains 10 hit points at the start of its turn. If the creature takes radiant damage, this trait doesn't function at the start of its next turn. The creature dies only if it starts its turn with 0 hit points and doesn't regenerate.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature regains 10 hit points at the start of its turn. If the creature takes radiant damage, this trait doesn't function at the start of its next turn. The creature dies only if it starts its turn with 0 hit points and doesn't regenerate."
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "endure",
+      "recover"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

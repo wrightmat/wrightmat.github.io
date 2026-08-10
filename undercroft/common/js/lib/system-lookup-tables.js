@@ -89,6 +89,21 @@ export function deriveLookupTables(systemPayload) {
     activations: positional(valuesOf(fields, "activation"), (entry) => entry.shortName),
     components: positional(valuesOf(fields, "components"), (entry) => entry.shortName),
     conditions: positionalNames(valuesOf(fields, "conditions")),
+    // sys.dnd5e.json's own "creatureTypes" field (Crucible's own generation
+    // vocabulary — see crucible/CLAUDE.md) — each value's own `sourceId`
+    // (added specifically for this) ties it to D&D Beyond's own numeric
+    // typeId (e.g. 14 = Ooze). `name` here carries the value's own semantic
+    // `id` string ("ooze"), matching Crucible's own generated monsters' and
+    // the DDB/Fantasy Statblocks monster mappings' shared top-level `type`
+    // field, NOT the value's display `name` — same "`.name` is the thing
+    // this lookup is actually for" convention `sizes`/`alignments` already
+    // establish in this file.
+    creatureTypes: valuesOf(fields, "creatureTypes").map((entry) => ({ id: entry.sourceId, name: entry.id })),
+    // sys.dnd5e.json's own "environment" field (Sanctum's own generator-
+    // property vocabulary, reused here) — each value's own `sourceId`
+    // (added specifically for this) ties it to D&D Beyond's own numeric
+    // environment id.
+    environments: valuesOf(fields, "environment").map((entry) => ({ id: entry.sourceId, name: entry.name })),
     // Only a fallback source for attacksTable (mapping-custom-functions.js)
     // — DDB's own friendly damage-type strings (weapon items'
     // `definition.damageType`, spell-backed actions' own `type:"damage"`
@@ -111,6 +126,16 @@ export function deriveLookupTables(systemPayload) {
       shortName: entry.shortName,
     })),
     savingThrowSubtypes,
+    // sys.dnd5e.json's own field is "challengeRating" (D&D's specific name
+    // for its own Combat Scaling data — see that field's own comment) —
+    // `shortName` is the real, portable CR value ("1/2") ddb-monster.json's
+    // own `lookup('challengeRatings', @challengeRatingId)` resolves to;
+    // `id` (sourceId) matches DDB's own numeric challengeRatingId directly.
+    challengeRatings: valuesOf(fields, "challengeRating").map((entry) => ({
+      id: entry.sourceId,
+      name: entry.name,
+      shortName: entry.shortName,
+    })),
     senses: valuesOf(fields, "senses").map((entry) => ({ id: entry.sourceId, name: String(entry.name || "").toLowerCase() })),
     // Legacy SIZES exposed the short DDB size code ("tiny"/"sm"/"med"/...) as
     // `value` (matched directly against DDB's own raw size strings in

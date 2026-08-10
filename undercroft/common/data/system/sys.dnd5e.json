@@ -26,15 +26,47 @@
         },
         {
           "name": "Bard",
-          "allowedFeatureTags": ["buff", "debuff", "illusion", "charm", "control", "healing", "utility", "status", "combat", "ritual"]
+          "allowedFeatureTags": [
+            "buff",
+            "debuff",
+            "illusion",
+            "charm",
+            "control",
+            "healing",
+            "utility",
+            "status",
+            "combat",
+            "ritual"
+          ]
         },
         {
           "name": "Cleric",
-          "allowedFeatureTags": ["healing", "revival", "divine", "status", "buff", "utility", "light", "protection", "ritual"]
+          "allowedFeatureTags": [
+            "healing",
+            "revival",
+            "divine",
+            "status",
+            "buff",
+            "utility",
+            "light",
+            "protection",
+            "ritual"
+          ]
         },
         {
           "name": "Druid",
-          "allowedFeatureTags": ["healing", "revival", "divine", "nature", "terrain", "utility", "control", "movement", "poisoned", "ritual"]
+          "allowedFeatureTags": [
+            "healing",
+            "revival",
+            "divine",
+            "nature",
+            "terrain",
+            "utility",
+            "control",
+            "movement",
+            "poisoned",
+            "ritual"
+          ]
         },
         {
           "name": "Fighter"
@@ -44,30 +76,99 @@
         },
         {
           "name": "Paladin",
-          "allowedFeatureTags": ["healing", "divine", "buff", "combat", "status", "revival", "protection", "aura", "ritual"]
+          "allowedFeatureTags": [
+            "healing",
+            "divine",
+            "buff",
+            "combat",
+            "status",
+            "revival",
+            "protection",
+            "aura",
+            "ritual"
+          ]
         },
         {
           "name": "Ranger",
-          "allowedFeatureTags": ["utility", "movement", "terrain", "poisoned", "nature", "buff", "control", "combat", "ritual"]
+          "allowedFeatureTags": [
+            "utility",
+            "movement",
+            "terrain",
+            "poisoned",
+            "nature",
+            "buff",
+            "control",
+            "combat",
+            "ritual"
+          ]
         },
         {
           "name": "Rogue"
         },
         {
           "name": "Sorcerer",
-          "allowedFeatureTags": ["elemental", "fire", "lightning", "cold", "status", "control", "combat", "buff", "utility", "illusion", "ritual"]
+          "allowedFeatureTags": [
+            "elemental",
+            "fire",
+            "lightning",
+            "cold",
+            "status",
+            "control",
+            "combat",
+            "buff",
+            "utility",
+            "illusion",
+            "ritual"
+          ]
         },
         {
           "name": "Warlock",
-          "allowedFeatureTags": ["control", "status", "debuff", "dark", "curse", "buff", "illusion", "persistent", "duration", "ritual"]
+          "allowedFeatureTags": [
+            "control",
+            "status",
+            "debuff",
+            "dark",
+            "curse",
+            "buff",
+            "illusion",
+            "persistent",
+            "duration",
+            "ritual"
+          ]
         },
         {
           "name": "Wizard",
-          "allowedFeatureTags": ["illusion", "utility", "control", "movement", "fire", "status", "buff", "combat", "elemental", "duration", "disruption", "ritual"]
+          "allowedFeatureTags": [
+            "illusion",
+            "utility",
+            "control",
+            "movement",
+            "fire",
+            "status",
+            "buff",
+            "combat",
+            "elemental",
+            "duration",
+            "disruption",
+            "ritual"
+          ]
         },
         {
           "name": "Artificer",
-          "allowedFeatureTags": ["utility", "healing", "buff", "control", "disruption", "status", "construct", "restoration", "tech", "warding", "elemental", "ritual"]
+          "allowedFeatureTags": [
+            "utility",
+            "healing",
+            "buff",
+            "control",
+            "disruption",
+            "status",
+            "construct",
+            "restoration",
+            "tech",
+            "warding",
+            "elemental",
+            "ritual"
+          ]
         }
       ]
     },
@@ -330,32 +431,32 @@
       "values": [
         {
           "name": "Copper",
-          "cost": 1,
           "shortName": "cp",
+          "cost": 1,
           "weight": 0.001
         },
         {
           "name": "Silver",
-          "cost": 10,
           "shortName": "sp",
+          "cost": 10,
           "weight": 0.01
         },
         {
           "name": "Electrum",
-          "cost": 50,
           "shortName": "ep",
+          "cost": 50,
           "weight": 0.05
         },
         {
           "name": "Gold",
-          "cost": 100,
           "shortName": "gp",
+          "cost": 100,
           "weight": 0.1
         },
         {
           "name": "Platinum",
-          "cost": 1000,
           "shortName": "pp",
+          "cost": 1000,
           "weight": 0.001
         }
       ]
@@ -503,21 +604,21 @@
       "values": [
         {
           "name": "Action",
-          "cost": 0,
+          "shortName": "A",
           "sourceId": 1,
-          "shortName": "A"
+          "cost": 0
         },
         {
           "name": "Bonus Action",
-          "cost": 2,
+          "shortName": "BA",
           "sourceId": 3,
-          "shortName": "BA"
+          "cost": 2
         },
         {
           "name": "Reaction",
-          "cost": 1,
+          "shortName": "R",
           "sourceId": 4,
-          "shortName": "R"
+          "cost": 1
         },
         {
           "name": "Ritual (10 min, no slot)",
@@ -525,23 +626,23 @@
         },
         {
           "name": "Seconds",
-          "sourceId": 5,
-          "shortName": "s"
+          "shortName": "s",
+          "sourceId": 5
         },
         {
           "name": "Minutes",
-          "sourceId": 6,
-          "shortName": "m"
+          "shortName": "m",
+          "sourceId": 6
         },
         {
           "name": "Hours",
-          "sourceId": 7,
-          "shortName": "h"
+          "shortName": "h",
+          "sourceId": 7
         },
         {
           "name": "Special",
-          "sourceId": 8,
-          "shortName": "S"
+          "shortName": "S",
+          "sourceId": 8
         }
       ]
     },
@@ -574,37 +675,48 @@
       "label": "Environment",
       "values": [
         {
-          "name": "Arctic"
+          "name": "Arctic",
+          "sourceId": 1
         },
         {
-          "name": "Coast"
+          "name": "Coast",
+          "sourceId": 2
         },
         {
-          "name": "Desert"
+          "name": "Desert",
+          "sourceId": 3
         },
         {
-          "name": "Forest"
+          "name": "Forest",
+          "sourceId": 4
         },
         {
-          "name": "Grassland"
+          "name": "Grassland",
+          "sourceId": 5
         },
         {
-          "name": "Hill"
+          "name": "Hill",
+          "sourceId": 6
         },
         {
-          "name": "Mountain"
+          "name": "Mountain",
+          "sourceId": 7
         },
         {
-          "name": "Swamp"
+          "name": "Swamp",
+          "sourceId": 8
         },
         {
-          "name": "Underdark"
+          "name": "Underdark",
+          "sourceId": 9
         },
         {
-          "name": "Underwater"
+          "name": "Underwater",
+          "sourceId": 10
         },
         {
-          "name": "Urban"
+          "name": "Urban",
+          "sourceId": 11
         }
       ]
     },
@@ -684,32 +796,32 @@
           "name": "Hit Points",
           "maxPath": "@stats.hitPoints.max",
           "tempPath": "@stats.hitPoints.temp",
-          "role": "resource",
-          "binding": "@stats.hitPoints.current"
+          "binding": "@stats.hitPoints.current",
+          "role": "resource"
         },
         {
           "name": "Armor Class",
-          "role": "value",
-          "binding": "@stats.armorClass"
+          "binding": "@stats.armorClass",
+          "role": "value"
         },
         {
           "name": "Conditions",
-          "role": "tags",
           "binding": "@conditions",
-          "sourceField": "conditions"
+          "sourceField": "conditions",
+          "role": "tags"
         },
         {
           "name": "Initiative",
           "die": "d20",
-          "role": "modifier",
-          "binding": "@stats.initiativeBonus"
+          "binding": "@stats.initiativeBonus",
+          "role": "modifier"
         }
       ]
     },
     {
       "type": "array",
-      "key": "combatScaling",
-      "label": "Combat Scaling",
+      "key": "challengeRating",
+      "label": "Challenge Rating",
       "values": [
         {
           "name": "CR 0",
@@ -719,6 +831,8 @@
           "attackBonus": 3,
           "saveDC": 13,
           "xp": 10,
+          "shortName": "0",
+          "sourceId": 1,
           "targetBudget": 3
         },
         {
@@ -729,6 +843,8 @@
           "attackBonus": 3,
           "saveDC": 13,
           "xp": 25,
+          "shortName": "1/8",
+          "sourceId": 2,
           "targetBudget": 4
         },
         {
@@ -739,6 +855,8 @@
           "attackBonus": 3,
           "saveDC": 13,
           "xp": 50,
+          "shortName": "1/4",
+          "sourceId": 3,
           "targetBudget": 4
         },
         {
@@ -749,6 +867,8 @@
           "attackBonus": 3,
           "saveDC": 13,
           "xp": 100,
+          "shortName": "1/2",
+          "sourceId": 4,
           "targetBudget": 5
         },
         {
@@ -759,6 +879,8 @@
           "attackBonus": 3,
           "saveDC": 13,
           "xp": 200,
+          "shortName": "1",
+          "sourceId": 5,
           "targetBudget": 6
         },
         {
@@ -769,6 +891,8 @@
           "attackBonus": 3,
           "saveDC": 13,
           "xp": 450,
+          "shortName": "2",
+          "sourceId": 6,
           "targetBudget": 8
         },
         {
@@ -779,6 +903,8 @@
           "attackBonus": 4,
           "saveDC": 14,
           "xp": 700,
+          "shortName": "3",
+          "sourceId": 7,
           "targetBudget": 10
         },
         {
@@ -789,6 +915,8 @@
           "attackBonus": 5,
           "saveDC": 14,
           "xp": 1100,
+          "shortName": "4",
+          "sourceId": 8,
           "targetBudget": 12
         },
         {
@@ -799,6 +927,8 @@
           "attackBonus": 6,
           "saveDC": 15,
           "xp": 1800,
+          "shortName": "5",
+          "sourceId": 9,
           "targetBudget": 14
         },
         {
@@ -809,6 +939,8 @@
           "attackBonus": 6,
           "saveDC": 15,
           "xp": 2300,
+          "shortName": "6",
+          "sourceId": 10,
           "targetBudget": 16
         },
         {
@@ -819,6 +951,8 @@
           "attackBonus": 6,
           "saveDC": 15,
           "xp": 2900,
+          "shortName": "7",
+          "sourceId": 11,
           "targetBudget": 18
         },
         {
@@ -829,6 +963,8 @@
           "attackBonus": 7,
           "saveDC": 16,
           "xp": 3900,
+          "shortName": "8",
+          "sourceId": 12,
           "targetBudget": 20
         },
         {
@@ -839,6 +975,8 @@
           "attackBonus": 7,
           "saveDC": 16,
           "xp": 5000,
+          "shortName": "9",
+          "sourceId": 13,
           "targetBudget": 22
         },
         {
@@ -849,6 +987,8 @@
           "attackBonus": 7,
           "saveDC": 16,
           "xp": 5900,
+          "shortName": "10",
+          "sourceId": 14,
           "targetBudget": 24
         },
         {
@@ -859,6 +999,8 @@
           "attackBonus": 8,
           "saveDC": 17,
           "xp": 7200,
+          "shortName": "11",
+          "sourceId": 15,
           "targetBudget": 26
         },
         {
@@ -869,6 +1011,8 @@
           "attackBonus": 8,
           "saveDC": 17,
           "xp": 8400,
+          "shortName": "12",
+          "sourceId": 16,
           "targetBudget": 28
         },
         {
@@ -879,6 +1023,8 @@
           "attackBonus": 8,
           "saveDC": 18,
           "xp": 10000,
+          "shortName": "13",
+          "sourceId": 17,
           "targetBudget": 30
         },
         {
@@ -889,6 +1035,8 @@
           "attackBonus": 8,
           "saveDC": 18,
           "xp": 11500,
+          "shortName": "14",
+          "sourceId": 18,
           "targetBudget": 32
         },
         {
@@ -899,6 +1047,8 @@
           "attackBonus": 8,
           "saveDC": 18,
           "xp": 13000,
+          "shortName": "15",
+          "sourceId": 19,
           "targetBudget": 34
         },
         {
@@ -909,6 +1059,8 @@
           "attackBonus": 9,
           "saveDC": 18,
           "xp": 15000,
+          "shortName": "16",
+          "sourceId": 20,
           "targetBudget": 36
         },
         {
@@ -919,6 +1071,8 @@
           "attackBonus": 10,
           "saveDC": 19,
           "xp": 18000,
+          "shortName": "17",
+          "sourceId": 21,
           "targetBudget": 38
         },
         {
@@ -929,6 +1083,8 @@
           "attackBonus": 10,
           "saveDC": 19,
           "xp": 20000,
+          "shortName": "18",
+          "sourceId": 22,
           "targetBudget": 40
         },
         {
@@ -939,6 +1095,8 @@
           "attackBonus": 10,
           "saveDC": 19,
           "xp": 22000,
+          "shortName": "19",
+          "sourceId": 23,
           "targetBudget": 42
         },
         {
@@ -949,6 +1107,8 @@
           "attackBonus": 10,
           "saveDC": 19,
           "xp": 25000,
+          "shortName": "20",
+          "sourceId": 24,
           "targetBudget": 44
         },
         {
@@ -959,6 +1119,8 @@
           "attackBonus": 11,
           "saveDC": 20,
           "xp": 33000,
+          "shortName": "21",
+          "sourceId": 25,
           "targetBudget": 46
         },
         {
@@ -969,6 +1131,8 @@
           "attackBonus": 11,
           "saveDC": 20,
           "xp": 41000,
+          "shortName": "22",
+          "sourceId": 26,
           "targetBudget": 48
         },
         {
@@ -979,6 +1143,8 @@
           "attackBonus": 11,
           "saveDC": 20,
           "xp": 50000,
+          "shortName": "23",
+          "sourceId": 27,
           "targetBudget": 50
         },
         {
@@ -989,6 +1155,8 @@
           "attackBonus": 12,
           "saveDC": 21,
           "xp": 62000,
+          "shortName": "24",
+          "sourceId": 28,
           "targetBudget": 52
         },
         {
@@ -999,6 +1167,8 @@
           "attackBonus": 12,
           "saveDC": 21,
           "xp": 75000,
+          "shortName": "25",
+          "sourceId": 29,
           "targetBudget": 54
         },
         {
@@ -1009,6 +1179,8 @@
           "attackBonus": 12,
           "saveDC": 21,
           "xp": 90000,
+          "shortName": "26",
+          "sourceId": 30,
           "targetBudget": 56
         },
         {
@@ -1019,6 +1191,8 @@
           "attackBonus": 13,
           "saveDC": 22,
           "xp": 105000,
+          "shortName": "27",
+          "sourceId": 31,
           "targetBudget": 58
         },
         {
@@ -1029,6 +1203,8 @@
           "attackBonus": 13,
           "saveDC": 22,
           "xp": 120000,
+          "shortName": "28",
+          "sourceId": 32,
           "targetBudget": 60
         },
         {
@@ -1039,6 +1215,8 @@
           "attackBonus": 13,
           "saveDC": 22,
           "xp": 135000,
+          "shortName": "29",
+          "sourceId": 33,
           "targetBudget": 62
         },
         {
@@ -1049,6 +1227,8 @@
           "attackBonus": 14,
           "saveDC": 23,
           "xp": 155000,
+          "shortName": "30",
+          "sourceId": 34,
           "targetBudget": 64
         }
       ]
@@ -1058,26 +1238,186 @@
       "key": "levels",
       "label": "Levels",
       "values": [
-        { "name": "Level 1", "level": 1, "xpToLevel": 0, "easy": 25, "medium": 50, "hard": 75, "deadly": 100 },
-        { "name": "Level 2", "level": 2, "xpToLevel": 300, "easy": 50, "medium": 100, "hard": 150, "deadly": 200 },
-        { "name": "Level 3", "level": 3, "xpToLevel": 900, "easy": 75, "medium": 150, "hard": 225, "deadly": 400 },
-        { "name": "Level 4", "level": 4, "xpToLevel": 2700, "easy": 125, "medium": 250, "hard": 375, "deadly": 500 },
-        { "name": "Level 5", "level": 5, "xpToLevel": 6500, "easy": 250, "medium": 500, "hard": 750, "deadly": 1100 },
-        { "name": "Level 6", "level": 6, "xpToLevel": 14000, "easy": 300, "medium": 600, "hard": 900, "deadly": 1400 },
-        { "name": "Level 7", "level": 7, "xpToLevel": 23000, "easy": 350, "medium": 750, "hard": 1100, "deadly": 1700 },
-        { "name": "Level 8", "level": 8, "xpToLevel": 34000, "easy": 450, "medium": 900, "hard": 1400, "deadly": 2100 },
-        { "name": "Level 9", "level": 9, "xpToLevel": 48000, "easy": 550, "medium": 1100, "hard": 1600, "deadly": 2400 },
-        { "name": "Level 10", "level": 10, "xpToLevel": 64000, "easy": 600, "medium": 1200, "hard": 1900, "deadly": 2800 },
-        { "name": "Level 11", "level": 11, "xpToLevel": 85000, "easy": 800, "medium": 1600, "hard": 2400, "deadly": 3600 },
-        { "name": "Level 12", "level": 12, "xpToLevel": 100000, "easy": 1000, "medium": 2000, "hard": 3000, "deadly": 4500 },
-        { "name": "Level 13", "level": 13, "xpToLevel": 120000, "easy": 1100, "medium": 2200, "hard": 3400, "deadly": 5100 },
-        { "name": "Level 14", "level": 14, "xpToLevel": 140000, "easy": 1250, "medium": 2500, "hard": 3800, "deadly": 5700 },
-        { "name": "Level 15", "level": 15, "xpToLevel": 165000, "easy": 1400, "medium": 2800, "hard": 4300, "deadly": 6400 },
-        { "name": "Level 16", "level": 16, "xpToLevel": 195000, "easy": 1600, "medium": 3200, "hard": 4800, "deadly": 7200 },
-        { "name": "Level 17", "level": 17, "xpToLevel": 225000, "easy": 2000, "medium": 3900, "hard": 5900, "deadly": 8800 },
-        { "name": "Level 18", "level": 18, "xpToLevel": 265000, "easy": 2100, "medium": 4200, "hard": 6300, "deadly": 9500 },
-        { "name": "Level 19", "level": 19, "xpToLevel": 305000, "easy": 2400, "medium": 4900, "hard": 7300, "deadly": 10900 },
-        { "name": "Level 20", "level": 20, "xpToLevel": 355000, "easy": 2800, "medium": 5700, "hard": 8500, "deadly": 12700 }
+        {
+          "name": "Level 1",
+          "level": 1,
+          "xpToLevel": 0,
+          "easy": 25,
+          "medium": 50,
+          "hard": 75,
+          "deadly": 100
+        },
+        {
+          "name": "Level 2",
+          "level": 2,
+          "xpToLevel": 300,
+          "easy": 50,
+          "medium": 100,
+          "hard": 150,
+          "deadly": 200
+        },
+        {
+          "name": "Level 3",
+          "level": 3,
+          "xpToLevel": 900,
+          "easy": 75,
+          "medium": 150,
+          "hard": 225,
+          "deadly": 400
+        },
+        {
+          "name": "Level 4",
+          "level": 4,
+          "xpToLevel": 2700,
+          "easy": 125,
+          "medium": 250,
+          "hard": 375,
+          "deadly": 500
+        },
+        {
+          "name": "Level 5",
+          "level": 5,
+          "xpToLevel": 6500,
+          "easy": 250,
+          "medium": 500,
+          "hard": 750,
+          "deadly": 1100
+        },
+        {
+          "name": "Level 6",
+          "level": 6,
+          "xpToLevel": 14000,
+          "easy": 300,
+          "medium": 600,
+          "hard": 900,
+          "deadly": 1400
+        },
+        {
+          "name": "Level 7",
+          "level": 7,
+          "xpToLevel": 23000,
+          "easy": 350,
+          "medium": 750,
+          "hard": 1100,
+          "deadly": 1700
+        },
+        {
+          "name": "Level 8",
+          "level": 8,
+          "xpToLevel": 34000,
+          "easy": 450,
+          "medium": 900,
+          "hard": 1400,
+          "deadly": 2100
+        },
+        {
+          "name": "Level 9",
+          "level": 9,
+          "xpToLevel": 48000,
+          "easy": 550,
+          "medium": 1100,
+          "hard": 1600,
+          "deadly": 2400
+        },
+        {
+          "name": "Level 10",
+          "level": 10,
+          "xpToLevel": 64000,
+          "easy": 600,
+          "medium": 1200,
+          "hard": 1900,
+          "deadly": 2800
+        },
+        {
+          "name": "Level 11",
+          "level": 11,
+          "xpToLevel": 85000,
+          "easy": 800,
+          "medium": 1600,
+          "hard": 2400,
+          "deadly": 3600
+        },
+        {
+          "name": "Level 12",
+          "level": 12,
+          "xpToLevel": 100000,
+          "easy": 1000,
+          "medium": 2000,
+          "hard": 3000,
+          "deadly": 4500
+        },
+        {
+          "name": "Level 13",
+          "level": 13,
+          "xpToLevel": 120000,
+          "easy": 1100,
+          "medium": 2200,
+          "hard": 3400,
+          "deadly": 5100
+        },
+        {
+          "name": "Level 14",
+          "level": 14,
+          "xpToLevel": 140000,
+          "easy": 1250,
+          "medium": 2500,
+          "hard": 3800,
+          "deadly": 5700
+        },
+        {
+          "name": "Level 15",
+          "level": 15,
+          "xpToLevel": 165000,
+          "easy": 1400,
+          "medium": 2800,
+          "hard": 4300,
+          "deadly": 6400
+        },
+        {
+          "name": "Level 16",
+          "level": 16,
+          "xpToLevel": 195000,
+          "easy": 1600,
+          "medium": 3200,
+          "hard": 4800,
+          "deadly": 7200
+        },
+        {
+          "name": "Level 17",
+          "level": 17,
+          "xpToLevel": 225000,
+          "easy": 2000,
+          "medium": 3900,
+          "hard": 5900,
+          "deadly": 8800
+        },
+        {
+          "name": "Level 18",
+          "level": 18,
+          "xpToLevel": 265000,
+          "easy": 2100,
+          "medium": 4200,
+          "hard": 6300,
+          "deadly": 9500
+        },
+        {
+          "name": "Level 19",
+          "level": 19,
+          "xpToLevel": 305000,
+          "easy": 2400,
+          "medium": 4900,
+          "hard": 7300,
+          "deadly": 10900
+        },
+        {
+          "name": "Level 20",
+          "level": 20,
+          "xpToLevel": 355000,
+          "easy": 2800,
+          "medium": 5700,
+          "hard": 8500,
+          "deadly": 12700
+        }
       ]
     },
     {
@@ -1085,10 +1425,6 @@
       "key": "damageTypes",
       "label": "Damage Types",
       "values": [
-        {
-          "name": "",
-          "sourceId": 0
-        },
         {
           "name": "Bludgeoning",
           "sourceId": 1
@@ -1149,10 +1485,6 @@
       "label": "Durations",
       "values": [
         {
-          "name": "",
-          "sourceId": 0
-        },
-        {
           "name": "Short Rest",
           "sourceId": 1
         },
@@ -1170,7 +1502,6 @@
         {
           "id": "aberration",
           "name": "Aberration",
-          "description": "A creature whose form and thought are alien to the natural world — unsettling to look at and often incomprehensible in motive.",
           "vocabulary": {
             "namePatterns": [
               "The {name} That Should Not Be",
@@ -1186,12 +1517,13 @@
             "darkvision 60 ft."
           ],
           "defaultResistances": [],
-          "defaultImmunities": []
+          "defaultImmunities": [],
+          "description": "A creature whose form and thought are alien to the natural world — unsettling to look at and often incomprehensible in motive.",
+          "sourceId": 1
         },
         {
           "id": "beast",
           "name": "Beast",
-          "description": "A natural, non-magical animal, though often larger, fiercer, or stranger than its mundane cousins.",
           "vocabulary": {
             "namePatterns": [
               "Giant {name}",
@@ -1206,12 +1538,13 @@
             "keen smell or hearing"
           ],
           "defaultResistances": [],
-          "defaultImmunities": []
+          "defaultImmunities": [],
+          "description": "A natural, non-magical animal, though often larger, fiercer, or stranger than its mundane cousins.",
+          "sourceId": 2
         },
         {
           "id": "celestial",
           "name": "Celestial",
-          "description": "A creature native to the upper planes, acting (or claiming to act) with a purpose sanctioned by a greater power.",
           "vocabulary": {
             "namePatterns": [
               "{name}, Radiant Herald",
@@ -1229,12 +1562,13 @@
           "defaultResistances": [
             "radiant"
           ],
-          "defaultImmunities": []
+          "defaultImmunities": [],
+          "description": "A creature native to the upper planes, acting (or claiming to act) with a purpose sanctioned by a greater power.",
+          "sourceId": 3
         },
         {
           "id": "construct",
           "name": "Construct",
-          "description": "An animated object or artificial body, built or shaped rather than born, following its programming or binding rather than instinct.",
           "vocabulary": {
             "namePatterns": [
               "{name} Automaton",
@@ -1254,12 +1588,13 @@
             "disease",
             "charmed",
             "frightened"
-          ]
+          ],
+          "description": "An animated object or artificial body, built or shaped rather than born, following its programming or binding rather than instinct.",
+          "sourceId": 4
         },
         {
           "id": "dragon",
           "name": "Dragon",
-          "description": "A reptilian creature of ancient, often magical lineage — proud, territorial, and rarely anyone's servant by choice.",
           "vocabulary": {
             "namePatterns": [
               "{name} the Ancient",
@@ -1276,12 +1611,13 @@
             "darkvision 120 ft."
           ],
           "defaultResistances": [],
-          "defaultImmunities": []
+          "defaultImmunities": [],
+          "description": "A reptilian creature of ancient, often magical lineage — proud, territorial, and rarely anyone's servant by choice.",
+          "sourceId": 6
         },
         {
           "id": "elemental",
           "name": "Elemental",
-          "description": "A creature made manifest from one of the fundamental planes of existence, acting on straightforward, often single-minded impulses.",
           "vocabulary": {
             "namePatterns": [
               "{name} of the Churn",
@@ -1299,12 +1635,13 @@
           "defaultImmunities": [
             "poison",
             "exhaustion"
-          ]
+          ],
+          "description": "A creature made manifest from one of the fundamental planes of existence, acting on straightforward, often single-minded impulses.",
+          "sourceId": 7
         },
         {
           "id": "fey",
           "name": "Fey",
-          "description": "A creature tied to the vitality of nature and bound (whether it admits it or not) by old, strange rules of bargain and trickery.",
           "vocabulary": {
             "namePatterns": [
               "{name} of the Old Wood",
@@ -1320,12 +1657,13 @@
             "darkvision 60 ft."
           ],
           "defaultResistances": [],
-          "defaultImmunities": []
+          "defaultImmunities": [],
+          "description": "A creature tied to the vitality of nature and bound (whether it admits it or not) by old, strange rules of bargain and trickery.",
+          "sourceId": 8
         },
         {
           "id": "fiend",
           "name": "Fiend",
-          "description": "A creature of wickedness native to (or long corrupted by) the lower planes, acting with malice and purpose.",
           "vocabulary": {
             "namePatterns": [
               "{name} of the Pit",
@@ -1343,12 +1681,13 @@
           "defaultResistances": [
             "fire"
           ],
-          "defaultImmunities": []
+          "defaultImmunities": [],
+          "description": "A creature of wickedness native to (or long corrupted by) the lower planes, acting with malice and purpose.",
+          "sourceId": 9
         },
         {
           "id": "giant",
           "name": "Giant",
-          "description": "A humanoid-shaped creature of great size and strength, from a society with its own old, rigid sense of order.",
           "vocabulary": {
             "namePatterns": [
               "{name} the Towering",
@@ -1361,12 +1700,13 @@
           ],
           "defaultSenses": [],
           "defaultResistances": [],
-          "defaultImmunities": []
+          "defaultImmunities": [],
+          "description": "A humanoid-shaped creature of great size and strength, from a society with its own old, rigid sense of order.",
+          "sourceId": 10
         },
         {
           "id": "humanoid",
           "name": "Humanoid",
-          "description": "A creature of the common mortal races, organized into societies, professions, and factions much like the player characters.",
           "vocabulary": {
             "namePatterns": [
               "{name} the Sellsword",
@@ -1379,12 +1719,13 @@
           ],
           "defaultSenses": [],
           "defaultResistances": [],
-          "defaultImmunities": []
+          "defaultImmunities": [],
+          "description": "A creature of the common mortal races, organized into societies, professions, and factions much like the player characters.",
+          "sourceId": 11
         },
         {
           "id": "monstrosity",
           "name": "Monstrosity",
-          "description": "A frightening creature not entirely natural, often the product of magic gone wrong or a bloodline warped by it.",
           "vocabulary": {
             "namePatterns": [
               "{name}spawn",
@@ -1399,12 +1740,13 @@
             "darkvision 60 ft."
           ],
           "defaultResistances": [],
-          "defaultImmunities": []
+          "defaultImmunities": [],
+          "description": "A frightening creature not entirely natural, often the product of magic gone wrong or a bloodline warped by it.",
+          "sourceId": 13
         },
         {
           "id": "ooze",
           "name": "Ooze",
-          "description": "A creature with a gelatinous, near-formless body — mindless in most cases, but relentless in what little it does pursue.",
           "vocabulary": {
             "namePatterns": [
               "{name} Ooze",
@@ -1422,12 +1764,13 @@
           "defaultResistances": [],
           "defaultImmunities": [
             "prone"
-          ]
+          ],
+          "description": "A creature with a gelatinous, near-formless body — mindless in most cases, but relentless in what little it does pursue.",
+          "sourceId": 14
         },
         {
           "id": "plant",
           "name": "Plant",
-          "description": "A creature of vegetable rather than animal nature, ranging from barely mobile to aggressively territorial.",
           "vocabulary": {
             "namePatterns": [
               "{name} Bloom",
@@ -1440,12 +1783,13 @@
           ],
           "defaultSenses": [],
           "defaultResistances": [],
-          "defaultImmunities": []
+          "defaultImmunities": [],
+          "description": "A creature of vegetable rather than animal nature, ranging from barely mobile to aggressively territorial.",
+          "sourceId": 15
         },
         {
           "id": "undead",
           "name": "Undead",
-          "description": "Animated remains or restless spirits, driven by hunger, compulsion, or unfinished business rather than a living creature's needs.",
           "vocabulary": {
             "namePatterns": [
               "The Risen {name}",
@@ -1466,7 +1810,9 @@
           "defaultImmunities": [
             "poison",
             "exhaustion"
-          ]
+          ],
+          "description": "Animated remains or restless spirits, driven by hunger, compulsion, or unfinished business rather than a living creature's needs.",
+          "sourceId": 16
         }
       ]
     },
@@ -1477,53 +1823,53 @@
       "values": [
         {
           "name": "Lawful Good",
-          "sourceId": 1,
-          "shortName": "LG"
+          "shortName": "LG",
+          "sourceId": 1
         },
         {
           "name": "Neutral Good",
-          "sourceId": 2,
-          "shortName": "NG"
+          "shortName": "NG",
+          "sourceId": 2
         },
         {
           "name": "Chaotic Good",
-          "sourceId": 3,
-          "shortName": "CG"
+          "shortName": "CG",
+          "sourceId": 3
         },
         {
           "name": "Lawful Neutral",
-          "sourceId": 4,
-          "shortName": "LN"
+          "shortName": "LN",
+          "sourceId": 4
         },
         {
           "name": "True Neutral",
-          "sourceId": 5,
-          "shortName": "N"
+          "shortName": "N",
+          "sourceId": 5
         },
         {
           "name": "Chaotic Neutral",
-          "sourceId": 6,
-          "shortName": "CN"
+          "shortName": "CN",
+          "sourceId": 6
         },
         {
           "name": "Lawful Evil",
-          "sourceId": 7,
-          "shortName": "LE"
+          "shortName": "LE",
+          "sourceId": 7
         },
         {
           "name": "Neutral Evil",
-          "sourceId": 8,
-          "shortName": "NE"
+          "shortName": "NE",
+          "sourceId": 8
         },
         {
           "name": "Chaotic Evil",
-          "sourceId": 9,
-          "shortName": "CE"
+          "shortName": "CE",
+          "sourceId": 9
         },
         {
           "name": "Unaligned",
-          "sourceId": 10,
-          "shortName": "U"
+          "shortName": "U",
+          "sourceId": 10
         }
       ]
     },
@@ -1561,33 +1907,33 @@
       "values": [
         {
           "name": "Tiny",
-          "sourceId": 2,
-          "shortName": "tiny"
+          "shortName": "tiny",
+          "sourceId": 2
         },
         {
           "name": "Small",
-          "sourceId": 3,
-          "shortName": "sm"
+          "shortName": "sm",
+          "sourceId": 3
         },
         {
           "name": "Medium",
-          "sourceId": 4,
-          "shortName": "med"
+          "shortName": "med",
+          "sourceId": 4
         },
         {
           "name": "Large",
-          "sourceId": 5,
-          "shortName": "lg"
+          "shortName": "lg",
+          "sourceId": 5
         },
         {
           "name": "Huge",
-          "sourceId": 6,
-          "shortName": "huge"
+          "shortName": "huge",
+          "sourceId": 6
         },
         {
           "name": "Gargantuan",
-          "sourceId": 7,
-          "shortName": "grg"
+          "shortName": "grg",
+          "sourceId": 7
         }
       ]
     },
@@ -1621,28 +1967,28 @@
       "values": [
         {
           "name": "Walk",
-          "sourceId": 1,
-          "shortName": "walking"
+          "shortName": "walking",
+          "sourceId": 1
         },
         {
           "name": "Burrow",
-          "sourceId": 2,
-          "shortName": "burrowing"
+          "shortName": "burrowing",
+          "sourceId": 2
         },
         {
           "name": "Climb",
-          "sourceId": 3,
-          "shortName": "climbing"
+          "shortName": "climbing",
+          "sourceId": 3
         },
         {
           "name": "Fly",
-          "sourceId": 4,
-          "shortName": "flying"
+          "shortName": "flying",
+          "sourceId": 4
         },
         {
           "name": "Swim",
-          "sourceId": 5,
-          "shortName": "swimming"
+          "shortName": "swimming",
+          "sourceId": 5
         }
       ]
     },
@@ -1653,18 +1999,18 @@
       "values": [
         {
           "name": "Verbal",
-          "sourceId": 1,
-          "shortName": "V"
+          "shortName": "V",
+          "sourceId": 1
         },
         {
           "name": "Somatic",
-          "sourceId": 2,
-          "shortName": "S"
+          "shortName": "S",
+          "sourceId": 2
         },
         {
           "name": "Material",
-          "sourceId": 3,
-          "shortName": "M"
+          "shortName": "M",
+          "sourceId": 3
         }
       ]
     },
@@ -2075,13 +2421,34 @@
       "key": "dice",
       "label": "Dice",
       "values": [
-        { "name": "d4", "sides": 4 },
-        { "name": "d6", "sides": 6 },
-        { "name": "d8", "sides": 8 },
-        { "name": "d10", "sides": 10 },
-        { "name": "d12", "sides": 12 },
-        { "name": "d20", "sides": 20 },
-        { "name": "d100", "sides": 100 }
+        {
+          "name": "d4",
+          "sides": 4
+        },
+        {
+          "name": "d6",
+          "sides": 6
+        },
+        {
+          "name": "d8",
+          "sides": 8
+        },
+        {
+          "name": "d10",
+          "sides": 10
+        },
+        {
+          "name": "d12",
+          "sides": 12
+        },
+        {
+          "name": "d20",
+          "sides": 20
+        },
+        {
+          "name": "d100",
+          "sides": 100
+        }
       ]
     },
     {
@@ -2094,8 +2461,16 @@
           "expression": "1d20",
           "resultMode": "band",
           "bands": [
-            { "min": 20, "max": 20, "label": "Critical Success" },
-            { "min": 1, "max": 1, "label": "Critical Failure" }
+            {
+              "min": 20,
+              "max": 20,
+              "label": "Critical Success"
+            },
+            {
+              "min": 1,
+              "max": 1,
+              "label": "Critical Failure"
+            }
           ]
         }
       ]
@@ -2105,71 +2480,114 @@
       "key": "travelMeans",
       "label": "Travel Means",
       "values": [
-        { "name": "On Foot", "speedMph": 3, "hoursPerDay": 8 },
-        { "name": "By Horse", "speedMph": 6, "hoursPerDay": 8 },
-        { "name": "By Sailing Ship", "speedMph": 10, "hoursPerDay": 24, "fare": { "flat": { "amount": 1, "unit": "sp", "perMiles": 15 } } },
+        {
+          "name": "On Foot",
+          "speedMph": 3,
+          "hoursPerDay": 8
+        },
+        {
+          "name": "By Horse",
+          "speedMph": 6,
+          "hoursPerDay": 8
+        },
+        {
+          "name": "By Sailing Ship",
+          "speedMph": 10,
+          "hoursPerDay": 24,
+          "fare": {
+            "flat": {
+              "amount": 1,
+              "unit": "sp",
+              "perMiles": 15
+            }
+          }
+        },
         {
           "name": "Magebred Coach",
           "speedMph": 7,
           "hoursPerDay": 8,
-          "settingIds": ["eberron"],
-          "fare": { "flat": { "amount": 4, "unit": "cp", "perMiles": 5 } }
+          "settingIds": [
+            "eberron"
+          ],
+          "fare": {
+            "flat": {
+              "amount": 4,
+              "unit": "cp",
+              "perMiles": 5
+            }
+          }
         },
         {
           "name": "Elemental Galleon",
           "speedMph": 12,
           "hoursPerDay": 24,
-          "settingIds": ["eberron"],
+          "settingIds": [
+            "eberron"
+          ],
           "fare": {
-            "first": { "amount": 6, "unit": "sp", "perMiles": 15 },
-            "second": { "amount": 2, "unit": "sp", "perMiles": 15 },
-            "steerage": { "amount": 5, "unit": "cp", "perMiles": 15 }
+            "first": {
+              "amount": 6,
+              "unit": "sp",
+              "perMiles": 15
+            },
+            "second": {
+              "amount": 2,
+              "unit": "sp",
+              "perMiles": 15
+            },
+            "steerage": {
+              "amount": 5,
+              "unit": "cp",
+              "perMiles": 15
+            }
           }
         },
         {
           "name": "Airship",
           "speedMph": 20,
           "hoursPerDay": 24,
-          "settingIds": ["eberron"],
+          "settingIds": [
+            "eberron"
+          ],
           "fare": {
-            "first": { "amount": 10, "unit": "sp", "perMiles": 20 },
-            "second": { "amount": 5, "unit": "sp", "perMiles": 20 }
+            "first": {
+              "amount": 10,
+              "unit": "sp",
+              "perMiles": 20
+            },
+            "second": {
+              "amount": 5,
+              "unit": "sp",
+              "perMiles": 20
+            }
           }
         },
         {
           "name": "Lightning Rail",
           "speedMph": 30,
           "hoursPerDay": 24,
-          "settingIds": ["eberron"],
+          "settingIds": [
+            "eberron"
+          ],
           "fare": {
-            "first": { "amount": 6, "unit": "sp", "perMiles": 15 },
-            "second": { "amount": 2, "unit": "sp", "perMiles": 15 },
-            "steerage": { "amount": 5, "unit": "cp", "perMiles": 15 }
+            "first": {
+              "amount": 6,
+              "unit": "sp",
+              "perMiles": 15
+            },
+            "second": {
+              "amount": 2,
+              "unit": "sp",
+              "perMiles": 15
+            },
+            "steerage": {
+              "amount": 5,
+              "unit": "cp",
+              "perMiles": 15
+            }
           }
         }
       ]
     }
-  ],
-  "preview": {
-    "inventory": [
-      {
-        "name": "Longsword",
-        "quantity": 1,
-        "weight": 3,
-        "notes": "Trusted martial weapon"
-      },
-      {
-        "name": "Explorer's Pack",
-        "quantity": 1,
-        "weight": 10,
-        "notes": "Bedroll, rations, tinderbox, and more"
-      },
-      {
-        "name": "Potion of Healing",
-        "quantity": 2,
-        "weight": 0.5,
-        "notes": "Restores 2d4+2 hit points"
-      }
-    ]
-  }
+  ]
 }

@@ -1,0 +1,26 @@
+{
+  "id": "feat.spider-climb",
+  "name": "Spider Climb",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature can climb difficult surfaces, including upside down on ceilings, without needing to make an ability check.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature can climb difficult surfaces, including upside down on ceilings, without needing to make an ability check."
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "mobility"
+    ],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

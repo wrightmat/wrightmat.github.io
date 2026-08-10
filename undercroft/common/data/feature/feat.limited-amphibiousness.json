@@ -1,0 +1,26 @@
+{
+  "id": "feat.limited-amphibiousness",
+  "name": "Limited Amphibiousness",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature can breathe air and water, but it needs to be submerged at least once every 4 hours to avoid suffocating outside water.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature can breathe air and water, but it needs to be submerged at least once every 4 hours to avoid suffocating outside water."
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "mobility"
+    ],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}
