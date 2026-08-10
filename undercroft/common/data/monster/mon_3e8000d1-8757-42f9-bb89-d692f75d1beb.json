@@ -3,7 +3,7 @@
   "systemIds": [
     "sys.dnd5e"
   ],
-  "creatureTypeId": "monstrosity",
+  "type": "monstrosity",
   "archetypeId": "trickster",
   "roleId": "solo",
   "signatureFeatureId": "feat.false-opening",

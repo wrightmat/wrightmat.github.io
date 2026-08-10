@@ -1,6 +1,7 @@
 {
   "type": "object",
   "$source": "ddb-monster",
+  "$description": "D&D Beyond Monster",
   "fields": {
     "kind": {
       "type": "field",
@@ -14,259 +15,257 @@
       "type": "field",
       "bind": "@name"
     },
+    "image": {
+      "type": "field",
+      "bind": "@avatarUrl"
+    },
+    "systemIds": {
+      "type": "custom",
+      "fn": "ddbMonsterSystemIds"
+    },
+    "type": {
+      "type": "field",
+      "bind": "=lookup('creatureTypes', @typeId).name"
+    },
     "stats": {
-      "type": "object",
-      "fields": {
-        "size": {
-          "type": "field",
-          "bind": "=lookup('sizes', @sizeId).name"
-        },
-        "alignment": {
-          "type": "field",
-          "bind": "=lookup('alignments', @alignmentId).friendlyName"
-        },
-        "typeId": {
-          "type": "field",
-          "bind": "@typeId"
-        },
-        "armorClass": {
-          "type": "field",
-          "bind": "@armorClass"
-        },
-        "armorClassDescription": {
-          "type": "field",
-          "bind": "@armorClassDescription"
-        },
-        "hitPoints": {
-          "type": "field",
-          "bind": "@averageHitPoints"
-        },
-        "hitDice": {
-          "type": "field",
-          "bind": "@hitPointDice.diceString"
-        },
-        "abilities": {
-          "type": "pipeline",
-          "source": "@stats",
-          "steps": [
-            {
-              "step": "map",
-              "item": {
-                "type": "object",
-                "fields": {
-                  "name": {
-                    "type": "field",
-                    "bind": "=lookup('abilities', @value.statId).shortName"
-                  },
-                  "value": {
-                    "type": "field",
-                    "bind": "@value.value"
-                  }
-                }
-              }
-            }
-          ]
-        },
-        "savingThrows": {
-          "type": "pipeline",
-          "source": "@savingThrows",
-          "steps": [
-            {
-              "step": "map",
-              "item": {
-                "type": "object",
-                "fields": {
-                  "name": {
-                    "type": "field",
-                    "bind": "=lookup('abilities', @value.statId).shortName"
-                  },
-                  "value": {
-                    "type": "field",
-                    "bind": "@value.value"
-                  }
-                }
-              }
-            }
-          ]
-        },
-        "skills": {
-          "type": "pipeline",
-          "source": "@skills",
-          "steps": [
-            {
-              "step": "map",
-              "item": {
-                "type": "object",
-                "fields": {
-                  "name": {
-                    "type": "field",
-                    "bind": "=lookup('skills', @value.skillId).friendlyName"
-                  },
-                  "value": {
-                    "type": "field",
-                    "bind": "@value.value"
-                  }
-                }
-              }
-            }
-          ]
-        },
-        "speed": {
-          "type": "pipeline",
-          "source": "@movements",
-          "steps": [
-            {
-              "step": "map",
-              "item": {
-                "type": "object",
-                "fields": {
-                  "type": {
-                    "type": "field",
-                    "bind": "=lookup('speeds', @value.movementId).name"
-                  },
-                  "speed": {
-                    "type": "field",
-                    "bind": "@value.speed"
-                  },
-                  "notes": {
-                    "type": "field",
-                    "bind": "@value.notes"
-                  }
-                }
-              }
-            }
-          ]
-        },
-        "senses": {
-          "type": "pipeline",
-          "source": "@senses",
-          "steps": [
-            {
-              "step": "map",
-              "item": {
-                "type": "object",
-                "fields": {
-                  "name": {
-                    "type": "field",
-                    "bind": "=lookup('senses', @value.senseId).name"
-                  },
-                  "notes": {
-                    "type": "field",
-                    "bind": "@value.notes"
-                  }
-                }
-              }
-            }
-          ]
-        },
-        "passivePerception": {
-          "type": "field",
-          "bind": "@passivePerception"
-        },
-        "languages": {
-          "type": "field",
-          "bind": "@languageDescription"
-        },
-        "languageNote": {
-          "type": "field",
-          "bind": "@languageNote"
-        },
-        "damageAdjustmentIds": {
-          "type": "field",
-          "bind": "@damageAdjustments"
-        },
-        "conditionImmunities": {
-          "type": "pipeline",
-          "source": "@conditionImmunities",
-          "steps": [
-            {
-              "step": "map",
-              "item": {
+      "type": "with",
+      "bindings": {
+        "abilitiesObj": {
+          "type": "custom",
+          "fn": "ddbAbilitiesObject",
+          "args": {
+            "path": "stats"
+          }
+        }
+      },
+      "body": {
+        "type": "object",
+        "fields": {
+          "size": {
+            "type": "field",
+            "bind": "=lookup('sizes', @sizeId).name"
+          },
+          "alignment": {
+            "type": "field",
+            "bind": "=lookup('alignments', @alignmentId).friendlyName"
+          },
+          "armorClass": {
+            "type": "field",
+            "bind": "@armorClass"
+          },
+          "armorClassDescription": {
+            "type": "field",
+            "bind": "@armorClassDescription"
+          },
+          "hitPoints": {
+            "type": "object",
+            "fields": {
+              "max": {
                 "type": "field",
-                "bind": "=lookup('conditions', @value)"
+                "bind": "@averageHitPoints"
+              },
+              "current": {
+                "type": "field",
+                "bind": "@averageHitPoints"
               }
             }
-          ]
-        },
-        "challengeRatingId": {
-          "type": "field",
-          "bind": "@challengeRatingId"
-        },
-        "isLegendary": {
-          "type": "field",
-          "bind": "@isLegendary"
-        },
-        "isMythic": {
-          "type": "field",
-          "bind": "@isMythic"
-        },
-        "hasLair": {
-          "type": "field",
-          "bind": "@hasLair"
-        },
-        "environmentIds": {
-          "type": "field",
-          "bind": "@environments"
-        },
-        "tags": {
-          "type": "field",
-          "bind": "@tags"
-        },
-        "subTypes": {
-          "type": "field",
-          "bind": "@subTypes"
-        },
-        "sourcePageNumber": {
-          "type": "field",
-          "bind": "@sourcePageNumber"
-        },
-        "sources": {
-          "type": "field",
-          "bind": "@sources"
-        },
-        "avatarUrl": {
-          "type": "field",
-          "bind": "@avatarUrl"
-        },
-        "largeAvatarUrl": {
-          "type": "field",
-          "bind": "@largeAvatarUrl"
-        },
-        "specialTraits": {
-          "type": "field",
-          "bind": "@specialTraitsDescription"
-        },
-        "actionsDescription": {
-          "type": "field",
-          "bind": "@actionsDescription"
-        },
-        "bonusActionsDescription": {
-          "type": "field",
-          "bind": "@bonusActionsDescription"
-        },
-        "reactionsDescription": {
-          "type": "field",
-          "bind": "@reactionsDescription"
-        },
-        "legendaryActionsDescription": {
-          "type": "field",
-          "bind": "@legendaryActionsDescription"
-        },
-        "mythicActionsDescription": {
-          "type": "field",
-          "bind": "@mythicActionsDescription"
-        },
-        "characteristicsDescription": {
-          "type": "field",
-          "bind": "@characteristicsDescription"
-        },
-        "lairDescription": {
-          "type": "field",
-          "bind": "@lairDescription"
-        },
-        "url": {
-          "type": "field",
-          "bind": "@url"
+          },
+          "hitDice": {
+            "type": "field",
+            "bind": "@hitPointDice.diceString"
+          },
+          "abilities": {
+            "type": "field",
+            "bind": "@abilitiesObj"
+          },
+          "initiativeBonus": {
+            "type": "field",
+            "bind": "=floor((@abilitiesObj.dexterity - 10) / 2)"
+          },
+          "savingThrows": {
+            "type": "pipeline",
+            "source": "@savingThrows",
+            "steps": [
+              {
+                "step": "map",
+                "item": {
+                  "type": "object",
+                  "fields": {
+                    "name": {
+                      "type": "field",
+                      "bind": "=lookup('abilities', @value.statId).shortName"
+                    },
+                    "value": {
+                      "type": "field",
+                      "bind": "@value.value"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "skills": {
+            "type": "pipeline",
+            "source": "@skills",
+            "steps": [
+              {
+                "step": "map",
+                "item": {
+                  "type": "object",
+                  "fields": {
+                    "name": {
+                      "type": "field",
+                      "bind": "=lookup('skills', @value.skillId).friendlyName"
+                    },
+                    "value": {
+                      "type": "field",
+                      "bind": "@value.value"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "speed": {
+            "type": "custom",
+            "fn": "ddbFormatSpeed",
+            "args": {
+              "path": "movements"
+            }
+          },
+          "senses": {
+            "type": "pipeline",
+            "source": "@senses",
+            "steps": [
+              {
+                "step": "map",
+                "item": {
+                  "type": "field",
+                  "bind": "@value.notes"
+                }
+              }
+            ]
+          },
+          "passivePerception": {
+            "type": "field",
+            "bind": "@passivePerception"
+          },
+          "languages": {
+            "type": "field",
+            "bind": "@languageDescription"
+          },
+          "languageNote": {
+            "type": "field",
+            "bind": "@languageNote"
+          },
+          "damageAdjustments": {
+            "type": "field",
+            "bind": "@damageAdjustments"
+          },
+          "conditionImmunities": {
+            "type": "pipeline",
+            "source": "@conditionImmunities",
+            "steps": [
+              {
+                "step": "map",
+                "item": {
+                  "type": "field",
+                  "bind": "=lookup('conditions', @value)"
+                }
+              }
+            ]
+          },
+          "challengeRating": {
+            "type": "field",
+            "bind": "=lookup('challengeRatings', @challengeRatingId).shortName"
+          },
+          "isLegendary": {
+            "type": "field",
+            "bind": "@isLegendary"
+          },
+          "isMythic": {
+            "type": "field",
+            "bind": "@isMythic"
+          },
+          "hasLair": {
+            "type": "field",
+            "bind": "@hasLair"
+          },
+          "environments": {
+            "type": "pipeline",
+            "source": "@environments",
+            "steps": [
+              {
+                "step": "map",
+                "item": {
+                  "type": "field",
+                  "bind": "=lookup('environments', @value).name"
+                }
+              }
+            ]
+          },
+          "tags": {
+            "type": "field",
+            "bind": "@tags"
+          },
+          "subTypes": {
+            "type": "field",
+            "bind": "@subTypes"
+          },
+          "sourcePageNumber": {
+            "type": "field",
+            "bind": "@sourcePageNumber"
+          },
+          "sources": {
+            "type": "field",
+            "bind": "@sources"
+          },
+          "largeAvatarUrl": {
+            "type": "field",
+            "bind": "@largeAvatarUrl"
+          },
+          "traits": {
+            "type": "custom",
+            "fn": "ddbParseHtmlTraits",
+            "args": {
+              "path": "specialTraitsDescription"
+            }
+          },
+          "actions": {
+            "type": "custom",
+            "fn": "ddbParseHtmlTraits",
+            "args": {
+              "path": "actionsDescription"
+            }
+          },
+          "bonusActionsDescription": {
+            "type": "field",
+            "bind": "@bonusActionsDescription"
+          },
+          "reactionsDescription": {
+            "type": "field",
+            "bind": "@reactionsDescription"
+          },
+          "legendaryActionsDescription": {
+            "type": "field",
+            "bind": "@legendaryActionsDescription"
+          },
+          "mythicActionsDescription": {
+            "type": "field",
+            "bind": "@mythicActionsDescription"
+          },
+          "characteristicsDescription": {
+            "type": "field",
+            "bind": "@characteristicsDescription"
+          },
+          "lairDescription": {
+            "type": "field",
+            "bind": "@lairDescription"
+          },
+          "url": {
+            "type": "field",
+            "bind": "@url"
+          }
         }
       }
     }

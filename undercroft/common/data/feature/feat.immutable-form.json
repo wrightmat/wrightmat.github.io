@@ -1,0 +1,28 @@
+{
+  "id": "feat.immutable-form",
+  "name": "Immutable Form",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature is immune to any spell or effect that would alter its form.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature is immune to any spell or effect that would alter its form."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "endure"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

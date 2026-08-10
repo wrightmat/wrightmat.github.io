@@ -1,0 +1,26 @@
+{
+  "id": "feat.amphibious",
+  "name": "Amphibious",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature can breathe air and water.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature can breathe air and water."
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "mobility"
+    ],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

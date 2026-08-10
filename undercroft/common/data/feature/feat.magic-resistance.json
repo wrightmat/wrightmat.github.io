@@ -1,0 +1,28 @@
+{
+  "id": "feat.magic-resistance",
+  "name": "Magic Resistance",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature has advantage on saving throws against spells and other magical effects.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature has advantage on saving throws against spells and other magical effects."
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "endure"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,29 @@
+{
+  "id": "feat.shadow-stealth",
+  "name": "Shadow Stealth",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "While in dim light or darkness, the creature can take the Hide action as a bonus action.",
+  "mechanics": {
+    "type": "passive",
+    "text": "While in dim light or darkness, the creature can take the Hide action as a bonus action."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "mobility",
+      "control"
+    ],
+    "recipeSlots": [
+      "hide"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

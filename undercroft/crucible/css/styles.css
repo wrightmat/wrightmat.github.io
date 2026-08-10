@@ -21,3 +21,31 @@
   border-color: var(--bs-primary) !important;
   background-color: var(--bs-tertiary-bg);
 }
+
+/* Same blend-in-until-interacted idiom as Forge's own .forge-inline-edit
+   (forge/css/styles.css) — looks like the plain-text stat value it replaces
+   until hovered/focused, so an editable stat field doesn't visually stand
+   out from the read-only fields around it until you actually interact
+   with it. */
+.crucible-inline-edit {
+  display: block;
+  width: 100%;
+  border: 1px solid transparent;
+  border-radius: var(--bs-border-radius-sm, 0.25rem);
+  background-color: transparent;
+  padding: 0.05rem 0.25rem;
+  margin: -0.05rem -0.25rem;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+}
+
+.crucible-inline-edit:hover {
+  border-color: var(--bs-border-color);
+}
+
+.crucible-inline-edit:focus {
+  outline: none;
+  border-color: var(--bs-primary);
+  background-color: var(--bs-body-bg);
+}

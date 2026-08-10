@@ -1,0 +1,312 @@
+{
+  "type": "object",
+  "$source": "fantasy-statblocks",
+  "$description": "Fantasy Statblocks (Obsidian)",
+  "fields": {
+    "kind": {
+      "type": "field",
+      "bind": "='monster'"
+    },
+    "name": {
+      "type": "field",
+      "bind": "@name"
+    },
+    "image": {
+      "type": "field",
+      "bind": "@image"
+    },
+    "notes": {
+      "type": "field",
+      "bind": "@_postFenceNotes"
+    },
+    "stats": {
+      "type": "with",
+      "bindings": {
+        "sensesObj": {
+          "type": "custom",
+          "fn": "fantasyStatblockSenses",
+          "args": {
+            "path": "senses"
+          }
+        }
+      },
+      "body": {
+        "type": "object",
+        "fields": {
+          "size": {
+            "type": "field",
+            "bind": "@size"
+          },
+          "type": {
+            "type": "field",
+            "bind": "@type"
+          },
+          "alignment": {
+            "type": "field",
+            "bind": "@alignment"
+          },
+          "armorClass": {
+            "type": "field",
+            "bind": "@ac"
+          },
+          "hitPoints": {
+            "type": "object",
+            "fields": {
+              "max": {
+                "type": "field",
+                "bind": "@hp"
+              },
+              "current": {
+                "type": "field",
+                "bind": "@hp"
+              }
+            }
+          },
+          "hitDice": {
+            "type": "field",
+            "bind": "@hit_dice"
+          },
+          "speed": {
+            "type": "field",
+            "bind": "@speed"
+          },
+          "abilities": {
+            "type": "object",
+            "fields": {
+              "strength": {
+                "type": "field",
+                "bind": "@stats.0"
+              },
+              "dexterity": {
+                "type": "field",
+                "bind": "@stats.1"
+              },
+              "constitution": {
+                "type": "field",
+                "bind": "@stats.2"
+              },
+              "intelligence": {
+                "type": "field",
+                "bind": "@stats.3"
+              },
+              "wisdom": {
+                "type": "field",
+                "bind": "@stats.4"
+              },
+              "charisma": {
+                "type": "field",
+                "bind": "@stats.5"
+              }
+            }
+          },
+          "initiativeBonus": {
+            "type": "field",
+            "bind": "=floor((@stats.1 - 10) / 2)"
+          },
+          "savingThrows": {
+            "type": "custom",
+            "fn": "fantasyStatblockKeyedList",
+            "args": {
+              "path": "saves"
+            }
+          },
+          "skills": {
+            "type": "custom",
+            "fn": "fantasyStatblockKeyedList",
+            "args": {
+              "path": "skillsaves"
+            }
+          },
+          "senses": {
+            "type": "field",
+            "bind": "@sensesObj.senses"
+          },
+          "passivePerception": {
+            "type": "field",
+            "bind": "@sensesObj.passivePerception"
+          },
+          "languages": {
+            "type": "field",
+            "bind": "@languages"
+          },
+          "challengeRating": {
+            "type": "field",
+            "bind": "@cr"
+          },
+          "damageResistances": {
+            "type": "custom",
+            "fn": "fantasyStatblockSplitList",
+            "args": {
+              "path": "damage_resistances"
+            }
+          },
+          "damageVulnerabilities": {
+            "type": "custom",
+            "fn": "fantasyStatblockSplitList",
+            "args": {
+              "path": "damage_vulnerabilities"
+            }
+          },
+          "damageImmunities": {
+            "type": "custom",
+            "fn": "fantasyStatblockSplitList",
+            "args": {
+              "path": "damage_immunities"
+            }
+          },
+          "conditionImmunities": {
+            "type": "custom",
+            "fn": "fantasyStatblockSplitList",
+            "args": {
+              "path": "condition_immunities"
+            }
+          },
+          "traits": {
+            "type": "pipeline",
+            "source": "@traits",
+            "steps": [
+              {
+                "step": "map",
+                "item": {
+                  "type": "object",
+                  "fields": {
+                    "name": {
+                      "type": "field",
+                      "bind": "@name"
+                    },
+                    "description": {
+                      "type": "field",
+                      "bind": "@desc"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "actions": {
+            "type": "pipeline",
+            "source": "@actions",
+            "steps": [
+              {
+                "step": "map",
+                "item": {
+                  "type": "object",
+                  "fields": {
+                    "name": {
+                      "type": "field",
+                      "bind": "@name"
+                    },
+                    "description": {
+                      "type": "field",
+                      "bind": "@desc"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "bonusActions": {
+            "type": "pipeline",
+            "source": "@bonus_actions",
+            "steps": [
+              {
+                "step": "map",
+                "item": {
+                  "type": "object",
+                  "fields": {
+                    "name": {
+                      "type": "field",
+                      "bind": "@name"
+                    },
+                    "description": {
+                      "type": "field",
+                      "bind": "@desc"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "legendaryActions": {
+            "type": "pipeline",
+            "source": "@legendary_actions",
+            "steps": [
+              {
+                "step": "map",
+                "item": {
+                  "type": "object",
+                  "fields": {
+                    "name": {
+                      "type": "field",
+                      "bind": "@name"
+                    },
+                    "description": {
+                      "type": "field",
+                      "bind": "@desc"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "reactions": {
+            "type": "pipeline",
+            "source": "@reactions",
+            "steps": [
+              {
+                "step": "map",
+                "item": {
+                  "type": "object",
+                  "fields": {
+                    "name": {
+                      "type": "field",
+                      "bind": "@name"
+                    },
+                    "description": {
+                      "type": "field",
+                      "bind": "@desc"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "lairActions": {
+            "type": "pipeline",
+            "source": "@lair_actions",
+            "steps": [
+              {
+                "step": "map",
+                "item": {
+                  "type": "object",
+                  "fields": {
+                    "name": {
+                      "type": "field",
+                      "bind": "@name"
+                    },
+                    "description": {
+                      "type": "field",
+                      "bind": "@desc"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "spells": {
+            "type": "field",
+            "bind": "@spells"
+          },
+          "environment": {
+            "type": "field",
+            "bind": "@environment"
+          },
+          "source": {
+            "type": "field",
+            "bind": "@source"
+          }
+        }
+      }
+    }
+  }
+}

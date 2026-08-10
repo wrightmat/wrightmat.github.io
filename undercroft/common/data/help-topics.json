@@ -345,6 +345,17 @@
       "href": "../loom/index.html#loom-selection"
     },
     {
+      "id": "loom.source.fantasy-statblocks",
+      "title": "Fantasy Statblocks Markdown File",
+      "summary": "Upload a creature note exported from Obsidian's Fantasy Statblocks plugin — the data lives in its own fenced ```statblock YAML block.",
+      "details": [
+        "Everything else in the file (frontmatter, the #monster tag, prose after the block) is ignored except a trailing \"### Description\"/\"### References\" section, which is carried through as this monster's own Notes.",
+        "Spellcasting is unstructured prose in this format — names/frequencies come through as-is, not parsed into real spell references."
+      ],
+      "category": "Loom",
+      "href": "../loom/index.html#loom-selection"
+    },
+    {
       "id": "loom.libraryTable",
       "title": "Library Contents",
       "summary": "Every saved item across every owner, with details and Share in the right-pane inspector.",

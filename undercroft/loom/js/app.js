@@ -318,6 +318,11 @@ const dataTypeSelect = document.querySelector("[data-data-type-select]");
 // dataTypeSelect above, no live dirty-tracking wiring needed.
 const mappingDescriptionInput = document.querySelector("[data-mapping-description]");
 const sourceValueInput = document.querySelector("[data-source-value]");
+// Shown instead of sourceValueInput above only for a source flagged
+// `file: true` (SOURCES, content-fetch.js) — currently just Fantasy
+// Statblocks' own markdown upload; every other source's value is typed
+// text/a URL.
+const sourceFileInput = document.querySelector("[data-source-file]");
 const sourceValueLabelRow = document.querySelector("[data-source-value-label-row]");
 const sourceFetchButton = document.querySelector("[data-source-fetch]");
 const entitiesSummary = document.querySelector("[data-entities-summary]");
@@ -1201,11 +1206,21 @@ if (treeContainer) {
 // reflects the mapping's own current value; the Save handler below now
 // always stamps whatever's currently selected, not only when unset.
 
+// Toggles which of sourceValueInput/sourceFileInput is actually shown for
+// `active` — the one place both this function and updateSourceUi below
+// (Data Source dropdown's own change handler) need to agree on which
+// element to display, so it isn't duplicated between them.
+function applySourceValueVisibility(active) {
+  if (sourceValueInput) sourceValueInput.classList.toggle("d-none", Boolean(active.file));
+  if (sourceFileInput) sourceFileInput.classList.toggle("d-none", !active.file);
+}
+
 function applySourceSelection(source) {
   if (!sourceSelect) return;
   if (source) sourceSelect.value = source;
   const active = SOURCES.find((entry) => entry.id === sourceSelect.value) || SOURCES[0];
   if (sourceValueInput) sourceValueInput.placeholder = active.placeholder;
+  applySourceValueVisibility(active);
   renderSourceValueLabel(active);
 }
 
@@ -1338,7 +1353,7 @@ function renderSourceValueLabel(source) {
   labelRow.className = "d-flex justify-content-between align-items-center gap-2 flex-wrap";
   const label = document.createElement("label");
   label.className = "form-label fw-semibold mb-0";
-  label.setAttribute("for", "loomSourceValue");
+  label.setAttribute("for", source.file ? "loomSourceFile" : "loomSourceValue");
   label.textContent = source.valueLabel;
   labelRow.appendChild(label);
   if (source.helpTopic) {
@@ -1363,6 +1378,7 @@ if (sourceSelect) {
   const updateSourceUi = () => {
     const source = SOURCES.find((entry) => entry.id === sourceSelect.value) || SOURCES[0];
     if (sourceValueInput) sourceValueInput.placeholder = source.placeholder;
+    applySourceValueVisibility(source);
     renderSourceValueLabel(source);
   };
   sourceSelect.addEventListener("change", updateSourceUi);
@@ -1372,9 +1388,13 @@ if (sourceSelect) {
 if (sourceFetchButton) {
   sourceFetchButton.addEventListener("click", async () => {
     const source = SOURCES.find((entry) => entry.id === sourceSelect?.value) || SOURCES[0];
-    const value = (sourceValueInput?.value || "").trim();
+    // A `file: true` source's value is the picked File itself, not typed
+    // text — loadSourceDataRaw's own "fantasy-statblocks" case (
+    // content-fetch.js) reads it via readTextFile, same as the existing
+    // "json" source already does via readJsonFile.
+    const value = source.file ? sourceFileInput?.files?.[0] || null : (sourceValueInput?.value || "").trim();
     if (!value) {
-      status?.show("Enter a value to fetch.", { type: "warning", timeout: 2000 });
+      status?.show(source.file ? "Choose a file to load." : "Enter a value to fetch.", { type: "warning", timeout: 2000 });
       return;
     }
     try {
@@ -4967,6 +4987,7 @@ async function populateMappingSelect() {
 function resetRawData() {
   sampleData = {};
   if (sourceValueInput) sourceValueInput.value = "";
+  if (sourceFileInput) sourceFileInput.value = "";
   if (sampleDataInput) sampleDataInput.value = JSON.stringify(sampleData, null, 2);
 }
 

@@ -1,0 +1,28 @@
+{
+  "id": "feat.amorphous",
+  "name": "Amorphous",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature can move through a space as narrow as 1 inch wide without squeezing.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature can move through a space as narrow as 1 inch wide without squeezing."
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "mobility"
+    ],
+    "recipeSlots": [
+      "escape"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

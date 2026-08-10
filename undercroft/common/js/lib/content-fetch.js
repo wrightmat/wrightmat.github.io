@@ -10,6 +10,12 @@ import { createMappingCustomFunctions } from "./mapping-custom-functions.js";
 
 const SRD_BASE_URL = "https://www.dnd5eapi.co";
 const DDB_CHARACTER_URL = "https://character-service.dndbeyond.com/character/v5/character/";
+// A completely separate D&D Beyond service from the character endpoint above
+// — confirmed via a real live fetch during this feature's own research (id
+// 16909, Gray Ooze) — undocumented, but already an allowed host on the
+// server's own /ddb-proxy route (server/config.py's ddb_proxy_allowed_hosts),
+// which is what fetchDdbMonster below actually goes through.
+const DDB_MONSTER_URL = "https://monster-service.dndbeyond.com/v1/Monster/";
 const CORS_PROXY = "https://corsproxy.io/?url=";
 // The DDB-import pipeline is inherently D&D-5e-specific (D&D Beyond only ever
 // has 5e content) — hardcoding which System record to derive lookup tables
@@ -38,6 +44,24 @@ export const SOURCES = [
     valueLabel: "API Endpoint or URL",
     placeholder: "e.g. /api/2024/classes/barbarian",
     helpTopic: "loom.source.srd",
+  },
+  {
+    id: "ddb-monster",
+    label: "D&D Beyond (Monster)",
+    valueLabel: "Monster ID or URL",
+    placeholder: "e.g. 16909, or https://www.dndbeyond.com/monsters/16909-gray-ooze",
+    helpTopic: "loom.source.ddb-monster",
+  },
+  {
+    id: "fantasy-statblocks",
+    label: "Fantasy Statblocks (Markdown)",
+    valueLabel: "Markdown file",
+    // No placeholder text — this source's own value is a File, not typed
+    // text (see loom/index.html's own file-input branch, shown only when
+    // this source is selected).
+    placeholder: "",
+    helpTopic: "loom.source.fantasy-statblocks",
+    file: true,
   },
 ];
 
@@ -71,6 +95,22 @@ export async function readJsonFile(file) {
   return JSON.parse(text);
 }
 
+// Twin of readJsonFile above, minus the JSON.parse — for a source whose file
+// isn't JSON at all (Fantasy Statblocks' own markdown export, see
+// loadFantasyStatblockData below).
+export async function readTextFile(file) {
+  if (!file) return "";
+  if (typeof file === "string") {
+    return file;
+  }
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsText(file);
+  });
+}
+
 export function extractDdbId(value) {
   if (!value) return null;
   const asString = String(value).trim();
@@ -87,6 +127,74 @@ export async function fetchDdbCharacter(id) {
   }
   const payload = await parseJsonResponse(response, url);
   return payload?.data ?? payload;
+}
+
+// Unlike fetchDdbCharacter above (public CORS proxy only), this goes through
+// fetchDdbContentPage's own local-proxy-first path — monster-service is
+// already an allowed host on server/app.py's /ddb-proxy route, and a non-SRD
+// monster (per this suite's own loom.source.ddb-monster help topic) may only
+// resolve in full with the session cookie that local proxy attaches, same
+// reasoning as a gated class/background/species page. Falls back to the
+// public CORS proxy exactly like every other content-page fetch when the
+// local server isn't available.
+export async function fetchDdbMonster(id) {
+  const text = await fetchDdbContentPage(`${DDB_MONSTER_URL}${id}`);
+  let payload;
+  try {
+    payload = JSON.parse(text);
+  } catch (error) {
+    throw new Error("D&D Beyond monster fetch returned an unexpected (non-JSON) response.");
+  }
+  return payload?.data ?? payload;
+}
+
+// Same "extract the trailing numeric id, whether it's a bare number or a
+// full monster-page URL" resolution extractDdbId already does for
+// characters — reused as-is, no monster-specific parsing needed.
+export async function loadDdbMonsterRawData(value) {
+  const id = extractDdbId(value);
+  if (!id) {
+    throw new Error("Enter a valid D&D Beyond monster ID/URL.");
+  }
+  return fetchDdbMonster(id);
+}
+
+// Vendored the same way dice-overlay.js already vendors @3d-dice/dice-box —
+// a version-pinned dynamic import() straight from unpkg, no build step. No
+// YAML parser existed anywhere in this codebase before Fantasy Statblocks
+// import needed one. Confirmed js-yaml@4.1.0's own package.json "exports"
+// field maps "import" to this exact dist/js-yaml.mjs, a real ESM build.
+const FANTASY_STATBLOCK_YAML_MODULE_URL = "https://unpkg.com/js-yaml@4.1.0/dist/js-yaml.mjs";
+
+// Obsidian's Fantasy Statblocks plugin stores 100% of a creature's actual
+// data inside a ```statblock fenced YAML block — the YAML frontmatter above
+// it (`statblock: inline`) is just a plugin marker, and the `#monster` tag
+// line is irrelevant; both are ignored. Everything AFTER the closing fence
+// (an optional "### Description" heading + prose, then a "### References"
+// heading + source citations — confirmed against undercroft/test/*.md, the
+// 3 real reference files this format was reverse-engineered from) is folded
+// into one `_postFenceNotes` string on the returned object rather than
+// parsed further — heading presence and bullet style both vary between real
+// files, with nothing else worth modeling separately.
+// fantasy-statblocks-monster.json's own `notes` field binds straight to it.
+export async function loadFantasyStatblockData(text) {
+  const source = String(text || "");
+  const fenceMatch = source.match(/```statblock\r?\n([\s\S]*?)```/);
+  if (!fenceMatch) {
+    throw new Error("No ```statblock block found in this file.");
+  }
+  const { load } = await import(/* @vite-ignore */ FANTASY_STATBLOCK_YAML_MODULE_URL);
+  let parsed;
+  try {
+    parsed = load(fenceMatch[1]);
+  } catch (error) {
+    throw new Error(`Invalid YAML in the \`\`\`statblock block: ${error.message}`);
+  }
+  if (!parsed || typeof parsed !== "object") {
+    throw new Error("The ```statblock block didn't parse to a usable object.");
+  }
+  const postFence = source.slice(fenceMatch.index + fenceMatch[0].length).trim();
+  return { ...parsed, _postFenceNotes: postFence };
 }
 
 // D&D Beyond content pages (classes/backgrounds/species) have no API — unlike
@@ -279,10 +387,13 @@ export async function loadDdbData(value, dataManager) {
 // isn't stored separately — the mapping definition's own top-level
 // `$source` (e.g. "ddb") already declares that, so a mapping and the source
 // it expects can never drift apart from what's actually stored.
-// Lookup-table/custom-function context is only meaningful for the "ddb"
-// source today (loadDdbLookupTables' own dnd5e-specific tables, same as
-// loadDdbData's own identical assumption) — a future non-DDB character
-// mapping would need its own equivalent branch here.
+// Lookup-table/custom-function context is only meaningful for D&D-5e-backed
+// sources today (loadDdbLookupTables' own dnd5e-specific tables, same as
+// loadDdbData's own identical assumption) — "ddb" (characters) and
+// "ddb-monster" both resolve against the same sys.dnd5e lookup tables
+// (lookup('creatureTypes', ...), lookup('challengeRatings', ...), etc. —
+// see ddb-monster.json's own mapping); a future non-DDB mapping would need
+// its own equivalent branch here.
 export async function reimportViaMapping(mappingId, value, dataManager) {
   const trimmedId = String(mappingId || "").trim();
   const trimmedValue = String(value || "").trim();
@@ -294,7 +405,7 @@ export async function reimportViaMapping(mappingId, value, dataManager) {
     throw new Error(`Mapping "${trimmedId}" has no declared source to fetch from.`);
   }
   const raw = await loadSourceDataRaw({ id: sourceId }, trimmedValue, dataManager);
-  const lookupTables = sourceId === "ddb" ? await loadDdbLookupTables(dataManager) : {};
+  const lookupTables = sourceId === "ddb" || sourceId === "ddb-monster" ? await loadDdbLookupTables(dataManager) : {};
   const customFunctions = createMappingCustomFunctions(lookupTables);
   return applyMapping(definition, raw, { lookupTables, customFunctions });
 }
@@ -589,6 +700,14 @@ export async function loadSourceData(source, value, dataManager) {
   switch (source.id) {
     case "ddb":
       return loadDdbData(value, dataManager);
+    case "ddb-monster":
+      // No parsed/raw distinction the way "ddb" has (loadDdbData vs
+      // loadDdbRawData) — there's no hardcoded "always run this one mapping"
+      // convenience for monsters the way loadCharacterMappingDefinition is
+      // for characters, so both loadSourceData and loadSourceDataRaw always
+      // want the same raw payload here; loadSourceDataRaw's own fallthrough
+      // to this function already gets that for free.
+      return loadDdbMonsterRawData(value);
     case "srd":
       return loadSrdData(value);
     case "library":
@@ -599,6 +718,13 @@ export async function loadSourceData(source, value, dataManager) {
       }
       const raw = await readJsonFile(value);
       return raw;
+    }
+    case "fantasy-statblocks": {
+      if (!value) {
+        throw new Error("Select a Fantasy Statblocks markdown file to load.");
+      }
+      const text = await readTextFile(value);
+      return loadFantasyStatblockData(text);
     }
     case "manual": {
       const trimmed = (value || "").trim();

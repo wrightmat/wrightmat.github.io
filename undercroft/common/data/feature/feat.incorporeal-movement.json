@@ -1,0 +1,29 @@
+{
+  "id": "feat.incorporeal-movement",
+  "name": "Incorporeal Movement",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature can move through other creatures and objects as if they were difficult terrain. It takes 5 (1d10) force damage if it ends its turn inside an object.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature can move through other creatures and objects as if they were difficult terrain. It takes 5 (1d10) force damage if it ends its turn inside an object."
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "mobility",
+      "defense"
+    ],
+    "recipeSlots": [
+      "escape"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

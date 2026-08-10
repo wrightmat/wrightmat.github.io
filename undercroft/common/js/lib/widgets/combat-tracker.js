@@ -79,6 +79,21 @@ export function initCombatTrackerWidget(
     return { destroy() {} };
   }
 
+  // GM mode only — see ensureGmShell/renderGm's own comments. Two permanent
+  // children of `container`, created exactly once and never torn down:
+  // `dynamicMount` (everything that legitimately needs rebuilding on every
+  // render — the encounter picker, combatant list, edit panel) and
+  // `addRowMount` (the Add Combatant row, built once and left completely
+  // alone afterward). Splitting these apart is what actually fixes the
+  // focus-loss bug a previous attempt only band-aided (capturing/restoring
+  // focus around a full rebuild reduced, but never eliminated, the GM's
+  // cursor getting dropped mid-keystroke — confirmed still happening
+  // intermittently). An `<input>` that is NEVER removed from the document
+  // simply cannot lose focus to a re-render, so this makes the bug
+  // structurally impossible instead of merely less likely.
+  let dynamicMount = null;
+  let addRowMount = null;
+
   const state = {
     encounter: null,
     conditions: null,
@@ -862,6 +877,14 @@ export function initCombatTrackerWidget(
     return entries;
   }
 
+  // Built exactly ONCE (see ensureAddRowMounted below) and never rebuilt for
+  // the rest of this widget instance's life — a previous fix here tried to
+  // shadow the inputs' own live text/focus into `state` and restore them
+  // after every rebuild, which reduced but never fully eliminated the bug
+  // (confirmed by the user: focus was still intermittently lost). The only
+  // fully reliable fix is to never destroy these <input> elements at all —
+  // see ensureAddRowMounted's own comment for how that's structurally
+  // guaranteed now, not just band-aided.
   function renderGmAddCombatantRow() {
     // flex-nowrap + overflow-x on the row (not the whole widget) — a single
     // inline row that scrolls sideways in a narrow column rather than ever
@@ -1133,11 +1156,33 @@ export function initCombatTrackerWidget(
     return panel;
   }
 
+  // Creates dynamicMount/addRowMount exactly once (a no-op every call after
+  // the first) — see their own declaration comment for why the split
+  // exists. Called from renderGm() itself rather than init(), so it's
+  // naturally never reached in player mode at all.
+  function ensureGmShell() {
+    if (dynamicMount && addRowMount) return;
+    container.innerHTML = "";
+    dynamicMount = el("div");
+    // mt-2 replaces the gap-2 spacing this row used to get for free as
+    // root's own last flex child — now a separate sibling of dynamicMount,
+    // not a child of it, so it needs its own top margin to keep the same
+    // visual spacing. Starts hidden (d-none) — toggled per-render below,
+    // same "only show once an encounter is selected" behavior this row
+    // always had, just via a class now instead of being present/absent.
+    addRowMount = el("div", "mt-2 d-none");
+    addRowMount.appendChild(renderGmAddCombatantRow());
+    container.append(dynamicMount, addRowMount);
+  }
+
   // Synchronous, and builds everything into a detached `root` before ever
-  // touching `container` — swapping content in one step at the very end
-  // (rather than clearing container up front, the old approach) is what
-  // stops the whole widget from visibly flashing empty on every click.
+  // touching dynamicMount — swapping content in one step at the very end
+  // (rather than clearing it up front, the old approach) is what stops the
+  // widget from visibly flashing empty on every click. The Add Combatant
+  // row (addRowMount) is deliberately NOT part of this rebuild at all — see
+  // ensureGmShell's own comment for why.
   function renderGm() {
+    ensureGmShell();
     const root = el("div", "combat-tracker-widget d-flex flex-column gap-2");
 
     const pickerRow = el("div", "d-flex flex-wrap gap-2 align-items-end");
@@ -1183,18 +1228,22 @@ export function initCombatTrackerWidget(
 
       const editPanel = renderCombatantEditPanel();
       if (editPanel) root.appendChild(editPanel);
-
-      root.appendChild(renderGmAddCombatantRow());
     } else {
       root.appendChild(el("p", "text-body-secondary small mb-0", "Select or create an encounter to start tracking combat."));
     }
 
-    disposeTooltips(container);
-    container.innerHTML = "";
-    container.appendChild(root);
+    disposeTooltips(dynamicMount);
+    dynamicMount.innerHTML = "";
+    dynamicMount.appendChild(root);
     renderTagDatalist(TAG_DATALIST_ID, state.conditions);
-    refreshTooltips(container);
+    refreshTooltips(dynamicMount);
     updateVisibilityAction();
+
+    // addRowMount itself (and everything inside it) was built once in
+    // ensureGmShell and is never rebuilt here — only its visibility follows
+    // state.encounter, same "only shown once an encounter exists" behavior
+    // this row always had.
+    addRowMount.classList.toggle("d-none", !state.encounter);
   }
 
   // A rough, numeric-free read on how hurt a non-PC combatant is — players

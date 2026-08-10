@@ -1,0 +1,27 @@
+{
+  "id": "feat.unusual-nature",
+  "name": "Unusual Nature",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature doesn't require air, food, drink, or sleep.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature doesn't require air, food, drink, or sleep."
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility",
+      "defense"
+    ],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}
