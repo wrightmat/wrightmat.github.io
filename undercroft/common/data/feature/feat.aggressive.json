@@ -1,0 +1,26 @@
+{
+  "id": "feat.aggressive",
+  "name": "Aggressive",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "As a bonus action, the creature can move up to its speed toward a hostile creature it can see.",
+  "mechanics": {
+    "type": "passive",
+    "text": "As a bonus action, the creature can move up to its speed toward a hostile creature it can see."
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "mobility"
+    ],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

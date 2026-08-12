@@ -77,6 +77,13 @@ export async function listFeaturesForSystem(dataManager, systemId) {
   return listKindForSystem(dataManager, "feature", systemId);
 }
 
+// Crucible's own generated-output kind — lets the Monster picker (app.js)
+// offer every previously-saved monster for the active System, the same way
+// Sanctum's Location picker lists saved Locations for the active Setting.
+export async function listMonstersForSystem(dataManager, systemId) {
+  return listKindForSystem(dataManager, "monster", systemId);
+}
+
 // Every top-level array field, so Crucible's "Combat scaling field" tool
 // preference dropdown can list all real candidates — deliberately not
 // filtered by shape (unlike Vault's cost/targetBudget-based

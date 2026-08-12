@@ -1,0 +1,19 @@
+{
+  "id": "eff.longbow",
+  "name": "Longbow",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "signatureFeatureId": null,
+  "featureIds": [],
+  "properties": {
+    "form": "weapon"
+  },
+  "budget": {
+    "target": 0,
+    "spent": 0,
+    "remaining": 0
+  },
+  "price": "50 gp",
+  "notes": "A tall bow with real reach and punch, but awkward indoors."
+}

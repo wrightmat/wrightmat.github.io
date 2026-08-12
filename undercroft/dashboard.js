@@ -88,6 +88,11 @@ const { status } = initAppShell({
   namespace: "dashboard",
   leftPane: { size: "default", initial: "collapsed" },
   rightPane: { size: "lg", initial: "collapsed" },
+  // Same header slot (and same gear-button styling, wired below rather than
+  // through tool-settings.js — see the modal-building comment further down
+  // for why) Vault/Forge/Crucible/Repository already reserve for their own
+  // Settings button — upper-left, before the pane toggle/title.
+  settingsSlotAttr: "data-dashboard-settings-slot",
 });
 const dataManager = new DataManager({ baseUrl: resolveApiBase(), storagePrefix: "undercroft.workbench" });
 initAuthControls({ root: document, status, dataManager });
@@ -367,6 +372,7 @@ const WIDGET_CATALOG = [
         setRightAction: ctx.setRightAction,
         instanceId: ctx.instanceId,
         forcePlayerView: ctx.forcePlayerView,
+        plainMountContainer: ctx.plainMountContainer,
       }),
   },
   {
@@ -760,7 +766,6 @@ function persistBackground(color) {
 function applyBackground(color) {
   if (!mainEl) return;
   mainEl.style.backgroundColor = color || "";
-  if (colorInput) colorInput.value = color || "#ffffff";
 }
 
 // "" means no override — falls back to the computed default (campaign name →
@@ -1167,16 +1172,6 @@ const gridZoneRegistry = new Map();
 // primary/success/danger palette) and top-placed tooltips (not the other
 // tools' bottom) — both passed as explicit overrides rather than through
 // ACTION_PRESETS/kind defaults, which assume the generator-tool convention.
-document.querySelector("[data-dashboard-color-reset-mount]")?.appendChild(
-  createIconButton({
-    icon: "tabler:eraser",
-    label: "Reset background",
-    variant: "dark",
-    kind: "toolbar",
-    tooltipPlacement: "top",
-    attrs: { "data-dashboard-color-reset": true },
-  })
-);
 // GM-and-above only — a second screen/TV mirror is a table-running tool, not
 // something a player-tier account has any use for. Simply never mounted
 // below that tier, rather than mounted-but-hidden — screenViewButton (below)
@@ -1217,18 +1212,6 @@ const welcomeEl = document.querySelector("[data-dashboard-welcome]");
 const editToggle = document.querySelector("[data-dashboard-edit-toggle]");
 const layoutTools = document.querySelector("[data-dashboard-layout-tools]");
 const addToolbar = document.querySelector("[data-dashboard-add-toolbar]");
-const colorInput = document.querySelector("[data-dashboard-color-input]");
-const colorReset = document.querySelector("[data-dashboard-color-reset]");
-const gridColumnsInput = document.querySelector("[data-dashboard-grid-columns-input]");
-const gridRowsInput = document.querySelector("[data-dashboard-grid-rows-input]");
-if (gridColumnsInput) {
-  gridColumnsInput.min = String(GRID_COLUMN_COUNT_MIN);
-  gridColumnsInput.max = String(GRID_COLUMN_COUNT_MAX);
-}
-if (gridRowsInput) {
-  gridRowsInput.min = String(GRID_ROW_COUNT_MIN);
-  gridRowsInput.max = String(GRID_ROW_COUNT_MAX);
-}
 const screenViewButton = document.querySelector("[data-dashboard-screen-toggle]");
 const leftPane = document.querySelector('[data-pane="left"]');
 const leftPaneToggle = document.querySelector('[data-pane-toggle="left"]');
@@ -1394,10 +1377,11 @@ function buildCtx(instance, { setTitle, setHeaderAction, setHeaderContent, setRi
     // should see the same restricted view everyone else at the table sees).
     forcePlayerView: screenMode,
     // An alternate, never-zoomed mount point — set per-instance by
-    // mountWidget only for Handout (the one widget type where only SOME of
-    // what it renders — Press-templated cards, not journal pages — conflicts
-    // with a CSS zoom; see ZOOM_EXCLUDED_WIDGET_TYPES's own comment). null
-    // for every other widget type.
+    // mountWidget for Handout (only SOME of what it renders — Press-
+    // templated cards, not journal pages — conflicts with a CSS zoom; see
+    // ZOOM_EXCLUDED_WIDGET_TYPES's own comment) and Browser (its own URL
+    // input specifically, not its embedded content — see mountWidget's own
+    // isBrowser comment). null for every other widget type.
     plainMountContainer: null,
     // Only meaningful as the value *at mount time* — dashboard.js never
     // remounts a widget just because edit mode toggled (see editToggle's own
@@ -1459,18 +1443,33 @@ function mountWidget(instance, { screenMode: isScreenCard = false } = {}) {
   // render time, whether zoom is safe (a journal page — plain flow, zoom is
   // fine) or not (a Press-templated card — its own JS-measurement scale-to-
   // fit conflicts with CSS zoom, same as Map). It always gets both a zoomed
-  // wrapper and a never-zoomed sibling — handout.js itself picks which one
+  // wrapper and a never-zoomed sibling — handout.js itself picks which ONE
   // to actually render into (see its own plainMountContainer/renderTarget
-  // comment) — every other widget type just mounts straight into `mount`.
+  // comment) — the two are never both visible at once there.
+  //
+  // Browser is a different shape of the same underlying need: BOTH its own
+  // URL input (never zoomed — an address bar that grows with the content
+  // zoom is disorienting, and zooming it does nothing for legibility the
+  // way zooming the actual embedded page does) and its embedded content
+  // (the part zoom is actually FOR) are always visible together, not a
+  // per-instance either/or — see browser.js's own render, which puts the
+  // input in plainMountContainer and the content in `container` itself.
+  //
+  // Every other widget type just mounts straight into `mount`.
   const isHandout = instance.widgetType === "handout";
+  const isBrowser = instance.widgetType === "browser";
   let zoomTargetEl = mount;
   let plainMountEl = null;
-  if (isHandout) {
+  if (isHandout || isBrowser) {
     const zoomWrap = el("div", "d-flex flex-column flex-grow-1");
     zoomWrap.style.minHeight = "0";
-    const plainWrap = el("div", "d-none flex-column flex-grow-1");
+    const plainWrap = el("div", isBrowser ? "d-flex flex-column" : "d-none flex-column flex-grow-1");
     plainWrap.style.minHeight = "0";
-    mount.append(zoomWrap, plainWrap);
+    if (isBrowser) {
+      mount.append(plainWrap, zoomWrap);
+    } else {
+      mount.append(zoomWrap, plainWrap);
+    }
     zoomTargetEl = zoomWrap;
     plainMountEl = plainWrap;
   }
@@ -1731,7 +1730,7 @@ function mountWidget(instance, { screenMode: isScreenCard = false } = {}) {
     setHeaderContent: isScreenCard ? () => {} : setHeaderContent,
     setRightAction: isScreenCard ? () => {} : setRightAction,
   });
-  if (isHandout) ctx.plainMountContainer = plainMountEl;
+  if (isHandout || isBrowser) ctx.plainMountContainer = plainMountEl;
   const api = entry.init(zoomTargetEl, ctx) || { destroy() {} };
   mounted.set(instance.instanceId, api);
 }
@@ -1782,6 +1781,7 @@ async function isInstanceSpotlighted(instance) {
 }
 
 let screenGridEl = null;
+let screenZoomEl = null;
 let screenPollTimer = null;
 let screenInstances = [];
 
@@ -1800,19 +1800,64 @@ let screenInstances = [];
 // about those (confirmed directly: without this, resizing/moving a widget
 // on the GM's own dashboard never showed up here, even once already-visible
 // content kept updating live via each widget's own separate polling).
+// Whole-window scale (loadScreenSettings().zoom) — distinct from a single
+// widget instance's own `instance.zoom` (mountWidget's data-widget-zoom-
+// target, re-applied separately inside refreshScreen below).
+//
+// CSS `zoom` was tried first and dropped: it grows the ZOOMED element's own
+// rendered box as seen by ITS PARENT (the same thing a browser's native
+// Ctrl+ page zoom does) — so screenRootEl itself ballooned past the actual
+// window bounds, and that overflow happens one level up, at the document,
+// where no `overflow: hidden` set ON screenRootEl could ever catch it.
+// `transform: scale` doesn't touch layout size at all, so instead
+// screenZoomEl is deliberately pre-shrunk to 1/factor of screenRootEl's own
+// real, stable (unscaled) content box, then visually scaled back up —
+// screenZoomEl's OWN footprint never changes, so there's nothing left for
+// the document to overflow around.
+function applyScreenZoom() {
+  if (!screenRootEl || !screenZoomEl) return;
+  const factor = (loadScreenSettings().zoom || DEFAULT_SCREEN_ZOOM) / 100;
+  screenZoomEl.style.width = `${screenRootEl.clientWidth / factor}px`;
+  screenZoomEl.style.height = `${screenRootEl.clientHeight / factor}px`;
+  screenZoomEl.style.transform = `scale(${factor})`;
+}
+
 function renderScreenView() {
   dashboardShellEl?.classList.add("d-none");
   if (!screenRootEl) return;
   screenRootEl.classList.remove("d-none");
   screenRootEl.classList.add("d-flex");
+  // Belt-and-suspenders no-scrollbar: screenZoomEl's own compensated sizing
+  // (applyScreenZoom) already keeps screenRootEl's box from ever growing
+  // past the window, but clipping at every level (document + screenRootEl
+  // itself) guarantees no scrollbar can appear regardless of source — the
+  // GM running this window can't see it (it's on the table's own display),
+  // so there's nothing here to scroll to, ever.
+  document.documentElement.style.overflow = "hidden";
+  document.body.style.overflow = "hidden";
+  screenRootEl.style.overflow = "hidden";
   document.title = "Second screen — Undercroft";
+  // screenZoomEl is the thing that actually gets scaled (applyScreenZoom) —
+  // transformOrigin fixed at top-left here since it never changes; width/
+  // height are set per-render by applyScreenZoom itself, which needs
+  // screenRootEl already laid out to measure its real content-box size.
+  screenZoomEl = el("div", "d-flex flex-column");
+  screenZoomEl.style.transformOrigin = "top left";
   screenGridEl = el("div", "dashboard-grid flex-grow-1");
   screenGridEl.style.setProperty("--dashboard-grid-columns", String(getColumnCount()));
-  screenRootEl.appendChild(screenGridEl);
+  screenZoomEl.appendChild(screenGridEl);
+  screenRootEl.appendChild(screenZoomEl);
+  applyScreenZoom();
+  // A resized mirror window (the GM dragging its edge, or the OS itself
+  // repositioning it back onto a screen) changes screenRootEl's own content-
+  // box size — re-measure and re-apply so screenZoomEl's compensated size
+  // stays correct instead of drifting stale and reintroducing overflow.
+  window.addEventListener("resize", applyScreenZoom);
   screenInstances = layout.widgets.filter((instance) => TABLE_WIDGET_TYPES.has(instance.widgetType));
   screenInstances.forEach((instance) => mountWidget(instance, { screenMode: true }));
 
   const refreshScreen = async () => {
+    applyScreenZoom();
     const serverSettings = await loadServerSettings();
     layout = await loadLayout(serverSettings);
     screenGridEl.style.setProperty("--dashboard-grid-columns", String(getColumnCount()));
@@ -2488,14 +2533,12 @@ function applyEditingState() {
     // toolbar via d-none (not a size/visibility change Bootstrap's own
     // mouseleave handling reliably catches) can leave a shown tooltip
     // floating with no trigger left to dismiss it. Dispose right before
-    // hiding, re-arm right after showing.
+    // hiding, re-arm right after showing. Grid size/background used to live
+    // here too — now in the Dashboard Settings modal (openDashboardSettingsModal),
+    // which reads straight from `layout` fresh on every open, so there's no
+    // separate sync to do for those anymore.
     if (editing) {
       layoutTools.classList.remove("d-none");
-      // Sync from `layout` every time this becomes visible, not just once —
-      // it can change out from under these inputs (onPinCharacter swapping
-      // campaigns loads a different layout) while they were hidden.
-      if (gridColumnsInput) gridColumnsInput.value = String(getColumnCount());
-      if (gridRowsInput) gridRowsInput.value = String(getRowCount());
       refreshTooltips(layoutTools);
     } else {
       disposeTooltips(layoutTools);
@@ -2556,6 +2599,112 @@ gridEl?.addEventListener("click", (event) => {
 // "undercroft-screen" target) only lets you reopen/refocus, not close.
 let screenWindowRef = null;
 let screenWindowWatchTimer = 0;
+let lastTrackedScreenPosition = null;
+
+// Common physical second-monitor/TV resolutions — a GM picks one instead of
+// guessing pixel values, since "everyone's second screen is different" (the
+// exact ask this exists for). SCREEN_RESOLUTION_CUSTOM opens up the two raw
+// width/height fields in the settings modal for anything not listed here.
+const SCREEN_RESOLUTION_PRESETS = [
+  { value: "1024x768", label: "1024 × 768", width: 1024, height: 768 },
+  { value: "1280x800", label: "1280 × 800", width: 1280, height: 800 },
+  { value: "1366x768", label: "1366 × 768", width: 1366, height: 768 },
+  { value: "1920x1080", label: "1920 × 1080 (Full HD)", width: 1920, height: 1080 },
+  { value: "1920x1280", label: "1920 × 1280", width: 1920, height: 1280 },
+  { value: "2560x1440", label: "2560 × 1440 (QHD)", width: 2560, height: 1440 },
+  { value: "3840x2160", label: "3840 × 2160 (4K UHD)", width: 3840, height: 2160 },
+];
+const SCREEN_RESOLUTION_CUSTOM = "custom";
+const DEFAULT_SCREEN_RESOLUTION = "1920x1080";
+// Same steps Windows' own display-scaling control offers — a familiar set
+// rather than an arbitrary one, and it directly covers the "displays things
+// smaller at such a high resolution" complaint this exists to fix.
+const SCREEN_ZOOM_OPTIONS = [100, 110, 125, 150, 175, 200];
+const DEFAULT_SCREEN_ZOOM = 100;
+const SCREEN_SETTINGS_LOCAL_KEY = "screenSettings";
+const DASHBOARD_SETTINGS_MODAL_ID = "undercroft-dashboard-settings-modal";
+
+// Deliberately local-only — NOT run through persistSetting()/
+// dataManager.saveUserSettings like every other dashboard setting (layout,
+// background, header title). Which physical display is "second," what
+// resolution/zoom it runs, and where the mirror window last sat are all
+// properties of THIS machine's own monitor arrangement, not something that
+// should follow a signed-in account to a different computer. loadLocalSetting/
+// saveLocalSetting (this file's own local-only pair) already stop short of
+// that server round trip, so no separate storage mechanism is needed here.
+function loadScreenSettings() {
+  const raw = loadLocalSetting(SCREEN_SETTINGS_LOCAL_KEY) || {};
+  return {
+    resolution: raw.resolution || DEFAULT_SCREEN_RESOLUTION,
+    customWidth: clampInt(raw.customWidth, 320, 7680, 1920),
+    customHeight: clampInt(raw.customHeight, 240, 4320, 1080),
+    zoom: SCREEN_ZOOM_OPTIONS.includes(Number(raw.zoom)) ? Number(raw.zoom) : DEFAULT_SCREEN_ZOOM,
+    // Wherever the GM last dragged the mirror window to — null until the
+    // first time it's moved (see watchScreenWindow's own tracking below).
+    left: Number.isFinite(raw.left) ? raw.left : null,
+    top: Number.isFinite(raw.top) ? raw.top : null,
+  };
+}
+
+function saveScreenSettings(patch) {
+  saveLocalSetting(SCREEN_SETTINGS_LOCAL_KEY, { ...loadScreenSettings(), ...patch });
+}
+
+function resolveScreenSize(settings) {
+  if (settings.resolution === SCREEN_RESOLUTION_CUSTOM) {
+    return { width: settings.customWidth, height: settings.customHeight };
+  }
+  const preset = SCREEN_RESOLUTION_PRESETS.find((entry) => entry.value === settings.resolution);
+  return preset ? { width: preset.width, height: preset.height } : { width: 1920, height: 1080 };
+}
+
+// Window Management API (`getScreenDetails`) — Chromium-only as of this
+// writing, no Firefox/Safari support, and gated behind a one-time permission
+// prompt the first time a page actually calls it. Tried first every time
+// per the "automatic when possible" ask: once granted it resolves near-
+// instantly with no prompt, so this costs nothing on the common case, and it
+// simply returns null on anything else (unsupported browser, denied/
+// dismissed permission, or a single-display machine with no "second" screen
+// to find) — resolveWindowPlacement's remembered-position fallback covers
+// every one of those cases identically, so nothing here needs to know WHY
+// auto-placement didn't happen, just that it didn't.
+async function detectSecondScreenPlacement(width, height) {
+  if (typeof window.getScreenDetails !== "function") return null;
+  try {
+    const details = await window.getScreenDetails();
+    const screens = details?.screens || [];
+    const target =
+      screens.find((entry) => entry !== details.currentScreen && !entry.isPrimary) ||
+      screens.find((entry) => entry !== details.currentScreen);
+    if (!target) return null;
+    return {
+      left: Math.round(target.availLeft + Math.max(0, (target.availWidth - width) / 2)),
+      top: Math.round(target.availTop + Math.max(0, (target.availHeight - height) / 2)),
+    };
+  } catch (error) {
+    return null;
+  }
+}
+
+// Auto-placement first (the "right browser, permission given" case), the
+// remembered last-dragged position as the always-on backup otherwise, and
+// no explicit left/top at all (the browser's own default placement) if
+// neither is available yet — e.g. a brand-new install of an unsupported
+// browser that's never had the window moved.
+async function resolveWindowPlacement(settings, width, height) {
+  const auto = await detectSecondScreenPlacement(width, height);
+  if (auto) return auto;
+  if (Number.isFinite(settings.left) && Number.isFinite(settings.top)) {
+    return { left: settings.left, top: settings.top };
+  }
+  return null;
+}
+
+function buildScreenWindowFeatures(width, height, placement) {
+  const parts = [`popup=yes`, `location=no`, `width=${width}`, `height=${height}`];
+  if (placement) parts.push(`left=${placement.left}`, `top=${placement.top}`);
+  return parts.join(",");
+}
 
 function setScreenButtonActive(active) {
   if (!screenViewButton) return;
@@ -2574,16 +2723,59 @@ function stopWatchingScreenWindow() {
 // closed" (by its own OS close button, not through this toggle) — polling
 // its own `.closed` flag is the standard workaround, so the button still
 // reverts to inactive if the GM closes the mirror window directly instead
-// of clicking this toggle again.
+// of clicking this toggle again. The same tick also captures screenX/screenY
+// into the remembered-position setting above — harmless to keep recording
+// even when this open used auto-placement, since a GM who drags it
+// afterward wants THAT new spot remembered as the backup, not the stale one.
 function watchScreenWindow() {
   stopWatchingScreenWindow();
+  lastTrackedScreenPosition = null;
   screenWindowWatchTimer = window.setInterval(() => {
     if (!screenWindowRef || screenWindowRef.closed) {
       screenWindowRef = null;
       setScreenButtonActive(false);
       stopWatchingScreenWindow();
+      return;
+    }
+    try {
+      const { screenX, screenY } = screenWindowRef;
+      if (
+        Number.isFinite(screenX) &&
+        Number.isFinite(screenY) &&
+        (!lastTrackedScreenPosition || lastTrackedScreenPosition.left !== screenX || lastTrackedScreenPosition.top !== screenY)
+      ) {
+        lastTrackedScreenPosition = { left: screenX, top: screenY };
+        saveScreenSettings(lastTrackedScreenPosition);
+      }
+    } catch (error) {
+      // Same-origin popup — reading screenX/screenY should never throw;
+      // defensive only.
     }
   }, 1000);
+}
+
+async function openScreenWindow() {
+  const search = new URLSearchParams();
+  search.set("screen", "1");
+  if (shareParam) search.set("share", shareParam);
+  const url = new URL(window.location.href);
+  url.search = `?${search.toString()}`;
+  const settings = loadScreenSettings();
+  const { width, height } = resolveScreenSize(settings);
+  const placement = await resolveWindowPlacement(settings, width, height);
+  const features = buildScreenWindowFeatures(width, height, placement);
+  screenWindowRef = window.open(url, "undercroft-screen", features);
+  // null when the browser's popup blocker stepped in — nothing opened, so
+  // the button should stay showing "off." The one case this can legitimately
+  // happen even with a real click behind it: the very first time
+  // getScreenDetails() has to show its own permission prompt, the wait for
+  // a human response can outlast the click's "user activation" window. A
+  // second click right after granting works normally, since the permission
+  // is then already decided and getScreenDetails() resolves instantly.
+  if (screenWindowRef) {
+    setScreenButtonActive(true);
+    watchScreenWindow();
+  }
 }
 
 screenViewButton?.addEventListener("click", () => {
@@ -2594,39 +2786,11 @@ screenViewButton?.addEventListener("click", () => {
     stopWatchingScreenWindow();
     return;
   }
-  const search = new URLSearchParams();
-  search.set("screen", "1");
-  if (shareParam) search.set("share", shareParam);
-  const url = new URL(window.location.href);
-  url.search = `?${search.toString()}`;
-  screenWindowRef = window.open(url, "undercroft-screen", "popup=yes,location=no,width=1280,height=800");
-  // null when the browser's popup blocker stepped in — nothing opened, so
-  // the button should stay showing "off."
-  if (screenWindowRef) {
-    setScreenButtonActive(true);
-    watchScreenWindow();
-  }
+  void openScreenWindow();
 });
 
-widgetInspectorRemove?.addEventListener("click", () => {
-  if (!selectedWidgetInstanceId) return;
-  const instanceId = selectedWidgetInstanceId;
-  selectWidget("");
-  removeWidget(instanceId);
-});
-
-colorInput?.addEventListener("input", () => {
-  applyBackground(colorInput.value);
-  persistBackground(colorInput.value);
-});
-
-colorReset?.addEventListener("click", () => {
-  applyBackground("");
-  persistBackground("");
-});
-
-gridColumnsInput?.addEventListener("change", () => {
-  layout.columnCount = clampInt(gridColumnsInput.value, GRID_COLUMN_COUNT_MIN, GRID_COLUMN_COUNT_MAX, layout.columnCount);
+function applyColumnCount(value) {
+  layout.columnCount = clampInt(value, GRID_COLUMN_COUNT_MIN, GRID_COLUMN_COUNT_MAX, layout.columnCount);
   // A shrunk grid can leave existing widgets extending past the new right
   // edge — clamp their own colSpan/col to fit rather than leaving them
   // hanging off the grid entirely.
@@ -2634,22 +2798,274 @@ gridColumnsInput?.addEventListener("change", () => {
     instance.colSpan = Math.min(instance.colSpan, layout.columnCount);
     instance.col = Math.min(instance.col, layout.columnCount - instance.colSpan);
   });
-  gridColumnsInput.value = String(layout.columnCount);
   persistLayout();
   renderWidgetGrid();
-});
+  return layout.columnCount;
+}
 
-gridRowsInput?.addEventListener("change", () => {
-  layout.rowCount = clampInt(gridRowsInput.value, GRID_ROW_COUNT_MIN, GRID_ROW_COUNT_MAX, layout.rowCount);
+function applyRowCount(value) {
+  layout.rowCount = clampInt(value, GRID_ROW_COUNT_MIN, GRID_ROW_COUNT_MAX, layout.rowCount);
   // Same reflow as columns above — a shrunk grid can leave existing widgets
   // extending past the new bottom edge.
   layout.widgets.forEach((instance) => {
     instance.rowSpan = Math.min(instance.rowSpan, layout.rowCount);
     instance.row = Math.min(instance.row, layout.rowCount - instance.rowSpan);
   });
-  gridRowsInput.value = String(layout.rowCount);
   persistLayout();
   renderWidgetGrid();
+  return layout.rowCount;
+}
+
+// A dedicated small modal rather than routing through tool-settings.js's
+// generic per-tool settings module — that module's rows are flat
+// boolean/select/multiselect fields with no support for a conditionally-
+// shown custom width/height pair or a plain action button ("Forget
+// remembered position"), and teaching it those shapes just for this one
+// caller isn't worth it. Built the same way that module builds its own
+// modal (a detached wrapper appended to document.body once, rebuilt fresh
+// on every open) — same convention, just not the same shared instance. Two
+// sections (Layout, Second Screen) under one "Dashboard Settings" header,
+// same "one settings home per tool" shape Vault/Forge/Crucible/Repository's
+// own gear button already establishes — this just has two groups of
+// settings instead of one flat list.
+function ensureDashboardSettingsModal() {
+  let modal = document.getElementById(DASHBOARD_SETTINGS_MODAL_ID);
+  if (modal) return modal;
+  const wrapper = document.createElement("div");
+  wrapper.innerHTML = `
+    <div class="modal fade" id="${DASHBOARD_SETTINGS_MODAL_ID}" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5">Dashboard Settings</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body d-flex flex-column gap-4" data-dashboard-settings-body></div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  const element = wrapper.firstElementChild;
+  document.body.appendChild(element);
+  return element;
+}
+
+function buildSettingsSection(title, helpTopic) {
+  const section = el("div", "d-flex flex-column gap-3");
+  const heading = el("h2", "h6 text-uppercase text-body-secondary mb-0 d-flex align-items-center gap-1", title);
+  if (helpTopic) {
+    const helpTrigger = el("span", "align-middle");
+    helpTrigger.dataset.helpTopic = helpTopic;
+    helpTrigger.dataset.helpInsert = "replace";
+    heading.appendChild(helpTrigger);
+  }
+  section.appendChild(heading);
+  return section;
+}
+
+function renderLayoutSettingsSection() {
+  const section = buildSettingsSection("Layout");
+
+  const gridRow = el("div", "d-flex gap-2");
+  const columnsWrap = el("div", "flex-grow-1");
+  columnsWrap.append(el("label", "form-label small mb-1", "Columns"));
+  const columnsInput = document.createElement("input");
+  columnsInput.type = "number";
+  columnsInput.className = "form-control";
+  columnsInput.min = String(GRID_COLUMN_COUNT_MIN);
+  columnsInput.max = String(GRID_COLUMN_COUNT_MAX);
+  columnsInput.value = String(getColumnCount());
+  columnsWrap.appendChild(columnsInput);
+  const rowsWrap = el("div", "flex-grow-1");
+  rowsWrap.append(el("label", "form-label small mb-1", "Rows"));
+  const rowsInput = document.createElement("input");
+  rowsInput.type = "number";
+  rowsInput.className = "form-control";
+  rowsInput.min = String(GRID_ROW_COUNT_MIN);
+  rowsInput.max = String(GRID_ROW_COUNT_MAX);
+  rowsInput.value = String(getRowCount());
+  rowsWrap.appendChild(rowsInput);
+  gridRow.append(columnsWrap, rowsWrap);
+  section.appendChild(gridRow);
+
+  columnsInput.addEventListener("change", () => {
+    columnsInput.value = String(applyColumnCount(columnsInput.value));
+  });
+  rowsInput.addEventListener("change", () => {
+    rowsInput.value = String(applyRowCount(rowsInput.value));
+  });
+
+  const backgroundRow = el("div", "d-flex flex-column gap-1");
+  backgroundRow.append(el("label", "form-label fw-semibold mb-0", "Background color"));
+  const backgroundGroup = el("div", "d-flex gap-2 align-items-center");
+  const colorInput = document.createElement("input");
+  colorInput.type = "color";
+  colorInput.className = "form-control form-control-color";
+  colorInput.value = background || "#ffffff";
+  const resetButton = el("button", "btn btn-outline-secondary btn-sm", "Reset");
+  resetButton.type = "button";
+  backgroundGroup.append(colorInput, resetButton);
+  backgroundRow.appendChild(backgroundGroup);
+  section.appendChild(backgroundRow);
+
+  colorInput.addEventListener("input", () => {
+    applyBackground(colorInput.value);
+    persistBackground(colorInput.value);
+  });
+  resetButton.addEventListener("click", () => {
+    applyBackground("");
+    persistBackground("");
+    colorInput.value = "#ffffff";
+  });
+
+  return section;
+}
+
+function renderScreenSettingsSection() {
+  const section = buildSettingsSection("Second Screen", "dashboard.secondScreen");
+  const settings = loadScreenSettings();
+
+  const resolutionRow = el("div", "d-flex flex-column gap-1");
+  const resolutionLabel = el("label", "form-label fw-semibold mb-0", "Resolution");
+  const resolutionSelect = document.createElement("select");
+  resolutionSelect.className = "form-select";
+  SCREEN_RESOLUTION_PRESETS.forEach((preset) => resolutionSelect.appendChild(new Option(preset.label, preset.value)));
+  resolutionSelect.appendChild(new Option("Custom…", SCREEN_RESOLUTION_CUSTOM));
+  resolutionSelect.value = settings.resolution;
+  resolutionRow.append(resolutionLabel, resolutionSelect);
+  section.appendChild(resolutionRow);
+
+  const customRow = el("div", "d-flex gap-2");
+  customRow.classList.toggle("d-none", settings.resolution !== SCREEN_RESOLUTION_CUSTOM);
+  const widthWrap = el("div", "flex-grow-1");
+  widthWrap.append(el("label", "form-label small mb-1", "Width"));
+  const widthInput = document.createElement("input");
+  widthInput.type = "number";
+  widthInput.className = "form-control";
+  widthInput.min = "320";
+  widthInput.max = "7680";
+  widthInput.value = String(settings.customWidth);
+  widthWrap.appendChild(widthInput);
+  const heightWrap = el("div", "flex-grow-1");
+  heightWrap.append(el("label", "form-label small mb-1", "Height"));
+  const heightInput = document.createElement("input");
+  heightInput.type = "number";
+  heightInput.className = "form-control";
+  heightInput.min = "240";
+  heightInput.max = "4320";
+  heightInput.value = String(settings.customHeight);
+  heightWrap.appendChild(heightInput);
+  customRow.append(widthWrap, heightWrap);
+  section.appendChild(customRow);
+
+  resolutionSelect.addEventListener("change", () => {
+    saveScreenSettings({ resolution: resolutionSelect.value });
+    customRow.classList.toggle("d-none", resolutionSelect.value !== SCREEN_RESOLUTION_CUSTOM);
+  });
+  widthInput.addEventListener("change", () => {
+    saveScreenSettings({ customWidth: clampInt(widthInput.value, 320, 7680, 1920) });
+    widthInput.value = String(loadScreenSettings().customWidth);
+  });
+  heightInput.addEventListener("change", () => {
+    saveScreenSettings({ customHeight: clampInt(heightInput.value, 240, 4320, 1080) });
+    heightInput.value = String(loadScreenSettings().customHeight);
+  });
+
+  // Scales everything the mirror window renders (same mechanism as a
+  // browser's own Ctrl+/Ctrl- page zoom) — a high-resolution second display
+  // often renders the same physical UI smaller than a lower-resolution one
+  // would, since more CSS pixels fit in the same physical inches; this is
+  // the direct fix for that, independent of the resolution chosen above.
+  // Takes effect on an already-open mirror window too — applyScreenZoom
+  // (dashboard.js's own screen-mode code) re-reads this same localStorage
+  // setting on every 5s refreshScreen poll, so there's no need to close and
+  // reopen the window after changing it here.
+  const zoomRow = el("div", "d-flex flex-column gap-1");
+  zoomRow.append(el("label", "form-label fw-semibold mb-0", "Zoom"));
+  const zoomSelect = document.createElement("select");
+  zoomSelect.className = "form-select";
+  SCREEN_ZOOM_OPTIONS.forEach((percent) => zoomSelect.appendChild(new Option(`${percent}%`, String(percent))));
+  zoomSelect.value = String(settings.zoom);
+  zoomRow.appendChild(zoomSelect);
+  section.appendChild(zoomRow);
+
+  zoomSelect.addEventListener("change", () => {
+    saveScreenSettings({ zoom: clampInt(zoomSelect.value, SCREEN_ZOOM_OPTIONS[0], SCREEN_ZOOM_OPTIONS[SCREEN_ZOOM_OPTIONS.length - 1], DEFAULT_SCREEN_ZOOM) });
+  });
+
+  const statusEl = el("p", "small text-body-secondary mb-0");
+  const forgetButton = el("button", "btn btn-outline-secondary btn-sm align-self-start", "Forget remembered position");
+  forgetButton.type = "button";
+  section.append(statusEl, forgetButton);
+
+  function renderPlacementStatus() {
+    const current = loadScreenSettings();
+    const supportsAuto = typeof window.getScreenDetails === "function";
+    const hasRemembered = Number.isFinite(current.left) && Number.isFinite(current.top);
+    const rememberedText = hasRemembered
+      ? `Remembered position: (${current.left}, ${current.top}).`
+      : "No remembered position yet — drag the mirror window once and it'll be remembered from then on.";
+    statusEl.textContent = supportsAuto
+      ? `This browser can place the mirror window on a second monitor automatically, once you grant permission (you'll be prompted the first time you open it). ${rememberedText}`
+      : `This browser can't auto-detect a second monitor, so the remembered position below is always used instead. ${rememberedText}`;
+    forgetButton.disabled = !hasRemembered;
+  }
+  forgetButton.addEventListener("click", () => {
+    saveScreenSettings({ left: null, top: null });
+    renderPlacementStatus();
+  });
+  renderPlacementStatus();
+
+  return section;
+}
+
+// Rebuilds every section's elements fresh every open (same pattern
+// tool-settings.js's own renderModalBody uses) rather than reusing/mutating
+// existing nodes — the simplest way to avoid stale event listeners piling up
+// across repeated opens, and it means each section always reflects whatever
+// changed (layout, background, campaign) since the modal was last open.
+function renderDashboardSettingsModal(modal) {
+  const body = modal.querySelector("[data-dashboard-settings-body]");
+  if (!body) return;
+  body.innerHTML = "";
+  body.append(renderLayoutSettingsSection(), el("hr", "my-0"), renderScreenSettingsSection());
+  void initHelpSystem({ root: modal });
+}
+
+function openDashboardSettingsModal() {
+  const modal = ensureDashboardSettingsModal();
+  renderDashboardSettingsModal(modal);
+  const bsModal =
+    window.bootstrap && typeof window.bootstrap.Modal === "function" ? window.bootstrap.Modal.getOrCreateInstance(modal) : null;
+  bsModal?.show();
+}
+
+// Same button shape tool-settings.js's own mountButton builds for Vault/
+// Forge/Crucible/Repository (outline-secondary gear icon, bottom tooltip) —
+// not built through that module itself, since its modal doesn't fit this
+// tool's needs (see renderDashboardSettingsModal's own comment), but the
+// button belongs in the exact same upper-left header slot those tools use.
+const dashboardSettingsButton = el("button", "btn btn-outline-secondary d-flex align-items-center justify-content-center");
+dashboardSettingsButton.type = "button";
+dashboardSettingsButton.setAttribute("aria-label", "Dashboard Settings");
+dashboardSettingsButton.dataset.bsToggle = "tooltip";
+dashboardSettingsButton.dataset.bsPlacement = "bottom";
+dashboardSettingsButton.dataset.bsTitle = "Dashboard Settings";
+const dashboardSettingsIcon = el("span", "iconify fs-5");
+dashboardSettingsIcon.dataset.icon = "tabler:settings";
+dashboardSettingsIcon.setAttribute("aria-hidden", "true");
+dashboardSettingsButton.appendChild(dashboardSettingsIcon);
+dashboardSettingsButton.addEventListener("click", () => openDashboardSettingsModal());
+document.querySelector("[data-dashboard-settings-slot]")?.appendChild(dashboardSettingsButton);
+
+widgetInspectorRemove?.addEventListener("click", () => {
+  if (!selectedWidgetInstanceId) return;
+  const instanceId = selectedWidgetInstanceId;
+  selectWidget("");
+  removeWidget(instanceId);
 });
 
 titleInput?.addEventListener("blur", () => {

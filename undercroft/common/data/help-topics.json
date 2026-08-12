@@ -189,6 +189,18 @@
       "href": "../common/account.html?help=accounts.roles"
     },
     {
+      "id": "accounts.upgrade",
+      "title": "Upgrading Your Tier",
+      "summary": "Self-service tier changes from the Upgrade tab — free for now, real billing lands later.",
+      "details": [
+        "Pick any tier up to Creator from the Upgrade tab on your Account page, or the \"Upgrade tier\" link in your account menu — it applies immediately.",
+        "No payment platform is connected yet, so switching tiers (including downgrading) is currently free and can be repeated as often as you like.",
+        "Admin tier can never be self-selected here — it can only be granted by an existing administrator."
+      ],
+      "category": "Collaboration",
+      "href": "../common/account.html?help=accounts.upgrade"
+    },
+    {
       "id": "dashboard.widgets",
       "title": "Dashboard Widgets",
       "summary": "A customizable landing page — build your own play space out of widgets.",
@@ -200,6 +212,20 @@
       ],
       "category": "Dashboard",
       "href": "../index.html?help=dashboard.widgets"
+    },
+    {
+      "id": "dashboard.secondScreen",
+      "title": "Second Screen Settings",
+      "summary": "Control the resolution, zoom, and placement of the mirror window used for a physical second monitor or TV.",
+      "details": [
+        "Pick a common resolution, or choose Custom to enter any width/height your own second display needs.",
+        "Zoom scales everything the mirror window shows, for a high-resolution display that renders the same UI smaller than expected — change it any time, even while the window is already open, and it updates within a few seconds without needing to be closed and reopened. There's no scrollbar for the extra content zooming in produces; the table's own screen isn't something you scroll from the GM side.",
+        "In a browser that supports it (Chromium-based, once you grant permission), the mirror window opens on your second monitor automatically every time.",
+        "Everywhere else, the mirror window's position is remembered from wherever you last dragged it — drag it onto your second monitor once, and it reopens there from then on.",
+        "These settings live only in this browser, since a monitor arrangement is specific to this machine, not something that should follow your account to a different computer."
+      ],
+      "category": "Dashboard",
+      "href": "../index.html?help=dashboard.secondScreen"
     },
     {
       "id": "press.flow",
@@ -648,10 +674,11 @@
     },
     {
       "id": "sanctum.npcConfig",
-      "title": "NPC Generation Config",
+      "title": "Location Properties",
       "summary": "Optional per-Location settings Forge uses to generate NPCs here — not every place needs one.",
       "details": [
         "Species Weights, Mixing Coefficient, and Setting-Specific Archetypes drive Forge's weighted species roll and name blending for this Location specifically.",
+        "Species Weights here take priority over the Setting's own default Species Weights (Setting Properties, right pane) — leave this Location's own list empty to fall back to the Setting's general population instead of defining one from scratch.",
         "Generic Name Fallback: names to draw from when a rolled species is \"Other\" or otherwise can't be resolved to a real Species entity. Each entry is a name and an optional weight (defaults to 1 if left blank) — higher weight means more likely to be picked.",
         "Leave this whole section empty for a Location that will never be used to generate NPCs (a Room, a Structure with no population)."
       ],
@@ -659,9 +686,21 @@
       "href": "../sanctum/index.html#sanctum-npc-config"
     },
     {
+      "id": "sanctum.settingSpeciesWeights",
+      "title": "Species Weights",
+      "summary": "Optional. The Setting's own general population — the default Forge falls back to for any Location here with no Species Weights of its own.",
+      "details": [
+        "Same shape as a Location's own Species Weights (Location Properties, center pane): pick a Species and a relative weight for each entry Forge should be able to roll.",
+        "A Location's own Species Weights always take priority when it has any — this is only ever used when that Location's list is empty (or no Location is selected at all).",
+        "Leave this empty if every Location in this Setting will always define its own population explicitly."
+      ],
+      "category": "Sanctum",
+      "href": "../sanctum/index.html#sanctum-setting-species-weights"
+    },
+    {
       "id": "sanctum.calendar",
       "title": "Calendar",
-      "summary": "Optional in-fiction calendar vocabulary for this Setting — days per week, weekday names, months, and moon cycles.",
+      "summary": "Optional. In-fiction calendar vocabulary for this Setting — days per week, weekday names, months, and moon cycles.",
       "details": [
         "Months is the only field a real calendar needs: an ordered list of names with a day count each (e.g. Eberron's 13 months of 28 days), handling uneven real-world-style month lengths just as well.",
         "Weekday names and moon cycles are optional extras — leave them empty if this Setting doesn't need a week or moon-phase tracking.",
@@ -880,7 +919,7 @@
     },
     {
       "id": "forge.note",
-      "title": "Character Note",
+      "title": "Notes (optional)",
       "summary": "Optional. Type your own note directly, or use Generate Note to have Claude write one from the rolled attributes — either way you can freely edit it afterward.",
       "details": [
         "An NPC is complete without a note — every rolled value already stands on its own as the character record.",
@@ -1213,18 +1252,6 @@
       "href": "../sanctum/index.html#sanctum-overrides"
     },
     {
-      "id": "sanctum.dungeonRoomCount",
-      "title": "Dungeon Room Count",
-      "summary": "How many rooms Generate Dungeon creates and connects, alongside a parent Location representing the dungeon as a whole.",
-      "details": [
-        "Generate Dungeon creates one parent Location (the dungeon) plus this many child Locations (rooms), each generated the same way a single Generate Location click would — respecting any Type/Purpose/Environment overrides and Locked Features pinned above.",
-        "Rooms are wired together via Connected To in a branching path (each new room connects to a randomly-chosen earlier one, favoring the most recent) so the result reads as a snaking layout with occasional side branches, not a single straight corridor.",
-        "Unlike Generate Location, this action saves everything immediately (it can't pause per room for you to type a name) — rooms are auto-named and fully editable afterward, the same as any other Location."
-      ],
-      "category": "Sanctum",
-      "href": "../sanctum/index.html#sanctum-overrides"
-    },
-    {
       "id": "sanctum.identity",
       "title": "Identity",
       "summary": "The resolved Type, Purpose, and Environment for this Location, plus its Name — edit the Name directly; the rest comes from generation or the overrides above.",
@@ -1407,6 +1434,18 @@
         "On (default): checking a task adds a date, like ✅ 2026-07-27, to the end of the line.",
         "Off: checking a task just marks it done — nothing is added to the line.",
         "Unchecking a task always removes its date, regardless of this setting."
+      ],
+      "category": "Repository",
+      "href": "../repository/index.html#repository-tags"
+    },
+    {
+      "id": "repository.searchScope",
+      "title": "Search Scope",
+      "summary": "Controls whether the page search box also searches inside page contents, not just titles and tags.",
+      "details": [
+        "On (default): the search box matches against a page's title, tags, AND its full body text — so it finds a page by anything written inside it, not just its name.",
+        "Off: only titles and tags are searched — narrower, useful once a wiki has enough pages that a common word turns up matches in dozens of unrelated bodies.",
+        "A page that only matches in its body (not its title) still shows up in the list — the group tree auto-expands to reveal it while a search is active."
       ],
       "category": "Repository",
       "href": "../repository/index.html#repository-tags"

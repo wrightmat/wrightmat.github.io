@@ -21,8 +21,9 @@
 
           <section class="d-flex flex-column gap-2" id="crucible-generate">
             <div data-field-mount="system-select"></div>
+            <div data-field-mount="monster-select"></div>
 
-            <div class="d-flex flex-column gap-2" id="crucible-overrides">
+            <div class="d-flex flex-column gap-2" id="crucible-overrides" data-generation-fields>
               <div data-field-mount="creature-type-override"></div>
               <div data-field-mount="archetype-override"></div>
               <div data-field-mount="role-override"></div>
@@ -41,53 +42,54 @@
           <div class="d-flex flex-column gap-3 d-none" data-monster-display>
             <div class="card shadow-theme">
               <div class="card-body">
-                <section class="d-flex flex-column gap-2" id="crucible-identity">
-                  <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0 d-flex align-items-center gap-2">
-                    <span>Identity</span>
-                    <span class="align-middle" data-help-topic="crucible.identity" data-help-insert="replace"></span>
-                  </h2>
-                  <div data-field-mount="monster-name"></div>
-                  <div class="col-12 col-md-6 col-lg-4" style="max-width: 22rem" data-field-mount="monster-image"></div>
+                <div data-identity-mount></div>
+                <div class="d-flex flex-column gap-2" data-identity-panel>
+                  <div class="d-flex align-items-start gap-3 flex-wrap">
+                    <div class="flex-grow-1" style="min-width: 12rem" data-field-mount="monster-name"></div>
+                    <div style="max-width: 22rem; width: 100%" data-field-mount="monster-image"></div>
+                  </div>
                   <div class="row g-3" data-identity-fields></div>
-                </section>
+                </div>
               </div>
             </div>
 
             <div class="card shadow-theme">
               <div class="card-body">
                 <section class="d-flex flex-column gap-2" id="crucible-features">
-                  <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0 d-flex align-items-center gap-2">
-                    <span>Features</span>
-                    <span class="align-middle" data-help-topic="crucible.features" data-help-insert="replace"></span>
-                  </h2>
-                  <div class="d-flex flex-column gap-2" data-feature-list></div>
+                  <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+                    <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0 d-flex align-items-center gap-2">
+                      <span>Features</span>
+                      <span class="align-middle" data-help-topic="crucible.features" data-help-insert="replace"></span>
+                    </h2>
+                    <div class="d-flex align-items-center gap-3">
+                      <div class="d-flex align-items-center gap-3 small" data-budget-summary hidden>
+                        <span class="text-body-secondary">Target <span class="fw-semibold" data-budget-target>0</span></span>
+                        <span class="text-body-secondary">Spent <span class="fw-semibold" data-budget-spent>0</span></span>
+                        <span class="text-body-secondary">Remaining <span class="fw-semibold" data-budget-remaining>0</span></span>
+                      </div>
+                      <span data-features-toggle-mount></span>
+                    </div>
+                  </div>
+                  <div class="d-flex flex-column gap-2" data-features-panel>
+                    <div class="d-flex flex-column gap-2" data-feature-list></div>
+                    <div class="d-flex gap-2 align-items-center">
+                      <select class="form-select" data-add-feature-select></select>
+                      <button class="btn btn-outline-secondary flex-shrink-0 d-flex align-items-center gap-1" type="button" data-add-feature-button>
+                        <span class="iconify" data-icon="tabler:plus" aria-hidden="true"></span>
+                        Add
+                      </button>
+                    </div>
+                  </div>
                 </section>
               </div>
             </div>
 
             <div class="card shadow-theme">
               <div class="card-body">
-                <section class="d-flex flex-column gap-2" id="crucible-recipe">
-                  <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0 d-flex align-items-center gap-2">
-                    <span>Recipe Fulfillment</span>
-                    <span class="align-middle" data-help-topic="crucible.recipe" data-help-insert="replace"></span>
-                  </h2>
-                  <div class="d-flex flex-column gap-1 small" data-recipe-summary></div>
-                </section>
-              </div>
-            </div>
-
-            <div class="card shadow-theme">
-              <div class="card-body">
-                <section class="d-flex flex-column gap-2" id="crucible-stats">
-                  <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0 d-flex align-items-center gap-2">
-                    <span>Stats</span>
-                    <span class="align-middle" data-help-topic="crucible.stats" data-help-insert="replace"></span>
-                  </h2>
+                <div data-stats-mount></div>
+                <div class="d-flex flex-column gap-2" data-stats-panel>
                   <div class="row g-3" data-stats-fields></div>
-                  <div class="d-flex flex-column gap-1 small" data-stats-actions></div>
-                  <div class="small text-body-secondary" data-stats-budget></div>
-                </section>
+                </div>
               </div>
             </div>
 
@@ -99,13 +101,39 @@
                       <span>Notes (optional)</span>
                       <span class="align-middle" data-help-topic="crucible.notes" data-help-insert="replace"></span>
                     </h2>
-                    <button class="btn btn-outline-secondary btn-sm" type="button" data-generate-note>
-                      <span class="iconify" data-icon="tabler:sparkles" aria-hidden="true"></span>
-                      Generate Note
-                    </button>
+                    <div class="d-flex align-items-center gap-2">
+                      <button
+                        class="btn btn-outline-secondary btn-sm"
+                        type="button"
+                        data-notes-mode-toggle
+                        data-bs-toggle="tooltip"
+                        data-bs-title="View"
+                      >
+                        <span class="iconify" data-icon="tabler:eye" aria-hidden="true" data-notes-mode-icon="view"></span>
+                        <span class="iconify d-none" data-icon="tabler:pencil" aria-hidden="true" data-notes-mode-icon="edit"></span>
+                        <span data-notes-mode-label>View</span>
+                      </button>
+                      <button class="btn btn-outline-secondary btn-sm" type="button" data-generate-note>
+                        <span class="iconify" data-icon="tabler:sparkles" aria-hidden="true"></span>
+                        Generate Note
+                      </button>
+                      <span data-notes-toggle-mount></span>
+                    </div>
                   </div>
-                  <textarea class="form-control" rows="3" data-notes-text placeholder="Type a note, or Generate Note to have Claude write one."></textarea>
+                  <div class="d-flex flex-column gap-2" data-notes-panel>
+                    <textarea class="form-control" rows="3" data-notes-text placeholder="Type a note, or Generate Note to have Claude write one."></textarea>
+                    <div class="d-none" data-notes-preview></div>
+                  </div>
                 </section>
+              </div>
+            </div>
+
+            <div class="card shadow-theme" data-recipe-card>
+              <div class="card-body">
+                <div data-recipe-mount></div>
+                <div class="d-flex flex-column gap-1 small" data-recipe-panel>
+                  <div class="d-flex flex-column gap-1 small" data-recipe-summary></div>
+                </div>
               </div>
             </div>
           </div>
@@ -140,5 +168,11 @@
       integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
       crossorigin="anonymous"
     ></script>
+    <!-- Repository's own renderMarkdown (js/lib/markdown.js) is reused
+         as-is for the Notes preview below — it checks for window.marked/
+         window.DOMPurify at call time, not module load, so loading these
+         `defer`red like every other CDN script here is safe. -->
+    <script defer src="https://cdn.jsdelivr.net/npm/marked@18.0.7/lib/marked.umd.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/dompurify@3.4.12/dist/purify.min.js"></script>
   </body>
 </html>

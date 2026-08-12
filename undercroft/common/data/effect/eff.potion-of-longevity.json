@@ -1,0 +1,19 @@
+{
+  "id": "eff.potion-of-longevity",
+  "name": "Potion of Longevity",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "signatureFeatureId": null,
+  "featureIds": [],
+  "properties": {
+    "rarity": "very-rare",
+    "form": "potion"
+  },
+  "budget": {
+    "target": 0,
+    "spent": 0,
+    "remaining": 0
+  },
+  "notes": "Reduces the drinker's apparent age by 1d6+6 years, with a small cumulative risk of the reverse on repeat use."
+}

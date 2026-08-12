@@ -1,6 +1,7 @@
 {
   "id": "settlement",
   "name": "Settlement",
+  "scale": 1,
   "systemIds": ["sys.dnd5e"],
   "description": "A populated place where people live — a hamlet, town, city, or anything built around a resident population."
 }

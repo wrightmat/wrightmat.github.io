@@ -930,6 +930,21 @@ export class DataManager {
     return result;
   }
 
+  // Self-service tier change (distinct from updateUserTier above, which is
+  // admin-only and targets another user). No payment step yet — applies
+  // immediately; the server rejects "admin" as a target unconditionally.
+  async upgradeTier({ tier }) {
+    const result = await this._request("/auth/profile/upgrade", {
+      method: "POST",
+      body: { tier },
+      auth: true,
+    });
+    if (result && result.user) {
+      this.refreshSessionUser(result.user);
+    }
+    return result;
+  }
+
   async updatePassword({ current_password, new_password }) {
     return this._request("/auth/profile/password", {
       method: "POST",

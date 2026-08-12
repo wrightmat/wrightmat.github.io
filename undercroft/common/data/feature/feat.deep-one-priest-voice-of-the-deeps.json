@@ -1,0 +1,24 @@
+{
+  "id": "feat.deep-one-priest-voice-of-the-deeps",
+  "name": "Voice of the Deeps",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "A deep one priest may sway an audience of listeners with its rolling, droning speech, fascinating them for 5 minutes and making them dismiss or forget what they've seen recently unless they make a successful DC 13 Wisdom saving throw at the end of that period. If the saving throw succeeds, they remember whatever events the deep one sought to erase.",
+  "mechanics": {
+    "type": "passive",
+    "text": "A deep one priest may sway an audience of listeners with its rolling, droning speech, fascinating them for 5 minutes and making them dismiss or forget what they've seen recently unless they make a successful DC 13 Wisdom saving throw at the end of that period. If the saving throw succeeds, they remember whatever events the deep one sought to erase."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

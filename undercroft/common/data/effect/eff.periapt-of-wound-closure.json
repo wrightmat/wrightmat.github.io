@@ -1,0 +1,20 @@
+{
+  "id": "eff.periapt-of-wound-closure",
+  "name": "Periapt of Wound Closure",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "signatureFeatureId": null,
+  "featureIds": [],
+  "properties": {
+    "rarity": "rare",
+    "form": "wondrous-item"
+  },
+  "budget": {
+    "target": 12,
+    "spent": 0,
+    "remaining": 12
+  },
+  "notes": "While wearing this pendant, you stabilize automatically if you drop to 0 hit points and aren't killed outright, and you regain the maximum number of hit points possible for any Hit Die you spend.",
+  "featureTiers": {}
+}

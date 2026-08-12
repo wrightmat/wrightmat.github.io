@@ -185,7 +185,7 @@
                             "type": "field",
                             "component": "stat",
                             "label": "Alignment",
-                            "text": "@alignment.friendlyName",
+                            "text": "@stats.alignment",
                             "className": "press-block",
                             "gap": 2,
                             "style": {

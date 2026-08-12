@@ -1,0 +1,26 @@
+{
+  "id": "feat.fire-breath",
+  "name": "Fire Breath",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Lets the creature exhale a gout of searing flame.",
+  "mechanics": {
+    "type": "active",
+    "text": "On activation, lets the creature exhale fire at a target within 30 feet, dealing 4d6 fire damage."
+  },
+  "budgetCost": 5,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "damage",
+      "fire"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

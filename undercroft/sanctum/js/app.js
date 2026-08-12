@@ -10,6 +10,8 @@ import {
   createIconButton,
   createEmptyStateCard,
   createCompactField,
+  createFieldBox,
+  createSearchableCheckList,
 } from "../../common/js/lib/ui-components.js";
 import {
   listLocationTypesForSystem,
@@ -23,7 +25,7 @@ import {
   listSettingsForSystem,
   listLocationsForSetting,
 } from "./lib/tables.js";
-import { generateLocation } from "./lib/generator.js";
+import { generateLocation, rerollAxis, matchesCategory } from "./lib/generator.js";
 import { createLocationRecord, toPressExportShape } from "./lib/location-schema.js";
 import { generateLocationNote } from "./lib/llm-note.js";
 import { allowsDelete, refreshOwnershipCatalog, confirmDelete } from "../../common/js/lib/ownership.js";
@@ -32,9 +34,14 @@ import {
   findById,
   featureLabel as sharedFeatureLabel,
   readLockedFeatureIds as sharedReadLockedFeatureIds,
+  populateLockedFeaturesCheckList as sharedPopulateLockedFeaturesCheckList,
   exportRecordAsJson,
   generateNoteForRecord,
+  renderRequiredSelectOptions,
+  renderOptionalSelectOptions,
 } from "../../common/js/lib/generator-kit.js";
+import { markRequiredControl } from "../../common/js/lib/dom.js";
+import { resolveGroupContext, pickGroupDefaultId } from "../../common/js/lib/widgets/group-context.js";
 
 const ASSET_NEED_KINDS = ["resource", "npc", "monster", "effect"];
 
@@ -79,22 +86,23 @@ createToolbarButtonGroup([
   { action: "delete", label: "Delete Setting", disabled: true, attrs: { "data-delete-setting": true } },
 ]).forEach((button) => document.querySelector("[data-setting-toolbar-mount]")?.appendChild(button));
 createToolbarButtonGroup([
-  { action: "generate", icon: "tabler:map-2", label: "Generate Location", primary: true, attrs: { "data-generate-location": true } },
-  // Generates and SAVES a whole connected set of rooms in one action (see
-  // handleGenerateDungeon) — unlike Generate Location, which only ever
-  // produces one unsaved record for the GM to review/rename/Save
-  // themselves, this bulk action can't pause for a name per room, so it
-  // auto-names and saves everything immediately.
-  { action: "generate", icon: "tabler:stack-2", label: "Generate Dungeon", attrs: { "data-generate-dungeon": true } },
+  { action: "generate", icon: "tabler:map-2", label: "Generate Single Location", primary: true, attrs: { "data-generate-location": true } },
+  // Generates and SAVES a whole connected set of sub-locations in one action
+  // (see handleGenerateMultiRoom) — unlike Generate Single Location, which
+  // only ever produces one unsaved record for the GM to review/rename/Save
+  // themselves, this bulk action can't pause for a name per sub-location, so
+  // it auto-names and saves everything immediately. Deliberately not
+  // "dungeon"-specific — a multi-room result could be a Complex's rooms, a
+  // Settlement's districts, or a market's stalls, depending on what Type/
+  // Purpose resolve to.
+  { action: "generate", icon: "tabler:stack-2", label: "Generate Multi-Room Location", attrs: { "data-generate-multi-room": true } },
   { action: "save", label: "Save", disabled: true, attrs: { "data-save-location": true } },
   { action: "export", label: "Export JSON", disabled: true, attrs: { "data-export-location": true } },
-  { action: "delete", label: "Delete Location", disabled: true, attrs: { "data-delete-location": true } },
+  { action: "delete", label: "Delete", disabled: true, attrs: { "data-delete-location": true } },
 ]).forEach((button) => document.querySelector("[data-location-toolbar-mount]")?.appendChild(button));
 document.querySelector("[data-location-empty-state]")?.appendChild(
   createEmptyStateCard({
-    icon: "tabler:map-2",
-    message:
-      "No Location loaded yet. Pick a Setting, optionally pin a Type, Purpose, or Environment, then click Generate Location — or pick an existing Location above to revisit and expand it.",
+    message: "Nothing selected yet. Pick an existing Location above, or fill in the fields and click Generate Location.",
   })
 );
 
@@ -115,6 +123,7 @@ function mountField(key, element) {
   if (mount.className) element.classList.add(...mount.classList);
   mount.replaceWith(element);
 }
+
 mountField("system-select", createCompactField({ type: "select", id: "sanctumSystemSelect", label: "System", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-system-select" }));
 mountField(
   "setting-select",
@@ -129,22 +138,15 @@ mountField("purpose-override", createCompactField({ type: "select", id: "sanctum
 mountField("environment-override", createCompactField({ type: "select", id: "sanctumEnvironmentOverride", label: "Environment", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-environment-override" }));
 mountField(
   "locked-features",
-  createCompactField({
-    type: "select-multiple", id: "sanctumLockedFeatures", label: "Locked Features", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select",
-    dataAttr: "data-locked-features", helpTopic: "sanctum.lockedFeatures", size: 4,
+  createSearchableCheckList({
+    id: "sanctumLockedFeatures", label: "Locked Features",
+    dataAttr: "data-locked-features", helpTopic: "sanctum.lockedFeatures",
   })
 );
-mountField(
-  "dungeon-room-count",
-  createCompactField({
-    type: "number", id: "sanctumDungeonRoomCount", label: "Dungeon Room Count", labelClass: "form-label fw-semibold mb-0", controlClass: "form-control",
-    dataAttr: "data-dungeon-room-count", helpTopic: "sanctum.dungeonRoomCount", min: 1, step: 1, value: "5",
-  })
-);
-mountField("location-name", createCompactField({ type: "text", id: "sanctumLocationName", label: "Name", labelClass: "form-label fw-semibold mb-0", controlClass: "form-control", dataAttr: "data-location-name", placeholder: "Unnamed" }));
-mountField("identity-type", createCompactField({ type: "select", id: "sanctumIdentityType", label: "Type", dataAttr: "data-identity-type" }));
-mountField("identity-purpose", createCompactField({ type: "select", id: "sanctumIdentityPurpose", label: "Purpose", dataAttr: "data-identity-purpose" }));
-mountField("identity-environment", createCompactField({ type: "select", id: "sanctumIdentityEnvironment", label: "Environment", dataAttr: "data-identity-environment" }));
+// Same field-box style as Identity below (and Crucible's/Vault's/Forge's
+// own Name box) — per explicit, repeated feedback that every tool's
+// center-pane properties should look and act the same, Sanctum included.
+mountField("location-name", createFieldBox({ key: "name", label: "Name", editable: true, colClass: null, dataAttr: "data-location-name" }));
 mountField("parent-select", createCompactField({ type: "select", id: "sanctumParentSelect", label: "Parent", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-parent-select" }));
 mountField("setting-name", createCompactField({ type: "text", id: "sanctumSettingName", label: "Name", dataAttr: "data-setting-name" }));
 mountField("setting-description", createCompactField({ type: "textarea", id: "sanctumSettingDescription", label: "Description", dataAttr: "data-setting-description", rows: 2 }));
@@ -161,13 +163,13 @@ const elements = {
   settingDescriptionInput: document.querySelector("[data-setting-description]"),
   saveSettingButton: document.querySelector("[data-save-setting]"),
   locationSelect: document.querySelector("[data-location-select]"),
+  generationFields: document.querySelector("[data-generation-fields]"),
   deleteLocationButton: document.querySelector("[data-delete-location]"),
   typeOverride: document.querySelector("[data-type-override]"),
   purposeOverride: document.querySelector("[data-purpose-override]"),
   environmentOverride: document.querySelector("[data-environment-override]"),
   lockedFeatures: document.querySelector("[data-locked-features]"),
-  dungeonRoomCount: document.querySelector("[data-dungeon-room-count]"),
-  generateDungeonButton: document.querySelector("[data-generate-dungeon]"),
+  generateMultiRoomButton: document.querySelector("[data-generate-multi-room]"),
   parentSelect: document.querySelector("[data-parent-select]"),
   connectedToList: document.querySelector("[data-connected-to-list]"),
   addConnectionSelect: document.querySelector("[data-add-connection-select]"),
@@ -179,9 +181,7 @@ const elements = {
   emptyState: document.querySelector("[data-location-empty-state]"),
   display: document.querySelector("[data-location-display]"),
   nameInput: document.querySelector("[data-location-name]"),
-  identityTypeSelect: document.querySelector("[data-identity-type]"),
-  identityPurposeSelect: document.querySelector("[data-identity-purpose]"),
-  identityEnvironmentSelect: document.querySelector("[data-identity-environment]"),
+  identityFields: document.querySelector("[data-identity-fields]"),
   featureList: document.querySelector("[data-feature-list]"),
   addFeatureSelect: document.querySelector("[data-add-feature-select]"),
   addFeatureButton: document.querySelector("[data-add-feature-button]"),
@@ -196,6 +196,9 @@ const elements = {
   speciesWeightRows: document.querySelector("[data-species-weight-rows]"),
   speciesWeightTotal: document.querySelector("[data-species-weight-total]"),
   addSpeciesWeightButton: document.querySelector("[data-add-species-weight]"),
+  settingSpeciesWeightRows: document.querySelector("[data-setting-species-weight-rows]"),
+  settingSpeciesWeightTotal: document.querySelector("[data-setting-species-weight-total]"),
+  addSettingSpeciesWeightButton: document.querySelector("[data-add-setting-species-weight]"),
   mixingCoefficientInput: document.querySelector("[data-mixing-coefficient]"),
   mixingCoefficientValue: document.querySelector("[data-mixing-coefficient-value]"),
   archetypeOverrideRows: document.querySelector("[data-archetype-override-rows]"),
@@ -239,39 +242,36 @@ function currentSystemId() {
 
 async function populateSystemSelect() {
   const systems = await listAllSystems(dataManager);
-  const previous = elements.systemSelect?.value;
-  if (!elements.systemSelect) return systems;
-  elements.systemSelect.innerHTML = "";
-  systems.forEach((system) => {
-    const option = document.createElement("option");
-    option.value = system.id;
-    option.textContent = system.title;
-    elements.systemSelect.appendChild(option);
-  });
-  if (systems.some((system) => system.id === previous)) elements.systemSelect.value = previous;
+  // Disabled, not just blank — a real System is required before anything
+  // else in this tool is usable, so the picker shouldn't silently fall back
+  // to whichever System happens to sort first (previously "Blades in the
+  // Dark"). Once a real System is chosen this option can't be reselected.
+  renderRequiredSelectOptions(elements.systemSelect, systems, { placeholder: "Select a System" });
+  markRequiredControl(elements.systemSelect, Boolean(elements.systemSelect?.value));
   return systems;
 }
 
 // --- Setting mini-editor (ported from Loom's Places panel) ------------------
 async function populateSettingSelect(systemId) {
-  if (!elements.settingSelect) return;
-  elements.settingSelect.innerHTML = "";
-  const blank = document.createElement("option");
-  blank.value = "";
-  blank.textContent = "New / unsaved";
-  elements.settingSelect.appendChild(blank);
+  if (!elements.settingSelect) return [];
   if (!systemId) {
+    renderOptionalSelectOptions(elements.settingSelect, []);
     settingCatalog = new Map();
-    return;
+    markRequiredControl(elements.settingSelect, false);
+    return [];
   }
   const settings = await listSettingsForSystem(dataManager, systemId);
-  settings.forEach((setting) => {
-    const option = document.createElement("option");
-    option.value = setting.id;
-    option.textContent = setting.name || setting.id;
-    elements.settingSelect.appendChild(option);
-  });
+  // Alphabetized the same way populateSystemSelect's own listAllSystems
+  // result already is — listSettingsForSystem itself returns server order,
+  // not name order.
+  const sortedSettings = [...settings].sort((a, b) => (a.name || a.id).localeCompare(b.name || b.id));
+  renderOptionalSelectOptions(elements.settingSelect, sortedSettings);
+  markRequiredControl(elements.settingSelect, Boolean(elements.settingSelect.value));
   await refreshSettingCatalog(settings.map((setting) => setting.id));
+  // Returned (not just awaited) so the init flow's own active-group
+  // auto-default can check the Setting it wants against what actually
+  // loaded for this System, without a second, redundant fetch.
+  return sortedSettings;
 }
 
 // Ownership metadata comes from the list response, not the full fetched
@@ -298,6 +298,7 @@ function createSettingSnapshot() {
     // Cheap deep-compare via serialization — same idea as the plain string
     // fields above, just for a structured value.
     calendar: JSON.stringify(collectCalendarFromForm()),
+    speciesWeights: JSON.stringify(collectSettingSpeciesWeightsFromForm()),
   };
 }
 
@@ -307,7 +308,8 @@ function isSettingDirty() {
   return (
     settingCleanSnapshot.name !== current.name ||
     settingCleanSnapshot.description !== current.description ||
-    settingCleanSnapshot.calendar !== current.calendar
+    settingCleanSnapshot.calendar !== current.calendar ||
+    settingCleanSnapshot.speciesWeights !== current.speciesWeights
   );
 }
 
@@ -337,6 +339,7 @@ function populateSettingForm(entity) {
   if (elements.settingNameInput) elements.settingNameInput.value = entity?.name || "";
   if (elements.settingDescriptionInput) elements.settingDescriptionInput.value = entity?.description || "";
   populateCalendarForm(entity?.calendar || null);
+  populateSettingSpeciesWeights(entity);
   markSettingClean();
 }
 
@@ -346,7 +349,15 @@ async function loadSettingIntoForm(id) {
     return;
   }
   try {
-    const result = await dataManager.get("setting", id);
+    // preferLocal: false — a Setting's own Species Weights (and everything
+    // else edited here) must be visible immediately, not hidden behind a
+    // stale local cache. Confirmed real bug this fixes: dataManager.get's
+    // own default (preferLocal: true) served a browser-cached copy of
+    // Eberron from before its Species Weights were seeded, while other
+    // Settings that had never been locally cached correctly showed fresh
+    // data — same class of staleness Vault's/Crucible's own System reads
+    // already guard against.
+    const result = await dataManager.get("setting", id, { preferLocal: false });
     populateSettingForm(result?.payload || null);
   } catch (error) {
     populateSettingForm(null);
@@ -379,21 +390,20 @@ function canDeleteLocation() {
   return locationAllowsDelete(currentLocationId);
 }
 
+// The Type/Purpose/Environment/Locked Features overrides only matter for
+// generating something new — once an existing Location is loaded they're
+// just clutter (per-tool "feel the same" convention shared with Crucible/
+// Forge/Vault's own generation fields). Purely visual: hiding never clears
+// an override's underlying value, so a pinned override still applies if the
+// GM regenerates in place afterward (see handleGenerate's own reuse of
+// currentLocationId).
+function updateGenerationFieldsVisibility() {
+  elements.generationFields?.classList.toggle("d-none", Boolean(elements.locationSelect?.value));
+}
+
 function populateLocationSelect() {
-  if (!elements.locationSelect) return;
-  const previous = elements.locationSelect.value;
-  elements.locationSelect.innerHTML = "";
-  const blank = document.createElement("option");
-  blank.value = "";
-  blank.textContent = "New / unsaved";
-  elements.locationSelect.appendChild(blank);
-  locationsInSetting.forEach((location) => {
-    const option = document.createElement("option");
-    option.value = location.id;
-    option.textContent = location.name || location.id;
-    elements.locationSelect.appendChild(option);
-  });
-  if (locationsInSetting.some((location) => location.id === previous)) elements.locationSelect.value = previous;
+  renderOptionalSelectOptions(elements.locationSelect, locationsInSetting);
+  updateGenerationFieldsVisibility();
 }
 
 function populateParentSelect() {
@@ -442,7 +452,8 @@ function populateAddConnectionSelect() {
 // --- Reference data (location-type/location-purpose/feature/resource/species/npc/monster/effect) ----
 async function reloadReferenceData() {
   const systemId = currentSystemId();
-  [locationTypes, locationPurposes, features, resources, npcs, monsters, effects, speciesOptions] = await Promise.all([
+  let fetchedFeatures;
+  [locationTypes, locationPurposes, fetchedFeatures, resources, npcs, monsters, effects, speciesOptions] = await Promise.all([
     listLocationTypesForSystem(dataManager, systemId),
     listLocationPurposesForSystem(dataManager, systemId),
     listFeaturesForSystem(dataManager, systemId),
@@ -452,13 +463,23 @@ async function reloadReferenceData() {
     listEffectsForSystem(dataManager, systemId),
     listSpeciesForSystem(dataManager, systemId),
   ]);
+  // The shared `feature` kind also holds Crucible's monster features and
+  // Vault's spell/item features (tagged accordingly) — filtered here, once,
+  // so every consumer of the module-level `features` array (generateLocation,
+  // and the Locked/Add-feature selects below) only ever sees Sanctum's own
+  // location ones. generateLocation already applied this same matchesCategory
+  // filter internally, so this was only ever visible in the two UI pickers —
+  // confirmed the identical bug already fixed in Crucible's/Vault's own
+  // equivalents.
+  features = fetchedFeatures.filter(matchesCategory);
   environmentPropertyType = await loadEnvironmentPropertyType(systemId);
   populateOverrideSelect(elements.typeOverride, locationTypes, "Random");
   populateOverrideSelect(elements.purposeOverride, locationPurposes, "Random");
   populateEnvironmentSelect(elements.environmentOverride, "Random");
-  populateOverrideSelect(elements.identityTypeSelect, locationTypes, "(none)");
-  populateOverrideSelect(elements.identityPurposeSelect, locationPurposes, "(none)");
-  populateEnvironmentSelect(elements.identityEnvironmentSelect, "(none)");
+  // Identity's own Type/Purpose/Environment (renderIdentity below) rebuild
+  // their options fresh every render from these same locationTypes/
+  // locationPurposes/environmentPropertyType lists — no separate static
+  // population needed, unlike the override selects above.
   populateLockedFeaturesSelect();
   populateAddFeatureSelect();
   populateAssetNeedKindSelects();
@@ -523,23 +544,17 @@ function populateEnvironmentSelect(select, blankLabel) {
 
 function populateLockedFeaturesSelect() {
   if (!elements.lockedFeatures) return;
-  const previouslySelected = new Set(Array.from(elements.lockedFeatures.selectedOptions).map((option) => option.value));
-  elements.lockedFeatures.innerHTML = "";
-  features
-    .filter((feature) => (feature.tags?.categories || []).includes("location") || !feature.tags?.categories?.length)
-    .forEach((feature) => {
-      const option = document.createElement("option");
-      option.value = feature.id;
-      option.textContent = feature.name || feature.id;
-      option.selected = previouslySelected.has(feature.id);
-      elements.lockedFeatures.appendChild(option);
-    });
+  const eligible = features.filter(
+    (feature) => (feature.tags?.categories || []).includes("location") || !feature.tags?.categories?.length
+  );
+  sharedPopulateLockedFeaturesCheckList(elements.lockedFeatures, eligible);
 }
 
 function populateAddFeatureSelect() {
   if (!elements.addFeatureSelect) return;
   const selectedIds = new Set(currentRecord?.featureIds || []);
   elements.addFeatureSelect.innerHTML = "";
+  elements.addFeatureSelect.appendChild(createPlaceholderOption());
   features
     .filter((feature) => !selectedIds.has(feature.id))
     .forEach((feature) => {
@@ -575,9 +590,22 @@ function populateAssetNeedKindSelects() {
   populateAddEntitySelect(elements.addNeedKindSelect?.value || "resource", elements.addNeedEntitySelect);
 }
 
+// Shared by the Add-Feature/Add-Asset/Add-Need selects — an unselected
+// leading option so the first real entry doesn't look pre-chosen (and thus
+// like part of the Location's identity) before the GM has actually picked
+// one. addFeature/addAssetOrNeed already no-op on an empty value, so this
+// needs no extra guard at the "Add" button.
+function createPlaceholderOption(label = "Select…") {
+  const option = document.createElement("option");
+  option.value = "";
+  option.textContent = label;
+  return option;
+}
+
 function populateAddEntitySelect(kind, select) {
   if (!select) return;
   select.innerHTML = "";
+  select.appendChild(createPlaceholderOption());
   entityListForKind(kind).forEach((entry) => {
     const option = document.createElement("option");
     option.value = entry.id;
@@ -586,9 +614,15 @@ function populateAddEntitySelect(kind, select) {
   });
 }
 
-// --- NPC Generation Config (optional; ported verbatim from Loom's Places panel) ----
-function renderSpeciesWeightRow(entry = { entityId: "", weight: 0 }) {
-  if (!elements.speciesWeightRows) return;
+// --- Location Properties (optional; ported verbatim from Loom's Places panel) ----
+// rowsEl/totalEl are parameters (not always elements.speciesWeightRows/
+// elements.speciesWeightTotal) so this same row editor backs both the
+// per-Location Species Weights (Location Properties, more specific) and the
+// per-Setting Species Weights (Setting Properties, the general default a
+// Location without its own weights falls back to — see Forge's own
+// effectiveSpeciesLocation, forge/js/app.js).
+function renderSpeciesWeightRow(rowsEl, totalEl, entry = { entityId: "", weight: 0 }) {
+  if (!rowsEl) return;
   const row = document.createElement("div");
   row.className = "d-flex align-items-center gap-2";
   const optionsHtml = speciesOptions
@@ -607,17 +641,17 @@ function renderSpeciesWeightRow(entry = { entityId: "", weight: 0 }) {
       <span class="iconify" data-icon="tabler:trash" aria-hidden="true"></span>
     </button>
   `;
-  elements.speciesWeightRows.appendChild(row);
-  updateSpeciesWeightTotal();
+  rowsEl.appendChild(row);
+  updateSpeciesWeightTotal(rowsEl, totalEl);
 }
 
-function updateSpeciesWeightTotal() {
-  if (!elements.speciesWeightRows || !elements.speciesWeightTotal) return;
-  const total = Array.from(elements.speciesWeightRows.querySelectorAll("[data-species-weight-value]")).reduce(
+function updateSpeciesWeightTotal(rowsEl, totalEl) {
+  if (!rowsEl || !totalEl) return;
+  const total = Array.from(rowsEl.querySelectorAll("[data-species-weight-value]")).reduce(
     (sum, input) => sum + (Number(input.value) || 0),
     0
   );
-  elements.speciesWeightTotal.textContent = `Total: ${total}`;
+  totalEl.textContent = `Total: ${total}`;
 }
 
 function renderArchetypeOverrideRow(roll = "", name = "") {
@@ -659,8 +693,8 @@ function populateNpcConfigForm(record) {
   }
   if (elements.speciesWeightRows) {
     elements.speciesWeightRows.innerHTML = "";
-    (record?.speciesWeights || []).forEach((entry) => renderSpeciesWeightRow(entry));
-    updateSpeciesWeightTotal();
+    (record?.speciesWeights || []).forEach((entry) => renderSpeciesWeightRow(elements.speciesWeightRows, elements.speciesWeightTotal, entry));
+    updateSpeciesWeightTotal(elements.speciesWeightRows, elements.speciesWeightTotal);
   }
   if (elements.archetypeOverrideRows) {
     elements.archetypeOverrideRows.innerHTML = "";
@@ -674,13 +708,20 @@ function populateNpcConfigForm(record) {
   }
 }
 
-function collectNpcConfigFromForm() {
-  const speciesWeights = Array.from(elements.speciesWeightRows?.children || [])
+// Shared by Location's own Species Weights (collectNpcConfigFromForm) and
+// the Setting's general Species Weights (collectSettingSpeciesWeightsFromForm)
+// — same row shape, same collection logic either way.
+function readSpeciesWeightsFromRows(rowsEl) {
+  return Array.from(rowsEl?.children || [])
     .map((row) => ({
       entityId: row.querySelector("[data-species-weight-select]").value,
       weight: Number(row.querySelector("[data-species-weight-value]").value) || 0,
     }))
     .filter((entry) => entry.entityId);
+}
+
+function collectNpcConfigFromForm() {
+  const speciesWeights = readSpeciesWeightsFromRows(elements.speciesWeightRows);
   const archetypeOverrides = {};
   Array.from(elements.archetypeOverrideRows?.children || []).forEach((row) => {
     const roll = row.querySelector("[data-archetype-override-roll]").value.trim();
@@ -701,6 +742,22 @@ function collectNpcConfigFromForm() {
     archetypeOverrides,
     genericNameFallback,
   };
+}
+
+// --- Setting Properties: Species Weights (general default a Location -----
+// without its own Species Weights falls back to — see Forge's own
+// effectiveSpeciesLocation, forge/js/app.js) -------------------------------
+function populateSettingSpeciesWeights(record) {
+  if (!elements.settingSpeciesWeightRows) return;
+  elements.settingSpeciesWeightRows.innerHTML = "";
+  (record?.speciesWeights || []).forEach((entry) =>
+    renderSpeciesWeightRow(elements.settingSpeciesWeightRows, elements.settingSpeciesWeightTotal, entry)
+  );
+  updateSpeciesWeightTotal(elements.settingSpeciesWeightRows, elements.settingSpeciesWeightTotal);
+}
+
+function collectSettingSpeciesWeightsFromForm() {
+  return readSpeciesWeightsFromRows(elements.settingSpeciesWeightRows);
 }
 
 // --- Calendar (optional; read by the Dashboard Calendar widget) -------------
@@ -874,15 +931,49 @@ function locationLabel(id) {
   return location ? location.name || location.id : id;
 }
 
-// Type/Purpose/Environment are real, editable selects (not read-only text) —
-// a GM can change any of them on an already-generated Location without
-// having to regenerate the whole thing. Options are populated once by
-// reloadReferenceData(); this just syncs the current record's values onto
-// them whenever a Location is loaded or generated.
-function syncIdentitySelects(record) {
-  if (elements.identityTypeSelect) elements.identityTypeSelect.value = record.typeId || "";
-  if (elements.identityPurposeSelect) elements.identityPurposeSelect.value = record.purposeId || "";
-  if (elements.identityEnvironmentSelect) elements.identityEnvironmentSelect.value = record.environment || "";
+// Type/Purpose/Environment as field boxes (createFieldBox, same shared
+// look Forge's/Crucible's/Vault's own Identity fields use) — editable
+// selects, each with its own reroll button, rebuilt fresh every render the
+// same way Crucible's/Vault's own renderIdentity work (this tool has no
+// static-mount alternative anymore; per explicit, repeated feedback, every
+// tool's center-pane properties look and act the same now).
+function renderIdentity(record) {
+  if (!elements.identityFields) return;
+  elements.identityFields.innerHTML = "";
+  [
+    {
+      key: "typeId",
+      label: "Type",
+      value: record.typeId,
+      options: locationTypes.map((entry) => ({ value: entry.id, label: entry.name || entry.id })),
+    },
+    {
+      key: "purposeId",
+      label: "Purpose",
+      value: record.purposeId,
+      options: locationPurposes.map((entry) => ({ value: entry.id, label: entry.name || entry.id })),
+    },
+    {
+      key: "environment",
+      label: "Environment",
+      value: record.environment,
+      options: (environmentPropertyType?.values || []).map((entry) => ({ value: entry.id, label: entry.label || entry.id })),
+    },
+  ].forEach(({ key, label, value, options }) => {
+    elements.identityFields.appendChild(
+      createFieldBox({
+        key,
+        label,
+        type: "select",
+        value: value || "",
+        options: [{ value: "", label: "(none)" }, ...options],
+        colClass: "col-6 col-md-4",
+        editable: true,
+        rerollable: true,
+        dataAttr: "data-editable-identity",
+      })
+    );
+  });
 }
 
 function renderFeatureList(record) {
@@ -971,6 +1062,25 @@ function addAssetOrNeed(listKey, kind, refId) {
 }
 
 // --- Relationships (Parent / Connected To / Children) -----------------------
+
+// Every location in the current Setting whose parentId chain leads back to
+// `locationId`, however many levels deep — used by the delete handler below
+// to offer removing the whole subtree at once, not just direct children.
+function collectDescendantLocations(locationId) {
+  const descendants = [];
+  const queue = [locationId];
+  while (queue.length) {
+    const id = queue.shift();
+    locationsInSetting
+      .filter((location) => location.parentId === id)
+      .forEach((child) => {
+        descendants.push(child);
+        queue.push(child.id);
+      });
+  }
+  return descendants;
+}
+
 function renderConnectedToList(record) {
   if (!elements.connectedToList) return;
   elements.connectedToList.innerHTML = "";
@@ -1084,7 +1194,7 @@ function renderLocation(record) {
   elements.emptyState?.classList.add("d-none");
   elements.display?.classList.remove("d-none");
   if (elements.nameInput) elements.nameInput.value = record.name || "";
-  syncIdentitySelects(record);
+  renderIdentity(record);
   renderFeatureList(record);
   renderAssetsAndNeeds(record);
   populateAddFeatureSelect();
@@ -1132,26 +1242,36 @@ function handleGenerate() {
   }
 }
 
-// Generates a parent Location (the dungeon as a whole) plus a series of
-// child Locations (rooms) and saves all of it immediately — every piece
-// here is an existing Sanctum primitive (generateLocation/
-// createLocationRecord run once per room, parentId/connectedTo are already
-// real Location relationship fields), just orchestrated in a loop rather
-// than the single-record flow Generate Location's own button uses. Type/
-// Purpose left blank in the current overrides naturally randomizes fresh
-// per room (generateLocation's own existing behavior for a blank
-// override) — an explicit override, if the GM set one, applies to every
-// room the same way it would to a single Generate Location click, which is
-// an intentional consequence of it being a deliberate pin, not a bug.
-async function handleGenerateDungeon() {
+// Generates a parent Location plus a series of child Locations ("rooms" —
+// could be a Complex's chambers, a Settlement's districts, or a market's
+// stalls, depending on what Type/Purpose resolve to) and saves all of it
+// immediately — every piece here is an existing Sanctum primitive
+// (generateLocation/createLocationRecord run once per room, parentId/
+// connectedTo are already real Location relationship fields), just
+// orchestrated in a loop rather than the single-record flow Generate Single
+// Location's own button uses. Purpose is left free to vary per room (a
+// dungeon's rooms, or a city's districts, plausibly serve different
+// Purposes) — Environment is NOT: every room is pinned to the parent's own
+// resolved Environment below, since one physical place doesn't span
+// multiple climates/terrains. An explicit Type/Purpose/Environment
+// override, if the GM set one, applies to every room the same way it would
+// to a single Generate Single Location click, which is an intentional
+// consequence of it being a deliberate pin, not a bug.
+async function handleGenerateMultiRoom() {
   const settingId = currentSettingId || elements.settingSelect?.value;
   if (!settingId) {
     status?.show("Select or save a Setting first.", { type: "warning", timeout: 2500 });
     return;
   }
   if (!dataManager) return;
-  const roomCount = Math.max(1, Math.floor(Number(elements.dungeonRoomCount?.value) || 5));
-  if (elements.generateDungeonButton) elements.generateDungeonButton.disabled = true;
+  const roomCountInput = window.prompt("How many rooms should this generate?", "5");
+  if (roomCountInput === null) return;
+  const roomCount = Math.floor(Number(roomCountInput));
+  if (!Number.isFinite(roomCount) || roomCount < 1) {
+    status?.show("Enter a whole number of 1 or more.", { type: "warning", timeout: 2500 });
+    return;
+  }
+  if (elements.generateMultiRoomButton) elements.generateMultiRoomButton.disabled = true;
   try {
     const genOptions = {
       systemId: currentSystemId() || null,
@@ -1167,16 +1287,64 @@ async function handleGenerateDungeon() {
       generateLocation(locationTypes, locationPurposes, features, resources, genOptions),
       null
     );
-    parentRecord.name = "Dungeon";
+    // Purpose + Type, e.g. "Industry Settlement" — a real, descriptive
+    // default tied to what was actually generated, rather than a fixed
+    // literal string implying every multi-room result is a dungeon.
+    parentRecord.name =
+      [findById(locationPurposes, parentRecord.purposeId)?.name, findById(locationTypes, parentRecord.typeId)?.name]
+        .filter(Boolean)
+        .join(" ") || "Location";
     await dataManager.save("location", parentRecord.id, toPressExportShape(parentRecord));
+
+    // Rooms share the parent's own resolved Environment — pinned explicitly
+    // here rather than left to each generateLocation call's own random
+    // resolution (genOptions.environment stays blank/random for Type and
+    // Purpose), which is what previously let every room end up with an
+    // unrelated Environment from the parent and from each other.
+    const roomGenOptions = { ...genOptions, environment: parentRecord.environment || genOptions.environment };
+
+    // A room's Type is also kept plausible relative to the parent's — see
+    // the `scale` convention documented in undercroft/README.md's Location
+    // Type conventions: a Region/Environment parent can have Complex/
+    // Structure/Settlement rooms, but a Complex parent can't have a Region
+    // room. Skipped entirely (falls back to the full, unfiltered list) when
+    // the parent's own Type has no `scale` set, so an unscaled/custom Type
+    // taxonomy sees no behavior change.
+    const parentTypeScale = findById(locationTypes, parentRecord.typeId)?.scale;
+    const roomLocationTypes =
+      typeof parentTypeScale === "number"
+        ? locationTypes.filter((entry) => typeof entry.scale !== "number" || entry.scale <= parentTypeScale)
+        : locationTypes;
+
+    // Type + Purpose + Feature set identifies a room as a duplicate of
+    // another sibling — two rooms with the exact same identity read as a
+    // generation mistake, not a deliberate "twin rooms" choice. Assets/
+    // Needs aren't part of this signature; only Type/Purpose/Features make
+    // a room feel like the same room.
+    function roomSignature(generated) {
+      return `${generated.typeId || ""}|${generated.purposeId || ""}|${(generated.featureIds || []).slice().sort().join(",")}`;
+    }
+    const usedRoomSignatures = new Set();
+    // Capped retries, not a guarantee — a small enough Type/Purpose/Feature
+    // pool (or a large enough room count) can genuinely run out of distinct
+    // combinations; this re-rolls when it easily can, and just accepts a
+    // repeat rather than looping forever once it can't.
+    const MAX_ROOM_REROLLS = 8;
 
     const rooms = [];
     for (let index = 0; index < roomCount; index += 1) {
-      const room = createLocationRecord(
-        generateLocation(locationTypes, locationPurposes, features, resources, genOptions),
-        null
-      );
-      room.name = `Room ${index + 1}`;
+      let generated;
+      let signature;
+      for (let attempt = 0; attempt < MAX_ROOM_REROLLS; attempt += 1) {
+        generated = generateLocation(roomLocationTypes, locationPurposes, features, resources, roomGenOptions);
+        signature = roomSignature(generated);
+        if (!usedRoomSignatures.has(signature)) break;
+      }
+      usedRoomSignatures.add(signature);
+      const room = createLocationRecord(generated, null);
+      // Prefaced with the parent's name — "Room 1" alone collides once more
+      // than one multi-room Location exists in the same Setting.
+      room.name = `${parentRecord.name} - Room ${index + 1}`;
       room.parentId = parentRecord.id;
       if (rooms.length) {
         // Branching-tree layout: mostly connects to the room just placed
@@ -1191,7 +1359,7 @@ async function handleGenerateDungeon() {
       rooms.push(room);
     }
 
-    status?.show(`Generated a dungeon with ${roomCount} room${roomCount === 1 ? "" : "s"}.`, {
+    status?.show(`Generated "${parentRecord.name}" with ${roomCount} room${roomCount === 1 ? "" : "s"}.`, {
       type: "success",
       timeout: 2500,
     });
@@ -1201,9 +1369,41 @@ async function handleGenerateDungeon() {
     renderLocation(parentRecord);
     markLocationClean();
   } catch (error) {
-    status?.show(`Unable to generate dungeon: ${error.message}`, { type: "error", timeout: 4000 });
+    status?.show(`Unable to generate: ${error.message}`, { type: "error", timeout: 4000 });
   } finally {
-    if (elements.generateDungeonButton) elements.generateDungeonButton.disabled = false;
+    if (elements.generateMultiRoomButton) elements.generateMultiRoomButton.disabled = false;
+  }
+}
+
+// If `parentId`'s Location has direct children still following the
+// "[Parent Name] - Room [n]" convention Generate Multi-Room Location gives
+// them (see handleGenerateMultiRoom), offers to re-prefix them to match a
+// just-renamed parent. Only children whose name still starts with the OLD
+// parent name are touched — a room the GM already renamed to something else
+// no longer looks like it belongs to this convention, so it's left alone.
+async function renameChildRoomsIfConfirmed(parentId, previousName, newName) {
+  const prefix = `${previousName} - `;
+  const matchingChildren = locationsInSetting.filter(
+    (location) => location.parentId === parentId && (location.name || "").startsWith(prefix)
+  );
+  if (!matchingChildren.length) return;
+  const rename = window.confirm(
+    `Rename ${matchingChildren.length} child location${matchingChildren.length === 1 ? "" : "s"} to match too? (e.g. "${matchingChildren[0].name}" → "${newName} - ${matchingChildren[0].name.slice(prefix.length)}")`
+  );
+  if (!rename) return;
+  for (const child of matchingChildren) {
+    try {
+      // preferLocal: false — this reads-then-saves the child right back;
+      // a stale local read here wouldn't just display wrong data, it would
+      // silently overwrite that child's real, current server data (e.g.
+      // Species Weights edited elsewhere) with the stale snapshot.
+      const result = await dataManager.get("location", child.id, { preferLocal: false });
+      const childRecord = createLocationRecord(result?.payload || {}, child.id);
+      childRecord.name = `${newName} - ${child.name.slice(prefix.length)}`;
+      await dataManager.save("location", child.id, toPressExportShape(childRecord));
+    } catch (error) {
+      // Best-effort — one failed child shouldn't block renaming the rest.
+    }
   }
 }
 
@@ -1219,6 +1419,13 @@ async function handleSave() {
     status?.show("Enter a Location name first.", { type: "warning", timeout: 2500 });
     return;
   }
+  // Captured before currentRecord.name is overwritten below — Name is one
+  // of the fields not live-synced into currentRecord until save time (see
+  // buildLocationSnapshot's own comment), so this is still the last-saved/
+  // loaded value. Only an existing (already-saved) Location can have
+  // children to rename.
+  const previousName = currentRecord.name;
+  const renaming = Boolean(currentLocationId) && previousName && previousName !== name;
   currentRecord.name = name;
   currentRecord.notes = elements.notesText?.value || "";
   // systemIds/settingIds (both plural) are the only System/Setting
@@ -1238,6 +1445,9 @@ async function handleSave() {
     await dataManager.save("location", id, toPressExportShape(currentRecord));
     currentLocationId = id;
     status?.show("Saved.", { type: "success", timeout: 1500 });
+    if (renaming) {
+      await renameChildRoomsIfConfirmed(id, previousName, name);
+    }
     await reloadLocationsForSetting(settingId);
     if (elements.locationSelect) elements.locationSelect.value = id;
     markLocationClean();
@@ -1304,6 +1514,15 @@ function initCollapsibles() {
     }).section
   );
 
+  document.querySelector("[data-identity-mount]")?.appendChild(
+    createCollapsibleSection({
+      label: "Identity",
+      helpTopic: "sanctum.identity",
+      collapsed: false,
+      content: document.querySelector("[data-identity-panel]"),
+    }).section
+  );
+
   document.querySelector("[data-features-mount]")?.appendChild(
     createCollapsibleSection({
       label: "Features",
@@ -1339,7 +1558,15 @@ function initCollapsibles() {
 
   document.querySelector("[data-npc-config-mount]")?.appendChild(
     createCollapsibleSection({
-      label: "NPC Generation Config (optional)",
+      // Renamed from "NPC Generation Config" per explicit feedback — a GM
+      // looking to edit a Location's own settings couldn't find this
+      // section under its old, narrower-sounding name. Content is
+      // unchanged (still exactly the fields Forge reads to generate NPCs
+      // here); only the label/framing changed. Briefly moved to the right
+      // pane (alongside Setting Properties) and back — the Location being
+      // edited lives in the center pane along with everything else about
+      // it, so this belongs there too.
+      label: "Properties",
       helpTopic: "sanctum.npcConfig",
       collapsed: true,
       className: "d-flex flex-column gap-2",
@@ -1361,9 +1588,19 @@ function initCollapsibles() {
     collapseLabel: "Collapse notes",
   });
 
+  document.querySelector("[data-setting-species-mount]")?.appendChild(
+    createCollapsibleSection({
+      label: "Species Weights",
+      helpTopic: "sanctum.settingSpeciesWeights",
+      collapsed: true,
+      className: "d-flex flex-column gap-2",
+      content: document.querySelector("[data-setting-species-panel]"),
+    }).section
+  );
+
   document.querySelector("[data-calendar-mount]")?.appendChild(
     createCollapsibleSection({
-      label: "Calendar (optional)",
+      label: "Calendar",
       helpTopic: "sanctum.calendar",
       collapsed: true,
       className: "d-flex flex-column gap-2",
@@ -1393,7 +1630,7 @@ async function init() {
   initCollapsibles();
 
   elements.generateButton?.addEventListener("click", handleGenerate);
-  elements.generateDungeonButton?.addEventListener("click", () => void handleGenerateDungeon());
+  elements.generateMultiRoomButton?.addEventListener("click", () => void handleGenerateMultiRoom());
   elements.saveButton?.addEventListener("click", handleSave);
   elements.exportButton?.addEventListener("click", handleExport);
   elements.generateNoteButton?.addEventListener("click", handleGenerateNote);
@@ -1403,19 +1640,25 @@ async function init() {
     if (featureId) addFeature(featureId);
   });
 
-  elements.identityTypeSelect?.addEventListener("change", () => {
-    if (!currentRecord) return;
-    currentRecord.typeId = elements.identityTypeSelect.value || null;
+  // Picking a Type/Purpose/Environment keeps currentRecord in sync — same
+  // convention Crucible's own identityFields "change" listener uses.
+  elements.identityFields?.addEventListener("change", (event) => {
+    const target = event.target.closest("[data-editable-identity]");
+    if (!target || !currentRecord) return;
+    currentRecord[target.dataset.editableIdentity] = target.value || null;
     jsonDataPanel.render();
   });
-  elements.identityPurposeSelect?.addEventListener("change", () => {
-    if (!currentRecord) return;
-    currentRecord.purposeId = elements.identityPurposeSelect.value || null;
-    jsonDataPanel.render();
-  });
-  elements.identityEnvironmentSelect?.addEventListener("change", () => {
-    if (!currentRecord) return;
-    currentRecord.environment = elements.identityEnvironmentSelect.value || null;
+
+  // Per-field reroll button (createFieldBox's own `rerollable` option) —
+  // same convention Forge's/Crucible's/Vault's own Identity fields use.
+  // Rebuilds the whole Identity grid (not just this one box) since
+  // renderIdentity is the single source of truth for it now, matching
+  // Crucible's own reroll listener.
+  elements.identityFields?.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-reroll-attribute]");
+    if (!button || !currentRecord) return;
+    currentRecord = rerollAxis(currentRecord, { locationTypes, locationPurposes, environmentPropertyType }, currentSystemId(), button.dataset.rerollAttribute);
+    renderIdentity(currentRecord);
     jsonDataPanel.render();
   });
 
@@ -1432,15 +1675,36 @@ async function init() {
     addAssetOrNeed("needs", elements.addNeedKindSelect?.value || "resource", elements.addNeedEntitySelect?.value)
   );
 
-  elements.addSpeciesWeightButton?.addEventListener("click", () => renderSpeciesWeightRow());
+  elements.addSpeciesWeightButton?.addEventListener("click", () => renderSpeciesWeightRow(elements.speciesWeightRows, elements.speciesWeightTotal));
   elements.speciesWeightRows?.addEventListener("click", (event) => {
     if (event.target.closest("[data-remove-species-weight]")) {
       event.target.closest(".d-flex").remove();
-      updateSpeciesWeightTotal();
+      updateSpeciesWeightTotal(elements.speciesWeightRows, elements.speciesWeightTotal);
     }
   });
   elements.speciesWeightRows?.addEventListener("input", (event) => {
-    if (event.target.matches("[data-species-weight-value]")) updateSpeciesWeightTotal();
+    if (event.target.matches("[data-species-weight-value]")) updateSpeciesWeightTotal(elements.speciesWeightRows, elements.speciesWeightTotal);
+  });
+
+  // Same row editor, targeting the Setting's own general Species Weights
+  // (Setting Properties, right pane) — the default a Location without its
+  // own Species Weights falls back to (see Forge's effectiveSpeciesLocation).
+  elements.addSettingSpeciesWeightButton?.addEventListener("click", () => {
+    renderSpeciesWeightRow(elements.settingSpeciesWeightRows, elements.settingSpeciesWeightTotal);
+    updateSettingToolbarState();
+  });
+  elements.settingSpeciesWeightRows?.addEventListener("click", (event) => {
+    if (event.target.closest("[data-remove-species-weight]")) {
+      event.target.closest(".d-flex").remove();
+      updateSpeciesWeightTotal(elements.settingSpeciesWeightRows, elements.settingSpeciesWeightTotal);
+      updateSettingToolbarState();
+    }
+  });
+  elements.settingSpeciesWeightRows?.addEventListener("input", (event) => {
+    if (event.target.matches("[data-species-weight-value]")) {
+      updateSpeciesWeightTotal(elements.settingSpeciesWeightRows, elements.settingSpeciesWeightTotal);
+    }
+    updateSettingToolbarState();
   });
   elements.mixingCoefficientInput?.addEventListener("input", () => {
     if (elements.mixingCoefficientValue) {
@@ -1516,30 +1780,40 @@ async function init() {
   elements.display?.addEventListener("input", updateActionButtons);
   elements.display?.addEventListener("change", updateActionButtons);
 
-  elements.systemSelect?.addEventListener("change", async () => {
+  // Named (not an inline listener) so the init flow below can also call
+  // this directly when auto-selecting the active campaign group's own
+  // System.
+  async function handleSystemSelectChange() {
+    markRequiredControl(elements.systemSelect, Boolean(elements.systemSelect.value));
     currentSettingId = null;
     currentLocationId = null;
     await reloadReferenceData();
-    await populateSettingSelect(currentSystemId());
+    const settings = await populateSettingSelect(currentSystemId());
     populateSettingForm(null);
     await reloadLocationsForSetting(null);
     renderLocation(null);
-  });
+    return settings;
+  }
+  elements.systemSelect?.addEventListener("change", handleSystemSelectChange);
 
-  elements.settingSelect?.addEventListener("change", async () => {
+  // Named for the same reason as handleSystemSelectChange above.
+  async function handleSettingSelectChange() {
     const settingId = elements.settingSelect.value;
+    markRequiredControl(elements.settingSelect, Boolean(settingId));
     currentSettingId = settingId || null;
     currentLocationId = null;
     await loadSettingIntoForm(settingId);
     await reloadLocationsForSetting(settingId);
     renderLocation(null);
-  });
+  }
+  elements.settingSelect?.addEventListener("change", handleSettingSelectChange);
 
   elements.settingNameInput?.addEventListener("input", updateSettingToolbarState);
   elements.settingDescriptionInput?.addEventListener("input", updateSettingToolbarState);
 
   elements.newSettingButton?.addEventListener("click", () => {
     if (elements.settingSelect) elements.settingSelect.value = "";
+    markRequiredControl(elements.settingSelect, false);
     currentSettingId = null;
     populateSettingForm(null);
   });
@@ -1567,16 +1841,18 @@ async function init() {
     }
     const id = currentSettingId || slugify(name);
     const calendar = collectCalendarFromForm();
+    const speciesWeights = collectSettingSpeciesWeightsFromForm();
     try {
       await dataManager.save("setting", id, {
         kind: "setting",
         systemIds: [systemId],
         name,
         description: elements.settingDescriptionInput?.value.trim() || "",
-        // Omitted entirely (not even an empty object) unless the GM actually
-        // filled the Calendar section in — same "optional fields start
+        // Omitted entirely (not even an empty object/array) unless the GM
+        // actually filled the section in — same "optional fields start
         // absent" convention as every other optional field in this suite.
         ...(hasCalendarContent(calendar) ? { calendar } : {}),
+        ...(speciesWeights.length ? { speciesWeights } : {}),
       });
       currentSettingId = id;
       status?.show(`Saved Setting ${id}.`, { type: "success", timeout: 2000 });
@@ -1608,12 +1884,17 @@ async function init() {
   elements.locationSelect?.addEventListener("change", async () => {
     const id = elements.locationSelect.value;
     currentLocationId = id || null;
+    updateGenerationFieldsVisibility();
     if (!id) {
       renderLocation(null);
       return;
     }
     try {
-      const result = await dataManager.get("location", id);
+      // preferLocal: false — same reason loadSettingIntoForm needs it
+      // (this file, above): a Location's own Species Weights/Properties
+      // must be visible immediately, not hidden behind a stale local
+      // cache from an earlier load in this browser.
+      const result = await dataManager.get("location", id, { preferLocal: false });
       renderLocation(createLocationRecord(result?.payload || {}, id));
       markLocationClean();
     } catch (error) {
@@ -1625,9 +1906,31 @@ async function init() {
     if (!dataManager || !currentLocationId) return;
     if (!confirmDelete({ label: `location "${currentLocationId}"` })) return;
     const settingId = currentSettingId || elements.settingSelect?.value || null;
+    // Every descendant (not just direct children) — a grandchild would be
+    // orphaned just the same if only its own parent (one of these children)
+    // gets deleted, so "delete the children too" has to mean the whole
+    // subtree.
+    const descendants = collectDescendantLocations(currentLocationId);
+    const deleteDescendants =
+      descendants.length > 0 &&
+      window.confirm(
+        `This location has ${descendants.length} child location${descendants.length === 1 ? "" : "s"}. Delete ${
+          descendants.length === 1 ? "it" : "them"
+        } too? They won't make much sense without their parent.`
+      );
     try {
       await dataManager.delete("location", currentLocationId);
-      status?.show("Deleted.", { type: "success", timeout: 2000 });
+      if (deleteDescendants) {
+        for (const descendant of descendants) {
+          await dataManager.delete("location", descendant.id);
+        }
+      }
+      status?.show(
+        deleteDescendants
+          ? `Deleted, along with ${descendants.length} child location${descendants.length === 1 ? "" : "s"}.`
+          : "Deleted.",
+        { type: "success", timeout: 2000 }
+      );
       currentLocationId = null;
       if (elements.locationSelect) elements.locationSelect.value = "";
       renderLocation(null);
@@ -1637,12 +1940,31 @@ async function init() {
     }
   });
 
-  await populateSystemSelect();
-  await reloadReferenceData();
-  await populateSettingSelect(currentSystemId());
-  populateSettingForm(null);
-  await reloadLocationsForSetting(null);
-  renderLocation(null);
+  // If a campaign group is active (the header's Campaign dropdown) and that
+  // group has its own System/Setting assigned, default Sanctum's own
+  // pickers to THOSE specifically — a real, GM-chosen fact about the
+  // campaign being played, not a guess — to make mid-campaign generation
+  // faster. Falls through to the original "nothing chosen yet" sequence
+  // whenever there's no active group, or its System/Setting isn't one this
+  // tool's own lists actually contain.
+  const systems = await populateSystemSelect();
+  const groupContext = await resolveGroupContext(dataManager).catch(() => null);
+  const defaultSystemId = pickGroupDefaultId(groupContext, "systemId", systems);
+  if (defaultSystemId) {
+    elements.systemSelect.value = defaultSystemId;
+    const settings = await handleSystemSelectChange();
+    const defaultSettingId = pickGroupDefaultId(groupContext, "settingId", settings);
+    if (defaultSettingId) {
+      elements.settingSelect.value = defaultSettingId;
+      await handleSettingSelectChange();
+    }
+  } else {
+    await reloadReferenceData();
+    await populateSettingSelect(currentSystemId());
+    populateSettingForm(null);
+    await reloadLocationsForSetting(null);
+    renderLocation(null);
+  }
 
   initHelpSystem();
   refreshTooltips();

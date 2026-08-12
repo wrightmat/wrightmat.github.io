@@ -1,0 +1,24 @@
+{
+  "id": "eff.weapon-plus-3",
+  "name": "Weapon, +3",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "signatureFeatureId": null,
+  "featureIds": [
+    "feat.weapon-enhancement"
+  ],
+  "properties": {
+    "rarity": "very-rare",
+    "form": "weapon"
+  },
+  "budget": {
+    "target": 18,
+    "spent": 16,
+    "remaining": 2
+  },
+  "notes": "You have a +3 bonus to attack and damage rolls made with this magic weapon.",
+  "featureTiers": {
+    "feat.weapon-enhancement": "plus-3"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "id": "feat.undead-fortitude",
+  "name": "Undead Fortitude",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "If damage would reduce the creature to 0 hit points, it must first make a Constitution saving throw to drop to 1 hit point instead, unless the damage is radiant or from a critical hit.",
+  "mechanics": {
+    "type": "passive",
+    "text": "If damage would reduce the creature to 0 hit points, it must first make a Constitution saving throw to drop to 1 hit point instead, unless the damage is radiant or from a critical hit."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "endure"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

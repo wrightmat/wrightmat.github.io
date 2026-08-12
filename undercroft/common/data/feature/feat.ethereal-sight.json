@@ -1,0 +1,26 @@
+{
+  "id": "feat.ethereal-sight",
+  "name": "Ethereal Sight",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature can see a distance into the Ethereal Plane when it is on the Material Plane, and vice versa.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature can see a distance into the Ethereal Plane when it is on the Material Plane, and vice versa."
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

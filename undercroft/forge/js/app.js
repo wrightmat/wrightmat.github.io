@@ -8,15 +8,20 @@ import {
   createCollapsibleSection,
   createEmptyStateCard,
   createCompactField,
+  createFieldBox,
 } from "../../common/js/lib/ui-components.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
 import { refreshTooltips } from "../../common/js/lib/tooltips.js";
 import { initToolSettings } from "../../common/js/lib/tool-settings.js";
+import { bindCollapsibleToggle } from "../../common/js/lib/collapsible.js";
 import {
   loadForgeTables,
   listSettingsForSystem,
   listLocationsForSetting,
+  listNpcsForLocation,
+  listNpcsForSetting,
   loadLocation,
+  loadSetting,
   loadSpeciesProfilesForLocation,
   getSpeciesOptions,
   getArchetypeOptions,
@@ -25,11 +30,11 @@ import {
   loadAbilityFieldDefs,
   listArrayFieldOptions,
   loadArchetypeTable,
+  loadNpcAttitudes,
   GENDER_FACES,
   AGE_FACES,
   RELATIONSHIP_STATUS_FACES,
   ORIENTATION_FACES,
-  ATTITUDE_LABELS,
 } from "./lib/tables.js";
 import { generateNpc, rerollAttribute } from "./lib/generator.js";
 import { createNpcRecord, toPressExportShape } from "./lib/npc-schema.js";
@@ -37,8 +42,11 @@ import { generateCharacterNote } from "./lib/llm-note.js";
 import { buildLocationPressTemplate } from "./lib/press-export.js";
 import { createDirtyGate } from "../../common/js/lib/dirty-gate.js";
 import { abilityModifier } from "../../common/js/lib/dnd-rules.js";
-import { confirmDelete } from "../../common/js/lib/ownership.js";
+import { allowsDelete, refreshOwnershipCatalog, confirmDelete } from "../../common/js/lib/ownership.js";
 import { createTokenImageField } from "../../common/js/lib/token-picker.js";
+import { renderRequiredSelectOptions, renderOptionalSelectOptions } from "../../common/js/lib/generator-kit.js";
+import { markRequiredControl } from "../../common/js/lib/dom.js";
+import { resolveGroupContext, pickGroupDefaultId } from "../../common/js/lib/widgets/group-context.js";
 
 // Built and mounted before any of the querySelector("[data-*-npc]") lines
 // below, so every existing selector/disabled-state call site elsewhere in
@@ -60,8 +68,7 @@ document.querySelector("[data-export-location-template-mount]")?.appendChild(
 );
 document.querySelector("[data-npc-empty-state]")?.appendChild(
   createEmptyStateCard({
-    icon: "tabler:dice-5",
-    message: "No NPC generated yet. Choose a Location and click Generate NPC.",
+    message: "Nothing selected yet. Pick an existing NPC above, or fill in the fields and click Generate NPC.",
   })
 );
 
@@ -91,6 +98,7 @@ mountField(
 );
 mountField("setting-select", createCompactField({ type: "select", id: "forgeSettingSelect", label: "Setting", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-setting-select" }));
 mountField("location-select", createCompactField({ type: "select", id: "forgeLocationSelect", label: "Location", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-location-select" }));
+mountField("npc-select", createCompactField({ type: "select", id: "forgeNpcSelect", label: "NPC", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-npc-select" }));
 mountField(
   "species-override",
   createCompactField({
@@ -147,6 +155,8 @@ mountField(
 const systemSelect = document.querySelector("[data-system-select]");
 const settingSelect = document.querySelector("[data-setting-select]");
 const locationSelect = document.querySelector("[data-location-select]");
+const npcSelect = document.querySelector("[data-npc-select]");
+const generationFields = document.querySelector("[data-generation-fields]");
 const speciesOverrideSelect = document.querySelector("[data-species-override]");
 const archetypeOverrideSelect = document.querySelector("[data-archetype-override]");
 const alignmentOverrideSelect = document.querySelector("[data-alignment-override]");
@@ -156,6 +166,10 @@ const generateButton = document.querySelector("[data-generate-npc]");
 const npcEmptyState = document.querySelector("[data-npc-empty-state]");
 const npcDisplay = document.querySelector("[data-npc-display]");
 const identityFields = document.querySelector("[data-identity-fields]");
+// Name renders here instead of inside identityFields' own grid — its own
+// row, inline with Image (see renderNpc) — same "Name+Image inline, image
+// on the right" layout Crucible/Vault/Sanctum's own Identity sections use.
+const nameMount = document.querySelector("[data-name-mount]");
 const npcImageMount = document.querySelector('[data-field-mount="npc-image"]');
 const fourDFields = document.querySelector("[data-fourd-fields]");
 const statsFields = document.querySelector("[data-stats-fields]");
@@ -174,10 +188,15 @@ const jsonDataPanel = createJsonDataPanel({
   getData: () => (currentRecord ? toPressExportShape(currentRecord) : {}),
 });
 
-// Adopts the existing static `[data-inspector-panel]` markup (its own
+// Adopts each section's existing static `[data-xxx-panel]` markup (its own
 // content stays hand-authored HTML — only the header+chevron wrapper is
-// JS-built) as this section's content; createCollapsibleSection's own
-// internal bindCollapsibleToggle replaces the old standalone one below.
+// JS-built) as createCollapsibleSection's content — same pattern Sanctum's
+// own initCollapsibles/Crucible's own module-top-level block use. Every
+// section here is expanded by default (collapsed: false), unlike Crucible's
+// own Recipe Fulfillment — Forge has nothing that warrants starting
+// collapsed. Note keeps its "Generate Note" sibling button in static HTML
+// (a shape createCollapsibleSection would clobber by rebuilding the whole
+// header), so only its toggle button is built and mounted.
 const inspectorSection = createCollapsibleSection({
   label: "Component Properties",
   helpTopic: "forge.inspector",
@@ -185,6 +204,48 @@ const inspectorSection = createCollapsibleSection({
   content: document.querySelector("[data-inspector-panel]"),
 });
 document.querySelector("[data-inspector-mount]")?.appendChild(inspectorSection.section);
+
+document.querySelector("[data-identity-mount]")?.appendChild(
+  createCollapsibleSection({
+    label: "Identity",
+    helpTopic: "forge.identity",
+    collapsed: false,
+    content: document.querySelector("[data-identity-panel]"),
+  }).section
+);
+
+document.querySelector("[data-fourd-mount]")?.appendChild(
+  createCollapsibleSection({
+    label: "4D",
+    helpTopic: "forge.fourD",
+    collapsed: false,
+    content: document.querySelector("[data-fourd-panel]"),
+  }).section
+);
+
+document.querySelector("[data-stats-mount]")?.appendChild(
+  createCollapsibleSection({
+    label: "Stats",
+    helpTopic: "forge.stats",
+    collapsed: false,
+    content: document.querySelector("[data-stats-panel]"),
+  }).section
+);
+
+{
+  const noteToggle = createIconButton({
+    icon: "tabler:chevron-right",
+    className: "collapsible-toggle",
+    includeToggleLabel: true,
+  });
+  noteToggle.setAttribute("aria-expanded", "true");
+  document.querySelector("[data-note-toggle-mount]")?.appendChild(noteToggle);
+  bindCollapsibleToggle(noteToggle, document.querySelector("[data-note-panel]"), {
+    collapsed: false,
+    expandLabel: "Expand character note",
+    collapseLabel: "Collapse character note",
+  });
+}
 const inspectorPanel = document.querySelector("[data-inspector-panel]");
 const inspectorEmpty = document.querySelector("[data-inspector-empty]");
 const inspectorLocation = document.querySelector("[data-inspector-location]");
@@ -214,6 +275,18 @@ const speciesLastNamesGroup = document.querySelector("[data-species-last-names-g
 let status = null;
 let tables = null;
 let currentLocation = null;
+// The active Setting's own full record (not just its id) — needed for its
+// general Species Weights (effectiveSpeciesLocation below), the fallback a
+// Location without its own falls back to. Only Location used to be fetched
+// in full; Setting was previously tracked purely by settingSelect.value.
+let currentSetting = null;
+// Every Location belonging to the currently selected Setting — {id, name,
+// parentId} pairs (listLocationsForSetting's own shape), refreshed by
+// populateLocationSelectOptions. Kept globally (not just on the left-pane
+// <select>) so the Identity Location field's own editable select
+// (renderNpc's identityFields loop) can source its options without a
+// second fetch.
+let locationsInSetting = [];
 let currentRecord = null;
 // Gates Save (dirty relative to the last save) and Delete (only a record
 // that's actually been saved, not just generated/rerolled locally, can be
@@ -222,7 +295,21 @@ let currentRecord = null;
 // fields), so the snapshot is just its own export shape.
 const dirtyGate = createDirtyGate({ buildSnapshot: () => (currentRecord ? toPressExportShape(currentRecord) : null) });
 let selectedFieldKey = null;
+// Guards the Location inspector's own async fetch (updateInspector below)
+// against a race: if the GM selects a different field (or a different
+// Location) before an in-flight fetch resolves, the stale response must not
+// overwrite whatever the inspector should show now.
+let locationInspectorRequestId = 0;
 let dataManager = null;
+// Every saved NPC at the currently selected Location (NPC picker options)
+// plus its ownership metadata — same role/shape as Crucible's
+// monstersInSystem/monsterCatalog, Vault's effectsInSystem/effectCatalog,
+// Sanctum's locationsInSetting/locationCatalog. currentNpcId is tracked
+// separately from currentRecord for the same reason those tools track their
+// own current*Id separately.
+let npcsAtLocation = [];
+let npcCatalog = new Map();
+let currentNpcId = null;
 
 const IDENTITY_FIELD_DEFS = [
   { key: "name", label: "Name" },
@@ -287,7 +374,7 @@ function setForgeSystemSetting(systemId, key, value) {
   // An empty statsKeys carries no information (see getStatsKeysPreference
   // below — it's treated the same as never having set it), so it doesn't
   // keep this record alive on its own.
-  if (!next.archetypeField && !(next.statsKeys && next.statsKeys.length)) {
+  if (!next.archetypeField && !next.attitudeField && !(next.statsKeys && next.statsKeys.length)) {
     dataManager.removeLocal(FORGE_SETTINGS_BUCKET, systemId);
   } else {
     dataManager.saveLocal(FORGE_SETTINGS_BUCKET, systemId, next);
@@ -300,6 +387,17 @@ function getArchetypeFieldPreference(systemId) {
 
 function setArchetypeFieldPreference(systemId, fieldKey) {
   setForgeSystemSetting(systemId, "archetypeField", fieldKey || "");
+}
+
+// Which array field on the active System supplies NPC Attitude levels —
+// same "per-tool preference, not System data" pattern as Archetype's own
+// npcTypes field preference above.
+function getAttitudeFieldPreference(systemId) {
+  return getForgeSystemSettings(systemId).attitudeField || "";
+}
+
+function setAttitudeFieldPreference(systemId, fieldKey) {
+  setForgeSystemSetting(systemId, "attitudeField", fieldKey || "");
 }
 
 // An empty selection is treated exactly like "never configured" — both
@@ -323,10 +421,12 @@ function setStatsKeysPreference(systemId, keys) {
   setForgeSystemSetting(systemId, "statsKeys", Array.isArray(keys) ? keys : []);
 }
 
-// Every array field the active System defines, for the Archetype field
-// picker — "None" is a real, valid choice (a System with no archetype
-// table authored yet).
-function archetypeFieldOptions() {
+// Every array field the active System defines, for the Archetype/Attitude
+// field pickers (same shape Crucible's own fieldPreferenceOptions uses for
+// its Combat Scaling/Creature Type field pickers) — "None" is a real,
+// deliberate choice (a System with no archetype table/attitude scale
+// authored yet).
+function fieldPreferenceOptions() {
   return [{ value: "", label: "None" }, ...arrayFieldOptions.map((field) => ({ value: field.key, label: field.label || field.key }))];
 }
 
@@ -349,6 +449,15 @@ const CONVENTIONAL_ARCHETYPE_FIELD = "npcTypes";
 function resolveEffectiveArchetypeField(rawValue) {
   if (rawValue) return rawValue;
   return arrayFieldOptions.some((field) => field.key === CONVENTIONAL_ARCHETYPE_FIELD) ? CONVENTIONAL_ARCHETYPE_FIELD : "";
+}
+
+// Same reasoning as CONVENTIONAL_ARCHETYPE_FIELD/resolveEffectiveArchetypeField
+// above, for the Attitude field preference.
+const CONVENTIONAL_ATTITUDE_FIELD = "npcAttitudes";
+
+function resolveEffectiveAttitudeField(rawValue) {
+  if (rawValue) return rawValue;
+  return arrayFieldOptions.some((field) => field.key === CONVENTIONAL_ATTITUDE_FIELD) ? CONVENTIONAL_ATTITUDE_FIELD : "";
 }
 
 // Every key (besides `name`) present on any archetype entry, nice-labeled —
@@ -401,11 +510,13 @@ function resolveArchetypeStats(statsByName, systemId) {
 // in sync with whichever System is currently active.
 async function refreshSystemVocabulary(systemId) {
   const archetypeField = getArchetypeFieldPreference(systemId);
-  const [alignmentFaces, abilityFieldDefs, fieldOptions, archetypeTable] = await Promise.all([
+  const attitudeField = getAttitudeFieldPreference(systemId);
+  const [alignmentFaces, abilityFieldDefs, fieldOptions, archetypeTable, npcAttitudes] = await Promise.all([
     loadAlignmentFaces(dataManager, systemId),
     loadAbilityFieldDefs(dataManager, systemId),
     listArrayFieldOptions(dataManager, systemId),
     loadArchetypeTable(dataManager, systemId, archetypeField || undefined),
+    loadNpcAttitudes(dataManager, systemId, attitudeField || undefined),
   ]);
   arrayFieldOptions = fieldOptions;
   ABILITY_FIELD_DEFS = abilityFieldDefs;
@@ -415,15 +526,79 @@ async function refreshSystemVocabulary(systemId) {
     tables.alignmentFaces = alignmentFaces;
     tables.archetype = { entries: archetypeTable.entries };
     tables.stats = resolveArchetypeStats(archetypeTable.statsByName, systemId);
+    tables.npcAttitudes = npcAttitudes;
+    // Threaded through to getStatsForArchetype (lib/tables.js, via
+    // generator.js's own resolveStats) so it can tell an ability score
+    // apart from any other kind of stat and bundle it into stats.abilities
+    // — the shape Crucible's monsters/Characters both already use.
+    tables.abilityKeys = ABILITY_KEYS;
   }
   populateSelectOptions(alignmentOverrideSelect, alignmentFaces);
 }
 
 function formatIdentityValue(key, value) {
   if (key === "attitude") {
-    return `${getAttitudeLabel(value)} (${value})`;
+    return `${getAttitudeLabel(tables?.npcAttitudes, value)} (${value})`;
   }
   return String(value ?? "");
+}
+
+// A field's own vocabulary as <select> options ({value, label} pairs), or
+// null for a field that's still a free-typed text box (Relationship — a
+// combined status+orientation string with no single fixed vocabulary of its
+// own). Species/Archetype/Alignment/Age are all label strings stored as-is
+// on the record (value === label, same convention every one of these
+// already used before becoming selects); Gender's own fixed table has
+// weighted duplicate faces (Male x3 for the roll, but only one "Male"
+// *choice*), so it's deduped for display; Attitude is the one numeric-valued
+// field, sourced from the active System's own npcAttitudes data (see
+// loadNpcAttitudes/refreshSystemVocabulary) instead of a hardcoded label
+// list. Location is the one id-valued field (record.locationId, not
+// record.identity.location — see renderNpc's own identityFields loop) and
+// the one field with a real, always-present blank choice: unlike every
+// other axis here, "no Location" is a normal, valid state (Location is
+// optional), not just a display fallback for a value that doesn't match.
+function identitySelectOptions(key) {
+  switch (key) {
+    case "species":
+      return uniqueLabelOptions(getSpeciesOptions(effectiveSpeciesLocation(), tables?.speciesProfiles).map((entry) => entry.label));
+    case "archetype":
+      return uniqueLabelOptions(getArchetypeOptions(tables?.archetype, currentLocation).map((entry) => entry.name));
+    case "alignment":
+      return uniqueLabelOptions(tables?.alignmentFaces || []);
+    case "gender":
+      return uniqueLabelOptions(GENDER_FACES);
+    case "age":
+      return uniqueLabelOptions(AGE_FACES);
+    case "attitude":
+      return (tables?.npcAttitudes || []).map((entry) => ({ value: entry.value, label: entry.label }));
+    case "location":
+      return [
+        { value: "", label: "No Location" },
+        ...locationsInSetting.map((location) => ({ value: location.id, label: location.name })),
+      ];
+    default:
+      return null;
+  }
+}
+
+function uniqueLabelOptions(labels) {
+  return Array.from(new Set(labels.filter(Boolean))).map((label) => ({ value: label, label }));
+}
+
+// A generated NPC's current value for a select-backed Identity field isn't
+// always guaranteed to be among that field's "normal" candidate options
+// (Species can resolve to "Other" with zero location weights; Archetype can
+// resolve to "Unknown"; System vocabulary can change after generation) —
+// silently defaulting the <select> to whatever its first option happens to
+// be, while the record still holds the real value underneath, would
+// misrepresent the record. Appending the current value as its own option
+// when missing keeps the select honest.
+function ensureOptionIncludesValue(options, value) {
+  if (value === "" || value === null || value === undefined || options.some((option) => option.value === value)) {
+    return options;
+  }
+  return [...options, { value, label: String(value) }];
 }
 
 function abilityModifierText(score) {
@@ -431,75 +606,12 @@ function abilityModifierText(score) {
   return `(${modifier >= 0 ? "+" : ""}${modifier})`;
 }
 
-function buildFieldCard({
-  key,
-  label,
-  value,
-  rerollable,
-  colClass = "col-12 col-md-6 col-lg-4",
-  compact = false,
-  editable = false,
-  selectable = false,
-  suffix = "",
-}) {
-  const col = document.createElement("div");
-  col.className = colClass;
-  const box = document.createElement("div");
-  if (compact) {
-    box.className = "d-flex flex-column align-items-center justify-content-center text-center border rounded-3 p-1 h-100";
-    const labelLine = `<div class="text-uppercase text-body-secondary" style="font-size: 0.65rem">${escapeHtml(label)}</div>`;
-    if (editable) {
-      // Same .forge-inline-edit blend-in idiom as the Name field, just sized
-      // for a compact box — the raw score/number is what's editable, kept
-      // separate from the (+N) ability modifier (recomputed live, not stored).
-      box.innerHTML = `${labelLine}<div class="d-flex align-items-center justify-content-center gap-1"><input type="text" class="forge-inline-edit small fw-semibold text-center" style="width: 2.5rem" value="${escapeHtml(value)}" data-editable-field="${key}" aria-label="Edit ${label}" />${
-        suffix ? `<span class="small text-body-secondary" data-editable-suffix="${key}">${escapeHtml(suffix)}</span>` : ""
-      }</div>`;
-    } else {
-      box.innerHTML = `${labelLine}<div class="fw-semibold small">${escapeHtml(value)}</div>`;
-    }
-    col.appendChild(box);
-    return col;
-  }
-  box.className = "d-flex align-items-center justify-content-between gap-2 border rounded-3 p-2 h-100";
-  if (selectable) {
-    box.dataset.selectField = key;
-  }
-  const text = document.createElement("div");
-  text.className = "flex-grow-1";
-  const labelLine = document.createElement("div");
-  labelLine.className = "small text-uppercase text-body-secondary";
-  labelLine.textContent = label;
-  text.appendChild(labelLine);
-  if (editable) {
-    // Looks like the plain value line (see .forge-inline-edit) until
-    // hovered/focused — an <input> the whole time, just styled to blend in.
-    const input = document.createElement("input");
-    input.type = "text";
-    input.className = "forge-inline-edit";
-    input.value = value;
-    input.dataset.editableField = key;
-    input.setAttribute("aria-label", `Edit ${label}`);
-    text.appendChild(input);
-  } else {
-    const valueLine = document.createElement("div");
-    valueLine.className = "fw-semibold";
-    valueLine.textContent = value;
-    text.appendChild(valueLine);
-  }
-  box.appendChild(text);
-  if (rerollable) {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "btn btn-outline-secondary btn-sm flex-shrink-0";
-    button.dataset.rerollAttribute = key;
-    button.setAttribute("aria-label", `Reroll ${label}`);
-    button.innerHTML = `<span class="iconify" data-icon="tabler:refresh" aria-hidden="true"></span>`;
-    box.appendChild(button);
-  }
-  col.appendChild(box);
-  return col;
-}
+// Forge's own field-box implementation, originally hand-rolled here, is now
+// the shared createFieldBox (common/js/lib/ui-components.js) — Crucible's
+// Stats/Identity fields and Vault's Identity fields render the exact same
+// box today. Kept as a thin local alias so every call site below (Name/
+// Identity/4D/Stats) needs no changes.
+const buildFieldCard = createFieldBox;
 
 // "strength" -> "Strength", "attackModifier" -> "Attack Modifier" — used for
 // any stats key with no matching ABILITY_FIELD_DEFS short name, so a
@@ -512,17 +624,47 @@ function titleCaseKey(key) {
     .trim();
 }
 
+// Forge's own generation (getStatsForArchetype, lib/tables.js) always nests
+// ability scores under stats.abilities — the same shape Crucible's monsters
+// and Characters both already use (see crucible/js/lib/stats.js#deriveStats,
+// sys.dnd5e.json's own "abilities" object field) — confirmed the actual
+// suite-wide standard, not a Forge-specific choice, after this shape's own
+// bug report. A saved NPC with one or more ability scores sitting FLAT on
+// `stats` instead (an inconsistency from earlier in this tool's own
+// development, since corrected on both existing saved records directly —
+// see undercroft/common/data/npc/*.json) would render as a jumble of
+// unlabeled ability-score boxes mixed in among armorClass/hitPoints/etc.,
+// each missing its own (+N) modifier suffix. This is a pure failsafe, not
+// something normal generation/editing relies on — it folds any of the
+// active System's own ability keys (ABILITY_KEYS) found sitting flat on
+// `stats` back into `stats.abilities` (merging with whatever's already
+// nested there, if anything) at load time, so a record in that shape,
+// however it got there, still renders correctly.
+function normalizeStats(stats) {
+  if (!stats) return stats;
+  const flatAbilityKeys = Array.from(ABILITY_KEYS).filter((key) => stats[key] !== undefined);
+  if (!flatAbilityKeys.length) return stats;
+  const abilities = { ...(stats.abilities && typeof stats.abilities === "object" ? stats.abilities : {}) };
+  const rest = { ...stats };
+  flatAbilityKeys.forEach((key) => {
+    abilities[key] = rest[key];
+    delete rest[key];
+  });
+  return { ...rest, abilities };
+}
+
 // Schema-driven: renders whatever keys are actually present on the resolved
 // stats object instead of assuming D&D's fixed "6 abilities + AC + HP"
 // shape (see getStatsForArchetype in lib/tables.js) — a different System's
 // archetypeStats field can carry an entirely different set of keys (or
-// none at all). `hitPoints` is the one key still special-cased, as a
-// max/current pair — worth keeping the nice split display, only rendered
-// if present. A key matching one of the active System's own ability
-// fields (ABILITY_FIELD_DEFS) gets that field's short label and a live
-// (+N) modifier suffix; every other key gets a plain title-cased label. A
-// string-valued entry (e.g. a Daggerheart Adversary's Feature text) renders
-// full-width instead of jammed into the compact number-box grid.
+// none at all). `abilities` and `hitPoints` are the two keys still
+// special-cased: `abilities` (a nested object — the active System's own
+// ability keys, e.g. strength/dexterity/...) renders as one box per
+// ability, each with its field's short label and a live (+N) modifier
+// suffix, ahead of everything else; `hitPoints` as a max/current pair.
+// Every other key gets a plain title-cased label. A string-valued entry
+// (e.g. a Daggerheart Adversary's Feature text) renders full-width instead
+// of jammed into the compact number-box grid.
 //
 // No stats at all — whether this System has no Stats bound (Blades in the
 // Dark) or this particular archetype has no block within a System that
@@ -536,21 +678,52 @@ function renderStats(stats) {
     return;
   }
   statsCard?.classList.remove("d-none");
-  const abilityDefByKey = new Map(ABILITY_FIELD_DEFS.map((def) => [def.key, def]));
+
+  // Abilities render first, in the active System's own field order (not
+  // raw object insertion order) — stats.abilities is the suite-wide nested
+  // shape Crucible's monsters and Characters both already use (see
+  // getStatsForArchetype, lib/tables.js), not a Forge-specific flat one.
+  // The compound "abilities.<key>" carried in data-editable-field (and its
+  // suffix's matching data-editable-suffix) is what tells the write-back
+  // listener below to patch the nested object, not a flat stats.<key>.
+  if (stats.abilities && typeof stats.abilities === "object") {
+    ABILITY_FIELD_DEFS.forEach(({ key, label }) => {
+      const value = stats.abilities[key];
+      if (value === undefined) return;
+      statsFields.appendChild(
+        buildFieldCard({
+          key: `abilities.${key}`,
+          label,
+          value: value ?? "",
+          suffix: abilityModifierText(value),
+          rerollable: false,
+          colClass: "col-4 col-md-2",
+          compact: true,
+          editable: true,
+        })
+      );
+    });
+  }
+
   const compactEntries = [];
   const wideEntries = [];
   Object.entries(stats).forEach(([key, value]) => {
-    if (key === "hitPoints") return;
+    // hitPoints/abilities get their own dedicated boxes below. `initiative`
+    // is a `{bonus, advantage?, disadvantage?}` object now (this suite's
+    // one shared initiative shape — see the monster-data-alignment plan),
+    // not a flat number — Combat Tracker already reads it generically via
+    // the System's own combatBindings, and there's no dedicated box for it
+    // here (same "combat-only, no static-editor UI needed" reasoning Temp
+    // HP uses), so it's excluded here rather than rendered as a raw object.
+    if (key === "hitPoints" || key === "abilities" || key === "initiative") return;
     (typeof value === "string" && value.length > 12 ? wideEntries : compactEntries).push([key, value]);
   });
   compactEntries.forEach(([key, value]) => {
-    const abilityDef = abilityDefByKey.get(key);
     statsFields.appendChild(
       buildFieldCard({
         key,
-        label: abilityDef?.label || titleCaseKey(key),
+        label: titleCaseKey(key),
         value: value ?? "",
-        suffix: abilityDef ? abilityModifierText(value) : "",
         rerollable: false,
         colClass: "col-4 col-md-2",
         compact: true,
@@ -604,7 +777,7 @@ function renderStats(stats) {
 function refreshActionButtons() {
   saveButton.disabled = !currentRecord || !dirtyGate.isDirty();
   exportButton.disabled = !currentRecord;
-  deleteButton.disabled = !currentRecord || !dirtyGate.hasSaved();
+  deleteButton.disabled = !currentRecord || !dirtyGate.hasSaved() || !npcAllowsDelete(currentNpcId);
 }
 
 function renderNpc(record) {
@@ -617,6 +790,10 @@ function renderNpc(record) {
     jsonDataPanel.render();
     return;
   }
+  // See normalizeStats' own comment — a pure failsafe, folding any stray
+  // flat ability keys back into stats.abilities in place, so every render/
+  // save/edit from here on sees (and persists) the correct nested shape.
+  record.stats = normalizeStats(record.stats);
 
   // Its own small card rather than an IDENTITY_FIELD_DEFS entry — image
   // isn't reroll-able like the rest of Identity, it's a picked/inherited
@@ -631,6 +808,10 @@ function renderNpc(record) {
       createTokenImageField({
         id: "forgeNpcImage",
         label: "Image",
+        // Matches the Name field box it sits inline beside — per explicit
+        // feedback that Image looking visually different from every other
+        // field box (including Forge's own) was the thing to fix.
+        boxed: true,
         value: record.image || "",
         dataManager,
         status,
@@ -644,18 +825,49 @@ function renderNpc(record) {
     );
   }
 
+  // Name renders on its own, inline with Image (see nameMount above) —
+  // excluded from the grid loop below, which now only covers the other 8
+  // identity fields (Species/Archetype/Alignment/Gender/Age/Relationship/
+  // Attitude/Location).
+  if (nameMount) {
+    nameMount.innerHTML = "";
+    nameMount.appendChild(
+      buildFieldCard({
+        key: "name",
+        label: "Name",
+        value: formatIdentityValue("name", record.name),
+        rerollable: true,
+        editable: true,
+        selectable: true,
+        colClass: "flex-grow-1",
+      })
+    );
+  }
+
   identityFields.innerHTML = "";
-  IDENTITY_FIELD_DEFS.forEach(({ key, label }) => {
+  IDENTITY_FIELD_DEFS.filter(({ key }) => key !== "name").forEach(({ key, label }) => {
+    // Location lives at record.locationId (a top-level field, not nested
+    // under record.identity like every other Identity axis) since it's a
+    // real id reference to a Location entity, not a rolled/typed value —
+    // same reason its stored value is an id rather than a label, unlike
+    // every other field here. Never rerollable (there's no random-Location
+    // mechanic), but editable like everything else — picking a different
+    // Location (or "No Location") here only changes this record's own
+    // reference, the same restrained "no cascading side effects" behavior
+    // every other Identity field's edit already has. Relationship stays
+    // free text (see identitySelectOptions). Every other field is a select
+    // over its own real vocabulary.
+    const value = key === "location" ? record.locationId || "" : record.identity[key];
+    const options = identitySelectOptions(key);
     identityFields.appendChild(
       buildFieldCard({
         key,
         label,
-        value:
-          key === "location"
-            ? currentLocation?.name || ""
-            : formatIdentityValue(key, key === "name" ? record.name : record.identity[key]),
+        value,
+        type: options ? "select" : "text",
+        options: options ? ensureOptionIncludesValue(options, value) : [],
         rerollable: key !== "location",
-        editable: key === "name",
+        editable: true,
         selectable: true,
       })
     );
@@ -664,7 +876,19 @@ function renderNpc(record) {
   fourDFields.innerHTML = "";
   FOURD_FIELD_DEFS.forEach(({ key, label }) => {
     fourDFields.appendChild(
-      buildFieldCard({ key, label, value: record.fourD[key], rerollable: true, selectable: true })
+      buildFieldCard({
+        key,
+        label,
+        value: record.fourD[key],
+        type: "select",
+        options: ensureOptionIncludesValue(
+          (tables?.fourD?.[key] || []).map((entry) => ({ value: entry, label: entry })),
+          record.fourD[key]
+        ),
+        rerollable: true,
+        editable: true,
+        selectable: true,
+      })
     );
   });
 
@@ -728,6 +952,38 @@ function populateLocationOverrides(location) {
   populateSelectOptions(archetypeOverrideSelect, archetypeNames);
 }
 
+// The Location a GM picks is optional and, per its own design, only ever
+// contributes naming/species context — but a Location with no Species
+// Weights of its own (or no Location at all) used to always fall through
+// straight to "Other," even when the active Setting has a perfectly good
+// general population defined (Setting Properties' own Species Weights,
+// right pane in Sanctum). This resolves which speciesWeights list actually
+// applies: the Location's own when it has one, else the Setting's, else
+// neither (still "Other," same as before) — a plain, real Location object
+// otherwise so every other field it carries (archetypeOverrides, id, ...)
+// keeps working exactly as it already did.
+function effectiveSpeciesLocation() {
+  const locationWeights = currentLocation?.speciesWeights;
+  if (Array.isArray(locationWeights) && locationWeights.length) return currentLocation;
+  const settingWeights = currentSetting?.speciesWeights;
+  if (Array.isArray(settingWeights) && settingWeights.length) {
+    return { ...(currentLocation || {}), speciesWeights: settingWeights };
+  }
+  return currentLocation;
+}
+
+// Re-derives everything that depends on "what Species can be rolled/picked
+// right now" — the Species Name Profile cache (needed for both the roll AND
+// the override select's own labels) and the override selects themselves —
+// against effectiveSpeciesLocation()'s resolved population. Called whenever
+// System, Setting, or Location changes, since any of the three can change
+// which population is actually in effect.
+async function refreshSpeciesContext() {
+  const location = effectiveSpeciesLocation();
+  tables.speciesProfiles = await loadSpeciesProfilesForLocation(location);
+  populateLocationOverrides(location);
+}
+
 function readOverrides() {
   return {
     species: speciesOverrideSelect.value,
@@ -773,70 +1029,107 @@ async function listAllSystems() {
   return Array.from(merged.values()).sort((a, b) => (a.title || "").localeCompare(b.title || ""));
 }
 
+// System/Setting are "pick one of these existing, required things" selects
+// — no in-place creation exists for either in Forge (they're authored in
+// Sanctum now, see this file's own System>Setting>Location comment above) —
+// so both get the disabled-placeholder, forced-choice treatment System
+// already used. Location is NOT required to generate (it only contributes
+// naming/species-weighting context — generateNpc and everything it calls
+// tolerate a null Location), so it gets the same "New/unsaved"-style
+// always-selectable blank the NPC picker below uses, minus the red
+// required-field border.
 async function populateSystemSelect() {
   const systems = await listAllSystems();
-  const previous = systemSelect.value;
-  systemSelect.innerHTML = "";
-  const blank = document.createElement("option");
-  blank.value = "";
-  blank.textContent = systems.length ? "Select a system…" : "No systems yet";
-  systemSelect.appendChild(blank);
-  systems.forEach((system) => {
-    const option = document.createElement("option");
-    option.value = system.id;
-    option.textContent = system.title;
-    systemSelect.appendChild(option);
-  });
-  if (systems.some((system) => system.id === previous)) systemSelect.value = previous;
+  renderRequiredSelectOptions(systemSelect, systems, { placeholder: systems.length ? "Select a System" : "No Systems yet" });
+  markRequiredControl(systemSelect, Boolean(systemSelect.value));
   return systems;
 }
 
 async function populateSettingSelect(systemId) {
   const settings = await listSettingsForSystem(dataManager, systemId);
-  settingSelect.innerHTML = "";
-  const blank = document.createElement("option");
-  blank.value = "";
-  blank.textContent = settings.length ? "Select a setting…" : "No settings yet";
-  settingSelect.appendChild(blank);
-  settings.forEach((setting) => {
-    const option = document.createElement("option");
-    option.value = setting.id;
-    option.textContent = setting.name;
-    settingSelect.appendChild(option);
-  });
-  return settings;
+  // listSettingsForSystem itself returns server order, not name order —
+  // alphabetized here the same way Sanctum's own populateSettingSelect
+  // sorts its (otherwise-identical) list.
+  const sortedSettings = [...settings].sort((a, b) => (a.name || a.id).localeCompare(b.name || b.id));
+  renderRequiredSelectOptions(settingSelect, sortedSettings, { placeholder: settings.length ? "Select a Setting" : "No Settings yet" });
+  markRequiredControl(settingSelect, Boolean(settingSelect.value));
+  return sortedSettings;
 }
 
 async function populateLocationSelectOptions(settingId) {
   const locations = await listLocationsForSetting(dataManager, settingId);
-  locationSelect.innerHTML = "";
-  const blank = document.createElement("option");
-  blank.value = "";
-  blank.textContent = locations.length ? "Select a location…" : "No locations yet";
-  locationSelect.appendChild(blank);
-  locations.forEach((location) => {
-    const option = document.createElement("option");
-    option.value = location.id;
-    option.textContent = location.name;
-    locationSelect.appendChild(option);
-  });
+  locationsInSetting = locations;
+  renderOptionalSelectOptions(locationSelect, locations, { blankLabel: locations.length ? "No Location" : "No Locations yet" });
   return locations;
 }
 
-async function selectLocation(id) {
-  currentLocation = await loadLocation(id);
-  locationSelect.value = id;
-  tables.speciesProfiles = await loadSpeciesProfilesForLocation(currentLocation);
-  populateLocationOverrides(currentLocation);
+// Ownership metadata comes from the list response, not the full fetched
+// body — mirrors Sanctum's refreshLocationCatalog/Crucible's
+// refreshMonsterCatalog/Vault's refreshEffectCatalog exactly. Local-only
+// (anonymous, browser-storage) entries are always deletable, since it's
+// just this browser's own storage.
+async function refreshNpcCatalog(ids) {
+  npcCatalog = await refreshOwnershipCatalog(dataManager, "npc", ids);
+}
 
-  // The Location Identity box (and the inspector, if it's the one currently
-  // selected) reflect whatever's chosen up here in the left pane, not just
-  // whatever was true at the last renderNpc.
-  const locationValue = identityFields.querySelector('[data-select-field="location"] .fw-semibold');
-  if (locationValue) locationValue.textContent = currentLocation?.name || "";
-  if (selectedFieldKey === "location") {
-    updateInspector();
+function npcAllowsDelete(id) {
+  return allowsDelete(npcCatalog, id, { dataManager });
+}
+
+// Every saved NPC at the currently selected Location — same picker pattern
+// as Sanctum's Location/Crucible's Monster/Vault's Effect: "New / unsaved"
+// as the default so a fresh Generate NPC keeps working exactly as before.
+// With no Location selected (it's optional now), falls back to every NPC
+// belonging to the whole Setting (via its own settingIds — see
+// listNpcsForSetting/generateNpc, lib/tables.js and lib/generator.js)
+// instead of an empty list — confirmed real bug this fixes: a campaign's
+// auto-selected System/Setting (see init()'s own active-group default)
+// never auto-selects a Location, so a GM's own previously-saved NPCs never
+// showed up until that exact Location was reselected by hand.
+async function populateNpcSelect() {
+  if (!npcSelect) return;
+  if (currentLocation) {
+    npcsAtLocation = await listNpcsForLocation(dataManager, currentLocation.id);
+  } else if (settingSelect.value) {
+    npcsAtLocation = await listNpcsForSetting(dataManager, settingSelect.value);
+  } else {
+    npcsAtLocation = [];
   }
+  const sorted = [...npcsAtLocation].sort((a, b) => (a.name || a.id).localeCompare(b.name || b.id));
+  renderOptionalSelectOptions(npcSelect, sorted, { previousValue: currentNpcId || "" });
+  await refreshNpcCatalog(npcsAtLocation.map((npc) => npc.id));
+  updateGenerationFieldsVisibility();
+}
+
+// Species/Archetype/Alignment/Gender overrides only matter for generating
+// something new — once an existing NPC is loaded they're just clutter (same
+// convention Sanctum/Crucible/Vault's own generation fields follow). Purely
+// visual: hiding never clears an override's underlying value.
+function updateGenerationFieldsVisibility() {
+  generationFields?.classList.toggle("d-none", Boolean(npcSelect?.value));
+}
+
+async function selectLocation(id) {
+  if (!id) {
+    currentLocation = null;
+  } else {
+    try {
+      currentLocation = await loadLocation(dataManager, id);
+    } catch (error) {
+      status?.show(`Unable to load location: ${error.message}`, { type: "error", timeout: 4000 });
+      return;
+    }
+  }
+  locationSelect.value = id;
+  // Reset which saved NPC (if any) the picker points at — a different
+  // Location has its own distinct set of saved NPCs — but deliberately
+  // don't clear whatever NPC is currently displayed: Forge already left a
+  // generated/loaded NPC on screen across a Location change before this
+  // change, and forcing it away here would risk losing an unsaved NPC the
+  // GM didn't ask to discard just for browsing a different Location.
+  currentNpcId = null;
+  await populateNpcSelect();
+  await refreshSpeciesContext();
 }
 
 // --- Location inspector (read-only — edited in Sanctum) --------------------
@@ -934,7 +1227,7 @@ function selectField(key) {
 }
 
 function updateFieldSelectionUI() {
-  [identityFields, fourDFields].forEach((container) => {
+  [identityFields, fourDFields, nameMount].filter(Boolean).forEach((container) => {
     container.querySelectorAll("[data-select-field]").forEach((box) => {
       box.classList.toggle("forge-field-selected", box.dataset.selectField === selectedFieldKey);
     });
@@ -974,7 +1267,29 @@ function updateInspector() {
   }
 
   if (selectedFieldKey === "location") {
-    populateLocationForm(currentLocation);
+    // Reflects THIS record's own locationId — not necessarily the left
+    // pane's currentLocation, which the record's own Location field is no
+    // longer tied to (see renderNpc's identityFields loop and
+    // handleIdentityFieldInput). Reuses the already-loaded currentLocation
+    // object when it happens to be the same Location (the common case —
+    // no extra fetch); otherwise loads the record's own Location fresh.
+    const locationId = currentRecord?.locationId || "";
+    if (!locationId) {
+      populateLocationForm(null);
+      return;
+    }
+    if (currentLocation?.id === locationId) {
+      populateLocationForm(currentLocation);
+      return;
+    }
+    const requestId = ++locationInspectorRequestId;
+    loadLocation(dataManager, locationId)
+      .then((location) => {
+        if (requestId === locationInspectorRequestId) populateLocationForm(location);
+      })
+      .catch(() => {
+        if (requestId === locationInspectorRequestId) populateLocationForm(null);
+      });
     return;
   }
 
@@ -1017,7 +1332,7 @@ function getFieldTableData(key) {
     case "relationship":
       return { status: RELATIONSHIP_STATUS_FACES, orientation: ORIENTATION_FACES };
     case "attitude":
-      return ATTITUDE_LABELS;
+      return tables?.npcAttitudes || [];
     case "name": {
       const nameRoll = currentRecord?.rolls?.name;
       if (!nameRoll) return {};
@@ -1044,33 +1359,37 @@ generateButton.addEventListener("click", () => {
     status?.show("Select a Setting first.", { type: "warning", timeout: 2500 });
     return;
   }
-  if (!currentLocation) {
-    status?.show("Select a Location first.", { type: "warning", timeout: 2500 });
-    return;
-  }
   if (!tables) return;
   try {
     const overrides = readOverrides();
-    const record = createNpcRecord(generateNpc(currentLocation, tables, { overrides }));
+    const record = createNpcRecord(
+      generateNpc(effectiveSpeciesLocation(), tables, { overrides, systemId: systemSelect.value, settingId: settingSelect.value })
+    );
     dirtyGate.markDirty();
+    // Freshly generated content is always unsaved, regardless of whichever
+    // saved NPC the picker previously pointed at — mirrors Crucible/Vault/
+    // Sanctum's own Generate handlers resetting the same way.
+    currentNpcId = null;
+    if (npcSelect) npcSelect.value = "";
+    updateGenerationFieldsVisibility();
     renderNpc(record);
   } catch (error) {
     status?.show(`Unable to generate: ${error.message}`, { type: "error", timeout: 4000 });
   }
 });
 
-[identityFields, fourDFields].forEach((container) => {
+[identityFields, fourDFields, nameMount].filter(Boolean).forEach((container) => {
   container.addEventListener("click", (event) => {
     const button = event.target.closest("[data-reroll-attribute]");
-    if (!button || !currentRecord || !currentLocation || !tables) return;
-    renderNpc(rerollAttribute(currentRecord, tables, currentLocation, button.dataset.rerollAttribute));
+    if (!button || !currentRecord || !tables) return;
+    renderNpc(rerollAttribute(currentRecord, tables, effectiveSpeciesLocation(), button.dataset.rerollAttribute));
   });
 });
 
 // Clicking an Identity or 4D box selects it and surfaces its details in the
 // inspector — guarded so a click on the reroll button or the Name field's
 // inline input (both nested inside the box) doesn't also toggle selection.
-[identityFields, fourDFields].forEach((container) => {
+[identityFields, fourDFields, nameMount].filter(Boolean).forEach((container) => {
   container.addEventListener("click", (event) => {
     if (event.target.closest("[data-reroll-attribute]") || event.target.closest("[data-editable-field]")) return;
     const box = event.target.closest("[data-select-field]");
@@ -1079,27 +1398,52 @@ generateButton.addEventListener("click", () => {
   });
 });
 
-// Typing directly into an editable field (currently just Name, which lives
-// at the record's top level — see undercroft/forge/js/lib/generator.js —
-// not nested in `identity` like the rest of the rolled Identity block) keeps
-// the record in sync without re-running renderNpc — same reasoning as the
-// note textarea below: resetting .value mid-edit would jump the cursor.
-identityFields.addEventListener("input", (event) => {
+// Typing directly into an editable field keeps the record in sync without
+// re-running renderNpc — same reasoning as the note textarea below:
+// resetting .value mid-edit would jump the cursor. Name lives at the
+// record's top level (see undercroft/forge/js/lib/generator.js) and renders
+// in its own container (nameMount, inline with Image); every other Identity
+// field lives under record.identity; 4D fields under record.fourD — one
+// shared handler covers all three containers. Attitude is the one special
+// case: its stored value is the raw 1-6 number, displayed with a derived
+// label suffix (see renderNpc's identityFields loop), so its suffix span
+// needs the same live-update-on-edit treatment Stats' ability scores get.
+function handleIdentityFieldInput(event) {
   const input = event.target.closest("[data-editable-field]");
   if (!input || !currentRecord) return;
   const field = input.dataset.editableField;
-  currentRecord = field === "name" ? { ...currentRecord, name: input.value } : currentRecord;
+  if (field === "name") {
+    currentRecord = { ...currentRecord, name: input.value };
+  } else if (field === "location") {
+    // A top-level id reference, not part of `identity` — see renderNpc's
+    // own identityFields loop. Blank ("No Location") stores null, same
+    // "absent means unset" convention locationId already used everywhere
+    // else in this file.
+    currentRecord = { ...currentRecord, locationId: input.value || null };
+  } else if (FOURD_FIELD_DEFS.some((entry) => entry.key === field)) {
+    currentRecord = { ...currentRecord, fourD: { ...currentRecord.fourD, [field]: input.value } };
+  } else if (IDENTITY_FIELD_DEFS.some((entry) => entry.key === field)) {
+    // Attitude is the one numeric-valued Identity field (a <select> whose
+    // option values are real numbers, but <select>.value always reads back
+    // as a string) — every other field stores its label string as-is.
+    const nextValue = field === "attitude" ? Number(input.value) || 0 : input.value;
+    currentRecord = { ...currentRecord, identity: { ...currentRecord.identity, [field]: nextValue } };
+  }
   jsonDataPanel.render();
   refreshActionButtons();
-});
+}
+identityFields.addEventListener("input", handleIdentityFieldInput);
+fourDFields.addEventListener("input", handleIdentityFieldInput);
+nameMount?.addEventListener("input", handleIdentityFieldInput);
 
 // Typing directly into a Stats field keeps the record in sync the same way
 // — ability scores also live-update their (+N) modifier suffix alongside,
-// since that's derived rather than stored. hitPoints stays the one
-// special-cased key (a max/current pair); every other key is a flat
-// stats[field] write, coerced to a number only if it already held one (so
-// a text stat like a Daggerheart Adversary's Feature line doesn't get
-// silently zeroed).
+// since that's derived rather than stored. `abilities.<key>` (renderStats'
+// own compound data-editable-field for an ability box) patches the nested
+// stats.abilities object; hitPoints stays the other special-cased key (a
+// max/current pair); every other key is a flat stats[field] write, coerced
+// to a number only if it already held one (so a text stat like a
+// Daggerheart Adversary's Feature line doesn't get silently zeroed).
 statsFields.addEventListener("input", (event) => {
   const input = event.target.closest("[data-editable-field]");
   if (!input || !currentRecord?.stats) return;
@@ -1111,14 +1455,19 @@ statsFields.addEventListener("input", (event) => {
       ...currentRecord,
       stats: { ...currentRecord.stats, hitPoints: { ...currentRecord.stats.hitPoints, [hpKey]: numericValue } },
     };
+  } else if (field.startsWith("abilities.")) {
+    const abilityKey = field.slice("abilities.".length);
+    const numericValue = Number(input.value) || 0;
+    currentRecord = {
+      ...currentRecord,
+      stats: { ...currentRecord.stats, abilities: { ...currentRecord.stats.abilities, [abilityKey]: numericValue } },
+    };
+    const suffixEl = statsFields.querySelector(`[data-editable-suffix="${field}"]`);
+    if (suffixEl) suffixEl.textContent = abilityModifierText(numericValue);
   } else {
     const previousValue = currentRecord.stats[field];
     const nextValue = typeof previousValue === "number" ? Number(input.value) || 0 : input.value;
     currentRecord = { ...currentRecord, stats: { ...currentRecord.stats, [field]: nextValue } };
-    if (ABILITY_KEYS.has(field)) {
-      const suffixEl = statsFields.querySelector(`[data-editable-suffix="${field}"]`);
-      if (suffixEl) suffixEl.textContent = abilityModifierText(nextValue);
-    }
   }
   jsonDataPanel.render();
   refreshActionButtons();
@@ -1173,6 +1522,8 @@ saveButton.addEventListener("click", async () => {
     // signed-in user's NPC becomes a real, owned, shareable record.
     await dataManager.save("npc", currentRecord.id, record);
     dirtyGate.markClean(record);
+    currentNpcId = currentRecord.id;
+    await populateNpcSelect();
     refreshActionButtons();
     status?.show("Saved.", { type: "success", timeout: 1500 });
   } catch (error) {
@@ -1181,14 +1532,16 @@ saveButton.addEventListener("click", async () => {
 });
 
 deleteButton.addEventListener("click", async () => {
-  if (!currentRecord || !dataManager || !dirtyGate.hasSaved()) return;
+  if (!currentRecord || !dataManager || !dirtyGate.hasSaved() || !npcAllowsDelete(currentNpcId)) return;
   const label = currentRecord.name || currentRecord.id;
   if (!confirmDelete({ label: `"${label}"` })) return;
   try {
     await dataManager.delete("npc", currentRecord.id);
     status?.show("Deleted.", { type: "success", timeout: 1500 });
     dirtyGate.markDirty();
+    currentNpcId = null;
     renderNpc(null);
+    await populateNpcSelect();
   } catch (error) {
     status?.show(`Unable to delete: ${error.message}`, { type: "error", timeout: 4000 });
   }
@@ -1206,23 +1559,87 @@ exportButton.addEventListener("click", () => {
   URL.revokeObjectURL(url);
 });
 
-systemSelect.addEventListener("change", async () => {
+// Named (not an inline listener) so the init flow below can also call this
+// directly when auto-selecting the active campaign group's own System.
+async function handleSystemSelectChange() {
   const systemId = systemSelect.value;
+  markRequiredControl(systemSelect, Boolean(systemId));
   currentLocation = null;
-  await Promise.all([refreshSystemVocabulary(systemId), populateSettingSelect(systemId)]);
+  currentSetting = null;
+  currentNpcId = null;
+  // Settings returned (not just awaited) so the init flow's own active-group
+  // auto-default can check the Setting it wants against what actually loaded
+  // for this System, without a second, redundant fetch.
+  const [, settings] = await Promise.all([refreshSystemVocabulary(systemId), populateSettingSelect(systemId)]);
   await populateLocationSelectOptions("");
-});
+  await populateNpcSelect();
+  // Archetype's own table is System-wide, not Location-dependent (only its
+  // 22/23 "Setting Specific" overrides are — see getArchetypeOptions), so
+  // its override select needs to populate here too, not only inside
+  // selectLocation — otherwise, now that picking a Location is optional,
+  // a GM who generates without ever selecting one sees an empty Archetype
+  // override list even though nothing about it actually needed a Location.
+  // currentLocation/currentSetting are both null at this point (reset
+  // above), so effectiveSpeciesLocation() resolves to null too — this also
+  // correctly leaves the Species override empty until a Setting or Location
+  // is picked.
+  await refreshSpeciesContext();
+  return settings;
+}
+systemSelect.addEventListener("change", handleSystemSelectChange);
 
-settingSelect.addEventListener("change", async () => {
+// Named for the same reason as handleSystemSelectChange above.
+async function handleSettingSelectChange() {
   const settingId = settingSelect.value;
+  markRequiredControl(settingSelect, Boolean(settingId));
   currentLocation = null;
-  const locations = await populateLocationSelectOptions(settingId);
-  if (locations.length) {
-    await selectLocation(locations[0].id);
+  currentNpcId = null;
+  try {
+    currentSetting = settingId ? await loadSetting(dataManager, settingId) : null;
+  } catch (error) {
+    currentSetting = null;
   }
-});
+  // No auto-selecting the first Location anymore — matches Sanctum's own
+  // Setting/Location pickers, which always land on an explicit "nothing
+  // chosen yet" state and let the GM pick deliberately, rather than
+  // silently defaulting to whichever Location happens to sort first.
+  await populateLocationSelectOptions(settingId);
+  await populateNpcSelect();
+  // The Setting's own Species Weights become the fallback the moment it's
+  // picked (effectiveSpeciesLocation) — refresh here too, not just on
+  // Location change, so the Species override select reflects it right away
+  // even before any Location is selected.
+  await refreshSpeciesContext();
+}
+settingSelect.addEventListener("change", handleSettingSelectChange);
 
 locationSelect.addEventListener("change", () => selectLocation(locationSelect.value));
+
+npcSelect?.addEventListener("change", async () => {
+  const id = npcSelect.value;
+  currentNpcId = id || null;
+  updateGenerationFieldsVisibility();
+  if (!id) {
+    renderNpc(null);
+    return;
+  }
+  try {
+    const result = await dataManager.get("npc", id);
+    if (!result?.payload) {
+      status?.show("Unable to load that NPC.", { type: "error", timeout: 4000 });
+      return;
+    }
+    // Not createNpcRecord — that function always stamps a fresh id and
+    // createdAt (see npc-schema.js), which is right for a NEW generation
+    // but would silently rewrite an existing record's real creation time
+    // on every load.
+    renderNpc({ ...result.payload, id });
+    dirtyGate.markClean(toPressExportShape(currentRecord));
+    refreshActionButtons();
+  } catch (error) {
+    status?.show(`Unable to load NPC: ${error.message}`, { type: "error", timeout: 4000 });
+  }
+});
 
 exportLocationTemplateButton.addEventListener("click", async () => {
   if (!currentLocation) {
@@ -1276,10 +1693,21 @@ async function init() {
           key: "archetypeField",
           type: "select",
           label: "Archetype field",
-          options: archetypeFieldOptions(),
+          options: fieldPreferenceOptions(),
           getValue: () => resolveEffectiveArchetypeField(getArchetypeFieldPreference(systemId)),
           setValue: (value) => {
             setArchetypeFieldPreference(systemId, value);
+            refreshSystemVocabulary(systemId);
+          },
+        },
+        {
+          key: "attitudeField",
+          type: "select",
+          label: "Attitude field",
+          options: fieldPreferenceOptions(),
+          getValue: () => resolveEffectiveAttitudeField(getAttitudeFieldPreference(systemId)),
+          setValue: (value) => {
+            setAttitudeFieldPreference(systemId, value);
             refreshSystemVocabulary(systemId);
           },
         },
@@ -1315,25 +1743,32 @@ async function init() {
   tables = await loadForgeTables();
   populateFixedOverrides();
 
+  // No blanket auto-selected defaults (previously always sys.dnd5e /
+  // forgotten-realms / sword-coast, regardless of who was signed in) — the
+  // GM picks System, then Setting, then Location explicitly, same
+  // forced-choice convention Sanctum/Crucible/Vault's own System select
+  // uses. The one exception: if a campaign group is active (the header's
+  // Campaign dropdown) and that group has its own System/Setting assigned,
+  // default to THOSE specifically — a real, GM-chosen fact about the
+  // campaign being played, not a guess — to make mid-campaign generation
+  // faster. Falls through to the original "nothing chosen yet" placeholders
+  // whenever there's no active group, or its System/Setting isn't one this
+  // tool's own lists actually contain.
   const systems = await populateSystemSelect();
-  const defaultSystemId = systems.some((system) => system.id === "sys.dnd5e") ? "sys.dnd5e" : systems[0]?.id;
+  const groupContext = await resolveGroupContext(dataManager).catch(() => null);
+  const defaultSystemId = pickGroupDefaultId(groupContext, "systemId", systems);
   if (defaultSystemId) {
     systemSelect.value = defaultSystemId;
-    await refreshSystemVocabulary(defaultSystemId);
-    const settings = await populateSettingSelect(defaultSystemId);
-    const defaultSettingId = settings.some((setting) => setting.id === "forgotten-realms")
-      ? "forgotten-realms"
-      : settings[0]?.id;
+    const settings = await handleSystemSelectChange();
+    const defaultSettingId = pickGroupDefaultId(groupContext, "settingId", settings);
     if (defaultSettingId) {
       settingSelect.value = defaultSettingId;
-      const locations = await populateLocationSelectOptions(defaultSettingId);
-      const defaultLocationId = locations.some((location) => location.id === "sword-coast")
-        ? "sword-coast"
-        : locations[0]?.id;
-      if (defaultLocationId) {
-        await selectLocation(defaultLocationId);
-      }
+      await handleSettingSelectChange();
     }
+  } else {
+    await populateSettingSelect("");
+    await populateLocationSelectOptions("");
+    await populateNpcSelect();
   }
 
   renderNpc(null);

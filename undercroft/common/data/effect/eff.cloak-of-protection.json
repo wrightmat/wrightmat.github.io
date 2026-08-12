@@ -1,0 +1,24 @@
+{
+  "id": "eff.cloak-of-protection",
+  "name": "Cloak of Protection",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "signatureFeatureId": null,
+  "featureIds": [
+    "feat.protection-bonus"
+  ],
+  "properties": {
+    "rarity": "uncommon",
+    "form": "wondrous-item"
+  },
+  "budget": {
+    "target": 8,
+    "spent": 7,
+    "remaining": 1
+  },
+  "notes": "You gain a +1 bonus to AC and saving throws while wearing this cloak.",
+  "featureTiers": {
+    "feat.protection-bonus": "plus-1"
+  }
+}

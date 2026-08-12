@@ -1,0 +1,20 @@
+{
+  "id": "eff.bag-of-holding",
+  "name": "Bag of Holding",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "signatureFeatureId": null,
+  "featureIds": [],
+  "properties": {
+    "rarity": "uncommon",
+    "form": "wondrous-item"
+  },
+  "budget": {
+    "target": 8,
+    "spent": 0,
+    "remaining": 8
+  },
+  "notes": "This bag has an interior space considerably larger than its outside dimensions, opening into a nondimensional space that can hold up to 500 pounds, not exceeding 64 cubic feet in volume.",
+  "featureTiers": {}
+}

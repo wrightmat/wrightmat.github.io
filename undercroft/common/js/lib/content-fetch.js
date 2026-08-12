@@ -596,7 +596,17 @@ export async function fetchKindEntriesWithIds(dataManager, kind) {
   const entries = await Promise.all(
     ids.map(async (id) => {
       try {
-        return { id, entity: (await dataManager.get(kind, id))?.payload };
+        // preferLocal: false — the id list above is already forced fresh
+        // (refresh: true, includeLocal: false), but each entry's own body
+        // fetch defaults to preferring a local cache; without this override
+        // that default silently served a stale per-entry snapshot even
+        // though the list itself was current. Confirmed real bug this
+        // fixes: an NPC's locationId, corrected server-side, kept resolving
+        // to its old value here (this function backs every "list every X
+        // for filtering" helper — Forge's NPCs/Locations, Crucible's
+        // Monsters, Vault's Effects, Sanctum's Features/Resources/...),
+        // making it disappear from the Setting it now actually belongs to.
+        return { id, entity: (await dataManager.get(kind, id, { preferLocal: false }))?.payload };
       } catch (error) {
         return null;
       }
@@ -627,7 +637,7 @@ export async function listLocationsForSetting(dataManager, settingId) {
           : [];
       return ids.includes(settingId);
     })
-    .map((entry) => ({ id: entry.id, name: entry.entity.name || entry.id }));
+    .map((entry) => ({ id: entry.id, name: entry.entity.name || entry.id, parentId: entry.entity.parentId || null }));
 }
 
 // `value` is "kind/id" for a single saved entry, or "kind/*" (or bare "kind")

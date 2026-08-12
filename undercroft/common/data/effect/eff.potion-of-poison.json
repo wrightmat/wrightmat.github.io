@@ -1,0 +1,22 @@
+{
+  "id": "eff.potion-of-poison",
+  "name": "Potion of Poison",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "signatureFeatureId": null,
+  "featureIds": [
+    "feat.poisoned"
+  ],
+  "properties": {
+    "rarity": "uncommon",
+    "form": "potion"
+  },
+  "budget": {
+    "target": 8,
+    "spent": 4,
+    "remaining": 4
+  },
+  "notes": "Looks and initially tastes like a beneficial potion, but is poison — a trap for the unwary, not a boon.",
+  "featureTiers": {}
+}

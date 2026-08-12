@@ -1,0 +1,26 @@
+{
+  "id": "feat.death-burst",
+  "name": "Death Burst",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "When the creature dies, it explodes, and each creature nearby must make a saving throw or take damage.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When the creature dies, it explodes, and each creature nearby must make a saving throw or take damage."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

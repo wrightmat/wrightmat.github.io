@@ -1,0 +1,26 @@
+{
+  "id": "feat.blood-frenzy",
+  "name": "Blood Frenzy",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature has advantage on melee attack rolls against any creature that doesn't have all its hit points.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature has advantage on melee attack rolls against any creature that doesn't have all its hit points."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

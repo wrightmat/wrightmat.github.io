@@ -1,0 +1,24 @@
+{
+  "id": "eff.amulet-of-health",
+  "name": "Amulet of Health",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "signatureFeatureId": null,
+  "featureIds": [
+    "feat.increase-constitution"
+  ],
+  "properties": {
+    "rarity": "rare",
+    "form": "wondrous-item"
+  },
+  "budget": {
+    "target": 12,
+    "spent": 4,
+    "remaining": 8
+  },
+  "notes": "Your Constitution score is 19 while you wear this amulet. It has no effect on you if your Constitution is already 19 or higher.",
+  "featureTiers": {
+    "feat.increase-constitution": "set-19"
+  }
+}

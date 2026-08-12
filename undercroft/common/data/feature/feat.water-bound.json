@@ -1,0 +1,24 @@
+{
+  "id": "feat.water-bound",
+  "name": "Water-Bound",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature can breathe only underwater and suffocates on dry land — the restriction Amphibious frees a creature from.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature can breathe only underwater and suffocates on dry land — the restriction Amphibious frees a creature from."
+  },
+  "budgetCost": -1,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

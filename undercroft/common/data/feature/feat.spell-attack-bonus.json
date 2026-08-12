@@ -1,0 +1,46 @@
+{
+  "id": "feat.spell-attack-bonus",
+  "name": "Spell Attack Bonus",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Channels spellcasting through a focus tuned to strike true.",
+  "mechanics": {
+    "type": "active",
+    "text": "While wielded as a spellcasting focus, grants a bonus to spell attack rolls."
+  },
+  "budgetCost": 5,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "damage",
+      "utility"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "plus-1",
+      "name": "+1",
+      "shortName": "+1",
+      "budgetCost": 5
+    },
+    {
+      "id": "plus-2",
+      "name": "+2",
+      "shortName": "+2",
+      "budgetCost": 10
+    },
+    {
+      "id": "plus-3",
+      "name": "+3",
+      "shortName": "+3",
+      "budgetCost": 16
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "id": "eff.studded-leather-armor",
+  "name": "Studded Leather Armor",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "signatureFeatureId": null,
+  "featureIds": [],
+  "properties": {
+    "form": "armor"
+  },
+  "budget": {
+    "target": 0,
+    "spent": 0,
+    "remaining": 0
+  },
+  "price": "45 gp",
+  "notes": "Leather reinforced with close-set rivets for real protection without sacrificing mobility."
+}

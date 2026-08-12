@@ -6,6 +6,7 @@ import { initHelpSystem } from "./js/lib/help.js";
 import { initHelpBrowser as initHelpBrowserModule } from "./js/lib/help-browser.js";
 import { confirmDelete } from "./js/lib/ownership.js";
 import { initShareModal } from "./js/lib/share-modal.js";
+import { showConfirmModal } from "./js/lib/confirm-modal.js";
 import { disableForm } from "./js/lib/dom.js";
 import {
   DICE_THEMES,
@@ -60,6 +61,8 @@ const elements = {
   diceColorInput: document.getElementById("admin-settings-dice-color"),
   diceColorReset: document.querySelector("[data-dice-color-reset]"),
   dicePreview: document.querySelector("[data-dice-preview]"),
+  upgradeCurrent: document.querySelector("[data-upgrade-current]"),
+  upgradeCards: document.querySelector("[data-upgrade-cards]"),
 };
 
 const TIER_OPTIONS = [
@@ -92,7 +95,25 @@ const OWNER_BUCKET_ALIASES = { character: "characters", template: "templates", s
 
 const TAB_SETTINGS = "settings";
 const TAB_OWNED = "owned";
-const AVAILABLE_TABS = [TAB_SETTINGS, TAB_OWNED];
+const TAB_UPGRADE = "upgrade";
+const AVAILABLE_TABS = [TAB_SETTINGS, TAB_OWNED, TAB_UPGRADE];
+
+// Self-service upgrade targets only — "admin" is deliberately excluded from
+// this list (and rejected server-side in upgrade_own_tier regardless) since
+// it can only ever be granted by an existing admin, never chosen here.
+//
+// TEMPORARY: prices are placeholders, not settled figures — and there's no
+// billing integration yet at all (see dataManager.upgradeTier, which applies
+// the tier change for free today, immediately, with no payment step). This
+// whole self-service-for-free approach is a stand-in until a real payment
+// platform is wired up; a future payment-token check would slot in ahead of
+// dataManager.upgradeTier's call without changing this UI.
+const TIER_UPGRADE_PLANS = [
+  { value: "free", label: "Free", price: "Free", description: "A limited number of saves to your account." },
+  { value: "player", label: "Player", price: "$10 one-time", description: "Unlimited saves of your characters and content." },
+  { value: "gm", label: "GM", price: "$50 one-time", description: "Run live campaigns: Combat Tracker, Show-to-table, Campaign Groups." },
+  { value: "creator", label: "Creator", price: "$99 one-time", description: "Author and share Systems, Templates, and other reusable content." },
+];
 
 const dateFormatter = typeof Intl !== "undefined" && typeof Intl.DateTimeFormat === "function"
   ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" })
@@ -214,6 +235,109 @@ function setActiveTab(name, { updateHash = true, force = false } = {}) {
     }
     populateOwnedUserFilter();
     loadOwnedContent();
+  }
+  if (target === TAB_UPGRADE) {
+    renderUpgradeTab();
+  }
+}
+
+// Excludes "admin" by construction (TIER_UPGRADE_PLANS never lists it) —
+// the server rejects it unconditionally too (upgrade_own_tier), so this is
+// a UX nicety on top of a real enforced restriction, not the restriction
+// itself.
+function renderUpgradeTab() {
+  if (!elements.upgradeCards) {
+    return;
+  }
+  const user = currentUser();
+  if (elements.upgradeCurrent) {
+    elements.upgradeCurrent.textContent = user
+      ? `Your current tier: ${formatTier(user.tier)}.`
+      : "Sign in to change your tier.";
+  }
+  const userRank = user ? roleRank(user.tier) : -1;
+  const fragment = document.createDocumentFragment();
+  TIER_UPGRADE_PLANS.forEach((plan) => {
+    const isCurrent = Boolean(user) && user.tier === plan.value;
+    // Server-enforced too (upgrade_own_tier rejects any rank below the
+    // user's current one) — disabling here is just the matching UX, not the
+    // real restriction.
+    const isBelowCurrent = Boolean(user) && !isCurrent && roleRank(plan.value) < userRank;
+    const col = document.createElement("div");
+    col.className = "col-12 col-md-6 col-xl-3";
+    const card = document.createElement("div");
+    card.className = `card h-100${isCurrent ? " border-primary" : ""}`;
+    const body = document.createElement("div");
+    body.className = "card-body d-flex flex-column gap-2";
+
+    const title = document.createElement("h4");
+    title.className = "h6 mb-0 d-flex align-items-center justify-content-between";
+    const titleLabel = document.createElement("span");
+    titleLabel.textContent = plan.label;
+    title.appendChild(titleLabel);
+    if (isCurrent) {
+      const badge = document.createElement("span");
+      badge.className = "badge text-bg-primary";
+      badge.textContent = "Current";
+      title.appendChild(badge);
+    }
+
+    const price = document.createElement("div");
+    price.className = "fw-semibold";
+    price.textContent = plan.price;
+
+    const description = document.createElement("p");
+    description.className = "text-body-secondary small mb-0 flex-grow-1";
+    description.textContent = plan.description;
+
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "btn btn-outline-primary btn-sm align-self-start";
+    button.textContent = isCurrent
+      ? "Current tier"
+      : isBelowCurrent
+        ? "Included in your tier"
+        : `Upgrade to ${plan.label}`;
+    button.disabled = isCurrent || isBelowCurrent || !user;
+    button.addEventListener("click", () => void handleUpgradeClick(plan));
+
+    body.append(title, price, description, button);
+    card.appendChild(body);
+    col.appendChild(card);
+    fragment.appendChild(col);
+  });
+  elements.upgradeCards.replaceChildren(fragment);
+}
+
+async function handleUpgradeClick(plan) {
+  const user = currentUser();
+  if (!user) {
+    return;
+  }
+  const confirmed = await showConfirmModal({
+    title: `Upgrade to ${plan.label}?`,
+    bodyHtml: `
+      <p>Your account will upgrade from <strong>${formatTier(user.tier)}</strong> to <strong>${plan.label}</strong> (${plan.price}).</p>
+      <p class="text-body-secondary small mb-0">Billing isn't live yet — this applies immediately, for free.</p>
+    `,
+    confirmLabel: `Upgrade to ${plan.label}`,
+  });
+  if (!confirmed) {
+    return;
+  }
+  try {
+    await dataManager.upgradeTier({ tier: plan.value });
+    renderUpgradeTab();
+    if (status) {
+      status.show(`Upgraded to ${plan.label}`, { type: "success", timeout: 2000 });
+    }
+    if (auth && typeof auth.refreshDisplay === "function") {
+      auth.refreshDisplay();
+    }
+  } catch (error) {
+    if (status) {
+      status.show(error.message || "Unable to switch tiers", { type: "danger" });
+    }
   }
 }
 

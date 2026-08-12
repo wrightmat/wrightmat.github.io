@@ -23,8 +23,9 @@
             <div data-field-mount="system-select"></div>
             <div data-field-mount="setting-select"></div>
             <div data-field-mount="location-select"></div>
+            <div data-field-mount="npc-select"></div>
 
-            <div class="d-flex flex-column gap-2" id="forge-overrides">
+            <div class="d-flex flex-column gap-2" id="forge-overrides" data-generation-fields>
               <div data-field-mount="species-override"></div>
               <div data-field-mount="archetype-override"></div>
               <div data-field-mount="alignment-override"></div>
@@ -41,40 +42,32 @@
           <div class="d-flex flex-column gap-3 d-none" data-npc-display>
             <div class="card shadow-theme">
               <div class="card-body">
-                <section class="d-flex flex-column gap-3" id="forge-identity">
-                  <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
-                    <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0 d-flex align-items-center gap-2">
-                      <span>Identity</span>
-                      <span class="align-middle" data-help-topic="forge.identity" data-help-insert="replace"></span>
-                    </h2>
+                <div data-identity-mount></div>
+                <div class="d-flex flex-column gap-3" data-identity-panel>
+                  <div class="d-flex align-items-start gap-3 flex-wrap">
+                    <div class="flex-grow-1" style="min-width: 12rem" data-name-mount></div>
+                    <div style="max-width: 22rem; width: 100%" data-field-mount="npc-image"></div>
                   </div>
-                  <div class="col-12 col-md-6 col-lg-4" style="max-width: 22rem" data-field-mount="npc-image"></div>
                   <div class="row g-3" data-identity-fields></div>
-                </section>
+                </div>
               </div>
             </div>
 
             <div class="card shadow-theme">
               <div class="card-body">
-                <section class="d-flex flex-column gap-3" id="forge-fourd">
-                  <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0 d-flex align-items-center gap-2">
-                    <span>4D</span>
-                    <span class="align-middle" data-help-topic="forge.fourD" data-help-insert="replace"></span>
-                  </h2>
+                <div data-fourd-mount></div>
+                <div class="d-flex flex-column gap-3" data-fourd-panel>
                   <div class="row g-3" data-fourd-fields></div>
-                </section>
+                </div>
               </div>
             </div>
 
             <div class="card shadow-theme">
               <div class="card-body">
-                <section class="d-flex flex-column gap-3" id="forge-stats">
-                  <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0 d-flex align-items-center gap-2">
-                    <span>Stats</span>
-                    <span class="align-middle" data-help-topic="forge.stats" data-help-insert="replace"></span>
-                  </h2>
+                <div data-stats-mount></div>
+                <div class="d-flex flex-column gap-3" data-stats-panel>
                   <div class="row g-3" data-stats-fields></div>
-                </section>
+                </div>
               </div>
             </div>
 
@@ -83,15 +76,20 @@
                 <section class="d-flex flex-column gap-3" id="forge-note">
                   <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
                     <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0 d-flex align-items-center gap-2">
-                      <span>Character Note (optional)</span>
+                      <span>Notes (optional)</span>
                       <span class="align-middle" data-help-topic="forge.note" data-help-insert="replace"></span>
                     </h2>
-                    <button class="btn btn-outline-secondary btn-sm" type="button" data-generate-note>
-                      <span class="iconify" data-icon="tabler:sparkles" aria-hidden="true"></span>
-                      Generate Note
-                    </button>
+                    <div class="d-flex align-items-center gap-2">
+                      <button class="btn btn-outline-secondary btn-sm" type="button" data-generate-note>
+                        <span class="iconify" data-icon="tabler:sparkles" aria-hidden="true"></span>
+                        Generate Note
+                      </button>
+                      <span data-note-toggle-mount></span>
+                    </div>
                   </div>
-                  <textarea class="form-control" rows="3" data-note-text placeholder="Type a note, or Generate Note to have Claude write one."></textarea>
+                  <div class="d-flex flex-column gap-2" data-note-panel>
+                    <textarea class="form-control" rows="3" data-note-text placeholder="Type a note, or Generate Note to have Claude write one."></textarea>
+                  </div>
                 </section>
               </div>
             </div>

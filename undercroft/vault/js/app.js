@@ -8,9 +8,13 @@ import {
   createCollapsibleSection,
   createEmptyStateCard,
   createCompactField,
+  createIconButton,
+  createFieldBox,
+  createSearchableCheckList,
 } from "../../common/js/lib/ui-components.js";
-import { listFeaturesForSystem, getSystemPropertyTypes, getSystemClasses } from "./lib/tables.js";
-import { generateEffect, computeBudget } from "./lib/generator.js";
+import { bindCollapsibleToggle } from "../../common/js/lib/collapsible.js";
+import { listFeaturesForSystem, listEffectsForSystem, getSystemPropertyTypes, getSystemClasses } from "./lib/tables.js";
+import { generateEffect, computeBudget, matchesCategory, rerollPropertyValue, resolveFeatureBudgetCost } from "./lib/generator.js";
 import { createEffectRecord, toPressExportShape } from "./lib/effect-schema.js";
 import { generateEffectNote } from "./lib/llm-note.js";
 import { createDirtyGate } from "../../common/js/lib/dirty-gate.js";
@@ -19,12 +23,16 @@ import {
   findById,
   featureLabel as sharedFeatureLabel,
   readLockedFeatureIds as sharedReadLockedFeatureIds,
+  populateLockedFeaturesCheckList as sharedPopulateLockedFeaturesCheckList,
   exportRecordAsJson,
   generateNoteForRecord,
+  renderRequiredSelectOptions,
+  renderOptionalSelectOptions,
 } from "../../common/js/lib/generator-kit.js";
-import { confirmDelete } from "../../common/js/lib/ownership.js";
+import { allowsDelete, refreshOwnershipCatalog, confirmDelete } from "../../common/js/lib/ownership.js";
 import { initToolSettings } from "../../common/js/lib/tool-settings.js";
-import { setElementVisible } from "../../common/js/lib/dom.js";
+import { setElementVisible, markRequiredControl } from "../../common/js/lib/dom.js";
+import { resolveGroupContext, pickGroupDefaultId } from "../../common/js/lib/widgets/group-context.js";
 
 let status = null;
 let dataManager = null;
@@ -36,6 +44,14 @@ let propertyTypes = [];
 // populateCastingClassSelect).
 let classes = [];
 let currentRecord = null;
+// Every saved effect for the active System (Effect picker options) plus its
+// ownership metadata — same role/shape as Crucible's monstersInSystem/
+// monsterCatalog, itself mirroring Sanctum's locationsInSetting/
+// locationCatalog. currentEffectId is tracked separately from currentRecord
+// for the same reason Crucible tracks currentMonsterId separately.
+let effectsInSystem = [];
+let effectCatalog = new Map();
+let currentEffectId = null;
 // Tracks whether the record as last successfully saved differs from a live
 // snapshot — built from currentRecord (feature add/remove already patches it
 // directly) plus whatever's currently typed into Name/Notes, since those two
@@ -56,9 +72,7 @@ createToolbarButtonGroup([
 ]).forEach((button) => document.querySelector("[data-effect-toolbar-mount]")?.appendChild(button));
 document.querySelector("[data-effect-empty-state]")?.appendChild(
   createEmptyStateCard({
-    icon: "tabler:sparkles",
-    message:
-      "No effect generated yet. Optionally pin properties or a Signature Effect, then click Generate Effect — or build one by hand once a result exists, using the Features section's Add/Remove controls.",
+    message: "Nothing selected yet. Pick an existing Effect above, or fill in the fields and click Generate Effect.",
   })
 );
 
@@ -80,6 +94,7 @@ function mountField(key, element) {
   mount.replaceWith(element);
 }
 mountField("system-select", createCompactField({ type: "select", id: "vaultSystemSelect", label: "System", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-system-select" }));
+mountField("effect-select", createCompactField({ type: "select", id: "vaultEffectSelect", label: "Effect", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-effect-select" }));
 // Hidden entirely for a System with no "classes" field (most Systems) —
 // see populateCastingClassSelect. Casting Class narrows which Features are
 // eligible (matchesClass, lib/generator.js) the same way a locked Signature
@@ -89,15 +104,20 @@ mountField("casting-class-select", createCompactField({ type: "select", id: "vau
 mountField("signature-feature-override", createCompactField({ type: "select", id: "vaultSignatureOverride", label: "Signature Effect", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-signature-feature-override" }));
 mountField(
   "locked-features",
-  createCompactField({
-    type: "select-multiple", id: "vaultLockedFeatures", label: "Locked Features", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select",
-    dataAttr: "data-locked-features", helpTopic: "vault.lockedFeatures", size: 5,
+  createSearchableCheckList({
+    id: "vaultLockedFeatures", label: "Locked Features",
+    dataAttr: "data-locked-features", helpTopic: "vault.lockedFeatures",
   })
 );
-mountField("effect-name", createCompactField({ type: "text", id: "vaultEffectName", label: "Name", labelClass: "form-label fw-semibold mb-0", controlClass: "form-control", dataAttr: "data-effect-name", placeholder: "Unnamed" }));
+// Same field-box style as Identity below (and Forge/Crucible's own Name
+// box) — per explicit feedback that every tool's center-pane properties
+// should look and act the same.
+mountField("effect-name", createFieldBox({ key: "name", label: "Name", editable: true, colClass: null, dataAttr: "data-effect-name" }));
 
 const elements = {
   systemSelect: document.querySelector("[data-system-select]"),
+  effectSelect: document.querySelector("[data-effect-select]"),
+  generationFields: document.querySelector("[data-generation-fields]"),
   castingClassSelect: document.querySelector("[data-casting-class-select]"),
   propertyOverridesContainer: document.querySelector("[data-property-overrides]"),
   signatureOverride: document.querySelector("[data-signature-feature-override]"),
@@ -123,10 +143,15 @@ const elements = {
   inspectorJson: document.querySelector("[data-inspector-json]"),
 };
 
-// Adopts the existing static `[data-inspector-panel]` markup (its own
+// Adopts each section's existing static `[data-xxx-panel]` markup (its own
 // content stays hand-authored HTML — only the header+chevron wrapper is
-// JS-built) as this section's content; createCollapsibleSection's own
-// internal bindCollapsibleToggle replaces the old standalone one below.
+// JS-built) as createCollapsibleSection's content — same pattern Sanctum's
+// own initCollapsibles/Crucible's own module-top-level block use. Every
+// section here is expanded by default. Features and Notes both keep extra
+// header content in static HTML (Features' own budget summary; Notes' own
+// "Generate Note" button) that createCollapsibleSection's built header would
+// clobber, so only their toggle button is built and mounted — same as
+// Crucible/Forge/Sanctum's own Notes sections.
 {
   const inspectorSection = createCollapsibleSection({
     label: "Inspector",
@@ -134,6 +159,41 @@ const elements = {
     content: document.querySelector("[data-inspector-panel]"),
   });
   document.querySelector("[data-inspector-mount]")?.appendChild(inspectorSection.section);
+
+  document.querySelector("[data-identity-mount]")?.appendChild(
+    createCollapsibleSection({
+      label: "Identity",
+      helpTopic: "vault.identity",
+      collapsed: false,
+      content: document.querySelector("[data-identity-panel]"),
+    }).section
+  );
+
+  const featuresToggle = createIconButton({
+    icon: "tabler:chevron-right",
+    className: "collapsible-toggle",
+    includeToggleLabel: true,
+  });
+  featuresToggle.setAttribute("aria-expanded", "true");
+  document.querySelector("[data-features-toggle-mount]")?.appendChild(featuresToggle);
+  bindCollapsibleToggle(featuresToggle, document.querySelector("[data-features-panel]"), {
+    collapsed: false,
+    expandLabel: "Expand features",
+    collapseLabel: "Collapse features",
+  });
+
+  const notesToggle = createIconButton({
+    icon: "tabler:chevron-right",
+    className: "collapsible-toggle",
+    includeToggleLabel: true,
+  });
+  notesToggle.setAttribute("aria-expanded", "true");
+  document.querySelector("[data-notes-toggle-mount]")?.appendChild(notesToggle);
+  bindCollapsibleToggle(notesToggle, document.querySelector("[data-notes-panel]"), {
+    collapsed: false,
+    expandLabel: "Expand notes",
+    collapseLabel: "Collapse notes",
+  });
 }
 
 const jsonDataPanel = createJsonDataPanel({
@@ -167,21 +227,65 @@ function setBudgetCeilingFieldPreference(systemId, fieldKey) {
   }
 }
 
+// The conventional field-name fallback getSystemPropertyTypes applies on its
+// own when given no explicit preference (its own "rarity" default parameter)
+// — duplicated here only so the Settings modal can show what's actually in
+// effect (e.g. "Rarity") instead of misleadingly showing "None" while
+// generation quietly uses that field anyway. Mirrors Crucible's own
+// resolveEffectiveFieldPreference/CONVENTIONAL_FIELD_DEFAULTS exactly.
+const CONVENTIONAL_BUDGET_CEILING_FIELD = "rarity";
+
+function resolveEffectiveBudgetCeilingField(systemId) {
+  const stored = getBudgetCeilingFieldPreference(systemId);
+  if (stored) return stored;
+  return propertyTypes.some((propertyType) => propertyType.id === CONVENTIONAL_BUDGET_CEILING_FIELD)
+    ? CONVENTIONAL_BUDGET_CEILING_FIELD
+    : "";
+}
+
 async function populateSystemSelect() {
   const systems = await listAllSystems(dataManager);
-  const previous = elements.systemSelect?.value;
-  if (!elements.systemSelect) return systems;
-  elements.systemSelect.innerHTML = "";
-  systems.forEach((system) => {
-    const option = document.createElement("option");
-    option.value = system.id;
-    option.textContent = system.title;
-    elements.systemSelect.appendChild(option);
-  });
-  if (systems.some((system) => system.id === previous)) {
-    elements.systemSelect.value = previous;
-  }
+  // Disabled, not just blank — a real System is required before anything
+  // else in this tool is usable, so the picker shouldn't silently fall back
+  // to whichever System happens to sort first (previously "Blades in the
+  // Dark"). Once a real System is chosen this option can't be reselected.
+  renderRequiredSelectOptions(elements.systemSelect, systems, { placeholder: "Select a System" });
+  markRequiredControl(elements.systemSelect, Boolean(elements.systemSelect?.value));
   return systems;
+}
+
+// Ownership metadata comes from the list response, not the full fetched
+// body — mirrors Sanctum's refreshLocationCatalog/Crucible's
+// refreshMonsterCatalog exactly. Local-only (anonymous, browser-storage)
+// entries are always deletable, since it's just this browser's own storage.
+async function refreshEffectCatalog(ids) {
+  effectCatalog = await refreshOwnershipCatalog(dataManager, "effect", ids);
+}
+
+function effectAllowsDelete(id) {
+  return allowsDelete(effectCatalog, id, { dataManager });
+}
+
+// Every saved Effect for the active System — same picker pattern as
+// Crucible's Monster/Sanctum's Location: "New / unsaved" as the default so
+// a fresh Generate Effect keeps working exactly as before.
+async function populateEffectSelect() {
+  if (!elements.effectSelect) return;
+  const systemId = currentSystemId();
+  effectsInSystem = systemId ? await listEffectsForSystem(dataManager, systemId) : [];
+  const sorted = [...effectsInSystem].sort((a, b) => (a.name || a.id).localeCompare(b.name || b.id));
+  renderOptionalSelectOptions(elements.effectSelect, sorted, { previousValue: currentEffectId || "" });
+  await refreshEffectCatalog(effectsInSystem.map((effect) => effect.id));
+  updateGenerationFieldsVisibility();
+}
+
+// Casting Class/Property overrides/Signature Effect/Locked Features only
+// matter for generating something new — once an existing Effect is loaded
+// they're just clutter (same convention Sanctum/Crucible/Forge's own
+// generation fields follow). Purely visual: hiding never clears an
+// override's underlying value.
+function updateGenerationFieldsVisibility() {
+  elements.generationFields?.classList.toggle("d-none", Boolean(elements.effectSelect?.value));
 }
 
 // Signature Effect is an optional override — blank = "Random" — exactly like
@@ -204,18 +308,7 @@ function populateOverrideSelect(select, entries, blankLabel) {
 }
 
 function populateLockedFeaturesSelect() {
-  if (!elements.lockedFeatures) return;
-  const previouslySelected = new Set(
-    Array.from(elements.lockedFeatures.selectedOptions).map((option) => option.value)
-  );
-  elements.lockedFeatures.innerHTML = "";
-  features.forEach((feature) => {
-    const option = document.createElement("option");
-    option.value = feature.id;
-    option.textContent = feature.name || feature.id;
-    option.selected = previouslySelected.has(feature.id);
-    elements.lockedFeatures.appendChild(option);
-  });
+  sharedPopulateLockedFeaturesCheckList(elements.lockedFeatures, features);
 }
 
 // One dropdown per System-defined property type — nothing here is
@@ -225,6 +318,8 @@ function populatePropertyOverrides() {
   if (!elements.propertyOverridesContainer) return;
   const previous = readPropertyOverrides();
   elements.propertyOverridesContainer.innerHTML = "";
+  let formSelect = null;
+  let spellLevelsWrapper = null;
   propertyTypes.forEach((propertyType) => {
     const wrapper = document.createElement("div");
     wrapper.className = "d-flex flex-column gap-1";
@@ -249,7 +344,21 @@ function populatePropertyOverrides() {
     }
     wrapper.append(label, select);
     elements.propertyOverridesContainer.appendChild(wrapper);
+    if (propertyType.id === "form") formSelect = select;
+    if (propertyType.id === "spellLevels") spellLevelsWrapper = wrapper;
   });
+  // Spell Levels only means anything for an effect whose Item Form IS
+  // "Spell" (no physical vessel) — every other Form has its own real-world
+  // shape instead. "Random" (the default, no override pinned) still shows
+  // it, since generation could still land on Spell. See renderIdentity's
+  // own matching check for the post-generation half of this.
+  if (formSelect && spellLevelsWrapper) {
+    const syncSpellLevelsVisibility = () => {
+      spellLevelsWrapper.classList.toggle("d-none", Boolean(formSelect.value) && formSelect.value !== "spell");
+    };
+    formSelect.addEventListener("change", syncSpellLevelsVisibility);
+    syncSpellLevelsVisibility();
+  }
 }
 
 function readPropertyOverrides() {
@@ -261,10 +370,18 @@ function readPropertyOverrides() {
   return overrides;
 }
 
+function createPlaceholderOption(label = "Select…") {
+  const option = document.createElement("option");
+  option.value = "";
+  option.textContent = label;
+  return option;
+}
+
 function populateAddFeatureSelect() {
   if (!elements.addFeatureSelect) return;
   const selectedIds = new Set(currentRecord?.featureIds || []);
   elements.addFeatureSelect.innerHTML = "";
+  elements.addFeatureSelect.appendChild(createPlaceholderOption());
   features
     .filter((feature) => !selectedIds.has(feature.id))
     .forEach((feature) => {
@@ -278,16 +395,31 @@ function populateAddFeatureSelect() {
 async function reloadReferenceData() {
   const systemId = currentSystemId();
   const budgetCeilingField = getBudgetCeilingFieldPreference(systemId);
-  [features, propertyTypes, classes] = await Promise.all([
+  let fetchedFeatures;
+  [fetchedFeatures, propertyTypes, classes] = await Promise.all([
     listFeaturesForSystem(dataManager, systemId),
-    getSystemPropertyTypes(dataManager, systemId, budgetCeilingField),
+    // `|| undefined` (not the stored "" directly) so an unconfigured System
+    // falls through to getSystemPropertyTypes's own "rarity" default instead
+    // of resolving to no ceiling field at all — mirrors Crucible's own
+    // combatScalingField/creatureTypeField `|| undefined` call pattern.
+    getSystemPropertyTypes(dataManager, systemId, budgetCeilingField || undefined),
     getSystemClasses(dataManager, systemId),
   ]);
+  // The shared `feature` kind also holds Sanctum's location features and
+  // Crucible's monster features (tagged accordingly) — filtered here, once,
+  // so every consumer of the module-level `features` array (generateEffect,
+  // and the Locked/Signature/Add-feature selects below) only ever sees
+  // Vault's own spell/item ones. generateEffect already applied this same
+  // matchesCategory filter internally, so this was really only ever visible
+  // in the three UI pickers — confirmed the identical bug reported (and
+  // just fixed) in Crucible's own equivalent pickers.
+  features = fetchedFeatures.filter(matchesCategory);
   populatePropertyOverrides();
   populateCastingClassSelect();
   populateOverrideSelect(elements.signatureOverride, features, "Random");
   populateLockedFeaturesSelect();
   populateAddFeatureSelect();
+  await populateEffectSelect();
 }
 
 // Optional override, blank = "Any class" (unconstrained) — same convention
@@ -331,25 +463,35 @@ function propertyValueLabel(propertyTypeId, valueId) {
   return value?.label || valueId;
 }
 
+// Editable — a select per property type, listing that type's own real
+// values (Rarity/Activation/Item Form/...), matching how Crucible/Forge/
+// Sanctum's own Identity fields are all directly editable post-generation
+// rather than plain read-only text. Signature Effect is deliberately not
+// included here — it's already shown, clearly labeled "Signature", on its
+// own Feature's row at the top of the Features list, so repeating it here
+// was redundant.
 function renderIdentity(record) {
   if (!elements.identityFields) return;
   elements.identityFields.innerHTML = "";
-  const rows = propertyTypes.map((propertyType) => [
-    propertyType.label || propertyType.id,
-    propertyValueLabel(propertyType.id, record.properties?.[propertyType.id]),
-  ]);
-  rows.push(["Signature Effect", record.signatureFeatureId ? featureLabel(record.signatureFeatureId) : "(none)"]);
-  rows.forEach(([label, value]) => {
-    const col = document.createElement("div");
-    col.className = "col-6 col-md-3";
-    const labelEl = document.createElement("div");
-    labelEl.className = "small text-body-secondary text-uppercase";
-    labelEl.textContent = label;
-    const valueEl = document.createElement("div");
-    valueEl.className = "fw-semibold";
-    valueEl.textContent = value;
-    col.append(labelEl, valueEl);
-    elements.identityFields.appendChild(col);
+  propertyTypes.forEach((propertyType) => {
+    // Same "only means something for a bare Spell" reasoning as
+    // populatePropertyOverrides' own pre-generation check — here Form is
+    // always resolved to a concrete value (generation never leaves it
+    // blank), so the check is exact: show only when it's actually "spell".
+    if (propertyType.id === "spellLevels" && record.properties?.form !== "spell") return;
+    elements.identityFields.appendChild(
+      createFieldBox({
+        key: propertyType.id,
+        label: propertyType.label || propertyType.id,
+        type: "select",
+        value: record.properties?.[propertyType.id] || "",
+        options: (propertyType.values || []).map((value) => ({ value: value.id, label: value.label || value.id })),
+        colClass: "col-6 col-md-3",
+        editable: true,
+        rerollable: true,
+        dataAttr: "data-editable-property",
+      })
+    );
   });
 }
 
@@ -358,7 +500,7 @@ function renderIdentity(record) {
 // add/remove editing can never disagree about the running total.
 function recomputeBudget(record) {
   const selectedFeatures = record.featureIds.map((id) => findById(features, id)).filter(Boolean);
-  record.budget = computeBudget(selectedFeatures, record.properties, propertyTypes);
+  record.budget = computeBudget(selectedFeatures, record.properties, propertyTypes, record.featureTiers || {});
   return record.budget;
 }
 
@@ -393,7 +535,9 @@ function renderFeatureList(record) {
   record.featureIds.forEach((featureId) => {
     const feature = findById(features, featureId);
     const isSignature = featureId === record.signatureFeatureId;
-    const cost = Number(feature?.budgetCost ?? 0);
+    const hasTiers = Array.isArray(feature?.tiers) && feature.tiers.length > 0;
+    const selectedTierId = record.featureTiers?.[featureId];
+    const cost = resolveFeatureBudgetCost(feature || {}, record.featureTiers || {});
 
     const row = document.createElement("div");
     row.className = "border rounded-3 p-2 d-flex align-items-start justify-content-between gap-2";
@@ -413,6 +557,29 @@ function renderFeatureList(record) {
       badge.className = "badge text-bg-primary";
       badge.textContent = "Signature";
       header.appendChild(badge);
+    }
+    // Only a feature that actually scales (feat.mending-pulse's Healing,
+    // feat.giant-strength, ...) gets this — every other feature keeps the
+    // exact same row shape it always had. Changing it recomputes the badge
+    // and the whole budget readout together, same as add/remove already do.
+    if (hasTiers) {
+      const tierSelect = document.createElement("select");
+      tierSelect.className = "form-select form-select-sm";
+      tierSelect.style.maxWidth = "10rem";
+      feature.tiers.forEach((tier) => {
+        const option = document.createElement("option");
+        option.value = tier.id;
+        option.textContent = tier.shortName ? `${tier.name} (${tier.shortName})` : tier.name;
+        option.selected = tier.id === selectedTierId;
+        tierSelect.appendChild(option);
+      });
+      tierSelect.addEventListener("click", (event) => event.stopPropagation());
+      tierSelect.addEventListener("change", () => {
+        currentRecord.featureTiers = { ...(currentRecord.featureTiers || {}), [featureId]: tierSelect.value };
+        recomputeBudget(currentRecord);
+        refreshEffectView();
+      });
+      header.appendChild(tierSelect);
     }
     const costBadge = document.createElement("span");
     costBadge.className = `badge ${cost < 0 ? "text-bg-success" : "text-bg-secondary"}`;
@@ -473,6 +640,15 @@ function removeFeature(featureId) {
 function addFeature(featureId) {
   if (!currentRecord || !featureId) return;
   if (!currentRecord.featureIds.includes(featureId)) currentRecord.featureIds.push(featureId);
+  // A freshly added tiered feature starts at its own first (cheapest) tier
+  // — same "always a real, well-defined tier" guarantee generateEffect's
+  // own output gives — so the tier <select> in renderFeatureList always has
+  // something valid selected rather than defaulting silently.
+  const feature = findById(features, featureId);
+  if (Array.isArray(feature?.tiers) && feature.tiers.length) {
+    currentRecord.featureTiers = { ...(currentRecord.featureTiers || {}) };
+    if (!currentRecord.featureTiers[featureId]) currentRecord.featureTiers[featureId] = feature.tiers[0].id;
+  }
   recomputeBudget(currentRecord);
   refreshEffectView();
 }
@@ -485,7 +661,9 @@ function updateActionButtons() {
   const hasRecord = Boolean(currentRecord);
   if (elements.saveButton) elements.saveButton.disabled = !hasRecord || !dirtyGate.isDirty();
   if (elements.exportButton) elements.exportButton.disabled = !hasRecord;
-  if (elements.deleteButton) elements.deleteButton.disabled = !hasRecord || !dirtyGate.hasSaved();
+  if (elements.deleteButton) {
+    elements.deleteButton.disabled = !hasRecord || !dirtyGate.hasSaved() || !effectAllowsDelete(currentEffectId);
+  }
 }
 
 function renderEffect(record) {
@@ -523,6 +701,12 @@ function handleGenerate() {
     });
     const record = createEffectRecord(generated);
     dirtyGate.markDirty();
+    // Freshly generated content is always unsaved, regardless of whichever
+    // saved Effect the picker previously pointed at — mirrors Crucible's
+    // handleGenerate/Sanctum's handleGenerate resetting the same way.
+    currentEffectId = null;
+    if (elements.effectSelect) elements.effectSelect.value = "";
+    updateGenerationFieldsVisibility();
     renderEffect(record);
     status?.show("Effect generated.", { type: "success", timeout: 1500 });
   } catch (error) {
@@ -541,6 +725,8 @@ async function handleSave() {
     const exported = toPressExportShape(currentRecord);
     await dataManager.save("effect", currentRecord.id, exported);
     dirtyGate.markClean(exported);
+    currentEffectId = currentRecord.id;
+    await populateEffectSelect();
     updateActionButtons();
     status?.show("Saved.", { type: "success", timeout: 1500 });
   } catch (error) {
@@ -549,14 +735,16 @@ async function handleSave() {
 }
 
 async function handleDelete() {
-  if (!currentRecord || !dataManager || !dirtyGate.hasSaved()) return;
+  if (!currentRecord || !dataManager || !dirtyGate.hasSaved() || !effectAllowsDelete(currentEffectId)) return;
   const label = currentRecord.name || currentRecord.id;
   if (!confirmDelete({ label: `"${label}"` })) return;
   try {
     await dataManager.delete("effect", currentRecord.id);
     status?.show("Deleted.", { type: "success", timeout: 1500 });
     dirtyGate.markDirty();
+    currentEffectId = null;
     renderEffect(null);
+    await populateEffectSelect();
   } catch (error) {
     status?.show(`Unable to delete: ${error.message}`, { type: "error", timeout: 4000 });
   }
@@ -628,7 +816,77 @@ async function init() {
     const featureId = elements.addFeatureSelect?.value;
     if (featureId) addFeature(featureId);
   });
-  elements.systemSelect?.addEventListener("change", () => reloadReferenceData());
+  // Changing a property value can change the budget (a ceiling-setting
+  // property's own targetBudget, or any other property's cost) — recompute
+  // it the same way add/removeFeature already do, not just re-render.
+  elements.identityFields?.addEventListener("change", (event) => {
+    const select = event.target.closest("[data-editable-property]");
+    if (!select || !currentRecord) return;
+    const key = select.dataset.editableProperty;
+    currentRecord.properties = { ...(currentRecord.properties || {}), [key]: select.value };
+    recomputeBudget(currentRecord);
+    // Form's own value gates Spell Levels' visibility (see renderIdentity) —
+    // only a Form change needs the whole Identity grid rebuilt to reflect
+    // that; every other property just updates its own already-visible select.
+    if (key === "form") renderIdentity(currentRecord);
+    refreshEffectView();
+  });
+  // Per-property reroll button (createFieldBox's own `rerollable` option) —
+  // same convention Forge's Identity/4D and Crucible's Identity fields use.
+  // Unlike a manual select change, the picked value never touched the DOM,
+  // so the Identity grid needs a full re-render (not just refreshEffectView)
+  // to show it.
+  elements.identityFields?.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-reroll-attribute]");
+    if (!button || !currentRecord) return;
+    const key = button.dataset.rerollAttribute;
+    const propertyType = propertyTypes.find((entry) => entry.id === key);
+    const pick = rerollPropertyValue(propertyType, currentRecord.properties?.[key]);
+    if (!pick) return;
+    currentRecord.properties = { ...(currentRecord.properties || {}), [key]: pick.id };
+    recomputeBudget(currentRecord);
+    renderIdentity(currentRecord);
+    refreshEffectView();
+  });
+  // Named (not an inline listener) so the init flow below can also call
+  // this directly when auto-selecting the active campaign group's own
+  // System.
+  async function handleSystemSelectChange() {
+    markRequiredControl(elements.systemSelect, Boolean(elements.systemSelect.value));
+    // A different System means any previously loaded Effect (and the
+    // reference data it was built from) is no longer relevant — same
+    // reasoning as Crucible/Sanctum's own System change handlers.
+    currentEffectId = null;
+    renderEffect(null);
+    await reloadReferenceData();
+  }
+  elements.systemSelect?.addEventListener("change", handleSystemSelectChange);
+
+  elements.effectSelect?.addEventListener("change", async () => {
+    const id = elements.effectSelect.value;
+    currentEffectId = id || null;
+    updateGenerationFieldsVisibility();
+    if (!id) {
+      renderEffect(null);
+      return;
+    }
+    try {
+      const result = await dataManager.get("effect", id);
+      if (!result?.payload) {
+        status?.show("Unable to load that effect.", { type: "error", timeout: 4000 });
+        return;
+      }
+      // Not createEffectRecord — that function always stamps a fresh id and
+      // createdAt (see effect-schema.js), which is right for a NEW
+      // generation but would silently rewrite an existing record's real
+      // creation time on every load.
+      renderEffect({ ...result.payload, id });
+      dirtyGate.markClean(toPressExportShape(currentRecord));
+      updateActionButtons();
+    } catch (error) {
+      status?.show(`Unable to load effect: ${error.message}`, { type: "error", timeout: 4000 });
+    }
+  });
 
   // Budget ceiling field picker, moved into a gear-icon Settings modal
   // (upper-left of the header) — same shared module and visual pattern
@@ -648,12 +906,14 @@ async function init() {
         label: "Budget ceiling field",
         helpTopic: "vault.budgetCeilingField",
         options: [{ value: "", label: "None" }, ...propertyTypes.map((propertyType) => ({ value: propertyType.id, label: propertyType.label || propertyType.id }))],
-        getValue: () => getBudgetCeilingFieldPreference(currentSystemId()),
-        setValue: (fieldKey) => {
+        // Shows the effective value (falling back to "Rarity" when
+        // unconfigured), not the raw stored "", so the modal doesn't
+        // misleadingly show "None" while generation quietly uses Rarity
+        // anyway — mirrors Crucible's own resolveEffectiveFieldPreference.
+        getValue: () => resolveEffectiveBudgetCeilingField(currentSystemId()),
+        setValue: async (fieldKey) => {
           setBudgetCeilingFieldPreference(currentSystemId(), fieldKey);
-          propertyTypes.forEach((propertyType) => {
-            propertyType.setsBudgetCeiling = propertyType.id === fieldKey;
-          });
+          await reloadReferenceData();
           if (currentRecord) {
             recomputeBudget(currentRecord);
             refreshEffectView();
@@ -677,8 +937,21 @@ async function init() {
 
   document.querySelector("[data-json-mount]")?.appendChild(jsonDataPanel.section);
 
-  await populateSystemSelect();
-  await reloadReferenceData();
+  // If a campaign group is active (the header's Campaign dropdown) and that
+  // group has its own System assigned, default Vault's System select to it
+  // — a real, GM-chosen fact about the campaign being played, not a guess —
+  // to make mid-campaign generation faster. Falls through to the original
+  // "nothing chosen yet" placeholder whenever there's no active group, or
+  // its System isn't one this tool's own list actually contains.
+  const systems = await populateSystemSelect();
+  const groupContext = await resolveGroupContext(dataManager).catch(() => null);
+  const defaultSystemId = pickGroupDefaultId(groupContext, "systemId", systems);
+  if (defaultSystemId) {
+    elements.systemSelect.value = defaultSystemId;
+    await handleSystemSelectChange();
+  } else {
+    await reloadReferenceData();
+  }
   renderEffect(null);
 
   initHelpSystem();

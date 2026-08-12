@@ -1,0 +1,26 @@
+{
+  "id": "feat.water-breathing",
+  "name": "Water Breathing",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Lets a creature breathe underwater as easily as air.",
+  "mechanics": {
+    "type": "active",
+    "text": "On activation, grants the ability to breathe underwater for 1 hour."
+  },
+  "budgetCost": 5,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "utility",
+      "exploration"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

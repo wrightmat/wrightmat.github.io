@@ -26,6 +26,22 @@ function matchesSystem(entity, systemId) {
   return !ids.length || ids.includes(systemId);
 }
 
+// A feature with no categories tag is treated as universally compatible
+// (the suite-wide "no tag means unconstrained" convention); otherwise it
+// must claim "monster" — same pattern Sanctum's own matchesCategory uses
+// for "location" and Vault's for "spell"/"item". Confirmed missing here
+// entirely: the shared `feature` kind (undercroft/README.md's own
+// Resource/Location Type conventions section covers its siblings) serves
+// all three generators from ONE pool, and without this check Crucible's own
+// generation — and its Locked/Add-feature pickers — pulled in Sanctum's
+// location features and Vault's spell/item features right alongside its
+// own monster ones.
+export function matchesCategory(feature) {
+  const categories = feature.tags?.categories;
+  if (!Array.isArray(categories) || !categories.length) return true;
+  return categories.includes("monster");
+}
+
 function candidatesForSlot(features, slot, roleId, creatureTypeId, avoidTags, excludeIds) {
   return features.filter((feature) => {
     if (excludeIds.has(feature.id)) return false;
@@ -106,7 +122,7 @@ export function generateMonster(allCreatureTypes, allArchetypes, allRoles, allFe
 
   const recipe = archetype.recipe || {};
   const avoidTags = new Set(recipe.avoidTags || []);
-  const features = allFeatures.filter((entry) => matchesSystem(entry, systemId));
+  const features = allFeatures.filter((entry) => matchesSystem(entry, systemId) && matchesCategory(entry));
 
   const lockedFeatures = lockedFeatureIds
     .map((id) => features.find((entry) => entry.id === id))
@@ -177,4 +193,48 @@ export function generateMonster(allCreatureTypes, allArchetypes, allRoles, allFe
     recipeFulfillment,
     notes: "",
   };
+}
+
+// Rerolls a single Identity axis in place, returning a new record — backs
+// the per-attribute reroll buttons in Identity (mirrors Forge's own
+// rerollAttribute, forge/js/lib/generator.js). Deliberately does NOT
+// re-run recipe/feature traversal for type/archetypeId/roleId — same
+// restraint Forge's own reroll applies to everything except its one
+// tightly-coupled species→name pair, rather than cascading into a much
+// bigger, more surprising re-derivation of the whole feature list just
+// because one axis changed. Signature Feature is the one field that DOES
+// touch featureIds, since it's a member of that list, not a separate value
+// (see generateMonster above) — rerolling it swaps the old entry for the
+// new one in place rather than leaving a stale id behind.
+export function rerollAttribute(record, { creatureTypes, archetypes, roles, features }, systemId, key, { random = Math.random } = {}) {
+  function rerollFrom(list, currentId) {
+    const eligible = list.filter((entry) => matchesSystem(entry, systemId));
+    const excludingCurrent = eligible.filter((entry) => entry.id !== currentId);
+    return pickRandom(excludingCurrent.length ? excludingCurrent : eligible, random);
+  }
+
+  if (key === "type") {
+    const pick = rerollFrom(creatureTypes, record.type);
+    return pick ? { ...record, type: pick.id } : record;
+  }
+  if (key === "archetypeId") {
+    const pick = rerollFrom(archetypes, record.archetypeId);
+    return pick ? { ...record, archetypeId: pick.id } : record;
+  }
+  if (key === "roleId") {
+    const pick = rerollFrom(roles, record.roleId);
+    return pick ? { ...record, roleId: pick.id } : record;
+  }
+  if (key === "signatureFeatureId") {
+    const eligibleFeatures = features.filter(
+      (entry) => matchesSystem(entry, systemId) && matchesCategory(entry) && entry.id !== record.signatureFeatureId
+    );
+    const compatible = eligibleFeatures.filter((entry) => isCompatible(entry, record.roleId, record.type));
+    const pick = pickRandom(compatible.length ? compatible : eligibleFeatures, random);
+    if (!pick) return record;
+    const featureIds = (record.featureIds || []).filter((id) => id !== record.signatureFeatureId);
+    if (!featureIds.includes(pick.id)) featureIds.unshift(pick.id);
+    return { ...record, signatureFeatureId: pick.id, featureIds };
+  }
+  return record;
 }

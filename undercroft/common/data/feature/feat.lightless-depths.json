@@ -1,0 +1,26 @@
+{
+  "id": "feat.lightless-depths",
+  "name": "Lightless Depths",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature is immune to the crushing pressure of the deep ocean.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature is immune to the crushing pressure of the deep ocean."
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

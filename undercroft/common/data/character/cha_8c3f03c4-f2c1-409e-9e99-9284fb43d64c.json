@@ -34,349 +34,312 @@
     ]
   },
   "proficiency": 4,
-  "alignment": {
-    "name": "Chaotic Evil",
-    "shortName": "CE"
-  },
-  "initiative": {
-    "value": 4,
-    "advantage": true,
-    "disadvantage": false
-  },
-  "senses": {
-    "passives": {
-      "perception": 12,
-      "investigation": 10,
-      "insight": 12
-    }
-  },
-  "speeds": {
-    "walk": 25,
-    "burrow": 0,
-    "climb": 0,
-    "fly": 50,
-    "swim": 0
-  },
   "conditions": [],
-  "abilities": [
-    {
-      "id": 1,
-      "name": "strength",
-      "friendlyName": "Strength",
-      "shortName": "STR",
-      "score": 12,
-      "modifier": 1
-    },
-    {
-      "id": 2,
-      "name": "dexterity",
-      "friendlyName": "Dexterity",
-      "shortName": "DEX",
-      "score": 18,
-      "modifier": 4
-    },
-    {
-      "id": 3,
-      "name": "constitution",
-      "friendlyName": "Constitution",
-      "shortName": "CON",
-      "score": 14,
-      "modifier": 2
-    },
-    {
-      "id": 4,
-      "name": "intelligence",
-      "friendlyName": "Intelligence",
-      "shortName": "INT",
-      "score": 10,
-      "modifier": 0
-    },
-    {
-      "id": 5,
-      "name": "wisdom",
-      "friendlyName": "Wisdom",
-      "shortName": "WIS",
-      "score": 15,
-      "modifier": 2
-    },
-    {
-      "id": 6,
-      "name": "charisma",
-      "friendlyName": "Charisma",
-      "shortName": "CHA",
-      "score": 8,
-      "modifier": -1
-    }
-  ],
-  "saves": [
-    {
-      "id": 1,
-      "name": "strength",
-      "friendlyName": "Strength",
-      "shortName": "STR",
-      "value": 5,
-      "proficiency": 3,
-      "advantage": false,
-      "disadvantage": false
-    },
-    {
-      "id": 2,
-      "name": "dexterity",
-      "friendlyName": "Dexterity",
-      "shortName": "DEX",
-      "value": 8,
-      "proficiency": 3,
-      "advantage": false,
-      "disadvantage": false
-    },
-    {
-      "id": 3,
-      "name": "constitution",
-      "friendlyName": "Constitution",
-      "shortName": "CON",
-      "value": 2,
-      "proficiency": 0,
-      "advantage": false,
-      "disadvantage": false
-    },
-    {
-      "id": 4,
-      "name": "intelligence",
-      "friendlyName": "Intelligence",
-      "shortName": "INT",
-      "value": 0,
-      "proficiency": 0,
-      "advantage": false,
-      "disadvantage": false
-    },
-    {
-      "id": 5,
-      "name": "wisdom",
-      "friendlyName": "Wisdom",
-      "shortName": "WIS",
-      "value": 2,
-      "proficiency": 0,
-      "advantage": false,
-      "disadvantage": false
-    },
-    {
-      "id": 6,
-      "name": "charisma",
-      "friendlyName": "Charisma",
-      "shortName": "CHA",
-      "value": -1,
-      "proficiency": 0,
-      "advantage": false,
-      "disadvantage": false
-    }
-  ],
-  "skills": [
-    {
-      "id": 3,
-      "name": "acrobatics",
-      "friendlyName": "Acrobatics",
-      "stat": 1,
-      "ability": "DEX",
-      "value": 8,
-      "proficiency": 3,
-      "advantage": false,
-      "disadvantage": false
-    },
-    {
-      "id": 11,
-      "name": "animal-handling",
-      "friendlyName": "Animal Handling",
-      "stat": 4,
-      "ability": "WIS",
-      "value": 2,
-      "proficiency": 0,
-      "advantage": false,
-      "disadvantage": false
-    },
-    {
-      "id": 6,
-      "name": "arcana",
-      "friendlyName": "Arcana",
-      "stat": 3,
-      "ability": "INT",
-      "value": 0,
-      "proficiency": 0,
-      "advantage": false,
-      "disadvantage": false
-    },
-    {
-      "id": 2,
-      "name": "athletics",
-      "friendlyName": "Athletics",
-      "stat": 0,
-      "ability": "STR",
-      "value": 5,
-      "proficiency": 3,
-      "advantage": false,
-      "disadvantage": false
-    },
-    {
-      "id": 16,
-      "name": "deception",
-      "friendlyName": "Deception",
-      "stat": 5,
-      "ability": "CHA",
-      "value": -1,
-      "proficiency": 0,
-      "advantage": false,
-      "disadvantage": false
-    },
-    {
-      "id": 7,
-      "name": "history",
-      "friendlyName": "History",
-      "stat": 3,
-      "ability": "INT",
-      "value": 0,
-      "proficiency": 0,
-      "advantage": false,
-      "disadvantage": false
-    },
-    {
-      "id": 12,
-      "name": "insight",
-      "friendlyName": "Insight",
-      "stat": 4,
-      "ability": "WIS",
-      "value": 2,
-      "proficiency": 0,
-      "advantage": false,
-      "disadvantage": false
-    },
-    {
-      "id": 17,
-      "name": "intimidation",
-      "friendlyName": "Intimidation",
-      "stat": 5,
-      "ability": "CHA",
-      "value": -1,
-      "proficiency": 0,
-      "advantage": false,
-      "disadvantage": false
-    },
-    {
-      "id": 8,
-      "name": "investigation",
-      "friendlyName": "Investigation",
-      "stat": 3,
-      "ability": "INT",
-      "value": 0,
-      "proficiency": 0,
-      "advantage": false,
-      "disadvantage": false
-    },
-    {
-      "id": 13,
-      "name": "medicine",
-      "friendlyName": "Medicine",
-      "stat": 4,
-      "ability": "WIS",
-      "value": 2,
-      "proficiency": 0,
-      "advantage": false,
-      "disadvantage": false
-    },
-    {
-      "id": 9,
-      "name": "nature",
-      "friendlyName": "Nature",
-      "stat": 3,
-      "ability": "INT",
-      "value": 0,
-      "proficiency": 0,
-      "advantage": false,
-      "disadvantage": false
-    },
-    {
-      "id": 14,
-      "name": "perception",
-      "friendlyName": "Perception",
-      "stat": 4,
-      "ability": "WIS",
-      "value": 2,
-      "proficiency": 0,
-      "advantage": false,
-      "disadvantage": false
-    },
-    {
-      "id": 18,
-      "name": "performance",
-      "friendlyName": "Performance",
-      "stat": 5,
-      "ability": "CHA",
-      "value": -1,
-      "proficiency": 0,
-      "advantage": false,
-      "disadvantage": false
-    },
-    {
-      "id": 19,
-      "name": "persuasion",
-      "friendlyName": "Persuasion",
-      "stat": 5,
-      "ability": "CHA",
-      "value": -1,
-      "proficiency": 0,
-      "advantage": false,
-      "disadvantage": false
-    },
-    {
-      "id": 10,
-      "name": "religion",
-      "friendlyName": "Religion",
-      "stat": 3,
-      "ability": "INT",
-      "value": 0,
-      "proficiency": 0,
-      "advantage": false,
-      "disadvantage": false
-    },
-    {
-      "id": 4,
-      "name": "sleight-of-hand",
-      "friendlyName": "Sleight of Hand",
-      "stat": 1,
-      "ability": "DEX",
-      "value": 4,
-      "proficiency": 0,
-      "advantage": false,
-      "disadvantage": false
-    },
-    {
-      "id": 5,
-      "name": "stealth",
-      "friendlyName": "Stealth",
-      "stat": 1,
-      "ability": "DEX",
-      "value": 8,
-      "proficiency": 3,
-      "advantage": false,
-      "disadvantage": false
-    },
-    {
-      "id": 15,
-      "name": "survival",
-      "friendlyName": "Survival",
-      "stat": 4,
-      "ability": "WIS",
-      "value": 6,
-      "proficiency": 3,
-      "advantage": false,
-      "disadvantage": false
-    }
-  ],
   "stats": {
     "hitPoints": {
       "max": 66,
       "current": 66,
       "temp": 0
     },
-    "armorClass": 14
+    "armorClass": 14,
+    "abilities": {
+      "strength": 12,
+      "dexterity": 18,
+      "constitution": 14,
+      "intelligence": 10,
+      "wisdom": 15,
+      "charisma": 8
+    },
+    "alignment": "Chaotic Evil",
+    "initiative": {
+      "bonus": 4,
+      "advantage": true
+    },
+    "senses": {
+      "passives": {
+        "perception": 12,
+        "investigation": 10,
+        "insight": 12
+      }
+    },
+    "speed": {
+      "walk": 25,
+      "burrow": 0,
+      "climb": 0,
+      "fly": 50,
+      "swim": 0
+    },
+    "savingThrows": [
+      {
+        "id": 1,
+        "name": "strength",
+        "friendlyName": "Strength",
+        "shortName": "STR",
+        "value": 5,
+        "proficiency": 3,
+        "advantage": false,
+        "disadvantage": false
+      },
+      {
+        "id": 2,
+        "name": "dexterity",
+        "friendlyName": "Dexterity",
+        "shortName": "DEX",
+        "value": 8,
+        "proficiency": 3,
+        "advantage": false,
+        "disadvantage": false
+      },
+      {
+        "id": 3,
+        "name": "constitution",
+        "friendlyName": "Constitution",
+        "shortName": "CON",
+        "value": 2,
+        "proficiency": 0,
+        "advantage": false,
+        "disadvantage": false
+      },
+      {
+        "id": 4,
+        "name": "intelligence",
+        "friendlyName": "Intelligence",
+        "shortName": "INT",
+        "value": 0,
+        "proficiency": 0,
+        "advantage": false,
+        "disadvantage": false
+      },
+      {
+        "id": 5,
+        "name": "wisdom",
+        "friendlyName": "Wisdom",
+        "shortName": "WIS",
+        "value": 2,
+        "proficiency": 0,
+        "advantage": false,
+        "disadvantage": false
+      },
+      {
+        "id": 6,
+        "name": "charisma",
+        "friendlyName": "Charisma",
+        "shortName": "CHA",
+        "value": -1,
+        "proficiency": 0,
+        "advantage": false,
+        "disadvantage": false
+      }
+    ],
+    "skills": [
+      {
+        "id": 3,
+        "name": "acrobatics",
+        "friendlyName": "Acrobatics",
+        "stat": 1,
+        "ability": "DEX",
+        "value": 8,
+        "proficiency": 3,
+        "advantage": false,
+        "disadvantage": false
+      },
+      {
+        "id": 11,
+        "name": "animal-handling",
+        "friendlyName": "Animal Handling",
+        "stat": 4,
+        "ability": "WIS",
+        "value": 2,
+        "proficiency": 0,
+        "advantage": false,
+        "disadvantage": false
+      },
+      {
+        "id": 6,
+        "name": "arcana",
+        "friendlyName": "Arcana",
+        "stat": 3,
+        "ability": "INT",
+        "value": 0,
+        "proficiency": 0,
+        "advantage": false,
+        "disadvantage": false
+      },
+      {
+        "id": 2,
+        "name": "athletics",
+        "friendlyName": "Athletics",
+        "stat": 0,
+        "ability": "STR",
+        "value": 5,
+        "proficiency": 3,
+        "advantage": false,
+        "disadvantage": false
+      },
+      {
+        "id": 16,
+        "name": "deception",
+        "friendlyName": "Deception",
+        "stat": 5,
+        "ability": "CHA",
+        "value": -1,
+        "proficiency": 0,
+        "advantage": false,
+        "disadvantage": false
+      },
+      {
+        "id": 7,
+        "name": "history",
+        "friendlyName": "History",
+        "stat": 3,
+        "ability": "INT",
+        "value": 0,
+        "proficiency": 0,
+        "advantage": false,
+        "disadvantage": false
+      },
+      {
+        "id": 12,
+        "name": "insight",
+        "friendlyName": "Insight",
+        "stat": 4,
+        "ability": "WIS",
+        "value": 2,
+        "proficiency": 0,
+        "advantage": false,
+        "disadvantage": false
+      },
+      {
+        "id": 17,
+        "name": "intimidation",
+        "friendlyName": "Intimidation",
+        "stat": 5,
+        "ability": "CHA",
+        "value": -1,
+        "proficiency": 0,
+        "advantage": false,
+        "disadvantage": false
+      },
+      {
+        "id": 8,
+        "name": "investigation",
+        "friendlyName": "Investigation",
+        "stat": 3,
+        "ability": "INT",
+        "value": 0,
+        "proficiency": 0,
+        "advantage": false,
+        "disadvantage": false
+      },
+      {
+        "id": 13,
+        "name": "medicine",
+        "friendlyName": "Medicine",
+        "stat": 4,
+        "ability": "WIS",
+        "value": 2,
+        "proficiency": 0,
+        "advantage": false,
+        "disadvantage": false
+      },
+      {
+        "id": 9,
+        "name": "nature",
+        "friendlyName": "Nature",
+        "stat": 3,
+        "ability": "INT",
+        "value": 0,
+        "proficiency": 0,
+        "advantage": false,
+        "disadvantage": false
+      },
+      {
+        "id": 14,
+        "name": "perception",
+        "friendlyName": "Perception",
+        "stat": 4,
+        "ability": "WIS",
+        "value": 2,
+        "proficiency": 0,
+        "advantage": false,
+        "disadvantage": false
+      },
+      {
+        "id": 18,
+        "name": "performance",
+        "friendlyName": "Performance",
+        "stat": 5,
+        "ability": "CHA",
+        "value": -1,
+        "proficiency": 0,
+        "advantage": false,
+        "disadvantage": false
+      },
+      {
+        "id": 19,
+        "name": "persuasion",
+        "friendlyName": "Persuasion",
+        "stat": 5,
+        "ability": "CHA",
+        "value": -1,
+        "proficiency": 0,
+        "advantage": false,
+        "disadvantage": false
+      },
+      {
+        "id": 10,
+        "name": "religion",
+        "friendlyName": "Religion",
+        "stat": 3,
+        "ability": "INT",
+        "value": 0,
+        "proficiency": 0,
+        "advantage": false,
+        "disadvantage": false
+      },
+      {
+        "id": 4,
+        "name": "sleight-of-hand",
+        "friendlyName": "Sleight of Hand",
+        "stat": 1,
+        "ability": "DEX",
+        "value": 4,
+        "proficiency": 0,
+        "advantage": false,
+        "disadvantage": false
+      },
+      {
+        "id": 5,
+        "name": "stealth",
+        "friendlyName": "Stealth",
+        "stat": 1,
+        "ability": "DEX",
+        "value": 8,
+        "proficiency": 3,
+        "advantage": false,
+        "disadvantage": false
+      },
+      {
+        "id": 15,
+        "name": "survival",
+        "friendlyName": "Survival",
+        "stat": 4,
+        "ability": "WIS",
+        "value": 6,
+        "proficiency": 3,
+        "advantage": false,
+        "disadvantage": false
+      }
+    ],
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Aarakocra",
+        "Auran",
+        "Common",
+        "Elvish"
+      ]
+    }
   },
   "currencies": {
     "cp": 0,
@@ -727,13 +690,6 @@
       "Tinker's Tools",
       "Flute"
     ],
-    "languages": [
-      "Aarakocra",
-      "Auran",
-      "Common",
-      "Elvish"
-    ],
-    "defenses": [],
     "senses": [],
     "other": [
       "Slashing",

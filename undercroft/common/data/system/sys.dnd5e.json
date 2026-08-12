@@ -577,23 +577,33 @@
       "values": [
         {
           "name": "Common",
-          "targetBudget": 4
+          "targetBudget": 4,
+          "priceMin": 50,
+          "priceMax": 100
         },
         {
           "name": "Uncommon",
-          "targetBudget": 8
+          "targetBudget": 8,
+          "priceMin": 101,
+          "priceMax": 500
         },
         {
           "name": "Rare",
-          "targetBudget": 12
+          "targetBudget": 12,
+          "priceMin": 501,
+          "priceMax": 5000
         },
         {
           "name": "Very Rare",
-          "targetBudget": 18
+          "targetBudget": 18,
+          "priceMin": 5001,
+          "priceMax": 50000
         },
         {
           "name": "Legendary",
-          "targetBudget": 26
+          "targetBudget": 26,
+          "priceMin": 50001,
+          "priceMax": 200000
         }
       ]
     },
@@ -656,16 +666,44 @@
           "cost": 0
         },
         {
+          "name": "Armor",
+          "cost": 1
+        },
+        {
+          "name": "Equipment",
+          "cost": 0
+        },
+        {
+          "name": "Potion",
+          "cost": -1
+        },
+        {
+          "name": "Ring",
+          "cost": 1
+        },
+        {
+          "name": "Rod",
+          "cost": 2
+        },
+        {
+          "name": "Scroll",
+          "cost": -2
+        },
+        {
+          "name": "Staff",
+          "cost": 2
+        },
+        {
           "name": "Wand",
           "cost": 1
         },
         {
-          "name": "Potion (single use)",
-          "cost": -2
+          "name": "Weapon",
+          "cost": 2
         },
         {
-          "name": "Imbued Weapon",
-          "cost": 2
+          "name": "Wondrous Item",
+          "cost": 1
         }
       ]
     },
@@ -813,7 +851,7 @@
         {
           "name": "Initiative",
           "die": "d20",
-          "binding": "@stats.initiativeBonus",
+          "binding": "@stats.initiative.bonus",
           "role": "modifier"
         }
       ]
@@ -1513,11 +1551,11 @@
             "psionic",
             "unnatural"
           ],
-          "defaultSenses": [
-            "darkvision 60 ft."
-          ],
+          "defaultSenses": { "darkvision": 60 },
           "defaultResistances": [],
+          "defaultVulnerabilities": [],
           "defaultImmunities": [],
+          "defaultConditionImmunities": [],
           "description": "A creature whose form and thought are alien to the natural world — unsettling to look at and often incomprehensible in motive.",
           "sourceId": 1
         },
@@ -1534,11 +1572,11 @@
             "natural",
             "instinctive"
           ],
-          "defaultSenses": [
-            "keen smell or hearing"
-          ],
+          "defaultSenses": {},
           "defaultResistances": [],
+          "defaultVulnerabilities": [],
           "defaultImmunities": [],
+          "defaultConditionImmunities": [],
           "description": "A natural, non-magical animal, though often larger, fiercer, or stranger than its mundane cousins.",
           "sourceId": 2
         },
@@ -1556,13 +1594,13 @@
             "radiant",
             "purposeful"
           ],
-          "defaultSenses": [
-            "darkvision 120 ft."
-          ],
+          "defaultSenses": { "darkvision": 120 },
           "defaultResistances": [
             "radiant"
           ],
+          "defaultVulnerabilities": [],
           "defaultImmunities": [],
+          "defaultConditionImmunities": [],
           "description": "A creature native to the upper planes, acting (or claiming to act) with a purpose sanctioned by a greater power.",
           "sourceId": 3
         },
@@ -1579,16 +1617,16 @@
             "artificial",
             "mindless-or-bound"
           ],
-          "defaultSenses": [
-            "darkvision 60 ft."
-          ],
+          "defaultSenses": { "darkvision": 60 },
           "defaultResistances": [],
+          "defaultVulnerabilities": [],
           "defaultImmunities": [
             "poison",
             "disease",
             "charmed",
             "frightened"
           ],
+          "defaultConditionImmunities": [],
           "description": "An animated object or artificial body, built or shaped rather than born, following its programming or binding rather than instinct.",
           "sourceId": 4
         },
@@ -1606,12 +1644,11 @@
             "territorial",
             "elemental-breath"
           ],
-          "defaultSenses": [
-            "blindsight 30 ft.",
-            "darkvision 120 ft."
-          ],
+          "defaultSenses": { "blindsight": 30, "darkvision": 120 },
           "defaultResistances": [],
+          "defaultVulnerabilities": [],
           "defaultImmunities": [],
+          "defaultConditionImmunities": [],
           "description": "A reptilian creature of ancient, often magical lineage — proud, territorial, and rarely anyone's servant by choice.",
           "sourceId": 6
         },
@@ -1628,14 +1665,14 @@
             "elemental-nature",
             "single-minded"
           ],
-          "defaultSenses": [
-            "darkvision 60 ft."
-          ],
+          "defaultSenses": { "darkvision": 60 },
           "defaultResistances": [],
+          "defaultVulnerabilities": [],
           "defaultImmunities": [
             "poison",
             "exhaustion"
           ],
+          "defaultConditionImmunities": [],
           "description": "A creature made manifest from one of the fundamental planes of existence, acting on straightforward, often single-minded impulses.",
           "sourceId": 7
         },
@@ -1653,11 +1690,11 @@
             "trickery",
             "bound-by-bargain"
           ],
-          "defaultSenses": [
-            "darkvision 60 ft."
-          ],
+          "defaultSenses": { "darkvision": 60 },
           "defaultResistances": [],
+          "defaultVulnerabilities": [],
           "defaultImmunities": [],
+          "defaultConditionImmunities": [],
           "description": "A creature tied to the vitality of nature and bound (whether it admits it or not) by old, strange rules of bargain and trickery.",
           "sourceId": 8
         },
@@ -1675,13 +1712,13 @@
             "fire",
             "cunning"
           ],
-          "defaultSenses": [
-            "darkvision 120 ft."
-          ],
+          "defaultSenses": { "darkvision": 120 },
           "defaultResistances": [
             "fire"
           ],
+          "defaultVulnerabilities": [],
           "defaultImmunities": [],
+          "defaultConditionImmunities": [],
           "description": "A creature of wickedness native to (or long corrupted by) the lower planes, acting with malice and purpose.",
           "sourceId": 9
         },
@@ -1698,9 +1735,11 @@
             "huge-stature",
             "strength-focused"
           ],
-          "defaultSenses": [],
+          "defaultSenses": {},
           "defaultResistances": [],
+          "defaultVulnerabilities": [],
           "defaultImmunities": [],
+          "defaultConditionImmunities": [],
           "description": "A humanoid-shaped creature of great size and strength, from a society with its own old, rigid sense of order.",
           "sourceId": 10
         },
@@ -1717,9 +1756,11 @@
             "mortal",
             "organized"
           ],
-          "defaultSenses": [],
+          "defaultSenses": {},
           "defaultResistances": [],
+          "defaultVulnerabilities": [],
           "defaultImmunities": [],
+          "defaultConditionImmunities": [],
           "description": "A creature of the common mortal races, organized into societies, professions, and factions much like the player characters.",
           "sourceId": 11
         },
@@ -1736,11 +1777,11 @@
             "unnatural-origin",
             "frightening"
           ],
-          "defaultSenses": [
-            "darkvision 60 ft."
-          ],
+          "defaultSenses": { "darkvision": 60 },
           "defaultResistances": [],
+          "defaultVulnerabilities": [],
           "defaultImmunities": [],
+          "defaultConditionImmunities": [],
           "description": "A frightening creature not entirely natural, often the product of magic gone wrong or a bloodline warped by it.",
           "sourceId": 13
         },
@@ -1758,11 +1799,11 @@
             "mindless",
             "corrosive"
           ],
-          "defaultSenses": [
-            "blindsight 60 ft. (blind beyond this radius)"
-          ],
+          "defaultSenses": { "blindsight": 60 },
           "defaultResistances": [],
-          "defaultImmunities": [
+          "defaultVulnerabilities": [],
+          "defaultImmunities": [],
+          "defaultConditionImmunities": [
             "prone"
           ],
           "description": "A creature with a gelatinous, near-formless body — mindless in most cases, but relentless in what little it does pursue.",
@@ -1781,9 +1822,11 @@
             "vegetal",
             "territorial"
           ],
-          "defaultSenses": [],
+          "defaultSenses": {},
           "defaultResistances": [],
+          "defaultVulnerabilities": [],
           "defaultImmunities": [],
+          "defaultConditionImmunities": [],
           "description": "A creature of vegetable rather than animal nature, ranging from barely mobile to aggressively territorial.",
           "sourceId": 15
         },
@@ -1801,16 +1844,16 @@
             "undead-nature",
             "fear"
           ],
-          "defaultSenses": [
-            "darkvision 60 ft."
-          ],
+          "defaultSenses": { "darkvision": 60 },
           "defaultResistances": [
             "necrotic"
           ],
+          "defaultVulnerabilities": [],
           "defaultImmunities": [
             "poison",
             "exhaustion"
           ],
+          "defaultConditionImmunities": [],
           "description": "Animated remains or restless spirits, driven by hunger, compulsion, or unfinished business rather than a living creature's needs.",
           "sourceId": 16
         }
@@ -2414,6 +2457,19 @@
           "armorClass": 15,
           "hitPoints": 65
         }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "npcAttitudes",
+      "label": "NPC Attitudes",
+      "values": [
+        { "name": "Hostile", "value": 1 },
+        { "name": "Unfriendly", "value": 2 },
+        { "name": "Wary", "value": 3 },
+        { "name": "Neutral", "value": 4 },
+        { "name": "Friendly", "value": 5 },
+        { "name": "Helpful", "value": 6 }
       ]
     },
     {

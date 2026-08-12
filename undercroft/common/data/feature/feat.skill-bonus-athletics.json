@@ -1,0 +1,46 @@
+{
+  "id": "feat.skill-bonus-athletics",
+  "name": "Athletics Bonus",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Sharpens the creature's Athletics checks.",
+  "mechanics": {
+    "type": "active",
+    "text": "While active, grants advantage on Athletics checks, or a flat bonus, depending on tier."
+  },
+  "budgetCost": 3,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "athletics",
+      "buff"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "advantage",
+      "name": "Advantage",
+      "shortName": "Adv",
+      "budgetCost": 3
+    },
+    {
+      "id": "plus-2",
+      "name": "+2 Bonus",
+      "shortName": "+2",
+      "budgetCost": 6
+    },
+    {
+      "id": "plus-5",
+      "name": "+5 Bonus",
+      "shortName": "+5",
+      "budgetCost": 10
+    }
+  ]
+}

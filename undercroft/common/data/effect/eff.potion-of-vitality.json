@@ -1,0 +1,19 @@
+{
+  "id": "eff.potion-of-vitality",
+  "name": "Potion of Vitality",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "signatureFeatureId": null,
+  "featureIds": [],
+  "properties": {
+    "rarity": "rare",
+    "form": "potion"
+  },
+  "budget": {
+    "target": 0,
+    "spent": 0,
+    "remaining": 0
+  },
+  "notes": "Ends any exhaustion, cures any disease/poison affecting the drinker, and grants max hit points on all hit dice spent for the next 24 hours."
+}

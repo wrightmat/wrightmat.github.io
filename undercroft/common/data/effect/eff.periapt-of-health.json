@@ -1,0 +1,22 @@
+{
+  "id": "eff.periapt-of-health",
+  "name": "Periapt of Health",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "signatureFeatureId": null,
+  "featureIds": [
+    "feat.condition-immunity"
+  ],
+  "properties": {
+    "rarity": "uncommon",
+    "form": "wondrous-item"
+  },
+  "budget": {
+    "target": 8,
+    "spent": 5,
+    "remaining": 3
+  },
+  "notes": "You are immune to contracting any disease while you wear this pendant. If you are already infected with a disease, the disease is suppressed while you wear the pendant.",
+  "featureTiers": {}
+}

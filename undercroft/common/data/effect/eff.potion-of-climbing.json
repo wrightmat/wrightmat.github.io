@@ -1,0 +1,26 @@
+{
+  "id": "eff.potion-of-climbing",
+  "name": "Potion of Climbing",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "signatureFeatureId": null,
+  "featureIds": [
+    "feat.speed-modification",
+    "feat.skill-bonus-athletics"
+  ],
+  "properties": {
+    "rarity": "common",
+    "form": "potion"
+  },
+  "budget": {
+    "target": 4,
+    "spent": 8,
+    "remaining": -4
+  },
+  "notes": "Grants a climbing speed equal to your walking speed, and advantage on Strength (Athletics) checks to climb, for 1 hour.",
+  "featureTiers": {
+    "feat.speed-modification": "climbing",
+    "feat.skill-bonus-athletics": "advantage"
+  }
+}

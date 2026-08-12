@@ -1,0 +1,26 @@
+{
+  "id": "feat.echolocation",
+  "name": "Echolocation",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature can't use its blindsight while deafened.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature can't use its blindsight while deafened."
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

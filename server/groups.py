@@ -58,6 +58,22 @@ _GROUP_ID_PREFIX = "grp_"
 # set) alongside its own inline spotlight entry.
 _INLINE_SPOTLIGHT_KINDS = {"browser", "clock", "calendar", "soundboard"}
 
+# Kinds allowed to post a `spotlight-update` entry — a strict superset of
+# _INLINE_SPOTLIGHT_KINDS above, NOT the same set. "encounter" is a real,
+# Library-backed kind (content_exists() IS still enforced for it on initial
+# `spotlight` creation, below) — it's here only because combat-tracker.js's
+# own hideFromTable deliberately patches `data.hidden` on an
+# already-announced spotlight via updateSpotlightData instead of clearing it
+# outright, so the encounter stays "the active encounter" (still findable by
+# character-sheet.js's pushInitiativeToActiveEncounter) while merely hidden
+# from table display. Folding "encounter" into _INLINE_SPOTLIGHT_KINDS
+# itself instead of a separate set would have also skipped THAT kind's
+# content_exists() check at spotlight-creation time (the branch just above
+# this comment's own home), which is real, wanted validation for a
+# Library-backed record — this set exists so expanding "who can patch" never
+# has to loosen "who gets validated on the way in."
+_SPOTLIGHT_UPDATE_ALLOWED_KINDS = _INLINE_SPOTLIGHT_KINDS | {"encounter"}
+
 
 def _generate_group_id(state: ServerState) -> str:
     while True:
@@ -646,14 +662,17 @@ def create_group_log_entry(
             if template_id and not content_exists(state, "template", str(template_id)):
                 raise AuthError("Save this template before showing it to the table")
     if normalized_type == "spotlight-update":
-        # A silent data refresh on an already-shown inline-kind spotlight (a
-        # clock tick, a Browser URL edit) — never posted for a real
-        # Library-backed kind, whose content already lives in, and is always
-        # re-fetched from, its own record.
+        # A silent data refresh on an already-shown spotlight — usually a
+        # content refresh for an inline-kind widget (a clock tick, a Browser
+        # URL edit), whose content already lives in, and is always re-fetched
+        # from, the log entry itself rather than a record. "encounter" is the
+        # one Library-backed exception, allowed here only to patch
+        # `data.hidden` without re-announcing — see
+        # _SPOTLIGHT_UPDATE_ALLOWED_KINDS' own comment for why.
         if not payload_value or not payload_value.get("kind") or not payload_value.get("id"):
             raise AuthError("Spotlight update payload requires kind and id")
         kind_value = str(payload_value["kind"])
-        if kind_value not in _INLINE_SPOTLIGHT_KINDS:
+        if kind_value not in _SPOTLIGHT_UPDATE_ALLOWED_KINDS:
             raise AuthError("This kind does not support inline spotlight updates")
     payload_data = None
     if payload_value is not None:

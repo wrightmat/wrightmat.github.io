@@ -80,3 +80,32 @@ def serve_from_root(state: ServerState, relative_path: str) -> Response:
         relative_path,
         directory_listing=False,
     )
+
+
+# Deliberately has NO base-root restriction like _serve_from_base above —
+# this exists specifically to serve an ARBITRARY absolute path anywhere on
+# disk (see undercroft/common/js/lib/widgets/browser.js's own header for
+# why: a GM's local file, embedded via this server instead of a bare
+# file:// URL, since browsers refuse to load file: as an iframe/img
+# subresource at all). Safety here comes entirely from WHO is allowed to
+# call this at all — the loopback-only + GM-tier check in app.py's own
+# handle_local_file, the one and only caller — not from validating the path
+# itself, since there's no "allowed root" to validate it against in the
+# first place. Do not call this from anywhere that hasn't done that check.
+def serve_local_file(path: str) -> Response:
+    if not path:
+        raise FileNotFoundError(path)
+    try:
+        target = Path(path).resolve()
+    except OSError:
+        raise FileNotFoundError(path)
+    if not target.is_file():
+        raise FileNotFoundError(path)
+    content_type, _ = mimetypes.guess_type(str(target))
+    if not content_type:
+        content_type = "application/octet-stream"
+    return Response(
+        status=HTTPStatus.OK,
+        body=target.read_bytes(),
+        headers={"Content-Type": content_type, "Cache-Control": "no-cache"},
+    )

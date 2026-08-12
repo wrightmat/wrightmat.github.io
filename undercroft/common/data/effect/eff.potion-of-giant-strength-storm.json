@@ -1,0 +1,24 @@
+{
+  "id": "eff.potion-of-giant-strength-storm",
+  "name": "Potion of Giant Strength, Storm",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "signatureFeatureId": null,
+  "featureIds": [
+    "feat.increase-strength"
+  ],
+  "properties": {
+    "rarity": "legendary",
+    "form": "potion"
+  },
+  "budget": {
+    "target": 26,
+    "spent": 22,
+    "remaining": 4
+  },
+  "notes": "Sets the drinker's Strength score to 29 for 1 hour.",
+  "featureTiers": {
+    "feat.increase-strength": "set-29"
+  }
+}

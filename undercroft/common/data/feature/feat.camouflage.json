@@ -1,0 +1,26 @@
+{
+  "id": "feat.camouflage",
+  "name": "Camouflage",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature has advantage on Dexterity (Stealth) checks made to hide in its natural surroundings.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature has advantage on Dexterity (Stealth) checks made to hide in its natural surroundings."
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "mobility"
+    ],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

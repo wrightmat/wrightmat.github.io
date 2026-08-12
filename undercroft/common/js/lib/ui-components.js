@@ -593,6 +593,253 @@ export function createCompactField({
   return wrapper;
 }
 
+// A compact "search box + scrollable checkbox list" — the Locked Features
+// picker's replacement for a bare `<select multiple>` (Crucible/Vault/
+// Sanctum all had one). A native multi-select forces ctrl/cmd-click to pick
+// more than one option, gives no way to search a long list, and its
+// "selected" rows are barely distinguishable from unselected ones at a
+// glance — checkboxes fix all three with a single click per item and an
+// obvious checked state. `maxHeight` caps the scrollable list so the whole
+// control (search input + list) stays about the same footprint as the
+// multi-select it replaces rather than growing with the option count.
+// Callers populate/read it via populateLockedFeaturesCheckList/
+// readLockedFeatureIds (common/js/lib/generator-kit.js), which look inside
+// this control for the fixed `data-checklist-search`/`data-checklist-options`
+// markers below — `dataAttr` (like every other field factory here) marks the
+// whole control so a caller's usual `document.querySelector("[data-x]")`
+// still finds it.
+export function createSearchableCheckList({
+  id,
+  label,
+  labelClass = "form-label fw-semibold mb-0",
+  dataAttr,
+  helpTopic,
+  helpPlacement,
+  searchPlaceholder = "Search…",
+  maxHeight = "5rem",
+} = {}) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "d-flex flex-column gap-1";
+
+  const labelEl = document.createElement("label");
+  labelEl.className = labelClass;
+  if (id) labelEl.htmlFor = `${id}Search`;
+  labelEl.textContent = label;
+
+  let labelRow = labelEl;
+  if (helpTopic) {
+    labelRow = document.createElement("div");
+    labelRow.className = "d-flex align-items-center justify-content-between gap-2";
+    const helpSpan = document.createElement("span");
+    helpSpan.className = "align-middle";
+    helpSpan.setAttribute("data-help-topic", helpTopic);
+    helpSpan.setAttribute("data-help-insert", "replace");
+    if (helpPlacement) helpSpan.setAttribute("data-help-placement", helpPlacement);
+    labelRow.append(labelEl, helpSpan);
+  }
+
+  const container = document.createElement("div");
+  container.className = "d-flex flex-column gap-1";
+  if (dataAttr) container.setAttribute(dataAttr, "");
+
+  const searchInput = document.createElement("input");
+  searchInput.type = "search";
+  searchInput.className = "form-control form-control-sm";
+  searchInput.placeholder = searchPlaceholder;
+  if (id) searchInput.id = `${id}Search`;
+  searchInput.setAttribute("data-checklist-search", "");
+
+  const listBox = document.createElement("div");
+  listBox.className = "border rounded-2 overflow-auto p-1 d-flex flex-column";
+  listBox.style.maxHeight = maxHeight;
+  listBox.setAttribute("data-checklist-options", "");
+
+  // Filters existing rows on every keystroke — populateLockedFeaturesCheckList
+  // (generator-kit.js) stamps each row with its own lowercased
+  // `data-search-label` and re-applies whatever query is already in this box
+  // whenever it rebuilds the list, so a search survives a System/Setting
+  // change that repopulates the options underneath it.
+  searchInput.addEventListener("input", () => {
+    const query = searchInput.value.trim().toLowerCase();
+    Array.from(listBox.children).forEach((row) => {
+      row.classList.toggle("d-none", Boolean(query) && !row.dataset.searchLabel?.includes(query));
+    });
+  });
+
+  container.append(searchInput, listBox);
+  wrapper.append(labelRow, container);
+  return wrapper;
+}
+
+// A bordered "field box" — label above, editable value below, an optional
+// trailing action button (Forge's per-attribute reroll) — the shared
+// generator-tool property/stat card. Originally Forge's own buildFieldCard
+// (its Identity/4D/Stats fields), independently reinvented near-identically
+// as Crucible's buildStatCard (its own Stats fields); consolidated here so
+// Crucible's Identity fields and Vault's Identity fields can adopt the exact
+// same look instead of a fourth hand-rolled variant, per explicit user
+// feedback that Forge's box style — "it basically matches the Stats boxes
+// and Features boxes in the other tools" — should be the one shared look
+// across every tool's center-pane properties. `.field-inline-edit` (see
+// common/css/shell.css) is the "blend in until hovered/focused" idiom that
+// keeps an editable value from visually standing out among read-only ones;
+// works for both an <input> and a <select>.
+//
+// type: "text" (a free-typed value, e.g. Forge's Name/Stats, Crucible's
+// Stats/an imported monster's Size-Type-Alignment-Speed) or "select" (a
+// fixed-vocabulary pick, e.g. Crucible's Creature Type/Archetype/Role,
+// Vault's Rarity/Activation/Item Form) — `options` is required for "select"
+// (`[{value, label}]`). `editable: false` renders a plain read-only value
+// line instead (no border/background at all — the pre-existing "static"
+// look every tool already used before any field here was editable).
+//
+// `rerollable` adds a trailing reroll button carrying `data-reroll-attribute`
+// (Forge's own per-attribute-reroll delegated listener reads this) —
+// harmless to any tool that doesn't wire up that listener, since the button
+// simply wouldn't do anything without it; only Forge currently sets this.
+// `selectable` adds `data-select-field` (Forge's click-a-field-to-inspect-it
+// convention) — also Forge-only today, for the same reason.
+//
+// `colClass` wraps the box in a Bootstrap grid column (the default,
+// matching every field-box grid in the suite); pass `colClass: null` for a
+// caller that wants the bare box itself instead — for a flex-row mount like
+// Name/Image (not laid out via `.row`/`.col-*`), the caller supplies its own
+// wrapping/sizing.
+export function createFieldBox({
+  key,
+  label,
+  value = "",
+  type = "text",
+  options = [],
+  suffix = "",
+  compact = false,
+  editable = false,
+  rerollable = false,
+  selectable = false,
+  colClass = "col-12 col-md-6 col-lg-4",
+  dataAttr = "data-editable-field",
+  suffixDataAttr = "data-editable-suffix",
+  ariaLabelPrefix = "Edit",
+  rows = 3,
+} = {}) {
+  function buildControl(controlClass) {
+    if (type === "select") {
+      const select = document.createElement("select");
+      select.className = controlClass;
+      options.forEach((option) => {
+        const optionEl = document.createElement("option");
+        optionEl.value = option.value;
+        optionEl.textContent = option.label;
+        select.appendChild(optionEl);
+      });
+      if (options.some((option) => option.value === value)) select.value = value;
+      return select;
+    }
+    if (type === "textarea") {
+      const textarea = document.createElement("textarea");
+      textarea.className = controlClass;
+      textarea.rows = rows;
+      textarea.value = value ?? "";
+      return textarea;
+    }
+    const input = document.createElement("input");
+    input.type = "text";
+    input.className = controlClass;
+    input.value = value ?? "";
+    return input;
+  }
+
+  const box = document.createElement("div");
+  if (selectable && key) box.dataset.selectField = key;
+
+  const labelEl = document.createElement("div");
+  labelEl.textContent = label;
+
+  let control = null;
+  let suffixEl = null;
+  if (editable) {
+    // .field-inline-edit already sets font-weight: 600 on its own (see
+    // common/css/shell.css) — no fw-semibold utility class needed on top.
+    // Compact boxes size the INPUT to the box's own width (flex-grow-1 on a
+    // w-100 valueRow below), not a fixed rem value — colClass can make a
+    // compact box anywhere from 1x an ability-score box up to several times
+    // wider (e.g. Crucible/Forge's own 2x/3x stat boxes), and a fixed-width
+    // input left most of a wider box empty instead of actually using it.
+    control = buildControl(compact ? "field-inline-edit small text-center flex-grow-1" : "field-inline-edit");
+    if (key) control.setAttribute(dataAttr, key);
+    control.setAttribute("aria-label", `${ariaLabelPrefix} ${label}`);
+    if (compact) control.style.minWidth = "0";
+  }
+
+  if (compact) {
+    box.className = "d-flex flex-column align-items-center justify-content-center text-center border rounded-3 p-1 h-100";
+    labelEl.className = "text-uppercase text-body-secondary";
+    labelEl.style.fontSize = "0.65rem";
+    box.appendChild(labelEl);
+    if (editable) {
+      const valueRow = document.createElement("div");
+      valueRow.className = "d-flex align-items-center justify-content-center gap-1 w-100";
+      valueRow.appendChild(control);
+      if (suffix) {
+        suffixEl = document.createElement("span");
+        suffixEl.className = "small text-body-secondary";
+        if (key) suffixEl.setAttribute(suffixDataAttr, key);
+        suffixEl.textContent = suffix;
+        valueRow.appendChild(suffixEl);
+      }
+      box.appendChild(valueRow);
+    } else {
+      const valueEl = document.createElement("div");
+      valueEl.className = "fw-semibold small";
+      valueEl.textContent = value;
+      box.appendChild(valueEl);
+    }
+  } else {
+    box.className = "d-flex align-items-center justify-content-between gap-2 border rounded-3 p-2 h-100";
+    const text = document.createElement("div");
+    text.className = "flex-grow-1";
+    labelEl.className = "small text-uppercase text-body-secondary";
+    text.appendChild(labelEl);
+    if (editable) {
+      if (suffix) {
+        control.classList.add("flex-grow-1");
+        const valueRow = document.createElement("div");
+        valueRow.className = "d-flex align-items-center gap-1";
+        valueRow.appendChild(control);
+        suffixEl = document.createElement("span");
+        suffixEl.className = "small text-body-secondary";
+        if (key) suffixEl.setAttribute(suffixDataAttr, key);
+        suffixEl.textContent = suffix;
+        valueRow.appendChild(suffixEl);
+        text.appendChild(valueRow);
+      } else {
+        text.appendChild(control);
+      }
+    } else {
+      const valueEl = document.createElement("div");
+      valueEl.className = "fw-semibold";
+      valueEl.textContent = value;
+      text.appendChild(valueEl);
+    }
+    box.appendChild(text);
+    if (rerollable) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "btn btn-outline-secondary btn-sm flex-shrink-0";
+      if (key) button.dataset.rerollAttribute = key;
+      button.setAttribute("aria-label", `Reroll ${label}`);
+      button.innerHTML = `<span class="iconify" data-icon="tabler:refresh" aria-hidden="true"></span>`;
+      box.appendChild(button);
+    }
+  }
+
+  if (!colClass) return box;
+  const col = document.createElement("div");
+  col.className = colClass;
+  col.appendChild(box);
+  return col;
+}
+
 // A label + searchable icon input with a live preview swatch, wired to
 // icon-picker.js's attachIconAutocomplete — defaults to the ddb-*/bi-*
 // class vocabulary and dropdown Press's own Icon component field uses (see

@@ -1,42 +1,17 @@
 /*
  * Forge-specific styles. Kept minimal — the generator/location-builder UI
  * is built almost entirely from Bootstrap utilities; these are the handful
- * of things Bootstrap can't express directly.
+ * of things Bootstrap can't express directly. The shared field-box "blend
+ * in until interacted" input/select style and the [data-select-field]
+ * cursor now live in common/css/shell.css (createFieldBox, ui-components.js)
+ * since Crucible/Vault's own field boxes need the identical look.
  */
 
-/* Looks like the plain-text value it replaces until hovered/focused, so an
-   editable field (currently just Name) doesn't visually stand out from the
-   read-only ones next to it until you actually interact with it. */
-.forge-inline-edit {
-  display: block;
-  width: 100%;
-  border: 1px solid transparent;
-  border-radius: var(--bs-border-radius-sm, 0.25rem);
-  background-color: transparent;
-  padding: 0.05rem 0.25rem;
-  margin: -0.05rem -0.25rem;
-  color: inherit;
-  font: inherit;
-  font-weight: 600;
-}
-
-.forge-inline-edit:hover {
-  border-color: var(--bs-border-color);
-}
-
-.forge-inline-edit:focus {
-  outline: none;
-  border-color: var(--bs-primary);
-  background-color: var(--bs-body-bg);
-}
-
-/* Identity boxes are selectable (click one to inspect it in the right pane,
-   the standard Undercroft select-then-inspect convention) — this is the
-   visual state for whichever one is currently selected. */
-[data-select-field] {
-  cursor: pointer;
-}
-
+/* Identity/4D/Stats boxes are selectable (click one to inspect it in the
+   right pane, the standard Undercroft select-then-inspect convention) —
+   this is the visual state for whichever one is currently selected. Stays
+   Forge-specific since no other tool has this click-to-inspect-a-field
+   behavior yet. */
 [data-select-field].forge-field-selected {
   border-color: var(--bs-primary) !important;
   background-color: var(--bs-tertiary-bg);

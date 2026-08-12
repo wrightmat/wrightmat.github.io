@@ -1,0 +1,19 @@
+{
+  "id": "feat.hazardous-passage",
+  "name": "Hazardous Passage",
+  "systemIds": ["sys.dnd5e"],
+  "description": "Getting through or past this place is genuinely dangerous — treacherous terrain, foul weather, or worse waits along the way.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Travel through this location carries real risk of delay, injury, or loss."
+  },
+  "tags": {
+    "categories": ["location"],
+    "locationTypes": ["region", "environment", "structure"],
+    "locationPurposes": ["transportation", "exploration"],
+    "environments": ["mountain", "swamp", "arctic", "underdark"]
+  },
+  "synergizesWith": ["feat.corrupted"],
+  "dependsOn": [],
+  "conflictsWith": []
+}

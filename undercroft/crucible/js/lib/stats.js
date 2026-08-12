@@ -199,13 +199,44 @@ export async function deriveStats({
       // binding) rather than deriving it itself — the D&D-specific math
       // stays here in the 5e generator, not in system-agnostic tracker code.
       // Falls back to 10 (a flat +0) if this System's abilities don't
-      // include a "dexterity" key at all.
-      initiativeBonus: abilityModifier(abilities.dexterity ?? 10),
+      // include a "dexterity" key at all. `{bonus}` — this suite's one
+      // shared initiative shape (see the monster-data-alignment plan),
+      // matching every import mapping's own initiative and Character's own
+      // initiativeTable exactly (advantage/disadvantage are optional extras
+      // native generation has no source to derive, so they're simply
+      // absent, not false).
+      initiative: { bonus: abilityModifier(abilities.dexterity ?? 10) },
       saveDC,
-      damageResistances: creatureType?.defaultResistances || [],
-      damageImmunities: creatureType?.defaultImmunities || [],
-      conditionImmunities: [],
-      senses: creatureType?.defaultSenses || [],
+      // `defenses` — this suite's one shared shape for resistances/
+      // immunities/vulnerabilities/condition-immunities (see the monster-
+      // data-alignment plan), matching every import mapping's own defenses
+      // function and Character's own proficiencies.defenses exactly.
+      // Condition immunities fold into the same array as `type:
+      // "immunity"` too — no separate bucket, same convention Character's
+      // own data already uses. No native concept of languages — a
+      // generated monster's `proficiencies.languages` stays absent.
+      proficiencies: {
+        defenses: [
+          ...(creatureType?.defaultResistances || []).map((name) => ({ name, type: "resistance" })),
+          ...(creatureType?.defaultVulnerabilities || []).map((name) => ({ name, type: "vulnerability" })),
+          ...(creatureType?.defaultImmunities || []).map((name) => ({ name, type: "immunity" })),
+          ...(creatureType?.defaultConditionImmunities || []).map((name) => ({ name, type: "immunity" })),
+        ],
+      },
+      // {passives:{perception}, darkvision, blindsight, ...} — this suite's
+      // one shared senses shape (see monster-data-alignment plan), matching
+      // every import mapping's own senses function and Character's own
+      // sensesTable. defaultSenses on the creature type already carries this
+      // exact structured shape (sys.dnd5e.json); passive Perception isn't
+      // authored there since it depends on the generated monster's own
+      // Wisdom, not the creature type — same "10 + modifier" formula
+      // Character's own sensesTable uses. Falls back to 10 (flat +0) if
+      // this System's abilities don't include a "wisdom" key at all, same
+      // fallback convention initiative.bonus above uses for dexterity.
+      senses: {
+        ...(creatureType?.defaultSenses || {}),
+        passives: { perception: 10 + abilityModifier(abilities.wisdom ?? 10) },
+      },
       actions,
       budget,
     },

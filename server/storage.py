@@ -764,7 +764,27 @@ def write_json(path: Path, payload: Any) -> None:
 # saves (e.g. an encounter's own combat state) with no other explanation —
 # the lock is always brief, so a short retry loop resolves it silently
 # instead of surfacing a raw OS exception as a save-failure toast.
-def _replace_with_retry(source: Path, destination: Path, attempts: int = 6, initial_delay: float = 0.05) -> None:
+#
+# The original 6-attempt/~3s budget below wasn't enough during an actual
+# multi-hour GM session: Combat Tracker's own frequent autosaves (markDirty
+# -> debounced persist, see combat-tracker.js) kept the same encounter file
+# changing often enough that Nextcloud's sync client stayed busy with it for
+# well past 3 seconds at a stretch, so the retry loop exhausted and every
+# save failed outright, over and over, for the same record. Two changes:
+# a longer, capped-backoff budget (~9s instead of ~3s) covers a longer
+# contention window without making a single save hang indefinitely, and a
+# direct write-in-place fallback (real if that's still not enough) — it
+# uses a different Windows file-open mode than the rename above
+# (CreateFile-for-write vs MoveFileEx), and in practice succeeds even while
+# the rename can't, since it never has to unlink/replace the directory
+# entry the sync client is watching. This is a genuine, if rare, loss of
+# the atomic-write guarantee (a crash mid-write here could leave a partially
+# written destination, unlike the rename path), but for a single local
+# process saving its own data, "eventually succeeds" beats "fails outright
+# after burning the whole retry budget, repeatedly, for the length of an
+# entire session." The rename path stays the default and is always tried
+# first — this is a last resort, not a replacement for it.
+def _replace_with_retry(source: Path, destination: Path, attempts: int = 10, initial_delay: float = 0.05) -> None:
     delay = initial_delay
     for attempt in range(attempts):
         try:
@@ -772,9 +792,18 @@ def _replace_with_retry(source: Path, destination: Path, attempts: int = 6, init
             return
         except OSError:
             if attempt == attempts - 1:
+                break
+            time.sleep(delay)
+            delay = min(delay * 2, 1.0)
+    for attempt in range(3):
+        try:
+            destination.write_bytes(source.read_bytes())
+            source.unlink(missing_ok=True)
+            return
+        except OSError:
+            if attempt == 2:
                 raise
             time.sleep(delay)
-            delay *= 2
 
 
 def _parse_metadata(path: Path, line_limit: int = 20) -> Dict[str, str]:

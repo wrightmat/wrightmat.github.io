@@ -14,248 +14,242 @@
       "type": "field",
       "bind": "@name"
     },
+    "type": {
+      "type": "field",
+      "bind": "=lookup('creatureTypes', @type).name"
+    },
+    "systemIds": {
+      "type": "custom",
+      "fn": "srdMonsterSystemIds"
+    },
+    "image": {
+      "type": "field",
+      "bind": "@image"
+    },
     "stats": {
-      "type": "object",
-      "fields": {
-        "size": {
-          "type": "field",
-          "bind": "@size"
-        },
-        "type": {
-          "type": "field",
-          "bind": "@type"
-        },
-        "alignment": {
-          "type": "field",
-          "bind": "@alignment"
-        },
-        "armorClass": {
-          "type": "field",
-          "bind": "@armor_class"
-        },
-        "hitPoints": {
-          "type": "object",
-          "fields": {
-            "max": {
-              "type": "field",
-              "bind": "@hit_points"
-            },
-            "current": {
-              "type": "field",
-              "bind": "@hit_points"
-            }
-          }
-        },
-        "hitDice": {
-          "type": "field",
-          "bind": "@hit_dice"
-        },
-        "hitPointsRoll": {
-          "type": "field",
-          "bind": "@hit_points_roll"
-        },
-        "speed": {
+      "type": "with",
+      "bindings": {
+        "profSplit": {
           "type": "custom",
-          "fn": "formatSpeedFromObject",
-          "args": {
-            "path": "speed"
-          }
-        },
-        "abilities": {
-          "type": "object",
-          "fields": {
-            "strength": {
-              "type": "field",
-              "bind": "@strength"
-            },
-            "dexterity": {
-              "type": "field",
-              "bind": "@dexterity"
-            },
-            "constitution": {
-              "type": "field",
-              "bind": "@constitution"
-            },
-            "intelligence": {
-              "type": "field",
-              "bind": "@intelligence"
-            },
-            "wisdom": {
-              "type": "field",
-              "bind": "@wisdom"
-            },
-            "charisma": {
-              "type": "field",
-              "bind": "@charisma"
-            }
-          }
-        },
-        "initiativeBonus": {
-          "type": "field",
-          "bind": "=floor((@dexterity - 10) / 2)"
-        },
-        "proficiencies": {
-          "type": "pipeline",
-          "source": "@proficiencies",
-          "steps": [
-            {
-              "step": "map",
-              "item": {
-                "type": "object",
-                "fields": {
-                  "name": {
-                    "type": "field",
-                    "bind": "@proficiency.name"
-                  },
-                  "value": {
-                    "type": "field",
-                    "bind": "@value.value"
-                  }
-                }
-              }
-            }
-          ]
-        },
-        "damageVulnerabilities": {
-          "type": "field",
-          "bind": "@damage_vulnerabilities"
-        },
-        "damageResistances": {
-          "type": "field",
-          "bind": "@damage_resistances"
-        },
-        "damageImmunities": {
-          "type": "field",
-          "bind": "@damage_immunities"
-        },
-        "conditionImmunities": {
-          "type": "pipeline",
-          "source": "@condition_immunities",
-          "steps": [
-            {
-              "step": "map",
-              "item": {
+          "fn": "srdSplitProficiencies"
+        }
+      },
+      "body": {
+        "type": "object",
+        "fields": {
+          "size": {
+            "type": "field",
+            "bind": "@size"
+          },
+          "alignment": {
+            "type": "field",
+            "bind": "@alignment"
+          },
+          "armorClass": {
+            "type": "field",
+            "bind": "@armor_class.0.value"
+          },
+          "hitPoints": {
+            "type": "object",
+            "fields": {
+              "max": {
                 "type": "field",
-                "bind": "@name"
+                "bind": "@hit_points"
+              },
+              "current": {
+                "type": "field",
+                "bind": "@hit_points"
               }
             }
-          ]
-        },
-        "senses": {
-          "type": "field",
-          "bind": "@senses"
-        },
-        "languages": {
-          "type": "field",
-          "bind": "@languages"
-        },
-        "challengeRating": {
-          "type": "field",
-          "bind": "@challenge_rating"
-        },
-        "proficiencyBonus": {
-          "type": "field",
-          "bind": "@proficiency_bonus"
-        },
-        "xp": {
-          "type": "field",
-          "bind": "@xp"
-        },
-        "specialAbilities": {
-          "type": "pipeline",
-          "source": "@special_abilities",
-          "steps": [
-            {
-              "step": "map",
-              "item": {
-                "type": "object",
-                "fields": {
-                  "name": {
-                    "type": "field",
-                    "bind": "@name"
-                  },
-                  "description": {
-                    "type": "field",
-                    "bind": "@desc"
-                  }
+          },
+          "hitDice": {
+            "type": "field",
+            "bind": "@hit_dice"
+          },
+          "hitPointsRoll": {
+            "type": "field",
+            "bind": "@hit_points_roll"
+          },
+          "speed": {
+            "type": "custom",
+            "fn": "formatSpeedFromObject",
+            "args": {
+              "path": "speed"
+            }
+          },
+          "abilities": {
+            "type": "object",
+            "fields": {
+              "strength": {
+                "type": "field",
+                "bind": "@strength"
+              },
+              "dexterity": {
+                "type": "field",
+                "bind": "@dexterity"
+              },
+              "constitution": {
+                "type": "field",
+                "bind": "@constitution"
+              },
+              "intelligence": {
+                "type": "field",
+                "bind": "@intelligence"
+              },
+              "wisdom": {
+                "type": "field",
+                "bind": "@wisdom"
+              },
+              "charisma": {
+                "type": "field",
+                "bind": "@charisma"
+              }
+            }
+          },
+          "initiative": {
+            "type": "object",
+            "fields": {
+              "bonus": {
+                "type": "field",
+                "bind": "=floor((@dexterity - 10) / 2)"
+              }
+            }
+          },
+          "savingThrows": {
+            "type": "field",
+            "bind": "@profSplit.savingThrows"
+          },
+          "skills": {
+            "type": "field",
+            "bind": "@profSplit.skills"
+          },
+          "proficiencies": {
+            "type": "object",
+            "fields": {
+              "defenses": {
+                "type": "custom",
+                "fn": "srdDefenses"
+              },
+              "languages": {
+                "type": "custom",
+                "fn": "fantasyStatblockSplitList",
+                "args": {
+                  "path": "languages"
                 }
               }
             }
-          ]
-        },
-        "actions": {
-          "type": "pipeline",
-          "source": "@actions",
-          "steps": [
-            {
-              "step": "map",
-              "item": {
-                "type": "object",
-                "fields": {
-                  "name": {
-                    "type": "field",
-                    "bind": "@name"
-                  },
-                  "description": {
-                    "type": "field",
-                    "bind": "@desc"
+          },
+          "senses": {
+            "type": "custom",
+            "fn": "srdSenses"
+          },
+          "challengeRating": {
+            "type": "custom",
+            "fn": "formatChallengeRating",
+            "args": {
+              "path": "challenge_rating"
+            }
+          },
+          "proficiencyBonus": {
+            "type": "field",
+            "bind": "@proficiency_bonus"
+          },
+          "xp": {
+            "type": "field",
+            "bind": "@xp"
+          },
+          "traits": {
+            "type": "pipeline",
+            "source": "@special_abilities",
+            "steps": [
+              {
+                "step": "map",
+                "item": {
+                  "type": "object",
+                  "fields": {
+                    "name": {
+                      "type": "field",
+                      "bind": "@name"
+                    },
+                    "description": {
+                      "type": "field",
+                      "bind": "@desc"
+                    }
                   }
                 }
               }
-            }
-          ]
-        },
-        "legendaryActions": {
-          "type": "pipeline",
-          "source": "@legendary_actions",
-          "steps": [
-            {
-              "step": "map",
-              "item": {
-                "type": "object",
-                "fields": {
-                  "name": {
-                    "type": "field",
-                    "bind": "@name"
-                  },
-                  "description": {
-                    "type": "field",
-                    "bind": "@desc"
+            ]
+          },
+          "actions": {
+            "type": "pipeline",
+            "source": "@actions",
+            "steps": [
+              {
+                "step": "map",
+                "item": {
+                  "type": "object",
+                  "fields": {
+                    "name": {
+                      "type": "field",
+                      "bind": "@name"
+                    },
+                    "description": {
+                      "type": "field",
+                      "bind": "@desc"
+                    }
                   }
                 }
               }
-            }
-          ]
-        },
-        "reactions": {
-          "type": "pipeline",
-          "source": "@reactions",
-          "steps": [
-            {
-              "step": "map",
-              "item": {
-                "type": "object",
-                "fields": {
-                  "name": {
-                    "type": "field",
-                    "bind": "@name"
-                  },
-                  "description": {
-                    "type": "field",
-                    "bind": "@desc"
+            ]
+          },
+          "legendaryActions": {
+            "type": "pipeline",
+            "source": "@legendary_actions",
+            "steps": [
+              {
+                "step": "map",
+                "item": {
+                  "type": "object",
+                  "fields": {
+                    "name": {
+                      "type": "field",
+                      "bind": "@name"
+                    },
+                    "description": {
+                      "type": "field",
+                      "bind": "@desc"
+                    }
                   }
                 }
               }
-            }
-          ]
-        },
-        "image": {
-          "type": "field",
-          "bind": "@image"
-        },
-        "url": {
-          "type": "field",
-          "bind": "@url"
+            ]
+          },
+          "reactions": {
+            "type": "pipeline",
+            "source": "@reactions",
+            "steps": [
+              {
+                "step": "map",
+                "item": {
+                  "type": "object",
+                  "fields": {
+                    "name": {
+                      "type": "field",
+                      "bind": "@name"
+                    },
+                    "description": {
+                      "type": "field",
+                      "bind": "@desc"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "url": {
+            "type": "field",
+            "bind": "@url"
+          }
         }
       }
     }

@@ -34,6 +34,7 @@ from .auth import (
     admin_set_user_status,
     update_email_address,
     update_password,
+    upgrade_own_tier,
     get_user_settings,
     update_user_settings,
 )
@@ -53,7 +54,7 @@ from .shares import (
     share_with_user,
 )
 from .state import ServerState, configure_logging
-from .static import serve_from_root
+from .static import serve_from_root, serve_local_file
 from .kinds import normalize_kind
 from .storage import (
     AuthError as StorageAuthError,
@@ -1170,6 +1171,62 @@ def register_routes():
 
     router.add("GET", r"^/ddb-proxy$", handle_ddb_proxy)
 
+    # GET /local-file?path=<absolute path>&token=<session token>
+    #
+    # Lets the Browser widget actually embed a file straight off the GM's
+    # own machine (see undercroft/common/js/lib/widgets/browser.js's own
+    # header) — routed through this server instead of a bare file:// URL,
+    # since browsers categorically refuse to load file: as an iframe/img
+    # subresource (a hardcoded scheme restriction, not a CORS check, so no
+    # sandbox attribute or client-side workaround fixes it). This is also
+    # the ONLY way a local file can ever show up on the second-screen
+    # mirror: that window reads this same widget instance's own contentRef
+    # directly (dashboard.js's renderScreenView mounts straight from
+    # layout.widgets, not through the spotlight/follower network path a
+    # genuinely remote player's dashboard uses) — same-origin, same
+    # machine, so it can reach this endpoint exactly like the GM's own tab
+    # can.
+    #
+    # Deliberately loopback-only, in addition to the GM-tier check below:
+    # this hands back the contents of ANY file this server process can
+    # read, given nothing but a path string — an acceptable trust boundary
+    # ONLY because "local file" here means the same physical machine the
+    # server itself runs on. A request that didn't arrive over the loopback
+    # interface can't possibly be that machine, so it's refused outright —
+    # this is what keeps "a GM's own quick file access" from silently
+    # becoming "any signed-in GM can read arbitrary files off the server
+    # host" the moment this server is ever reachable from anywhere else (a
+    # LAN, or the VPS this app is expected to eventually move to). A
+    # genuinely remote follower who received this same file:// URL in a
+    # spotlight's own data (harmless — it's just a path string, not
+    # filesystem access) just gets a failed embed here, not a security
+    # hole.
+    #
+    # img/iframe src can't set a custom Authorization header (same
+    # limitation _handle_live_stream's own comment documents for
+    # EventSource) — token travels as a query param instead, checked
+    # through the same session lookup every other endpoint's Bearer token
+    # goes through.
+    LOCAL_FILE_ALLOWED_CLIENT_IPS = {"127.0.0.1", "::1"}
+
+    def handle_local_file(request: Request) -> Response:
+        from urllib.parse import parse_qs, urlsplit
+
+        client_ip = request.handler.client_address[0]
+        if client_ip not in LOCAL_FILE_ALLOWED_CLIENT_IPS:
+            raise AuthError("Local file access is only available from this machine")
+        query = parse_qs(urlsplit(request.handler.path).query)
+        token = (query.get("token", [""])[0] or "").strip()
+        user = get_user_by_session(request.state, token) if token else None
+        if not user:
+            raise AuthError("Authentication required")
+        if role_rank(user.tier) < role_rank("gm"):
+            raise AuthError("GM tier or higher required")
+        path = (query.get("path", [""])[0] or "").strip()
+        return serve_local_file(path)
+
+    router.add("GET", r"^/local-file$", handle_local_file)
+
     # GET /content/owned
     def handle_owned_content(request: Request) -> Response:
         user = request.handler.current_user()
@@ -1666,6 +1723,26 @@ def register_routes():
         return json_response(result)
 
     router.add("POST", r"^/auth/profile/password$", handle_update_password)
+
+    # POST /auth/profile/upgrade — self-service tier change (distinct from
+    # /auth/upgrade, which is admin-only and targets another user by
+    # username). "admin" is rejected server-side in upgrade_own_tier — it can
+    # only ever be granted through /auth/upgrade by an existing admin. No
+    # payment integration exists yet, so this applies immediately for free;
+    # a future payment-token check would slot in before upgrade_own_tier is
+    # called, without changing this route's shape.
+    def handle_upgrade_own_tier(request: Request) -> Response:
+        user = request.handler.current_user()
+        if not user:
+            raise AuthError("Authentication required")
+        data = require_json(request)
+        tier = data.get("tier")
+        if not tier:
+            raise AuthError("tier required")
+        result = upgrade_own_tier(request.state, user, tier)
+        return json_response(result)
+
+    router.add("POST", r"^/auth/profile/upgrade$", handle_upgrade_own_tier)
 
     # GET /auth/profile/settings — a small per-user JSON blob (today: just
     # the Dashboard's widget layout) stored directly on the users row (see

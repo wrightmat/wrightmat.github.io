@@ -86,3 +86,21 @@ export async function resolveGroupContext(dataManager, { shareToken = "" } = {})
   }
   return null;
 }
+
+// Auto-default helper for the generator tools (Forge/Crucible/Vault/
+// Sanctum) — "if a campaign group is active and assigned to a System/
+// Setting, default these tools' own pickers to it, to make mid-campaign
+// generation faster" (explicit user ask). `groupContext` is whatever
+// resolveGroupContext above returned (or null); `key` is "systemId" or
+// "settingId"; `options` is the tool's own already-loaded list for that
+// picker (needs an `id` on each entry). Returns "" (never a value the
+// picker can't actually offer) when there's no active group, the group
+// never had that field assigned, or it points at a System/Setting this
+// tool's own list doesn't currently contain (deleted, or not visible to
+// this user) — the caller's existing "nothing chosen yet" placeholder
+// behavior is always a safe fallback.
+export function pickGroupDefaultId(groupContext, key, options) {
+  const id = groupContext?.[key];
+  if (!id || !Array.isArray(options)) return "";
+  return options.some((entry) => entry.id === id) ? id : "";
+}

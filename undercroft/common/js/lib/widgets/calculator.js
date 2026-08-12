@@ -36,6 +36,13 @@ import {
   autoFillRosterFromGroup,
 } from "../calculator-modes/encounter-xp.js";
 import { computeCharacterTotalWeight, resolveWeightUnitLabel } from "../calculator-modes/inventory-weight.js";
+import { loadRarityPriceRanges, rollItemPrices, PRICE_CHECK_TIERS } from "../item-pricing.js";
+// Cross-tool import of Vault's own reference-data loader — same established
+// precedent as this file's own Repository imports below (journal-tables.js,
+// the two autocompletes): a Dashboard widget reusing one tool's data-loading
+// module isn't a layering violation in this codebase, it's how "the same
+// list Vault itself uses" is guaranteed rather than re-fetched a second way.
+import { listEffectsForSystem } from "../../../../vault/js/lib/tables.js";
 // Same `` `macro:`/`encounter:`/`dice:`/`kindId:` `` and `[[Page Title]]`
 // filtered autocomplete dropdowns Board's own "Add a card" input attaches
 // (board.js) — reused as-is rather than duplicated, so the Daily macro
@@ -57,6 +64,7 @@ const MODE_OPTIONS = [
   { id: "diceprob", label: "Dice Probability" },
   { id: "encounterxp", label: "Encounter Difficulty & XP" },
   { id: "inventoryweight", label: "Inventory Weight" },
+  { id: "itemprice", label: "Item Price" },
 ];
 
 // Same `` `dice:` `` prefix convention journal-dice.js/journal-kind-reference.js
@@ -198,6 +206,10 @@ export function initCalculatorWidget(
   let encounterLevels = []; // extractLevels(systemDefinition)
   let encounterTierNames = [];
   let encounterCombatScalingLevels = [];
+
+  // --- Item Price state --------------------------------------------------
+  let itemPriceRanges = []; // loadRarityPriceRanges(systemDefinition)
+  let itemPriceEffects = []; // this System's saved Vault Effects, for the optional auto-fill picker
 
   container.innerHTML = "";
   const wrap = el("div", "d-flex flex-column gap-2");
@@ -476,7 +488,68 @@ export function initCalculatorWidget(
 
   inventorySection.append(scopeRow, characterPickerRow, includeCurrencyRow, inventoryCalculateButton, inventoryResultBox);
 
-  wrap.append(travelSection, diceProbSection, encounterSection, inventorySection);
+  // --- Item Price ------------------------------------------------------
+  const itemPriceSection = el("div", "d-flex flex-column gap-2");
+
+  // Optional — picking a saved Effect just auto-fills the Rarity select
+  // below to whatever that Effect's own "rarity" property resolved to
+  // (see loadItemPriceOptions); it's a shortcut, not a requirement, so a
+  // GM pricing something that was never generated in Vault can still pick
+  // a Rarity directly.
+  const itemEffectRow = el("div", "d-flex align-items-center gap-2 flex-wrap");
+  itemEffectRow.appendChild(el("span", "small text-body-secondary flex-grow-1", "Effect (optional)"));
+  const itemEffectSelect = document.createElement("select");
+  itemEffectSelect.className = "form-select form-select-sm";
+  itemEffectSelect.style.maxWidth = "14rem";
+  itemEffectRow.appendChild(itemEffectSelect);
+
+  const itemRarityRow = el("div", "d-flex align-items-center gap-2");
+  itemRarityRow.appendChild(el("span", "small text-body-secondary flex-grow-1", "Rarity"));
+  const itemRaritySelect = document.createElement("select");
+  itemRaritySelect.className = "form-select form-select-sm";
+  itemRaritySelect.style.maxWidth = "10rem";
+  itemRarityRow.appendChild(itemRaritySelect);
+  const itemPriceUnavailableNotice = el(
+    "div",
+    "small text-body-secondary fst-italic",
+    'This System has no Rarity price ranges configured — add priceMin/priceMax to its "rarity" field\'s values via Loom\'s Property editor (Extra JSON).'
+  );
+
+  // Optional — the GM's own read of how a Persuasion/Insight/appraisal-
+  // flavored check the PC already rolled went, compared against whatever DC
+  // the table uses. Left at "No check rolled" this has no effect at all,
+  // same shape as the "Setting" blank option elsewhere in this widget.
+  const itemCheckRow = el("div", "d-flex align-items-center gap-2");
+  itemCheckRow.appendChild(el("span", "small text-body-secondary flex-grow-1", "PC's check"));
+  const itemCheckSelect = document.createElement("select");
+  itemCheckSelect.className = "form-select form-select-sm";
+  itemCheckSelect.style.maxWidth = "12rem";
+  PRICE_CHECK_TIERS.forEach((tier) => {
+    const option = document.createElement("option");
+    option.value = tier.id;
+    option.textContent = tier.label;
+    // "No check rolled" is the default state (no PC check happened yet),
+    // not just whichever tier happens to render first in the worst-to-best
+    // list order above.
+    option.selected = tier.id === "none";
+    itemCheckSelect.appendChild(option);
+  });
+  itemCheckRow.appendChild(itemCheckSelect);
+
+  const itemPriceCalculateButton = el("button", "btn btn-primary btn-sm align-self-start", "Roll a price");
+  itemPriceCalculateButton.type = "button";
+  const itemPriceResultBox = el("div", "d-flex flex-column gap-1 small");
+
+  itemPriceSection.append(
+    itemEffectRow,
+    itemRarityRow,
+    itemCheckRow,
+    itemPriceUnavailableNotice,
+    itemPriceCalculateButton,
+    itemPriceResultBox
+  );
+
+  wrap.append(travelSection, diceProbSection, encounterSection, inventorySection, itemPriceSection);
   container.appendChild(wrap);
 
   // --- Wiring: shared / mode switching --------------------------------------
@@ -489,8 +562,10 @@ export function initCalculatorWidget(
     setElementVisible(diceProbSection, mode === "diceprob", "flex");
     setElementVisible(encounterSection, mode === "encounterxp", "flex");
     setElementVisible(inventorySection, mode === "inventoryweight", "flex");
+    setElementVisible(itemPriceSection, mode === "itemprice", "flex");
     if (mode === "encounterxp") void loadEncounterData();
     if (mode === "inventoryweight") void loadInventoryOptions();
+    if (mode === "itemprice") void loadItemPriceOptions();
   }
   const VALID_MODE_IDS = MODE_OPTIONS.map((option) => option.id);
   modeSelect.value = VALID_MODE_IDS.includes(config.mode) ? config.mode : "traveltime";
@@ -1081,6 +1156,97 @@ export function initCalculatorWidget(
   inventoryCalculateButton.addEventListener("click", () => {
     void computeInventoryWeight();
   });
+
+  // --- Wiring: Item Price ------------------------------------------------
+
+  // Which array field Item Price treats as Rarity — resolved, not stored,
+  // so the Effect auto-fill (below) looks up the same field's slug id the
+  // range list itself was keyed by.
+  let itemPriceRarityFieldKey = "rarity";
+
+  async function loadItemPriceOptions() {
+    const systemId = groupContext?.systemId || "";
+    // Reuses Vault's OWN configured Budget ceiling field preference
+    // (bucket "vault-settings") rather than a second, separately
+    // maintained setting — same reasoning Encounter XP's own reuse of
+    // Crucible's Combat scaling field preference gives above. A GM who's
+    // already pointed Vault at a Rarity-equivalent field gets correct
+    // price data here with nothing further to set up.
+    const storedField = dataManager?.getLocal?.("vault-settings", systemId)?.budgetCeilingField;
+    itemPriceRarityFieldKey = storedField || "rarity";
+    itemPriceRanges = systemId ? await loadRarityPriceRanges(dataManager, systemId, itemPriceRarityFieldKey) : [];
+
+    itemRaritySelect.innerHTML = "";
+    itemPriceRanges.forEach((range) => {
+      const option = document.createElement("option");
+      option.value = range.id;
+      option.textContent = range.name;
+      itemRaritySelect.appendChild(option);
+    });
+    const hasRanges = itemPriceRanges.length > 0;
+    setElementVisible(itemRarityRow, hasRanges, "flex");
+    setElementVisible(itemCheckRow, hasRanges, "flex");
+    itemPriceCalculateButton.disabled = !hasRanges;
+    setElementVisible(itemPriceUnavailableNotice, !hasRanges);
+
+    // The Effect picker only matters once there's something to auto-fill
+    // into — hidden entirely for a System with no price ranges configured,
+    // or one with no saved Effects yet.
+    const fetchedEffects = systemId && hasRanges ? await listEffectsForSystem(dataManager, systemId).catch(() => []) : [];
+    // Same name-sort Vault's own Effect select uses (vault/js/app.js's
+    // populateEffectSelect) — without it, grouped names like "Potion of
+    // Giant Strength, Hill"/"...Storm" would list in fetch order instead of
+    // clustering together the way the naming was chosen to achieve.
+    itemPriceEffects = [...fetchedEffects].sort((a, b) => (a.name || a.id).localeCompare(b.name || b.id));
+    itemEffectSelect.innerHTML = "";
+    const blankOption = document.createElement("option");
+    blankOption.value = "";
+    blankOption.textContent = "Pick a saved Effect…";
+    itemEffectSelect.appendChild(blankOption);
+    itemPriceEffects.forEach((effect) => {
+      const option = document.createElement("option");
+      option.value = effect.id;
+      option.textContent = effect.name || effect.id;
+      itemEffectSelect.appendChild(option);
+    });
+    setElementVisible(itemEffectRow, itemPriceEffects.length > 0, "flex");
+  }
+
+  // Auto-fills Rarity from whichever value the picked Effect's own
+  // generation actually resolved (`properties[rarityField]`, the same slug
+  // id toLegacyPropertyType/loadRarityPriceRanges both derive from the
+  // value's name) — a shortcut, so re-selecting Rarity by hand still works
+  // for an Effect that predates this field or used a different one.
+  itemEffectSelect.addEventListener("change", () => {
+    const effect = itemPriceEffects.find((entry) => entry.id === itemEffectSelect.value);
+    const rarityId = effect?.properties?.[itemPriceRarityFieldKey];
+    if (rarityId && itemPriceRanges.some((range) => range.id === rarityId)) {
+      itemRaritySelect.value = rarityId;
+    }
+  });
+
+  function computeItemPrice() {
+    const range = itemPriceRanges.find((entry) => entry.id === itemRaritySelect.value);
+    if (!range) {
+      status?.show("Pick a Rarity with a configured price range.", { type: "info", timeout: 2500 });
+      return;
+    }
+    // A single roll drives both figures — the check tier's multiplier always
+    // favors the PC (a discount for buying, a better payout for selling), so
+    // picking "Extreme success" once improves whichever of the two actually
+    // applies to this transaction without the GM having to say which in
+    // advance.
+    const { buyPrice, sellPrice } = rollItemPrices(range.priceMin, range.priceMax, {
+      checkTierId: itemCheckSelect.value,
+    });
+    itemPriceResultBox.innerHTML = "";
+    itemPriceResultBox.appendChild(
+      el("div", "text-body-secondary", `${range.name} range: ${range.priceMin.toLocaleString()}–${range.priceMax.toLocaleString()} gp`)
+    );
+    itemPriceResultBox.appendChild(el("div", "fw-semibold", `Buying from a shop: ${buyPrice.toLocaleString()} gp`));
+    itemPriceResultBox.appendChild(el("div", "", `Selling to a shop: ${sellPrice.toLocaleString()} gp`));
+  }
+  itemPriceCalculateButton.addEventListener("click", computeItemPrice);
 
   renderMode();
   renderDiceProbability();

@@ -1,0 +1,19 @@
+{
+  "id": "eff.healers-kit",
+  "name": "Healer's Kit",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "signatureFeatureId": null,
+  "featureIds": [],
+  "properties": {
+    "form": "equipment"
+  },
+  "budget": {
+    "target": 0,
+    "spent": 0,
+    "remaining": 0
+  },
+  "price": "5 gp",
+  "notes": "Bandages, salves, and splints enough for ten uses."
+}

@@ -1,0 +1,27 @@
+{
+  "id": "feat.etherealness",
+  "name": "Etherealness",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature can enter the Ethereal Plane from the Material Plane, and vice versa.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature can enter the Ethereal Plane from the Material Plane, and vice versa."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "mobility",
+      "utility"
+    ],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

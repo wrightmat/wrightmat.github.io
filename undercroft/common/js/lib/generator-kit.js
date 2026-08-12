@@ -1,13 +1,18 @@
 // Shared plumbing for Crucible/Vault/Sanctum's near-identical "generate a
 // record from Library reference data, then save/export/note it" one-shot
-// flow — Forge doesn't participate (no feature/recipe concept, and its own
-// listAllSystems merges in dataManager.listBuiltins() for a legacy-builtin-
-// Location case none of these three have, so it stays a local function
-// there rather than being forced into this shared shape). Each function
-// here takes whatever per-tool state it needs explicitly (a list, a DOM
-// element, an export-shaping function) instead of closing over module-level
-// state, so one shared copy works for all three tools' own module-scoped
-// variables.
+// flow — Forge doesn't participate in most of this (no feature/recipe
+// concept, and its own listAllSystems merges in dataManager.listBuiltins()
+// for a legacy-builtin-Location case none of these three have, so it stays a
+// local function there rather than being forced into this shared shape).
+// Each function here takes whatever per-tool state it needs explicitly (a
+// list, a DOM element, an export-shaping function) instead of closing over
+// module-level state, so one shared copy works for all three tools' own
+// module-scoped variables.
+//
+// renderRequiredSelectOptions/renderOptionalSelectOptions below are the one
+// exception — Forge uses those two too, since they're about rendering a
+// <select>'s options a specific, now suite-wide way, not about how the
+// underlying list gets fetched.
 
 export async function listAllSystems(dataManager) {
   if (!dataManager) return [];
@@ -22,6 +27,63 @@ export async function listAllSystems(dataManager) {
   }
 }
 
+// Renders a "you must pick one of these before anything else works" select
+// (System, today; any future required picker) — a disabled placeholder first
+// so the browser never silently defaults to whichever entry happens to sort
+// first (the bug this replaced: every tool used to auto-select the
+// alphabetically-first System, e.g. "Blades in the Dark", with no
+// indication that was even a default rather than a deliberate choice).
+// `entries` need an `id` and either a `title` or a `name`. Once a real entry
+// is chosen the placeholder can't be reselected (it's `disabled`, not just
+// blank) — the caller only ever gets back to "nothing chosen" by this
+// function being called again with no matching `previousValue`.
+export function renderRequiredSelectOptions(select, entries, { placeholder = "Select…", previousValue } = {}) {
+  if (!select) return;
+  const previous = previousValue !== undefined ? previousValue : select.value;
+  select.innerHTML = "";
+  const placeholderOption = document.createElement("option");
+  placeholderOption.value = "";
+  placeholderOption.textContent = placeholder;
+  placeholderOption.disabled = true;
+  select.appendChild(placeholderOption);
+  entries.forEach((entry) => {
+    const option = document.createElement("option");
+    option.value = entry.id;
+    option.textContent = entry.title || entry.name || entry.id;
+    select.appendChild(option);
+  });
+  if (entries.some((entry) => entry.id === previous)) {
+    select.value = previous;
+  } else {
+    placeholderOption.selected = true;
+  }
+}
+
+// Renders a "pick an existing saved record, or leave this to start fresh"
+// select (Sanctum's Location picker; Crucible's Monster picker, Vault's
+// Effect picker, Forge's NPC picker) — unlike renderRequiredSelectOptions
+// above, the leading option here is a real, always-selectable choice ("New /
+// unsaved"), not a disabled placeholder: starting a brand new record is a
+// perfectly valid thing to want, not a state to force the user out of.
+export function renderOptionalSelectOptions(select, entries, { blankLabel = "New / unsaved", previousValue } = {}) {
+  if (!select) return;
+  const previous = previousValue !== undefined ? previousValue : select.value;
+  select.innerHTML = "";
+  const blank = document.createElement("option");
+  blank.value = "";
+  blank.textContent = blankLabel;
+  select.appendChild(blank);
+  entries.forEach((entry) => {
+    const option = document.createElement("option");
+    option.value = entry.id;
+    option.textContent = entry.title || entry.name || entry.id;
+    select.appendChild(option);
+  });
+  if (entries.some((entry) => entry.id === previous)) {
+    select.value = previous;
+  }
+}
+
 export function findById(list, id) {
   return list.find((entry) => entry.id === id) || null;
 }
@@ -31,9 +93,54 @@ export function featureLabel(features, id) {
   return feature ? feature.name || feature.id : id;
 }
 
-export function readLockedFeatureIds(selectElement) {
-  if (!selectElement) return [];
-  return Array.from(selectElement.selectedOptions).map((option) => option.value);
+// `container` is the element createSearchableCheckList's `dataAttr` marks
+// (e.g. `[data-locked-features]`) — the search input + scrollable checkbox
+// list it wraps, not a bare `<select multiple>` (that shape was retired
+// suite-wide in favor of this one; see ui-components.js's own comment on
+// createSearchableCheckList for why).
+export function readLockedFeatureIds(container) {
+  if (!container) return [];
+  const listBox = container.querySelector("[data-checklist-options]");
+  if (!listBox) return [];
+  return Array.from(listBox.querySelectorAll("input[type=checkbox]:checked")).map((input) => input.value);
+}
+
+// Rebuilds a createSearchableCheckList's checkbox rows from `features`,
+// preserving whichever were already checked and re-applying whatever search
+// query is already typed into the box — the checkbox-list equivalent of the
+// old `populateLockedFeaturesSelect` each of Crucible/Vault/Sanctum used to
+// hand-roll identically for a `<select multiple>`.
+export function populateLockedFeaturesCheckList(container, features) {
+  if (!container) return;
+  const listBox = container.querySelector("[data-checklist-options]");
+  if (!listBox) return;
+  const searchInput = container.querySelector("[data-checklist-search]");
+  const previouslyChecked = new Set(
+    Array.from(listBox.querySelectorAll("input[type=checkbox]:checked")).map((input) => input.value)
+  );
+  const query = (searchInput?.value || "").trim().toLowerCase();
+  listBox.innerHTML = "";
+  features.forEach((feature) => {
+    const name = feature.name || feature.id;
+    const searchLabel = name.toLowerCase();
+    const row = document.createElement("div");
+    row.className = "form-check mb-0";
+    row.dataset.searchLabel = searchLabel;
+    if (query && !searchLabel.includes(query)) row.classList.add("d-none");
+    const checkboxId = `checklist-${feature.id}`;
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.className = "form-check-input";
+    input.id = checkboxId;
+    input.value = feature.id;
+    input.checked = previouslyChecked.has(feature.id);
+    const labelEl = document.createElement("label");
+    labelEl.className = "form-check-label small";
+    labelEl.htmlFor = checkboxId;
+    labelEl.textContent = name;
+    row.append(input, labelEl);
+    listBox.appendChild(row);
+  });
 }
 
 // `toPressExportShape` is each tool's own record-shaping function (monster/

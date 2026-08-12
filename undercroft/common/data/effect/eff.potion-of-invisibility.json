@@ -1,0 +1,24 @@
+{
+  "id": "eff.potion-of-invisibility",
+  "name": "Potion of Invisibility",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "signatureFeatureId": null,
+  "featureIds": [
+    "feat.cast-a-spell"
+  ],
+  "properties": {
+    "rarity": "very-rare",
+    "form": "potion"
+  },
+  "budget": {
+    "target": 18,
+    "spent": 5,
+    "remaining": 13
+  },
+  "notes": "Turns the drinker invisible for 1 hour, or until they attack or cast a spell.",
+  "featureTiers": {
+    "feat.cast-a-spell": "level-2"
+  }
+}

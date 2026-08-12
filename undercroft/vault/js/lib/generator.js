@@ -28,7 +28,7 @@ function matchesSystem(entity, systemId) {
 // (the suite-wide "no tag means unconstrained" convention); otherwise it
 // must claim "spell" or "item" — Vault produces one effect concept usable
 // as either, per its design (Form controls presentation, not eligibility).
-function matchesCategory(feature) {
+export function matchesCategory(feature) {
   const categories = feature.tags?.categories;
   if (!Array.isArray(categories) || !categories.length) return true;
   return categories.includes("spell") || categories.includes("item");
@@ -87,16 +87,42 @@ function collectDependencyBundle(feature, featuresById, selectedIds, seen) {
   return bundle;
 }
 
+// A Feature can optionally carry a `tiers` array — e.g. feat.mending-pulse's
+// Healing scales from a Common-tier "2d4+2" up through a Very-Rare-tier
+// "10d4+20", each tier its own `{id, name, shortName, budgetCost}` entry —
+// the same "one record, graduated levels" shape Combat Scaling/Challenge
+// Rating levels and Rarity already use elsewhere in this suite, applied here
+// to an individual Feature instead of a System-wide field. A feature with no
+// `tiers` (nearly all of them) is entirely unaffected — this only ever
+// changes behavior for a feature that opts in.
+//
+// `featureTierIds` is a plain `{ [featureId]: tierId }` map — which tier of
+// any tiered feature in `selectedFeatures` was actually picked. Omitted or
+// missing an entry for a given feature means "use that feature's own base
+// `budgetCost`" (equivalent to always picking the cheapest/first tier),
+// which keeps every pre-existing caller (nothing here passed tier info
+// before this existed) and every non-tiered feature behaving exactly as
+// before.
+export function resolveFeatureBudgetCost(feature, featureTierIds) {
+  const tierId = featureTierIds?.[feature?.id];
+  if (tierId && Array.isArray(feature?.tiers)) {
+    const tier = feature.tiers.find((entry) => entry.id === tierId);
+    if (tier && typeof tier.budgetCost === "number") return tier.budgetCost;
+  }
+  return Number(feature?.budgetCost ?? 0);
+}
+
 /**
- * computeBudget(selectedFeatures, properties, propertyTypes)
+ * computeBudget(selectedFeatures, properties, propertyTypes, featureTierIds)
  *
  * Shared by both the automatic generator and the manual authoring UI, so
  * they can never disagree about the running total. `properties` is a plain
  * `{ [propertyTypeId]: valueId }` map; `propertyTypes` is the active
  * System's `propertyTypes` array (or a subset/empty array — every step here
  * degrades gracefully to `DEFAULT_TARGET_BUDGET`/0-cost when data is missing).
+ * `featureTierIds` is optional — see resolveFeatureBudgetCost above.
  */
-export function computeBudget(selectedFeatures, properties, propertyTypes) {
+export function computeBudget(selectedFeatures, properties, propertyTypes, featureTierIds = {}) {
   let target = DEFAULT_TARGET_BUDGET;
   let spent = 0;
   (propertyTypes || []).forEach((propertyType) => {
@@ -110,7 +136,7 @@ export function computeBudget(selectedFeatures, properties, propertyTypes) {
     }
   });
   (selectedFeatures || []).forEach((feature) => {
-    spent += Number(feature.budgetCost ?? 0);
+    spent += resolveFeatureBudgetCost(feature, featureTierIds);
   });
   return { target, spent, remaining: target - spent };
 }
@@ -123,6 +149,18 @@ function resolvePropertyValue(propertyType, overrideId, random) {
     if (found) return found;
   }
   return pickRandom(values, random);
+}
+
+// Backs the per-property reroll button in Identity (createFieldBox's own
+// `rerollable` option, mirroring Forge's Identity/4D and Crucible's
+// Identity fields) — a new random value for just this one property type,
+// excluding its current value when another choice exists. Returns null if
+// this property type has no values (or only the one already selected) to
+// reroll into; the caller leaves the record untouched in that case.
+export function rerollPropertyValue(propertyType, currentValueId, { random = Math.random } = {}) {
+  const values = Array.isArray(propertyType?.values) ? propertyType.values : [];
+  const eligible = values.filter((value) => value.id !== currentValueId);
+  return pickRandom(eligible.length ? eligible : values, random);
 }
 
 // Optional per-type override (blank = random), same convention as Crucible's
@@ -138,8 +176,22 @@ function resolveProperties(propertyTypes, overrides, random) {
 
 // Finds the single best-synergy, non-conflicting, affordable candidate (and
 // its dependency bundle) among whatever isn't already selected — ties broken
-// randomly, exactly like Crucible's resolveSlot. Returns null once nothing
-// qualifies, which is the traversal's stopping condition.
+// randomly, exactly like Crucible's resolveSlot. Prefers positive synergy
+// when it exists, but — unlike an earlier version of this function, which
+// refused a candidate scoring zero at all ("a feature with zero synergy to
+// the current selection is never pulled in automatically") — falls back to
+// any compatible, affordable candidate when nothing synergizes, the same
+// restraint Crucible's own resolveSlot already applies via its slot-driven
+// traversal. Confirmed real bug the old behavior caused: with no slots
+// forcing a fill here, traversal routinely stopped after just one or two
+// Features regardless of how much budget was actually left — a target
+// budget in the dozens with barely a quarter of it spent, consistently, not
+// as an occasional edge case. Positive-synergy candidates still win over
+// zero-synergy ones whenever both exist (bestScore below), so a genuinely
+// synergistic pick is never passed over for a random one — this only
+// changes what happens once nothing else synergizes. Returns null once
+// nothing qualifies at all, which is the traversal's real stopping
+// condition now (out of budget, or every candidate's used/conflicting).
 function pickNextCandidate(eligibleFeatures, selected, properties, propertyTypes, random) {
   const featuresById = new Map(eligibleFeatures.map((entry) => [entry.id, entry]));
   const selectedIds = new Set(selected.map((entry) => entry.id));
@@ -148,14 +200,12 @@ function pickNextCandidate(eligibleFeatures, selected, properties, propertyTypes
   for (const candidate of eligibleFeatures) {
     if (selectedIds.has(candidate.id)) continue;
     if (conflictsWithSelected(candidate, selected)) continue;
-    const score = synergyScore(candidate, selected);
-    if (score <= 0) continue;
     const bundle = collectDependencyBundle(candidate, featuresById, selectedIds, new Set());
     if (!bundle) continue;
     if (bundle.some((entry) => entry.id !== candidate.id && conflictsWithSelected(entry, selected))) continue;
     const bundleCost = bundle.reduce((sum, entry) => sum + Number(entry.budgetCost ?? 0), 0);
     if (bundleCost > remaining) continue;
-    scored.push({ candidate, bundle, score });
+    scored.push({ candidate, bundle, score: synergyScore(candidate, selected) });
   }
   if (!scored.length) return null;
   const bestScore = Math.max(...scored.map((entry) => entry.score));
@@ -304,6 +354,12 @@ export function generateEffect(allFeatures, propertyTypes, options = {}) {
     systemIds: systemId ? [systemId] : [],
     signatureFeatureId: signatureFeature ? signatureFeature.id : null,
     featureIds: selected.map((entry) => entry.id),
+    // Always present (even empty) so callers never need an `|| {}` guard —
+    // automatic generation never picks a tier for a tiered feature it
+    // selects (that's a deliberate manual choice, see resolveFeatureBudgetCost
+    // above), so a freshly generated Effect always starts every tiered
+    // feature at its base/cheapest tier until a GM upgrades it by hand.
+    featureTiers: {},
     properties,
     budget: computeBudget(selected, properties, eligiblePropertyTypes),
     notes: "",
