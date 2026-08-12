@@ -1,0 +1,24 @@
+{
+  "id": "feat.deep-one-priest-ocean-change",
+  "name": "Ocean Change",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "A deep one born to a human family resembles a human child, but transforms into an adult deep one between the ages of 16 and 30.",
+  "mechanics": {
+    "type": "passive",
+    "text": "A deep one born to a human family resembles a human child, but transforms into an adult deep one between the ages of 16 and 30."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,22 @@
+{
+  "id": "eff.potion-of-fire-breath",
+  "name": "Potion of Fire Breath",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "signatureFeatureId": null,
+  "featureIds": [
+    "feat.fire-breath"
+  ],
+  "properties": {
+    "rarity": "uncommon",
+    "form": "potion"
+  },
+  "budget": {
+    "target": 8,
+    "spent": 5,
+    "remaining": 3
+  },
+  "notes": "For 1 hour, an action lets you exhale fire at a target within 30 feet, dealing 4d6 fire damage.",
+  "featureTiers": {}
+}

@@ -1,0 +1,19 @@
+{
+  "id": "feat.major-crossroads",
+  "name": "Major Crossroads",
+  "systemIds": ["sys.dnd5e"],
+  "description": "Several significant routes converge here — roads, rivers, or trade lanes all meet at this one point.",
+  "mechanics": {
+    "type": "passive",
+    "text": "A steady stream of travelers, caravans, and news passes through."
+  },
+  "tags": {
+    "categories": ["location"],
+    "locationTypes": ["settlement", "structure", "region"],
+    "locationPurposes": ["transportation", "commerce"],
+    "environments": []
+  },
+  "synergizesWith": ["feat.bustling-market"],
+  "dependsOn": [],
+  "conflictsWith": ["feat.isolated"]
+}

@@ -634,6 +634,168 @@ function parseDdbHtmlTraitBlocks(html) {
   return entries;
 }
 
+// Extracted from what used to be proficienciesTable's own inline body (that
+// function now just calls this and trims two keys off) — a standalone
+// function, not an object-literal method, so proficiencyDefenses/
+// proficiencyLanguages below can call it directly too without relying on
+// `this` (this file's own established rule — see sensesTable's own comment
+// on why: "nothing guarantees the mapping engine invokes them in a way that
+// preserves `this`").
+function buildProficiencyBuckets(context) {
+  const modifiers = getActiveModifiers(context.root);
+  const buckets = { armor: [], weapons: [], tools: [], languages: [], defenses: [], senses: [], other: [] };
+
+  const defenseMap = new Map();
+  const addDefense = (entry) => {
+    const key = `${(entry.type || "").toLowerCase()}|${(entry.name || "").toLowerCase()}|${(entry.condition || "").toLowerCase()}`;
+    const existing = defenseMap.get(key);
+    if (!existing) {
+      defenseMap.set(key, entry);
+      buckets.defenses.push(entry);
+      return;
+    }
+    if (entry.value != null && (!existing.value || entry.value > existing.value)) existing.value = entry.value;
+  };
+
+  const knownSenseNames = new Set(SENSES.map((sense) => sense.name));
+
+  modifiers.forEach((modifier) => {
+    const subtype = (modifier.subType || "").toLowerCase();
+    const normalizedSubtype = subtype.startsWith("skill-") ? subtype.slice(6) : subtype;
+    const friendly = modifier.friendlySubtypeName || modifier.subType || "Unknown";
+    const modType = (modifier.type || "").toLowerCase();
+    const condition = modifier.restriction || null;
+
+    if (modifier.isGranted === false && !["proficiency", "language"].includes(modType)) return;
+
+    if (modType === "language") {
+      buckets.languages.push(friendly);
+      return;
+    }
+    // Advantage/disadvantage on initiative, a saving throw, or a skill/
+    // ability check is already exposed as its own flag on that specific
+    // thing's own table (initiativeTable/savingThrowsTable/
+    // buildSkillValues) — recognized and skipped here rather than also
+    // landing in "defenses" (the old script's own behavior, ported
+    // faithfully until now — but advantage/disadvantage was never really
+    // a "defense" the way resistance/immunity/vulnerability are, and
+    // duplicating it here just meant every advantage source was
+    // represented twice). A generic saving-throw *bonus* (not advantage)
+    // is the same story: savingThrowsTable's own generalSaveBonus already
+    // folds it into every ability's value. Only resistance/immunity/
+    // vulnerability are true defenses; anything else recognized-but-
+    // elsewhere is dropped, anything unrecognized falls through to
+    // "other" so it's still visible somewhere (e.g. advantage on attack
+    // rolls or death saves, which have no dedicated table of their own).
+    if (["advantage", "disadvantage"].includes(modType)) {
+      if (
+        subtype === "initiative" ||
+        subtype.endsWith("saving-throws") ||
+        normalizedSubtype === "ability-checks" ||
+        SKILLS.some((skill) => skill.name === normalizedSubtype) ||
+        ABILITIES.some((ability) => ability.name === normalizedSubtype)
+      ) {
+        return;
+      }
+      buckets.other.push(friendly);
+      return;
+    }
+    if (modType === "bonus" && subtype.includes("saving-throws")) return;
+    if (["resistance", "immunity", "vulnerability"].includes(modType)) {
+      addDefense({ name: friendly, type: modifier.type, condition });
+      return;
+    }
+    if (!modType.includes("proficiency")) {
+      buckets.other.push(friendly);
+      return;
+    }
+
+    if (subtype.includes("armor") || subtype === "shields") {
+      buckets.armor.push(friendly);
+      return;
+    }
+    // Saving throw / skill / ability-score proficiencies are dropped here
+    // (see this function's own comment above) — recognized and skipped
+    // rather than falling through to "other".
+    if (
+      subtype.endsWith("saving-throws") ||
+      normalizedSubtype === "ability-checks" ||
+      SKILLS.some((skill) => skill.name === normalizedSubtype) ||
+      ABILITIES.some((ability) => ability.name === normalizedSubtype)
+    ) {
+      return;
+    }
+    if (knownSenseNames.has(normalizedSubtype)) {
+      buckets.senses.push(friendly);
+      return;
+    }
+    if (
+      subtype.includes("tool") ||
+      subtype.includes("kit") ||
+      subtype.includes("suppl") ||
+      subtype.includes("instrument") ||
+      subtype.includes("gaming-set") ||
+      subtype.includes("vehicle") ||
+      modifier.entityTypeId === 2103445194
+    ) {
+      buckets.tools.push(friendly);
+      return;
+    }
+    if (subtype.includes("weapon")) {
+      buckets.weapons.push(friendly);
+      return;
+    }
+
+    buckets.other.push(friendly);
+  });
+
+  buckets.armor = Array.from(new Set(buckets.armor));
+  buckets.weapons = Array.from(new Set(buckets.weapons));
+  buckets.tools = Array.from(new Set(buckets.tools));
+  buckets.languages = Array.from(new Set(buckets.languages));
+  buckets.senses = Array.from(new Set(buckets.senses));
+  buckets.other = Array.from(new Set(buckets.other));
+  return buckets;
+}
+
+// Shared by fantasyStatblockSplitList and fantasyStatblockSources below —
+// a plain comma-separated string (or an already-split array) into a
+// trimmed, non-empty string array.
+function splitCommaList(raw) {
+  if (Array.isArray(raw)) return raw.map((entry) => String(entry).trim()).filter(Boolean);
+  return String(raw || "")
+    .split(",")
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+}
+
+// Fantasy Statblocks' own post-fence text (see loadFantasyStatblockData's
+// own comment, content-fetch.js) is an optional "### Description" heading +
+// prose, then an optional "### References" heading + a bulleted list of
+// source citations (confirmed against all 3 real reference files this
+// format was reverse-engineered from — heading level is always `###`, but
+// matched loosely here in case a hand-edited file uses a different level).
+// Splits the two apart: everything before the References heading is real
+// notes prose; everything after it, one bullet per line (`*` or `-`
+// prefixed — both appear across the 3 reference files), is citation data
+// that belongs in `sources`, not mixed into notes. No References heading
+// found at all (not every statblock has one) — the whole text is notes,
+// references stays empty.
+function splitFantasyStatblockNotes(raw) {
+  const text = String(raw || "");
+  const headingMatch = text.match(/^#{1,6}\s*references\s*$/im);
+  if (!headingMatch) return { notes: text.trim(), references: [] };
+  const notes = text.slice(0, headingMatch.index).trim();
+  const references = text
+    .slice(headingMatch.index + headingMatch[0].length)
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => /^[*-]\s+/.test(line))
+    .map((line) => line.replace(/^[*-]\s+/, "").trim())
+    .filter(Boolean);
+  return { notes, references };
+}
+
 // --- Registered custom functions (referenced by name from mapping JSON) ---
 
 return {
@@ -663,50 +825,169 @@ return {
     return ["sys.dnd5e"];
   },
 
+  // Same reasoning and same hardcoded value as ddbMonsterSystemIds above —
+  // the 5e-API/SRD monster-import pipeline is just as unambiguously D&D-5e-
+  // specific, but had no systemIds field at all before this, so every SRD
+  // monster import landed invisible to anything that filters by System.
+  // Kept as its own function (not a shared name) so each mapping's own
+  // intent stays legible at the call site.
+  srdMonsterSystemIds() {
+    return ["sys.dnd5e"];
+  },
+
+  // D&D Beyond's own monster-service `senses` (confirmed via a real live
+  // fetch) is `[{senseId, notes}]` — senseId a numeric id resolved through
+  // the SAME `senses` lookup table `lookup('senses', ...)` formula calls
+  // already use (`env.lookupTables`, not `args` — needs the live table),
+  // `notes` a free-text range string ("60 ft.") to regex-extract a plain
+  // number out of. Folds the monster's own separate `passivePerception`
+  // field into `passives.perception`, producing this suite's one shared
+  // senses shape — `{passives:{perception}, darkvision, blindsight, ...}` —
+  // matching Character's own sensesTable output, srdSenses, and
+  // fantasyStatblockSenses exactly. `args.sensesPath`/
+  // `args.passivePerceptionPath` default to "senses"/"passivePerception".
+  ddbMonsterSenses(context, args, env) {
+    const rawSenses = resolvePath(context, args?.sensesPath || "senses");
+    const sensesTable = Array.isArray(env?.lookupTables?.senses) ? env.lookupTables.senses : [];
+    const nameForId = (id) => sensesTable.find((entry) => entry.id === id)?.name || "";
+    const result = {};
+    (Array.isArray(rawSenses) ? rawSenses : []).forEach((entry) => {
+      const name = nameForId(entry?.senseId);
+      const match = String(entry?.notes || "").match(/(\d+)/);
+      if (name && match) result[name] = Number(match[1]);
+    });
+    const passivePerception = Number(resolvePath(context, args?.passivePerceptionPath || "passivePerception"));
+    if (Number.isFinite(passivePerception)) {
+      result.passives = { perception: passivePerception };
+    }
+    return result;
+  },
+
+  // The 5e API's own raw `senses` (confirmed via a real live fetch) is a
+  // keyed object of already-unit-suffixed strings plus `passive_perception`
+  // — e.g. `{darkvision: "60 ft.", passive_perception: 12}`. Reshapes into
+  // this suite's one shared senses shape, same as ddbMonsterSenses/
+  // fantasyStatblockSenses above.
+  srdSenses(context, args) {
+    const raw = resolvePath(context, args?.path || "senses");
+    const result = {};
+    if (raw && typeof raw === "object") {
+      Object.entries(raw).forEach(([key, value]) => {
+        if (key === "passive_perception") {
+          const num = Number(value);
+          if (Number.isFinite(num)) result.passives = { perception: num };
+          return;
+        }
+        const match = String(value || "").match(/(\d+)/);
+        if (match) result[key] = Number(match[1]);
+      });
+    }
+    return result;
+  },
+
   // D&D Beyond's own monster-service `movements` (confirmed via a real live
   // fetch, content-fetch.js's fetchDdbMonster) is `[{movementId, speed,
-  // notes}, ...]` — resolved here into a single free-text string ("30 ft.,
-  // swim 30 ft.") instead, matching Fantasy Statblocks' own native `speed`
-  // shape (a plain string) and Crucible's own total non-use of this field
-  // (confirmed nothing in crucible/js/lib/stats.js or generator.js reads
-  // `speed` at all today) — there's no structured consumer anywhere in this
-  // suite forcing a keyed-object shape the way a CHARACTER's own speed
-  // (this file's own speedsTable, ddb-character.json's `{walk:30,
-  // swim:30, ...}`) has, so the
-  // simplest, most-directly-displayable shape wins. `walk` renders bare (no
-  // "walk" prefix), matching standard 5e stat-block phrasing; every other
-  // mode is prefixed by its own resolved name. Resolves each entry's own
-  // `movementId` through the SAME `speeds` lookup table `lookup('speeds',
-  // ...)` formula calls already use (`env.lookupTables`, not `args` — this
-  // needs the live table, not a fixed path).
+  // notes}, ...]` — resolved into this suite's one shared speed shape,
+  // `{walk, burrow, climb, fly, swim}` (matching Character's own
+  // speedsTable/ddb-character.json's speed shape exactly — see the
+  // monster-data-alignment plan). Resolves each entry's own `movementId`
+  // through the SAME `speeds` lookup table `lookup('speeds', ...)` formula
+  // calls already use (`env.lookupTables`, not `args` — needs the live
+  // table). Falls back to "walk" if a movement has no resolvable name
+  // (DDB's own base-walking-speed entry sometimes has no movementId at
+  // all).
   ddbFormatSpeed(context, args, env) {
     const movements = resolvePath(context, args?.path || "movements");
     const speedsTable = Array.isArray(env?.lookupTables?.speeds) ? env.lookupTables.speeds : [];
     const nameForId = (id) => speedsTable.find((entry) => entry.id === id)?.name || "";
-    return (Array.isArray(movements) ? movements : [])
-      .map((entry) => {
-        if (!entry || !entry.speed) return "";
-        const name = nameForId(entry.movementId);
-        return name && name !== "walk" ? `${name} ${entry.speed} ft.` : `${entry.speed} ft.`;
-      })
+    const result = {};
+    (Array.isArray(movements) ? movements : []).forEach((entry) => {
+      if (!entry || !entry.speed) return;
+      result[nameForId(entry.movementId) || "walk"] = entry.speed;
+    });
+    return result;
+  },
+
+  // Fantasy Statblocks' own `speed` is a single free-text string ("30 ft.,
+  // swim 30 ft.", "fly 60 ft. (hover)") — the first, unprefixed entry is
+  // always walking speed; every other entry is prefixed by its own
+  // movement-type name. Parsed into this suite's one shared speed shape,
+  // same as ddbFormatSpeed above. `args.path` defaults to "speed".
+  fantasyStatblockSpeed(context, args) {
+    const raw = String(resolvePath(context, args?.path || "speed") || "");
+    const result = {};
+    raw
+      .split(",")
+      .map((part) => part.trim())
       .filter(Boolean)
-      .join(", ");
+      .forEach((part) => {
+        const match = part.match(/^([A-Za-z]+)?\s*(\d+)\s*ft/i);
+        if (!match) return;
+        result[(match[1] || "walk").toLowerCase()] = Number(match[2]);
+      });
+    return result;
   },
 
   // The 5e API's own raw `speed` (confirmed via a real live fetch) is a
   // keyed object of already-unit-suffixed strings — `{walk: "30 ft.", swim:
-  // "30 ft."}` — reformatted into the same single free-text string
-  // ddbFormatSpeed above produces, for the same reasons (no structured
-  // consumer anywhere forces a keyed-object shape for a MONSTER's speed;
-  // Fantasy Statblocks' own native shape already is a plain string).
+  // "30 ft."}` — parsed into this suite's one shared speed shape, same as
+  // ddbFormatSpeed/fantasyStatblockSpeed above.
   formatSpeedFromObject(context, args) {
     const raw = resolvePath(context, args?.path || "speed");
-    if (typeof raw === "string") return raw;
-    if (!raw || typeof raw !== "object") return "";
-    return Object.entries(raw)
-      .filter(([, value]) => value)
-      .map(([type, value]) => (type === "walk" ? String(value) : `${type} ${value}`))
-      .join(", ");
+    const result = {};
+    if (raw && typeof raw === "object") {
+      Object.entries(raw).forEach(([key, value]) => {
+        const match = String(value || "").match(/(\d+)/);
+        if (match) result[key] = Number(match[1]);
+      });
+    }
+    return result;
+  },
+
+  // Both 5e-API's raw `challenge_rating` (a decimal number, e.g. 0.5) and
+  // Fantasy Statblocks' plugin-authored `cr` (usually already a string, but
+  // not guaranteed) need to converge on the same string shape DDB's own
+  // `lookup('challengeRatings', ...).shortName` already produces (a whole
+  // number or a fraction — "5", "1/2", "1/8") — this suite's one CR
+  // convention. `args.path` defaults to "challenge_rating".
+  formatChallengeRating(context, args) {
+    const raw = resolvePath(context, args?.path || "challenge_rating");
+    if (typeof raw === "string") return raw.trim();
+    const value = Number(raw);
+    if (!Number.isFinite(value)) return "";
+    const FRACTIONS = { 0.125: "1/8", 0.25: "1/4", 0.5: "1/2" };
+    return FRACTIONS[value] || String(value);
+  },
+
+  // 5e-API's raw `proficiencies` (confirmed by this mapping's own prior
+  // pipeline step, which this function replaces) is `[{proficiency:{name:
+  // "Saving Throw: DEX"|"Skill: Perception"}, value:{value:N}}, ...]` — one
+  // flat list mixing both concepts, distinguished only by a fixed string
+  // prefix on the label. Splits it into the same two-field convention DDB/
+  // Fantasy Statblocks' own `savingThrows`/`skills` already use (`{name,
+  // value}[]` each), matching this suite's one shared shape for the
+  // concept. `args.path` defaults to "proficiencies"; wire via a `with`
+  // binding (same pairing pattern `fantasyStatblockSenses`'s own comment
+  // documents) so both sibling output fields read this one computed result
+  // instead of each re-parsing the raw list independently.
+  srdSplitProficiencies(context, args) {
+    const entries = resolvePath(context, args?.path || "proficiencies");
+    const savingThrows = [];
+    const skills = [];
+    (Array.isArray(entries) ? entries : []).forEach((entry) => {
+      const label = entry?.proficiency?.name || "";
+      const value = entry?.value?.value;
+      const saveMatch = label.match(/^Saving Throw:\s*(.+)$/i);
+      if (saveMatch) {
+        savingThrows.push({ name: saveMatch[1].trim(), value });
+        return;
+      }
+      const skillMatch = label.match(/^Skill:\s*(.+)$/i);
+      if (skillMatch) {
+        skills.push({ name: skillMatch[1].trim(), value });
+      }
+    });
+    return { savingThrows, skills };
   },
 
   // `args.path` defaults to "descLines" (ddb-content-parser.js's paragraph
@@ -743,29 +1024,32 @@ return {
   // Fantasy Statblocks bundles passive Perception into the same free-text
   // `senses` string as darkvision/blindsight/etc (e.g. "darkvision 120 ft.,
   // passive Perception 13") — no separate field, confirmed across all 3
-  // reference examples. Splits it into this suite's own common standard
-  // shape: `senses` as an array of plain strings (matching Crucible's own
-  // stats.senses), `passivePerception` pulled out as its own number.
-  // `args.path` defaults to "senses". ddb-monster.json's `with`-node/
-  // ddbAbilitiesObject pairing is the precedent for reading this shared
-  // result back into two sibling output fields without recomputing it.
-  fantasyStatblockSenses(context, args) {
+  // reference examples, and always uses standard D&D sense-type names.
+  // Splits/parses it directly into this suite's one shared senses shape —
+  // `{passives:{perception}, darkvision, blindsight, ...}`, matching
+  // ddbMonsterSenses/srdSenses/Character's own sensesTable exactly — sourced
+  // from the SAME `senses` lookup table (`env.lookupTables`, not `args`) so
+  // the sense-name vocabulary lives in one place. `args.path` defaults to
+  // "senses".
+  fantasyStatblockSenses(context, args, env) {
     const raw = String(resolvePath(context, args?.path || "senses") || "");
-    const senses = [];
-    let passivePerception = null;
+    const sensesTable = Array.isArray(env?.lookupTables?.senses) ? env.lookupTables.senses : [];
+    const result = {};
     raw
       .split(",")
       .map((part) => part.trim())
       .filter(Boolean)
       .forEach((part) => {
-        const match = part.match(/passive perception\s+(\d+)/i);
-        if (match) {
-          passivePerception = Number(match[1]);
-        } else {
-          senses.push(part);
+        const passiveMatch = part.match(/passive perception\s+(\d+)/i);
+        if (passiveMatch) {
+          result.passives = { perception: Number(passiveMatch[1]) };
+          return;
         }
+        const senseEntry = sensesTable.find((entry) => new RegExp(`^${entry.name}\\b`, "i").test(part));
+        const rangeMatch = part.match(/(\d+)/);
+        if (senseEntry && rangeMatch) result[senseEntry.name] = Number(rangeMatch[1]);
       });
-    return { senses, passivePerception };
+    return result;
   },
 
   // Fantasy Statblocks' own `damage_resistances`/`damage_vulnerabilities`
@@ -776,12 +1060,98 @@ return {
   // "cold, fire") — split and trimmed into a plain string array, matching
   // Crucible's own damageResistances/damageImmunities shape.
   fantasyStatblockSplitList(context, args) {
-    const raw = resolvePath(context, args?.path || "");
-    if (Array.isArray(raw)) return raw.map((entry) => String(entry).trim()).filter(Boolean);
-    return String(raw || "")
-      .split(",")
-      .map((entry) => entry.trim())
-      .filter(Boolean);
+    return splitCommaList(resolvePath(context, args?.path || ""));
+  },
+
+  // The "notes" half of splitFantasyStatblockNotes above — References
+  // stripped out (see fantasyStatblockSources below for where that half
+  // goes instead). `args.path` defaults to "_postFenceNotes".
+  fantasyStatblockNotes(context, args) {
+    return splitFantasyStatblockNotes(resolvePath(context, args?.path || "_postFenceNotes")).notes;
+  },
+
+  // Combines the YAML frontmatter's own terse `source` field (e.g. "MM",
+  // a sourcebook abbreviation) with any citations parsed out of the
+  // "### References" list (splitFantasyStatblockNotes above) into one
+  // array — both are "where this content came from" in the same sense,
+  // and this suite has one `sources` field per monster, not two competing
+  // citation concepts. `args.sourcePath`/`args.notesPath` default to
+  // "source"/"_postFenceNotes".
+  fantasyStatblockSources(context, args) {
+    const fromSourceField = splitCommaList(resolvePath(context, args?.sourcePath || "source"));
+    const { references } = splitFantasyStatblockNotes(resolvePath(context, args?.notesPath || "_postFenceNotes"));
+    return [...fromSourceField, ...references];
+  },
+
+  // Fantasy Statblocks' own damage_resistances/damage_vulnerabilities/
+  // damage_immunities/condition_immunities are each a separate free-text,
+  // comma-separated field — combined here into this suite's one shared
+  // `defenses` array (matching Character's own proficiencies.defenses
+  // exactly), each entry tagged with its `type`. Condition immunities fold
+  // into the same array as `type: "immunity"` too — no separate condition-
+  // immunity bucket, same convention Character's own data already uses
+  // (e.g. `{name:"Magical Sleep", type:"immunity"}`).
+  fantasyStatblockDefenses(context) {
+    const splitField = (path) =>
+      String(resolvePath(context, path) || "")
+        .split(",")
+        .map((entry) => entry.trim())
+        .filter(Boolean);
+    const build = (path, type) => splitField(path).map((name) => ({ name, type }));
+    return [
+      ...build("damage_resistances", "resistance"),
+      ...build("damage_vulnerabilities", "vulnerability"),
+      ...build("damage_immunities", "immunity"),
+      ...build("condition_immunities", "immunity"),
+    ];
+  },
+
+  // The 5e API's own damage_resistances/damage_vulnerabilities/
+  // damage_immunities are each already a flat string array; condition_
+  // immunities is an array of `{name}` reference objects (read raw here,
+  // not via the mapping's own pipeline step, since a custom function only
+  // ever sees the raw input context). Combined into this suite's one shared
+  // `defenses` array, each entry tagged with its `type` — same convention
+  // fantasyStatblockDefenses/Character's own proficiencies.defenses use.
+  srdDefenses(context) {
+    const stringList = (path) => {
+      const raw = resolvePath(context, path);
+      return Array.isArray(raw) ? raw.filter(Boolean) : [];
+    };
+    const build = (path, type) => stringList(path).map((name) => ({ name: String(name).trim(), type }));
+    const conditionImmunities = resolvePath(context, "condition_immunities");
+    const conditionEntries = (Array.isArray(conditionImmunities) ? conditionImmunities : [])
+      .map((entry) => entry?.name)
+      .filter(Boolean)
+      .map((name) => ({ name, type: "immunity" }));
+    return [
+      ...build("damage_resistances", "resistance"),
+      ...build("damage_vulnerabilities", "vulnerability"),
+      ...build("damage_immunities", "immunity"),
+      ...conditionEntries,
+    ];
+  },
+
+  // D&D Beyond's own monster conditionImmunities (numeric ids, resolved via
+  // the SAME positional `conditions` lookup table `lookup('conditions',
+  // ...)` formula calls already use — a plain array of strings indexed by
+  // sourceId, see system-lookup-tables.js's own `positionalNames`) fold into
+  // this suite's one shared `defenses` array as `type: "immunity"` entries —
+  // same convention every other source uses for condition immunities.
+  // Damage-type resistances/immunities/vulnerabilities are NOT included
+  // here yet: DDB's own raw `damageAdjustments` field has no documented
+  // shape anywhere in this codebase or a confirmed live-fetch sample (unlike
+  // senses/speed, which were verified against real payloads before being
+  // ported) — a known, flagged gap in the monster-data-alignment plan
+  // rather than a guessed-at parser. `args.path` defaults to
+  // "conditionImmunities".
+  ddbConditionDefenses(context, args, env) {
+    const raw = resolvePath(context, args?.path || "conditionImmunities");
+    const conditionsTable = Array.isArray(env?.lookupTables?.conditions) ? env.lookupTables.conditions : [];
+    return (Array.isArray(raw) ? raw : [])
+      .map((id) => conditionsTable[Number(id)])
+      .filter(Boolean)
+      .map((name) => ({ name, type: "immunity" }));
   },
 
   ddbHitDie(context) {
@@ -957,121 +1327,24 @@ return {
   // script: savingThrowsTable/skillsTable already cover that ground with
   // real per-item proficiency levels, so a flat name list here would just
   // be a worse duplicate.
+  // `defenses`/`languages` are deliberately NOT in this object anymore —
+  // they relocated to `stats.proficiencies.{defenses,languages}` (this
+  // suite's one shared path/shape for both, matching every monster import
+  // mapping's own defenses/languages functions — see the monster-data-
+  // alignment plan), via proficiencyDefenses/proficiencyLanguages below.
+  // Keeping them here too would be the exact "two keys doing the same job"
+  // this suite avoids everywhere else.
   proficienciesTable(context) {
-    const modifiers = getActiveModifiers(context.root);
-    const buckets = { armor: [], weapons: [], tools: [], languages: [], defenses: [], senses: [], other: [] };
+    const { defenses, languages, ...rest } = buildProficiencyBuckets(context);
+    return rest;
+  },
 
-    const defenseMap = new Map();
-    const addDefense = (entry) => {
-      const key = `${(entry.type || "").toLowerCase()}|${(entry.name || "").toLowerCase()}|${(entry.condition || "").toLowerCase()}`;
-      const existing = defenseMap.get(key);
-      if (!existing) {
-        defenseMap.set(key, entry);
-        buckets.defenses.push(entry);
-        return;
-      }
-      if (entry.value != null && (!existing.value || entry.value > existing.value)) existing.value = entry.value;
-    };
+  proficiencyDefenses(context) {
+    return buildProficiencyBuckets(context).defenses;
+  },
 
-    const knownSenseNames = new Set(SENSES.map((sense) => sense.name));
-
-    modifiers.forEach((modifier) => {
-      const subtype = (modifier.subType || "").toLowerCase();
-      const normalizedSubtype = subtype.startsWith("skill-") ? subtype.slice(6) : subtype;
-      const friendly = modifier.friendlySubtypeName || modifier.subType || "Unknown";
-      const modType = (modifier.type || "").toLowerCase();
-      const condition = modifier.restriction || null;
-
-      if (modifier.isGranted === false && !["proficiency", "language"].includes(modType)) return;
-
-      if (modType === "language") {
-        buckets.languages.push(friendly);
-        return;
-      }
-      // Advantage/disadvantage on initiative, a saving throw, or a skill/
-      // ability check is already exposed as its own flag on that specific
-      // thing's own table (initiativeTable/savingThrowsTable/
-      // buildSkillValues) — recognized and skipped here rather than also
-      // landing in "defenses" (the old script's own behavior, ported
-      // faithfully until now — but advantage/disadvantage was never really
-      // a "defense" the way resistance/immunity/vulnerability are, and
-      // duplicating it here just meant every advantage source was
-      // represented twice). A generic saving-throw *bonus* (not advantage)
-      // is the same story: savingThrowsTable's own generalSaveBonus already
-      // folds it into every ability's value. Only resistance/immunity/
-      // vulnerability are true defenses; anything else recognized-but-
-      // elsewhere is dropped, anything unrecognized falls through to
-      // "other" so it's still visible somewhere (e.g. advantage on attack
-      // rolls or death saves, which have no dedicated table of their own).
-      if (["advantage", "disadvantage"].includes(modType)) {
-        if (
-          subtype === "initiative" ||
-          subtype.endsWith("saving-throws") ||
-          normalizedSubtype === "ability-checks" ||
-          SKILLS.some((skill) => skill.name === normalizedSubtype) ||
-          ABILITIES.some((ability) => ability.name === normalizedSubtype)
-        ) {
-          return;
-        }
-        buckets.other.push(friendly);
-        return;
-      }
-      if (modType === "bonus" && subtype.includes("saving-throws")) return;
-      if (["resistance", "immunity", "vulnerability"].includes(modType)) {
-        addDefense({ name: friendly, type: modifier.type, condition });
-        return;
-      }
-      if (!modType.includes("proficiency")) {
-        buckets.other.push(friendly);
-        return;
-      }
-
-      if (subtype.includes("armor") || subtype === "shields") {
-        buckets.armor.push(friendly);
-        return;
-      }
-      // Saving throw / skill / ability-score proficiencies are dropped here
-      // (see this function's own comment above) — recognized and skipped
-      // rather than falling through to "other".
-      if (
-        subtype.endsWith("saving-throws") ||
-        normalizedSubtype === "ability-checks" ||
-        SKILLS.some((skill) => skill.name === normalizedSubtype) ||
-        ABILITIES.some((ability) => ability.name === normalizedSubtype)
-      ) {
-        return;
-      }
-      if (knownSenseNames.has(normalizedSubtype)) {
-        buckets.senses.push(friendly);
-        return;
-      }
-      if (
-        subtype.includes("tool") ||
-        subtype.includes("kit") ||
-        subtype.includes("suppl") ||
-        subtype.includes("instrument") ||
-        subtype.includes("gaming-set") ||
-        subtype.includes("vehicle") ||
-        modifier.entityTypeId === 2103445194
-      ) {
-        buckets.tools.push(friendly);
-        return;
-      }
-      if (subtype.includes("weapon")) {
-        buckets.weapons.push(friendly);
-        return;
-      }
-
-      buckets.other.push(friendly);
-    });
-
-    buckets.armor = Array.from(new Set(buckets.armor));
-    buckets.weapons = Array.from(new Set(buckets.weapons));
-    buckets.tools = Array.from(new Set(buckets.tools));
-    buckets.languages = Array.from(new Set(buckets.languages));
-    buckets.senses = Array.from(new Set(buckets.senses));
-    buckets.other = Array.from(new Set(buckets.other));
-    return buckets;
+  proficiencyLanguages(context) {
+    return buildProficiencyBuckets(context).languages;
   },
 
   // Ported from ddb-parser.js's buildAttacks (equipped-weapon half) plus a
@@ -1313,13 +1586,22 @@ return {
     return pools;
   },
 
+  // Flat `{strength: N, dexterity: N, ...}` — matching Monster/NPC's own
+  // stats.abilities exactly (this suite's one shared shape — see the
+  // monster-data-alignment plan). No longer an array of enriched
+  // {id,name,friendlyName,shortName,score,modifier} objects — that
+  // metadata is already available from the active System's own `abilities`
+  // field definitions (abilityFieldDefs), no need to duplicate it per-
+  // character; `modifier` is derivable via the same `abilityModifier()`
+  // helper Monster/NPC's own UI already uses, not stored.
   abilitiesTable(context) {
     const modifiers = getActiveModifiers(context.root);
     const scores = calculateAbilityScores(context.root, modifiers);
-    return ABILITIES.map((ability) => {
-      const score = scores[ability.name] ?? 10;
-      return { ...ability, score, modifier: Math.floor((score - 10) / 2) };
+    const result = {};
+    ABILITIES.forEach((ability) => {
+      result[ability.name] = scores[ability.name] ?? 10;
     });
+    return result;
   },
 
   // Ported from ddb-parser.js's buildHitPoints (never carried over to this
@@ -1409,20 +1691,30 @@ return {
     return buildSkillValues(context.root);
   },
 
+  // Plain string — matching Monster/NPC's own `alignment` shape exactly
+  // (this suite's one shared shape — see the monster-data-alignment plan).
   // ALIGNMENTS entries (deriveLookupTables) carry `id` matching DDB's own
   // alignmentId, `friendlyName` (the display name — `name` itself is a
-  // slug, same convention as every other lookup entry in this file).
+  // slug, same convention as every other lookup entry in this file);
+  // `shortName` is no longer stored per-character — it's derivable from
+  // the System's own alignments vocabulary, same as every other lookup-
+  // resolved display value in this suite.
   alignmentTable(context) {
     const alignmentId = context.root?.alignmentId;
     const match = ALIGNMENTS.find((entry) => entry.id === alignmentId);
-    return match ? { name: match.friendlyName, shortName: match.shortName } : null;
+    return match?.friendlyName || null;
   },
 
   // Ported from ddb-parser.js's buildInitiative — everyone technically CAN
   // have an "initiative" proficiency/expertise modifier (e.g. the Alert
   // feat's variants, or a subclass feature), hence the same
   // determineProficiencyLevel/applyProficiency path saves/skills use, not
-  // just a flat Dex mod.
+  // just a flat Dex mod. `{bonus, advantage?, disadvantage?}` — this
+  // suite's one shared initiative shape (see the monster-data-alignment
+  // plan), matching Monster/NPC's own stats.initiative exactly (they only
+  // ever populate `bonus`; advantage/disadvantage are Character-observable
+  // extras, sparse — omitted rather than `false` when absent, same
+  // convention senses/defenses already use).
   initiativeTable(context) {
     const rawCharacter = context.root;
     const modifiers = getActiveModifiers(rawCharacter);
@@ -1434,10 +1726,10 @@ return {
     const { level, roundUp } = determineProficiencyLevel(modifiers, "initiative");
     const bonus = collectModifiers(modifiers, ["initiative", "dexterity-ability-checks"], "bonus");
 
-    const value = dexModifier + applyProficiency(level, proficiencyBonus, roundUp) + bonus;
-    const advantage = modifiers.some((modifier) => modifier.subType === "initiative" && modifier.type === "advantage");
-    const disadvantage = modifiers.some((modifier) => modifier.subType === "initiative" && modifier.type === "disadvantage");
-    return { value, advantage, disadvantage };
+    const result = { bonus: dexModifier + applyProficiency(level, proficiencyBonus, roundUp) + bonus };
+    if (modifiers.some((modifier) => modifier.subType === "initiative" && modifier.type === "advantage")) result.advantage = true;
+    if (modifiers.some((modifier) => modifier.subType === "initiative" && modifier.type === "disadvantage")) result.disadvantage = true;
+    return result;
   },
 
   // Ported from ddb-parser.js's buildSenses — passive Perception/

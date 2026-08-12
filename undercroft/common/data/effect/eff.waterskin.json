@@ -1,0 +1,19 @@
+{
+  "id": "eff.waterskin",
+  "name": "Waterskin",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "signatureFeatureId": null,
+  "featureIds": [],
+  "properties": {
+    "form": "equipment"
+  },
+  "budget": {
+    "target": 0,
+    "spent": 0,
+    "remaining": 0
+  },
+  "price": "2 sp",
+  "notes": "A leather skin holding about four days' worth of water."
+}

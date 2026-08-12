@@ -23,11 +23,6 @@
   "campaign": {
     "name": "Undercroft Trials"
   },
-  "alignment": {
-    "name": "neutral-good",
-    "friendlyName": "Neutral Good",
-    "shortName": "NG"
-  },
   "background": {
     "name": "Expedition Scribe",
     "description": "Cartographer assigned to record the Undercroft’s shifting halls.",
@@ -52,68 +47,21 @@
     "weight": 135,
     "size": "med"
   },
-  "abilities": [
-    { "id": 1, "name": "strength", "friendlyName": "Strength", "shortName": "STR", "score": 12, "modifier": 1 },
-    { "id": 2, "name": "dexterity", "friendlyName": "Dexterity", "shortName": "DEX", "score": 14, "modifier": 2 },
-    { "id": 3, "name": "constitution", "friendlyName": "Constitution", "shortName": "CON", "score": 12, "modifier": 1 },
-    { "id": 4, "name": "intelligence", "friendlyName": "Intelligence", "shortName": "INT", "score": 18, "modifier": 4 },
-    { "id": 5, "name": "wisdom", "friendlyName": "Wisdom", "shortName": "WIS", "score": 12, "modifier": 1 },
-    { "id": 6, "name": "charisma", "friendlyName": "Charisma", "shortName": "CHA", "score": 10, "modifier": 0 }
-  ],
-  "saves": [
-    { "id": 1, "name": "strength", "friendlyName": "Strength", "shortName": "STR", "value": 3, "proficiency": 1 },
-    { "id": 2, "name": "dexterity", "friendlyName": "Dexterity", "shortName": "DEX", "value": 5, "proficiency": 2 },
-    { "id": 3, "name": "constitution", "friendlyName": "Constitution", "shortName": "CON", "value": 3, "proficiency": 1 },
-    { "id": 4, "name": "intelligence", "friendlyName": "Intelligence", "shortName": "INT", "value": 7, "proficiency": 2 },
-    { "id": 5, "name": "wisdom", "friendlyName": "Wisdom", "shortName": "WIS", "value": 3, "proficiency": 1 },
-    { "id": 6, "name": "charisma", "friendlyName": "Charisma", "shortName": "CHA", "value": 0, "proficiency": 0 }
-  ],
-  "skills": [
-    { "id": 6, "name": "arcana", "friendlyName": "Arcana", "ability": "INT", "value": 7, "proficiency": 2 },
-    { "id": 7, "name": "history", "friendlyName": "History", "ability": "INT", "value": 7, "proficiency": 2 },
-    { "id": 8, "name": "investigation", "friendlyName": "Investigation", "ability": "INT", "value": 5, "proficiency": 1 },
-    { "id": 14, "name": "perception", "friendlyName": "Perception", "ability": "WIS", "value": 3, "proficiency": 1 },
-    { "id": 18, "name": "persuasion", "friendlyName": "Persuasion", "ability": "CHA", "value": 2, "proficiency": 1 }
-  ],
-  "senses": {
-    "passives": {
-      "perception": 14,
-      "investigation": 12,
-      "insight": 13
-    },
-    "darkvision": 60
-  },
-  "speeds": {
-    "walk": 30,
-    "fly": 0
-  },
-  "ac": {
-    "value": 15,
-    "shieldBonus": 0,
-    "bonus": 2
-  },
-  "hp": {
-    "max": 38,
-    "current": 38,
-    "temp": 0,
-    "hitDice": 5,
-    "hitDiceSize": "1d8+2"
-  },
-  "initiative": {
-    "value": 2,
-    "advantage": true,
-    "disadvantage": false
-  },
   "proficiency": 3,
   "proficiencies": {
-    "armor": ["Light armor"],
-    "weapons": ["Simple weapons", "Light crossbows"],
-    "tools": ["Calligrapher's supplies"],
-    "languages": ["Common", "Elvish", "Draconic"],
-    "defenses": [
-      { "name": "Fire Resistance", "type": "resistance", "condition": null }
+    "armor": [
+      "Light armor"
     ],
-    "senses": ["Darkvision"]
+    "weapons": [
+      "Simple weapons",
+      "Light crossbows"
+    ],
+    "tools": [
+      "Calligrapher's supplies"
+    ],
+    "senses": [
+      "Darkvision"
+    ]
   },
   "attacks": [
     {
@@ -132,15 +80,41 @@
     }
   ],
   "features": [
-    { "name": "Arcane Recovery", "description": "Recover spell slots on a short rest to keep spells flowing." },
-    { "name": "Scribe's Insight", "description": "Add double proficiency to lore checks tied to written records." }
+    {
+      "name": "Arcane Recovery",
+      "description": "Recover spell slots on a short rest to keep spells flowing."
+    },
+    {
+      "name": "Scribe's Insight",
+      "description": "Add double proficiency to lore checks tied to written records."
+    }
   ],
   "inventory": [
     [
-      { "name": "Pack", "quantity": 1, "weight": 60, "notes": "Expedition pack with field gear." },
-      { "name": "Spellbook", "quantity": 1, "weight": 3, "notes": "Annotated for the Undercroft archives." },
-      { "name": "Focus", "quantity": 1, "weight": 1, "notes": "Arcane quill focus." },
-      { "name": "Notes", "quantity": 6, "weight": 0.5, "notes": "Loose pages, indexed." }
+      {
+        "name": "Pack",
+        "quantity": 1,
+        "weight": 60,
+        "notes": "Expedition pack with field gear."
+      },
+      {
+        "name": "Spellbook",
+        "quantity": 1,
+        "weight": 3,
+        "notes": "Annotated for the Undercroft archives."
+      },
+      {
+        "name": "Focus",
+        "quantity": 1,
+        "weight": 1,
+        "notes": "Arcane quill focus."
+      },
+      {
+        "name": "Notes",
+        "quantity": 6,
+        "weight": 0.5,
+        "notes": "Loose pages, indexed."
+      }
     ]
   ],
   "notes": {
@@ -197,7 +171,13 @@
     ]
   ],
   "limitedUses": [
-    { "name": "Arcane Recovery", "uses": 1, "used": 0, "available": 1, "reset": "Short Rest" }
+    {
+      "name": "Arcane Recovery",
+      "uses": 1,
+      "used": 0,
+      "available": 1,
+      "reset": "Short Rest"
+    }
   ],
   "currencies": {
     "cp": 12,
@@ -205,5 +185,144 @@
     "ep": 0,
     "gp": 142,
     "pp": 2
+  },
+  "stats": {
+    "hitPoints": {
+      "max": 38,
+      "current": 38,
+      "temp": 0
+    },
+    "armorClass": 15,
+    "abilities": {
+      "strength": 12,
+      "dexterity": 14,
+      "constitution": 12,
+      "intelligence": 18,
+      "wisdom": 12,
+      "charisma": 10
+    },
+    "alignment": "Neutral Good",
+    "initiative": {
+      "bonus": 2,
+      "advantage": true
+    },
+    "senses": {
+      "passives": {
+        "perception": 14,
+        "investigation": 12,
+        "insight": 13
+      },
+      "darkvision": 60
+    },
+    "speed": {
+      "walk": 30,
+      "fly": 0
+    },
+    "savingThrows": [
+      {
+        "id": 1,
+        "name": "strength",
+        "friendlyName": "Strength",
+        "shortName": "STR",
+        "value": 3,
+        "proficiency": 1
+      },
+      {
+        "id": 2,
+        "name": "dexterity",
+        "friendlyName": "Dexterity",
+        "shortName": "DEX",
+        "value": 5,
+        "proficiency": 2
+      },
+      {
+        "id": 3,
+        "name": "constitution",
+        "friendlyName": "Constitution",
+        "shortName": "CON",
+        "value": 3,
+        "proficiency": 1
+      },
+      {
+        "id": 4,
+        "name": "intelligence",
+        "friendlyName": "Intelligence",
+        "shortName": "INT",
+        "value": 7,
+        "proficiency": 2
+      },
+      {
+        "id": 5,
+        "name": "wisdom",
+        "friendlyName": "Wisdom",
+        "shortName": "WIS",
+        "value": 3,
+        "proficiency": 1
+      },
+      {
+        "id": 6,
+        "name": "charisma",
+        "friendlyName": "Charisma",
+        "shortName": "CHA",
+        "value": 0,
+        "proficiency": 0
+      }
+    ],
+    "skills": [
+      {
+        "id": 6,
+        "name": "arcana",
+        "friendlyName": "Arcana",
+        "ability": "INT",
+        "value": 7,
+        "proficiency": 2
+      },
+      {
+        "id": 7,
+        "name": "history",
+        "friendlyName": "History",
+        "ability": "INT",
+        "value": 7,
+        "proficiency": 2
+      },
+      {
+        "id": 8,
+        "name": "investigation",
+        "friendlyName": "Investigation",
+        "ability": "INT",
+        "value": 5,
+        "proficiency": 1
+      },
+      {
+        "id": 14,
+        "name": "perception",
+        "friendlyName": "Perception",
+        "ability": "WIS",
+        "value": 3,
+        "proficiency": 1
+      },
+      {
+        "id": 18,
+        "name": "persuasion",
+        "friendlyName": "Persuasion",
+        "ability": "CHA",
+        "value": 2,
+        "proficiency": 1
+      }
+    ],
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Fire Resistance",
+          "type": "resistance",
+          "condition": null
+        }
+      ],
+      "languages": [
+        "Common",
+        "Elvish",
+        "Draconic"
+      ]
+    }
   }
 }

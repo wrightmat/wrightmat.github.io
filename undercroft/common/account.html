@@ -83,6 +83,17 @@
                       Owned content
                     </button>
                   </li>
+                  <li class="nav-item" role="presentation">
+                    <button
+                      class="nav-link"
+                      id="admin-tab-upgrade"
+                      type="button"
+                      data-admin-tab="upgrade"
+                      role="tab"
+                    >
+                      Upgrade tier
+                    </button>
+                  </li>
                 </ul>
                 <div class="tab-content" data-admin-tab-panels>
                   <div class="tab-pane fade show active" id="admin-panel-settings" data-admin-tab-panel="settings" role="tabpanel">
@@ -259,6 +270,21 @@
                           </tbody>
                         </table>
                       </div>
+                    </div>
+                  </div>
+                  <div class="tab-pane fade" id="admin-panel-upgrade" data-admin-tab-panel="upgrade" role="tabpanel" hidden>
+                    <div class="d-flex flex-column gap-3">
+                      <div>
+                        <h3 class="h5 mb-1 d-flex align-items-center gap-2">
+                          <span>Upgrade your tier</span>
+                          <span class="align-middle" data-help-topic="accounts.upgrade" data-help-insert="replace"></span>
+                        </h3>
+                        <p class="text-body-secondary mb-0" data-upgrade-current></p>
+                      </div>
+                      <div class="alert alert-info mb-0" data-upgrade-billing-note>
+                        Billing isn't live yet — switching tiers below is free for now and applies immediately.
+                      </div>
+                      <div class="row g-3" data-upgrade-cards></div>
                     </div>
                   </div>
                 </div>

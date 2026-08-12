@@ -268,6 +268,11 @@ export function initAuthControls({
     const groupItems = groups
       .map((group) => {
         const isActive = activeStillExists && group.id === active.groupId;
+        // list_groups' own scope=member query (groups.py) returns both
+        // groups this user owns AND groups they're only a member of (via a
+        // character they own) — owner_id is how the two are told apart
+        // here, same field _serialize_group already puts on every group.
+        const isOwner = group.owner_id === user.id;
         // System first, Setting second — matches _serialize_group's/
         // updateGroup's own {systemId, settingId} field order elsewhere in
         // the suite. Either alone is fine (just that one label); neither
@@ -284,7 +289,14 @@ export function initAuthControls({
             <div class="d-flex align-items-center">
               <button class="dropdown-item flex-grow-1${isActive ? " active" : ""}" type="button" data-campaign-select="${escapeHtml(group.id)}">
                 <div class="d-flex flex-column align-items-start lh-sm">
-                  <span>${escapeHtml(group.name)}</span>
+                  <span class="d-inline-flex align-items-center gap-1">
+                    ${escapeHtml(group.name)}
+                    ${
+                      isOwner
+                        ? `<span class="badge text-bg-secondary" style="font-size: 0.6rem;" title="You own this group">Owner</span>`
+                        : ""
+                    }
+                  </span>
                   ${contextLine}
                 </div>
               </button>
@@ -313,6 +325,7 @@ export function initAuthControls({
       </button>
       <ul class="dropdown-menu dropdown-menu-end undercroft-auth-dropdown">
         <li><span class="dropdown-item-text text-body-secondary">Tier: ${escapeHtml(manager.describeTier(user.tier) || user.tier || "")}</span></li>
+        <li><a class="dropdown-item" href="${resolvedAccountHref}" data-auth-settings>Account Settings</a></li>
         <li><hr class="dropdown-divider" /></li>
         ${
           groups.length
@@ -320,7 +333,6 @@ export function initAuthControls({
             : `<li><span class="dropdown-item-text text-body-secondary">No campaign groups yet</span></li>`
         }
         <li><hr class="dropdown-divider" /></li>
-        <li><a class="dropdown-item" href="${resolvedAccountHref}" data-auth-settings>Account Settings</a></li>
         <li><button class="dropdown-item" type="button" data-auth-logout>Log out</button></li>
       </ul>
     `;

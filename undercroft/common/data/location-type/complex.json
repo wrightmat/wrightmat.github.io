@@ -1,6 +1,7 @@
 {
   "id": "complex",
   "name": "Complex",
+  "scale": 1,
   "systemIds": ["sys.dnd5e"],
   "description": "A cluster of connected spaces functioning as one place — a dungeon, a cave system, a compound of several buildings, or any multi-part site smaller than a settlement."
 }

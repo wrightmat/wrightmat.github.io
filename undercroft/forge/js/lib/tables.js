@@ -6,6 +6,7 @@
 // rather than duplicating a second dice parser.
 import { rollDiceExpression } from "../../../workbench/js/lib/dice.js";
 import { fetchLibraryEntry, fetchKindEntriesWithIds, listLocationsForSetting } from "../../../common/js/lib/content-fetch.js";
+import { abilityModifier } from "../../../common/js/lib/dnd-rules.js";
 
 // Re-exported so undercroft/forge/js/app.js's own import (from this file)
 // keeps working unchanged — the implementation moved to content-fetch.js
@@ -79,13 +80,26 @@ export const RELATIONSHIP_STATUS_FACES = [
 
 export const ORIENTATION_FACES = ["Heterosexual", "Homosexual", "Bisexual", "Asexual", "Pansexual", "Questioning"];
 
-// CLAUDE.md only names the two endpoints (Hostile 1 / Helpful 6) for the
-// numeric Attitude scale; these fill in 2-5 so every roll has a
-// human-readable label to display alongside its number.
-export const ATTITUDE_LABELS = ["Hostile", "Unfriendly", "Wary", "Neutral", "Friendly", "Helpful"];
+// Attitude used to be a hardcoded Hostile(1)-Helpful(6) label list here —
+// now real System data (see loadNpcAttitudes below), read from whichever
+// array field Forge's own "Attitude field" Settings preference points at
+// (getAttitudeFieldPreference in app.js), same "per-tool preference, not
+// System data" pattern as Archetype's own npcTypes field. This constant is
+// only the last-resort fallback for a System that defines no such field at
+// all, so NPC generation never hard-fails for lack of one — mirrors
+// DEFAULT_ALIGNMENT_FACES exactly.
+export const DEFAULT_ATTITUDES = [
+  { value: 1, label: "Hostile" },
+  { value: 2, label: "Unfriendly" },
+  { value: 3, label: "Wary" },
+  { value: 4, label: "Neutral" },
+  { value: 5, label: "Friendly" },
+  { value: 6, label: "Helpful" },
+];
 
-export function getAttitudeLabel(value) {
-  return ATTITUDE_LABELS[Number(value) - 1] || "";
+export function getAttitudeLabel(attitudes, value) {
+  const list = Array.isArray(attitudes) && attitudes.length ? attitudes : DEFAULT_ATTITUDES;
+  return list.find((entry) => entry.value === Number(value))?.label || "";
 }
 
 let tablesPromise = null;
@@ -142,6 +156,24 @@ export async function loadAlignmentFaces(dataManager, systemId) {
   const field = fields.find((entry) => entry.type === "array" && entry.key === "alignments");
   const faces = (field?.values || []).map((value) => value.name).filter(Boolean);
   return faces.length ? faces : DEFAULT_ALIGNMENT_FACES;
+}
+
+// Which array field on the active System supplies NPC Attitude levels is
+// Forge's own tool preference (getAttitudeFieldPreference in app.js), same
+// pattern as Archetype's own npcTypes field — defaults to the conventional
+// "npcAttitudes" key when unset. Each value's `name` is the attitude's own
+// description (e.g. "Hostile") and `value` is the numeric scale position
+// (see sys.dnd5e.json's own npcAttitudes field) — falls back to
+// DEFAULT_ATTITUDES if the System defines no such field, or its entries
+// don't resolve to a valid {value, label} shape.
+export async function loadNpcAttitudes(dataManager, systemId, attitudeField = "npcAttitudes") {
+  const system = await fetchSystemRecord(dataManager, systemId);
+  const fields = Array.isArray(system?.fields) ? system.fields : [];
+  const field = fields.find((entry) => entry.type === "array" && entry.key === attitudeField);
+  const attitudes = (field?.values || [])
+    .map((value) => ({ value: Number(value.value), label: value.name || "" }))
+    .filter((entry) => entry.label && Number.isFinite(entry.value));
+  return attitudes.length ? attitudes : DEFAULT_ATTITUDES;
 }
 
 // The active System's own "abilities" object field's children (key +
@@ -255,18 +287,86 @@ export async function listSettingsForSystem(dataManager, systemId) {
     .map((entry) => ({ id: entry.id, name: entry.entity.name || entry.id }));
 }
 
+// Forge's own generated-output kind — lets the NPC picker (app.js) offer
+// every previously-saved NPC at the currently selected Location, the same
+// way Sanctum's Location picker lists saved Locations for a Setting.
+// generator.js stamps every generated NPC with `locationId` (the Location it
+// was rolled for), which is what this filters on.
+export async function listNpcsForLocation(dataManager, locationId) {
+  if (!locationId) return [];
+  const entries = await fetchKindEntriesWithIds(dataManager, "npc");
+  return entries
+    .filter((entry) => entry.entity.locationId === locationId)
+    .map((entry) => ({ id: entry.id, name: entry.entity.name || entry.id }));
+}
+
+// Every saved NPC belonging to a Setting — the NPC picker's own fallback
+// for when a Setting is selected but no one specific Location is (Location
+// is optional now). Filters on the NPC's own settingIds directly (same
+// plural-array membership convention listLocationsForSetting/
+// listSettingsForSystem already use for their own kinds — see
+// generateNpc's own settingIds stamp, generator.js) rather than
+// cross-referencing through locationId, since an NPC generated with no
+// Location at all still has a real settingIds of its own to filter on.
+// Confirmed real bug this fixes twice over: first, auto-selecting a
+// campaign's System/Setting (the active-group default, see app.js's own
+// init()) never auto-selects a Location, so a GM's own previously-saved
+// NPCs never appeared in the picker until that exact Location was
+// reselected by hand; second, an earlier version of this function filtered
+// via locationId cross-referenced against the Setting's own Locations,
+// which silently excluded any NPC with no locationId at all (e.g. one
+// whose Location reference was cleared, rather than corrected, once
+// Location became optional).
+export async function listNpcsForSetting(dataManager, settingId) {
+  if (!settingId) return [];
+  const entries = await fetchKindEntriesWithIds(dataManager, "npc");
+  return entries
+    .filter((entry) => {
+      const ids = Array.isArray(entry.entity.settingIds)
+        ? entry.entity.settingIds
+        : entry.entity.settingId
+          ? [entry.entity.settingId]
+          : [];
+      return ids.includes(settingId);
+    })
+    .map((entry) => ({ id: entry.id, name: entry.entity.name || entry.id }));
+}
+
 // The location's own id doesn't live in the JSON body (same convention as
 // every other library kind — the filename is the id), so it's stamped onto
 // the returned object here; the rest of Forge (export-template ids, the
 // per-Location name-generator model cache) already expects `currentLocation.id`.
-export async function loadLocation(id) {
-  const entity = await fetchLibraryEntry("location", id);
-  return { id, ...entity };
+//
+// Goes through dataManager (authenticated) — NOT fetchLibraryEntry's
+// deliberately-anonymous /content/ route, which 401s on anything the
+// signed-in GM owns but hasn't published. Most Locations aren't public, so
+// this is the common case, not an edge case. Confirmed real bug this fixes:
+// every real Location silently failed to load once Forge stopped
+// auto-selecting the two seeded PUBLIC starter Locations (Sword Coast/
+// Sharn) and the GM started picking their own instead.
+export async function loadLocation(dataManager, id) {
+  // preferLocal: false — a Location's own Species Weights/Properties
+  // (edited in Sanctum, possibly on a different device/browser) must be
+  // visible here immediately, not hidden behind whatever this browser
+  // happened to cache on an earlier load. Same class of staleness bug as
+  // loadSetting above.
+  const result = await dataManager.get("location", id, { preferLocal: false });
+  return { id, ...(result?.payload || {}) };
 }
 
-export async function loadSetting(id) {
-  const entity = await fetchLibraryEntry("setting", id);
-  return { id, ...entity };
+// Goes through dataManager (authenticated) — NOT fetchLibraryEntry's
+// deliberately-anonymous /content/ route, matching loadLocation above (same
+// bug this fixed there: a private, unpublished Setting 401'd on the
+// anonymous route). Now used to read a Setting's own general Species
+// Weights (effectiveSpeciesLocation, forge/js/app.js) — previously unused
+// dead code, so this bug had never actually surfaced. preferLocal: false
+// for the same reason Sanctum's own Setting Properties editor needs it — a
+// Setting's Species Weights edited elsewhere must be visible here
+// immediately, not hidden behind whatever this browser happened to cache
+// on an earlier load.
+export async function loadSetting(dataManager, id) {
+  const result = await dataManager.get("setting", id, { preferLocal: false });
+  return { id, ...(result?.payload || {}) };
 }
 
 // Species used to be a Forge-only "Species Name Profile" file, entirely
@@ -401,12 +501,18 @@ export function rollRelationship({ random = Math.random } = {}) {
   };
 }
 
-// Numeric scale, Hostile (1) to Helpful (6) — the record keeps the raw
-// number as canonical data (rerolls/comparisons stay simple), with `label`
-// alongside it purely for display.
-export function rollAttitude({ random = Math.random } = {}) {
-  const { face, notation } = rollUniformD(6, "1d6", { random });
-  return { value: face, label: getAttitudeLabel(face), notation };
+// Numeric scale (Hostile 1 to Helpful 6 for D&D's own default, but the die
+// size follows however many levels the active System's npcAttitudes field
+// actually defines — same flexible-count convention rollAlignment already
+// uses for its own faces list) — the record keeps the raw number as
+// canonical data (rerolls/comparisons stay simple), with `label` alongside
+// it purely for display. `attitudes` is the already-loaded list from
+// loadNpcAttitudes above (or DEFAULT_ATTITUDES if omitted/empty).
+export function rollAttitude(attitudes, { random = Math.random } = {}) {
+  const list = Array.isArray(attitudes) && attitudes.length ? attitudes : DEFAULT_ATTITUDES;
+  const { face, notation } = rollUniformD(list.length, `1d${list.length}`, { random });
+  const entry = list[face - 1];
+  return { value: entry?.value ?? face, label: entry?.label || "", roll: face, notation };
 }
 
 // Basic combat stats for this archetype, whatever shape the active
@@ -414,27 +520,62 @@ export function rollAttitude({ random = Math.random } = {}) {
 // for D&D, an Adversary-style block for another System, or nothing at
 // all). `statsMap` here is already filtered down to just the keys
 // Forge's own "Stats" tool preference selected (see resolveArchetypeStats
-// in app.js) — this function doesn't know or care which keys those are.
-// There's nothing to roll here, it's a deterministic lookup by name, so
-// it's a plain function rather than a rollX helper. Setting-specific
-// archetypes (rolls 22/23), Wildcard (24), and any System with no Stats
-// keys selected at all have no fixed identity/no stat concept — callers
-// get null and should show a graceful fallback rather than blank/zeroed
-// stats. `hitPoints` is the one key given special handling: authored as a
-// flat number (the archetype's max), wrapped here into { max, current } to
-// match the shape every kind's stats.hitPoints uses (see
-// combat-tracker.js#addCombatant) — a freshly rolled NPC is undamaged, so
-// current starts at max. Every other key passes through verbatim; Combat
-// Tracker resolves Initiative/AC/etc. through the System's own
-// combatBindings, not anything precomputed here.
-export function getStatsForArchetype(statsMap, archetypeName) {
+// in app.js) — this function doesn't know or care which keys those are,
+// except for `abilityKeys` (below), needed to tell an ability score apart
+// from any other kind of stat. There's nothing to roll here, it's a
+// deterministic lookup by name, so it's a plain function rather than a
+// rollX helper. Setting-specific archetypes (rolls 22/23), Wildcard (24),
+// and any System with no Stats keys selected at all have no fixed
+// identity/no stat concept — callers get null and should show a graceful
+// fallback rather than blank/zeroed stats.
+//
+// Three things get special handling so a generated NPC can be added to
+// Combat Tracker and show up correctly, matching the exact shape Crucible's
+// own generated monsters and Characters both already use (see
+// crucible/js/lib/stats.js#deriveStats and sys.dnd5e.json's own "abilities"
+// object field — confirmed the suite-wide standard, not a Forge-specific
+// choice, after this shape's own bug report): `abilityKeys` (the active
+// System's own ability field keys, e.g. strength/dexterity/...) get pulled
+// out of the raw npcTypes entry's flat keys and bundled into a nested
+// `abilities` object rather than left sitting flat on `stats` — a flat
+// ability key on `stats` isn't just wrong shape, it renders as a jumbled
+// mess (confirmed real bug — see Belimmar/Berosalia's own saved records,
+// undercroft/common/data/npc/*.json, both corrected back to this nested
+// shape directly). `hitPoints` is authored as a flat number (the
+// archetype's max), wrapped here into { max, current } — a freshly rolled
+// NPC is undamaged, so current starts at max. `initiative.bonus` isn't
+// authored data at all — it's derived from `abilities.dexterity` (D&D's own
+// ability key, same hardcoded assumption Crucible's own stats.js makes for
+// its generated monsters) via the standard ability-modifier formula,
+// whenever dexterity is present in the resolved Stats subset — `{bonus}`,
+// this suite's one shared initiative shape (see the monster-data-alignment
+// plan), matching Monster/Character exactly. Every other
+// key (armorClass, ...) passes through verbatim at the top level; Combat
+// Tracker resolves AC/etc. through the System's own combatBindings
+// directly.
+export function getStatsForArchetype(statsMap, archetypeName, abilityKeys) {
   const entry = statsMap?.[archetypeName];
   if (!entry) return null;
   const { name, ...rest } = entry;
-  const result = { ...rest };
+  const keySet = abilityKeys instanceof Set ? abilityKeys : new Set(abilityKeys || []);
+  const abilities = {};
+  const result = {};
+  Object.entries(rest).forEach(([key, value]) => {
+    if (keySet.has(key)) {
+      abilities[key] = value;
+    } else {
+      result[key] = value;
+    }
+  });
+  if (Object.keys(abilities).length) {
+    result.abilities = abilities;
+  }
   if (result.hitPoints !== undefined && typeof result.hitPoints !== "object") {
     const maxHp = Number(result.hitPoints) || 0;
     result.hitPoints = { max: maxHp, current: maxHp };
+  }
+  if (typeof abilities.dexterity === "number") {
+    result.initiative = { bonus: abilityModifier(abilities.dexterity) };
   }
   return result;
 }

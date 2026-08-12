@@ -4,5 +4,19 @@
     "sys.dnd5e"
   ],
   "name": "Forgotten Realms",
-  "description": "The classic D&D 5E setting — culturally insular border regions like the Sword Coast, where most communities are predominantly Human."
+  "description": "The classic D&D 5E setting — culturally insular border regions like the Sword Coast, where most communities are predominantly Human.",
+  "speciesWeights": [
+    { "entityId": "human", "weight": 40 },
+    { "entityId": "elf", "weight": 11 },
+    { "entityId": "half-elf", "weight": 10 },
+    { "entityId": "dwarf", "weight": 10 },
+    { "entityId": "halfling", "weight": 8 },
+    { "entityId": "gnome", "weight": 5 },
+    { "entityId": "half-orc", "weight": 5 },
+    { "entityId": "tiefling", "weight": 4 },
+    { "entityId": "dragonborn", "weight": 3 },
+    { "entityId": "genasi", "weight": 2 },
+    { "entityId": "orc", "weight": 1 },
+    { "entityId": "other", "weight": 1 }
+  ]
 }

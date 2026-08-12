@@ -1,0 +1,24 @@
+{
+  "id": "eff.ammunition-plus-1",
+  "name": "Ammunition, +1",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "signatureFeatureId": null,
+  "featureIds": [
+    "feat.weapon-enhancement"
+  ],
+  "properties": {
+    "rarity": "uncommon",
+    "form": "weapon"
+  },
+  "budget": {
+    "target": 8,
+    "spent": 5,
+    "remaining": 3
+  },
+  "notes": "You have a +1 bonus to attack and damage rolls made with this piece of magic ammunition. Once it hits a target, it is no longer magical.",
+  "featureTiers": {
+    "feat.weapon-enhancement": "plus-1"
+  }
+}

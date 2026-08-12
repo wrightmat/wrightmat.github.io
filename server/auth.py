@@ -13,6 +13,7 @@ from datetime import datetime, timedelta
 from email.message import EmailMessage
 from typing import Any, Dict, Optional
 
+from .roles import role_rank
 from .state import ServerState
 
 PBKDF2_ITERATIONS = 240_000
@@ -479,6 +480,34 @@ def update_password(state: ServerState, user: User, current_password: str, new_p
     state.db.execute("UPDATE users SET password_hash = ? WHERE id = ?", (hash_password(new), user.id))
     state.db.commit()
     return {"ok": True}
+
+
+# Self-service tiers only — "admin" is deliberately excluded here and can
+# only ever be granted by an existing admin via upgrade_user() above. No
+# payment integration exists yet, so this applies the tier change immediately;
+# once real billing lands, that step slots in before the UPDATE below without
+# changing this function's shape.
+SELF_SERVICE_TIERS = ["free", "player", "gm", "creator"]
+
+
+def upgrade_own_tier(state: ServerState, user: User, new_tier: str) -> Dict[str, Any]:
+    tier_value = (new_tier or "").strip().lower()
+    if tier_value not in SELF_SERVICE_TIERS:
+        raise AuthError("Unknown tier")
+    row = state.db.execute("SELECT id, tier FROM users WHERE id = ?", (user.id,)).fetchone()
+    if not row:
+        raise AuthError("User not found")
+    # Downgrading isn't offered through this free, self-service flow (also
+    # rules out an admin quietly demoting themselves this way, so the old
+    # last-active-admin guard that used to live here is now unreachable and
+    # was removed) — enforced here, not just by disabling the picker
+    # client-side, since a direct API call would otherwise bypass that.
+    if role_rank(tier_value) < role_rank(row["tier"]):
+        raise AuthError("Downgrading isn't available through self-service upgrade")
+    state.db.execute("UPDATE users SET tier = ? WHERE id = ?", (tier_value, row["id"]))
+    state.db.commit()
+    updated = state.db.execute("SELECT * FROM users WHERE id = ?", (row["id"],)).fetchone()
+    return {"user": sanitize_user_row(updated)}
 
 
 def admin_create_user(state: ServerState, username: str, email: str, password: str, tier: str) -> Dict[str, Any]:

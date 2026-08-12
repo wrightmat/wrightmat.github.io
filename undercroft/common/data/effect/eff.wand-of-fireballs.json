@@ -1,0 +1,24 @@
+{
+  "id": "eff.wand-of-fireballs",
+  "name": "Wand of Fireballs",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "signatureFeatureId": null,
+  "featureIds": [
+    "feat.cast-a-spell"
+  ],
+  "properties": {
+    "rarity": "rare",
+    "form": "wand"
+  },
+  "budget": {
+    "target": 12,
+    "spent": 7,
+    "remaining": 5
+  },
+  "notes": "This wand has 7 charges. While holding it, you can use an action to expend 1 or more charges to cast the fireball spell from it, using your own or the standard save DC.",
+  "featureTiers": {
+    "feat.cast-a-spell": "level-3"
+  }
+}

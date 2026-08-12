@@ -1,0 +1,28 @@
+{
+  "id": "feat.possession",
+  "name": "Possession",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature can leave its own body to inhabit the body of a nearby humanoid, taking control of it for as long as it maintains concentration.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature can leave its own body to inhabit the body of a nearby humanoid, taking control of it for as long as it maintains concentration."
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "control"
+    ],
+    "recipeSlots": [
+      "isolate"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

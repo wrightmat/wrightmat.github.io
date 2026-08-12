@@ -537,7 +537,7 @@
             },
             "align": "start",
             "alignSelf": "",
-            "binding": "@abilities",
+            "binding": "@stats.abilities",
             "readOnly": false,
             "collapsible": false,
             "zones": {
@@ -819,7 +819,7 @@
                   },
                   "align": "start",
                   "alignSelf": "",
-                  "binding": "@saves",
+                  "binding": "@stats.savingThrows",
                   "readOnly": false,
                   "collapsible": false,
                   "zones": {
@@ -1131,7 +1131,7 @@
                   },
                   "align": "start",
                   "alignSelf": "",
-                  "binding": "@skills",
+                  "binding": "@stats.skills",
                   "readOnly": false,
                   "collapsible": false,
                   "zones": {
@@ -2017,7 +2017,7 @@
                   },
                   "align": "start",
                   "alignSelf": "",
-                  "binding": "@stats.initiativeBonus",
+                  "binding": "@stats.initiative.bonus",
                   "readOnly": false,
                   "collapsible": false,
                   "variant": "number",

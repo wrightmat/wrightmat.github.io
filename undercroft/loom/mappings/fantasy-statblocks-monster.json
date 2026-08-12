@@ -16,8 +16,12 @@
       "bind": "@image"
     },
     "notes": {
+      "type": "custom",
+      "fn": "fantasyStatblockNotes"
+    },
+    "type": {
       "type": "field",
-      "bind": "@_postFenceNotes"
+      "bind": "=lookup('creatureTypes', @type).name"
     },
     "stats": {
       "type": "with",
@@ -36,10 +40,6 @@
           "size": {
             "type": "field",
             "bind": "@size"
-          },
-          "type": {
-            "type": "field",
-            "bind": "@type"
           },
           "alignment": {
             "type": "field",
@@ -67,8 +67,8 @@
             "bind": "@hit_dice"
           },
           "speed": {
-            "type": "field",
-            "bind": "@speed"
+            "type": "custom",
+            "fn": "fantasyStatblockSpeed"
           },
           "abilities": {
             "type": "object",
@@ -99,9 +99,14 @@
               }
             }
           },
-          "initiativeBonus": {
-            "type": "field",
-            "bind": "=floor((@stats.1 - 10) / 2)"
+          "initiative": {
+            "type": "object",
+            "fields": {
+              "bonus": {
+                "type": "field",
+                "bind": "=floor((@stats.1 - 10) / 2)"
+              }
+            }
           },
           "savingThrows": {
             "type": "custom",
@@ -119,46 +124,29 @@
           },
           "senses": {
             "type": "field",
-            "bind": "@sensesObj.senses"
-          },
-          "passivePerception": {
-            "type": "field",
-            "bind": "@sensesObj.passivePerception"
-          },
-          "languages": {
-            "type": "field",
-            "bind": "@languages"
+            "bind": "@sensesObj"
           },
           "challengeRating": {
-            "type": "field",
-            "bind": "@cr"
-          },
-          "damageResistances": {
             "type": "custom",
-            "fn": "fantasyStatblockSplitList",
+            "fn": "formatChallengeRating",
             "args": {
-              "path": "damage_resistances"
+              "path": "cr"
             }
           },
-          "damageVulnerabilities": {
-            "type": "custom",
-            "fn": "fantasyStatblockSplitList",
-            "args": {
-              "path": "damage_vulnerabilities"
-            }
-          },
-          "damageImmunities": {
-            "type": "custom",
-            "fn": "fantasyStatblockSplitList",
-            "args": {
-              "path": "damage_immunities"
-            }
-          },
-          "conditionImmunities": {
-            "type": "custom",
-            "fn": "fantasyStatblockSplitList",
-            "args": {
-              "path": "condition_immunities"
+          "proficiencies": {
+            "type": "object",
+            "fields": {
+              "defenses": {
+                "type": "custom",
+                "fn": "fantasyStatblockDefenses"
+              },
+              "languages": {
+                "type": "custom",
+                "fn": "fantasyStatblockSplitList",
+                "args": {
+                  "path": "languages"
+                }
+              }
             }
           },
           "traits": {
@@ -297,13 +285,16 @@
             "type": "field",
             "bind": "@spells"
           },
-          "environment": {
-            "type": "field",
-            "bind": "@environment"
+          "environments": {
+            "type": "custom",
+            "fn": "fantasyStatblockSplitList",
+            "args": {
+              "path": "environment"
+            }
           },
-          "source": {
-            "type": "field",
-            "bind": "@source"
+          "sources": {
+            "type": "custom",
+            "fn": "fantasyStatblockSources"
           }
         }
       }

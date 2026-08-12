@@ -1,0 +1,24 @@
+{
+  "id": "eff.potion-of-healing",
+  "name": "Potion of Healing",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "signatureFeatureId": null,
+  "featureIds": [
+    "feat.mending-pulse"
+  ],
+  "properties": {
+    "rarity": "common",
+    "form": "potion"
+  },
+  "budget": {
+    "target": 4,
+    "spent": 3,
+    "remaining": 1
+  },
+  "notes": "A vial of red liquid that shimmers when agitated; restores 2d4+2 hit points on drinking.",
+  "featureTiers": {
+    "feat.mending-pulse": "tier-1"
+  }
+}

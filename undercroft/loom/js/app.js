@@ -23,6 +23,7 @@ import {
   listAvailableMappings,
   SOURCES,
 } from "../../common/js/lib/content-fetch.js";
+import { convertStatBlockToFeatures, hasConvertibleStatBlock } from "../../common/js/lib/monster-feature-matching.js";
 import { initShareModal } from "../../common/js/lib/share-modal.js";
 import { allowsDelete, confirmDelete } from "../../common/js/lib/ownership.js";
 import { roleRank } from "../../common/js/lib/data-manager.js";
@@ -1465,6 +1466,24 @@ async function saveEntity(entity) {
   if (!dataManager) return;
   try {
     let data = entity.data;
+    // Records exactly what this record would need to redo this same
+    // fetch+transform later without reopening Loom at all — Workbench's own
+    // "Re-import" button (workbench-character-view.js) shows up only when
+    // both are present, and passes them straight to content-fetch.js's
+    // reimportViaMapping. `mapping` alone (no `url`) happens when the
+    // mapping was applied to hand-pasted/edited Sample Data rather than a
+    // real fetch — nothing to re-fetch from, so `url` is deliberately left
+    // unset rather than storing an empty placeholder. Generic across every
+    // kind (not character-specific) — this is also the suite's standard
+    // "was this imported?" signal (see Crucible's own isImportedStatBlock),
+    // so any mapping-driven save needs it stamped, not just Character's.
+    if (currentMappingId) {
+      data = { ...data, mapping: currentMappingId };
+    }
+    const sourceValue = (sourceValueInput?.value || "").trim();
+    if (sourceValue) {
+      data = { ...data, url: sourceValue };
+    }
     if (entity.kind === "character") {
       // content-fetch.js's own mergeImportedCharacterData preserves
       // template/systemIds/data/url/mapping from whatever's already saved
@@ -1479,24 +1498,9 @@ async function saveEntity(entity) {
         // this specifically needs the record actually on the server right
         // now, not a possibly-stale local cache from an earlier save.
         const existing = await dataManager.get("character", id, { preferLocal: false });
-        data = mergeImportedCharacterData(entity.data, existing?.payload);
+        data = mergeImportedCharacterData(data, existing?.payload);
       } catch (error) {
         // No existing record at this id — nothing to preserve, first import.
-      }
-      // Records exactly what this character would need to redo this same
-      // fetch+transform later without reopening Loom at all — Workbench's
-      // own "Re-import" button (workbench-character-view.js) shows up only
-      // when both are present, and passes them straight to content-fetch.js's
-      // reimportViaMapping. `mapping` alone (no `url`) happens when the
-      // mapping was applied to hand-pasted/edited Sample Data rather than a
-      // real fetch — nothing to re-fetch from, so `url` is deliberately left
-      // unset rather than storing an empty placeholder.
-      if (currentMappingId) {
-        data = { ...data, mapping: currentMappingId };
-      }
-      const sourceValue = (sourceValueInput?.value || "").trim();
-      if (sourceValue) {
-        data = { ...data, url: sourceValue };
       }
       // Every imported (or created) character needs at least one Assigned
       // System — without this, a brand-new DDB import (nothing to preserve
@@ -1512,6 +1516,43 @@ async function saveEntity(entity) {
       // one) or a prior save's own preserved value always wins over this.
       if ((!Array.isArray(data.systemIds) || !data.systemIds.length) && mappingDefinition?.$source === "ddb") {
         data = { ...data, systemIds: ["sys.dnd5e"] };
+      }
+    } else if (entity.kind === "monster") {
+      // Same "every imported record needs at least one Assigned System"
+      // reasoning as the character branch above — a monster mapping that
+      // never sets systemIds would otherwise leave the conversion below
+      // unable to scope its matching to the right System's own Feature
+      // library, not just invisible to Assigned-Systems-driven UI.
+      if (
+        (!Array.isArray(data.systemIds) || !data.systemIds.length) &&
+        (mappingDefinition?.$source === "ddb-monster" ||
+          mappingDefinition?.$source === "fantasy-statblocks" ||
+          mappingDefinition?.$source === "srd")
+      ) {
+        data = { ...data, systemIds: ["sys.dnd5e"] };
+      }
+      // Every monster import lands with real featureIds, unconditionally —
+      // this is what "every import aligns with internal data standards"
+      // means in practice, not an opt-in extra step. See
+      // monster-feature-matching.js's own module comment for the full
+      // reasoning and why this exact function also backs Crucible's own
+      // one-time backfill action for monsters imported before this existed.
+      if (hasConvertibleStatBlock(data)) {
+        const existingFeatures = await fetchKindEntriesWithIds(dataManager, "feature").then(
+          (entries) => entries.map((entry) => ({ id: entry.id, ...entry.entity })),
+          () => []
+        );
+        const { matchedCount, createdCount } = await convertStatBlockToFeatures(data, {
+          dataManager,
+          existingFeatures,
+          monsterSlug: slugify(id),
+        });
+        if (matchedCount || createdCount) {
+          status?.show(
+            `Matched ${matchedCount} trait${matchedCount === 1 ? "" : "s"}/action${matchedCount === 1 ? "" : "s"} to existing Features, created ${createdCount} new one${createdCount === 1 ? "" : "s"}.`,
+            { type: "info", timeout: 4000 }
+          );
+        }
       }
     }
     await dataManager.save(entity.kind, id, data);
@@ -4464,16 +4505,22 @@ if (librarySaveButton) {
       status?.show("Entity JSON isn't valid — fix it before saving.", { type: "error", timeout: 3000 });
       return;
     }
-    // Every character needs at least one Assigned System (systemIds) — the
-    // Systems checkbox list right above already writes straight into this
-    // same JSON textarea (see librarySystemList's own "change" handler), so
-    // this only ever fires if the GM saves a brand-new character without
-    // checking any of them first. Library's own generic newLibraryEntry()
-    // starts every kind blank, character included, so there's nothing
-    // upstream that already guarantees this the way saveEntity's own DDB-
-    // import default does (Mapping tool, above).
-    if (kind === "character" && (!Array.isArray(entity.systemIds) || !entity.systemIds.length)) {
-      status?.show("Check at least one Assigned System before saving a character.", { type: "warning", timeout: 3000 });
+    // Every character or monster needs at least one Assigned System
+    // (systemIds) — every record's downstream consumers (combat bindings,
+    // Feature-matching's own System-scoped candidate pool, Assigned-Systems-
+    // driven UI everywhere) depend on it being set, so this isn't optional
+    // for either kind. The Systems checkbox list right above already writes
+    // straight into this same JSON textarea (see librarySystemList's own
+    // "change" handler), so this only ever fires if the GM saves a
+    // brand-new record without checking any of them first. Library's own
+    // generic newLibraryEntry() starts every kind blank, so there's nothing
+    // upstream that already guarantees this the way saveEntity's own
+    // import-time defaults do (Mapping tool, above).
+    if (
+      (kind === "character" || kind === "monster") &&
+      (!Array.isArray(entity.systemIds) || !entity.systemIds.length)
+    ) {
+      status?.show(`Check at least one Assigned System before saving a ${kind}.`, { type: "warning", timeout: 3000 });
       return;
     }
     try {

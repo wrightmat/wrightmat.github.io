@@ -1,7 +1,9 @@
 {
   "id": "feat.paralyzed",
   "name": "Inflicts Paralyzed",
-  "systemIds": ["sys.dnd5e"],
+  "systemIds": [
+    "sys.dnd5e"
+  ],
   "description": "A failed save leaves the target paralyzed.",
   "mechanics": {
     "type": "active",
@@ -9,8 +11,14 @@
   },
   "budgetCost": 8,
   "tags": {
-    "categories": ["spell"],
-    "propertyHints": ["status", "paralyzed"]
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "status",
+      "paralyzed"
+    ]
   },
   "synergizesWith": [],
   "dependsOn": [],

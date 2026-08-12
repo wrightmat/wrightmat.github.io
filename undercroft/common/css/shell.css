@@ -1555,3 +1555,43 @@ a.undercroft-tool-card:focus-visible {
   height: 100%;
   display: block;
 }
+
+/* Blend-in-until-interacted idiom for the value inside a "field box" (see
+   ui-components.js's createFieldBox — Forge's Identity/4D/Stats fields,
+   Crucible's Stats/Identity fields, Vault's Identity fields all use this
+   one shared implementation now). Looks like the plain read-only value it
+   sits beside until hovered/focused, so an editable field doesn't visually
+   stand out from any non-editable ones around it. Previously duplicated
+   per-tool as .forge-inline-edit/.crucible-inline-edit before those two
+   tools' field-box markup was consolidated into one shared factory. Works
+   for both <input> and <select> — a <select> keeps its native dropdown
+   arrow/affordance, which is fine and expected. */
+.field-inline-edit {
+  display: block;
+  width: 100%;
+  border: 1px solid transparent;
+  border-radius: var(--bs-border-radius-sm, 0.25rem);
+  background-color: transparent;
+  padding: 0.05rem 0.25rem;
+  margin: -0.05rem -0.25rem;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+}
+
+.field-inline-edit:hover {
+  border-color: var(--bs-border-color);
+}
+
+.field-inline-edit:focus {
+  outline: none;
+  border-color: var(--bs-primary);
+  background-color: var(--bs-body-bg);
+}
+
+/* A field box is selectable (click one to inspect it in the right pane, the
+   standard Undercroft select-then-inspect convention) when it carries
+   data-select-field — this is the affordance cursor for that state. */
+[data-select-field] {
+  cursor: pointer;
+}

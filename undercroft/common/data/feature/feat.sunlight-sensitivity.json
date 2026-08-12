@@ -1,0 +1,24 @@
+{
+  "id": "feat.sunlight-sensitivity",
+  "name": "Sunlight Sensitivity",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "While in sunlight, the creature has disadvantage on attack rolls, as well as on Wisdom (Perception) checks that rely on sight.",
+  "mechanics": {
+    "type": "passive",
+    "text": "While in sunlight, the creature has disadvantage on attack rolls, as well as on Wisdom (Perception) checks that rely on sight."
+  },
+  "budgetCost": -1,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

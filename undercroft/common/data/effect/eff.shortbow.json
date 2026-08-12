@@ -1,0 +1,19 @@
+{
+  "id": "eff.shortbow",
+  "name": "Shortbow",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "signatureFeatureId": null,
+  "featureIds": [],
+  "properties": {
+    "form": "weapon"
+  },
+  "budget": {
+    "target": 0,
+    "spent": 0,
+    "remaining": 0
+  },
+  "price": "25 gp",
+  "notes": "A compact bow, easy to wield in tight or wooded terrain."
+}

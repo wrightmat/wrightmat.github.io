@@ -1,0 +1,24 @@
+{
+  "id": "eff.wand-of-the-war-mage-plus-1",
+  "name": "Wand of the War Mage, +1",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "signatureFeatureId": null,
+  "featureIds": [
+    "feat.spell-attack-bonus"
+  ],
+  "properties": {
+    "rarity": "uncommon",
+    "form": "wand"
+  },
+  "budget": {
+    "target": 8,
+    "spent": 5,
+    "remaining": 3
+  },
+  "notes": "You gain a +1 bonus to spell attack rolls made with this wand while holding it as your spellcasting focus.",
+  "featureTiers": {
+    "feat.spell-attack-bonus": "plus-1"
+  }
+}

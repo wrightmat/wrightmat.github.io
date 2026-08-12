@@ -1,0 +1,19 @@
+{
+  "id": "eff.bedroll",
+  "name": "Bedroll",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "signatureFeatureId": null,
+  "featureIds": [],
+  "properties": {
+    "form": "equipment"
+  },
+  "budget": {
+    "target": 0,
+    "spent": 0,
+    "remaining": 0
+  },
+  "price": "1 gp",
+  "notes": "A bundle of blankets and padding for sleeping rough."
+}

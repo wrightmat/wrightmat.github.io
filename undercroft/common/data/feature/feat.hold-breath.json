@@ -1,0 +1,26 @@
+{
+  "id": "feat.hold-breath",
+  "name": "Hold Breath",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature can hold its breath for a long time, far longer than an ordinary creature could.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature can hold its breath for a long time, far longer than an ordinary creature could."
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

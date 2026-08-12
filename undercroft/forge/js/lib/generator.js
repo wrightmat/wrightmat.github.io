@@ -23,7 +23,7 @@ import { generateSpeciesName } from "./name-generator.js";
 // saved/exported record for an unbound System has no `stats` key at all.
 function resolveStats(tables, archetypeName) {
   const hasStatsTable = tables.stats && Object.keys(tables.stats).length > 0;
-  return hasStatsTable ? getStatsForArchetype(tables.stats, archetypeName) : undefined;
+  return hasStatsTable ? getStatsForArchetype(tables.stats, archetypeName, tables.abilityKeys) : undefined;
 }
 
 // Composes one full NPC roll (Identity + 4D) from a Location config and the
@@ -33,18 +33,28 @@ function resolveStats(tables, archetypeName) {
 // population, not just the rolled primary species. `overrides` (species,
 // archetype, alignment, gender) come from the left pane's manual-pick
 // selects — any attribute set there is used as-is instead of rolled.
-export function generateNpc(location, tables, { overrides = {}, random = Math.random } = {}) {
+// `systemId`/`settingId` stamp systemIds/settingIds the same plural-array
+// way every other generated-output kind in this suite already does
+// (Crucible's monster, Vault's effect, Sanctum's location) — previously
+// never stamped here at all, meaning an NPC generated with no Location
+// selected (Location is optional) had no way to be found again once the
+// active Setting changed. Location is still the more specific reference
+// when present (see listNpcsForLocation in tables.js); settingIds is what
+// lets an NPC with no Location at all still show up under the right Setting.
+export function generateNpc(location, tables, { overrides = {}, random = Math.random, systemId = null, settingId = null } = {}) {
   const species = rollWeightedSpecies(location, tables.speciesProfiles, { random, override: overrides.species });
   const archetype = rollArchetype(tables.archetype, location, { random, override: overrides.archetype });
   const alignment = rollAlignment({ random, override: overrides.alignment, faces: tables.alignmentFaces });
   const gender = rollGender({ random, override: overrides.gender });
   const age = rollAge({ random });
   const relationship = rollRelationship({ random });
-  const attitude = rollAttitude({ random });
+  const attitude = rollAttitude(tables.npcAttitudes, { random });
   const fourD = rollFourD(tables.fourD, { random });
   const nameResult = generateSpeciesName(location, species.speciesId, tables.speciesProfiles, { random });
 
   return {
+    systemIds: systemId ? [systemId] : [],
+    settingIds: settingId ? [settingId] : [],
     locationId: location?.id ?? null,
     name: nameResult.name,
     // Never rolled/generated — set manually afterward (Orrery's own marker
@@ -144,7 +154,7 @@ export function rerollAttribute(record, tables, location, attribute, { random = 
       break;
     }
     case "attitude": {
-      const attitude = rollAttitude({ random });
+      const attitude = rollAttitude(tables.npcAttitudes, { random });
       next.identity.attitude = attitude.value;
       next.rolls.attitude = attitude;
       break;

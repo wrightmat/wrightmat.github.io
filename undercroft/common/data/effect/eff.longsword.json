@@ -1,0 +1,19 @@
+{
+  "id": "eff.longsword",
+  "name": "Longsword",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "signatureFeatureId": null,
+  "featureIds": [],
+  "properties": {
+    "form": "weapon"
+  },
+  "budget": {
+    "target": 0,
+    "spent": 0,
+    "remaining": 0
+  },
+  "price": "15 gp",
+  "notes": "A versatile straight blade, equally at home one- or two-handed."
+}

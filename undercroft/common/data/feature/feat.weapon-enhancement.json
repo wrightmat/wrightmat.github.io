@@ -1,0 +1,45 @@
+{
+  "id": "feat.weapon-enhancement",
+  "name": "Weapon Enhancement",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "A magical edge (or ammunition) that strikes truer and harder than steel alone.",
+  "mechanics": {
+    "type": "active",
+    "text": "Grants a bonus to attack and damage rolls made with this weapon or ammunition."
+  },
+  "budgetCost": 5,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "damage"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "plus-1",
+      "name": "+1",
+      "shortName": "+1",
+      "budgetCost": 5
+    },
+    {
+      "id": "plus-2",
+      "name": "+2",
+      "shortName": "+2",
+      "budgetCost": 10
+    },
+    {
+      "id": "plus-3",
+      "name": "+3",
+      "shortName": "+3",
+      "budgetCost": 16
+    }
+  ]
+}

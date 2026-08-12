@@ -1,0 +1,24 @@
+{
+  "id": "eff.potion-of-speed",
+  "name": "Potion of Speed",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "signatureFeatureId": null,
+  "featureIds": [
+    "feat.cast-a-spell"
+  ],
+  "properties": {
+    "rarity": "very-rare",
+    "form": "potion"
+  },
+  "budget": {
+    "target": 18,
+    "spent": 7,
+    "remaining": 11
+  },
+  "notes": "Grants the effect of the Haste spell for 3 minutes, without needing concentration.",
+  "featureTiers": {
+    "feat.cast-a-spell": "level-3"
+  }
+}

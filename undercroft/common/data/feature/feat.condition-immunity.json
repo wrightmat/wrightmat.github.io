@@ -1,0 +1,25 @@
+{
+  "id": "feat.condition-immunity",
+  "name": "Condition Immunity",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Wards the body against a single debilitating condition.",
+  "mechanics": {
+    "type": "active",
+    "text": "On activation, grants immunity to one condition (set when authored) for 1 hour."
+  },
+  "budgetCost": 5,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "defense"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,26 @@
+{
+  "id": "feat.magic-weapons",
+  "name": "Magic Weapons",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature's weapon attacks count as magical for the purpose of overcoming resistance and immunity to nonmagical attacks and damage.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature's weapon attacks count as magical for the purpose of overcoming resistance and immunity to nonmagical attacks and damage."
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

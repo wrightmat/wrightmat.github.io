@@ -1,0 +1,24 @@
+{
+  "id": "eff.ring-of-swimming",
+  "name": "Ring of Swimming",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "signatureFeatureId": null,
+  "featureIds": [
+    "feat.speed-modification"
+  ],
+  "properties": {
+    "rarity": "uncommon",
+    "form": "ring"
+  },
+  "budget": {
+    "target": 8,
+    "spent": 5,
+    "remaining": 3
+  },
+  "notes": "You have a swimming speed of 40 feet while wearing this ring.",
+  "featureTiers": {
+    "feat.speed-modification": "swimming"
+  }
+}

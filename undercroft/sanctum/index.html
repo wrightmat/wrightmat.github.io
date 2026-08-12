@@ -31,15 +31,11 @@
             <div data-field-mount="location-select"></div>
           </section>
 
-          <section class="d-flex flex-column gap-2" id="sanctum-overrides">
+          <section class="d-flex flex-column gap-2" id="sanctum-overrides" data-generation-fields>
             <div data-field-mount="type-override"></div>
             <div data-field-mount="purpose-override"></div>
             <div data-field-mount="environment-override"></div>
             <div data-field-mount="locked-features"></div>
-            <div class="d-flex align-items-center gap-2">
-              <div class="flex-grow-1" data-field-mount="dungeon-room-count"></div>
-              <span class="align-middle" data-help-topic="sanctum.dungeonRoomCount" data-help-insert="replace"></span>
-            </div>
           </section>
 
           <div class="mt-auto" id="sanctum-json" data-json-mount></div>
@@ -51,18 +47,11 @@
           <div class="d-flex flex-column gap-3 d-none" data-location-display>
             <div class="card shadow-theme">
               <div class="card-body">
-                <section class="d-flex flex-column gap-2" id="sanctum-identity">
-                  <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0 d-flex align-items-center gap-2">
-                    <span>Identity</span>
-                    <span class="align-middle" data-help-topic="sanctum.identity" data-help-insert="replace"></span>
-                  </h2>
+                <div data-identity-mount></div>
+                <div class="d-flex flex-column gap-2" data-identity-panel>
                   <div data-field-mount="location-name"></div>
-                  <div class="row g-2">
-                    <div class="col-6 col-md-4" data-field-mount="identity-type"></div>
-                    <div class="col-6 col-md-4" data-field-mount="identity-purpose"></div>
-                    <div class="col-6 col-md-4" data-field-mount="identity-environment"></div>
-                  </div>
-                </section>
+                  <div class="row g-3" data-identity-fields></div>
+                </div>
               </div>
             </div>
 
@@ -139,10 +128,6 @@
               <div class="card-body">
                 <div data-npc-config-mount></div>
                   <div class="d-flex flex-column gap-3" data-npc-config-panel hidden>
-                    <p class="small text-body-secondary mb-0">
-                      Only needed if Forge should be able to generate NPCs at this
-                      Location — not every place needs a population.
-                    </p>
                     <section class="d-flex flex-column gap-2" id="sanctum-species-weights">
                       <div class="d-flex align-items-center justify-content-between gap-2">
                         <h3 class="fs-6 fw-semibold text-body-secondary mb-0">Species Weights</h3>
@@ -181,7 +166,7 @@
                           <span class="iconify" data-icon="tabler:plus" aria-hidden="true"></span>
                         </button>
                       </div>
-                      <div class="d-flex flex-column gap-2" data-fallback-name-rows></div>
+                      <div class="d-flex flex-column gap-2 border rounded-3 p-2 overflow-auto" style="max-height: 16rem" data-fallback-name-rows></div>
                     </section>
                   </div>
               </div>
@@ -222,6 +207,17 @@
                   <div data-field-mount="setting-name"></div>
                   <div data-field-mount="setting-description"></div>
                 </div>
+
+                <div data-setting-species-mount></div>
+                  <div class="d-flex flex-column gap-2" data-setting-species-panel hidden>
+                    <div class="d-flex align-items-center justify-content-end gap-2">
+                      <span class="small text-body-secondary" data-setting-species-weight-total>Total: 0</span>
+                      <button class="btn btn-outline-secondary btn-sm p-1" type="button" data-add-setting-species-weight aria-label="Add Species">
+                        <span class="iconify" data-icon="tabler:plus" aria-hidden="true"></span>
+                      </button>
+                    </div>
+                    <div class="d-flex flex-column gap-2 border rounded-3 p-2 overflow-auto" style="max-height: 16rem" data-setting-species-weight-rows></div>
+                  </div>
 
                 <div data-calendar-mount></div>
                   <div class="d-flex flex-column gap-3" data-calendar-panel hidden>

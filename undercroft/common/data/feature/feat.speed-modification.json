@@ -1,0 +1,52 @@
+{
+  "id": "feat.speed-modification",
+  "name": "Speed Modification",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Grants a new way of moving, matching the creature's own walking speed.",
+  "mechanics": {
+    "type": "active",
+    "text": "On activation or while worn, grants a climbing, swimming, burrowing, or flying speed (depending on tier) equal to the creature's walking speed."
+  },
+  "budgetCost": 5,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "mobility",
+      "utility"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "climbing",
+      "name": "Climbing Speed",
+      "shortName": "Climb",
+      "budgetCost": 5
+    },
+    {
+      "id": "swimming",
+      "name": "Swimming Speed",
+      "shortName": "Swim",
+      "budgetCost": 5
+    },
+    {
+      "id": "burrowing",
+      "name": "Burrowing Speed",
+      "shortName": "Burrow",
+      "budgetCost": 8
+    },
+    {
+      "id": "flying",
+      "name": "Flying Speed",
+      "shortName": "Fly",
+      "budgetCost": 14
+    }
+  ]
+}

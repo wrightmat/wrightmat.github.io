@@ -1,0 +1,24 @@
+{
+  "id": "eff.gauntlets-of-ogre-power",
+  "name": "Gauntlets of Ogre Power",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "signatureFeatureId": null,
+  "featureIds": [
+    "feat.increase-strength"
+  ],
+  "properties": {
+    "rarity": "uncommon",
+    "form": "wondrous-item"
+  },
+  "budget": {
+    "target": 8,
+    "spent": 4,
+    "remaining": 4
+  },
+  "notes": "Your Strength score is 19 while you wear these gauntlets. They have no effect on you if your Strength is already 19 or higher.",
+  "featureTiers": {
+    "feat.increase-strength": "set-19"
+  }
+}

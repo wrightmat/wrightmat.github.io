@@ -94,6 +94,12 @@ const toolSettings = initToolSettings({
       helpTopic: "repository.completionStamp",
       default: true,
     },
+    {
+      key: "searchPageContents",
+      label: "Search page contents, not just titles/tags",
+      helpTopic: "repository.searchScope",
+      default: true,
+    },
   ],
   mountButton: (button) => settingsSlotEl?.appendChild(button),
 });
@@ -219,6 +225,18 @@ let currentMode = "edit";
 // committed (debounced, or flushed early by blur/Ctrl+Z — see
 // scheduleFieldCommit/commitFieldEdit near the bottom of this file).
 let fieldEditBaseline = null;
+// Enter-to-cycle search state (goToSearchMatch and friends, near
+// matchesSearch below) — the page-id order to step through, which one is
+// current, and the <mark> elements highlighted on whichever of those pages
+// is currently open, plus which one of THOSE is current. lastSearchQuery is
+// what tells a fresh Enter apart from "still cycling the same search" — see
+// resetSearchCycle's own comment for why typing invalidates all of this.
+let lastSearchQuery = null;
+let searchMatchPageIds = [];
+let searchMatchPageIndex = -1;
+let searchMatchTrackedPageId = "";
+let searchMatchMarks = [];
+let searchMatchMarkIndex = -1;
 
 function generateId() {
   return `journal_${Math.random().toString(36).slice(2, 10)}`;
@@ -287,8 +305,15 @@ function titleOf(entry) {
 
 function matchesSearch(entry, query) {
   if (!query) return true;
-  const haystack = `${titleOf(entry)} ${(entry.payload?.tags || []).join(" ")}`.toLowerCase();
-  return haystack.includes(query);
+  const parts = [titleOf(entry), (entry.payload?.tags || []).join(" ")];
+  // Body is a single plain markdown string (see fetchAllEntries's own
+  // comment) already sitting in memory for every entry — no extra fetch
+  // needed to search it. Behind a setting (default on) rather than always
+  // on: a title/tag-only search is meaningfully narrower once a campaign
+  // wiki has enough pages that "the" or a common word shows up in dozens of
+  // bodies, and toggling it off is the fast way back to that narrower list.
+  if (toolSettings.get("searchPageContents")) parts.push(entry.payload?.body || "");
+  return parts.join(" ").toLowerCase().includes(query);
 }
 
 function buildPageRow(entry, depth) {
@@ -398,6 +423,146 @@ function renderPageTree() {
   }
   const tree = buildGroupTree(visible);
   renderGroupNode(tree, pageTreeEl, 0, Boolean(query));
+}
+
+// The exact order matching pages appear in the sidebar right now — reusing
+// pageTreeEl's own already-filtered, already-hierarchically-sorted rows
+// (renderPageTree just built them) instead of re-deriving that same order
+// here, so Enter-cycling always visits pages in the same order you'd see
+// them in if you scrolled the list yourself.
+function matchingPageIdsInTreeOrder() {
+  if (!pageTreeEl) return [];
+  return Array.from(pageTreeEl.querySelectorAll("[data-repository-page-id]")).map((row) => row.dataset.repositoryPageId);
+}
+
+// Wraps every occurrence of `query` (case-insensitive) found anywhere in
+// `root`'s own text with a <mark data-repo-search-mark>, in document order
+// — goToSearchMatch cycles through the returned array directly. Only ever
+// touches TEXT NODES, never an element's attributes or structure, so this
+// is safe to run over rendered markdown that also contains wiki-links,
+// checkboxes, code blocks, dice/macro chips, etc. — none of those depend on
+// their own text staying a single, unsplit node. Collects every text node
+// up front, THEN mutates, so the walk itself is never disturbed by the
+// wrapping it triggers. The one real limitation: a match spanning two
+// separate text nodes (e.g. split across an inline **bold** boundary) isn't
+// found — the same blind spot any plain per-node text scan has.
+function highlightTextMatches(root, query) {
+  const marks = [];
+  if (!root || !query) return marks;
+  const lowerQuery = query.toLowerCase();
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode: (node) => (node.nodeValue && node.nodeValue.trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP),
+  });
+  const textNodes = [];
+  let node;
+  while ((node = walker.nextNode())) textNodes.push(node);
+  textNodes.forEach((textNode) => {
+    const text = textNode.nodeValue;
+    const lowerText = text.toLowerCase();
+    if (!lowerText.includes(lowerQuery)) return;
+    const frag = document.createDocumentFragment();
+    let cursor = 0;
+    let matchStart = lowerText.indexOf(lowerQuery, cursor);
+    while (matchStart !== -1) {
+      if (matchStart > cursor) frag.appendChild(document.createTextNode(text.slice(cursor, matchStart)));
+      const mark = document.createElement("mark");
+      mark.dataset.repoSearchMark = "";
+      mark.textContent = text.slice(matchStart, matchStart + query.length);
+      frag.appendChild(mark);
+      marks.push(mark);
+      cursor = matchStart + query.length;
+      matchStart = lowerText.indexOf(lowerQuery, cursor);
+    }
+    if (cursor < text.length) frag.appendChild(document.createTextNode(text.slice(cursor)));
+    textNode.parentNode?.replaceChild(frag, textNode);
+  });
+  return marks;
+}
+
+function clearSearchHighlights() {
+  if (!previewEl) return;
+  previewEl.querySelectorAll("mark[data-repo-search-mark]").forEach((mark) => {
+    mark.replaceWith(document.createTextNode(mark.textContent));
+  });
+  previewEl.normalize();
+}
+
+// Typing anything invalidates the whole cycle — the matching page order,
+// which page/mark within it is current, all of it — rather than trying to
+// re-map an old position onto a new result set. The next Enter after typing
+// always starts a fresh cycle from the top, same as a browser's own Find
+// does when you edit the search term mid-search.
+function resetSearchCycle() {
+  clearSearchHighlights();
+  lastSearchQuery = null;
+  searchMatchPageIds = [];
+  searchMatchPageIndex = -1;
+  searchMatchTrackedPageId = "";
+  searchMatchMarks = [];
+  searchMatchMarkIndex = -1;
+}
+
+function setActiveSearchMark(index) {
+  searchMatchMarks.forEach((mark, i) => mark.classList.toggle("repository-search-mark-active", i === index));
+  searchMatchMarks[index]?.scrollIntoView({ block: "center", behavior: "smooth" });
+}
+
+// Enter (direction 1) / Shift+Enter (direction -1) in the search box —
+// steps to the next/previous occurrence of the current query, cycling
+// through every occurrence on the currently-open matching page before
+// moving on to the next matching page (wrapping at both ends), same
+// two-level "within this page, then the next page" order a browser's own
+// Ctrl+F would give you if every matching page were one long document.
+function goToSearchMatch(direction) {
+  const query = (searchInput?.value || "").trim();
+  if (!query) return;
+  const normalized = query.toLowerCase();
+  const queryChanged = normalized !== lastSearchQuery;
+  lastSearchQuery = normalized;
+  if (queryChanged) {
+    searchMatchPageIds = matchingPageIdsInTreeOrder();
+    searchMatchPageIndex = -1;
+    searchMatchTrackedPageId = "";
+    searchMatchMarks = [];
+    searchMatchMarkIndex = -1;
+  }
+  if (!searchMatchPageIds.length) {
+    status?.show("No pages match.", { type: "warning", timeout: 2000 });
+    return;
+  }
+  // Still looking at the page these marks belong to, with another of its
+  // own occurrences left in this direction — step within it before moving
+  // on. Checked against selectedId (not just "were there marks left over
+  // from last time") since the user could have clicked to a different page
+  // by hand in between Enter presses without touching the search box at all.
+  if (!queryChanged && selectedId === searchMatchTrackedPageId && searchMatchMarks.length) {
+    const nextMarkIndex = searchMatchMarkIndex + direction;
+    if (nextMarkIndex >= 0 && nextMarkIndex < searchMatchMarks.length) {
+      searchMatchMarkIndex = nextMarkIndex;
+      setActiveSearchMark(searchMatchMarkIndex);
+      searchInput?.focus();
+      return;
+    }
+  }
+  // -1 means "haven't landed on a page yet this cycle" — a first Shift+Enter
+  // should jump straight to the LAST match, not wrap arithmetic through -1
+  // as if it were "one before index 0" (which lands on index 0 either way
+  // and loses that distinction). Once a page's actually selected, plain
+  // wrapping modulo arithmetic is exactly right for every step after.
+  searchMatchPageIndex =
+    searchMatchPageIndex === -1
+      ? (direction >= 0 ? 0 : searchMatchPageIds.length - 1)
+      : (searchMatchPageIndex + direction + searchMatchPageIds.length) % searchMatchPageIds.length;
+  const pageId = searchMatchPageIds[searchMatchPageIndex];
+  selectPage(pageId, { remember: false });
+  searchMatchTrackedPageId = pageId;
+  // A match that only landed in the title/tags (not the body) leaves no
+  // marks here — expected, not a bug: the title is already right there in
+  // the editor the moment this page opens, nothing left to highlight.
+  searchMatchMarks = highlightTextMatches(previewEl, query);
+  searchMatchMarkIndex = direction >= 0 ? 0 : searchMatchMarks.length - 1;
+  if (searchMatchMarks.length) setActiveSearchMark(searchMatchMarkIndex);
+  searchInput?.focus();
 }
 
 function updateTagDatalist() {
@@ -1229,7 +1394,23 @@ function handleDuplicate() {
   });
 }
 
-searchInput?.addEventListener("input", () => renderPageTree());
+searchInput?.addEventListener("input", () => {
+  resetSearchCycle();
+  renderPageTree();
+});
+// stopPropagation (not just preventDefault) — preventDefault alone only
+// cancels Enter's own default action, it doesn't stop this same keydown
+// from continuing to bubble up past this input to document (where
+// app-shell.js's own KeyboardShortcuts listens, among possibly others) —
+// belt-and-suspenders against anything further up the chain also reacting
+// to Shift+Enter, even though nothing in this codebase currently registers
+// for that combo.
+searchInput?.addEventListener("keydown", (event) => {
+  if (event.key !== "Enter") return;
+  event.preventDefault();
+  event.stopPropagation();
+  goToSearchMatch(event.shiftKey ? -1 : 1);
+});
 undoButton?.addEventListener("click", () => undo());
 redoButton?.addEventListener("click", () => redo());
 // Same dirty check updateToolbarState already uses for the Save button —

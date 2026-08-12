@@ -5,14 +5,20 @@
   "description": "A wave of restorative energy closes wounds and steadies the body.",
   "mechanics": {
     "type": "active",
-    "text": "On activation, restores a moderate amount of lost hit points to one creature touched or within short range."
+    "text": "On activation, restores lost hit points to one creature touched or within short range — the amount scales with tier, from a Common-tier trickle up to a Very-Rare-tier flood."
   },
-  "budgetCost": 4,
+  "budgetCost": 3,
   "tags": {
     "categories": ["spell", "item"],
     "propertyHints": ["healing"]
   },
   "synergizesWith": [],
   "dependsOn": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "tiers": [
+    { "id": "tier-1", "name": "Lesser", "shortName": "2d4+2 hp", "budgetCost": 3 },
+    { "id": "tier-2", "name": "Greater", "shortName": "4d4+4 hp", "budgetCost": 6 },
+    { "id": "tier-3", "name": "Superior", "shortName": "8d4+8 hp", "budgetCost": 10 },
+    { "id": "tier-4", "name": "Supreme", "shortName": "10d4+20 hp", "budgetCost": 15 }
+  ]
 }

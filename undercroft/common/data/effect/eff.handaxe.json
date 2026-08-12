@@ -1,0 +1,19 @@
+{
+  "id": "eff.handaxe",
+  "name": "Handaxe",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "signatureFeatureId": null,
+  "featureIds": [],
+  "properties": {
+    "form": "weapon"
+  },
+  "budget": {
+    "target": 0,
+    "spent": 0,
+    "remaining": 0
+  },
+  "price": "5 gp",
+  "notes": "A small axe balanced for throwing as readily as swinging."
+}

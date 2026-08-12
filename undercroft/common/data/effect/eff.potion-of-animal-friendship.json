@@ -1,0 +1,24 @@
+{
+  "id": "eff.potion-of-animal-friendship",
+  "name": "Potion of Animal Friendship",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "signatureFeatureId": null,
+  "featureIds": [
+    "feat.cast-a-spell"
+  ],
+  "properties": {
+    "rarity": "uncommon",
+    "form": "potion"
+  },
+  "budget": {
+    "target": 8,
+    "spent": 3,
+    "remaining": 5
+  },
+  "notes": "Lets you cast Animal Friendship (DC 13) on yourself, once, within the next hour.",
+  "featureTiers": {
+    "feat.cast-a-spell": "level-1"
+  }
+}

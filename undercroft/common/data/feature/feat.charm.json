@@ -1,0 +1,28 @@
+{
+  "id": "feat.charm",
+  "name": "Charm",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature can magically charm a creature it can see, which must succeed on a saving throw or be charmed for a time.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature can magically charm a creature it can see, which must succeed on a saving throw or be charmed for a time."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "control"
+    ],
+    "recipeSlots": [
+      "isolate"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

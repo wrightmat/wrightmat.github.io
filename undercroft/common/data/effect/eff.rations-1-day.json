@@ -1,0 +1,19 @@
+{
+  "id": "eff.rations-1-day",
+  "name": "Rations (1 day)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "signatureFeatureId": null,
+  "featureIds": [],
+  "properties": {
+    "form": "equipment"
+  },
+  "budget": {
+    "target": 0,
+    "spent": 0,
+    "remaining": 0
+  },
+  "price": "5 sp",
+  "notes": "Dry, portable food enough to keep one person going for a day."
+}

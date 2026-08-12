@@ -28,6 +28,20 @@ export function setElementVisible(element, visible, displayValue = "flex") {
   element.style.setProperty("display", visible ? displayValue : "none", "important");
 }
 
+// Suite-wide "this is required and currently unset" marker — toggles
+// Bootstrap's own `.border-danger` utility class (already loaded everywhere,
+// no new CSS needed) rather than a bespoke class. `isSatisfied` is whatever
+// the caller already knows counts as "filled in" for that control (a select
+// with a real, non-placeholder value; a checked checkbox; etc.) — this just
+// applies/removes the marker, it has no opinion on what "satisfied" means.
+// The suite's first pass at visually marking required fields at all — see
+// Sanctum/Crucible/Forge/Vault's own System (and, where relevant, Setting)
+// selects for the first call sites.
+export function markRequiredControl(element, isSatisfied) {
+  if (!element) return;
+  element.classList.toggle("border-danger", !isSatisfied);
+}
+
 export function disableForm(form, disabled) {
   if (!form) return;
   Array.from(form.elements).forEach((element) => {

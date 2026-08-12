@@ -1,0 +1,19 @@
+{
+  "id": "feat.rich-vein",
+  "name": "Rich Vein",
+  "systemIds": ["sys.dnd5e"],
+  "description": "A genuinely valuable deposit — ore, timber, or some rarer material — is actively worked here.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Provides a real, exploitable source of a valuable raw material."
+  },
+  "tags": {
+    "categories": ["location"],
+    "locationTypes": ["region", "structure", "complex"],
+    "locationPurposes": ["resource", "industry"],
+    "environments": ["mountain", "forest", "hill"]
+  },
+  "synergizesWith": ["feat.overworked-labor"],
+  "dependsOn": [],
+  "conflictsWith": []
+}

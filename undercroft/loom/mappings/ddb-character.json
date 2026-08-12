@@ -39,10 +39,6 @@
       }
     },
     "proficiency": { "type": "custom", "fn": "proficiencyBonus" },
-    "alignment": { "type": "custom", "fn": "alignmentTable" },
-    "initiative": { "type": "custom", "fn": "initiativeTable" },
-    "senses": { "type": "custom", "fn": "sensesTable" },
-    "speeds": { "type": "custom", "fn": "speedsTable" },
     "conditions": {
       "type": "pipeline",
       "source": "@conditions",
@@ -51,14 +47,25 @@
         { "step": "filter", "bind": "=@value" }
       ]
     },
-    "abilities": { "type": "custom", "fn": "abilitiesTable" },
-    "saves": { "type": "custom", "fn": "savingThrowsTable" },
-    "skills": { "type": "custom", "fn": "skillsTable" },
     "stats": {
       "type": "object",
       "fields": {
         "hitPoints": { "type": "custom", "fn": "hitPoints" },
-        "armorClass": { "type": "custom", "fn": "armorClass" }
+        "armorClass": { "type": "custom", "fn": "armorClass" },
+        "senses": { "type": "custom", "fn": "sensesTable" },
+        "speed": { "type": "custom", "fn": "speedsTable" },
+        "abilities": { "type": "custom", "fn": "abilitiesTable" },
+        "alignment": { "type": "custom", "fn": "alignmentTable" },
+        "initiative": { "type": "custom", "fn": "initiativeTable" },
+        "savingThrows": { "type": "custom", "fn": "savingThrowsTable" },
+        "skills": { "type": "custom", "fn": "skillsTable" },
+        "proficiencies": {
+          "type": "object",
+          "fields": {
+            "defenses": { "type": "custom", "fn": "proficiencyDefenses" },
+            "languages": { "type": "custom", "fn": "proficiencyLanguages" }
+          }
+        }
       }
     },
     "currencies": {

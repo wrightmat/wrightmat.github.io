@@ -1,7 +1,9 @@
 {
   "id": "feat.poisoned",
   "name": "Inflicts Poisoned",
-  "systemIds": ["sys.dnd5e"],
+  "systemIds": [
+    "sys.dnd5e"
+  ],
   "description": "A failed save leaves the target poisoned.",
   "mechanics": {
     "type": "active",
@@ -9,8 +11,14 @@
   },
   "budgetCost": 4,
   "tags": {
-    "categories": ["spell"],
-    "propertyHints": ["status", "poisoned"]
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "status",
+      "poisoned"
+    ]
   },
   "synergizesWith": [],
   "dependsOn": [],

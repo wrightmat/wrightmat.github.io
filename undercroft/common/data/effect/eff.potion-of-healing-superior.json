@@ -1,0 +1,24 @@
+{
+  "id": "eff.potion-of-healing-superior",
+  "name": "Potion of Healing, Superior",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "signatureFeatureId": null,
+  "featureIds": [
+    "feat.mending-pulse"
+  ],
+  "properties": {
+    "rarity": "rare",
+    "form": "potion"
+  },
+  "budget": {
+    "target": 12,
+    "spent": 10,
+    "remaining": 2
+  },
+  "notes": "Restores 8d4+8 hit points on drinking.",
+  "featureTiers": {
+    "feat.mending-pulse": "tier-3"
+  }
+}

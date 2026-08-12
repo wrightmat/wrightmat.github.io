@@ -1,0 +1,45 @@
+{
+  "id": "feat.protection-bonus",
+  "name": "Protection Bonus",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "A general ward that makes the wearer harder to hit and harder to affect.",
+  "mechanics": {
+    "type": "active",
+    "text": "While worn or carried, grants a bonus to AC and to saving throws."
+  },
+  "budgetCost": 7,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "defense"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "plus-1",
+      "name": "+1",
+      "shortName": "+1",
+      "budgetCost": 7
+    },
+    {
+      "id": "plus-2",
+      "name": "+2",
+      "shortName": "+2",
+      "budgetCost": 13
+    },
+    {
+      "id": "plus-3",
+      "name": "+3",
+      "shortName": "+3",
+      "budgetCost": 21
+    }
+  ]
+}

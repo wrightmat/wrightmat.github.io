@@ -137,3 +137,21 @@
 .repository-dice-roller:hover {
   background: var(--bs-secondary-bg, #e9ecef) !important;
 }
+
+/* Search-cycle highlights (app.js's own highlightTextMatches/
+   goToSearchMatch) — Bootstrap's subtle-color tokens instead of a plain
+   <mark>'s UA-default yellow, so this stays readable in dark theme too.
+   The active one (whichever occurrence Enter/Shift+Enter is currently on)
+   gets the stronger, non-subtle warning color plus an outline so it's
+   unambiguous which of several highlighted matches on the page is current. */
+.repository-preview mark[data-repo-search-mark] {
+  background: var(--bs-warning-bg-subtle);
+  color: inherit;
+  border-radius: 2px;
+  padding: 0 0.125rem;
+}
+
+.repository-preview mark[data-repo-search-mark].repository-search-mark-active {
+  background: var(--bs-warning);
+  outline: 2px solid var(--bs-warning-border-subtle);
+}

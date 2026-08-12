@@ -145,8 +145,8 @@
                         {
                           "type": "field",
                           "component": "stat",
-                          "label": "@abilities.0.shortName",
-                          "text": "@abilities.0.score",
+                          "label": "STR",
+                          "text": "@stats.abilities.strength",
                           "textSize": "xl",
                           "align": "center",
                           "style": {
@@ -169,8 +169,8 @@
                         {
                           "type": "field",
                           "component": "stat",
-                          "label": "@abilities.1.shortName",
-                          "text": "@abilities.1.score",
+                          "label": "DEX",
+                          "text": "@stats.abilities.dexterity",
                           "textSize": "xl",
                           "align": "center",
                           "style": {
@@ -193,8 +193,8 @@
                         {
                           "type": "field",
                           "component": "stat",
-                          "label": "@abilities.2.shortName",
-                          "text": "@abilities.2.score",
+                          "label": "CON",
+                          "text": "@stats.abilities.constitution",
                           "textSize": "xl",
                           "align": "center",
                           "style": {
@@ -217,8 +217,8 @@
                         {
                           "type": "field",
                           "component": "stat",
-                          "label": "@abilities.3.shortName",
-                          "text": "@abilities.3.score",
+                          "label": "INT",
+                          "text": "@stats.abilities.intelligence",
                           "textSize": "xl",
                           "align": "center",
                           "style": {
@@ -241,8 +241,8 @@
                         {
                           "type": "field",
                           "component": "stat",
-                          "label": "@abilities.4.shortName",
-                          "text": "@abilities.4.score",
+                          "label": "WIS",
+                          "text": "@stats.abilities.wisdom",
                           "textSize": "xl",
                           "align": "center",
                           "style": {
@@ -265,8 +265,8 @@
                         {
                           "type": "field",
                           "component": "stat",
-                          "label": "@abilities.5.shortName",
-                          "text": "@abilities.5.score",
+                          "label": "CHA",
+                          "text": "@stats.abilities.charisma",
                           "textSize": "xl",
                           "align": "center",
                           "style": {
@@ -318,7 +318,7 @@
                               "node": {
                                 "type": "field",
                                 "component": "text",
-                                "text": "@saves.0.shortName",
+                                "text": "@stats.savingThrows.0.shortName",
                                 "textStyle": "span",
                                 "className": "circle"
                               }
@@ -327,7 +327,7 @@
                               "node": {
                                 "type": "field",
                                 "component": "text",
-                                "text": "@saves.0.value",
+                                "text": "@stats.savingThrows.0.value",
                                 "textStyle": "span",
                                 "textSize": "xs",
                                 "className": "modifier"
@@ -337,7 +337,7 @@
                               "node": {
                                 "type": "field",
                                 "component": "text",
-                                "text": "@saves.0.friendlyName",
+                                "text": "@stats.savingThrows.0.friendlyName",
                                 "textStyle": "span",
                                 "textSize": "xs",
                                 "className": "name"
@@ -354,7 +354,7 @@
                               "node": {
                                 "type": "field",
                                 "component": "text",
-                                "text": "@saves.1.shortName",
+                                "text": "@stats.savingThrows.1.shortName",
                                 "textStyle": "span",
                                 "className": "circle"
                               }
@@ -363,7 +363,7 @@
                               "node": {
                                 "type": "field",
                                 "component": "text",
-                                "text": "@saves.1.value",
+                                "text": "@stats.savingThrows.1.value",
                                 "textStyle": "span",
                                 "textSize": "xs",
                                 "className": "modifier"
@@ -373,7 +373,7 @@
                               "node": {
                                 "type": "field",
                                 "component": "text",
-                                "text": "@saves.1.friendlyName",
+                                "text": "@stats.savingThrows.1.friendlyName",
                                 "textStyle": "span",
                                 "textSize": "xs",
                                 "className": "name"
@@ -390,7 +390,7 @@
                               "node": {
                                 "type": "field",
                                 "component": "text",
-                                "text": "@saves.2.shortName",
+                                "text": "@stats.savingThrows.2.shortName",
                                 "textStyle": "span",
                                 "className": "circle"
                               }
@@ -399,7 +399,7 @@
                               "node": {
                                 "type": "field",
                                 "component": "text",
-                                "text": "@saves.2.value",
+                                "text": "@stats.savingThrows.2.value",
                                 "textStyle": "span",
                                 "textSize": "xs",
                                 "className": "modifier"
@@ -409,7 +409,7 @@
                               "node": {
                                 "type": "field",
                                 "component": "text",
-                                "text": "@saves.2.friendlyName",
+                                "text": "@stats.savingThrows.2.friendlyName",
                                 "textStyle": "span",
                                 "textSize": "xs",
                                 "className": "name"
@@ -426,7 +426,7 @@
                               "node": {
                                 "type": "field",
                                 "component": "text",
-                                "text": "@saves.3.shortName",
+                                "text": "@stats.savingThrows.3.shortName",
                                 "textStyle": "span",
                                 "className": "circle"
                               }
@@ -435,7 +435,7 @@
                               "node": {
                                 "type": "field",
                                 "component": "text",
-                                "text": "@saves.3.value",
+                                "text": "@stats.savingThrows.3.value",
                                 "textStyle": "span",
                                 "textSize": "xs",
                                 "className": "modifier"
@@ -445,7 +445,7 @@
                               "node": {
                                 "type": "field",
                                 "component": "text",
-                                "text": "@saves.3.friendlyName",
+                                "text": "@stats.savingThrows.3.friendlyName",
                                 "textStyle": "span",
                                 "textSize": "xs",
                                 "className": "name"
@@ -462,7 +462,7 @@
                               "node": {
                                 "type": "field",
                                 "component": "text",
-                                "text": "@saves.4.shortName",
+                                "text": "@stats.savingThrows.4.shortName",
                                 "textStyle": "span",
                                 "className": "circle"
                               }
@@ -471,7 +471,7 @@
                               "node": {
                                 "type": "field",
                                 "component": "text",
-                                "text": "@saves.4.value",
+                                "text": "@stats.savingThrows.4.value",
                                 "textStyle": "span",
                                 "textSize": "xs",
                                 "className": "modifier"
@@ -481,7 +481,7 @@
                               "node": {
                                 "type": "field",
                                 "component": "text",
-                                "text": "@saves.4.friendlyName",
+                                "text": "@stats.savingThrows.4.friendlyName",
                                 "textStyle": "span",
                                 "textSize": "xs",
                                 "className": "name"
@@ -498,7 +498,7 @@
                               "node": {
                                 "type": "field",
                                 "component": "text",
-                                "text": "@saves.5.shortName",
+                                "text": "@stats.savingThrows.5.shortName",
                                 "textStyle": "span",
                                 "className": "circle"
                               }
@@ -507,7 +507,7 @@
                               "node": {
                                 "type": "field",
                                 "component": "text",
-                                "text": "@saves.5.value",
+                                "text": "@stats.savingThrows.5.value",
                                 "textStyle": "span",
                                 "textSize": "xs",
                                 "className": "modifier"
@@ -517,7 +517,7 @@
                               "node": {
                                 "type": "field",
                                 "component": "text",
-                                "text": "@saves.5.friendlyName",
+                                "text": "@stats.savingThrows.5.friendlyName",
                                 "textStyle": "span",
                                 "textSize": "xs",
                                 "className": "name"
@@ -549,7 +549,7 @@
                               "node": {
                                 "type": "field",
                                 "component": "text",
-                                "text": "@skills.0.ability",
+                                "text": "@stats.skills.0.ability",
                                 "textStyle": "span",
                                 "className": "circle"
                               }
@@ -558,7 +558,7 @@
                               "node": {
                                 "type": "field",
                                 "component": "text",
-                                "text": "@skills.0.value",
+                                "text": "@stats.skills.0.value",
                                 "textStyle": "span",
                                 "textSize": "xs",
                                 "className": "modifier"
@@ -568,7 +568,7 @@
                               "node": {
                                 "type": "field",
                                 "component": "text",
-                                "text": "@skills.0.friendlyName",
+                                "text": "@stats.skills.0.friendlyName",
                                 "textStyle": "span",
                                 "textSize": "xs",
                                 "className": "name"
@@ -578,7 +578,7 @@
                               "node": {
                                 "type": "field",
                                 "component": "text",
-                                "text": "@skills.0.proficiency",
+                                "text": "@stats.skills.0.proficiency",
                                 "className": "text-body-secondary"
                               }
                             }
@@ -593,7 +593,7 @@
                               "node": {
                                 "type": "field",
                                 "component": "text",
-                                "text": "@skills.1.ability",
+                                "text": "@stats.skills.1.ability",
                                 "textStyle": "span",
                                 "className": "circle"
                               }
@@ -602,7 +602,7 @@
                               "node": {
                                 "type": "field",
                                 "component": "text",
-                                "text": "@skills.1.value",
+                                "text": "@stats.skills.1.value",
                                 "textStyle": "span",
                                 "textSize": "xs",
                                 "className": "modifier"
@@ -612,7 +612,7 @@
                               "node": {
                                 "type": "field",
                                 "component": "text",
-                                "text": "@skills.1.friendlyName",
+                                "text": "@stats.skills.1.friendlyName",
                                 "textStyle": "span",
                                 "textSize": "xs",
                                 "className": "name"
@@ -622,7 +622,7 @@
                               "node": {
                                 "type": "field",
                                 "component": "text",
-                                "text": "@skills.1.proficiency",
+                                "text": "@stats.skills.1.proficiency",
                                 "className": "text-body-secondary"
                               }
                             }
@@ -637,7 +637,7 @@
                               "node": {
                                 "type": "field",
                                 "component": "text",
-                                "text": "@skills.2.ability",
+                                "text": "@stats.skills.2.ability",
                                 "textStyle": "span",
                                 "className": "circle"
                               }
@@ -646,7 +646,7 @@
                               "node": {
                                 "type": "field",
                                 "component": "text",
-                                "text": "@skills.2.value",
+                                "text": "@stats.skills.2.value",
                                 "textStyle": "span",
                                 "textSize": "xs",
                                 "className": "modifier"
@@ -656,7 +656,7 @@
                               "node": {
                                 "type": "field",
                                 "component": "text",
-                                "text": "@skills.2.friendlyName",
+                                "text": "@stats.skills.2.friendlyName",
                                 "textStyle": "span",
                                 "textSize": "xs",
                                 "className": "name"
@@ -666,7 +666,7 @@
                               "node": {
                                 "type": "field",
                                 "component": "text",
-                                "text": "@skills.2.proficiency",
+                                "text": "@stats.skills.2.proficiency",
                                 "className": "text-body-secondary"
                               }
                             }
@@ -681,7 +681,7 @@
                               "node": {
                                 "type": "field",
                                 "component": "text",
-                                "text": "@skills.3.ability",
+                                "text": "@stats.skills.3.ability",
                                 "textStyle": "span",
                                 "className": "circle"
                               }
@@ -690,7 +690,7 @@
                               "node": {
                                 "type": "field",
                                 "component": "text",
-                                "text": "@skills.3.value",
+                                "text": "@stats.skills.3.value",
                                 "textStyle": "span",
                                 "textSize": "xs",
                                 "className": "modifier"
@@ -700,7 +700,7 @@
                               "node": {
                                 "type": "field",
                                 "component": "text",
-                                "text": "@skills.3.friendlyName",
+                                "text": "@stats.skills.3.friendlyName",
                                 "textStyle": "span",
                                 "textSize": "xs",
                                 "className": "name"
@@ -710,7 +710,7 @@
                               "node": {
                                 "type": "field",
                                 "component": "text",
-                                "text": "@skills.3.proficiency",
+                                "text": "@stats.skills.3.proficiency",
                                 "className": "text-body-secondary"
                               }
                             }
@@ -725,7 +725,7 @@
                               "node": {
                                 "type": "field",
                                 "component": "text",
-                                "text": "@skills.4.ability",
+                                "text": "@stats.skills.4.ability",
                                 "textStyle": "span",
                                 "className": "circle"
                               }
@@ -734,7 +734,7 @@
                               "node": {
                                 "type": "field",
                                 "component": "text",
-                                "text": "@skills.4.value",
+                                "text": "@stats.skills.4.value",
                                 "textStyle": "span",
                                 "textSize": "xs",
                                 "className": "modifier"
@@ -744,7 +744,7 @@
                               "node": {
                                 "type": "field",
                                 "component": "text",
-                                "text": "@skills.4.friendlyName",
+                                "text": "@stats.skills.4.friendlyName",
                                 "textStyle": "span",
                                 "textSize": "xs",
                                 "className": "name"
@@ -754,7 +754,7 @@
                               "node": {
                                 "type": "field",
                                 "component": "text",
-                                "text": "@skills.4.proficiency",
+                                "text": "@stats.skills.4.proficiency",
                                 "className": "text-body-secondary"
                               }
                             }
@@ -832,7 +832,7 @@
                             "type": "field",
                             "component": "stat",
                             "label": "Initiative",
-                            "text": "@initiative.value",
+                            "text": "@stats.initiative.bonus",
                             "textSize": "xs",
                             "className": "press-block",
                             "gap": 0
@@ -861,7 +861,7 @@
                       "type": "field",
                       "component": "stat",
                       "label": "Speed",
-                      "text": "@speeds.walk",
+                      "text": "@stats.speed.walk",
                       "textSize": "xs",
                       "className": "press-block",
                       "gap": 0
@@ -911,19 +911,19 @@
                     {
                       "type": "field",
                       "component": "text",
-                      "text": "@senses.passives.perception",
+                      "text": "@stats.senses.passives.perception",
                       "textSize": "xs"
                     },
                     {
                       "type": "field",
                       "component": "text",
-                      "text": "@senses.passives.investigation",
+                      "text": "@stats.senses.passives.investigation",
                       "textSize": "xs"
                     },
                     {
                       "type": "field",
                       "component": "text",
-                      "text": "@senses.passives.insight",
+                      "text": "@stats.senses.passives.insight",
                       "textSize": "xs"
                     },
                     {
@@ -967,7 +967,7 @@
               {
                 "type": "field",
                 "component": "text",
-                "text": "@alignment.friendlyName",
+                "text": "@stats.alignment",
                 "textSize": "xs",
                 "className": "text-body-secondary mb-0"
               },

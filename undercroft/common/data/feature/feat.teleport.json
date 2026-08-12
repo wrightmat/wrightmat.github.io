@@ -1,0 +1,28 @@
+{
+  "id": "feat.teleport",
+  "name": "Teleport",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "As part of its move, the creature can magically teleport a short distance to an unoccupied space it can see, rather than moving normally.",
+  "mechanics": {
+    "type": "passive",
+    "text": "As part of its move, the creature can magically teleport a short distance to an unoccupied space it can see, rather than moving normally."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "mobility"
+    ],
+    "recipeSlots": [
+      "escape"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

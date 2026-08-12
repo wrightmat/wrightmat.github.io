@@ -1,0 +1,19 @@
+{
+  "id": "feat.close-knit-community",
+  "name": "Close-Knit Community",
+  "systemIds": ["sys.dnd5e"],
+  "description": "Everyone here knows everyone else's business — residents look out for one another, and a stranger is noticed immediately.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Outsiders stand out and word of them travels fast."
+  },
+  "tags": {
+    "categories": ["location"],
+    "locationTypes": ["settlement", "region"],
+    "locationPurposes": ["habitation"],
+    "environments": []
+  },
+  "synergizesWith": ["feat.isolated"],
+  "dependsOn": [],
+  "conflictsWith": []
+}

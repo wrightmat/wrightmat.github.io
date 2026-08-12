@@ -1,0 +1,26 @@
+{
+  "id": "feat.false-appearance",
+  "name": "False Appearance",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "While the creature remains motionless, it is indistinguishable from an ordinary object.",
+  "mechanics": {
+    "type": "passive",
+    "text": "While the creature remains motionless, it is indistinguishable from an ordinary object."
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "control"
+    ],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,29 @@
+{
+  "id": "feat.rejuvenation",
+  "name": "Rejuvenation",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "If it has a destroyed body part, or is destroyed outright, the creature reforms after a time unless specific conditions permanently end it.",
+  "mechanics": {
+    "type": "passive",
+    "text": "If it has a destroyed body part, or is destroyed outright, the creature reforms after a time unless specific conditions permanently end it."
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "endure",
+      "recover"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,26 @@
+{
+  "id": "feat.flyby",
+  "name": "Flyby",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature doesn't provoke opportunity attacks when it flies out of an enemy's reach.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature doesn't provoke opportunity attacks when it flies out of an enemy's reach."
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "mobility"
+    ],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

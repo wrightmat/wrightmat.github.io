@@ -1,0 +1,19 @@
+{
+  "id": "feat.overworked-labor",
+  "name": "Overworked Labor",
+  "systemIds": ["sys.dnd5e"],
+  "description": "The workforce here is stretched thin and pushed hard — long hours, poor conditions, and little say in the matter.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Output here is high, but at real cost to the people producing it."
+  },
+  "tags": {
+    "categories": ["location"],
+    "locationTypes": ["settlement", "complex", "structure"],
+    "locationPurposes": ["industry", "resource"],
+    "environments": []
+  },
+  "synergizesWith": ["feat.rich-vein"],
+  "dependsOn": [],
+  "conflictsWith": []
+}

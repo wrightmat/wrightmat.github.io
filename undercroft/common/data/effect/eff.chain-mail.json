@@ -1,0 +1,19 @@
+{
+  "id": "eff.chain-mail",
+  "name": "Chain Mail",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "signatureFeatureId": null,
+  "featureIds": [],
+  "properties": {
+    "form": "armor"
+  },
+  "budget": {
+    "target": 0,
+    "spent": 0,
+    "remaining": 0
+  },
+  "price": "75 gp",
+  "notes": "A full suit of interlocking metal rings — heavy, but reliable."
+}

@@ -78,9 +78,14 @@
             "type": "field",
             "bind": "@abilitiesObj"
           },
-          "initiativeBonus": {
-            "type": "field",
-            "bind": "=floor((@abilitiesObj.dexterity - 10) / 2)"
+          "initiative": {
+            "type": "object",
+            "fields": {
+              "bonus": {
+                "type": "field",
+                "bind": "=floor((@abilitiesObj.dexterity - 10) / 2)"
+              }
+            }
           },
           "savingThrows": {
             "type": "pipeline",
@@ -134,25 +139,24 @@
             }
           },
           "senses": {
-            "type": "pipeline",
-            "source": "@senses",
-            "steps": [
-              {
-                "step": "map",
-                "item": {
-                  "type": "field",
-                  "bind": "@value.notes"
+            "type": "custom",
+            "fn": "ddbMonsterSenses"
+          },
+          "proficiencies": {
+            "type": "object",
+            "fields": {
+              "defenses": {
+                "type": "custom",
+                "fn": "ddbConditionDefenses"
+              },
+              "languages": {
+                "type": "custom",
+                "fn": "fantasyStatblockSplitList",
+                "args": {
+                  "path": "languageDescription"
                 }
               }
-            ]
-          },
-          "passivePerception": {
-            "type": "field",
-            "bind": "@passivePerception"
-          },
-          "languages": {
-            "type": "field",
-            "bind": "@languageDescription"
+            }
           },
           "languageNote": {
             "type": "field",
@@ -161,19 +165,6 @@
           "damageAdjustments": {
             "type": "field",
             "bind": "@damageAdjustments"
-          },
-          "conditionImmunities": {
-            "type": "pipeline",
-            "source": "@conditionImmunities",
-            "steps": [
-              {
-                "step": "map",
-                "item": {
-                  "type": "field",
-                  "bind": "=lookup('conditions', @value)"
-                }
-              }
-            ]
           },
           "challengeRating": {
             "type": "field",
@@ -238,17 +229,33 @@
               "path": "actionsDescription"
             }
           },
-          "bonusActionsDescription": {
-            "type": "field",
-            "bind": "@bonusActionsDescription"
+          "bonusActions": {
+            "type": "custom",
+            "fn": "ddbParseHtmlTraits",
+            "args": {
+              "path": "bonusActionsDescription"
+            }
           },
-          "reactionsDescription": {
-            "type": "field",
-            "bind": "@reactionsDescription"
+          "reactions": {
+            "type": "custom",
+            "fn": "ddbParseHtmlTraits",
+            "args": {
+              "path": "reactionsDescription"
+            }
           },
-          "legendaryActionsDescription": {
-            "type": "field",
-            "bind": "@legendaryActionsDescription"
+          "legendaryActions": {
+            "type": "custom",
+            "fn": "ddbParseHtmlTraits",
+            "args": {
+              "path": "legendaryActionsDescription"
+            }
+          },
+          "lairActions": {
+            "type": "custom",
+            "fn": "ddbParseHtmlTraits",
+            "args": {
+              "path": "lairDescription"
+            }
           },
           "mythicActionsDescription": {
             "type": "field",
@@ -257,10 +264,6 @@
           "characteristicsDescription": {
             "type": "field",
             "bind": "@characteristicsDescription"
-          },
-          "lairDescription": {
-            "type": "field",
-            "bind": "@lairDescription"
           },
           "url": {
             "type": "field",

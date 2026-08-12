@@ -1,0 +1,26 @@
+{
+  "id": "feat.fire-aura",
+  "name": "Fire Aura",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "A creature that touches the creature or hits it with a melee attack while within reach takes fire damage.",
+  "mechanics": {
+    "type": "passive",
+    "text": "A creature that touches the creature or hits it with a melee attack while within reach takes fire damage."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

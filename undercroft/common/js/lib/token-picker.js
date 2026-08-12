@@ -34,19 +34,29 @@ function randomId() {
 // URL-field-with-preview half (no library browsing/saving) can omit them and
 // the Browse button simply won't be built. Every real caller in this suite
 // passes both.
+//
+// `boxed: true` wraps the field in the same bordered "field box" every other
+// center-pane property now uses (see ui-components.js's createFieldBox) —
+// border/rounded corners/padding, and the same small-uppercase-secondary
+// label style — so Image sits visually consistent next to Name/Identity
+// instead of standing out with plain Bootstrap input-group styling. Default
+// stays unboxed for any caller (Orrery's marker Image field) that isn't
+// rendering inside a field-box grid.
 export function createTokenImageField({
   id,
   label = "Image",
+  labelClass,
   value = "",
   dataManager,
   status,
   onSelect,
+  boxed = false,
 } = {}) {
   const wrapper = document.createElement("div");
-  wrapper.className = "d-flex flex-column gap-1";
+  wrapper.className = boxed ? "d-flex flex-column gap-1 border rounded-3 p-2 h-100" : "d-flex flex-column gap-1";
 
   const labelEl = document.createElement("label");
-  labelEl.className = "form-label small text-body-secondary fw-semibold";
+  labelEl.className = labelClass || (boxed ? "small text-uppercase text-body-secondary" : "form-label small text-body-secondary fw-semibold");
   if (id) labelEl.htmlFor = id;
   labelEl.textContent = label;
 

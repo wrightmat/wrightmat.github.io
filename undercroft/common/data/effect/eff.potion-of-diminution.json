@@ -1,0 +1,24 @@
+{
+  "id": "eff.potion-of-diminution",
+  "name": "Potion of Diminution",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "signatureFeatureId": null,
+  "featureIds": [
+    "feat.cast-a-spell"
+  ],
+  "properties": {
+    "rarity": "rare",
+    "form": "potion"
+  },
+  "budget": {
+    "target": 12,
+    "spent": 5,
+    "remaining": 7
+  },
+  "notes": "Shrinks the drinker as if affected by the reduce effect of Enlarge/Reduce, with the duration set by how much is drunk.",
+  "featureTiers": {
+    "feat.cast-a-spell": "level-2"
+  }
+}

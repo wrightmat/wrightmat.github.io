@@ -24,82 +24,61 @@
     ]
   },
   "proficiency": 3,
-  "alignment": {
-    "name": "Lawful Neutral",
-    "shortName": "LN"
-  },
-  "initiative": {
-    "value": 2,
-    "advantage": false,
-    "disadvantage": false
-  },
-  "senses": {
-    "passives": {
-      "perception": 17,
-      "investigation": 11,
-      "insight": 14
-    },
-    "darkvision": 60
-  },
-  "speeds": {
-    "walk": 30,
-    "burrow": 0,
-    "climb": 0,
-    "fly": 0,
-    "swim": 30
-  },
   "conditions": [],
-  "abilities": [
-    {
-      "id": 1,
-      "name": "strength",
-      "friendlyName": "Strength",
-      "shortName": "STR",
-      "score": 8,
-      "modifier": -1
+  "stats": {
+    "hitPoints": {
+      "max": 28,
+      "current": 28,
+      "temp": 0
     },
-    {
-      "id": 2,
-      "name": "dexterity",
-      "friendlyName": "Dexterity",
-      "shortName": "DEX",
-      "score": 15,
-      "modifier": 2
+    "armorClass": 12,
+    "abilities": {
+      "strength": 8,
+      "dexterity": 15,
+      "constitution": 10,
+      "intelligence": 12,
+      "wisdom": 19,
+      "charisma": 13
     },
-    {
-      "id": 3,
-      "name": "constitution",
-      "friendlyName": "Constitution",
-      "shortName": "CON",
-      "score": 10,
-      "modifier": 0
+    "alignment": "Lawful Neutral",
+    "initiative": {
+      "bonus": 2
     },
-    {
-      "id": 4,
-      "name": "intelligence",
-      "friendlyName": "Intelligence",
-      "shortName": "INT",
-      "score": 12,
-      "modifier": 1
+    "senses": {
+      "passives": {
+        "perception": 17,
+        "investigation": 11,
+        "insight": 14
+      },
+      "darkvision": 60
     },
-    {
-      "id": 5,
-      "name": "wisdom",
-      "friendlyName": "Wisdom",
-      "shortName": "WIS",
-      "score": 19,
-      "modifier": 4
+    "speed": {
+      "walk": 30,
+      "burrow": 0,
+      "climb": 0,
+      "fly": 0,
+      "swim": 30
     },
-    {
-      "id": 6,
-      "name": "charisma",
-      "friendlyName": "Charisma",
-      "shortName": "CHA",
-      "score": 13,
-      "modifier": 1
-    }
-  ],
-  "saves": [
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Cold",
+          "type": "resistance",
+          "condition": null
+        },
+        {
+          "name": "Magical Sleep",
+          "type": "immunity",
+          "condition": null
+        }
+      ],
+      "languages": [
+        "Abyssal",
+        "Common",
+        "Druidic"
+      ]
+    },
+  "savingThrows": [
     {
       "id": 1,
       "name": "strength",
@@ -360,14 +339,7 @@
       "advantage": false,
       "disadvantage": false
     }
-  ],
-  "stats": {
-    "hitPoints": {
-      "max": 28,
-      "current": 28,
-      "temp": 0
-    },
-    "armorClass": 12
+  ]
   },
   "currencies": {
     "cp": 0,
@@ -779,23 +751,6 @@
       "Navigator's Tools",
       "Herbalism Kit",
       "Cartographer's Tools"
-    ],
-    "languages": [
-      "Abyssal",
-      "Common",
-      "Druidic"
-    ],
-    "defenses": [
-      {
-        "name": "Cold",
-        "type": "resistance",
-        "condition": null
-      },
-      {
-        "name": "Magical Sleep",
-        "type": "immunity",
-        "condition": null
-      }
     ],
     "senses": [],
     "other": [

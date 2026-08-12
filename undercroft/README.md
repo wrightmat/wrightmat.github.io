@@ -1001,15 +1001,71 @@ these are conventions, not enforced fields:
   reads, not something any code sums or validates.
 - **`category`** — a plain descriptive string (`"adventuring-gear"`,
   `"service"`, `"wondrous-item"`) for a human skimming the Resource list.
-  Not read by any filter — Resource generation-matching only ever uses
-  `tags.locationTypes`/`tags.locationPurposes`/`tags.environments` and the
-  `systemIds`/`settingIds` scoping below, the same as every other kind.
+  Mostly not read by any filter — Resource generation-matching's own
+  tag-compatibility check only ever uses `tags.locationTypes`/
+  `tags.locationPurposes`/`tags.environments` and the `systemIds`/
+  `settingIds` scoping below, the same as every other kind — except that the
+  literal value `"service"` IS read by `generator.js`'s Needs picker (see
+  `family` below): a shop (the shared starter "commerce" Purpose) never
+  Needs a Service, and even outside Commerce a Service is comparatively rare
+  as a Need. Every other `category` string is purely descriptive.
 - **`house`** — which Eberron Dragonmarked house offers a service Resource
   (`"kundarak"`, `"sivis"`, `"orien"`, ...), purely descriptive, same
   no-code-reads-it status as `category`.
 - **`settingIds`** — same convention as `systemIds` (empty/absent = every
   Setting, non-empty = restricted to those) — so an Eberron-specific Resource
   never surfaces when generating a Location under a different Setting.
+- **`family`** — unlike the fields above, this one IS read by
+  `generator.js`: an optional string tying together Resources that are
+  really the same underlying thing at different sizes/grades/variants (e.g.
+  every `res.dragonshard-*` file shares `"family": "dragonshard"`, whether
+  it's Eberron/Khyber/Siberys or Large/Medium/Small). Generation never lets
+  an Asset and a Need share a `family` (in addition to never letting them
+  share the exact same id) — a place having "Dragonshards" as a resource and
+  also needing "Dragonshards" makes no sense even if the two picks happened
+  to be different sizes. Leave unset for a Resource with no real variants;
+  two Resources with no `family` are never treated as the same thing just
+  for both being unset.
+
+### Location Type conventions (`common/data/location-type/*.json`)
+
+Like Resource, a `location-type` payload is freeform JSON — no field schema
+enforces this, it's a convention:
+
+- **`scale`** — an optional number, read by `js/app.js`'s Generate
+  Multi-Room Location handler to keep a multi-room result's rooms
+  plausible relative to their parent: a room's own Type may only have a
+  `scale` **less than or equal to** the parent Location's resolved Type
+  scale, never greater (a Structure or Complex can plausibly be "inside" a
+  Region, but a Region can't sensibly be "inside" a Complex). The 5 starter
+  Types seed two tiers — `region`/`environment` at `2`, `settlement`/
+  `complex`/`structure` at `1` — matching the containment language already
+  in `region.json`'s/`complex.json`'s own descriptions. A Type with no
+  `scale` set is always treated as an eligible child (permissive default —
+  a Creator-authored Type that hasn't opted into this convention shouldn't
+  silently become unpickable), and the whole constraint is skipped entirely
+  when the parent's own resolved Type has no `scale`. Only ever consulted
+  for multi-room generation — a single Generate Single Location click has no
+  parent to compare against, so `scale` plays no role there. An explicit
+  Type override (if the GM pinned one) still applies to every room exactly
+  as it did before this convention existed, since the override's own Type
+  always trivially satisfies `scale <= scale` against itself.
+
+### Vault's generator-property field detection (`vault/js/lib/tables.js`)
+
+Vault has no hardcoded knowledge of "Rarity"/"Activation"/"Form" as concepts —
+`isGeneratorPropertyField` treats any array field on the active System as a
+selectable Vault property whenever every one of its values carries a numeric
+`cost` or `targetBudget`. That shape-only detection can false-positive on a
+field meant for an entirely different mechanism that happens to reuse those
+key names — confirmed for `sys.dnd5e.json`'s own `challengeRating` (Crucible's
+Combat Scaling levels; each value's `targetBudget` feeds Crucible's own
+encounter-difficulty math, nothing to do with spells/items), which used to
+leak into Vault's own Identity section as a selectable property purely by
+accident. Excluded via `NON_VAULT_PROPERTY_FIELD_KEYS`, a small hardcoded set
+of field keys checked first in `isGeneratorPropertyField` — deliberately an
+exception in Vault's own code, not a flag stored on the System record: a
+System's fields describe the game, not which Undercroft tool may read them.
 
 ### Event naming
 

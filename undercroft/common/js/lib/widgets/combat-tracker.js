@@ -79,20 +79,54 @@ export function initCombatTrackerWidget(
     return { destroy() {} };
   }
 
-  // GM mode only — see ensureGmShell/renderGm's own comments. Two permanent
-  // children of `container`, created exactly once and never torn down:
-  // `dynamicMount` (everything that legitimately needs rebuilding on every
-  // render — the encounter picker, combatant list, edit panel) and
-  // `addRowMount` (the Add Combatant row, built once and left completely
-  // alone afterward). Splitting these apart is what actually fixes the
-  // focus-loss bug a previous attempt only band-aided (capturing/restoring
-  // focus around a full rebuild reduced, but never eliminated, the GM's
-  // cursor getting dropped mid-keystroke — confirmed still happening
-  // intermittently). An `<input>` that is NEVER removed from the document
-  // simply cannot lose focus to a re-render, so this makes the bug
-  // structurally impossible instead of merely less likely.
-  let dynamicMount = null;
+  // GM mode only — see ensureGmShell/renderGm's own comments. Permanent
+  // children of `container`, created exactly once and never torn down as
+  // elements: `topBarMount` (New Encounter + Encounter select + System
+  // select, one row), `toolbarMount` (round readout + start/stop/turn/sort/
+  // roll/delete buttons), `listMount` (the combatant list-group — the ONE
+  // region that's rebuilt on every render, since it's the only part meant to
+  // reflect a poll/sync tick landing while the GM might be mid-edit
+  // elsewhere), `editPanelMount` (the selected combatant's own fields),
+  // `addRowMount` (the Add Combatant row), and `emptyStateMount` (the "select
+  // or create an encounter" message).
+  //
+  // An earlier attempt only split out addRowMount, leaving every other
+  // input (Name/Init/HP/Max HP/Temp HP/AC, the Encounter/System selects)
+  // inside one big region that got torn down and rebuilt on EVERY render —
+  // including passive ones with nothing to do with whatever the GM was
+  // actually typing into (pollActiveEncounter isn't reached in GM mode, but
+  // startGmCharacterSync's own periodic re-sync sweep, and simply selecting/
+  // editing a DIFFERENT combatant, both trigger a full render()). Splitting
+  // just the Add row out reduced the bug to "everywhere except that one
+  // row," not eliminated it — confirmed by the user still losing focus in
+  // Name/HP/AC while editing. The real fix is the same "never destroy the
+  // element" principle applied everywhere it belongs: topBarMount/
+  // toolbarMount only rebuild their DOM when the data they depend on
+  // (encounter list, system list, started/round) actually changes between
+  // renders (see refreshTopBar/refreshToolbar's own signature checks), and
+  // editPanelMount only rebuilds when the SELECTED COMBATANT ITSELF changes
+  // (see refreshEditPanel) — an unrelated render (a different combatant's
+  // HP changing, a poll tick) just pushes fresh values into the existing,
+  // still-focused inputs via syncEditPanelValues, skipping whichever one is
+  // `document.activeElement` so an in-progress edit is never overwritten out
+  // from under the GM. listMount is the deliberate exception: it always
+  // rebuilds, since combatant rows have no free-text inputs to lose focus
+  // from and are exactly what a GM wants to see update live.
+  let topBarMount = null;
+  let toolbarMount = null;
+  let listMount = null;
+  let editPanelMount = null;
   let addRowMount = null;
+  let emptyStateMount = null;
+  // Cheap "did the inputs to this region actually change since last render"
+  // guards — see topBarMount/toolbarMount's own comment above for why.
+  let lastTopBarSignature = "";
+  let lastToolbarSignature = "";
+  // {combatantId, panel, nameInput, initInput, hpInput, maxHpInput,
+  // tempHpInput, acInput, visibleButton, tagsBadgesMount} for whichever
+  // combatant editPanelMount currently shows — null when nothing's selected.
+  // See refreshEditPanel/syncEditPanelValues.
+  let editPanelRefs = null;
 
   const state = {
     encounter: null,
@@ -563,21 +597,27 @@ export function initCombatTrackerWidget(
   async function hideFromTable() {
     if (!state.encounter || !state.announced) return;
     const active = dataManager.getActiveGroup();
-    if (active?.groupId) {
-      try {
-        await dataManager.updateSpotlightData({
-          groupId: active.groupId,
-          kind: "encounter",
-          id: state.encounter.id,
-          data: { hidden: true },
-        });
-        status?.show("Stopped showing to the table.", { type: "success", timeout: 2000 });
-      } catch (error) {
-        status?.show(error.message || "Unable to stop showing.", { type: "error" });
-      }
+    if (!active?.groupId) return;
+    try {
+      await dataManager.updateSpotlightData({
+        groupId: active.groupId,
+        kind: "encounter",
+        id: state.encounter.id,
+        data: { hidden: true },
+      });
+      // Only flip state (and re-render the now-off toggle) on confirmed
+      // success — same shape as showToTable's own try block. Setting this
+      // unconditionally after the try/catch used to desync client from
+      // server on any failure: the toggle would visually turn off
+      // immediately, then flip back on after a refresh once the page
+      // re-fetched the real (still-active) server state, with no obvious
+      // explanation why — confirmed real bug, not just theoretical.
+      state.announced = false;
+      status?.show("Stopped showing to the table.", { type: "success", timeout: 2000 });
+      render();
+    } catch (error) {
+      status?.show(error.message || "Unable to stop showing.", { type: "error" });
     }
-    state.announced = false;
-    render();
   }
 
   async function toggleVisibility() {
@@ -901,11 +941,11 @@ export function initCombatTrackerWidget(
     entries.forEach((entry) => datalist.appendChild(new Option(entry.label, entry.label)));
     row.appendChild(datalist);
 
-    const combatantInput = el("input", "form-control form-control-sm flex-shrink-0");
+    const combatantInput = el("input", "form-control form-control-sm flex-grow-1");
     combatantInput.type = "text";
     combatantInput.setAttribute("list", COMBATANT_DATALIST_ID);
     combatantInput.placeholder = "Character/NPC/monster…";
-    combatantInput.style.width = "10rem";
+    combatantInput.style.minWidth = "10rem";
 
     const nameInput = el("input", "form-control form-control-sm flex-shrink-0");
     nameInput.placeholder = "Combatant name";
@@ -933,19 +973,45 @@ export function initCombatTrackerWidget(
     return row;
   }
 
-  // Synchronous — reads the systems list cached by loadSystemsList() at
-  // init time, rather than re-fetching on every render (see systemsList's
-  // own comment for why that matters).
-  function renderGmSystemPicker() {
-    const wrap = el("div");
-    wrap.appendChild(el("label", "form-label small mb-1", "System"));
-    const select = el("select", "form-select form-select-sm");
-    select.appendChild(new Option("None", ""));
-    (state.systemsList || []).forEach((entry) => select.appendChild(new Option(entry.title || entry.name || entry.id, entry.id)));
-    select.value = state.encounter.systemId || "";
-    select.addEventListener("change", () => changeSystem(select.value));
-    wrap.appendChild(select);
-    return wrap;
+  // Builds the single condensed top row: New Encounter (icon button) +
+  // Encounter select + System select — folded from three separate rows into
+  // one, matching how the rest of this widget's controls read. Called only
+  // from refreshTopBar, itself only called when its own signature check
+  // says something here actually changed (see topBarMount's declaration
+  // comment) — reads systemsList/ownedEncounters synchronously, same
+  // reasoning as the rest of this file's cached-list reads.
+  function buildTopBarRow() {
+    const row = el("div", "d-flex gap-2 align-items-end");
+
+    const newButton = iconButton("tabler:plus", "New Encounter");
+    newButton.addEventListener("click", createEncounter);
+    row.appendChild(newButton);
+
+    const pickerWrap = el("div", "flex-grow-1");
+    pickerWrap.appendChild(el("label", "form-label small mb-1", "Encounter"));
+    const picker = el("select", "form-select form-select-sm");
+    picker.appendChild(new Option("Select an encounter…", ""));
+    state.ownedEncounters.forEach((entry) => {
+      picker.appendChild(new Option(entry.title || entry.name || entry.id, entry.id));
+    });
+    if (state.encounter) picker.value = state.encounter.id;
+    picker.addEventListener("change", () => selectEncounter(picker.value));
+    pickerWrap.appendChild(picker);
+    row.appendChild(pickerWrap);
+
+    if (state.encounter) {
+      const systemWrap = el("div", "flex-grow-1");
+      systemWrap.appendChild(el("label", "form-label small mb-1", "System"));
+      const select = el("select", "form-select form-select-sm");
+      select.appendChild(new Option("None", ""));
+      (state.systemsList || []).forEach((entry) => select.appendChild(new Option(entry.title || entry.name || entry.id, entry.id)));
+      select.value = state.encounter.systemId || "";
+      select.addEventListener("change", () => changeSystem(select.value));
+      systemWrap.appendChild(select);
+      row.appendChild(systemWrap);
+    }
+
+    return row;
   }
 
   function renderEncounterToolbar() {
@@ -1047,11 +1113,15 @@ export function initCombatTrackerWidget(
   // Edit button/toolbar; selecting a row IS opening its details. Visible
   // and Delete (previously a separate small toolbar above this panel) now
   // live in its header, next to the Name field.
-  function renderCombatantEditPanel() {
-    const combatant = selectedCombatant();
-    if (!combatant) {
-      return null;
-    }
+  //
+  // Built exactly ONCE per selected combatant identity (see refreshEditPanel
+  // below) — every input handler here resolves selectedCombatant() fresh at
+  // event time rather than closing over the `combatant` parameter directly,
+  // since state.encounter (and so every combatant object inside it) can be
+  // wholesale-replaced by a poll/sync refresh between when this panel was
+  // built and when the GM actually commits an edit; reading fresh keeps the
+  // write landing on the live object instead of a detached stale one.
+  function buildEditPanel(combatant) {
     const panel = el("div", "border rounded-3 p-2 d-flex flex-column gap-2");
 
     const nameRow = el("div", "d-flex gap-2 align-items-center");
@@ -1059,7 +1129,9 @@ export function initCombatTrackerWidget(
     const nameInput = el("input", "form-control form-control-sm flex-grow-1");
     nameInput.value = combatant.name;
     nameInput.addEventListener("change", () => {
-      combatant.name = nameInput.value.trim() || combatant.name;
+      const current = selectedCombatant();
+      if (!current) return;
+      current.name = nameInput.value.trim() || current.name;
       markDirty();
     });
     nameRow.appendChild(nameInput);
@@ -1084,7 +1156,9 @@ export function initCombatTrackerWidget(
     const valueBinding = findBindingByRole(state.combatBindings, "value");
     const modifierBinding = findBindingByRole(state.combatBindings, "modifier");
 
-    const statsRow = el("div", "d-flex gap-2 align-items-center flex-wrap");
+    // Row 2: Initiative + AC together — the two "how this turn/hit goes"
+    // numbers, as opposed to HP's own resource-tracking row below.
+    const initAcRow = el("div", "d-flex gap-2 align-items-center flex-wrap");
     const initWrap = el("div", "d-flex align-items-center gap-1");
     initWrap.appendChild(el("span", "small text-body-secondary", modifierBinding?.name || "Init"));
     const initInput = el("input", "form-control form-control-sm");
@@ -1092,45 +1166,12 @@ export function initCombatTrackerWidget(
     initInput.style.width = "4.5rem";
     initInput.value = combatant.initiative;
     initInput.addEventListener("change", () => {
-      combatant.initiative = Number(initInput.value) || 0;
+      const current = selectedCombatant();
+      if (!current) return;
+      current.initiative = Number(initInput.value) || 0;
       markDirty();
     });
     initWrap.appendChild(initInput);
-
-    const hpWrap = el("div", "d-flex align-items-center gap-1");
-    hpWrap.appendChild(el("span", "small text-body-secondary", resourceBinding?.name || "Resource"));
-    const hpInput = el("input", "form-control form-control-sm");
-    hpInput.type = "number";
-    hpInput.style.width = "4.5rem";
-    hpInput.value = combatant.hp;
-    hpInput.addEventListener("change", () => {
-      combatant.hp = Number(hpInput.value) || 0;
-      markDirty();
-      void writeThroughToCharacter(combatant, { hp: combatant.hp });
-    });
-    const maxHpInput = el("input", "form-control form-control-sm");
-    maxHpInput.type = "number";
-    maxHpInput.style.width = "4.5rem";
-    maxHpInput.value = combatant.maxHp;
-    maxHpInput.addEventListener("change", () => {
-      combatant.maxHp = Number(maxHpInput.value) || 0;
-      markDirty();
-      void writeThroughToCharacter(combatant, { maxHp: combatant.maxHp });
-    });
-    hpWrap.append(hpInput, el("span", "text-body-secondary", "/"), maxHpInput);
-
-    const tempHpWrap = el("div", "d-flex align-items-center gap-1");
-    tempHpWrap.appendChild(el("span", "small text-body-secondary", "Temp"));
-    const tempHpInput = el("input", "form-control form-control-sm");
-    tempHpInput.type = "number";
-    tempHpInput.style.width = "4.5rem";
-    tempHpInput.value = combatant.tempHp ?? 0;
-    tempHpInput.addEventListener("change", () => {
-      combatant.tempHp = Number(tempHpInput.value) || 0;
-      markDirty();
-      void writeThroughToCharacter(combatant, { tempHp: combatant.tempHp });
-    });
-    tempHpWrap.appendChild(tempHpInput);
 
     const acWrap = el("div", "d-flex align-items-center gap-1");
     acWrap.appendChild(el("span", "small text-body-secondary", valueBinding?.name || "Value"));
@@ -1139,111 +1180,285 @@ export function initCombatTrackerWidget(
     acInput.style.width = "4.5rem";
     acInput.value = combatant.ac ?? 0;
     acInput.addEventListener("change", () => {
-      combatant.ac = Number(acInput.value) || 0;
+      const current = selectedCombatant();
+      if (!current) return;
+      current.ac = Number(acInput.value) || 0;
       markDirty();
-      void writeThroughToCharacter(combatant, { ac: combatant.ac });
+      void writeThroughToCharacter(current, { ac: current.ac });
     });
     acWrap.appendChild(acInput);
 
-    statsRow.append(initWrap, hpWrap, tempHpWrap, acWrap);
+    initAcRow.append(initWrap, acWrap);
 
-    const tagsSection = el("div", "d-flex flex-column gap-1");
-    tagsSection.appendChild(el("span", "small text-body-secondary", "Tags"));
-    tagsSection.appendChild(renderCombatantTagBadges(combatant, { removable: true }));
-    tagsSection.appendChild(buildTagInputRow(TAG_DATALIST_ID, { onAdd: (value) => addTag(combatant, value) }));
+    // Row 3: current/max/temp HP and the ± delta box all together — every
+    // number that describes "how hurt is this combatant right now" in one
+    // place, separate from Init/AC above.
+    // flex-nowrap + overflow-x-auto (not flex-wrap) — four number boxes plus
+    // the delta box is too much to reliably fit one line at every dashboard
+    // card width even at the reduced 3.5rem size below; scrolling sideways
+    // beats the row breaking onto a second line and separating HP from the
+    // ± box the GM actually wants right next to it. Same convention the Add
+    // Combatant row already uses for the same reason.
+    const hpRow = el("div", "d-flex align-items-center gap-1 flex-nowrap overflow-x-auto");
+    hpRow.appendChild(el("span", "small text-body-secondary", resourceBinding?.name || "Resource"));
+    const hpInput = el("input", "form-control form-control-sm");
+    hpInput.type = "number";
+    hpInput.style.width = "3.5rem";
+    hpInput.value = combatant.hp;
+    hpInput.addEventListener("change", () => {
+      const current = selectedCombatant();
+      if (!current) return;
+      current.hp = Number(hpInput.value) || 0;
+      markDirty();
+      void writeThroughToCharacter(current, { hp: current.hp });
+    });
+    const maxHpInput = el("input", "form-control form-control-sm");
+    maxHpInput.type = "number";
+    maxHpInput.style.width = "3.5rem";
+    maxHpInput.value = combatant.maxHp;
+    maxHpInput.addEventListener("change", () => {
+      const current = selectedCombatant();
+      if (!current) return;
+      current.maxHp = Number(maxHpInput.value) || 0;
+      markDirty();
+      void writeThroughToCharacter(current, { maxHp: current.maxHp });
+    });
+    const tempHpInput = el("input", "form-control form-control-sm");
+    tempHpInput.type = "number";
+    tempHpInput.style.width = "3.5rem";
+    tempHpInput.value = combatant.tempHp ?? 0;
+    tempHpInput.addEventListener("change", () => {
+      const current = selectedCombatant();
+      if (!current) return;
+      current.tempHp = Number(tempHpInput.value) || 0;
+      markDirty();
+      void writeThroughToCharacter(current, { tempHp: current.tempHp });
+    });
+    // "Remove HP" — a delta box, not a value box: type a positive number to
+    // subtract it from current HP, or a negative number to add it back
+    // (heal). The sign is deliberately inverted from what a plain "+/- HP"
+    // box would do — per the user, most entries during a real session are
+    // damage, so making the common case not require typing a leading "-"
+    // every time is the point, not an accident. Always clears back to blank
+    // after applying so it's immediately ready for the next hit, and never
+    // reflects any persisted value itself (see syncEditPanelValues, which
+    // skips it on purpose).
+    const hpDeltaInput = el("input", "form-control form-control-sm");
+    hpDeltaInput.type = "number";
+    hpDeltaInput.style.width = "4.5rem";
+    hpDeltaInput.placeholder = "±HP";
+    hpDeltaInput.title = "Remove this much HP — type a negative number to heal instead";
+    hpDeltaInput.setAttribute("aria-label", "Remove HP");
+    hpDeltaInput.setAttribute("data-bs-toggle", "tooltip");
+    hpDeltaInput.addEventListener("change", () => {
+      const amount = Number(hpDeltaInput.value);
+      hpDeltaInput.value = "";
+      if (!amount) return;
+      const current = selectedCombatant();
+      if (!current) return;
+      current.hp -= amount;
+      markDirty();
+      void writeThroughToCharacter(current, { hp: current.hp });
+    });
+    hpRow.append(
+      hpInput,
+      el("span", "text-body-secondary", "/"),
+      maxHpInput,
+      el("span", "small text-body-secondary ms-1", "Temp"),
+      tempHpInput,
+      hpDeltaInput
+    );
 
-    panel.append(nameRow, statsRow, tagsSection);
-    return panel;
+    // Row 4: current tag badges on the left, the Add Tag input on the right
+    // — one row, rebuilt fresh every sync (see syncEditPanelValues) since
+    // neither side is a value a GM sits typing into for a while.
+    const tagsMount = el("div", "d-flex align-items-center justify-content-between gap-2 flex-wrap");
+    panel.append(nameRow, initAcRow, hpRow, tagsMount);
+
+    return {
+      combatantId: combatant.id,
+      panel,
+      nameInput,
+      initInput,
+      hpInput,
+      maxHpInput,
+      tempHpInput,
+      acInput,
+      visibleButton,
+      tagsMount,
+    };
   }
 
-  // Creates dynamicMount/addRowMount exactly once (a no-op every call after
+  // Pushes `combatant`'s current values into an already-built panel's
+  // inputs — never recreates a single DOM node. Skips whichever input is
+  // `document.activeElement`, so a render triggered by anything else (a
+  // poll/sync tick, a different combatant's HP changing) can't overwrite an
+  // edit the GM is mid-typing into. hpDeltaInput is deliberately excluded —
+  // it never represents persisted state, only a transient action.
+  function syncEditPanelValues(refs, combatant) {
+    const active = document.activeElement;
+    if (active !== refs.nameInput) refs.nameInput.value = combatant.name;
+    if (active !== refs.initInput) refs.initInput.value = combatant.initiative;
+    if (active !== refs.hpInput) refs.hpInput.value = combatant.hp;
+    if (active !== refs.maxHpInput) refs.maxHpInput.value = combatant.maxHp;
+    if (active !== refs.tempHpInput) refs.tempHpInput.value = combatant.tempHp ?? 0;
+    if (active !== refs.acInput) refs.acInput.value = combatant.ac ?? 0;
+
+    const visibleIcon = refs.visibleButton.querySelector(".iconify");
+    if (visibleIcon) visibleIcon.dataset.icon = combatant.hidden ? "tabler:eye-off" : "tabler:eye";
+    // refreshTooltips (below) disposes and reconstructs the Tooltip
+    // instance, which re-reads `title` at construction time — same
+    // convention iconButton itself relies on — so updating the plain
+    // attribute here is enough, no data-bs-title needed.
+    const visibleTitle = combatant.hidden ? "Hidden from players — click to reveal" : "Visible to players — click to hide";
+    refs.visibleButton.title = visibleTitle;
+    refs.visibleButton.setAttribute("aria-label", visibleTitle);
+
+    // Tag badges/input are buttons and a text field that's empty between
+    // uses, not a value the GM sits typing into for a while — safe (and
+    // simplest) to fully rebuild every sync rather than diffing. Badges
+    // grow to fill the row on the left; the Add Tag input stays a fixed
+    // size pinned to the right (justify-content-between on tagsMount).
+    refs.tagsMount.innerHTML = "";
+    const badges = renderCombatantTagBadges(combatant, { removable: true });
+    badges.classList.add("flex-grow-1");
+    const addTagRow = buildTagInputRow(TAG_DATALIST_ID, { onAdd: (value) => addTag(combatant, value) });
+    addTagRow.classList.add("flex-shrink-0");
+    refs.tagsMount.append(badges, addTagRow);
+
+    refreshTooltips(refs.panel);
+  }
+
+  // Creates every persistent mount exactly once (a no-op every call after
   // the first) — see their own declaration comment for why the split
   // exists. Called from renderGm() itself rather than init(), so it's
   // naturally never reached in player mode at all.
   function ensureGmShell() {
-    if (dynamicMount && addRowMount) return;
+    if (topBarMount) return;
     container.innerHTML = "";
-    dynamicMount = el("div");
-    // mt-2 replaces the gap-2 spacing this row used to get for free as
-    // root's own last flex child — now a separate sibling of dynamicMount,
-    // not a child of it, so it needs its own top margin to keep the same
-    // visual spacing. Starts hidden (d-none) — toggled per-render below,
-    // same "only show once an encounter is selected" behavior this row
-    // always had, just via a class now instead of being present/absent.
-    addRowMount = el("div", "mt-2 d-none");
-    addRowMount.appendChild(renderGmAddCombatantRow());
-    container.append(dynamicMount, addRowMount);
-  }
-
-  // Synchronous, and builds everything into a detached `root` before ever
-  // touching dynamicMount — swapping content in one step at the very end
-  // (rather than clearing it up front, the old approach) is what stops the
-  // widget from visibly flashing empty on every click. The Add Combatant
-  // row (addRowMount) is deliberately NOT part of this rebuild at all — see
-  // ensureGmShell's own comment for why.
-  function renderGm() {
-    ensureGmShell();
     const root = el("div", "combat-tracker-widget d-flex flex-column gap-2");
 
-    const pickerRow = el("div", "d-flex flex-wrap gap-2 align-items-end");
-    const pickerWrap = el("div", "flex-grow-1");
-    pickerWrap.appendChild(el("label", "form-label small mb-1", "Encounter"));
-    const picker = el("select", "form-select form-select-sm");
-    picker.appendChild(new Option("Select an encounter…", ""));
-    state.ownedEncounters.forEach((entry) => {
-      picker.appendChild(new Option(entry.title || entry.name || entry.id, entry.id));
+    // No individual mt-2/spacing classes needed on any of these — they're
+    // all direct children of `root`'s own gap-2 flex column now (unlike the
+    // old addRowMount, a sibling of the whole rebuilt tree rather than a
+    // child within it, which needed its own margin for exactly that reason).
+    // gap-2 only applies between children actually in layout, so a hidden
+    // (d-none) mount correctly contributes no extra blank space.
+    topBarMount = el("div");
+    toolbarMount = el("div", "d-flex flex-wrap gap-3 align-items-center justify-content-end d-none");
+    emptyStateMount = el("p", "text-body-secondary small mb-0", "Select or create an encounter to start tracking combat.");
+    listMount = el("div", "list-group d-none");
+    editPanelMount = el("div");
+    // Starts hidden — toggled per-render below, same "only show once an
+    // encounter is selected" behavior this row always had, just via a class
+    // now instead of being present/absent.
+    addRowMount = el("div", "d-none");
+    addRowMount.appendChild(renderGmAddCombatantRow());
+
+    root.append(topBarMount, toolbarMount, emptyStateMount, listMount, editPanelMount, addRowMount);
+    container.appendChild(root);
+  }
+
+  // Rebuilds topBarMount's actual DOM only when what it depends on
+  // (the owned-encounter list, the systems list, which encounter/system are
+  // current) has actually changed since the last render — see topBarMount's
+  // declaration comment for why this matters. Cheap to call on every render;
+  // the signature check is what keeps it from touching the DOM (and so the
+  // Encounter/System selects) on renders that have nothing to do with them.
+  function refreshTopBar() {
+    const signature = JSON.stringify({
+      encounters: state.ownedEncounters.map((entry) => [entry.id, entry.title || entry.name]),
+      systems: (state.systemsList || []).map((entry) => entry.id),
+      encounterId: state.encounter?.id || "",
+      systemId: state.encounter?.systemId || "",
     });
-    if (state.encounter) picker.value = state.encounter.id;
-    picker.addEventListener("change", () => selectEncounter(picker.value));
-    pickerWrap.appendChild(picker);
+    if (signature === lastTopBarSignature) return;
+    lastTopBarSignature = signature;
+    disposeTooltips(topBarMount);
+    topBarMount.innerHTML = "";
+    topBarMount.appendChild(buildTopBarRow());
+    refreshTooltips(topBarMount);
+  }
 
-    const newButton = el("button", "btn btn-outline-primary btn-sm", "New");
-    newButton.type = "button";
-    newButton.addEventListener("click", createEncounter);
+  // Same signature-gated approach as refreshTopBar, for the round readout +
+  // start/stop/turn/sort/roll/delete buttons.
+  function refreshToolbar() {
+    const signature = JSON.stringify({ started: state.encounter?.started, round: state.encounter?.round });
+    if (signature === lastToolbarSignature) return;
+    lastToolbarSignature = signature;
+    disposeTooltips(toolbarMount);
+    toolbarMount.innerHTML = "";
+    if (state.encounter.started) {
+      toolbarMount.appendChild(el("span", "text-body-secondary small", `Round ${state.encounter.round}`));
+    }
+    toolbarMount.appendChild(renderEncounterToolbar());
+    refreshTooltips(toolbarMount);
+  }
 
-    pickerRow.append(pickerWrap, newButton);
-    root.appendChild(pickerRow);
+  // The one region that's deliberately rebuilt in full on every render — see
+  // listMount's declaration comment for why that's the correct behavior
+  // here (no free-text inputs live in a combatant row, and this is exactly
+  // what a GM wants reflecting a poll/sync tick live).
+  function refreshCombatantList() {
+    disposeTooltips(listMount);
+    listMount.innerHTML = "";
+    state.encounter.combatants.forEach((combatant, index) => {
+      listMount.appendChild(renderCombatantRow(combatant, index));
+    });
+    if (!state.encounter.combatants.length) {
+      listMount.appendChild(el("p", "text-body-secondary small mb-0", "No combatants yet."));
+    }
+    refreshTooltips(listMount);
+  }
 
-    if (state.encounter) {
-      const metaRow = el("div", "d-flex flex-wrap gap-3 align-items-end justify-content-between");
-      metaRow.appendChild(renderGmSystemPicker());
-      const rightMeta = el("div", "d-flex align-items-center gap-3");
-      if (state.encounter.started) {
-        rightMeta.appendChild(el("span", "text-body-secondary small", `Round ${state.encounter.round}`));
+  // Rebuilds editPanelMount's DOM only when the SELECTED COMBATANT ITSELF
+  // changes (a real structural change); otherwise pushes fresh values into
+  // the already-built inputs via syncEditPanelValues, which itself skips
+  // whichever input currently has focus — see editPanelRefs' declaration
+  // comment and buildEditPanel's own comment for the full reasoning.
+  function refreshEditPanel() {
+    const combatant = selectedCombatant();
+    if (!combatant) {
+      if (editPanelRefs) {
+        disposeTooltips(editPanelMount);
+        editPanelMount.innerHTML = "";
+        editPanelRefs = null;
       }
-      rightMeta.appendChild(renderEncounterToolbar());
-      metaRow.appendChild(rightMeta);
-      root.appendChild(metaRow);
+      return;
+    }
+    if (!editPanelRefs || editPanelRefs.combatantId !== combatant.id) {
+      disposeTooltips(editPanelMount);
+      editPanelMount.innerHTML = "";
+      editPanelRefs = buildEditPanel(combatant);
+      editPanelMount.appendChild(editPanelRefs.panel);
+    }
+    syncEditPanelValues(editPanelRefs, combatant);
+  }
 
-      root.appendChild(el("hr", "my-1"));
+  // Synchronous, and touches only whichever mounts actually need it this
+  // render — see each mount's own declaration/refresh-function comment.
+  function renderGm() {
+    ensureGmShell();
+    const hasEncounter = Boolean(state.encounter);
 
-      const list = el("div", "list-group");
-      state.encounter.combatants.forEach((combatant, index) => {
-        list.appendChild(renderCombatantRow(combatant, index));
-      });
-      if (!state.encounter.combatants.length) {
-        list.appendChild(el("p", "text-body-secondary small mb-0", "No combatants yet."));
-      }
-      root.appendChild(list);
+    emptyStateMount.classList.toggle("d-none", hasEncounter);
+    toolbarMount.classList.toggle("d-none", !hasEncounter);
+    listMount.classList.toggle("d-none", !hasEncounter);
+    addRowMount.classList.toggle("d-none", !hasEncounter);
 
-      const editPanel = renderCombatantEditPanel();
-      if (editPanel) root.appendChild(editPanel);
-    } else {
-      root.appendChild(el("p", "text-body-secondary small mb-0", "Select or create an encounter to start tracking combat."));
+    refreshTopBar();
+    if (hasEncounter) {
+      refreshToolbar();
+      refreshCombatantList();
+      refreshEditPanel();
+    } else if (editPanelRefs) {
+      disposeTooltips(editPanelMount);
+      editPanelMount.innerHTML = "";
+      editPanelRefs = null;
     }
 
-    disposeTooltips(dynamicMount);
-    dynamicMount.innerHTML = "";
-    dynamicMount.appendChild(root);
     renderTagDatalist(TAG_DATALIST_ID, state.conditions);
-    refreshTooltips(dynamicMount);
     updateVisibilityAction();
-
-    // addRowMount itself (and everything inside it) was built once in
-    // ensureGmShell and is never rebuilt here — only its visibility follows
-    // state.encounter, same "only shown once an encounter exists" behavior
-    // this row always had.
-    addRowMount.classList.toggle("d-none", !state.encounter);
   }
 
   // A rough, numeric-free read on how hurt a non-PC combatant is — players

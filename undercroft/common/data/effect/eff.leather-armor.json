@@ -1,0 +1,19 @@
+{
+  "id": "eff.leather-armor",
+  "name": "Leather Armor",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "signatureFeatureId": null,
+  "featureIds": [],
+  "properties": {
+    "form": "armor"
+  },
+  "budget": {
+    "target": 0,
+    "spent": 0,
+    "remaining": 0
+  },
+  "price": "10 gp",
+  "notes": "Boiled and shaped leather — light, quiet, and unrestrictive."
+}

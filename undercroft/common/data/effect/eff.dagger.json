@@ -1,0 +1,19 @@
+{
+  "id": "eff.dagger",
+  "name": "Dagger",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "signatureFeatureId": null,
+  "featureIds": [],
+  "properties": {
+    "form": "weapon"
+  },
+  "budget": {
+    "target": 0,
+    "spent": 0,
+    "remaining": 0
+  },
+  "price": "2 gp",
+  "notes": "A simple, balanced blade — light enough to throw, easily concealed."
+}
