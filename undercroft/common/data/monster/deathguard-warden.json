@@ -1,0 +1,121 @@
+{
+  "kind": "monster",
+  "name": "Deathguard Warden",
+  "notes": "The Deathguard view fighting evil undead and the necromancers who create them as part of a great crusade against darkness. Members of the Deathguard on Aerenal hunt for signs of undead or necromantic activity in Mabaran manifest zones that dot the island. However, many members of the Deathguard are dispersed far and wide across the other continents of Eberron to hunt down and do battle with undead.",
+  "type": "humanoid",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Neutral Good",
+    "armorClass": 18,
+    "hitPoints": {
+      "max": 71,
+      "current": 71,
+      "diceString": "11d8 + 22"
+    },
+    "hitDice": "11d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 13,
+      "dexterity": 18,
+      "constitution": 14,
+      "intelligence": 11,
+      "wisdom": 13,
+      "charisma": 12
+    },
+    "initiative": {
+      "bonus": 4
+    },
+    "savingThrows": "Dex +7, Con +5, Wis +4",
+    "skills": "Perception +4, Stealth +10",
+    "senses": {
+      "darkvision": 120,
+      "passives": {
+        "perception": 14
+      }
+    },
+    "challengeRating": "5",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Common",
+        "Elvish"
+      ]
+    },
+    "environments": [
+      "Urban"
+    ],
+    "sources": [
+      "Homebrew",
+      "Based on the Drow Elite Warrior (MM), Astral Elf Warrior (Spelljammer), and Vættir (ToB1)"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.deathguard-warden-fey-ancestry",
+    "feat.deathguard-warden-deathless",
+    "feat.multiattack",
+    "feat.longsword",
+    "feat.longbow",
+    "feat.parry",
+    "feat.ooze-nature"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "text": "The creature makes two Longsword or Longbow attacks.",
+      "options": [
+        [
+          {
+            "featureId": "feat.longsword",
+            "count": 2
+          }
+        ],
+        [
+          {
+            "featureId": "feat.longbow",
+            "count": 2
+          }
+        ]
+      ]
+    },
+    "feat.longbow": {
+      "kind": "Ranged",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "range",
+      "distance": "150/600",
+      "damageDice": "1d8 + 2",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "3d6",
+        "damageType": "radiant"
+      }
+    },
+    "feat.longsword": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d8 + 1",
+      "damageType": "slashing",
+      "versatile": {
+        "damageDice": "1d10 + 1"
+      },
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "3d6",
+        "damageType": "radiant"
+      }
+    }
+  },
+  "featureTiers": {
+    "feat.parry": "ac-3"
+  }
+}

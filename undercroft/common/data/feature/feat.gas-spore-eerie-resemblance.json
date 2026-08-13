@@ -1,0 +1,29 @@
+{
+  "id": "feat.gas-spore-eerie-resemblance",
+  "name": "Eerie Resemblance",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature resembles a beholder. A creature that can see the creature can discern its true nature with a successful DC 15 Intelligence (Nature) check.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature resembles a beholder. A creature that can see the creature can discern its true nature with a successful DC 15 Intelligence (Nature) check.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

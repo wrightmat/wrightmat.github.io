@@ -1,0 +1,98 @@
+{
+  "kind": "monster",
+  "name": "Intellect Devourer",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/30831/57/1000/1000/638063804285013333.png",
+  "notes": "An intellect devourer resembles a walking brain protected by a crusty covering and set on bestial clawed legs. This foul aberration feeds on the intelligence of sentient creatures, taking over a victim’s body on behalf of its [mind flayer](https://www.dndbeyond.com/monsters/17104-mind-flayer) masters.\r\n\r\n_**Illithid Creations.**_ Mind flayers breed intellect devourers to serve as roaming hunters of the Underdark, creating an intellect devourer by taking the brain of a thrall and subjecting it to a horrible ritual. As it sprouts legs, the brain becomes an intelligent predator as twisted and evil as its masters.\r\n\r\n**_Deadly Puppet Masters._** An intellect devourer consumes a creature’s mind and memories, then turns the host body into a puppet under its control. An intellect devourer typically uses its puppet host to lure others into the domain of the mind flayers to be enthralled or consumed.",
+  "type": "aberration",
+  "stats": {
+    "size": "Tiny",
+    "alignment": "Lawful Evil",
+    "armorClass": 12,
+    "hitPoints": {
+      "max": 21,
+      "current": 21,
+      "diceString": "6d4 + 6"
+    },
+    "hitDice": "6d4",
+    "speed": {
+      "walk": 40
+    },
+    "abilities": {
+      "strength": 6,
+      "dexterity": 14,
+      "constitution": 13,
+      "intelligence": 12,
+      "wisdom": 11,
+      "charisma": 10
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "Perception +2, Stealth +4",
+    "senses": {
+      "blindsight": 60,
+      "passives": {
+        "perception": 12
+      }
+    },
+    "challengeRating": "2",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "Piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "and Slashing from Nonmagical Attacks",
+          "type": "resistance"
+        },
+        {
+          "name": "Blinded",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Deep Speech understands but can't speak",
+        "Telepathy 60 ft."
+      ]
+    },
+    "environments": [
+      "Underdark"
+    ],
+    "sources": [
+      "MM",
+      "Monster Manual, pg. 191"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.intellect-devourer-detect-sentience",
+    "feat.multiattack",
+    "feat.claws",
+    "feat.intellect-devourer-devour-intellect",
+    "feat.intellect-devourer-body-thief"
+  ],
+  "featureParams": {
+    "feat.claws": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d4 + 2",
+      "damageType": "slashing"
+    },
+    "feat.multiattack": {
+      "text": "The creature makes one attack with its claws and uses Devour Intellect."
+    }
+  }
+}

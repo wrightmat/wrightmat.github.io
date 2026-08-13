@@ -1,0 +1,32 @@
+{
+  "id": "feat.skitterhaunt-acid-spray-recharge-6",
+  "name": "Acid Spray (Recharge 6)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature spits acid in a line 30 feet long and 5 feet wide. Each creature in that line takes 18 (4d8) acid damage, or half damage with a successful DC 14 Dexterity saving throw.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature spits acid in a line 30 feet long and 5 feet wide. Each creature in that line takes 18 (4d8) acid damage, or half damage with a successful DC 14 Dexterity saving throw.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "burst"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

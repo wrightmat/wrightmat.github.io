@@ -1,0 +1,83 @@
+{
+  "kind": "monster",
+  "index": "rakshasa",
+  "name": "Rakshasa",
+  "type": "fiend",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/rakshasa.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "lawful evil",
+    "armorClass": 16,
+    "hitPoints": {
+      "max": 110,
+      "current": 110,
+      "diceString": "13d8+52"
+    },
+    "hitDice": "13d8",
+    "speed": {
+      "walk": 40
+    },
+    "abilities": {
+      "strength": 14,
+      "dexterity": 17,
+      "constitution": 18,
+      "intelligence": 13,
+      "wisdom": 16,
+      "charisma": 20
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "",
+    "skills": "Deception +10, Insight +8",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "piercing from magic weapons wielded by good creatures",
+          "type": "vulnerability"
+        },
+        {
+          "name": "bludgeoning, piercing, and slashing from nonmagical weapons",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Common",
+        "Infernal"
+      ]
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 13
+      }
+    },
+    "challengeRating": "13",
+    "proficiencyBonus": 5,
+    "xp": 10000,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/rakshasa",
+    "spells": "The rakshasa's innate spellcasting ability is Charisma (spell save DC 18, +10 to hit with spell attacks). The rakshasa can innately cast the following spells, requiring no material components:\n\nAt will: detect thoughts, disguise self, mage hand, minor illusion\n3/day each: charm person, detect magic, invisibility, major image, suggestion\n1/day each: dominate person, fly, plane shift, true seeing",
+    "saveDC": 18
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/rakshasa",
+  "featureIds": [
+    "feat.rakshasa-limited-magic-immunity",
+    "feat.multiattack",
+    "feat.rakshasa-claw"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.rakshasa-claw",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two claw attacks"
+    }
+  }
+}

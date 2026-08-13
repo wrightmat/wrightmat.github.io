@@ -1,0 +1,25 @@
+{
+  "id": "feat.rust-monster-rust-metal",
+  "name": "Rust Metal",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Any nonmagical weapon made of metal that hits the creature corrodes. After dealing damage, the weapon takes a permanent and cumulative -1 penalty to damage rolls. If its penalty drops to -5, the weapon is destroyed. Nonmagical ammunition made of metal that hits the creature is destroyed after dealing damage.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "Any nonmagical weapon made of metal that hits the creature corrodes. After dealing damage, the weapon takes a permanent and cumulative -1 penalty to damage rolls. If its penalty drops to -5, the weapon is destroyed. Nonmagical ammunition made of metal that hits the creature is destroyed after dealing damage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,33 @@
+{
+  "id": "feat.esix-fractal-bloom-fractal-geometry-recharge-5-6",
+  "name": "Fractal Geometry (Recharge 5–6)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Esix unleashes recursive psychic energy. Each creature of Esix’s choice within 30 feet must make a DC 15 Intelligence saving throw. On a failed save, the creature takes 27 (6d8) psychic damage and is Dazed until the end of its next turn. On a successful save, the creature takes half damage and is not Dazed.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Esix unleashes recursive psychic energy. Each creature of Esix’s choice within 30 feet must make a DC 15 Intelligence saving throw. On a failed save, the creature takes 27 (6d8) psychic damage and is Dazed until the end of its next turn. On a successful save, the creature takes half damage and is not Dazed.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "control"
+    ],
+    "recipeSlots": [
+      "burst"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

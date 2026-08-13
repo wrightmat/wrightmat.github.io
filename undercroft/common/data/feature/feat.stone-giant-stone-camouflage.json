@@ -1,0 +1,25 @@
+{
+  "id": "feat.stone-giant-stone-camouflage",
+  "name": "Stone Camouflage",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The giant has advantage on Dexterity (Stealth) checks made to hide in rocky terrain.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The giant has advantage on Dexterity (Stealth) checks made to hide in rocky terrain."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

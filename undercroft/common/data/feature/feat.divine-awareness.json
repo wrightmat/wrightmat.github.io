@@ -1,0 +1,24 @@
+{
+  "id": "feat.divine-awareness",
+  "name": "Divine Awareness",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature knows if it hears a lie.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature knows if it hears a lie."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

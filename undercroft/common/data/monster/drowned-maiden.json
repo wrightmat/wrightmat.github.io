@@ -1,0 +1,132 @@
+{
+  "kind": "monster",
+  "name": "Drowned Maiden",
+  "notes": "_The drowned maiden is usually found as the corpse of a women f loating in the water, her long hair drifting with the current. Occasionally, these are drowned lads rather than maidens, though this is rare._\n\n**Raging Romantics**. Drowned maidens are piteous but terrifying undead, created when a woman dies in water due to a doomed romance, whether from unrequited love or whether drowned by a philandering partner. Either way, the drowned maiden awakens from death seeking vengeance. Even as she dishes out retribution, a drowned maiden often anguishes over her doomed existence and tragic fate.\n\n**Beckoning for Help**. The maiden lurks in the silent depths where she died—usually deserted docks, bridges, or coastal cliffs. She waits to pull the living to the same watery grave in which she is now condemned. A drowned maiden uses her disguise self ability to appear as in life. She silently beckons victims from afar, as if in danger of drowning. When within range, the maiden uses her hair to pull her victim close enough to kiss it. Victims soon weaken and drown. The victim’s final vision is the drowned maiden’s tearful lament over the loss of life.\n\n**Death to Betrayers**. Desperate individuals may bargain with drowned maidens, and they will release pleading victims who promise to return to their lair with the person who caused the maiden’s death. Embracing and drowning her betrayer releases the maiden from undeath.",
+  "type": "undead",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Neutral Evil",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 90,
+      "current": 90
+    },
+    "hitDice": "20d8",
+    "speed": {
+      "walk": 30,
+      "swim": 40
+    },
+    "abilities": {
+      "strength": 15,
+      "dexterity": 16,
+      "constitution": 10,
+      "intelligence": 10,
+      "wisdom": 12,
+      "charisma": 18
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "Dex +6, Cha +7",
+    "skills": "",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 11
+      }
+    },
+    "challengeRating": "5",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "and slashing from nonmagical weapons that aren’t silvered",
+          "type": "resistance"
+        },
+        {
+          "name": "necrotic",
+          "type": "immunity"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Common"
+      ]
+    },
+    "spells": "Innate Spellcasting. The drowned maiden’s innate spellcasting ability is Charisma (spell save DC 15). She can innately cast the following spells, requiring no material components: At will: disguise self, silence",
+    "environments": [],
+    "sources": [],
+    "saveDC": 15
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.drowned-maiden-grasping-hair",
+    "feat.multiattack",
+    "feat.claw",
+    "feat.drowned-maiden-hair",
+    "feat.drowned-maiden-kiss",
+    "feat.reel"
+  ],
+  "featureParams": {
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d8 + 3",
+      "damageType": "slashing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.claw",
+          "count": 2
+        },
+        {
+          "featureId": "feat.drowned-maiden-hair",
+          "count": 1
+        },
+        {
+          "featureId": "feat.drowned-maiden-kiss",
+          "count": 1
+        }
+      ],
+      "text": "The creature makes two claw attacks and one hair attack, each of which it can replace with one kiss attack."
+    }
+  }
+}

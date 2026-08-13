@@ -1,0 +1,25 @@
+{
+  "id": "feat.nightmare-confer-fire-resistance",
+  "name": "Confer Fire Resistance",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature can grant resistance to fire damage to anyone riding it.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The creature can grant resistance to fire damage to anyone riding it."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

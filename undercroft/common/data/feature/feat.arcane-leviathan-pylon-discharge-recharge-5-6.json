@@ -1,0 +1,33 @@
+{
+  "id": "feat.arcane-leviathan-pylon-discharge-recharge-5-6",
+  "name": "Pylon Discharge (Recharge 5–6)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature discharges a surge of energy at a point the creature can see within 200 feet of it. Each creature within 30 feet of that point must make a DC 19 Dexterity saving throw. On a failure, a creature takes 45 (10d8) lightning damage and is blinded until the end of its next turn. On a success, a creature takes half the damage and isn’t blinded.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature discharges a surge of energy at a point the creature can see within 200 feet of it. Each creature within 30 feet of that point must make a DC 19 Dexterity saving throw. On a failure, a creature takes 45 (10d8) lightning damage and is blinded until the end of its next turn. On a success, a creature takes half the damage and isn’t blinded.",
+    "scope": "unique"
+  },
+  "budgetCost": 4,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "debuff"
+    ],
+    "recipeSlots": [
+      "burst"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

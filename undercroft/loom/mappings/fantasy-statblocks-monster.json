@@ -20,8 +20,11 @@
       "fn": "fantasyStatblockNotes"
     },
     "type": {
-      "type": "field",
-      "bind": "=lookup('creatureTypes', @type).name"
+      "type": "custom",
+      "fn": "resolveCreatureType",
+      "args": {
+        "path": "type"
+      }
     },
     "stats": {
       "type": "with",
@@ -31,6 +34,13 @@
           "fn": "fantasyStatblockSenses",
           "args": {
             "path": "senses"
+          }
+        },
+        "hitDiceSplit": {
+          "type": "custom",
+          "fn": "splitHitDice",
+          "args": {
+            "path": "hit_dice"
           }
         }
       },
@@ -59,12 +69,16 @@
               "current": {
                 "type": "field",
                 "bind": "@hp"
+              },
+              "diceString": {
+                "type": "field",
+                "bind": "@hitDiceSplit.roll"
               }
             }
           },
           "hitDice": {
             "type": "field",
-            "bind": "@hit_dice"
+            "bind": "@hitDiceSplit.dice"
           },
           "speed": {
             "type": "custom",
@@ -129,6 +143,13 @@
           "challengeRating": {
             "type": "custom",
             "fn": "formatChallengeRating",
+            "args": {
+              "path": "cr"
+            }
+          },
+          "proficiencyBonus": {
+            "type": "custom",
+            "fn": "proficiencyBonusFromChallengeRating",
             "args": {
               "path": "cr"
             }

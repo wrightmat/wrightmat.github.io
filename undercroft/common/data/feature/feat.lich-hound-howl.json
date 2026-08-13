@@ -1,0 +1,33 @@
+{
+  "id": "feat.lich-hound-howl",
+  "name": "Howl",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The eerie howl of lich hounds as they close in on their prey plays havoc on the morale of living creatures that hear it. Howling requires an action, and creatures that hear the howl of a creature within 100 feet must succeed on a DC 14 Wisdom saving throw or become frightened for 5 rounds. Creatures that successfully save against this effect cannot be affected by a creature’s howl for 24 hours.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The eerie howl of lich hounds as they close in on their prey plays havoc on the morale of living creatures that hear it. Howling requires an action, and creatures that hear the howl of a creature within 100 feet must succeed on a DC 14 Wisdom saving throw or become frightened for 5 rounds. Creatures that successfully save against this effect cannot be affected by a creature’s howl for 24 hours.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "fear",
+      "control"
+    ],
+    "recipeSlots": [
+      "threaten"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "id": "feat.nihileth-form-swap",
+  "name": "Form Swap",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "As a bonus action, the creature can alter between its material and ethereal forms at will.",
+  "mechanics": {
+    "type": "passive",
+    "text": "As a bonus action, the creature can alter between its material and ethereal forms at will.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "mobility"
+    ],
+    "recipeSlots": [
+      "escape"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

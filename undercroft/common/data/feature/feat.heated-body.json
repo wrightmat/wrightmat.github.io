@@ -1,0 +1,42 @@
+{
+  "id": "feat.heated-body",
+  "name": "Heated Body",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "A creature that touches the elemental or hits it with a melee attack while within 5 ft. of it takes 5 (1d10) fire damage.",
+  "mechanics": {
+    "type": "passive",
+    "text": "A creature that touches the elemental or hits it with a melee attack while within 5 ft. of it takes 5 (1d10) fire damage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "1d10",
+      "name": "Heated Body",
+      "shortName": "1d10",
+      "mechanics": {
+        "text": "A creature that touches the elemental or hits it with a melee attack while within 5 ft. of it takes 5 (1d10) fire damage."
+      }
+    },
+    {
+      "id": "2d6",
+      "name": "Heated Body",
+      "shortName": "2d6",
+      "mechanics": {
+        "text": "A creature that touches the elemental or hits it with a melee attack while within 5 ft. of it takes 7 (2d6) fire damage."
+      }
+    }
+  ]
+}

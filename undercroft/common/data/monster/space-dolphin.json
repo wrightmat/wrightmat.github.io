@@ -1,0 +1,82 @@
+{
+  "kind": "monster",
+  "name": "Space Dolphin",
+  "image": "https://5e.tools/img/MPMM/Dolphin%20Delighter.png",
+  "notes": "### Description\r\n\r\nMuch like terrestrial dolphins, Space Dolphins play with ships travelling the currents of the Astral Sea and have even been known to rescue sailors who have fallen overboard. They avoid monstrous and aggressive races. \r\n\r\n>They mate for life. In packs of six. Pure love.",
+  "type": "fey",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Chaotic Good",
+    "armorClass": 14,
+    "hitPoints": {
+      "max": 27,
+      "current": 27,
+      "diceString": "5d8 + 8"
+    },
+    "hitDice": "5d8",
+    "speed": {
+      "walk": 0,
+      "fly": 60
+    },
+    "abilities": {
+      "strength": 14,
+      "dexterity": 13,
+      "constitution": 13,
+      "intelligence": 11,
+      "wisdom": 12,
+      "charisma": 16
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "Wis +3, Cha +5",
+    "skills": "Perception +3, Performance +5",
+    "senses": {
+      "blindsight": 60,
+      "passives": {
+        "perception": 13
+      }
+    },
+    "challengeRating": "3",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Aquan",
+        "Telepathy 120 ft."
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "MPMM",
+      "Thor: Love and Thunder",
+      "Dolphin Delighter from _MPMM_, page 97",
+      "https://5e.tools/bestiary.html#dolphin%20delighter_mpmm"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.unusual-nature",
+    "feat.multiattack",
+    "feat.space-dolphin-dazzling-slam",
+    "feat.space-dolphin-delightful-light-recharge-5-6",
+    "feat.space-dolphin-starlight-leap"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.space-dolphin-dazzling-slam",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two Dazzling Slam attacks."
+    }
+  },
+  "featureTiers": {
+    "feat.unusual-nature": "no-air-food-drink"
+  }
+}

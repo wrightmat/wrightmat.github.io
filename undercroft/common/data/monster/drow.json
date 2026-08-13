@@ -1,0 +1,87 @@
+{
+  "kind": "monster",
+  "index": "drow",
+  "name": "Drow",
+  "type": "humanoid",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/drow.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "neutral evil",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 13,
+      "current": 13,
+      "diceString": "3d8"
+    },
+    "hitDice": "3d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 10,
+      "dexterity": 14,
+      "constitution": 10,
+      "intelligence": 11,
+      "wisdom": 11,
+      "charisma": 12
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "Perception +2, Stealth +4",
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Elvish",
+        "Undercommon"
+      ]
+    },
+    "senses": {
+      "darkvision": 120,
+      "passives": {
+        "perception": 12
+      }
+    },
+    "challengeRating": "1/4",
+    "proficiencyBonus": 2,
+    "xp": 50,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/drow",
+    "spells": "The drow's spellcasting ability is Charisma (spell save DC 11). It can innately cast the following spells, requiring no material components:\nAt will: dancing lights\n1/day each: darkness, faerie fire",
+    "saveDC": 11
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/drow",
+  "featureIds": [
+    "feat.deathguard-warden-fey-ancestry",
+    "feat.sunlight-sensitivity",
+    "feat.shortsword",
+    "feat.hand-crossbow"
+  ],
+  "featureParams": {
+    "feat.shortsword": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d6 + 2",
+      "damageType": "piercing"
+    },
+    "feat.hand-crossbow": {
+      "kind": "Ranged",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "range",
+      "distance": "30/120",
+      "damageDice": "1d6 + 2",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "save-or-condition"
+      }
+    }
+  }
+}

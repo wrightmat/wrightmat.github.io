@@ -871,7 +871,8 @@
           "xp": 10,
           "shortName": "0",
           "sourceId": 1,
-          "targetBudget": 3
+          "targetBudget": 3,
+          "proficiencyBonus": 2
         },
         {
           "name": "CR 1/8",
@@ -883,7 +884,8 @@
           "xp": 25,
           "shortName": "1/8",
           "sourceId": 2,
-          "targetBudget": 4
+          "targetBudget": 4,
+          "proficiencyBonus": 2
         },
         {
           "name": "CR 1/4",
@@ -895,7 +897,8 @@
           "xp": 50,
           "shortName": "1/4",
           "sourceId": 3,
-          "targetBudget": 4
+          "targetBudget": 4,
+          "proficiencyBonus": 2
         },
         {
           "name": "CR 1/2",
@@ -907,7 +910,8 @@
           "xp": 100,
           "shortName": "1/2",
           "sourceId": 4,
-          "targetBudget": 5
+          "targetBudget": 5,
+          "proficiencyBonus": 2
         },
         {
           "name": "CR 1",
@@ -919,7 +923,8 @@
           "xp": 200,
           "shortName": "1",
           "sourceId": 5,
-          "targetBudget": 6
+          "targetBudget": 6,
+          "proficiencyBonus": 2
         },
         {
           "name": "CR 2",
@@ -931,7 +936,8 @@
           "xp": 450,
           "shortName": "2",
           "sourceId": 6,
-          "targetBudget": 8
+          "targetBudget": 8,
+          "proficiencyBonus": 2
         },
         {
           "name": "CR 3",
@@ -943,7 +949,8 @@
           "xp": 700,
           "shortName": "3",
           "sourceId": 7,
-          "targetBudget": 10
+          "targetBudget": 10,
+          "proficiencyBonus": 2
         },
         {
           "name": "CR 4",
@@ -955,7 +962,8 @@
           "xp": 1100,
           "shortName": "4",
           "sourceId": 8,
-          "targetBudget": 12
+          "targetBudget": 12,
+          "proficiencyBonus": 2
         },
         {
           "name": "CR 5",
@@ -967,7 +975,8 @@
           "xp": 1800,
           "shortName": "5",
           "sourceId": 9,
-          "targetBudget": 14
+          "targetBudget": 14,
+          "proficiencyBonus": 3
         },
         {
           "name": "CR 6",
@@ -979,7 +988,8 @@
           "xp": 2300,
           "shortName": "6",
           "sourceId": 10,
-          "targetBudget": 16
+          "targetBudget": 16,
+          "proficiencyBonus": 3
         },
         {
           "name": "CR 7",
@@ -991,7 +1001,8 @@
           "xp": 2900,
           "shortName": "7",
           "sourceId": 11,
-          "targetBudget": 18
+          "targetBudget": 18,
+          "proficiencyBonus": 3
         },
         {
           "name": "CR 8",
@@ -1003,7 +1014,8 @@
           "xp": 3900,
           "shortName": "8",
           "sourceId": 12,
-          "targetBudget": 20
+          "targetBudget": 20,
+          "proficiencyBonus": 3
         },
         {
           "name": "CR 9",
@@ -1015,7 +1027,8 @@
           "xp": 5000,
           "shortName": "9",
           "sourceId": 13,
-          "targetBudget": 22
+          "targetBudget": 22,
+          "proficiencyBonus": 4
         },
         {
           "name": "CR 10",
@@ -1027,7 +1040,8 @@
           "xp": 5900,
           "shortName": "10",
           "sourceId": 14,
-          "targetBudget": 24
+          "targetBudget": 24,
+          "proficiencyBonus": 4
         },
         {
           "name": "CR 11",
@@ -1039,7 +1053,8 @@
           "xp": 7200,
           "shortName": "11",
           "sourceId": 15,
-          "targetBudget": 26
+          "targetBudget": 26,
+          "proficiencyBonus": 4
         },
         {
           "name": "CR 12",
@@ -1051,7 +1066,8 @@
           "xp": 8400,
           "shortName": "12",
           "sourceId": 16,
-          "targetBudget": 28
+          "targetBudget": 28,
+          "proficiencyBonus": 4
         },
         {
           "name": "CR 13",
@@ -1063,7 +1079,8 @@
           "xp": 10000,
           "shortName": "13",
           "sourceId": 17,
-          "targetBudget": 30
+          "targetBudget": 30,
+          "proficiencyBonus": 5
         },
         {
           "name": "CR 14",
@@ -1075,7 +1092,8 @@
           "xp": 11500,
           "shortName": "14",
           "sourceId": 18,
-          "targetBudget": 32
+          "targetBudget": 32,
+          "proficiencyBonus": 5
         },
         {
           "name": "CR 15",
@@ -1087,7 +1105,8 @@
           "xp": 13000,
           "shortName": "15",
           "sourceId": 19,
-          "targetBudget": 34
+          "targetBudget": 34,
+          "proficiencyBonus": 5
         },
         {
           "name": "CR 16",
@@ -1099,7 +1118,8 @@
           "xp": 15000,
           "shortName": "16",
           "sourceId": 20,
-          "targetBudget": 36
+          "targetBudget": 36,
+          "proficiencyBonus": 5
         },
         {
           "name": "CR 17",
@@ -1111,7 +1131,8 @@
           "xp": 18000,
           "shortName": "17",
           "sourceId": 21,
-          "targetBudget": 38
+          "targetBudget": 38,
+          "proficiencyBonus": 6
         },
         {
           "name": "CR 18",
@@ -1123,7 +1144,8 @@
           "xp": 20000,
           "shortName": "18",
           "sourceId": 22,
-          "targetBudget": 40
+          "targetBudget": 40,
+          "proficiencyBonus": 6
         },
         {
           "name": "CR 19",
@@ -1135,7 +1157,8 @@
           "xp": 22000,
           "shortName": "19",
           "sourceId": 23,
-          "targetBudget": 42
+          "targetBudget": 42,
+          "proficiencyBonus": 6
         },
         {
           "name": "CR 20",
@@ -1147,7 +1170,8 @@
           "xp": 25000,
           "shortName": "20",
           "sourceId": 24,
-          "targetBudget": 44
+          "targetBudget": 44,
+          "proficiencyBonus": 6
         },
         {
           "name": "CR 21",
@@ -1159,7 +1183,8 @@
           "xp": 33000,
           "shortName": "21",
           "sourceId": 25,
-          "targetBudget": 46
+          "targetBudget": 46,
+          "proficiencyBonus": 7
         },
         {
           "name": "CR 22",
@@ -1171,7 +1196,8 @@
           "xp": 41000,
           "shortName": "22",
           "sourceId": 26,
-          "targetBudget": 48
+          "targetBudget": 48,
+          "proficiencyBonus": 7
         },
         {
           "name": "CR 23",
@@ -1183,7 +1209,8 @@
           "xp": 50000,
           "shortName": "23",
           "sourceId": 27,
-          "targetBudget": 50
+          "targetBudget": 50,
+          "proficiencyBonus": 7
         },
         {
           "name": "CR 24",
@@ -1195,7 +1222,8 @@
           "xp": 62000,
           "shortName": "24",
           "sourceId": 28,
-          "targetBudget": 52
+          "targetBudget": 52,
+          "proficiencyBonus": 7
         },
         {
           "name": "CR 25",
@@ -1207,7 +1235,8 @@
           "xp": 75000,
           "shortName": "25",
           "sourceId": 29,
-          "targetBudget": 54
+          "targetBudget": 54,
+          "proficiencyBonus": 8
         },
         {
           "name": "CR 26",
@@ -1219,7 +1248,8 @@
           "xp": 90000,
           "shortName": "26",
           "sourceId": 30,
-          "targetBudget": 56
+          "targetBudget": 56,
+          "proficiencyBonus": 8
         },
         {
           "name": "CR 27",
@@ -1231,7 +1261,8 @@
           "xp": 105000,
           "shortName": "27",
           "sourceId": 31,
-          "targetBudget": 58
+          "targetBudget": 58,
+          "proficiencyBonus": 8
         },
         {
           "name": "CR 28",
@@ -1243,7 +1274,8 @@
           "xp": 120000,
           "shortName": "28",
           "sourceId": 32,
-          "targetBudget": 60
+          "targetBudget": 60,
+          "proficiencyBonus": 8
         },
         {
           "name": "CR 29",
@@ -1255,7 +1287,8 @@
           "xp": 135000,
           "shortName": "29",
           "sourceId": 33,
-          "targetBudget": 62
+          "targetBudget": 62,
+          "proficiencyBonus": 9
         },
         {
           "name": "CR 30",
@@ -1267,7 +1300,8 @@
           "xp": 155000,
           "shortName": "30",
           "sourceId": 34,
-          "targetBudget": 64
+          "targetBudget": 64,
+          "proficiencyBonus": 9
         }
       ]
     },
@@ -1551,7 +1585,9 @@
             "psionic",
             "unnatural"
           ],
-          "defaultSenses": { "darkvision": 60 },
+          "defaultSenses": {
+            "darkvision": 60
+          },
           "defaultResistances": [],
           "defaultVulnerabilities": [],
           "defaultImmunities": [],
@@ -1594,7 +1630,9 @@
             "radiant",
             "purposeful"
           ],
-          "defaultSenses": { "darkvision": 120 },
+          "defaultSenses": {
+            "darkvision": 120
+          },
           "defaultResistances": [
             "radiant"
           ],
@@ -1617,7 +1655,9 @@
             "artificial",
             "mindless-or-bound"
           ],
-          "defaultSenses": { "darkvision": 60 },
+          "defaultSenses": {
+            "darkvision": 60
+          },
           "defaultResistances": [],
           "defaultVulnerabilities": [],
           "defaultImmunities": [
@@ -1644,7 +1684,10 @@
             "territorial",
             "elemental-breath"
           ],
-          "defaultSenses": { "blindsight": 30, "darkvision": 120 },
+          "defaultSenses": {
+            "blindsight": 30,
+            "darkvision": 120
+          },
           "defaultResistances": [],
           "defaultVulnerabilities": [],
           "defaultImmunities": [],
@@ -1665,7 +1708,9 @@
             "elemental-nature",
             "single-minded"
           ],
-          "defaultSenses": { "darkvision": 60 },
+          "defaultSenses": {
+            "darkvision": 60
+          },
           "defaultResistances": [],
           "defaultVulnerabilities": [],
           "defaultImmunities": [
@@ -1690,7 +1735,9 @@
             "trickery",
             "bound-by-bargain"
           ],
-          "defaultSenses": { "darkvision": 60 },
+          "defaultSenses": {
+            "darkvision": 60
+          },
           "defaultResistances": [],
           "defaultVulnerabilities": [],
           "defaultImmunities": [],
@@ -1712,7 +1759,9 @@
             "fire",
             "cunning"
           ],
-          "defaultSenses": { "darkvision": 120 },
+          "defaultSenses": {
+            "darkvision": 120
+          },
           "defaultResistances": [
             "fire"
           ],
@@ -1777,7 +1826,9 @@
             "unnatural-origin",
             "frightening"
           ],
-          "defaultSenses": { "darkvision": 60 },
+          "defaultSenses": {
+            "darkvision": 60
+          },
           "defaultResistances": [],
           "defaultVulnerabilities": [],
           "defaultImmunities": [],
@@ -1799,7 +1850,9 @@
             "mindless",
             "corrosive"
           ],
-          "defaultSenses": { "blindsight": 60 },
+          "defaultSenses": {
+            "blindsight": 60
+          },
           "defaultResistances": [],
           "defaultVulnerabilities": [],
           "defaultImmunities": [],
@@ -1844,7 +1897,9 @@
             "undead-nature",
             "fear"
           ],
-          "defaultSenses": { "darkvision": 60 },
+          "defaultSenses": {
+            "darkvision": 60
+          },
           "defaultResistances": [
             "necrotic"
           ],
@@ -2464,12 +2519,30 @@
       "key": "npcAttitudes",
       "label": "NPC Attitudes",
       "values": [
-        { "name": "Hostile", "value": 1 },
-        { "name": "Unfriendly", "value": 2 },
-        { "name": "Wary", "value": 3 },
-        { "name": "Neutral", "value": 4 },
-        { "name": "Friendly", "value": 5 },
-        { "name": "Helpful", "value": 6 }
+        {
+          "name": "Hostile",
+          "value": 1
+        },
+        {
+          "name": "Unfriendly",
+          "value": 2
+        },
+        {
+          "name": "Wary",
+          "value": 3
+        },
+        {
+          "name": "Neutral",
+          "value": 4
+        },
+        {
+          "name": "Friendly",
+          "value": 5
+        },
+        {
+          "name": "Helpful",
+          "value": 6
+        }
       ]
     },
     {

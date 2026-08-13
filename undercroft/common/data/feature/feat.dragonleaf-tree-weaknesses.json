@@ -1,0 +1,29 @@
+{
+  "id": "feat.dragonleaf-tree-weaknesses",
+  "name": "Weaknesses",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Dragonleaf trees with immunity to fire also have vulnerability to cold, and trees with immunity to cold have vulnerability to fire.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Dragonleaf trees with immunity to fire also have vulnerability to cold, and trees with immunity to cold have vulnerability to fire.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "debuff"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

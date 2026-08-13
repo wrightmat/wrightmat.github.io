@@ -1,0 +1,144 @@
+{
+  "kind": "monster",
+  "index": "ice-devil",
+  "name": "Ice Devil",
+  "type": "fiend",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/ice-devil.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "lawful evil",
+    "armorClass": 18,
+    "hitPoints": {
+      "max": 180,
+      "current": 180,
+      "diceString": "19d10+76"
+    },
+    "hitDice": "19d10",
+    "speed": {
+      "walk": 40
+    },
+    "abilities": {
+      "strength": 21,
+      "dexterity": 14,
+      "constitution": 18,
+      "intelligence": 18,
+      "wisdom": 15,
+      "charisma": 18
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "DEX +7, CON +9, WIS +7, CHA +9",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "bludgeoning, piercing, and slashing from nonmagical weapons that aren't silvered",
+          "type": "resistance"
+        },
+        {
+          "name": "fire",
+          "type": "immunity"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Infernal",
+        "telepathy 120 ft."
+      ]
+    },
+    "senses": {
+      "blindsight": 60,
+      "darkvision": 120,
+      "passives": {
+        "perception": 12
+      }
+    },
+    "challengeRating": "14",
+    "proficiencyBonus": 5,
+    "xp": 11500,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/ice-devil"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/ice-devil",
+  "featureIds": [
+    "feat.devil-s-sight",
+    "feat.magic-resistance",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.claws",
+    "feat.tail",
+    "feat.ice-devil-wall-of-ice"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 10,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 5",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "3d6",
+        "damageType": "cold"
+      }
+    },
+    "feat.claws": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 10,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d4 + 5",
+      "damageType": "slashing",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "3d6",
+        "damageType": "cold"
+      }
+    },
+    "feat.tail": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 10,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "2d6 + 5",
+      "damageType": "bludgeoning",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "3d6",
+        "damageType": "cold"
+      }
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.bite",
+          "count": 1
+        },
+        {
+          "featureId": "feat.claws",
+          "count": 1
+        },
+        {
+          "featureId": "feat.tail",
+          "count": 1
+        }
+      ],
+      "text": "The creature makes three attacks: one with its bite, one with its claws, and one with its tail."
+    }
+  }
+}

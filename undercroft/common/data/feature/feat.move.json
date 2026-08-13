@@ -1,0 +1,27 @@
+{
+  "id": "feat.move",
+  "name": "Move",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The vampire moves up to its speed without provoking opportunity attacks.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The vampire moves up to its speed without provoking opportunity attacks."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "legendary-action"
+  }
+}

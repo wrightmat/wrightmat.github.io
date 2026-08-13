@@ -1,0 +1,119 @@
+{
+  "kind": "monster",
+  "index": "barbed-devil",
+  "name": "Barbed Devil",
+  "type": "fiend",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/barbed-devil.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "lawful evil",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 110,
+      "current": 110,
+      "diceString": "13d8+52"
+    },
+    "hitDice": "13d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 16,
+      "dexterity": 17,
+      "constitution": 18,
+      "intelligence": 12,
+      "wisdom": 14,
+      "charisma": 14
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "STR +6, CON +7, WIS +5, CHA +5",
+    "skills": "Deception +5, Insight +5, Perception +8",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "cold",
+          "type": "resistance"
+        },
+        {
+          "name": "bludgeoning, piercing, and slashing from nonmagical weapons that aren't silvered",
+          "type": "resistance"
+        },
+        {
+          "name": "fire",
+          "type": "immunity"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Infernal",
+        "telepathy 120 ft."
+      ]
+    },
+    "senses": {
+      "darkvision": 120,
+      "passives": {
+        "perception": 18
+      }
+    },
+    "challengeRating": "5",
+    "proficiencyBonus": 3,
+    "xp": 1800,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/barbed-devil"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/barbed-devil",
+  "featureIds": [
+    "feat.barbed-devil-barbed-hide",
+    "feat.devil-s-sight",
+    "feat.magic-resistance",
+    "feat.multiattack",
+    "feat.claw",
+    "feat.tail",
+    "feat.barbed-devil-hurl-flame"
+  ],
+  "featureParams": {
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d6 + 3",
+      "damageType": "piercing"
+    },
+    "feat.tail": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 3",
+      "damageType": "piercing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.tail",
+          "count": 1
+        },
+        {
+          "featureId": "feat.claw",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes three melee attacks: one with its tail and two with its claws. Alternatively, it can use Hurl Flame twice."
+    }
+  }
+}

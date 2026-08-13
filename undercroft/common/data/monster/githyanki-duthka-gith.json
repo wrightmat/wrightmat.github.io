@@ -1,0 +1,92 @@
+{
+  "kind": "monster",
+  "name": "Githyanki Duthka'Gith",
+  "notes": "### Description\r\n\r\nVlaakith devised a method to infuse red dragon blood into newborn githyanki, which resulted in the creation of a new hybrid race known as the duthka'gith. Generally despised by the rest of githyanki society, the duthka'gith served as elite shock warriors and palace guards.\r\n\r\n#### Githyanki\r\n\r\nGithyanki descend from an ancient people who were also the progenitors of githzerai. These tall, gaunt folk have potent psionic powers and dwell, for the most part, on the Astral Plane. Among the best-known githyanki are the bellicose followers of the Lich Queen Vlaakith. They terrorize the Astral Plane, raiding into other planes to plunder the multiverse of its magic and riches.",
+  "type": "humanoid",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Any Alignment",
+    "armorClass": 19,
+    "hitPoints": {
+      "max": 221,
+      "current": 221,
+      "diceString": "26d8 + 104"
+    },
+    "hitDice": "26d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 20,
+      "dexterity": 14,
+      "constitution": 18,
+      "intelligence": 14,
+      "wisdom": 14,
+      "charisma": 17
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "Con +9, Wis +7, Cha +8",
+    "skills": "Athletics +10, Perception +7",
+    "senses": {
+      "blindsight": 10,
+      "darkvision": 60,
+      "passives": {
+        "perception": 17
+      }
+    },
+    "challengeRating": "13",
+    "proficiencyBonus": 5,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Draconic",
+        "Gith"
+      ]
+    },
+    "spells": "(Innate). The githyanki's innate spellcasting ability is Intelligence (spell save DC 15, +7 to hit with spell attacks). It can innately cast the following spells, requiring no material components: At will: mage hand (the hand is invisible) 3/day each: detect thoughts, jump, misty step, nondetection (self only), tongues 1/day each: blink, plane shift, telekinesis",
+    "environments": [
+      "Desert",
+      "Mountain",
+      "Urban"
+    ],
+    "sources": [
+      "Homebrew",
+      "https://external-preview.redd.it/fOLdd3c6UFygOTIDM3ZHghtiUkdoKgN3qrNGqa5YFpo.png?auto=webp&v=enabled&s=4fb662ba2bc3c56899fa690f7810f2bbbb733ddc"
+    ],
+    "saveDC": 15
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.githyanki-duthka-gith-aura-of-ephelomon",
+    "feat.brute",
+    "feat.multiattack",
+    "feat.silver-greatsword",
+    "feat.githyanki-duthka-gith-javelin",
+    "feat.fire-breath-monster",
+    "feat.parry"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "text": "The creature makes three melee attacks, or it makes two ranged attacks with its javelins."
+    },
+    "feat.fire-breath-monster": {
+      "verb": "exhales",
+      "substance": "fire",
+      "areaSize": "30",
+      "areaShape": "cone",
+      "dcAbility": "constitution",
+      "ability": "dexterity",
+      "damageDice": "16d6",
+      "damageType": "fire"
+    }
+  },
+  "featureTiers": {
+    "feat.parry": "ac-5",
+    "feat.silver-greatsword": "dc-13-plus8"
+  }
+}

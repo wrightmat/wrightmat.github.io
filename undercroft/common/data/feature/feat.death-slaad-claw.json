@@ -1,0 +1,33 @@
+{
+  "id": "feat.death-slaad-claw",
+  "name": "Claw",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Melee Weapon Attack: +9 to hit, reach 5 ft., one target. Hit: 10 (1d10 + 5) slashing damage plus 7 (2d6) necrotic damage. The target must succeed a DC 17 Constitution saving throw or suffer the stunned condition for 1d6 rounds.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Melee Weapon Attack: +9 to hit, reach 5 ft., one target. Hit: 10 (1d10 + 5) slashing damage plus 7 (2d6) necrotic damage. The target must succeed a DC 17 Constitution saving throw or suffer the stunned condition for 1d6 rounds.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "debuff"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

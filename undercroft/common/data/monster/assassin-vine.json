@@ -1,0 +1,95 @@
+{
+  "kind": "monster",
+  "name": "Assassin Vine",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/5907/468/1000/1000/636918204697433981.png",
+  "notes": "",
+  "type": "plant",
+  "stats": {
+    "size": "Large",
+    "alignment": "Unaligned",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 85,
+      "current": 85,
+      "diceString": "10d10 + 30"
+    },
+    "hitDice": "10d10",
+    "speed": {
+      "walk": 5,
+      "climb": 5
+    },
+    "abilities": {
+      "strength": 18,
+      "dexterity": 10,
+      "constitution": 16,
+      "intelligence": 1,
+      "wisdom": 10,
+      "charisma": 1
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "",
+    "senses": {
+      "blindsight": 30,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "3",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Cold",
+          "type": "resistance"
+        },
+        {
+          "name": "Fire",
+          "type": "resistance"
+        },
+        {
+          "name": "Blinded",
+          "type": "immunity"
+        },
+        {
+          "name": "Deafened",
+          "type": "immunity"
+        },
+        {
+          "name": "Exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "Prone",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [
+      "Forest",
+      "Grassland"
+    ],
+    "sources": [
+      "ToA",
+      "https://www.dndbeyond.com/monsters/33010-assassin-vine",
+      "Tomb of Annihilation"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.false-appearance-ambush",
+    "feat.assassin-vine-constrict",
+    "feat.assassin-vine-entangling-vines"
+  ],
+  "featureTiers": {
+    "feat.false-appearance-ambush": "normal-plant"
+  }
+}

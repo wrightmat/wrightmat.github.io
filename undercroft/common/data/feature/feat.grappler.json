@@ -1,0 +1,28 @@
+{
+  "id": "feat.grappler",
+  "name": "Grappler",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature has advantage on attack rolls against any creature grappled by it.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature has advantage on attack rolls against any creature grappled by it."
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

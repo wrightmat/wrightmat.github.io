@@ -1,0 +1,101 @@
+{
+  "kind": "monster",
+  "name": "Giant Skeleton",
+  "notes": "",
+  "type": "undead",
+  "stats": {
+    "size": "Huge",
+    "alignment": "Neutral Evil",
+    "armorClass": 17,
+    "hitPoints": {
+      "max": 115,
+      "current": 115,
+      "diceString": "10d12 + 50"
+    },
+    "hitDice": "10d12",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 21,
+      "dexterity": 10,
+      "constitution": 20,
+      "intelligence": 4,
+      "wisdom": 6,
+      "charisma": 6
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "",
+    "senses": {
+      "blindsight": 60,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "7",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Bludgeoning",
+          "type": "vulnerability"
+        },
+        {
+          "name": "Poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Exhausted",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "understands Giant but can’t speak"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "TftYP",
+      "https://www.dndbeyond.com/monsters/22565-giant-skeleton",
+      "Tales from the Yawning Portal"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.dolgaunt-evasion",
+    "feat.magic-resistance",
+    "feat.giant-skeleton-turn-immunity",
+    "feat.multiattack",
+    "feat.scimitar"
+  ],
+  "featureParams": {
+    "feat.scimitar": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 8,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "3d6 + 5",
+      "damageType": "slashing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.scimitar",
+          "count": 3
+        }
+      ],
+      "text": "The creature makes three scimitar attacks."
+    }
+  }
+}

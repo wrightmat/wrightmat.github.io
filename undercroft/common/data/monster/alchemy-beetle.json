@@ -1,0 +1,102 @@
+{
+  "kind": "monster",
+  "name": "Alchemy Beetle",
+  "notes": "### Description\r\n\r\nAlchemy Beetles are relatively easy to construct, as far as constructs are concerned. The problem is no one has figured out how to refill an alchemical beetle without it exploding. The iron frame and reservoir is worth 1,000 gp. When an Alchemy Beetle is created, part of the cost of making it is getting 2,000 gp worth the alchemical liquid chosen for its energy type; acid, Alchemist Fire (fire), Bottled Lightning (electriciity) or Liquid Ice (cold). One chosen, this cannot be changed and an Alchemy Beetle cannot mix alchemical liquids.",
+  "type": "construct",
+  "stats": {
+    "size": "Small",
+    "alignment": "Unaligned",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 31,
+      "current": 31
+    },
+    "hitDice": "9d6",
+    "speed": {
+      "walk": 40
+    },
+    "abilities": {
+      "strength": 13,
+      "dexterity": 11,
+      "constitution": 11,
+      "intelligence": 1,
+      "wisdom": 5,
+      "charisma": 1
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "Acrobatics +5, Stealth +4",
+    "senses": {
+      "passives": {
+        "perception": 7
+      }
+    },
+    "challengeRating": "2",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Psychic",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "SoX",
+      "Secrets of Xen'drik, pg. 74"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.alchemy-beetle-alchemical-damage",
+    "feat.alchemy-beetle-alchemical-destruction",
+    "feat.multiattack",
+    "feat.alchemy-beetle-bite",
+    "feat.claw"
+  ],
+  "featureParams": {
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 2,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d4",
+      "damageType": "slashing"
+    },
+    "feat.multiattack": {
+      "text": "The creature makes one Bite attack and one Claw attack, or two Claw attacks.",
+      "options": [
+        [
+          {
+            "featureId": "feat.alchemy-beetle-bite",
+            "count": 1
+          },
+          {
+            "featureId": "feat.claw",
+            "count": 1
+          }
+        ],
+        [
+          {
+            "featureId": "feat.claw",
+            "count": 2
+          }
+        ]
+      ]
+    }
+  }
+}

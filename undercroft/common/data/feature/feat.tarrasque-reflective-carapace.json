@@ -1,0 +1,25 @@
+{
+  "id": "feat.tarrasque-reflective-carapace",
+  "name": "Reflective Carapace",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Any time the creature is targeted by a magic missile spell, a line spell, or a spell that requires a ranged attack roll, roll a d6. On a 1 to 5, the creature is unaffected. On a 6, the creature is unaffected, and the effect is reflected back at the caster as though it originated from the creature, turning the caster into the target.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "Any time the creature is targeted by a magic missile spell, a line spell, or a spell that requires a ranged attack roll, roll a d6. On a 1 to 5, the creature is unaffected. On a 6, the creature is unaffected, and the effect is reflected back at the caster as though it originated from the creature, turning the caster into the target."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

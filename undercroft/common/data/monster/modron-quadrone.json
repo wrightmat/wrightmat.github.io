@@ -1,0 +1,106 @@
+{
+  "kind": "monster",
+  "name": "Modron Quadrone",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/47139/93/1000/1000/638741964432945144.jpeg",
+  "notes": "### Description\n\nQuadrones are among the most relatable modrons—and those most likely to go rogue.",
+  "type": "construct",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Lawful Neutral",
+    "armorClass": 16,
+    "hitPoints": {
+      "max": 22,
+      "current": 22,
+      "diceString": "4d8 + 4"
+    },
+    "hitDice": "4d8",
+    "speed": {
+      "walk": 30,
+      "fly": 30
+    },
+    "abilities": {
+      "strength": 12,
+      "dexterity": 14,
+      "constitution": 12,
+      "intelligence": 10,
+      "wisdom": 10,
+      "charisma": 11
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "Perception +2",
+    "senses": {
+      "truesight": 120,
+      "passives": {
+        "perception": 12
+      }
+    },
+    "challengeRating": "1",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Charmed",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Modron"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "https://www.dndbeyond.com/monsters/5195131-modron-quadrone",
+      "Monster Manual (2024), pg. 218"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.modron-duodrone-disintegration",
+    "feat.multiattack",
+    "feat.slam",
+    "feat.gears-launcher"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "text": "The creature makes four Slam attacks or four Gears Launcher attacks.",
+      "options": [
+        [
+          {
+            "featureId": "feat.slam",
+            "count": 4
+          }
+        ],
+        [
+          {
+            "featureId": "feat.gears-launcher",
+            "count": 4
+          }
+        ]
+      ]
+    },
+    "feat.gears-launcher": {
+      "kind": "Ranged",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "range",
+      "distance": "320",
+      "damageDice": "1d4 + 2",
+      "damageType": "force"
+    },
+    "feat.slam": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d4 + 2",
+      "damageType": "force"
+    }
+  }
+}

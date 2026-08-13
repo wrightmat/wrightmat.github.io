@@ -1,0 +1,31 @@
+{
+  "id": "feat.dragonsoul-orb-of-dragon-s-breath-3-day",
+  "name": "Orb of Dragon's Breath (3/Day)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Ranged Spell Attack: +7 to hit, range 90 ft., one target. Hit: 27 (6d8) damage of the type to which the creature has damage resistance.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Ranged Spell Attack: +7 to hit, range 90 ft., one target. Hit: 27 (6d8) damage of the type to which the creature has damage resistance."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

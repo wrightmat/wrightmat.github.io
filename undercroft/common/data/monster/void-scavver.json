@@ -1,0 +1,81 @@
+{
+  "kind": "monster",
+  "name": "Void Scavver",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/28079/965/1000/1000/637961801015741442.jpeg",
+  "notes": "### Description\r\n\r\nVoid scavvers are 20 feet long. Each one is a solitary menace with a pitch-black hide. While most other scavvers are content to feed on kitchen scraps, a void scavver goes after the cook.\r\n\r\nA void scavver can emit an invisible ray from its eye that causes its target to feel fear even more intense than what it might normally experience given the creature’s size and nature.\r\n\r\n#### Scavvers\r\n\r\nScavvers are shark-like scavengers that fly through space, feeding on whatever they can fit in their mouths. Scavvers are not always aggressive; often they trail behind larger creatures as well as ships and asteroids, living off droppings and discarded refuse. They can enter the air envelopes of these bodies, so that as their “host” moves (often at high speed), the scavvers keep pace. The lesser varieties—brown and gray—rarely rise above the level of nuisances. The larger varieties are more formidable, in part because they often don’t wait for their meals to come to them.\r\n\r\nA scavver has a single large eye in the leading edge of its head. This eye glows while the creature is awake. Its wide mouth is full of sharp teeth. A scavver flies in lazy circles when it sleeps but otherwise moves through space much as a shark swims through water.",
+  "type": "monstrosity",
+  "stats": {
+    "size": "Huge",
+    "alignment": "Unaligned",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 157,
+      "current": 157,
+      "diceString": "15d12 + 60"
+    },
+    "hitDice": "15d12",
+    "speed": {
+      "walk": 0,
+      "fly": 40
+    },
+    "abilities": {
+      "strength": 22,
+      "dexterity": 16,
+      "constitution": 19,
+      "intelligence": 4,
+      "wisdom": 13,
+      "charisma": 5
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "",
+    "skills": "",
+    "senses": {
+      "darkvision": 120,
+      "passives": {
+        "perception": 15
+      }
+    },
+    "challengeRating": "11",
+    "proficiencyBonus": 4,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "BAM",
+      "Spelljammer: Adventures in Space Boo’s Astral Menagerie, pg. 49"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.unusual-nature",
+    "feat.swallowing-bite",
+    "feat.void-scavver-ray-of-fear-recharge-4-6"
+  ],
+  "featureTiers": {
+    "feat.unusual-nature": "no-air"
+  },
+  "featureParams": {
+    "feat.swallowing-bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 10,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "6d12 + 6",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "save-or-condition",
+        "targetRestriction": "large or smaller creature"
+      }
+    }
+  }
+}

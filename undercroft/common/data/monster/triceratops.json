@@ -1,0 +1,71 @@
+{
+  "kind": "monster",
+  "index": "triceratops",
+  "name": "Triceratops",
+  "type": "beast",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/triceratops.png",
+  "stats": {
+    "size": "Huge",
+    "alignment": "unaligned",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 95,
+      "current": 95,
+      "diceString": "10d12+30"
+    },
+    "hitDice": "10d12",
+    "speed": {
+      "walk": 50
+    },
+    "abilities": {
+      "strength": 22,
+      "dexterity": 9,
+      "constitution": 17,
+      "intelligence": 2,
+      "wisdom": 11,
+      "charisma": 5
+    },
+    "initiative": {
+      "bonus": -1
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [],
+      "languages": []
+    },
+    "senses": {
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "5",
+    "proficiencyBonus": 3,
+    "xp": 1800,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/triceratops"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/triceratops",
+  "featureIds": [
+    "feat.trampling-charge",
+    "feat.gore",
+    "feat.triceratops-stomp"
+  ],
+  "featureParams": {
+    "feat.gore": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 9,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "4d8 + 6",
+      "damageType": "piercing"
+    }
+  },
+  "featureTiers": {
+    "feat.trampling-charge": "triceratops"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "id": "feat.eternal-flame-guardian-flaming-weapon-recharges-after-a-short-or-long-rest",
+  "name": "Flaming Weapon (Recharges after a Short or Long Rest)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "As a bonus action, the guard can wreath one melee weapon it is wielding in flame. The guard is unharmed by this fire, which lasts until the end of the guard's next turn. While wreathed in flame, the weapon deals an extra 3 (1d6) fire damage on a hit.",
+  "mechanics": {
+    "type": "passive",
+    "text": "As a bonus action, the guard can wreath one melee weapon it is wielding in flame. The guard is unharmed by this fire, which lasts until the end of the guard's next turn. While wreathed in flame, the weapon deals an extra 3 (1d6) fire damage on a hit.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

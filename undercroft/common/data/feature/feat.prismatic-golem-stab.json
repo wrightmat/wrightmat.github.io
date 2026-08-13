@@ -1,0 +1,32 @@
+{
+  "id": "feat.prismatic-golem-stab",
+  "name": "Stab",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Melee Weapon Attack. +13 to hit, reach 5 ft., one target. Hit. 11 (1d8 + 7) piercing damage plus 4 (1d8) damage of your choosing from: Acid, Fire, Cold, Force, Lightning, or Radiant.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Melee Weapon Attack. +13 to hit, reach 5 ft., one target. Hit. 11 (1d8 + 7) piercing damage plus 4 (1d8) damage of your choosing from: Acid, Fire, Cold, Force, Lightning, or Radiant.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

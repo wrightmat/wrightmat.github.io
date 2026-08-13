@@ -1,0 +1,28 @@
+{
+  "id": "feat.dragonsoul-fanatic-advantage",
+  "name": "Fanatic Advantage",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Once per turn, if the creature makes a weapon attack with advantage on the attack roll and hits, the target takes an extra 10 (3d6) damage.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Once per turn, if the creature makes a weapon attack with advantage on the attack roll and hits, the target takes an extra 10 (3d6) damage."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

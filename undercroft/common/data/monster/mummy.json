@@ -1,0 +1,106 @@
+{
+  "kind": "monster",
+  "index": "mummy",
+  "name": "Mummy",
+  "type": "undead",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/mummy.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "lawful evil",
+    "armorClass": 11,
+    "hitPoints": {
+      "max": 58,
+      "current": 58,
+      "diceString": "9d8+18"
+    },
+    "hitDice": "9d8",
+    "speed": {
+      "walk": 20
+    },
+    "abilities": {
+      "strength": 16,
+      "dexterity": 8,
+      "constitution": 15,
+      "intelligence": 6,
+      "wisdom": 10,
+      "charisma": 12
+    },
+    "initiative": {
+      "bonus": -1
+    },
+    "savingThrows": "WIS +2",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "bludgeoning, piercing, and slashing from nonmagical weapons",
+          "type": "resistance"
+        },
+        {
+          "name": "fire",
+          "type": "vulnerability"
+        },
+        {
+          "name": "necrotic",
+          "type": "immunity"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "Exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "Frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "Paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "the languages it knew in life"
+      ]
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "3",
+    "proficiencyBonus": 2,
+    "xp": 700,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/mummy"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/mummy",
+  "featureIds": [
+    "feat.multiattack",
+    "feat.rotting-fist",
+    "feat.dreadful-glare"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "text": "The creature can use its Dreadful Glare and makes one attack with its rotting fist."
+    }
+  },
+  "featureTiers": {
+    "feat.dreadful-glare": "mummy",
+    "feat.rotting-fist": "mummy"
+  }
+}

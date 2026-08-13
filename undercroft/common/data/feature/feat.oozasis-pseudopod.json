@@ -1,0 +1,33 @@
+{
+  "id": "feat.oozasis-pseudopod",
+  "name": "Pseudopod",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Melee Weapon Attack: +8 to hit, reach 15 ft., one creature. Hit: 13 (2d8 + 4) bludgeoning damage plus 10 (3d6) acid damage, and a target that’s Large or smaller is grappled (escape DC 16) and restrained until the grapple ends. The oozasis has two pseudopods, each of which can grapple one target at a time.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "Melee Weapon Attack: +8 to hit, reach 15 ft., one creature. Hit: 13 (2d8 + 4) bludgeoning damage plus 10 (3d6) acid damage, and a target that’s Large or smaller is grappled (escape DC 16) and restrained until the grapple ends. The oozasis has two pseudopods, each of which can grapple one target at a time."
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "control"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

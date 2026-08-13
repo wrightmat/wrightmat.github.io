@@ -1,0 +1,119 @@
+{
+  "kind": "monster",
+  "name": "Tlexolotl",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/27340/644/1000/1000/637937472235470046.jpeg",
+  "notes": "### Description\n\nTlexolotls are gigantic, salamander-like creatures that slumber deep in the magma of dormant volcanoes. A tlexolotl drowses amid the molten depths for centuries, rising only rarely to gorge itself on massive amounts of animal and plant life before returning to its slumber. Should a tlexolotl’s sleep be disturbed—whether by intruders in its volcanic lair or the eruption of its molten home—the lava-drenched brute emerges in a rage, rampaging forth until its belly is full and its volcano is quiet once more.\n\nDespite a tlexolotl’s destructive prowess, the land around its volcano is often naturally abundant. It’s common for those who live nearby to honor the tlexolotl as a protector of the land, as the ash it creates rejuvenates the soil and encourages life to flourish.",
+  "type": "elemental",
+  "stats": {
+    "size": "Huge",
+    "alignment": "Typically Neutral",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 104,
+      "current": 104,
+      "diceString": "11d12 + 33"
+    },
+    "hitDice": "11d12",
+    "speed": {
+      "walk": 40
+    },
+    "abilities": {
+      "strength": 25,
+      "dexterity": 10,
+      "constitution": 17,
+      "intelligence": 7,
+      "wisdom": 13,
+      "charisma": 9
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "",
+    "senses": {
+      "darkvision": 120,
+      "tremorsense": 120,
+      "passives": {
+        "perception": 11
+      }
+    },
+    "challengeRating": "10",
+    "proficiencyBonus": 4,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Fire",
+          "type": "immunity"
+        },
+        {
+          "name": "Poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "Petrified",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Ignan"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Journeys through the Radiant Citadel, pg. 119"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.fire-aura",
+    "feat.light-elemental-brilliant-illumination",
+    "feat.regeneration",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.tlexolotl-tail",
+    "feat.tlexolotl-pyroclasm-recharge-5-6"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.bite",
+          "count": 1
+        },
+        {
+          "featureId": "feat.tlexolotl-tail",
+          "count": 1
+        }
+      ],
+      "text": "The creature makes one Bite attack and one Tail attack."
+    },
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 11,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "1d10 + 7",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "4d8",
+        "damageType": "fire"
+      }
+    }
+  },
+  "featureTiers": {
+    "feat.fire-aura": "wide-automatic"
+  }
+}

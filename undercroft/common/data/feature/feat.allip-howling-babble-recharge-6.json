@@ -1,0 +1,33 @@
+{
+  "id": "feat.allip-howling-babble-recharge-6",
+  "name": "Howling Babble (Recharge 6)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Each creature within 30 feet of the creature that can hear it must make a DC 14 Wisdom saving throw. On a failed save, a target takes 12 (2d8 + 3) psychic damage, and it is stunned until the end of its next turn. On a successful save, it takes half as much damage and isn’t stunned. Constructs and Undead are immune to this effect.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Each creature within 30 feet of the creature that can hear it must make a DC 14 Wisdom saving throw. On a failed save, a target takes 12 (2d8 + 3) psychic damage, and it is stunned until the end of its next turn. On a successful save, it takes half as much damage and isn’t stunned. Constructs and Undead are immune to this effect.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "control"
+    ],
+    "recipeSlots": [
+      "burst"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

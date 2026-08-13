@@ -1,0 +1,50 @@
+{
+  "id": "feat.ink-cloud-2",
+  "name": "Ink Cloud (Costs 3 Actions)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "While underwater, the creature expels an ink cloud in a 40-foot radius. The cloud spreads around corners, and that area is heavily obscured to creatures other than the creature. Each creature other than the creature that ends its turn there must succeed on a DC 18 Constitution saving throw, taking 11 (2d10) poison damage on a failed save or half as much damage on a successful one. A strong current disperses the cloud, which otherwise disappears at the end of the creature’s next turn.",
+  "mechanics": {
+    "type": "passive",
+    "text": "While underwater, the creature expels an ink cloud in a 40-foot radius. The cloud spreads around corners, and that area is heavily obscured to creatures other than the creature. Each creature other than the creature that ends its turn there must succeed on a DC 18 Constitution saving throw, taking 11 (2d10) poison damage on a failed save or half as much damage on a successful one. A strong current disperses the cloud, which otherwise disappears at the end of the creature’s next turn."
+  },
+  "budgetCost": 4,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "debuff"
+    ],
+    "recipeSlots": [
+      "spread"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "juvenile-kraken-costs-3-actions",
+      "name": "Ink Cloud (Costs 3 Actions)",
+      "shortName": "Juvenile Kraken Costs 3 Actions",
+      "mechanics": {
+        "text": "While underwater, the creature expels an ink cloud in a 40-foot radius. The cloud spreads around corners, and that area is heavily obscured to creatures other than the creature. Each creature other than the creature that ends its turn there must succeed on a DC 18 Constitution saving throw, taking 11 (2d10) poison damage on a failed save or half as much damage on a successful one. A strong current disperses the cloud, which otherwise disappears at the end of the creature’s next turn."
+      }
+    },
+    {
+      "id": "kraken-costs-3-actions",
+      "name": "Ink Cloud (Costs 3 Actions)",
+      "shortName": "Kraken Costs 3 Actions",
+      "mechanics": {
+        "text": "While underwater, the monstrosity expels an ink cloud in a 60-foot radius. The cloud spreads around corners, and that area is heavily obscured to creatures other than the monstrosity. Each creature other than the monstrosity that ends its turn there must succeed on a DC 23 Constitution saving throw, taking 16 (3d10) poison damage on a failed save, or half as much damage on a successful one. A strong current disperses the cloud, which otherwise disappears at the end of the monstrosity's next turn."
+      }
+    }
+  ],
+  "combat": {
+    "actionCost": "legendary-action"
+  }
+}

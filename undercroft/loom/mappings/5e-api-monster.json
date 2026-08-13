@@ -14,17 +14,27 @@
       "type": "field",
       "bind": "@name"
     },
-    "type": {
+    "notes": {
       "type": "field",
-      "bind": "=lookup('creatureTypes', @type).name"
+      "bind": "@desc"
+    },
+    "type": {
+      "type": "custom",
+      "fn": "resolveCreatureType",
+      "args": {
+        "path": "type"
+      }
     },
     "systemIds": {
       "type": "custom",
       "fn": "srdMonsterSystemIds"
     },
     "image": {
-      "type": "field",
-      "bind": "@image"
+      "type": "custom",
+      "fn": "srdAbsoluteUrl",
+      "args": {
+        "path": "image"
+      }
     },
     "stats": {
       "type": "with",
@@ -59,16 +69,16 @@
               "current": {
                 "type": "field",
                 "bind": "@hit_points"
+              },
+              "diceString": {
+                "type": "field",
+                "bind": "@hit_points_roll"
               }
             }
           },
           "hitDice": {
             "type": "field",
             "bind": "@hit_dice"
-          },
-          "hitPointsRoll": {
-            "type": "field",
-            "bind": "@hit_points_roll"
           },
           "speed": {
             "type": "custom",
@@ -247,8 +257,11 @@
             ]
           },
           "url": {
-            "type": "field",
-            "bind": "@url"
+            "type": "custom",
+            "fn": "srdAbsoluteUrl",
+            "args": {
+              "path": "url"
+            }
           }
         }
       }

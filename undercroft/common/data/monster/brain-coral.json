@@ -1,0 +1,109 @@
+{
+  "kind": "monster",
+  "name": "Brain Coral",
+  "notes": "_This towering spire of pink coral is textured like the ridges of a brain and hums with strange power._\n\nOnce this water-dwelling organism finds purchase in a reef or rocky shore, it multiplies rapidly, forming a tower-like spire of thousands of clustered beings that share a single, potent consciousness known as a brain coral.\n\n**Divide and Conquer**. Brain coral is a conglomerate of thousands of psychically linked organisms. This unique structure allows groups of organizations to break off from the larger whole to defend the central spire, patrol the surrounding area, or leave to establish a new colony.\n\n**Mind Tyrant**. While the brain coral can expel pieces of the colony to defend against intruders, it prefers to dominate the minds of those around it to enact its will. Frequently, brain coral grows along coral reefs because they are home to aquatic creatures readily brought under the brain coral's control.",
+  "type": "aberration",
+  "stats": {
+    "size": "Huge",
+    "alignment": "Neutral Evil",
+    "armorClass": 14,
+    "hitPoints": {
+      "max": 119,
+      "current": 119,
+      "diceString": "14d12 + 28"
+    },
+    "hitDice": "14d12",
+    "speed": {
+      "walk": 0,
+      "swim": 120
+    },
+    "abilities": {
+      "strength": 16,
+      "dexterity": 6,
+      "constitution": 14,
+      "intelligence": 18,
+      "wisdom": 14,
+      "charisma": 10
+    },
+    "initiative": {
+      "bonus": -2
+    },
+    "savingThrows": "Int +5",
+    "skills": "Perception +5",
+    "senses": {
+      "blindsight": 120,
+      "passives": {
+        "perception": 15
+      }
+    },
+    "challengeRating": "5",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "psychic",
+          "type": "immunity"
+        },
+        {
+          "name": "blinded",
+          "type": "immunity"
+        },
+        {
+          "name": "charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "deafened",
+          "type": "immunity"
+        },
+        {
+          "name": "frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "poisoned",
+          "type": "immunity"
+        },
+        {
+          "name": "prone",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Common",
+        "Deep Speech",
+        "telepathy 120 ft."
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Tome of Beasts 3, pg. 67"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.brain-coral-colony-cluster",
+    "feat.multiattack",
+    "feat.pseudopod",
+    "feat.brain-coral-reef-poison-spray-recharge-5-6",
+    "feat.brain-coral-beasts-of-the-sea-1-day",
+    "feat.water-breathing"
+  ],
+  "featureParams": {
+    "feat.pseudopod": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d8 + 3",
+      "damageType": "bludgeoning"
+    },
+    "feat.multiattack": {
+      "text": "The creature makes one Pseudopod attack from its central spire and one additional Pseudopod attack for each cluster it has. These additional Pseudopod attacks can originate from the central spire or from any cluster, provided the target is within reach of the attack’s origin."
+    }
+  }
+}

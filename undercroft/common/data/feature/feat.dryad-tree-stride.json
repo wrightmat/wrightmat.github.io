@@ -1,0 +1,25 @@
+{
+  "id": "feat.dryad-tree-stride",
+  "name": "Tree Stride",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Once on her turn, the creature can use 10 ft. of her movement to step magically into one living tree within her reach and emerge from a second living tree within 60 ft. of the first tree, appearing in an unoccupied space within 5 ft. of the second tree. Both trees must be large or bigger.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "Once on her turn, the creature can use 10 ft. of her movement to step magically into one living tree within her reach and emerge from a second living tree within 60 ft. of the first tree, appearing in an unoccupied space within 5 ft. of the second tree. Both trees must be large or bigger."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

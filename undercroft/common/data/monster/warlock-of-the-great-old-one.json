@@ -1,0 +1,81 @@
+{
+  "kind": "monster",
+  "name": "Warlock of the Great Old One",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/25746/743/1000/1000/637880558139225068.jpeg",
+  "notes": "Warlocks of the Great Old One gain their powers through magical pacts forged with eldritch entities from strange and distant realms of existence. Some of these warlocks associate with cultists devoted to these entities, as well as Aberrations that share their goals, yet other warlocks of the Great Old One are experts at rooting out the chaos and wickedness inspired by bizarre beings from beyond the stars.",
+  "type": "humanoid",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Any Alignment",
+    "armorClass": "13 (16 with mage armor)",
+    "hitPoints": {
+      "max": 91,
+      "current": 91,
+      "diceString": "14d8 + 28"
+    },
+    "hitDice": "14d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 9,
+      "dexterity": 16,
+      "constitution": 15,
+      "intelligence": 12,
+      "wisdom": 12,
+      "charisma": 18
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "WIS +4, CHA +7",
+    "skills": "Arcana +4, History +4",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 11
+      }
+    },
+    "challengeRating": "6",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Psychic",
+          "type": "resistance"
+        }
+      ],
+      "languages": [
+        "any two languages",
+        "telepathy 30 ft."
+      ]
+    },
+    "spells": "The warlock casts one of the following spells, using Charisma as the spellcasting ability (spell save DC 15): At will: detect magic, guidance, levitate, mage armor (self only), mage hand, minor illusion, prestidigitation, speak with dead 1/day each: arcane gate, detect thoughts, true seeing",
+    "environments": [],
+    "sources": [
+      "https://www.dndbeyond.com/monsters/2560955-warlock-of-the-great-old-one"
+    ],
+    "saveDC": 15
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.warlock-of-the-great-old-one-whispering-aura",
+    "feat.multiattack",
+    "feat.warlock-of-the-great-old-one-dagger",
+    "feat.warlock-of-the-great-old-one-howling-void"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.warlock-of-the-great-old-one-dagger",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two Dagger attacks."
+    }
+  }
+}

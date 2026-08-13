@@ -1,0 +1,28 @@
+{
+  "id": "feat.kraken-lightning-storm",
+  "name": "Lightning Storm",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature magically creates three bolts of lightning, each of which can strike a target the creature can see within 120 feet of it. A target must make a DC 23 Dexterity saving throw, taking 22 (4d10) lightning damage on a failed save, or half as much damage on a successful one.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The creature magically creates three bolts of lightning, each of which can strike a target the creature can see within 120 feet of it. A target must make a DC 23 Dexterity saving throw, taking 22 (4d10) lightning damage on a failed save, or half as much damage on a successful one."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

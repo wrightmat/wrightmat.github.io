@@ -1,0 +1,83 @@
+{
+  "kind": "monster",
+  "index": "chuul",
+  "name": "Chuul",
+  "type": "aberration",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/chuul.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "chaotic evil",
+    "armorClass": 16,
+    "hitPoints": {
+      "max": 93,
+      "current": 93,
+      "diceString": "11d10+33"
+    },
+    "hitDice": "11d10",
+    "speed": {
+      "walk": 30,
+      "swim": 30
+    },
+    "abilities": {
+      "strength": 19,
+      "dexterity": 10,
+      "constitution": 16,
+      "intelligence": 5,
+      "wisdom": 11,
+      "charisma": 5
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "Perception +4",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "understands Deep Speech but can't speak"
+      ]
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 14
+      }
+    },
+    "challengeRating": "4",
+    "proficiencyBonus": 2,
+    "xp": 1100,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/chuul"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/chuul",
+  "featureIds": [
+    "feat.amphibious",
+    "feat.chuul-sense-magic",
+    "feat.multiattack",
+    "feat.chuul-pincer",
+    "feat.chuul-tentacles"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.chuul-pincer",
+          "count": 2
+        }
+      ],
+      "text": "The aberration makes two pincer attacks. If the aberration is grappling a creature, the aberration can also use its tentacles once."
+    }
+  }
+}

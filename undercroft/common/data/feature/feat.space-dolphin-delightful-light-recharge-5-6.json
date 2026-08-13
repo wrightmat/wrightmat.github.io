@@ -1,0 +1,32 @@
+{
+  "id": "feat.space-dolphin-delightful-light-recharge-5-6",
+  "name": "Delightful Light (Recharge 5–6)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature magically emanates light in a 10-foot radius for a moment. The creature and each creature of its choice in that light gain 11 (2d10) temporary hit points.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature magically emanates light in a 10-foot radius for a moment. The creature and each creature of its choice in that light gain 11 (2d10) temporary hit points.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "endure"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "bonus-action"
+  }
+}

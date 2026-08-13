@@ -1,0 +1,134 @@
+{
+  "kind": "monster",
+  "name": "Shoal Ooze",
+  "notes": "_Hundreds of small silver fish school together in a tightly-packed sphere inside this enormous, near-invisible ooze._\n\nThe shoal ooze is a deadly, ocean-dwelling predator that thrives in symbiosis with a school of acid-resistant fish. In return for the ooze’s protection from predators, the fish lure prey toward the ooze. When sharks or other would-be predators approach, the schooling fish swim in mesmerizing spiral patterns, allowing the ooze to surprise the hunters and devour them. As the ooze’s acid dissolves its engulfed victims, the fish eagerly gobble up tiny pieces.\n\nObscure Origins. Merfolk scholars believe these fish were once native to volcanic seas, eventually growing resistant to acidic environments. Encounters between an ocean-dwelling ooze and the fish long ago allowed them to develop their symbiotic relationship. The deranged—some say visionary—lich who created the first giant shark bowl ooze (see Creature Codex) may have been inspired by studying the shoal ooze.\n\nInextricably Linked. The fish live entirely inside the ooze, including hatching offspring. When the school—and its surrounding ooze—gets too big, part of the school splits off, forming a new shoal ooze. Small shoal oozes might combine into a larger shoal ooze, securing themselves against predators",
+  "type": "ooze",
+  "stats": {
+    "size": "Gargantuan",
+    "alignment": "Unaligned",
+    "armorClass": 9,
+    "hitPoints": {
+      "max": 232,
+      "current": 232,
+      "diceString": "16d20 + 64"
+    },
+    "hitDice": "16d20",
+    "speed": {
+      "walk": 10,
+      "swim": 40
+    },
+    "abilities": {
+      "strength": 20,
+      "dexterity": 8,
+      "constitution": 19,
+      "intelligence": 1,
+      "wisdom": 10,
+      "charisma": 5
+    },
+    "initiative": {
+      "bonus": -1
+    },
+    "savingThrows": "",
+    "skills": "",
+    "senses": {
+      "blindsight": 60,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "10",
+    "proficiencyBonus": 4,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "slashing",
+          "type": "resistance"
+        },
+        {
+          "name": "acid",
+          "type": "immunity"
+        },
+        {
+          "name": "blinded",
+          "type": "immunity"
+        },
+        {
+          "name": "charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "deafened",
+          "type": "immunity"
+        },
+        {
+          "name": "exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "prone",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Tome of Beasts 3, pg. 308"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.false-appearance-ambush",
+    "feat.multiattack",
+    "feat.pseudopod",
+    "feat.oozasis-engulf",
+    "feat.shoal-ooze-mesmerizing-spiral",
+    "feat.water-breathing",
+    "feat.ooze-nature"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.pseudopod",
+          "count": 3
+        }
+      ],
+      "text": "The creature uses Mesmerizing Spiral. It then makes three Pseudopod attacks and uses Engulf."
+    },
+    "feat.pseudopod": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 9,
+      "distanceLabel": "reach",
+      "distance": "15",
+      "damageDice": "2d10 + 5",
+      "damageType": "bludgeoning",
+      "rider": {
+        "kind": "condition-no-save",
+        "condition": "is grappled (escape DC 16)"
+      }
+    }
+  },
+  "featureTiers": {
+    "feat.false-appearance-ambush": "school-of-fish",
+    "feat.ooze-nature": "symbiotically-bound"
+  }
+}

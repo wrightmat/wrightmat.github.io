@@ -1,0 +1,42 @@
+{
+  "id": "feat.relentless-2",
+  "name": "Relentless",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "If the creature takes 7 damage or less that would reduce it to 0 hit points, it is reduced to 1 hit point instead.",
+  "mechanics": {
+    "type": "passive",
+    "text": "If the creature takes 7 damage or less that would reduce it to 0 hit points, it is reduced to 1 hit point instead."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "boar",
+      "name": "Relentless",
+      "shortName": "Boar",
+      "mechanics": {
+        "text": "If the creature takes 7 damage or less that would reduce it to 0 hit points, it is reduced to 1 hit point instead."
+      }
+    },
+    {
+      "id": "giant-boar",
+      "name": "Relentless",
+      "shortName": "Giant Boar",
+      "mechanics": {
+        "text": "If the creature takes 10 damage or less that would reduce it to 0 hit points, it is reduced to 1 hit point instead."
+      }
+    }
+  ]
+}

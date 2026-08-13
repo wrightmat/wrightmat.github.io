@@ -1,0 +1,24 @@
+{
+  "id": "feat.rampage",
+  "name": "Rampage",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "When the beast reduces a creature to 0 hit points with a melee attack on its turn, the beast can take a bonus action to move up to half its speed and make a bite attack.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When the beast reduces a creature to 0 hit points with a melee attack on its turn, the beast can take a bonus action to move up to half its speed and make a bite attack."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,90 @@
+{
+  "kind": "monster",
+  "name": "Giant Crayfish",
+  "notes": "",
+  "type": "beast",
+  "stats": {
+    "size": "Large",
+    "alignment": "Unaligned",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 45,
+      "current": 45,
+      "diceString": "7d10 + 7"
+    },
+    "hitDice": "7d10",
+    "speed": {
+      "walk": 30,
+      "swim": 30
+    },
+    "abilities": {
+      "strength": 15,
+      "dexterity": 13,
+      "constitution": 13,
+      "intelligence": 1,
+      "wisdom": 9,
+      "charisma": 3
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "",
+    "skills": "Stealth +3",
+    "senses": {
+      "blindsight": 30,
+      "passives": {
+        "perception": 9
+      }
+    },
+    "challengeRating": "2",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [
+      "Coastal",
+      "Underwater"
+    ],
+    "sources": [
+      "TftYP",
+      "https://www.dndbeyond.com/monsters/22553-giant-crayfish",
+      "Tales from the Yawning Portal"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.amphibious",
+    "feat.multiattack",
+    "feat.claw"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.claw",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two claw attacks."
+    },
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d10 + 2",
+      "damageType": "bludgeoning",
+      "rider": {
+        "kind": "condition-no-save",
+        "condition": "is grappled (escape DC 12). The creature has two claws, each of which can grapple only one target."
+      }
+    }
+  }
+}

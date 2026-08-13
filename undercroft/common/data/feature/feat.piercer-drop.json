@@ -1,0 +1,32 @@
+{
+  "id": "feat.piercer-drop",
+  "name": "Drop",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Melee Weapon Attack: +3 to hit, one creature directly underneath the creature. Hit: 3 (1d6) piercing damage per 10 feet fallen, up to 21 (6d6). Miss: The creature takes half the normal falling damage for the distance fallen.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Melee Weapon Attack: +3 to hit, one creature directly underneath the creature. Hit: 3 (1d6) piercing damage per 10 feet fallen, up to 21 (6d6). Miss: The creature takes half the normal falling damage for the distance fallen.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

@@ -1,0 +1,110 @@
+{
+  "kind": "monster",
+  "index": "assassin",
+  "name": "Assassin",
+  "notes": "Trained in the use of poison, assassins are remorseless killers who work for nobles, guildmasters, sovereigns, and anyone else who can afford them.",
+  "type": "humanoid",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/assassin.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "any non-good alignment",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 78,
+      "current": 78,
+      "diceString": "12d8+24"
+    },
+    "hitDice": "12d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 11,
+      "dexterity": 16,
+      "constitution": 14,
+      "intelligence": 13,
+      "wisdom": 11,
+      "charisma": 10
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "DEX +6, INT +4",
+    "skills": "Acrobatics +6, Deception +3, Perception +3, Stealth +9",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "poison",
+          "type": "resistance"
+        }
+      ],
+      "languages": [
+        "Thieves' cant plus any two languages"
+      ]
+    },
+    "senses": {
+      "passives": {
+        "perception": 13
+      }
+    },
+    "challengeRating": "8",
+    "proficiencyBonus": 3,
+    "xp": 3900,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/assassin"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/assassin",
+  "featureIds": [
+    "feat.assassin-assassinate",
+    "feat.dolgaunt-evasion",
+    "feat.sneak-attack",
+    "feat.multiattack",
+    "feat.shortsword",
+    "feat.light-crossbow"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.shortsword",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two shortsword attacks."
+    },
+    "feat.light-crossbow": {
+      "kind": "Ranged",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "range",
+      "distance": "80/320",
+      "damageDice": "1d8 + 3",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "save-or-damage",
+        "dice": "7d6",
+        "damageType": "poison"
+      }
+    },
+    "feat.shortsword": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d6 + 3",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "save-or-damage",
+        "dice": "7d6",
+        "damageType": "poison"
+      }
+    }
+  },
+  "featureTiers": {
+    "feat.sneak-attack": "4d6"
+  }
+}

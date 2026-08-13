@@ -163,6 +163,17 @@ export async function deriveStats({
   const baseDamagePerRound = Number(level?.damagePerRound ?? 0);
   const attackBonus = Number(level?.attackBonus ?? 0);
   const saveDC = Number(level?.saveDC ?? 10);
+  // Authored per Combat-Scaling-level (sys.dnd5e.json's own `challengeRating`
+  // field, same "flat value per CR" convention as attackBonus/saveDC/
+  // damagePerRound/targetBudget above) rather than computed from a numeric
+  // CR — CR is otherwise only ever stored as a display string
+  // (`stats.challengeRating`, e.g. "1/2"), never a number, so deriving this
+  // via a formula would mean parsing that string right back into one. Never
+  // set here before this — formula-mode weapon-attack/save-effect Features
+  // (monster-feature-matching.js's own featureParams `ability` shape) are
+  // what actually consume it, computing a live attack bonus/save DC from
+  // THIS monster's own ability scores instead of a number baked into text.
+  const proficiencyBonus = Number(level?.proficiencyBonus ?? 0);
 
   const hitPoints = Math.max(1, Math.round(baseHitPoints * (HP_BAND_MULTIPLIER[tendencies.hpBand] ?? 1)));
   const armorClass = Math.round(baseArmorClass * (AC_BAND_MULTIPLIER[tendencies.acBand] ?? 1));
@@ -207,6 +218,7 @@ export async function deriveStats({
       // absent, not false).
       initiative: { bonus: abilityModifier(abilities.dexterity ?? 10) },
       saveDC,
+      proficiencyBonus,
       // `defenses` — this suite's one shared shape for resistances/
       // immunities/vulnerabilities/condition-immunities (see the monster-
       // data-alignment plan), matching every import mapping's own defenses

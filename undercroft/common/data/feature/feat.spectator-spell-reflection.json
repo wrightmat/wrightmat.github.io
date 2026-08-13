@@ -1,0 +1,32 @@
+{
+  "id": "feat.spectator-spell-reflection",
+  "name": "Spell Reflection",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Trigger: The creature succeeds on a saving throw against a spell, or a spell’s attack roll misses it. Response—Dexterity Saving Throw: DC 12, one creature the creature can see within 120 feet. Failure: 10 (3d6) Force damage.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Trigger: The creature succeeds on a saving throw against a spell, or a spell’s attack roll misses it. Response—Dexterity Saving Throw: DC 12, one creature the creature can see within 120 feet. Failure: 10 (3d6) Force damage.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "reaction"
+  }
+}

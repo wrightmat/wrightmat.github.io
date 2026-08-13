@@ -1,0 +1,29 @@
+{
+  "id": "feat.bone-crab-hive-mind",
+  "name": "Hive Mind",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "a creature can communicate perfectly with all other bone crabs within 100 feet of it. If one is aware of danger, they all are.",
+  "mechanics": {
+    "type": "passive",
+    "text": "a creature can communicate perfectly with all other bone crabs within 100 feet of it. If one is aware of danger, they all are.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

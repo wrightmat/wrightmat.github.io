@@ -1,0 +1,30 @@
+{
+  "id": "feat.paper-drake-refold-recharge-5-6",
+  "name": "Refold (Recharge 5–6)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "a creature can fold its body into different sizes and shapes. The creature can adjust its size by one step in either direction, but can’t be smaller than Tiny or larger than Medium size. Changes in size or shape don’t affect the creature’s stats.",
+  "mechanics": {
+    "type": "passive",
+    "text": "a creature can fold its body into different sizes and shapes. The creature can adjust its size by one step in either direction, but can’t be smaller than Tiny or larger than Medium size. Changes in size or shape don’t affect the creature’s stats.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "utility",
+      "mobility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

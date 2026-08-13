@@ -1,0 +1,108 @@
+{
+  "kind": "monster",
+  "name": "Juvenile Kraken",
+  "notes": "_This twisted, unnatural beast looks like the unholy union of squid and spider. Its shell-covered core has six small rubbery legs, peculiar antennae, and six tentacles around a squid’s enormous beak. Unlike krakens and giant squid, krake spawn can scuttle onto land._\n\n**Demonic Crossbreeds**. Some believe krake spawn are demonic crossbreeds created by the aboleth, fusing kraken blood with demonic souls. Others say that krake spawn are the horrible creation of a long-forgotten meddling god, summoned to the mortal world by deep ones. Certainly krake spawn do respond to summoning magic, and sorcerers do summon krake spawn through blood sacrifices to work evil in the world. However, they do so at considerable peril: unlike demons and devils, krake spawn are seldom bound by pacts of any kind.\n\n**Outwit Humans**. Though enormous and carrying an armored green shell on their six spindly legs, krake spawn are surprisingly quick and agile. Worse, they have a malicious and bloodthirsty intellect. A krake spawn is considerably smarter than most humans, who mistake them for dumb beasts—an error that can often prove fatal.\n\n**Iceberg Fortresses**. Krake spawn live in remote, icy regions, where they fashion elaborate iceberg fortresses. When they venture into warmer climes in search of magic or slaves, they can preserve their icebergs with ice storms. These fortresses are stocked with frozen creatures (an emergency food supply), the krake spawn’s treasure and library, slaves or prisoners of many races, and a hellish nest filled with the krake spawn’s offspring.",
+  "type": "Monstrosity (Titan)",
+  "stats": {
+    "size": "Huge",
+    "alignment": "Chaotic Evil",
+    "armorClass": 16,
+    "hitPoints": {
+      "max": 207,
+      "current": 207,
+      "diceString": "18d12 + 90"
+    },
+    "hitDice": "18d12",
+    "speed": {
+      "walk": 20,
+      "swim": 50
+    },
+    "abilities": {
+      "strength": 24,
+      "dexterity": 11,
+      "constitution": 20,
+      "intelligence": 19,
+      "wisdom": 15,
+      "charisma": 17
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "Str +12, Dex +5, Con +10, Int +9, Wis +7",
+    "skills": "",
+    "senses": {
+      "truesight": 120,
+      "passives": {
+        "perception": 14
+      }
+    },
+    "challengeRating": "14",
+    "proficiencyBonus": 5,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Lightning; Bludgeoning",
+          "type": "immunity"
+        },
+        {
+          "name": "Piercing",
+          "type": "immunity"
+        },
+        {
+          "name": "and Slashing from Nonmagical Attacks",
+          "type": "immunity"
+        },
+        {
+          "name": "Frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "Paralyzed",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Abyssal",
+        "Celestial",
+        "Infernal",
+        "Primordial",
+        "Telepathy 60 ft. but can't speak"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Tome of Beasts 1, pg. 269"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.amphibious",
+    "feat.freedom-of-movement",
+    "feat.multiattack",
+    "feat.juvenile-kraken-swallowing-bite",
+    "feat.juvenile-kraken-tentacle",
+    "feat.fling",
+    "feat.lightning-strike",
+    "feat.juvenile-kraken-tentacle-attack-costs-2-actions",
+    "feat.ink-cloud-2"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.juvenile-kraken-tentacle",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two tentacle attacks, each of which it can replace with one use of Fling."
+    }
+  },
+  "featureTiers": {
+    "feat.ink-cloud-2": "juvenile-kraken-costs-3-actions",
+    "feat.fling": "juvenile",
+    "feat.lightning-strike": "dc-18"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "id": "feat.dragonsoul-dragon-fanatic",
+  "name": "Dragon Fanatic",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature has advantage on saving throws against being charmed or frightened. While the creature can see a dragon or higher-ranking Cult of the Dragon cultist friendly to it, the creature ignores the effects of being charmed or frightened.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature has advantage on saving throws against being charmed or frightened. While the creature can see a dragon or higher-ranking Cult of the Dragon cultist friendly to it, the creature ignores the effects of being charmed or frightened."
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

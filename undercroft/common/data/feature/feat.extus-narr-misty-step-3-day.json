@@ -1,0 +1,32 @@
+{
+  "id": "feat.extus-narr-misty-step-3-day",
+  "name": "Misty Step (3/Day)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Extus casts Misty Step, using the same spellcasting ability as Spellcasting.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Extus casts Misty Step, using the same spellcasting ability as Spellcasting.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "mobility"
+    ],
+    "recipeSlots": [
+      "escape"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "bonus-action"
+  }
+}

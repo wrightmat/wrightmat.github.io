@@ -1,0 +1,32 @@
+{
+  "id": "feat.mage-hunter-mage-tracker-sentry-form-only",
+  "name": "Mage Tracker (Sentry Form Only)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature emits a pulse of energy that helps it better locate its magical quarry. Each creature within 120 feet of the creature that has the ability to cast spells must succeed on a DC 14 Wisdom saving throw or be mystically marked by the creature for 1 hour. While marked, a creature can’t become hidden from the creature and gains no benefit from the invisible condition against the creature. Additionally, while a marked creature is on the same plane of existence as the creature, the creature always knows the distance and direction to the creature.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature emits a pulse of energy that helps it better locate its magical quarry. Each creature within 120 feet of the creature that has the ability to cast spells must succeed on a DC 14 Wisdom saving throw or be mystically marked by the creature for 1 hour. While marked, a creature can’t become hidden from the creature and gains no benefit from the invisible condition against the creature. Additionally, while a marked creature is on the same plane of existence as the creature, the creature always knows the distance and direction to the creature.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

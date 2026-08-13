@@ -1,0 +1,100 @@
+{
+  "kind": "monster",
+  "name": "Githyanki Gish",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/25746/416/1000/1000/637880557623079462.jpeg",
+  "notes": "### Description\n\nGish blend their magical abilities with swordplay to become dangerous foes in battle. Their specialized capabilities make them well suited for assassination, raiding, and espionage.\n\n#### Githyanki\n\nGithyanki descend from an ancient people who were also the progenitors of githzerai. These tall, gaunt folk have potent psionic powers and dwell, for the most part, on the Astral Plane. Among the best-known githyanki are the bellicose followers of the Lich Queen Vlaakith. They terrorize the Astral Plane, raiding into other planes to plunder the multiverse of its magic and riches.",
+  "type": "humanoid",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Any Alignment",
+    "armorClass": 17,
+    "hitPoints": {
+      "max": 130,
+      "current": 130,
+      "diceString": "20d8 + 40"
+    },
+    "hitDice": "20d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 17,
+      "dexterity": 15,
+      "constitution": 14,
+      "intelligence": 16,
+      "wisdom": 15,
+      "charisma": 16
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "Con +6, Int +7, Wis +6",
+    "skills": "Insight +6, Perception +6, Stealth +6",
+    "senses": {
+      "passives": {
+        "perception": 16
+      }
+    },
+    "challengeRating": "10",
+    "proficiencyBonus": 4,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Gith"
+      ]
+    },
+    "spells": "(Psionics). The githyanki casts one of the following spells, requiring no spell components and using Intelligence as the spellcasting ability (spell save DC 15): At will: light, mage hand (the hand is invisible), message 3/day each: fireball, invisibility, nondetection (self only) 1/day each: dimension door, plane shift, telekinesis",
+    "environments": [
+      "Desert",
+      "Mountain",
+      "Urban"
+    ],
+    "sources": [
+      "MPMM",
+      "https://www.dndbeyond.com/monsters/2560828-githyanki-gish",
+      "Mordenkainen Presents: Monsters of the Multiverse, pg. 140"
+    ],
+    "saveDC": 15
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.multiattack",
+    "feat.longsword",
+    "feat.telekinetic-bolt",
+    "feat.autumn-eladrin-fey-step-recharge-4-6"
+  ],
+  "featureParams": {
+    "feat.telekinetic-bolt": {
+      "kind": "Ranged",
+      "attackKind": "Spell",
+      "attackBonus": 7,
+      "distanceLabel": "range",
+      "distance": "120",
+      "damageDice": "8d6",
+      "damageType": "force"
+    },
+    "feat.multiattack": {
+      "text": "The creature makes three Longsword or Telekinetic Bolt attacks, or it makes one of those attacks and uses Spellcasting."
+    },
+    "feat.longsword": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d8 + 3",
+      "damageType": "slashing",
+      "versatile": {
+        "damageDice": "1d10 + 3"
+      },
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "5d8",
+        "damageType": "psychic"
+      }
+    }
+  }
+}

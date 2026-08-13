@@ -1,0 +1,93 @@
+{
+  "kind": "monster",
+  "name": "Needle Blight",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/16/462/1000/1000/636376286057911052.png",
+  "notes": "",
+  "type": "plant",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Neutral Evil",
+    "armorClass": 12,
+    "hitPoints": {
+      "max": 11,
+      "current": 11,
+      "diceString": "2d8 + 2"
+    },
+    "hitDice": "2d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 12,
+      "dexterity": 12,
+      "constitution": 13,
+      "intelligence": 4,
+      "wisdom": 8,
+      "charisma": 3
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "",
+    "skills": "",
+    "senses": {
+      "blindsight": 60,
+      "passives": {
+        "perception": 9
+      }
+    },
+    "challengeRating": "1/4",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Blinded",
+          "type": "immunity"
+        },
+        {
+          "name": "Deafened",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "understands Common but can’t speak"
+      ]
+    },
+    "environments": [
+      "Forest"
+    ],
+    "sources": [
+      "MM",
+      "https://www.dndbeyond.com/monsters/17215-needle-blight",
+      "Monster Manual, pg. 32"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.claws",
+    "feat.needles"
+  ],
+  "featureParams": {
+    "feat.claws": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 3,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d4 + 1",
+      "damageType": "piercing"
+    },
+    "feat.needles": {
+      "kind": "Ranged",
+      "attackKind": "Weapon",
+      "attackBonus": 3,
+      "distanceLabel": "range",
+      "distance": "30/60",
+      "damageDice": "2d6 + 1",
+      "damageType": "piercing"
+    }
+  }
+}

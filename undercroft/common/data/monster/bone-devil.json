@@ -1,0 +1,109 @@
+{
+  "kind": "monster",
+  "index": "bone-devil",
+  "name": "Bone Devil",
+  "type": "fiend",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/bone-devil.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "lawful evil",
+    "armorClass": 19,
+    "hitPoints": {
+      "max": 142,
+      "current": 142,
+      "diceString": "15d10+60"
+    },
+    "hitDice": "15d10",
+    "speed": {
+      "walk": 40,
+      "fly": 40
+    },
+    "abilities": {
+      "strength": 18,
+      "dexterity": 16,
+      "constitution": 18,
+      "intelligence": 13,
+      "wisdom": 14,
+      "charisma": 16
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "INT +5, WIS +6, CHA +7",
+    "skills": "Deception +7, Insight +6",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "cold",
+          "type": "resistance"
+        },
+        {
+          "name": "bludgeoning, piercing, and slashing from nonmagical weapons that aren't silvered",
+          "type": "resistance"
+        },
+        {
+          "name": "fire",
+          "type": "immunity"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Infernal",
+        "telepathy 120 ft."
+      ]
+    },
+    "senses": {
+      "darkvision": 120,
+      "passives": {
+        "perception": 12
+      }
+    },
+    "challengeRating": "9",
+    "proficiencyBonus": 4,
+    "xp": 5000,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/bone-devil"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/bone-devil",
+  "featureIds": [
+    "feat.devil-s-sight",
+    "feat.magic-resistance",
+    "feat.multiattack",
+    "feat.claw",
+    "feat.bone-devil-sting"
+  ],
+  "featureParams": {
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 8,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "1d8 + 4",
+      "damageType": "slashing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.claw",
+          "count": 2
+        },
+        {
+          "featureId": "feat.bone-devil-sting",
+          "count": 1
+        }
+      ],
+      "text": "The creature makes three attacks: two with its claws and one with its sting."
+    }
+  }
+}

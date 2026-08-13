@@ -1,0 +1,162 @@
+{
+  "kind": "monster",
+  "name": "Crimson Shade",
+  "notes": "",
+  "type": "fey",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Chaotic Evil",
+    "armorClass": 12,
+    "hitPoints": {
+      "max": 27,
+      "current": 27
+    },
+    "hitDice": "6d8",
+    "speed": {
+      "walk": 40
+    },
+    "abilities": {
+      "strength": 6,
+      "dexterity": 14,
+      "constitution": 10,
+      "intelligence": 9,
+      "wisdom": 10,
+      "charisma": 12
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "stealth +6",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "1/2",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Acid",
+          "type": "resistance"
+        },
+        {
+          "name": "Cold",
+          "type": "resistance"
+        },
+        {
+          "name": "Fire",
+          "type": "resistance"
+        },
+        {
+          "name": "Lightning",
+          "type": "resistance"
+        },
+        {
+          "name": "Thunder; Bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "Piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "and Slashing from Nonmagical Attacks",
+          "type": "resistance"
+        },
+        {
+          "name": "Radiant",
+          "type": "vulnerability"
+        },
+        {
+          "name": "Necrotic",
+          "type": "immunity"
+        },
+        {
+          "name": "Poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "Frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "Grappled",
+          "type": "immunity"
+        },
+        {
+          "name": "Paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "Petrified",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        },
+        {
+          "name": "Prone",
+          "type": "immunity"
+        },
+        {
+          "name": "Restrained",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Common",
+        "understands but can't speak"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Homebrew"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.amorphous",
+    "feat.shadow-stealth",
+    "feat.sunlight-sensitivity",
+    "feat.shielded-mind",
+    "feat.shadow-touch",
+    "feat.necrotic-breath",
+    "feat.crimson-shade-cursed-body"
+  ],
+  "featureParams": {
+    "feat.shadow-touch": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d4 + 0",
+      "damageType": "cold"
+    },
+    "feat.necrotic-breath": {
+      "verb": "exhales",
+      "substance": "shadowy energy",
+      "areaSize": "15",
+      "areaShape": "cone",
+      "dcAbility": "constitution",
+      "ability": "dexterity",
+      "damageDice": "4d8",
+      "damageType": "necrotic",
+      "rider": {
+        "kind": "trailing-note",
+        "conditionText": "A humanoid slain by this attack rises 24 hours later as a creature, unless the humanoid is restored to life or its body is destroyed."
+      }
+    }
+  }
+}

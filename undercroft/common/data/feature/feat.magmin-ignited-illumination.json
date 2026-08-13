@@ -1,0 +1,25 @@
+{
+  "id": "feat.magmin-ignited-illumination",
+  "name": "Ignited Illumination",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "As a bonus action, the creature can set itself ablaze or extinguish its flames. While ablaze, the creature sheds bright light in a 10-foot radius and dim light for an additional 10 ft.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "As a bonus action, the creature can set itself ablaze or extinguish its flames. While ablaze, the creature sheds bright light in a 10-foot radius and dim light for an additional 10 ft."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,115 @@
+{
+  "kind": "monster",
+  "index": "mummy-lord",
+  "name": "Mummy Lord",
+  "type": "undead",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/mummy-lord.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "lawful evil",
+    "armorClass": 17,
+    "hitPoints": {
+      "max": 97,
+      "current": 97,
+      "diceString": "13d8+39"
+    },
+    "hitDice": "13d8",
+    "speed": {
+      "walk": 20
+    },
+    "abilities": {
+      "strength": 18,
+      "dexterity": 10,
+      "constitution": 17,
+      "intelligence": 11,
+      "wisdom": 18,
+      "charisma": 16
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "CON +8, INT +5, WIS +9, CHA +8",
+    "skills": "History +5, Religion +5",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "fire",
+          "type": "vulnerability"
+        },
+        {
+          "name": "necrotic",
+          "type": "immunity"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "bludgeoning, piercing, and slashing from nonmagical weapons",
+          "type": "immunity"
+        },
+        {
+          "name": "Charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "Exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "Frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "Paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "the languages it knew in life"
+      ]
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 14
+      }
+    },
+    "challengeRating": "15",
+    "proficiencyBonus": 5,
+    "xp": 13000,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/mummy-lord",
+    "spells": "The mummy lord is a 10th-level spellcaster. Its spellcasting ability is Wisdom (spell save DC 17, +9 to hit with spell attacks). The mummy lord has the following cleric spells prepared:\n\n- Cantrips (at will): sacred flame, thaumaturgy\n- 1st level (4 slots): command, guiding bolt, shield of faith\n- 2nd level (3 slots): hold person, silence, spiritual weapon\n- 3rd level (3 slots): animate dead, dispel magic\n- 4th level (3 slots): divination, guardian of faith\n- 5th level (2 slots): contagion, insect plague\n- 6th level (1 slot): harm",
+    "saveDC": 17
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/mummy-lord",
+  "featureIds": [
+    "feat.magic-resistance",
+    "feat.mummy-lord-rejuvenation",
+    "feat.multiattack",
+    "feat.rotting-fist",
+    "feat.dreadful-glare",
+    "feat.mummy-lord-attack",
+    "feat.mummy-lord-blinding-dust",
+    "feat.mummy-lord-blasphemous-word-costs-2-actions",
+    "feat.mummy-lord-channel-negative-energy-costs-2-actions",
+    "feat.mummy-lord-whirlwind-of-sand-costs-2-actions"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "text": "The creature can use its Dreadful Glare and makes one attack with its rotting fist."
+    }
+  },
+  "featureTiers": {
+    "feat.dreadful-glare": "mummy-lord",
+    "feat.rotting-fist": "mummy-lord"
+  }
+}

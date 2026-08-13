@@ -1,0 +1,101 @@
+{
+  "kind": "monster",
+  "name": "Aalpamac",
+  "notes": "_A chimeric beast with the body of a massive trout and the front claws and head of a fierce wolverine bursts up from the icy water. Its eyes glow with a lambent green light, and the air around it bends and distorts as if viewed through a thick lens._\n\n**Hungry Lake Monsters**. The aalpamac is a dangerous freshwater predator native to lakes and rivers. While primarily a water-dwelling monster, the aalpamac can haul itself onto shore with its front claws and does so to attack prey drinking or moving at the water’s edge. While not evil, the aalpamac is a ravenous and territorial creature, ranging over an area of up to a dozen miles in search of fresh meat. Aalpamacs are not picky about what they consume and even attack large boats if sufficiently hungry. They are solitary creatures and tolerate others of their own kind only during mating seasons.\n\n**Local Legends**. An aalpamac that terrorizes the same lake or river for many years often develops a reputation among the locals of the area, particularly those living along the body of water in question. Inevitably, this gives rise to a number of stories exaggerating the size, ferocity, disposition, or powers of the aalpamac. The stories often give aalpamacs names that highlight their most prominent features or are specific to the area in which they live, such as “Chompo” or “the Heron Lake Monster.” These stories also make the aalpamac the target of adventurers and trophy hunters, most of whom either do not locate the beast or fall victim to it.",
+  "type": "monstrosity",
+  "stats": {
+    "size": "Huge",
+    "alignment": "Unaligned",
+    "armorClass": 16,
+    "hitPoints": {
+      "max": 136,
+      "current": 136,
+      "diceString": "13d12 + 52"
+    },
+    "hitDice": "13d12",
+    "speed": {
+      "walk": 15,
+      "swim": 50
+    },
+    "abilities": {
+      "strength": 21,
+      "dexterity": 10,
+      "constitution": 19,
+      "intelligence": 2,
+      "wisdom": 16,
+      "charisma": 10
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "Con +7",
+    "skills": "Perception +6",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 16
+      }
+    },
+    "challengeRating": "7",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "cold",
+          "type": "resistance"
+        }
+      ],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Tome of Beasts 2 (pg. 8)"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.amphibious",
+    "feat.aalpamac-distance-distortion-aura",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.claws"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 8,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d10 + 5",
+      "damageType": "piercing"
+    },
+    "feat.claws": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 8,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 5",
+      "damageType": "slashing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.bite",
+          "count": 1
+        },
+        {
+          "featureId": "feat.claws",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes three attacks: one with its bite and two with its claws."
+    }
+  }
+}

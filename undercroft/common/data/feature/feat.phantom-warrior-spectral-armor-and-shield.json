@@ -1,0 +1,29 @@
+{
+  "id": "feat.phantom-warrior-spectral-armor-and-shield",
+  "name": "Spectral Armor and Shield",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature’s AC accounts for its spectral armor and shield.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature’s AC accounts for its spectral armor and shield.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

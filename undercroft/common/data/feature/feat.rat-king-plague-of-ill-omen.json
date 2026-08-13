@@ -1,0 +1,30 @@
+{
+  "id": "feat.rat-king-plague-of-ill-omen",
+  "name": "Plague of Ill Omen",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature radiates a magical aura of misfortune in a 30-foot radius. A foe of the creature that starts its turn in the aura must make a successful DC 14 Charisma saving throw or be cursed with bad luck until the start of its next turn. When a cursed character makes an attack roll, ability check, or saving throw, it must subtract 1d4 from the result.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature radiates a magical aura of misfortune in a 30-foot radius. A foe of the creature that starts its turn in the aura must make a successful DC 14 Charisma saving throw or be cursed with bad luck until the start of its next turn. When a cursed character makes an attack roll, ability check, or saving throw, it must subtract 1d4 from the result.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "debuff",
+      "control"
+    ],
+    "recipeSlots": [
+      "deny"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

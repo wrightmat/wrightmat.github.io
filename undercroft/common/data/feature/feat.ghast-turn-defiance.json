@@ -1,0 +1,25 @@
+{
+  "id": "feat.ghast-turn-defiance",
+  "name": "Turn Defiance",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature and any ghouls within 30 ft. of it have advantage on saving throws against effects that turn undead.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The creature and any ghouls within 30 ft. of it have advantage on saving throws against effects that turn undead."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,30 @@
+{
+  "id": "feat.pterafolk-terror-dive",
+  "name": "Terror Dive",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "If the creature is flying and dives at least 30 feet forward toward a target, and then hits that target with a melee weapon attack, the target is frightened until the end of its next turn.",
+  "mechanics": {
+    "type": "passive",
+    "text": "If the creature is flying and dives at least 30 feet forward toward a target, and then hits that target with a melee weapon attack, the target is frightened until the end of its next turn.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "fear",
+      "control"
+    ],
+    "recipeSlots": [
+      "threaten"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

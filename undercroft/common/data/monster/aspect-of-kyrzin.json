@@ -1,0 +1,143 @@
+{
+  "kind": "monster",
+  "name": "Aspect of Kyrzin",
+  "notes": "A miniature version of [[Kyrzin]].",
+  "type": "aberration",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Chaotic Evil",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 170,
+      "current": 170,
+      "diceString": "21d8 + 86"
+    },
+    "hitDice": "21d8",
+    "speed": {
+      "walk": 40,
+      "fly": 40,
+      "hover": true
+    },
+    "abilities": {
+      "strength": 15,
+      "dexterity": 16,
+      "constitution": 21,
+      "intelligence": 24,
+      "wisdom": 21,
+      "charisma": 23
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "intelligence +14, wisdom +12, charisma +13",
+    "skills": "arcana +14, perception +12, nature +12",
+    "senses": {
+      "truesight": 120,
+      "passives": {
+        "perception": 22
+      }
+    },
+    "challengeRating": "10",
+    "proficiencyBonus": 4,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "and slashing from nonmagical attacks",
+          "type": "resistance"
+        },
+        {
+          "name": "psychic",
+          "type": "resistance"
+        },
+        {
+          "name": "acid",
+          "type": "immunity"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "blinded",
+          "type": "immunity"
+        },
+        {
+          "name": "charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "poisoned",
+          "type": "immunity"
+        },
+        {
+          "name": "prone",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Deep Speech",
+        "telepathy 120 ft."
+      ]
+    },
+    "environments": [],
+    "sources": []
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.amorphous",
+    "feat.alien-mind",
+    "feat.legendary-resistance",
+    "feat.magic-resistance",
+    "feat.regeneration",
+    "feat.teleport",
+    "feat.multiattack",
+    "feat.aspect-of-kyrzin-acid-grasp",
+    "feat.acid-breath"
+  ],
+  "featureTiers": {
+    "feat.teleport": "30-ft-bonus-action",
+    "feat.legendary-resistance": "3-day",
+    "feat.alien-mind": "dc-22"
+  },
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.aspect-of-kyrzin-acid-grasp",
+          "count": 2
+        }
+      ],
+      "text": "Kyrzin makes two Acid Grasp attacks. One of these can be replaced by a Slime Prince's Breath attack."
+    },
+    "feat.acid-breath": {
+      "verb": "exhales",
+      "substance": "acid",
+      "areaSize": "30",
+      "areaShape": "line",
+      "dcAbility": "constitution",
+      "ability": "dexterity",
+      "damageDice": "4d6 + 8",
+      "damageType": "acid",
+      "lineWidth": "5"
+    }
+  }
+}

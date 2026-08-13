@@ -1,0 +1,128 @@
+{
+  "kind": "monster",
+  "name": "Hoard Mimic",
+  "notes": "Kin to the common mimic described in the _Monster Manual_, hoard mimics are among the oldest and most cunning of their kind. A hoard mimic's massive, amorphous form and shape-shifting prowess allow it to take on the semblance of a vast trove of treasures, not just a single object. Like smaller mimics, hoard mimics exude adhesive goo to trap prey. They can also vent a fine, caustic mist from their pores that burns and blinds creatures caught in it.\r\n\r\nHoard mimics are so named because many enter into partnerships with dragons, each one serving as a false hoard in a dragon's lair to draw unwitting intruders away from the real riches — and into the mimic's maw. If faced with unexpectedly fierce opposition, though, a hoard mimic might offer information about the true hoard in exchange for its life.",
+  "type": "monstrosity",
+  "stats": {
+    "size": "Huge",
+    "alignment": "Typically Neutral",
+    "armorClass": 14,
+    "hitPoints": {
+      "max": 123,
+      "current": 123,
+      "diceString": "13d12 + 39"
+    },
+    "hitDice": "13d12",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 21,
+      "dexterity": 12,
+      "constitution": 17,
+      "intelligence": 10,
+      "wisdom": 16,
+      "charisma": 10
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "Con +6, Wis +6",
+    "skills": "Persuasion +3, Stealth +6",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 13
+      }
+    },
+    "challengeRating": "8",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "prone",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Common",
+        "Draconic",
+        "telepathy 120 ft."
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "FToD",
+      "Fizban's Treasury of Dragons, pg 204"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.false-appearance-ambush",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.pseudopod",
+    "feat.caustic-mist",
+    "feat.shapechanger"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.bite",
+          "count": 1
+        },
+        {
+          "featureId": "feat.pseudopod",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes one Bite attack and two Pseudopod attacks."
+    },
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 8,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d10 + 5",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "2d6",
+        "damageType": "acid"
+      }
+    },
+    "feat.pseudopod": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 8,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "2d6 + 5",
+      "damageType": "bludgeoning",
+      "rider": {
+        "kind": "condition-no-save",
+        "condition": "is grappled (escape DC 16) and restrained until the grapple ends, once the creature adheres to it. Ability checks made to escape this grapple have disadvantage."
+      }
+    },
+    "feat.caustic-mist": {
+      "verb": "sprays",
+      "substance": "a fine mist of acid",
+      "areaSize": "30",
+      "areaShape": "cone",
+      "dcAbility": "constitution",
+      "ability": "dexterity",
+      "rider": {
+        "kind": "fail-condition",
+        "conditionText": "On a failed save, the creature takes 27 (6d8) acid damage and is blinded until the end of its next turn. On a successful save, the creature takes half as much damage and isn't blinded."
+      }
+    }
+  },
+  "featureTiers": {
+    "feat.false-appearance-ambush": "motionless-eyes-legs-wrapped"
+  }
+}

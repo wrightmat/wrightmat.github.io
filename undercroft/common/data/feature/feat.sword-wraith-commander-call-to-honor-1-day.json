@@ -1,0 +1,33 @@
+{
+  "id": "feat.sword-wraith-commander-call-to-honor-1-day",
+  "name": "Call to Honor (1/Day)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "If the creature has taken damage during this combat, it gives itself advantage on attack rolls until the end of its next turn, and 1d4 + 1 sword wraith warriors appear in unoccupied spaces within 30 feet of it. The warriors last until they drop to 0 hit points, and they take their turns immediately after the creature’s turn on the same initiative count.",
+  "mechanics": {
+    "type": "passive",
+    "text": "If the creature has taken damage during this combat, it gives itself advantage on attack rolls until the end of its next turn, and 1d4 + 1 sword wraith warriors appear in unoccupied spaces within 30 feet of it. The warriors last until they drop to 0 hit points, and they take their turns immediately after the creature’s turn on the same initiative count.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "control",
+      "damage"
+    ],
+    "recipeSlots": [
+      "threaten"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

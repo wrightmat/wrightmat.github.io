@@ -1,0 +1,33 @@
+{
+  "id": "feat.xag-yi-necrotic-bolt-recharge-4-6",
+  "name": "Necrotic Bolt (Recharge 4-6)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature fires a bolt of necrotic energy at one target it can see within 30 feet of it. The target must succeed on a DC 16 Dexterity saving throw or take 9 (1d6 + 6) necrotic damage. In addition, nonmagical armor worn by the target is partly dissolved and takes a permanent and cumulative -1 penalty to the AC it offers. The armor is destroyed if the penalty reduces its AC to 10.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature fires a bolt of necrotic energy at one target it can see within 30 feet of it. The target must succeed on a DC 16 Dexterity saving throw or take 9 (1d6 + 6) necrotic damage. In addition, nonmagical armor worn by the target is partly dissolved and takes a permanent and cumulative -1 penalty to the AC it offers. The armor is destroyed if the penalty reduces its AC to 10.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "debuff"
+    ],
+    "recipeSlots": [
+      "burst"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

@@ -1,0 +1,105 @@
+{
+  "kind": "monster",
+  "index": "chimera",
+  "name": "Chimera",
+  "type": "monstrosity",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/chimera.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "chaotic evil",
+    "armorClass": 14,
+    "hitPoints": {
+      "max": 114,
+      "current": 114,
+      "diceString": "12d10+48"
+    },
+    "hitDice": "12d10",
+    "speed": {
+      "walk": 30,
+      "fly": 60
+    },
+    "abilities": {
+      "strength": 19,
+      "dexterity": 11,
+      "constitution": 19,
+      "intelligence": 3,
+      "wisdom": 14,
+      "charisma": 10
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "Perception +8",
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "understands Draconic but can't speak"
+      ]
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 18
+      }
+    },
+    "challengeRating": "6",
+    "proficiencyBonus": 3,
+    "xp": 2300,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/chimera"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/chimera",
+  "featureIds": [
+    "feat.multiattack",
+    "feat.bite",
+    "feat.horns",
+    "feat.claws",
+    "feat.fire-breath-monster"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 4",
+      "damageType": "piercing"
+    },
+    "feat.horns": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d12 + 4",
+      "damageType": "bludgeoning"
+    },
+    "feat.claws": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 4",
+      "damageType": "slashing"
+    },
+    "feat.multiattack": {
+      "text": "The creature makes three attacks: one with its bite, one with its horns, and one with its claws. When its fire breath is available, it can use the breath in place of its bite or horns."
+    },
+    "feat.fire-breath-monster": {
+      "verb": "exhales",
+      "substance": "fire",
+      "areaSize": "15",
+      "areaShape": "cone",
+      "dcAbility": "constitution",
+      "ability": "dexterity",
+      "damageDice": "7d8",
+      "damageType": "fire"
+    }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "id": "feat.bone-crab-leap",
+  "name": "Leap",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Bone crabs have incredibly powerful legs and can leap up to 10 feet straight ahead or backward as part of its movement; this counts as withdraw action when moving away from a foe.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Bone crabs have incredibly powerful legs and can leap up to 10 feet straight ahead or backward as part of its movement; this counts as withdraw action when moving away from a foe.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "mobility"
+    ],
+    "recipeSlots": [
+      "escape"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

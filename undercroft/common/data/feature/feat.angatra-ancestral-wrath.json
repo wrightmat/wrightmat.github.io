@@ -1,0 +1,29 @@
+{
+  "id": "feat.angatra-ancestral-wrath",
+  "name": "Ancestral Wrath",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature immediately recognizes any individual that is descended from its tribe. It has advantage on attack rolls against such creatures, and those creatures have disadvantage on saving throws against the creature’s traits and attacks.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature immediately recognizes any individual that is descended from its tribe. It has advantage on attack rolls against such creatures, and those creatures have disadvantage on saving throws against the creature’s traits and attacks.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

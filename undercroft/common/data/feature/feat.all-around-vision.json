@@ -1,0 +1,28 @@
+{
+  "id": "feat.all-around-vision",
+  "name": "All-Around Vision",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Attackers never gain advantage on attacks or bonus damage against a creature from the presence of nearby allies.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Attackers never gain advantage on attacks or bonus damage against a creature from the presence of nearby allies."
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

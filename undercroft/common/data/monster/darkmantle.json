@@ -1,0 +1,63 @@
+{
+  "kind": "monster",
+  "index": "darkmantle",
+  "name": "Darkmantle",
+  "type": "monstrosity",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/darkmantle.png",
+  "stats": {
+    "size": "Small",
+    "alignment": "unaligned",
+    "armorClass": 11,
+    "hitPoints": {
+      "max": 22,
+      "current": 22,
+      "diceString": "5d6+5"
+    },
+    "hitDice": "5d6",
+    "speed": {
+      "walk": 10,
+      "fly": 30
+    },
+    "abilities": {
+      "strength": 16,
+      "dexterity": 12,
+      "constitution": 13,
+      "intelligence": 2,
+      "wisdom": 10,
+      "charisma": 5
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "",
+    "skills": "Stealth +3",
+    "proficiencies": {
+      "defenses": [],
+      "languages": []
+    },
+    "senses": {
+      "blindsight": 60,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "1/2",
+    "proficiencyBonus": 2,
+    "xp": 100,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/darkmantle"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/darkmantle",
+  "featureIds": [
+    "feat.echolocation",
+    "feat.false-appearance-ambush",
+    "feat.darkmantle-crush",
+    "feat.darkmantle-darkness-aura"
+  ],
+  "featureTiers": {
+    "feat.false-appearance-ambush": "stalactite"
+  }
+}

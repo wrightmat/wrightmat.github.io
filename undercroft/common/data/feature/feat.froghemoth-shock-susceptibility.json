@@ -1,0 +1,29 @@
+{
+  "id": "feat.froghemoth-shock-susceptibility",
+  "name": "Shock Susceptibility",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "If the creature takes lightning damage, it suffers two effects until the end of its next turn: its speed is halved, and it has disadvantage on Dexterity saving throws.",
+  "mechanics": {
+    "type": "passive",
+    "text": "If the creature takes lightning damage, it suffers two effects until the end of its next turn: its speed is halved, and it has disadvantage on Dexterity saving throws.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "debuff"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,32 @@
+{
+  "id": "feat.spirit-statue-mascot-counsel-of-the-past-2-day",
+  "name": "Counsel of the Past (2/Day)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature touches one creature. Once within the next 10 minutes, that creature can roll a d4 and add the number rolled to one ability check of its choice, immediately after rolling the d20.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature touches one creature. Once within the next 10 minutes, that creature can roll a d4 and add the number rolled to one ability check of its choice, immediately after rolling the d20.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

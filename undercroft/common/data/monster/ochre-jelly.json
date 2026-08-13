@@ -1,0 +1,113 @@
+{
+  "kind": "monster",
+  "index": "ochre-jelly",
+  "name": "Ochre Jelly",
+  "type": "ooze",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/ochre-jelly.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "unaligned",
+    "armorClass": 8,
+    "hitPoints": {
+      "max": 45,
+      "current": 45,
+      "diceString": "6d10+12"
+    },
+    "hitDice": "6d10",
+    "speed": {
+      "walk": 10,
+      "climb": 10
+    },
+    "abilities": {
+      "strength": 15,
+      "dexterity": 6,
+      "constitution": 14,
+      "intelligence": 2,
+      "wisdom": 6,
+      "charisma": 1
+    },
+    "initiative": {
+      "bonus": -2
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "acid",
+          "type": "resistance"
+        },
+        {
+          "name": "lightning",
+          "type": "immunity"
+        },
+        {
+          "name": "slashing",
+          "type": "immunity"
+        },
+        {
+          "name": "Blinded",
+          "type": "immunity"
+        },
+        {
+          "name": "Charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "Blinded",
+          "type": "immunity"
+        },
+        {
+          "name": "Exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "Frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "Prone",
+          "type": "immunity"
+        }
+      ],
+      "languages": []
+    },
+    "senses": {
+      "blindsight": 60,
+      "passives": {
+        "perception": 8
+      }
+    },
+    "challengeRating": "2",
+    "proficiencyBonus": 2,
+    "xp": 450,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/ochre-jelly"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/ochre-jelly",
+  "featureIds": [
+    "feat.amorphous",
+    "feat.spider-climb",
+    "feat.pseudopod",
+    "feat.fractine-split"
+  ],
+  "featureParams": {
+    "feat.pseudopod": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 2",
+      "damageType": "bludgeoning",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "1d6",
+        "damageType": "acid"
+      }
+    }
+  }
+}

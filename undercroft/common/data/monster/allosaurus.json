@@ -1,0 +1,86 @@
+{
+  "kind": "monster",
+  "name": "Allosaurus",
+  "notes": "",
+  "type": "beast",
+  "stats": {
+    "size": "Large",
+    "alignment": "Unaligned",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 51,
+      "current": 51,
+      "diceString": "6d10+18"
+    },
+    "hitDice": "6d10",
+    "speed": {
+      "walk": 60
+    },
+    "abilities": {
+      "strength": 19,
+      "dexterity": 13,
+      "constitution": 17,
+      "intelligence": 2,
+      "wisdom": 12,
+      "charisma": 5
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "",
+    "skills": "Perception +5",
+    "senses": {
+      "passives": {
+        "perception": 15
+      }
+    },
+    "challengeRating": "2",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [
+      "Grassland"
+    ],
+    "sources": [
+      "MM",
+      "https://www.dndbeyond.com/monsters/17087-allosaurus",
+      "Basic Rules, pg. 116"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.pounce",
+    "feat.bite",
+    "feat.claw"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d10 + 4",
+      "damageType": "piercing"
+    },
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d8 + 4",
+      "damageType": "slashing"
+    }
+  },
+  "featureTiers": {
+    "feat.pounce": "allosaurus"
+  }
+}

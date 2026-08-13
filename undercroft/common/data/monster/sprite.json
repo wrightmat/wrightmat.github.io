@@ -1,0 +1,86 @@
+{
+  "kind": "monster",
+  "index": "sprite",
+  "name": "Sprite",
+  "type": "fey",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/sprite.png",
+  "stats": {
+    "size": "Tiny",
+    "alignment": "neutral good",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 2,
+      "current": 2,
+      "diceString": "1d4"
+    },
+    "hitDice": "1d4",
+    "speed": {
+      "walk": 10,
+      "fly": 40
+    },
+    "abilities": {
+      "strength": 3,
+      "dexterity": 18,
+      "constitution": 10,
+      "intelligence": 14,
+      "wisdom": 13,
+      "charisma": 11
+    },
+    "initiative": {
+      "bonus": 4
+    },
+    "savingThrows": "",
+    "skills": "Perception +3, Stealth +8",
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Common",
+        "Elvish",
+        "Sylvan"
+      ]
+    },
+    "senses": {
+      "passives": {
+        "perception": 13
+      }
+    },
+    "challengeRating": "1/4",
+    "proficiencyBonus": 2,
+    "xp": 50,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/sprite"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/sprite",
+  "featureIds": [
+    "feat.longsword",
+    "feat.shortbow",
+    "feat.sprite-heart-sight",
+    "feat.invisibility"
+  ],
+  "featureParams": {
+    "feat.longsword": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 2,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1",
+      "damageType": "slashing"
+    },
+    "feat.shortbow": {
+      "kind": "Ranged",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "range",
+      "distance": "40/160",
+      "damageDice": "1",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "save-or-condition"
+      }
+    }
+  }
+}

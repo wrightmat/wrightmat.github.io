@@ -1,0 +1,101 @@
+{
+  "kind": "monster",
+  "name": "Sandwyrm",
+  "image": "https://koboldpress.com/wp-content/uploads/2024/03/Sandwyrm.jpg",
+  "notes": "_While they mimic the bleached bones of a desert creature, the bony adornments atop along their backs are part of their peculiar melding of bone and scale._\r\n\r\n**Hidden by Sand**. These lethargic, horned, yellow-scaled lizards spend most of their lives underground, lying in wait under the desert sand with their long-necked, spine-tailed bulk hidden below the surface and only the long, jagged bones lining their backs exposed. These bones resemble a sun-bleached ribcage so perfectly that it attracts carrion birds — and curious travelers. When prey passes between the “ribs,” the sandwyrm snaps the rows of bone tightly over its prey. Once its victim is restrained, the sandwyrm paralyzes its meal with repeated stings before carrying it away.\r\n\r\n**Torpid and Slow**. Sandwyrms sometimes wait for weeks in torpid hibernation before footsteps on the sand alert it to a fresh meal approaching. To guard against lean weeks, sandwyrms store excess prey in subterranean lairs. They’re not above eating carrion if fresh meat isn’t available. When outmatched in a fight, sandwyrms retreat to their lairs with their paralyzed prety.\r\n\r\n**Peculiar Drakes**. Sandwyrms evolved as an offshoot to drakes or wyverns rather than from true dragons; their anatomy suggests they were originally four-limbed creatures and that their forearms are recent additions to the animal’s body. The bones on their backs may have once been wings, so that sandwyrms are the remnants of some primordial, winged reptiles that migrated to the deep deserts.",
+  "type": "dragon",
+  "stats": {
+    "size": "Large",
+    "alignment": "Unaligned",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 142,
+      "current": 142,
+      "diceString": "15d10 + 60"
+    },
+    "hitDice": "15d10",
+    "speed": {
+      "walk": 20,
+      "burrow": 40
+    },
+    "abilities": {
+      "strength": 20,
+      "dexterity": 12,
+      "constitution": 18,
+      "intelligence": 5,
+      "wisdom": 13,
+      "charisma": 8
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "",
+    "skills": "Perception +7, Stealth +4",
+    "senses": {
+      "darkvision": 60,
+      "tremorsense": 120,
+      "passives": {
+        "perception": 17
+      }
+    },
+    "challengeRating": "6",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [
+      "Desert"
+    ],
+    "sources": [
+      "ToB1",
+      "Tome of Beasts 1, pg 334"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.sandwyrm-spine-trap",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.gore",
+    "feat.sandwyrm-stinger"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 8,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 5",
+      "damageType": "piercing"
+    },
+    "feat.gore": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 8,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "1d12 + 5",
+      "damageType": "piercing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.bite",
+          "count": 1
+        },
+        {
+          "featureId": "feat.sandwyrm-stinger",
+          "count": 1
+        }
+      ],
+      "text": "The creature makes one bite attack and one stinger attack. It can gore in place of the bite attack."
+    }
+  }
+}

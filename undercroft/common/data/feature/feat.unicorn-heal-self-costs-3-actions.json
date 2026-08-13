@@ -1,0 +1,28 @@
+{
+  "id": "feat.unicorn-heal-self-costs-3-actions",
+  "name": "Heal Self (Costs 3 Actions)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature magically regains 11 (2d8 + 2) hit points.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The creature magically regains 11 (2d8 + 2) hit points."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "legendary-action"
+  }
+}

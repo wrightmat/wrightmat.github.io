@@ -1,0 +1,32 @@
+{
+  "id": "feat.aerial-sentry-razor-feather-barrage-recharge-5-6",
+  "name": "Razor-Feather Barrage (Recharge 5-6)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature launches a barrage of razor-sharp feathers in a 15-foot cone. Each creature in that area must make a DC 13 Dexterity saving throw, taking 21 (6d6) slashing damage on a failed save, or half as much damage on a successful one.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature launches a barrage of razor-sharp feathers in a 15-foot cone. Each creature in that area must make a DC 13 Dexterity saving throw, taking 21 (6d6) slashing damage on a failed save, or half as much damage on a successful one.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "burst"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

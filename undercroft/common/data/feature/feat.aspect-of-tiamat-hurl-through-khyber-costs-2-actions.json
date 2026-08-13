@@ -1,0 +1,33 @@
+{
+  "id": "feat.aspect-of-tiamat-hurl-through-khyber-costs-2-actions",
+  "name": "Hurl Through Khyber (Costs 2 Actions)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The aspect targets a creature she is grappling. The creature must succeed on a DC 25 Charisma saving throw or take 44 (8d10) psychic damage and be banished to Khyber (the underworld of Eberron). At the start of the aspect's next turn, the creature reappears in an unoccupied space within 10 feet of the aspect.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The aspect targets a creature she is grappling. The creature must succeed on a DC 25 Charisma saving throw or take 44 (8d10) psychic damage and be banished to Khyber (the underworld of Eberron). At the start of the aspect's next turn, the creature reappears in an unoccupied space within 10 feet of the aspect."
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "control"
+    ],
+    "recipeSlots": [
+      "isolate"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "legendary-action"
+  }
+}

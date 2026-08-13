@@ -1,0 +1,28 @@
+{
+  "id": "feat.mummy-lord-blasphemous-word-costs-2-actions",
+  "name": "Blasphemous Word (Costs 2 Actions)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The undead utters a blasphemous word. Each non-undead creature within 10 feet of the undead that can hear the magical utterance must succeed on a DC 16 Constitution saving throw or be stunned until the end of the undead's next turn.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The undead utters a blasphemous word. Each non-undead creature within 10 feet of the undead that can hear the magical utterance must succeed on a DC 16 Constitution saving throw or be stunned until the end of the undead's next turn."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "legendary-action"
+  }
+}

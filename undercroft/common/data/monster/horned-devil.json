@@ -1,0 +1,110 @@
+{
+  "kind": "monster",
+  "index": "horned-devil",
+  "name": "Horned Devil",
+  "type": "fiend",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/horned-devil.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "lawful evil",
+    "armorClass": 18,
+    "hitPoints": {
+      "max": 178,
+      "current": 178,
+      "diceString": "17d10+85"
+    },
+    "hitDice": "17d10",
+    "speed": {
+      "walk": 20,
+      "fly": 60
+    },
+    "abilities": {
+      "strength": 22,
+      "dexterity": 17,
+      "constitution": 21,
+      "intelligence": 12,
+      "wisdom": 16,
+      "charisma": 17
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "STR +10, DEX +7, WIS +7, CHA +7",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "cold",
+          "type": "resistance"
+        },
+        {
+          "name": "bludgeoning, piercing, and slashing from nonmagical weapons that aren't silvered",
+          "type": "resistance"
+        },
+        {
+          "name": "fire",
+          "type": "immunity"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Infernal",
+        "telepathy 120 ft."
+      ]
+    },
+    "senses": {
+      "darkvision": 120,
+      "passives": {
+        "perception": 13
+      }
+    },
+    "challengeRating": "11",
+    "proficiencyBonus": 4,
+    "xp": 7200,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/horned-devil"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/horned-devil",
+  "featureIds": [
+    "feat.devil-s-sight",
+    "feat.magic-resistance",
+    "feat.multiattack",
+    "feat.fork",
+    "feat.horned-devil-tail",
+    "feat.horned-devil-hurl-flame"
+  ],
+  "featureParams": {
+    "feat.fork": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 10,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "2d8 + 6",
+      "damageType": "piercing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.fork",
+          "count": 2
+        },
+        {
+          "featureId": "feat.horned-devil-tail",
+          "count": 1
+        }
+      ],
+      "text": "The creature makes three melee attacks: two with its fork and one with its tail. It can use Hurl Flame in place of any melee attack."
+    }
+  }
+}

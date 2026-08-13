@@ -4,16 +4,14 @@
   "systemIds": [
     "sys.dnd5e"
   ],
-  "description": "While the creature remains motionless, it is indistinguishable from an ordinary object.",
+  "description": "While the creature remains motionless, it is indistinguishable from an ordinary fungus.",
   "mechanics": {
     "type": "passive",
-    "text": "While the creature remains motionless, it is indistinguishable from an ordinary object."
+    "text": "While the creature remains motionless, it is indistinguishable from an ordinary fungus."
   },
-  "budgetCost": 1,
+  "budgetCost": 0,
   "tags": {
-    "behaviors": [
-      "control"
-    ],
+    "behaviors": [],
     "recipeSlots": [],
     "roles": [],
     "creatureTypes": [],
@@ -22,5 +20,31 @@
     ]
   },
   "synergizesWith": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "cave-formation",
+      "name": "False Appearance",
+      "shortName": "Cave Formation",
+      "mechanics": {
+        "text": "While the creature remains motionless, it is indistinguishable from a normal cave formation, such as a stalagmite."
+      }
+    },
+    {
+      "id": "rug",
+      "name": "False Appearance",
+      "shortName": "Rug",
+      "mechanics": {
+        "text": "While the rug remains motionless, it is indistinguishable from a normal rug."
+      }
+    },
+    {
+      "id": "tree",
+      "name": "False Appearance",
+      "shortName": "Tree",
+      "mechanics": {
+        "text": "While the creature remains motionless, it is indistinguishable from a normal tree."
+      }
+    }
+  ]
 }

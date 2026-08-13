@@ -1,0 +1,116 @@
+{
+  "kind": "monster",
+  "index": "dretch",
+  "name": "Dretch",
+  "type": "fiend",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/dretch.png",
+  "stats": {
+    "size": "Small",
+    "alignment": "chaotic evil",
+    "armorClass": 11,
+    "hitPoints": {
+      "max": 18,
+      "current": 18,
+      "diceString": "4d6+4"
+    },
+    "hitDice": "4d6",
+    "speed": {
+      "walk": 20
+    },
+    "abilities": {
+      "strength": 11,
+      "dexterity": 11,
+      "constitution": 12,
+      "intelligence": 5,
+      "wisdom": 8,
+      "charisma": 3
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "cold",
+          "type": "resistance"
+        },
+        {
+          "name": "fire",
+          "type": "resistance"
+        },
+        {
+          "name": "lightning",
+          "type": "resistance"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Abyssal",
+        "telepathy 60 ft. (works only with creatures that understand Abyssal)"
+      ]
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 9
+      }
+    },
+    "challengeRating": "1/4",
+    "proficiencyBonus": 2,
+    "xp": 25,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/dretch"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/dretch",
+  "featureIds": [
+    "feat.multiattack",
+    "feat.bite",
+    "feat.claws",
+    "feat.dretch-fetid-cloud"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 2,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d6",
+      "damageType": "piercing"
+    },
+    "feat.claws": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 2,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d4",
+      "damageType": "slashing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.bite",
+          "count": 1
+        },
+        {
+          "featureId": "feat.claws",
+          "count": 1
+        }
+      ],
+      "text": "The creature makes two attacks: one with its bite and one with its claws."
+    }
+  }
+}

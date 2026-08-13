@@ -1,0 +1,29 @@
+{
+  "id": "feat.alpha-fish-defensive-frenzy",
+  "name": "Defensive Frenzy",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "When it has half its hit points or fewer, the creature can make one headbutt attack as a bonus action.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When it has half its hit points or fewer, the creature can make one headbutt attack as a bonus action.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

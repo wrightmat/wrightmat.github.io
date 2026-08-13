@@ -1,0 +1,33 @@
+{
+  "id": "feat.krake-spawn-tentacle",
+  "name": "Tentacle",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Melee Weapon Attack: +11 to hit, reach 15 ft., one target. Hit: 10 (1d6 + 7) necrotic damage. If two tentacle attacks hit the same target in one turn, the target is also grappled (escape DC 17).",
+  "mechanics": {
+    "type": "passive",
+    "text": "Melee Weapon Attack: +11 to hit, reach 15 ft., one target. Hit: 10 (1d6 + 7) necrotic damage. If two tentacle attacks hit the same target in one turn, the target is also grappled (escape DC 17).",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "control"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "id": "feat.water-elemental-freeze",
+  "name": "Freeze",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "If the creature takes cold damage, it partially freezes; its speed is reduced by 20 ft. until the end of its next turn.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "If the creature takes cold damage, it partially freezes; its speed is reduced by 20 ft. until the end of its next turn."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

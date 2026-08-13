@@ -1,0 +1,136 @@
+{
+  "kind": "monster",
+  "index": "dragon-turtle",
+  "name": "Dragon Turtle",
+  "type": "dragon",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/dragon-turtle.png",
+  "stats": {
+    "size": "Gargantuan",
+    "alignment": "neutral",
+    "armorClass": 20,
+    "hitPoints": {
+      "max": 341,
+      "current": 341,
+      "diceString": "22d20+110"
+    },
+    "hitDice": "22d20",
+    "speed": {
+      "walk": 20,
+      "swim": 40
+    },
+    "abilities": {
+      "strength": 25,
+      "dexterity": 10,
+      "constitution": 20,
+      "intelligence": 10,
+      "wisdom": 12,
+      "charisma": 12
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "DEX +6, CON +11, WIS +7",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "fire",
+          "type": "resistance"
+        }
+      ],
+      "languages": [
+        "Aquan",
+        "Draconic"
+      ]
+    },
+    "senses": {
+      "darkvision": 120,
+      "passives": {
+        "perception": 11
+      }
+    },
+    "challengeRating": "17",
+    "proficiencyBonus": 6,
+    "xp": 18000,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/dragon-turtle"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/dragon-turtle",
+  "featureIds": [
+    "feat.amphibious",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.claw",
+    "feat.tail",
+    "feat.steam-breath"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 13,
+      "distanceLabel": "reach",
+      "distance": "15",
+      "damageDice": "3d12 + 7",
+      "damageType": "piercing"
+    },
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 13,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "2d8 + 7",
+      "damageType": "slashing"
+    },
+    "feat.tail": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 13,
+      "distanceLabel": "reach",
+      "distance": "15",
+      "damageDice": "3d12 + 7",
+      "damageType": "bludgeoning",
+      "rider": {
+        "kind": "save-or-condition",
+        "saveDC": 20,
+        "saveAbility": "strength",
+        "condition": "pushed up to 10 feet away from the dragon turtle and knocked prone"
+      }
+    },
+    "feat.steam-breath": {
+      "verb": "exhales",
+      "substance": "scalding steam",
+      "areaSize": "60",
+      "areaShape": "cone",
+      "dcAbility": "constitution",
+      "ability": "constitution",
+      "damageDice": "15d6",
+      "damageType": "fire",
+      "rider": {
+        "kind": "trailing-note",
+        "conditionText": "Being underwater doesn't grant resistance against this damage."
+      }
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.bite",
+          "count": 1
+        },
+        {
+          "featureId": "feat.claw",
+          "count": 2
+        },
+        {
+          "featureId": "feat.tail",
+          "count": 1
+        }
+      ],
+      "text": "The creature makes three attacks: one with its bite and two with its claws. It can make one tail attack in place of its two claw attacks."
+    }
+  }
+}

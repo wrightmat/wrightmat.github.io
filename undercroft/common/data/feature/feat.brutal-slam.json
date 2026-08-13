@@ -4,10 +4,10 @@
   "systemIds": [
     "sys.dnd5e"
   ],
-  "description": "A successful melee attack can push the target 10 feet and knock it prone.",
+  "description": "The creature attack can push the target 10 feet and knock it prone.",
   "mechanics": {
     "type": "passive-or-triggered",
-    "text": "A successful melee attack can push the target 10 feet and knock it prone."
+    "text": "The creature attack can push the target 10 feet and knock it prone."
   },
   "tags": {
     "behaviors": [

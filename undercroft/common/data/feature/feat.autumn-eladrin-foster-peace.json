@@ -1,0 +1,32 @@
+{
+  "id": "feat.autumn-eladrin-foster-peace",
+  "name": "Foster Peace",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "If a creature charmed by the creature hits with an attack roll while within 60 feet of the creature, the creature magically causes the attack to miss, provided the creature can see the attacker.",
+  "mechanics": {
+    "type": "passive",
+    "text": "If a creature charmed by the creature hits with an attack roll while within 60 feet of the creature, the creature magically causes the attack to miss, provided the creature can see the attacker.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "reaction"
+  }
+}

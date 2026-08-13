@@ -1,0 +1,125 @@
+{
+  "kind": "monster",
+  "name": "Canopic Golem",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/16420/907/1000/1000/637514193116718560.jpeg",
+  "notes": "",
+  "type": "construct",
+  "stats": {
+    "size": "Large",
+    "armorClass": 17,
+    "hitPoints": {
+      "max": 252,
+      "current": 252,
+      "diceString": "24d10 + 12"
+    },
+    "hitDice": "24d10",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 20,
+      "dexterity": 10,
+      "constitution": 20,
+      "intelligence": 7,
+      "wisdom": 11,
+      "charisma": 1
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "Int +3, Wis +5",
+    "skills": "",
+    "senses": {
+      "darkvision": 120,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "13",
+    "proficiencyBonus": 5,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Blinded",
+          "type": "immunity"
+        },
+        {
+          "name": "Charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "Deafened",
+          "type": "immunity"
+        },
+        {
+          "name": "Exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "Frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "Paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "Petrified",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "CM",
+      "https://www.dndbeyond.com/monsters/1528957-canopic-golem",
+      "Candlekeep Mysteries, pg. 179"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.canopic-golem-limited-spell-immunity",
+    "feat.unusual-nature",
+    "feat.multiattack",
+    "feat.slam",
+    "feat.crystal-dart",
+    "feat.canopic-golem-spell-deflection"
+  ],
+  "featureParams": {
+    "feat.slam": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 10,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "4d10 + 5",
+      "damageType": "force"
+    },
+    "feat.crystal-dart": {
+      "kind": "Ranged",
+      "attackKind": "Weapon",
+      "attackBonus": 10,
+      "distanceLabel": "range",
+      "distance": "120",
+      "damageDice": "2d8 + 5",
+      "damageType": "force"
+    },
+    "feat.multiattack": {
+      "text": "The creature makes two attacks."
+    }
+  }
+}

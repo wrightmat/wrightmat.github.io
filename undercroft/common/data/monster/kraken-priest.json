@@ -1,0 +1,97 @@
+{
+  "kind": "monster",
+  "name": "Kraken Priest",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/25746/486/1000/1000/637880557759901920.jpeg",
+  "notes": "A kraken can seem godlike to folk who have faced its fury. Those who mistake its might for divine power and those who seek to appease the monster through veneration are sometimes rewarded with power, to serve thereafter as kraken priests.\n\nEvery kraken priest undergoes a change in appearance that reflects the kraken’s influence, although each one differs in how their reverence is displayed. One kraken priest might have ink-black eyes and a suckered tentacle for a tongue, while another has a featureless face and a body covered in eyes and mouths that dribble seawater. These horrific manifestations intensify when the kraken possesses its minion to utter dire pronouncements.",
+  "type": "monstrosity",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Typically Chaotic Evil",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 75,
+      "current": 75,
+      "diceString": "10d8 + 30"
+    },
+    "hitDice": "10d8",
+    "speed": {
+      "walk": 30,
+      "swim": 30
+    },
+    "abilities": {
+      "strength": 12,
+      "dexterity": 10,
+      "constitution": 16,
+      "intelligence": 10,
+      "wisdom": 15,
+      "charisma": 14
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "Perception +5",
+    "senses": {
+      "passives": {
+        "perception": 15
+      }
+    },
+    "challengeRating": "5",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "any two languages"
+      ]
+    },
+    "spells": "Spellcasting. The priest casts one of the following spells, requiring no material components and using Wisdom as the spellcasting ability (spell save DC 13): At will: command, create or destroy water 3/day each: control water, darkness, water breathing, water walk 1/day each: Evard’s black tentacles",
+    "environments": [],
+    "sources": [
+      "Mordenkainen Presents: Monsters of the Multiverse, pg. 167",
+      "https://www.dndbeyond.com/monsters/2560858-kraken-priest"
+    ],
+    "saveDC": 13
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.amphibious",
+    "feat.multiattack",
+    "feat.thunderous-touch",
+    "feat.thunderbolt",
+    "feat.kraken-priest-voice-of-the-kraken-recharges-after-a-short-or-long-rest"
+  ],
+  "featureParams": {
+    "feat.thunderous-touch": {
+      "kind": "Melee",
+      "attackKind": "Spell",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "5d10",
+      "damageType": "thunder"
+    },
+    "feat.multiattack": {
+      "text": "The creature makes two Thunderous Touch or Thunderbolt attacks.",
+      "options": [
+        [
+          {
+            "featureId": "feat.thunderous-touch",
+            "count": 2
+          }
+        ],
+        [
+          {
+            "featureId": "feat.thunderbolt",
+            "count": 2
+          }
+        ]
+      ]
+    }
+  },
+  "featureTiers": {
+    "feat.thunderbolt": "prone"
+  }
+}

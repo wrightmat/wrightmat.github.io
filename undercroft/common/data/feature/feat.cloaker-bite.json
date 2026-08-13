@@ -1,0 +1,28 @@
+{
+  "id": "feat.cloaker-bite",
+  "name": "Bite",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Melee Weapon Attack: +6 to hit, reach 5 ft., one creature. Hit: 10 (2d6 + 3) piercing damage, and if the target is Large or smaller, the aberration attaches to it. If the aberration has advantage against the target, the aberration attaches to the target's head, and the target is blinded and unable to breathe while the aberration is attached. While attached, the aberration can make this attack only against the target and has advantage on the attack roll. The aberration can detach itself by spending 5 feet of its movement. A creature, including the target, can take its action to detach the aberration by succeeding on a DC 16 Strength check.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "Melee Weapon Attack: +6 to hit, reach 5 ft., one creature. Hit: 10 (2d6 + 3) piercing damage, and if the target is Large or smaller, the aberration attaches to it. If the aberration has advantage against the target, the aberration attaches to the target's head, and the target is blinded and unable to breathe while the aberration is attached. While attached, the aberration can make this attack only against the target and has advantage on the attack roll. The aberration can detach itself by spending 5 feet of its movement. A creature, including the target, can take its action to detach the aberration by succeeding on a DC 16 Strength check."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

@@ -1,0 +1,146 @@
+{
+  "kind": "monster",
+  "name": "Living Star",
+  "notes": "### Description\r\n\r\nThe living star is a mysterious and powerful elemental creature that is native to wildspace and the astral plane. These creatures are often mistaken for ordinary stars by those who gaze upon them from afar, but in reality, they are living beings of pure light and energy.\r\n\r\nThe living star is a massive creature, with a body that is composed entirely of swirling, radiant energy. It is capable of flying through the void of wildspace and the astral plane with ease, and it is able to move through solid objects as if they were not there.\r\n\r\nDespite its size and power, the living star is a neutral creature, and it is not interested in the petty conflicts of mortal beings. It is content to watch and observe from afar, occasionally intervening if it senses great danger or imbalance in the cosmos.\r\n\r\nThose who encounter a living star in wildspace or the astral plane are often awestruck by its beauty and majesty, and they are filled with a sense of wonder and awe at the sight of this powerful and ancient being. Those who dare to attack a living star, however, soon learn the folly of their ways, as the creature is capable of unleashing powerful blasts of radiant energy and reflecting magical attacks back at their source.",
+  "type": "elemental",
+  "stats": {
+    "size": "Gargantuan",
+    "alignment": "Neutral",
+    "armorClass": 17,
+    "hitPoints": {
+      "max": 185,
+      "current": 185,
+      "diceString": "14d12  + 70"
+    },
+    "hitDice": "14d12",
+    "speed": {
+      "walk": 0,
+      "fly": 50
+    },
+    "abilities": {
+      "strength": 1,
+      "dexterity": 28,
+      "constitution": 10,
+      "intelligence": 13,
+      "wisdom": 14,
+      "charisma": 11
+    },
+    "initiative": {
+      "bonus": 9
+    },
+    "savingThrows": "",
+    "skills": "Stealth +6",
+    "senses": {
+      "darkvision": 120,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "9",
+    "proficiencyBonus": 4,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Acid",
+          "type": "resistance"
+        },
+        {
+          "name": "Cold",
+          "type": "resistance"
+        },
+        {
+          "name": "Fire",
+          "type": "resistance"
+        },
+        {
+          "name": "Necrotic",
+          "type": "resistance"
+        },
+        {
+          "name": "Thunder; Bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "Piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "and Slashing from Nonmagical Attacks",
+          "type": "resistance"
+        },
+        {
+          "name": "Lightning",
+          "type": "immunity"
+        },
+        {
+          "name": "Poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Radiant",
+          "type": "immunity"
+        },
+        {
+          "name": "Exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "Grappled",
+          "type": "immunity"
+        },
+        {
+          "name": "Paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        },
+        {
+          "name": "Prone",
+          "type": "immunity"
+        },
+        {
+          "name": "Restrained",
+          "type": "immunity"
+        },
+        {
+          "name": "Unconscious",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Homebrew"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.ephemeral",
+    "feat.incorporeal-movement",
+    "feat.magic-resistance",
+    "feat.magic-weapons",
+    "feat.living-star-variable-illumination",
+    "feat.radiant-strike",
+    "feat.living-star-radiant-blast-3-day",
+    "feat.living-star-reflective-barrier"
+  ],
+  "featureParams": {
+    "feat.radiant-strike": {
+      "kind": "Ranged",
+      "attackKind": "Weapon",
+      "attackBonus": 9,
+      "distanceLabel": "reach",
+      "distance": "300",
+      "damageDice": "3d8 + 6",
+      "damageType": "radiant"
+    }
+  }
+}

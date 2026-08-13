@@ -1,0 +1,132 @@
+{
+  "kind": "monster",
+  "name": "Fractine",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/25265/572/1000/1000/637861450545952412.jpeg",
+  "notes": "### Description\r\n\r\nA fractine is a bizarre, two-dimensional creature that flies through Wildspace and the Astral Sea, folding and refolding like a piece of origami. When it encounters another creature, it flattens into a plane that resembles a trapezoidal mirror between 9 and 13 feet tall.\r\n\r\nAstral explorers who have encountered fractines attest that the creatures are intelligent and often allow themselves to be used as scrying sensors, their reflective surfaces substituting for the mirror needed to cast certain divination spells. While being used in this way, the fractine siphons magical energy from the spellcaster—not enough to cause harm, but enough to make the caster take notice.\r\n\r\nA fractine needs light and magical energy to survive. It can draw sustenance from a nearby light source, spellcaster, magic item, or magical effect without causing harm to anyone or anything. A fractine that doesn’t consume light or magical energy for ten days begins to flicker. A day later, it folds in on itself and self-destructs, leaving no trace of itself behind. The destruction of a fractine is accompanied by a loud sound reminiscent of shattering glass.\r\n\r\nA fractine attacks by falling on its targets, dealing damage as it passes through them. A fractine can also imprison a creature inside a demiplane contained within its two-dimensional form, the prisoner’s distorted reflection visible in the fractine’s glassy surface.\r\n\r\nBludgeoning, piercing, slashing, and thunder damage can cause a fractine to break into two smaller fractines, each one autonomous and capable of imprisoning creatures. When a fractine dies, it folds in on itself and disappears, releasing any creature trapped inside it.",
+  "type": "construct",
+  "stats": {
+    "size": "Large",
+    "alignment": "Typically Neutral",
+    "armorClass": 14,
+    "hitPoints": {
+      "max": 110,
+      "current": 110,
+      "diceString": "13d10 + 39"
+    },
+    "hitDice": "13d10",
+    "speed": {
+      "walk": 0,
+      "fly": 60,
+      "hover": true
+    },
+    "abilities": {
+      "strength": 1,
+      "dexterity": 13,
+      "constitution": 16,
+      "intelligence": 18,
+      "wisdom": 18,
+      "charisma": 11
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "",
+    "skills": "",
+    "senses": {
+      "blindsight": 360,
+      "passives": {
+        "perception": 18
+      }
+    },
+    "challengeRating": "9",
+    "proficiencyBonus": 4,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Blinded",
+          "type": "immunity"
+        },
+        {
+          "name": "Charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "Deafened",
+          "type": "immunity"
+        },
+        {
+          "name": "Exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "Frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "Grappled",
+          "type": "immunity"
+        },
+        {
+          "name": "Paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "Petrified",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        },
+        {
+          "name": "Prone",
+          "type": "immunity"
+        },
+        {
+          "name": "Restrained",
+          "type": "immunity"
+        },
+        {
+          "name": "Stunned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "MC1",
+      "Monstrous Compendium Volume One: Spelljammer Creatures, pg. 7"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.magic-resistance",
+    "feat.fractine-scrying-focus",
+    "feat.fractine-two-dimensionality",
+    "feat.unusual-nature",
+    "feat.extradimensional-touch",
+    "feat.fractine-imprison",
+    "feat.fractine-mirrored-damage",
+    "feat.fractine-split"
+  ],
+  "featureTiers": {
+    "feat.unusual-nature": "no-air-drink-sleep"
+  },
+  "featureParams": {
+    "feat.extradimensional-touch": {
+      "kind": "Melee",
+      "attackKind": "Spell",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "8d6",
+      "damageType": "force"
+    }
+  }
+}

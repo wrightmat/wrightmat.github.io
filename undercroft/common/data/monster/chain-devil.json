@@ -1,0 +1,90 @@
+{
+  "kind": "monster",
+  "index": "chain-devil",
+  "name": "Chain Devil",
+  "type": "fiend",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/chain-devil.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "lawful evil",
+    "armorClass": 16,
+    "hitPoints": {
+      "max": 85,
+      "current": 85,
+      "diceString": "10d8+40"
+    },
+    "hitDice": "10d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 18,
+      "dexterity": 15,
+      "constitution": 18,
+      "intelligence": 11,
+      "wisdom": 12,
+      "charisma": 14
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "CON +7, WIS +4, CHA +5",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "cold",
+          "type": "resistance"
+        },
+        {
+          "name": "bludgeoning, piercing, and slashing from nonmagical weapons that aren't silvered",
+          "type": "resistance"
+        },
+        {
+          "name": "fire",
+          "type": "immunity"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Infernal",
+        "telepathy 120 ft."
+      ]
+    },
+    "senses": {
+      "darkvision": 120,
+      "passives": {
+        "perception": 11
+      }
+    },
+    "challengeRating": "8",
+    "proficiencyBonus": 3,
+    "xp": 3900,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/chain-devil"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/chain-devil",
+  "featureIds": [
+    "feat.devil-s-sight",
+    "feat.magic-resistance",
+    "feat.multiattack",
+    "feat.chain-devil-chain",
+    "feat.chain-devil-animate-chains",
+    "feat.chain-devil-unnerving-mask"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "text": "The creature makes two attacks with its chains."
+    }
+  }
+}

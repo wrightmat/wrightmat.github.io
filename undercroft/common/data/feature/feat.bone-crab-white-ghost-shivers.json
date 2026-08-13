@@ -1,0 +1,32 @@
+{
+  "id": "feat.bone-crab-white-ghost-shivers",
+  "name": "White Ghost Shivers",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "A living creature that is injured by or makes physical contact with a creature carrying the white ghost shivers must succeed on a DC 11 Constitution saving throw at the end of the encounter to avoid becoming infected. This disease manifests after 24 hours, beginning as a mild chill, but increasingly severe after a day, accompanied by a fever. Hallucinations are common, and the fright they induce lends the disease its name. At onset, the infected creature gains two levels of exhaustion that cannot be removed until the disease is cured by lesser restoration, comparable magic, or rest. The infected creature makes another DC 11 Constitution saving throw at the end of each long rest; a successful save removes one level of exhaustion. If the saving throw fails, the disease persists. If both levels of exhaustion are removed by successful saving throws, the victim has recovered naturally.",
+  "mechanics": {
+    "type": "passive",
+    "text": "A living creature that is injured by or makes physical contact with a creature carrying the white ghost shivers must succeed on a DC 11 Constitution saving throw at the end of the encounter to avoid becoming infected. This disease manifests after 24 hours, beginning as a mild chill, but increasingly severe after a day, accompanied by a fever. Hallucinations are common, and the fright they induce lends the disease its name. At onset, the infected creature gains two levels of exhaustion that cannot be removed until the disease is cured by lesser restoration, comparable magic, or rest. The infected creature makes another DC 11 Constitution saving throw at the end of each long rest; a successful save removes one level of exhaustion. If the saving throw fails, the disease persists. If both levels of exhaustion are removed by successful saving throws, the victim has recovered naturally.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "debuff"
+    ],
+    "recipeSlots": [
+      "spread"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

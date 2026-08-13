@@ -1,0 +1,116 @@
+{
+  "kind": "monster",
+  "name": "Githyanki Supreme Commander",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/25746/420/1000/1000/637880557629850021.jpeg",
+  "notes": "### Description\r\n\r\nSupreme commanders lead armies, each one commanding ten kith’raks, who in turn lead the rest of their forces. Most supreme commanders ride red dragons (see the Monster Manual) into battle.\r\n\r\n#### Githyanki\r\n\r\nGithyanki descend from an ancient people who were also the progenitors of githzerai. These tall, gaunt folk have potent psionic powers and dwell, for the most part, on the Astral Plane. Among the best-known githyanki are the bellicose followers of the Lich Queen Vlaakith. They terrorize the Astral Plane, raiding into other planes to plunder the multiverse of its magic and riches.",
+  "type": "humanoid",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Any Alignment",
+    "armorClass": 18,
+    "hitPoints": {
+      "max": 187,
+      "current": 187,
+      "diceString": "22d8 + 88"
+    },
+    "hitDice": "22d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 19,
+      "dexterity": 17,
+      "constitution": 18,
+      "intelligence": 16,
+      "wisdom": 16,
+      "charisma": 18
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "Con +9, Int +8, Wis +8",
+    "skills": "Insight +8, Intimidation +9, Perception +8",
+    "senses": {
+      "passives": {
+        "perception": 18
+      }
+    },
+    "challengeRating": "14",
+    "proficiencyBonus": 5,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Gith"
+      ]
+    },
+    "spells": "(Psionics). The githyanki casts one of the following spells, requiring no spell components and using Intelligence as the spellcasting ability (spell save DC 15): At will: mage hand (the hand is invisible) 3/day each: levitate (self only), nondetection (self only) 1/day each: Bigby’s hand, mass suggestion, plane shift, telekinesis",
+    "environments": [
+      "Desert",
+      "Mountain",
+      "Urban"
+    ],
+    "sources": [
+      "MPMM",
+      "https://www.dndbeyond.com/monsters/2560830-githyanki-supreme-commander",
+      "Mordenkainen Presents: Monsters of the Multiverse, pg. 141"
+    ],
+    "saveDC": 15
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.legendary-resistance",
+    "feat.multiattack",
+    "feat.silver-greatsword",
+    "feat.longsword",
+    "feat.telekinetic-bolt",
+    "feat.autumn-eladrin-fey-step-recharge-4-6",
+    "feat.parry",
+    "feat.githyanki-supreme-commander-command-ally",
+    "feat.githyanki-supreme-commander-attack-2-actions"
+  ],
+  "featureTiers": {
+    "feat.legendary-resistance": "3-day",
+    "feat.parry": "ac-5",
+    "feat.silver-greatsword": "dc-12-plus7"
+  },
+  "featureParams": {
+    "feat.telekinetic-bolt": {
+      "kind": "Ranged",
+      "attackKind": "Spell",
+      "attackBonus": 7,
+      "distanceLabel": "range",
+      "distance": "120",
+      "damageDice": "8d6",
+      "damageType": "force"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.githyanki-supreme-commander-silver-greatsword",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two Silver Greatsword attacks."
+    },
+    "feat.longsword": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d8 + 3",
+      "damageType": "slashing",
+      "versatile": {
+        "damageDice": "1d10 + 3"
+      },
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "5d8",
+        "damageType": "psychic"
+      }
+    }
+  }
+}

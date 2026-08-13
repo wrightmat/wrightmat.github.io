@@ -1,0 +1,29 @@
+{
+  "id": "feat.redcap-iron-boots",
+  "name": "Iron Boots",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "While moving, the creature has disadvantage on Dexterity (Stealth) checks.",
+  "mechanics": {
+    "type": "passive",
+    "text": "While moving, the creature has disadvantage on Dexterity (Stealth) checks.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "debuff"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

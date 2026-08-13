@@ -4,10 +4,10 @@
   "systemIds": [
     "sys.dnd5e"
   ],
-  "description": "The first attack the creature makes in a combat deals extra damage.",
+  "description": "The creature attack the creature makes in a combat deals extra damage.",
   "mechanics": {
     "type": "passive-or-triggered",
-    "text": "The first attack the creature makes in a combat deals extra damage."
+    "text": "The creature attack the creature makes in a combat deals extra damage."
   },
   "budgetCost": 2,
   "combat": {

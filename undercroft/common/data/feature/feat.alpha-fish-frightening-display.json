@@ -1,0 +1,29 @@
+{
+  "id": "feat.alpha-fish-frightening-display",
+  "name": "Frightening Display",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "When the creature uses its Fin Flare, it looks one size category larger than it actually is to any creature that can see it until the start of its next turn.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When the creature uses its Fin Flare, it looks one size category larger than it actually is to any creature that can see it until the start of its next turn.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "enhance"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

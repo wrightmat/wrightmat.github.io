@@ -1,0 +1,29 @@
+{
+  "id": "feat.redcap-outsize-strength",
+  "name": "Outsize Strength",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "While grappling, the creature is considered to be Medium. Also, wielding a heavy weapon doesn’t impose disadvantage on its attack rolls.",
+  "mechanics": {
+    "type": "passive",
+    "text": "While grappling, the creature is considered to be Medium. Also, wielding a heavy weapon doesn’t impose disadvantage on its attack rolls.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "adapt"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

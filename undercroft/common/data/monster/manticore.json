@@ -1,0 +1,111 @@
+{
+  "kind": "monster",
+  "index": "manticore",
+  "name": "Manticore",
+  "type": "monstrosity",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/manticore.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "lawful evil",
+    "armorClass": 14,
+    "hitPoints": {
+      "max": 68,
+      "current": 68,
+      "diceString": "8d10+24"
+    },
+    "hitDice": "8d10",
+    "speed": {
+      "walk": 30,
+      "fly": 50
+    },
+    "abilities": {
+      "strength": 17,
+      "dexterity": 16,
+      "constitution": 17,
+      "intelligence": 7,
+      "wisdom": 12,
+      "charisma": 8
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [],
+      "languages": []
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 11
+      }
+    },
+    "challengeRating": "3",
+    "proficiencyBonus": 2,
+    "xp": 700,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/manticore"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/manticore",
+  "featureIds": [
+    "feat.manticore-tail-spike-regrowth",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.claw",
+    "feat.tail-spike"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d8 + 3",
+      "damageType": "piercing"
+    },
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d6 + 3",
+      "damageType": "slashing"
+    },
+    "feat.tail-spike": {
+      "kind": "Ranged",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "range",
+      "distance": "100/200",
+      "damageDice": "1d8 + 3",
+      "damageType": "piercing"
+    },
+    "feat.multiattack": {
+      "options": [
+        [
+          {
+            "featureId": "feat.bite",
+            "count": 1
+          },
+          {
+            "featureId": "feat.claw",
+            "count": 2
+          }
+        ],
+        [
+          {
+            "featureId": "feat.tail-spike",
+            "count": 3
+          }
+        ]
+      ],
+      "text": "The creature makes three attacks: one with its bite and two with its claws or three with its tail spikes."
+    }
+  }
+}

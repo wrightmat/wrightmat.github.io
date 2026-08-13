@@ -1,0 +1,43 @@
+{
+  "id": "feat.myconid-sovereign-animating-spores-3-day",
+  "name": "Animating Spores (3/Day)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature targets one corpse of a humanoid or a Large or smaller beast within 5 feet of it and releases spores at the corpse. In 24 hours, the corpse rises as a spore servant. The corpse stays animated for 1d4 + 1 weeks or until destroyed, and it can’t be animated again in this way.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature targets one corpse of a humanoid or a Large or smaller beast within 5 feet of it and releases spores at the corpse. In 24 hours, the corpse rises as a spore servant. The corpse stays animated for 1d4 + 1 weeks or until destroyed, and it can’t be animated again in this way.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "utility",
+      "control"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  },
+  "tiers": [
+    {
+      "id": "3-day",
+      "name": "Animating Spores (3/Day)",
+      "shortName": "3/Day",
+      "mechanics": {
+        "text": "The creature targets one corpse of a humanoid or a Large or smaller beast within 5 feet of it and releases spores at the corpse. In 24 hours, the corpse rises as a spore servant. The corpse stays animated for 1d4 + 1 weeks or until destroyed, and it can’t be animated again in this way."
+      }
+    }
+  ]
+}

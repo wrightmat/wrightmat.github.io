@@ -1,0 +1,96 @@
+{
+  "kind": "monster",
+  "name": "Gem Stalker",
+  "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTrzdyh73mAChGOxdVVCp5ivOcppfGiQl60Vg&s",
+  "notes": "",
+  "type": "monstrosity",
+  "stats": {
+    "size": "Large",
+    "alignment": "Typically Neutral",
+    "armorClass": 17,
+    "hitPoints": {
+      "max": 67,
+      "current": 67,
+      "diceString": "9d10 + 18"
+    },
+    "hitDice": "9d10",
+    "speed": {
+      "walk": 40,
+      "climb": 40
+    },
+    "abilities": {
+      "strength": 17,
+      "dexterity": 15,
+      "constitution": 14,
+      "intelligence": 15,
+      "wisdom": 10,
+      "charisma": 6
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "Dex +5, Int +5",
+    "skills": "Perception +3, Stealth +5",
+    "senses": {
+      "darkvision": 120,
+      "passives": {
+        "perception": 13
+      }
+    },
+    "challengeRating": "5",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "psychic",
+          "type": "resistance"
+        }
+      ],
+      "languages": [
+        "telepathy 60 ft. understands Draconic but can't speak"
+      ]
+    },
+    "environments": [
+      "Underdark"
+    ],
+    "sources": [
+      "FToD",
+      "Fizban's Treasury of Dragons, pg 202"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.spider-climb",
+    "feat.unusual-nature",
+    "feat.multiattack",
+    "feat.claw",
+    "feat.gem-stalker-crystal-dart",
+    "feat.gem-stalker-protective-link"
+  ],
+  "featureTiers": {
+    "feat.unusual-nature": "no-food-drink"
+  },
+  "featureParams": {
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 3",
+      "damageType": "slashing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.claw",
+          "count": 4
+        }
+      ],
+      "text": "The creature makes four Claw attacks."
+    }
+  }
+}

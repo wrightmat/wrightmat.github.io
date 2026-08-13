@@ -254,6 +254,22 @@ function formatSigned(value) {
   return `${sign}${value}`;
 }
 
+// Shared by proficiencyBonusFromChallengeRating below — accepts either a
+// decimal number (5e API's own raw `challenge_rating`) or a fraction/whole-
+// number string ("1/8", "1/2", "5" — DDB's/Fantasy Statblocks' own already-
+// resolved challengeRating shortName), same dual-shape input
+// formatChallengeRating already handles.
+function crToNumber(value) {
+  if (typeof value === "number") return value;
+  const text = String(value ?? "").trim();
+  if (!text) return NaN;
+  if (text.includes("/")) {
+    const [numerator, denominator] = text.split("/").map(Number);
+    return denominator ? numerator / denominator : NaN;
+  }
+  return Number(text);
+}
+
 // DDB's `actions` bucket groups entries by source (race/class/feat/...),
 // same shape context.spells.{class,race,feat} already gets flattened for
 // (see collectRawSpells below) — one flat list, tagging isn't needed here
@@ -835,6 +851,53 @@ return {
     return ["sys.dnd5e"];
   },
 
+  // Case-insensitive/trimmed creature-type resolution, for the two sources
+  // whose own `type` value is free text a human (or a different tool)
+  // typed rather than a clean API-generated slug: the 5e API's own type
+  // string is always already lowercase, but Fantasy Statblocks' is
+  // whatever an author wrote — confirmed live: a real import titled
+  // "Monstrosity" (a completely typical way to write it) silently produced
+  // an EMPTY stats.type, because mapping-engine.js's own `lookup()` formula
+  // function does a strict `===` string compare against
+  // system-lookup-tables.js's derived table (whose own `.name` is
+  // sys.dnd5e.json's lowercase-slug `id`, e.g. "monstrosity") — "Monstrosity"
+  // !== "monstrosity" fails the lookup, `.name` on the resulting `undefined`
+  // throws inside the formula, and bindings.js's own catch swallows that to
+  // "" (see resolveBinding's own comment). Crucible's Creature Type select
+  // then compounded the bug by silently defaulting to whichever option
+  // happens to be first alphabetically ("Aberration") for that empty value
+  // instead of reading as unset (see renderIdentity's own blank-option fix,
+  // crucible/js/app.js) — so the failure was doubly invisible. Falls back
+  // to the raw trimmed input, unmodified, when nothing in the System's own
+  // creatureTypes vocabulary matches at all — an honestly-preserved-but-
+  // unrecognized value beats silently discarding the author's own stated
+  // intent. `args.path` defaults to "type".
+  resolveCreatureType(context, args, env) {
+    const raw = String(resolvePath(context, args?.path || "type") || "").trim();
+    if (!raw) return "";
+    const table = Array.isArray(env?.lookupTables?.creatureTypes) ? env.lookupTables.creatureTypes : [];
+    const key = raw.toLowerCase();
+    const match = table.find((entry) => String(entry?.name || "").toLowerCase() === key);
+    return match ? match.name : raw;
+  },
+
+  // The 5e API's own `image`/`url` fields (confirmed via a real live fetch)
+  // are relative paths ("/api/images/monsters/aboleth.png",
+  // "/api/2014/monsters/aboleth"), not fetchable/displayable as-is. Prefixed
+  // with the same SRD base URL content-fetch.js's own SRD_BASE_URL
+  // constant holds — duplicated as a literal here rather than imported,
+  // since content-fetch.js already imports createMappingCustomFunctions
+  // FROM this file, and importing back would be circular. Left alone if
+  // already absolute (defensive — every real response seen so far is
+  // relative). `args.path` defaults to "image".
+  srdAbsoluteUrl(context, args) {
+    const raw = resolvePath(context, args?.path || "image");
+    if (!raw) return "";
+    const text = String(raw);
+    if (/^https?:\/\//i.test(text)) return text;
+    return `https://www.dnd5eapi.co${text.startsWith("/") ? text : `/${text}`}`;
+  },
+
   // D&D Beyond's own monster-service `senses` (confirmed via a real live
   // fetch) is `[{senseId, notes}]` — senseId a numeric id resolved through
   // the SAME `senses` lookup table `lookup('senses', ...)` formula calls
@@ -908,11 +971,35 @@ return {
     return result;
   },
 
+  // Fantasy Statblocks' own `hit_dice` is normally already just the dice
+  // count ("21d20", the plugin's own documented convention), matching the
+  // 5e API's `hit_dice` directly — but real-world source files don't
+  // always follow that (a note pasted from elsewhere can carry the flat
+  // modifier too, e.g. "16d8 + 48"), so this defensively splits either
+  // shape into `{dice, roll}`: `dice` is always just the `NdN` portion for
+  // `stats.hitDice` (this suite's one normalized-across-sources value —
+  // see undercroft/README.md's stats.hitPoints entry); `roll` is the
+  // original full string for `stats.hitPoints.diceString`, but ONLY when
+  // it actually carries more than the bare dice (an unmodified "21d20"
+  // input leaves `roll` unset, so a clean source doesn't grow a redundant
+  // duplicate field). `args.path` defaults to "hit_dice".
+  splitHitDice(context, args) {
+    const raw = String(resolvePath(context, args?.path || "hit_dice") || "").trim();
+    const match = raw.match(/^(\d+d\d+)/i);
+    const dice = match ? match[1] : raw;
+    return { dice, roll: raw && raw !== dice ? raw : undefined };
+  },
+
   // Fantasy Statblocks' own `speed` is a single free-text string ("30 ft.,
   // swim 30 ft.", "fly 60 ft. (hover)") — the first, unprefixed entry is
   // always walking speed; every other entry is prefixed by its own
   // movement-type name. Parsed into this suite's one shared speed shape,
-  // same as ddbFormatSpeed above. `args.path` defaults to "speed".
+  // same as ddbFormatSpeed above. The trailing "(hover)" this example
+  // itself shows was previously matched-but-discarded (the regex below
+  // only ever captured the leading digits) — now captured as a sparse
+  // `hover: true` sibling, same `stats.speed.hover` shape/convention
+  // formatSpeedFromObject uses for the 5e API. `args.path` defaults to
+  // "speed".
   fantasyStatblockSpeed(context, args) {
     const raw = String(resolvePath(context, args?.path || "speed") || "");
     const result = {};
@@ -923,7 +1010,9 @@ return {
       .forEach((part) => {
         const match = part.match(/^([A-Za-z]+)?\s*(\d+)\s*ft/i);
         if (!match) return;
-        result[(match[1] || "walk").toLowerCase()] = Number(match[2]);
+        const key = (match[1] || "walk").toLowerCase();
+        result[key] = Number(match[2]);
+        if (key === "fly" && /hover/i.test(part)) result.hover = true;
       });
     return result;
   },
@@ -931,12 +1020,23 @@ return {
   // The 5e API's own raw `speed` (confirmed via a real live fetch) is a
   // keyed object of already-unit-suffixed strings — `{walk: "30 ft.", swim:
   // "30 ft."}` — parsed into this suite's one shared speed shape, same as
-  // ddbFormatSpeed/fantasyStatblockSpeed above.
+  // ddbFormatSpeed/fantasyStatblockSpeed above. A flying creature that can
+  // hover carries a sibling `hover: true` boolean on this same object
+  // (confirmed live — Air Elemental's own `{fly: "90 ft.", hover: true}`,
+  // no numeric value, so the generic digit-match below would otherwise
+  // silently drop it) — copied straight through as `stats.speed.hover`,
+  // sparse (omitted, not `false`, when absent — same convention every
+  // other optional stats.* flag already uses), read by Crucible's own
+  // formatSpeedValue/parseSpeedText as a "(hover)" suffix on the fly value.
   formatSpeedFromObject(context, args) {
     const raw = resolvePath(context, args?.path || "speed");
     const result = {};
     if (raw && typeof raw === "object") {
       Object.entries(raw).forEach(([key, value]) => {
+        if (key === "hover") {
+          if (value) result.hover = true;
+          return;
+        }
         const match = String(value || "").match(/(\d+)/);
         if (match) result[key] = Number(match[1]);
       });
@@ -959,6 +1059,24 @@ return {
     return FRACTIONS[value] || String(value);
   },
 
+  // Standard 5e Proficiency Bonus-by-CR — a fixed rule (PB = 2 +
+  // floor((max(CR,1)-1)/4)), never house-ruled per creature, computed here
+  // from the raw challenge rating rather than trusted to a source-provided
+  // field: only the 5e API actually has one directly (`proficiency_bonus`,
+  // still used as-is in that mapping — this function isn't wired there).
+  // DDB has none at all anywhere in a real monster payload (confirmed via a
+  // live fetch); Fantasy Statblocks' own Proficiency Bonus display is
+  // itself just a CR-based callback in the plugin, never stored frontmatter
+  // data (per the plugin's own docs). Deriving it here for those two
+  // sources guarantees the same value every import produces instead of
+  // "present on some sources, missing on others." `args.path` defaults to
+  // "challenge_rating"; see crToNumber above for the accepted shapes.
+  proficiencyBonusFromChallengeRating(context, args) {
+    const cr = crToNumber(resolvePath(context, args?.path || "challenge_rating"));
+    if (!Number.isFinite(cr)) return undefined;
+    return 2 + Math.floor((Math.max(cr, 1) - 1) / 4);
+  },
+
   // 5e-API's raw `proficiencies` (confirmed by this mapping's own prior
   // pipeline step, which this function replaces) is `[{proficiency:{name:
   // "Saving Throw: DEX"|"Skill: Perception"}, value:{value:N}}, ...]` — one
@@ -976,7 +1094,13 @@ return {
     const skills = [];
     (Array.isArray(entries) ? entries : []).forEach((entry) => {
       const label = entry?.proficiency?.name || "";
-      const value = entry?.value?.value;
+      // A bare number (confirmed via a real live fetch,
+      // https://www.dnd5eapi.co/api/2014/monsters/adult-black-dragon:
+      // `{"value":7,"proficiency":{"name":"Saving Throw: DEX",...}}`) — NOT
+      // `{value:{value:N}}`. The pre-existing pipeline this function
+      // replaced made the same wrong assumption (carried forward
+      // unverified); this is the corrected shape.
+      const value = entry?.value;
       const saveMatch = label.match(/^Saving Throw:\s*(.+)$/i);
       if (saveMatch) {
         savingThrows.push({ name: saveMatch[1].trim(), value });

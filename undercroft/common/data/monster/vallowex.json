@@ -1,0 +1,93 @@
+{
+  "kind": "monster",
+  "name": "Vallowex",
+  "notes": "_A creature with two legs and a flat tail emerges from the water. Its wide mouth opens, revealing a spiked tongue._\n\n**Luring with Thirst**. The vallowex haunts woodland rivers, luring in prey with its thirst-inducing aura. When a creature stops to drink, the vallowex attacks and drags the creature into the water to feast.\n\n**Reproduce through Hosts**. Vallowexes release eggs into potable water. After a creature drinks the eggs, a tadpole hatches in its stomach. The tadpole slowly consumes the host from the inside out, emerging as a vallowex when the host dies",
+  "type": "aberration",
+  "stats": {
+    "size": "Large",
+    "alignment": "Chaotic Neutral",
+    "armorClass": 14,
+    "hitPoints": {
+      "max": 123,
+      "current": 123,
+      "diceString": "13d10 + 52"
+    },
+    "hitDice": "13d10",
+    "speed": {
+      "walk": 30,
+      "swim": 30
+    },
+    "abilities": {
+      "strength": 20,
+      "dexterity": 10,
+      "constitution": 18,
+      "intelligence": 5,
+      "wisdom": 12,
+      "charisma": 5
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "Wis +4",
+    "skills": "Perception +4, Stealth +6",
+    "senses": {
+      "blindsight": 60,
+      "passives": {
+        "perception": 14
+      }
+    },
+    "challengeRating": "7",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Tome of Beasts 2, pg. 356"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.amphibious",
+    "feat.vallowex-aura-of-thirst",
+    "feat.riptide-drake-underwater-camouflage",
+    "feat.multiattack",
+    "feat.vallowex-spiked-tongue",
+    "feat.tail",
+    "feat.swallow",
+    "feat.vallowex-release-eggs-1-week"
+  ],
+  "featureParams": {
+    "feat.tail": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 8,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d10 + 5",
+      "damageType": "bludgeoning"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.vallowex-spiked-tongue",
+          "count": 1
+        },
+        {
+          "featureId": "feat.tail",
+          "count": 1
+        }
+      ],
+      "text": "The creature makes two attacks: one with its spiked tongue and one with its tail."
+    }
+  },
+  "featureTiers": {
+    "feat.swallow": "vallowex"
+  }
+}

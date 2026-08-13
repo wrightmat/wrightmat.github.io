@@ -1,0 +1,43 @@
+{
+  "id": "feat.cloud-giant-ghost-wind-howl-recharge-6",
+  "name": "Wind Howl (Recharge 6)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature emits a dreadful howl that summons a cold, biting wind. This wind engulfs up to three creatures of the creature’s choice that it can see within 60 feet of it. Each target is pulled up to 20 feet toward the creature and must make a DC 15 Constitution saving throw, taking 16 (3d10) cold damage on a failed save, or half as much damage on a successful one.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature emits a dreadful howl that summons a cold, biting wind. This wind engulfs up to three creatures of the creature’s choice that it can see within 60 feet of it. Each target is pulled up to 20 feet toward the creature and must make a DC 15 Constitution saving throw, taking 16 (3d10) cold damage on a failed save, or half as much damage on a successful one.",
+    "scope": "unique"
+  },
+  "budgetCost": 4,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "control"
+    ],
+    "recipeSlots": [
+      "burst"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  },
+  "tiers": [
+    {
+      "id": "recharge-6",
+      "name": "Wind Howl (Recharge 6)",
+      "shortName": "Recharge 6",
+      "mechanics": {
+        "text": "The creature emits a dreadful howl that summons a cold, biting wind. This wind engulfs up to three creatures of the creature’s choice that it can see within 60 feet of it. Each target is pulled up to 20 feet toward the creature and must make a DC 15 Constitution saving throw, taking 16 (3d10) cold damage on a failed save, or half as much damage on a successful one."
+      }
+    }
+  ]
+}

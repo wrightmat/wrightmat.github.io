@@ -1,0 +1,111 @@
+{
+  "kind": "monster",
+  "name": "Nihilethic Zombie",
+  "notes": "",
+  "type": "undead",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Neutral Evil",
+    "armorClass": 8,
+    "hitPoints": {
+      "max": 37,
+      "current": 37,
+      "diceString": "5d8 + 15"
+    },
+    "hitDice": "5d8",
+    "speed": {
+      "walk": 20,
+      "swim": 30
+    },
+    "abilities": {
+      "strength": 13,
+      "dexterity": 6,
+      "constitution": 16,
+      "intelligence": 3,
+      "wisdom": 6,
+      "charisma": 5
+    },
+    "initiative": {
+      "bonus": -2
+    },
+    "savingThrows": "Wis +0",
+    "skills": "",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 8
+      }
+    },
+    "challengeRating": "1",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "cold",
+          "type": "immunity"
+        },
+        {
+          "name": "necrotic",
+          "type": "immunity"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "understands Void Speech and the languages it knew in life but can't speak"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "ToB1",
+      "Tome of Beasts 1, page 10"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.nihilethic-dominator-ghostly-body-void-ghost-form-only",
+    "feat.undead-fortitude",
+    "feat.unusual-nature",
+    "feat.slam",
+    "feat.withering-touch",
+    "feat.nihilethic-zombie-sacrifice-life",
+    "feat.void-body"
+  ],
+  "featureParams": {
+    "feat.slam": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 3,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d6 + 1",
+      "damageType": "bludgeoning",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "2d6",
+        "damageType": "necrotic"
+      }
+    },
+    "feat.withering-touch": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 3,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 1",
+      "damageType": "necrotic"
+    }
+  },
+  "featureTiers": {
+    "feat.void-body": "1d12"
+  }
+}

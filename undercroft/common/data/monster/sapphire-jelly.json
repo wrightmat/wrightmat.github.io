@@ -1,0 +1,124 @@
+{
+  "kind": "monster",
+  "name": "Sapphire Jelly",
+  "notes": "",
+  "type": "ooze",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Unaligned",
+    "armorClass": 9,
+    "hitPoints": {
+      "max": 144,
+      "current": 144,
+      "diceString": "17d8 + 68"
+    },
+    "hitDice": "17d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 16,
+      "dexterity": 8,
+      "constitution": 18,
+      "intelligence": 3,
+      "wisdom": 12,
+      "charisma": 12
+    },
+    "initiative": {
+      "bonus": -1
+    },
+    "savingThrows": "Wis +4, Cha +4",
+    "skills": "",
+    "senses": {
+      "blindsight": 60,
+      "passives": {
+        "perception": 11
+      }
+    },
+    "challengeRating": "6",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "cold",
+          "type": "immunity"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "blinded",
+          "type": "immunity"
+        },
+        {
+          "name": "charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "deafened",
+          "type": "immunity"
+        },
+        {
+          "name": "exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "poisoned",
+          "type": "immunity"
+        },
+        {
+          "name": "prone",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Tome of Beasts 2 (pg. 312)"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.amorphous",
+    "feat.sapphire-jelly-icy-transformation",
+    "feat.multiattack",
+    "feat.freezing-slam",
+    "feat.sapphire-jelly-engulf"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.freezing-slam",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two freezing slam attacks."
+    },
+    "feat.freezing-slam": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 3",
+      "damageType": "bludgeoning",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "3d6",
+        "damageType": "cold"
+      }
+    }
+  }
+}

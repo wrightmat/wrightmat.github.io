@@ -1,0 +1,33 @@
+{
+  "id": "feat.aerial-sentry-blinding-gale-1-day",
+  "name": "Blinding Gale (1/Day)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature unleashes a blinding burst of wind in a 20-foot radius centered on itself. Each creature in that area must make a DC 14 Dexterity saving throw, becoming blinded on a failed save for 1 minute. A creature can repeat the saving throw at the end of each of its turns, ending the effect on a success.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature unleashes a blinding burst of wind in a 20-foot radius centered on itself. Each creature in that area must make a DC 14 Dexterity saving throw, becoming blinded on a failed save for 1 minute. A creature can repeat the saving throw at the end of each of its turns, ending the effect on a success.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "debuff",
+      "control"
+    ],
+    "recipeSlots": [
+      "burst"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

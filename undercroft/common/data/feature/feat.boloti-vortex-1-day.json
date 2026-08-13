@@ -1,0 +1,33 @@
+{
+  "id": "feat.boloti-vortex-1-day",
+  "name": "Vortex (1/Day)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "a creature can transform into a vortex of swirling, churning water for up to 4 minutes. This ability can be used only while the creature is underwater, and the creature can’t leave the water while in vortex form. While in vortex form, the creature can enter another creature’s space and stop there in vortex form. In this liquid form, the creature still takes normal damage from weapons and magic. A creature in the same space as the creature at the start of the creature’s turn takes 9 (2d8) bludgeoning damage unless it makes a successful DC 15 Dexterity saving throw. If the creature is Medium or smaller, a failed saving throw also means it is grappled (escape DC 11). Until this grapple ends, the target is restrained and unable to breathe unless it can breathe water. If the saving throw succeeds, the target is pushed 5 feet so it is out of the creature’s space.",
+  "mechanics": {
+    "type": "passive",
+    "text": "a creature can transform into a vortex of swirling, churning water for up to 4 minutes. This ability can be used only while the creature is underwater, and the creature can’t leave the water while in vortex form. While in vortex form, the creature can enter another creature’s space and stop there in vortex form. In this liquid form, the creature still takes normal damage from weapons and magic. A creature in the same space as the creature at the start of the creature’s turn takes 9 (2d8) bludgeoning damage unless it makes a successful DC 15 Dexterity saving throw. If the creature is Medium or smaller, a failed saving throw also means it is grappled (escape DC 11). Until this grapple ends, the target is restrained and unable to breathe unless it can breathe water. If the saving throw succeeds, the target is pushed 5 feet so it is out of the creature’s space.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "control"
+    ],
+    "recipeSlots": [
+      "isolate"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

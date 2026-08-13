@@ -1,0 +1,28 @@
+{
+  "id": "feat.shrieker-shriek",
+  "name": "Shriek",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "When bright light or a creature is within 30 feet of the plant, it emits a shriek audible within 300 feet of it. The plant continues to shriek until the disturbance moves out of range and for 1d4 of the plant's turns afterward",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "When bright light or a creature is within 30 feet of the plant, it emits a shriek audible within 300 feet of it. The plant continues to shriek until the disturbance moves out of range and for 1d4 of the plant's turns afterward"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "reaction"
+  }
+}

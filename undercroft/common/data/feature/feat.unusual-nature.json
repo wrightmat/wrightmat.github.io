@@ -23,5 +23,55 @@
     ]
   },
   "synergizesWith": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "no-sleep",
+      "name": "Unusual Nature (No Sleep)",
+      "shortName": "No sleep",
+      "mechanics": {
+        "text": "The creature doesn't require sleep."
+      }
+    },
+    {
+      "id": "no-air",
+      "name": "Unusual Nature (No Air)",
+      "shortName": "No air",
+      "mechanics": {
+        "text": "The creature doesn't require air."
+      }
+    },
+    {
+      "id": "no-air-drink-sleep",
+      "name": "Unusual Nature (No Air, Drink, or Sleep)",
+      "shortName": "No air/drink/sleep",
+      "mechanics": {
+        "text": "The creature doesn't require air, drink, or sleep."
+      }
+    },
+    {
+      "id": "no-food-drink",
+      "name": "Unusual Nature (No Food or Drink)",
+      "shortName": "No food/drink",
+      "mechanics": {
+        "text": "The creature doesn't require food or drink."
+      }
+    },
+    {
+      "id": "no-air-food-drink",
+      "name": "Unusual Nature (No Air, Food, or Drink)",
+      "shortName": "No air/food/drink",
+      "mechanics": {
+        "text": "The creature doesn't require air, food, or drink."
+      }
+    },
+    {
+      "id": "no-air-sleep",
+      "name": "Unusual Nature (No Air or Sleep)",
+      "shortName": "No air/sleep",
+      "mechanics": {
+        "text": "The creature doesn't require air or sleep."
+      }
+    }
+  ]
 }

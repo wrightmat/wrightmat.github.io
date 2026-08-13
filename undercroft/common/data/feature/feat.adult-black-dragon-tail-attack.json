@@ -1,0 +1,31 @@
+{
+  "id": "feat.adult-black-dragon-tail-attack",
+  "name": "Tail Attack",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature makes a tail attack.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature makes a tail attack."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "legendary-action"
+  }
+}

@@ -1,0 +1,87 @@
+{
+  "kind": "monster",
+  "index": "dust-mephit",
+  "name": "Dust Mephit",
+  "type": "elemental",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/dust-mephit.png",
+  "stats": {
+    "size": "Small",
+    "alignment": "neutral evil",
+    "armorClass": 12,
+    "hitPoints": {
+      "max": 17,
+      "current": 17,
+      "diceString": "5d6"
+    },
+    "hitDice": "5d6",
+    "speed": {
+      "walk": 30,
+      "fly": 30
+    },
+    "abilities": {
+      "strength": 5,
+      "dexterity": 14,
+      "constitution": 10,
+      "intelligence": 9,
+      "wisdom": 11,
+      "charisma": 10
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "Perception +2, Stealth +4",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "fire",
+          "type": "vulnerability"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Auran",
+        "Terran"
+      ]
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 12
+      }
+    },
+    "challengeRating": "1/2",
+    "proficiencyBonus": 2,
+    "xp": 100,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/dust-mephit",
+    "spells": "The mephit can innately cast sleep, requiring no material components. Its innate spellcasting ability is Charisma."
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/dust-mephit",
+  "featureIds": [
+    "feat.dust-mephit-death-burst",
+    "feat.claws",
+    "feat.dust-mephit-blinding-breath"
+  ],
+  "featureParams": {
+    "feat.claws": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d4 + 2",
+      "damageType": "slashing"
+    }
+  }
+}

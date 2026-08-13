@@ -1,0 +1,28 @@
+{
+  "id": "feat.murgaxor-sanguine-sense",
+  "name": "Sanguine Sense",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "While Murgaxor isn’t blinded, he can see any creature that isn’t an Undead or a Construct within 60 feet of himself, even through total cover, heavily obscured areas, invisibility, or any other phenomena that would prevent sight.",
+  "mechanics": {
+    "type": "passive",
+    "text": "While Murgaxor isn’t blinded, he can see any creature that isn’t an Undead or a Construct within 60 feet of himself, even through total cover, heavily obscured areas, invisibility, or any other phenomena that would prevent sight."
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

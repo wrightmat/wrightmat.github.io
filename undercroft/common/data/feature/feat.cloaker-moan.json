@@ -1,0 +1,28 @@
+{
+  "id": "feat.cloaker-moan",
+  "name": "Moan",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Each creature within 60 feet of the aberration that can hear its moan and that isn't an aberration must succeed on a DC 13 Wisdom saving throw or become frightened until the end of the aberration's next turn. If a creature's saving throw is successful, the creature is immune to the aberration's moan for the next 24 hours.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "Each creature within 60 feet of the aberration that can hear its moan and that isn't an aberration must succeed on a DC 13 Wisdom saving throw or become frightened until the end of the aberration's next turn. If a creature's saving throw is successful, the creature is immune to the aberration's moan for the next 24 hours."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

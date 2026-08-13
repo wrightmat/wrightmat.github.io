@@ -1,0 +1,77 @@
+{
+  "kind": "monster",
+  "index": "werewolf-wolf",
+  "name": "Werewolf, Wolf Form",
+  "type": "humanoid",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/werewolf-wolf.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "chaotic evil",
+    "armorClass": 12,
+    "hitPoints": {
+      "max": 58,
+      "current": 58,
+      "diceString": "9d8+18"
+    },
+    "hitDice": "9d8",
+    "speed": {
+      "walk": 40
+    },
+    "abilities": {
+      "strength": 15,
+      "dexterity": 13,
+      "constitution": 14,
+      "intelligence": 10,
+      "wisdom": 11,
+      "charisma": 10
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "",
+    "skills": "Perception +4",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "bludgeoning, piercing, and slashing from nonmagical weapons that aren't silvered",
+          "type": "immunity"
+        }
+      ],
+      "languages": []
+    },
+    "senses": {
+      "passives": {
+        "perception": 14
+      }
+    },
+    "challengeRating": "3",
+    "proficiencyBonus": 2,
+    "xp": 700,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/werewolf-wolf"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/werewolf-wolf",
+  "featureIds": [
+    "feat.shapechanger",
+    "feat.keen-hearing-and-smell",
+    "feat.bite"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d8 + 2",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "save-or-condition",
+        "targetRestriction": "humanoid"
+      }
+    }
+  }
+}

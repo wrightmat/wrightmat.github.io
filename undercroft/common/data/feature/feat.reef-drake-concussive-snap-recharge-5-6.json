@@ -1,0 +1,33 @@
+{
+  "id": "feat.reef-drake-concussive-snap-recharge-5-6",
+  "name": "Concussive Snap (Recharge 5–6)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature snaps its jaws, emitting concussive force in a 90-foot cone. Each creature in that area must make a DC 15 Constitution saving throw. On a failure, a creature takes 35 (10d6) thunder damage, is pushed up to 15 feet away from the creature, and stops holding its breath, if was doing so. On a success, a creature takes half as much damage, isn’t pushed, and doesn’t lose its held breath. Constructs and objects and structures have disadvantage on the saving throw.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature snaps its jaws, emitting concussive force in a 90-foot cone. Each creature in that area must make a DC 15 Constitution saving throw. On a failure, a creature takes 35 (10d6) thunder damage, is pushed up to 15 feet away from the creature, and stops holding its breath, if was doing so. On a success, a creature takes half as much damage, isn’t pushed, and doesn’t lose its held breath. Constructs and objects and structures have disadvantage on the saving throw.",
+    "scope": "unique"
+  },
+  "budgetCost": 4,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "control"
+    ],
+    "recipeSlots": [
+      "burst"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

@@ -1,0 +1,97 @@
+{
+  "kind": "monster",
+  "name": "Swamp Naga",
+  "notes": "_A human head tops this green-and-brown constrictor. Vines protrude from its scalp and writhe in unison to the serpent’s swaying motion. Mosquitos, gnats, and other flying insects form a cloud around it._\n\n**Self-Proclaimed Ruler and Protector**. The swamp naga is a manifestation of the swamp it inhabits. Its physical form is reminiscent of snakes, and marsh plants grow from its head. The naga’s strong tie to the swamp provides an impetus to protect its home and to believe it is the swamp’s sovereign. Because of this strong link, a swamp rarely hosts more than one naga, unless it covers vast territory.\n\n**Insect and Serpent Friend**. The swamp naga’s link to the swamp extends to many creatures within it. Humanoids and mammalian animals that share the swamp with the naga recognize it as a protector and rarely trouble it, though the naga exerts no control over them. A cloud of poisonous biting and stinging insects accompanies the naga, endangering those who draw close to it.\n\n**Necessarily Ruthless**. Scholars who have studied the connection between swamp nagas and their domains postulate the nagas’ malevolence is an outgrowth of swamplands’ inherent evil. However, the nagas only use force when trespassers actively harm the swamp or refuse to leave after the nagas attempt to reason with them. Nagas typically encourage those they enthrall to either leave or repair damages. They prefer not to take slaves, since this encourages more intruders and likely further havoc.",
+  "type": "monstrosity",
+  "stats": {
+    "size": "Large",
+    "alignment": "Lawful Evil",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 102,
+      "current": 102,
+      "diceString": "12d10 + 36"
+    },
+    "hitDice": "12d10",
+    "speed": {
+      "walk": 30,
+      "swim": 40
+    },
+    "abilities": {
+      "strength": 18,
+      "dexterity": 16,
+      "constitution": 17,
+      "intelligence": 11,
+      "wisdom": 14,
+      "charisma": 17
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "Con +6, Wis +5",
+    "skills": "Nature +3, Persuasion +6",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 12
+      }
+    },
+    "challengeRating": "6",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Common"
+      ]
+    },
+    "spells": "The swamp naga is an 8th-level spellcaster. Its spellcasting ability is Charisma (spell save DC 14, +6 to hit with spell attacks), and it needs only verbal components to cast its spells. It knows the following sorcerer spells: null Cantrips (at will): dancing lights, mage hand, message, poison spray 1st level (4 slots): charm person, fog cloud, silent image, sleep 2nd level (3 slots): blindness/deafness, hold person, suggestion 3rd level (3 slots): hypnotic pattern, stinking cloud, water breathing 4th level (2 slots): blight",
+    "environments": [
+      "Swamp"
+    ],
+    "sources": [
+      "ToB2",
+      "Tome of Beasts 2, pg 265"
+    ],
+    "saveDC": 14
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.swamp-naga-cloud-of-insects",
+    "feat.swamp-naga-rejuvenation",
+    "feat.swamp-naga-insect-and-serpent-passivism",
+    "feat.bite",
+    "feat.swamp-naga-constrict"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "3d8 + 4",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "3d8",
+        "damageType": "poison"
+      }
+    }
+  }
+}

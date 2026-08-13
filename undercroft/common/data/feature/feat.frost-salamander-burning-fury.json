@@ -1,0 +1,29 @@
+{
+  "id": "feat.frost-salamander-burning-fury",
+  "name": "Burning Fury",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "When the creature takes fire damage, its Freezing Breath automatically recharges.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When the creature takes fire damage, its Freezing Breath automatically recharges.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

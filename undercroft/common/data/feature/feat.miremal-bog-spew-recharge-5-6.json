@@ -1,0 +1,33 @@
+{
+  "id": "feat.miremal-bog-spew-recharge-5-6",
+  "name": "Bog Spew (Recharge 5-6)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature spews a noxious stream of bog filth mixed with stomach acid at a target up to 20 feet away. Target must succeed on a DC 11 Constitution saving throw or be blinded for 1d4 rounds.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature spews a noxious stream of bog filth mixed with stomach acid at a target up to 20 feet away. Target must succeed on a DC 11 Constitution saving throw or be blinded for 1d4 rounds.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "debuff",
+      "control"
+    ],
+    "recipeSlots": [
+      "burst"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

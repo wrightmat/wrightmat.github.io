@@ -1,0 +1,113 @@
+{
+  "kind": "monster",
+  "index": "glabrezu",
+  "name": "Glabrezu",
+  "type": "fiend",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/glabrezu.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "chaotic evil",
+    "armorClass": 17,
+    "hitPoints": {
+      "max": 157,
+      "current": 157,
+      "diceString": "15d10+75"
+    },
+    "hitDice": "15d10",
+    "speed": {
+      "walk": 40
+    },
+    "abilities": {
+      "strength": 20,
+      "dexterity": 15,
+      "constitution": 21,
+      "intelligence": 19,
+      "wisdom": 17,
+      "charisma": 16
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "STR +9, CON +9, WIS +7, CHA +7",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "cold",
+          "type": "resistance"
+        },
+        {
+          "name": "fire",
+          "type": "resistance"
+        },
+        {
+          "name": "lightning",
+          "type": "resistance"
+        },
+        {
+          "name": "bludgeoning, piercing, and slashing from nonmagical weapons",
+          "type": "resistance"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Abyssal",
+        "telepathy 120 ft."
+      ]
+    },
+    "senses": {
+      "truesight": 120,
+      "passives": {
+        "perception": 13
+      }
+    },
+    "challengeRating": "9",
+    "proficiencyBonus": 4,
+    "xp": 5000,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/glabrezu",
+    "spells": "The glabrezu's spellcasting ability is Intelligence (spell save DC 16). The glabrezu can innately cast the following spells, requiring no material components:\nAt will: darkness, detect magic, dispel magic\n1/day each: confusion, fly, power word stun",
+    "saveDC": 16
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/glabrezu",
+  "featureIds": [
+    "feat.magic-resistance",
+    "feat.multiattack",
+    "feat.glabrezu-pincer",
+    "feat.fist"
+  ],
+  "featureParams": {
+    "feat.fist": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 9,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d4 + 2",
+      "damageType": "bludgeoning"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.glabrezu-pincer",
+          "count": 2
+        },
+        {
+          "featureId": "feat.fist",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes four attacks: two with its pincers and two with its fists. Alternatively, it makes two attacks with its pincers and casts one spell."
+    }
+  }
+}

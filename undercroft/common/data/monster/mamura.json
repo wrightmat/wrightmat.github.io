@@ -1,0 +1,110 @@
+{
+  "kind": "monster",
+  "name": "Mamura",
+  "notes": "_This tiny monstrosity combines the worst elements of a dead frog and a rotting fish. Its slimy, scaly, vaguely humanoid form has three clawed arms arranged radially about its body. Its slimy green bat-like wings seem too small to work, yet it flies very well._\n\nTwisted Field Sprites. Mamuras are the twisted faeries of magical wastelands and barren plains. They were once goodaligned, pixie-like fey called “polevoi,” or “field sprites,” but at some point they swore their souls to a dark goddess and were corrupted by her foul magic. Now they are twisted, alien things. \n\nCross-Dimensional. The mamura is one degree out of phase with the usual five dimensions. As a result, it always appears blurry and indistinct even in bright light, and it seems translucent in dim light. Mamuras babble constantly, but their talk is mostly nonsense. Their minds operate in multiple dimensions in time as well as space, and this allows them to talk to creatures of the Realms Beyond. Because of this, their babble may be prophetic, but only few can decipher it. \n\nProphetic Followers. They occasionally align themselves with powerful goblin tribes or evil wasteland sorcerers for their own unknowable purposes.",
+  "type": "aberration",
+  "stats": {
+    "size": "Small",
+    "alignment": "Neutral Evil",
+    "armorClass": 16,
+    "hitPoints": {
+      "max": 97,
+      "current": 97,
+      "diceString": "13d6 + 52"
+    },
+    "hitDice": "13d6",
+    "speed": {
+      "walk": 20,
+      "fly": 30
+    },
+    "abilities": {
+      "strength": 8,
+      "dexterity": 18,
+      "constitution": 19,
+      "intelligence": 17,
+      "wisdom": 11,
+      "charisma": 16
+    },
+    "initiative": {
+      "bonus": 4
+    },
+    "savingThrows": "Dex +7, Con +7, Cha +6",
+    "skills": "Acrobatics +7, Perception +6, Stealth +7",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 16
+      }
+    },
+    "challengeRating": "6",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "and slashing from nonmagical weapons",
+          "type": "resistance"
+        }
+      ],
+      "languages": [
+        "Common",
+        "Elvish",
+        "Goblin",
+        "Sylvan",
+        "Void Speech"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Tome of Beasts 1 (pg 284)"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.magic-resistance",
+    "feat.mamura-friend-to-darkness",
+    "feat.mamura-distraction",
+    "feat.flyby",
+    "feat.multiattack",
+    "feat.claw",
+    "feat.mamura-whiptail-stinger",
+    "feat.all-around-vision"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.claw",
+          "count": 3
+        }
+      ],
+      "text": "The creature makes three claw attacks and one whiptail sting attack."
+    },
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d8 + 4",
+      "damageType": "slashing",
+      "rider": {
+        "kind": "save-or-condition",
+        "saveAbility": "constitution",
+        "saveDC": 15,
+        "condition": "poisoned",
+        "duration": "1 round (cumulative with multiple failed saving throws)"
+      }
+    }
+  }
+}

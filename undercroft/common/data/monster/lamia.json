@@ -1,0 +1,87 @@
+{
+  "kind": "monster",
+  "index": "lamia",
+  "name": "Lamia",
+  "type": "monstrosity",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/lamia.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "chaotic evil",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 97,
+      "current": 97,
+      "diceString": "13d10+26"
+    },
+    "hitDice": "13d10",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 16,
+      "dexterity": 13,
+      "constitution": 15,
+      "intelligence": 14,
+      "wisdom": 15,
+      "charisma": 16
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "",
+    "skills": "Deception +7, Insight +4, Stealth +3",
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Abyssal",
+        "Common"
+      ]
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 12
+      }
+    },
+    "challengeRating": "4",
+    "proficiencyBonus": 2,
+    "xp": 1100,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/lamia",
+    "spells": "The lamia's innate spellcasting ability is Charisma (spell save DC 13). It can innately cast the following spells, requiring no material components. At will: disguise self (any humanoid form), major image 3/day each: charm person, mirror image, scrying, suggestion 1/day: geas",
+    "saveDC": 13
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/lamia",
+  "featureIds": [
+    "feat.multiattack",
+    "feat.claws",
+    "feat.dagger",
+    "feat.lamia-intoxicating-touch"
+  ],
+  "featureParams": {
+    "feat.claws": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d10 + 3",
+      "damageType": "slashing"
+    },
+    "feat.dagger": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d4 + 3",
+      "damageType": "piercing"
+    },
+    "feat.multiattack": {
+      "text": "The creature makes two attacks: one with its claws and one with its dagger or Intoxicating Touch."
+    }
+  }
+}

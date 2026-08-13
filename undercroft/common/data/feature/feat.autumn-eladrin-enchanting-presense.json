@@ -1,0 +1,29 @@
+{
+  "id": "feat.autumn-eladrin-enchanting-presense",
+  "name": "Enchanting Presense",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Any non-eladrin creature that starts its turn within 60 feet of the creature must make a DC 16 Wisdom saving throw. On a failed save, the creature becomes charmed by the creature for 1 minute. On a successful save, the creature becomes immune to any eladrin’s Enchanting Presence for 24 hours. Whenever the creature deals damage to the charmed creature, the charmed creature can repeat the saving throw, ending the effect on itself on a success.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Any non-eladrin creature that starts its turn within 60 feet of the creature must make a DC 16 Wisdom saving throw. On a failed save, the creature becomes charmed by the creature for 1 minute. On a successful save, the creature becomes immune to any eladrin’s Enchanting Presence for 24 hours. Whenever the creature deals damage to the charmed creature, the charmed creature can repeat the saving throw, ending the effect on itself on a success.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "control"
+    ],
+    "recipeSlots": [
+      "dominate"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

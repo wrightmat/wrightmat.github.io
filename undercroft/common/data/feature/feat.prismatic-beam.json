@@ -1,0 +1,49 @@
+{
+  "id": "feat.prismatic-beam",
+  "name": "Prismatic Beam",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Ranged Spell Attack: +11 to hit, range 150/300 ft., up to two targets within 30 feet of each other. Hit: 32 (5d10 + 5) damage of your choosing from: acid, fire, cold, force, lightning, or radiant.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Ranged Spell Attack: +11 to hit, range 150/300 ft., up to two targets within 30 feet of each other. Hit: 32 (5d10 + 5) damage of your choosing from: acid, fire, cold, force, lightning, or radiant."
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  },
+  "tiers": [
+    {
+      "id": "golem",
+      "name": "Prismatic Beam",
+      "shortName": "+11",
+      "mechanics": {
+        "text": "Ranged Spell Attack: +11 to hit, range 150/300 ft., up to two targets within 30 feet of each other. Hit: 32 (5d10 + 5) damage of your choosing from: acid, fire, cold, force, lightning, or radiant."
+      }
+    },
+    {
+      "id": "shard",
+      "name": "Prismatic Beam",
+      "shortName": "+7",
+      "mechanics": {
+        "text": "Ranged Spell Attack: +7 to hit, range 80/150 ft., up to two targets within 30 feet of each other. Hit: 20 (3d10 + 4) damage of your choosing from: acid, fire, cold, force, lightning, or radiant."
+      }
+    }
+  ]
+}

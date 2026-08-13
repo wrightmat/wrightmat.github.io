@@ -1,0 +1,113 @@
+{
+  "kind": "monster",
+  "name": "Red Slaad",
+  "image": "https://angrygolem-games.com/wp-content/uploads/2021/04/red-slaad.jpg",
+  "notes": "",
+  "type": "aberration",
+  "stats": {
+    "size": "Large",
+    "alignment": "Chaotic Neutral",
+    "armorClass": 14,
+    "hitPoints": {
+      "max": 93,
+      "current": 93,
+      "diceString": "11d10 + 33"
+    },
+    "hitDice": "11d10",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 16,
+      "dexterity": 12,
+      "constitution": 16,
+      "intelligence": 6,
+      "wisdom": 6,
+      "charisma": 7
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "",
+    "skills": "Perception +1",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 11
+      }
+    },
+    "challengeRating": "5",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "acid",
+          "type": "resistance"
+        },
+        {
+          "name": "cold",
+          "type": "resistance"
+        },
+        {
+          "name": "fire",
+          "type": "resistance"
+        },
+        {
+          "name": "lightning",
+          "type": "resistance"
+        },
+        {
+          "name": "thunder",
+          "type": "resistance"
+        }
+      ],
+      "languages": [
+        "Slaad",
+        "telepathy 60 ft."
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "MM",
+      "https://www.dndbeyond.com/monsters/17116-red-slaad",
+      "Monster Manual, pg. 276",
+      "https://angrygolem-games.com/monster-manual/letter-r/red-slaad-5e-stats/"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.magic-resistance",
+    "feat.regeneration",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.red-slaad-claw",
+    "feat.red-slaad-stunning-croak-1-long-rest"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d4 + 3",
+      "damageType": "piercing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.bite",
+          "count": 1
+        },
+        {
+          "featureId": "feat.red-slaad-claw",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes three attacks: one with its bite and two with its claws."
+    }
+  }
+}

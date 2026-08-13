@@ -1,0 +1,88 @@
+{
+  "kind": "monster",
+  "name": "Arcane Devourer",
+  "notes": "",
+  "type": "construct",
+  "stats": {
+    "size": "Large",
+    "alignment": "Unaligned",
+    "armorClass": 18,
+    "hitPoints": {
+      "max": 195,
+      "current": 195,
+      "diceString": "17d10 + 102"
+    },
+    "hitDice": "17d10",
+    "speed": {
+      "walk": 40,
+      "climb": 20
+    },
+    "abilities": {
+      "strength": 14,
+      "dexterity": 16,
+      "constitution": 20,
+      "intelligence": 22,
+      "wisdom": 18,
+      "charisma": 18
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "Int +11, Wis +9, Cha +9",
+    "skills": "Arcana +11, Perception +9",
+    "senses": {
+      "truesight": 60,
+      "darkvision": 120,
+      "passives": {
+        "perception": 19
+      }
+    },
+    "challengeRating": "12",
+    "proficiencyBonus": 4,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Force",
+          "type": "resistance"
+        },
+        {
+          "name": "Psychic",
+          "type": "resistance"
+        }
+      ],
+      "languages": [
+        "Understands all languages but cannot speak"
+      ]
+    },
+    "spells": "Innate Spellcasting (Psionics). The arcane devourer’s innate spellcasting ability is Intelligence (spell save DC 19). It can innately cast the following spells, requiring no material components: At will: Counterspell, Detect Magic, Shield 3/day each: Globe of Invulnerability, Resilient Sphere, Wall of Force",
+    "environments": [],
+    "sources": [
+      "https://www.aonprd.com/MonsterDisplay.aspx?ItemName=Arcanaton",
+      "https://www.dndbeyond.com/monsters/5194923-beholder",
+      "https://mtg.fandom.com/wiki/Eldrazi"
+    ],
+    "saveDC": 19
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.magic-resistance",
+    "feat.multiattack",
+    "feat.arcane-devourer-void-tendril",
+    "feat.arcane-devourer-antimagic-cone",
+    "feat.arcane-devourer-arcane-consumption"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.arcane-devourer-void-tendril",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two Void Tendril attacks."
+    }
+  }
+}

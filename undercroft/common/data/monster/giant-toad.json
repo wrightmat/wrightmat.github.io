@@ -1,0 +1,63 @@
+{
+  "kind": "monster",
+  "index": "giant-toad",
+  "name": "Giant Toad",
+  "type": "beast",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/giant-toad.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "unaligned",
+    "armorClass": 11,
+    "hitPoints": {
+      "max": 39,
+      "current": 39,
+      "diceString": "6d10+6"
+    },
+    "hitDice": "6d10",
+    "speed": {
+      "walk": 20,
+      "swim": 40
+    },
+    "abilities": {
+      "strength": 15,
+      "dexterity": 13,
+      "constitution": 13,
+      "intelligence": 2,
+      "wisdom": 10,
+      "charisma": 3
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [],
+      "languages": []
+    },
+    "senses": {
+      "darkvision": 30,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "1",
+    "proficiencyBonus": 2,
+    "xp": 200,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/giant-toad"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/giant-toad",
+  "featureIds": [
+    "feat.amphibious",
+    "feat.standing-leap",
+    "feat.giant-toad-bite",
+    "feat.swallow-2"
+  ],
+  "featureTiers": {
+    "feat.swallow-2": "giant-toad"
+  }
+}

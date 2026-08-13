@@ -1,0 +1,32 @@
+{
+  "id": "feat.animated-breath-slam",
+  "name": "Slam",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Melee Weapon Attack: +7 to hit, reach 5 ft., one target. Hit: 13 (2d8 + 4) bludgeoning damage plus 11 (2d10) damage of a type determined by the creature’s form: acid, cold, fire, lightning, or poison.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Melee Weapon Attack: +7 to hit, reach 5 ft., one target. Hit: 13 (2d8 + 4) bludgeoning damage plus 11 (2d10) damage of a type determined by the creature’s form: acid, cold, fire, lightning, or poison.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

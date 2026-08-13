@@ -1,0 +1,78 @@
+{
+  "kind": "monster",
+  "index": "wereboar-boar",
+  "name": "Wereboar, Boar Form",
+  "type": "humanoid",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/wereboar-boar.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "neutral evil",
+    "armorClass": 11,
+    "hitPoints": {
+      "max": 78,
+      "current": 78,
+      "diceString": "12d8+24"
+    },
+    "hitDice": "12d8",
+    "speed": {
+      "walk": 40
+    },
+    "abilities": {
+      "strength": 17,
+      "dexterity": 10,
+      "constitution": 15,
+      "intelligence": 10,
+      "wisdom": 11,
+      "charisma": 8
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "Perception +2",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "bludgeoning, piercing, and slashing from nonmagical weapons that aren't silvered",
+          "type": "immunity"
+        }
+      ],
+      "languages": []
+    },
+    "senses": {
+      "passives": {
+        "perception": 12
+      }
+    },
+    "challengeRating": "4",
+    "proficiencyBonus": 2,
+    "xp": 1100,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/wereboar-boar"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/wereboar-boar",
+  "featureIds": [
+    "feat.shapechanger",
+    "feat.charge",
+    "feat.relentless",
+    "feat.tusks"
+  ],
+  "featureParams": {
+    "feat.tusks": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 3",
+      "damageType": "slashing",
+      "rider": {
+        "kind": "save-or-condition",
+        "targetRestriction": "humanoid"
+      }
+    }
+  }
+}

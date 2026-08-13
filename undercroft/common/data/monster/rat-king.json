@@ -1,0 +1,124 @@
+{
+  "kind": "monster",
+  "name": "Rat King",
+  "notes": "_A great knot of scabrous rats scrabbles together as a mass, with skulls, bones, and flesh entangled in the whole. Teeth, eyes, and fur all flow as a single disturbing rat swarm walking on two legs._\r\n\r\n**Fused at the Tail**. A rat king forms when dozens of rats twist their tails together in a thick knot of bone and lumpy cartilage — and offer praise to the rat demon Chittr'k'k. Its numbers and powers grow quickly.\r\n\r\n**Rule Sewers and Slums**. The rat king is a cunning creature that stalks city sewers, boneyards, and slums. Some even command entire thieves’ guilds or hordes of beggars that give it obeisance. They grow larger and more powerful over time until discovered.\r\n\r\n**Plague and Dark Magic**. The rat king is the result of plague infused with twisted magic, and a malignant ceremony that creates one is called “Enthroning the Rat King.” Rats afflicted with virulent leavings of dark magic rites or twisted experiments become bound to one another. As more rats add to the mass, the creature’s intelligence and force of will grow, and it invariably goes quite mad.",
+  "type": "monstrosity",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Chaotic Evil",
+    "armorClass": 14,
+    "hitPoints": {
+      "max": 76,
+      "current": 76,
+      "diceString": "9d8 + 36"
+    },
+    "hitDice": "9d8",
+    "speed": {
+      "walk": 30,
+      "burrow": 20
+    },
+    "abilities": {
+      "strength": 6,
+      "dexterity": 16,
+      "constitution": 18,
+      "intelligence": 11,
+      "wisdom": 15,
+      "charisma": 16
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "",
+    "skills": "Stealth +6",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 12
+      }
+    },
+    "challengeRating": "5",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "slashing",
+          "type": "resistance"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "petrified",
+          "type": "immunity"
+        },
+        {
+          "name": "prone",
+          "type": "immunity"
+        },
+        {
+          "name": "restrained",
+          "type": "immunity"
+        },
+        {
+          "name": "stunned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Common",
+        "Thieves’ Cant"
+      ]
+    },
+    "environments": [
+      "Urban"
+    ],
+    "sources": [
+      "ToB1",
+      "Tome of Beasts 1, pg 318"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.keen-smell",
+    "feat.rat-king-plague-of-ill-omen",
+    "feat.multiattack",
+    "feat.rat-king-bite",
+    "feat.rat-king-summon-swarm-1-day",
+    "feat.rat-king-absorption"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.rat-king-bite",
+          "count": 4
+        }
+      ],
+      "text": "The creature makes four bite attacks."
+    }
+  }
+}

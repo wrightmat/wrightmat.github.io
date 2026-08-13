@@ -1,0 +1,81 @@
+{
+  "kind": "monster",
+  "index": "roper",
+  "name": "Roper",
+  "type": "monstrosity",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/roper.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "neutral evil",
+    "armorClass": 20,
+    "hitPoints": {
+      "max": 93,
+      "current": 93,
+      "diceString": "11d10+33"
+    },
+    "hitDice": "11d10",
+    "speed": {
+      "walk": 10,
+      "climb": 10
+    },
+    "abilities": {
+      "strength": 18,
+      "dexterity": 8,
+      "constitution": 17,
+      "intelligence": 7,
+      "wisdom": 16,
+      "charisma": 6
+    },
+    "initiative": {
+      "bonus": -1
+    },
+    "savingThrows": "",
+    "skills": "Perception +6, Stealth +5",
+    "proficiencies": {
+      "defenses": [],
+      "languages": []
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 16
+      }
+    },
+    "challengeRating": "5",
+    "proficiencyBonus": 3,
+    "xp": 1800,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/roper"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/roper",
+  "featureIds": [
+    "feat.false-appearance",
+    "feat.roper-grasping-tendrils",
+    "feat.spider-climb",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.roper-tendril",
+    "feat.reel"
+  ],
+  "featureTiers": {
+    "feat.reel": "25-ft",
+    "feat.false-appearance": "cave-formation"
+  },
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "4d8 + 4",
+      "damageType": "piercing"
+    },
+    "feat.multiattack": {
+      "text": "The creature makes four attacks with its tendrils, uses Reel, and makes one attack with its bite."
+    }
+  }
+}

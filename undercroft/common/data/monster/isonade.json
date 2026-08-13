@@ -1,0 +1,97 @@
+{
+  "kind": "monster",
+  "name": "Isonade",
+  "notes": "_The isonade’s gargantuan thrashing tail is lined with cruelly hooked barbs, and it delights in destruction. When it approaches a coastal village, its tail shoots high into the air from beneath the waves, and it smashes all ships, docks, and nets in its path._\n\n**Coastal Destroyer**. The isonade is a beast of destruction, sweeping away entire islands and villages. It wrecks seaside communities with battering winds and carves coastlines with its powerful magic. Though not very intelligent, it singles out a community and tries to lure residents into the waves with its animal messenger ability, sending gulls bearing confused riddles, grand promises, and eerie noises to the townsfolk.\n\n**Ocean Sacrifices**. When coastal villagers suffered from a hurricane or tsunami, they fell back on folklore and blamed the stirrings of the dreaded isonade. To some, appeasing a leviathan such as this makes sense. Some say that a degenerate group seeks to draw the beast forth by sailing from sight of land and dumping a long chain of bound and screaming sacrifices into the lightless depths of the sea.\n\n**Enormous Age and Size**. The isonade is more than 45 feet long. The beast’s age is unknown, and many coastal bards tell some version of the legend—some believe it is the last of its kind, others believe that a small group of isonade remains.",
+  "type": "monstrosity",
+  "stats": {
+    "size": "Gargantuan",
+    "alignment": "Chaotic Neutral",
+    "armorClass": 18,
+    "hitPoints": {
+      "max": 222,
+      "current": 222,
+      "diceString": "12d20 + 96"
+    },
+    "hitDice": "12d20",
+    "speed": {
+      "swim": 100
+    },
+    "abilities": {
+      "strength": 30,
+      "dexterity": 14,
+      "constitution": 26,
+      "intelligence": 6,
+      "wisdom": 18,
+      "charisma": 8
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "Str +14, Con +12, Wis +8",
+    "skills": "Athletics +14, Perception +8",
+    "senses": {
+      "darkvision": 90,
+      "passives": {
+        "perception": 18
+      }
+    },
+    "challengeRating": "14",
+    "proficiencyBonus": 5,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "ability damage/drain",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "understands Aquan and Elvish",
+        "but cannot speak"
+      ]
+    },
+    "spells": "Innate Spellcasting. The isonade’s innate spellcasting ability is Wisdom (spell save DC 16). It can innately cast the following spells, requiring no material components: At will: animal messenger 3/day each: control water, earthquake 1/day each: control weather, storm of vengeance, tsunami",
+    "environments": [],
+    "sources": [
+      "Tome of Beasts 1, pg. 257"
+    ],
+    "saveDC": 16
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.isonade-atmospheric-immunity",
+    "feat.magic-resistance",
+    "feat.multiattack",
+    "feat.isonade-bite",
+    "feat.tail-slap",
+    "feat.isonade-breach",
+    "feat.isonade-swallow",
+    "feat.water-breathing"
+  ],
+  "featureParams": {
+    "feat.tail-slap": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 14,
+      "distanceLabel": "reach",
+      "distance": "15",
+      "damageDice": "6d6 + 10",
+      "damageType": "bludgeoning"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.tail-slap",
+          "count": 1
+        },
+        {
+          "featureId": "feat.isonade-bite",
+          "count": 1
+        }
+      ],
+      "text": "The creature makes one tail slap attack and one bite attack."
+    }
+  }
+}

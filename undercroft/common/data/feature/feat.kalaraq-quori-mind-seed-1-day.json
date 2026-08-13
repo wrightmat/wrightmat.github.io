@@ -1,0 +1,33 @@
+{
+  "id": "feat.kalaraq-quori-mind-seed-1-day",
+  "name": "Mind Seed (1/Day)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature touches one humanoid, which must succeed on a DC 21 Intelligence saving throw or be cursed. The curse lasts until it’s removed by a remove curse or greater restoration spell. The cursed target suffers 1 level of exhaustion every 24 hours, and finishing a long rest doesn’t reduce its exhaustion. If the cursed target reaches exhaustion level 6, it doesn’t die; it instead becomes a thrall under the creature’s control, and all its exhaustion is removed. Only the wish spell can free the thrall from this control.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature touches one humanoid, which must succeed on a DC 21 Intelligence saving throw or be cursed. The curse lasts until it’s removed by a remove curse or greater restoration spell. The cursed target suffers 1 level of exhaustion every 24 hours, and finishing a long rest doesn’t reduce its exhaustion. If the cursed target reaches exhaustion level 6, it doesn’t die; it instead becomes a thrall under the creature’s control, and all its exhaustion is removed. Only the wish spell can free the thrall from this control.",
+    "scope": "unique"
+  },
+  "budgetCost": 4,
+  "tags": {
+    "behaviors": [
+      "control",
+      "debuff"
+    ],
+    "recipeSlots": [
+      "isolate"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

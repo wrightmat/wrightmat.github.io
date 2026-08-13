@@ -1,0 +1,160 @@
+{
+  "kind": "monster",
+  "name": "Clockwork Horror",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/25265/558/400/490/637861450522280364.png",
+  "notes": "### Description\n\nClockwork horrors are ruthless insectile automatons—eldritch machines encased in adamantine or some other precious metal. They roam Wildspace in commandeered spelljamming ships, gathering the precious metals and crystals they need to build more of their kind. Clockwork horrors have no goal beyond replication and will stop at nothing to create new clockwork horrors. The time it takes for a clockwork horror to build another of its kind, assuming it has the requisite materials, is approximately ten days.\n\nThe body of a clockwork horror is about two feet in diameter, but the legs give it an overall diameter of four feet. Embedded in the front of its head is a crystal that enables the clockwork horror to see.\n\nClockwork horrors communicate with each other by means of clicks, whirs, and similar mechanical sounds that imitate the Thri-kreen language perfectly, leading some to speculate the first clockwork horror was the brainchild of a thri-kreen artificer. A horror can also emit light from its crystal eye, issuing dot-and-dash messages to other creatures that can see the light. Creatures besides clockwork horrors can learn this blinking light code, which is called Ziklight.\n\nWhen another creature gets in its way, a clockwork horror attacks that creature with its razor-sharp mandibles and two tiny rotating saws mounted at the tips of its forelimbs. A horror can also discharge bolts of lightning from a short lightning rod embedded in its body.\n\nWhen a clockwork horror dies, the magic that created it consumes it over a period of 1 minute. Its metallic body and crystal eye degrade rapidly until nothing is left but a small heap of glittering dust.",
+  "type": "construct",
+  "stats": {
+    "size": "Small",
+    "alignment": "Typically Lawful Evil",
+    "armorClass": 18,
+    "hitPoints": {
+      "max": 60,
+      "current": 60,
+      "diceString": "8d6 + 32"
+    },
+    "hitDice": "8d6",
+    "speed": {
+      "walk": 30,
+      "climb": 30
+    },
+    "abilities": {
+      "strength": 14,
+      "dexterity": 14,
+      "constitution": 18,
+      "intelligence": 13,
+      "wisdom": 14,
+      "charisma": 19
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "strength +4, wisdom +4",
+    "skills": "perception +6",
+    "senses": {
+      "darkvision": 120,
+      "passives": {
+        "perception": 16
+      }
+    },
+    "challengeRating": "2",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Lightning",
+          "type": "immunity"
+        },
+        {
+          "name": "Poison",
+          "type": "immunity"
+        },
+        {
+          "name": "blinded",
+          "type": "immunity"
+        },
+        {
+          "name": "charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "deafened",
+          "type": "immunity"
+        },
+        {
+          "name": "exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "petrified",
+          "type": "immunity"
+        },
+        {
+          "name": "poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Thri-kreen",
+        "Ziklight"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "MC1",
+      "https://www.dndbeyond.com/monsters/2506149-clockwork-horror",
+      "Monstrous Compendium Vol. 1: Spelljammer Creatures, pg. 4"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.clockwork-horror-shutdown",
+    "feat.unusual-nature",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.rotating-saw",
+    "feat.lightning-jolt",
+    "feat.clockwork-horror-spelljamming-helm-interface"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d8 + 2",
+      "damageType": "piercing"
+    },
+    "feat.rotating-saw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d4 + 2",
+      "damageType": "slashing"
+    },
+    "feat.lightning-jolt": {
+      "kind": "Ranged",
+      "attackKind": "Spell",
+      "attackBonus": 4,
+      "distanceLabel": "range",
+      "distance": "120",
+      "damageDice": "1d10 + 2",
+      "damageType": "lightning"
+    },
+    "feat.multiattack": {
+      "text": "The creature makes one Bite attack and two Rotating Saw attacks, or it makes two Lightning Jolt attacks.",
+      "options": [
+        [
+          {
+            "featureId": "feat.bite",
+            "count": 1
+          },
+          {
+            "featureId": "feat.rotating-saw",
+            "count": 2
+          }
+        ],
+        [
+          {
+            "featureId": "feat.lightning-jolt",
+            "count": 2
+          }
+        ]
+      ]
+    }
+  }
+}

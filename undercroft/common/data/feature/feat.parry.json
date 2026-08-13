@@ -24,5 +24,26 @@
     ]
   },
   "synergizesWith": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "reaction"
+  },
+  "tiers": [
+    {
+      "id": "ac-3",
+      "name": "Parry (+3 AC)",
+      "shortName": "+3 AC",
+      "mechanics": {
+        "text": "The creature adds 3 to its AC against one melee attack that would hit it. To do so, the creature must see the attacker and be wielding a melee weapon."
+      }
+    },
+    {
+      "id": "ac-5",
+      "name": "Parry (+5 AC)",
+      "shortName": "+5 AC",
+      "mechanics": {
+        "text": "The creature adds 5 to its AC against one melee attack that would hit it. To do so, the creature must see the attacker and be wielding a melee weapon."
+      }
+    }
+  ]
 }

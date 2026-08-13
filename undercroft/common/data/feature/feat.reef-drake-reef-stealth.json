@@ -1,0 +1,32 @@
+{
+  "id": "feat.reef-drake-reef-stealth",
+  "name": "Reef Stealth",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "If the creature is within 10 feet of a coral reef, it can take the Hide action.",
+  "mechanics": {
+    "type": "passive",
+    "text": "If the creature is within 10 feet of a coral reef, it can take the Hide action.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "bonus-action"
+  }
+}

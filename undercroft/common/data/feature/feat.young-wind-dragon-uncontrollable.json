@@ -1,0 +1,30 @@
+{
+  "id": "feat.young-wind-dragon-uncontrollable",
+  "name": "Uncontrollable",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature’s movement is never impeded by difficult terrain, and its speed can’t be reduced by spells or magical effects. It can’t be restrained (per the condition), and it escapes automatically from any nonmagical restraints (such as chains, entanglement, or grappling) by spending 5 feet of movement. Being underwater imposes no penalty on its movement or attacks.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature’s movement is never impeded by difficult terrain, and its speed can’t be reduced by spells or magical effects. It can’t be restrained (per the condition), and it escapes automatically from any nonmagical restraints (such as chains, entanglement, or grappling) by spending 5 feet of movement. Being underwater imposes no penalty on its movement or attacks.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "defense",
+      "mobility"
+    ],
+    "recipeSlots": [
+      "escape"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

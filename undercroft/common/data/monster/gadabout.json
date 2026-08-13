@@ -1,0 +1,122 @@
+{
+  "kind": "monster",
+  "name": "Gadabout",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/25265/575/1000/1000/637861450553132951.jpeg",
+  "notes": "### Description\r\n\r\nGadabouts are gentle, winged creatures that can be used as personal conveyances for short-distance travel across the airless void of Wildspace. A gadabout wraps its branches around a Humanoid creature, spreads its butterfly wings, and allows its wearer to fly through space in a continuously refreshed air envelope. The gadabout’s leaves even provide a nourishing syrup that its wearer can consume in the absence of other food and water. One Humanoid can survive on these leaves for up to sixty days.\r\n\r\nGadabouts require sunlight and water to survive. A healthy specimen can live for 25 years. Although its preferred mode of travel is flight, a gadabout can creep slowly along the ground as well.\r\n\r\nElves are the only Humanoids to date who know how to grow gadabouts. Since gadabouts don’t generate seeds, each one is a valuable commodity. Mercane and dohwar merchants who come into possession of a healthy gadabout might sell it for 2,500 gp or more.",
+  "type": "plant",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Unaligned",
+    "armorClass": 11,
+    "hitPoints": {
+      "max": 11,
+      "current": 11,
+      "diceString": "2d8 + 2"
+    },
+    "hitDice": "2d8",
+    "speed": {
+      "walk": 10,
+      "fly": 60,
+      "hover": true
+    },
+    "abilities": {
+      "strength": 12,
+      "dexterity": 10,
+      "constitution": 14,
+      "intelligence": 1,
+      "wisdom": 6,
+      "charisma": 1
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "",
+    "senses": {
+      "blindsight": 10,
+      "passives": {
+        "perception": 8
+      }
+    },
+    "challengeRating": "1/8",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Fire",
+          "type": "vulnerability"
+        },
+        {
+          "name": "Blinded",
+          "type": "immunity"
+        },
+        {
+          "name": "Charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "Deafened",
+          "type": "immunity"
+        },
+        {
+          "name": "Exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "Frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "Paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "Petrified",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "MC1",
+      "Monstrous Compendium Volume One: Spelljammer Creatures, pg. 8"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.gadabout-air-envelope",
+    "feat.unusual-nature",
+    "feat.multiattack",
+    "feat.branch",
+    "feat.gadabout-wrap"
+  ],
+  "featureParams": {
+    "feat.branch": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 3,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d4 + 1",
+      "damageType": "slashing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.branch",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two Branch attacks."
+    }
+  },
+  "featureTiers": {
+    "feat.unusual-nature": "no-air-sleep"
+  }
+}

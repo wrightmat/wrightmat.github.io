@@ -1,0 +1,50 @@
+{
+  "id": "feat.blood-boil",
+  "name": "Blood Boil (Recharge 4–6)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Murgaxor chooses a point within 150 feet of himself, and a 20-foot radius sphere centered on that point fills with a burst of searing, blood-red mist. Each creature of Murgaxor’s choice that he can see in that area must make a DC 16 Constitution saving throw. On a failed save, a creature takes 16 (3d10) necrotic damage and is incapacitated until the end of its next turn. On a success, a creature takes half as much damage and isn’t incapacitated. A creature dies if reduced to 0 hit points by this necrotic damage.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Murgaxor chooses a point within 150 feet of himself, and a 20-foot radius sphere centered on that point fills with a burst of searing, blood-red mist. Each creature of Murgaxor’s choice that he can see in that area must make a DC 16 Constitution saving throw. On a failed save, a creature takes 16 (3d10) necrotic damage and is incapacitated until the end of its next turn. On a success, a creature takes half as much damage and isn’t incapacitated. A creature dies if reduced to 0 hit points by this necrotic damage."
+  },
+  "budgetCost": 4,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "control"
+    ],
+    "recipeSlots": [
+      "burst"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "murgaxor-recharge-4-6",
+      "name": "Blood Boil (Recharge 4–6)",
+      "shortName": "Murgaxor Recharge 4 6",
+      "mechanics": {
+        "text": "Murgaxor chooses a point within 150 feet of himself, and a 20-foot radius sphere centered on that point fills with a burst of searing, blood-red mist. Each creature of Murgaxor’s choice that he can see in that area must make a DC 16 Constitution saving throw. On a failed save, a creature takes 16 (3d10) necrotic damage and is incapacitated until the end of its next turn. On a success, a creature takes half as much damage and isn’t incapacitated. A creature dies if reduced to 0 hit points by this necrotic damage."
+      }
+    },
+    {
+      "id": "oriq-blood-mage-recharge-4-6",
+      "name": "Blood Boil (Recharge 4–6)",
+      "shortName": "Oriq Blood Mage Recharge 4 6",
+      "mechanics": {
+        "text": "The blood mage chooses a point within 150 feet of itself, and a 20-foot radius sphere centered on that point fills with a burst of searing, blood-red mist. Each creature of the blood mage’s choice that it can see in that area must make a DC 17 Constitution saving throw. On a failed save, a creature takes 38 (7d10) necrotic damage and is incapacitated until the end of its next turn. On a success, a creature takes half as much damage and isn’t incapacitated. A creature dies if reduced to 0 hit points by this necrotic damage."
+      }
+    }
+  ],
+  "combat": {
+    "actionCost": "action"
+  }
+}

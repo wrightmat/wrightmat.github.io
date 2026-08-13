@@ -1,0 +1,27 @@
+{
+  "id": "feat.werebat-keen-hearing",
+  "name": "Keen Hearing",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The werebat has advantage on Wisdom (Perception) checks that rely on hearing.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The werebat has advantage on Wisdom (Perception) checks that rely on hearing."
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

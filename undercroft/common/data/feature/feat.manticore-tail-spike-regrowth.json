@@ -1,0 +1,25 @@
+{
+  "id": "feat.manticore-tail-spike-regrowth",
+  "name": "Tail Spike Regrowth",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature has twenty-four tail spikes. Used spikes regrow when the creature finishes a long rest.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The creature has twenty-four tail spikes. Used spikes regrow when the creature finishes a long rest."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

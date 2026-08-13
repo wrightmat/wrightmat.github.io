@@ -1,0 +1,141 @@
+{
+  "kind": "monster",
+  "name": "Lightning Elemental",
+  "notes": "",
+  "type": "elemental",
+  "stats": {
+    "size": "Large",
+    "alignment": "Neutral",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 102,
+      "current": 102,
+      "diceString": "12d10 + 36"
+    },
+    "hitDice": "12d10",
+    "speed": {
+      "walk": 0,
+      "fly": 90,
+      "hover": true
+    },
+    "abilities": {
+      "strength": 10,
+      "dexterity": 20,
+      "constitution": 16,
+      "intelligence": 6,
+      "wisdom": 10,
+      "charisma": 7
+    },
+    "initiative": {
+      "bonus": 5
+    },
+    "savingThrows": "",
+    "skills": "",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "5",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "thunder; bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "and slashing from nonmagical attacks",
+          "type": "resistance"
+        },
+        {
+          "name": "lightning",
+          "type": "immunity"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "grappled",
+          "type": "immunity"
+        },
+        {
+          "name": "paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "petrified",
+          "type": "immunity"
+        },
+        {
+          "name": "poisoned",
+          "type": "immunity"
+        },
+        {
+          "name": "prone",
+          "type": "immunity"
+        },
+        {
+          "name": "restrained",
+          "type": "immunity"
+        },
+        {
+          "name": "unconscious",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Primordial"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Homebrew",
+      "https://www.dandwiki.com/wiki/Lightning_Elemental_(5e_Creature)"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.lightning-elemental-lightning-form",
+    "feat.light-elemental-brilliant-illumination",
+    "feat.multiattack",
+    "feat.arch",
+    "feat.lightning-elemental-stormwave-recharge-4-6"
+  ],
+  "featureTiers": {
+    "feat.lightning-elemental-stormwave-recharge-4-6": "recharge-4to6"
+  },
+  "featureParams": {
+    "feat.arch": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 8,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "2d8 + 5",
+      "damageType": "lightning"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.arch",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two arch attacks."
+    }
+  }
+}

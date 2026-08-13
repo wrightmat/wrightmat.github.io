@@ -1,0 +1,29 @@
+{
+  "id": "feat.swampgas-shade-rejuvenation",
+  "name": "Rejuvenation",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "If it dies within its bound region, the creature returns to life in 1d4 days and regains all its hp. This trait doesn’t function if the creature is put to rest, which occurs after its corpse has been reburied outside the swamp.",
+  "mechanics": {
+    "type": "passive",
+    "text": "If it dies within its bound region, the creature returns to life in 1d4 days and regains all its hp. This trait doesn’t function if the creature is put to rest, which occurs after its corpse has been reburied outside the swamp.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "regeneration"
+    ],
+    "recipeSlots": [
+      "endure"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

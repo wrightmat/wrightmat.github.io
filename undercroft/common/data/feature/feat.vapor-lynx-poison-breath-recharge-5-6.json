@@ -1,0 +1,34 @@
+{
+  "id": "feat.vapor-lynx-poison-breath-recharge-5-6",
+  "name": "Poison Breath (Recharge 5–6)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature exhales a 40-foot radius poison fog, which heavily obscures a spherical area around the creature. Any breathing creature that ends its turn in the fog must make a DC 14 Constitution saving throw or become poisoned for 1d4 + 1 rounds.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature exhales a 40-foot radius poison fog, which heavily obscures a spherical area around the creature. Any breathing creature that ends its turn in the fog must make a DC 14 Constitution saving throw or become poisoned for 1d4 + 1 rounds.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "debuff",
+      "control"
+    ],
+    "recipeSlots": [
+      "burst"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

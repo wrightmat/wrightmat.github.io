@@ -1,0 +1,127 @@
+{
+  "kind": "monster",
+  "name": "Gorthok the Thunder Boar",
+  "notes": "",
+  "type": "monstrosity",
+  "stats": {
+    "size": "Huge",
+    "alignment": "chaotic evil",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 72,
+      "current": 72,
+      "diceString": "7d12 + 28"
+    },
+    "hitDice": "7d12",
+    "speed": {
+      "walk": 50
+    },
+    "abilities": {
+      "strength": 20,
+      "dexterity": 11,
+      "constitution": 19,
+      "intelligence": 6,
+      "wisdom": 10,
+      "charisma": 14
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "6",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "Piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "and Slashing from Nonmagical Attacks",
+          "type": "resistance"
+        },
+        {
+          "name": "Lightning; Thunder",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "DIP",
+      "https://www.dndbeyond.com/monsters/338612-gorthok-the-thunder-boar",
+      "Dragon of Icespire Peak"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.gorthok-the-thunder-boar-relentless-recharges-after-a-short-or-long-rest",
+    "feat.multiattack",
+    "feat.lightning-tusks",
+    "feat.thunder-hooves",
+    "feat.gorthok-the-thunder-boar-lightning-bolt-recharge-6"
+  ],
+  "featureTiers": {
+    "feat.gorthok-the-thunder-boar-lightning-bolt-recharge-6": "recharge-6"
+  },
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.lightning-tusks",
+          "count": 1
+        },
+        {
+          "featureId": "feat.thunder-hooves",
+          "count": 1
+        }
+      ],
+      "text": "Gorthok makes two melee attacks: one with its lightning tusks and one with its thunder hooves."
+    },
+    "feat.lightning-tusks": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 8,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "2d6 + 5",
+      "damageType": "slashing",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "2d6",
+        "damageType": "lightning"
+      }
+    },
+    "feat.thunder-hooves": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 8,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "2d6 + 5",
+      "damageType": "bludgeoning",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "2d6",
+        "damageType": "thunder"
+      }
+    }
+  }
+}

@@ -1,0 +1,113 @@
+{
+  "kind": "monster",
+  "name": "Graknork",
+  "notes": "_Towering over the frozen landscape, this immense saurian monstrosity possesses a terrifying shark-like head with a multitude of serrated teeth. The monster has three eyes: two soulless black pits and a third larger eye that glows with a freezing blue light._\n\n**Terror of the North**. The legendary graknork is one of the most powerful monsters to roam the endless tundra and taiga of the north and is feared by all who live in the rugged and frozen expanses of the world. Only the largest white dragons surpass the graknork in size and strength, and lesser creatures give the monster a wide berth. Graknorks are mostly found on land but are reasonable swimmers. They have no problem taking to the water to pursue escaping prey or to hunt fishermen and even whales. Graknorks are solitary creatures and cannot stand the presence of their own kind, attacking and eating juvenile graknorks that cross their path. When they do mate, it is a destructive affair with the female uprooting dozens of trees to build her nest. A typical graknork is more than forty feet long, though even larger specimens have been sighted in the coldest regions of the world.\n\n**Great Blue Eye**. While the graknork’s raw physical prowess is justifiably feared, the aspect of its appearance that causes the greatest consternation is its great, freezing blue eye. Its eye is said to possess terrible and wondrous powers, including seeing through illusions, freezing souls outright, and causing everlasting blizzards. Most of these tales are mere fancy and hearsay spun by northern tribesmen, yet there is no denying that the graknork’s central eye is a fearsome weapon.",
+  "type": "monstrosity",
+  "stats": {
+    "size": "Gargantuan",
+    "alignment": "Unaligned",
+    "armorClass": 20,
+    "hitPoints": {
+      "max": 201,
+      "current": 201,
+      "diceString": "13d20 + 65"
+    },
+    "hitDice": "13d20",
+    "speed": {
+      "walk": 50,
+      "swim": 30
+    },
+    "abilities": {
+      "strength": 25,
+      "dexterity": 18,
+      "constitution": 21,
+      "intelligence": 5,
+      "wisdom": 13,
+      "charisma": 7
+    },
+    "initiative": {
+      "bonus": 4
+    },
+    "savingThrows": "",
+    "skills": "Perception +6",
+    "senses": {
+      "darkvision": 90,
+      "passives": {
+        "perception": 16
+      }
+    },
+    "challengeRating": "14",
+    "proficiencyBonus": 5,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "and slashing from nonmagical attacks",
+          "type": "resistance"
+        },
+        {
+          "name": "cold",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Tome of Beasts 2, pg. 182"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.keen-sight",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.claw",
+    "feat.eye-ray",
+    "feat.graknork-freezing-eye-recharge-5-6"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 12,
+      "distanceLabel": "reach",
+      "distance": "15",
+      "damageDice": "3d10 + 7",
+      "damageType": "piercing"
+    },
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 12,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "3d8 + 7",
+      "damageType": "slashing"
+    },
+    "feat.eye-ray": {
+      "kind": "Ranged",
+      "attackKind": "Weapon",
+      "attackBonus": 9,
+      "distanceLabel": "range",
+      "distance": "30/120",
+      "damageDice": "5d6",
+      "damageType": "cold"
+    },
+    "feat.multiattack": {
+      "text": "The creature makes three attacks: one with its bite and two with its claws. Alternatively, it can use its Eye Ray twice. If both claw attacks hit a Large or smaller creature, the creature must succeed on a DC 18 Strength saving throw or take an additional 9 (2d8) slashing damage and be knocked prone."
+    }
+  }
+}

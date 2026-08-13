@@ -1,0 +1,103 @@
+{
+  "kind": "monster",
+  "name": "Crystal Dragon Wyrmling",
+  "image": "https://5e.tools/img/bestiary/FTD/Crystal%20Dragon%20Wyrmling.webp",
+  "notes": "",
+  "type": "dragon",
+  "stats": {
+    "size": "Medium",
+    "alignment": "typically Chaotic Neutral",
+    "armorClass": 14,
+    "hitPoints": {
+      "max": 32,
+      "current": 32,
+      "diceString": "5d8 + 10"
+    },
+    "hitDice": "5d8",
+    "speed": {
+      "walk": 30,
+      "burrow": 15,
+      "climb": 30,
+      "fly": 60
+    },
+    "abilities": {
+      "strength": 14,
+      "dexterity": 12,
+      "constitution": 14,
+      "intelligence": 14,
+      "wisdom": 13,
+      "charisma": 15
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "Dex +3, Con +4, Wis +3, Cha +4",
+    "skills": "Perception +5, Stealth +5, Survival +3",
+    "senses": {
+      "blindsight": 10,
+      "darkvision": 60,
+      "passives": {
+        "perception": 15
+      }
+    },
+    "challengeRating": "2",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "cold",
+          "type": "resistance"
+        },
+        {
+          "name": "radiant",
+          "type": "resistance"
+        }
+      ],
+      "languages": [
+        "Draconic",
+        "telepathy 120 ft."
+      ]
+    },
+    "spells": "(Psionics). The dragon casts one of the following spells, requiring no spell components and using Intelligence as the spellcasting ability: At will: dancing lights, guidance",
+    "environments": [],
+    "sources": []
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.bite",
+    "feat.scintillating-breath"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "1d10 + 2",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "1d4",
+        "damageType": "radiant"
+      }
+    },
+    "feat.scintillating-breath": {
+      "verb": "exhales",
+      "substance": "a burst of brilliant radiance",
+      "areaSize": "15",
+      "areaShape": "cone",
+      "dcAbility": "constitution",
+      "ability": "constitution",
+      "damageDice": "4d8",
+      "damageType": "radiant",
+      "rider": {
+        "kind": "trailing-note",
+        "conditionText": "The creature then gains 5 temporary hit points by absorbing a portion of the radiant energy."
+      }
+    }
+  }
+}

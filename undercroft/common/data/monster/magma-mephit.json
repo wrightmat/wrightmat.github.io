@@ -1,0 +1,111 @@
+{
+  "kind": "monster",
+  "index": "magma-mephit",
+  "name": "Magma Mephit",
+  "type": "elemental",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/magma-mephit.png",
+  "stats": {
+    "size": "Small",
+    "alignment": "neutral evil",
+    "armorClass": 11,
+    "hitPoints": {
+      "max": 22,
+      "current": 22,
+      "diceString": "5d6+5"
+    },
+    "hitDice": "5d6",
+    "speed": {
+      "walk": 30,
+      "fly": 30
+    },
+    "abilities": {
+      "strength": 8,
+      "dexterity": 12,
+      "constitution": 12,
+      "intelligence": 7,
+      "wisdom": 10,
+      "charisma": 10
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "",
+    "skills": "Stealth +3",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "cold",
+          "type": "vulnerability"
+        },
+        {
+          "name": "fire",
+          "type": "immunity"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Ignan",
+        "Terran"
+      ]
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "1/2",
+    "proficiencyBonus": 2,
+    "xp": 100,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/magma-mephit",
+    "spells": "The mephit can innately cast heat metal (spell save DC 10), requiring no material components. Its innate spellcasting ability is Charisma.",
+    "saveDC": 10
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/magma-mephit",
+  "featureIds": [
+    "feat.magma-mephit-death-burst",
+    "feat.false-appearance-ambush",
+    "feat.claws",
+    "feat.fire-breath-monster"
+  ],
+  "featureTiers": {
+    "feat.false-appearance-ambush": "mound-of-mud"
+  },
+  "featureParams": {
+    "feat.claws": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 3,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d4 + 1",
+      "damageType": "slashing",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "1d4",
+        "damageType": "fire"
+      }
+    },
+    "feat.fire-breath-monster": {
+      "verb": "exhales",
+      "areaSize": "15",
+      "areaShape": "cone",
+      "substance": "fire",
+      "dcAbility": "constitution",
+      "ability": "dexterity",
+      "damageDice": "2d6",
+      "damageType": "fire"
+    }
+  }
+}

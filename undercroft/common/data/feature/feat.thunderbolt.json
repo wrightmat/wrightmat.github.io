@@ -1,0 +1,50 @@
+{
+  "id": "feat.thunderbolt",
+  "name": "Thunderbolt",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Ranged Spell Attack: +5 to hit, range 60 ft., one target. Hit: 11 (2d10) lightning damage plus 11 (2d10) thunder damage, and the target is knocked prone.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Ranged Spell Attack: +5 to hit, range 60 ft., one target. Hit: 11 (2d10) lightning damage plus 11 (2d10) thunder damage, and the target is knocked prone."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "control"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  },
+  "tiers": [
+    {
+      "id": "prone",
+      "name": "Thunderbolt",
+      "shortName": "Prone",
+      "mechanics": {
+        "text": "Ranged Spell Attack: +5 to hit, range 60 ft., one target. Hit: 11 (2d10) lightning damage plus 11 (2d10) thunder damage, and the target is knocked prone."
+      }
+    },
+    {
+      "id": "blinded-deafened",
+      "name": "Thunderbolt",
+      "shortName": "Blinded/Deafened",
+      "mechanics": {
+        "text": "Ranged Spell Attack: +14 to hit, range 500 ft., one target. Hit: 22 (2d12 + 9) lightning damage, and the target has the blinded and deafened conditions until the start of the creature's next turn."
+      }
+    }
+  ]
+}

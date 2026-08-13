@@ -1,0 +1,29 @@
+{
+  "id": "feat.nihileth-aboleth-traits",
+  "name": "Aboleth Traits",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Unless noted otherwise or where contradicted below, a creature has the same traits as a living aboleth. This includes legendary actions and lair actions.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Unless noted otherwise or where contradicted below, a creature has the same traits as a living aboleth. This includes legendary actions and lair actions.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

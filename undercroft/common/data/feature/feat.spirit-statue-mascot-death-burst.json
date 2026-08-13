@@ -1,0 +1,29 @@
+{
+  "id": "feat.spirit-statue-mascot-death-burst",
+  "name": "Death Burst",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "When the creature is reduced to 0 hit points, the creature crumbles, and the creature returns to the afterlife in a burst of ghostly white flame. Each creature within 5 feet of it must succeed on a DC 12 Constitution saving throw or take 3 (1d6) radiant damage.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When the creature is reduced to 0 hit points, the creature crumbles, and the creature returns to the afterlife in a burst of ghostly white flame. Each creature within 5 feet of it must succeed on a DC 12 Constitution saving throw or take 3 (1d6) radiant damage.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "burst"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,32 @@
+{
+  "id": "feat.esix-fractal-bloom-spectral-slice",
+  "name": "Spectral Slice",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Esix makes one Geometric Blades attack.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Esix makes one Geometric Blades attack.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "legendary-action"
+  }
+}

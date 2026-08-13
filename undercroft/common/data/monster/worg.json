@@ -1,0 +1,78 @@
+{
+  "kind": "monster",
+  "index": "worg",
+  "name": "Worg",
+  "notes": "A worg is an evil predator that delights in hunting and devouring creatures weaker than itself. Cunning and malevolent, worgs roam across the remote wilderness or are raised by goblins and hobgoblins. Those creatures use worgs as mounts, but a worg will turn on its rider if it feels mistreated or malnourished. Worgs speak in their own language and Goblin, and a few learn to speak Common as well.",
+  "type": "monstrosity",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/worg.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "neutral evil",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 26,
+      "current": 26,
+      "diceString": "4d10+4"
+    },
+    "hitDice": "4d10",
+    "speed": {
+      "walk": 50
+    },
+    "abilities": {
+      "strength": 16,
+      "dexterity": 13,
+      "constitution": 13,
+      "intelligence": 7,
+      "wisdom": 11,
+      "charisma": 8
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "",
+    "skills": "Perception +4",
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Goblin",
+        "Worg"
+      ]
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 14
+      }
+    },
+    "challengeRating": "1/2",
+    "proficiencyBonus": 2,
+    "xp": 100,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/worg"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/worg",
+  "featureIds": [
+    "feat.keen-hearing-and-smell",
+    "feat.bite"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 3",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "save-or-condition",
+        "saveDC": 13,
+        "saveAbility": "strength",
+        "condition": "knocked prone"
+      }
+    }
+  }
+}

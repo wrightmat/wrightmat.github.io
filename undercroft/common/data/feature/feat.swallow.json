@@ -1,0 +1,69 @@
+{
+  "id": "feat.swallow",
+  "name": "Swallow",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The monstrosity makes one bite attack against a Medium or smaller target it is grappling. If the attack hits, the target is also swallowed, and the grapple ends. While swallowed, the target is blinded and restrained, it has total cover against attacks and other effects outside the monstrosity, and it takes 21 (6d6) acid damage at the start of each of the monstrosity's turns. A monstrosity can have only one creature swallowed at a time.\nIf the monstrosity takes 30 damage or more on a single turn from the swallowed creature, the monstrosity must succeed on a DC 14 Constitution saving throw at the end of that turn or regurgitate the creature, which falls prone in a space within 10 ft. of the monstrosity. If the monstrosity dies, a swallowed creature is no longer restrained by it and can escape from the corpse by using 15 ft. of movement, exiting prone.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The monstrosity makes one bite attack against a Medium or smaller target it is grappling. If the attack hits, the target is also swallowed, and the grapple ends. While swallowed, the target is blinded and restrained, it has total cover against attacks and other effects outside the monstrosity, and it takes 21 (6d6) acid damage at the start of each of the monstrosity's turns. A monstrosity can have only one creature swallowed at a time.\nIf the monstrosity takes 30 damage or more on a single turn from the swallowed creature, the monstrosity must succeed on a DC 14 Constitution saving throw at the end of that turn or regurgitate the creature, which falls prone in a space within 10 ft. of the monstrosity. If the monstrosity dies, a swallowed creature is no longer restrained by it and can escape from the corpse by using 15 ft. of movement, exiting prone."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "behir",
+      "name": "Swallow",
+      "shortName": "Behir",
+      "mechanics": {
+        "text": "The monstrosity makes one bite attack against a Medium or smaller target it is grappling. If the attack hits, the target is also swallowed, and the grapple ends. While swallowed, the target is blinded and restrained, it has total cover against attacks and other effects outside the monstrosity, and it takes 21 (6d6) acid damage at the start of each of the monstrosity's turns. A monstrosity can have only one creature swallowed at a time.\nIf the monstrosity takes 30 damage or more on a single turn from the swallowed creature, the monstrosity must succeed on a DC 14 Constitution saving throw at the end of that turn or regurgitate the creature, which falls prone in a space within 10 ft. of the monstrosity. If the monstrosity dies, a swallowed creature is no longer restrained by it and can escape from the corpse by using 15 ft. of movement, exiting prone."
+      }
+    },
+    {
+      "id": "nauthveli-illhveli",
+      "name": "Swallow",
+      "shortName": "Nauthveli Illhveli",
+      "mechanics": {
+        "text": "The creature makes one bite attack against a Large or smaller creature it is grappling. If the attack hits, the target is also swallowed, and the grapple ends. While swallowed, the creature is blinded and restrained, it has total cover against attacks and other effects outside the creature, and it takes 28 (8d6) acid damage at the start of each of the creature’s turns. If the creature takes 40 damage or more on a single turn from a creature inside it, the creature must succeed on a DC 22 Constitution saving throw at the end of that turn or regurgitate all swallowed creatures, which fall prone in a space within 10 feet of the creature. If the creature dies, a swallowed creature is no longer restrained by it and can escape from the corpse using 15 feet of movement, exiting prone."
+      }
+    },
+    {
+      "id": "remorhaz",
+      "name": "Swallow",
+      "shortName": "Remorhaz",
+      "mechanics": {
+        "text": "The monstrosity makes one bite attack against a Medium or smaller creature it is grappling. If the attack hits, that creature takes the bite's damage and is swallowed, and the grapple ends. While swallowed, the creature is blinded and restrained, it has total cover against attacks and other effects outside the monstrosity, and it takes 21 (6d6) acid damage at the start of each of the monstrosity's turns.\nIf the monstrosity takes 30 damage or more on a single turn from a creature inside it, the monstrosity must succeed on a DC 15 Constitution saving throw at the end of that turn or regurgitate all swallowed creatures, which fall prone in a space within 10 feet of the monstrosity. If the monstrosity dies, a swallowed creature is no longer restrained by it and can escape from the corpse using 15 feet of movement, exiting prone."
+      }
+    },
+    {
+      "id": "tarrasque",
+      "name": "Swallow",
+      "shortName": "Tarrasque",
+      "mechanics": {
+        "text": "The monstrosity makes one bite attack against a Large or smaller creature it is grappling. If the attack hits, the target takes the bite's damage, the target is swallowed, and the grapple ends. While swallowed, the creature is blinded and restrained, it has total cover against attacks and other effects outside the monstrosity, and it takes 56 (16d6) acid damage at the start of each of the monstrosity's turns.\nIf the monstrosity takes 60 damage or more on a single turn from a creature inside it, the monstrosity must succeed on a DC 20 Constitution saving throw at the end of that turn or regurgitate all swallowed creatures, which fall prone in a space within 10 feet of the monstrosity. If the monstrosity dies, a swallowed creature is no longer restrained by it and can escape from the corpse by using 30 feet of movement, exiting prone."
+      }
+    },
+    {
+      "id": "vallowex",
+      "name": "Swallow",
+      "shortName": "Vallowex",
+      "mechanics": {
+        "text": "The vallowex makes one spiked tongue attack against a Medium or smaller target it is grappling. If the attack hits, the target is also swallowed, and the grapple ends. The swallowed target is blinded and restrained, it has total cover against attacks and other effects outside the vallowex, and it takes 10 (3d6) acid damage at the start of each of the vallowex’s turns. The vallowex can have only one creature swallowed at a time. If the vallowex takes 15 damage or more on a single turn from the swallowed creature, the vallowex must succeed on a DC 15 Constitution saving throw at the end of that turn or regurgitate the creature, which falls prone in a space within 5 feet of the vallowex. If the vallowex dies, the swallowed creature is no longer restrained by it and can escape from the corpse using 10 feet of movement, exiting prone."
+      }
+    }
+  ],
+  "combat": {
+    "actionCost": "action"
+  }
+}

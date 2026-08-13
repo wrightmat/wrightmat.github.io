@@ -1,0 +1,69 @@
+{
+  "kind": "monster",
+  "index": "duergar",
+  "name": "Duergar",
+  "type": "humanoid",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/duergar.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "lawful evil",
+    "armorClass": 16,
+    "hitPoints": {
+      "max": 26,
+      "current": 26,
+      "diceString": "4d8+8"
+    },
+    "hitDice": "4d8",
+    "speed": {
+      "walk": 25
+    },
+    "abilities": {
+      "strength": 14,
+      "dexterity": 11,
+      "constitution": 14,
+      "intelligence": 11,
+      "wisdom": 10,
+      "charisma": 9
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "poison",
+          "type": "resistance"
+        }
+      ],
+      "languages": [
+        "Dwarvish",
+        "Undercommon"
+      ]
+    },
+    "senses": {
+      "darkvision": 120,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "1",
+    "proficiencyBonus": 2,
+    "xp": 200,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/duergar"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/duergar",
+  "featureIds": [
+    "feat.duergar-duergar-resilience",
+    "feat.sunlight-sensitivity",
+    "feat.duergar-enlarge",
+    "feat.duergar-war-pick",
+    "feat.duergar-javelin",
+    "feat.duergar-invisibility"
+  ]
+}

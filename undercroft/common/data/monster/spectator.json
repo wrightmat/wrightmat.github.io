@@ -1,0 +1,90 @@
+{
+  "kind": "monster",
+  "name": "Spectator",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/47139/253/1000/1000/638741964652328039.png",
+  "notes": "",
+  "type": "aberration",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Lawful Neutral",
+    "armorClass": 14,
+    "hitPoints": {
+      "max": 45,
+      "current": 45,
+      "diceString": "7d8 + 14"
+    },
+    "hitDice": "7d8",
+    "speed": {
+      "walk": 5,
+      "fly": 30,
+      "hover": true
+    },
+    "abilities": {
+      "strength": 8,
+      "dexterity": 14,
+      "constitution": 14,
+      "intelligence": 13,
+      "wisdom": 14,
+      "charisma": 11
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "Perception +6",
+    "senses": {
+      "darkvision": 120,
+      "passives": {
+        "perception": 16
+      }
+    },
+    "challengeRating": "3",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "Prone",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Deep Speech",
+        "Telepathy 120 ft.",
+        "Undercommon"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "https://www.dndbeyond.com/monsters/5195209-spectator",
+      "Monster Manual (2024), pg. 289"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.multiattack",
+    "feat.bite",
+    "feat.spectator-eye-rays",
+    "feat.spectator-spell-reflection"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "text": "The creature uses Eye Rays twice."
+    },
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d6 + 2",
+      "damageType": "piercing"
+    }
+  }
+}

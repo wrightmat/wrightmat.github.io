@@ -1,0 +1,118 @@
+{
+  "kind": "monster",
+  "index": "fire-elemental",
+  "name": "Fire Elemental",
+  "type": "elemental",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/fire-elemental.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "neutral",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 102,
+      "current": 102,
+      "diceString": "12d10+36"
+    },
+    "hitDice": "12d10",
+    "speed": {
+      "walk": 50
+    },
+    "abilities": {
+      "strength": 10,
+      "dexterity": 17,
+      "constitution": 16,
+      "intelligence": 6,
+      "wisdom": 10,
+      "charisma": 7
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "bludgeoning, piercing, and slashing from nonmagical weapons",
+          "type": "resistance"
+        },
+        {
+          "name": "fire",
+          "type": "immunity"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "Grappled",
+          "type": "immunity"
+        },
+        {
+          "name": "Paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "Petrified",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        },
+        {
+          "name": "Prone",
+          "type": "immunity"
+        },
+        {
+          "name": "Restrained",
+          "type": "immunity"
+        },
+        {
+          "name": "Unconscious",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Ignan"
+      ]
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "5",
+    "proficiencyBonus": 3,
+    "xp": 1800,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/fire-elemental"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/fire-elemental",
+  "featureIds": [
+    "feat.fire-elemental-fire-form",
+    "feat.light-elemental-brilliant-illumination",
+    "feat.fire-elemental-water-susceptibility",
+    "feat.multiattack",
+    "feat.fire-elemental-touch"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.fire-elemental-touch",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two touch attacks."
+    }
+  }
+}

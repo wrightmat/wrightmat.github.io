@@ -1,0 +1,33 @@
+{
+  "id": "feat.lich-hound-gut-rip",
+  "name": "Gut Rip",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "As a bonus action, the creature tears into any adjacent prone creature, inflicting 19 (3d12) slashing damage. The target must succeed on a DC 14 Constitution saving throw or be incapacitated for 1d4 rounds. An incapacitated creature repeats the saving throw at the end of each of its turns; a successful save ends the condition early.",
+  "mechanics": {
+    "type": "passive",
+    "text": "As a bonus action, the creature tears into any adjacent prone creature, inflicting 19 (3d12) slashing damage. The target must succeed on a DC 14 Constitution saving throw or be incapacitated for 1d4 rounds. An incapacitated creature repeats the saving throw at the end of each of its turns; a successful save ends the condition early.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "control"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

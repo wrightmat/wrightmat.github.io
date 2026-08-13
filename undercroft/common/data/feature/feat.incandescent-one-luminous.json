@@ -1,0 +1,29 @@
+{
+  "id": "feat.incandescent-one-luminous",
+  "name": "Luminous",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature sheds dim light in a 5-foot radius.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature sheds dim light in a 5-foot radius.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

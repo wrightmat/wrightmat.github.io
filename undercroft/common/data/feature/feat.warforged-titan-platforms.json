@@ -1,0 +1,29 @@
+{
+  "id": "feat.warforged-titan-platforms",
+  "name": "Platforms",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature has two platforms built into its chassis. One Medium or smaller creature can ride on each platform without squeezing. To make a melee attack against a target within 5 feet of the creature, they must use spears or weapons with reach and the target must be Large or larger.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature has two platforms built into its chassis. One Medium or smaller creature can ride on each platform without squeezing. To make a melee attack against a target within 5 feet of the creature, they must use spears or weapons with reach and the target must be Large or larger.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

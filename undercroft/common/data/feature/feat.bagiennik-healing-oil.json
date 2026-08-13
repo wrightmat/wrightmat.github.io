@@ -1,0 +1,30 @@
+{
+  "id": "feat.bagiennik-healing-oil",
+  "name": "Healing Oil",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "a creature can automatically stabilize a dying creature by using an action to smear some of its oily secretion on the dying creature’s flesh. A similar application on an already-stable creature or one with 1 or more hit points acts as a potion of healing, restoring 2d4 + 2 hit points. Alternatively, the creature’s secretion can have the effect of a lesser restoration spell. However, any creature receiving a creature’s Healing Oil must make a successful DC 13 Constitution saving throw or be slowed for 1 minute.",
+  "mechanics": {
+    "type": "passive",
+    "text": "a creature can automatically stabilize a dying creature by using an action to smear some of its oily secretion on the dying creature’s flesh. A similar application on an already-stable creature or one with 1 or more hit points acts as a potion of healing, restoring 2d4 + 2 hit points. Alternatively, the creature’s secretion can have the effect of a lesser restoration spell. However, any creature receiving a creature’s Healing Oil must make a successful DC 13 Constitution saving throw or be slowed for 1 minute.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "utility",
+      "defense"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

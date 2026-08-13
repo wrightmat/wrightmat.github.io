@@ -1,0 +1,31 @@
+{
+  "id": "feat.giant-skeleton-turn-immunity",
+  "name": "Turn Immunity",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature is immune to effects that turn undead.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature is immune to effects that turn undead.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [
+      "Undead"
+    ],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,28 @@
+{
+  "id": "feat.vampire-vampire-bite-costs-2-actions",
+  "name": "Bite (Costs 2 Actions)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature makes one bite attack.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The creature makes one bite attack."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "legendary-action"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "id": "feat.will-o-wisp-invisibility",
+  "name": "Invisibility",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature and its light magically become invisible until it attacks or uses its Consume Life, or until its concentration ends (as if concentrating on a spell).",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The creature and its light magically become invisible until it attacks or uses its Consume Life, or until its concentration ends (as if concentrating on a spell)."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "id": "feat.void-knight-immoveable",
+  "name": "Immoveable",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature can’t be moved against its will, except by magical means. In addition, the creature has disadvantage on Dexterity (Acrobatics) and Dexterity (Stealth) checks.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature can’t be moved against its will, except by magical means. In addition, the creature has disadvantage on Dexterity (Acrobatics) and Dexterity (Stealth) checks.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

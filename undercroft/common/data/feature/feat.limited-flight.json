@@ -1,0 +1,24 @@
+{
+  "id": "feat.limited-flight",
+  "name": "Limited Flight",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature can use a bonus action to gain a flying speed of 30 feet until the end of its turn.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature can use a bonus action to gain a flying speed of 30 feet until the end of its turn."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

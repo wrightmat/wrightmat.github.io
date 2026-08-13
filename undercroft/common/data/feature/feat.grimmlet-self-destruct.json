@@ -1,0 +1,29 @@
+{
+  "id": "feat.grimmlet-self-destruct",
+  "name": "Self-destruct",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "When the creature dies, it explodes in a spray of Void-infused crystal shards. Each creature within 5 feet of the creature must succeed on a DC 12 Dexterity saving throw or take 3 (1d6) slashing damage and 3 (1d6) psychic damage. Grimmlets damaged by this trait don’t Reproduce.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When the creature dies, it explodes in a spray of Void-infused crystal shards. Each creature within 5 feet of the creature must succeed on a DC 12 Dexterity saving throw or take 3 (1d6) slashing damage and 3 (1d6) psychic damage. Grimmlets damaged by this trait don’t Reproduce.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "burst"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

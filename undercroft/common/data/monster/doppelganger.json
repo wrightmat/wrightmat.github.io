@@ -1,0 +1,85 @@
+{
+  "kind": "monster",
+  "index": "doppelganger",
+  "name": "Doppelganger",
+  "type": "monstrosity",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/doppelganger.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "unaligned",
+    "armorClass": 14,
+    "hitPoints": {
+      "max": 52,
+      "current": 52,
+      "diceString": "8d8+16"
+    },
+    "hitDice": "8d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 11,
+      "dexterity": 18,
+      "constitution": 14,
+      "intelligence": 11,
+      "wisdom": 12,
+      "charisma": 14
+    },
+    "initiative": {
+      "bonus": 4
+    },
+    "savingThrows": "",
+    "skills": "Deception +6, Insight +3",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Charmed",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Common"
+      ]
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 11
+      }
+    },
+    "challengeRating": "3",
+    "proficiencyBonus": 2,
+    "xp": 700,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/doppelganger"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/doppelganger",
+  "featureIds": [
+    "feat.shapechanger",
+    "feat.doppelganger-ambusher",
+    "feat.surprise-attack",
+    "feat.multiattack",
+    "feat.slam",
+    "feat.doppelganger-read-thoughts"
+  ],
+  "featureParams": {
+    "feat.slam": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d6 + 4",
+      "damageType": "bludgeoning"
+    },
+    "feat.multiattack": {
+      "text": "The creature makes two melee attacks."
+    }
+  },
+  "featureTiers": {
+    "feat.surprise-attack": "3d6"
+  }
+}

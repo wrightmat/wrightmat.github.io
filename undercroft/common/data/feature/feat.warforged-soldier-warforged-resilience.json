@@ -1,0 +1,29 @@
+{
+  "id": "feat.warforged-soldier-warforged-resilience",
+  "name": "Warforged Resilience",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature has advantage on saving throws against being poisoned and is immune to disease. Magic can’t put it to sleep.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature has advantage on saving throws against being poisoned and is immune to disease. Magic can’t put it to sleep.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

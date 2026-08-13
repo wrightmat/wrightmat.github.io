@@ -1,0 +1,28 @@
+{
+  "id": "feat.modron-duodrone-disintegration",
+  "name": "Disintegration",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "If the creature dies, its body disintegrates into dust, leaving behind its weapons and anything else it was carrying.",
+  "mechanics": {
+    "type": "passive",
+    "text": "If the creature dies, its body disintegrates into dust, leaving behind its weapons and anything else it was carrying."
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

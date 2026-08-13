@@ -1,0 +1,33 @@
+{
+  "id": "feat.bereginyas-smother",
+  "name": "Smother",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "If the creature grapples an opponent, it extends a semi-solid gaseous tendril down the target’s throat as a bonus action. The target must make a successful DC 14 Strength saving or it is immediately out of breath and begins suffocating. Suffocation ends if the grapple is broken or if the creature is killed.",
+  "mechanics": {
+    "type": "passive",
+    "text": "If the creature grapples an opponent, it extends a semi-solid gaseous tendril down the target’s throat as a bonus action. The target must make a successful DC 14 Strength saving or it is immediately out of breath and begins suffocating. Suffocation ends if the grapple is broken or if the creature is killed.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "control",
+      "debuff"
+    ],
+    "recipeSlots": [
+      "isolate"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

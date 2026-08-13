@@ -1,0 +1,72 @@
+{
+  "kind": "monster",
+  "name": "Spirit Statue Mascot",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/22135/838/1000/1000/637743395617720368.jpeg",
+  "notes": "### Description\n\nTo enhance their studies of the past, Lorehold students often call upon the spirits of dead creatures. Mages seeking longer-term assistance from ancient spirits have learned to house these spirits in statues, giving them a more permanent residence from which to assist the living.\n\nSome of these spirit statues bond with and mentor a specific mage, but most serve in a variety of roles for numerous individuals, ranging from research colleagues to martial tacticians. Regardless, their appearance is so common around the Lorehold campus that they have become the college’s mascots.",
+  "type": "construct",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Any Alignment",
+    "armorClass": 14,
+    "hitPoints": {
+      "max": 26,
+      "current": 26,
+      "diceString": "4d8 + 8"
+    },
+    "hitDice": "4d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 14,
+      "dexterity": 9,
+      "constitution": 15,
+      "intelligence": 12,
+      "wisdom": 13,
+      "charisma": 8
+    },
+    "initiative": {
+      "bonus": -1
+    },
+    "savingThrows": "",
+    "skills": "Arcana +5, History +5, Perception +3",
+    "senses": {
+      "passives": {
+        "perception": 13
+      }
+    },
+    "challengeRating": "1/4",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "any languages it knew in life"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "https://www.dndbeyond.com/monsters/2160334-spirit-statue-mascot",
+      "Strixhaven: A Curriculum of Chaos, pg. 216"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.spirit-statue-mascot-death-burst",
+    "feat.slam",
+    "feat.spirit-statue-mascot-counsel-of-the-past-2-day"
+  ],
+  "featureParams": {
+    "feat.slam": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d6 + 2",
+      "damageType": "bludgeoning"
+    }
+  }
+}

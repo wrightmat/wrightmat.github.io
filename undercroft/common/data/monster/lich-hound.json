@@ -1,0 +1,99 @@
+{
+  "kind": "monster",
+  "name": "Lich Hound",
+  "image": "https://pbs.twimg.com/media/CQuQFeDWUAATtDI.jpg",
+  "notes": "",
+  "type": "undead",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Neutral Evil",
+    "armorClass": 14,
+    "hitPoints": {
+      "max": 119,
+      "current": 119,
+      "diceString": "14d8 + 56"
+    },
+    "hitDice": "14d8",
+    "speed": {
+      "walk": 30,
+      "fly": 50
+    },
+    "abilities": {
+      "strength": 10,
+      "dexterity": 18,
+      "constitution": 18,
+      "intelligence": 6,
+      "wisdom": 10,
+      "charisma": 16
+    },
+    "initiative": {
+      "bonus": 4
+    },
+    "savingThrows": "Dex +4, Con +4, Cha +3",
+    "skills": "Acrobatics +6, Perception +4",
+    "senses": {
+      "blindsight": 100,
+      "passives": {
+        "perception": 14
+      }
+    },
+    "challengeRating": "4",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "piercing and bludgeoning from nonmagical weapons",
+          "type": "resistance"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "ToB1",
+      "Tome of Beasts 1, pg 274"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.keen-hearing-and-smell",
+    "feat.bite",
+    "feat.ethereal-jaunt",
+    "feat.lich-hound-gut-rip",
+    "feat.lich-hound-howl"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d12 + 4",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "save-or-condition",
+        "saveAbility": "strength",
+        "saveDC": 14,
+        "condition": "knocked prone"
+      }
+    }
+  }
+}

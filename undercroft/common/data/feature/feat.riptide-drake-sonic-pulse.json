@@ -1,0 +1,32 @@
+{
+  "id": "feat.riptide-drake-sonic-pulse",
+  "name": "Sonic Pulse",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Ranged Spell Attack: +7 to hit, range 60 ft., one target. Hit: 21 (4d8 + 3) thunder damage. The creature can use this action only while underwater.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Ranged Spell Attack: +7 to hit, range 60 ft., one target. Hit: 21 (4d8 + 3) thunder damage. The creature can use this action only while underwater.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

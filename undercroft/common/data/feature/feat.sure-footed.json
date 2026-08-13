@@ -1,0 +1,28 @@
+{
+  "id": "feat.sure-footed",
+  "name": "Sure-Footed",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature has advantage on Strength and Dexterity saving throws made against effects that would knock it prone.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature has advantage on Strength and Dexterity saving throws made against effects that would knock it prone."
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,29 @@
+{
+  "id": "feat.aerial-sentry-dive-attack",
+  "name": "Dive Attack",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "If the creature dives at least 30 feet straight toward a target and then hits it with a talon attack, the attack deals an extra 7 (2d6) slashing damage.",
+  "mechanics": {
+    "type": "passive",
+    "text": "If the creature dives at least 30 feet straight toward a target and then hits it with a talon attack, the attack deals an extra 7 (2d6) slashing damage.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

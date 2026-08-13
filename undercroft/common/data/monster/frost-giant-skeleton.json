@@ -1,0 +1,105 @@
+{
+  "kind": "monster",
+  "name": "Frost Giant Skeleton",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/12734/873/1000/1000/637357081636637868.jpeg",
+  "notes": "",
+  "type": "undead",
+  "stats": {
+    "size": "Huge",
+    "alignment": "Lawful Evil",
+    "armorClass": 14,
+    "hitPoints": {
+      "max": 102,
+      "current": 102,
+      "diceString": "12d12 + 24"
+    },
+    "hitDice": "12d12",
+    "speed": {
+      "walk": 40
+    },
+    "abilities": {
+      "strength": 23,
+      "dexterity": 9,
+      "constitution": 15,
+      "intelligence": 6,
+      "wisdom": 8,
+      "charisma": 5
+    },
+    "initiative": {
+      "bonus": -1
+    },
+    "savingThrows": "",
+    "skills": "",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 9
+      }
+    },
+    "challengeRating": "6",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Bludgeoning",
+          "type": "vulnerability"
+        },
+        {
+          "name": "Cold",
+          "type": "immunity"
+        },
+        {
+          "name": "Poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "understands Giant but can’t speak"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "IDRotF",
+      "https://www.dndbeyond.com/monsters/1123084-frost-giant-skeleton",
+      "Icewind Dale: Rime of the Frostmaiden, pg. 288"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.unusual-nature",
+    "feat.multiattack",
+    "feat.greataxe",
+    "feat.frost-giant-skeleton-freezing-stare"
+  ],
+  "featureParams": {
+    "feat.greataxe": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 9,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "3d12 + 6",
+      "damageType": "slashing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.greataxe",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two greataxe attacks."
+    }
+  }
+}

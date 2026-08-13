@@ -1,0 +1,33 @@
+{
+  "id": "feat.intellect-devourer-devour-intellect",
+  "name": "Devour Intellect",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature targets one creature it can see within 10 feet of it that has a brain. The target must succeed on a DC 12 Intelligence saving throw against this magic or take 11 (2d10) psychic damage. Also on a failure, roll 3d6: If the total equals or exceeds the target’s Intelligence score, that score is reduced to 0. The target is stunned until it regains at least one point of Intelligence.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature targets one creature it can see within 10 feet of it that has a brain. The target must succeed on a DC 12 Intelligence saving throw against this magic or take 11 (2d10) psychic damage. Also on a failure, roll 3d6: If the total equals or exceeds the target’s Intelligence score, that score is reduced to 0. The target is stunned until it regains at least one point of Intelligence.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "debuff"
+    ],
+    "recipeSlots": [
+      "drain"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "id": "feat.aspect-of-avassh-thrashing-vines",
+  "name": "Thrashing Vines",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Melee Weapon Attack: +7 to hit, reach 30 ft., one target. Hit: 15 (2d10 + 4) slashing damage, and the target is restrained until the end of its next turn.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Melee Weapon Attack: +7 to hit, reach 30 ft., one target. Hit: 15 (2d10 + 4) slashing damage, and the target is restrained until the end of its next turn.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "control"
+    ],
+    "recipeSlots": [
+      "spread"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

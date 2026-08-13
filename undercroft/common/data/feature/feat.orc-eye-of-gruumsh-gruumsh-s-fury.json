@@ -1,0 +1,28 @@
+{
+  "id": "feat.orc-eye-of-gruumsh-gruumsh-s-fury",
+  "name": "Gruumsh’s Fury",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The orc deals an extra 4 (1d8) damage when it hits with a weapon attack (included in the attack).",
+  "mechanics": {
+    "type": "passive",
+    "text": "The orc deals an extra 4 (1d8) damage when it hits with a weapon attack (included in the attack)."
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

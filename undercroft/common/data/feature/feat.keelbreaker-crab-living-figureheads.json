@@ -1,0 +1,30 @@
+{
+  "id": "feat.keelbreaker-crab-living-figureheads",
+  "name": "Living Figureheads",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Three magical figureheads adorn the creature’s back. While at least one figurehead remains intact, the creature has advantage on Wisdom (Perception) checks and can use its Wail. Each figurehead is an object with AC 15, 20 hp, resistance to bludgeoning and piercing damage, and immunity to poison and psychic damage. If all the figureheads are reduced to 0 hp, the creature can’t use its Wail action. Damaging a figurehead does not harm the creature. Siege Monster. The creature deals double damage to objects and structures.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Three magical figureheads adorn the creature’s back. While at least one figurehead remains intact, the creature has advantage on Wisdom (Perception) checks and can use its Wail. Each figurehead is an object with AC 15, 20 hp, resistance to bludgeoning and piercing damage, and immunity to poison and psychic damage. If all the figureheads are reduced to 0 hp, the creature can’t use its Wail action. Damaging a figurehead does not harm the creature. Siege Monster. The creature deals double damage to objects and structures.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "defense",
+      "utility"
+    ],
+    "recipeSlots": [
+      "endure"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

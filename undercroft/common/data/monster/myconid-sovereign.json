@@ -1,0 +1,93 @@
+{
+  "kind": "monster",
+  "name": "Myconid Sovereign",
+  "image": "https://www.kryxrpg.com/static/36336d8e9fc9ab7bf8c4b3daaca66d6f/52485/myconid-sovereign.png",
+  "notes": "",
+  "type": "plant",
+  "stats": {
+    "size": "Large",
+    "alignment": "Lawful Neutral",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 60,
+      "current": 60,
+      "diceString": "8d10 + 16"
+    },
+    "hitDice": "8d10",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 12,
+      "dexterity": 10,
+      "constitution": 14,
+      "intelligence": 13,
+      "wisdom": 15,
+      "charisma": 10
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "",
+    "senses": {
+      "darkvision": 120,
+      "passives": {
+        "perception": 12
+      }
+    },
+    "challengeRating": "2",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [
+      "Underdark"
+    ],
+    "sources": [
+      "MM",
+      "https://www.dndbeyond.com/monsters/17184-myconid-sovereign",
+      "Monster Manual, pg. 232"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.myconid-sovereign-distress-spores",
+    "feat.myconid-sovereign-sun-sickness",
+    "feat.multiattack",
+    "feat.fist",
+    "feat.myconid-sovereign-animating-spores-3-day",
+    "feat.myconid-sovereign-hallucination-spores",
+    "feat.myconid-sovereign-hallucination-spores",
+    "feat.myconid-sovereign-rapport-spores",
+    "feat.myconid-sovereign-pacifying-spores"
+  ],
+  "featureTiers": {
+    "feat.myconid-sovereign-animating-spores-3-day": "3-day"
+  },
+  "featureParams": {
+    "feat.multiattack": {
+      "text": "The creature uses either its Hallucination Spores or its Pacifying Spores, then makes a fist attack."
+    },
+    "feat.fist": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 3,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "3d4 + 1",
+      "damageType": "bludgeoning",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "3d4",
+        "damageType": "poison"
+      }
+    }
+  }
+}

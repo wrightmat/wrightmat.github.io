@@ -1,0 +1,84 @@
+{
+  "kind": "monster",
+  "index": "scout",
+  "name": "Scout",
+  "notes": "Scouts are skilled hunters and trackers who offer their services for a fee. Most hunt wild game, but a few work as bounty hunters, serve as guides, or provide military reconnaissance.",
+  "type": "humanoid",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/scout.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "any alignment",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 16,
+      "current": 16,
+      "diceString": "3d8+3"
+    },
+    "hitDice": "3d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 11,
+      "dexterity": 14,
+      "constitution": 12,
+      "intelligence": 11,
+      "wisdom": 13,
+      "charisma": 11
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "Nature +4, Perception +5, Stealth +6, Survival +5",
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "any one language (usually Common)"
+      ]
+    },
+    "senses": {
+      "passives": {
+        "perception": 15
+      }
+    },
+    "challengeRating": "1/2",
+    "proficiencyBonus": 2,
+    "xp": 100,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/scout"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/scout",
+  "featureIds": [
+    "feat.keen-hearing-and-smell",
+    "feat.multiattack",
+    "feat.shortsword",
+    "feat.longbow"
+  ],
+  "featureParams": {
+    "feat.shortsword": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d6 + 2",
+      "damageType": "piercing"
+    },
+    "feat.longbow": {
+      "kind": "Ranged",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "range",
+      "distance": "150/600",
+      "damageDice": "1d8 + 2",
+      "damageType": "piercing"
+    },
+    "feat.multiattack": {
+      "text": "The creature makes two melee attacks or two ranged attacks."
+    }
+  }
+}

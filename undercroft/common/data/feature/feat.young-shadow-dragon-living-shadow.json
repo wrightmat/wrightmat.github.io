@@ -1,0 +1,29 @@
+{
+  "id": "feat.young-shadow-dragon-living-shadow",
+  "name": "Living Shadow",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "While in dim light or darkness, the creature has resistance to damage that isn’t force, psychic, or radiant.",
+  "mechanics": {
+    "type": "passive",
+    "text": "While in dim light or darkness, the creature has resistance to damage that isn’t force, psychic, or radiant.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

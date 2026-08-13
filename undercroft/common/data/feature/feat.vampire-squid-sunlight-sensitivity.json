@@ -1,0 +1,27 @@
+{
+  "id": "feat.vampire-squid-sunlight-sensitivity",
+  "name": "Sunlight Sensitivity",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The vampire squid takes 20 radiant damage if it starts its turn in sunlight. While in sunlight, it has disadvantage on attack rolls and ability checks.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The vampire squid takes 20 radiant damage if it starts its turn in sunlight. While in sunlight, it has disadvantage on attack rolls and ability checks."
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "debuff"
+    ],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

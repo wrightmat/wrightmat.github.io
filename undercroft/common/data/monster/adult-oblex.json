@@ -1,0 +1,119 @@
+{
+  "kind": "monster",
+  "name": "Adult Oblex",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/25746/107/1000/1000/637880557086160019.jpeg",
+  "notes": "### Description\r\n\r\nOlder oblexes, called adults and elders, have eaten so many memories that they can form duplicates of the creatures they have devoured from the substance of their bodies, sending these copies off to lure prey into their clutches while remaining tethered to the slime by long tendrils of goo. These duplicated creatures are indistinguishable from their victims except for a faint sulfurous smell. Oblexes use these duplicates to lead prey into danger or to infiltrate settlements so they can feed on superior victims.\r\n\r\n#### Oblexes\r\n\r\nBy experimenting on the slimes, jellies, and puddings that infest the depths of the Underdark, mind flayers created a special breed of Ooze, the oblex—a slime capable of assaulting the minds of other creatures. These pools of jelly are cunning hunters that feed on thoughts and memories. The sharper the mind, the better the meal, so oblexes hunt targets more likely to be intelligent, such as wizards and other spellcasters. When suitable fare comes within reach, an oblex draws its body up to engulf its victim. As it withdraws, it plunders the creature’s mind, leaving its prey befuddled and confused—or dead.\r\n\r\nWhen oblexes feed on thoughts, they can form weird copies of their prey to use as lures, which helps them harvest even more victims for their mind flayer masters.",
+  "type": "ooze",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Typically Lawful Evil",
+    "armorClass": 14,
+    "hitPoints": {
+      "max": 75,
+      "current": 75,
+      "diceString": "10d8 + 30"
+    },
+    "hitDice": "10d8",
+    "speed": {
+      "walk": 20
+    },
+    "abilities": {
+      "strength": 8,
+      "dexterity": 19,
+      "constitution": 16,
+      "intelligence": 19,
+      "wisdom": 12,
+      "charisma": 15
+    },
+    "initiative": {
+      "bonus": 4
+    },
+    "savingThrows": "intelligence +7, charisma +5",
+    "skills": "deception +5, perception +4",
+    "senses": {
+      "blindsight": 60,
+      "passives": {
+        "perception": 14
+      }
+    },
+    "challengeRating": "5",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Blinded",
+          "type": "immunity"
+        },
+        {
+          "name": "Charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "Deafened",
+          "type": "immunity"
+        },
+        {
+          "name": "Exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "Prone",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Common plus two more languages"
+      ]
+    },
+    "spells": "(Psionics). The oblex casts one of the following spells, requiring no spell components and using Intelligence as the spellcasting ability (spell save DC 15): 3/day each: charm person (as 5th-level spell), detect thoughts, hypnotic pattern",
+    "environments": [
+      "Swamp",
+      "Underdark",
+      "Urban"
+    ],
+    "sources": [
+      "MPMM",
+      "https://www.dndbeyond.com/monsters/2560714-adult-oblex",
+      "Mordenkainen Presents: Monsters of the Multiverse, pg. 198"
+    ],
+    "saveDC": 15
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.amorphous",
+    "feat.adult-oblex-aversion-to-fire",
+    "feat.multiattack",
+    "feat.pseudopod",
+    "feat.adult-oblex-eat-memories",
+    "feat.adult-oblex-sulfurous-impersonation",
+    "feat.ooze-nature"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.pseudopod",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two Pseudopod attacks, and it uses Eat Memories."
+    },
+    "feat.pseudopod": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 4",
+      "damageType": "bludgeoning",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "2d6",
+        "damageType": "psychic"
+      }
+    }
+  }
+}

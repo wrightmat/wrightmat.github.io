@@ -1,0 +1,25 @@
+{
+  "id": "feat.centaur-charge",
+  "name": "Charge",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "If the creature moves at least 30 ft. straight toward a target and then hits it with a pike attack on the same turn, the target takes an extra 10 (3d6) piercing damage.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "If the creature moves at least 30 ft. straight toward a target and then hits it with a pike attack on the same turn, the target takes an extra 10 (3d6) piercing damage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

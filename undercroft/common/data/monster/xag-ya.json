@@ -1,0 +1,147 @@
+{
+  "kind": "monster",
+  "name": "Xag-ya",
+  "image": "https://i0.wp.com/dmdave.com/wp-content/uploads/2018/11/xag-ya-xeg-yi.jpg",
+  "notes": "### Description\r\n\r\nXag-ya, also known as Positive Energons, are sentient energy that has coalesced into an alien form of life. These beings wander the energy plane of Irian.",
+  "type": "aberration",
+  "stats": {
+    "size": "Large",
+    "alignment": "Neutral",
+    "armorClass": 19,
+    "hitPoints": {
+      "max": 189,
+      "current": 189,
+      "diceString": "18d8 + 108"
+    },
+    "hitDice": "18d8",
+    "speed": {
+      "walk": 0,
+      "fly": 60,
+      "hover": true
+    },
+    "abilities": {
+      "strength": 3,
+      "dexterity": 19,
+      "constitution": 22,
+      "intelligence": 21,
+      "wisdom": 18,
+      "charisma": 16
+    },
+    "initiative": {
+      "bonus": 4
+    },
+    "savingThrows": "Int +9, Wis +8, Cha +7",
+    "skills": "Perception +8",
+    "senses": {
+      "darkvision": 120,
+      "passives": {
+        "perception": 18
+      }
+    },
+    "challengeRating": "12",
+    "proficiencyBonus": 4,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Radiant",
+          "type": "resistance"
+        },
+        {
+          "name": "Cold",
+          "type": "vulnerability"
+        },
+        {
+          "name": "Necrotic",
+          "type": "vulnerability"
+        },
+        {
+          "name": "Acid",
+          "type": "immunity"
+        },
+        {
+          "name": "Fire",
+          "type": "immunity"
+        },
+        {
+          "name": "Lightning",
+          "type": "immunity"
+        },
+        {
+          "name": "Psychic",
+          "type": "immunity"
+        },
+        {
+          "name": "Thunder; Bludgeoning",
+          "type": "immunity"
+        },
+        {
+          "name": "piercing",
+          "type": "immunity"
+        },
+        {
+          "name": "and slashing from nonmagical attacks",
+          "type": "immunity"
+        },
+        {
+          "name": "blinded",
+          "type": "immunity"
+        },
+        {
+          "name": "exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "grappled",
+          "type": "immunity"
+        },
+        {
+          "name": "paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "poisoned",
+          "type": "immunity"
+        },
+        {
+          "name": "prone",
+          "type": "immunity"
+        },
+        {
+          "name": "restrained",
+          "type": "immunity"
+        },
+        {
+          "name": "unconscious",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [
+      "Planar"
+    ],
+    "sources": [
+      "Homebrew",
+      "https://dmdave.com/xag-ya-xeg-yi/",
+      "https://eberron.fandom.com/wiki/Energon"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.xag-ya-death-burst",
+    "feat.xag-ya-pure-radiance",
+    "feat.multiattack",
+    "feat.xag-ya-tendril",
+    "feat.xag-ya-radiant-bolt-recharge-4-6"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "text": "The creature makes four attacks with its tendrils and uses its Radiant Bolt if it can."
+    }
+  }
+}

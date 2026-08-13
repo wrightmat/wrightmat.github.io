@@ -1,0 +1,25 @@
+{
+  "id": "feat.steam-mephit-death-burst",
+  "name": "Death Burst",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "When the elemental dies, it explodes in a cloud of steam. Each creature within 5 ft. of the elemental must succeed on a DC 10 Dexterity saving throw or take 4 (1d8) fire damage.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "When the elemental dies, it explodes in a cloud of steam. Each creature within 5 ft. of the elemental must succeed on a DC 10 Dexterity saving throw or take 4 (1d8) fire damage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

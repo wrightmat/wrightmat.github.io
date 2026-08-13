@@ -1,0 +1,32 @@
+{
+  "id": "feat.deep-one-maelstrom",
+  "name": "Maelstrom",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The currents and eddies of the underwater realm The creature occupies swirl in a maelstrom out to a radius of 100 feet. All creatures in that area, other than Dagon, must make a DC 21 Strength saving throw. On a failed save, the target is moved in a random direction 30 feet.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The currents and eddies of the underwater realm The creature occupies swirl in a maelstrom out to a radius of 100 feet. All creatures in that area, other than Dagon, must make a DC 21 Strength saving throw. On a failed save, the target is moved in a random direction 30 feet.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "control"
+    ],
+    "recipeSlots": [
+      "burst"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "lair-action"
+  }
+}

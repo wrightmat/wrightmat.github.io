@@ -1,0 +1,108 @@
+{
+  "kind": "monster",
+  "name": "Succubus",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/30835/963/1000/1000/638063925132245499.png",
+  "notes": "### Description\r\n\r\n[Succubi](https://www.dndbeyond.com/monsters/17027-succubus) and incubi inhabit all of the Lower Planes, and the lascivious dark-winged fiends can be found in service to devils, demons, night hags, rakshasas, and yugoloths. Asmodeus, ruler of the Nine Hells, uses these fiends to tempt mortals to perform evil acts. The demon lord Graz’zt keeps succubi and incubi as advisers and consorts.\r\n\r\nThough legend speaks of them separately, any succubus can become an incubus, and vice versa. Most of these fiends do have a preference for one form or the other. Mortals only rarely see a succubus or incubus in its true form, however, for the fiend typically begins its corruption in veiled, insidious ways.\r\n\r\n_**Beautiful Corrupters.**_ A succubus or incubus first appears in ethereal form, passing through walls like a ghost to lurk next to a mortal’s bedside and whisper forbidden pleasures. Sleeping victims are tempted to give in to their darkest desires, indulge in taboos, and feed forbidden appetites. As the fiend fills the victim’s dreams with debauched images, the victim becomes more susceptible to temptation in everyday life.\r\n\r\nInevitably, the fiend enters the mortal realm in tempting form to directly influence a creature’s actions. Appearing in the guise of a humanoid who has previously appeared only in the victim’s dreams, the succubus or incubus seduces or befriends its victim, indulging all its desires so that it performs evil acts of its own free will.\r\n\r\nA mortal bequeaths its soul to the fiend not by formal pledge or contract. Instead, when a succubus or incubus has corrupted a creature completely — some say by causing the victim to commit the three betrayals of thought, word, and deed — the victim’s soul belongs to the fiend. The more virtuous the fiend’s prey, the longer the corruption takes, but the more rewarding the downfall. After successfully corrupting a victim, the succubus or incubus kills it, and the tainted soul descends into the Lower Planes.\r\n\r\nThe succubus or incubus resorts to charming a victim magically only when necessary, usually as a form of self-defense. A charmed creature isn’t responsible for its actions, so forcing it to behave against its will won’t bring the fiend closer to the ultimate prize: the victim’s soul.\r\n\r\n_**Deadly Kiss.**_ The kiss of a succubus or incubus is an echo of the emptiness that is the fiend’s longing for a corrupted soul. Likewise, the recipient of the fiend’s kiss gains no satisfaction from it, experiencing only pain and the profound emptiness that the fiend imparts. The kiss is nothing short of an attack, usually delivered as a final farewell before the fiend escapes.\r\n\r\n_**Fiendish Offspring.**_ Succubi and incubi can reproduce with one another to spawn more of their kind. Less commonly, a succubus or incubus reproduces with a humanoid. From this unholy union, a cambion child is conceived. Invariably, the fiendish offspring is as wicked as its fiendish parent.",
+  "type": "fiend",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Neutral Evil",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 66,
+      "current": 66,
+      "diceString": "12d8 + 12"
+    },
+    "hitDice": "12d8",
+    "speed": {
+      "walk": 30,
+      "fly": 60
+    },
+    "abilities": {
+      "strength": 8,
+      "dexterity": 17,
+      "constitution": 13,
+      "intelligence": 15,
+      "wisdom": 12,
+      "charisma": 20
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "",
+    "skills": "Deception +9, Insight +5, Perception +5, Persuasion +9, Stealth +7",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 15
+      }
+    },
+    "challengeRating": "4",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Cold",
+          "type": "resistance"
+        },
+        {
+          "name": "Fire",
+          "type": "resistance"
+        },
+        {
+          "name": "Lightning",
+          "type": "resistance"
+        },
+        {
+          "name": "Poison; Bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "Piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "and Slashing from Nonmagical Attacks",
+          "type": "resistance"
+        }
+      ],
+      "languages": [
+        "Abyssal",
+        "Common",
+        "Infernal",
+        "Telepathy 60 ft."
+      ]
+    },
+    "environments": [
+      "Urban"
+    ],
+    "sources": [
+      "MM",
+      "https://www.dndbeyond.com/monsters/257235-incubus",
+      "Basic Rules, pg. 349"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.incubus-telepathic-bond",
+    "feat.shapechanger",
+    "feat.claw",
+    "feat.charm",
+    "feat.incubus-draining-kiss",
+    "feat.etherealness"
+  ],
+  "featureParams": {
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d6 + 3",
+      "damageType": "slashing"
+    }
+  }
+}

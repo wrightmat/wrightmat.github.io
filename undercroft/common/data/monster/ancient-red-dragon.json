@@ -1,0 +1,138 @@
+{
+  "kind": "monster",
+  "index": "ancient-red-dragon",
+  "name": "Ancient Red Dragon",
+  "type": "dragon",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/ancient-red-dragon.png",
+  "stats": {
+    "size": "Gargantuan",
+    "alignment": "chaotic evil",
+    "armorClass": 22,
+    "hitPoints": {
+      "max": 546,
+      "current": 546,
+      "diceString": "28d20+252"
+    },
+    "hitDice": "28d20",
+    "speed": {
+      "walk": 40,
+      "climb": 40,
+      "fly": 80
+    },
+    "abilities": {
+      "strength": 30,
+      "dexterity": 10,
+      "constitution": 29,
+      "intelligence": 18,
+      "wisdom": 15,
+      "charisma": 23
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "DEX +7, CON +16, WIS +9, CHA +13",
+    "skills": "Perception +16, Stealth +7",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "fire",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Common",
+        "Draconic"
+      ]
+    },
+    "senses": {
+      "blindsight": 60,
+      "darkvision": 120,
+      "passives": {
+        "perception": 26
+      }
+    },
+    "challengeRating": "24",
+    "proficiencyBonus": 7,
+    "xp": 62000,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/ancient-red-dragon"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/ancient-red-dragon",
+  "featureIds": [
+    "feat.legendary-resistance",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.claw",
+    "feat.tail",
+    "feat.frightful-presence",
+    "feat.fire-breath-monster",
+    "feat.aboleth-detect",
+    "feat.adult-black-dragon-tail-attack",
+    "feat.wing-attack"
+  ],
+  "featureTiers": {
+    "feat.legendary-resistance": "3-day",
+    "feat.frightful-presence": "dc-21",
+    "feat.wing-attack": "dc-22"
+  },
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 17,
+      "distanceLabel": "reach",
+      "distance": "15",
+      "damageDice": "2d10 + 10",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "4d6",
+        "damageType": "fire"
+      }
+    },
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 17,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "2d6 + 10",
+      "damageType": "slashing"
+    },
+    "feat.tail": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 17,
+      "distanceLabel": "reach",
+      "distance": "20",
+      "damageDice": "2d8 + 10",
+      "damageType": "bludgeoning"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.bite",
+          "count": 1
+        },
+        {
+          "featureId": "feat.claw",
+          "count": 2
+        }
+      ],
+      "text": "The creature can use its Frightful Presence. It then makes three attacks: one with its bite and two with its claws."
+    },
+    "feat.fire-breath-monster": {
+      "verb": "exhales",
+      "substance": "fire",
+      "areaSize": "90",
+      "areaShape": "cone",
+      "dcAbility": "constitution",
+      "ability": "dexterity",
+      "damageDice": "26d6",
+      "damageType": "fire"
+    }
+  }
+}

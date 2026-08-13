@@ -1,0 +1,30 @@
+{
+  "id": "feat.equinal-guardinal-headfirst-charge",
+  "name": "Headfirst Charge",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "If the creature moves at least 30 feet in a straight line toward a creature and ends within 5 feet of it, that creature must succeed on a DC 17 Strength saving throw or take 14 (4d6) bludgeoning damage and have the prone condition.",
+  "mechanics": {
+    "type": "passive",
+    "text": "If the creature moves at least 30 feet in a straight line toward a creature and ends within 5 feet of it, that creature must succeed on a DC 17 Strength saving throw or take 14 (4d6) bludgeoning damage and have the prone condition.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "control"
+    ],
+    "recipeSlots": [
+      "isolate"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

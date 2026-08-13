@@ -1,0 +1,29 @@
+{
+  "id": "feat.psurlon-aberrant-mind",
+  "name": "Aberrant Mind",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Magic can’t read the creature’s thoughts or put the creature to sleep.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Magic can’t read the creature’s thoughts or put the creature to sleep.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

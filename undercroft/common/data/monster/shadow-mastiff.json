@@ -1,0 +1,98 @@
+{
+  "kind": "monster",
+  "name": "Shadow Mastiff",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/25746/635/1000/1000/637880557981173432.jpeg",
+  "notes": "### Description\r\n\r\nShunning sunlight, these hounds are usually met as a pack. Some faiths devoted to deities of gloom and night, such as that of Shar in the Forgotten Realms, perform unholy rites to summon shadow mastiffs to work as temple sentinels and bodyguards.\r\n\r\n#### Shadow Mastiffs\r\n\r\nShadow mastiffs — hounds of the Shadowfell — move invisibly through the shadows, always on the hunt.",
+  "type": "monstrosity",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Typically Neutral Evil",
+    "armorClass": 12,
+    "hitPoints": {
+      "max": 33,
+      "current": 33,
+      "diceString": "6d8 + 6"
+    },
+    "hitDice": "6d8",
+    "speed": {
+      "walk": 40
+    },
+    "abilities": {
+      "strength": 16,
+      "dexterity": 14,
+      "constitution": 13,
+      "intelligence": 5,
+      "wisdom": 12,
+      "charisma": 5
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "Perception +5, Stealth +6",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 15
+      }
+    },
+    "challengeRating": "2",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "Piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "and Slashing from Nonmagical Attacks while in Dim Light or Darkness",
+          "type": "resistance"
+        }
+      ],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [
+      "Forest",
+      "Hill",
+      "Swamp"
+    ],
+    "sources": [
+      "MPMM",
+      "https://www.dndbeyond.com/monsters/2560913-shadow-mastiff",
+      "Mordenkainen Presents: Monsters of the Multiverse, pg. 215"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.shadow-mastiff-ethereal-awareness",
+    "feat.sunlight-weakness",
+    "feat.bite",
+    "feat.shadow-mastiff-shadow-blend"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d12 + 4",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "save-or-condition",
+        "saveAbility": "strength",
+        "saveDC": 14,
+        "condition": "knocked prone"
+      }
+    }
+  }
+}

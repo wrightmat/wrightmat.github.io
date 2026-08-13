@@ -1,0 +1,74 @@
+{
+  "kind": "monster",
+  "name": "Stegosaurus",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/25746/682/1000/1000/637880558052946930.jpeg",
+  "notes": "",
+  "type": "beast",
+  "stats": {
+    "size": "Huge",
+    "alignment": "Unaligned",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 76,
+      "current": 76,
+      "diceString": "8d12 + 24"
+    },
+    "hitDice": "8d12",
+    "speed": {
+      "walk": 40
+    },
+    "abilities": {
+      "strength": 20,
+      "dexterity": 9,
+      "constitution": 17,
+      "intelligence": 2,
+      "wisdom": 11,
+      "charisma": 5
+    },
+    "initiative": {
+      "bonus": -1
+    },
+    "savingThrows": "",
+    "skills": "",
+    "senses": {
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "4",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [
+      "Forest",
+      "Grassland"
+    ],
+    "sources": [
+      "MPMM",
+      "https://www.dndbeyond.com/monsters/2560928-stegosaurus",
+      "Mordenkainen Presents: Monsters of the Multiverse, pg. 96"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.tail"
+  ],
+  "featureParams": {
+    "feat.tail": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "6d6 + 5",
+      "damageType": "piercing"
+    }
+  }
+}

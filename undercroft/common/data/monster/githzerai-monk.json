@@ -1,0 +1,93 @@
+{
+  "kind": "monster",
+  "name": "Githzerai Monk",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/47138/902/1000/1000/638741964172255310.jpeg",
+  "notes": "### Description\n\nGithzerai monks pursue control of their minds by honing their physical and psionic talents. They might be found beyond githzerai sanctuaries, testing themselves amid the dangerous extremes of the multiverse.\n\n#### Githzerai\n\nGithzerai are gaunt, humanlike beings, physically identical to githyanki. They share a history with githyanki as creatures physically and psychically transformed by mind flayers. Githzerai know that in body and mind, their species was manipulated by their former illithid oppressors. Rather than giving in to this programming, githzerai follow the teachings of their first leader, Zerthimon, and reshape their minds and bodies to find peace.\n\nGithzerai psychically create serene, hidden sanctuaries in chaotic reaches of the multiverse. Most of these redoubts drift through the chaotic plane of Limbo, but githzerai conclaves can also be found in the Abyss, the Elemental Chaos, and the Feywild. Githzerai create these cloisters to hone their psionic abilities, to gain insights from the multiverse, and to avoid githyanki and mind flayers.",
+  "type": "humanoid",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Any Alignment",
+    "armorClass": 14,
+    "hitPoints": {
+      "max": 38,
+      "current": 38,
+      "diceString": "7d8 + 7"
+    },
+    "hitDice": "7d8",
+    "speed": {
+      "walk": 40
+    },
+    "abilities": {
+      "strength": 12,
+      "dexterity": 15,
+      "constitution": 12,
+      "intelligence": 13,
+      "wisdom": 14,
+      "charisma": 10
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "Str +2, Dex +2, Int +2, Wis +2",
+    "skills": "Insight +4, Perception +4",
+    "senses": {
+      "passives": {
+        "perception": 11
+      }
+    },
+    "challengeRating": "2",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Gith"
+      ]
+    },
+    "spells": "(Psionics). The githyanki’s innate spellcasting ability is Intelligence. It can innately cast the following spells, requiring no components: At will: mage hand (the hand is invisible) 1/day: see invisibility",
+    "environments": [
+      "Desert",
+      "Mountain",
+      "Urban"
+    ],
+    "sources": [
+      "MM",
+      "https://www.dndbeyond.com/monsters/5195038-githzerai-monk",
+      "Monster Manual, pg. 160"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.multiattack",
+    "feat.psi-strike",
+    "feat.githzerai-monk-psi-powered-leap-2-day",
+    "feat.githzerai-monk-psionic-defense-2-day"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.psi-strike",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two Psi Strike attacks."
+    },
+    "feat.psi-strike": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d8 + 2",
+      "damageType": "bludgeoning",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "2d8",
+        "damageType": "psychic"
+      }
+    }
+  }
+}

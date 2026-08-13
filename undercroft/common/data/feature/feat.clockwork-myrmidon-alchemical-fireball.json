@@ -1,0 +1,32 @@
+{
+  "id": "feat.clockwork-myrmidon-alchemical-fireball",
+  "name": "Alchemical Fireball",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature’s alchemical flame reservoir explodes when the construct is destroyed, spraying nearby creatures with burning fuel. A creature within 5 feet of the creature takes 19 (3d12) fire damage, or half damage with a successful DC 15 Dexterity saving throw. This explosion doesn’t occur if the creature has already fired its alchemical flame jet four times.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature’s alchemical flame reservoir explodes when the construct is destroyed, spraying nearby creatures with burning fuel. A creature within 5 feet of the creature takes 19 (3d12) fire damage, or half damage with a successful DC 15 Dexterity saving throw. This explosion doesn’t occur if the creature has already fired its alchemical flame jet four times.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "burst"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

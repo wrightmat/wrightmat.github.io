@@ -1,0 +1,88 @@
+{
+  "kind": "monster",
+  "name": "Shimmer Seal",
+  "notes": "",
+  "type": "beast",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Unaligned",
+    "armorClass": 12,
+    "hitPoints": {
+      "max": 105,
+      "current": 105,
+      "diceString": "14d8 + 42"
+    },
+    "hitDice": "14d8",
+    "speed": {
+      "walk": 30,
+      "swim": 40
+    },
+    "abilities": {
+      "strength": 18,
+      "dexterity": 14,
+      "constitution": 17,
+      "intelligence": 5,
+      "wisdom": 12,
+      "charisma": 9
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "Wis +4, Cha +2",
+    "skills": "Acrobatics +8, Performance +5, Stealth +5",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 11
+      }
+    },
+    "challengeRating": "5",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "cold",
+          "type": "resistance"
+        }
+      ],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Tome of Beasts 2 (pg. 324)"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.shimmer-seal-limited-invisibility",
+    "feat.shimmer-seal-sureflippered",
+    "feat.shimmer-seal-underwater-propulsion",
+    "feat.multiattack",
+    "feat.tusk"
+  ],
+  "featureParams": {
+    "feat.tusk": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "3d6 + 4",
+      "damageType": "slashing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.tusk",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two tusk attacks."
+    }
+  }
+}

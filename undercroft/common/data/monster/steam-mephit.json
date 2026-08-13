@@ -1,0 +1,92 @@
+{
+  "kind": "monster",
+  "index": "steam-mephit",
+  "name": "Steam Mephit",
+  "type": "elemental",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/steam-mephit.png",
+  "stats": {
+    "size": "Small",
+    "alignment": "neutral evil",
+    "armorClass": 10,
+    "hitPoints": {
+      "max": 21,
+      "current": 21,
+      "diceString": "6d6"
+    },
+    "hitDice": "6d6",
+    "speed": {
+      "walk": 30,
+      "fly": 30
+    },
+    "abilities": {
+      "strength": 5,
+      "dexterity": 11,
+      "constitution": 10,
+      "intelligence": 11,
+      "wisdom": 10,
+      "charisma": 12
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "fire",
+          "type": "immunity"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Aquan",
+        "Ignan"
+      ]
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "1/4",
+    "proficiencyBonus": 2,
+    "xp": 50,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/steam-mephit",
+    "spells": "The mephit can innately cast blur, requiring no material components. Its innate spellcasting ability is Charisma."
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/steam-mephit",
+  "featureIds": [
+    "feat.steam-mephit-death-burst",
+    "feat.claws",
+    "feat.steam-breath"
+  ],
+  "featureParams": {
+    "feat.claws": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 2,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d4",
+      "damageType": "slashing",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "1d4",
+        "damageType": "fire"
+      }
+    }
+  }
+}

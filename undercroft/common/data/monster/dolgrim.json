@@ -1,0 +1,103 @@
+{
+  "kind": "monster",
+  "name": "Dolgrim",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/7725/608/1000/1000/637091619688542557.png",
+  "notes": "### Description\r\n\r\nDolgrims are squat, deformed things. Warped by the daelkyr, a dolgrim is essentially two goblins crushed into one creature, their misshapen body boasting four arms and a pair of twisted mouths that gibber and slather at the front of a headless torso. The two mouths of a dolgrim sometimes carry on demented conversations with one another. However, a dolgrim has only a single personality — sadistic, bloodthirsty, and brutally dedicated to serving itself.\r\n\r\nSmall numbers of these creatures sometimes make their way to the surface, often under the command of [dolgaunts](https://www.dndbeyond.com/monsters/487575-dolgaunt), and undertaking missions advancing the inscrutable schemes of their malevolent masters. But great hordes of dolgrims remain clustered in Khyber with the daelkyr, dreaming of the day when they will be released into Eberron to feast and destroy.",
+  "type": "aberration",
+  "stats": {
+    "size": "Small",
+    "alignment": "Chaotic Evil",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 13,
+      "current": 13,
+      "diceString": "3d6 + 3"
+    },
+    "hitDice": "3d6",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 15,
+      "dexterity": 14,
+      "constitution": 12,
+      "intelligence": 8,
+      "wisdom": 10,
+      "charisma": 8
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "1/2",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Deep Speech",
+        "Goblin"
+      ]
+    },
+    "environments": [
+      "Underdark"
+    ],
+    "sources": [
+      "ERLW",
+      "https://www.dndbeyond.com/monsters/487585-dolgrim",
+      "Eberron: Rising from the Last War, pg. 291"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.dolgrim-dual-consciousness",
+    "feat.multiattack",
+    "feat.morningstar",
+    "feat.spear",
+    "feat.hand-crossbow"
+  ],
+  "featureParams": {
+    "feat.morningstar": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d8 + 2",
+      "damageType": "piercing"
+    },
+    "feat.hand-crossbow": {
+      "kind": "Ranged",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "range",
+      "distance": "30/120",
+      "damageDice": "1d6 + 2",
+      "damageType": "piercing"
+    },
+    "feat.multiattack": {
+      "text": "The creature makes three attacks."
+    },
+    "feat.spear": {
+      "kind": "MeleeOrRanged",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "meleeDistance": "5",
+      "rangeDistance": "20/60",
+      "damageDice": "1d6 + 2",
+      "damageType": "piercing",
+      "versatile": {
+        "damageDice": "1d8 + 2"
+      }
+    }
+  }
+}

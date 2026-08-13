@@ -1,0 +1,55 @@
+{
+  "id": "feat.vampire-spawn-vampire-weaknesses",
+  "name": "Vampire Weaknesses",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature has the following flaws:",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The creature has the following flaws:"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "options": [
+    {
+      "id": "forbiddance",
+      "name": "Forbiddance",
+      "mechanics": {
+        "text": "The creature can't enter a residence without an invitation from one of the occupants."
+      }
+    },
+    {
+      "id": "harmed-by-running-water",
+      "name": "Harmed by Running Water",
+      "mechanics": {
+        "text": "The creature takes 20 acid damage when it ends its turn in running water."
+      }
+    },
+    {
+      "id": "stake-to-the-heart",
+      "name": "Stake to the Heart",
+      "mechanics": {
+        "text": "The creature is destroyed if a piercing weapon made of wood is driven into its heart while it is incapacitated in its resting place."
+      }
+    },
+    {
+      "id": "sunlight-hypersensitivity",
+      "name": "Sunlight Hypersensitivity",
+      "mechanics": {
+        "text": "The creature takes 20 radiant damage when it starts its turn in sunlight. While in sunlight, it has disadvantage on attack rolls and ability checks."
+      }
+    }
+  ]
+}

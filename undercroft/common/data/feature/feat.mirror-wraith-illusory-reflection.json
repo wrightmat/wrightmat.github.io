@@ -1,0 +1,33 @@
+{
+  "id": "feat.mirror-wraith-illusory-reflection",
+  "name": "Illusory Reflection",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "When the creature is targeted by an attack, it can impose disadvantage on the attack roll, taking the form of the attacker's greatest fear in the process. If the attack misses, the creature can make one Shadowy Touch attack against the attacker.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When the creature is targeted by an attack, it can impose disadvantage on the attack roll, taking the form of the attacker's greatest fear in the process. If the attack misses, the creature can make one Shadowy Touch attack against the attacker.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "defense",
+      "damage"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "reaction"
+  }
+}

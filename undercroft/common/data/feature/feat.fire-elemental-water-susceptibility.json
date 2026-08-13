@@ -1,0 +1,25 @@
+{
+  "id": "feat.fire-elemental-water-susceptibility",
+  "name": "Water Susceptibility",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "For every 5 ft. the creature moves in water, or for every gallon of water splashed on it, it takes 1 cold damage.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "For every 5 ft. the creature moves in water, or for every gallon of water splashed on it, it takes 1 cold damage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,32 @@
+{
+  "id": "feat.aboleth-tail-swipe",
+  "name": "Tail Swipe",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature makes one tail attack.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature makes one tail attack.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "legendary-action"
+  }
+}

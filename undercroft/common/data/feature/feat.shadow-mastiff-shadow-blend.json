@@ -1,0 +1,32 @@
+{
+  "id": "feat.shadow-mastiff-shadow-blend",
+  "name": "Shadow Blend",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "While in dim light or darkness, the creature becomes invisible, along with anything it is wearing or carrying. The invisibility lasts until the creature uses a bonus action to end it or until the creature attacks, is in bright light, or is incapacitated.",
+  "mechanics": {
+    "type": "passive",
+    "text": "While in dim light or darkness, the creature becomes invisible, along with anything it is wearing or carrying. The invisibility lasts until the creature uses a bonus action to end it or until the creature attacks, is in bright light, or is incapacitated.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "bonus-action"
+  }
+}

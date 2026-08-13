@@ -1,0 +1,33 @@
+{
+  "id": "feat.kelp-drake-binding-bile-recharge-6",
+  "name": "Binding Bile (Recharge 6)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature forcibly vomits a long line of bile-coated kelp that unravels in a 30-foot-long, 5-foot-wide line. Each target in the area must make a DC 13 Dexterity saving throw. On a failure, a creature takes 14 (4d6) acid damage and is restrained by kelp for 1 minute. On a success, a creature takes half the damage and isn’t restrained. A creature, including the target, can take its action to remove the kept by succeeding on a DC 13 Strength check. Alternatively, the creature can be attacked and destroyed (AC 10; hp 3; immunity to bludgeoning, poison, and psychic damage).",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature forcibly vomits a long line of bile-coated kelp that unravels in a 30-foot-long, 5-foot-wide line. Each target in the area must make a DC 13 Dexterity saving throw. On a failure, a creature takes 14 (4d6) acid damage and is restrained by kelp for 1 minute. On a success, a creature takes half the damage and isn’t restrained. A creature, including the target, can take its action to remove the kept by succeeding on a DC 13 Strength check. Alternatively, the creature can be attacked and destroyed (AC 10; hp 3; immunity to bludgeoning, poison, and psychic damage).",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "control"
+    ],
+    "recipeSlots": [
+      "spread"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

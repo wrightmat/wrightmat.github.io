@@ -1,0 +1,105 @@
+{
+  "kind": "monster",
+  "name": "Bastet Temple Cat",
+  "image": "https://paperanddice.files.wordpress.com/2018/05/bastet_cat1.png?w=770",
+  "notes": "*A slim feline far larger than any house cat slips from the shadows. Its coat glistens like ink as it chirps, and its tail flicks teasingly as its golden eyes observe the doings in its temple.*\r\n\r\n**Bred for Magic**. Temple cats of Bastet are thought by some to be outsiders, but they are a terrestrial breed, created by the priesthood through generations of enchantment.\r\n\r\n**Lazy Temple Pets**. By day, temple cats laze about their shrines and porticos, searching out attention from the faithful and occasionally granting boons when it suits then.\r\n\r\n**Fierce Shrine Guardians**. By night, they serve as guardians in their temples, inciting would-be thieves to come close before viciously mauling them. More than one would-be rogue has met his or her fate at the claws and teeth of these slim, black-furred beasts. Bastet temple cats are fierce enemies of temple dogs.",
+  "type": "beast",
+  "stats": {
+    "size": "Small",
+    "alignment": "Chaotic Neutral",
+    "armorClass": 14,
+    "hitPoints": {
+      "max": 40,
+      "current": 40,
+      "diceString": "9d6 + 9"
+    },
+    "hitDice": "9d6",
+    "speed": {
+      "walk": 40,
+      "climb": 30
+    },
+    "abilities": {
+      "strength": 8,
+      "dexterity": 19,
+      "constitution": 12,
+      "intelligence": 12,
+      "wisdom": 16,
+      "charisma": 18
+    },
+    "initiative": {
+      "bonus": 4
+    },
+    "savingThrows": "",
+    "skills": "Perception +5, Stealth +6",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 15
+      }
+    },
+    "challengeRating": "1",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Common",
+        "Nurian",
+        "and Sylvan"
+      ]
+    },
+    "spells": "The temple cat’s innate spellcasting ability is Charisma (spell save DC 14, +6 to hit with spell attacks). The temple cat can innately cast the following spells, requiring no material components: At will: guidance 3/day each: charm person, cure wounds 1/day (only Cat’s Grace): enhance ability",
+    "environments": [
+      "Urban"
+    ],
+    "sources": [
+      "ToB1",
+      "Tome of Beasts 1, pg. 32"
+    ],
+    "saveDC": 14
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.keen-smell",
+    "feat.bastet-temple-cat-priestly-purr",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.claws",
+    "feat.bastet-temple-cat-fascinating-lure"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d4 + 4",
+      "damageType": "piercing"
+    },
+    "feat.claws": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d4 + 4",
+      "damageType": "slashing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.bite",
+          "count": 1
+        },
+        {
+          "featureId": "feat.claws",
+          "count": 1
+        }
+      ],
+      "text": "The creature cat makes one bite attack and one claws attack."
+    }
+  }
+}

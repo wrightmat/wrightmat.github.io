@@ -1,0 +1,88 @@
+{
+  "kind": "monster",
+  "index": "gorgon",
+  "name": "Gorgon",
+  "type": "monstrosity",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/gorgon.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "unaligned",
+    "armorClass": 19,
+    "hitPoints": {
+      "max": 114,
+      "current": 114,
+      "diceString": "12d10+48"
+    },
+    "hitDice": "12d10",
+    "speed": {
+      "walk": 40
+    },
+    "abilities": {
+      "strength": 20,
+      "dexterity": 11,
+      "constitution": 18,
+      "intelligence": 2,
+      "wisdom": 12,
+      "charisma": 7
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "Perception +4",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Petrified",
+          "type": "immunity"
+        }
+      ],
+      "languages": []
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 14
+      }
+    },
+    "challengeRating": "5",
+    "proficiencyBonus": 3,
+    "xp": 1800,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/gorgon"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/gorgon",
+  "featureIds": [
+    "feat.trampling-charge-2",
+    "feat.gore",
+    "feat.hooves",
+    "feat.petrifying-breath"
+  ],
+  "featureParams": {
+    "feat.gore": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 8,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d12 + 5",
+      "damageType": "piercing"
+    },
+    "feat.hooves": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 8,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d10 + 5",
+      "damageType": "bludgeoning"
+    }
+  },
+  "featureTiers": {
+    "feat.petrifying-breath": "gorgon",
+    "feat.trampling-charge-2": "gorgon"
+  }
+}

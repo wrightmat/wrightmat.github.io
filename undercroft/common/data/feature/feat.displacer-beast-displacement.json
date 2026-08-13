@@ -1,0 +1,29 @@
+{
+  "id": "feat.displacer-beast-displacement",
+  "name": "Displacement",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature projects a magical illusion that makes it appear to be standing near its actual location, causing attack rolls against it to have disadvantage. If it is hit by an attack, this trait is disrupted until the end of its next turn. This trait is also disrupted while the creature is incapacitated or has a speed of 0.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature projects a magical illusion that makes it appear to be standing near its actual location, causing attack rolls against it to have disadvantage. If it is hit by an attack, this trait is disrupted until the end of its next turn. This trait is also disrupted while the creature is incapacitated or has a speed of 0.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

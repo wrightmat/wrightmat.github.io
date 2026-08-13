@@ -1,0 +1,124 @@
+{
+  "kind": "monster",
+  "name": "Animated Breath",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/21205/165/1000/1000/637707682369550913.jpeg",
+  "notes": "### Description\r\n\r\nA chromatic dragon’s breath weapon is a manifestation of the energy that suffuses the dragon. With sufficient practice, dragons can learn to draw on magic from the Elemental Planes to shape their breath weapons into bipedal form, creating Elemental creatures called animated breaths. Chromatic dragons often use these creatures as guardians for their hoards or send them out to gather treasure from the territory around their lairs.\r\n\r\nAn animated breath is a bipedal creature formed from the same energy as the breath weapon of the dragon that created it. A red dragon’s creation strongly resembles a fire elemental, while a black dragon’s is similar to a water elemental, but viscous and foul-looking. A green dragon’s animated poison breath looks like billowing clouds of green gas, while a white dragon’s animated cold breath looks like a walking ice sculpture with frigid air whirling around it. A blue dragon’s animated lightning breath is a constantly shifting form of crackling lightning, and it can suddenly vanish from one place to reappear in another, striking like a bolt from the blue.",
+  "type": "elemental",
+  "stats": {
+    "size": "Large",
+    "alignment": "Typically Neutral Evil",
+    "armorClass": "15 (natural armor) or 17 (Cold form only)",
+    "hitPoints": {
+      "max": 95,
+      "current": 95,
+      "diceString": "10d10 + 40"
+    },
+    "hitDice": "10d10",
+    "speed": {
+      "walk": 30,
+      "fly": 30,
+      "hover": true
+    },
+    "abilities": {
+      "strength": 19,
+      "dexterity": 11,
+      "constitution": 18,
+      "intelligence": 6,
+      "wisdom": 10,
+      "charisma": 5
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "6",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Damage of the type matching the animated breath's form (acid",
+          "type": "resistance"
+        },
+        {
+          "name": "cold",
+          "type": "resistance"
+        },
+        {
+          "name": "fire",
+          "type": "resistance"
+        },
+        {
+          "name": "lightning",
+          "type": "resistance"
+        },
+        {
+          "name": "or poison)",
+          "type": "resistance"
+        },
+        {
+          "name": "Exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "Paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "Petrified",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        },
+        {
+          "name": "Restrained",
+          "type": "immunity"
+        },
+        {
+          "name": "Unconscious",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "understands Draconic but can’t speak"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "FToD",
+      "https://www.dndbeyond.com/monsters/2059704-animated-breath",
+      "Fizban's Treasury of Dragons, pg. 163"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.animated-breath-chromatic-form",
+    "feat.fire-aura",
+    "feat.animated-breath-putrid-aura-acid-and-poison-forms-only",
+    "feat.multiattack",
+    "feat.animated-breath-slam",
+    "feat.animated-breath-lightning-burst-lightning-form-only"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.animated-breath-slam",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two Slam attacks."
+    }
+  }
+}

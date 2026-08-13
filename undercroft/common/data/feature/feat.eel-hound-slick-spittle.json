@@ -1,0 +1,29 @@
+{
+  "id": "feat.eel-hound-slick-spittle",
+  "name": "Slick Spittle",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "By spending 2 rounds dribbling spittle on an area, a creature can cover a 5-foot square with its slippery saliva. This area is treated as if under the effects of a grease spell, but it lasts for 1 hour.",
+  "mechanics": {
+    "type": "passive",
+    "text": "By spending 2 rounds dribbling spittle on an area, a creature can cover a 5-foot square with its slippery saliva. This area is treated as if under the effects of a grease spell, but it lasts for 1 hour.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

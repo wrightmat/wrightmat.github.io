@@ -1,0 +1,32 @@
+{
+  "id": "feat.sahuagin-priest-fiendish-aid-2-day",
+  "name": "Fiendish Aid (2/Day)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature casts Bless or Healing Word, using the same spellcasting ability as Spellcasting.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature casts Bless or Healing Word, using the same spellcasting ability as Spellcasting.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "bonus-action"
+  }
+}

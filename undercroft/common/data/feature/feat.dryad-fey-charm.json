@@ -1,0 +1,28 @@
+{
+  "id": "feat.dryad-fey-charm",
+  "name": "Fey Charm",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The fey targets one humanoid or beast that she can see within 30 feet of her. If the target can see the fey, it must succeed on a DC 14 Wisdom saving throw or be magically charmed. The charmed creature regards the fey as a trusted friend to be heeded and protected. Although the target isn't under the fey's control, it takes the fey's requests or actions in the most favorable way it can.\nEach time the fey or its allies do anything harmful to the target, it can repeat the saving throw, ending the effect on itself on a success. Otherwise, the effect lasts 24 hours or until the fey dies, is on a different plane of existence from the target, or ends the effect as a bonus action. If a target's saving throw is successful, the target is immune to the fey's Fey Charm for the next 24 hours.\nThe fey can have no more than one humanoid and up to three beasts charmed at a time.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The fey targets one humanoid or beast that she can see within 30 feet of her. If the target can see the fey, it must succeed on a DC 14 Wisdom saving throw or be magically charmed. The charmed creature regards the fey as a trusted friend to be heeded and protected. Although the target isn't under the fey's control, it takes the fey's requests or actions in the most favorable way it can.\nEach time the fey or its allies do anything harmful to the target, it can repeat the saving throw, ending the effect on itself on a success. Otherwise, the effect lasts 24 hours or until the fey dies, is on a different plane of existence from the target, or ends the effect as a bonus action. If a target's saving throw is successful, the target is immune to the fey's Fey Charm for the next 24 hours.\nThe fey can have no more than one humanoid and up to three beasts charmed at a time."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

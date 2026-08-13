@@ -1,0 +1,51 @@
+{
+  "id": "feat.androsphinx-roar",
+  "name": "Roar",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The sphinx emits a magical roar. Each time it roars before finishing a long rest, the roar is louder and the effect is different, as detailed below. Each creature within 500 feet of the sphinx and able to hear the roar must make a saving throw.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The sphinx emits a magical roar. Each time it roars before finishing a long rest, the roar is louder and the effect is different, as detailed below. Each creature within 500 feet of the sphinx and able to hear the roar must make a saving throw."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  },
+  "options": [
+    {
+      "id": "first-roar",
+      "name": "First Roar",
+      "mechanics": {
+        "text": "Each creature that fails a DC 18 Wisdom saving throw is frightened for 1 minute. A frightened creature can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success."
+      }
+    },
+    {
+      "id": "second-roar",
+      "name": "Second Roar",
+      "mechanics": {
+        "text": "Each creature that fails a DC 18 Wisdom saving throw is deafened and frightened for 1 minute. A frightened creature is paralyzed and can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success."
+      }
+    },
+    {
+      "id": "third-roar",
+      "name": "Third Roar",
+      "mechanics": {
+        "text": "Each creature makes a DC 18 Constitution saving throw. On a failed save, a creature takes 44 (8d10) thunder damage and is knocked prone. On a successful save, the creature takes half as much damage and isn't knocked prone."
+      }
+    }
+  ]
+}

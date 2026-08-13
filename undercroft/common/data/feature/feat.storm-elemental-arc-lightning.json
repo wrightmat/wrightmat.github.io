@@ -1,0 +1,32 @@
+{
+  "id": "feat.storm-elemental-arc-lightning",
+  "name": "Arc Lightning",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature chooses one creature or object within 120 feet and up to three other creatures or objects within 30 feet of the first target. Each target must make a DC 16 Dexterity saving throw. A target takes 28 (8d6) lightning damage on a failed save, or half as much damage on a successful one.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature chooses one creature or object within 120 feet and up to three other creatures or objects within 30 feet of the first target. Each target must make a DC 16 Dexterity saving throw. A target takes 28 (8d6) lightning damage on a failed save, or half as much damage on a successful one.",
+    "scope": "unique"
+  },
+  "budgetCost": 4,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "burst"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "id": "feat.bone-collector-summon-shadow-recharges-after-a-short-or-long-rest",
+  "name": "Summon Shadow (Recharges after a Short or Long Rest)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "As a bonus action, the creature calls up the enslaved spirits of those whose bones have been added to its body; 2 shadows arise in unoccupied spaces within 15 feet of the creature. The shadows act right after the creature on the same initiative count and fight until they're destroyed. They disappear when the creature is destroyed.",
+  "mechanics": {
+    "type": "passive",
+    "text": "As a bonus action, the creature calls up the enslaved spirits of those whose bones have been added to its body; 2 shadows arise in unoccupied spaces within 15 feet of the creature. The shadows act right after the creature on the same initiative count and fight until they're destroyed. They disappear when the creature is destroyed.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "control"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

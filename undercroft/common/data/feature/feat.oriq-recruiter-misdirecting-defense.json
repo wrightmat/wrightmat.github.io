@@ -1,0 +1,29 @@
+{
+  "id": "feat.oriq-recruiter-misdirecting-defense",
+  "name": "Misdirecting Defense",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The AC of the creature includes its Charisma modifier while it isn’t wearing armor or wielding a shield.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The AC of the creature includes its Charisma modifier while it isn’t wearing armor or wielding a shield.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

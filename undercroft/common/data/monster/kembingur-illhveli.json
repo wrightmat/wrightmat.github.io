@@ -1,0 +1,111 @@
+{
+  "kind": "monster",
+  "name": "Kembingur Illhveli",
+  "notes": "_A bright-red crest runs along the back of this monstrous whale._\n\n**Demon of the Deep**. Belonging to a race of evil giant whales known as the illhveli, the kembingur is a terror to behold. It rapaciously hunts down ships to sink them and gorge itself on the crew, and many seagoing humanoids believe it to be some sort of demon or evil spirit. \n\n**Blood on the High Seas**. The kembingur’s ability to smell blood is legendary, and the beast has been known to track bleeding targets for days without rest. A kembingur typically thrashes around in the water to founder smaller vessels it cannot easily overturn, then it focuses on mauling anyone who falls into the water. Eternally cruel, the kembingur enjoys taking small nips out of a creature to prolong its death, letting the victim slowly bleed out.",
+  "type": "monstrosity",
+  "stats": {
+    "size": "Gargantuan",
+    "alignment": "Chaotic Evil",
+    "armorClass": 17,
+    "hitPoints": {
+      "max": 210,
+      "current": 210,
+      "diceString": "12d20 + 84"
+    },
+    "hitDice": "12d20",
+    "speed": {
+      "walk": 5,
+      "swim": 60
+    },
+    "abilities": {
+      "strength": 27,
+      "dexterity": 12,
+      "constitution": 24,
+      "intelligence": 7,
+      "wisdom": 14,
+      "charisma": 12
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "Str +12, Con +11",
+    "skills": "Athletics +12, Perception +10",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 20
+      }
+    },
+    "challengeRating": "12",
+    "proficiencyBonus": 4,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "cold",
+          "type": "resistance"
+        },
+        {
+          "name": "prone",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "understands Common but can’t speak"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Tome of Beasts 2, pg. 211"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.blood-frenzy",
+    "feat.kembingur-illhveli-blood-scent",
+    "feat.hold-breath",
+    "feat.siege-monster",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.tail",
+    "feat.kembingur-illhveli-churn-water-recharge-4-6"
+  ],
+  "featureTiers": {
+    "feat.hold-breath": "1-hour"
+  },
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 12,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "6d6 + 8",
+      "damageType": "piercing"
+    },
+    "feat.tail": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 12,
+      "distanceLabel": "reach",
+      "distance": "20",
+      "damageDice": "4d8 + 8",
+      "damageType": "bludgeoning"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.bite",
+          "count": 1
+        },
+        {
+          "featureId": "feat.tail",
+          "count": 1
+        }
+      ],
+      "text": "The creature makes one bite attack and one tail attack."
+    }
+  }
+}

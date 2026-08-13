@@ -1,0 +1,82 @@
+{
+  "kind": "monster",
+  "index": "awakened-shrub",
+  "name": "Awakened Shrub",
+  "notes": "An awakened shrub is an ordinary shrub given sentience and mobility by the awaken spell or similar magic.",
+  "type": "plant",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/awakened-shrub.png",
+  "stats": {
+    "size": "Small",
+    "alignment": "unaligned",
+    "armorClass": 9,
+    "hitPoints": {
+      "max": 10,
+      "current": 10,
+      "diceString": "3d6"
+    },
+    "hitDice": "3d6",
+    "speed": {
+      "walk": 20
+    },
+    "abilities": {
+      "strength": 3,
+      "dexterity": 8,
+      "constitution": 11,
+      "intelligence": 10,
+      "wisdom": 10,
+      "charisma": 6
+    },
+    "initiative": {
+      "bonus": -1
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "fire",
+          "type": "vulnerability"
+        }
+      ],
+      "languages": [
+        "one language known by its creator"
+      ]
+    },
+    "senses": {
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "0",
+    "proficiencyBonus": 2,
+    "xp": 10,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/awakened-shrub"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/awakened-shrub",
+  "featureIds": [
+    "feat.false-appearance-ambush",
+    "feat.rake"
+  ],
+  "featureTiers": {
+    "feat.false-appearance-ambush": "normal-plant"
+  },
+  "featureParams": {
+    "feat.rake": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 1,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d4 - 1",
+      "damageType": "slashing"
+    }
+  }
+}

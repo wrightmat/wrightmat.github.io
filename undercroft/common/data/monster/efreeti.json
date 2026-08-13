@@ -1,0 +1,100 @@
+{
+  "kind": "monster",
+  "index": "efreeti",
+  "name": "Efreeti",
+  "type": "elemental",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/efreeti.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "lawful evil",
+    "armorClass": 17,
+    "hitPoints": {
+      "max": 200,
+      "current": 200,
+      "diceString": "16d10+112"
+    },
+    "hitDice": "16d10",
+    "speed": {
+      "walk": 40,
+      "fly": 60
+    },
+    "abilities": {
+      "strength": 22,
+      "dexterity": 12,
+      "constitution": 24,
+      "intelligence": 16,
+      "wisdom": 15,
+      "charisma": 16
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "INT +7, WIS +6, CHA +7",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "fire",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Ignan"
+      ]
+    },
+    "senses": {
+      "darkvision": 120,
+      "passives": {
+        "perception": 12
+      }
+    },
+    "challengeRating": "11",
+    "proficiencyBonus": 4,
+    "xp": 7200,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/efreeti",
+    "spells": "The efreeti's innate spell casting ability is Charisma (spell save DC 15, +7 to hit with spell attacks). It can innately cast the following spells, requiring no material components:\n\nAt will: detect magic\n3/day: enlarge/reduce, tongues\n1/day each: conjure elemental (fire elemental only), gaseous form, invisibility, major image, plane shift, wall of fire",
+    "saveDC": 15
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/efreeti",
+  "featureIds": [
+    "feat.elemental-demise",
+    "feat.multiattack",
+    "feat.scimitar",
+    "feat.hurl-flame"
+  ],
+  "featureParams": {
+    "feat.scimitar": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 10,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 6",
+      "damageType": "slashing",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "2d6",
+        "damageType": "fire"
+      }
+    },
+    "feat.hurl-flame": {
+      "kind": "Ranged",
+      "attackKind": "Spell",
+      "attackBonus": 7,
+      "distanceLabel": "range",
+      "distance": "120",
+      "damageDice": "5d6",
+      "damageType": "fire"
+    },
+    "feat.multiattack": {
+      "text": "The creature makes two scimitar attacks or uses its Hurl Flame twice."
+    }
+  },
+  "featureTiers": {
+    "feat.elemental-demise": "flash-of-fire"
+  }
+}

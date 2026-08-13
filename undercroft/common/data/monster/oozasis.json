@@ -1,0 +1,128 @@
+{
+  "kind": "monster",
+  "name": "Oozasis",
+  "notes": "_The oasis appears as an idyllic desert respite, offering water, shade, and even perhaps edible fruit and nuts in the trees above._\n\n**Mockmire**. The oozasis, or oasis ooze, is also known as a mockmire in other climates. It mimics a peaceful, pristine watering hole to draw in unsuspecting prey. An oozasis cycles seemingly at random between wakefulness and hibernation.\n\n**Quest Givers**. Within its odd physiology stirs an ancient mind with an inscrutable purpose. Far from being a mere mindless sludge, its fractured intelligence occasionally awakens to read the thoughts of visitors. At these times, it tries to coerce them into undertaking quests for cryptic reasons.\n\n**Ancient Minds**. Some tales claim these creatures preserve the memories of mad wizards from dead empires, or that they have unimaginably ancient, inhuman origins.",
+  "type": "ooze",
+  "stats": {
+    "size": "Gargantuan",
+    "alignment": "Unaligned",
+    "armorClass": 7,
+    "hitPoints": {
+      "max": 217,
+      "current": 217,
+      "diceString": "14d20 + 70"
+    },
+    "hitDice": "14d20",
+    "speed": {
+      "walk": 20,
+      "climb": 20,
+      "swim": 20
+    },
+    "abilities": {
+      "strength": 18,
+      "dexterity": 5,
+      "constitution": 20,
+      "intelligence": 12,
+      "wisdom": 22,
+      "charisma": 18
+    },
+    "initiative": {
+      "bonus": -3
+    },
+    "savingThrows": "Int +5, Wis +10, Cha +8",
+    "skills": "Deception +8, History +5, Insight +10, Perception +10",
+    "senses": {
+      "blindsight": 60,
+      "tremorsense": 120,
+      "passives": {
+        "perception": 20
+      }
+    },
+    "challengeRating": "9",
+    "proficiencyBonus": 4,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "fire",
+          "type": "resistance"
+        },
+        {
+          "name": "lightning; bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "and slashing from nonmagical weapons",
+          "type": "resistance"
+        },
+        {
+          "name": "thunder",
+          "type": "vulnerability"
+        },
+        {
+          "name": "acid",
+          "type": "immunity"
+        },
+        {
+          "name": "blinded",
+          "type": "immunity"
+        },
+        {
+          "name": "charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "deafened",
+          "type": "immunity"
+        },
+        {
+          "name": "exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "prone",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "understands all languages but can’t speak",
+        "telepathy 120 ft."
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Tome of Beasts 1, pg. 310"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.amorphous",
+    "feat.oozasis-mirage",
+    "feat.oozasis-waters-of-unfathomable-compulsion",
+    "feat.multiattack",
+    "feat.oozasis-pseudopod",
+    "feat.oozasis-engulf",
+    "feat.oozasis-vapors-of-tranquility-or-turmoil-recharges-after-a-short-or-long-rest"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.oozasis-pseudopod",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two pseudopod attacks."
+    }
+  }
+}

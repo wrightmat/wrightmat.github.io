@@ -1,0 +1,33 @@
+{
+  "id": "feat.wild-mange-shock-step",
+  "name": "Shock Step",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature teleports up to 60 feet. Immediately after it disappears, the tear in reality bursts, and each creature within 10 feet of the space the creature formerly occupied must make a DC 12 Constitution saving throw, taking 2d6 lightning damage on a failed save, or half as much damage on a successful one.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature teleports up to 60 feet. Immediately after it disappears, the tear in reality bursts, and each creature within 10 feet of the space the creature formerly occupied must make a DC 12 Constitution saving throw, taking 2d6 lightning damage on a failed save, or half as much damage on a successful one.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "mobility",
+      "damage"
+    ],
+    "recipeSlots": [
+      "escape"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

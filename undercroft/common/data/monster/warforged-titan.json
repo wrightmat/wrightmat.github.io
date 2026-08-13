@@ -1,0 +1,126 @@
+{
+  "kind": "monster",
+  "name": "Warforged Titan",
+  "image": "https://static.wikia.nocookie.net/eberron/images/a/a6/Warforgedtitan.jpg",
+  "notes": "",
+  "type": "construct",
+  "stats": {
+    "size": "Huge",
+    "alignment": "Lawful Neutral",
+    "armorClass": 20,
+    "hitPoints": {
+      "max": 125,
+      "current": 125,
+      "diceString": "10d12 + 60"
+    },
+    "hitDice": "10d12",
+    "speed": {
+      "walk": 40
+    },
+    "abilities": {
+      "strength": 23,
+      "dexterity": 8,
+      "constitution": 22,
+      "intelligence": 11,
+      "wisdom": 3,
+      "charisma": 1
+    },
+    "initiative": {
+      "bonus": -1
+    },
+    "savingThrows": "",
+    "skills": "",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "8",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Psychic",
+          "type": "immunity"
+        },
+        {
+          "name": "charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "petrified",
+          "type": "immunity"
+        },
+        {
+          "name": "poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "understands the languages of its creator but cant speak"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Homebrew",
+      "https://www.dndwiki.io/monsters/warforged-titan"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.warforged-titan-platforms",
+    "feat.siege-monster",
+    "feat.multiattack",
+    "feat.warforged-titan-axehand",
+    "feat.hammerfist",
+    "feat.warforged-titan-sweeping-axe-recharge-5-6"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.warforged-titan-axehand",
+          "count": 1
+        },
+        {
+          "featureId": "feat.hammerfist",
+          "count": 1
+        }
+      ],
+      "text": "The creature makes one axehand attack and one hammerfist attack."
+    },
+    "feat.hammerfist": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 9,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "3d8 + 6",
+      "damageType": "bludgeoning",
+      "rider": {
+        "kind": "condition-no-save",
+        "condition": "must succeed on a DC: 17 Strength saving throw or be knocked prone"
+      }
+    }
+  }
+}

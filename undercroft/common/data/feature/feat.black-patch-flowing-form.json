@@ -1,0 +1,30 @@
+{
+  "id": "feat.black-patch-flowing-form",
+  "name": "Flowing Form",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature can enter a hostile creature’s space and stop there. It can move through a space as narrow as 1 inch wide without squeezing.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature can enter a hostile creature’s space and stop there. It can move through a space as narrow as 1 inch wide without squeezing."
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "mobility"
+    ],
+    "recipeSlots": [
+      "escape"
+    ],
+    "roles": [],
+    "creatureTypes": [
+      "Ooze"
+    ],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

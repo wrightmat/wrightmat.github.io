@@ -1,0 +1,32 @@
+{
+  "id": "feat.usvapna-quori-bloodied-shriek",
+  "name": "Bloodied Shriek",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "As a reaction to being reduced to below half its hit points (115), the creature immediately recharges and uses its Throughscour Shriek.",
+  "mechanics": {
+    "type": "passive",
+    "text": "As a reaction to being reduced to below half its hit points (115), the creature immediately recharges and uses its Throughscour Shriek.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "reaction"
+  }
+}

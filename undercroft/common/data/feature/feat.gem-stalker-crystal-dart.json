@@ -1,0 +1,69 @@
+{
+  "id": "feat.gem-stalker-crystal-dart",
+  "name": "Crystal Dart",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Ranged Spell Attack: +5 to hit, range 30 ft., one target. Hit: 7 (1d10 + 2) force damage, and one of the following effects occurs, determined by the kind of dragon that created the creature:",
+  "mechanics": {
+    "type": "passive",
+    "text": "Ranged Spell Attack: +5 to hit, range 30 ft., one target. Hit: 7 (1d10 + 2) force damage, and one of the following effects occurs, determined by the kind of dragon that created the creature:",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "bonus-action"
+  },
+  "options": [
+    {
+      "id": "amethyst",
+      "name": "Amethyst",
+      "mechanics": {
+        "text": "The creature can teleport to an unoccupied space it can see within 30 feet of it."
+      }
+    },
+    {
+      "id": "crystal",
+      "name": "Crystal",
+      "mechanics": {
+        "text": "The creature gains a number of temporary hit points equal to the damage dealt."
+      }
+    },
+    {
+      "id": "emerald",
+      "name": "Emerald",
+      "mechanics": {
+        "text": "The target must roll a d4 and subtract the number rolled from the next attack roll it makes before the start of the creature's next turn."
+      }
+    },
+    {
+      "id": "sapphire",
+      "name": "Sapphire",
+      "mechanics": {
+        "text": "The target must succeed on a DC 13 Strength saving throw or be pushed horizontally up to 10 feet away from the creature and be knocked prone."
+      }
+    },
+    {
+      "id": "topaz",
+      "name": "Topaz",
+      "mechanics": {
+        "text": "The target must succeed on a DC 13 Constitution saving throw or be poisoned until the start of the creature's next turn."
+      }
+    }
+  ]
+}

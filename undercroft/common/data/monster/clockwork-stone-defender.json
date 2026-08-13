@@ -1,0 +1,111 @@
+{
+  "kind": "monster",
+  "name": "Clockwork Stone Defender",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/25746/232/1000/1000/637880557295319136.jpeg",
+  "notes": "",
+  "type": "construct",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Unaligned",
+    "armorClass": 16,
+    "hitPoints": {
+      "max": 105,
+      "current": 105,
+      "diceString": "14d8 + 42"
+    },
+    "hitDice": "14d8",
+    "speed": {},
+    "abilities": {
+      "strength": 19,
+      "dexterity": 10,
+      "constitution": 17,
+      "intelligence": 3,
+      "wisdom": 10,
+      "charisma": 1
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "4",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "Exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "Frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "Paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "Petrified",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "understands one language of its creator but can’t speak"
+      ]
+    },
+    "environments": [
+      "Forest",
+      "Grassland",
+      "Hill",
+      "Mountain"
+    ],
+    "sources": [
+      "MPMM",
+      "https://www.dndbeyond.com/monsters/2560759-clockwork-stone-defender",
+      "Mordenkainen Presents: Monsters of the Multiverse, pg. 80"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.magic-resistance",
+    "feat.unusual-nature",
+    "feat.slam",
+    "feat.clockwork-stone-defender-intercept-attack"
+  ],
+  "featureParams": {
+    "feat.slam": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 4",
+      "damageType": "bludgeoning",
+      "rider": {
+        "kind": "condition-no-save",
+        "condition": "is knocked prone, if it is Large or smaller"
+      }
+    }
+  }
+}

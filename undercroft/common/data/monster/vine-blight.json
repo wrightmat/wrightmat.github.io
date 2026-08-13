@@ -1,0 +1,77 @@
+{
+  "kind": "monster",
+  "name": "Vine Blight",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/16/466/1000/1000/636376287271000215.png",
+  "notes": "",
+  "type": "plant",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Neutral Evil",
+    "armorClass": 12,
+    "hitPoints": {
+      "max": 26,
+      "current": 26,
+      "diceString": "4d8 + 8"
+    },
+    "hitDice": "4d8",
+    "speed": {
+      "walk": 10
+    },
+    "abilities": {
+      "strength": 15,
+      "dexterity": 8,
+      "constitution": 14,
+      "intelligence": 5,
+      "wisdom": 10,
+      "charisma": 3
+    },
+    "initiative": {
+      "bonus": -1
+    },
+    "savingThrows": "",
+    "skills": "Stealth +1",
+    "senses": {
+      "blindsight": 60,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "1/2",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Blinded",
+          "type": "immunity"
+        },
+        {
+          "name": "Deafened",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "understands Common but can’t speak"
+      ]
+    },
+    "environments": [
+      "Forest"
+    ],
+    "sources": [
+      "MM",
+      "https://www.dndbeyond.com/monsters/17216-vine-blight",
+      "Monster Manual, pg. 32"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.false-appearance-ambush",
+    "feat.vine-blight-constrict",
+    "feat.vine-blight-entangling-plants-recharge-5-6"
+  ],
+  "featureTiers": {
+    "feat.false-appearance-ambush": "tangle-of-vines"
+  }
+}

@@ -1,0 +1,105 @@
+{
+  "kind": "monster",
+  "name": "Werebat",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/4772/20/1000/1000/636764577391179535.png",
+  "notes": "",
+  "type": "humanoid",
+  "stats": {
+    "size": "Small",
+    "alignment": "Neutral Evil",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 24,
+      "current": 24
+    },
+    "hitDice": "7d6",
+    "speed": {
+      "walk": 30,
+      "climb": 30,
+      "fly": 60
+    },
+    "abilities": {
+      "strength": 8,
+      "dexterity": 17,
+      "constitution": 10,
+      "intelligence": 10,
+      "wisdom": 12,
+      "charisma": 8
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "",
+    "skills": "Perception +3, Stealth +5",
+    "senses": {
+      "passives": {
+        "perception": 13
+      }
+    },
+    "challengeRating": "2",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "bludgeoning",
+          "type": "immunity"
+        },
+        {
+          "name": "piercing",
+          "type": "immunity"
+        },
+        {
+          "name": "and slashing from nonmagical attacks that aren't silvered",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Goblin (can’t speak in bat form)"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "WDotMM",
+      "https://www.dndbeyond.com/monsters/183864-werebat",
+      "Waterdeep: Dungeon of the Mad Mage"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.shapechanger",
+    "feat.werebat-echolocation-bat-or-hybrid-form-only",
+    "feat.werebat-keen-hearing",
+    "feat.nimble-escape",
+    "feat.sunlight-sensitivity",
+    "feat.multiattack",
+    "feat.werebat-bite-shark-or-hybrid-form-only",
+    "feat.scimitar",
+    "feat.shortbow"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "text": "In humanoid form, the creature makes two scimitar attacks or two shortbow attacks. In hybrid form, it can make one bite attack and one scimitar attack."
+    },
+    "feat.scimitar": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d6 + 3",
+      "damageType": "slashing"
+    },
+    "feat.shortbow": {
+      "kind": "Ranged",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "range",
+      "distance": "80/320",
+      "damageDice": "1d6 + 3",
+      "damageType": "piercing"
+    }
+  }
+}

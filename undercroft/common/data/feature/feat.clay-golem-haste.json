@@ -1,0 +1,28 @@
+{
+  "id": "feat.clay-golem-haste",
+  "name": "Haste",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Until the end of its next turn, the creature magically gains a +2 bonus to its AC, has advantage on Dexterity saving throws, and can use its slam attack as a bonus action.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "Until the end of its next turn, the creature magically gains a +2 bonus to its AC, has advantage on Dexterity saving throws, and can use its slam attack as a bonus action."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

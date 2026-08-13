@@ -1,0 +1,33 @@
+{
+  "id": "feat.tlexolotl-tail",
+  "name": "Tail",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Melee Weapon Attack: +11 to hit, reach 10 ft., one target. Hit: 11 (1d8 + 7) bludgeoning damage plus 14 (4d6) fire damage. If the target is a Large or smaller creature, it must succeed on a DC 19 Strength saving throw or be pushed up to 10 feet away from the tlexolotl and knocked prone.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "Melee Weapon Attack: +11 to hit, reach 10 ft., one target. Hit: 11 (1d8 + 7) bludgeoning damage plus 14 (4d6) fire damage. If the target is a Large or smaller creature, it must succeed on a DC 19 Strength saving throw or be pushed up to 10 feet away from the tlexolotl and knocked prone."
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "control"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

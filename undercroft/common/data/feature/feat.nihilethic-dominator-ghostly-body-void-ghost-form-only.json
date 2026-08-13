@@ -1,0 +1,28 @@
+{
+  "id": "feat.nihilethic-dominator-ghostly-body-void-ghost-form-only",
+  "name": "Ghostly Body (Void Ghost Form Only)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature has resistance to bludgeoning, piercing, and slashing damage from nonmagical attacks. In addition, the creature can move through other creatures and objects as if they were difficult terrain. It takes 5 (1d10) force damage if it ends its turn inside an object.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature has resistance to bludgeoning, piercing, and slashing damage from nonmagical attacks. In addition, the creature can move through other creatures and objects as if they were difficult terrain. It takes 5 (1d10) force damage if it ends its turn inside an object."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

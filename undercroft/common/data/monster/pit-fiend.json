@@ -1,0 +1,160 @@
+{
+  "kind": "monster",
+  "index": "pit-fiend",
+  "name": "Pit Fiend",
+  "type": "fiend",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/pit-fiend.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "lawful evil",
+    "armorClass": 19,
+    "hitPoints": {
+      "max": 300,
+      "current": 300,
+      "diceString": "24d10+168"
+    },
+    "hitDice": "24d10",
+    "speed": {
+      "walk": 30,
+      "fly": 60
+    },
+    "abilities": {
+      "strength": 26,
+      "dexterity": 14,
+      "constitution": 24,
+      "intelligence": 22,
+      "wisdom": 18,
+      "charisma": 24
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "DEX +8, CON +13, WIS +10",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "cold",
+          "type": "resistance"
+        },
+        {
+          "name": "bludgeoning, piercing, and slashing from nonmagical weapons that aren't silvered",
+          "type": "resistance"
+        },
+        {
+          "name": "fire",
+          "type": "immunity"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Infernal",
+        "telepathy 120 ft."
+      ]
+    },
+    "senses": {
+      "truesight": 120,
+      "passives": {
+        "perception": 14
+      }
+    },
+    "challengeRating": "20",
+    "proficiencyBonus": 6,
+    "xp": 25000,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/pit-fiend",
+    "spells": "The pit fiend's spellcasting ability is Charisma (spell save DC 21). The pit fiend can innately cast the following spells, requiring no material components:\nAt will: detect magic, fireball\n3/day each: hold monster, wall of fire",
+    "saveDC": 21
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/pit-fiend",
+  "featureIds": [
+    "feat.fear-aura",
+    "feat.magic-resistance",
+    "feat.magic-weapons",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.claw",
+    "feat.mace",
+    "feat.tail"
+  ],
+  "featureParams": {
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 14,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "2d8 + 8",
+      "damageType": "slashing"
+    },
+    "feat.mace": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 14,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "2d6 + 8",
+      "damageType": "bludgeoning",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "6d6",
+        "damageType": "fire"
+      }
+    },
+    "feat.tail": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 14,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "3d10 + 8",
+      "damageType": "bludgeoning"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.bite",
+          "count": 1
+        },
+        {
+          "featureId": "feat.claw",
+          "count": 1
+        },
+        {
+          "featureId": "feat.mace",
+          "count": 1
+        },
+        {
+          "featureId": "feat.tail",
+          "count": 1
+        }
+      ],
+      "text": "The creature makes four attacks: one with its bite, one with its claw, one with its mace, and one with its tail."
+    },
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 14,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "4d6 + 8",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "save-or-condition"
+      }
+    }
+  },
+  "featureTiers": {
+    "feat.fear-aura": "dc-21"
+  }
+}

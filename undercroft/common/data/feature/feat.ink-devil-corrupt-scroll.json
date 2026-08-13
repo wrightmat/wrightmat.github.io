@@ -1,0 +1,33 @@
+{
+  "id": "feat.ink-devil-corrupt-scroll",
+  "name": "Corrupt Scroll",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "a creature can corrupt the magic within any scroll by touch. Any such corrupted scroll requires a DC 13 Intelligence saving throw to use successfully. If the check fails, the scroll’s spell affects the caster if it is an offensive spell, or it affects the nearest devil if it is a beneficial spell.",
+  "mechanics": {
+    "type": "passive",
+    "text": "a creature can corrupt the magic within any scroll by touch. Any such corrupted scroll requires a DC 13 Intelligence saving throw to use successfully. If the check fails, the scroll’s spell affects the caster if it is an offensive spell, or it affects the nearest devil if it is a beneficial spell.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "control",
+      "debuff"
+    ],
+    "recipeSlots": [
+      "deny"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

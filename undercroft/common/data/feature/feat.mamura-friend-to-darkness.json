@@ -1,0 +1,29 @@
+{
+  "id": "feat.mamura-friend-to-darkness",
+  "name": "Friend to Darkness",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "In darkness or dim light, the creature has advantage on Stealth checks. It can attempt to hide as a bonus action at the end of its turn if it’s in dim light or darkness.",
+  "mechanics": {
+    "type": "passive",
+    "text": "In darkness or dim light, the creature has advantage on Stealth checks. It can attempt to hide as a bonus action at the end of its turn if it’s in dim light or darkness.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "mobility"
+    ],
+    "recipeSlots": [
+      "escape"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

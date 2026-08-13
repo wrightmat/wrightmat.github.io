@@ -1,0 +1,32 @@
+{
+  "id": "feat.fractine-imprison",
+  "name": "Imprison",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature targets one creature of its size or smaller in its space. The target must succeed on a DC 16 Dexterity saving throw or be imprisoned in a demiplane. While the creature is imprisoned, a distorted image of it can be seen on the creature’s two-dimensional surface. The demiplane moves with the creature, has indestructible and opaque walls, and is only as big as it needs to be to contain the target, which doesn’t suffer from hunger or thirst while imprisoned. No other creature can enter the demiplane, and the creature can’t be harmed from within the demiplane. The creature can imprison only one creature at a time and can release that creature as a bonus action. If the creature is reduced to 0 hit points, any creature in the creature’s demiplane is released instantly. A released creature reappears in an unoccupied space as close to the creature (or where it died) as possible. A creature can leave the demiplane on its own by using magic that enables planar travel, such as the plane shift spell.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature targets one creature of its size or smaller in its space. The target must succeed on a DC 16 Dexterity saving throw or be imprisoned in a demiplane. While the creature is imprisoned, a distorted image of it can be seen on the creature’s two-dimensional surface. The demiplane moves with the creature, has indestructible and opaque walls, and is only as big as it needs to be to contain the target, which doesn’t suffer from hunger or thirst while imprisoned. No other creature can enter the demiplane, and the creature can’t be harmed from within the demiplane. The creature can imprison only one creature at a time and can release that creature as a bonus action. If the creature is reduced to 0 hit points, any creature in the creature’s demiplane is released instantly. A released creature reappears in an unoccupied space as close to the creature (or where it died) as possible. A creature can leave the demiplane on its own by using magic that enables planar travel, such as the plane shift spell.",
+    "scope": "unique"
+  },
+  "budgetCost": 4,
+  "tags": {
+    "behaviors": [
+      "control"
+    ],
+    "recipeSlots": [
+      "isolate"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "bonus-action"
+  }
+}

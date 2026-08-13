@@ -1,0 +1,32 @@
+{
+  "id": "feat.corpse-flower-digest",
+  "name": "Digest",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature digests one corpse in its body and instantly regains 11 (2d10) hit points. Nothing of the digested corpse remains. Any equipment on the creature is expelled from the creature in its space.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature digests one corpse in its body and instantly regains 11 (2d10) hit points. Nothing of the digested corpse remains. Any equipment on the creature is expelled from the creature in its space.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "regeneration"
+    ],
+    "recipeSlots": [
+      "drain"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "bonus-action"
+  }
+}

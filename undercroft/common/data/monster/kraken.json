@@ -1,0 +1,105 @@
+{
+  "kind": "monster",
+  "index": "kraken",
+  "name": "Kraken",
+  "type": "monstrosity",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/kraken.png",
+  "stats": {
+    "size": "Gargantuan",
+    "alignment": "chaotic evil",
+    "armorClass": 18,
+    "hitPoints": {
+      "max": 472,
+      "current": 472,
+      "diceString": "27d20+189"
+    },
+    "hitDice": "27d20",
+    "speed": {
+      "walk": 20,
+      "swim": 60
+    },
+    "abilities": {
+      "strength": 30,
+      "dexterity": 11,
+      "constitution": 25,
+      "intelligence": 22,
+      "wisdom": 18,
+      "charisma": 20
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "STR +17, DEX +7, CON +14, INT +13, WIS +11",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "lightning",
+          "type": "immunity"
+        },
+        {
+          "name": "bludgeoning, piercing, and slashing from nonmagical weapons",
+          "type": "immunity"
+        },
+        {
+          "name": "Frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "Paralyzed",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "understands Abyssal",
+        "Celestial",
+        "Infernal",
+        "and Primordial but can't speak",
+        "telepathy 120 ft."
+      ]
+    },
+    "senses": {
+      "truesight": 120,
+      "passives": {
+        "perception": 14
+      }
+    },
+    "challengeRating": "23",
+    "proficiencyBonus": 7,
+    "xp": 50000,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/kraken"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/kraken",
+  "featureIds": [
+    "feat.amphibious",
+    "feat.freedom-of-movement",
+    "feat.siege-monster",
+    "feat.multiattack",
+    "feat.kraken-bite",
+    "feat.kraken-tentacle",
+    "feat.fling",
+    "feat.kraken-lightning-storm",
+    "feat.kraken-tentacle-attack-or-fling",
+    "feat.kraken-lightning-storm-costs-2-actions",
+    "feat.ink-cloud-2"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.kraken-tentacle",
+          "count": 3
+        }
+      ],
+      "text": "The creature makes three tentacle attacks, each of which it can replace with one use of Fling."
+    }
+  },
+  "featureTiers": {
+    "feat.ink-cloud-2": "kraken-costs-3-actions",
+    "feat.fling": "adult"
+  }
+}

@@ -1,0 +1,137 @@
+{
+  "kind": "monster",
+  "index": "will-o-wisp",
+  "name": "Will-o'-Wisp",
+  "type": "undead",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/will-o-wisp.png",
+  "stats": {
+    "size": "Tiny",
+    "alignment": "chaotic evil",
+    "armorClass": 19,
+    "hitPoints": {
+      "max": 22,
+      "current": 22,
+      "diceString": "9d4"
+    },
+    "hitDice": "9d4",
+    "speed": {
+      "walk": 0,
+      "fly": 50,
+      "hover": true
+    },
+    "abilities": {
+      "strength": 1,
+      "dexterity": 28,
+      "constitution": 10,
+      "intelligence": 13,
+      "wisdom": 14,
+      "charisma": 11
+    },
+    "initiative": {
+      "bonus": 9
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "acid",
+          "type": "resistance"
+        },
+        {
+          "name": "cold",
+          "type": "resistance"
+        },
+        {
+          "name": "fire",
+          "type": "resistance"
+        },
+        {
+          "name": "necrotic",
+          "type": "resistance"
+        },
+        {
+          "name": "thunder",
+          "type": "resistance"
+        },
+        {
+          "name": "bludgeoning, piercing, and slashing from nonmagical weapons",
+          "type": "resistance"
+        },
+        {
+          "name": "lightning",
+          "type": "immunity"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "Grappled",
+          "type": "immunity"
+        },
+        {
+          "name": "Paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        },
+        {
+          "name": "Prone",
+          "type": "immunity"
+        },
+        {
+          "name": "Restrained",
+          "type": "immunity"
+        },
+        {
+          "name": "Unconscious",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "the languages it knew in life"
+      ]
+    },
+    "senses": {
+      "darkvision": 120,
+      "passives": {
+        "perception": 12
+      }
+    },
+    "challengeRating": "2",
+    "proficiencyBonus": 2,
+    "xp": 450,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/will-o-wisp"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/will-o-wisp",
+  "featureIds": [
+    "feat.will-o-wisp-consume-life",
+    "feat.ephemeral",
+    "feat.incorporeal-movement",
+    "feat.living-star-variable-illumination",
+    "feat.shock",
+    "feat.will-o-wisp-invisibility"
+  ],
+  "featureParams": {
+    "feat.shock": {
+      "kind": "Melee",
+      "attackKind": "Spell",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d8",
+      "damageType": "lightning"
+    }
+  }
+}

@@ -1,0 +1,139 @@
+{
+  "kind": "monster",
+  "index": "iron-golem",
+  "name": "Iron Golem",
+  "type": "construct",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/iron-golem.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "unaligned",
+    "armorClass": 20,
+    "hitPoints": {
+      "max": 210,
+      "current": 210,
+      "diceString": "20d10+100"
+    },
+    "hitDice": "20d10",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 24,
+      "dexterity": 9,
+      "constitution": 20,
+      "intelligence": 3,
+      "wisdom": 11,
+      "charisma": 1
+    },
+    "initiative": {
+      "bonus": -1
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "fire",
+          "type": "immunity"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "psychic",
+          "type": "immunity"
+        },
+        {
+          "name": "bludgeoning, piercing, and slashing from nonmagical weapons that aren't adamantine",
+          "type": "immunity"
+        },
+        {
+          "name": "Charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "Exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "Frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "Paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "Petrified",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "understands the languages of its creator but can't speak"
+      ]
+    },
+    "senses": {
+      "darkvision": 120,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "16",
+    "proficiencyBonus": 5,
+    "xp": 15000,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/iron-golem"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/iron-golem",
+  "featureIds": [
+    "feat.iron-golem-fire-absorption",
+    "feat.immutable-form",
+    "feat.magic-resistance",
+    "feat.magic-weapons",
+    "feat.multiattack",
+    "feat.slam",
+    "feat.sword",
+    "feat.poison-breath"
+  ],
+  "featureParams": {
+    "feat.slam": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 13,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "3d8 + 7",
+      "damageType": "bludgeoning"
+    },
+    "feat.sword": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 13,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "3d10 + 7",
+      "damageType": "slashing"
+    },
+    "feat.poison-breath": {
+      "verb": "exhales",
+      "substance": "poisonous gas",
+      "areaSize": "15",
+      "areaShape": "cone",
+      "dcAbility": "constitution",
+      "ability": "constitution",
+      "damageDice": "10d8",
+      "damageType": "poison"
+    },
+    "feat.multiattack": {
+      "text": "The creature makes two melee attacks."
+    }
+  }
+}

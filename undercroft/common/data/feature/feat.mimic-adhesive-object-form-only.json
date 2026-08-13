@@ -1,0 +1,24 @@
+{
+  "id": "feat.mimic-adhesive-object-form-only",
+  "name": "Adhesive (Object Form Only)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The monstrosity adheres to anything that touches it. A Huge or smaller creature adhered to the monstrosity is also grappled by it (escape DC 13). Ability checks made to escape this grapple have disadvantage.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The monstrosity adheres to anything that touches it. A Huge or smaller creature adhered to the monstrosity is also grappled by it (escape DC 13). Ability checks made to escape this grapple have disadvantage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,28 @@
+{
+  "id": "feat.nightmare-ethereal-stride",
+  "name": "Ethereal Stride",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The fiend and up to three willing creatures within 5 feet of it magically enter the Ethereal Plane from the Material Plane, or vice versa.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The fiend and up to three willing creatures within 5 feet of it magically enter the Ethereal Plane from the Material Plane, or vice versa."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

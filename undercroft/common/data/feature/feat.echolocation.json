@@ -22,5 +22,15 @@
     ]
   },
   "synergizesWith": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "no-water",
+      "name": "Echolocation (No Water)",
+      "shortName": "No water",
+      "mechanics": {
+        "text": "The creature can't use its blindsight while deafened or out of the water."
+      }
+    }
+  ]
 }

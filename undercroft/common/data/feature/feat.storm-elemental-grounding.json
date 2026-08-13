@@ -1,0 +1,29 @@
+{
+  "id": "feat.storm-elemental-grounding",
+  "name": "Grounding",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Lightning damage the creature deals to earth elementals or to creatures that are buried or burrowing in earth is halved.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Lightning damage the creature deals to earth elementals or to creatures that are buried or burrowing in earth is halved.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

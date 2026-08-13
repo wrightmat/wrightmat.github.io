@@ -1,0 +1,33 @@
+{
+  "id": "feat.eldritch-lich-psychic-whisper",
+  "name": "Psychic Whisper",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature targets one creature it can see within 120 feet of itself. The target must succeed on a DC 17 Wisdom saving throw or take 25 (6d6 + 4) psychic damage and be stunned until the end of the creature’s next turn as incomprehensible whispers fill the target’s mind.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature targets one creature it can see within 120 feet of itself. The target must succeed on a DC 17 Wisdom saving throw or take 25 (6d6 + 4) psychic damage and be stunned until the end of the creature’s next turn as incomprehensible whispers fill the target’s mind.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "control"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "id": "feat.lorehold-apprentice-learn-from-the-past-2-day",
+  "name": "Learn from the Past (2/Day)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "When another creature within 60 feet of the creature misses a target with an attack roll, the creature magically enables the attacker to reroll the attack roll. It must use the new roll.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When another creature within 60 feet of the creature misses a target with an attack roll, the creature magically enables the attacker to reroll the attack roll. It must use the new roll.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "reaction"
+  }
+}

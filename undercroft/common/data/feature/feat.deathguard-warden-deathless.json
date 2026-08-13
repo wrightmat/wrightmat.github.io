@@ -1,0 +1,29 @@
+{
+  "id": "feat.deathguard-warden-deathless",
+  "name": "Deathless",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature is destroyed when reduced to 0 hit points, but it returns to life where it fell on the next dawn with full hit points. It can be killed only by exposing it to the direct negative energy of the plane of Mabar.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature is destroyed when reduced to 0 hit points, but it returns to life where it fell on the next dawn with full hit points. It can be killed only by exposing it to the direct negative energy of the plane of Mabar.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "endure"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

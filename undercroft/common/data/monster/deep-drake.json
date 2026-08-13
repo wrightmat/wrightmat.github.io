@@ -1,0 +1,135 @@
+{
+  "kind": "monster",
+  "name": "Deep Drake",
+  "notes": "",
+  "type": "dragon",
+  "stats": {
+    "size": "Large",
+    "alignment": "Chaotic Evil",
+    "armorClass": "17 (natural armor)",
+    "hitPoints": {
+      "max": 150,
+      "current": 150,
+      "diceString": "20d10 + 40"
+    },
+    "hitDice": "20d10",
+    "speed": {
+      "walk": 40,
+      "climb": 30,
+      "fly": 80
+    },
+    "abilities": {
+      "strength": 21,
+      "dexterity": 19,
+      "constitution": 14,
+      "intelligence": 11,
+      "wisdom": 14,
+      "charisma": 12
+    },
+    "initiative": {
+      "bonus": 4
+    },
+    "savingThrows": "Dex +8, Con +6",
+    "skills": "Athletics +9, Insight +6, Perception +6",
+    "senses": {
+      "blindsight": 60,
+      "darkvision": 120,
+      "passives": {
+        "perception": 16
+      }
+    },
+    "challengeRating": "9",
+    "proficiencyBonus": 4,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "necrotic",
+          "type": "immunity"
+        },
+        {
+          "name": "paralyzed",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Common",
+        "Darakhul",
+        "Draconic",
+        "Undercommon"
+      ]
+    },
+    "environments": [
+      "Underdark"
+    ],
+    "sources": [
+      "ToB1",
+      "Tome of Beasts 1"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.magic-resistance",
+    "feat.sunlight-sensitivity",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.claw",
+    "feat.deep-drake-stinger",
+    "feat.enervating-breath"
+  ],
+  "featureTiers": {
+    "feat.deep-drake-enervating-breath-recharge-5-6": "recharge-5to6"
+  },
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 9,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "2d10 + 5",
+      "damageType": "piercing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.bite",
+          "count": 1
+        },
+        {
+          "featureId": "feat.claw",
+          "count": 2
+        },
+        {
+          "featureId": "feat.deep-drake-stinger",
+          "count": 1
+        }
+      ],
+      "text": "The creature makes one Bite attack, two Claw attacks, and one Stinger attack."
+    },
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 9,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 5",
+      "damageType": "slashing"
+    },
+    "feat.enervating-breath": {
+      "verb": "exhales",
+      "substance": "pain-inducing, purple-black energy",
+      "areaSize": "90",
+      "areaShape": "line",
+      "dcAbility": "constitution",
+      "ability": "dexterity",
+      "rider": {
+        "kind": "fail-condition",
+        "conditionText": "On a failure, a creature takes 35 (10d6) necrotic damage and is stunned until the end of its next turn. On a success, a creature takes half the damage and isn't stunned."
+      },
+      "lineWidth": "5"
+    }
+  }
+}

@@ -1,0 +1,92 @@
+{
+  "kind": "monster",
+  "name": "Orc War Chief",
+  "image": "https://www.aidedd.org/dnd/images/orc.jpg",
+  "notes": "",
+  "type": "humanoid",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Chaotic Evil",
+    "armorClass": 16,
+    "hitPoints": {
+      "max": 93,
+      "current": 93,
+      "diceString": "11d8 + 44"
+    },
+    "hitDice": "11d8",
+    "speed": {},
+    "abilities": {
+      "strength": 18,
+      "dexterity": 12,
+      "constitution": 18,
+      "intelligence": 11,
+      "wisdom": 11,
+      "charisma": 16
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "Str +6, Con +6, Wis +2",
+    "skills": "Intimidation +5",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "4",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Common",
+        "Orc"
+      ]
+    },
+    "environments": [
+      "Arctic",
+      "Forest",
+      "Grassland",
+      "Hill",
+      "Mountain",
+      "Swamp",
+      "Underdark"
+    ],
+    "sources": [
+      "MM",
+      "https://www.dndbeyond.com/monsters/17187-orc-war-chief",
+      "Monster Manual, pg. 246"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.aggressive",
+    "feat.orc-eye-of-gruumsh-gruumsh-s-fury",
+    "feat.multiattack",
+    "feat.greataxe",
+    "feat.orc-war-chief-spear",
+    "feat.orc-war-chief-battle-cry-1-day"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "text": "The orc makes two attacks with its greataxe or its spear."
+    },
+    "feat.greataxe": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d12 + 4",
+      "damageType": "slashing",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "1d8",
+        "damageType": "slashing"
+      }
+    }
+  }
+}

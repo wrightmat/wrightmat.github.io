@@ -1,0 +1,28 @@
+{
+  "id": "feat.prismatic-golem-elemental-shift",
+  "name": "Elemental Shift",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "At the start of each of the creature's turns, it can choose one of its resisted damage types and become immune to it until the start of its next turn, where it cycles to another one. The creature can not be immune to more than one damage type from this feature at a time.",
+  "mechanics": {
+    "type": "passive",
+    "text": "At the start of each of the creature's turns, it can choose one of its resisted damage types and become immune to it until the start of its next turn, where it cycles to another one. The creature can not be immune to more than one damage type from this feature at a time."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "adapt"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

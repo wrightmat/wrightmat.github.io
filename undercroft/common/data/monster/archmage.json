@@ -1,0 +1,81 @@
+{
+  "kind": "monster",
+  "index": "archmage",
+  "name": "Archmage",
+  "notes": "Archmages are powerful (and usually quite old) spellcasters dedicated to the study of the arcane arts. Benevolent ones counsel kings and queens, while evil ones rule as tyrants and pursue lichdom. Those who are neither good nor evil sequester themselves in remote towers to practice their magic without interruption. \n\nAn archmage typically has one or more apprentice mages, and an archmage’s abode has numerous magical wards and guardians to discourage interlopers.",
+  "type": "humanoid",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/archmage.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "any alignment",
+    "armorClass": 12,
+    "hitPoints": {
+      "max": 99,
+      "current": 99,
+      "diceString": "18d8+18"
+    },
+    "hitDice": "18d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 10,
+      "dexterity": 14,
+      "constitution": 12,
+      "intelligence": 20,
+      "wisdom": 15,
+      "charisma": 16
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "INT +9, WIS +6",
+    "skills": "Arcana +13, History +13",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "damage from spells",
+          "type": "resistance"
+        },
+        {
+          "name": "bludgeoning, piercing, and slashing from nonmagical attacks (from stoneskin)",
+          "type": "resistance"
+        }
+      ],
+      "languages": [
+        "any six languages"
+      ]
+    },
+    "senses": {
+      "passives": {
+        "perception": 12
+      }
+    },
+    "challengeRating": "12",
+    "proficiencyBonus": 4,
+    "xp": 8400,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/archmage",
+    "spells": "The archmage is an 18th-level spellcaster. Its spellcasting ability is Intelligence (spell save DC 17, +9 to hit with spell attacks). The archmage can cast disguise self and invisibility at will and has the following wizard spells prepared:\n\n- Cantrips (at will): fire bolt, light, mage hand, prestidigitation, shocking grasp\n- 1st level (4 slots): detect magic, identify, mage armor*, magic missile\n- 2nd level (3 slots): detect thoughts, mirror image, misty step\n- 3rd level (3 slots): counterspell, fly, lightning bolt\n- 4th level (3 slots): banishment, fire shield, stoneskin*\n- 5th level (3 slots): cone of cold, scrying, wall of force\n- 6th level (1 slot): globe of invulnerability\n- 7th level (1 slot): teleport\n- 8th level (1 slot): mind blank*\n- 9th level (1 slot): time stop\n* The archmage casts these spells on itself before combat.",
+    "saveDC": 17
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/archmage",
+  "featureIds": [
+    "feat.magic-resistance",
+    "feat.dagger"
+  ],
+  "featureParams": {
+    "feat.dagger": {
+      "kind": "MeleeOrRanged",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "meleeDistance": "5",
+      "rangeDistance": "20/60",
+      "damageDice": "1d4 + 2",
+      "damageType": "piercing"
+    }
+  }
+}

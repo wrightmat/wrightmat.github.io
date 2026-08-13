@@ -4,10 +4,10 @@
   "systemIds": [
     "sys.dnd5e"
   ],
-  "description": "A successful attack deals extra acid damage and can degrade the target's armor or weapon.",
+  "description": "The creature attack deals extra acid damage and can degrade the target's armor or weapon.",
   "mechanics": {
     "type": "passive-or-triggered",
-    "text": "A successful attack deals extra acid damage and can degrade the target's armor or weapon."
+    "text": "The creature attack deals extra acid damage and can degrade the target's armor or weapon."
   },
   "tags": {
     "behaviors": [

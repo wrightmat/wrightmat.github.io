@@ -1,0 +1,77 @@
+{
+  "kind": "monster",
+  "index": "vampire-spawn",
+  "name": "Vampire Spawn",
+  "type": "undead",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/vampire-spawn.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "neutral evil",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 82,
+      "current": 82,
+      "diceString": "11d8+33"
+    },
+    "hitDice": "11d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 16,
+      "dexterity": 16,
+      "constitution": 16,
+      "intelligence": 11,
+      "wisdom": 10,
+      "charisma": 12
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "DEX +6, WIS +3",
+    "skills": "Perception +3, Stealth +6",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "necrotic",
+          "type": "resistance"
+        },
+        {
+          "name": "bludgeoning, piercing, and slashing from nonmagical weapons",
+          "type": "resistance"
+        }
+      ],
+      "languages": [
+        "the languages it knew in life"
+      ]
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 13
+      }
+    },
+    "challengeRating": "5",
+    "proficiencyBonus": 3,
+    "xp": 1800,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/vampire-spawn"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/vampire-spawn",
+  "featureIds": [
+    "feat.regeneration",
+    "feat.spider-climb",
+    "feat.vampire-spawn-vampire-weaknesses",
+    "feat.multiattack",
+    "feat.vampire-spawn-bite",
+    "feat.vampire-spawn-claws"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "text": "The creature makes two attacks, only one of which can be a bite attack."
+    }
+  }
+}

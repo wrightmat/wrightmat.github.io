@@ -4,12 +4,12 @@
   "systemIds": [
     "sys.dnd5e"
   ],
-  "description": "The creature can hold its breath for a long time, far longer than an ordinary creature could.",
+  "description": "The creature can hold its breath for 1 hour.",
   "mechanics": {
     "type": "passive",
-    "text": "The creature can hold its breath for a long time, far longer than an ordinary creature could."
+    "text": "The creature can hold its breath for 1 hour."
   },
-  "budgetCost": 1,
+  "budgetCost": 0,
   "tags": {
     "behaviors": [
       "utility"
@@ -22,5 +22,31 @@
     ]
   },
   "synergizesWith": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "20-minutes",
+      "name": "Hold Breath",
+      "shortName": "20 Minutes",
+      "mechanics": {
+        "text": "While out of water, the creature can hold its breath for 20 minutes."
+      }
+    },
+    {
+      "id": "30-minutes",
+      "name": "Hold Breath",
+      "shortName": "30 Minutes",
+      "mechanics": {
+        "text": "While out of water, the creature can hold its breath for 30 minutes."
+      }
+    },
+    {
+      "id": "1-hour",
+      "name": "Hold Breath",
+      "shortName": "1 Hour",
+      "mechanics": {
+        "text": "The creature can hold its breath for 1 hour."
+      }
+    }
+  ]
 }

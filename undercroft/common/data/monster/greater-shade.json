@@ -1,0 +1,136 @@
+{
+  "kind": "monster",
+  "name": "Greater Shade",
+  "image": "https://static.wikia.nocookie.net/forgottenrealms/images/f/f9/Shadow_elemental.jpg",
+  "notes": "These shadow beings tend to take on a form that's most resonant to its target, to ensure that it can frighten it to the most extreme level.",
+  "type": "undead",
+  "stats": {
+    "size": "Large",
+    "alignment": "Chaotic Evil",
+    "armorClass": 14,
+    "hitPoints": {
+      "max": "number",
+      "current": "number",
+      "diceString": "15d10 + 15"
+    },
+    "hitDice": "15d10",
+    "speed": {
+      "walk": 40
+    },
+    "abilities": {
+      "strength": 1,
+      "dexterity": 18,
+      "constitution": 13,
+      "intelligence": 10,
+      "wisdom": 13,
+      "charisma": 16
+    },
+    "initiative": {
+      "bonus": 4
+    },
+    "savingThrows": "Dex +7, Cha +6",
+    "skills": "Stealth +7",
+    "senses": {
+      "darkvision": 120,
+      "passives": {
+        "perception": 11
+      }
+    },
+    "challengeRating": "7",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "acid",
+          "type": "resistance"
+        },
+        {
+          "name": "fire",
+          "type": "resistance"
+        },
+        {
+          "name": "necrotic",
+          "type": "resistance"
+        },
+        {
+          "name": "thunder; bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "slashing from non-magical attacks",
+          "type": "resistance"
+        },
+        {
+          "name": "radiant",
+          "type": "vulnerability"
+        },
+        {
+          "name": "cold",
+          "type": "immunity"
+        },
+        {
+          "name": "lightning",
+          "type": "immunity"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "grappled",
+          "type": "immunity"
+        },
+        {
+          "name": "paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "petrified",
+          "type": "immunity"
+        },
+        {
+          "name": "poisoned",
+          "type": "immunity"
+        },
+        {
+          "name": "prone",
+          "type": "immunity"
+        },
+        {
+          "name": "restrained",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Telepathy 120 ft."
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Homebrew",
+      "https://www.reddit.com/r/UnearthedArcana/comments/mhqd40/greater_shadow_what_you_get_when_you_mix_a_shadow/",
+      "https://www.dndbeyond.com/monsters/17010-shadow",
+      "Herald of Darkness, Tome of Beasts 1, page 249."
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.amorphous",
+    "feat.shadow-stealth",
+    "feat.sunlight-weakness",
+    "feat.greater-shade-darkness-embrace",
+    "feat.greater-shade-majesty-of-the-abyss-recharge-4-6",
+    "feat.greater-shade-devour-sanity-1-day"
+  ]
+}

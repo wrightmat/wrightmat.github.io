@@ -1,0 +1,33 @@
+{
+  "id": "feat.adult-oblex-sulfurous-impersonation",
+  "name": "Sulfurous Impersonation",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature extrudes a piece of itself that assumes the appearance of one Medium or smaller creature whose memories it has stolen. This simulacrum appears, feels, and sounds exactly like the creature it impersonates, though it smells faintly of sulfur. The creature can impersonate 1d4 + 1 different creatures, each one tethered to its body by a strand of slime that can extend up to 120 feet away. The simulacrum is an extension of the creature, meaning that the creature occupies its space and the simulacrum’s space simultaneously. The tether is immune to damage, but it is severed if there is no opening at least 1 inch wide between the creature and the simulacrum. The simulacrum disappears if the tether is severed.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature extrudes a piece of itself that assumes the appearance of one Medium or smaller creature whose memories it has stolen. This simulacrum appears, feels, and sounds exactly like the creature it impersonates, though it smells faintly of sulfur. The creature can impersonate 1d4 + 1 different creatures, each one tethered to its body by a strand of slime that can extend up to 120 feet away. The simulacrum is an extension of the creature, meaning that the creature occupies its space and the simulacrum’s space simultaneously. The tether is immune to damage, but it is severed if there is no opening at least 1 inch wide between the creature and the simulacrum. The simulacrum disappears if the tether is severed.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "utility",
+      "control"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "bonus-action"
+  }
+}

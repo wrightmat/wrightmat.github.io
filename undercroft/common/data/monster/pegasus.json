@@ -1,0 +1,72 @@
+{
+  "kind": "monster",
+  "index": "pegasus",
+  "name": "Pegasus",
+  "type": "celestial",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/pegasus.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "chaotic good",
+    "armorClass": 12,
+    "hitPoints": {
+      "max": 59,
+      "current": 59,
+      "diceString": "7d10+21"
+    },
+    "hitDice": "7d10",
+    "speed": {
+      "walk": 60,
+      "fly": 90
+    },
+    "abilities": {
+      "strength": 18,
+      "dexterity": 15,
+      "constitution": 16,
+      "intelligence": 10,
+      "wisdom": 15,
+      "charisma": 13
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "DEX +4, WIS +4, CHA +3",
+    "skills": "Perception +6",
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "understands Celestial",
+        "Common",
+        "Elvish",
+        "and Sylvan but can't speak"
+      ]
+    },
+    "senses": {
+      "passives": {
+        "perception": 16
+      }
+    },
+    "challengeRating": "2",
+    "proficiencyBonus": 2,
+    "xp": 450,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/pegasus"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/pegasus",
+  "featureIds": [
+    "feat.hooves"
+  ],
+  "featureParams": {
+    "feat.hooves": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 4",
+      "damageType": "bludgeoning"
+    }
+  }
+}

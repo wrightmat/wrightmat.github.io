@@ -1,0 +1,33 @@
+{
+  "id": "feat.animated-breath-lightning-burst-lightning-form-only",
+  "name": "Lightning Burst (Lightning Form Only)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature magically teleports to an unoccupied space it can see within 30 feet of it. Each creature with 5 feet of the creature after it teleports takes 3 (1d6) lightning damage.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature magically teleports to an unoccupied space it can see within 30 feet of it. Each creature with 5 feet of the creature after it teleports takes 3 (1d6) lightning damage.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "mobility"
+    ],
+    "recipeSlots": [
+      "escape"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "bonus-action"
+  }
+}

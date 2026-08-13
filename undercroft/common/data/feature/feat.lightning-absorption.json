@@ -1,0 +1,24 @@
+{
+  "id": "feat.lightning-absorption",
+  "name": "Lightning Absorption",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Whenever the creature is subjected to lightning damage, it takes no damage and instead regains a number of hit points equal to the lightning damage dealt.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Whenever the creature is subjected to lightning damage, it takes no damage and instead regains a number of hit points equal to the lightning damage dealt."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

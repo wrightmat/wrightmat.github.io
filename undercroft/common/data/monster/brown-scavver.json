@@ -1,0 +1,80 @@
+{
+  "kind": "monster",
+  "name": "Brown Scavver",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/28079/814/1000/1000/637961800732449697.jpeg",
+  "notes": "### Description\r\n\r\nBrown scavvers are 10 feet long and range in color from sun-dappled brownish gold to dark umber. It takes them days to digest a meal, during which time they attack only in self-defense.\r\n\r\nA brown scavver likes to swallow its prey whole. The creature’s stomach is filled with poisonous gas, which kills off anything that survives being swallowed.\r\n\r\n---\r\n\r\n#### Scavvers\r\n\r\nScavvers are shark-like scavengers that fly through space, feeding on whatever they can fit in their mouths. Scavvers are not always aggressive; often they trail behind larger creatures as well as ships and asteroids, living off droppings and discarded refuse. They can enter the air envelopes of these bodies, so that as their “host” moves (often at high speed), the scavvers keep pace. The lesser varieties—brown and gray—rarely rise above the level of nuisances. The larger varieties are more formidable, in part because they often don’t wait for their meals to come to them.\r\n\r\nA scavver has a single large eye in the leading edge of its head. This eye glows while the creature is awake. Its wide mouth is full of sharp teeth. A scavver flies in lazy circles when it sleeps but otherwise moves through space much as a shark swims through water.",
+  "type": "monstrosity",
+  "stats": {
+    "size": "Large",
+    "alignment": "Unaligned",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 51,
+      "current": 51,
+      "diceString": "6d10 + 18"
+    },
+    "hitDice": "6d10",
+    "speed": {
+      "walk": 0,
+      "fly": 40
+    },
+    "abilities": {
+      "strength": 18,
+      "dexterity": 15,
+      "constitution": 17,
+      "intelligence": 1,
+      "wisdom": 10,
+      "charisma": 1
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "",
+    "senses": {
+      "darkvision": 120,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "4",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "BAM",
+      "Spelljammer: Adventures in Space • Boo’s Astral Menagerie, pg. 49"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.unusual-nature",
+    "feat.swallowing-bite"
+  ],
+  "featureTiers": {
+    "feat.unusual-nature": "no-air"
+  },
+  "featureParams": {
+    "feat.swallowing-bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 4",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "save-or-condition",
+        "targetRestriction": "medium or smaller creature"
+      }
+    }
+  }
+}

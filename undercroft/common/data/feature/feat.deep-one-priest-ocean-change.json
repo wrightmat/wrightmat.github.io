@@ -4,15 +4,19 @@
   "systemIds": [
     "sys.dnd5e"
   ],
-  "description": "A deep one born to a human family resembles a human child, but transforms into an adult deep one between the ages of 16 and 30.",
+  "description": "a creature born to a human family resembles a human child, but transforms into an adult deep one between the ages of 16 and 30.",
   "mechanics": {
     "type": "passive",
-    "text": "A deep one born to a human family resembles a human child, but transforms into an adult deep one between the ages of 16 and 30."
+    "text": "a creature born to a human family resembles a human child, but transforms into an adult deep one between the ages of 16 and 30."
   },
-  "budgetCost": 0,
+  "budgetCost": 1,
   "tags": {
-    "behaviors": [],
-    "recipeSlots": [],
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
     "roles": [],
     "creatureTypes": [],
     "categories": [

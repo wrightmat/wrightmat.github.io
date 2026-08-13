@@ -1,0 +1,29 @@
+{
+  "id": "feat.lorelei-unearthly-grace",
+  "name": "Unearthly Grace",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "a creature applies her Charisma modifier to all of her saving throws in place of the normal ability modifier.",
+  "mechanics": {
+    "type": "passive",
+    "text": "a creature applies her Charisma modifier to all of her saving throws in place of the normal ability modifier.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

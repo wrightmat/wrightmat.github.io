@@ -1,0 +1,32 @@
+{
+  "id": "feat.githzerai-monk-psi-powered-leap-2-day",
+  "name": "Psi-Powered Leap (2/Day)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature casts Jump, requiring no spell components and using the same spellcasting ability as Spellcasting.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature casts Jump, requiring no spell components and using the same spellcasting ability as Spellcasting.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "mobility"
+    ],
+    "recipeSlots": [
+      "escape"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "bonus-action"
+  }
+}

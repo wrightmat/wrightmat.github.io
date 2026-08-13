@@ -1,0 +1,33 @@
+{
+  "id": "feat.void-scavver-ray-of-fear-recharge-4-6",
+  "name": "Ray of Fear (Recharge 4-6)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature’s eye emits an invisible, magical ray that targets one creature the creature can see within 60 feet of itself. The target must succeed on a DC 16 Wisdom saving throw or be frightened of the creature until the start of the creature’s next turn.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature’s eye emits an invisible, magical ray that targets one creature the creature can see within 60 feet of itself. The target must succeed on a DC 16 Wisdom saving throw or be frightened of the creature until the start of the creature’s next turn.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "fear",
+      "control"
+    ],
+    "recipeSlots": [
+      "threaten"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "bonus-action"
+  }
+}

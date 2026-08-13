@@ -1,0 +1,33 @@
+{
+  "id": "feat.vampire-squid-death-frenzy",
+  "name": "Death Frenzy",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "When a creature drops to 0 HP nearby, all vampire squid within 100 ft gain advantage on their next attack.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When a creature drops to 0 HP nearby, all vampire squid within 100 ft gain advantage on their next attack.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "reaction"
+  }
+}

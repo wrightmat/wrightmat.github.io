@@ -1,0 +1,24 @@
+{
+  "id": "feat.devil-s-sight",
+  "name": "Devil's Sight",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Magical darkness doesn't impede the creature's darkvision.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Magical darkness doesn't impede the creature's darkvision."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

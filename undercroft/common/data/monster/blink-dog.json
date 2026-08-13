@@ -1,0 +1,75 @@
+{
+  "kind": "monster",
+  "index": "blink-dog",
+  "name": "Blink Dog",
+  "notes": "A blink dog takes its name from its ability to blink in and out of existence, a talent it uses to aid its attacks and to avoid harm.",
+  "type": "fey",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/blink-dog.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "lawful good",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 22,
+      "current": 22,
+      "diceString": "4d8+4"
+    },
+    "hitDice": "4d8",
+    "speed": {
+      "walk": 40
+    },
+    "abilities": {
+      "strength": 12,
+      "dexterity": 17,
+      "constitution": 12,
+      "intelligence": 10,
+      "wisdom": 13,
+      "charisma": 11
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "",
+    "skills": "Perception +3, Stealth +5",
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Blink Dog",
+        "understands Sylvan but can't speak it"
+      ]
+    },
+    "senses": {
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "1/4",
+    "proficiencyBonus": 2,
+    "xp": 50,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/blink-dog"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/blink-dog",
+  "featureIds": [
+    "feat.keen-hearing-and-smell",
+    "feat.bite",
+    "feat.teleport"
+  ],
+  "featureTiers": {
+    "feat.teleport": "60-ft"
+  },
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 3,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d6 + 1",
+      "damageType": "piercing"
+    }
+  }
+}

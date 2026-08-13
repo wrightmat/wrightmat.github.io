@@ -1,0 +1,24 @@
+{
+  "id": "feat.brave",
+  "name": "Brave",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature has advantage on saving throws against being frightened.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature has advantage on saving throws against being frightened."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

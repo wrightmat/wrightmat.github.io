@@ -1,0 +1,137 @@
+{
+  "kind": "monster",
+  "name": "Living Cloudkill",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/7725/795/1000/1000/637091643640649912.png",
+  "notes": "",
+  "type": "construct",
+  "stats": {
+    "size": "Large",
+    "alignment": "Unaligned",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 73,
+      "current": 73,
+      "diceString": "7d10 + 35"
+    },
+    "hitDice": "7d10",
+    "speed": {
+      "walk": 25,
+      "fly": 25,
+      "hover": true
+    },
+    "abilities": {
+      "strength": 10,
+      "dexterity": 15,
+      "constitution": 14,
+      "intelligence": 3,
+      "wisdom": 11,
+      "charisma": 6
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "7",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "and slashing from nonmagical attacks",
+          "type": "resistance"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "blinded",
+          "type": "immunity"
+        },
+        {
+          "name": "charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "deafened",
+          "type": "immunity"
+        },
+        {
+          "name": "exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "grappled",
+          "type": "immunity"
+        },
+        {
+          "name": "poisoned",
+          "type": "immunity"
+        },
+        {
+          "name": "prone",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "ERLW",
+      "https://www.dndbeyond.com/monsters/486460-living-cloudkill",
+      "Eberron: Rising from the Last War, pg. 299",
+      "https://media.wizards.com/2019/dnd/dragon/28/DRA28_LivingSpells.pdf"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.amorphous",
+    "feat.magic-resistance",
+    "feat.multiattack",
+    "feat.magical-strike",
+    "feat.living-cloudkill-spell-mimicry-recharge-5-6"
+  ],
+  "featureParams": {
+    "feat.magical-strike": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 8,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "5d6 + 5",
+      "damageType": "poison"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.magical-strike",
+          "count": 2
+        }
+      ],
+      "text": "The creature spell makes two Magical Strike attacks."
+    }
+  }
+}

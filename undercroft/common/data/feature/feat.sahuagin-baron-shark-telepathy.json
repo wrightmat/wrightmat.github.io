@@ -1,0 +1,28 @@
+{
+  "id": "feat.sahuagin-baron-shark-telepathy",
+  "name": "Shark Telepathy",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature can magically command any shark within 120 feet of it, using a limited telepathy.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature can magically command any shark within 120 feet of it, using a limited telepathy."
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

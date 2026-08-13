@@ -1,0 +1,118 @@
+{
+  "kind": "monster",
+  "name": "Ink Devil",
+  "notes": "This small devil wears a small red hat. A wicked grin flashes black teeth, and the creature nervously wrings its hands, baring long, needle-like claws.\r\n\r\nInk devils have small, pursed mouths and long, thin, bony fingers. Their nails resemble quills. Their heads are often bald or shaved in a monastic tonsure, and they have two small horns, no larger than an acorn. Their skin tends toward walnut, indigo, and black tones, though the eldest are as pale as parchment. They often wear robes and carry scroll cases, and many consider the Baron Totivillus the greatest of arch-devils.\r\n\r\n**Cowards at Heart**. Ink devils are talkers and cowards. They prefer chatting, whining, and pleading to any form of combat. When they are forced to fight, they prefer to hide behind other devils. They force lesser devils, like lemures, to fight for them while they use teleportation, invisibility, and their ability to disrupt the concentration of spellcasters to harry the opposition.\r\n\r\n**False Gifts**. They often give strangers false gifts, like letters of credit, charters, or scholarly papers inscribed with a glyph of warding to start combat.\r\n\r\n**Bibliophiles and Bookworms**. Ink devils live in libraries and scriptoria in the hells and related planes. Their speed and keen vision make them excellent accountants, record keepers, translators, and note takers. They cannot be trusted, and they delight in altering documents for their own amusement or in their master’s service.",
+  "type": "fiend",
+  "stats": {
+    "size": "Small",
+    "alignment": "Lawful Evil",
+    "armorClass": 14,
+    "hitPoints": {
+      "max": 54,
+      "current": 54,
+      "diceString": "12d6 + 12"
+    },
+    "hitDice": "12d6",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 12,
+      "dexterity": 18,
+      "constitution": 12,
+      "intelligence": 20,
+      "wisdom": 8,
+      "charisma": 18
+    },
+    "initiative": {
+      "bonus": 4
+    },
+    "savingThrows": "Dex +6",
+    "skills": "Arcana +9, Deception +8, History +9, Stealth +8",
+    "senses": {
+      "darkvision": 120,
+      "passives": {
+        "perception": 9
+      }
+    },
+    "challengeRating": "2",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "cold; bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "and slashing from nonmagical weapons that aren’t silvered",
+          "type": "resistance"
+        },
+        {
+          "name": "fire",
+          "type": "immunity"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Celestial",
+        "Common",
+        "Draconic",
+        "Infernal",
+        "Telepathy (120 ft.)"
+      ]
+    },
+    "spells": "(Innate): The ink devil’s spellcasting ability is Charisma (spell save DC 14). The ink devil can cast the following spells, requiring no material components: At will: detect magic, illusory script, invisibility, teleportation (self plus 50 lb. of objects only) 1/day each: glyph of warding, planar ally (1d4 + 1 lemures 40%, or 1 ink devil 25%)",
+    "environments": [
+      "Planar"
+    ],
+    "sources": [
+      "ToB1",
+      "Tome of Beasts 1, pg 107"
+    ],
+    "saveDC": 14
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.ink-devil-devil-s-sight",
+    "feat.magic-resistance",
+    "feat.bite",
+    "feat.claw",
+    "feat.ink-devil-disrupt-concentration",
+    "feat.ink-devil-corrupt-scroll",
+    "feat.ink-devil-devil-s-mark"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 4",
+      "damageType": "piercing"
+    },
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "3d6 + 4",
+      "damageType": "slashing"
+    }
+  }
+}

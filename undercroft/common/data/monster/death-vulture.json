@@ -1,0 +1,126 @@
+{
+  "kind": "monster",
+  "name": "Death Vulture",
+  "notes": "_The putrid stench of death wafts off a grotesquely muscled vulture with glowing green eyes. It opens its mouth in a shrill call, rotting meat dripping from its beak._\r\n\r\nDeath vultures are giant birds transformed by their diet of undead flesh.\r\n\r\n**Mutated Monstrosities**. When a giant vulture gorges on undead flesh, the necromantic magic suffused in the meal warps and changes the bird’s body. The vulture’s muscles bulge in odd places, making it stronger and tougher, its eyes burn with green fire, and it reeks of rot, earning these mutated monsters the name “death vultures.” The vulture also gains the ability to regurgitate necromantic energy, which can cause the flesh of living creatures to decay and age rapidly.\r\n\r\n**Massive Meat Appetites**. Death vultures have incredible appetites and are far more willing to attack live prey than other vultures. They have a special taste for rotting flesh, and they use their decaying breath weapon to “season” their foes with necrotic energy before using their talons and beaks to tear apart their quarry.\r\n\r\n**Necromancer Neighbors**. Death vultures often form kettles near the lairs of necromancers as they feed on their undead creations. While some necromancers find the birds to be a nuisance, many necromancers feed the vultures, encouraging them to stay. Most death vultures are willing to trade service as guardians of the lairs for food.",
+  "type": "monstrosity",
+  "stats": {
+    "size": "Large",
+    "alignment": "Neutral Evil",
+    "armorClass": 12,
+    "hitPoints": {
+      "max": 76,
+      "current": 76,
+      "diceString": "8d10 + 32"
+    },
+    "hitDice": "8d10",
+    "speed": {
+      "walk": 10,
+      "fly": 60
+    },
+    "abilities": {
+      "strength": 18,
+      "dexterity": 10,
+      "constitution": 18,
+      "intelligence": 6,
+      "wisdom": 12,
+      "charisma": 7
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "Con +6",
+    "skills": "Perception +3",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 13
+      }
+    },
+    "challengeRating": "4",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "necrotic",
+          "type": "immunity"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "understands Common but can’t speak"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "ToB2",
+      "Tome of Beasts 2, pg 81"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.death-vulture-awful-stench",
+    "feat.keen-sight-and-smell",
+    "feat.pack-tactics",
+    "feat.multiattack",
+    "feat.beak",
+    "feat.talons",
+    "feat.decaying-breath"
+  ],
+  "featureParams": {
+    "feat.beak": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d4 + 4",
+      "damageType": "piercing"
+    },
+    "feat.talons": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 4",
+      "damageType": "slashing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.beak",
+          "count": 1
+        },
+        {
+          "featureId": "feat.talons",
+          "count": 1
+        }
+      ],
+      "text": "The creature makes two attacks: one with its beak and one with its talons."
+    },
+    "feat.decaying-breath": {
+      "verb": "breathes",
+      "substance": "necrotic energy",
+      "areaSize": "15",
+      "areaShape": "cone",
+      "dcAbility": "constitution",
+      "ability": "constitution",
+      "damageDice": "4d10",
+      "damageType": "necrotic",
+      "rider": {
+        "kind": "trailing-note",
+        "conditionText": "Creatures that fail this saving throw by 5 or more also age a number of years equal to half the damage taken."
+      }
+    }
+  }
+}

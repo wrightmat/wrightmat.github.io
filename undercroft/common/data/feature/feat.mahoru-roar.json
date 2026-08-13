@@ -1,0 +1,33 @@
+{
+  "id": "feat.mahoru-roar",
+  "name": "Roar",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "When a creature roars all creatures with hearing within 30 feet of it must succeed on a DC 14 Wisdom saving throw or become frightened until the end of the creature’s next turn. If the target fails the saving throw by 5 or more, it’s also paralyzed for the same duration. A target that succeeds on the saving throw is immune to the Roar of all mahoru for the next 24 hours.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When a creature roars all creatures with hearing within 30 feet of it must succeed on a DC 14 Wisdom saving throw or become frightened until the end of the creature’s next turn. If the target fails the saving throw by 5 or more, it’s also paralyzed for the same duration. A target that succeeds on the saving throw is immune to the Roar of all mahoru for the next 24 hours.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "fear",
+      "control"
+    ],
+    "recipeSlots": [
+      "threaten"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

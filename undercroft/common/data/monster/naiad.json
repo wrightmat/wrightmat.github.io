@@ -1,0 +1,110 @@
+{
+  "kind": "monster",
+  "name": "Naiad",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/16464/484/1000/1000/637515965711226798.png",
+  "notes": "",
+  "type": "fey",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Unaligned",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 31,
+      "current": 31
+    },
+    "hitDice": "7d8",
+    "speed": {
+      "walk": 30,
+      "swim": 30
+    },
+    "abilities": {
+      "strength": 10,
+      "dexterity": 16,
+      "constitution": 11,
+      "intelligence": 15,
+      "wisdom": 10,
+      "charisma": 18
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "",
+    "skills": "Persuasion +6, Sleight of Hand +5",
+    "senses": {
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "2",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "psychic",
+          "type": "resistance"
+        },
+        {
+          "name": "poision",
+          "type": "immunity"
+        },
+        {
+          "name": "charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Common",
+        "Sylvan"
+      ]
+    },
+    "spells": "The naiad casts one of the following spells using Charisma as the spellcasting ability (save DC 14) and requiring no material components: At will: minor illusion 3/day: phantasmal force 1/day each: fly, hypnotic pattern",
+    "environments": [
+      "Coastal",
+      "Underwater"
+    ],
+    "sources": [
+      "MOT",
+      "https://www.dndbeyond.com/monsters/909494-naiad",
+      "Mythic Odysseys of Theros, pg. 236"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.amphibious",
+    "feat.naiad-invisible-in-water",
+    "feat.magic-resistance",
+    "feat.multiattack",
+    "feat.psychic-touch"
+  ],
+  "featureParams": {
+    "feat.psychic-touch": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d10 + 4",
+      "damageType": "psychic"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.psychic-touch",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two psychic touch attacks."
+    }
+  }
+}

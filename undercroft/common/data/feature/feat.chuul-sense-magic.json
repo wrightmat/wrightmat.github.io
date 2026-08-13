@@ -1,0 +1,25 @@
+{
+  "id": "feat.chuul-sense-magic",
+  "name": "Sense Magic",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature senses magic within 120 feet of it at will. This trait otherwise works like the detect magic spell but isn't itself magical.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The creature senses magic within 120 feet of it at will. This trait otherwise works like the detect magic spell but isn't itself magical."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

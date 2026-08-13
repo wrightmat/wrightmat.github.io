@@ -1,0 +1,109 @@
+{
+  "kind": "monster",
+  "name": "Pterafolk",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/30/762/1000/1000/636395100053374701.png",
+  "notes": "",
+  "type": "monstrosity",
+  "stats": {
+    "size": "Large",
+    "alignment": "Neutral Evil",
+    "armorClass": 12,
+    "hitPoints": {
+      "max": 26,
+      "current": 26,
+      "diceString": "4d10 + 4"
+    },
+    "hitDice": "4d10",
+    "speed": {
+      "walk": 30,
+      "fly": 50
+    },
+    "abilities": {
+      "strength": 15,
+      "dexterity": 13,
+      "constitution": 12,
+      "intelligence": 9,
+      "wisdom": 10,
+      "charisma": 11
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "",
+    "skills": "Perception +2, Survival +2",
+    "senses": {
+      "passives": {
+        "perception": 12
+      }
+    },
+    "challengeRating": "1",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Common"
+      ]
+    },
+    "environments": [
+      "Mountain"
+    ],
+    "sources": [
+      "ToA",
+      "Tomb of Annihilation",
+      "https://www.dndbeyond.com/monsters/33242-pterafolk"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.pterafolk-terror-dive",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.claws",
+    "feat.javelin"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d4+ 2",
+      "damageType": "piercing"
+    },
+    "feat.claws": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d6 + 2",
+      "damageType": "slashing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.bite",
+          "count": 1
+        },
+        {
+          "featureId": "feat.claws",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes three attacks: one with its bite and two with its claws. Alternatively, it makes two melee attacks with its javelin."
+    },
+    "feat.javelin": {
+      "kind": "MeleeOrRanged",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "meleeDistance": "5",
+      "rangeDistance": "30/120",
+      "damageDice": "2d6 + 2",
+      "damageType": "piercing"
+    }
+  }
+}

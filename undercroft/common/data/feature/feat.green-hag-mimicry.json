@@ -1,0 +1,25 @@
+{
+  "id": "feat.green-hag-mimicry",
+  "name": "Mimicry",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The hag can mimic animal sounds and humanoid voices. A creature that hears the sounds can tell they are imitations with a successful DC 14 Wisdom (Insight) check.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The hag can mimic animal sounds and humanoid voices. A creature that hears the sounds can tell they are imitations with a successful DC 14 Wisdom (Insight) check."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

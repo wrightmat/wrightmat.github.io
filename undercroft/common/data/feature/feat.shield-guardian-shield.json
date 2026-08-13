@@ -1,0 +1,28 @@
+{
+  "id": "feat.shield-guardian-shield",
+  "name": "Shield",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "When a creature makes an attack against the wearer of the construct's amulet, the construct grants a +2 bonus to the wearer's AC if the construct is within 5 feet of the wearer.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "When a creature makes an attack against the wearer of the construct's amulet, the construct grants a +2 bonus to the wearer's AC if the construct is within 5 feet of the wearer."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "reaction"
+  }
+}

@@ -1,0 +1,131 @@
+{
+  "kind": "monster",
+  "name": "Death Slaad",
+  "image": "https://angrygolem-games.com/wp-content/uploads/2021/11/Death-Slaad.jpg",
+  "notes": "",
+  "type": "Abberation",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Chaotic Evil",
+    "armorClass": 18,
+    "hitPoints": {
+      "max": 170,
+      "current": 170,
+      "diceString": "20d8 + 80"
+    },
+    "hitDice": "20d8",
+    "speed": {
+      "walk": 60
+    },
+    "abilities": {
+      "strength": 20,
+      "dexterity": 15,
+      "constitution": 19,
+      "intelligence": 15,
+      "wisdom": 10,
+      "charisma": 16
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "Arcana +6, Perception +8",
+    "senses": {
+      "blindsight": 60,
+      "darkvision": 60,
+      "passives": {
+        "perception": 18
+      }
+    },
+    "challengeRating": "10",
+    "proficiencyBonus": 4,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "acid",
+          "type": "resistance"
+        },
+        {
+          "name": "cold",
+          "type": "resistance"
+        },
+        {
+          "name": "fire",
+          "type": "resistance"
+        },
+        {
+          "name": "lightning",
+          "type": "resistance"
+        },
+        {
+          "name": "thunder; bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "piercing and slashing from non magical weapons",
+          "type": "resistance"
+        }
+      ],
+      "languages": [
+        "Slaad",
+        "telepathy 60 ft."
+      ]
+    },
+    "spells": "The death slaad’s innate spellcasting ability is Charisma (spell save DC 15, +7 to hit with spell attacks). The slaad can innately cast the following spells, requiring no material components: At will: detect magic, detect thoughts, invisibility (self only), mage hand, major image 2/day each: fear, fly, fireball, tongues 1/day: cloudkill, plane shift",
+    "environments": [],
+    "sources": [
+      "MM",
+      "https://www.dndbeyond.com/monsters/17113-death-slaad",
+      "Monster Manual, pg. 278",
+      "https://angrygolem-games.com/monster-manual/letter-d/death-slaad-5e-stats/"
+    ],
+    "saveDC": 15
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.magic-resistance",
+    "feat.magic-weapons",
+    "feat.regeneration",
+    "feat.shapechanger",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.death-slaad-claw",
+    "feat.greatsword"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "text": "The creature makes three attacks: one with its bite (slaad form) and two with its claws (slaad form) or two with its greatsword (humanoid form)."
+    },
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 9,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d8 + 5",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "2d6",
+        "damageType": "necrotic"
+      }
+    },
+    "feat.greatsword": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 9,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 5",
+      "damageType": "slashing",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "2d6",
+        "damageType": "necrotic"
+      }
+    }
+  }
+}

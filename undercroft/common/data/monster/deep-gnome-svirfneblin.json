@@ -1,0 +1,88 @@
+{
+  "kind": "monster",
+  "index": "deep-gnome-svirfneblin",
+  "name": "Deep Gnome (Svirfneblin)",
+  "type": "humanoid",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/deep-gnome-svirfneblin.png",
+  "stats": {
+    "size": "Small",
+    "alignment": "neutral good",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 16,
+      "current": 16,
+      "diceString": "3d6+6"
+    },
+    "hitDice": "3d6",
+    "speed": {
+      "walk": 20
+    },
+    "abilities": {
+      "strength": 15,
+      "dexterity": 14,
+      "constitution": 14,
+      "intelligence": 12,
+      "wisdom": 10,
+      "charisma": 9
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "Investigation +3, Perception +2, Stealth +4",
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Gnomish",
+        "Terran",
+        "Undercommon"
+      ]
+    },
+    "senses": {
+      "darkvision": 120,
+      "passives": {
+        "perception": 12
+      }
+    },
+    "challengeRating": "1/2",
+    "proficiencyBonus": 2,
+    "xp": 50,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/deep-gnome-svirfneblin",
+    "spells": "The gnome's innate spellcasting ability is Intelligence (spell save DC 11). It can innately cast the following spells, requiring no material components:\nAt will: nondetection (self only)\n1/day each: blindness/deafness, blur, disguise self",
+    "saveDC": 11
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/deep-gnome-svirfneblin",
+  "featureIds": [
+    "feat.camouflage",
+    "feat.deep-gnome-svirfneblin-gnome-cunning",
+    "feat.war-pick",
+    "feat.poisoned-dart"
+  ],
+  "featureParams": {
+    "feat.war-pick": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d8 + 2",
+      "damageType": "piercing"
+    },
+    "feat.poisoned-dart": {
+      "kind": "Ranged",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "range",
+      "distance": "30/120",
+      "damageDice": "1d4 + 2",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "save-or-condition"
+      }
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "id": "feat.multiattack",
+  "name": "Multiattack",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature makes multiple attacks.",
+  "mechanics": {
+    "type": "multiattack"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

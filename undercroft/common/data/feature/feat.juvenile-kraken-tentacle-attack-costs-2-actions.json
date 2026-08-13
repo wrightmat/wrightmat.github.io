@@ -1,0 +1,37 @@
+{
+  "id": "feat.juvenile-kraken-tentacle-attack-costs-2-actions",
+  "name": "Tentacle Attack (Costs 2 Actions)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature makes one tentacle attack.",
+  "mechanics": {
+    "type": "legendary-action-reference",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "legendary-action"
+  },
+  "legendaryActionReference": {
+    "referencedFeatureIds": [
+      "feat.esthetic-tentacle"
+    ],
+    "template": "The creature makes one {names} attack."
+  }
+}

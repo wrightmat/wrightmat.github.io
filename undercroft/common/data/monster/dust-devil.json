@@ -1,0 +1,136 @@
+{
+  "kind": "monster",
+  "name": "Dust Devil",
+  "notes": "",
+  "type": "elemental",
+  "stats": {
+    "size": "Large",
+    "alignment": "Neutral",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 90,
+      "current": 90,
+      "diceString": "12d10 + 24"
+    },
+    "hitDice": "12d10",
+    "speed": {
+      "walk": 50
+    },
+    "abilities": {
+      "strength": 14,
+      "dexterity": 20,
+      "constitution": 14,
+      "intelligence": 1,
+      "wisdom": 10,
+      "charisma": 1
+    },
+    "initiative": {
+      "bonus": 5
+    },
+    "savingThrows": "",
+    "skills": "",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "5",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Lightning",
+          "type": "resistance"
+        },
+        {
+          "name": "Thunder; Bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "Piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "and Slashing from Nonmagical Attacks",
+          "type": "resistance"
+        },
+        {
+          "name": "Poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "Grappled",
+          "type": "immunity"
+        },
+        {
+          "name": "Paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        },
+        {
+          "name": "Prone",
+          "type": "immunity"
+        },
+        {
+          "name": "Restrained",
+          "type": "immunity"
+        },
+        {
+          "name": "Unconscious",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Auran",
+        "understands but doesn’t speak"
+      ]
+    },
+    "environments": [
+      "Desert",
+      "Mountain"
+    ],
+    "sources": [
+      "MM",
+      "https://www.dndbeyond.com/monsters/804867-dust-devil",
+      "Basic Rules"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.black-patch-flowing-form",
+    "feat.multiattack",
+    "feat.slam",
+    "feat.air-elemental-whirlwind"
+  ],
+  "featureParams": {
+    "feat.slam": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 8,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d8 + 5",
+      "damageType": "bludgeoning"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.slam",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two slam attacks."
+    }
+  }
+}

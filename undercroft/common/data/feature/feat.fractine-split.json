@@ -1,0 +1,32 @@
+{
+  "id": "feat.fractine-split",
+  "name": "Split",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "When a Large fractine that has at least 10 hit points remaining takes bludgeoning, piercing, slashing, or thunder damage from any source, it splits into two Medium fractines. The new fractines occupy the space formerly occupied by the original fractine, and each new fractine has hit points equal to half the original’s, rounded down. If the original fractine had a creature trapped in its demiplane, that creature is released when the creature splits, reappearing in an unoccupied space as close to the new fractines as possible.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When a Large fractine that has at least 10 hit points remaining takes bludgeoning, piercing, slashing, or thunder damage from any source, it splits into two Medium fractines. The new fractines occupy the space formerly occupied by the original fractine, and each new fractine has hit points equal to half the original’s, rounded down. If the original fractine had a creature trapped in its demiplane, that creature is released when the creature splits, reappearing in an unoccupied space as close to the new fractines as possible."
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "regeneration",
+      "control"
+    ],
+    "recipeSlots": [
+      "endure"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "reaction"
+  }
+}

@@ -1,0 +1,111 @@
+{
+  "kind": "monster",
+  "index": "erinyes",
+  "name": "Erinyes",
+  "type": "fiend",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/erinyes.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "lawful evil",
+    "armorClass": 18,
+    "hitPoints": {
+      "max": 153,
+      "current": 153,
+      "diceString": "18d8+72"
+    },
+    "hitDice": "18d8",
+    "speed": {
+      "walk": 30,
+      "fly": 60
+    },
+    "abilities": {
+      "strength": 18,
+      "dexterity": 16,
+      "constitution": 18,
+      "intelligence": 14,
+      "wisdom": 14,
+      "charisma": 18
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "DEX +7, CON +8, WIS +6, CHA +8",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "cold",
+          "type": "resistance"
+        },
+        {
+          "name": "bludgeoning, piercing, and slashing from nonmagical weapons that aren't silvered",
+          "type": "resistance"
+        },
+        {
+          "name": "fire",
+          "type": "immunity"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Infernal",
+        "telepathy 120 ft."
+      ]
+    },
+    "senses": {
+      "truesight": 120,
+      "passives": {
+        "perception": 12
+      }
+    },
+    "challengeRating": "12",
+    "proficiencyBonus": 4,
+    "xp": 8400,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/erinyes"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/erinyes",
+  "featureIds": [
+    "feat.erinyes-hellish-weapons",
+    "feat.magic-resistance",
+    "feat.multiattack",
+    "feat.longsword",
+    "feat.erinyes-longbow",
+    "feat.parry"
+  ],
+  "featureTiers": {
+    "feat.parry": "ac-3"
+  },
+  "featureParams": {
+    "feat.longsword": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 8,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d8 + 4",
+      "damageType": "slashing",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "3d8",
+        "damageType": "poison"
+      },
+      "versatile": {
+        "damageDice": "1d10 + 4"
+      }
+    },
+    "feat.multiattack": {
+      "text": "The creature makes three attacks"
+    }
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "id": "feat.wakeful",
+  "name": "Wakeful",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "When one of the creature's heads is asleep, its other head is awake.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When one of the creature's heads is asleep, its other head is awake."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "ettin",
+      "name": "Wakeful",
+      "shortName": "Ettin",
+      "mechanics": {
+        "text": "When one of the creature's heads is asleep, its other head is awake."
+      }
+    },
+    {
+      "id": "hydra",
+      "name": "Wakeful",
+      "shortName": "Hydra",
+      "mechanics": {
+        "text": "While the creature sleeps, at least one of its heads is awake."
+      }
+    }
+  ]
+}

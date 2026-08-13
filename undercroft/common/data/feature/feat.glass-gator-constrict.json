@@ -1,0 +1,32 @@
+{
+  "id": "feat.glass-gator-constrict",
+  "name": "Constrict",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "One creature that’s already grappled by the creature takes 7 (2d4 + 2) bludgeoning damage plus 7 (2d6) poison damage, or half as much poison damage with a successful DC 11 Constitution saving throw.",
+  "mechanics": {
+    "type": "passive",
+    "text": "One creature that’s already grappled by the creature takes 7 (2d4 + 2) bludgeoning damage plus 7 (2d6) poison damage, or half as much poison damage with a successful DC 11 Constitution saving throw.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

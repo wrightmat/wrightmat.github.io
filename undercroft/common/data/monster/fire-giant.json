@@ -1,0 +1,93 @@
+{
+  "kind": "monster",
+  "index": "fire-giant",
+  "name": "Fire Giant",
+  "type": "giant",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/fire-giant.png",
+  "stats": {
+    "size": "Huge",
+    "alignment": "lawful evil",
+    "armorClass": 18,
+    "hitPoints": {
+      "max": 162,
+      "current": 162,
+      "diceString": "13d12+78"
+    },
+    "hitDice": "13d12",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 25,
+      "dexterity": 9,
+      "constitution": 23,
+      "intelligence": 10,
+      "wisdom": 14,
+      "charisma": 13
+    },
+    "initiative": {
+      "bonus": -1
+    },
+    "savingThrows": "DEX +3, CON +10, CHA +5",
+    "skills": "Athletics +11, Perception +6",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "fire",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Giant"
+      ]
+    },
+    "senses": {
+      "passives": {
+        "perception": 16
+      }
+    },
+    "challengeRating": "9",
+    "proficiencyBonus": 4,
+    "xp": 5000,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/fire-giant"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/fire-giant",
+  "featureIds": [
+    "feat.multiattack",
+    "feat.greatsword",
+    "feat.rock"
+  ],
+  "featureParams": {
+    "feat.greatsword": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 11,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "6d6 + 7",
+      "damageType": "slashing"
+    },
+    "feat.rock": {
+      "kind": "Ranged",
+      "attackKind": "Weapon",
+      "attackBonus": 11,
+      "distanceLabel": "range",
+      "distance": "60/240",
+      "damageDice": "4d10 + 7",
+      "damageType": "bludgeoning"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.greatsword",
+          "count": 2
+        }
+      ],
+      "text": "The giant makes two greatsword attacks."
+    }
+  }
+}

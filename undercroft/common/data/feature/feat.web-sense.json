@@ -1,0 +1,34 @@
+{
+  "id": "feat.web-sense",
+  "name": "Web Sense",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "While in contact with a web, the monstrosity knows the exact location of any other creature in contact with the same web.",
+  "mechanics": {
+    "type": "passive",
+    "text": "While in contact with a web, the monstrosity knows the exact location of any other creature in contact with the same web."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "swarm",
+      "name": "Web Sense",
+      "shortName": "Swarm",
+      "mechanics": {
+        "text": "While in contact with a web, the swarm of Tiny beasts knows the exact location of any other creature in contact with the same web."
+      }
+    }
+  ]
+}

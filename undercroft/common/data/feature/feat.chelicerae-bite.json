@@ -1,0 +1,34 @@
+{
+  "id": "feat.chelicerae-bite",
+  "name": "Bite",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Melee Weapon Attack: +9 to hit, reach 10 ft., one target. Hit: 17 (2d10 + 6) piercing damage, and the target is grappled (escape DC 16). The target must also make a successful DC 16 Constitution saving throw or become poisoned. While poisoned this way, the target is unconscious and takes 1d4 Strength damage at the start of each of its turns. The poisoning ends after 4 rounds or when the target makes a successful DC 16 Constitution save at the end of its turn.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Melee Weapon Attack: +9 to hit, reach 10 ft., one target. Hit: 17 (2d10 + 6) piercing damage, and the target is grappled (escape DC 16). The target must also make a successful DC 16 Constitution saving throw or become poisoned. While poisoned this way, the target is unconscious and takes 1d4 Strength damage at the start of each of its turns. The poisoning ends after 4 rounds or when the target makes a successful DC 16 Constitution save at the end of its turn.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "control",
+      "debuff"
+    ],
+    "recipeSlots": [
+      "isolate"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

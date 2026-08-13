@@ -1,0 +1,109 @@
+{
+  "kind": "monster",
+  "index": "shield-guardian",
+  "name": "Shield Guardian",
+  "type": "construct",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/shield-guardian.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "unaligned",
+    "armorClass": 17,
+    "hitPoints": {
+      "max": 142,
+      "current": 142,
+      "diceString": "15d10+60"
+    },
+    "hitDice": "15d10",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 18,
+      "dexterity": 8,
+      "constitution": 18,
+      "intelligence": 7,
+      "wisdom": 10,
+      "charisma": 3
+    },
+    "initiative": {
+      "bonus": -1
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "Exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "Frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "Paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "understands commands given in any language but can't speak"
+      ]
+    },
+    "senses": {
+      "blindsight": 10,
+      "darkvision": 60,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "7",
+    "proficiencyBonus": 3,
+    "xp": 2900,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/shield-guardian"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/shield-guardian",
+  "featureIds": [
+    "feat.shield-guardian-bound",
+    "feat.regeneration",
+    "feat.shield-guardian-spell-storing",
+    "feat.multiattack",
+    "feat.fist",
+    "feat.shield-guardian-shield"
+  ],
+  "featureParams": {
+    "feat.fist": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 4",
+      "damageType": "bludgeoning"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.fist",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two fist attacks."
+    }
+  }
+}

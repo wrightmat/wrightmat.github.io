@@ -1,0 +1,33 @@
+{
+  "id": "feat.void-knight-pull-of-the-void-recharge-5-6",
+  "name": "Pull of the Void (Recharge 5–6)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature sends Void tendrils at up to three creatures it can see within 60 feet of it that are not behind total cover. Each target must succeed on a DC 16 strength Saving throw or be pulled up to 30 feet toward the creature. Then each creature within 5 feet of the creature takes 36 (8d8) force damage.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature sends Void tendrils at up to three creatures it can see within 60 feet of it that are not behind total cover. Each target must succeed on a DC 16 strength Saving throw or be pulled up to 30 feet toward the creature. Then each creature within 5 feet of the creature takes 36 (8d8) force damage.",
+    "scope": "unique"
+  },
+  "budgetCost": 4,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "control"
+    ],
+    "recipeSlots": [
+      "burst"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

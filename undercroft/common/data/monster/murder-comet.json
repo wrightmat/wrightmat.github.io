@@ -1,0 +1,143 @@
+{
+  "kind": "monster",
+  "name": "Murder Comet",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/28079/894/1000/1000/637961800881115372.jpeg",
+  "notes": "### Description\r\n\r\nEvil spellcasters create murder comets by combining the essence of [earth elementals](https://www.dndbeyond.com/monsters/16853-earth-elemental) with that of [fire elementals](https://www.dndbeyond.com/monsters/16861-fire-elemental). A murder comet looks like a screaming stone head wreathed in flame. It trails fire behind it as it flies through Wildspace, either singly or in a posse with other murder comets, looking for ships, crews, and other unsuspecting targets to destroy.\r\n\r\nA murder comet’s creator can bind their spirit to the comet. In this form, the comet’s creator becomes ageless and immortal, free to race across Wildspace without need for air, sleep, or sustenance. The murder comet’s face takes on the appearance of its creator’s, and its statistics change as follows:\r\n-   Replace the comet’s Intelligence, Wisdom, and Charisma scores with those of its creator.\r\n-   Replace the comet’s alignment and languages with those of its creator.",
+  "type": "elemental",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Typically Neutral Evil",
+    "armorClass": 19,
+    "hitPoints": {
+      "max": 66,
+      "current": 66,
+      "diceString": "7d8 + 35"
+    },
+    "hitDice": "7d8",
+    "speed": {
+      "walk": 0,
+      "fly": 120
+    },
+    "abilities": {
+      "strength": 15,
+      "dexterity": 15,
+      "constitution": 20,
+      "intelligence": 6,
+      "wisdom": 10,
+      "charisma": 6
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "",
+    "senses": {
+      "darkvision": 240,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "5",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Fire",
+          "type": "immunity"
+        },
+        {
+          "name": "Poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "Paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "Petrified",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        },
+        {
+          "name": "Prone",
+          "type": "immunity"
+        },
+        {
+          "name": "Unconscious",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Ignan",
+        "Terran"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "BAM",
+      "Spelljammer: Adventures in Space • Boo’s Astral Menagerie, pg. 38"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.murder-comet-explode",
+    "feat.flyby",
+    "feat.light-elemental-brilliant-illumination",
+    "feat.siege-monster",
+    "feat.unusual-nature",
+    "feat.multiattack",
+    "feat.slam",
+    "feat.spit-fire"
+  ],
+  "featureParams": {
+    "feat.spit-fire": {
+      "kind": "Ranged",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "range",
+      "distance": "60",
+      "damageDice": "2d10 + 2",
+      "damageType": "fire"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.slam",
+          "count": 1
+        },
+        {
+          "featureId": "feat.spit-fire",
+          "count": 1
+        }
+      ],
+      "text": "The creature makes one Slam attack and one Spit Fire attack."
+    },
+    "feat.slam": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d8 + 2",
+      "damageType": "bludgeoning",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "2d6",
+        "damageType": "fire"
+      }
+    }
+  },
+  "featureTiers": {
+    "feat.unusual-nature": "no-air-sleep"
+  }
+}

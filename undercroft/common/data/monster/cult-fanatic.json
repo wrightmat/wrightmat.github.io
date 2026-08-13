@@ -1,0 +1,76 @@
+{
+  "kind": "monster",
+  "index": "cult-fanatic",
+  "name": "Cult Fanatic",
+  "notes": "Fanatics are often part of a cult’s leadership, using their charisma and dogma to influence and prey on those of weak will. Most are interested in personal power above all else.",
+  "type": "humanoid",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/cult-fanatic.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "any non-good alignment",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 22,
+      "current": 22,
+      "diceString": "6d8-5"
+    },
+    "hitDice": "6d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 11,
+      "dexterity": 14,
+      "constitution": 12,
+      "intelligence": 10,
+      "wisdom": 13,
+      "charisma": 14
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "Deception +4, Persuasion +4, Religion +2",
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "any one language (usually Common)"
+      ]
+    },
+    "senses": {
+      "passives": {
+        "perception": 11
+      }
+    },
+    "challengeRating": "2",
+    "proficiencyBonus": 2,
+    "xp": 450,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/cult-fanatic",
+    "spells": "The fanatic is a 4th-level spellcaster. Its spell casting ability is Wisdom (spell save DC 11, +3 to hit with spell attacks). The fanatic has the following cleric spells prepared:\n\nCantrips (at will): light, sacred flame, thaumaturgy\n- 1st level (4 slots): command, inflict wounds, shield of faith\n- 2nd level (3 slots): hold person, spiritual weapon",
+    "saveDC": 11
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/cult-fanatic",
+  "featureIds": [
+    "feat.dark-devotion",
+    "feat.multiattack",
+    "feat.dagger"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "text": "The creature makes two melee attacks."
+    },
+    "feat.dagger": {
+      "kind": "MeleeOrRanged",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "meleeDistance": "5",
+      "rangeDistance": "20/60",
+      "damageDice": "1d4 + 2",
+      "damageType": "piercing"
+    }
+  }
+}

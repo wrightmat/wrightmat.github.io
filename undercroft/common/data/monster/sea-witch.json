@@ -1,0 +1,100 @@
+{
+  "kind": "monster",
+  "name": "Sea Witch",
+  "image": "https://upload.wikimedia.org/wikipedia/en/e/e3/Ursula%28TheLittleMermaid%29character.png",
+  "notes": "",
+  "type": "monstrosity",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Chaotic Evil",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 150,
+      "current": 150,
+      "diceString": "20d8 + 60"
+    },
+    "hitDice": "20d8",
+    "speed": {
+      "walk": 30,
+      "swim": 30
+    },
+    "abilities": {
+      "strength": 12,
+      "dexterity": 10,
+      "constitution": 16,
+      "intelligence": 10,
+      "wisdom": 15,
+      "charisma": 14
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "Perception +5",
+    "senses": {
+      "passives": {
+        "perception": 15
+      }
+    },
+    "challengeRating": "7",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Common",
+        "Aquan"
+      ]
+    },
+    "spells": "The witch casts one of the following spells, requiring no material components and using Wisdom as the spellcasting ability (spell save DC 13): At will: command, create or destroy water, polymorph 3/day each: control water, darkness, water breathing, water walk 1/day each: black tentacles",
+    "environments": [
+      "Underwater"
+    ],
+    "sources": [
+      "Homebrew",
+      "https://www.dndbeyond.com/monsters/2560858-kraken-priest"
+    ],
+    "saveDC": 13
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.amphibious",
+    "feat.multiattack",
+    "feat.thunderous-touch",
+    "feat.thunderbolt",
+    "feat.sea-witch-tentacle"
+  ],
+  "featureParams": {
+    "feat.thunderous-touch": {
+      "kind": "Melee",
+      "attackKind": "Spell",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "5d10",
+      "damageType": "thunder"
+    },
+    "feat.multiattack": {
+      "text": "The creature makes two Thunderous Touch or Thunderbolt attacks.",
+      "options": [
+        [
+          {
+            "featureId": "feat.thunderous-touch",
+            "count": 2
+          }
+        ],
+        [
+          {
+            "featureId": "feat.thunderbolt",
+            "count": 2
+          }
+        ]
+      ]
+    }
+  },
+  "featureTiers": {
+    "feat.thunderbolt": "prone"
+  }
+}

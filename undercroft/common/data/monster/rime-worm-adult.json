@@ -1,0 +1,84 @@
+{
+  "kind": "monster",
+  "name": "Rime Worm Adult",
+  "notes": "",
+  "type": "elemental",
+  "stats": {
+    "size": "Large",
+    "alignment": "Neutral",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 105,
+      "current": 105,
+      "diceString": "10d10 + 50"
+    },
+    "hitDice": "10d10",
+    "speed": {
+      "walk": 30,
+      "swim": 30
+    },
+    "abilities": {
+      "strength": 20,
+      "dexterity": 14,
+      "constitution": 20,
+      "intelligence": 6,
+      "wisdom": 14,
+      "charisma": 3
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "Str +8, Con +8",
+    "skills": "",
+    "senses": {
+      "darkvision": 200,
+      "passives": {
+        "perception": 12
+      }
+    },
+    "challengeRating": "6",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "cold",
+          "type": "immunity"
+        },
+        {
+          "name": "necrotic",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Tome of Beasts 1 (pg. 327)"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.rime-worm-adult-born-of-rime",
+    "feat.rime-worm-adult-ringed-by-ice-and-death",
+    "feat.multiattack",
+    "feat.rime-worm-adult-tendril",
+    "feat.rime-worm-adult-devour",
+    "feat.rime-worm-adult-black-ice-spray-recharge-5-6"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.rime-worm-adult-tendril",
+          "count": 2
+        }
+      ],
+      "text": "The creature worm makes two tendril attacks."
+    }
+  }
+}

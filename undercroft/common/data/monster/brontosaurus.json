@@ -1,0 +1,86 @@
+{
+  "kind": "monster",
+  "name": "Brontosaurus",
+  "notes": "",
+  "type": "beast",
+  "stats": {
+    "size": "Gargantuan",
+    "alignment": "Unaligned",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 121,
+      "current": 121,
+      "diceString": "9d20+27"
+    },
+    "hitDice": "9d20",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 21,
+      "dexterity": 9,
+      "constitution": 17,
+      "intelligence": 2,
+      "wisdom": 10,
+      "charisma": 7
+    },
+    "initiative": {
+      "bonus": -1
+    },
+    "savingThrows": "Con +6",
+    "skills": "",
+    "senses": {
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "5",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [
+      "Forest",
+      "Grassland"
+    ],
+    "sources": [
+      "MPMM",
+      "https://www.dndbeyond.com/monsters/2560746-brontosaurus",
+      "Mordenkainen Presents: Monsters of the Multiverse, pg. 95"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.stomp",
+    "feat.tail"
+  ],
+  "featureParams": {
+    "feat.tail": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 8,
+      "distanceLabel": "reach",
+      "distance": "20",
+      "damageDice": "6d8 + 5",
+      "damageType": "bludgeoning"
+    },
+    "feat.stomp": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 8,
+      "distanceLabel": "reach",
+      "distance": "20",
+      "damageDice": "5d8 + 5",
+      "damageType": "bludgeoning",
+      "rider": {
+        "kind": "save-or-condition"
+      }
+    }
+  }
+}

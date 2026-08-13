@@ -1,0 +1,32 @@
+{
+  "id": "feat.goon-balloon-float",
+  "name": "Float",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature moves up to 20 feet vertically in one direction without provoking opportunity attacks. If it ends this movement suspended in the air, it hovers in place. It can’t be knocked prone while airborne.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature moves up to 20 feet vertically in one direction without provoking opportunity attacks. If it ends this movement suspended in the air, it hovers in place. It can’t be knocked prone while airborne.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "mobility"
+    ],
+    "recipeSlots": [
+      "escape"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "bonus-action"
+  }
+}

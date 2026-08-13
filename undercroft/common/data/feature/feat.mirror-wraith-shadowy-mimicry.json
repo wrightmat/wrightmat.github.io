@@ -1,0 +1,29 @@
+{
+  "id": "feat.mirror-wraith-shadowy-mimicry",
+  "name": "Shadowy Mimicry",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature can hide in the shadows, gaining advantage on Stealth checks in dim light or darkness.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature can hide in the shadows, gaining advantage on Stealth checks in dim light or darkness.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -4,10 +4,10 @@
   "systemIds": [
     "sys.dnd5e"
   ],
-  "description": "The creature can enter the Ethereal Plane from the Material Plane, and vice versa.",
+  "description": "The creature enters the Ethereal Plane from the Material Plane, or vice versa. It is visible on the Material Plane while it is in the Border Ethereal, and vice versa, yet it can't affect or be affected by anything on the other plane.",
   "mechanics": {
     "type": "passive",
-    "text": "The creature can enter the Ethereal Plane from the Material Plane, and vice versa."
+    "text": "The creature enters the Ethereal Plane from the Material Plane, or vice versa. It is visible on the Material Plane while it is in the Border Ethereal, and vice versa, yet it can't affect or be affected by anything on the other plane."
   },
   "budgetCost": 2,
   "tags": {
@@ -23,5 +23,8 @@
     ]
   },
   "synergizesWith": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
 }

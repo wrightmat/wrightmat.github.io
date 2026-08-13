@@ -1,0 +1,32 @@
+{
+  "id": "feat.vampire-squid-deathless-agility",
+  "name": "Deathless Agility",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature takes the Dash or Disengage action.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature takes the Dash or Disengage action.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "mobility"
+    ],
+    "recipeSlots": [
+      "escape"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "bonus-action"
+  }
+}

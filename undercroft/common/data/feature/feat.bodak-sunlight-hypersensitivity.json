@@ -1,0 +1,29 @@
+{
+  "id": "feat.bodak-sunlight-hypersensitivity",
+  "name": "Sunlight Hypersensitivity",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature takes 5 radiant damage when it starts its turn in sunlight. While in sunlight, it has disadvantage on attack rolls and ability checks.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature takes 5 radiant damage when it starts its turn in sunlight. While in sunlight, it has disadvantage on attack rolls and ability checks.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "debuff"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

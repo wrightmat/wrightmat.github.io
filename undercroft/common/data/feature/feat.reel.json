@@ -1,0 +1,55 @@
+{
+  "id": "feat.reel",
+  "name": "Reel",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature pulls each creature it has grappled a short distance straight toward itself.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature pulls each creature it has grappled a short distance straight toward itself."
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "control"
+    ],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "5-ft",
+      "name": "Reel (5 ft.)",
+      "shortName": "5 ft.",
+      "mechanics": {
+        "text": "Each creature grappled by the creature is pulled up to 5 feet straight toward the creature."
+      }
+    },
+    {
+      "id": "60-ft",
+      "name": "Reel (60 ft.)",
+      "shortName": "60 ft.",
+      "mechanics": {
+        "text": "The creature pulls each creature grappled by it up to 60 feet straight toward itself."
+      }
+    },
+    {
+      "id": "25-ft",
+      "name": "Reel (25 ft.)",
+      "shortName": "25 ft.",
+      "mechanics": {
+        "text": "The creature pulls each creature grappled by it up to 25 feet straight toward it."
+      }
+    }
+  ],
+  "combat": {
+    "actionCost": "action"
+  }
+}

@@ -1,0 +1,100 @@
+{
+  "kind": "monster",
+  "name": "Grell",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/47138/944/1000/1000/638741964226364873.png",
+  "notes": "With barbed tentacles sprouting from their brain-shaped bodies, grells hunt the lightless depths. These silent predators defy gravity, allowing them to strike from unexpected places, and they perceive their surroundings via sound and electrical fields. Their tentacles secrete paralytic venom, which prevents most creatures ambushed by grells from crying out before being dragged into the dark and consumed.\n\nGrells are sapient beings, but their intellects and motivations are alien to most. They typically cooperate with one another only to defeat more powerful prey. Most demonstrate no interest in creating things or in communicating with other creatures, including their own kind.\n\nMany grells pursue methods of traveling between worlds and planes of existence. They sometimes slip onto star-faring vessels or enter portals heedless of their destination. Roll on or choose a result from the Grell Explorations table to inspire why grells seek passage between realms.",
+  "type": "aberration",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Neutral Evil",
+    "armorClass": 12,
+    "hitPoints": {
+      "max": 55,
+      "current": 55,
+      "diceString": "10d8 + 10"
+    },
+    "hitDice": "10d8",
+    "speed": {
+      "walk": 10,
+      "fly": 30,
+      "hover": true
+    },
+    "abilities": {
+      "strength": 15,
+      "dexterity": 14,
+      "constitution": 13,
+      "intelligence": 12,
+      "wisdom": 11,
+      "charisma": 9
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "Perception +4, Stealth +6",
+    "senses": {
+      "passives": {
+        "perception": 14
+      }
+    },
+    "challengeRating": "3",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Lightning",
+          "type": "immunity"
+        },
+        {
+          "name": "Blinded",
+          "type": "immunity"
+        },
+        {
+          "name": "Prone",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Deep Speech"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "https://www.dndbeyond.com/monsters/5195059-grell"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.grell-abduct",
+    "feat.multiattack",
+    "feat.beak",
+    "feat.grell-paralyzing-tentacles"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.beak",
+          "count": 1
+        },
+        {
+          "featureId": "feat.grell-paralyzing-tentacles",
+          "count": 1
+        }
+      ],
+      "text": "The creature makes one Beak attack and one Paralyzing Tentacles attack."
+    },
+    "feat.beak": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d8 + 2",
+      "damageType": "piercing"
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "id": "feat.clockwork-horror-shutdown",
+  "name": "Shutdown",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "If targeted by dispel magic, the creature must succeed on a Constitution saving throw against the caster’s spell save DC or fall unconscious for 1 minute or until it takes any damage.",
+  "mechanics": {
+    "type": "passive",
+    "text": "If targeted by dispel magic, the creature must succeed on a Constitution saving throw against the caster’s spell save DC or fall unconscious for 1 minute or until it takes any damage.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "defense",
+      "debuff"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

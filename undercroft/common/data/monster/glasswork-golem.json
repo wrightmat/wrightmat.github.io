@@ -1,0 +1,130 @@
+{
+  "kind": "monster",
+  "name": "Glasswork Golem",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/20472/433/1000/1000/637677440076415821.jpeg",
+  "notes": "",
+  "type": "construct",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Unaligned",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 36,
+      "current": 36
+    },
+    "hitDice": "8d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 13,
+      "dexterity": 10,
+      "constitution": 10,
+      "intelligence": 1,
+      "wisdom": 10,
+      "charisma": 1
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "Dex +2, Con +2, Wis +2",
+    "skills": "",
+    "senses": {
+      "blindsight": 60,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "2",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Psychic",
+          "type": "immunity"
+        },
+        {
+          "name": "Blinded",
+          "type": "immunity"
+        },
+        {
+          "name": "Charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "Deafened",
+          "type": "immunity"
+        },
+        {
+          "name": "Exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "Frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "Paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "Petrified",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "WBtW",
+      "The Wild Beyond the Witchlight, pg. 193",
+      "https://www.dndbeyond.com/monsters/1979785-glasswork-golem"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.false-appearance-ambush",
+    "feat.immutable-form",
+    "feat.regeneration",
+    "feat.unusual-nature",
+    "feat.multiattack",
+    "feat.glass-sword",
+    "feat.glasswork-golem-dazzling-light-recharge-5-6"
+  ],
+  "featureParams": {
+    "feat.glass-sword": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 3,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d8 + 1",
+      "damageType": "slashing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.glass-sword",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two Glass Sword attacks."
+    }
+  },
+  "featureTiers": {
+    "feat.false-appearance-ambush": "motionless-eyes-legs-wrapped"
+  }
+}

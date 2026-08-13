@@ -1,0 +1,89 @@
+{
+  "kind": "monster",
+  "index": "knight",
+  "name": "Knight",
+  "notes": "Knights are warriors who pledge service to rulers, religious orders, and noble causes. A knight’s alignment determines the extent to which a pledge is honored. Whether undertaking a quest or patrolling a realm, a knight often travels with an entourage that includes squires and hirelings who are commoners.",
+  "type": "humanoid",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/knight.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "any alignment",
+    "armorClass": 18,
+    "hitPoints": {
+      "max": 52,
+      "current": 52,
+      "diceString": "8d8+16"
+    },
+    "hitDice": "8d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 16,
+      "dexterity": 11,
+      "constitution": 14,
+      "intelligence": 11,
+      "wisdom": 11,
+      "charisma": 15
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "CON +4, WIS +2",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "any one language (usually Common)"
+      ]
+    },
+    "senses": {
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "3",
+    "proficiencyBonus": 2,
+    "xp": 700,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/knight"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/knight",
+  "featureIds": [
+    "feat.brave",
+    "feat.multiattack",
+    "feat.greatsword",
+    "feat.heavy-crossbow",
+    "feat.leadership",
+    "feat.parry"
+  ],
+  "featureTiers": {
+    "feat.parry": "ac-3"
+  },
+  "featureParams": {
+    "feat.greatsword": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 3",
+      "damageType": "slashing"
+    },
+    "feat.heavy-crossbow": {
+      "kind": "Ranged",
+      "attackKind": "Weapon",
+      "attackBonus": 2,
+      "distanceLabel": "range",
+      "distance": "100/400",
+      "damageDice": "1d10",
+      "damageType": "piercing"
+    },
+    "feat.multiattack": {
+      "text": "The creature makes two melee attacks."
+    }
+  }
+}

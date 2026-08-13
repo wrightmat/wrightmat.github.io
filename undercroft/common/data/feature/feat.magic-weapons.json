@@ -22,5 +22,15 @@
     ]
   },
   "synergizesWith": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "silvered",
+      "name": "Magic Weapons (Silvered)",
+      "shortName": "Silvered",
+      "mechanics": {
+        "text": "The creature's weapon attacks are magical and silvered for the purpose of overcoming resistance and immunity to nonmagical attacks and damage."
+      }
+    }
+  ]
 }

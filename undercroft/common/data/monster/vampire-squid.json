@@ -1,0 +1,70 @@
+{
+  "kind": "monster",
+  "name": "Vampire Squid",
+  "notes": "",
+  "type": "monstrosity",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Unaligned",
+    "armorClass": 11,
+    "hitPoints": {
+      "max": 45,
+      "current": 45,
+      "diceString": "7d10 + 7"
+    },
+    "hitDice": "7d10",
+    "speed": {
+      "walk": 10,
+      "swim": 60
+    },
+    "abilities": {
+      "strength": 17,
+      "dexterity": 13,
+      "constitution": 13,
+      "intelligence": 5,
+      "wisdom": 10,
+      "charisma": 4
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "",
+    "skills": "Perception +4, Stealth +5",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 14
+      }
+    },
+    "challengeRating": "2",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "necrotic",
+          "type": "resistance"
+        }
+      ],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Based on the Giant Octopus, Deathmantle, and Vampire Spawn"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.vampire-squid-sunlight-sensitivity",
+    "feat.vampire-squid-tentacle",
+    "feat.vampire-squid-deathless-agility",
+    "feat.vampire-squid-death-frenzy",
+    "feat.giant-squid-ink-cloud-1-day",
+    "feat.water-breathing",
+    "feat.vampire-squid-umbral-ink-1-day"
+  ]
+}

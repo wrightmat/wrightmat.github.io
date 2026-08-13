@@ -1,0 +1,33 @@
+{
+  "id": "feat.extus-narr-temporal-shunt-3-day",
+  "name": "Temporal Shunt (3/Day)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Extus casts Temporal Shunt in response to the spell's trigger, using the same spellcasting ability as Spellcasting.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Extus casts Temporal Shunt in response to the spell's trigger, using the same spellcasting ability as Spellcasting.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "defense",
+      "mobility"
+    ],
+    "recipeSlots": [
+      "escape"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "reaction"
+  }
+}

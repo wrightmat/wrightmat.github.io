@@ -1,0 +1,25 @@
+{
+  "id": "feat.erinyes-hellish-weapons",
+  "name": "Hellish Weapons",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature's weapon attacks are magical and deal an extra 13 (3d8) poison damage on a hit (included in the attacks).",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The creature's weapon attacks are magical and deal an extra 13 (3d8) poison damage on a hit (included in the attacks)."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

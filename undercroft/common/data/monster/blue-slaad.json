@@ -1,0 +1,135 @@
+{
+  "kind": "monster",
+  "name": "Blue Slaad",
+  "image": "https://angrygolem-games.com/wp-content/uploads/2021/11/Blue-Slaad.jpg",
+  "notes": "",
+  "type": "Abberation",
+  "stats": {
+    "size": "Large",
+    "alignment": "Chaotic Neutral",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 123,
+      "current": 123,
+      "diceString": "13d10 + 52"
+    },
+    "hitDice": "13d10",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 20,
+      "dexterity": 15,
+      "constitution": 18,
+      "intelligence": 7,
+      "wisdom": 7,
+      "charisma": 9
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "Perception +1",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 11
+      }
+    },
+    "challengeRating": "7",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "acid",
+          "type": "resistance"
+        },
+        {
+          "name": "cold",
+          "type": "resistance"
+        },
+        {
+          "name": "fire",
+          "type": "resistance"
+        },
+        {
+          "name": "lightning",
+          "type": "resistance"
+        },
+        {
+          "name": "thunder",
+          "type": "resistance"
+        }
+      ],
+      "languages": [
+        "Slaad",
+        "Telepathy 60 ft."
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "MM",
+      "https://www.dndbeyond.com/monsters/17112-blue-slaad",
+      "Monster Manual, pg. 276",
+      "https://angrygolem-games.com/monster-manual/letter-b/blue-slaad-5e-stats/"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.magic-resistance",
+    "feat.regeneration",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.claw",
+    "feat.rake"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 8,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d8 + 5",
+      "damageType": "piercing"
+    },
+    "feat.rake": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 8,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d4 + 5",
+      "damageType": "slashing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.bite",
+          "count": 1
+        },
+        {
+          "featureId": "feat.claw",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes three attacks: one with its bite and two with its claws."
+    },
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 8,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 5",
+      "damageType": "slashing",
+      "rider": {
+        "kind": "save-or-condition",
+        "targetRestriction": "humanoid"
+      }
+    }
+  }
+}

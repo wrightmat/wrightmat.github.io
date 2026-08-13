@@ -1,0 +1,29 @@
+{
+  "id": "feat.dragonleaf-tree-loyal-to-dragon-master",
+  "name": "Loyal to Dragon Master",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "a creature only follows commands from its designated master (or from any creatures to whom the master grants control). It has advantage on saving throws against any charm or compulsion spell or effect. Additionally, the creature has advantage on any saving throw to resist Bluff, Diplomacy, or Intimidate checks made to influence it to act against its masters.",
+  "mechanics": {
+    "type": "passive",
+    "text": "a creature only follows commands from its designated master (or from any creatures to whom the master grants control). It has advantage on saving throws against any charm or compulsion spell or effect. Additionally, the creature has advantage on any saving throw to resist Bluff, Diplomacy, or Intimidate checks made to influence it to act against its masters.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

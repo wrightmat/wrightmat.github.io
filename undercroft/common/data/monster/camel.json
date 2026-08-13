@@ -1,0 +1,66 @@
+{
+  "kind": "monster",
+  "index": "camel",
+  "name": "Camel",
+  "type": "beast",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/camel.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "unaligned",
+    "armorClass": 9,
+    "hitPoints": {
+      "max": 15,
+      "current": 15,
+      "diceString": "2d10+4"
+    },
+    "hitDice": "2d10",
+    "speed": {
+      "walk": 50
+    },
+    "abilities": {
+      "strength": 16,
+      "dexterity": 8,
+      "constitution": 14,
+      "intelligence": 2,
+      "wisdom": 8,
+      "charisma": 5
+    },
+    "initiative": {
+      "bonus": -1
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [],
+      "languages": []
+    },
+    "senses": {
+      "passives": {
+        "perception": 9
+      }
+    },
+    "challengeRating": "1/8",
+    "proficiencyBonus": 2,
+    "xp": 25,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/camel"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/camel",
+  "featureIds": [
+    "feat.bite"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d4",
+      "damageType": "bludgeoning"
+    }
+  }
+}

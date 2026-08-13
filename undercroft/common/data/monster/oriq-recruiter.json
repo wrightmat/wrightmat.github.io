@@ -1,0 +1,94 @@
+{
+  "kind": "monster",
+  "name": "Oriq Recruiter",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/22135/816/1000/1000/637743395587947984.jpeg",
+  "notes": "",
+  "type": "humanoid",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Typically Lawful Evil",
+    "armorClass": 16,
+    "hitPoints": {
+      "max": 55,
+      "current": 55,
+      "diceString": "10d8 + 10"
+    },
+    "hitDice": "10d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 10,
+      "dexterity": 14,
+      "constitution": 12,
+      "intelligence": 17,
+      "wisdom": 15,
+      "charisma": 18
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "Int +5, Wis +4, Cha +6",
+    "skills": "Arcana +5, Deception +8, Insight +4, Persuasion +6",
+    "senses": {
+      "passives": {
+        "perception": 12
+      }
+    },
+    "challengeRating": "4",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "psychic",
+          "type": "resistance"
+        },
+        {
+          "name": "charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "frightened",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Common plus any two languages"
+      ]
+    },
+    "spells": "The recruiter casts one of the following spells, requiring no material components and using Charisma as the spellcasting ability (spell save DC 14): At will: disguise self, silent image 2/day: charm person 1/day: suggestion",
+    "environments": [],
+    "sources": [],
+    "saveDC": 14
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.oriq-recruiter-misdirecting-defense",
+    "feat.extus-narr-oriq-mask",
+    "feat.multiattack",
+    "feat.psychic-knife"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.psychic-knife",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two Psychic Knife attacks. It can use Spellcasting in place of one of the attacks."
+    },
+    "feat.psychic-knife": {
+      "kind": "MeleeOrRanged",
+      "attackKind": "Spell",
+      "attackBonus": 6,
+      "meleeDistance": "5",
+      "rangeDistance": "30",
+      "damageDice": "5d6 + 4",
+      "damageType": "psychic"
+    }
+  }
+}

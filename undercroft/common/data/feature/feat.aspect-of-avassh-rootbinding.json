@@ -1,0 +1,33 @@
+{
+  "id": "feat.aspect-of-avassh-rootbinding",
+  "name": "Rootbinding",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Avassh attempts to remake one creature it can see within 30 feet of it into a twisted tree. The target must make a DC 22 Constitution saving throw. On a successful save, the target narrowly escapes being remade, and instead takes 25 (5d10) necrotic damage. On a failed save, the target’s body is twisted into the form of a Large tree, becoming paralyzed and rootbound. A rootbound creature must make a DC 22 Constitution saving throw at the start of each of its turns. On a failed save, it is paralyzed until the start of its next turn. On a successful save, it is no longer paralyzed, but has disadvantage on attack rolls and ability checks, and its speed is reduced to 10 feet. The creature continues making this saving throw at the start of each of its turns until it either succeeds twice or fails twice (not including the initial failure that made that creature rootbound). If the creature succeeds twice, the effect ends and the creature takes 25 (5d10) necrotic damage. If the creature fails twice, the effect ends, the creature dies, and it is turned into an inanimate tree; this transformation can be undone only by a wish spell.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Avassh attempts to remake one creature it can see within 30 feet of it into a twisted tree. The target must make a DC 22 Constitution saving throw. On a successful save, the target narrowly escapes being remade, and instead takes 25 (5d10) necrotic damage. On a failed save, the target’s body is twisted into the form of a Large tree, becoming paralyzed and rootbound. A rootbound creature must make a DC 22 Constitution saving throw at the start of each of its turns. On a failed save, it is paralyzed until the start of its next turn. On a successful save, it is no longer paralyzed, but has disadvantage on attack rolls and ability checks, and its speed is reduced to 10 feet. The creature continues making this saving throw at the start of each of its turns until it either succeeds twice or fails twice (not including the initial failure that made that creature rootbound). If the creature succeeds twice, the effect ends and the creature takes 25 (5d10) necrotic damage. If the creature fails twice, the effect ends, the creature dies, and it is turned into an inanimate tree; this transformation can be undone only by a wish spell.",
+    "scope": "unique"
+  },
+  "budgetCost": 4,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "control"
+    ],
+    "recipeSlots": [
+      "isolate"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

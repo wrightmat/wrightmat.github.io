@@ -1,0 +1,33 @@
+{
+  "id": "feat.dragonbone-golem-pinion",
+  "name": "Pinion",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Melee Weapon Attack: +9 to hit, reach 5 ft., one target. Hit: 12 (2d6 + 5) piercing damage. If the target is a Medium or smaller creature, it is pinned beneath the bony pinion and restrained. The creature has two pinions, each of which can restrain one target. If a creature is restrained by one of the pinions, the creature can’t attack with it. Any creature restrained by a pinion can free itself at the start of its turn with a successful DC 17 Strength (Athletics) check.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Melee Weapon Attack: +9 to hit, reach 5 ft., one target. Hit: 12 (2d6 + 5) piercing damage. If the target is a Medium or smaller creature, it is pinned beneath the bony pinion and restrained. The creature has two pinions, each of which can restrain one target. If a creature is restrained by one of the pinions, the creature can’t attack with it. Any creature restrained by a pinion can free itself at the start of its turn with a successful DC 17 Strength (Athletics) check.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "control"
+    ],
+    "recipeSlots": [
+      "isolate"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

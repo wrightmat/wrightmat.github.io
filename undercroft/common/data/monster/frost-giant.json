@@ -1,0 +1,93 @@
+{
+  "kind": "monster",
+  "index": "frost-giant",
+  "name": "Frost Giant",
+  "type": "giant",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/frost-giant.png",
+  "stats": {
+    "size": "Huge",
+    "alignment": "neutral evil",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 138,
+      "current": 138,
+      "diceString": "12d12+60"
+    },
+    "hitDice": "12d12",
+    "speed": {
+      "walk": 40
+    },
+    "abilities": {
+      "strength": 23,
+      "dexterity": 9,
+      "constitution": 21,
+      "intelligence": 9,
+      "wisdom": 10,
+      "charisma": 12
+    },
+    "initiative": {
+      "bonus": -1
+    },
+    "savingThrows": "CON +8, WIS +3, CHA +4",
+    "skills": "Athletics +9, Perception +3",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "cold",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Giant"
+      ]
+    },
+    "senses": {
+      "passives": {
+        "perception": 13
+      }
+    },
+    "challengeRating": "8",
+    "proficiencyBonus": 3,
+    "xp": 3900,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/frost-giant"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/frost-giant",
+  "featureIds": [
+    "feat.multiattack",
+    "feat.greataxe",
+    "feat.rock"
+  ],
+  "featureParams": {
+    "feat.greataxe": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 9,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "3d12 + 6",
+      "damageType": "slashing"
+    },
+    "feat.rock": {
+      "kind": "Ranged",
+      "attackKind": "Weapon",
+      "attackBonus": 9,
+      "distanceLabel": "range",
+      "distance": "60/240",
+      "damageDice": "4d10 + 6",
+      "damageType": "bludgeoning"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.greataxe",
+          "count": 2
+        }
+      ],
+      "text": "The giant makes two greataxe attacks."
+    }
+  }
+}

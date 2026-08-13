@@ -1,0 +1,42 @@
+{
+  "id": "feat.standing-leap",
+  "name": "Standing Leap",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature's long jump is up to 20 ft. and its high jump is up to 10 ft., with or without a running start.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature's long jump is up to 20 ft. and its high jump is up to 10 ft., with or without a running start."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "30-15",
+      "name": "Standing Leap",
+      "shortName": "30/15 ft",
+      "mechanics": {
+        "text": "The creature's long jump is up to 30 ft. and its high jump is up to 15 ft., with or without a running start."
+      }
+    },
+    {
+      "id": "10-5",
+      "name": "Standing Leap",
+      "shortName": "10/5 ft",
+      "mechanics": {
+        "text": "The creature's long jump is up to 10 ft. and its high jump is up to 5 ft., with or without a running start."
+      }
+    }
+  ]
+}

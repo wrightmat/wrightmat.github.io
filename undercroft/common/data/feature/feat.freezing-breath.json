@@ -1,0 +1,26 @@
+{
+  "id": "feat.freezing-breath",
+  "name": "Freezing Breath",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature exhales chill wind in an area, forcing a saving throw or dealing damage.",
+  "mechanics": {
+    "type": "save-effect"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "id": "feat.usvapna-quori-thoughtscour-shriek-recharge-5-6",
+  "name": "Thoughtscour Shriek (Recharge 5-6)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Each creature within 10 ft. must succeed on a DC 16 Wisdom saving throw or fall asleep for the next minute. A creature wakes up if it takes damage or another creature uses its action to wake it. When the creature wakes, it experiences the time since it encountered the creature as though it were a dream.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Each creature within 10 ft. must succeed on a DC 16 Wisdom saving throw or fall asleep for the next minute. A creature wakes up if it takes damage or another creature uses its action to wake it. When the creature wakes, it experiences the time since it encountered the creature as though it were a dream.",
+    "scope": "unique"
+  },
+  "budgetCost": 4,
+  "tags": {
+    "behaviors": [
+      "control"
+    ],
+    "recipeSlots": [
+      "dominate"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

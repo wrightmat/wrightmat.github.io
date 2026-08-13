@@ -1,0 +1,110 @@
+{
+  "kind": "monster",
+  "name": "Wereshark",
+  "notes": "_The twisted form of a humanoid shark hunches over, its grin showing rows of jagged teeth. Fresh blood drips from its mouth as it clutches a trident in powerful hands._\n\nIn humanoid form, weresharks tend to be powerfully-muscled and broad, with little body hair. They are solitary hunters who sometimes stalk and eat each other. If a wereshark spreads its curse, it’s likely because the lycanthrope made a mistake and let potential prey get away.\n\n**Voracious Appetites**. Weresharks are savage predators who, driven by voracious appetites, devour anything they come across. Aggressive in all forms, weresharks prefer to spend their time beneath the waves, hunting fish, seals, and other prey. They have no qualms about attacking humanoids or boats, particularly fishing vessels, which contain even more food for the lycanthrope to consume.\n\n**Obsessed Predators**. Weresharks become obsessed with prey that gets away from them. A wereshark can stalk an individual through the seas and over land for months, leaving a path of destruction behind it, just to get a taste of what it missed.",
+  "type": "humanoid",
+  "stats": {
+    "size": "Large",
+    "alignment": "Chaotic Evil",
+    "armorClass": "11 in humanoid form, 12 (natural armor) in shark and hybrid form",
+    "hitPoints": {
+      "max": 90,
+      "current": 90,
+      "diceString": "12d8 + 36"
+    },
+    "hitDice": "12d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 19,
+      "dexterity": 13,
+      "constitution": 17,
+      "intelligence": 11,
+      "wisdom": 12,
+      "charisma": 8
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "",
+    "skills": "Perception +4",
+    "senses": {
+      "blindsight": 30,
+      "passives": {
+        "perception": 14
+      }
+    },
+    "challengeRating": "5",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "bludgeoning",
+          "type": "immunity"
+        },
+        {
+          "name": "piercing",
+          "type": "immunity"
+        },
+        {
+          "name": "and slashing from nonmagical attacks not made with silvered weapons",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Common (can’t speak in shark form)"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Tome of Beasts 2, pg. 247"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.blood-frenzy",
+    "feat.hold-breath",
+    "feat.shapechanger",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.trident",
+    "feat.water-breathing"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "text": "In humanoid or hybrid form, the creature makes three trident attacks."
+    },
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d10 + 4",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "save-or-condition",
+        "targetRestriction": "humanoid"
+      }
+    },
+    "feat.trident": {
+      "kind": "MeleeOrRanged",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "meleeDistance": "5",
+      "rangeDistance": "20/60",
+      "damageDice": "1d6 + 4",
+      "damageType": "piercing",
+      "versatile": {
+        "damageDice": "1d8 + 4"
+      }
+    }
+  },
+  "featureTiers": {
+    "feat.hold-breath": "1-hour"
+  }
+}

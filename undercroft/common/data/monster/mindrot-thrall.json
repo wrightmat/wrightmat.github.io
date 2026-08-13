@@ -1,0 +1,124 @@
+{
+  "kind": "monster",
+  "name": "Mindrot Thrall",
+  "notes": "_A heavily cloaked figure reeks of decay and spreads a floating cloud of spores with every step._\n\n**Fungal Rot**. Mindrot fungus is an intelligent hive-mind parasite that consumes creatures from the inside out. When inhaled, mindrot spores enter the brain through the bloodstream. As the fungus grows, it dissolves the host’s body and slowly replaces the creature’s flesh with its own. The fungus’s first target is the motor function of the brain. It takes control of the creature’s movement while the victim is still alive and fully conscious — but no longer controls his or her own body! Indeed, sensory awareness may be the last function that the fungus attacks. Eventually, even the victim’s skin and muscle are replaced with fungal fibers. At that point, the affected creature no longer looks like its former self. Such a newly-born mindrot thrall conceals its alarming appearance under heavy robes or cloaks so it can travel without causing alarm.\n\n**Spore Blisters**. A thrall’s skin is taut and waxy. Blisters form just beneath the surface, and when they grow as large as a child’s fist they burst, releasing a spray of spores. It seeks to infect as many new victims as possible during the few weeks that it survives in humanoid form. At the end of that time, the thrall shrivels to a dried, vaguely humanoid husk. Even a dead mindrot thrall, however, is still dangerous because its half-formed spore blisters can remain infectious for months. Disturbing the husk can burst these blisters and trigger a Mindrot Spores attack.\n\n**Dimensional Horrors**. Wizards hypothesize the fungus was brought to the mortal world by a shambling horror crossing through a dimensional portal. The remoteness of that wasteland is likely why the mindrot fungus hasn’t destroyed whole cities, though someday it may find a more fertile breeding ground.",
+  "type": "plant",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Neutral",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 82,
+      "current": 82,
+      "diceString": "11d8 + 33"
+    },
+    "hitDice": "11d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 15,
+      "dexterity": 14,
+      "constitution": 17,
+      "intelligence": 11,
+      "wisdom": 14,
+      "charisma": 6
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "Con +5",
+    "skills": "",
+    "senses": {
+      "tremorsense": 30,
+      "passives": {
+        "perception": 12
+      }
+    },
+    "challengeRating": "3",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "bludgeoning and piercing from nonmagical weapons",
+          "type": "resistance"
+        },
+        {
+          "name": "acid",
+          "type": "immunity"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "understands Common but cannot speak"
+      ]
+    },
+    "environments": [
+      "Underdark"
+    ],
+    "sources": [
+      "ToB1",
+      "Tome of Beasts 1, pg 290"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.mindrot-thrall-fungal-aura",
+    "feat.multiattack",
+    "feat.claw",
+    "feat.acid-breath",
+    "feat.mindrot-thrall-mindrot-spores"
+  ],
+  "featureParams": {
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 2",
+      "damageType": "slashing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.claw",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two claw attacks."
+    },
+    "feat.acid-breath": {
+      "verb": "exhales",
+      "substance": "a blast of acidic spores from its rotten lungs",
+      "areaSize": "15",
+      "areaShape": "cone",
+      "dcAbility": "constitution",
+      "damageDice": "8d8",
+      "damageType": "acid",
+      "ability": "dexterity",
+      "rider": {
+        "kind": "trailing-note",
+        "conditionText": "If the saving throw fails, the creature is also infected with mindrot spores."
+      }
+    }
+  }
+}

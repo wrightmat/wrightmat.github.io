@@ -36,6 +36,10 @@
           "args": {
             "path": "stats"
           }
+        },
+        "crShortName": {
+          "type": "field",
+          "bind": "=lookup('challengeRatings', @challengeRatingId).shortName"
         }
       },
       "body": {
@@ -67,12 +71,16 @@
               "current": {
                 "type": "field",
                 "bind": "@averageHitPoints"
+              },
+              "diceString": {
+                "type": "field",
+                "bind": "@hitPointDice.diceString"
               }
             }
           },
           "hitDice": {
             "type": "field",
-            "bind": "@hitPointDice.diceString"
+            "bind": "=@hitPointDice.diceCount + 'd' + @hitPointDice.diceValue"
           },
           "abilities": {
             "type": "field",
@@ -168,7 +176,14 @@
           },
           "challengeRating": {
             "type": "field",
-            "bind": "=lookup('challengeRatings', @challengeRatingId).shortName"
+            "bind": "@crShortName"
+          },
+          "proficiencyBonus": {
+            "type": "custom",
+            "fn": "proficiencyBonusFromChallengeRating",
+            "args": {
+              "path": "crShortName"
+            }
           },
           "isLegendary": {
             "type": "field",

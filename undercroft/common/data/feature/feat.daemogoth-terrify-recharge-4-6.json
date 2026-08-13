@@ -1,0 +1,34 @@
+{
+  "id": "feat.daemogoth-terrify-recharge-4-6",
+  "name": "Terrify (Recharge 4–6)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature targets one creature it can see within 120 feet of itself. The target must make a DC 17 Wisdom saving throw. On a failed save, the target takes 33 (6d10) psychic damage and is frightened of the creature until the end of the creature’s next turn, and the creature regains 5 hit points. On a successful save, the target takes half as much damage and isn’t frightened, and the creature doesn’t heal.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature targets one creature it can see within 120 feet of itself. The target must make a DC 17 Wisdom saving throw. On a failed save, the target takes 33 (6d10) psychic damage and is frightened of the creature until the end of the creature’s next turn, and the creature regains 5 hit points. On a successful save, the target takes half as much damage and isn’t frightened, and the creature doesn’t heal.",
+    "scope": "unique"
+  },
+  "budgetCost": 4,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "fear",
+      "regeneration"
+    ],
+    "recipeSlots": [
+      "burst"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

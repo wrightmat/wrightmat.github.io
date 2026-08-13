@@ -1,0 +1,25 @@
+{
+  "id": "feat.death-dog-two-headed",
+  "name": "Two-Headed",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The dog has advantage on Wisdom (Perception) checks and on saving throws against being blinded, charmed, deafened, frightened, stunned, or knocked unconscious.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The dog has advantage on Wisdom (Perception) checks and on saving throws against being blinded, charmed, deafened, frightened, stunned, or knocked unconscious."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,29 @@
+{
+  "id": "feat.grell-abduct",
+  "name": "Abduct",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature needn’t spend extra movement to move a creature it is grappling.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature needn’t spend extra movement to move a creature it is grappling.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "mobility"
+    ],
+    "recipeSlots": [
+      "escape"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

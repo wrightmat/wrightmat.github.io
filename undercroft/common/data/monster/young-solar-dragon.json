@@ -1,0 +1,106 @@
+{
+  "kind": "monster",
+  "name": "Young Solar Dragon",
+  "notes": "### Description\r\n\r\nA solar dragon (also known as a radiant dragon or a sun dragon) is born in the heart of a star. It divides its time outside its lair between patrolling its territory and hunting for food. The dragon has a serpentine body, a pair of ventral limbs ending in long fins, nebulous wings that give off light, and gleaming, multicolored scales. It can see clearly even in intensely bright light.\r\n\r\nSolar dragons are fond of treasure just as all dragons are, but in the airless void of Wildspace, they value food even more. Solar dragons typically feed on [kindori](https://www.dndbeyond.com/monsters/2821178-kindori), scavvers, and other forms of space-dwelling wildlife. A solar dragon might mistake a distant spelljamming ship for possible prey and come within range of the vessel’s weapons before realizing its error and veering away. A wise or experienced captain won’t take the dragon’s approach as a sign of hostility. Solar dragons that are fired upon have been known to batter the offending ships to flinders.\r\n\r\nSolar dragons are territorial carnivores, and they behave accordingly. A [young solar dragon](https://www.dndbeyond.com/monsters/2821213-young-solar-dragon) might lay claim to an asteroid belt, where food is relatively plentiful, while an [ancient solar dragon](https://www.dndbeyond.com/monsters/2821148-ancient-solar-dragon) might consider an entire Wildspace system its hunting ground. They tend to give a wide berth to Humanoid folk, whom they find violent and tiresome. Trespassers who are detected in a solar dragon’s lair can expect to be met with resistance, followed by hostility, especially if the lair contains eggs.\r\n\r\nA solar dragon egg has an obsidian shell, shiny black and opaque. When an egg is close to hatching, the shell becomes translucent, allowing the light from the unborn wyrmling’s wings to shine through.",
+  "type": "dragon",
+  "stats": {
+    "size": "Large",
+    "alignment": "Typically Neutral",
+    "armorClass": 16,
+    "hitPoints": {
+      "max": 178,
+      "current": 178,
+      "diceString": "17d10 + 85"
+    },
+    "hitDice": "17d10",
+    "speed": {
+      "walk": 20,
+      "fly": 60,
+      "hover": true
+    },
+    "abilities": {
+      "strength": 20,
+      "dexterity": 15,
+      "constitution": 20,
+      "intelligence": 13,
+      "wisdom": 14,
+      "charisma": 12
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "Dex +6, Con +9, Wis +6, Cha +5",
+    "skills": "Perception +10, Stealth +6",
+    "senses": {
+      "darkvision": 120,
+      "passives": {
+        "perception": 20
+      }
+    },
+    "challengeRating": "9",
+    "proficiencyBonus": 4,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Radiant",
+          "type": "immunity"
+        },
+        {
+          "name": "Blinded",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Draconic"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "BAM",
+      "Spelljammer: Adventures in Space • Boo’s Astral Menagerie, pg. 53"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.flyby",
+    "feat.unusual-nature",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.tail",
+    "feat.young-solar-dragon-photonic-breath-recharge-5-6"
+  ],
+  "featureParams": {
+    "feat.tail": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 9,
+      "distanceLabel": "reach",
+      "distance": "15",
+      "damageDice": "1d6 + 5",
+      "damageType": "bludgeoning"
+    },
+    "feat.multiattack": {
+      "text": "The comet makes one Slam attack and one Spit Fire attack."
+    },
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 9,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "2d6 + 5",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "2d6",
+        "damageType": "radiant"
+      }
+    }
+  },
+  "featureTiers": {
+    "feat.unusual-nature": "no-air-sleep"
+  }
+}

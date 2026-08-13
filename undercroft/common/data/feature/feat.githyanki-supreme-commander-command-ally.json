@@ -1,0 +1,33 @@
+{
+  "id": "feat.githyanki-supreme-commander-command-ally",
+  "name": "Command Ally",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature targets one ally it can see within 30 feet of it. If the target can see or hear the creature, the target can make one melee weapon attack using its reaction, if available, and has advantage on the attack roll.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature targets one ally it can see within 30 feet of it. If the target can see or hear the creature, the target can make one melee weapon attack using its reaction, if available, and has advantage on the attack roll.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "utility",
+      "control"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "legendary-action"
+  }
+}

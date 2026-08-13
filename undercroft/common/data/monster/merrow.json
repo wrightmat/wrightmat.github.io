@@ -1,0 +1,87 @@
+{
+  "kind": "monster",
+  "index": "merrow",
+  "name": "Merrow",
+  "type": "monstrosity",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/merrow.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "chaotic evil",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 45,
+      "current": 45,
+      "diceString": "6d10+12"
+    },
+    "hitDice": "6d10",
+    "speed": {
+      "walk": 10,
+      "swim": 40
+    },
+    "abilities": {
+      "strength": 18,
+      "dexterity": 10,
+      "constitution": 15,
+      "intelligence": 8,
+      "wisdom": 10,
+      "charisma": 9
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Abyssal",
+        "Aquan"
+      ]
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "2",
+    "proficiencyBonus": 2,
+    "xp": 450,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/merrow"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/merrow",
+  "featureIds": [
+    "feat.amphibious",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.claws",
+    "feat.merrow-harpoon"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d8 + 4",
+      "damageType": "piercing"
+    },
+    "feat.claws": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d4 + 4",
+      "damageType": "slashing"
+    },
+    "feat.multiattack": {
+      "text": "The creature makes two attacks: one with its bite and one with its claws or harpoon."
+    }
+  }
+}

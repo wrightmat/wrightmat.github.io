@@ -1,0 +1,139 @@
+{
+  "kind": "monster",
+  "index": "ancient-blue-dragon",
+  "name": "Ancient Blue Dragon",
+  "type": "dragon",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/ancient-blue-dragon.png",
+  "stats": {
+    "size": "Gargantuan",
+    "alignment": "lawful evil",
+    "armorClass": 22,
+    "hitPoints": {
+      "max": 481,
+      "current": 481,
+      "diceString": "26d20+208"
+    },
+    "hitDice": "26d20",
+    "speed": {
+      "walk": 40,
+      "burrow": 40,
+      "fly": 80
+    },
+    "abilities": {
+      "strength": 29,
+      "dexterity": 10,
+      "constitution": 27,
+      "intelligence": 18,
+      "wisdom": 17,
+      "charisma": 21
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "DEX +7, CON +15, WIS +10, CHA +12",
+    "skills": "Perception +17, Stealth +7",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "lightning",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Common",
+        "Draconic"
+      ]
+    },
+    "senses": {
+      "blindsight": 60,
+      "darkvision": 120,
+      "passives": {
+        "perception": 27
+      }
+    },
+    "challengeRating": "23",
+    "proficiencyBonus": 7,
+    "xp": 50000,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/ancient-blue-dragon"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/ancient-blue-dragon",
+  "featureIds": [
+    "feat.legendary-resistance",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.claw",
+    "feat.tail",
+    "feat.frightful-presence",
+    "feat.lightning-breath",
+    "feat.aboleth-detect",
+    "feat.adult-black-dragon-tail-attack",
+    "feat.wing-attack"
+  ],
+  "featureTiers": {
+    "feat.legendary-resistance": "3-day",
+    "feat.frightful-presence": "dc-16",
+    "feat.wing-attack": "dc-22"
+  },
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 16,
+      "distanceLabel": "reach",
+      "distance": "15",
+      "damageDice": "2d10 + 9",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "2d10",
+        "damageType": "lightning"
+      }
+    },
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 16,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "2d6 + 9",
+      "damageType": "slashing"
+    },
+    "feat.tail": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 16,
+      "distanceLabel": "reach",
+      "distance": "20",
+      "damageDice": "2d8 + 9",
+      "damageType": "bludgeoning"
+    },
+    "feat.lightning-breath": {
+      "verb": "exhales",
+      "substance": "lightning",
+      "areaSize": "120",
+      "areaShape": "line",
+      "lineWidth": "10",
+      "dcAbility": "constitution",
+      "ability": "dexterity",
+      "damageDice": "16d10",
+      "damageType": "lightning"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.bite",
+          "count": 1
+        },
+        {
+          "featureId": "feat.claw",
+          "count": 2
+        }
+      ],
+      "text": "The creature can use its Frightful Presence. It then makes three attacks: one with its bite and two with its claws."
+    }
+  }
+}

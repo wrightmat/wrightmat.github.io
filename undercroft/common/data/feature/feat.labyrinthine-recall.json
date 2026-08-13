@@ -1,0 +1,28 @@
+{
+  "id": "feat.labyrinthine-recall",
+  "name": "Labyrinthine Recall",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature can perfectly recall any path it has traveled.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature can perfectly recall any path it has traveled."
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

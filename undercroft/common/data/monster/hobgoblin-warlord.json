@@ -1,0 +1,100 @@
+{
+  "kind": "monster",
+  "name": "Hobgoblin Warlord",
+  "image": [
+    [
+      "Wikilink To Image"
+    ]
+  ],
+  "notes": "",
+  "type": "humanoid",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Lawful Evil",
+    "armorClass": 20,
+    "hitPoints": {
+      "max": 97,
+      "current": 97,
+      "diceString": "13d8 + 39"
+    },
+    "hitDice": "13d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 16,
+      "dexterity": 14,
+      "constitution": 16,
+      "intelligence": 14,
+      "wisdom": 11,
+      "charisma": 15
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "INT +5, WIS +3, CHA +5",
+    "skills": "",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "6",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Common",
+        "Goblin"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "MM",
+      "https://www.dndbeyond.com/monsters/17161-hobgoblin-warlord"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.martial-advantage",
+    "feat.multiattack",
+    "feat.longsword",
+    "feat.hobgoblin-warlord-shield-bash",
+    "feat.javelin",
+    "feat.leadership",
+    "feat.parry"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "text": "The creature makes three melee attacks. Alternatively, it can make two ranged attacks with its javelins."
+    },
+    "feat.longsword": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 9,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d8 + 3",
+      "damageType": "slashing",
+      "versatile": {
+        "damageDice": "1d10 + 3"
+      }
+    },
+    "feat.javelin": {
+      "kind": "MeleeOrRanged",
+      "attackKind": "Weapon",
+      "attackBonus": 9,
+      "meleeDistance": "5",
+      "rangeDistance": "30/120",
+      "damageDice": "1d6 + 3",
+      "damageType": "piercing"
+    }
+  },
+  "featureTiers": {
+    "feat.parry": "ac-3"
+  }
+}

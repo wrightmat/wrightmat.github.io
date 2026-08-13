@@ -1,0 +1,70 @@
+{
+  "kind": "monster",
+  "name": "Piercer",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/30834/687/1000/1000/638063894881668043.png",
+  "notes": "Clinging to the ceilings of caverns and large subterranean passages, piercers blend in perfectly with natural rock, dropping in silence to impale unsuspecting foes on the ground below.\r\n\r\nA piercer is the larval form of a roper, and the two creatures often attack in tandem. A rock-like shell encases a piercer’s body, giving it the look and texture of a stalactite. That shell protects a soft, slug-like upper body that lets the piercer move across cavern walls and ceilings to position itself for prey. With its eye and mouth closed, the piercer is difficult to distinguish from ordinary rock formations.\r\n\r\n**Patient Hunters.** Piercers can see, but they can also respond to noise and heat, waiting for living creatures to pass beneath them, then falling to attack. A piercer that misses its chance to kill must make its slow way back to the ceiling. A fallen piercer excretes a foul-smelling slime when attacked, making most predators think twice about eating it.\r\n\r\nPiercers gather in colonies to maximize the effectiveness of their attacks, dropping simultaneously to increase the odds of striking prey. After a piercer successfully slays a creature, the others slowly creep toward the corpse to join in the feast.",
+  "type": "monstrosity",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Unaligned",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 22,
+      "current": 22,
+      "diceString": "3d8 + 9"
+    },
+    "hitDice": "3d8",
+    "speed": {
+      "walk": 5,
+      "climb": 5
+    },
+    "abilities": {
+      "strength": 10,
+      "dexterity": 13,
+      "constitution": 16,
+      "intelligence": 1,
+      "wisdom": 7,
+      "charisma": 3
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "",
+    "skills": "Stealth +5",
+    "senses": {
+      "blindsight": 30,
+      "darkvision": 60,
+      "passives": {
+        "perception": 8
+      }
+    },
+    "challengeRating": "1/2",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [
+      "Underdark"
+    ],
+    "sources": [
+      "MM",
+      "https://www.dndbeyond.com/monsters/17191-piercer",
+      "Monster Manual, pg. 252"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.false-appearance-ambush",
+    "feat.spider-climb",
+    "feat.piercer-drop"
+  ],
+  "featureTiers": {
+    "feat.false-appearance-ambush": "stalactite"
+  }
+}

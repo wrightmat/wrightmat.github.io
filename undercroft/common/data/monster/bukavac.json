@@ -1,0 +1,152 @@
+{
+  "kind": "monster",
+  "name": "Bukavac",
+  "image": "https://static.wikia.nocookie.net/naturerules1/images/d/d0/Bukavac.jpg",
+  "notes": "_Unleashing a bone-shattering roar, this toad-like monster bears two gnarled horns and wicked claws. It charges from its watery lair on six legs, eager for the kill._\r\n\r\n**Pond Lurkers**. The placid surfaces of forest lakes and ponds hide many lethal threats, among them the bukavac. While not amphibious, the creature can hold its breath for minutes at a time as it lurks under the surface in wait for fresh meat.\r\n\r\n**Enormous Roar**. A ravenous bukavac lives to hunt and devour prey, preferring intelligent prey to animals, and usually ambushes its victims. Due to its size, the beast must find deep ponds or lakes to hide in, but it can flatten itself comfortably to rest in two feet of water. It leads with its wicked horns before grabbing hold of its target or another nearby foe and hanging on as it claws its victim to death. The creature relishes the feel of its victim’s struggles to escape its embrace and reserves its roar, which sounds like a cross between a toad’s croak and lion’s roar emanating from a creature the size of a dragon, for organized foes or against overwhelming numbers. If a bukavac’s devastating sonic attack routs its foes, it picks off remaining stragglers; otherwise, it retreats to its underwater hiding spot.\r\n\r\n**Clamorous Mating**. Solitary hunters by nature, bukavacs pair up briefly in the spring. Male bukavacs travel to a female’s lair and demonstrate their prowess by unleashing their most powerful bellows. Villages ten miles away from the lair often hear these howls for a week and pray that the creatures don’t attack. Once mating has been completed (and groves of trees have been destroyed), the female finds a secluded, shallow lake in which to bury eggs. A bukavac reaches maturity in five years, during which time it and its siblings hunt together. After the bukavacs mature, each finds its own lair. A bukavac is 11 feet long, including its foot-long horns, stands four feet tall, and weighs 4,000 lb. The creature has a natural lifespan of 40 years, but its noise and proclivity to ambush intelligent prey attracts the attention of hunting parties, which considerably shorten its life expectancy.",
+  "type": "monstrosity",
+  "stats": {
+    "size": "Large",
+    "alignment": "Neutral Evil",
+    "armorClass": 16,
+    "hitPoints": {
+      "max": 199,
+      "current": 199,
+      "diceString": "21d10 + 84"
+    },
+    "hitDice": "21d10",
+    "speed": {
+      "walk": 40,
+      "swim": 20
+    },
+    "abilities": {
+      "strength": 20,
+      "dexterity": 17,
+      "constitution": 18,
+      "intelligence": 7,
+      "wisdom": 15,
+      "charisma": 12
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "Dex +7, Con +8",
+    "skills": "Perception +10, Stealth +11",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 20
+      }
+    },
+    "challengeRating": "9",
+    "proficiencyBonus": 4,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "thunder",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Sylvan"
+      ]
+    },
+    "environments": [
+      "Forest",
+      "Underwater"
+    ],
+    "sources": [
+      "ToB1",
+      "Tome of Beasts 1, pg 47"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.hold-breath",
+    "feat.bukavac-hop",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.claw",
+    "feat.gore",
+    "feat.bukavac-croaking-blast-recharge-5-6"
+  ],
+  "featureTiers": {
+    "feat.hold-breath": "20-minutes"
+  },
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 9,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "3d10 + 5",
+      "damageType": "piercing"
+    },
+    "feat.gore": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 9,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "3d10 + 5",
+      "damageType": "piercing"
+    },
+    "feat.multiattack": {
+      "text": "The creature makes four claw attacks, or two claw attacks and one bite attack, or two claw attacks and one gore attack, or one bite and one gore attack.",
+      "options": [
+        [
+          {
+            "featureId": "feat.claw",
+            "count": 4
+          }
+        ],
+        [
+          {
+            "featureId": "feat.claw",
+            "count": 2
+          },
+          {
+            "featureId": "feat.bite",
+            "count": 1
+          }
+        ],
+        [
+          {
+            "featureId": "feat.claw",
+            "count": 2
+          },
+          {
+            "featureId": "feat.gore",
+            "count": 1
+          }
+        ],
+        [
+          {
+            "featureId": "feat.bite",
+            "count": 1
+          },
+          {
+            "featureId": "feat.gore",
+            "count": 1
+          }
+        ]
+      ]
+    },
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 9,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d12 + 5",
+      "damageType": "slashing",
+      "rider": {
+        "kind": "condition-no-save",
+        "condition": "is grappled (escape DC 15). The creature can grapple up to 2 Medium size foes."
+      }
+    }
+  }
+}

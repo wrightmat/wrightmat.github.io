@@ -1,0 +1,25 @@
+{
+  "id": "feat.duergar-duergar-resilience",
+  "name": "Duergar Resilience",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature has advantage on saving throws against poison, spells, and illusions, as well as to resist being charmed or paralyzed.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The creature has advantage on saving throws against poison, spells, and illusions, as well as to resist being charmed or paralyzed."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

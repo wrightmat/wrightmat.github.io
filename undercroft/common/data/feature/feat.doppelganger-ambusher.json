@@ -1,0 +1,25 @@
+{
+  "id": "feat.doppelganger-ambusher",
+  "name": "Ambusher",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "In the first round of combat, the monstrosity has advantage on attack rolls against any creature it has surprised.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "In the first round of combat, the monstrosity has advantage on attack rolls against any creature it has surprised."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

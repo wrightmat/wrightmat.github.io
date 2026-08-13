@@ -1,0 +1,30 @@
+{
+  "id": "feat.beholder-antimagic-cone",
+  "name": "Antimagic Cone",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Antimagic Cone. The creature’s central eye creates an area of antimagic, as in the antimagic field spell, in a 150-foot-cone. At the start of each of its turns, the creature decides which way the cone faces and whether the cone is active. The area works against the creature’s own eye rays.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Antimagic Cone. The creature’s central eye creates an area of antimagic, as in the antimagic field spell, in a 150-foot-cone. At the start of each of its turns, the creature decides which way the cone faces and whether the cone is active. The area works against the creature’s own eye rays.",
+    "scope": "unique"
+  },
+  "budgetCost": 4,
+  "tags": {
+    "behaviors": [
+      "defense",
+      "control"
+    ],
+    "recipeSlots": [
+      "deny"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,25 @@
+{
+  "id": "feat.lion-running-leap",
+  "name": "Running Leap",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "With a 10-foot running start, the creature can long jump up to 25 ft..",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "With a 10-foot running start, the creature can long jump up to 25 ft.."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

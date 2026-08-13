@@ -1,0 +1,126 @@
+{
+  "kind": "monster",
+  "name": "Skitterhaunt",
+  "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT5UxMQIjifB1mpFvgZq_Ec8tWN8HYHoWJxXzfhLJKe1g&s",
+  "notes": "_This large vermin moves erratically, leaking noxious fluid from its cracked exoskeleton._\r\n\r\n**Ooze Vermin**. This parasitic ooze lives in the shells of monstrous vermin, such as scorpions and spiders, that it has infested and killed. A skitterhaunt creature might be mistaken for its original, living version at a glance, but the sluggish, erratic movements and oozing carapace of skitterhaunts quickly reveal their true nature.\r\n\r\n**Wide Range of Prey**. A skitterhaunt infection can decimate whole nests of vermin. When those are in short supply, these oozes move on to prey on other species, such as ants, crabs, tosculi, and sometimes even zombies or reptiles.\r\n\r\n**Hosts Required**. Skitterhaunts can’t survive long outside their host creatures; they quickly liquefy and lose their cohesion. A body abandoned by a skitterhaunt is an eerie, hollowed-out husk with a strong, acidic odor.",
+  "type": "ooze",
+  "stats": {
+    "size": "Large",
+    "alignment": "Unaligned",
+    "armorClass": 14,
+    "hitPoints": {
+      "max": 95,
+      "current": 95,
+      "diceString": "10d10 + 40"
+    },
+    "hitDice": "10d10",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 15,
+      "dexterity": 11,
+      "constitution": 19,
+      "intelligence": 1,
+      "wisdom": 7,
+      "charisma": 1
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "",
+    "senses": {
+      "blindsight": 60,
+      "passives": {
+        "perception": 8
+      }
+    },
+    "challengeRating": "4",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "acid",
+          "type": "immunity"
+        },
+        {
+          "name": "blinded",
+          "type": "immunity"
+        },
+        {
+          "name": "charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "deafened",
+          "type": "immunity"
+        },
+        {
+          "name": "exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "prone",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [
+      "Forest",
+      "Underdark"
+    ],
+    "sources": [
+      "ToB1",
+      "Tome of Beasts 1, pg 352"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.skitterhaunt-broken-shell",
+    "feat.skitterhaunt-infest-vermin",
+    "feat.multiattack",
+    "feat.skitterhaunt-claw",
+    "feat.sting",
+    "feat.skitterhaunt-acid-spray-recharge-6"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.skitterhaunt-claw",
+          "count": 2
+        },
+        {
+          "featureId": "feat.sting",
+          "count": 1
+        }
+      ],
+      "text": "The creature makes two claw attacks and one sting attack."
+    },
+    "feat.sting": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d10 + 2",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "1d10",
+        "damageType": "acid"
+      }
+    }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "id": "feat.flumph-telepathic-shroud",
+  "name": "Telepathic Shroud",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature is immune to any effect that would sense its emotions or read its thoughts, as well as all divination spells.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature is immune to any effect that would sense its emotions or read its thoughts, as well as all divination spells.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

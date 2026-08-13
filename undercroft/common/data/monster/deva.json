@@ -1,0 +1,111 @@
+{
+  "kind": "monster",
+  "index": "deva",
+  "name": "Deva",
+  "type": "celestial",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/deva.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "lawful good",
+    "armorClass": 17,
+    "hitPoints": {
+      "max": 136,
+      "current": 136,
+      "diceString": "16d8+64"
+    },
+    "hitDice": "16d8",
+    "speed": {
+      "walk": 30,
+      "fly": 90
+    },
+    "abilities": {
+      "strength": 18,
+      "dexterity": 18,
+      "constitution": 18,
+      "intelligence": 17,
+      "wisdom": 20,
+      "charisma": 20
+    },
+    "initiative": {
+      "bonus": 4
+    },
+    "savingThrows": "WIS +9, CHA +9",
+    "skills": "Insight +9, Perception +9",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "radiant",
+          "type": "resistance"
+        },
+        {
+          "name": "bludgeoning, piercing, and slashing from nonmagical weapons",
+          "type": "resistance"
+        },
+        {
+          "name": "Charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "Exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "Frightened",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "all",
+        "telepathy 120 ft."
+      ]
+    },
+    "senses": {
+      "darkvision": 120,
+      "passives": {
+        "perception": 19
+      }
+    },
+    "challengeRating": "10",
+    "proficiencyBonus": 4,
+    "xp": 5900,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/deva",
+    "spells": "The deva's spellcasting ability is Charisma (spell save DC 17). The deva can innately cast the following spells, requiring only verbal components:\nAt will: detect evil and good\n1/day each: commune, raise dead",
+    "saveDC": 17
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/deva",
+  "featureIds": [
+    "feat.angelic-weapons",
+    "feat.magic-resistance",
+    "feat.multiattack",
+    "feat.mace",
+    "feat.healing-touch-monster",
+    "feat.change-shape"
+  ],
+  "featureParams": {
+    "feat.mace": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 8,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d6 + 4",
+      "damageType": "bludgeoning",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "4d8",
+        "damageType": "radiant"
+      }
+    },
+    "feat.multiattack": {
+      "text": "The creature makes two melee attacks."
+    }
+  },
+  "featureTiers": {
+    "feat.angelic-weapons": "4d8",
+    "feat.healing-touch-monster": "4d8"
+  }
+}

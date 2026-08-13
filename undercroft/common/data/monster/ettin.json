@@ -1,0 +1,99 @@
+{
+  "kind": "monster",
+  "index": "ettin",
+  "name": "Ettin",
+  "type": "giant",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/ettin.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "chaotic evil",
+    "armorClass": 12,
+    "hitPoints": {
+      "max": 85,
+      "current": 85,
+      "diceString": "10d10+30"
+    },
+    "hitDice": "10d10",
+    "speed": {
+      "walk": 40
+    },
+    "abilities": {
+      "strength": 21,
+      "dexterity": 8,
+      "constitution": 17,
+      "intelligence": 6,
+      "wisdom": 10,
+      "charisma": 8
+    },
+    "initiative": {
+      "bonus": -1
+    },
+    "savingThrows": "",
+    "skills": "Perception +4",
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Giant",
+        "Orc"
+      ]
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 14
+      }
+    },
+    "challengeRating": "4",
+    "proficiencyBonus": 2,
+    "xp": 1100,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/ettin"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/ettin",
+  "featureIds": [
+    "feat.ettin-two-heads",
+    "feat.wakeful",
+    "feat.multiattack",
+    "feat.battleaxe",
+    "feat.morningstar"
+  ],
+  "featureParams": {
+    "feat.battleaxe": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d8 + 5",
+      "damageType": "slashing"
+    },
+    "feat.morningstar": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d8 + 5",
+      "damageType": "piercing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.battleaxe",
+          "count": 1
+        },
+        {
+          "featureId": "feat.morningstar",
+          "count": 1
+        }
+      ],
+      "text": "The creature makes two attacks: one with its battleaxe and one with its morningstar."
+    }
+  },
+  "featureTiers": {
+    "feat.wakeful": "ettin"
+  }
+}

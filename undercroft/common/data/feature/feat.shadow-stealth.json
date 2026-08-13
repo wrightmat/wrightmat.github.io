@@ -4,10 +4,10 @@
   "systemIds": [
     "sys.dnd5e"
   ],
-  "description": "While in dim light or darkness, the creature can take the Hide action as a bonus action.",
+  "description": "While in dim light or darkness, the creature can take the Hide action as a bonus action. Its stealth bonus is also improved to +6.",
   "mechanics": {
     "type": "passive",
-    "text": "While in dim light or darkness, the creature can take the Hide action as a bonus action."
+    "text": "While in dim light or darkness, the creature can take the Hide action as a bonus action. Its stealth bonus is also improved to +6."
   },
   "budgetCost": 2,
   "tags": {
@@ -25,5 +25,18 @@
     ]
   },
   "synergizesWith": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "no-bonus-action",
+      "name": "Shadow Stealth (No Bonus Action)",
+      "shortName": "No bonus action",
+      "mechanics": {
+        "text": "While in dim light or darkness, the creature takes the Hide action."
+      }
+    }
+  ],
+  "combat": {
+    "actionCost": "bonus-action"
+  }
 }

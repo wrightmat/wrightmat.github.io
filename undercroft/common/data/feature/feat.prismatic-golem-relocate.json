@@ -1,0 +1,32 @@
+{
+  "id": "feat.prismatic-golem-relocate",
+  "name": "Relocate",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature moves up to half its movement speed without provoking attacks of opportunities.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature moves up to half its movement speed without provoking attacks of opportunities.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "mobility"
+    ],
+    "recipeSlots": [
+      "escape"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "legendary-action"
+  }
+}

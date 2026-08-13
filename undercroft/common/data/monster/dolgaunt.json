@@ -1,0 +1,94 @@
+{
+  "kind": "monster",
+  "name": "Dolgaunt",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/7725/602/1000/1000/637091618587585877.png",
+  "notes": "### Description\r\n\r\nDolgaunts are emaciated hobgoblins with disease-hued flesh. Their eye sockets gape open and empty above a mouth with a wormlike tongue. Writhing cilia cover their bodies, with longer tendrils around their heads and two wiry tentacles protruding from their bare shoulders. A dolgaunt is blind but can perceive its surroundings through the sensitive cilia that cover its skin. It can also absorb life through its tentacles, allowing it to drain the vitality out of any creature it touches.\r\n\r\n_**Warped by Chaos.**_ When the daelkyr emerged from Xoriat to conquer Khorvaire, they captured and transformed that land’s indigenous creatures to create armies of hideous warriors. Dyrrn the Corruptor shaped dolgaunts from hobgoblin stock, turning them into intelligent, cold, and efficient killers.\r\n\r\nWhen the daelkyr were defeated, the dolgaunts descended into the depths of Khyber with their masters. There, they study in cavernous monasteries, forging their bodies into living weapons dedicated to the missions given them by those masters. Dolgaunts are often found commanding squads of dolgrims, and can also be found working with the Cults of the Dragon Below — particularly those devoted to Dyrrn the Corruptor.",
+  "type": "aberration",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Lawful Evil",
+    "armorClass": 16,
+    "hitPoints": {
+      "max": 33,
+      "current": 33,
+      "diceString": "6d8 + 6"
+    },
+    "hitDice": "6d8",
+    "speed": {
+      "walk": 40
+    },
+    "abilities": {
+      "strength": 14,
+      "dexterity": 18,
+      "constitution": 12,
+      "intelligence": 13,
+      "wisdom": 14,
+      "charisma": 11
+    },
+    "initiative": {
+      "bonus": 4
+    },
+    "savingThrows": "",
+    "skills": "acrobatics +6, perception +4, stealth +6",
+    "senses": {
+      "blindsight": 120,
+      "passives": {
+        "perception": 14
+      }
+    },
+    "challengeRating": "3",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Blinded",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Deep Speech",
+        "Goblin"
+      ]
+    },
+    "environments": [
+      "Underdark"
+    ],
+    "sources": [
+      "ERLW",
+      "https://www.dndbeyond.com/monsters/487575-dolgaunt",
+      "Eberron: Rising from the Last War, pg. 290"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.dolgaunt-evasion",
+    "feat.dolgaunt-unarmored-defense",
+    "feat.multiattack",
+    "feat.dolgaunt-tentacle",
+    "feat.unarmed-strike",
+    "feat.dolgaunt-vitality-drain"
+  ],
+  "featureParams": {
+    "feat.unarmed-strike": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d4 + 4",
+      "damageType": "bludgeoning"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.dolgaunt-tentacle",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two tentacle attacks and two unarmed strikes. Up to two tentacle attacks can be replaced by Vitality Drain."
+    }
+  }
+}

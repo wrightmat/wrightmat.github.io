@@ -1,0 +1,29 @@
+{
+  "id": "feat.swamp-naga-insect-and-serpent-passivism",
+  "name": "Insect and Serpent Passivism",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "No insects or serpents can willingly attack the creature. They can be forced to do so through magical means.",
+  "mechanics": {
+    "type": "passive",
+    "text": "No insects or serpents can willingly attack the creature. They can be forced to do so through magical means.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

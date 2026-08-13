@@ -1,0 +1,110 @@
+{
+  "kind": "monster",
+  "index": "treant",
+  "name": "Treant",
+  "type": "plant",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/treant.png",
+  "stats": {
+    "size": "Huge",
+    "alignment": "chaotic good",
+    "armorClass": 16,
+    "hitPoints": {
+      "max": 138,
+      "current": 138,
+      "diceString": "12d12+60"
+    },
+    "hitDice": "12d12",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 23,
+      "dexterity": 8,
+      "constitution": 21,
+      "intelligence": 12,
+      "wisdom": 16,
+      "charisma": 12
+    },
+    "initiative": {
+      "bonus": -1
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "fire",
+          "type": "vulnerability"
+        }
+      ],
+      "languages": [
+        "Common",
+        "Druidic",
+        "Elvish",
+        "Sylvan"
+      ]
+    },
+    "senses": {
+      "passives": {
+        "perception": 13
+      }
+    },
+    "challengeRating": "9",
+    "proficiencyBonus": 4,
+    "xp": 5000,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/treant"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/treant",
+  "featureIds": [
+    "feat.false-appearance",
+    "feat.siege-monster",
+    "feat.multiattack",
+    "feat.slam",
+    "feat.rock",
+    "feat.treant-animate-trees"
+  ],
+  "featureParams": {
+    "feat.slam": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 10,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "3d6 + 6",
+      "damageType": "bludgeoning"
+    },
+    "feat.rock": {
+      "kind": "Ranged",
+      "attackKind": "Weapon",
+      "attackBonus": 10,
+      "distanceLabel": "range",
+      "distance": "60/180",
+      "damageDice": "4d10 + 6",
+      "damageType": "bludgeoning"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.slam",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two slam attacks."
+    }
+  },
+  "featureTiers": {
+    "feat.false-appearance": "tree"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "id": "feat.aspect-of-orlassk-marble-claw",
+  "name": "Marble Claw",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Melee Weapon Attack: +7 to hit, reach 5 ft., one target. Hit: 13 (2d8 + 4) bludgeoning, piercing, or slashing damage (Orlassk's choice). If the target is a Large or smaller creature, it is grappled (escape DC 19). Orlassk can grapple up to two targets, one with each claw.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Melee Weapon Attack: +7 to hit, reach 5 ft., one target. Hit: 13 (2d8 + 4) bludgeoning, piercing, or slashing damage (Orlassk's choice). If the target is a Large or smaller creature, it is grappled (escape DC 19). Orlassk can grapple up to two targets, one with each claw.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "control"
+    ],
+    "recipeSlots": [
+      "isolate"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

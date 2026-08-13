@@ -1,0 +1,95 @@
+{
+  "kind": "monster",
+  "name": "Extus Narr",
+  "notes": "",
+  "type": "humanoid",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Neutral Evil",
+    "armorClass": 17,
+    "hitPoints": {
+      "max": 120,
+      "current": 120,
+      "diceString": "15d8 + 60"
+    },
+    "hitDice": "15d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 10,
+      "dexterity": 14,
+      "constitution": 18,
+      "intelligence": 20,
+      "wisdom": 15,
+      "charisma": 16
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "Arcana +13, Deception +13, History +9, Perception +6",
+    "senses": {
+      "passives": {
+        "perception": 16
+      }
+    },
+    "challengeRating": "15",
+    "proficiencyBonus": 5,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Psychic",
+          "type": "immunity"
+        },
+        {
+          "name": "Charmed",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Abyssal",
+        "Celestial",
+        "Common",
+        "Draconic",
+        "Infernal",
+        "Sylvan"
+      ]
+    },
+    "spells": "As an action, Extus casts one of the following spells, using Intelligence as the spellcasting ability (spell save DC 17): At will: Detect Magic, Detect Thoughts, Disguise Self, Invisibility, Light, Mage Armor (included in AC), Mage Hand, Prestidigitation, Sapping Sting (level 11) 2/Day Each: Magnify Gravity, Immovable Object, Gravity Sinkhole, Pulse Wave 1/Day Each: Gravity Fissure, Dark Star, Ravenous Void, Time Ravage, Reality Break",
+    "environments": [],
+    "sources": [
+      "https://www.dndbeyond.com/monsters/5194902-archmage",
+      "https://dnd5e.wikidot.com/spells:dunamancy"
+    ],
+    "saveDC": 17
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.legendary-resistance",
+    "feat.magic-resistance",
+    "feat.extus-narr-oriq-mask",
+    "feat.multiattack",
+    "feat.extus-narr-arcane-burst",
+    "feat.extus-narr-misty-step-3-day",
+    "feat.extus-narr-protective-magic-3-day",
+    "feat.extus-narr-temporal-shunt-3-day"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.extus-narr-arcane-burst",
+          "count": 4
+        }
+      ],
+      "text": "Extus makes four Arcane Burst attacks."
+    }
+  },
+  "featureTiers": {
+    "feat.legendary-resistance": "3-day"
+  }
+}

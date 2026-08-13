@@ -11,7 +11,19 @@ function pickRandom(list, random) {
   return list[Math.floor(random() * list.length)];
 }
 
+// `mechanics.scope: "unique"` is a Feature-author's own explicit "never
+// hand this to a DIFFERENT monster" decision (a confirmed-irreducible
+// creature-specific ability, or something inherently one-off like a named
+// boss move) — distinct from an untagged Feature's empty `recipeSlots`,
+// which already excludes it from candidatesForSlot's own slot-membership
+// check but only as a side effect of nobody having reviewed it yet, not a
+// recorded decision. Checked here (the one choke point both
+// candidatesForSlot's normal traversal AND rerollAttribute's own signature-
+// feature reroll already call through isCompatible) so a unique-scoped
+// Feature can never be handed to generation via either path, independent
+// of whether recipeSlots also happens to be populated.
 function isCompatible(feature, roleId, creatureTypeId) {
+  if (feature.mechanics?.scope === "unique") return false;
   const tags = feature.tags || {};
   const roles = Array.isArray(tags.roles) ? tags.roles : [];
   const creatureTypes = Array.isArray(tags.creatureTypes) ? tags.creatureTypes : [];

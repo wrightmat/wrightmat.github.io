@@ -1,0 +1,33 @@
+{
+  "id": "feat.crimson-shade-cursed-body",
+  "name": "Cursed Body",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "A creature that hits the creature with a melee attack while within 5 feet of it must succeed on a DC 13 Wisdom saving throw or be frightened of the creature for 1 minute. A creature can repeat this saving throw at the start of each of its turns, ending the effect on a success.",
+  "mechanics": {
+    "type": "passive",
+    "text": "A creature that hits the creature with a melee attack while within 5 feet of it must succeed on a DC 13 Wisdom saving throw or be frightened of the creature for 1 minute. A creature can repeat this saving throw at the start of each of its turns, ending the effect on a success.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "fear",
+      "control"
+    ],
+    "recipeSlots": [
+      "threaten"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "reaction"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "id": "feat.sandwyrm-stinger",
+  "name": "Stinger",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Melee Weapon Attack: +8 to hit, reach 10 ft., one creature. Hit: 12 (2d6 + 5) piercing damage plus 24 (7d6) poison damage, or half as much poison damage with a successful DC 15 Constitution saving throw. If the poison damage reduces the target to 0 hit points, the target is stable but poisoned and paralyzed for 1 hour. Regaining hit points doesn’t end the poisoning or paralysis.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Melee Weapon Attack: +8 to hit, reach 10 ft., one creature. Hit: 12 (2d6 + 5) piercing damage plus 24 (7d6) poison damage, or half as much poison damage with a successful DC 15 Constitution saving throw. If the poison damage reduces the target to 0 hit points, the target is stable but poisoned and paralyzed for 1 hour. Regaining hit points doesn’t end the poisoning or paralysis.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

@@ -1,0 +1,90 @@
+{
+  "kind": "monster",
+  "name": "Bone Crab",
+  "notes": "",
+  "type": "beast",
+  "stats": {
+    "size": "Small",
+    "alignment": "Neutral",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 33,
+      "current": 33,
+      "diceString": "6d6 + 12"
+    },
+    "hitDice": "6d6",
+    "speed": {
+      "walk": 20,
+      "swim": 10
+    },
+    "abilities": {
+      "strength": 10,
+      "dexterity": 14,
+      "constitution": 14,
+      "intelligence": 1,
+      "wisdom": 12,
+      "charisma": 4
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "Perception +3, Stealth +4",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 13
+      }
+    },
+    "challengeRating": "1/2",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "bludgeoning",
+          "type": "resistance"
+        }
+      ],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Tome of Beasts 1 (pg 40)"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.amphibious",
+    "feat.bone-crab-bone-camouflage",
+    "feat.bone-crab-hive-mind",
+    "feat.bone-crab-leap",
+    "feat.multiattack",
+    "feat.claw",
+    "feat.bone-crab-white-ghost-shivers"
+  ],
+  "featureParams": {
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 2",
+      "damageType": "slashing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.claw",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two claw attacks."
+    }
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "kind": "monster",
+  "name": "Arboreal Grappler",
+  "notes": "_Long, simian arms snake through the trees like furred serpents, dangling from a shaggy, striped ape in the leafy canopy above and trying to snare those below._\n\nAn arboreal grappler is a malformed creation of the gods, a primate whose legs warped into long, muscular tentacles covered in shaggy, red fur.\n\n**Carry Prey to the Heights**. Arboreal grapplers use their long limbs to snatch prey and drag it behind them as they use their powerful forelimbs to ascend to the highest canopy. Their victims are constricted until their struggles cease and then are devoured. Their flexible tentacles are ill-suited for terrestrial movement; they must drag themselves clumsily across open ground too wide to swing across.\n\n**Clans in the Canopy**. Arboreal grappler tribes build family nests decorated with bones and prized relics of past hunts. These nests are built high in the jungle canopy, typically 80 feet or more above the ground. Clans of 40 or more spread across crude villages atop the trees; in such large settlements, a third of the population are juveniles. These nests are difficult to spot from the ground; a DC 20 Wisdom (Perception) check is required. A creature observing an arboreal grappler as it climbs into or out of a nest has advantage on the check.\n\n**Carnivorous Elf Hunters**. Grapplers are carnivorous and prefer humanoid flesh, elves in particular. Some suggest this arises from hatred as much as from hunger, a cruel combination of fascination and revulsion for the walking limbs of humanoid creatures.",
+  "type": "aberration",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Neutral Evil",
+    "armorClass": 14,
+    "hitPoints": {
+      "max": 90,
+      "current": 90,
+      "diceString": "12d8 + 36"
+    },
+    "hitDice": "12d8",
+    "speed": {
+      "walk": 10,
+      "climb": 40
+    },
+    "abilities": {
+      "strength": 16,
+      "dexterity": 16,
+      "constitution": 16,
+      "intelligence": 6,
+      "wisdom": 10,
+      "charisma": 6
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "",
+    "skills": "Acrobatics +5, Stealth +5",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "3",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "ToB",
+      "Tome of Beasts, pg 25"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.spider-climb",
+    "feat.arboreal-grappler-boscage-brachiation",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.arboreal-grappler-tentacle"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d6 + 3",
+      "damageType": "piercing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.bite",
+          "count": 1
+        },
+        {
+          "featureId": "feat.arboreal-grappler-tentacle",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes one bite attack and two tentacle attacks."
+    }
+  }
+}

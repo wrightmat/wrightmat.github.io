@@ -1,0 +1,120 @@
+{
+  "kind": "monster",
+  "name": "Nauthveli Illhveli",
+  "notes": "_Vast and terrible to behold, a nauthveli is an enormous whale with a dappled black-and-white hide and a head resembling an enormous fanged cow, its eyes blazing with malevolence._\n\n**Evil of the Seas**. One of the largest of the illhveli, the nauthveli is a creature of pure hatred and malice. Known for their bellowing bull-like cries, the nauthveli haunt deep, cold waters, contesting the depths with other monsters such as dragon turtles and kembingur. The only creatures a nauthveli fears are krakens and ancient sea dragons (Tome of Beasts, p. 135). All other creatures are its prey.\n\n**Ship Hunters**. Nauthveli love to attack ships laden with livestock, particularly cattle. They go to extreme lengths to acquire cattle, even temporarily beaching themselves to consume cattle that wander too close to the ocean. Its desire to consume cattle includes cow-like creatures, and stories abound of nauthveli attacking ships crewed by minotaurs.",
+  "type": "monstrosity",
+  "stats": {
+    "size": "Gargantuan",
+    "alignment": "Chaotic Evil",
+    "armorClass": 18,
+    "hitPoints": {
+      "max": 280,
+      "current": 280,
+      "diceString": "16d20 + 112"
+    },
+    "hitDice": "16d20",
+    "speed": {
+      "walk": 10,
+      "swim": 60
+    },
+    "abilities": {
+      "strength": 30,
+      "dexterity": 10,
+      "constitution": 25,
+      "intelligence": 6,
+      "wisdom": 15,
+      "charisma": 12
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "Str +15, Con +12, Wis +7",
+    "skills": "Athletics +15, Perception +7",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 17
+      }
+    },
+    "challengeRating": "16",
+    "proficiencyBonus": 5,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "cold",
+          "type": "resistance"
+        },
+        {
+          "name": "frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "prone",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "understands Common but can’t speak"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Tome of Beasts 2, pg. 212"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.hold-breath",
+    "feat.siege-monster",
+    "feat.nauthveli-illhveli-terror-of-the-high-seas",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.tail",
+    "feat.swallow",
+    "feat.nauthveli-illhveli-thunderous-bellow-recharge-5-6"
+  ],
+  "featureTiers": {
+    "feat.hold-breath": "1-hour",
+    "feat.swallow": "nauthveli-illhveli"
+  },
+  "featureParams": {
+    "feat.tail": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 15,
+      "distanceLabel": "reach",
+      "distance": "20",
+      "damageDice": "4d8 + 10",
+      "damageType": "bludgeoning"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.bite",
+          "count": 1
+        },
+        {
+          "featureId": "feat.tail",
+          "count": 1
+        }
+      ],
+      "text": "The creature makes one bite attack and one tail attack."
+    },
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 15,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "6d6 + 10",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "condition-no-save",
+        "condition": "is grappled (escape DC 18). Until this grapple ends, the target is restrained, and the creature can't bite another target."
+      }
+    }
+  }
+}

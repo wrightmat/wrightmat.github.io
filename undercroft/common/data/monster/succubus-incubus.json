@@ -1,0 +1,99 @@
+{
+  "kind": "monster",
+  "index": "succubus-incubus",
+  "name": "Succubus/Incubus",
+  "type": "fiend",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/succubus-incubus.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "neutral evil",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 66,
+      "current": 66,
+      "diceString": "12d8+12"
+    },
+    "hitDice": "12d8",
+    "speed": {
+      "walk": 30,
+      "fly": 60
+    },
+    "abilities": {
+      "strength": 8,
+      "dexterity": 17,
+      "constitution": 13,
+      "intelligence": 15,
+      "wisdom": 12,
+      "charisma": 20
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "",
+    "skills": "Deception +9, Insight +5, Perception +5, Persuasion +9, Stealth +7",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "cold",
+          "type": "resistance"
+        },
+        {
+          "name": "fire",
+          "type": "resistance"
+        },
+        {
+          "name": "lightning",
+          "type": "resistance"
+        },
+        {
+          "name": "poison",
+          "type": "resistance"
+        },
+        {
+          "name": "bludgeoning, piercing, and slashing from nonmagical weapons",
+          "type": "resistance"
+        }
+      ],
+      "languages": [
+        "Abyssal",
+        "Common",
+        "Infernal",
+        "telepathy 60 ft."
+      ]
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 15
+      }
+    },
+    "challengeRating": "4",
+    "proficiencyBonus": 2,
+    "xp": 1100,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/succubus-incubus"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/succubus-incubus",
+  "featureIds": [
+    "feat.incubus-telepathic-bond",
+    "feat.shapechanger",
+    "feat.claw",
+    "feat.charm",
+    "feat.incubus-draining-kiss",
+    "feat.etherealness"
+  ],
+  "featureParams": {
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d6 + 3",
+      "damageType": "slashing"
+    }
+  }
+}

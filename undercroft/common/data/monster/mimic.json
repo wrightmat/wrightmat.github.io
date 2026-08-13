@@ -1,0 +1,89 @@
+{
+  "kind": "monster",
+  "index": "mimic",
+  "name": "Mimic",
+  "type": "monstrosity",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/mimic.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "neutral",
+    "armorClass": 12,
+    "hitPoints": {
+      "max": 58,
+      "current": 58,
+      "diceString": "9d8+18"
+    },
+    "hitDice": "9d8",
+    "speed": {
+      "walk": 15
+    },
+    "abilities": {
+      "strength": 17,
+      "dexterity": 12,
+      "constitution": 15,
+      "intelligence": 5,
+      "wisdom": 13,
+      "charisma": 8
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "",
+    "skills": "Stealth +5",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "acid",
+          "type": "immunity"
+        },
+        {
+          "name": "Prone",
+          "type": "immunity"
+        }
+      ],
+      "languages": []
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 11
+      }
+    },
+    "challengeRating": "2",
+    "proficiencyBonus": 2,
+    "xp": 450,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/mimic"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/mimic",
+  "featureIds": [
+    "feat.shapechanger",
+    "feat.mimic-adhesive-object-form-only",
+    "feat.false-appearance-ambush",
+    "feat.grappler",
+    "feat.pseudopod",
+    "feat.bite"
+  ],
+  "featureTiers": {
+    "feat.false-appearance-ambush": "ordinary-kelp"
+  },
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d8 + 3",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "1d8",
+        "damageType": "acid"
+      }
+    }
+  }
+}

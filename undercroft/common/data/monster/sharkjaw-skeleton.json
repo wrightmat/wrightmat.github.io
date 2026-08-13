@@ -1,0 +1,123 @@
+{
+  "kind": "monster",
+  "name": "Sharkjaw Skeleton",
+  "notes": "_The humanoid form approaches through the murky water, but as it nears, it becomes clear that this is no living thing. It is made entirely of sharks’ jaws, joined together and brought to life with grim magic._\n\nMade from numerous, interlocking shark’s jaws, these horrors are animated through foul magic into a large, vaguely humanoid shape. Sahuagin priests animate them to guard their sepulchers of bones. These sharkjaw skeletons lie among great piles of bones, waiting to rise up and attack any uninvited souls who invade the sanctity of sahuagin holy sites. Others guard pirate treasures or ancient shipwrecks.\n\n**Undead Automaton**. Being mindless, sharkjaw skeletons do nothing without orders from their creator, and they follow those instructions explicitly. A sharkjaw skeleton’s creator can give it new commands as long as the skeleton is within 60 feet and can see and hear its creator. Otherwise, a sharkjaw skeleton follows its last instructions to the best of its ability and to the exclusion of all else, though it will always fight back if attacked.",
+  "type": "undead",
+  "stats": {
+    "size": "Large",
+    "alignment": "Lawful Evil",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 45,
+      "current": 45,
+      "diceString": "6d10 + 12"
+    },
+    "hitDice": "6d10",
+    "speed": {
+      "walk": 30,
+      "swim": 30
+    },
+    "abilities": {
+      "strength": 16,
+      "dexterity": 10,
+      "constitution": 15,
+      "intelligence": 6,
+      "wisdom": 8,
+      "charisma": 4
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "Perception +1, Stealth +2",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 11
+      }
+    },
+    "challengeRating": "1",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "bludgeoning",
+          "type": "vulnerability"
+        },
+        {
+          "name": "cold",
+          "type": "immunity"
+        },
+        {
+          "name": "necrotic",
+          "type": "immunity"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "understands the languages of its creator but can’t speak"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Tome of Beasts 1, pg. 350"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.multiattack",
+    "feat.bite",
+    "feat.claw"
+  ],
+  "featureParams": {
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d8 + 3",
+      "damageType": "slashing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.bite",
+          "count": 1
+        },
+        {
+          "featureId": "feat.claw",
+          "count": 1
+        }
+      ],
+      "text": "The creature makes one bite attack and one claw attack."
+    },
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d8 + 3",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "condition-no-save",
+        "condition": "is grappled (escape DC 13), if it is a Large or smaller creature. Until this grapple ends, the creature can bite only the grappled creature and has advantage on attack rolls to do so."
+      }
+    }
+  }
+}

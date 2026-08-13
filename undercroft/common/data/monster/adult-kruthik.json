@@ -1,0 +1,112 @@
+{
+  "kind": "monster",
+  "name": "Adult Kruthik",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/25746/105/1000/1000/637880557083119765.jpeg",
+  "notes": "It takes six months of steady eating for a young kruthik to reach adult size. The natural life span of an adult kruthik is roughly seven years.\r\n\r\nAdult kruthiks grow spiky protrusions on their legs and can fling these dagger-sized spikes at enemies beyond the reach of their claws.\r\n\r\n#### Kruthiks\r\n\r\nKruthiks are chitin-covered reptiles that hunt in packs and nest in sprawling subterranean warrens. They are attracted to sources of heat, such as dwarven forges and pools of molten lava, and carve out lairs as close to such locations as possible. As they burrow through the earth, they leave behind tunnels—evidence that is often the first clue to the nearby presence of a kruthik hive. Kruthiks also make use of preexisting underground chambers, incorporating them into their lairs when they can.\r\n\r\nKruthiks communicate with one another through a series of hisses and chittering noises. These sounds can often be heard in advance of a kruthik attack. Whenever their lair is invaded, kruthik guards send out an alarm by rapidly tapping the stone floor with their sharp legs.\r\n\r\nIn addition to having an acute sense of smell, kruthiks can see in the dark and can detect vibrations in the earth around them. They take the scent of their own dead as a warning and avoid areas where many other kruthiks have died. Slaying a sufficient number of kruthiks in one area might cause the remaining hive members to move elsewhere.\r\n\r\nAlthough they can feed on carrion, kruthiks prefer live prey. They kill enemies by impaling them on their spiked limbs, then grind up the flesh and bones with mandibles strong enough to chew rock. When several kruthiks gang up on a single foe, they become frenzied and even more lethal.\r\n\r\nKruthiks abide the presence of Constructs, Elementals, Oozes, and Undead, and they use such creatures to help guard their hive. They are smart enough to barricade some tunnels and dig new ones that keep their neighbors away from their eggs.",
+  "type": "monstrosity",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Unaligned",
+    "armorClass": 18,
+    "hitPoints": {
+      "max": 39,
+      "current": 39,
+      "diceString": "6d8 + 12"
+    },
+    "hitDice": "6d8",
+    "speed": {
+      "walk": 40,
+      "burrow": 20,
+      "climb": 40
+    },
+    "abilities": {
+      "strength": 15,
+      "dexterity": 16,
+      "constitution": 15,
+      "intelligence": 7,
+      "wisdom": 12,
+      "charisma": 8
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "",
+    "skills": "Perception +5",
+    "senses": {
+      "darkvision": 60,
+      "tremorsense": 60,
+      "passives": {
+        "perception": 15
+      }
+    },
+    "challengeRating": "2",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Kruthik"
+      ]
+    },
+    "environments": [
+      "Desert",
+      "Mountain",
+      "Underdark"
+    ],
+    "sources": [
+      "MPMM",
+      "https://www.dndbeyond.com/monsters/2560713-adult-kruthik",
+      "Mordenkainen Presents: Monsters of the Multiverse, pg. 169"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.pack-tactics",
+    "feat.tunneler",
+    "feat.multiattack",
+    "feat.stab",
+    "feat.spike"
+  ],
+  "featureParams": {
+    "feat.stab": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d6 + 3",
+      "damageType": "piercing"
+    },
+    "feat.spike": {
+      "kind": "Ranged",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "range",
+      "distance": "20/60",
+      "damageDice": "1d4 + 3",
+      "damageType": "piercing"
+    },
+    "feat.multiattack": {
+      "text": "The creature makes two Stab or Spike attacks.",
+      "options": [
+        [
+          {
+            "featureId": "feat.stab",
+            "count": 2
+          }
+        ],
+        [
+          {
+            "featureId": "feat.spike",
+            "count": 2
+          }
+        ]
+      ]
+    }
+  },
+  "featureTiers": {
+    "feat.tunneler": "5ft"
+  }
+}

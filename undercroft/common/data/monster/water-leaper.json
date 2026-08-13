@@ -1,0 +1,94 @@
+{
+  "kind": "monster",
+  "name": "Water Leaper",
+  "notes": "_The water leaper is a frogheaded, legless creature with wide batlike wings and a gaping maw. Its shrieks resemble those of a hawk. Its long, sinuous tail tapers and ends in a venomous barb._\n\n**Gliding Wings**. The creature has no legs or arms, but sports a pair of wide, membranous wings. It uses the wings to glide beneath the water, as well as to soar through the air.\n\n**Scourge of Waterways**. Water leapers plague fresh lakes and rivers. The creatures prey on animals that come to the water’s edge to drink, as well as on fishermen that ply their trade in the water leaper’s territory. Stories circulate among fishermen of fishing grounds notorious for broken lines and missing bait, and fishermen give these areas a wide berth for fear of water leapers. Desperate or unwary fishermen who ignore the warnings are never seen again; drifting, empty boats are the only sign of their passing.",
+  "type": "monstrosity",
+  "stats": {
+    "size": "Large",
+    "alignment": "Unaligned",
+    "armorClass": 14,
+    "hitPoints": {
+      "max": 97,
+      "current": 97,
+      "diceString": "13d10 + 26"
+    },
+    "hitDice": "13d10",
+    "speed": {
+      "walk": 5,
+      "fly": 50,
+      "swim": 40
+    },
+    "abilities": {
+      "strength": 16,
+      "dexterity": 14,
+      "constitution": 15,
+      "intelligence": 4,
+      "wisdom": 12,
+      "charisma": 5
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 11
+      }
+    },
+    "challengeRating": "4",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Tome of Beasts 1, pg. 406"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.amphibious",
+    "feat.riptide-drake-underwater-camouflage",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.water-leaper-shriek",
+    "feat.water-leaper-stinger",
+    "feat.water-leaper-swallow"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.bite",
+          "count": 1
+        },
+        {
+          "featureId": "feat.water-leaper-stinger",
+          "count": 1
+        }
+      ],
+      "text": "The creature uses its shriek and makes one bite attack and one stinger attack."
+    },
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 3",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "condition-no-save",
+        "condition": "is grappled (escape DC 13). Until this grapple ends, the target is restrained and the creature can't bite another target."
+      }
+    }
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "id": "feat.heated-weapons",
+  "name": "Heated Weapons",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "When the creature hits with a metal melee weapon, it deals an extra 3 (1d6) fire damage (included in the attack).",
+  "mechanics": {
+    "type": "passive",
+    "text": "When the creature hits with a metal melee weapon, it deals an extra 3 (1d6) fire damage (included in the attack)."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "base",
+      "name": "Heated Weapons",
+      "shortName": "Base",
+      "mechanics": {
+        "text": "When the creature hits with a metal melee weapon, it deals an extra 3 (1d6) fire damage (included in the attack)."
+      }
+    }
+  ]
+}

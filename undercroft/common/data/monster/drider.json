@@ -1,0 +1,114 @@
+{
+  "kind": "monster",
+  "index": "drider",
+  "name": "Drider",
+  "type": "monstrosity",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/drider.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "chaotic evil",
+    "armorClass": 19,
+    "hitPoints": {
+      "max": 123,
+      "current": 123,
+      "diceString": "13d10+52"
+    },
+    "hitDice": "13d10",
+    "speed": {
+      "walk": 30,
+      "climb": 30
+    },
+    "abilities": {
+      "strength": 16,
+      "dexterity": 16,
+      "constitution": 18,
+      "intelligence": 13,
+      "wisdom": 14,
+      "charisma": 12
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "",
+    "skills": "Perception +5, Stealth +9",
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Elvish",
+        "Undercommon"
+      ]
+    },
+    "senses": {
+      "darkvision": 120,
+      "passives": {
+        "perception": 15
+      }
+    },
+    "challengeRating": "6",
+    "proficiencyBonus": 3,
+    "xp": 2300,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/drider",
+    "spells": "The drider's innate spellcasting ability is Wisdom (spell save DC 13). The drider can innately cast the following spells, requiring no material components:\nAt will: dancing lights\n1/day each: darkness, faerie fire",
+    "saveDC": 13
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/drider",
+  "featureIds": [
+    "feat.deathguard-warden-fey-ancestry",
+    "feat.spider-climb",
+    "feat.sunlight-sensitivity",
+    "feat.web-walker",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.longsword",
+    "feat.longbow"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d4",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "2d8",
+        "damageType": "poison"
+      }
+    },
+    "feat.longsword": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d8 + 3",
+      "damageType": "slashing",
+      "versatile": {
+        "damageDice": "1d10 + 3"
+      }
+    },
+    "feat.longbow": {
+      "kind": "Ranged",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "range",
+      "distance": "150/600",
+      "damageDice": "1d8 + 3",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "1d8",
+        "damageType": "poison"
+      }
+    },
+    "feat.multiattack": {
+      "text": "The creature makes three attacks, either with its longsword or its longbow. It can replace one of those attacks with a bite attack."
+    }
+  }
+}

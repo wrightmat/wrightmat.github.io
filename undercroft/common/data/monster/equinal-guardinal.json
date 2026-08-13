@@ -1,0 +1,121 @@
+{
+  "kind": "monster",
+  "name": "Equinal Guardinal",
+  "image": [
+    [
+      "Wikilink To Image"
+    ]
+  ],
+  "notes": "",
+  "type": "celestial",
+  "stats": {
+    "size": "Large",
+    "alignment": "typically Neutral Good",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 93,
+      "current": 93,
+      "diceString": "11d10 + 33"
+    },
+    "hitDice": "11d10",
+    "speed": {
+      "walk": 50
+    },
+    "abilities": {
+      "strength": 23,
+      "dexterity": 16,
+      "constitution": 17,
+      "intelligence": 15,
+      "wisdom": 14,
+      "charisma": 12
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "Str +9, Con +6",
+    "skills": "Athletics +9, Perception +5, Religion +5",
+    "senses": {
+      "passives": {
+        "perception": 15
+      }
+    },
+    "challengeRating": "6",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "radiant",
+          "type": "resistance"
+        },
+        {
+          "name": "charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "frightened",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Celestial",
+        "Common"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "MPP",
+      "Source: MPP, page 33. Also found in SatO; ToFW."
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.equinal-guardinal-headfirst-charge",
+    "feat.multiattack",
+    "feat.fist",
+    "feat.rock",
+    "feat.equinal-guardinal-shout-recharge-6"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.fist",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two Fist attacks."
+    },
+    "feat.rock": {
+      "kind": "Ranged",
+      "attackKind": "Weapon",
+      "attackBonus": 9,
+      "distanceLabel": "range",
+      "distance": "60/180",
+      "damageDice": "3d10 + 6",
+      "damageType": "bludgeoning",
+      "rider": {
+        "kind": "save-or-condition",
+        "saveAbility": "strength",
+        "saveDC": 17,
+        "condition": "prone"
+      }
+    },
+    "feat.fist": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 9,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 6",
+      "damageType": "bludgeoning",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "1d6",
+        "damageType": "radiant"
+      }
+    }
+  }
+}

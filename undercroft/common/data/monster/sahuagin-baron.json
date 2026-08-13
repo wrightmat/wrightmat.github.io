@@ -1,0 +1,82 @@
+{
+  "kind": "monster",
+  "name": "Sahuagin Baron",
+  "notes": "",
+  "type": "humanoid",
+  "stats": {
+    "size": "Large",
+    "alignment": "Lawful Evil",
+    "armorClass": 16,
+    "hitPoints": {
+      "max": 76,
+      "current": 76,
+      "diceString": "9d10 + 27"
+    },
+    "hitDice": "9d10",
+    "speed": {
+      "walk": 30,
+      "swim": 50
+    },
+    "abilities": {
+      "strength": 19,
+      "dexterity": 15,
+      "constitution": 16,
+      "intelligence": 14,
+      "wisdom": 13,
+      "charisma": 17
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "Perception +6, Religion +3",
+    "senses": {
+      "darkvision": 120,
+      "passives": {
+        "perception": 17
+      }
+    },
+    "challengeRating": "5",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "acid",
+          "type": "resistance"
+        },
+        {
+          "name": "cold",
+          "type": "resistance"
+        }
+      ],
+      "languages": [
+        "Sahuagin"
+      ]
+    },
+    "environments": [],
+    "sources": []
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.blood-frenzy",
+    "feat.limited-amphibiousness",
+    "feat.sahuagin-baron-shark-telepathy",
+    "feat.multiattack",
+    "feat.sahuagin-baron-trident",
+    "feat.sahuagin-baron-fiendish-blood"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.sahuagin-baron-trident",
+          "count": 3
+        }
+      ],
+      "text": "The creature makes three Trident attacks."
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "id": "feat.duergar-enlarge",
+  "name": "Enlarge",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "For 1 minute, the creature magically increases in size, along with anything it is wearing or carrying. While enlarged, the creature is Large, doubles its damage dice on Strength-based weapon attacks (included in the attacks), and makes Strength checks and Strength saving throws with advantage. If the creature lacks the room to become Large, it attains the maximum size possible in the space available.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "For 1 minute, the creature magically increases in size, along with anything it is wearing or carrying. While enlarged, the creature is Large, doubles its damage dice on Strength-based weapon attacks (included in the attacks), and makes Strength checks and Strength saving throws with advantage. If the creature lacks the room to become Large, it attains the maximum size possible in the space available."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

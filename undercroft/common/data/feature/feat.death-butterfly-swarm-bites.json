@@ -1,0 +1,33 @@
+{
+  "id": "feat.death-butterfly-swarm-bites",
+  "name": "Bites",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Melee Weapon Attack: +3 to hit, reach 0 ft., every target in the creature’s space. Hit: 22 (6d6 +1) piercing damage, or 11 (3d6 + 1) piercing damage if the creature has half of its hit points or fewer. The target also takes 10 (3d6) poison damage and becomes poisoned for 1d4 rounds; a successful DC 13 Constitution saving throw reduces poison damage by half and prevents the poisoned condition.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Melee Weapon Attack: +3 to hit, reach 0 ft., every target in the creature’s space. Hit: 22 (6d6 +1) piercing damage, or 11 (3d6 + 1) piercing damage if the creature has half of its hit points or fewer. The target also takes 10 (3d6) poison damage and becomes poisoned for 1d4 rounds; a successful DC 13 Constitution saving throw reduces poison damage by half and prevents the poisoned condition.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "debuff"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

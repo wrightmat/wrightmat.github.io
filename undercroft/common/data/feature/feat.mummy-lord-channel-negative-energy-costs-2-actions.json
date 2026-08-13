@@ -1,0 +1,28 @@
+{
+  "id": "feat.mummy-lord-channel-negative-energy-costs-2-actions",
+  "name": "Channel Negative Energy (Costs 2 Actions)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The undead magically unleashes negative energy. Creatures within 60 feet of the undead, including ones behind barriers and around corners, can't regain hit points until the end of the undead's next turn.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The undead magically unleashes negative energy. Creatures within 60 feet of the undead, including ones behind barriers and around corners, can't regain hit points until the end of the undead's next turn."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "legendary-action"
+  }
+}

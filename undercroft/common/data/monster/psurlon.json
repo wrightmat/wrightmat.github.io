@@ -1,0 +1,112 @@
+{
+  "kind": "monster",
+  "name": "Psurlon",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/28079/916/1000/1000/637961800921830771.jpeg",
+  "notes": "### Description\r\n\r\nPsurlons are malevolent, wormlike creatures that were ejected from the Far Realm long ago. They now live on the Astral Plane. They have legs that end in hooves and arms that end in hands with three long fingers. A psurlon’s eyeless head resembles that of an earthworm, capped by a maw ringed with teeth. Psurlons adorn themselves in richly colored robes and rarely wear armor or carry weapons.\r\n\r\nPsurlons live for thousands of years because they spend most of their time in the Astral Sea. Every hundred years or so, psurlons leave their astral strongholds, invade Wildspace systems, and indulge in a seven-year-long ceremony called the Feast of Worlds, during which they consume as many sentient life-forms as they can before returning to the Astral Plane. Psurlons prefer the flesh of humans and halflings but don’t mind feasting on other folk. They use their spellcasting abilities to infiltrate the settlements of their intended victims.\r\n\r\nOn the Material Plane, psurlons have been known to work with mind flayers. Together, they collect victims to feed on; the illithids devour the victims’ brains while the psurlons consume the rest of the prey. Githyanki despise psurlons because of this alliance and attack psurlon strongholds in the Astral Sea wherever they are found.\r\n\r\nWhen a psurlon dies, other psurlons store the corpse in a safe place. As the corpse decays, the psurlons lay one or more eggs inside it. These eggs hatch 24 hours later, each one producing a Tiny worm. For the next seven days, the worms feed on the corpse and on each other until only one remains. This worm crawls out of the putrescent remains of its dead host as an adult psurlon.",
+  "type": "aberration",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Typically Lawful Evil",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 45,
+      "current": 45,
+      "diceString": "7d8 + 14"
+    },
+    "hitDice": "7d8",
+    "speed": {},
+    "abilities": {
+      "strength": 14,
+      "dexterity": 14,
+      "constitution": 14,
+      "intelligence": 17,
+      "wisdom": 11,
+      "charisma": 7
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "",
+    "senses": {
+      "blindsight": 120,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "2",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Psychic",
+          "type": "resistance"
+        },
+        {
+          "name": "Blinded",
+          "type": "immunity"
+        },
+        {
+          "name": "Charmed",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Deep Speech",
+        "Telepathy 120 ft."
+      ]
+    },
+    "spells": "(Psionics) The psurlon casts one of the following spells, requiring no spell components and using Intelligence as the spellcasting ability (spell save DC 13) 2/day each: disguise self, mage armor 1/day: suggestion",
+    "environments": [],
+    "sources": [
+      "BAM",
+      "Spelljammer: Adventures in Space • Boo’s Astral Menagerie, pg. 44",
+      "https://www.dndbeyond.com/monsters/2821193-psurlon"
+    ],
+    "saveDC": 13
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.psurlon-aberrant-mind",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.claw",
+    "feat.psurlon-psychic-crush"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d8 + 2",
+      "damageType": "piercing"
+    },
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d4 + 2",
+      "damageType": "slashing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.bite",
+          "count": 1
+        },
+        {
+          "featureId": "feat.claw",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes one Bite attack and two Claw attacks."
+    }
+  }
+}

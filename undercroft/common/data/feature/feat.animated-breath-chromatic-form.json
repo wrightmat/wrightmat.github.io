@@ -1,0 +1,29 @@
+{
+  "id": "feat.animated-breath-chromatic-form",
+  "name": "Chromatic Form",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "When created, the creature takes one of five forms, matching its creator’s breath weapon: Acid, Cold, Fire, Lightning, or Poison. This form determines the creature’s AC, damage resistance, traits, and attacks.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When created, the creature takes one of five forms, matching its creator’s breath weapon: Acid, Cold, Fire, Lightning, or Poison. This form determines the creature’s AC, damage resistance, traits, and attacks.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

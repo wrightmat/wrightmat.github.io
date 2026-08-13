@@ -1,0 +1,92 @@
+{
+  "kind": "monster",
+  "name": "Dragon Turtle Wyrmling",
+  "notes": "Dragon turtles are mighty creatures whose inherent magic is intimately linked with the oceans of the Material Plane. The dragon turtle presented in the Monster Manual is a typical adult, at least a century old and boasting a valuable hoard. You can use the stat blocks in this section for older or younger dragon turtles. In addition, chapter 5 includes lair actions and regional effects that can be used for adult or ancient dragon turtles. An ancient dragon turtle is a mythic creature akin to a greatwyrm, combining the power of multiple echoes from across the worlds of the Material Plane. Such a creature can be as large as an island— and indeed, legends suggest that many unwitting sailors wrecked at sea have mistaken slumbering dragon turtles for solid ground.\n\nAncient dragon turtles might sleep for years or decades while floating along the surface of the ocean, enjoying the warmth of the sun and letting vegetation take root on their shells. An angry ancient dragon turtle is terrible to behold, radiating heat from the shell to boil the surrounding water—and any creatures in it. And even if an enemy wears down the dragon turtle’s defenses, magical storms manifest to shield the dragon turtle and strike at foes.",
+  "type": "dragon",
+  "stats": {
+    "size": "Large",
+    "alignment": "Typically Neutral",
+    "armorClass": 18,
+    "hitPoints": {
+      "max": 90,
+      "current": 90,
+      "diceString": "12d10 + 24"
+    },
+    "hitDice": "12d10",
+    "speed": {
+      "walk": 20,
+      "swim": 30
+    },
+    "abilities": {
+      "strength": 17,
+      "dexterity": 10,
+      "constitution": 15,
+      "intelligence": 8,
+      "wisdom": 10,
+      "charisma": 10
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "DEX +2, CON +4, WIS +2",
+    "skills": "",
+    "senses": {
+      "darkvision": 120,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "4",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "fire",
+          "type": "resistance"
+        }
+      ],
+      "languages": [
+        "Draconic"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Fizban's Treasury of Dragons, pg. 192",
+      "https://www.dndbeyond.com/monsters/2059725-dragon-turtle-wyrmling"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.amphibious",
+    "feat.bite",
+    "feat.steam-breath"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "1d12 + 3",
+      "damageType": "piercing"
+    },
+    "feat.steam-breath": {
+      "verb": "exhales",
+      "substance": "scalding steam",
+      "areaSize": "60",
+      "areaShape": "cone",
+      "dcAbility": "constitution",
+      "ability": "constitution",
+      "damageDice": "15d6",
+      "damageType": "fire",
+      "rider": {
+        "kind": "trailing-note",
+        "conditionText": "Being underwater doesn't grant resistance against this damage."
+      }
+    }
+  }
+}

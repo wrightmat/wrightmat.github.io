@@ -1,0 +1,87 @@
+{
+  "kind": "monster",
+  "index": "giant-ape",
+  "name": "Giant Ape",
+  "type": "beast",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/giant-ape.png",
+  "stats": {
+    "size": "Huge",
+    "alignment": "unaligned",
+    "armorClass": 12,
+    "hitPoints": {
+      "max": 157,
+      "current": 157,
+      "diceString": "15d12+60"
+    },
+    "hitDice": "15d12",
+    "speed": {
+      "walk": 40,
+      "climb": 40
+    },
+    "abilities": {
+      "strength": 23,
+      "dexterity": 14,
+      "constitution": 18,
+      "intelligence": 7,
+      "wisdom": 12,
+      "charisma": 7
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "Athletics +9, Perception +4",
+    "proficiencies": {
+      "defenses": [],
+      "languages": []
+    },
+    "senses": {
+      "passives": {
+        "perception": 14
+      }
+    },
+    "challengeRating": "7",
+    "proficiencyBonus": 3,
+    "xp": 2900,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/giant-ape"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/giant-ape",
+  "featureIds": [
+    "feat.multiattack",
+    "feat.fist",
+    "feat.rock"
+  ],
+  "featureParams": {
+    "feat.fist": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 9,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "3d10 + 6",
+      "damageType": "bludgeoning"
+    },
+    "feat.rock": {
+      "kind": "Ranged",
+      "attackKind": "Weapon",
+      "attackBonus": 9,
+      "distanceLabel": "range",
+      "distance": "50/100",
+      "damageDice": "7d6 + 6",
+      "damageType": "bludgeoning"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.fist",
+          "count": 2
+        }
+      ],
+      "text": "The ape makes two fist attacks."
+    }
+  }
+}

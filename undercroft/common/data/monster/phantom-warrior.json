@@ -1,0 +1,141 @@
+{
+  "kind": "monster",
+  "name": "Phantom Warrior",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/323/741/1000/1000/636623996440271782.png",
+  "notes": "### Description\nA phantom warrior is the spectral remnant of a willful soldier or knight who perished on the battlefield or died performing its sworn duty. It appears like a translucent version of its living self.\n\n**Task Driven**. Although one is often mistaken for a ghost, a phantom warrior isn’t bound by a yearning to complete some unresolved goal. It can choose to end its undead existence at any time. Its spirit lingers willingly, either out of loyalty to its former master or because it believes it must perform a task to satisfy its honor or sense of duty. For example, a guard who dies defending a wall might return as a phantom warrior and continue guarding the wall, then disappear forever once a new guard assumes its post or the wall is destroyed. The period between the time it died and the time it rises as a phantom warrior is usually 24 hours.\n\n**Faded Memories**. A phantom warrior retains the alignment and personality it had before it died, and it remembers how it died. Memories of its life from shortly before it died are hazy, and older memories are forgotten. A phantom warrior can usually remember the last 1d10 + 10 days of its life; everything that happened before that is an impenetrable fog.\n\n**Forceful Presence**. Although they are incorporeal, phantom warriors can harness the energy around them to deflect incoming attacks and strike with great force. An invisible sheath of energy surrounds a phantom warrior’s ghostly armor, shields, and weapons, which become as hard as steel yet don’t impede the warrior’s ability to move through walls and other solid objects.\n\n**Undead Nature**. A phantom warrior doesn’t require air, food, drink, or sleep.",
+  "type": "undead",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Any Alignment",
+    "armorClass": 16,
+    "hitPoints": {
+      "max": 45,
+      "current": 45,
+      "diceString": "6d8 + 18"
+    },
+    "hitDice": "6d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 16,
+      "dexterity": 11,
+      "constitution": 16,
+      "intelligence": 8,
+      "wisdom": 10,
+      "charisma": 15
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "Perception +2, Stealth +4",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 12
+      }
+    },
+    "challengeRating": "3",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "Piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "and Slashing from Nonmagical Attacks",
+          "type": "resistance"
+        },
+        {
+          "name": "Cold",
+          "type": "immunity"
+        },
+        {
+          "name": "Necrotic",
+          "type": "immunity"
+        },
+        {
+          "name": "Poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "Exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "Frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "Grappled",
+          "type": "immunity"
+        },
+        {
+          "name": "Paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "Petrified",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        },
+        {
+          "name": "Prone",
+          "type": "immunity"
+        },
+        {
+          "name": "Restrained",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "any languages it knew in life"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "CoS",
+      "Curse of Strahd, pg. 235",
+      "https://www.dndbeyond.com/monsters/17368-phantom-warrior"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.ethereal-sight",
+    "feat.incorporeal-movement",
+    "feat.phantom-warrior-spectral-armor-and-shield",
+    "feat.multiattack",
+    "feat.spectral-longsword",
+    "feat.etherealness"
+  ],
+  "featureParams": {
+    "feat.spectral-longsword": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d8 + 3",
+      "damageType": "force"
+    },
+    "feat.multiattack": {
+      "text": "The creature makes two attacks with its spectral longsword."
+    }
+  }
+}

@@ -1,0 +1,100 @@
+{
+  "kind": "monster",
+  "name": "Murgaxor",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/22135/810/1000/1000/637743395580987025.jpeg",
+  "notes": "",
+  "type": "humanoid",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Neutral Evil",
+    "armorClass": "16 (Blood Aegis)",
+    "hitPoints": {
+      "max": 64,
+      "current": 64,
+      "diceString": "8d8 + 32"
+    },
+    "hitDice": "8d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 11,
+      "dexterity": 14,
+      "constitution": 18,
+      "intelligence": 20,
+      "wisdom": 12,
+      "charisma": 12
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "Con +8, Int +9, Wis +5, Cha +5",
+    "skills": "Deception +9, Medicine +5, Survival +5",
+    "senses": {
+      "passives": {
+        "perception": 11
+      }
+    },
+    "challengeRating": "5",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Necrotic",
+          "type": "resistance"
+        },
+        {
+          "name": "Exhaustion",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Common plus any four languages"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "SCC",
+      "Strixhaven: A Curriculum of Chaos"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.murgaxor-blood-aegis",
+    "feat.extus-narr-oriq-mask",
+    "feat.murgaxor-sanguine-sense",
+    "feat.multiattack",
+    "feat.blood-lash",
+    "feat.blood-boil"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.blood-lash",
+          "count": 2
+        }
+      ],
+      "text": "Murgaxor makes two Blood Lash attacks."
+    },
+    "feat.blood-lash": {
+      "kind": "Melee",
+      "attackKind": "Spell",
+      "attackBonus": 8,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "2d10 + 4",
+      "damageType": "necrotic",
+      "rider": {
+        "kind": "condition-no-save",
+        "condition": "can't regain hit points until the start of the creature's next turn"
+      }
+    }
+  },
+  "featureTiers": {
+    "feat.blood-boil": "murgaxor-recharge-4-6"
+  }
+}

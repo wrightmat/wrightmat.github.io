@@ -1,0 +1,119 @@
+{
+  "kind": "monster",
+  "name": "Aspect of Belashyrra",
+  "notes": "A miniature version of [[Belashyrra]].",
+  "type": "aberration",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Chaotic Evil",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 148,
+      "current": 148,
+      "diceString": "22d8 + 60"
+    },
+    "hitDice": "22d8",
+    "speed": {
+      "walk": 40,
+      "fly": 40,
+      "hover": true
+    },
+    "abilities": {
+      "strength": 19,
+      "dexterity": 16,
+      "constitution": 15,
+      "intelligence": 22,
+      "wisdom": 25,
+      "charisma": 23
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "intelligence +14, wisdom +13, charisma +13",
+    "skills": "arcana +14, perception +13",
+    "senses": {
+      "truesight": 120,
+      "passives": {
+        "perception": 23
+      }
+    },
+    "challengeRating": "10",
+    "proficiencyBonus": 4,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "poison",
+          "type": "resistance"
+        },
+        {
+          "name": "psychic",
+          "type": "resistance"
+        },
+        {
+          "name": "blinded",
+          "type": "immunity"
+        },
+        {
+          "name": "charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "poisoned",
+          "type": "immunity"
+        },
+        {
+          "name": "prone",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Deep Speech",
+        "telepathy 120 ft."
+      ]
+    },
+    "environments": [],
+    "sources": []
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.alien-mind",
+    "feat.aspect-of-belashyrra-eye-thief",
+    "feat.legendary-resistance",
+    "feat.magic-resistance",
+    "feat.regeneration",
+    "feat.teleport",
+    "feat.multiattack",
+    "feat.claw",
+    "feat.aspect-of-belashyrra-eye-ray"
+  ],
+  "featureTiers": {
+    "feat.teleport": "30-ft-bonus-action",
+    "feat.legendary-resistance": "3-day",
+    "feat.alien-mind": "dc-22"
+  },
+  "featureParams": {
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "3d6 + 4",
+      "damageType": "slashing"
+    },
+    "feat.multiattack": {
+      "text": "Belashyrra makes one attack with its claws and uses its Eye Ray once."
+    }
+  }
+}

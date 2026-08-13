@@ -1,0 +1,107 @@
+{
+  "kind": "monster",
+  "name": "Groff",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/22135/801/1000/1000/637743395570836477.jpeg",
+  "notes": "",
+  "type": "plant",
+  "stats": {
+    "size": "Large",
+    "alignment": "Unaligned",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 68,
+      "current": 68,
+      "diceString": "8d10 + 24"
+    },
+    "hitDice": "8d10",
+    "speed": {
+      "walk": 30,
+      "swim": 30
+    },
+    "abilities": {
+      "strength": 20,
+      "dexterity": 10,
+      "constitution": 17,
+      "intelligence": 4,
+      "wisdom": 13,
+      "charisma": 7
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 13
+      }
+    },
+    "challengeRating": "4",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "SCC",
+      "https://www.dndbeyond.com/monsters/2160306-groff",
+      "Strixhaven: A Curriculum of Chaos, pg. 194"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.false-appearance-ambush",
+    "feat.hold-breath",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.swamp-claw"
+  ],
+  "featureTiers": {
+    "feat.hold-breath": "1-hour",
+    "feat.false-appearance-ambush": "motionless-eyes-legs-wrapped"
+  },
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d8 + 5",
+      "damageType": "piercing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.bite",
+          "count": 1
+        },
+        {
+          "featureId": "feat.swamp-claw",
+          "count": 1
+        }
+      ],
+      "text": "The creature makes one Bite attack and one Swamp Claw attack."
+    },
+    "feat.swamp-claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d6 + 5",
+      "damageType": "slashing",
+      "rider": {
+        "kind": "save-or-condition",
+        "targetRestriction": "medium or smaller creature"
+      }
+    }
+  }
+}

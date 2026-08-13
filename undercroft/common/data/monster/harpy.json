@@ -1,0 +1,94 @@
+{
+  "kind": "monster",
+  "index": "harpy",
+  "name": "Harpy",
+  "type": "monstrosity",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/harpy.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "chaotic evil",
+    "armorClass": 11,
+    "hitPoints": {
+      "max": 38,
+      "current": 38,
+      "diceString": "7d8+7"
+    },
+    "hitDice": "7d8",
+    "speed": {
+      "walk": 20,
+      "fly": 40
+    },
+    "abilities": {
+      "strength": 12,
+      "dexterity": 13,
+      "constitution": 12,
+      "intelligence": 7,
+      "wisdom": 10,
+      "charisma": 13
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Common"
+      ]
+    },
+    "senses": {
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "1",
+    "proficiencyBonus": 2,
+    "xp": 200,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/harpy"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/harpy",
+  "featureIds": [
+    "feat.multiattack",
+    "feat.claws",
+    "feat.club",
+    "feat.harpy-luring-song"
+  ],
+  "featureParams": {
+    "feat.claws": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 3,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d4 + 1",
+      "damageType": "slashing"
+    },
+    "feat.club": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 3,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d4 + 1",
+      "damageType": "bludgeoning"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.claws",
+          "count": 1
+        },
+        {
+          "featureId": "feat.club",
+          "count": 1
+        }
+      ],
+      "text": "The creature makes two attacks: one with its claws and one with its club."
+    }
+  }
+}

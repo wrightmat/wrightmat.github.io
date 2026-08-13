@@ -1,0 +1,153 @@
+{
+  "kind": "monster",
+  "name": "Allip",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/25746/119/1000/1000/637880557105201582.jpeg",
+  "notes": "### Description\r\n\r\nWhen a creature uncovers a secret that a powerful being has protected with a mighty curse, the result is often the creation of an allip. Secrets protected in this manner range in scope from a demon lord’s true name to the hidden truths of the cosmic order. The creature acquires the secret, but the curse annihilates its body and leaves behind a spectral being composed of fragments from the victim’s psyche and overwhelming psychic agony.\r\n\r\nEvery allip is wracked with a horrifying insight that torments what remains of its mind. In the presence of other creatures, an allip seeks to relieve this burden by sharing its secret. The creature can impart only a shard of the knowledge that doomed it, but that piece is enough to wrack the recipient with temporary mental anguish and violent compulsions. The survivors of an allip’s attack are sometimes left with a compulsion to learn more about what spawned this monstrosity. Strange phrases echo through their minds, and weird visions occupy their dreams. The sense that some colossal truth sits just outside their recall plagues them for days, months, and sometimes years after their fateful encounter.\r\n\r\n#### Insidious Lore\r\n\r\nAn allip might attempt to share its lore to escape its curse and enter the afterlife. It can transfer knowledge from its mind by guiding another creature to write down what it knows. This process takes days or possibly weeks. An allip can accomplish this task by lurking in the study or workplace of a scholar. If the allip remains hidden, its victim is gradually overcome by frantic energy. A scholar, driven by sudden insights to work night and day, produces reams of text with little memory of exactly what the documents contain. If the allip succeeds, it passes from the world—and its terrible secret hides somewhere in the scholar’s text, waiting to be discovered by its next victim.",
+  "type": "undead",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Typically Neutral Evil",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 40,
+      "current": 40
+    },
+    "hitDice": "9d8",
+    "speed": {
+      "walk": 0,
+      "fly": 40,
+      "hover": true
+    },
+    "abilities": {
+      "strength": 6,
+      "dexterity": 17,
+      "constitution": 10,
+      "intelligence": 17,
+      "wisdom": 15,
+      "charisma": 16
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "Int +6, Wis +5",
+    "skills": "Perception +5, Stealth +6",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 15
+      }
+    },
+    "challengeRating": "5",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Acid",
+          "type": "resistance"
+        },
+        {
+          "name": "Fire",
+          "type": "resistance"
+        },
+        {
+          "name": "Lightning",
+          "type": "resistance"
+        },
+        {
+          "name": "Thunder; Bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "Piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "and Slashing from Nonmagical Attacks",
+          "type": "resistance"
+        },
+        {
+          "name": "Cold",
+          "type": "immunity"
+        },
+        {
+          "name": "Necrotic",
+          "type": "immunity"
+        },
+        {
+          "name": "Poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "Exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "Frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "Grappled",
+          "type": "immunity"
+        },
+        {
+          "name": "Paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "Petrified",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        },
+        {
+          "name": "Prone",
+          "type": "immunity"
+        },
+        {
+          "name": "Restrained",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "the languages it knew in life"
+      ]
+    },
+    "environments": [
+      "Swamp",
+      "Urban"
+    ],
+    "sources": [
+      "MPMM",
+      "Mordenkainen Presents: Monsters of the Multiverse, pg. 45",
+      "https://www.dndbeyond.com/monsters/2560718-allip"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.incorporeal-movement",
+    "feat.unusual-nature",
+    "feat.maddening-touch",
+    "feat.allip-howling-babble-recharge-6",
+    "feat.allip-whispers-of-compulsion"
+  ],
+  "featureParams": {
+    "feat.maddening-touch": {
+      "kind": "Melee",
+      "attackKind": "Spell",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "4d6 + 3",
+      "damageType": "psychic"
+    }
+  }
+}

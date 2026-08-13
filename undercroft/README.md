@@ -109,6 +109,23 @@ to every current member transparently — sharing once with a group is
 equivalent to sharing individually with everyone in it, and stays current as
 membership changes.
 
+**"Public" isn't its own mechanism — it's modeled as sharing with a special
+`"All Users"` pseudo-target**, always `view`-only (`server/shares.py`:
+sharing/revoking with this exact username is what flips
+`library_items.is_public`; `ALL_USERS_DISPLAY = "All Users"`). The Share
+modal's own "Shared with people" field always offers this as the first
+suggestion; typing/selecting it (instead of a real username) is how public
+visibility gets set from there. Loom's own Library tab additionally has a
+**Public checkbox** (right in the item inspector, next to Owner) as a
+one-click shortcut for the exact same thing — it calls the same
+`dataManager.shareWithUser`/`revokeShare` methods with `username: "All
+Users"`, never a separate `is_public` setter, so the checkbox and the Share
+modal's own "All Users" row can't drift out of sync with each other. Same
+owner-or-admin permission tier the server enforces for sharing at all
+(`ensure_share_permission`) — reuses the exact same
+`libraryEntryAllowsDelete` check the item-level Delete button already
+gates on, not a separate permission rule.
+
 ---
 
 ## Campaign Groups
@@ -1066,6 +1083,1162 @@ accident. Excluded via `NON_VAULT_PROPERTY_FIELD_KEYS`, a small hardcoded set
 of field keys checked first in `isGeneratorPropertyField` — deliberately an
 exception in Vault's own code, not a flag stored on the System record: a
 System's fields describe the game, not which Undercroft tool may read them.
+
+### Combat stat-block convention (`stats.*` — Monster/NPC/Character)
+
+Every kind that carries combat-relevant data (Crucible's `monster`, Forge's
+`npc`, Workbench's `character`) puts it under one `stats` object, at
+identical **paths** with identical **shapes** — not just "the same shape
+each kind happens to use at its own prefix." A field that means the same
+thing must live at the same place on every kind, because Press templates
+and Dashboard widgets (Combat Tracker above all) read these paths
+generically across kinds; path drift between kinds breaks that exactly as
+badly as shape drift would. This was a real, corrected mistake mid-alignment
+— see the git history around the "monster-data-alignment" plan for the
+before/after. Fields that genuinely don't apply to a kind (Forge NPCs have
+no Challenge Rating; native-generated monsters have no `stats.speed` yet)
+stay absent — that's expected, not a gap.
+
+The canonical shape, per field:
+
+- **`stats.hitPoints`** — `{max, current, temp, diceString?}`. `max`/
+  `current`/`temp` are all numbers (every kind that tracks HP has all
+  three, `temp` defaults to `0`). `diceString` is the optional full hit-
+  point roll formula including the flat modifier (e.g. `"18d10+36"`,
+  DDB's own `"3d8 + 9"`) — sparse, present only when the source actually
+  provides it (Monster-only, import-sourced; native generation has
+  neither this nor `stats.hitDice` yet). Deliberately separate from
+  `stats.hitDice` below, not folded into it: every source's own hit-dice
+  value is normalized to the bare dice count (`"18d10"`, `"3d8"`) so
+  `stats.hitDice` means the same thing everywhere, while the full-roll
+  string (extra, genuinely useful information) lives in its own optional
+  key instead of making `stats.hitDice` inconsistent across sources.
+- **`stats.armorClass`** — a flat number.
+- **`stats.abilities`** — a flat object keyed by the active System's own
+  ability field keys (`{strength: 14, dexterity: 12, ...}`), bare numbers,
+  not modifiers. Character used to store an array of enriched
+  `{id,name,friendlyName,shortName,score,modifier}` objects — that metadata
+  is derivable from the System's own `abilities` field definitions
+  (`abilityFieldDefs`) and `common/js/lib/dnd-rules.js#abilityModifier`, so
+  it's never stored per-record.
+- **`stats.alignment`** — a plain string (the display name, e.g. `"Lawful
+  Neutral"`), not `{name, shortName}` — `shortName` is derivable from the
+  System's own `alignments` vocabulary the same way every other lookup-
+  resolved display value in this suite already works.
+- **`stats.initiative`** — `{bonus, advantage?, disadvantage?}`.
+  `advantage`/`disadvantage` are sparse (omitted, not `false`, when absent)
+  — available to any kind (a monster feature could grant it too), not
+  Character-exclusive. The System's own `combatBindings` Initiative entry
+  (`sys.dnd5e.json`) declares this exact path (`@stats.initiative.bonus`).
+- **`stats.senses`** — `{passives:{perception, ...}, darkvision?,
+  blindsight?, tremorsense?, truesight?}`, sparse (only present sense types
+  get a key). Character's `passives` additionally carries
+  `investigation`/`insight` — Monster/NPC simply don't have those keys.
+- **`stats.speed`** — `{walk, burrow, climb, fly, swim, hover?}`. All the
+  movement types are numbers (feet); `hover` is a sparse boolean (omitted,
+  not `false`, when absent), a sibling of `fly` never a numeric speed of
+  its own — 5e's own convention always pairs it with flying, never any
+  other movement type (e.g. the 5e API's own Air Elemental: `{fly: "90
+  ft.", hover: true}`). Crucible's Stats box shows/edits it as a "(hover)"
+  suffix on the fly value (`formatSpeedValue`/`parseSpeedText`,
+  `crucible/js/app.js`) rather than a separate field.
+- **`stats.proficiencies.defenses`** — one unified array, `[{name, type:
+  "resistance"|"immunity"|"vulnerability", condition?, value?}]`. Condition
+  immunities fold into this same array as `type: "immunity"` (e.g.
+  `{name:"prone", type:"immunity"}`) — there's no separate condition-
+  immunity bucket, matching how Character's own data already worked before
+  Monster/NPC were aligned to it.
+- **`stats.proficiencies.languages`** — `string[]`.
+- **`stats.savingThrows`** / **`stats.skills`** — arrays of `{name, value,
+  ...}`. Character's entries carry extra fields (`proficiency`, `advantage`,
+  `disadvantage`) Monster's simpler entries don't — same key/path, richer
+  payload where a kind actually needs it, not a shape mismatch.
+- **`stats.challengeRating`** — a string, always (a fraction like `"1/8"` or
+  a whole number like `"5"`), never a decimal number or an internal scaling-
+  level slug. Monster-only concept.
+- **`stats.hitDice`**, **`stats.environments`**, **`stats.sources`** —
+  Monster-only, all import-sourced. `environments`/`sources` are always
+  arrays even when a source only ever provides one value.
+- **`stats.proficiencyBonus`** — a plain number, Monster-only. The 5e API
+  provides it directly (`proficiency_bonus`); DDB and Fantasy Statblocks
+  don't (confirmed live — DDB's monster payload has no such field at all,
+  and Fantasy Statblocks' own Proficiency Bonus display is itself just a
+  CR-based callback in the plugin, never stored frontmatter), so both are
+  computed from the resolved `challengeRating` instead
+  (`proficiencyBonusFromChallengeRating`, `mapping-custom-functions.js`) —
+  it's a fixed 5e rule (`2 + floor((max(CR,1)-1)/4)`), never house-ruled
+  per creature, so deriving it is exactly as correct as reading it.
+- **`stats.saveDC`** is not a real mapping-level field, despite living
+  alongside these — its canonical home is `sys.dnd5e.json`'s own Combat
+  Scaling table (`crucible/js/lib/stats.js`), Crucible's native-generation-
+  only DMG scaling number, and no mapping binds it directly: a real D&D
+  monster typically has several different save DCs (spellcasting, breath
+  weapon, Frightful Presence, ...), each embedded in its own ability's
+  text, not one scalar an import source ever exposes as a single field.
+  `convertStatBlockToFeatures` does make one best-effort exception —
+  regex-extracting `spell save DC N` out of the Spellcasting trait text
+  it's already collecting for `stats.spells` (only when `stats.saveDC`
+  isn't already set) — since that's the one DC phrased consistently enough
+  to reliably parse, and the one a GM most wants next to the Spells box. A
+  monster with no Spellcasting trait (or unparsed phrasing) still starts
+  with `stats.saveDC` blank, same editable manual-note box as before.
+
+**Crucible's own Stats UI deliberately does not grow bespoke editors for any
+of the structured fields above** (senses, speed, defenses, languages) — each
+stays the same simple comma-separated text box every other list-shaped stat
+uses (`crucible/js/app.js`'s `formatSensesValue`/`parseSensesText`,
+`formatSpeedValue`/`parseSpeedText`, and the `DEFENSE_TYPE_BY_STAT_KEY`-keyed
+read/write-back for the three defense boxes). The read/write-back layer
+reshapes between the plain-text display and the structured stored value;
+building a real structured editor for these was explicitly rejected in favor
+of reusing the existing text-box convention.
+
+**Provenance, not shape, answers "was this imported."** `record.mapping`
+(the mapping id, e.g. `"ddb-monster"`) and `record.url` (when available) are
+stamped on any mapping-driven save — generically, for any kind, in Loom's
+`saveEntity` (`loom/js/app.js`), and Crucible's own `handleSave` does the
+same for monster saves that bypass Loom entirely. Crucible's
+`isImportedStatBlock(record)` reads `Boolean(record.mapping)` — **not**
+`featureIds` presence or any other shape signal, because Feature-matching
+(next section) deliberately normalizes an imported record's shape to look
+identical to a native one once converted. A function that needs to know
+"does this record have real Feature references yet" (rendering the Features
+list, populating the Add-Feature dropdown, manual add/remove) checks
+`Array.isArray(record.featureIds)` directly instead — a different question
+than provenance, answered differently on purpose (this was a real bug,
+caught and fixed after the alignment work: gating those on
+`isImportedStatBlock` made every converted import's Features list
+permanently blank, since provenance never becomes false).
+
+**Feature-matching runs automatically on every monster save, unconditionally
+— there is no manual "convert" button anywhere in this suite, by explicit
+decision.** `common/js/lib/monster-feature-matching.js`'s
+`convertStatBlockToFeatures`/`hasConvertibleStatBlock` turn an imported
+monster's remaining `stats.traits`/`actions`/`bonusActions`/`reactions`/
+`legendaryActions`/`lairActions` into real `feature` Library references,
+called from both Loom's `saveEntity` and Crucible's own `handleSave` (which
+otherwise bypasses `saveEntity` completely). Idempotent — a monster with
+nothing left to convert just no-ops — so it's safe to call on every save,
+not gated on "is this the first save." Each converted/matched Feature gets
+tagged with `combat.actionCost` from the category it came from (`actions`→
+`"action"`, `bonusActions`→`"bonus-action"`, `reactions`→`"reaction"`,
+`legendaryActions`→`"legendary-action"`, `lairActions`→`"lair-action"`,
+`traits`→ no `combat` at all, passive) — backfilled onto an existing match
+only if it doesn't already have one, never overwriting already-authored
+content. Crucible's Features list shows `combat.actionCost` as a muted
+outline pill on the right of the row (`ACTION_COST_LABELS`,
+`crucible/js/app.js`) — deliberately not styled like the solid Signature
+pill up-left, so the two never compete for attention on the same row; a
+trait shows no pill at all (it has no `actionCost`).
+
+**A "Spellcasting"/"Innate Spellcasting"/etc. trait never becomes a
+Feature** — `convertStatBlockToFeatures` matches it by name (case-
+insensitive `.includes("spellcasting")`, `traits` group only) and routes
+its description into `stats.spells` instead, only when a source hasn't
+already populated `stats.spells` directly (Fantasy Statblocks' own
+dedicated `spells` frontmatter field). It's prose (an intro sentence plus a
+per-frequency spell list), not a discrete atomic ability, so it doesn't fit
+Crucible's recipe-slot/synergy Feature model — and every source's
+spellcasting summary belongs in the one dedicated field for it, not
+duplicated as a Feature too.
+
+**Multiattack is a single shared Feature (`feat.multiattack`) plus
+per-monster `featureParams`** — the same "shared, content-free template,
+per-monster data on the record" convention `parseWeaponAttack`'s
+`feat.bite`/`feat.claw`/... already use (see below), extended here to cover
+Multiattack too. This wasn't the original design: every monster with a
+Multiattack used to get a fresh `feat.<slug>-multiattack` Feature file, on
+the reasoning that Multiattack's own CONTENT is monster-specific by
+definition (true — it's a menu of THIS monster's own other attacks, and
+should never be MATCHED against a different monster's own Multiattack text
+no matter how the generic phrasing scores — confirmed live: "Multiattack"
+false-matched a completely unrelated dragon's Multiattack under the old
+exact-name-match path) — but that's an argument for why the DATA is
+per-monster, not for why it needs a whole separate Feature file per monster
+to hold it. Confirmed real cost of the original design: 200+ near-identical
+one-off Multiattack files cluttering the Library, every one structurally
+saying the exact same thing. `record.featureParams["feat.multiattack"]`
+holds `{attacks, text}` (or `{options, text}` for a genuine choice — see
+below) — `attacks` is the parsed `{featureId, count}[]` list
+(`extractMultiattackReferences`, resolving against this SAME monster's own
+already-resolved attack Features — a real stat block almost always lists
+Multiattack *before* the attacks it references, so this is computed in a
+second pass, after every other trait/action already has its own Feature id
+resolved), `text` is always the original (name-substituted) prose fallback.
+Extraction bails all the way out to the text fallback only when NEITHER a
+fixed combination NOR a genuine choice can be safely parsed (see below for
+what choice-structured phrasings ARE covered). Crucible's own
+`multiattackDescriptionText` computes the displayed sentence from
+`attacks`/`options` at render time (resolving each referenced Feature's
+CURRENT name, so editing e.g. a Bite Feature's name keeps Multiattack's own
+text in sync automatically) — a single attack type gets its own natural
+phrasing ("The creature makes three Tentacle attacks.") rather than the
+multi-type sentence shape ("...attacks: three with its Tentacle.") forced
+onto it, which read redundantly (confirmed live, caught reviewing Aboleth's
+own Multiattack) — falling back to `text` whenever `attacks`/`options` is
+absent or a referenced Feature no longer resolves.
+
+**A Multiattack that's a genuine CHOICE ("two Claws, two Bites, or one of
+each") is structured too, not just a fixed combination** —
+`record.featureParams["feat.multiattack"]` gains an optional `options:
+Array<{featureId,count}[]>` alongside the original flat `attacks`; `attacks`
+is really just `options` with one entry, and stays the on-disk shape for
+the ~200 already-simple fixed-combination cases (additive, not a forced
+migration — `multiattackOptionGroups`, `crucible/js/app.js`, is the one
+place both shapes get read as a normalized list of option groups).
+`extractMultiattackReferences` (`monster-feature-matching.js`) covers the
+real choice-phrasings confirmed live across this session's own imported
+monsters, each via its own anchored, safe-fallback-only pattern (same "never
+guess, never a wrong partial structure" discipline `parseWeaponAttack`/
+`parseSaveEffect` already use — any segment/shape that doesn't cleanly
+parse bails the WHOLE trait to its original text, never a wrong merge):
+- **Top-level split, each segment parsed independently**
+  (`splitTopLevelOptions`/`extractAttacksFromSegment`) — covers both a
+  simple 2-way choice and deeper nested AND/OR (Bukavac's own "four Claw
+  attacks, or two Claw attacks and one Bite attack, or two Claw attacks and
+  one Gore attack, or one Bite and one Gore attack" — 4 options, the middle
+  two each their own 2-attack AND-combination). A bare comma (not just one
+  directly before "or") is ALSO a valid option boundary, but ONLY when the
+  text contains no "and" anywhere — real 5e Oxford-comma phrasing ("two
+  Branch attacks, two Radiant Pellet attacks, or one of each") lists 3+
+  PEER alternatives this way, "or" appearing only before the last one; a
+  comma-only split (the original, more conservative rule) mis-parsed this
+  exact case as ONE option worth 4 attacks (both mentions found by the same
+  segment's own general pattern loop) instead of two separate 2-attack
+  alternatives — a real semantic bug, not just a wording difference (Aartuk
+  Elder never has an option where it makes both Branch AND Radiant Pellet
+  attacks together). Gated on the absence of "and" specifically because
+  "and" is the one word every real AND-combo option (Bukavac's own "two
+  Claw attacks and one Bite attack") uses to bind its own items together —
+  if "and" appears anywhere in the text, a bare comma might legitimately be
+  part of an Oxford-comma AND-list WITHIN one option, so this falls back to
+  the conservative comma-only-directly-before-or split instead. Verified
+  against every real Multiattack trait across the whole imported monster
+  set (`CONSERVATIVE_OPTION_SPLIT_PATTERN`/`AGGRESSIVE_OPTION_SPLIT_PATTERN`):
+  this changes ONLY Aartuk Elder's own parse (correctly, from 2 options to
+  3); every other already-structured or already-text-only case is
+  unaffected.
+- **"one of each"** (Aartuk Elder's own third option, after "two Branch
+  attacks, two Radiant Pellet attacks, or ___") doesn't name any attack
+  itself — resolved as a post-pass once every other segment's own attacks
+  are known, from the union of THEIR referenced Features at count 1 each.
+- **Elided trailing noun in an AND-pair** ("one bite and one gore attack" —
+  meaning "one bite ATTACK and one gore attack", Bukavac's own last option)
+  — the general per-segment patterns require every item to carry its own
+  trailing "attack(s)"/"with its", so this 2-item elision needs its own
+  small anchored pattern (`ELIDED_TRAILING_NOUN_PAIR_PATTERN`) tried first.
+- **Shared count/suffix across an inline "X or Y"** ("two Stab or Spike
+  attacks" — Adult Kruthik's own Multiattack, meaning "two attacks, each a
+  Stab or a Spike") — anchored to the FULL text
+  (`SHARED_SUFFIX_CHOICE_PATTERN`), specifically so it can never partially
+  match a LONGER sentence with real extra content after it (confirmed live:
+  must not fire on Autumn Eladrin's own "two Longsword or Longbow attacks.
+  It can replace one attack with a use of Spellcasting." — the second
+  sentence changes what the ability does, so representing it as just a
+  Longsword-or-Longbow choice would misrepresent it).
+- **An interior sentence boundary blocks the segment-split path
+  entirely** (an "or" is only trusted as a top-level option boundary when
+  the WHOLE text is one sentence) — confirmed live: Werebat's own two-
+  sentence Multiattack ("In humanoid form, the creature makes two scimitar
+  attacks or two shortbow attacks. In hybrid form, it can make one bite
+  attack and one scimitar attack.") would otherwise let the SECOND
+  sentence's own unrelated "and"-list bleed into the FIRST sentence's own
+  last "or" segment, since a plain "or"-split doesn't know about sentence
+  boundaries — producing a wrong-but-plausible merged option instead of the
+  real 3 separate, form-gated options. A genuinely harder case (Autumn
+  Eladrin's own conditional "replace one attack with a use of Spellcasting")
+  correctly falls all the way through to the original text-only fallback,
+  same as before this workstream — never a wrong partial parse.
+
+Rendering (`multiattackDescriptionText`, `crucible/js/app.js`) branches the
+same way: a single option renders EXACTLY the sentence it always has
+(`describeSingleAttackSentence`, unchanged, so the ~200 simple cases don't
+gain new phrasing they don't need); 2+ options each resolve to their own
+bare AND-fragment (`describeAttackCombination`, no "The creature makes..."
+lead-in of its own — each item within the fragment is its own "N Name
+attack(s)" phrase, matching `describeSingleAttackSentence`'s own single-item
+convention, joined with "and"; NOT "N with its Name", a real rendering bug
+this had at first — confirmed live: Aartuk Elder's own Multiattack rendered
+"two with its Branch and two with its Radiant Pellet", not "two Branch
+attacks and two Radiant Pellet attacks") and those fragments join in an
+Oxford-comma-style list (`"X, Y, or Z"`, used even for exactly 2 fragments,
+so the join style stays consistent regardless of option count). An option
+whose own resolved attacks are exactly "one of each" distinct attack type
+referenced by every OTHER option (`isOneOfEachOption`) renders as the
+literal fragment `"one of each"` instead of spelling out the individual
+items — Aartuk Elder's own third option (`extractMultiattackReferences`'s
+`EACH_OF_PREVIOUS_OPTIONS_PATTERN` already resolves this to a concrete
+`{Branch:1, RadiantPellet:1}` list so the editor has real, editable rows,
+but rendering that expansion word-for-word loses the much more natural
+"one of each" the original text said — detected at RENDER time instead of
+baked into storage, so the stored option shape stays the uniform
+`{featureId,count}[]` every option already uses). Deliberately **not**
+attempting DPR/average-damage-across-options math — the value here is
+correct representation of the choice, not combat math derived from it.
+
+**Crucible has a manual editor for Multiattack's own attack list** (the
+right-pane Inspector, shown only when the selected Feature's
+`mechanics.type === "multiattack"`) — for a fixed-combination or choice-
+structured ability whose phrasing extraction couldn't cleanly parse, or for
+a native monster's own hand-authored Multiattack. A single option group
+renders with **no visible "option" chrome** (no border, no "Option 1"
+label, no move/remove-group buttons) — the common case shouldn't look more
+complex than it did before this workstream; that chrome (and the "or"
+divider it implies) only appears once a second group exists. An "Add
+option" button promotes the current fixed combination into the first entry
+of a real choice, appending a fresh group alongside it; removing a group
+back down to exactly one collapses the stored shape back to the plain
+`attacks` key (`writeMultiattackOptionGroups`), not a permanently-promoted
+single-entry `options` array. Each option group's own header also carries
+Move Up/Move Down buttons (disabled at the first/last position) — a swap in
+the `options` array's own order is the entire fix, since both the rendered
+"or"-list and the editor's own "Option N" labels just read off that array
+order directly, nothing else to keep in sync. Since the data lives in
+`record.featureParams`, editing it is editing part of the monster record —
+marks the record dirty and waits for the monster's own Save button, exactly
+like adding/removing a Feature, rather than an independent immediate save.
+
+**The same right-pane Inspector also has structured editors for
+`weapon-attack` and `save-effect` Features** (`renderFeatureParamsEditor`,
+shown alongside the Multiattack editor, mutually exclusive by
+`mechanics.type`) — before this, a monster's own numbers for a shared
+Feature like `feat.bite` or a breath-weapon template were only reachable by
+hand-editing the raw JSON. Weapon-attack gets a **Literal/Formula mode
+select** (`renderWeaponAttackParamsEditor`) that switches which fields show
+— Literal exposes `attackBonus` and a `damageDice` with the modifier baked
+in as text; Formula exposes `ability` (a `<select>` sourced from the active
+System's own `abilityFieldDefs`, no separate fetch needed — Crucible's
+Stats box already loads this) and a bare-base-die `damageDice`. Switching
+modes is a deliberate, honest reset (clears the other mode's own number(s)
+rather than attempting a numeric conversion between them) — literal mode's
+`damageDice` already has a monster's own ability modifier baked in as text,
+so converting it to formula mode's bare-die shape would mean guessing at
+that modifier, the same "never guess" discipline the rest of this pipeline
+holds to elsewhere. Save-effect exposes every `parseSaveEffect` field
+(`verb`/`substance`/`areaSize`/`areaShape`/`lineWidth`/`dcAbility`/
+`ability`/`damageDice`/`damageType`) — Line Width only renders once Area
+Shape is "line" (re-rendered live on that select's own change, same
+pattern the mode toggle uses). Both editors share one commit path with the
+Multiattack editor: `updateFeatureParams(feature, patch)` patches
+`record.featureParams[feature.id]` (deleting a key entirely on an empty/
+undefined value, never storing a blank placeholder) and calls
+`refreshAfterFeatureEdit()` — renamed from `refreshAfterMultiattackEdit`
+now that three different structured editors share it, not just Multiattack.
+
+**The right-pane Inspector's own raw JSON dump is a nested collapsible
+section, collapsed by default** (`createCollapsibleSection({label: "Raw
+JSON", collapsed: true, ...})`, inside the Inspector's own already-
+collapsible content) — a diagnostic/power-user detail that doesn't need to
+be open by default the way the structured editors above it are. Same
+"adopt the existing static element as content" pattern every other
+`createCollapsibleSection` call in this file already uses (e.g. "Recipe
+Fulfillment", also `collapsed: true`) — `elements.inspectorJson`'s own
+`querySelector` reference keeps working unchanged after `appendChild`
+relocates the element into the new section.
+
+**`mechanics.scope: "unique"` marks a Feature as never eligible for
+Crucible's native generation**, independent of `tags.recipeSlots` —
+distinct from an untagged Feature, whose empty `recipeSlots` already
+excludes it from `candidatesForSlot`'s own slot-membership check but only
+as a side effect of nobody having reviewed it yet, not a recorded
+decision. Set this explicitly for a confirmed-irreducible creature-specific
+cluster (2+ real, non-tierable mechanical differences found during a
+generic/specific merge review) or anything inherently one-off by design (a
+named boss move). Checked in `generator.js`'s own `isCompatible` — the one
+choke point both the normal recipe-slot traversal (`candidatesForSlot`) and
+`rerollAttribute`'s own signature-feature reroll already call through — so
+a unique-scoped Feature can never reach generation via either path. Absent
+or any other value = eligible (the default; matches every other tag field's
+own "no marker means unconstrained" convention elsewhere in this doc).
+
+**A monster-slug-prefixed id (`feat.<monster-slug>-...`) does NOT mean a
+Feature should default to `scope: "unique"`** — a real question raised
+live in Loom's own Features tab, where "Scope" showed "Generic" for the
+vast majority of Features (only 13 of ~1100 had ever been reviewed and
+marked Unique), including many with monster-specific-looking ids. That id
+shape just means "created as a one-off during import" — it says nothing
+about whether the ability is architecturally irreducible (the confirmed
+three-different-"Dagger"-Features case earlier this session is the concrete
+counterexample: monster-prefixed ids, but `feat.dagger` — the merge
+target — is perfectly generic). "Generic" is correctly the DEFAULT/
+unreviewed state here, same "empty means unreviewed, not confirmed-
+reusable" convention `budgetCost`/tags already use — inverting it (auto-
+marking every monster-prefixed Feature Unique) would prejudge ~950
+Features as irreducible without the actual review Workstream E's own
+process depends on. Loom's Features tab (see below) instead clarifies this
+in the UI: the Scope select's own option labels spell out "default — not
+yet reviewed" vs. "confirmed — never eligible", and a note appears
+whenever a Feature ISN'T currently eligible for native generation for
+EITHER reason (Scope Unique, or simply no `tags.recipeSlots` yet) — making
+the two independent gates (Scope and Recipe Slots) visible together
+instead of leaving a GM to infer generation-eligibility from Scope alone.
+
+**A Feature can carry `tiers`** — the same shape Vault's own
+spell/item Features already use (`tiers: [{id, name, shortName, ...}]`),
+extended here with a per-tier `mechanics.text` instead of Vault's per-tier
+`budgetCost`, since a monster Feature's tiers vary by frequency/duration,
+not gp value. `record.featureTiers: {featureId: tierId}` on the monster
+itself (mirrors Vault's own `currentRecord.featureTiers` exactly) records
+which tier THIS monster's own copy uses. Only ever created once
+`findMatch` has already found a same-mechanic match — this never changes
+WHETHER something matches, only what happens once it has.
+`resolveNamedTier` (`monster-feature-matching.js`) handles this
+generically for any `"Base Name (N/Day)"` or `"Base Name (Recharge
+N[-6])"`-suffixed trait (not hardcoded to "Legendary Resistance" — that's
+just the common real case) once it's matched against a shared Feature:
+instead of silently discarding the frequency difference, it's recorded as
+a tier on the ONE shared Feature. A Recharge-tagged ability whose OTHER
+numbers (damage, area, DC, ...) also vary per monster — the common case,
+e.g. two different creatures' own "Acid Breath (Recharge N-6)" — never
+even reaches this function, since `findMatch`'s own description-similarity
+gate already keeps those from matching as the same mechanic in the first
+place; that's a parameterized-ability problem (see the weapon-attack
+convention below), not a tiering one.
+Crucible's `renderFeatureList` resolves `record.featureTiers[featureId]`
+against the Feature's own `tiers` and shows that tier's `name`/
+`mechanics.text` in place of the base Feature's own — absent entirely for
+a non-tiered Feature.
+
+**A Feature can also carry `options`** — a genuinely different shape from
+`tiers`, for a real recurring 5e pattern: an ability that presents a menu
+of named sub-effects (Iron Cobra's Bite rolling one random poison effect;
+Gem Stalker's Crystal Dart varying by the kind of dragon that made it; a
+dragon's own "uses one of the following breath weapons"). Where `tiers`
+means "the monster picks exactly one, recorded via `record.featureTiers`",
+`options` means every entry always belongs to the ability at once — no
+monster-level pointer at all. How resolution actually happens at the table
+(a random roll, a fixed trait of that individual creature, or the
+attacker's own per-turn choice) is flavor text the data model deliberately
+doesn't distinguish; all three collapse to the same
+`options: [{id, name, mechanics: {text}}]` shape. `renderFeatureOptionsDescription`
+(`crucible/js/app.js`) renders the base `description` followed by a real
+indented bulleted list — each option's own name bolded, its text plain —
+checked in `renderFeatureList`'s description-resolution chain right after
+the `tiers` lookup (a tiered AND options-bearing Feature would never
+coexist in practice, but tiers wins if it somehow did, matching resolution
+priority elsewhere in this file). A plain joined-text version was tried
+first and abandoned — a `.textContent` string with embedded `"\n"`s
+renders as one unbroken run-on paragraph in a `<div>` (browsers don't
+respect literal newlines without explicit `white-space: pre-line`), which
+read as far less clear than a real list for what's fundamentally a menu
+of alternatives.
+
+**Crucible's own Inspector can edit `options` directly** — `renderFeatureOptionsEditor`
+(add/edit/remove option name+text rows), wired into `renderFeatureParamsEditor`'s
+existing dispatch alongside the weapon-attack/save-effect editors. This is
+a genuine departure from every other editor in that dispatch: Multiattack/
+weapon-attack/save-effect all only ever write to the MONSTER record's own
+`featureParams`, but `options` lives on the shared FEATURE record itself —
+`updateFeatureOptions` saves straight through `dataManager.save("feature",
+...)` rather than the monster's own dirty-tracking. Justified specifically
+because an options-bearing Feature is ALWAYS a monster-specific one-off by
+construction (`saveOptionsFeature` in `monster-feature-matching.js` never
+shares one across monsters, the same guarantee Multiattack's own content
+already relies on) — there's no OTHER monster whose own view this edit
+could silently affect, so the usual "Crucible reads, Loom authors"
+boundary isn't protecting anything real for this one field specifically;
+it would still apply to any other Feature-level field.
+
+**Every selected Feature — not just weapon-attack/save-effect/options-
+bearing ones — shows a Basic Info block** (ID, Name, Description, Budget
+Cost) at the top of the Inspector, so a GM can see what a Feature actually
+is without opening the collapsed Raw JSON section. `renderFeatureBasicInfo`
+populates it on every `selectFeatureRow`. Fields are **disabled by
+default** and only enabled once `mechanics.scope === "unique"` confirms
+it's safe (ID stays read-only regardless) — the GM-facing explanation
+lives in `crucible.feature-basic-info` (`help-topics.json`), linked via
+the section's own `data-help-topic` icon, same convention as every other
+help-linked section in this file (never an inline hint paragraph).
+`updateFeatureBasicInfo` saves through `dataManager.save("feature", ...)`
+the same immediate, non-dirty-gated way `updateFeatureOptions` does, and
+keeps `description`/`mechanics.text` in sync on a description edit — this
+session's own established convention for a one-off passive Feature.
+
+**An "Edit Feature" toolbar button links out to Loom** — built through
+`createToolbarButtonGroup` into its own scoped `data-feature-inspector-
+toolbar-mount` inside the Inspector detail panel, the exact same
+btn-toolbar/btn-group/toolbar-mount shape used everywhere else in the
+suite (Loom's own per-section Property Inspector toolbars are the closest
+precedent) rather than a one-off hand-built button. Opens `../loom/
+index.html?feature=<id>` in a new tab (so the GM's in-progress monster
+stays untouched) for full editing of a SHARED Feature's own fields, or
+anything this panel doesn't expose. Loom's own `init()` (`loom/js/app.js`)
+reads the `?feature=` query param the same way it already reads `?macro=`
+for the Dashboard's Board-widget deep link — lands already on the
+Features tab with that Feature loaded, no manual tab-and-select needed.
+
+**The IMPORT pipeline itself now produces `options` directly** — the two
+real shapes above were originally found and hand-fixed on already-imported
+data, which would have silently reproduced the exact same corruption on a
+future re-import if left alone. `convertStatBlockToFeatures`
+(`monster-feature-matching.js`) now detects both at conversion time, before
+either bug can occur:
+- `detectChoiceEffectGroup` catches the shape where the source itself
+  splits each sub-effect into its own SEPARATE `{name, desc}` entry (Iron
+  Cobra's numbered "1. Poison Damage:"/"2. Confusion:"/"3. Paralysis:",
+  Gem Stalker's plain-named "Amethyst."/"Crystal."/etc.) — narrowly
+  triggered only by a small, real, anchored set of 5e "choice lead-in"
+  phrasings (`CHOICE_LEAD_IN_PATTERN`: "...suffer one random X effect:",
+  "...one of the following effects occurs, determined by X:"), never a
+  loose "ends with a colon" heuristic. Consumes following entries as this
+  one ability's own `options` — a numbered list keeps consuming as long as
+  the numbering stays sequential (self-terminating); a plain-named list
+  stops at the first entry that looks like its own independent ability
+  (starts with its own "Melee/Ranged Weapon/Spell Attack"/"...Attack Roll"
+  line — a sub-effect never re-describes an attack roll from scratch) or a
+  small generous cap.
+- `splitEmbeddedEffectOptions` catches the OTHER shape, where the choice
+  is already one entry's own multi-paragraph text (dragon Breath Weapons'
+  own "uses one of the following breath weapons.\nFire Breath. ...\n
+  Weakening Breath. ..." — never split into separate entries by the
+  source). Anchored on literal embedded newlines, bails the whole split on
+  any non-conforming line (never a wrong partial structure).
+
+Both funnel through `saveOptionsFeature`, always a monster-specific one-off
+(`feat.<monsterSlug>-<trait-slug>`, `mechanics.scope: "unique"` — this
+content is inherently monster-specific, same as Multiattack's own is never
+matched across monsters) that refreshes in place on re-import rather than
+duplicating, same "safe to overwrite our own prior output" rule the
+generic one-off branch already follows.
+
+**`nameToFeatureId` (the map Multiattack's own text extraction resolves
+attack names against) no longer lets a later ability-group entry silently
+overwrite an earlier one for the same name.** Confirmed live: Adult Topaz
+Dragon has BOTH a real "Claw" weapon attack (in `actions`) and a Legendary
+Action ALSO named "Claw" ("The dragon makes one Claw attack.", in
+`legendary_actions`) — `ABILITY_GROUP_KEYS` processes `legendaryActions`
+after `actions`, so the legendary-action entry's own name→id mapping used
+to silently clobber the real weapon attack's mapping, and Multiattack's
+own "...and two Claw attacks" ended up pointing at the Legendary Action
+wrapper Feature instead. Every `nameToFeatureId.set(...)` call site now
+guards with `if (!nameToFeatureId.has(...))` — the FIRST (mechanically
+real) mapping for a name always wins, a same-named wrapper/reference
+encountered later still gets its own Feature and its own `featureIds`
+entry, it just never overwrites the earlier resolution Multiattack needs.
+
+**A simple weapon attack (Bite, Claw, Slam, Tail, ...) is a shared,
+number-free template Feature plus per-monster parameters, never
+prose duplicated per monster** — this is the single biggest source of
+near-duplicate Features (confirmed live: hundreds of files across a real
+300-monster import, differing ONLY in their numbers), and unlike a real
+shared mechanic those numbers are genuinely different per monster, so
+merging into one Feature was never an option. `parseWeaponAttack`
+(`monster-feature-matching.js`) recognizes the standard template ("Melee
+Weapon Attack: +8 to hit, reach 5 ft., one target. Hit: 16 (2d10 + 5)
+piercing damage.") and, when it matches END TO END (a trailing "plus N
+(dice) TYPE damage" rider clause, or any other extra sentence, fails the
+match entirely rather than truncating it — that trait keeps going through
+the normal prose path, unchanged), routes the trait to a shared Feature
+keyed purely by name (`feat.bite`, `feat.claw`, ... — no monster-slug
+prefix, unlike every other Feature created here) with
+`mechanics.type: "weapon-attack"` and no numbers of its own. This is a
+completely separate matching path from `findMatch`'s own description-
+similarity logic — comparing descriptions would always disagree here (the
+numbers differ), so this matches by name alone, which is safe precisely
+because the shared Feature carries nothing that could be wrong. Each
+monster's own numbers (`attackBonus`, `distanceLabel`/`distance`,
+`damageDice`, `damageType`) live in `record.featureParams: {featureId:
+params}` — parallel to `record.featureTiers`, same "shared Feature,
+per-monster data on the record" shape. Crucible's `renderFeatureList`
+computes the full sentence from `record.featureParams[featureId]`
+(`weaponAttackDescriptionText`, including `averageDiceRoll`'s own standard
+5e floor-rounding for the "Hit: N" figure) rather than storing it, falling
+back to the Feature's own generic description if this monster has no
+params entry for it.
+
+**`parseWeaponAttack` also recognizes the 2024 D&D rules revision's own
+phrasing for the same mechanical shape** — "Melee Attack Roll: +9, reach 5
+ft. Hit: 28 (4d10 + 6) Piercing damage." (no "Weapon"/"Spell" word, the
+2024 revision drops that distinction from this sentence shape entirely;
+"Attack Roll" instead of "...Attack"; no "one target"/"one creature"
+clause; Title Case damage type) — via a completely separate
+`WEAPON_ATTACK_ROLL_PATTERN`, tried only once the classic pattern has
+already failed to match, so the classic pattern's own already-proven-safe
+behavior can't be affected by this addition. Same end-to-end-or-nothing
+discipline: a "Melee or Ranged Attack Roll" combined-distance shape, a
+rider clause, or a flat (non-dice, e.g. "Hit: 2 Necrotic damage.") damage
+value all correctly fail to match and stay a one-off, rather than losing
+information or breaking `averageDiceRoll`'s own dice-notation assumption.
+`attackKind` always resolves to `"Weapon"` for this phrasing — confirmed
+live: every real 2024-phrased trait found this session was a natural
+weapon/innate attack, never a spell attack — and renders back through
+`weaponAttackDescriptionText`'s own classic-style sentence the same way
+every other weapon-attack Feature already displays, regardless of which
+phrasing the source used. Confirmed live: this converted 8 previously
+one-off Features (`feat.giant-squid-bite`, `feat.grell-beak`,
+`feat.guard-captain-longsword`, `feat.modron-quadrone-slam`,
+`feat.pteranodon-bite`, `feat.shadow-demon-umbral-claw` — new template —
+`feat.modron-quadrone-gears-launcher` — new template `feat.gears-launcher`
+— and `feat.spectator-bite`) onto their now-existing or newly-created
+shared templates.
+
+**The overwhelming majority of still-one-off weapon-attack-SHAPED
+Features (203 of 212 found in a full-library scan) are rider-bearing, not
+a phrasing gap** — a "plus N (dice) TYPE damage" elemental rider (dragon
+Bites' own acid/cold/fire/lightning/poison damage), a secondary save-or-
+effect clause, or a whole second sentence. `WEAPON_ATTACK_PATTERN`'s own
+end-to-end anchoring correctly declines to swallow these (same "never lose
+information" rule as always), but there's currently no FIELD in the
+weapon-attack `featureParams` shape to represent a rider at all, so they
+can't be merged into `feat.bite`/`feat.claw`/etc. without a real schema
+extension (an optional `riderDice`/`riderType` or similar, plus matching
+support in `weaponAttackDescriptionText` and the Inspector's own
+weapon-attack params editor) — this is exactly the gap the original
+Workstream C plan flagged ("176 rider-bearing weapon-attack Features
+across 114 distinct names... exist purely because a rider clause blocks
+the existing feat.bite-style shared template from applying") and remains
+open, scoped future work rather than something this pass attempted.
+
+**A weapon-attack or save-effect Feature's numbers can be computed live from
+a monster's own ability scores instead of stored as text — "formula
+mode"** — this is what makes `feat.bite` (or a breath-weapon template)
+genuinely reusable by a brand-new NATIVELY-generated monster, not just a
+dedup convenience for imports: a native monster is never going to arrive
+with a hand-authored `attackBonus`/`damageDice` string, only ability
+scores and a Combat-Scaling level. `record.featureParams[featureId]` for a
+`weapon-attack` Feature now has two possible shapes, distinguished by
+which keys are present (never both):
+```js
+// literal mode (import-produced, unchanged from the original design above)
+{ kind, attackKind, attackBonus, distanceLabel, distance, damageDice, damageType }
+// formula mode (new — ability name present, no attackBonus of its own)
+{ kind, attackKind, ability: "strength", distanceLabel, distance, damageDice: "1d10", damageType }
+```
+`weaponAttackDescriptionText` (`crucible/js/app.js`) branches on which
+shape it sees: formula mode computes the attack bonus and average damage
+live via `computeAttackBonus`/`computeAverageDamage`
+(`common/js/lib/dnd-rules.js`) from `record.stats.abilities[params.ability]`
+and `record.stats.proficiencyBonus`, falling back to the Feature's own
+generic description (never a wrong number) if either is missing. Formula
+mode's `damageDice` is a bare base die with no modifier baked in (e.g.
+`"1d10"`) — contrast literal mode's `damageDice`, which already has the
+monster's modifier embedded (e.g. `"2d10 + 6"`); `computeAverageDamage`
+adds the ability modifier live instead of it being part of the stored
+string. Migrating existing literal `featureParams` to formula mode is
+explicitly not required — reverse-engineering which ability score
+produced an already-imported literal `attackBonus` is a separate, smaller,
+hand-verified cleanup pass, not something this system depends on.
+
+**A weapon-attack Feature's `featureParams` can also carry an optional
+`rider`** — the per-monster half of the "menu of named sub-effects" split
+covered above under `feature.options`: a rider is a clause tacked onto an
+otherwise-normal computed attack (Peryton's charge bonus, "plus 4 acid
+damage", "or be knocked prone") whose own numbers vary per monster on an
+OTHERWISE-shared template, rather than a whole one-off ability. This is
+what let 200+ Bite/Claw/Gore/etc. one-offs finally collapse into
+`feat.bite`/`feat.claw`/`feat.gore` instead of staying separate Features
+purely because of one extra clause. `rider` is discriminated by `rider.kind`
+(never more than one kind active at once — picking a new kind in the
+Inspector clears the previous kind's own fields):
+```js
+{ kind: "secondary-damage", dice: "1d8", damageType: "acid" }
+{ kind: "save-or-condition", saveAbility: "strength", saveDC: 14, condition: "knocked prone", duration: undefined }
+{ kind: "charge-bonus", dice: "2d8", damageType: "piercing", triggerDistance: 30 }
+```
+Rider dice are always literal/flat — never formula-computed off the
+attacker's own ability score, the same reasoning `save-effect`'s own
+damage dice below already rely on (a secondary damage type or a charge
+bonus doesn't scale with the attacker's Strength/Dexterity mod in real 5e
+design). `riderClauseText` (`crucible/js/app.js`) builds the trailing
+clause and `weaponAttackDescriptionText` appends it after the base
+sentence in EITHER literal or formula mode. `renderWeaponAttackParamsEditor`
+gained a Rider section below its existing grid for editing this.
+
+**The IMPORT pipeline recognizes rider-bearing attacks too, not just
+already-imported data** — the rider mechanism above was originally
+applied as a one-time bulk migration over already-imported Features, with
+nothing in `convertStatBlockToFeatures` itself aware of it. Confirmed
+live: this meant EVERY re-import of a monster with a rider-bearing Bite/
+Claw/Gore/etc. recreated its own one-off Feature from scratch, undoing
+the migration — a full-library scan found 21 separate "Bite" Features
+(17 "Claw", 9 "Longsword", ...) coexisting at once as a result.
+`parseWeaponAttackWithRider` (`monster-feature-matching.js`) is
+`parseWeaponAttack`'s sibling for this shape — tried only once the
+clean, rider-free pattern has already failed, it strips exactly one of
+the 4 known real trailing-clause phrasings (the same wording
+`riderClauseText` itself renders, since that was modeled on real found
+examples) and requires the remaining text to match the base attack
+pattern cleanly; anything else (an unrecognized rider shape, 2+ stacked
+clauses) returns `null` and falls through to the one-off path untouched.
+Its return shape (`{...baseParams, rider}`) is a strict superset of
+`parseWeaponAttack`'s own, so the main loop just ORs the two parsers
+together (`parseWeaponAttack(text) || parseWeaponAttackWithRider(text)`)
+— the existing match/create-shared-template block handles either result
+identically, no separate branch needed.
+
+**A 4th rider kind — `condition-no-save`** — for an unconditional on-hit
+effect with no saving throw involved at all: `{kind: "condition-no-save",
+condition}`, rendering as `" If the target is a creature, it
+{condition}."`. Confirmed live: Blood Lash's own "...it can't regain hit
+points until the start of [name]'s next turn" (Murgaxor, Oriq Blood Mage)
+didn't fit any of the first 3 kinds — no DC/saving throw (rules out
+save-or-condition), no extra damage (rules out secondary-damage/charge-
+bonus). Tried last in `parseWeaponAttackWithRider`, only once the
+stricter save-or-condition pattern (which specifically requires "must
+succeed on a DC...") has already failed, so it never steals a real
+save-based rider.
+
+**`featureParams.versatile` — the 5e Versatile weapon property, a
+separate concept from the 4 rider kinds above.** "or N2 (dice2) TYPE
+damage if used with two hands" is an ALTERNATE DAMAGE VALUE for the same
+hit, not a conditional extra effect — it inserts INTO the base "Hit: ..."
+sentence (before the period) rather than trailing after it the way every
+rider does, and it can genuinely coexist with a real rider. Confirmed
+live: a full scan of the "Longsword" duplicate-name group found all 8
+one-off Features carried Versatile, and 5 of those 8 ALSO stacked a
+secondary-damage rider on top (Autumn Eladrin's own "...or 6 (1d10 + 1)
+slashing damage if used with two hands, plus 22 (5d8) psychic damage.") —
+`parseWeaponAttackWithRider` alone can't parse that shape, since the
+versatile clause breaks its own end-anchored base-attack sub-match.
+`{versatile: {damageDice}}` — same literal-vs-formula duality as the
+primary `damageDice` (a bare base die for formula mode, computed via the
+SAME ability score as the base damage, matching real 5e design — a
+Versatile weapon's two-handed die never has a different governing
+ability). `parseWeaponAttackWithVersatile` (`monster-feature-matching.js`)
+strips the clause out first — wherever it falls in the sentence, not just
+a trailing suffix — then re-attempts both the clean and rider-aware
+parsers on what's left; the main loop tries it between the clean parse
+and the rider-only parse. `versatileClauseText`/`weaponAttackDescriptionText`
+(`crucible/js/app.js`) insert the rendered clause before the base
+sentence's own period, then append any rider after.
+`renderWeaponAttackParamsEditor` gained its own Versatile section
+(separate from Rider) for editing this.
+
+**Every freshly-created one-off Feature now gets `mechanics.scope:
+"unique"` automatically** — previously unset, meaning every newly
+imported monster-specific Feature was both wrongly eligible for native
+generation and stuck read-only in Crucible's own Inspector (which gates
+Basic Info editability on this flag) until someone hand-reviewed it. A
+one-time backfill also applied this to 541 already-imported Features that
+were genuinely one-off (monster-slug-prefixed id, referenced by exactly
+one monster — never touching an id that LOOKS monster-prefixed but is
+actually referenced by 2+ monsters, since that's functioning as a de
+facto shared template regardless of its name and needs a human decision,
+not an automatic one).
+
+**`findMatch`'s own short-text similarity bar was blocking legitimate
+merges of short, exact-name-matched traits** — confirmed live: Amphibious
+("The creature can breathe air and water.") only has 3-4 significant
+tokens after stopword-filtering, so it hit the strict 0.85
+`SHORT_TEXT_SIMILARITY_THRESHOLD` (meant to protect the WEAK-evidence
+case: no name confirmation, content similarity as the only signal); one
+source's own extra filler word ("...can breathe BOTH air and water")
+dropped its similarity to 0.75, just under that bar, so two monsters'
+plainly-identical Amphibious traits stayed split as separate Features.
+An EXACT name match now always uses the lenient `NAME_MATCH_SIMILARITY_THRESHOLD`
+(0.25) regardless of text length — `sameShapeDifferentNumbers` (checked
+earlier, unconditionally) is what actually protects against a false merge
+once the name has already confirmed a match, not this threshold on top of
+it; short/templated text WITHOUT an exact name match still needs the
+strict bar, since that's the genuinely risky weak-signal combination.
+
+**`mechanics.type: "legendary-action-reference"`** — a legendary action
+that just re-invokes another already-defined ability by name ("The
+creature uses its Command Aquatic Creature ability, even if it has not
+recharged.", "The creature makes one Tentacle attack.") rather than
+carrying its own real mechanical effect (most "(Costs N Actions)" Features
+DON'T fit this — a live audit found only 2 of 11 candidates were actually
+reference-shaped; the rest, e.g. Aboleth's Psychic Drain or Prismatic
+Golem's Shatter the World, are self-contained legendary actions with their
+own real text and stay exactly as they are). `legendaryActionReference`
+lives directly on the Feature (`{referencedFeatureIds: [...], template}`)
+— these are already monster-specific one-off content, same as
+`feature.options` above, so no per-monster `featureParams` indirection is
+needed. `legendaryActionReferenceDescriptionText` (`crucible/js/app.js`)
+resolves each referenced id to that Feature's own CURRENT name (so a
+rename elsewhere doesn't leave the wrapper's own text stale), joins 2+
+with "or" (Adult Topaz Dragon's own "uses Psychic Step or Spellcasting"
+shape), and substitutes the result into `template`'s `{names}` placeholder
+— `template` stays author-written per Feature since the verb genuinely
+varies ("uses its X ability" vs "makes one X attack").
+
+**`mechanics.type: "save-effect"` is the same shared-template-plus-
+`featureParams` convention as `weapon-attack`, for breath weapons and
+other area/save abilities** — these had no shared-template mechanism at
+all before (confirmed live: the dragons' own Breath traits were one-off
+Features differing only in area/DC/damage, the exact same "95% same
+shape, different numbers" problem `weapon-attack` already solved for
+Bite/Claw/Slam/Tail). `parseSaveEffect` (`monster-feature-matching.js`)
+recognizes the standard 5e breath-weapon template ("The creature exhales
+acid in a 60-foot line that is 5 feet wide. Each creature in that line
+must make a DC 18 Dexterity saving throw, taking 54 (12d8) acid damage on
+a failed save, or half as much damage on a successful one.") end-to-end,
+same safe-fallback discipline as `parseWeaponAttack` (no match at all
+if the text doesn't fit the pattern exactly — never a truncated partial
+parse). `record.featureParams[featureId]` holds `{verb, substance,
+areaSize, areaShape, lineWidth?, dcAbility, ability, damageDice,
+damageType}` — `dcAbility` is always `"constitution"` (5e's universal
+breath-weapon convention: the DC is driven by the ATTACKING monster's own
+Constitution, confirmed against every real example), kept as a separate
+field from `ability` (the TARGET's own saving-throw ability, e.g.
+Dexterity for a fire breath — genuinely varies per breath weapon and has
+nothing to do with the attacker's own stats, so it stays literal stored
+data, never computed). `saveEffectDescriptionText` (`crucible/js/app.js`)
+computes the DC live via `computeSaveDC(record.stats.abilities[params.
+dcAbility], record.stats.proficiencyBonus)` and the average damage via
+`averageDiceRoll(params.damageDice)`, same fallback-to-generic-description
+posture as the weapon-attack renderer.
+
+**`stats.proficiencyBonus` now also has a NATIVE-generation source, not
+just the import-mapping one documented above** — `sys.dnd5e.json`'s own
+Combat Scaling field (`challengeRating`) carries a `proficiencyBonus`
+value per level (the standard 5e table), and `deriveStats`
+(`crucible/js/lib/stats.js`) sets `stats.proficiencyBonus` from it
+alongside `attackBonus`/`saveDC`/`damagePerRound`, the same "flat value
+authored per Combat-Scaling level" convention every other native-
+generation combat number already uses — this is what lets formula-mode
+`weapon-attack`/`save-effect` rendering work for a natively-generated
+monster, which never goes through the import-mapping computation at all.
+
+**A newly-created shared weapon-attack or save-effect template's id is
+checked against the FULL Feature Library, not just monster-category
+Features, before being claimed** — `resolveTemplateId(baseId,
+existingFeatures)` (`monster-feature-matching.js`), called at both
+template-creation call sites. A trait's slugified name (`feat.fire-
+breath`, say) can collide with a genuinely unrelated, pre-existing
+Feature from a different category (confirmed live: `feat.fire-breath`
+already existed as a Vault spell/item Feature, entirely unrelated to any
+dragon's own Breath trait) — `convertStatBlockToFeatures`'s own
+`candidatePool` is pre-filtered to monster-category Features for MATCHING
+purposes, so without this check the CREATE branch would `dataManager.save`
+straight over the unrelated Feature by id, silently destroying it. If the
+colliding id belongs to a Feature that's already monster-category (or has
+no `categories` tag at all), the collision is harmless — the base id is
+reused as intended. Otherwise `resolveTemplateId` disambiguates with a
+`-monster`/`-monster-2`/... suffix instead of colliding.
+
+**A real reusable ability's description never names a specific
+monster** — a Fantasy Statblocks/DDB source's own trait text follows real
+published stat-block convention ("The aalpamac can breathe air and
+water."), not the SRD/Crucible-starter convention of generic "the
+creature" phrasing, which defeats both matching (two mechanically-
+identical traits' only difference is the creature noun) and reuse (a
+Feature created from one monster's own text, later matched by a
+DIFFERENT monster, ends up displaying the WRONG creature's name —
+confirmed live: `feat.aboleth-detect`, reused by every Adult Dragon's own
+"Detect" legendary action, used to read *"The aboleth makes a Wisdom
+(Perception) check"* on every dragon that had it).
+
+The first pass at this (a one-time consolidation script) tried to
+generalize the leading SUBJECT of a sentence via a verb-cue regex
+("The X can/makes/fails/is/...", "The X's...") — this corrupted real
+ability text on a real import (confirmed live: an unbounded subject-
+capture group skipped past the true subject to a coincidental LATER cue
+word in a long sentence, silently deleting everything in between —
+*"The oblex extrudes a piece of itself that assumes the appearance of one
+Medium or smaller creature whose memories it has stolen."* became *"The
+creature has stolen. This simulacrum..."*). That technique was
+abandoned entirely, in favor of a much narrower one that can't reproduce
+the failure mode: `known_name_substitute` (originally a Python migration
+helper, now also ported into `monster-feature-matching.js` itself — see
+below) only ever substitutes a VERIFIED reference to a monster's own name
+(its full name, or an individual word over 3 characters, minus common
+age/size descriptors like "Adult"/"Young"), always required to be
+preceded by an article — it never guesses at sentence structure, so it
+can only ever remove exactly the words it's certain refer to this one
+monster, nothing else. ~40-55 files corrupted by the abandoned technique
+were left untouched, at the user's explicit direction, pending re-import
+from source rather than an uncertain manual recovery attempt.
+
+Genericization now DOES run on live import, unlike this section's
+original claim — `convertStatBlockToFeatures` applies
+`knownNameSubstitute(trait.description, record.name, record.type)` to
+every trait before matching or storing it, so a newly-created one-off
+Feature starts out generic instead of needing this same cleanup again on a
+future import.
+
+**`knownNameSubstitute`'s own genericization can collide with a trait's
+pre-existing, unrelated uses of the word "creature"** — a real 5e trait's
+text almost always ALSO uses "creature" as a plain common noun for its
+TARGETS ("each creature within 120 feet...", "a creature can repeat the
+saving throw...") alongside the monster's own self-reference by name ("the
+dragon", "the aboleth") that this function genericizes. Substituting the
+self-reference with the SAME word ("the creature") then collides with
+those pre-existing target-references, since "creature" now means two
+different things in the same sentence — confirmed live: Adult Black
+Dragon's own Frightful Presence ("Each creature of the dragon's choice...
+immune to the dragon's Frightful Presence...") became "Each creature of
+the creature's choice... immune to the creature's Frightful Presence...",
+and Aboleth's own Probing Telepathy ("...the aboleth learns the creature's
+greatest desires if the aboleth can see the creature") became an
+unreadable "...the creature learns the creature's greatest desires if the
+creature can see the creature." First fixed with a hybrid fallback — "the
+attacker" for a combat/damage-dealing ability (detected via a
+saving-throw/damage word check), this monster's own creature type
+otherwise — then simplified again once "the attacker" turned out to be
+its own source of bad text just as often: a breath weapon's own "the
+attacker exhales..." reads oddly (exhaling isn't an "attack"), and Gem
+Stalker's own Protective Link ("...the attacker reduces that damage by
+10, the attacker then takes damage equal to that amount") was flatly
+WRONG — the gem stalker is the PROTECTOR in that reactive ability, not an
+attacker. **Always falls back to this monster's own creature type now**
+(`record.type`, e.g. "aberration"/"dragon" — already a plain lowercase
+noun, no id→name lookup needed) once a "creature" collision is detected,
+regardless of what the ability actually does — a plain noun reads
+correctly in every case checked (an attack, a breath weapon, telepathy, a
+protective reaction), unlike a role-specific word like "attacker." A
+missing/unknown creature type still falls back to "attacker" as a last
+resort (should be rare — every real monster record carries its own
+`type`) — imperfect wording beats the original collision either way.
+`buildMultiattackParams` gained the same third `creatureType` parameter
+for consistency, though Multiattack text rarely triggers this path in
+practice (it's almost always pure self-reference, no target-creature
+mentions to collide with).
+
+This only fixes the bug GOING FORWARD (every future import/re-save) —
+already-stored Feature text corrupted by the original collision bug isn't
+touched automatically, for the same reason the abandoned-technique
+corruption above wasn't: reconstructing which "creature" occurrences in
+ALREADY-corrupted text used to be the self-reference vs. the pre-existing
+target-reference isn't safely recoverable from the corrupted text alone
+(the original wording is gone). One well-known, high-confidence exception
+handled directly: **Frightful Presence** — confirmed live, all 4 existing
+`feat.*-frightful-presence` files were byte-identical except for their own
+DC number, matching 5e's own extremely standardized real SRD wording for
+this ability exactly — safe to recognize via one anchored,
+end-to-end-or-don't-match pattern (same discipline `parseWeaponAttack`/
+`parseSaveEffect` already use) and replace with the known-correct template,
+DC number preserved. Confirmed live via a full scan: **332 other Feature
+files** (across 239 distinct monsters) still carry 3+ "creature" mentions
+consistent with this same collision, each with its own unique (not
+duplicated-across-files) wording — no shared "well-known SRD text" shortcut
+available for those the way Frightful Presence had, so recovering them
+requires re-importing their source monster to regenerate correct text
+through the now-fixed pipeline, the same recovery path already established
+for the earlier abandoned-technique corruption above — not a bulk text
+repair attempted here.
+
+`findMatch` itself was also extended to score a candidate's
+`tiers[].mechanics.text` entries, not just its base `description` — a
+tiered Feature's base text is deliberately generic/parameter-free (e.g.
+Teleport's "a short distance"), so without this a re-imported monster
+whose exact ability is already captured as a tier (Arcanaloth's own "up
+to 60 feet" Teleport, once substituted, is near-identical to that
+Feature's own "60-ft" tier text) would fail to match at all and spawn a
+fresh duplicate, silently undoing a consolidation. When the winning
+match is a tier's own text, that tier id is recorded onto
+`record.featureTiers` the same way `resolveNamedTier` already does for
+name-suffix tiers — named tiers take priority since they're a
+deterministic label; content-tier matching only applies when a trait's
+name carries neither `(N/Day)` nor `(Recharge N)`.
+
+**`findMatch` forces a strict threshold on any 5e-templated mechanical
+text, regardless of token count** — `TEMPLATED_MECHANICAL_TEXT_PATTERN`
+(a bare presence check for `+N to hit` or `DC N <ability> saving throw`)
+overrides `MIN_SIGNIFICANT_TOKENS_FOR_LOOSE_MATCH`'s own token-count gate.
+The token-count gate's own assumption — a short text needs near-total
+agreement, a longer one can trust a looser threshold — breaks down for a
+rider-bearing weapon attack or a save-based area/breath effect: the
+boilerplate around the roll clause ("Melee Weapon Attack: +N to hit, reach
+N ft., one target. Hit:" / "Each creature ... must make a DC N ... saving
+throw, taking ... on a failed save, or half as much damage on a successful
+one.") is often enough significant-token padding on its own to clear 8
+tokens, even though almost none of it is genuinely distinguishing — the one
+or two tokens that actually matter (a damage type, an ability score, a DC)
+are just a couple words among many. Confirmed live TWICE, re-importing the
+adult chromatic dragons through the 5e API: Bite (parseWeaponAttack's own
+end-anchored pattern deliberately declines to structure a rider-bearing
+attack, see its own comment, leaving it to findMatch) false-matched across
+different damage types entirely (Blue Dragon's own lightning-rider Bite
+matched Dragon Eel's unrelated one); separately Breath (a completely
+different, `+N to hit`-free boilerplate shape) false-matched the same way
+across different elements. Even with this fix, a long-enough paragraph
+differing from a candidate's base description in NOTHING but its embedded
+numbers can still clear the strict threshold — confirmed live: Frightful
+Presence's own DC (which should vary by each dragon's own Charisma) scored
+~0.93 similar to a differently-worded dragon's identical-except-DC text.
+`sameShapeDifferentNumbers` guards specifically against that shape (a
+purely mechanical "identical once every digit run is masked out, but the
+digit runs themselves differ" check — no grammar/sentence-structure
+guessing, same safety property `knownNameSubstitute`'s own multi-word-slice
+matching relies on) and blocks the match entirely rather than silently
+losing the differing number — the same "this is what Tiers are for, never
+something safe to collapse onto one shared value" principle as Teleport's
+distance or Legendary Resistance's frequency, just without attempting to
+auto-build a tier live during import. Only guards a candidate's BASE
+description; matching against an EXISTING tier's own text already requires
+verbatim agreement, so this never blocks that.
+
+The one-time consolidation pass itself (existing data, not live import)
+still works the same way: for every already-shared Feature and every
+cluster of same-named one-off Features, `known_name_substitute` groups by
+the resulting exact text, and any group of 2+ safely merges into one
+canonical Feature (preferring a pre-existing `feat.<slug>` id) —
+repointing every referencing monster's `featureIds` and deleting the
+losing files. Never forces a merge when substituted text doesn't converge
+exactly (real per-monster variation — most of False Appearance's own
+"disguised as X" content, Unusual Nature's own combination of waived
+needs — stays untouched, same as Multiattack's own reasoning). Where the
+ONLY real difference between same-named traits is a single, isolable
+parameter (Teleport's distance, Shadow Stealth's bonus-action-or-not),
+that's a `tiers` candidate rather than a non-merge — each variant's own
+full original text is kept verbatim as its own tier (never rewritten or
+blended), so this carries none of the corruption risk a text-generating
+merge would. Attack-roll one-liners (Bite/Claw/Slam/Tail/...) and
+Multiattack are excluded from all of this entirely — already handled by
+their own dedicated mechanisms above.
+
+**A Feature's `budgetCost`/`tags` have a structured Loom editor now, and an
+optional LLM-assisted starting guess for both** — the whole point of the
+Feature Library is reusability: `tags.recipeSlots` is a whitelist
+(`generator.js`'s `candidatesForSlot`), so a Feature with none is
+*invisible* to Crucible's native generation, not merely deprioritized.
+Confirmed live at the start of this workstream: 991 of 1070 monster
+Features had `budgetCost: 0` and 975 had completely empty tags — almost
+entirely because nobody had gotten to them yet, not because they were
+reviewed and found unsuitable (that recorded decision is what
+`mechanics.scope: "unique"`, above, is for).
+
+**Loom's Library tab stays what it has always been — the generic raw-JSON
+fallback editor for every kind, with no kind-specific structured UI ever
+added to it.** A kind whose shape earns a structured editor gets its own
+`data-loom-view-panel="<kind>"` tab instead, exactly like the existing
+System and Macro tabs — so this workstream's new editor is a brand new
+**Features tab** (its own nav-tab entry, its own left-pane picker, its own
+main-content panel and toolbar Save/Delete buttons), not a section bolted
+onto the Library tab's own JSON textarea.
+
+**The Features tab is a FULL structured editor for the kind** — every
+field (id, name, description, mechanics, `tags.*`, `synergizesWith`,
+`conflictsWith`) is accessible and editable here, not just `budgetCost`/
+`tags` — confirmed necessary live: a GM comparing near-duplicate Features
+(three separate "Dagger" entries, `feat.boloti-dagger`/`feat.dagger`/
+`feat.warlock-of-the-great-old-one-dagger`) needs to see their actual
+`description`/`mechanics` differences to tell them apart, not just their
+cost/tags. `mechanics` is edited as its own small JSON textarea rather than
+type-specific structured fields — its shape genuinely varies by
+`mechanics.type` (passive/weapon-attack/multiattack/save-effect/active), so
+one generic JSON box (`currentFeatureMechanics`/`updateFeatureMechanicsFeedback`,
+mirroring `currentLibraryEntity`/`updateLibraryJsonFeedback`'s own
+invalid-JSON-blocks-Save contract) handles every variant without hand-
+building 4+ different sub-forms; this doesn't reopen the "Library tab is
+JSON-only" question since it's one FIELD on a dedicated tab, not the whole
+entity replacing this tab's own structure. Still no New button — creating a
+brand-new Feature (rare — Features are almost always import/conversion-
+produced) still starts on the Library tab (an id typed there once); every
+other field is fully editable here immediately afterward.
+
+A **Type filter** (`data-feature-type-filter`, above the picker) narrows
+it to one `tags.categories` value at a time — e.g. "Monster" vs a
+Vault-authored "Spell"/"Item" — so a Feature that reads as generic can be
+told apart from an unrelated same-named one without opening each (this is
+what surfaced `feat.fire-breath`, a Vault spell/item Feature, sitting next
+to the real monster template `feat.fire-breath-monster` and reading as a
+false duplicate). Options are the distinct categories actually present in
+the Library right now, rebuilt every visit (`populateFeatureTypeFilter`),
+never a fixed list.
+
+Selecting a Feature (`data-feature-select`, populated the same way the
+Macro tab's own record picker is) loads the FULL entity via
+`dataManager.get` and holds it in a module-level `currentFeatureEntity`.
+Saving patches every field this tab's own controls own back onto that
+already-loaded entity and writes the WHOLE thing back via
+`dataManager.save` — a field this tab doesn't expose (`tiers`, `combat`,
+`systemIds`) still round-trips untouched, never silently dropped. Six
+`createSearchableCheckList` checklists cover the rest: Categories/
+Behaviors/Recipe Slots/Roles/Creature Types (tag vocabularies, read live,
+never hardcoded — Categories/Behaviors are the union of every Feature's own
+`tags.categories`/`tags.behaviors` already in use; Recipe Slots is every
+`monster-archetype` recipe's own `signatureSlot`/`requiredSlots`/
+`optionalSlots`, scoped to the Feature's own Assigned Systems; Roles is the
+`monster-role` Library kind's own `id`s, labeled with their own `name`
+— e.g. checkbox value `"brute"`, visible label "Brute", NOT the `name`
+used as the value, a real bug this had at first: every Feature's own
+`tags.roles`/`tags.creatureTypes` are stored as lowercase ids, so using the
+display name as the checkbox's own value produced an entry that could
+never match what's actually saved, and a Feature already tagged with the
+id form showed up as TWO rows once the name form was also in the live
+vocabulary — confirmed live on `feat.acid-corrosion`'s own
+`tags.creatureTypes: ["ooze"]` showing both a checked "ooze" and an
+unchecked "Ooze"; Creature Types is read straight off each Assigned
+System's own `creatureTypes` array field, System-defined game-rule
+vocabulary not a Library kind — see `crucible/CLAUDE.md`'s own "Creature
+Type is not a Library kind" — same id-as-value/name-as-label shape) and
+Synergizes With/Conflicts With (plain references to OTHER Feature ids, not
+a tag vocabulary — the checklist's own "vocabulary" is every other Feature
+in the Library shown by name, excluding the one currently open).
+`populateStringChecklist` (`common/js/lib/generator-kit.js`) takes the
+checked set as an explicit `selected` argument (never inferred from
+whatever the DOM happened to have checked before a rebuild) and sorts
+checked items to the top of each list — so a Feature's existing
+tags/references are immediately visible without scrolling/searching —
+rather than the DOM-inference approach this also originally had, which
+meant "Suggest Cost & Tags" (below) rebuilding a checklist from ONLY the
+suggested values wiped every other option out of view instead of just
+checking the suggested ones among the full list. A value already selected
+that's since fallen out of its live vocabulary (a Recipe Slot from a
+deleted Archetype, say) still shows up in the list, checked — authored
+data is never silently dropped just because its source vocabulary moved
+on. This tab registers its own `SNAPSHOT_HANDLERS.feature` entry
+(`createFeatureSnapshot`/`applyFeatureSnapshot`) for undo/dirty-state, the
+same per-tab convention `mapping`/`library`/`system`/`macro` each already
+use — the checklist rows specifically use `wireUndoTracking`'s `selector`
+option (a dynamically-rebuilt row set, not one fixed field), the same
+two-phase focusin-then-change capture every other field here needs since
+the browser already mutated a checkbox by the time any listener could see
+it.
+
+**Every vocabulary collector above does at least one server round trip,
+cached at module scope to avoid a real, reported performance bug** — fully
+recomputing all of them (a `fetchKindEntriesWithIds("feature")` alone scans
+the FULL feature Library, 1000+ records, for the Categories/Behaviors
+vocabulary and the Synergizes/Conflicts candidate list; the System-scoped
+ones each fetch a whole Library kind or System record) on EVERY single
+Feature selection was the actual cause of a ~1 second lag per click.
+`featureLibraryEntriesCache`/`featureBehaviorVocabularyCache`/
+`featureCategoryVocabularyCache`/`featureSystemVocabularyCache` (the last
+keyed per distinct Assigned-Systems combination via `systemVocabKey`, since
+most Features share the same `systemIds` and repeat visits hit the cache)
+each memoize their own promise; `loadFeatureLibraryEntries`'s one shared
+fetch backs Categories, Behaviors, AND the Synergizes/Conflicts picker AND
+the Feature-select dropdown itself, instead of four separate full-Library
+fetches. Reset on every Save (a save might introduce a new value future
+lookups should see) and on every fresh visit to the tab
+(`populateFeatureSelect`, called on every `setLoomView("features")`) —
+some staleness within one visit (a value saved moments ago elsewhere not
+showing up yet) is an acceptable trade for not re-fetching the whole
+Library on every click.
+
+Grounded in two real data sources rather than free-floating judgment: the
+already-curated **starter Features** (real `budgetCost` + `tags` already
+authored — the original 40-universal-plus-19-flavor-variant set, plus
+whatever's been tagged since), and a **CR→targetBudget calibration table**
+cross-referencing every imported monster's own CR against its own real
+feature count (computed once, this session, as a small one-off analysis —
+same "flat value authored once" posture the System's own per-CR
+`targetBudget`/`attackBonus`/`saveDC` table already takes, not something
+worth recomputing live on every request). "**Suggest Cost & Tags**" (the
+Features tab's own button) sends the currently-selected Feature to
+`POST /loom/suggest-feature-tags` (`server/app.py`) — this route (extending
+the existing `_handle_generate_note` proxy pattern used by Forge/Crucible/
+Vault/Sanctum's own note-generation) is the first STRUCTURED-JSON-output
+LLM route in this codebase (every `*_generate-note` route returns free
+two-line prose instead, parsed by line-splitting) — the prompt embeds the
+live-read starter-Feature examples plus the calibration table (and this
+Feature's own monster's CR/targetBudget, when known) as grounding context,
+and the server strictly validates the response (rejects and reports rather
+than half-applying a response that isn't valid JSON, or whose value shapes
+don't match — same "never guess" posture the client-side Feature-matching
+pipeline above already holds itself to) before returning
+`{suggestions: {featureId: {budgetCost, behaviors, recipeSlots, roles,
+creatureTypes}}, missingIds}`. Applying a suggestion never auto-saves —
+it's written into the loaded entity/checklists exactly like a hand edit
+would (fully undoable via the tab's own undo stack), and the GM still
+reviews and clicks Save. Verified end-to-end against a real batch (Aartuk
+Elder's own 4 non-Multiattack Features) before treating the route as
+working: the suggested costs (1, 1, 1, 3) and tags tracked sensibly against
+both the starter-Feature vocabulary and Aartuk Elder's own CR 3
+`targetBudget` (10). Tagging the remaining untagged Features is iterative,
+ongoing work now that the tool exists — not something this pass did in
+bulk.
+
+**Fantasy Statblocks' post-fence notes text splits at a "### References"
+heading** (`mapping-custom-functions.js`'s `splitFantasyStatblockNotes`) —
+everything before the heading is real `notes` prose; the bulleted citation
+list after it becomes `stats.sources` entries (merged with the YAML
+frontmatter's own terse `source:` field, e.g. `"MM"`), not left mixed into
+the notes text. No heading found at all (not every statblock has one) — the
+whole text is notes, `sources` from this path stays empty.
 
 ### Event naming
 

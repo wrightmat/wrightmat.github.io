@@ -1,0 +1,29 @@
+{
+  "id": "feat.incandescent-one-immortal-nature",
+  "name": "Immortal Nature",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature doesn’t require food, drink, or sleep.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature doesn’t require food, drink, or sleep.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

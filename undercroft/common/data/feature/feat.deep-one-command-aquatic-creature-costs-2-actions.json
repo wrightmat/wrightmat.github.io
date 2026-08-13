@@ -1,0 +1,37 @@
+{
+  "id": "feat.deep-one-command-aquatic-creature-costs-2-actions",
+  "name": "Command Aquatic Creature (Costs 2 Actions)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature uses its Command Aquatic Creature ability, even if it has not recharged.",
+  "mechanics": {
+    "type": "legendary-action-reference",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "control"
+    ],
+    "recipeSlots": [
+      "isolate"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "legendary-action"
+  },
+  "legendaryActionReference": {
+    "referencedFeatureIds": [
+      "feat.deep-one-command-aquatic-creature-recharge-5-6"
+    ],
+    "template": "The creature uses its {names} ability, even if it has not recharged."
+  }
+}

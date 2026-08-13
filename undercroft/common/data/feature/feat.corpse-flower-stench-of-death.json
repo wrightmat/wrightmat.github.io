@@ -1,0 +1,30 @@
+{
+  "id": "feat.corpse-flower-stench-of-death",
+  "name": "Stench of Death",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Each creature that starts its turn within 10 feet of the creature or one of its zombies must make a DC 14 Constitution saving throw, unless the creature is a Construct or an Undead. On a failed save, the creature is poisoned until the start of its next turn. On a successful save, the creature is immune to the Stench of Death of all corpse flowers for 24 hours.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Each creature that starts its turn within 10 feet of the creature or one of its zombies must make a DC 14 Constitution saving throw, unless the creature is a Construct or an Undead. On a failed save, the creature is poisoned until the start of its next turn. On a successful save, the creature is immune to the Stench of Death of all corpse flowers for 24 hours.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "debuff",
+      "control"
+    ],
+    "recipeSlots": [
+      "spread"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

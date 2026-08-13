@@ -1,0 +1,29 @@
+{
+  "id": "feat.water-weird-water-bound",
+  "name": "Water Bound",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature dies if it leaves the creature to which it is bound or if that water is destroyed.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature dies if it leaves the creature to which it is bound or if that water is destroyed.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "debuff"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

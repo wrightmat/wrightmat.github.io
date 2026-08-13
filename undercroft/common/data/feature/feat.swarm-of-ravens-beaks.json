@@ -1,0 +1,28 @@
+{
+  "id": "feat.swarm-of-ravens-beaks",
+  "name": "Beaks",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Melee Weapon Attack: +4 to hit, reach 5 ft., one target in the creature's space. Hit: 7 (2d6) piercing damage, or 3 (1d6) piercing damage if the creature has half of its hit points or fewer.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "Melee Weapon Attack: +4 to hit, reach 5 ft., one target in the creature's space. Hit: 7 (2d6) piercing damage, or 3 (1d6) piercing damage if the creature has half of its hit points or fewer."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

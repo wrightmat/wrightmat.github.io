@@ -1,0 +1,104 @@
+{
+  "kind": "monster",
+  "name": "Tree Blight",
+  "notes": "",
+  "type": "plant",
+  "stats": {
+    "size": "Huge",
+    "alignment": "Neutral Evil",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 92,
+      "current": 92,
+      "diceString": "8d12 + 40"
+    },
+    "hitDice": "8d12",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 23,
+      "dexterity": 10,
+      "constitution": 20,
+      "intelligence": 6,
+      "wisdom": 10,
+      "charisma": 3
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "",
+    "senses": {
+      "blindsight": 60,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "7",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Blinded",
+          "type": "immunity"
+        },
+        {
+          "name": "Deafened",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "understands Common and Druidic but doesn’t speak"
+      ]
+    },
+    "environments": [
+      "Forest",
+      "Swamp"
+    ],
+    "sources": [
+      "CoS",
+      "https://www.dndbeyond.com/monsters/17363-tree-blight",
+      "Curse of Strahd, pg. 230"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.false-appearance-ambush",
+    "feat.siege-monster",
+    "feat.multiattack",
+    "feat.branch",
+    "feat.tree-blight-grasping-root",
+    "feat.tree-blight-bite"
+  ],
+  "featureParams": {
+    "feat.branch": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 9,
+      "distanceLabel": "reach",
+      "distance": "15",
+      "damageDice": "3d6 + 6",
+      "damageType": "bludgeoning"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.branch",
+          "count": 1
+        },
+        {
+          "featureId": "feat.tree-blight-grasping-root",
+          "count": 1
+        }
+      ],
+      "text": "The creature makes one Branch attack and one Grasping Root attack."
+    }
+  },
+  "featureTiers": {
+    "feat.false-appearance-ambush": "motionless-eyes-legs-wrapped"
+  }
+}

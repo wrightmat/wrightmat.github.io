@@ -1,0 +1,101 @@
+{
+  "kind": "monster",
+  "name": "Vapor Lynx",
+  "notes": "_These great cats pad noiselessly, while tendrils of smoke drift off their sleek gray coats, leaving misty whorls in their wake. Their eyes shift from dull, pallid orbs to pitch black slits. Their lips curl up into a fang-revealing smile as their bodies fades into fog._\r\n\r\n**Split the Herd**. Vapor lynxes are capricious hunters. Devious, manipulative, and mischievous, they toy with their prey before killing it. They rarely enjoy a stand-up fight, instead coalescing in and out of the fog to harass victims. Using their ability to solidify and poison the fog around them, they cut large groups into smaller, more manageable morsels.\r\n\r\n**Dreary Marshlands**. Their tactics have earned vapor lynxes a nasty reputation and the occasional bounty on their heads. Additionally, their magical nature makes them valuable to practitioners of the magical arts, and their beautiful, thick coats tempt many a furrier into hunts they may not be prepared for. For these reasons, vapor lynxes avoid civilization, fearing organized reprisal. Instead they haunt marshes and swamps, where the natural fog makes hunting easier. If an intelligent humanoid passes their way, they are happy for a change in their diet.\r\n\r\n**Chatty with Dinner**. Although reclusive, vapor lynxes are intelligent, speaking both Common and Sylvan. They are particularly prideful and take great joy in bantering with potential meals to belittle and frighten them. Survivors of vapor lynx encounters invariably mention their constant needling and self-aggrandizement.",
+  "type": "monstrosity",
+  "stats": {
+    "size": "Large",
+    "alignment": "Chaotic Neutral",
+    "armorClass": 14,
+    "hitPoints": {
+      "max": 127,
+      "current": 127,
+      "diceString": "15d10 + 45"
+    },
+    "hitDice": "15d10",
+    "speed": {
+      "walk": 50,
+      "climb": 30
+    },
+    "abilities": {
+      "strength": 15,
+      "dexterity": 18,
+      "constitution": 16,
+      "intelligence": 10,
+      "wisdom": 13,
+      "charisma": 14
+    },
+    "initiative": {
+      "bonus": 4
+    },
+    "savingThrows": "",
+    "skills": "Perception +4, Stealth +7",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 14
+      }
+    },
+    "challengeRating": "5",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Common",
+        "Sylvan"
+      ]
+    },
+    "spells": "(Innate): The lynx’s innate spellcasting ability is Charisma. It can cast the following spell, requiring no material components: 3/day: gaseous form",
+    "environments": [
+      "Swamp"
+    ],
+    "sources": [
+      "ToB1",
+      "Tome of Beasts 1, pg 398"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.vapor-lynx-smoky-constitution",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.claw",
+    "feat.vapor-lynx-poison-breath-recharge-5-6"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "3d8 + 4",
+      "damageType": "piercing"
+    },
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "2d8 + 4",
+      "damageType": "slashing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.bite",
+          "count": 1
+        },
+        {
+          "featureId": "feat.claw",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes one bite attack and two claw attacks."
+    }
+  }
+}

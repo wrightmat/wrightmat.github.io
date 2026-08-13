@@ -1,0 +1,135 @@
+{
+  "kind": "monster",
+  "index": "solar",
+  "name": "Solar",
+  "type": "celestial",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/solar.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "lawful good",
+    "armorClass": 21,
+    "hitPoints": {
+      "max": 243,
+      "current": 243,
+      "diceString": "18d10+144"
+    },
+    "hitDice": "18d10",
+    "speed": {
+      "walk": 50,
+      "fly": 150
+    },
+    "abilities": {
+      "strength": 26,
+      "dexterity": 22,
+      "constitution": 26,
+      "intelligence": 25,
+      "wisdom": 25,
+      "charisma": 30
+    },
+    "initiative": {
+      "bonus": 6
+    },
+    "savingThrows": "INT +14, WIS +14, CHA +17",
+    "skills": "Perception +14",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "radiant",
+          "type": "resistance"
+        },
+        {
+          "name": "bludgeoning, piercing, and slashing from nonmagical weapons",
+          "type": "resistance"
+        },
+        {
+          "name": "necrotic",
+          "type": "immunity"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "Exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "Frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "all",
+        "telepathy 120 ft."
+      ]
+    },
+    "senses": {
+      "truesight": 120,
+      "passives": {
+        "perception": 24
+      }
+    },
+    "challengeRating": "21",
+    "proficiencyBonus": 7,
+    "xp": 33000,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/solar",
+    "spells": "The solar's spell casting ability is Charisma (spell save DC 25). It can innately cast the following spells, requiring no material components:\nAt will: detect evil and good, invisibility (self only)\n3/day each: blade barrier, dispel evil and good, resurrection\n1/day each: commune, control weather",
+    "saveDC": 25
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/solar",
+  "featureIds": [
+    "feat.angelic-weapons",
+    "feat.divine-awareness",
+    "feat.magic-resistance",
+    "feat.multiattack",
+    "feat.greatsword",
+    "feat.solar-slaying-longbow",
+    "feat.solar-flying-sword",
+    "feat.healing-touch-monster",
+    "feat.teleport",
+    "feat.solar-searing-burst-costs-2-actions",
+    "feat.solar-blinding-gaze-costs-3-actions"
+  ],
+  "featureTiers": {
+    "feat.teleport": "60-ft",
+    "feat.angelic-weapons": "6d8",
+    "feat.healing-touch-monster": "8d8"
+  },
+  "featureParams": {
+    "feat.greatsword": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 15,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "4d6 + 8",
+      "damageType": "slashing",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "6d8",
+        "damageType": "radiant"
+      }
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.greatsword",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two greatsword attacks."
+    }
+  }
+}

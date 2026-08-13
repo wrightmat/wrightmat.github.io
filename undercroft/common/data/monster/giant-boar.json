@@ -1,0 +1,72 @@
+{
+  "kind": "monster",
+  "index": "giant-boar",
+  "name": "Giant Boar",
+  "type": "beast",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/giant-boar.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "unaligned",
+    "armorClass": 12,
+    "hitPoints": {
+      "max": 42,
+      "current": 42,
+      "diceString": "5d10+15"
+    },
+    "hitDice": "5d10",
+    "speed": {
+      "walk": 40
+    },
+    "abilities": {
+      "strength": 17,
+      "dexterity": 10,
+      "constitution": 16,
+      "intelligence": 2,
+      "wisdom": 7,
+      "charisma": 5
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [],
+      "languages": []
+    },
+    "senses": {
+      "passives": {
+        "perception": 8
+      }
+    },
+    "challengeRating": "2",
+    "proficiencyBonus": 2,
+    "xp": 450,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/giant-boar"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/giant-boar",
+  "featureIds": [
+    "feat.charge-2",
+    "feat.relentless-2",
+    "feat.tusk"
+  ],
+  "featureParams": {
+    "feat.tusk": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 3",
+      "damageType": "slashing"
+    }
+  },
+  "featureTiers": {
+    "feat.charge-2": "giant-boar",
+    "feat.relentless-2": "giant-boar"
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "kind": "monster",
+  "index": "sea-horse",
+  "name": "Sea Horse",
+  "type": "beast",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/sea-horse.png",
+  "stats": {
+    "size": "Tiny",
+    "alignment": "unaligned",
+    "armorClass": 11,
+    "hitPoints": {
+      "max": 1,
+      "current": 1,
+      "diceString": "1d4-1"
+    },
+    "hitDice": "1d4",
+    "speed": {
+      "swim": 20
+    },
+    "abilities": {
+      "strength": 1,
+      "dexterity": 12,
+      "constitution": 8,
+      "intelligence": 1,
+      "wisdom": 10,
+      "charisma": 2
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [],
+      "languages": []
+    },
+    "senses": {
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "0",
+    "proficiencyBonus": 2,
+    "xp": 0,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/sea-horse"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/sea-horse",
+  "featureIds": [
+    "feat.water-breathing-monster"
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "id": "feat.isonade-breach",
+  "name": "Breach",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature leaps out of the water to crash down onto a target with devastating effect. The creature must move 30 feet in a straight line toward its target before jumping. When jumping, the creature travels up to 30 feet through the air before landing. Any creature occupying the space where the creature lands takes 76 (12d10 + 10) bludgeoning damage and becomes submerged 10 feet below the surface of the water. Targets that make a successful DC 20 Strength saving throw take half damage and are not submerged, but are moved to the nearest unoccupied space. Boats and structures are not immune to this attack.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature leaps out of the water to crash down onto a target with devastating effect. The creature must move 30 feet in a straight line toward its target before jumping. When jumping, the creature travels up to 30 feet through the air before landing. Any creature occupying the space where the creature lands takes 76 (12d10 + 10) bludgeoning damage and becomes submerged 10 feet below the surface of the water. Targets that make a successful DC 20 Strength saving throw take half damage and are not submerged, but are moved to the nearest unoccupied space. Boats and structures are not immune to this attack.",
+    "scope": "unique"
+  },
+  "budgetCost": 4,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "control"
+    ],
+    "recipeSlots": [
+      "burst"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

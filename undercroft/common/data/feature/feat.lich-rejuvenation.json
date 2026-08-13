@@ -1,0 +1,25 @@
+{
+  "id": "feat.lich-rejuvenation",
+  "name": "Rejuvenation",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "If it has a phylactery, a destroyed lich gains a new body in 1d10 days, regaining all its hit points and becoming active again. The new body appears within 5 feet of the phylactery.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "If it has a phylactery, a destroyed lich gains a new body in 1d10 days, regaining all its hit points and becoming active again. The new body appears within 5 feet of the phylactery."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

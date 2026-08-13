@@ -1,0 +1,33 @@
+{
+  "id": "feat.bone-collector-gift-of-mabar-recharge-5-6",
+  "name": "Gift of Mabar (Recharge 5-6)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature draws on the Endless Night, releasing a burst of life-draining darkness in a 30-foot cone. Each creature in that area must make a successful DC 14 Constitution saving throw or take 9 (2d8) necrotic damage and become blinded for 1 minute. A blinded creature repeats the saving throw at the end of each of its turns, ending the effect on itself with a success.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature draws on the Endless Night, releasing a burst of life-draining darkness in a 30-foot cone. Each creature in that area must make a successful DC 14 Constitution saving throw or take 9 (2d8) necrotic damage and become blinded for 1 minute. A blinded creature repeats the saving throw at the end of each of its turns, ending the effect on itself with a success.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "debuff"
+    ],
+    "recipeSlots": [
+      "burst"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

@@ -1,0 +1,97 @@
+{
+  "kind": "monster",
+  "name": "Oriq Blood Mage",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/22135/814/1000/1000/637743395585887776.jpeg",
+  "notes": "",
+  "type": "humanoid",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Typically Neutral Evil",
+    "armorClass": 16,
+    "hitPoints": {
+      "max": 127,
+      "current": 127,
+      "diceString": "15d8 + 60"
+    },
+    "hitDice": "15d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 11,
+      "dexterity": 14,
+      "constitution": 18,
+      "intelligence": 20,
+      "wisdom": 12,
+      "charisma": 12
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "Con +8, Int +9, Wis +5, Cha +5",
+    "skills": "Deception +9, Medicine +5, Survival +5",
+    "senses": {
+      "passives": {
+        "perception": 11
+      }
+    },
+    "challengeRating": "9",
+    "proficiencyBonus": 4,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "necrotic",
+          "type": "resistance"
+        },
+        {
+          "name": "exhaustion",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Common plus any four languages"
+      ]
+    },
+    "environments": [],
+    "sources": []
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.murgaxor-blood-aegis",
+    "feat.extus-narr-oriq-mask",
+    "feat.murgaxor-sanguine-sense",
+    "feat.multiattack",
+    "feat.blood-lash",
+    "feat.blood-boil"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.blood-lash",
+          "count": 2
+        }
+      ],
+      "text": "The creature mage makes two Blood Lash attacks."
+    },
+    "feat.blood-lash": {
+      "kind": "Melee",
+      "attackKind": "Spell",
+      "attackBonus": 9,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "3d10 + 5",
+      "damageType": "necrotic",
+      "rider": {
+        "kind": "condition-no-save",
+        "condition": "can't regain hit points until the start of the creature's next turn"
+      }
+    }
+  },
+  "featureTiers": {
+    "feat.blood-boil": "oriq-blood-mage-recharge-4-6"
+  }
+}

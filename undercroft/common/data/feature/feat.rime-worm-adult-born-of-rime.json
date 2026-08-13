@@ -1,0 +1,29 @@
+{
+  "id": "feat.rime-worm-adult-born-of-rime",
+  "name": "Born of Rime",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "a creature can breathe air or water with equal ease.",
+  "mechanics": {
+    "type": "passive",
+    "text": "a creature can breathe air or water with equal ease.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

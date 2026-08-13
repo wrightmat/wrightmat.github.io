@@ -1,0 +1,32 @@
+{
+  "id": "feat.red-slaad-stunning-croak-1-long-rest",
+  "name": "Stunning Croak (1/long rest)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The red slaadi emits a loud croak. All targets within 20 feet must succeed a DC 14 Constitution saving throw or suffer the stunned condition for 1d3 rounds.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The red slaadi emits a loud croak. All targets within 20 feet must succeed a DC 14 Constitution saving throw or suffer the stunned condition for 1d3 rounds.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "control"
+    ],
+    "recipeSlots": [
+      "burst"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

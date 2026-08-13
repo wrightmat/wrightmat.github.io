@@ -1,0 +1,109 @@
+{
+  "kind": "monster",
+  "name": "Esix Fractal Bloom",
+  "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTgUeOnVk9bYBHZY-GvUNXxquu3TWgz_HJT1Q&s",
+  "notes": "### Esix, Fractal Bloom\n\nTasked with devising an infinite equation, a group of Quandrix students accidentally created Esix, a living theorem obsessed with infinity. Over the years, a few professors have tried to deactivate it, but all their formulas somehow end up dividing by zero and fizzling out. Esix never seems to register these would-be threats, as it remains consumed by its own calculations.\n\nIn 1055, a group of students visiting the Arithmodrome convinced Esix to go to \"the Up\" (wildspace) where they said there was more math than it could imagine. It's very likely that Esix is already some sort of math emporer of Daanvi by now.",
+  "type": "construct",
+  "stats": {
+    "size": "Large",
+    "alignment": "Neutral",
+    "armorClass": 16,
+    "hitPoints": {
+      "max": 123,
+      "current": 123,
+      "diceString": "13d10 + 52"
+    },
+    "hitDice": "13d10",
+    "speed": {
+      "walk": 30,
+      "fly": 30,
+      "hover": true
+    },
+    "abilities": {
+      "strength": 16,
+      "dexterity": 14,
+      "constitution": 18,
+      "intelligence": 18,
+      "wisdom": 12,
+      "charisma": 14
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "Int +7, Con +7",
+    "skills": "Arcana +7, Insight +4, Perception +4",
+    "senses": {
+      "blindsight": 30,
+      "passives": {
+        "perception": 14
+      }
+    },
+    "challengeRating": "6",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "force",
+          "type": "resistance"
+        },
+        {
+          "name": "psychic",
+          "type": "resistance"
+        },
+        {
+          "name": "charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "blinded",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "understands Draconic and Common but does not speak"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Created with the help of ChatGPT",
+      "https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=518316"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.esix-fractal-bloom-recursive-form",
+    "feat.multiattack",
+    "feat.geometric-blades",
+    "feat.esix-fractal-bloom-dimensional-refactor",
+    "feat.esix-fractal-bloom-fractal-geometry-recharge-5-6",
+    "feat.esix-fractal-bloom-recursive-shift",
+    "feat.esix-fractal-bloom-recompile-echo",
+    "feat.esix-fractal-bloom-spectral-slice"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "text": "Esix makes two attacks with its Geometric Blades."
+    },
+    "feat.geometric-blades": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "2d8 + 3",
+      "damageType": "slashing",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "1d8",
+        "damageType": "force"
+      }
+    }
+  }
+}

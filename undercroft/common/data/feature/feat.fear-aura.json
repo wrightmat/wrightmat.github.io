@@ -1,0 +1,47 @@
+{
+  "id": "feat.fear-aura",
+  "name": "Fear Aura",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Each creature of the creature’s choice that starts its turn within 20 feet of the creature must make a DC 15 Wisdom saving throw unless the creature is incapacitated. On a failed save, the creature is frightened until the start of its next turn. On a successful save, the creature is immune to this golem’s Fear Aura for the next 24 hours.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Each creature of the creature’s choice that starts its turn within 20 feet of the creature must make a DC 15 Wisdom saving throw unless the creature is incapacitated. On a failed save, the creature is frightened until the start of its next turn. On a successful save, the creature is immune to this golem’s Fear Aura for the next 24 hours."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "fear",
+      "control"
+    ],
+    "recipeSlots": [
+      "threaten"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "dc-15",
+      "name": "Fear Aura",
+      "shortName": "DC 15",
+      "mechanics": {
+        "text": "Each creature of the creature’s choice that starts its turn within 20 feet of the creature must make a DC 15 Wisdom saving throw unless the creature is incapacitated. On a failed save, the creature is frightened until the start of its next turn. On a successful save, the creature is immune to this golem’s Fear Aura for the next 24 hours."
+      }
+    },
+    {
+      "id": "dc-21",
+      "name": "Fear Aura",
+      "shortName": "DC 21",
+      "mechanics": {
+        "text": "Any creature hostile to the fiend that starts its turn within 20 feet of the fiend must make a DC 21 Wisdom saving throw, unless the fiend is incapacitated. On a failed save, the creature is frightened until the start of its next turn. If a creature's saving throw is successful, the creature is immune to the fiend's Fear Aura for the next 24 hours."
+      }
+    }
+  ]
+}

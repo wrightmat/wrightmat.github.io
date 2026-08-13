@@ -1,0 +1,30 @@
+{
+  "id": "feat.light-elemental-radiant-form",
+  "name": "Radiant Form",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature can move through a space as narrow as 1 inch wide without squeezing. A creature that touches the creature or hits it with a melee attack while within 5 feet of it takes 5 (1d10) radiant damage.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature can move through a space as narrow as 1 inch wide without squeezing. A creature that touches the creature or hits it with a melee attack while within 5 feet of it takes 5 (1d10) radiant damage.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "defense",
+      "damage"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

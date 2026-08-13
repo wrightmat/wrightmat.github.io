@@ -1,0 +1,111 @@
+{
+  "kind": "monster",
+  "name": "Psoglav Demon",
+  "notes": "_An immense creature sniffs at the air. Most of its head is covered by a helmet from which one baleful eye gazes out. Its muzzle fuses flesh and machinery, and sharp metal teeth glint from under its lips._\r\n\r\n**Paid in Souls and Memories**. These demonic creations are bred for protection, which they provide for a select few. The price for their guardianship is always high, and never in coin. Their Abyssal breeders demand everything from memories to souls in exchange for their services.\r\n\r\n**Fond of Trophies**. Psoglav demons carry recent kills along with them as grisly toys, and often wear strings of scalps or ears as trophies. They do not mind the stench, and they enjoy gnawing bones as a pastime, the larger and more durable the better. Psoglav demons suffer no ill effects from bright light, but they far prefer dappled shadow or full darkness.\r\n\r\n**Helmet Totems**. Speculation about what a psoglav keeps under its helmet is rampant. Some believe they keep stolen shadows and souls there, others that their helmets are part of a leash held by their breeders — and if the helmet were ever removed, one would not only see the demon’s brains, but also release it from servitude to its demonic lord or summoner. Psoglav demons without a helmet are rare but extremely dangerous.",
+  "type": "fiend",
+  "stats": {
+    "size": "Large",
+    "alignment": "Chaotic Evil",
+    "armorClass": 17,
+    "hitPoints": {
+      "max": 115,
+      "current": 115,
+      "diceString": "11d10 + 55"
+    },
+    "hitDice": "11d10",
+    "speed": {
+      "walk": 40,
+      "fly": 60
+    },
+    "abilities": {
+      "strength": 21,
+      "dexterity": 23,
+      "constitution": 20,
+      "intelligence": 16,
+      "wisdom": 19,
+      "charisma": 18
+    },
+    "initiative": {
+      "bonus": 6
+    },
+    "savingThrows": "Dex +9, Con +8, Wis +7, Cha +7",
+    "skills": "Acrobatics +9, Perception +6, Intimidation +7, Stealth +9",
+    "senses": {
+      "blindsight": 30,
+      "darkvision": 60,
+      "passives": {
+        "perception": 16
+      }
+    },
+    "challengeRating": "7",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "cold",
+          "type": "resistance"
+        },
+        {
+          "name": "lightning",
+          "type": "resistance"
+        },
+        {
+          "name": "fire",
+          "type": "immunity"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Common",
+        "Infernal; telepathy 60 ft."
+      ]
+    },
+    "spells": "(Innate). The psoglav’s innate spellcasting ability is Charisma (spell save DC 15). It can innately cast the following spell, requiring no material components: 1/day: greater invisibility",
+    "environments": [
+      "Planar"
+    ],
+    "sources": [
+      "ToB1",
+      "Tome of Beasts 1, pg 79"
+    ],
+    "saveDC": 15
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.magic-weapons",
+    "feat.psoglav-demon-shadow-door-4-day",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.psoglav-demon-shadow-stealing-ray-recharge-5-6"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 8,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d12 + 5",
+      "damageType": "piercing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.bite",
+          "count": 3
+        }
+      ],
+      "text": "The creature makes three bite attacks."
+    }
+  }
+}

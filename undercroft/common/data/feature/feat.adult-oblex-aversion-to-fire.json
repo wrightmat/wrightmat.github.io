@@ -1,0 +1,29 @@
+{
+  "id": "feat.adult-oblex-aversion-to-fire",
+  "name": "Aversion to Fire",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "If the creature takes fire damage, it has disadvantage on attack rolls and ability checks until the end of its next turn.",
+  "mechanics": {
+    "type": "passive",
+    "text": "If the creature takes fire damage, it has disadvantage on attack rolls and ability checks until the end of its next turn.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "debuff"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

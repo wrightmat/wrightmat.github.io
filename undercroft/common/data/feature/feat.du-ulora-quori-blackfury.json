@@ -1,0 +1,30 @@
+{
+  "id": "feat.du-ulora-quori-blackfury",
+  "name": "Blackfury",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "A creature that enter a barbarian rage or similar mental state within 60 ft. of the creature must succeed on a DC 18 Wisdom saving throw or gain vulnerability to psychic damage for as long as its rage lasts.",
+  "mechanics": {
+    "type": "passive",
+    "text": "A creature that enter a barbarian rage or similar mental state within 60 ft. of the creature must succeed on a DC 18 Wisdom saving throw or gain vulnerability to psychic damage for as long as its rage lasts.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "debuff",
+      "control"
+    ],
+    "recipeSlots": [
+      "deny"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

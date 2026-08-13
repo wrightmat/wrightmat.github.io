@@ -1,0 +1,29 @@
+{
+  "id": "feat.star-spawn-hulk-psychic-mirror",
+  "name": "Psychic Mirror",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "If the creature takes psychic damage, each creature within 10 feet of the creature takes that damage instead; the creature takes none of the damage. In addition, the creature’s thoughts and location can’t be discerned by magic.",
+  "mechanics": {
+    "type": "passive",
+    "text": "If the creature takes psychic damage, each creature within 10 feet of the creature takes that damage instead; the creature takes none of the damage. In addition, the creature’s thoughts and location can’t be discerned by magic.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

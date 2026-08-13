@@ -1,0 +1,89 @@
+{
+  "kind": "monster",
+  "name": "Salamander Fire Snake",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/47139/216/1000/1000/638741964603608103.png",
+  "notes": "### Description\n\nJuvenile salamanders emerge from burning hot, two-foot-diameter eggs. Called fire snakes, these serpentlike creatures slither through the Plane of Fire and other intensely hot places. After consuming the proper fuels and exposing themselves to fiery extremes, fire snakes grow into salamanders.",
+  "type": "elemental",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Neutral Evil",
+    "armorClass": 14,
+    "hitPoints": {
+      "max": 27,
+      "current": 27
+    },
+    "hitDice": "6d8",
+    "speed": {
+      "walk": 30,
+      "climb": 30
+    },
+    "abilities": {
+      "strength": 12,
+      "dexterity": 14,
+      "constitution": 11,
+      "intelligence": 7,
+      "wisdom": 10,
+      "charisma": 8
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "1",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Cold",
+          "type": "vulnerability"
+        },
+        {
+          "name": "Fire",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Understands Primordial but can’t speak"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "https://www.dndbeyond.com/monsters/5195191-salamander-fire-snake",
+      "Monster Manual (2024), pg. 266"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.fire-aura",
+    "feat.bite"
+  ],
+  "featureTiers": {
+    "feat.fire-aura": "targeted"
+  },
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d8 + 2",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "1d6",
+        "damageType": "fire"
+      }
+    }
+  }
+}

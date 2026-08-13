@@ -1,0 +1,88 @@
+{
+  "kind": "monster",
+  "index": "quasit",
+  "name": "Quasit",
+  "type": "fiend",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/quasit.png",
+  "stats": {
+    "size": "Tiny",
+    "alignment": "chaotic evil",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 7,
+      "current": 7,
+      "diceString": "3d4"
+    },
+    "hitDice": "3d4",
+    "speed": {
+      "walk": 40
+    },
+    "abilities": {
+      "strength": 5,
+      "dexterity": 17,
+      "constitution": 10,
+      "intelligence": 7,
+      "wisdom": 10,
+      "charisma": 10
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "",
+    "skills": "Stealth +5",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "cold",
+          "type": "resistance"
+        },
+        {
+          "name": "fire",
+          "type": "resistance"
+        },
+        {
+          "name": "lightning",
+          "type": "resistance"
+        },
+        {
+          "name": "bludgeoning, piercing, and slashing from nonmagical weapons",
+          "type": "resistance"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Abyssal",
+        "Common"
+      ]
+    },
+    "senses": {
+      "darkvision": 120,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "1",
+    "proficiencyBonus": 2,
+    "xp": 200,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/quasit"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/quasit",
+  "featureIds": [
+    "feat.shapechanger",
+    "feat.magic-resistance",
+    "feat.quasit-claw-bite-in-beast-form",
+    "feat.quasit-scare",
+    "feat.invisibility"
+  ]
+}

@@ -1,0 +1,113 @@
+{
+  "kind": "monster",
+  "name": "Young Moonstone Dragon",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/21205/333/1000/1000/637707682596838942.jpeg",
+  "notes": "### Description\r\n\r\nAncient legends suggest that when the gods came to the First World and tried to populate it with their Humanoid followers, a clever dragon fled to the Feywild to hide a clutch of eggs. The magic of that faerie realm suffused the eggs, which hatched into the first moonstone dragons. Their descendants are now found throughout the Feywild.\r\n\r\nMoonstone dragons are graceful and elegant creatures with opalescent scales and ruffs of emerald-green fur running down their chins, chests, backs, and tails. One horn arcs from the back of a moonstone dragon’s skull and another at the tip of the nose; the two horns together form a shape that’s reminiscent of a slender crescent moon. Moonstone dragons are playful and impetuous forces of mischief in their early years, but the best of them mature into wise teachers and storytellers who anchor Feywild communities. The worst of them are pompous and ill behaved, but even those remain gentle by nature and curious about all things—especially travelers from faraway places.\r\n\r\nMoonstone dragons can project themselves into the realm of dreams to communicate with the creatures that sleep near their lairs. In this way, they inspire artists and poets, encourage great thinkers, and spur adventurers to heroic deeds. They sometimes give guidance to those in need or request help from adventurers to encourage them to greatness.\r\n\r\nAs a rule, moonstone dragons are not particularly interested in gold or copper, but they love silver, platinum, and mithral. They also cherish treasures whose value can’t be easily quantified—a song sung from the heart, a lock of a loved one’s hair, or a painting of a favorite place. A story of happy times fondly remembered is more precious to a moonstone dragon than a sack of gold.",
+  "type": "dragon",
+  "stats": {
+    "size": "Large",
+    "alignment": "Typically Neutral",
+    "armorClass": 18,
+    "hitPoints": {
+      "max": 144,
+      "current": 144,
+      "diceString": "17d10 + 51"
+    },
+    "hitDice": "17d10",
+    "speed": {
+      "walk": 40,
+      "fly": 80
+    },
+    "abilities": {
+      "strength": 18,
+      "dexterity": 16,
+      "constitution": 17,
+      "intelligence": 18,
+      "wisdom": 17,
+      "charisma": 19
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "Con +6, Int +7, Wis +6, Cha +7",
+    "skills": "Perception +6, Persuasion +7, Stealth +6",
+    "senses": {
+      "blindsight": 30,
+      "darkvision": 120,
+      "passives": {
+        "perception": 16
+      }
+    },
+    "challengeRating": "8",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "charmed",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Common",
+        "Draconic",
+        "Sylvan"
+      ]
+    },
+    "spells": "The dragon casts one of the following spells, requiring no material components and using Charisma as the spellcasting ability (spell save DC 15): 1/day each: calm emotions, faerie fire",
+    "environments": [],
+    "sources": [
+      "FToD",
+      "https://www.dndbeyond.com/monsters/2059765-young-moonstone-dragon",
+      "Fizban's Treasury of Dragons, pg. 213"
+    ],
+    "saveDC": 15
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.multiattack",
+    "feat.bite",
+    "feat.claw",
+    "feat.young-moonstone-dragon-breath-weapon"
+  ],
+  "featureParams": {
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 4",
+      "damageType": "slashing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.bite",
+          "count": 1
+        },
+        {
+          "featureId": "feat.claw",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes one Bite attack and two Claw attacks."
+    },
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "2d10 + 4",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "1d10",
+        "damageType": "radiant"
+      }
+    }
+  }
+}

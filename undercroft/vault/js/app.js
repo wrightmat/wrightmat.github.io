@@ -33,6 +33,11 @@ import { allowsDelete, refreshOwnershipCatalog, confirmDelete } from "../../comm
 import { initToolSettings } from "../../common/js/lib/tool-settings.js";
 import { setElementVisible, markRequiredControl } from "../../common/js/lib/dom.js";
 import { resolveGroupContext, pickGroupDefaultId } from "../../common/js/lib/widgets/group-context.js";
+// Repository's own markdown renderer (dice/task-list/callout/wiki-link
+// awareness, degrading gracefully without any of that for a plain note) —
+// reused as-is for the Notes field's View mode, same as Crucible/Forge/
+// Sanctum's own identical Notes preview.
+import { renderMarkdown } from "../../repository/js/lib/markdown.js";
 
 let status = null;
 let dataManager = null;
@@ -44,6 +49,16 @@ let propertyTypes = [];
 // populateCastingClassSelect).
 let classes = [];
 let currentRecord = null;
+// View/Edit toggle for the Notes box — same button as Repository's own
+// Edit/View button (undercroft/repository/js/app.js#applyMode) for the
+// identical concept, and the same behavior Crucible/Forge/Sanctum's own
+// Notes toggle uses (this suite's one shared Notes-field convention).
+// Icon/label always describe what clicking will switch TO, not the current
+// state. Defaults to "view" — a freshly-loaded record's notes are read far
+// more often than edited, and a note written with markdown in mind
+// (headings, lists, callouts) reads better rendered than as raw source by
+// default.
+let notesMode = "view";
 // Every saved effect for the active System (Effect picker options) plus its
 // ownership metadata — same role/shape as Crucible's monstersInSystem/
 // monsterCatalog, itself mirroring Sanctum's locationsInSetting/
@@ -137,6 +152,11 @@ const elements = {
   budgetSpent: document.querySelector("[data-budget-spent]"),
   budgetRemaining: document.querySelector("[data-budget-remaining]"),
   notesText: document.querySelector("[data-notes-text]"),
+  notesPreview: document.querySelector("[data-notes-preview]"),
+  notesModeToggle: document.querySelector("[data-notes-mode-toggle]"),
+  notesModeEyeIcon: document.querySelector('[data-notes-mode-icon="view"]'),
+  notesModePencilIcon: document.querySelector('[data-notes-mode-icon="edit"]'),
+  notesModeLabel: document.querySelector("[data-notes-mode-label]"),
   generateNoteButton: document.querySelector("[data-generate-note]"),
   inspectorEmpty: document.querySelector("[data-inspector-empty]"),
   inspectorDetail: document.querySelector("[data-inspector-detail]"),
@@ -657,6 +677,28 @@ function readLockedFeatureIds() {
   return sharedReadLockedFeatureIds(elements.lockedFeatures);
 }
 
+function renderNotesPreview() {
+  if (!elements.notesPreview) return;
+  elements.notesPreview.innerHTML = "";
+  elements.notesPreview.appendChild(renderMarkdown(currentRecord?.notes || ""));
+}
+
+function applyNotesMode(mode) {
+  notesMode = mode;
+  const isView = mode === "view";
+  elements.notesText?.classList.toggle("d-none", isView);
+  elements.notesPreview?.classList.toggle("d-none", !isView);
+  // Showing the eye while in Edit mode (the icon describes what clicking
+  // switches TO, not the current state) and vice versa — same convention
+  // Repository's own toggle uses.
+  elements.notesModeEyeIcon?.classList.toggle("d-none", isView);
+  elements.notesModePencilIcon?.classList.toggle("d-none", !isView);
+  if (elements.notesModeLabel) elements.notesModeLabel.textContent = isView ? "Edit" : "View";
+  elements.notesModeToggle?.setAttribute("data-bs-title", isView ? "Edit" : "View");
+  refreshTooltips();
+  if (isView) renderNotesPreview();
+}
+
 function updateActionButtons() {
   const hasRecord = Boolean(currentRecord);
   if (elements.saveButton) elements.saveButton.disabled = !hasRecord || !dirtyGate.isDirty();
@@ -683,6 +725,7 @@ function renderEffect(record) {
   renderBudget(record);
   populateAddFeatureSelect();
   if (elements.notesText) elements.notesText.value = record.notes || "";
+  if (notesMode === "view") renderNotesPreview();
   elements.inspectorEmpty?.classList.remove("d-none");
   elements.inspectorDetail?.classList.add("d-none");
   updateActionButtons();
@@ -934,6 +977,14 @@ async function init() {
   // some unrelated re-render happened to call updateActionButtons() again.
   elements.nameInput?.addEventListener("input", updateActionButtons);
   elements.notesText?.addEventListener("input", updateActionButtons);
+  elements.notesModeToggle?.addEventListener("click", () => {
+    // Notes isn't written back into currentRecord until Save/Export (see
+    // buildRecordForSave) — switching to View needs the live textarea
+    // value, not whatever was last saved, so it's synced here same as
+    // Save/Export already does.
+    if (currentRecord) currentRecord.notes = elements.notesText?.value || "";
+    applyNotesMode(notesMode === "view" ? "edit" : "view");
+  });
 
   document.querySelector("[data-json-mount]")?.appendChild(jsonDataPanel.section);
 

@@ -1,0 +1,29 @@
+{
+  "id": "feat.myconid-sovereign-sun-sickness",
+  "name": "Sun Sickness",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "While in sunlight, the creature has disadvantage on ability checks, attack rolls, and saving throws. The creature dies if it spends more than 1 hour in direct sunlight.",
+  "mechanics": {
+    "type": "passive",
+    "text": "While in sunlight, the creature has disadvantage on ability checks, attack rolls, and saving throws. The creature dies if it spends more than 1 hour in direct sunlight.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "debuff"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

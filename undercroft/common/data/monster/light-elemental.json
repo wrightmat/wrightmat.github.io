@@ -1,0 +1,145 @@
+{
+  "kind": "monster",
+  "name": "Light Elemental",
+  "notes": "",
+  "type": "elemental",
+  "stats": {
+    "size": "Large",
+    "alignment": "Neutral Good",
+    "armorClass": 14,
+    "hitPoints": {
+      "max": 102,
+      "current": 102,
+      "diceString": "12d10 + 36"
+    },
+    "hitDice": "12d10",
+    "speed": {
+      "walk": 0,
+      "fly": 90,
+      "hover": true
+    },
+    "abilities": {
+      "strength": 8,
+      "dexterity": 18,
+      "constitution": 17,
+      "intelligence": 10,
+      "wisdom": 12,
+      "charisma": 14
+    },
+    "initiative": {
+      "bonus": 4
+    },
+    "savingThrows": "Dex +7",
+    "skills": "Acrobatics +7, Perception +4, Persuasion +5",
+    "senses": {
+      "darkvision": 300,
+      "passives": {
+        "perception": 14
+      }
+    },
+    "challengeRating": "5",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "fire; bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "and slashing from nonmagical attacks",
+          "type": "resistance"
+        },
+        {
+          "name": "radiant",
+          "type": "immunity"
+        },
+        {
+          "name": "necrotic",
+          "type": "immunity"
+        },
+        {
+          "name": "exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "grappled",
+          "type": "immunity"
+        },
+        {
+          "name": "paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "petrified",
+          "type": "immunity"
+        },
+        {
+          "name": "poisoned",
+          "type": "immunity"
+        },
+        {
+          "name": "prone",
+          "type": "immunity"
+        },
+        {
+          "name": "restrained",
+          "type": "immunity"
+        },
+        {
+          "name": "unconscious",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Primordial"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Homebrew",
+      "https://www.dandwiki.com/wiki/Light_Elemental_(5e_Creature)"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.light-elemental-radiant-form",
+    "feat.light-elemental-brilliant-illumination",
+    "feat.multiattack",
+    "feat.touch",
+    "feat.bright-shot",
+    "feat.light-elemental-light-flare-recharge-4-6"
+  ],
+  "featureTiers": {
+    "feat.light-elemental-light-flare-recharge-4-6": "recharge-4to6"
+  },
+  "featureParams": {
+    "feat.touch": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 4",
+      "damageType": "radiant"
+    },
+    "feat.bright-shot": {
+      "kind": "Ranged",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "range",
+      "distance": "120/360",
+      "damageDice": "1d10 + 4",
+      "damageType": "radiant"
+    },
+    "feat.multiattack": {
+      "text": "The creature makes two attacks, from either its Touch or Bright Shot."
+    }
+  }
+}

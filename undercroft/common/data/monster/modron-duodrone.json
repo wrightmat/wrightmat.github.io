@@ -1,0 +1,78 @@
+{
+  "kind": "monster",
+  "name": "Modron Duodrone",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/47139/86/1000/1000/638741964423251585.jpeg",
+  "notes": "",
+  "type": "construct",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Lawful Neutral",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 11,
+      "current": 11,
+      "diceString": "2d8 + 2"
+    },
+    "hitDice": "2d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 11,
+      "dexterity": 13,
+      "constitution": 12,
+      "intelligence": 6,
+      "wisdom": 10,
+      "charisma": 7
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "",
+    "skills": "",
+    "senses": {
+      "truesight": 120,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "1/4",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Charmed",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Modron"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "https://www.dndbeyond.com/monsters/5195128-modron-duodrone",
+      "Monster Manual (2024), pg. 217"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.modron-duodrone-disintegration",
+    "feat.multiattack",
+    "feat.modron-duodrone-clockwork-blade"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.modron-duodrone-clockwork-blade",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two Clockwork Blade attacks."
+    }
+  }
+}

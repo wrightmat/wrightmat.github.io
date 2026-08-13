@@ -1,0 +1,25 @@
+{
+  "id": "feat.mule-beast-of-burden",
+  "name": "Beast of Burden",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature is considered to be a Large animal for the purpose of determining its carrying capacity.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The creature is considered to be a Large animal for the purpose of determining its carrying capacity."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

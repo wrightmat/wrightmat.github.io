@@ -1,0 +1,102 @@
+{
+  "kind": "monster",
+  "index": "aboleth",
+  "name": "Aboleth",
+  "type": "aberration",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/aboleth.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "lawful evil",
+    "armorClass": 17,
+    "hitPoints": {
+      "max": 135,
+      "current": 135,
+      "diceString": "18d10+36"
+    },
+    "hitDice": "18d10",
+    "speed": {
+      "walk": 10,
+      "swim": 40
+    },
+    "abilities": {
+      "strength": 21,
+      "dexterity": 9,
+      "constitution": 15,
+      "intelligence": 18,
+      "wisdom": 15,
+      "charisma": 18
+    },
+    "initiative": {
+      "bonus": -1
+    },
+    "savingThrows": "CON +6, INT +8, WIS +6",
+    "skills": "History +12, Perception +10",
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Deep Speech",
+        "telepathy 120 ft."
+      ]
+    },
+    "senses": {
+      "darkvision": 120,
+      "passives": {
+        "perception": 20
+      }
+    },
+    "challengeRating": "10",
+    "proficiencyBonus": 4,
+    "xp": 5900,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/aboleth"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/aboleth",
+  "featureIds": [
+    "feat.amphibious",
+    "feat.aboleth-mucous-cloud",
+    "feat.aboleth-probing-telepathy",
+    "feat.multiattack",
+    "feat.tentacle",
+    "feat.tail",
+    "feat.aboleth-enslave",
+    "feat.aboleth-detect",
+    "feat.adult-black-dragon-tail-attack",
+    "feat.aboleth-psychic-drain-costs-2-actions"
+  ],
+  "featureParams": {
+    "feat.tentacle": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 9,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "2d6 + 5",
+      "damageType": "bludgeoning",
+      "rider": {
+        "kind": "condition-no-save",
+        "condition": "must succeed on a DC 14 Constitution saving throw or become diseased. The disease has no effect for 1 minute and can be removed by any magic that cures disease. After 1 minute, the diseased creature's skin becomes translucent and slimy, the creature can't regain hit points unless it is underwater, and the disease can be removed only by heal or another disease-curing spell of 6th level or higher. When the creature is outside a body of water, it takes 6 (1d12) acid damage every 10 minutes unless moisture is applied to the skin before 10 minutes have passed"
+      }
+    },
+    "feat.tail": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 9,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "3d6 + 5",
+      "damageType": "bludgeoning"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.tentacle",
+          "count": 3
+        }
+      ],
+      "text": "The creature makes three tentacle attacks."
+    }
+  }
+}

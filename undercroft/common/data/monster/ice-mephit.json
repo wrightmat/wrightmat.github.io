@@ -1,0 +1,114 @@
+{
+  "kind": "monster",
+  "index": "ice-mephit",
+  "name": "Ice Mephit",
+  "type": "elemental",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/ice-mephit.png",
+  "stats": {
+    "size": "Small",
+    "alignment": "neutral evil",
+    "armorClass": 11,
+    "hitPoints": {
+      "max": 21,
+      "current": 21,
+      "diceString": "6d6"
+    },
+    "hitDice": "6d6",
+    "speed": {
+      "walk": 30,
+      "fly": 30
+    },
+    "abilities": {
+      "strength": 7,
+      "dexterity": 13,
+      "constitution": 10,
+      "intelligence": 9,
+      "wisdom": 11,
+      "charisma": 12
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "",
+    "skills": "Perception +2, Stealth +3",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "bludgeoning",
+          "type": "vulnerability"
+        },
+        {
+          "name": "fire",
+          "type": "vulnerability"
+        },
+        {
+          "name": "cold",
+          "type": "immunity"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Aquan",
+        "Auran"
+      ]
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 12
+      }
+    },
+    "challengeRating": "1/2",
+    "proficiencyBonus": 2,
+    "xp": 100,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/ice-mephit",
+    "spells": "The mephit can innately cast fog cloud, requiring no material components. Its innate spellcasting ability is Charisma."
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/ice-mephit",
+  "featureIds": [
+    "feat.ice-mephit-death-burst",
+    "feat.false-appearance-ambush",
+    "feat.claws",
+    "feat.frost-breath"
+  ],
+  "featureTiers": {
+    "feat.false-appearance-ambush": "ordinary-kelp"
+  },
+  "featureParams": {
+    "feat.claws": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 3,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d4 + 1",
+      "damageType": "slashing",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "1d4",
+        "damageType": "cold"
+      }
+    },
+    "feat.frost-breath": {
+      "verb": "exhales",
+      "areaSize": "15",
+      "areaShape": "cone",
+      "substance": "cold air",
+      "dcAbility": "constitution",
+      "ability": "dexterity",
+      "damageDice": "2d4",
+      "damageType": "cold"
+    }
+  }
+}

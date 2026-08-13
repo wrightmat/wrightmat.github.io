@@ -1,0 +1,30 @@
+{
+  "id": "feat.swamp-naga-cloud-of-insects",
+  "name": "Cloud of Insects",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "A cloud of biting and stinging insects surrounds the creature. A creature that starts its turn within 5 feet of the creature must make a DC 14 Constitution saving throw. On a failure, a creature takes 9 (2d8) poison damage and is poisoned for 1 minute. On a success, it takes half the damage and isn’t poisoned. A poisoned creature can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success. A wind of moderate or greater speed (at least 10 miles per hour) disperses the insect cloud for 1 minute. As a bonus action, the creature can disperse the cloud for 1 minute.",
+  "mechanics": {
+    "type": "passive",
+    "text": "A cloud of biting and stinging insects surrounds the creature. A creature that starts its turn within 5 feet of the creature must make a DC 14 Constitution saving throw. On a failure, a creature takes 9 (2d8) poison damage and is poisoned for 1 minute. On a success, it takes half the damage and isn’t poisoned. A poisoned creature can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success. A wind of moderate or greater speed (at least 10 miles per hour) disperses the insect cloud for 1 minute. As a bonus action, the creature can disperse the cloud for 1 minute.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "debuff",
+      "control"
+    ],
+    "recipeSlots": [
+      "spread"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

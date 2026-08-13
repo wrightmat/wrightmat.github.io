@@ -1,0 +1,188 @@
+{
+  "kind": "monster",
+  "name": "Arcane Leviathan",
+  "notes": "_Lightning splits the sky on a clear day; the ocean breaks, and the leviathan wakes, a crustacean shape of ceramic armor and wrathful magic. Faded script in a forgotten tongue crawls along its flanks. Armor plating on its back parts as crystal pillars rise, charged with magic._\n\nLong ago, an undersea civilization forged guardians for its great cities. They built these leviathans in the image of ancient gods, inscribing the armored carapaces with religious iconography and verses from scripture, arming the constructs with claws that could crush stone. Most fearsome of all, the creators built enormous magical weapons into the leviathans’ abdomens, meant to shatter armies and destroy cities if their masters were ever truly threatened. Eventually, their masters faded from the world, then from memory, and the leviathans became dormant. \n\n**Wrathful Relics**. Occasionally, a leviathan awakens. With its cities ruined, the construct follows ancient retributive-strike protocols. It patrols the seas, looking for possible culprits to avenge itself upon or successor states to protect. Sometimes, an arcane leviathan guards some undersea settlement or ancient ruin. Other times, it becomes a scourge of shipping lanes, destroying fleets and terrorizing docks of those who have infringed upon the territory of a nation dead for millennia.",
+  "type": "construct",
+  "stats": {
+    "size": "Gargantuan",
+    "alignment": "Unaligned",
+    "armorClass": 17,
+    "hitPoints": {
+      "max": 279,
+      "current": 279,
+      "diceString": "18d20 + 90"
+    },
+    "hitDice": "18d20",
+    "speed": {
+      "walk": 10,
+      "swim": 60
+    },
+    "abilities": {
+      "strength": 26,
+      "dexterity": 5,
+      "constitution": 21,
+      "intelligence": 5,
+      "wisdom": 17,
+      "charisma": 8
+    },
+    "initiative": {
+      "bonus": -3
+    },
+    "savingThrows": "Str +13, Con +10, Int +2, Wis +8, Cha +4",
+    "skills": "",
+    "senses": {
+      "truesight": 120,
+      "passives": {
+        "perception": 13
+      }
+    },
+    "challengeRating": "16",
+    "proficiencyBonus": 5,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "acid",
+          "type": "resistance"
+        },
+        {
+          "name": "thunder; bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "and slashing from nonmagical attacks",
+          "type": "resistance"
+        },
+        {
+          "name": "lightning",
+          "type": "immunity"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "psychic",
+          "type": "immunity"
+        },
+        {
+          "name": "blinded",
+          "type": "immunity"
+        },
+        {
+          "name": "charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "deafened",
+          "type": "immunity"
+        },
+        {
+          "name": "exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "petrified",
+          "type": "immunity"
+        },
+        {
+          "name": "poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "understands the languages of its creator but can’t speak"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Tome of Beasts 3, pg. 40"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.unusual-nature",
+    "feat.arcane-leviathan-impregnable",
+    "feat.siege-monster",
+    "feat.multiattack",
+    "feat.claw",
+    "feat.slam",
+    "feat.lightning-bolt",
+    "feat.arcane-leviathan-pylon-discharge-recharge-5-6",
+    "feat.arcane-leviathan-arcane-barrage"
+  ],
+  "featureParams": {
+    "feat.lightning-bolt": {
+      "kind": "Ranged",
+      "attackKind": "Spell",
+      "attackBonus": 8,
+      "distanceLabel": "range",
+      "distance": "150/600",
+      "damageDice": "4d6 + 3",
+      "damageType": "lightning"
+    },
+    "feat.multiattack": {
+      "text": "The creature makes one Slam attack and two Claw attacks, or it makes four Lightning Bolt attacks.",
+      "options": [
+        [
+          {
+            "featureId": "feat.slam",
+            "count": 1
+          },
+          {
+            "featureId": "feat.claw",
+            "count": 2
+          }
+        ],
+        [
+          {
+            "featureId": "feat.lightning-bolt",
+            "count": 4
+          }
+        ]
+      ]
+    },
+    "feat.slam": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 13,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "4d4 + 8",
+      "damageType": "bludgeoning",
+      "rider": {
+        "kind": "save-or-condition",
+        "saveAbility": "strength",
+        "saveDC": 19,
+        "condition": "knocked prone"
+      }
+    },
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 13,
+      "distanceLabel": "reach",
+      "distance": "15",
+      "damageDice": "4d8 + 8",
+      "damageType": "slashing",
+      "rider": {
+        "kind": "condition-no-save",
+        "condition": "is grappled (escape DC 19), if it is Huge or smaller. The creature has two claws, each of which can grapple only one target."
+      }
+    }
+  }
+}

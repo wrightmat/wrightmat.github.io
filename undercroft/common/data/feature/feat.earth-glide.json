@@ -1,0 +1,28 @@
+{
+  "id": "feat.earth-glide",
+  "name": "Earth Glide",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature can burrow through nonmagical, unworked earth and stone. While doing so, the creature doesn’t disturb the material it moves through.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature can burrow through nonmagical, unworked earth and stone. While doing so, the creature doesn’t disturb the material it moves through."
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "mobility"
+    ],
+    "recipeSlots": [
+      "escape"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

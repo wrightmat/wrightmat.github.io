@@ -1,0 +1,32 @@
+{
+  "id": "feat.usvapna-quori-tear-apart",
+  "name": "Tear Apart",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "One creature grappled by all four of the creature's claws must succeed on a DC 16 Constitution saving throw or take 33 (6d10) piercing damage, or half as much on a success. A creature reduced to 0 hit points in this way is ripped into pieces and dies.",
+  "mechanics": {
+    "type": "passive",
+    "text": "One creature grappled by all four of the creature's claws must succeed on a DC 16 Constitution saving throw or take 33 (6d10) piercing damage, or half as much on a success. A creature reduced to 0 hit points in this way is ripped into pieces and dies.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

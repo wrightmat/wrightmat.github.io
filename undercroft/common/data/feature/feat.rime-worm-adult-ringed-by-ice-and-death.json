@@ -1,0 +1,30 @@
+{
+  "id": "feat.rime-worm-adult-ringed-by-ice-and-death",
+  "name": "Ringed by Ice and Death",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "a creature is surrounded by an aura of cold, necrotic magic. At the start of the creature’s turn, enemies within 5 feet take 2 (1d4) cold damage plus 2 (1d4) necrotic damage. If two or more enemies take damage from the aura on a single turn, the creature’s black ice spray recharges immediately.",
+  "mechanics": {
+    "type": "passive",
+    "text": "a creature is surrounded by an aura of cold, necrotic magic. At the start of the creature’s turn, enemies within 5 feet take 2 (1d4) cold damage plus 2 (1d4) necrotic damage. If two or more enemies take damage from the aura on a single turn, the creature’s black ice spray recharges immediately.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "defense"
+    ],
+    "recipeSlots": [
+      "spread"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

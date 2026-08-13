@@ -1,0 +1,50 @@
+{
+  "id": "feat.horrifying-visage",
+  "name": "Horrifying Visage",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Each non-undead creature within 60 feet of the creature that can see her must succeed on a DC 13 Wisdom saving throw or be frightened for 1 minute. A frightened target can repeat the saving throw at the end of each of its turns, with disadvantage if the creature is within line of sight, ending the effect on itself on a success. If a target’s saving throw is successful or the effect ends for it, the target is immune to the creature’s Horrifying Visage for the next 24 hours.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Each non-undead creature within 60 feet of the creature that can see her must succeed on a DC 13 Wisdom saving throw or be frightened for 1 minute. A frightened target can repeat the saving throw at the end of each of its turns, with disadvantage if the creature is within line of sight, ending the effect on itself on a success. If a target’s saving throw is successful or the effect ends for it, the target is immune to the creature’s Horrifying Visage for the next 24 hours."
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "fear",
+      "control"
+    ],
+    "recipeSlots": [
+      "threaten"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "banshee",
+      "name": "Horrifying Visage",
+      "shortName": "Banshee",
+      "mechanics": {
+        "text": "Each non-undead creature within 60 feet of the creature that can see her must succeed on a DC 13 Wisdom saving throw or be frightened for 1 minute. A frightened target can repeat the saving throw at the end of each of its turns, with disadvantage if the creature is within line of sight, ending the effect on itself on a success. If a target’s saving throw is successful or the effect ends for it, the target is immune to the creature’s Horrifying Visage for the next 24 hours."
+      }
+    },
+    {
+      "id": "ghost",
+      "name": "Horrifying Visage",
+      "shortName": "Ghost (ages target)",
+      "mechanics": {
+        "text": "Each non-undead creature within 60 ft. of the undead that can see it must succeed on a DC 13 Wisdom saving throw or be frightened for 1 minute. If the save fails by 5 or more, the target also ages 1d4 × 10 years. A frightened target can repeat the saving throw at the end of each of its turns, ending the frightened condition on itself on a success. If a target's saving throw is successful or the effect ends for it, the target is immune to this ghost's Horrifying Visage for the next 24 hours. The aging effect can be reversed with a greater restoration spell, but only within 24 hours of it occurring."
+      }
+    }
+  ],
+  "combat": {
+    "actionCost": "action"
+  }
+}

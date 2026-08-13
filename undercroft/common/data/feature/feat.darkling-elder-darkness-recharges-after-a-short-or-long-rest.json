@@ -1,0 +1,32 @@
+{
+  "id": "feat.darkling-elder-darkness-recharges-after-a-short-or-long-rest",
+  "name": "Darkness (Recharges after a Short or Long Rest)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature casts darkness, requiring no spell components and using Wisdom as the spellcasting ability.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature casts darkness, requiring no spell components and using Wisdom as the spellcasting ability.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "control"
+    ],
+    "recipeSlots": [
+      "deny"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

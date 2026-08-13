@@ -1,0 +1,30 @@
+{
+  "id": "feat.death-vulture-awful-stench",
+  "name": "Awful Stench",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature has a disgusting body odor. Any creature that starts its turn within 5 feet of the creature must succeed on a DC 14 Constitution saving throw or be poisoned until the start of its next turn.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature has a disgusting body odor. Any creature that starts its turn within 5 feet of the creature must succeed on a DC 14 Constitution saving throw or be poisoned until the start of its next turn.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "debuff",
+      "control"
+    ],
+    "recipeSlots": [
+      "spread"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

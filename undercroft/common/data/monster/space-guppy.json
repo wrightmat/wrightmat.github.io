@@ -1,0 +1,73 @@
+{
+  "kind": "monster",
+  "name": "Space Guppy",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/28079/931/1000/1000/637961800953030328.jpeg",
+  "notes": "### Description\r\n\r\nSpace guppies are 2- to 3-foot-long, fish-like creatures that glide through Wildspace and the Astral Sea. Chwinga astronauts, sprites, and other Tiny creatures occasionally use space guppies as mounts.",
+  "type": "beast",
+  "stats": {
+    "size": "Small",
+    "alignment": "Unaligned",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 3,
+      "current": 3
+    },
+    "hitDice": "1d6",
+    "speed": {
+      "walk": 0,
+      "fly": 30
+    },
+    "abilities": {
+      "strength": 3,
+      "dexterity": 16,
+      "constitution": 10,
+      "intelligence": 1,
+      "wisdom": 10,
+      "charisma": 1
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "",
+    "skills": "",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "0",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "BAM",
+      "Spelljammer: Adventures in Space • Boo’s Astral Menagerie, pg. 55"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.gadabout-air-envelope",
+    "feat.flyby",
+    "feat.tail-slap"
+  ],
+  "featureParams": {
+    "feat.tail-slap": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1",
+      "damageType": "bludgeoning"
+    }
+  }
+}

@@ -1,0 +1,108 @@
+{
+  "kind": "monster",
+  "name": "Dao",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/30783/894/1000/1000/638062023078340731.png",
+  "notes": "### Description\r\n\r\nDao are greedy, malicious genies from the Elemental Plane of Earth. They adorn themselves with jewelry crafted from precious gems and rare metals, and when they fly, their lower bodies become columns of swirling sand. A dao isn’t happy unless it is the envy of other dao.\r\n\r\n_**All That Glitters.**_ The dao dwell in complexes of twisting tunnels and glittering ore-veined caverns on the Elemental Plane of Earth. These mazeworks are continually expanding as the dao delve into and reshape the rock around them. Dao care nothing for the poverty or misfortune of others. A dao might grind powdered gems and gold dust over its food to heighten the experience of eating, devouring its wealth as mortals consume a precious spice.\r\n\r\n_**Lords of the Earth.**_ A dao never assists a mortal unless the genie has something to gain, preferably treasure. Among the genies, dao are on speaking and trading terms with the efreet, but they have nothing but scorn for djinn and marids. Other races native to the Elemental Plane of Earth avoid the dao, which are always seeking new slaves to mine the mazeworks of their floating earth islands.\r\n\r\n_**Proud Slavers.**_ The dao trade for the finest slaves that money can buy, forcing them to work in dangerous subterranean realms that rumble with earthquakes.\r\n\r\nAs much as they enjoy enslaving others, the dao hate being enslaved. Powerful wizards have been known to lure dao to the Material Plane and trap them in the confines of magic gemstones or iron flasks. Unfortunately for the dao, their greed makes it relatively easy for mages to cozen them into service.",
+  "type": "elemental",
+  "stats": {
+    "size": "Large",
+    "alignment": "Neutral Evil",
+    "armorClass": 18,
+    "hitPoints": {
+      "max": 187,
+      "current": 187,
+      "diceString": "15d10 + 105"
+    },
+    "hitDice": "15d10",
+    "speed": {
+      "walk": 30,
+      "burrow": 30,
+      "fly": 30
+    },
+    "abilities": {
+      "strength": 23,
+      "dexterity": 12,
+      "constitution": 24,
+      "intelligence": 12,
+      "wisdom": 13,
+      "charisma": 14
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "Int +5, Wis +5, Cha +6",
+    "skills": "",
+    "senses": {
+      "darkvision": 120,
+      "passives": {
+        "perception": 11
+      }
+    },
+    "challengeRating": "11",
+    "proficiencyBonus": 4,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Petrified",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Terran"
+      ]
+    },
+    "spells": "The dao’s innate spellcasting ability is Charisma (spell save DC 14, +6 to hit with spell attacks). It can innately cast the following spells, requiring no material components: At will: detect evil and good, detect magic, stone shape 3/day each: passwall, move earth, tongues 1/day each: conjure elemental (earth elemental only), gaseous form, invisibility, phantasmal killer, plane shift, wall of stone",
+    "environments": [
+      "Underdark"
+    ],
+    "sources": [
+      "MM",
+      "https://www.dndbeyond.com/monsters/17142-dao",
+      "Monster Manual, pg. 143"
+    ],
+    "saveDC": 14
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.earth-glide",
+    "feat.elemental-demise",
+    "feat.sure-footed",
+    "feat.multiattack",
+    "feat.fist",
+    "feat.dao-maul"
+  ],
+  "featureParams": {
+    "feat.fist": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 10,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d8 + 6",
+      "damageType": "bludgeoning"
+    },
+    "feat.multiattack": {
+      "text": "The creature makes two fist attacks or two maul attacks.",
+      "options": [
+        [
+          {
+            "featureId": "feat.fist",
+            "count": 2
+          }
+        ],
+        [
+          {
+            "featureId": "feat.dao-maul",
+            "count": 2
+          }
+        ]
+      ]
+    }
+  },
+  "featureTiers": {
+    "feat.elemental-demise": "crystalline-powder"
+  }
+}

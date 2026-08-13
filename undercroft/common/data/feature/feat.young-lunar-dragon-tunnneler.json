@@ -1,0 +1,29 @@
+{
+  "id": "feat.young-lunar-dragon-tunnneler",
+  "name": "Tunnneler",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature can burrow through solid rock at half its burrowing speed and leaves a 10-foot-diameter tunnel in its wake.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature can burrow through solid rock at half its burrowing speed and leaves a 10-foot-diameter tunnel in its wake.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "mobility"
+    ],
+    "recipeSlots": [
+      "escape"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

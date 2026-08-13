@@ -1,0 +1,33 @@
+{
+  "id": "feat.orc-war-chief-battle-cry-1-day",
+  "name": "Battle Cry (1/Day)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Each creature of the war chief’s choice that is within 30 feet of it, can hear it, and not already affected by Battle Cry gain advantage on attack rolls until the start of the war chief’s next turn. The war chief can then make one attack as a bonus action.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Each creature of the war chief’s choice that is within 30 feet of it, can hear it, and not already affected by Battle Cry gain advantage on attack rolls until the start of the war chief’s next turn. The war chief can then make one attack as a bonus action.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

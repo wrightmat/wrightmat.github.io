@@ -1,0 +1,32 @@
+{
+  "id": "feat.du-ulora-quori-empathic-feedback",
+  "name": "Empathic Feedback",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "When the creature takes damage from a creature it can see within 60 feet of it, the creature can force that creature to succeed on a DC 16 Intelligence saving throw or take 11 (2d10) psychic damage.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When the creature takes damage from a creature it can see within 60 feet of it, the creature can force that creature to succeed on a DC 16 Intelligence saving throw or take 11 (2d10) psychic damage."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "control"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "reaction"
+  }
+}
