@@ -1,0 +1,29 @@
+{
+  "id": "feat.sword-wraith-commander-turning-defiance",
+  "name": "Turning Defiance",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature and any other sword wraiths within 30 feet of it have advantage on saving throws against effects that turn Undead.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature and any other sword wraiths within 30 feet of it have advantage on saving throws against effects that turn Undead.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

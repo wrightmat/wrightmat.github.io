@@ -1,0 +1,33 @@
+{
+  "id": "feat.esthetic-jammerscream-recharge-6",
+  "name": "Jammerscream (Recharge 6)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature targets one spelljamming ship within 300 feet of itself, magically suppressing the properties of the ship’s spelljamming helm for 2d10 days. If the ship has more than one helm aboard it, randomly determine which helm is affected. A creature attuned to that helm can choose to make a DC 17 Charisma saving throw. On a failed save, the creature takes 42 (12d6) psychic damage, and the helm is suppressed for 2d10 hours instead of 2d10 days. On a successful save, the creature takes half as much damage, and the helm is suppressed for 2d10 minutes instead of 2d10 days.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature targets one spelljamming ship within 300 feet of itself, magically suppressing the properties of the ship’s spelljamming helm for 2d10 days. If the ship has more than one helm aboard it, randomly determine which helm is affected. A creature attuned to that helm can choose to make a DC 17 Charisma saving throw. On a failed save, the creature takes 42 (12d6) psychic damage, and the helm is suppressed for 2d10 hours instead of 2d10 days. On a successful save, the creature takes half as much damage, and the helm is suppressed for 2d10 minutes instead of 2d10 days.",
+    "scope": "unique"
+  },
+  "budgetCost": 4,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "control"
+    ],
+    "recipeSlots": [
+      "burst"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "bonus-action"
+  }
+}

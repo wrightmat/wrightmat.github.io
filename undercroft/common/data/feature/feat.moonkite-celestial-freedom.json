@@ -1,0 +1,30 @@
+{
+  "id": "feat.moonkite-celestial-freedom",
+  "name": "Celestial Freedom",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature ignores difficult terrain, and magical effects can’t reduce its speed or cause it to be restrained. It can spend 5 feet of movement to escape from nonmagical restraints or being grappled. In addition, it has advantage on saving throws against spells and effects that would banish it from its current plane or that would bind it to a particular location or creature. The creature can grant this trait to anyone riding it.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature ignores difficult terrain, and magical effects can’t reduce its speed or cause it to be restrained. It can spend 5 feet of movement to escape from nonmagical restraints or being grappled. In addition, it has advantage on saving throws against spells and effects that would banish it from its current plane or that would bind it to a particular location or creature. The creature can grant this trait to anyone riding it.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "mobility",
+      "defense"
+    ],
+    "recipeSlots": [
+      "escape"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

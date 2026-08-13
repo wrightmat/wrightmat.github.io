@@ -1,0 +1,28 @@
+{
+  "id": "feat.mummy-lord-whirlwind-of-sand-costs-2-actions",
+  "name": "Whirlwind of Sand (Costs 2 Actions)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature magically transforms into a whirlwind of sand, moves up to 60 feet, and reverts to its normal form. While in whirlwind form, the creature is immune to all damage, and it can't be grappled, petrified, knocked prone, restrained, or stunned. Equipment worn or carried by the creature remain in its possession.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The creature magically transforms into a whirlwind of sand, moves up to 60 feet, and reverts to its normal form. While in whirlwind form, the creature is immune to all damage, and it can't be grappled, petrified, knocked prone, restrained, or stunned. Equipment worn or carried by the creature remain in its possession."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "legendary-action"
+  }
+}

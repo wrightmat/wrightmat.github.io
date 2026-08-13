@@ -1,0 +1,24 @@
+{
+  "id": "feat.dark-devotion",
+  "name": "Dark Devotion",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature has advantage on saving throws against being charmed or frightened.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature has advantage on saving throws against being charmed or frightened."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

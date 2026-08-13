@@ -1,0 +1,68 @@
+{
+  "kind": "monster",
+  "index": "hawk",
+  "name": "Hawk",
+  "type": "beast",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/hawk.png",
+  "stats": {
+    "size": "Tiny",
+    "alignment": "unaligned",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 1,
+      "current": 1,
+      "diceString": "1d4-1"
+    },
+    "hitDice": "1d4",
+    "speed": {
+      "walk": 10,
+      "fly": 60
+    },
+    "abilities": {
+      "strength": 5,
+      "dexterity": 16,
+      "constitution": 8,
+      "intelligence": 2,
+      "wisdom": 14,
+      "charisma": 6
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "",
+    "skills": "Perception +4",
+    "proficiencies": {
+      "defenses": [],
+      "languages": []
+    },
+    "senses": {
+      "passives": {
+        "perception": 14
+      }
+    },
+    "challengeRating": "0",
+    "proficiencyBonus": 2,
+    "xp": 10,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/hawk"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/hawk",
+  "featureIds": [
+    "feat.keen-sight",
+    "feat.talons"
+  ],
+  "featureParams": {
+    "feat.talons": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1",
+      "damageType": "slashing"
+    }
+  }
+}

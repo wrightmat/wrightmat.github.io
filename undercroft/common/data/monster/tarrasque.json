@@ -1,0 +1,171 @@
+{
+  "kind": "monster",
+  "index": "tarrasque",
+  "name": "Tarrasque",
+  "type": "monstrosity",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/tarrasque.png",
+  "stats": {
+    "size": "Gargantuan",
+    "alignment": "unaligned",
+    "armorClass": 25,
+    "hitPoints": {
+      "max": 676,
+      "current": 676,
+      "diceString": "33d20+330"
+    },
+    "hitDice": "33d20",
+    "speed": {
+      "walk": 40
+    },
+    "abilities": {
+      "strength": 30,
+      "dexterity": 11,
+      "constitution": 30,
+      "intelligence": 3,
+      "wisdom": 11,
+      "charisma": 11
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "INT +5, WIS +9, CHA +9",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "fire",
+          "type": "immunity"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "bludgeoning, piercing, and slashing from nonmagical weapons",
+          "type": "immunity"
+        },
+        {
+          "name": "Charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "Frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "Paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": []
+    },
+    "senses": {
+      "blindsight": 120,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "30",
+    "proficiencyBonus": 9,
+    "xp": 155000,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/tarrasque"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/tarrasque",
+  "featureIds": [
+    "feat.legendary-resistance",
+    "feat.magic-resistance",
+    "feat.tarrasque-reflective-carapace",
+    "feat.siege-monster",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.claw",
+    "feat.horns",
+    "feat.tail",
+    "feat.frightful-presence",
+    "feat.swallow",
+    "feat.attack",
+    "feat.tarrasque-move",
+    "feat.tarrasque-chomp-costs-2-actions"
+  ],
+  "featureTiers": {
+    "feat.frightful-presence": "dc-17",
+    "feat.swallow": "tarrasque"
+  },
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 19,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "4d12 + 10",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "condition-no-save",
+        "condition": "is grappled (escape DC 20). Until this grapple ends, the target is restrained, and the tarrasque can't bite another target"
+      }
+    },
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 19,
+      "distanceLabel": "reach",
+      "distance": "15",
+      "damageDice": "4d8 + 10",
+      "damageType": "slashing"
+    },
+    "feat.horns": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 19,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "4d10 + 10",
+      "damageType": "piercing"
+    },
+    "feat.tail": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 19,
+      "distanceLabel": "reach",
+      "distance": "20",
+      "damageDice": "4d6 + 10",
+      "damageType": "bludgeoning",
+      "rider": {
+        "kind": "save-or-condition",
+        "saveDC": 20,
+        "saveAbility": "strength",
+        "condition": "knocked prone"
+      }
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.bite",
+          "count": 1
+        },
+        {
+          "featureId": "feat.claw",
+          "count": 2
+        },
+        {
+          "featureId": "feat.horns",
+          "count": 1
+        },
+        {
+          "featureId": "feat.tail",
+          "count": 1
+        }
+      ],
+      "text": "The creature can use its Frightful Presence. It then makes five attacks: one with its bite, two with its claws, one with its horns, and one with its tail. It can use its Swallow instead of its bite."
+    }
+  }
+}

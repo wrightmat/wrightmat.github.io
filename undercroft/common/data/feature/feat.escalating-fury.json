@@ -4,10 +4,10 @@
   "systemIds": [
     "sys.dnd5e"
   ],
-  "description": "The creature's attacks deal increasing extra damage on each of its turns after the first in a combat.",
+  "description": "The creature attacks deal increasing extra damage on each of its turns after the first in a combat.",
   "mechanics": {
     "type": "passive-or-triggered",
-    "text": "The creature's attacks deal increasing extra damage on each of its turns after the first in a combat."
+    "text": "The creature attacks deal increasing extra damage on each of its turns after the first in a combat."
   },
   "budgetCost": 2,
   "combat": {

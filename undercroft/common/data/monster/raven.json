@@ -1,0 +1,68 @@
+{
+  "kind": "monster",
+  "index": "raven",
+  "name": "Raven",
+  "type": "beast",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/raven.png",
+  "stats": {
+    "size": "Tiny",
+    "alignment": "unaligned",
+    "armorClass": 12,
+    "hitPoints": {
+      "max": 1,
+      "current": 1,
+      "diceString": "1d4-1"
+    },
+    "hitDice": "1d4",
+    "speed": {
+      "walk": 10,
+      "fly": 50
+    },
+    "abilities": {
+      "strength": 2,
+      "dexterity": 14,
+      "constitution": 8,
+      "intelligence": 2,
+      "wisdom": 12,
+      "charisma": 6
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "Perception +3",
+    "proficiencies": {
+      "defenses": [],
+      "languages": []
+    },
+    "senses": {
+      "passives": {
+        "perception": 13
+      }
+    },
+    "challengeRating": "0",
+    "proficiencyBonus": 2,
+    "xp": 10,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/raven"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/raven",
+  "featureIds": [
+    "feat.raven-mimicry",
+    "feat.beak"
+  ],
+  "featureParams": {
+    "feat.beak": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1",
+      "damageType": "piercing"
+    }
+  }
+}

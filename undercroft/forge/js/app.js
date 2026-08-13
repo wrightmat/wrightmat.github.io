@@ -47,6 +47,11 @@ import { createTokenImageField } from "../../common/js/lib/token-picker.js";
 import { renderRequiredSelectOptions, renderOptionalSelectOptions } from "../../common/js/lib/generator-kit.js";
 import { markRequiredControl } from "../../common/js/lib/dom.js";
 import { resolveGroupContext, pickGroupDefaultId } from "../../common/js/lib/widgets/group-context.js";
+// Repository's own markdown renderer (dice/task-list/callout/wiki-link
+// awareness, degrading gracefully without any of that for a plain note) —
+// reused as-is for the Note field's View mode, same as Crucible/Vault/
+// Sanctum's own identical Notes preview.
+import { renderMarkdown } from "../../repository/js/lib/markdown.js";
 
 // Built and mounted before any of the querySelector("[data-*-npc]") lines
 // below, so every existing selector/disabled-state call site elsewhere in
@@ -179,6 +184,11 @@ const statsFields = document.querySelector("[data-stats-fields]");
 const statsCard = statsFields?.closest(".card") || null;
 const generateNoteButton = document.querySelector("[data-generate-note]");
 const noteText = document.querySelector("[data-note-text]");
+const notePreview = document.querySelector("[data-note-preview]");
+const noteModeToggle = document.querySelector("[data-note-mode-toggle]");
+const noteModeEyeIcon = document.querySelector('[data-note-mode-icon="view"]');
+const noteModePencilIcon = document.querySelector('[data-note-mode-icon="edit"]');
+const noteModeLabel = document.querySelector("[data-note-mode-label]");
 
 const saveButton = document.querySelector("[data-save-npc]");
 const exportButton = document.querySelector("[data-export-npc]");
@@ -895,6 +905,7 @@ function renderNpc(record) {
   renderStats(record.stats);
 
   noteText.value = record.note || "";
+  if (noteMode === "view") renderNotePreview();
   jsonDataPanel.render();
 
   // Regenerating/rerolling replaces the Identity/4D boxes wholesale, so the
@@ -1499,6 +1510,48 @@ noteText.addEventListener("input", () => {
   currentRecord = { ...currentRecord, note: noteText.value };
   jsonDataPanel.render();
   refreshActionButtons();
+});
+
+// View/Edit toggle for the Note box itself — same button as Repository's
+// own Edit/View button (undercroft/repository/js/app.js#applyMode) for the
+// identical concept, and the same behavior Crucible/Vault/Sanctum's own
+// Notes toggle uses (this suite's one shared Notes-field convention).
+// Icon/label always describe what clicking will switch TO, not the current
+// state. Defaults to "view" — a freshly-loaded record's note is read far
+// more often than edited, and a note written with markdown in mind
+// (headings, lists, callouts) reads better rendered than as raw source by
+// default.
+let noteMode = "view";
+
+function renderNotePreview() {
+  if (!notePreview) return;
+  notePreview.innerHTML = "";
+  notePreview.appendChild(renderMarkdown(currentRecord?.note || ""));
+}
+
+function applyNoteMode(mode) {
+  noteMode = mode;
+  const isView = mode === "view";
+  noteText.classList.toggle("d-none", isView);
+  notePreview?.classList.toggle("d-none", !isView);
+  // Showing the eye while in Edit mode (the icon describes what clicking
+  // switches TO, not the current state) and vice versa — same convention
+  // Repository's own toggle uses.
+  noteModeEyeIcon?.classList.toggle("d-none", isView);
+  noteModePencilIcon?.classList.toggle("d-none", !isView);
+  if (noteModeLabel) noteModeLabel.textContent = isView ? "Edit" : "View";
+  noteModeToggle?.setAttribute("data-bs-title", isView ? "Edit" : "View");
+  refreshTooltips();
+  if (isView) renderNotePreview();
+}
+
+noteModeToggle?.addEventListener("click", () => {
+  // Note isn't written back into currentRecord until Save/Export (see
+  // handleSave) — switching to View needs the live textarea value, not
+  // whatever was last saved, so it's synced here same as handleSave
+  // already does.
+  if (currentRecord) currentRecord = { ...currentRecord, note: noteText.value };
+  applyNoteMode(noteMode === "view" ? "edit" : "view");
 });
 
 // Same dirty check refreshActionButtons already uses for the Save button —

@@ -1,0 +1,77 @@
+{
+  "kind": "monster",
+  "index": "giant-crocodile",
+  "name": "Giant Crocodile",
+  "type": "beast",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/giant-crocodile.png",
+  "stats": {
+    "size": "Huge",
+    "alignment": "unaligned",
+    "armorClass": 14,
+    "hitPoints": {
+      "max": 85,
+      "current": 85,
+      "diceString": "9d12+27"
+    },
+    "hitDice": "9d12",
+    "speed": {
+      "walk": 30,
+      "swim": 50
+    },
+    "abilities": {
+      "strength": 21,
+      "dexterity": 9,
+      "constitution": 17,
+      "intelligence": 2,
+      "wisdom": 10,
+      "charisma": 7
+    },
+    "initiative": {
+      "bonus": -1
+    },
+    "savingThrows": "",
+    "skills": "Stealth +5",
+    "proficiencies": {
+      "defenses": [],
+      "languages": []
+    },
+    "senses": {
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "5",
+    "proficiencyBonus": 3,
+    "xp": 1800,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/giant-crocodile"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/giant-crocodile",
+  "featureIds": [
+    "feat.hold-breath",
+    "feat.multiattack",
+    "feat.giant-crocodile-bite",
+    "feat.giant-crocodile-tail"
+  ],
+  "featureTiers": {
+    "feat.hold-breath": "30-minutes"
+  },
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.giant-crocodile-bite",
+          "count": 1
+        },
+        {
+          "featureId": "feat.giant-crocodile-tail",
+          "count": 1
+        }
+      ],
+      "text": "The creature makes two attacks: one with its bite and one with its tail."
+    }
+  }
+}

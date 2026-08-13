@@ -1,0 +1,33 @@
+{
+  "id": "feat.silverquill-pledgemage-rousing-verse",
+  "name": "Rousing Verse",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "When a creature the creature can see within 30 feet of it fails a saving throw, the creature magically weaves together stirring prose, allowing the creature to reroll the saving throw and use the higher result.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When a creature the creature can see within 30 feet of it fails a saving throw, the creature magically weaves together stirring prose, allowing the creature to reroll the saving throw and use the higher result.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "defense",
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "reaction"
+  }
+}

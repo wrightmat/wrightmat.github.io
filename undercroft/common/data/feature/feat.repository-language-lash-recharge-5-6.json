@@ -1,0 +1,33 @@
+{
+  "id": "feat.repository-language-lash-recharge-5-6",
+  "name": "Language Lash (Recharge 5–6)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature utters words of power, unleashing psychic energy in a 30-foot cone. Each creature in that area must make a DC 15 Intelligence saving throw. On a failure, a creature takes 14 (4d6) psychic damage and is incapacitated for 1 minute. On a success, a creature takes half the damage and isn’t stunned. A creature can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature utters words of power, unleashing psychic energy in a 30-foot cone. Each creature in that area must make a DC 15 Intelligence saving throw. On a failure, a creature takes 14 (4d6) psychic damage and is incapacitated for 1 minute. On a success, a creature takes half the damage and isn’t stunned. A creature can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success.",
+    "scope": "unique"
+  },
+  "budgetCost": 4,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "control"
+    ],
+    "recipeSlots": [
+      "burst"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

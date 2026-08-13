@@ -1,0 +1,68 @@
+{
+  "kind": "monster",
+  "name": "Flower Spirit",
+  "notes": "",
+  "type": "fey",
+  "stats": {
+    "size": "Tiny",
+    "alignment": "Chaotic Neutral",
+    "armorClass": 14,
+    "hitPoints": {
+      "max": 10,
+      "current": 10
+    },
+    "hitDice": "4d4",
+    "speed": {
+      "walk": 10,
+      "fly": 40
+    },
+    "abilities": {
+      "strength": 2,
+      "dexterity": 17,
+      "constitution": 11,
+      "intelligence": 17,
+      "wisdom": 17,
+      "charisma": 17
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "",
+    "skills": "Deception +5, Persuasion +5, Stealth +5",
+    "senses": {
+      "darkvision": 30,
+      "passives": {
+        "perception": 13
+      }
+    },
+    "challengeRating": "1",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Sylvan"
+      ]
+    },
+    "spells": "The spirit's spellcasting ability is Charisma (spell save DC 13). The spirit can innately cast the following spells, requiring no material components: at will: druidcraft, invisibility, minor illusion 1/day: tree stride",
+    "environments": [],
+    "sources": [
+      "Homebrew",
+      "https://5theditionhomebrewing.tumblr.com/post/177822151683/oh-hey-monsters-to-use-in-the-feywild-a-fairy-a/amp"
+    ],
+    "saveDC": 13
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.false-appearance-ambush",
+    "feat.magic-resistance",
+    "feat.flower-spirit-leaf-blade",
+    "feat.flower-spirit-tender-dance",
+    "feat.flower-spirit-spores"
+  ],
+  "featureTiers": {
+    "feat.false-appearance-ambush": "normal-flower"
+  }
+}

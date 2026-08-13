@@ -1,0 +1,32 @@
+{
+  "id": "feat.nihilethic-dominator-void-shape",
+  "name": "Void Shape",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature magically transforms into a dark purple, Void ghost form or back into its Undead form. Its statistics, other than its speed and resistances, are the same in each form. Any equipment it is wearing or carrying changes with it. It reverts to its Undead form of it dies.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature magically transforms into a dark purple, Void ghost form or back into its Undead form. Its statistics, other than its speed and resistances, are the same in each form. Any equipment it is wearing or carrying changes with it. It reverts to its Undead form of it dies.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "bonus-action"
+  }
+}

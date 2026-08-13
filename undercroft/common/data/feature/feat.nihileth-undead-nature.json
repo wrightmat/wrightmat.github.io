@@ -1,0 +1,29 @@
+{
+  "id": "feat.nihileth-undead-nature",
+  "name": "Undead Nature",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "a creature does not require air, food, drink, or sleep.",
+  "mechanics": {
+    "type": "passive",
+    "text": "a creature does not require air, food, drink, or sleep.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

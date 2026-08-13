@@ -1,0 +1,136 @@
+{
+  "kind": "monster",
+  "name": "Anubian",
+  "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS0RKt8MzP58GPv5BDGNfJPJTWgIFHDHa3adw&s",
+  "notes": "_An anubian’s swirling sand comes together to form a snarling, canine-faced humanoid whose eyes shine with an eerie, blue glow. Anubians are elementals summoned to guard tombs or protect treasures._\r\n\r\n**Piles of Dust**. An anubian at rest resembles a pile of sand or dust, often strewn about an already dusty location. When active, it rises up to form a muscular humanoid with the head of a jackal. A destroyed anubian collapses into an inert pile of sand.\r\n\r\n**Death to the Unarmored**. In combat, anubians prefer to fight unarmored foes rather than creatures wearing armor. They associate unarmored creatures with spellcasters, and their latent resentment over centuries of being summoned as servants drives them to attack such figures when they aren’t shackled by magical bondage.\r\n\r\n**Sandstorm Tag Teams**. Anubians fight effectively as teams, using their haboob attacks to corner and isolate the most vulnerable targets.",
+  "type": "elemental",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Chaotic Evil",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 44,
+      "current": 44,
+      "diceString": "8d8 + 8"
+    },
+    "hitDice": "8d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 12,
+      "dexterity": 16,
+      "constitution": 12,
+      "intelligence": 10,
+      "wisdom": 12,
+      "charisma": 10
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "",
+    "skills": "Stealth 5 (+7 in sand terrain)",
+    "senses": {
+      "darkvision": 60,
+      "tremorsense": 30,
+      "passives": {
+        "perception": 11
+      }
+    },
+    "challengeRating": "2",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "and slashing from nonmagical weapons",
+          "type": "resistance"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "grappled",
+          "type": "immunity"
+        },
+        {
+          "name": "paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "petrified",
+          "type": "immunity"
+        },
+        {
+          "name": "poisoned",
+          "type": "immunity"
+        },
+        {
+          "name": "prone",
+          "type": "immunity"
+        },
+        {
+          "name": "restrained",
+          "type": "immunity"
+        },
+        {
+          "name": "unconscious",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Primordial"
+      ]
+    },
+    "environments": [
+      "Desert"
+    ],
+    "sources": [
+      "ToB1",
+      "Tome of Beasts, pg 24"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.anubian-sand-step",
+    "feat.anubian-vulnerability-to-water",
+    "feat.multiattack",
+    "feat.claw",
+    "feat.anubian-haboob-1-day"
+  ],
+  "featureParams": {
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d6 + 3",
+      "damageType": "slashing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.claw",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two claw attacks."
+    }
+  }
+}

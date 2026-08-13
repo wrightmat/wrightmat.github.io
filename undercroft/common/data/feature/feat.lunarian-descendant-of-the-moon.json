@@ -1,0 +1,29 @@
+{
+  "id": "feat.lunarian-descendant-of-the-moon",
+  "name": "Descendant of The Moon",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Magical light created by the creature can’t be extinguished.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Magical light created by the creature can’t be extinguished.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

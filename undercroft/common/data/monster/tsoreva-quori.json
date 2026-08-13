@@ -1,0 +1,86 @@
+{
+  "kind": "monster",
+  "name": "Tsoreva Quori",
+  "image": "https://static.wikia.nocookie.net/eberron/images/7/78/Tsoreva.jpg",
+  "notes": "### Description\r\n\r\n#### Quori\r\n\r\nDal Quor is the plane of dreams and is currently dominated by a dark power known as il-Lashtavar, or the Dreaming Dark. Il-Lashtavar is served by a host of aberrations that are the embodiments of dreams and nightmares — the quori. Because it is difficult for anything to physically travel to or from Dal Quor, quori in Eberron are typically encountered while possessing a host body. The Inspired are the most common type of willing host for the quori and are described earlier in this chapter.\r\n\r\n#### Tsoreva Quori\r\n\r\nThe tsoreva quori (or quori mind blades) are the enforcers and shock troopers of the quori. They represent Envy, and reside in the Black Tower of the Outer Ring of Il-Lashtavar.\r\n\r\n>_The clicking of many legs draws your attention to monstrous creatures headed your way. Dozens of spindly legs sprout from their segmented bodies, and blades of energy protrude from the ends of handless arms. Glowing blue eyes glare from the top of headless torsos, watching your every move._\r\n\r\n***Tactics.*** Tsoreva quori skirmish in and out of combat, opening with their Mindslice Frenzy, then making a single attack and using their Flickering Psychoport to get into a position where they can exit combat while provoking only a single attack of opportunity. From there, they will often take cover and use the Dodge action until their Mindslice Frenzy recharges, at which point they scuttle back in.\r\nThe tsoreva quori focuses all of its attacks on a single creature, then as soon as that creature drops, it dives into its dreams and takes cover there until it either kills the creature or gains control of it with its Waking Nightmare ability.\r\nWhen it gains control of a creature, it makes basic attacks or casts cantrips the first turn while it gets accustomed to the body, then on following turns tried to go nova and use as many limited resources as possible to attack the creature's allies. Once they have learned enough to emulate their target's psyche, they assume their target's physical form and identity. The original person becomes almost impossible to recognize from the demon, who is a perfect replica of its target. Its mannerisms, tics, and opinions are identical to those of the original person.",
+  "type": "aberration",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Lawful Evil",
+    "armorClass": 16,
+    "hitPoints": {
+      "max": 120,
+      "current": 120,
+      "diceString": "16d8 + 48"
+    },
+    "hitDice": "16d8",
+    "speed": {
+      "walk": 30,
+      "fly": 40
+    },
+    "abilities": {
+      "strength": 17,
+      "dexterity": 15,
+      "constitution": 16,
+      "intelligence": 14,
+      "wisdom": 16,
+      "charisma": 16
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "Wis +6",
+    "skills": "Perception +6",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 16
+      }
+    },
+    "challengeRating": "5",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Psychic",
+          "type": "resistance"
+        },
+        {
+          "name": "Charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "Frightened",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Common",
+        "Quori"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Homebrew",
+      "https://eberron.fandom.com/wiki/Usvapna_quori",
+      "https://www.reddit.com/r/UnearthedArcana/comments/w9q4lt/complete_quori_6_variants_with_lore_and_tactics/",
+      "https://dragonage.fandom.com/wiki/Envy_demon"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.multiattack",
+    "feat.tsoreva-quori-mind-blades",
+    "feat.tsoreva-quori-flickering-psychoport",
+    "feat.tsoreva-quori-mindslice-frenzy-recharge-5-6",
+    "feat.tsoreva-quori-waking-nightmare"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "text": "The creature makes two melee attacks, one of which it may replace with a use of its flickering psychoport."
+    }
+  }
+}

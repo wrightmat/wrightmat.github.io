@@ -1,0 +1,33 @@
+{
+  "id": "feat.murgrik-unsettling-ululations-recharge-6",
+  "name": "Unsettling Ululations (Recharge 6)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The stalk on the creature’s head unleashes a dispiriting wail. Each creature within 30 feet of the creature that can hear it must make a DC 14 Wisdom saving throw. On a failure, a creature takes 21 (6d6) psychic damage and is frightened for 1 minute. On a success, a creature takes half the damage and isn’t frightened. A creature can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The stalk on the creature’s head unleashes a dispiriting wail. Each creature within 30 feet of the creature that can hear it must make a DC 14 Wisdom saving throw. On a failure, a creature takes 21 (6d6) psychic damage and is frightened for 1 minute. On a success, a creature takes half the damage and isn’t frightened. A creature can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "fear"
+    ],
+    "recipeSlots": [
+      "burst"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

@@ -1,0 +1,92 @@
+{
+  "kind": "monster",
+  "index": "polar-bear",
+  "name": "Polar Bear",
+  "type": "beast",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/polar-bear.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "unaligned",
+    "armorClass": 12,
+    "hitPoints": {
+      "max": 42,
+      "current": 42,
+      "diceString": "5d10+15"
+    },
+    "hitDice": "5d10",
+    "speed": {
+      "walk": 40,
+      "swim": 30
+    },
+    "abilities": {
+      "strength": 20,
+      "dexterity": 10,
+      "constitution": 16,
+      "intelligence": 2,
+      "wisdom": 13,
+      "charisma": 7
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "Perception +3",
+    "proficiencies": {
+      "defenses": [],
+      "languages": []
+    },
+    "senses": {
+      "passives": {
+        "perception": 13
+      }
+    },
+    "challengeRating": "2",
+    "proficiencyBonus": 2,
+    "xp": 450,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/polar-bear"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/polar-bear",
+  "featureIds": [
+    "feat.keen-hearing-and-smell",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.claws"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d8 + 5",
+      "damageType": "piercing"
+    },
+    "feat.claws": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 5",
+      "damageType": "slashing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.bite",
+          "count": 1
+        },
+        {
+          "featureId": "feat.claws",
+          "count": 1
+        }
+      ],
+      "text": "The creature makes two attacks: one with its bite and one with its claws."
+    }
+  }
+}

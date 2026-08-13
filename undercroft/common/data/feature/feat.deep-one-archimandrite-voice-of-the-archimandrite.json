@@ -1,0 +1,30 @@
+{
+  "id": "feat.deep-one-archimandrite-voice-of-the-archimandrite",
+  "name": "Voice of the Archimandrite",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "With a ringing shout, the creature summons all deep ones within a mile to come to his aid. This is not a spell but a command that ocean creatures and deep ones heed willingly.",
+  "mechanics": {
+    "type": "passive",
+    "text": "With a ringing shout, the creature summons all deep ones within a mile to come to his aid. This is not a spell but a command that ocean creatures and deep ones heed willingly.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "utility",
+      "control"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,92 @@
+{
+  "kind": "monster",
+  "index": "guardian-naga",
+  "name": "Guardian Naga",
+  "type": "monstrosity",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/guardian-naga.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "lawful good",
+    "armorClass": 18,
+    "hitPoints": {
+      "max": 127,
+      "current": 127,
+      "diceString": "15d10+45"
+    },
+    "hitDice": "15d10",
+    "speed": {
+      "walk": 40
+    },
+    "abilities": {
+      "strength": 19,
+      "dexterity": 18,
+      "constitution": 16,
+      "intelligence": 16,
+      "wisdom": 19,
+      "charisma": 18
+    },
+    "initiative": {
+      "bonus": 4
+    },
+    "savingThrows": "DEX +8, CON +7, INT +7, WIS +8, CHA +8",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Celestial",
+        "Common"
+      ]
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 14
+      }
+    },
+    "challengeRating": "10",
+    "proficiencyBonus": 4,
+    "xp": 5900,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/guardian-naga",
+    "spells": "The naga is an 11th-level spellcaster. Its spellcasting ability is Wisdom (spell save DC 16, +8 to hit with spell attacks), and it needs only verbal components to cast its spells. It has the following cleric spells prepared:\n\n- Cantrips (at will): mending, sacred flame, thaumaturgy\n- 1st level (4 slots): command, cure wounds, shield of faith\n- 2nd level (3 slots): calm emotions, hold person\n- 3rd level (3 slots): bestow curse, clairvoyance\n- 4th level (3 slots): banishment, freedom of movement\n- 5th level (2 slots): flame strike, geas\n- 6th level (1 slot): true seeing",
+    "saveDC": 16
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/guardian-naga",
+  "featureIds": [
+    "feat.rejuvenation",
+    "feat.bite",
+    "feat.guardian-naga-spit-poison"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 8,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "1d8 + 4",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "save-or-damage",
+        "dice": "10d8",
+        "damageType": "poison"
+      }
+    }
+  }
+}

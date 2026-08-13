@@ -1,0 +1,82 @@
+{
+  "kind": "monster",
+  "index": "kobold",
+  "name": "Kobold",
+  "type": "humanoid",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/kobold.png",
+  "stats": {
+    "size": "Small",
+    "alignment": "lawful evil",
+    "armorClass": 12,
+    "hitPoints": {
+      "max": 5,
+      "current": 5,
+      "diceString": "2d6-2"
+    },
+    "hitDice": "2d6",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 7,
+      "dexterity": 15,
+      "constitution": 9,
+      "intelligence": 8,
+      "wisdom": 7,
+      "charisma": 8
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Common",
+        "Draconic"
+      ]
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 8
+      }
+    },
+    "challengeRating": "1/8",
+    "proficiencyBonus": 2,
+    "xp": 25,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/kobold"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/kobold",
+  "featureIds": [
+    "feat.sunlight-sensitivity",
+    "feat.pack-tactics",
+    "feat.dagger",
+    "feat.sling"
+  ],
+  "featureParams": {
+    "feat.dagger": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d4 + 2",
+      "damageType": "piercing"
+    },
+    "feat.sling": {
+      "kind": "Ranged",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "range",
+      "distance": "30/120",
+      "damageDice": "1d4 + 2",
+      "damageType": "bludgeoning"
+    }
+  }
+}

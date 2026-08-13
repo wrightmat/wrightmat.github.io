@@ -1,0 +1,29 @@
+{
+  "id": "feat.deep-one-water-mastery",
+  "name": "Water Mastery",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature has advantage on attack rolls, ability checks, and saving throws when even partly immersed in sea water. It is immune to the pressure effects of the creature ocean.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature has advantage on attack rolls, ability checks, and saving throws when even partly immersed in sea water. It is immune to the pressure effects of the creature ocean.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "adapt"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

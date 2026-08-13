@@ -1,0 +1,80 @@
+{
+  "kind": "monster",
+  "index": "green-hag",
+  "name": "Green Hag",
+  "type": "fey",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/green-hag.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "neutral evil",
+    "armorClass": 17,
+    "hitPoints": {
+      "max": 82,
+      "current": 82,
+      "diceString": "11d8+33"
+    },
+    "hitDice": "11d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 18,
+      "dexterity": 12,
+      "constitution": 16,
+      "intelligence": 13,
+      "wisdom": 14,
+      "charisma": 14
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "",
+    "skills": "Arcana +3, Deception +4, Perception +4, Stealth +3",
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Common",
+        "Draconic",
+        "Sylvan"
+      ]
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 14
+      }
+    },
+    "challengeRating": "3",
+    "proficiencyBonus": 2,
+    "xp": 700,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/green-hag",
+    "spells": "The hag's innate spellcasting ability is Charisma (spell save DC 12). She can innately cast the following spells, requiring no material components:\n\nAt will: dancing lights, minor illusion, vicious mockery",
+    "saveDC": 12
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/green-hag",
+  "featureIds": [
+    "feat.amphibious",
+    "feat.green-hag-mimicry",
+    "feat.claws",
+    "feat.illusory-appearance",
+    "feat.green-hag-invisible-passage"
+  ],
+  "featureParams": {
+    "feat.claws": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d8 + 4",
+      "damageType": "slashing"
+    }
+  },
+  "featureTiers": {
+    "feat.illusory-appearance": "green-hag"
+  }
+}

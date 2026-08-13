@@ -1,0 +1,33 @@
+{
+  "id": "feat.kobold-chieftain-inspiring-presence-recharge-after-short-or-long-rest",
+  "name": "Inspiring Presence (Recharge after Short or Long Rest)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature chooses up to six allied kobolds it can see within 30 feet. For the next minute, the kobolds gain immunity to the charmed and frightened conditions, and add the creature’s Charisma bonus to attack rolls.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature chooses up to six allied kobolds it can see within 30 feet. For the next minute, the kobolds gain immunity to the charmed and frightened conditions, and add the creature’s Charisma bonus to attack rolls.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "utility",
+      "control"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

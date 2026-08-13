@@ -1,0 +1,83 @@
+{
+  "kind": "monster",
+  "name": "Redcap",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/9/788/1000/1000/636332006160598385.jpeg",
+  "notes": "### Description\r\n\r\nA redcap is a homicidal fey creature born of blood lust. Redcaps, although small, have formidable strength, which they use to hunt and kill without hesitation or regret.\r\n\r\nBlood Lust Personified. In the Feywild, or where that plane touches the world at a fey crossing, if a sentient creature acts on an intense desire for bloodshed, one or more redcaps might appear where the blood of a slain person soaks the ground. At first, new redcaps look like tiny bloodstained mushrooms just pushing their caps out of the soil. When moonlight shines on one of these caps, a creature that looks like a wizened and undersized gnome with a hunched back and a sinewy frame springs from the earth. The creature has a pointed leather cap, pants of similar material, heavy iron boots, and a heavy bladed weapon. From the moment it awakens, a redcap desires only murder and carnage, and it sets out to satisfy these cravings.\r\n\r\nRedcaps lack subtlety. They live for direct confrontation and the mayhem of mortal combat. Even if a redcap wanted to be stealthy, its iron boots force it to take ponderous, thunderous steps. When a redcap is near to potential prey, though, it can close the distance quickly and get in a vicious swing of its weapon before the target can react.\r\n\r\nSteeped in Slaughter. To sustain its unnatural existence, a redcap has to soak its hat in the fresh blood of its victims. When a redcap is born, its hat is coated with wet blood, and it knows that if the blood isn’t replenished at least once every three days, the redcap vanishes as if it had never been. A redcap’s desire to slay is rooted in its will to survive.\r\n\r\nBloodthirsty Mercenaries. Redcaps don’t usually operate in groups, but in some circumstances they might be found in the employ of hags and dark mages that know methods to call redcaps out of the Feywild and put them to work as grisly servants.\r\n\r\nAlso, some redcaps can sense the being whose murderous acts led to their birth. A redcap might use this innate connection to find its creator and make that creature its first victim. Others seek out their maker to enjoy proximity to a kindred spirit. An individual responsible for the creation of multiple redcaps at the same site could attract the entire group to serve as cohorts, emulating that creature’s murderous handiwork.\r\n\r\nIn any case, if a redcap works with another being, the redcap demands to be paid in victims. A patron who tries to stifle a redcap’s natural and necessary urge for blood risks becoming the redcap’s next target.",
+  "type": "fey",
+  "stats": {
+    "size": "Small",
+    "alignment": "Typically Chaotic Evil",
+    "armorClass": 14,
+    "hitPoints": {
+      "max": 45,
+      "current": 45,
+      "diceString": "6d6 + 24"
+    },
+    "hitDice": "6d6",
+    "speed": {
+      "walk": 25
+    },
+    "abilities": {
+      "strength": 18,
+      "dexterity": 13,
+      "constitution": 18,
+      "intelligence": 10,
+      "wisdom": 12,
+      "charisma": 9
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "",
+    "skills": "Athletics +6, Perception +3",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 13
+      }
+    },
+    "challengeRating": "3",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Common",
+        "Sylvan"
+      ]
+    },
+    "environments": [
+      "Forest",
+      "Hill",
+      "Swamp"
+    ],
+    "sources": [
+      "MPMM",
+      "Mordenkainen Presents: Monsters of the Multiverse, pg. 208"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.redcap-iron-boots",
+    "feat.redcap-outsize-strength",
+    "feat.multiattack",
+    "feat.wicked-sickle",
+    "feat.redcap-ironbound-pursuit"
+  ],
+  "featureParams": {
+    "feat.wicked-sickle": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d4 + 4",
+      "damageType": "slashing"
+    },
+    "feat.multiattack": {
+      "text": "The creature makes three attacks with its wicked sickle."
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "id": "feat.homunculus-telepathic-bond",
+  "name": "Telepathic Bond",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "While the creature is on the same plane of existence as its master, it can magically convey what it senses to its master, and the two can communicate telepathically.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "While the creature is on the same plane of existence as its master, it can magically convey what it senses to its master, and the two can communicate telepathically."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

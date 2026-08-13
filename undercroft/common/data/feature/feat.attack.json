@@ -1,0 +1,31 @@
+{
+  "id": "feat.attack",
+  "name": "Attack",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature makes one Claw or Tail attack.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature makes one Claw or Tail attack."
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "legendary-action"
+  }
+}

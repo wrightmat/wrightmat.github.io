@@ -1,0 +1,32 @@
+{
+  "id": "feat.library-automaton-bibliotelekinesis",
+  "name": "Bibliotelekinesis",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "This ability functions as the cantrip mage hand but can be used only on books, scrolls, maps, and other printed or written materials.",
+  "mechanics": {
+    "type": "passive",
+    "text": "This ability functions as the cantrip mage hand but can be used only on books, scrolls, maps, and other printed or written materials.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

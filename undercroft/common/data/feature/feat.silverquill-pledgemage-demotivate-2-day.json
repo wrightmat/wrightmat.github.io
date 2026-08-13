@@ -1,0 +1,33 @@
+{
+  "id": "feat.silverquill-pledgemage-demotivate-2-day",
+  "name": "Demotivate (2/Day)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature hurls magical insults at one creature it can see within 30 feet of itself. The target must succeed on a DC 13 Wisdom saving throw or become frightened of the creature for 1 minute. While frightened in this way, the target can’t take reactions, its speed is halved, and any hit the creature scores against the creature is a critical hit. The target can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature hurls magical insults at one creature it can see within 30 feet of itself. The target must succeed on a DC 13 Wisdom saving throw or become frightened of the creature for 1 minute. While frightened in this way, the target can’t take reactions, its speed is halved, and any hit the creature scores against the creature is a critical hit. The target can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "fear",
+      "control"
+    ],
+    "recipeSlots": [
+      "threaten"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "bonus-action"
+  }
+}

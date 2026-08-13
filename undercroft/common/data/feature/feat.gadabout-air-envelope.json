@@ -1,0 +1,28 @@
+{
+  "id": "feat.gadabout-air-envelope",
+  "name": "Air Envelope",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "If it has at least 1 hit point, the creature can generate an air envelope around itself when in a vacuum. This air envelope can sustain the creature and one other creature in its space indefinitely.",
+  "mechanics": {
+    "type": "passive",
+    "text": "If it has at least 1 hit point, the creature can generate an air envelope around itself when in a vacuum. This air envelope can sustain the creature and one other creature in its space indefinitely."
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

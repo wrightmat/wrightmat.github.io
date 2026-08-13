@@ -1,0 +1,91 @@
+{
+  "kind": "monster",
+  "index": "cloud-giant",
+  "name": "Cloud Giant",
+  "type": "giant",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/cloud-giant.png",
+  "stats": {
+    "size": "Huge",
+    "alignment": "neutral good (50%) or neutral evil (50%)",
+    "armorClass": 14,
+    "hitPoints": {
+      "max": 200,
+      "current": 200,
+      "diceString": "16d12+96"
+    },
+    "hitDice": "16d12",
+    "speed": {
+      "walk": 40
+    },
+    "abilities": {
+      "strength": 27,
+      "dexterity": 10,
+      "constitution": 22,
+      "intelligence": 12,
+      "wisdom": 16,
+      "charisma": 16
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "CON +10, WIS +7, CHA +7",
+    "skills": "Insight +7, Perception +7",
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Common",
+        "Giant"
+      ]
+    },
+    "senses": {
+      "passives": {
+        "perception": 17
+      }
+    },
+    "challengeRating": "9",
+    "proficiencyBonus": 4,
+    "xp": 5000,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/cloud-giant",
+    "spells": "The giant's innate spellcasting ability is Charisma. It can innately cast the following spells, requiring no material components:\n\nAt will: detect magic, fog cloud, light\n3/day each: feather fall, fly, misty step, telekinesis\n1/day each: control weather, gaseous form"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/cloud-giant",
+  "featureIds": [
+    "feat.keen-smell",
+    "feat.multiattack",
+    "feat.morningstar",
+    "feat.rock"
+  ],
+  "featureParams": {
+    "feat.morningstar": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 12,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "3d8 + 8",
+      "damageType": "piercing"
+    },
+    "feat.rock": {
+      "kind": "Ranged",
+      "attackKind": "Weapon",
+      "attackBonus": 12,
+      "distanceLabel": "range",
+      "distance": "60/240",
+      "damageDice": "4d10 + 8",
+      "damageType": "bludgeoning"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.morningstar",
+          "count": 2
+        }
+      ],
+      "text": "The giant makes two morningstar attacks."
+    }
+  }
+}

@@ -1,0 +1,104 @@
+{
+  "kind": "monster",
+  "index": "young-gold-dragon",
+  "name": "Young Gold Dragon",
+  "type": "dragon",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/young-gold-dragon.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "lawful good",
+    "armorClass": 18,
+    "hitPoints": {
+      "max": 178,
+      "current": 178,
+      "diceString": "17d10+85"
+    },
+    "hitDice": "17d10",
+    "speed": {
+      "walk": 40,
+      "fly": 80,
+      "swim": 40
+    },
+    "abilities": {
+      "strength": 23,
+      "dexterity": 14,
+      "constitution": 21,
+      "intelligence": 16,
+      "wisdom": 13,
+      "charisma": 20
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "DEX +6, CON +9, WIS +5, CHA +9",
+    "skills": "Insight +5, Perception +9, Persuasion +9, Stealth +6",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "fire",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Common",
+        "Draconic"
+      ]
+    },
+    "senses": {
+      "blindsight": 30,
+      "darkvision": 120,
+      "passives": {
+        "perception": 19
+      }
+    },
+    "challengeRating": "10",
+    "proficiencyBonus": 4,
+    "xp": 5900,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/young-gold-dragon"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/young-gold-dragon",
+  "featureIds": [
+    "feat.amphibious",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.claw",
+    "feat.young-gold-dragon-breath-weapons"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 10,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "2d10 + 6",
+      "damageType": "piercing"
+    },
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 10,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 6",
+      "damageType": "slashing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.bite",
+          "count": 1
+        },
+        {
+          "featureId": "feat.claw",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes three attacks: one with its bite and two with its claws."
+    }
+  }
+}

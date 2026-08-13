@@ -1,0 +1,70 @@
+{
+  "kind": "monster",
+  "index": "hunter-shark",
+  "name": "Hunter Shark",
+  "notes": "Smaller than a giant shark but larger and fiercer than a reef shark, a hunter shark haunts deep waters. It usually hunts alone, but multiple hunter sharks might feed in the same area. A fully grown hunter shark is 15 to 20 feet long.",
+  "type": "beast",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/hunter-shark.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "unaligned",
+    "armorClass": 12,
+    "hitPoints": {
+      "max": 45,
+      "current": 45,
+      "diceString": "6d10+12"
+    },
+    "hitDice": "6d10",
+    "speed": {
+      "swim": 40
+    },
+    "abilities": {
+      "strength": 18,
+      "dexterity": 13,
+      "constitution": 15,
+      "intelligence": 1,
+      "wisdom": 10,
+      "charisma": 4
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "",
+    "skills": "Perception +2",
+    "proficiencies": {
+      "defenses": [],
+      "languages": []
+    },
+    "senses": {
+      "darkvision": 30,
+      "passives": {
+        "perception": 12
+      }
+    },
+    "challengeRating": "2",
+    "proficiencyBonus": 2,
+    "xp": 450,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/hunter-shark"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/hunter-shark",
+  "featureIds": [
+    "feat.blood-frenzy",
+    "feat.water-breathing-monster",
+    "feat.bite"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d8 + 4",
+      "damageType": "piercing"
+    }
+  }
+}

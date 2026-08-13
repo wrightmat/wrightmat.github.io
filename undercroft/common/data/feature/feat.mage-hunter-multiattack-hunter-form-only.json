@@ -1,0 +1,32 @@
+{
+  "id": "feat.mage-hunter-multiattack-hunter-form-only",
+  "name": "Multiattack (Hunter Form Only)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature makes two Claw attacks.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature makes two Claw attacks.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "id": "feat.yggdrasti-lightning-conduit",
+  "name": "Lightning Conduit",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "If the creature is subjected to lightning damage, it is unhurt, and the lightning damage is instead divided evenly among all creatures it is grappling. In addition, the creature regains one use of Lightning Discharge.",
+  "mechanics": {
+    "type": "passive",
+    "text": "If the creature is subjected to lightning damage, it is unhurt, and the lightning damage is instead divided evenly among all creatures it is grappling. In addition, the creature regains one use of Lightning Discharge.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "defense",
+      "regeneration"
+    ],
+    "recipeSlots": [
+      "adapt"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,79 @@
+{
+  "kind": "monster",
+  "index": "werebear-human",
+  "name": "Werebear, Human Form",
+  "type": "humanoid",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/werebear-human.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "neutral good",
+    "armorClass": 10,
+    "hitPoints": {
+      "max": 135,
+      "current": 135,
+      "diceString": "18d8+54"
+    },
+    "hitDice": "18d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 19,
+      "dexterity": 10,
+      "constitution": 17,
+      "intelligence": 11,
+      "wisdom": 12,
+      "charisma": 12
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "Perception +7",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "bludgeoning, piercing, and slashing from nonmagical weapons that aren't silvered",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Common"
+      ]
+    },
+    "senses": {
+      "passives": {
+        "perception": 17
+      }
+    },
+    "challengeRating": "5",
+    "proficiencyBonus": 3,
+    "xp": 1800,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/werebear-human"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/werebear-human",
+  "featureIds": [
+    "feat.shapechanger",
+    "feat.keen-hearing-and-smell",
+    "feat.multiattack",
+    "feat.greataxe"
+  ],
+  "featureParams": {
+    "feat.greataxe": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d12 + 4",
+      "damageType": "slashing"
+    },
+    "feat.multiattack": {
+      "text": "In bear form, the werebear makes two claw attacks. In humanoid form, it makes two greataxe attacks. In hybrid form, it can attack like a bear or a humanoid."
+    }
+  }
+}

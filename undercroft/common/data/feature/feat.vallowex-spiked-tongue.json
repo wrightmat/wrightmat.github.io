@@ -1,0 +1,33 @@
+{
+  "id": "feat.vallowex-spiked-tongue",
+  "name": "Spiked Tongue",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Melee Weapon Attack: +8 to hit, reach 15 ft., one target. Hit: 14 (2d8 + 5) piercing damage, and the target is grappled (escape DC 15). Until this grapple ends, the target is restrained, and the creature can’t use its spiked tongue against another target.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Melee Weapon Attack: +8 to hit, reach 15 ft., one target. Hit: 14 (2d8 + 5) piercing damage, and the target is grappled (escape DC 15). Until this grapple ends, the target is restrained, and the creature can’t use its spiked tongue against another target.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "control"
+    ],
+    "recipeSlots": [
+      "isolate"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

@@ -1,0 +1,124 @@
+{
+  "kind": "monster",
+  "name": "Deep One Archimandrite",
+  "notes": "*With enormous eyes, a wide mouth, and almost no chin, the deep ones are hideous, fishlike folk, often hunched and scaled when encountered in coastal villages.* \n\n**Elder Gods**. In their fully grown form, the deep ones are an ocean-dwelling race that worships elder gods such as Father Dagon and Mother Hydra, and they dwell in deep water darkness. They’ve intermarried with coastal humans to create human-deep one hybrids.\n\n**Coastal Raiders**. The deep ones keep to themselves in isolated coastal villages and settlements in the ocean for long periods, and then turn suddenly, at the command of their patron gods, into strong, relentless raiders, seizing territory, slaves, and wealth all along the coasts.Some deep ones have even founded small kingdoms lasting generations in backwater reaches or distant chilled seas.\n\n**Demand Sacrifices**. They demand tolls from mariners frequently; those who do not leave tribute to them at certain islands or along certain straits find the fish escape their nets, or the storms shatter their hulls and drown their sailors. Over time, some seafaring nations have found it more profitable to ally themselves with the deep ones; this is the first step in their patient plans to dominate and rule.",
+  "type": "humanoid",
+  "stats": {
+    "size": "Large",
+    "alignment": "Chaotic Evil",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 153,
+      "current": 153,
+      "diceString": "18d10 + 54"
+    },
+    "hitDice": "18d10",
+    "speed": {
+      "walk": 40,
+      "swim": 40
+    },
+    "abilities": {
+      "strength": 20,
+      "dexterity": 15,
+      "constitution": 17,
+      "intelligence": 12,
+      "wisdom": 17,
+      "charisma": 19
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "Dex +5, Wis +6, Cha +7",
+    "skills": "Arcana +4, Perception +6",
+    "senses": {
+      "darkvision": 240,
+      "passives": {
+        "perception": 16
+      }
+    },
+    "challengeRating": "8",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "cold",
+          "type": "resistance"
+        },
+        {
+          "name": "thunder",
+          "type": "resistance"
+        },
+        {
+          "name": "fire",
+          "type": "vulnerability"
+        }
+      ],
+      "languages": [
+        "Common",
+        "Void Speech"
+      ]
+    },
+    "spells": "The deep one priest’s innate spellcasting ability is Charisma (spell save DC 15, +7 to hit with spell attacks). It can innately cast the following spells, requiring no material components: At will: bless, revivify, sacred flame, shocking grasp, suggestio 3/day each: charm person, lightning bolt, sanctuary, shatter 1/day each: chain lightning, cone of cold, ice storm",
+    "environments": [],
+    "sources": [
+      "Tome of Beasts 1 (pg 73)"
+    ],
+    "saveDC": 15
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.amphibious",
+    "feat.deep-one-priest-frenzied-rage",
+    "feat.legendary-resistance",
+    "feat.lightless-depths",
+    "feat.deep-one-priest-ocean-change",
+    "feat.deep-one-archimandrite-voice-of-the-archimandrite",
+    "feat.multiattack",
+    "feat.claw",
+    "feat.unholy-trident"
+  ],
+  "featureTiers": {
+    "feat.legendary-resistance": "1-day"
+  },
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.claw",
+          "count": 1
+        },
+        {
+          "featureId": "feat.unholy-trident",
+          "count": 1
+        }
+      ],
+      "text": "a creature makes one claw attack and one unholy trident attack."
+    },
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 8,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d8 + 5",
+      "damageType": "slashing"
+    },
+    "feat.unholy-trident": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 8,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "2d8 + 5",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "2d12",
+        "damageType": "necrotic"
+      }
+    }
+  }
+}

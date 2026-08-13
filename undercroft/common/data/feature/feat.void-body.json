@@ -1,0 +1,47 @@
+{
+  "id": "feat.void-body",
+  "name": "Void Body",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature can reduce the damage it takes from a single source to 0. Divine damage can only be reduced by half.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature can reduce the damage it takes from a single source to 0. Divine damage can only be reduced by half."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "reaction"
+  },
+  "tiers": [
+    {
+      "id": "total",
+      "name": "Void Body",
+      "shortName": "Full Reduction",
+      "mechanics": {
+        "text": "The creature can reduce the damage it takes from a single source to 0. Divine damage can only be reduced by half."
+      }
+    },
+    {
+      "id": "1d12",
+      "name": "Void Body",
+      "shortName": "1d12 Reduction",
+      "mechanics": {
+        "text": "When the creature takes damage that isn't radiant, it can reduce the damage by 1d12."
+      }
+    }
+  ]
+}

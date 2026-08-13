@@ -1,0 +1,28 @@
+{
+  "id": "feat.oni-change-shape",
+  "name": "Change Shape",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature magically polymorphs into a Small or Medium humanoid, into a Large giant, or back into its true form. Other than its size, its statistics are the same in each form. The only equipment that is transformed is its glaive, which shrinks so that it can be wielded in humanoid form. If the creature dies, it reverts to its true form, and its glaive reverts to its normal size.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The creature magically polymorphs into a Small or Medium humanoid, into a Large giant, or back into its true form. Other than its size, its statistics are the same in each form. The only equipment that is transformed is its glaive, which shrinks so that it can be wielded in humanoid form. If the creature dies, it reverts to its true form, and its glaive reverts to its normal size."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

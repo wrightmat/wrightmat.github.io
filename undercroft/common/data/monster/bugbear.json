@@ -1,0 +1,76 @@
+{
+  "kind": "monster",
+  "index": "bugbear",
+  "name": "Bugbear",
+  "type": "humanoid",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/bugbear.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "chaotic evil",
+    "armorClass": 16,
+    "hitPoints": {
+      "max": 27,
+      "current": 27,
+      "diceString": "5d8+5"
+    },
+    "hitDice": "5d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 15,
+      "dexterity": 14,
+      "constitution": 13,
+      "intelligence": 8,
+      "wisdom": 11,
+      "charisma": 9
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "Stealth +6, Survival +2",
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Common",
+        "Goblin"
+      ]
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "1",
+    "proficiencyBonus": 2,
+    "xp": 200,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/bugbear"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/bugbear",
+  "featureIds": [
+    "feat.brute",
+    "feat.surprise-attack",
+    "feat.morningstar",
+    "feat.bugbear-javelin"
+  ],
+  "featureParams": {
+    "feat.morningstar": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d8 + 2",
+      "damageType": "piercing"
+    }
+  },
+  "featureTiers": {
+    "feat.surprise-attack": "2d6"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "id": "feat.glass-gator-standing-leap",
+  "name": "Standing Leap",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature can long jump up to 15 feet from water or up to 10 feet on land, with or without a running start.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature can long jump up to 15 feet from water or up to 10 feet on land, with or without a running start.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "mobility"
+    ],
+    "recipeSlots": [
+      "escape"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

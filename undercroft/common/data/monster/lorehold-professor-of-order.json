@@ -1,0 +1,95 @@
+{
+  "kind": "monster",
+  "name": "Lorehold Professor of Order",
+  "image": [
+    [
+      "Wikilink To Image"
+    ]
+  ],
+  "notes": "",
+  "type": "humanoid",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Any Alignment",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 104,
+      "current": 104,
+      "diceString": "16d8 + 32"
+    },
+    "hitDice": "16d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 11,
+      "dexterity": 14,
+      "constitution": 14,
+      "intelligence": 19,
+      "wisdom": 15,
+      "charisma": 13
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "CON +5, INT +7, WIS +5, CHA +4",
+    "skills": "Arcana +7, History +7, Perception +5",
+    "senses": {
+      "passives": {
+        "perception": 15
+      }
+    },
+    "challengeRating": "7",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Force",
+          "type": "resistance"
+        }
+      ],
+      "languages": [
+        "Common plus any four languages"
+      ]
+    },
+    "spells": "The professor casts one of the following spells, requiring no material components and using Intelligence as the spellcasting ability (spell save DC 15): At will: comprehend languages, guidance, light 2/day each: dimension door, locate object, mage armor, stone shape",
+    "environments": [],
+    "sources": [],
+    "saveDC": 15
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.lorehold-professor-of-order-voice-from-the-past-1-day",
+    "feat.multiattack",
+    "feat.repelling-burst",
+    "feat.lorehold-professor-of-order-force-barrier-recharge-5-6",
+    "feat.lorehold-professor-of-order-arcane-stasis-2-day"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.repelling-burst",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two Repelling Burst attacks. It can also use Force Barrier, if available."
+    },
+    "feat.repelling-burst": {
+      "kind": "Melee",
+      "attackKind": "Spell",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "30",
+      "damageDice": "2d8 + 4",
+      "damageType": "force",
+      "rider": {
+        "kind": "save-or-condition",
+        "targetRestriction": "large or smaller creature"
+      }
+    }
+  }
+}

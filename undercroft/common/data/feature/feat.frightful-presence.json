@@ -1,0 +1,65 @@
+{
+  "id": "feat.frightful-presence",
+  "name": "Frightful Presence",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Each creature of the dragon's choice that is within 120 feet of the dragon and aware of it must succeed on a DC 16 Wisdom saving throw or become frightened for 1 minute. A creature can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success. If a creature's saving throw is successful or the effect ends for it, the creature is immune to the dragon's Frightful Presence for the next 24 hours.",
+  "mechanics": {
+    "type": "passive"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [
+      "fear",
+      "control"
+    ],
+    "recipeSlots": [
+      "threaten"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "dc-16",
+      "name": "Frightful Presence (DC 16)",
+      "shortName": "DC 16",
+      "mechanics": {
+        "text": "Each creature of the dragon's choice that is within 120 feet of the dragon and aware of it must succeed on a DC 16 Wisdom saving throw or become frightened for 1 minute. A creature can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success. If a creature's saving throw is successful or the effect ends for it, the creature is immune to the dragon's Frightful Presence for the next 24 hours."
+      }
+    },
+    {
+      "id": "dc-17",
+      "name": "Frightful Presence (DC 17)",
+      "shortName": "DC 17",
+      "mechanics": {
+        "text": "Each creature of the dragon's choice that is within 120 feet of the dragon and aware of it must succeed on a DC 17 Wisdom saving throw or become frightened for 1 minute. A creature can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success. If a creature's saving throw is successful or the effect ends for it, the creature is immune to the dragon's Frightful Presence for the next 24 hours."
+      }
+    },
+    {
+      "id": "dc-21",
+      "name": "Frightful Presence (DC 21)",
+      "shortName": "DC 21",
+      "mechanics": {
+        "text": "Each creature of the dragon's choice that is within 120 feet of the dragon and aware of it must succeed on a DC 21 Wisdom saving throw or become frightened for 1 minute. A creature can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success. If a creature's saving throw is successful or the effect ends for it, the creature is immune to the dragon's Frightful Presence for the next 24 hours."
+      }
+    },
+    {
+      "id": "dc-18",
+      "name": "Frightful Presence (DC 18)",
+      "shortName": "DC 18",
+      "mechanics": {
+        "text": "Each creature of the dragon's choice that is within 120 feet of the dragon and aware of it must succeed on a DC 18 Wisdom saving throw or become frightened for 1 minute. A creature can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success. If a creature's saving throw is successful or the effect ends for it, the creature is immune to the dragon's Frightful Presence for the next 24 hours."
+      }
+    }
+  ],
+  "combat": {
+    "actionCost": "action"
+  }
+}

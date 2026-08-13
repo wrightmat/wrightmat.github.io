@@ -1,0 +1,33 @@
+{
+  "id": "feat.galeb-duhr-animate-boulders-1-day",
+  "name": "Animate Boulders (1/Day)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature magically animates one or two boulders it can see within 60 feet of itself. Each boulder uses the creature stat block, except it has Intelligence and Charisma scores of 1 and lacks this action. The boulder takes its turn immediately after the creature on the same Initiative count, and it obeys the creature. A boulder remains animate for 1 minute or until it or the creature dies.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature magically animates one or two boulders it can see within 60 feet of itself. Each boulder uses the creature stat block, except it has Intelligence and Charisma scores of 1 and lacks this action. The boulder takes its turn immediately after the creature on the same Initiative count, and it obeys the creature. A boulder remains animate for 1 minute or until it or the creature dies.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "utility",
+      "damage"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

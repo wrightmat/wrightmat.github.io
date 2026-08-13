@@ -1,0 +1,78 @@
+{
+  "kind": "monster",
+  "name": "Ankylosaurus",
+  "notes": "",
+  "type": "beast",
+  "stats": {
+    "size": "Huge",
+    "alignment": "Unaligned",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 68,
+      "current": 68,
+      "diceString": "8d12+16"
+    },
+    "hitDice": "8d12",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 19,
+      "dexterity": 11,
+      "constitution": 15,
+      "intelligence": 2,
+      "wisdom": 12,
+      "charisma": 5
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "",
+    "senses": {
+      "passives": {
+        "perception": 11
+      }
+    },
+    "challengeRating": "3",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [
+      "Grassland"
+    ],
+    "sources": [
+      "MM",
+      "https://www.dndbeyond.com/monsters/17088-ankylosaurus",
+      "Basic Rules, pg. 117"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.tail"
+  ],
+  "featureParams": {
+    "feat.tail": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "4d6 + 4",
+      "damageType": "bludgeoning",
+      "rider": {
+        "kind": "save-or-condition",
+        "saveAbility": "strength",
+        "saveDC": 14,
+        "condition": "knocked prone"
+      }
+    }
+  }
+}

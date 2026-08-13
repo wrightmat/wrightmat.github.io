@@ -1,0 +1,106 @@
+{
+  "kind": "monster",
+  "index": "swarm-of-rats",
+  "name": "Swarm of Rats",
+  "type": "swarm of Tiny beasts",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/swarm-of-rats.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "unaligned",
+    "armorClass": 10,
+    "hitPoints": {
+      "max": 24,
+      "current": 24,
+      "diceString": "7d8-7"
+    },
+    "hitDice": "7d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 9,
+      "dexterity": 11,
+      "constitution": 9,
+      "intelligence": 2,
+      "wisdom": 10,
+      "charisma": 3
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "slashing",
+          "type": "resistance"
+        },
+        {
+          "name": "Charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "Frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "Grappled",
+          "type": "immunity"
+        },
+        {
+          "name": "Paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "Petrified",
+          "type": "immunity"
+        },
+        {
+          "name": "Prone",
+          "type": "immunity"
+        },
+        {
+          "name": "Restrained",
+          "type": "immunity"
+        },
+        {
+          "name": "Stunned",
+          "type": "immunity"
+        }
+      ],
+      "languages": []
+    },
+    "senses": {
+      "darkvision": 30,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "1/4",
+    "proficiencyBonus": 2,
+    "xp": 50,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/swarm-of-rats"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/swarm-of-rats",
+  "featureIds": [
+    "feat.keen-hearing-and-smell",
+    "feat.death-butterfly-swarm-swarm",
+    "feat.bites"
+  ],
+  "featureTiers": {
+    "feat.bites": "weaker"
+  }
+}

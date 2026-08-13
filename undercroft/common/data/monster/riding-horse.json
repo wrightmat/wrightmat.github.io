@@ -1,0 +1,66 @@
+{
+  "kind": "monster",
+  "index": "riding-horse",
+  "name": "Riding Horse",
+  "type": "beast",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/riding-horse.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "unaligned",
+    "armorClass": 10,
+    "hitPoints": {
+      "max": 13,
+      "current": 13,
+      "diceString": "2d10+2"
+    },
+    "hitDice": "2d10",
+    "speed": {
+      "walk": 60
+    },
+    "abilities": {
+      "strength": 16,
+      "dexterity": 10,
+      "constitution": 12,
+      "intelligence": 2,
+      "wisdom": 11,
+      "charisma": 7
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [],
+      "languages": []
+    },
+    "senses": {
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "1/4",
+    "proficiencyBonus": 2,
+    "xp": 25,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/riding-horse"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/riding-horse",
+  "featureIds": [
+    "feat.hooves"
+  ],
+  "featureParams": {
+    "feat.hooves": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d4 + 3",
+      "damageType": "bludgeoning"
+    }
+  }
+}

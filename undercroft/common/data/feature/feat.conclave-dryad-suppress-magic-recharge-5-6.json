@@ -1,0 +1,32 @@
+{
+  "id": "feat.conclave-dryad-suppress-magic-recharge-5-6",
+  "name": "Suppress Magic (Recharge 5–6)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature targets one magic item it can see within 120 feet of it. If the magic item isn’t an artifact, its magical properties are suppressed for 10 minutes, until the creature is incapacitated or dies, or until the creature uses a bonus action to end the effect.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature targets one magic item it can see within 120 feet of it. If the magic item isn’t an artifact, its magical properties are suppressed for 10 minutes, until the creature is incapacitated or dies, or until the creature uses a bonus action to end the effect.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "control"
+    ],
+    "recipeSlots": [
+      "deny"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

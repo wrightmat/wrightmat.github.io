@@ -1,0 +1,64 @@
+{
+  "kind": "monster",
+  "name": "Silverquill Pledgemage",
+  "image": [
+    [
+      "Wikilink To Image"
+    ]
+  ],
+  "notes": "",
+  "type": "humanoid",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Any Alignment",
+    "armorClass": 16,
+    "hitPoints": {
+      "max": 66,
+      "current": 66,
+      "diceString": "12d8 + 12"
+    },
+    "hitDice": "12d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 10,
+      "dexterity": 16,
+      "constitution": 13,
+      "intelligence": 12,
+      "wisdom": 11,
+      "charisma": 17
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "Dex +5, Wis +2, Cha +5",
+    "skills": "Deception +5, Performance +7, Persuasion +7",
+    "senses": {
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "4",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Common plus any two languages"
+      ]
+    },
+    "spells": "The pledgemage casts one of the following spells, requiring no material components and using Charisma as the spellcasting ability (spell save DC 13): At will: dancing lights, friends 1/day each: command, confusion, mage armor, tongues",
+    "environments": [],
+    "sources": [],
+    "saveDC": 13
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.silverquill-pledgemage-ink-blade",
+    "feat.silverquill-pledgemage-demotivate-2-day",
+    "feat.silverquill-pledgemage-rousing-verse"
+  ]
+}

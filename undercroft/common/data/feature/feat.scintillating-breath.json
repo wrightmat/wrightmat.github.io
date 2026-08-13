@@ -1,0 +1,26 @@
+{
+  "id": "feat.scintillating-breath",
+  "name": "Scintillating Breath",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature exhales a burst of brilliant radiance in an area, forcing a saving throw or dealing damage.",
+  "mechanics": {
+    "type": "save-effect"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

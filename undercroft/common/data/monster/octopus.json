@@ -1,0 +1,65 @@
+{
+  "kind": "monster",
+  "index": "octopus",
+  "name": "Octopus",
+  "type": "beast",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/octopus.png",
+  "stats": {
+    "size": "Small",
+    "alignment": "unaligned",
+    "armorClass": 12,
+    "hitPoints": {
+      "max": 3,
+      "current": 3,
+      "diceString": "1d6"
+    },
+    "hitDice": "1d6",
+    "speed": {
+      "walk": 5,
+      "swim": 30
+    },
+    "abilities": {
+      "strength": 4,
+      "dexterity": 15,
+      "constitution": 11,
+      "intelligence": 3,
+      "wisdom": 10,
+      "charisma": 4
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "Perception +2, Stealth +4",
+    "proficiencies": {
+      "defenses": [],
+      "languages": []
+    },
+    "senses": {
+      "darkvision": 30,
+      "passives": {
+        "perception": 12
+      }
+    },
+    "challengeRating": "0",
+    "proficiencyBonus": 2,
+    "xp": 10,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/octopus"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/octopus",
+  "featureIds": [
+    "feat.hold-breath",
+    "feat.riptide-drake-underwater-camouflage",
+    "feat.water-breathing-monster",
+    "feat.octopus-tentacles",
+    "feat.ink-cloud"
+  ],
+  "featureTiers": {
+    "feat.hold-breath": "30-minutes",
+    "feat.ink-cloud": "octopus"
+  }
+}

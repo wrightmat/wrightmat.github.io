@@ -4,10 +4,10 @@
   "systemIds": [
     "sys.dnd5e"
   ],
-  "description": "A successful attack forces the target to make its next concentration save with disadvantage.",
+  "description": "The creature attack forces the target to make its next concentration save with disadvantage.",
   "mechanics": {
     "type": "passive-or-triggered",
-    "text": "A successful attack forces the target to make its next concentration save with disadvantage."
+    "text": "The creature attack forces the target to make its next concentration save with disadvantage."
   },
   "budgetCost": 1,
   "tags": {

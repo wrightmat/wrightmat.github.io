@@ -1,0 +1,31 @@
+{
+  "id": "feat.aboleth-detect",
+  "name": "Detect",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature makes a Wisdom (Perception) check.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature makes a Wisdom (Perception) check."
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "legendary-action"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "id": "feat.naiad-invisible-in-water",
+  "name": "Invisible in Water",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature is invisible while fully immersed in water.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature is invisible while fully immersed in water."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

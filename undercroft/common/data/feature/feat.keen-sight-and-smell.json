@@ -1,0 +1,27 @@
+{
+  "id": "feat.keen-sight-and-smell",
+  "name": "Keen Sight and Smell",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature has advantage on Wisdom (Perception) checks that rely on sight or smell.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The creature has advantage on Wisdom (Perception) checks that rely on sight or smell."
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

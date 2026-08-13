@@ -1,0 +1,29 @@
+{
+  "id": "feat.black-patch-eldritch-luminance",
+  "name": "Eldritch Luminance",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "When a creature that can see the creature starts its turn within 90 feet of the ooze, the creature can force it to make a DC 15 Wisdom saving throw if the ooze isn’t incapacitated and can see the creature. On a failure, the creature is mesmerized for 1 minute. A mesmerized creature that is more than 5 feet away from the creature must move on its turn toward the ooze by the most direct route, trying to get within 5 feet. It doesn’t avoid opportunity attacks, but before moving into damaging terrain, such as lava or a pit, and whenever it takes damage from a source other than the ooze, the target can repeat the saving throw. A mesmerized target can also repeat the saving throw at the end of each of its turns, ending the effect on itself on a success. If a creature’s saving throw is successful or the effect ends for it, the creature is immune to the creature's Eldritch Luminance for the next 24 hours.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When a creature that can see the creature starts its turn within 90 feet of the ooze, the creature can force it to make a DC 15 Wisdom saving throw if the ooze isn’t incapacitated and can see the creature. On a failure, the creature is mesmerized for 1 minute. A mesmerized creature that is more than 5 feet away from the creature must move on its turn toward the ooze by the most direct route, trying to get within 5 feet. It doesn’t avoid opportunity attacks, but before moving into damaging terrain, such as lava or a pit, and whenever it takes damage from a source other than the ooze, the target can repeat the saving throw. A mesmerized target can also repeat the saving throw at the end of each of its turns, ending the effect on itself on a success. If a creature’s saving throw is successful or the effect ends for it, the creature is immune to the creature's Eldritch Luminance for the next 24 hours.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "control"
+    ],
+    "recipeSlots": [
+      "dominate"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,33 @@
+{
+  "id": "feat.void-knight-void-gauntlet",
+  "name": "Void Gauntlet",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Melee Weapon Attack: +10 to hit, reach 5 ft., one target. Hit: 13 (2d6 + 6) slashing damage plus 18 (4d8) force damage. If the target is a Medium or smaller creature it must succeed on a DC 16 Strength saving throw or be knocked prone.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Melee Weapon Attack: +10 to hit, reach 5 ft., one target. Hit: 13 (2d6 + 6) slashing damage plus 18 (4d8) force damage. If the target is a Medium or smaller creature it must succeed on a DC 16 Strength saving throw or be knocked prone.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "control"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

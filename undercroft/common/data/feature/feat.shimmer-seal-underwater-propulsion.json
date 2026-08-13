@@ -1,0 +1,29 @@
+{
+  "id": "feat.shimmer-seal-underwater-propulsion",
+  "name": "Underwater Propulsion",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "When the creature is underwater, it can take the Dash action as a bonus action on each of its turns.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When the creature is underwater, it can take the Dash action as a bonus action on each of its turns.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "mobility"
+    ],
+    "recipeSlots": [
+      "escape"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

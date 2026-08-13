@@ -1,0 +1,29 @@
+{
+  "id": "feat.eldritch-lich-far-realm-step",
+  "name": "Far Realm Step",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Immediately after taking damage, the lich, along with any equipment it is wearing or carrying, magically teleports up to 60 feet to an unoccupied space it can see.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "Immediately after taking damage, the lich, along with any equipment it is wearing or carrying, magically teleports up to 60 feet to an unoccupied space it can see."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "mobility"
+    ],
+    "recipeSlots": [
+      "escape"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

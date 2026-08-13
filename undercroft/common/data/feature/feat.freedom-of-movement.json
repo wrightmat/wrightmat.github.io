@@ -1,0 +1,28 @@
+{
+  "id": "feat.freedom-of-movement",
+  "name": "Freedom of Movement",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature ignores difficult terrain, and magical effects can't reduce its speed or cause it to be restrained. It can spend 5 feet of movement to escape from nonmagical restraints or being grappled.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature ignores difficult terrain, and magical effects can't reduce its speed or cause it to be restrained. It can spend 5 feet of movement to escape from nonmagical restraints or being grappled."
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "mobility"
+    ],
+    "recipeSlots": [
+      "escape"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

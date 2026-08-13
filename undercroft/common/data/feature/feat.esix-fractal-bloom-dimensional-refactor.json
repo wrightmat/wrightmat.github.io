@@ -1,0 +1,33 @@
+{
+  "id": "feat.esix-fractal-bloom-dimensional-refactor",
+  "name": "Dimensional Refactor",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Esix warps the space around it in a burst of recursive energy. Each creature within 20 feet must make a DC 15 Dexterity saving throw. On a failed save, a creature takes 21 (6d6) force damage and is pulled 10 feet toward Esix. On a success, a creature takes half damage and is not moved.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Esix warps the space around it in a burst of recursive energy. Each creature within 20 feet must make a DC 15 Dexterity saving throw. On a failed save, a creature takes 21 (6d6) force damage and is pulled 10 feet toward Esix. On a success, a creature takes half damage and is not moved.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "control"
+    ],
+    "recipeSlots": [
+      "burst"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

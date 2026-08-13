@@ -1,0 +1,81 @@
+{
+  "kind": "monster",
+  "index": "goblin",
+  "name": "Goblin",
+  "type": "humanoid",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/goblin.png",
+  "stats": {
+    "size": "Small",
+    "alignment": "neutral evil",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 7,
+      "current": 7,
+      "diceString": "2d6"
+    },
+    "hitDice": "2d6",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 8,
+      "dexterity": 14,
+      "constitution": 10,
+      "intelligence": 10,
+      "wisdom": 8,
+      "charisma": 8
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "Stealth +6",
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Common",
+        "Goblin"
+      ]
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 9
+      }
+    },
+    "challengeRating": "1/4",
+    "proficiencyBonus": 2,
+    "xp": 50,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/goblin"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/goblin",
+  "featureIds": [
+    "feat.nimble-escape",
+    "feat.scimitar",
+    "feat.shortbow"
+  ],
+  "featureParams": {
+    "feat.scimitar": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d6 + 2",
+      "damageType": "slashing"
+    },
+    "feat.shortbow": {
+      "kind": "Ranged",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "range",
+      "distance": "80/320",
+      "damageDice": "1d6 + 2",
+      "damageType": "piercing"
+    }
+  }
+}

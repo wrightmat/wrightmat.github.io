@@ -1,0 +1,29 @@
+{
+  "id": "feat.shellycoat-stealthy-observer",
+  "name": "Stealthy Observer",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature has advantage on Dexterity (Stealth) checks made to hide and any Perception checks that rely on hearing.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature has advantage on Dexterity (Stealth) checks made to hide and any Perception checks that rely on hearing.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

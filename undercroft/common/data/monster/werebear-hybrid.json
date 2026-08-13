@@ -1,0 +1,104 @@
+{
+  "kind": "monster",
+  "index": "werebear-hybrid",
+  "name": "Werebear, Hybrid Form",
+  "type": "humanoid",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/werebear-hybrid.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "neutral good",
+    "armorClass": 11,
+    "hitPoints": {
+      "max": 135,
+      "current": 135,
+      "diceString": "18d8+54"
+    },
+    "hitDice": "18d8",
+    "speed": {
+      "walk": 40,
+      "climb": 30
+    },
+    "abilities": {
+      "strength": 19,
+      "dexterity": 10,
+      "constitution": 17,
+      "intelligence": 11,
+      "wisdom": 12,
+      "charisma": 12
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "Perception +7",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "bludgeoning, piercing, and slashing from nonmagical weapons that aren't silvered",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Common"
+      ]
+    },
+    "senses": {
+      "passives": {
+        "perception": 17
+      }
+    },
+    "challengeRating": "5",
+    "proficiencyBonus": 3,
+    "xp": 1800,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/werebear-hybrid"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/werebear-hybrid",
+  "featureIds": [
+    "feat.shapechanger",
+    "feat.keen-hearing-and-smell",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.claw",
+    "feat.greataxe"
+  ],
+  "featureParams": {
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d8 + 4",
+      "damageType": "slashing"
+    },
+    "feat.greataxe": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d12 + 4",
+      "damageType": "slashing"
+    },
+    "feat.multiattack": {
+      "text": "In bear form, the werebear makes two claw attacks. In humanoid form, it makes two greataxe attacks. In hybrid form, it can attack like a bear or a humanoid."
+    },
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d10 + 4",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "save-or-condition",
+        "targetRestriction": "humanoid"
+      }
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "id": "feat.shielded-mind",
+  "name": "Shielded Mind",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature is immune to scrying and to any effect that would sense its emotions, read its thoughts, or detect its location.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature is immune to scrying and to any effect that would sense its emotions, read its thoughts, or detect its location."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

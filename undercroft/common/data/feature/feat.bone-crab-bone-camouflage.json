@@ -1,0 +1,29 @@
+{
+  "id": "feat.bone-crab-bone-camouflage",
+  "name": "Bone Camouflage",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "a creature has advantage on Dexterity (Stealth) checks while it’s among bones.",
+  "mechanics": {
+    "type": "passive",
+    "text": "a creature has advantage on Dexterity (Stealth) checks while it’s among bones.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

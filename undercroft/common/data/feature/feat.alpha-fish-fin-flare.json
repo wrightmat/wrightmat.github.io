@@ -1,0 +1,33 @@
+{
+  "id": "feat.alpha-fish-fin-flare",
+  "name": "Fin Flare",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature flares its fins in an attempt to frighten its opponents. Each creature within 30 feet that can see the creature must succeed on a DC 13 Wisdom saving throw or be frightened for 1 minute. A creature can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success. If a creature’s saving throw is successful or the effect ends for it, the creature is immune to the creature’s Fin Flare for the next 24 hours.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature flares its fins in an attempt to frighten its opponents. Each creature within 30 feet that can see the creature must succeed on a DC 13 Wisdom saving throw or be frightened for 1 minute. A creature can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success. If a creature’s saving throw is successful or the effect ends for it, the creature is immune to the creature’s Fin Flare for the next 24 hours.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "fear",
+      "control"
+    ],
+    "recipeSlots": [
+      "threaten"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

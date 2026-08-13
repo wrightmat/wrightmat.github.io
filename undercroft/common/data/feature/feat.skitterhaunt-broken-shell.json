@@ -1,0 +1,29 @@
+{
+  "id": "feat.skitterhaunt-broken-shell",
+  "name": "Broken Shell",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "A creature that hits the creature with a melee attack while within 5 feet of it takes 5 (1d10) acid damage.",
+  "mechanics": {
+    "type": "passive",
+    "text": "A creature that hits the creature with a melee attack while within 5 feet of it takes 5 (1d10) acid damage.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

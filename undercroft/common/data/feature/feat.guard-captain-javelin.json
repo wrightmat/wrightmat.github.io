@@ -1,0 +1,32 @@
+{
+  "id": "feat.guard-captain-javelin",
+  "name": "Javelin",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Melee or Ranged Attack Roll: +6, reach 5 ft. or range 30/120 ft. Hit: 14 (3d6 + 4) Piercing damage.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "Melee or Ranged Attack Roll: +6, reach 5 ft. or range 30/120 ft. Hit: 14 (3d6 + 4) Piercing damage."
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

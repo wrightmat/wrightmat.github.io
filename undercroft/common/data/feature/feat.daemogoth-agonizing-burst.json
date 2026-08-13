@@ -1,0 +1,33 @@
+{
+  "id": "feat.daemogoth-agonizing-burst",
+  "name": "Agonizing Burst",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Melee or Ranged Spell Attack: +9 to hit, reach 10 ft. or range 120 ft., one target. Hit: 11 (2d10) force damage. If the target is a creature, the creature regains 5 hit points.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Melee or Ranged Spell Attack: +9 to hit, reach 10 ft. or range 120 ft., one target. Hit: 11 (2d10) force damage. If the target is a creature, the creature regains 5 hit points.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "regeneration"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

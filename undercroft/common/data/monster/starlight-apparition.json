@@ -1,0 +1,136 @@
+{
+  "kind": "monster",
+  "name": "Starlight Apparition",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/28079/949/1000/1000/637961800985477888.jpeg",
+  "notes": "### Description\r\n\r\nThe transparent projections of unfortunate souls who perished in Wildspace or in the Astral Sea are known as starlight apparitions. Each one has a luminous, incorporeal appearance that resembles its former self, but with eyes that glow.\r\n\r\nA starlight apparition is different from a ghost. While a ghost is doomed to haunt the place where it died until some promise or goal it couldn’t achieve in life is fulfilled, the goal of a starlight apparition is to help someone else avoid or overcome a perilous obstacle or accomplish a difficult task. A starlight apparition comes into being when the soul of a deceased individual, from its resting place in the afterlife, projects a spectral copy of itself across a vast distance with the help of a deity or another powerful celestial entity. The apparition lasts only as long as its services are needed to complete the task at hand; then it fades away, never to return.",
+  "type": "celestial",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Typically Neutral Good",
+    "armorClass": 10,
+    "hitPoints": {
+      "max": 72,
+      "current": 72
+    },
+    "hitDice": "16d8",
+    "speed": {
+      "walk": 0,
+      "fly": 30,
+      "hover": true
+    },
+    "abilities": {
+      "strength": 1,
+      "dexterity": 11,
+      "constitution": 10,
+      "intelligence": 18,
+      "wisdom": 16,
+      "charisma": 16
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "",
+    "senses": {
+      "darkvision": 120,
+      "passives": {
+        "perception": 13
+      }
+    },
+    "challengeRating": "5",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Acid",
+          "type": "resistance"
+        },
+        {
+          "name": "Cold",
+          "type": "resistance"
+        },
+        {
+          "name": "Fire; Bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "Piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "and Slashing from Nonmagical Attacks",
+          "type": "resistance"
+        },
+        {
+          "name": "Poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Radiant",
+          "type": "immunity"
+        },
+        {
+          "name": "Blinded",
+          "type": "immunity"
+        },
+        {
+          "name": "Charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "Exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "Frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "Grappled",
+          "type": "immunity"
+        },
+        {
+          "name": "Paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "Petrified",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        },
+        {
+          "name": "Prone",
+          "type": "immunity"
+        },
+        {
+          "name": "Restrained",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "BAM",
+      "Spelljammer: Adventures in Space • Boo’s Astral Menagerie, pg. 59",
+      "https://www.dndbeyond.com/monsters/2821204-starlight-apparition"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.starlight-apparition-astral-existence",
+    "feat.light-elemental-brilliant-illumination",
+    "feat.incorporeal-movement",
+    "feat.unusual-nature",
+    "feat.starlight-apparition-radiant-eruption",
+    "feat.possession"
+  ]
+}

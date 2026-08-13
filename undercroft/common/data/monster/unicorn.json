@@ -1,0 +1,127 @@
+{
+  "kind": "monster",
+  "index": "unicorn",
+  "name": "Unicorn",
+  "type": "celestial",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/unicorn.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "lawful good",
+    "armorClass": 12,
+    "hitPoints": {
+      "max": 67,
+      "current": 67,
+      "diceString": "9d10+18"
+    },
+    "hitDice": "9d10",
+    "speed": {
+      "walk": 50
+    },
+    "abilities": {
+      "strength": 18,
+      "dexterity": 14,
+      "constitution": 15,
+      "intelligence": 11,
+      "wisdom": 17,
+      "charisma": 16
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "Paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Celestial",
+        "Elvish",
+        "Sylvan",
+        "telepathy 60 ft."
+      ]
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 13
+      }
+    },
+    "challengeRating": "5",
+    "proficiencyBonus": 3,
+    "xp": 1800,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/unicorn",
+    "spells": "The unicorn's innate spellcasting ability is Charisma (spell save DC 14). The unicorn can innately cast the following spells, requiring no components:\n\nAt will: detect evil and good, druidcraft, pass without trace\n1/day each: calm emotions, dispel evil and good, entangle",
+    "saveDC": 14
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/unicorn",
+  "featureIds": [
+    "feat.unicorn-charge",
+    "feat.magic-resistance",
+    "feat.magic-weapons",
+    "feat.multiattack",
+    "feat.hooves",
+    "feat.horn",
+    "feat.healing-touch-monster",
+    "feat.teleport",
+    "feat.unicorn-hooves",
+    "feat.unicorn-shimmering-shield-costs-2-actions",
+    "feat.unicorn-heal-self-costs-3-actions"
+  ],
+  "featureTiers": {
+    "feat.teleport": "60-ft",
+    "feat.healing-touch-monster": "2d8"
+  },
+  "featureParams": {
+    "feat.hooves": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 4",
+      "damageType": "bludgeoning"
+    },
+    "feat.horn": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d8 + 4",
+      "damageType": "piercing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.hooves",
+          "count": 1
+        },
+        {
+          "featureId": "feat.horn",
+          "count": 1
+        }
+      ],
+      "text": "The creature makes two attacks: one with its hooves and one with its horn."
+    }
+  }
+}

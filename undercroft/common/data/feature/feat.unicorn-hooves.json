@@ -1,0 +1,28 @@
+{
+  "id": "feat.unicorn-hooves",
+  "name": "Hooves",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature makes one attack with its hooves.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The creature makes one attack with its hooves."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "legendary-action"
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "id": "feat.grell-paralyzing-tentacles",
+  "name": "Paralyzing Tentacles",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Melee Attack Roll: +4, reach 10 ft. Hit: 7 (1d10 + 2) Piercing damage. If the target is a Medium or smaller creature, it has the Grappled condition (escape DC 12) from two of ten tentacles. The target is also subjected to the following effect. Constitution Saving Throw: DC 11. Failure: The target has the Poisoned condition and repeats the save at the end of each of its turns, ending the effect on itself on a success. After 1 minute, it succeeds automatically. While Poisoned, the target has the Paralyzed condition.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Melee Attack Roll: +4, reach 10 ft. Hit: 7 (1d10 + 2) Piercing damage. If the target is a Medium or smaller creature, it has the Grappled condition (escape DC 12) from two of ten tentacles. The target is also subjected to the following effect. Constitution Saving Throw: DC 11. Failure: The target has the Poisoned condition and repeats the save at the end of each of its turns, ending the effect on itself on a success. After 1 minute, it succeeds automatically. While Poisoned, the target has the Paralyzed condition.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "control",
+      "debuff"
+    ],
+    "recipeSlots": [
+      "isolate"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

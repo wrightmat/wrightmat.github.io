@@ -1,0 +1,25 @@
+{
+  "id": "feat.grimlock-blind-senses",
+  "name": "Blind Senses",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature can't use its blindsight while deafened and unable to smell.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The creature can't use its blindsight while deafened and unable to smell."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

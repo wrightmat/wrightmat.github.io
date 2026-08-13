@@ -1,0 +1,57 @@
+{
+  "id": "feat.wing-attack",
+  "name": "Wing Attack (Costs 2 Actions)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature beats its wings. Each creature within 10 ft. of the creature must succeed on a DC 19 Dexterity saving throw or take 13 (2d6 + 6) bludgeoning damage and be knocked prone. The creature can then fly up to half its flying speed.",
+  "mechanics": {
+    "type": "passive"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "control"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "dc-19",
+      "name": "Wing Attack (DC 19)",
+      "shortName": "DC 19",
+      "mechanics": {
+        "text": "The creature beats its wings. Each creature within 10 ft. of the creature must succeed on a DC 19 Dexterity saving throw or take 13 (2d6 + 6) bludgeoning damage and be knocked prone. The creature can then fly up to half its flying speed."
+      }
+    },
+    {
+      "id": "dc-20",
+      "name": "Wing Attack (DC 20)",
+      "shortName": "DC 20",
+      "mechanics": {
+        "text": "The creature beats its wings. Each creature within 10 ft. of the creature must succeed on a DC 20 Dexterity saving throw or take 14 (2d6 + 7) bludgeoning damage and be knocked prone. The creature can then fly up to half its flying speed."
+      }
+    },
+    {
+      "id": "dc-22",
+      "name": "Wing Attack (DC 22)",
+      "shortName": "DC 22",
+      "mechanics": {
+        "text": "The creature beats its wings. Each creature within 10 ft. of the creature must succeed on a DC 22 Dexterity saving throw or take 15 (2d6 + 8) bludgeoning damage and be knocked prone. The creature can then fly up to half its flying speed."
+      }
+    }
+  ],
+  "combat": {
+    "actionCost": "legendary-action"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "id": "feat.shimmer-seal-sureflippered",
+  "name": "Sureflippered",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature can move across and climb icy surfaces without needing to make an ability check. Additionally, difficult terrain composed of ice or snow doesn’t cost it extra movement.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature can move across and climb icy surfaces without needing to make an ability check. Additionally, difficult terrain composed of ice or snow doesn’t cost it extra movement.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "mobility"
+    ],
+    "recipeSlots": [
+      "escape"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

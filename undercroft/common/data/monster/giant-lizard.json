@@ -1,0 +1,69 @@
+{
+  "kind": "monster",
+  "index": "giant-lizard",
+  "name": "Giant Lizard",
+  "notes": "A giant lizard can be ridden or used as a draft animal. Lizardfolk also keep them as pets, and subterranean giant lizards are used as mounts and pack animals by drow, duergar, and others.",
+  "type": "beast",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/giant-lizard.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "unaligned",
+    "armorClass": 12,
+    "hitPoints": {
+      "max": 19,
+      "current": 19,
+      "diceString": "3d10+3"
+    },
+    "hitDice": "3d10",
+    "speed": {
+      "walk": 30,
+      "climb": 30
+    },
+    "abilities": {
+      "strength": 15,
+      "dexterity": 12,
+      "constitution": 13,
+      "intelligence": 2,
+      "wisdom": 10,
+      "charisma": 5
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [],
+      "languages": []
+    },
+    "senses": {
+      "darkvision": 30,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "1/4",
+    "proficiencyBonus": 2,
+    "xp": 50,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/giant-lizard"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/giant-lizard",
+  "featureIds": [
+    "feat.bite"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d8 + 2",
+      "damageType": "piercing"
+    }
+  }
+}

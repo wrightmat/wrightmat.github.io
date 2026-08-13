@@ -1,0 +1,111 @@
+{
+  "kind": "monster",
+  "name": "Sap Demon",
+  "notes": "",
+  "type": "ooze",
+  "stats": {
+    "size": "Small",
+    "alignment": "Chaotic Evil",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 81,
+      "current": 81,
+      "diceString": "18d6+18"
+    },
+    "hitDice": "18d6",
+    "speed": {
+      "walk": 20,
+      "climb": 20
+    },
+    "abilities": {
+      "strength": 14,
+      "dexterity": 6,
+      "constitution": 12,
+      "intelligence": 10,
+      "wisdom": 14,
+      "charisma": 10
+    },
+    "initiative": {
+      "bonus": -2
+    },
+    "savingThrows": "",
+    "skills": "",
+    "senses": {
+      "blindsight": 90,
+      "passives": {
+        "perception": 12
+      }
+    },
+    "challengeRating": "4",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "and slashing from nonmagical weapons",
+          "type": "resistance"
+        },
+        {
+          "name": "bludgeoning; acid",
+          "type": "immunity"
+        },
+        {
+          "name": "lightning",
+          "type": "immunity"
+        },
+        {
+          "name": "blinded",
+          "type": "immunity"
+        },
+        {
+          "name": "charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "deafened",
+          "type": "immunity"
+        },
+        {
+          "name": "exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "prone",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Tome of Beasts 1, pg. 335"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.amorphous",
+    "feat.sap-demon-season-s-change",
+    "feat.multiattack",
+    "feat.sap-demon-slam",
+    "feat.sap-demon-soul-sap"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.sap-demon-slam",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two slam attacks."
+    }
+  }
+}

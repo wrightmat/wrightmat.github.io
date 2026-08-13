@@ -1,0 +1,107 @@
+{
+  "kind": "monster",
+  "index": "lizardfolk",
+  "name": "Lizardfolk",
+  "type": "humanoid",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/lizardfolk.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "neutral",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 22,
+      "current": 22,
+      "diceString": "4d8+4"
+    },
+    "hitDice": "4d8",
+    "speed": {
+      "walk": 30,
+      "swim": 30
+    },
+    "abilities": {
+      "strength": 15,
+      "dexterity": 10,
+      "constitution": 13,
+      "intelligence": 7,
+      "wisdom": 12,
+      "charisma": 7
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "Perception +3, Stealth +4, Survival +5",
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Draconic"
+      ]
+    },
+    "senses": {
+      "passives": {
+        "perception": 13
+      }
+    },
+    "challengeRating": "1/2",
+    "proficiencyBonus": 2,
+    "xp": 100,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/lizardfolk"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/lizardfolk",
+  "featureIds": [
+    "feat.hold-breath",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.heavy-club",
+    "feat.javelin",
+    "feat.spiked-shield"
+  ],
+  "featureTiers": {
+    "feat.hold-breath": "30-minutes"
+  },
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d6 + 2",
+      "damageType": "piercing"
+    },
+    "feat.heavy-club": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d6 + 2",
+      "damageType": "bludgeoning"
+    },
+    "feat.spiked-shield": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d6 + 2",
+      "damageType": "piercing"
+    },
+    "feat.multiattack": {
+      "text": "The creature makes two melee attacks, each one with a different weapon."
+    },
+    "feat.javelin": {
+      "kind": "MeleeOrRanged",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "meleeDistance": "5",
+      "rangeDistance": "30/120",
+      "damageDice": "1d6 + 2",
+      "damageType": "piercing"
+    }
+  }
+}

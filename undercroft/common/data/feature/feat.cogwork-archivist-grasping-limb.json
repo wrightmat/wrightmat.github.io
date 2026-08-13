@@ -1,0 +1,33 @@
+{
+  "id": "feat.cogwork-archivist-grasping-limb",
+  "name": "Grasping Limb",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Melee Weapon Attack: +6 to hit, reach 15 ft., one target. Hit: 13 (2d8 + 4) bludgeoning damage, and the target is grappled (escape DC 14). The creature can have no more than two targets grappled at a time.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Melee Weapon Attack: +6 to hit, reach 15 ft., one target. Hit: 13 (2d8 + 4) bludgeoning damage, and the target is grappled (escape DC 14). The creature can have no more than two targets grappled at a time.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "control"
+    ],
+    "recipeSlots": [
+      "isolate"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

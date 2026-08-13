@@ -1,0 +1,32 @@
+{
+  "id": "feat.living-lightning-bolt-spell-mimicry-recharge-5-6",
+  "name": "Spell Mimicry (Recharge 5–6)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature spell unleashes a stroke of lightning in a line 100 feet long and 5 feet wide. Each creature in the line must make a DC 15 Dexterity saving throw, taking 28 (8d6) lightning damage on a failed save, or half as much damage on a successful one.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature spell unleashes a stroke of lightning in a line 100 feet long and 5 feet wide. Each creature in the line must make a DC 15 Dexterity saving throw, taking 28 (8d6) lightning damage on a failed save, or half as much damage on a successful one.",
+    "scope": "unique"
+  },
+  "budgetCost": 4,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "burst"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

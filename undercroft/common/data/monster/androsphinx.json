@@ -1,0 +1,109 @@
+{
+  "kind": "monster",
+  "index": "androsphinx",
+  "name": "Androsphinx",
+  "type": "monstrosity",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/androsphinx.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "lawful neutral",
+    "armorClass": 17,
+    "hitPoints": {
+      "max": 199,
+      "current": 199,
+      "diceString": "19d10+95"
+    },
+    "hitDice": "19d10",
+    "speed": {
+      "walk": 40,
+      "fly": 60
+    },
+    "abilities": {
+      "strength": 22,
+      "dexterity": 10,
+      "constitution": 20,
+      "intelligence": 16,
+      "wisdom": 18,
+      "charisma": 23
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "DEX +6, CON +11, INT +9, WIS +10",
+    "skills": "Arcana +9, Perception +10, Religion +15",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "psychic",
+          "type": "immunity"
+        },
+        {
+          "name": "bludgeoning, piercing, and slashing from nonmagical weapons",
+          "type": "immunity"
+        },
+        {
+          "name": "Charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "Frightened",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Common",
+        "Sphinx"
+      ]
+    },
+    "senses": {
+      "truesight": 120,
+      "passives": {
+        "perception": 20
+      }
+    },
+    "challengeRating": "17",
+    "proficiencyBonus": 6,
+    "xp": 18000,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/androsphinx",
+    "spells": "The sphinx is a 12th-level spellcaster. Its spellcasting ability is Wisdom (spell save DC 18, +10 to hit with spell attacks). It requires no material components to cast its spells. The sphinx has the following cleric spells prepared:\n\n- Cantrips (at will): sacred flame, spare the dying, thaumaturgy\n- 1st level (4 slots): command, detect evil and good, detect magic\n- 2nd level (3 slots): lesser restoration, zone of truth\n- 3rd level (3 slots): dispel magic, tongues\n- 4th level (3 slots): banishment, freedom of movement\n- 5th level (2 slots): flame strike, greater restoration\n- 6th level (1 slot): heroes' feast",
+    "saveDC": 18
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/androsphinx",
+  "featureIds": [
+    "feat.inscrutable",
+    "feat.magic-weapons",
+    "feat.multiattack",
+    "feat.claw",
+    "feat.androsphinx-roar",
+    "feat.claw-attack",
+    "feat.teleport",
+    "feat.gypsosphinx-cast-a-spell-costs-3-actions"
+  ],
+  "featureTiers": {
+    "feat.teleport": "60-ft"
+  },
+  "featureParams": {
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 12,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d10 + 6",
+      "damageType": "slashing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.claw",
+          "count": 2
+        }
+      ],
+      "text": "The sphinx makes two claw attacks."
+    }
+  }
+}

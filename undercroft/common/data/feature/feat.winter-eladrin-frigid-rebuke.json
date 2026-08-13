@@ -1,0 +1,33 @@
+{
+  "id": "feat.winter-eladrin-frigid-rebuke",
+  "name": "Frigid Rebuke",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "When the creature takes damage from a creature the creature can see within 60 feet of it, the creature can force that creature to succeed on a DC 16 Constitution saving throw or take 11 (2d10) cold damage.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When the creature takes damage from a creature the creature can see within 60 feet of it, the creature can force that creature to succeed on a DC 16 Constitution saving throw or take 11 (2d10) cold damage.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "control"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "reaction"
+  }
+}

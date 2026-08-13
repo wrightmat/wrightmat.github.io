@@ -1,0 +1,143 @@
+{
+  "kind": "monster",
+  "name": "Sword Wraith Commander",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/268/205/1000/1000/636597572553866730.png",
+  "notes": "### Description\r\n\r\nSword wraith commanders haunt battlefields, attacking anyone who questions their valor but looking kindly on those who sing their praises.\r\n\r\n#### Sword Wraiths\r\n\r\nWhen glory-obsessed warriors die in battle without honor, they might haunt the site as sword wraiths.",
+  "type": "undead",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Typically Lawful Evil",
+    "armorClass": 18,
+    "hitPoints": {
+      "max": 127,
+      "current": 127,
+      "diceString": "15d8 + 60"
+    },
+    "hitDice": "15d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 18,
+      "dexterity": 14,
+      "constitution": 18,
+      "intelligence": 11,
+      "wisdom": 12,
+      "charisma": 14
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "Perception +4",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 14
+      }
+    },
+    "challengeRating": "8",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Necrotic; Bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "Piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "and Slashing from Nonmagical Attacks",
+          "type": "resistance"
+        },
+        {
+          "name": "Poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "Frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        },
+        {
+          "name": "Unconscious",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "the languages it knew in life"
+      ]
+    },
+    "environments": [
+      "Grassland",
+      "Swamp"
+    ],
+    "sources": [
+      "MPMM",
+      "Mordenkainen Presents: Monsters of the Multiverse",
+      "https://www.dndbeyond.com/monsters/2407570-sword-wraith-commander"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.sword-wraith-commander-turning-defiance",
+    "feat.unusual-nature",
+    "feat.multiattack",
+    "feat.longsword",
+    "feat.longbow",
+    "feat.sword-wraith-commander-call-to-honor-1-day",
+    "feat.sword-wraith-commander-martial-fury"
+  ],
+  "featureParams": {
+    "feat.longbow": {
+      "kind": "Ranged",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "range",
+      "distance": "150/600",
+      "damageDice": "1d8 + 2",
+      "damageType": "piercing"
+    },
+    "feat.multiattack": {
+      "text": "The creature makes two Longsword or Longbow attacks.",
+      "options": [
+        [
+          {
+            "featureId": "feat.longsword",
+            "count": 2
+          }
+        ],
+        [
+          {
+            "featureId": "feat.longbow",
+            "count": 2
+          }
+        ]
+      ]
+    },
+    "feat.longsword": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d8 + 4",
+      "damageType": "slashing",
+      "versatile": {
+        "damageDice": "1d10 + 4"
+      }
+    }
+  }
+}

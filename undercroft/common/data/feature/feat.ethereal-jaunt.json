@@ -1,0 +1,31 @@
+{
+  "id": "feat.ethereal-jaunt",
+  "name": "Ethereal Jaunt",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "As a bonus action, the creature can magically shift from the Material Plane to the Ethereal Plane, or vice versa.",
+  "mechanics": {
+    "type": "passive",
+    "text": "As a bonus action, the creature can magically shift from the Material Plane to the Ethereal Plane, or vice versa."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "mobility"
+    ],
+    "recipeSlots": [
+      "escape"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "id": "feat.esthetic-bioluminescence",
+  "name": "Bioluminescence",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "While it has at least 1 hit point, the creature sheds bright light in a 30-foot radius and dim light for an additional 30 feet, and its interior compartments are dimly lit.",
+  "mechanics": {
+    "type": "passive",
+    "text": "While it has at least 1 hit point, the creature sheds bright light in a 30-foot radius and dim light for an additional 30 feet, and its interior compartments are dimly lit.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

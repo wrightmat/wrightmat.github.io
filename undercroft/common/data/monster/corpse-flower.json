@@ -1,0 +1,109 @@
+{
+  "kind": "monster",
+  "name": "Corpse Flower",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/25746/240/1000/1000/637880557308920420.jpeg",
+  "notes": "### References:\r\n\r\n* https://www.dndbeyond.com/monsters/2560762-corpse-flower\r\n* Mordenkainen Presents: Monsters of the Multiverse, pg. 82",
+  "type": "plant",
+  "stats": {
+    "size": "Large",
+    "alignment": "Typically Chaotic Evil",
+    "armorClass": 12,
+    "hitPoints": {
+      "max": 127,
+      "current": 127,
+      "diceString": "15d10 + 45"
+    },
+    "hitDice": "15d10",
+    "speed": {
+      "walk": 20,
+      "climb": 20
+    },
+    "abilities": {
+      "strength": 14,
+      "dexterity": 14,
+      "constitution": 16,
+      "intelligence": 7,
+      "wisdom": 15,
+      "charisma": 3
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "",
+    "senses": {
+      "blindsight": 120,
+      "passives": {
+        "perception": 12
+      }
+    },
+    "challengeRating": "8",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Blinded",
+          "type": "immunity"
+        },
+        {
+          "name": "Deafened",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [
+      "Forest",
+      "Swamp",
+      "Urban"
+    ],
+    "sources": [
+      "MPMM"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.corpse-flower-corpses",
+    "feat.spider-climb",
+    "feat.corpse-flower-stench-of-death",
+    "feat.multiattack",
+    "feat.tentacles",
+    "feat.corpse-flower-harvest-the-dead",
+    "feat.corpse-flower-digest",
+    "feat.corpse-flower-reanimate"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.tentacles",
+          "count": 3
+        }
+      ],
+      "text": "The creature makes three Tentacle attacks."
+    },
+    "feat.tentacles": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "2d6 + 2",
+      "damageType": "bludgeoning",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "3d6",
+        "damageType": "poison"
+      }
+    }
+  }
+}

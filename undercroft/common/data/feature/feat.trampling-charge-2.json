@@ -1,0 +1,42 @@
+{
+  "id": "feat.trampling-charge-2",
+  "name": "Trampling Charge",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "If the monstrosity moves at least 20 feet straight toward a creature and then hits it with a gore attack on the same turn, that target must succeed on a DC 16 Strength saving throw or be knocked prone. If the target is prone, the monstrosity can make one attack with its hooves against it as a bonus action.",
+  "mechanics": {
+    "type": "passive",
+    "text": "If the monstrosity moves at least 20 feet straight toward a creature and then hits it with a gore attack on the same turn, that target must succeed on a DC 16 Strength saving throw or be knocked prone. If the target is prone, the monstrosity can make one attack with its hooves against it as a bonus action."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "gorgon",
+      "name": "Trampling Charge",
+      "shortName": "Gorgon (gore)",
+      "mechanics": {
+        "text": "If the monstrosity moves at least 20 feet straight toward a creature and then hits it with a gore attack on the same turn, that target must succeed on a DC 16 Strength saving throw or be knocked prone. If the target is prone, the monstrosity can make one attack with its hooves against it as a bonus action."
+      }
+    },
+    {
+      "id": "warhorse",
+      "name": "Trampling Charge",
+      "shortName": "Warhorse (hooves)",
+      "mechanics": {
+        "text": "If the horse moves at least 20 ft. straight toward a creature and then hits it with a hooves attack on the same turn, that target must succeed on a DC 14 Strength saving throw or be knocked prone. If the target is prone, the horse can make another attack with its hooves against it as a bonus action."
+      }
+    }
+  ]
+}

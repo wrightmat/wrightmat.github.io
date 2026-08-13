@@ -1,0 +1,81 @@
+{
+  "kind": "monster",
+  "index": "oni",
+  "name": "Oni",
+  "type": "giant",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/oni.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "lawful evil",
+    "armorClass": 16,
+    "hitPoints": {
+      "max": 110,
+      "current": 110,
+      "diceString": "13d10+39"
+    },
+    "hitDice": "13d10",
+    "speed": {
+      "walk": 30,
+      "fly": 30
+    },
+    "abilities": {
+      "strength": 19,
+      "dexterity": 11,
+      "constitution": 16,
+      "intelligence": 14,
+      "wisdom": 12,
+      "charisma": 15
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "DEX +3, CON +6, WIS +4, CHA +5",
+    "skills": "Arcana +5, Deception +8, Perception +4",
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Common",
+        "Giant"
+      ]
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 14
+      }
+    },
+    "challengeRating": "7",
+    "proficiencyBonus": 3,
+    "xp": 2900,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/oni",
+    "spells": "The oni's innate spellcasting ability is Charisma (spell save DC 13). The oni can innately cast the following spells, requiring no material components:\n\nAt will: darkness, invisibility\n1/day each: charm person, cone of cold, gaseous form, sleep",
+    "saveDC": 13
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/oni",
+  "featureIds": [
+    "feat.magic-weapons",
+    "feat.regeneration",
+    "feat.multiattack",
+    "feat.claw",
+    "feat.oni-glaive",
+    "feat.oni-change-shape"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "text": "The creature makes two attacks, either with its claws or its glaive."
+    },
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d8 + 4",
+      "damageType": "slashing"
+    }
+  }
+}

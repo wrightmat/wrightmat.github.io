@@ -1,0 +1,32 @@
+{
+  "id": "feat.abjurer-quarterstaff",
+  "name": "Quarterstaff",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Melee Weapon Attack: +3 to hit, reach 5 ft., one target. Hit: 2 (1d6 − 1) bludgeoning damage, or 3 (1d8 − 1) bludgeoning damage if used with two hands.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Melee Weapon Attack: +3 to hit, reach 5 ft., one target. Hit: 2 (1d6 − 1) bludgeoning damage, or 3 (1d8 − 1) bludgeoning damage if used with two hands.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

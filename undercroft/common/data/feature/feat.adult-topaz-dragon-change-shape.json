@@ -1,0 +1,32 @@
+{
+  "id": "feat.adult-topaz-dragon-change-shape",
+  "name": "Change Shape",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The dragon magically transforms into any creature that is Medium or Small, while retaining its game statistics (other than its size). This transformation ends if the dragon is reduced to 0 hit points or uses a bonus action to end it.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The dragon magically transforms into any creature that is Medium or Small, while retaining its game statistics (other than its size). This transformation ends if the dragon is reduced to 0 hit points or uses a bonus action to end it.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "bonus-action"
+  }
+}

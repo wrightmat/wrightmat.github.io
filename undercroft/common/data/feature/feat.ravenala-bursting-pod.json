@@ -1,0 +1,32 @@
+{
+  "id": "feat.ravenala-bursting-pod",
+  "name": "Bursting Pod",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Melee Ranged Attack: +8 to hit, range 30/120 ft., one target. Hit: 8 (1d6 + 5) bludgeoning damage, and the target and all creatures within 5 feet of it also take 5 (2d4) piercing damage, or half as much piercing damage with a successful DC 15 Dexterity saving throw.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Melee Ranged Attack: +8 to hit, range 30/120 ft., one target. Hit: 8 (1d6 + 5) bludgeoning damage, and the target and all creatures within 5 feet of it also take 5 (2d4) piercing damage, or half as much piercing damage with a successful DC 15 Dexterity saving throw.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "burst"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

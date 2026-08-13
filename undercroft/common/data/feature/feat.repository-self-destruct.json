@@ -1,0 +1,29 @@
+{
+  "id": "feat.repository-self-destruct",
+  "name": "Self-Destruct",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "If a creature is reduced to 0 hp, it explodes, leaving behind its small, pyramidal chest cavity. Each creature within 20 feet of the creature when it explodes must make a DC 15 Dexterity saving throw, taking 14 (4d6) bludgeoning damage on a failed save, or half as much damage on a successful one.",
+  "mechanics": {
+    "type": "passive",
+    "text": "If a creature is reduced to 0 hp, it explodes, leaving behind its small, pyramidal chest cavity. Each creature within 20 feet of the creature when it explodes must make a DC 15 Dexterity saving throw, taking 14 (4d6) bludgeoning damage on a failed save, or half as much damage on a successful one.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "burst"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

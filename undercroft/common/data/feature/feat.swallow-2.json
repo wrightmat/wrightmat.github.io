@@ -1,0 +1,45 @@
+{
+  "id": "feat.swallow-2",
+  "name": "Swallow",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The beast makes one bite attack against a Small or smaller target it is grappling. If the attack hits, the target is swallowed, and the grapple ends. The swallowed target is blinded and restrained, it has total cover against attacks and other effects outside the beast, and it takes 5 (2d4) acid damage at the start of each of the beast's turns. The beast can have only one target swallowed at a time. If the beast dies, a swallowed creature is no longer restrained by it and can escape from the corpse using 5 ft. of movement, exiting prone.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The beast makes one bite attack against a Small or smaller target it is grappling. If the attack hits, the target is swallowed, and the grapple ends. The swallowed target is blinded and restrained, it has total cover against attacks and other effects outside the beast, and it takes 5 (2d4) acid damage at the start of each of the beast's turns. The beast can have only one target swallowed at a time. If the beast dies, a swallowed creature is no longer restrained by it and can escape from the corpse using 5 ft. of movement, exiting prone."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "giant-frog",
+      "name": "Swallow",
+      "shortName": "Giant Frog",
+      "mechanics": {
+        "text": "The beast makes one bite attack against a Small or smaller target it is grappling. If the attack hits, the target is swallowed, and the grapple ends. The swallowed target is blinded and restrained, it has total cover against attacks and other effects outside the beast, and it takes 5 (2d4) acid damage at the start of each of the beast's turns. The beast can have only one target swallowed at a time. If the beast dies, a swallowed creature is no longer restrained by it and can escape from the corpse using 5 ft. of movement, exiting prone."
+      }
+    },
+    {
+      "id": "giant-toad",
+      "name": "Swallow",
+      "shortName": "Giant Toad",
+      "mechanics": {
+        "text": "The beast makes one bite attack against a Medium or smaller target it is grappling. If the attack hits, the target is swallowed, and the grapple ends. The swallowed target is blinded and restrained, it has total cover against attacks and other effects outside the beast, and it takes 10 (3d6) acid damage at the start of each of the beast's turns. The beast can have only one target swallowed at a time.\nIf the beast dies, a swallowed creature is no longer restrained by it and can escape from the corpse using 5 feet of movement, exiting prone."
+      }
+    }
+  ],
+  "combat": {
+    "actionCost": "action"
+  }
+}

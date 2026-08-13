@@ -1,0 +1,53 @@
+{
+  "id": "feat.alien-mind",
+  "name": "Alien Mind",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "If a creature tries to read the creature's thoughts or deals psychic damage to it, that creature must succeed on a DC 22 Intelligence saving throw or be stunned for 1 minute. The stunned creature can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success.",
+  "mechanics": {
+    "type": "passive",
+    "text": "If a creature tries to read the creature's thoughts or deals psychic damage to it, that creature must succeed on a DC 22 Intelligence saving throw or be stunned for 1 minute. The stunned creature can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "defense",
+      "control"
+    ],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "dc-21",
+      "name": "Alien Mind",
+      "shortName": "DC 21",
+      "mechanics": {
+        "text": "If a creature tries to read the creature's thoughts or deals psychic damage to it, that creature must succeed on a DC 21 Intelligence saving throw or be stunned for 1 minute. The stunned creature can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success."
+      }
+    },
+    {
+      "id": "dc-22",
+      "name": "Alien Mind",
+      "shortName": "DC 22",
+      "mechanics": {
+        "text": "If a creature tries to read the creature's thoughts or deals psychic damage to it, that creature must succeed on a DC 22 Intelligence saving throw or be stunned for 1 minute. The stunned creature can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success."
+      }
+    },
+    {
+      "id": "dc-23",
+      "name": "Alien Mind",
+      "shortName": "DC 23",
+      "mechanics": {
+        "text": "If a creature tries to read the creature's thoughts or deals psychic damage to it, that creature must succeed on a DC 23 Intelligence saving throw or be stunned for 1 minute. The stunned creature can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success."
+      }
+    }
+  ]
+}

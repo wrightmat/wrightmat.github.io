@@ -1,0 +1,29 @@
+{
+  "id": "feat.formian-myrmarch-hive-mind",
+  "name": "Hive Mind",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature is immune to the charmed and frightened conditions and cannot be surprised while within 30 feet of at least one other formian.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature is immune to the charmed and frightened conditions and cannot be surprised while within 30 feet of at least one other formian.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

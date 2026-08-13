@@ -48,3 +48,14 @@
 [data-notes-preview] :first-child {
   margin-top: 0;
 }
+
+/* Action Cost pill (renderFeatureList) — deliberately not one of Bootstrap's
+   contextual text-bg-* pairs (none combine a dark-enough background with
+   dark text — they're all built for light-on-dark or dark-on-light at the
+   OPPOSITE ends), so this is explicit: a solid medium-dark grey with
+   near-black text, clearly legible and visually distinct from the solid-
+   primary Signature badge next to it. */
+.crucible-action-cost-pill {
+  background-color: #6c757d;
+  color: #111;
+}

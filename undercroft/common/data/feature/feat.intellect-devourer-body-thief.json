@@ -1,0 +1,33 @@
+{
+  "id": "feat.intellect-devourer-body-thief",
+  "name": "Body Thief",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature initiates an Intelligence contest with an incapacitated humanoid within 5 feet of it that isn’t protected by protection from evil and good. If it wins the contest, the creature magically consumes the target’s brain, teleports into the target’s skull, and takes control of the target’s body. While inside a creature, the creature has total cover against attacks and other effects originating outside its host. The creature retains its Intelligence, Wisdom, and Charisma scores, as well as its understanding of Deep Speech, its telepathy, and its traits. It otherwise adopts the target’s statistics. It knows everything the creature knew, including spells and languages. If the host body dies, the creature must leave it. A protection from evil and good spell cast on the body drives the creature out. The creature is also forced out if the target regains its devoured brain by means of a wish. By spending 5 feet of its movement, the creature can voluntarily leave the body, teleporting to the nearest unoccupied space within 5 feet of it. The body then dies, unless its brain is restored within 1 round.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature initiates an Intelligence contest with an incapacitated humanoid within 5 feet of it that isn’t protected by protection from evil and good. If it wins the contest, the creature magically consumes the target’s brain, teleports into the target’s skull, and takes control of the target’s body. While inside a creature, the creature has total cover against attacks and other effects originating outside its host. The creature retains its Intelligence, Wisdom, and Charisma scores, as well as its understanding of Deep Speech, its telepathy, and its traits. It otherwise adopts the target’s statistics. It knows everything the creature knew, including spells and languages. If the host body dies, the creature must leave it. A protection from evil and good spell cast on the body drives the creature out. The creature is also forced out if the target regains its devoured brain by means of a wish. By spending 5 feet of its movement, the creature can voluntarily leave the body, teleporting to the nearest unoccupied space within 5 feet of it. The body then dies, unless its brain is restored within 1 round.",
+    "scope": "unique"
+  },
+  "budgetCost": 4,
+  "tags": {
+    "behaviors": [
+      "control",
+      "debuff"
+    ],
+    "recipeSlots": [
+      "dominate"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

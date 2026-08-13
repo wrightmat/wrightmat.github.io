@@ -1,0 +1,103 @@
+{
+  "kind": "monster",
+  "name": "Du'ulora Quori",
+  "image": "https://static.wikia.nocookie.net/eberron/images/6/6c/Du%27ulora_quori.png",
+  "notes": "### Description\r\n\r\n#### Quori\r\n\r\nDal Quor is the plane of dreams and is currently dominated by a dark power known as il-Lashtavar, or the Dreaming Dark. Il-Lashtavar is served by a host of aberrations that are the embodiments of dreams and nightmares — the quori. Because it is difficult for anything to physically travel to or from Dal Quor, quori in Eberron are typically encountered while possessing a host body. The Inspired are the most common type of willing host for the quori and are described earlier in this chapter.\r\n\r\n#### Du'ulora Quori\r\n\r\nDu'ulora quori (or blackfuries) appear as a collection of wings and eyes suspended in shadows, with three protruding tendrils that end in an eyeball. Du'ulora are cold, calculating creatures who thrive on battle and defeating worthy foes. They represent Rage (which they feed off of in others) and reside in the Red Tower of the Outer Ring of Il-Lashtavar.\r\n\r\n>_Floating toward you is a bulbous flying mass with three long tendrils, each capped with a cat-like eye. A fourth eye sits in the middle of its warty form, as do three sets of seemingly too-small wings. You feel a silent rage bubbling up inside of you as it moves closer._\r\n\r\n***Tactics.*** The du'ulora quori will always focus its initial attacks on any creatures in a rage-like state (from its Blackfury ability), using Mind Thrust to double up damage on any of those foes. It will then use its Rage Blast to shower fiery rage over the rest of the battlefield. This quori uses *teleport* to maintain battlefield control, and will use its Possession ability only as a last resort if things get out of hand.",
+  "type": "aberration",
+  "stats": {
+    "size": "Large",
+    "alignment": "Lawful Evil",
+    "armorClass": 17,
+    "hitPoints": {
+      "max": 229,
+      "current": 229,
+      "diceString": "27d10 + 81"
+    },
+    "hitDice": "27d10",
+    "speed": {
+      "fly": 60,
+      "hover": true
+    },
+    "abilities": {
+      "strength": 14,
+      "dexterity": 16,
+      "constitution": 17,
+      "intelligence": 20,
+      "wisdom": 18,
+      "charisma": 23
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "Wis +8, Cha +10",
+    "skills": "Deception +10, Insight +8, Perception +12",
+    "senses": {
+      "truesight": 120,
+      "passives": {
+        "perception": 22
+      }
+    },
+    "challengeRating": "11",
+    "proficiencyBonus": 4,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Fire",
+          "type": "resistance"
+        },
+        {
+          "name": "Psychic",
+          "type": "resistance"
+        },
+        {
+          "name": "Charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "Frightened",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Common",
+        "Quori",
+        "Telepathy 120 ft."
+      ]
+    },
+    "spells": "(Psionics). The quori’s spellcasting ability is Intelligence (spell save DC 16). It can innately cast the following spells, requiring no components: at will: scorching ray, teleport 3/day each: dream, fireball 1/day: mass cure wounds",
+    "environments": [],
+    "sources": [
+      "Homebrew",
+      "https://eberron.fandom.com/wiki/Du%27ulora_quori",
+      "https://www.reddit.com/r/UnearthedArcana/comments/w9q4lt/complete_quori_6_variants_with_lore_and_tactics/",
+      "https://dragonage.fandom.com/wiki/Rage_demon"
+    ],
+    "saveDC": 16
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.du-ulora-quori-blackfury",
+    "feat.multiattack",
+    "feat.rage-blast",
+    "feat.du-ulora-quori-mind-thrust",
+    "feat.possession",
+    "feat.du-ulora-quori-empathic-feedback"
+  ],
+  "featureParams": {
+    "feat.rage-blast": {
+      "kind": "Ranged",
+      "attackKind": "Spell",
+      "attackBonus": 8,
+      "distanceLabel": "range",
+      "distance": "120",
+      "damageDice": "1d10 + 7",
+      "damageType": "fire"
+    },
+    "feat.multiattack": {
+      "text": "The creature uses its Mind Thrust once and Rage Blast once."
+    }
+  }
+}

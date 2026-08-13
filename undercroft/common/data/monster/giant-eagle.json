@@ -1,0 +1,96 @@
+{
+  "kind": "monster",
+  "index": "giant-eagle",
+  "name": "Giant Eagle",
+  "notes": "A giant eagle is a noble creature that speaks its own language and understands speech in the Common tongue. A mated pair of giant eagles typically has up to four eggs or young in their nest (treat the young as normal eagles).",
+  "type": "beast",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/giant-eagle.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "neutral good",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 26,
+      "current": 26,
+      "diceString": "4d10+4"
+    },
+    "hitDice": "4d10",
+    "speed": {
+      "walk": 10,
+      "fly": 80
+    },
+    "abilities": {
+      "strength": 16,
+      "dexterity": 17,
+      "constitution": 13,
+      "intelligence": 8,
+      "wisdom": 14,
+      "charisma": 10
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "",
+    "skills": "Perception +4",
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Giant Eagle",
+        "understands Common and Auran but can't speak"
+      ]
+    },
+    "senses": {
+      "passives": {
+        "perception": 14
+      }
+    },
+    "challengeRating": "1",
+    "proficiencyBonus": 2,
+    "xp": 200,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/giant-eagle"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/giant-eagle",
+  "featureIds": [
+    "feat.keen-sight",
+    "feat.multiattack",
+    "feat.beak",
+    "feat.talons"
+  ],
+  "featureParams": {
+    "feat.beak": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d6 + 3",
+      "damageType": "piercing"
+    },
+    "feat.talons": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 3",
+      "damageType": "slashing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.beak",
+          "count": 1
+        },
+        {
+          "featureId": "feat.talons",
+          "count": 1
+        }
+      ],
+      "text": "The creature makes two attacks: one with its beak and one with its talons."
+    }
+  }
+}

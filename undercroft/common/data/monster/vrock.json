@@ -1,0 +1,123 @@
+{
+  "kind": "monster",
+  "index": "vrock",
+  "name": "Vrock",
+  "type": "fiend",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/vrock.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "chaotic evil",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 104,
+      "current": 104,
+      "diceString": "11d10+44"
+    },
+    "hitDice": "11d10",
+    "speed": {
+      "walk": 40,
+      "fly": 60
+    },
+    "abilities": {
+      "strength": 17,
+      "dexterity": 15,
+      "constitution": 18,
+      "intelligence": 8,
+      "wisdom": 13,
+      "charisma": 8
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "DEX +5, WIS +4, CHA +2",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "cold",
+          "type": "resistance"
+        },
+        {
+          "name": "fire",
+          "type": "resistance"
+        },
+        {
+          "name": "lightning",
+          "type": "resistance"
+        },
+        {
+          "name": "bludgeoning, piercing, and slashing from nonmagical weapons",
+          "type": "resistance"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Abyssal",
+        "telepathy 120 ft."
+      ]
+    },
+    "senses": {
+      "darkvision": 120,
+      "passives": {
+        "perception": 11
+      }
+    },
+    "challengeRating": "6",
+    "proficiencyBonus": 3,
+    "xp": 2300,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/vrock"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/vrock",
+  "featureIds": [
+    "feat.magic-resistance",
+    "feat.multiattack",
+    "feat.beak",
+    "feat.talons",
+    "feat.vrock-spores",
+    "feat.vrock-stunning-screech"
+  ],
+  "featureParams": {
+    "feat.beak": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 3",
+      "damageType": "piercing"
+    },
+    "feat.talons": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d10 + 3",
+      "damageType": "slashing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.beak",
+          "count": 1
+        },
+        {
+          "featureId": "feat.talons",
+          "count": 1
+        }
+      ],
+      "text": "The creature makes two attacks: one with its beak and one with its talons."
+    }
+  }
+}

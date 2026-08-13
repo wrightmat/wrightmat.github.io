@@ -1,0 +1,54 @@
+{
+  "id": "feat.elemental-demise",
+  "name": "Elemental Demise",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "If the creature dies, its body disintegrates into crystalline powder, leaving behind only equipment the creature was wearing or carrying.",
+  "mechanics": {
+    "type": "passive",
+    "text": "If the creature dies, its body disintegrates into crystalline powder, leaving behind only equipment the creature was wearing or carrying."
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "crystalline-powder",
+      "name": "Elemental Demise",
+      "shortName": "Crystalline Powder",
+      "mechanics": {
+        "text": "If the creature dies, its body disintegrates into crystalline powder, leaving behind only equipment the creature was wearing or carrying."
+      }
+    },
+    {
+      "id": "warm-breeze",
+      "name": "Elemental Demise",
+      "shortName": "Warm Breeze",
+      "mechanics": {
+        "text": "If the creature dies, its body disintegrates into a warm breeze, leaving behind only equipment the creature was wearing or carrying."
+      }
+    },
+    {
+      "id": "flash-of-fire",
+      "name": "Elemental Demise",
+      "shortName": "Flash of Fire",
+      "mechanics": {
+        "text": "If the creature dies, its body disintegrates in a flash of fire and puff of smoke, leaving behind only equipment the djinni was wearing or carrying."
+      }
+    }
+  ]
+}

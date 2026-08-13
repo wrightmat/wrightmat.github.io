@@ -1,0 +1,65 @@
+{
+  "kind": "monster",
+  "index": "dryad",
+  "name": "Dryad",
+  "type": "fey",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/dryad.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "neutral",
+    "armorClass": 11,
+    "hitPoints": {
+      "max": 22,
+      "current": 22,
+      "diceString": "5d8"
+    },
+    "hitDice": "5d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 10,
+      "dexterity": 12,
+      "constitution": 11,
+      "intelligence": 14,
+      "wisdom": 15,
+      "charisma": 18
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "",
+    "skills": "Perception +4, Stealth +5",
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Elvish",
+        "Sylvan"
+      ]
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 14
+      }
+    },
+    "challengeRating": "1",
+    "proficiencyBonus": 2,
+    "xp": 200,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/dryad",
+    "spells": "The dryad's innate spellcasting ability is Charisma (spell save DC 14). The dryad can innately cast the following spells, requiring no material components:\n\nAt will: druidcraft\n3/day each: entangle, goodberry\n1/day each: barkskin, pass without trace, shillelagh",
+    "saveDC": 14
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/dryad",
+  "featureIds": [
+    "feat.magic-resistance",
+    "feat.speak-with-beasts-and-plants",
+    "feat.dryad-tree-stride",
+    "feat.dryad-club",
+    "feat.dryad-fey-charm"
+  ]
+}

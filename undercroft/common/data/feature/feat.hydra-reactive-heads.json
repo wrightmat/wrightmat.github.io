@@ -1,0 +1,25 @@
+{
+  "id": "feat.hydra-reactive-heads",
+  "name": "Reactive Heads",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "For each head the creature has beyond one, it gets an extra reaction that can be used only for opportunity attacks.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "For each head the creature has beyond one, it gets an extra reaction that can be used only for opportunity attacks."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

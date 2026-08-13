@@ -1,0 +1,25 @@
+{
+  "id": "feat.barbed-devil-barbed-hide",
+  "name": "Barbed Hide",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "At the start of each of its turns, the fiend deals 5 (1d10) piercing damage to any creature grappling it.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "At the start of each of its turns, the fiend deals 5 (1d10) piercing damage to any creature grappling it."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

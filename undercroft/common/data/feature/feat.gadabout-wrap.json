@@ -1,0 +1,32 @@
+{
+  "id": "feat.gadabout-wrap",
+  "name": "Wrap",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature enters the space of a willing Medium or Small creature within 5 feet of itself and gently wraps its branches around the target. The target is grappled (escape DC 0). Any attempt by the target to escape the grapple causes the creature to use its reaction to move into the nearest unoccupied space. While grappled by the creature, the target determines where the creature moves on the creature’s turns and accompanies the creature wherever it goes.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature enters the space of a willing Medium or Small creature within 5 feet of itself and gently wraps its branches around the target. The target is grappled (escape DC 0). Any attempt by the target to escape the grapple causes the creature to use its reaction to move into the nearest unoccupied space. While grappled by the creature, the target determines where the creature moves on the creature’s turns and accompanies the creature wherever it goes.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "control"
+    ],
+    "recipeSlots": [
+      "dominate"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

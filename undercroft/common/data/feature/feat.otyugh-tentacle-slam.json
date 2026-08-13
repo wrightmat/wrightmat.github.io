@@ -1,0 +1,28 @@
+{
+  "id": "feat.otyugh-tentacle-slam",
+  "name": "Tentacle Slam",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The aberration slams creatures grappled by it into each other or a solid surface. Each creature must succeed on a DC 14 Constitution saving throw or take 10 (2d6 + 3) bludgeoning damage and be stunned until the end of the aberration's next turn. On a successful save, the target takes half the bludgeoning damage and isn't stunned.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The aberration slams creatures grappled by it into each other or a solid surface. Each creature must succeed on a DC 14 Constitution saving throw or take 10 (2d6 + 3) bludgeoning damage and be stunned until the end of the aberration's next turn. On a successful save, the target takes half the bludgeoning damage and isn't stunned."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

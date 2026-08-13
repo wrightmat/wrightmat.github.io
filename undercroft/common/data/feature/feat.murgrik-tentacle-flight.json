@@ -1,0 +1,29 @@
+{
+  "id": "feat.murgrik-tentacle-flight",
+  "name": "Tentacle Flight",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature flies by spinning its tentacles. If it is grappling a creature with its tentacles, its flying speed is halved.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature flies by spinning its tentacles. If it is grappling a creature with its tentacles, its flying speed is halved.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "mobility"
+    ],
+    "recipeSlots": [
+      "escape"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

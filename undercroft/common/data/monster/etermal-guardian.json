@@ -1,0 +1,123 @@
+{
+  "kind": "monster",
+  "name": "Etermal Guardian",
+  "notes": "",
+  "type": "celestial",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Lawful Good",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 85,
+      "current": 85,
+      "diceString": "10d8 + 30"
+    },
+    "hitDice": "10d8",
+    "speed": {
+      "walk": 40,
+      "fly": 50
+    },
+    "abilities": {
+      "strength": 22,
+      "dexterity": 15,
+      "constitution": 17,
+      "intelligence": 12,
+      "wisdom": 23,
+      "charisma": 14
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "Str +10, Wis +10, Cha +6",
+    "skills": "Insight +10, Perception +10",
+    "senses": {
+      "blindsight": 120,
+      "passives": {
+        "perception": 16
+      }
+    },
+    "challengeRating": "6",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "fire",
+          "type": "resistance"
+        },
+        {
+          "name": "radiant; bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "and slashing from nonmagical attacks",
+          "type": "resistance"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "all"
+      ]
+    },
+    "spells": "Innate Spellcasting. The eternal guardian's innate spellcasting ability is Wisdom (spell save DC 15, +7 to hit with spell attacks). The guardian can innately cast the following spells, requiring no material components: 3/day each: moonbeam 1/day each: earth tremor",
+    "environments": [],
+    "sources": [],
+    "saveDC": 15
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.flyby",
+    "feat.etermal-guardian-etherflesh",
+    "feat.magic-resistance",
+    "feat.legendary-resistance",
+    "feat.multiattack",
+    "feat.staff-of-the-gatekeeper"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "text": "The eternal guardian makes two melee attacks."
+    },
+    "feat.staff-of-the-gatekeeper": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 10,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d8 + 6",
+      "damageType": "bludgeoning",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "2d8",
+        "damageType": "radiant"
+      }
+    }
+  },
+  "featureTiers": {
+    "feat.legendary-resistance": "1-day"
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "kind": "monster",
+  "index": "vampire-vampire",
+  "name": "Vampire, Vampire Form",
+  "type": "undead",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/vampire-vampire.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "lawful evil",
+    "armorClass": 16,
+    "hitPoints": {
+      "max": 144,
+      "current": 144,
+      "diceString": "17d8+68"
+    },
+    "hitDice": "17d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 18,
+      "dexterity": 18,
+      "constitution": 18,
+      "intelligence": 17,
+      "wisdom": 15,
+      "charisma": 18
+    },
+    "initiative": {
+      "bonus": 4
+    },
+    "savingThrows": "DEX +9, WIS +7, CHA +9",
+    "skills": "Perception +7, Stealth +9",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "necrotic",
+          "type": "resistance"
+        },
+        {
+          "name": "bludgeoning, piercing, and slashing from nonmagical weapons",
+          "type": "resistance"
+        }
+      ],
+      "languages": [
+        "the languages it knew in life"
+      ]
+    },
+    "senses": {
+      "darkvision": 120,
+      "passives": {
+        "perception": 17
+      }
+    },
+    "challengeRating": "13",
+    "proficiencyBonus": 5,
+    "xp": 10000,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/vampire-vampire"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/vampire-vampire",
+  "featureIds": [
+    "feat.shapechanger",
+    "feat.legendary-resistance",
+    "feat.misty-escape",
+    "feat.regeneration",
+    "feat.spider-climb",
+    "feat.vampire-vampire-vampire-weaknesses",
+    "feat.multiattack",
+    "feat.vampire-vampire-unarmed-strike",
+    "feat.bite",
+    "feat.charm",
+    "feat.children-of-the-night",
+    "feat.move",
+    "feat.vampire-vampire-unarmed-strike",
+    "feat.vampire-vampire-bite-costs-2-actions"
+  ],
+  "featureTiers": {
+    "feat.legendary-resistance": "3-day"
+  },
+  "featureParams": {
+    "feat.multiattack": {
+      "text": "The creature makes two attacks, only one of which can be a bite attack."
+    }
+  }
+}

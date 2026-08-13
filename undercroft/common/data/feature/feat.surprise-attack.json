@@ -1,0 +1,42 @@
+{
+  "id": "feat.surprise-attack",
+  "name": "Surprise Attack",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "If the humanoid surprises a creature and hits it with an attack during the first round of combat, the target takes an extra 7 (2d6) damage from the attack.",
+  "mechanics": {
+    "type": "passive",
+    "text": "If the humanoid surprises a creature and hits it with an attack during the first round of combat, the target takes an extra 7 (2d6) damage from the attack."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "2d6",
+      "name": "Surprise Attack",
+      "shortName": "2d6",
+      "mechanics": {
+        "text": "If the humanoid surprises a creature and hits it with an attack during the first round of combat, the target takes an extra 7 (2d6) damage from the attack."
+      }
+    },
+    {
+      "id": "3d6",
+      "name": "Surprise Attack",
+      "shortName": "3d6",
+      "mechanics": {
+        "text": "If the monstrosity surprises a creature and hits it with an attack during the first round of combat, the target takes an extra 10 (3d6) damage from the attack."
+      }
+    }
+  ]
+}

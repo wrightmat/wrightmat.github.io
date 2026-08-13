@@ -1,0 +1,33 @@
+{
+  "id": "feat.wild-mange-spell-scythe",
+  "name": "Spell Scythe",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Melee Weapon Attack: +4 to hit, reach 5 ft., one target. Hit: 8 (1d6 + 2) slashing damage. On a hit, the creature drains one spell slot of the targets lowest level available and regains 8 (2d4+4) hit points.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Melee Weapon Attack: +4 to hit, reach 5 ft., one target. Hit: 8 (1d6 + 2) slashing damage. On a hit, the creature drains one spell slot of the targets lowest level available and regains 8 (2d4+4) hit points.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "drain"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

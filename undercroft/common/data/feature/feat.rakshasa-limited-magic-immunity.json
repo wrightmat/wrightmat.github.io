@@ -1,0 +1,25 @@
+{
+  "id": "feat.rakshasa-limited-magic-immunity",
+  "name": "Limited Magic Immunity",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature can't be affected or detected by spells of 6th level or lower unless it wishes to be. It has advantage on saving throws against all other spells and magical effects.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The creature can't be affected or detected by spells of 6th level or lower unless it wishes to be. It has advantage on saving throws against all other spells and magical effects."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -24,5 +24,34 @@
     ]
   },
   "synergizesWith": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "60-ft",
+      "name": "Teleport (60 ft.)",
+      "shortName": "60 ft.",
+      "mechanics": {
+        "text": "The creature magically teleports, along with any equipment it is wearing or carrying, up to 60 feet to an unoccupied space it can see."
+      }
+    },
+    {
+      "id": "30-ft-move",
+      "name": "Teleport (30 ft.)",
+      "shortName": "30 ft.",
+      "mechanics": {
+        "text": "The creature teleports up to 30 feet to an unoccupied space it can see."
+      }
+    },
+    {
+      "id": "30-ft-bonus-action",
+      "name": "Teleport (30 ft., Bonus Action)",
+      "shortName": "30 ft. (bonus action)",
+      "mechanics": {
+        "text": "As a bonus action, the creature can teleport up to 30 feet to an unoccupied space it can see."
+      }
+    }
+  ],
+  "combat": {
+    "actionCost": "action"
+  }
 }

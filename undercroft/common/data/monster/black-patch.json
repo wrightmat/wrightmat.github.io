@@ -1,0 +1,131 @@
+{
+  "kind": "monster",
+  "name": "Black Patch",
+  "notes": "_A large patch of an odd, black substance floats on the water. Its glossy sheen catches the light in a shimmer of color as the inky black substance drifts ever-so-slowly upon the tide._\n\nBlack patch is a bizarre swamp ooze that has left most who studied it—from a safe distance—baffled by its origins.\n\n**Abstruse Lurker**. At first glance, black patch resembles a grotesque specimen of pond scum. Casual inspection of its dark surface, however, reveals a psychedelic eldritch luminance within the tenebrous folds of its slimy mass—a myriad of swirling colors that perpetually spiral in a maddening dance.\n\n**Insatiable Hunger**. A black patch stalks its prey slowly and silently from a distance. Since it can’t leave the water, this semi sentient aquatic ooze is forced to take advantage of its terrain to help it scavenge or hunt. Its digestive acid dissolves flesh and bone quickly but has no effect on other substances, such as wood and metal.",
+  "type": "ooze",
+  "stats": {
+    "size": "Large",
+    "alignment": "Unaligned",
+    "armorClass": 7,
+    "hitPoints": {
+      "max": 153,
+      "current": 153,
+      "diceString": "18d10 + 54"
+    },
+    "hitDice": "18d10",
+    "speed": {
+      "walk": 0,
+      "swim": 40
+    },
+    "abilities": {
+      "strength": 18,
+      "dexterity": 5,
+      "constitution": 16,
+      "intelligence": 4,
+      "wisdom": 6,
+      "charisma": 1
+    },
+    "initiative": {
+      "bonus": -3
+    },
+    "savingThrows": "",
+    "skills": "Stealth +3",
+    "senses": {
+      "blindsight": 120,
+      "passives": {
+        "perception": 8
+      }
+    },
+    "challengeRating": "6",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "cold",
+          "type": "resistance"
+        },
+        {
+          "name": "acid",
+          "type": "immunity"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "blinded",
+          "type": "immunity"
+        },
+        {
+          "name": "charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "deafened",
+          "type": "immunity"
+        },
+        {
+          "name": "exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "poisoned",
+          "type": "immunity"
+        },
+        {
+          "name": "prone",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Tome of Beasts 3, pg. 58"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.amphibious",
+    "feat.black-patch-eldritch-luminance",
+    "feat.black-patch-flowing-form",
+    "feat.multiattack",
+    "feat.pseudopod",
+    "feat.black-patch-viscid-suffocation",
+    "feat.ooze-nature"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.pseudopod",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two Pseudopod attacks. It can replace one attack with a use of Viscid Suffocation."
+    },
+    "feat.pseudopod": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "1d6 + 4",
+      "damageType": "bludgeoning",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "3d8",
+        "damageType": "acid"
+      }
+    }
+  }
+}

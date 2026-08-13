@@ -1,0 +1,32 @@
+{
+  "id": "feat.skinweaver-head-fleshweaving-recharge-5-6",
+  "name": "Fleshweaving (Recharge 5-6)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Any skinweavers within a 10-foot cone regain 10 hit points.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Any skinweavers within a 10-foot cone regain 10 hit points.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "regeneration"
+    ],
+    "recipeSlots": [
+      "drain"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "bonus-action"
+  }
+}

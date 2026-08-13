@@ -1,0 +1,28 @@
+{
+  "id": "feat.swarm-of-quippers-bites",
+  "name": "Bites",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Melee Weapon Attack: +5 to hit, reach 0 ft., one creature in the swarm of Tiny beasts's space. Hit: 14 (4d6) piercing damage, or 7 (2d6) piercing damage if the swarm of Tiny beasts has half of its hit points or fewer.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "Melee Weapon Attack: +5 to hit, reach 0 ft., one creature in the swarm of Tiny beasts's space. Hit: 14 (4d6) piercing damage, or 7 (2d6) piercing damage if the swarm of Tiny beasts has half of its hit points or fewer."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

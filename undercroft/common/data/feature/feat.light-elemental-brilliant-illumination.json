@@ -1,0 +1,28 @@
+{
+  "id": "feat.light-elemental-brilliant-illumination",
+  "name": "Brilliant Illumination",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature sheds bright light in a 60-foot radius and dim light for an additional 60 feet. This light is sunlight.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature sheds bright light in a 60-foot radius and dim light for an additional 60 feet. This light is sunlight."
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

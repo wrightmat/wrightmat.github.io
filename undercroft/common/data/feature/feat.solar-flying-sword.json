@@ -1,0 +1,28 @@
+{
+  "id": "feat.solar-flying-sword",
+  "name": "Flying Sword",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature releases its greatsword to hover magically in an unoccupied space within 5 ft. of it. If the creature can see the sword, the creature can mentally command it as a bonus action to fly up to 50 ft. and either make one attack against a target or return to the creature's hands. If the hovering sword is targeted by any effect, the creature is considered to be holding it. The hovering sword falls if the creature dies.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The creature releases its greatsword to hover magically in an unoccupied space within 5 ft. of it. If the creature can see the sword, the creature can mentally command it as a bonus action to fly up to 50 ft. and either make one attack against a target or return to the creature's hands. If the hovering sword is targeted by any effect, the creature is considered to be holding it. The hovering sword falls if the creature dies."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

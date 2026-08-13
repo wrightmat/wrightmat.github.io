@@ -1,0 +1,32 @@
+{
+  "id": "feat.lost-sorrowsworn-tightening-embrace",
+  "name": "Tightening Embrace",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "If the creature takes damage, the creature grappled by Embrace takes 18 (4d8) psychic damage.",
+  "mechanics": {
+    "type": "passive",
+    "text": "If the creature takes damage, the creature grappled by Embrace takes 18 (4d8) psychic damage.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "drain"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "reaction"
+  }
+}

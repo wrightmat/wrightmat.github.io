@@ -1,0 +1,25 @@
+{
+  "id": "feat.iron-golem-fire-absorption",
+  "name": "Fire Absorption",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Whenever the creature is subjected to fire damage, it takes no damage and instead regains a number of hit points equal to the fire damage dealt.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "Whenever the creature is subjected to fire damage, it takes no damage and instead regains a number of hit points equal to the fire damage dealt."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

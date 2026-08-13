@@ -1,0 +1,137 @@
+{
+  "kind": "monster",
+  "name": "Adult Topaz Dragon",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/21205/114/1000/1000/637707682295296513.jpeg",
+  "notes": "",
+  "type": "dragon",
+  "stats": {
+    "size": "Huge",
+    "alignment": "Typically Chaotic Neutral",
+    "armorClass": 18,
+    "hitPoints": {
+      "max": 210,
+      "current": 210,
+      "diceString": "20d12 + 80"
+    },
+    "hitDice": "20d12",
+    "speed": {
+      "walk": 40,
+      "fly": 80,
+      "swim": 40
+    },
+    "abilities": {
+      "strength": 19,
+      "dexterity": 12,
+      "constitution": 19,
+      "intelligence": 18,
+      "wisdom": 17,
+      "charisma": 18
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "DEX +6, CON +9, WIS +8, CHA +9",
+    "skills": "Intimidation +14, Perception +13, Stealth +6",
+    "senses": {
+      "blindsight": 60,
+      "darkvision": 120,
+      "passives": {
+        "perception": 23
+      }
+    },
+    "challengeRating": "13",
+    "proficiencyBonus": 5,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Cold",
+          "type": "resistance"
+        },
+        {
+          "name": "Necrotic",
+          "type": "resistance"
+        }
+      ],
+      "languages": [
+        "Common",
+        "Draconic",
+        "Telepathy 120 ft."
+      ]
+    },
+    "spells": "(Psionics). The dragon casts one of the following spells, requiring no spell components and using Intelligence as the spellcasting ability (spell save DC 17): 1/day each: bane, control water, create or destroy water",
+    "environments": [],
+    "sources": [],
+    "saveDC": 17
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.amphibious",
+    "feat.adult-topaz-dragon-fabricate-1-day",
+    "feat.legendary-resistance",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.claw",
+    "feat.desiccating-breath",
+    "feat.adult-topaz-dragon-change-shape",
+    "feat.adult-topaz-dragon-psychic-step",
+    "feat.adult-topaz-dragon-claw",
+    "feat.adult-topaz-dragon-psionics-costs-2-actions",
+    "feat.adult-topaz-dragon-essential-reduction-costs-3-actions"
+  ],
+  "featureTiers": {
+    "feat.legendary-resistance": "3-day"
+  },
+  "featureParams": {
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 9,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "1d8 + 4",
+      "damageType": "slashing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.bite",
+          "count": 1
+        },
+        {
+          "featureId": "feat.claw",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes one Bite attack and two Claw attacks."
+    },
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 9,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "2d10 + 4",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "1d6",
+        "damageType": "necrotic"
+      }
+    },
+    "feat.desiccating-breath": {
+      "verb": "exhales",
+      "substance": "yellowish necrotic energy",
+      "areaSize": "60",
+      "areaShape": "cone",
+      "dcAbility": "constitution",
+      "ability": "constitution",
+      "rider": {
+        "kind": "fail-condition",
+        "conditionText": "On a failed save, the creature takes 35 (10d6) necrotic damage and is weakened until the end of its next turn. A weakened creature has disadvantage on Strength-based ability checks and Strength saving throws, and the creature’s weapon attacks that rely on Strength deal half damage. On a successful save, the creature takes half as much damage and isn’t weakened."
+      }
+    }
+  }
+}

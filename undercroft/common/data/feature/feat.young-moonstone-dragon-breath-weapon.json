@@ -1,0 +1,49 @@
+{
+  "id": "feat.young-moonstone-dragon-breath-weapon",
+  "name": "Breath Weapon (Recharge 5–6)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature uses one of the following breath weapons.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The creature uses one of the following breath weapons."
+  },
+  "budgetCost": 4,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "control"
+    ],
+    "recipeSlots": [
+      "burst"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  },
+  "options": [
+    {
+      "id": "dream-breath",
+      "name": "Dream Breath",
+      "mechanics": {
+        "text": "The creature exhales mist in a 90-foot cone. Each creature in that area must succeed on a DC 14 Constitution saving throw or fall unconscious for 10 minutes. This effect ends for a creature if the creature takes damage or someone uses an action to wake it."
+      }
+    },
+    {
+      "id": "moonlight-breath",
+      "name": "Moonlight Breath",
+      "mechanics": {
+        "text": "The creature exhales a beam of moonlight in a 60-foot line that is 5 feet wide. Each creature in that area must make a DC 14 Dexterity saving throw, taking 38 (7d10) radiant damage on a failed save, or half as much damage on a successful one."
+      }
+    }
+  ]
+}

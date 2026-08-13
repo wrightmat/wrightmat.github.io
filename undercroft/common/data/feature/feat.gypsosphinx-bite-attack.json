@@ -1,0 +1,32 @@
+{
+  "id": "feat.gypsosphinx-bite-attack",
+  "name": "Bite Attack",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The sphinx makes one bite attack.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The sphinx makes one bite attack.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "legendary-action"
+  }
+}

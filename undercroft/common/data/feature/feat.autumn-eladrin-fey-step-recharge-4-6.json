@@ -1,0 +1,31 @@
+{
+  "id": "feat.autumn-eladrin-fey-step-recharge-4-6",
+  "name": "Fey Step (Recharge 4 - 6)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature teleports, along with any equipment it is wearing or carrying, up to 30 feet to an unoccupied space it can see.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature teleports, along with any equipment it is wearing or carrying, up to 30 feet to an unoccupied space it can see."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "mobility"
+    ],
+    "recipeSlots": [
+      "escape"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "bonus-action"
+  }
+}

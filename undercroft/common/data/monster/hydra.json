@@ -1,0 +1,80 @@
+{
+  "kind": "monster",
+  "index": "hydra",
+  "name": "Hydra",
+  "type": "monstrosity",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/hydra.png",
+  "stats": {
+    "size": "Huge",
+    "alignment": "unaligned",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 172,
+      "current": 172,
+      "diceString": "15d12+75"
+    },
+    "hitDice": "15d12",
+    "speed": {
+      "walk": 30,
+      "swim": 30
+    },
+    "abilities": {
+      "strength": 20,
+      "dexterity": 12,
+      "constitution": 20,
+      "intelligence": 2,
+      "wisdom": 10,
+      "charisma": 7
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "",
+    "skills": "Perception +6",
+    "proficiencies": {
+      "defenses": [],
+      "languages": []
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 16
+      }
+    },
+    "challengeRating": "8",
+    "proficiencyBonus": 3,
+    "xp": 3900,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/hydra"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/hydra",
+  "featureIds": [
+    "feat.hold-breath",
+    "feat.hydra-multiple-heads",
+    "feat.hydra-reactive-heads",
+    "feat.wakeful",
+    "feat.multiattack",
+    "feat.bite"
+  ],
+  "featureTiers": {
+    "feat.hold-breath": "1-hour",
+    "feat.wakeful": "hydra"
+  },
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 8,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "1d10 + 5",
+      "damageType": "piercing"
+    },
+    "feat.multiattack": {
+      "text": "The creature makes as many bite attacks as it has heads."
+    }
+  }
+}

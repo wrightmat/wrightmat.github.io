@@ -1,0 +1,69 @@
+{
+  "kind": "monster",
+  "index": "giant-rat",
+  "name": "Giant Rat",
+  "type": "beast",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/giant-rat.png",
+  "stats": {
+    "size": "Small",
+    "alignment": "unaligned",
+    "armorClass": 12,
+    "hitPoints": {
+      "max": 7,
+      "current": 7,
+      "diceString": "2d6"
+    },
+    "hitDice": "2d6",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 7,
+      "dexterity": 15,
+      "constitution": 11,
+      "intelligence": 2,
+      "wisdom": 10,
+      "charisma": 4
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [],
+      "languages": []
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "1/8",
+    "proficiencyBonus": 2,
+    "xp": 25,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/giant-rat"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/giant-rat",
+  "featureIds": [
+    "feat.keen-smell",
+    "feat.pack-tactics",
+    "feat.bite"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d4 + 2",
+      "damageType": "piercing"
+    }
+  }
+}

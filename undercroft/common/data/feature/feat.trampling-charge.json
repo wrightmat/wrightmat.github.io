@@ -1,0 +1,50 @@
+{
+  "id": "feat.trampling-charge",
+  "name": "Trampling Charge",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "If the beast moves at least 20 ft. straight toward a creature and then hits it with a gore attack on the same turn, that target must succeed on a DC 12 Strength saving throw or be knocked prone. If the target is prone, the beast can make one stomp attack against it as a bonus action.",
+  "mechanics": {
+    "type": "passive",
+    "text": "If the beast moves at least 20 ft. straight toward a creature and then hits it with a gore attack on the same turn, that target must succeed on a DC 12 Strength saving throw or be knocked prone. If the target is prone, the beast can make one stomp attack against it as a bonus action."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "elephant",
+      "name": "Trampling Charge",
+      "shortName": "Elephant",
+      "mechanics": {
+        "text": "If the beast moves at least 20 ft. straight toward a creature and then hits it with a gore attack on the same turn, that target must succeed on a DC 12 Strength saving throw or be knocked prone. If the target is prone, the beast can make one stomp attack against it as a bonus action."
+      }
+    },
+    {
+      "id": "mammoth",
+      "name": "Trampling Charge",
+      "shortName": "Mammoth",
+      "mechanics": {
+        "text": "If the beast moves at least 20 ft. straight toward a creature and then hits it with a gore attack on the same turn, that target must succeed on a DC 18 Strength saving throw or be knocked prone. If the target is prone, the beast can make one stomp attack against it as a bonus action."
+      }
+    },
+    {
+      "id": "triceratops",
+      "name": "Trampling Charge",
+      "shortName": "Triceratops",
+      "mechanics": {
+        "text": "If the beast moves at least 20 ft. straight toward a creature and then hits it with a gore attack on the same turn, that target must succeed on a DC 13 Strength saving throw or be knocked prone. If the target is prone, the beast can make one stomp attack against it as a bonus action."
+      }
+    }
+  ]
+}

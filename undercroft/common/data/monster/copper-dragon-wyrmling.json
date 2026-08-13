@@ -1,0 +1,78 @@
+{
+  "kind": "monster",
+  "index": "copper-dragon-wyrmling",
+  "name": "Copper Dragon Wyrmling",
+  "type": "dragon",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/copper-dragon-wyrmling.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "chaotic good",
+    "armorClass": 16,
+    "hitPoints": {
+      "max": 22,
+      "current": 22,
+      "diceString": "4d8+4"
+    },
+    "hitDice": "4d8",
+    "speed": {
+      "walk": 30,
+      "climb": 30,
+      "fly": 60
+    },
+    "abilities": {
+      "strength": 15,
+      "dexterity": 12,
+      "constitution": 13,
+      "intelligence": 14,
+      "wisdom": 11,
+      "charisma": 13
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "DEX +3, CON +3, WIS +2, CHA +3",
+    "skills": "Perception +4, Stealth +3",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "acid",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Draconic"
+      ]
+    },
+    "senses": {
+      "blindsight": 10,
+      "darkvision": 60,
+      "passives": {
+        "perception": 14
+      }
+    },
+    "challengeRating": "1",
+    "proficiencyBonus": 2,
+    "xp": 200,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/copper-dragon-wyrmling"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/copper-dragon-wyrmling",
+  "featureIds": [
+    "feat.bite",
+    "feat.copper-dragon-wyrmling-breath-weapons"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d10 + 2",
+      "damageType": "piercing"
+    }
+  }
+}

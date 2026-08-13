@@ -1,0 +1,73 @@
+{
+  "kind": "monster",
+  "index": "giant-poisonous-snake",
+  "name": "Giant Poisonous Snake",
+  "type": "beast",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/giant-poisonous-snake.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "unaligned",
+    "armorClass": 14,
+    "hitPoints": {
+      "max": 11,
+      "current": 11,
+      "diceString": "2d8+2"
+    },
+    "hitDice": "2d8",
+    "speed": {
+      "walk": 30,
+      "swim": 30
+    },
+    "abilities": {
+      "strength": 10,
+      "dexterity": 18,
+      "constitution": 13,
+      "intelligence": 2,
+      "wisdom": 10,
+      "charisma": 3
+    },
+    "initiative": {
+      "bonus": 4
+    },
+    "savingThrows": "",
+    "skills": "Perception +2",
+    "proficiencies": {
+      "defenses": [],
+      "languages": []
+    },
+    "senses": {
+      "blindsight": 10,
+      "passives": {
+        "perception": 12
+      }
+    },
+    "challengeRating": "1/4",
+    "proficiencyBonus": 2,
+    "xp": 50,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/giant-poisonous-snake"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/giant-poisonous-snake",
+  "featureIds": [
+    "feat.bite"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "1d4 + 4",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "save-or-damage",
+        "dice": "3d6",
+        "damageType": "poison"
+      }
+    }
+  }
+}

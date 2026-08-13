@@ -1,0 +1,124 @@
+{
+  "kind": "monster",
+  "index": "hezrou",
+  "name": "Hezrou",
+  "type": "fiend",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/hezrou.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "chaotic evil",
+    "armorClass": 16,
+    "hitPoints": {
+      "max": 136,
+      "current": 136,
+      "diceString": "13d10+65"
+    },
+    "hitDice": "13d10",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 19,
+      "dexterity": 17,
+      "constitution": 20,
+      "intelligence": 5,
+      "wisdom": 12,
+      "charisma": 13
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "STR +7, CON +8, WIS +4",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "cold",
+          "type": "resistance"
+        },
+        {
+          "name": "fire",
+          "type": "resistance"
+        },
+        {
+          "name": "lightning",
+          "type": "resistance"
+        },
+        {
+          "name": "bludgeoning, piercing, and slashing from nonmagical weapons",
+          "type": "resistance"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Abyssal",
+        "telepathy 120 ft."
+      ]
+    },
+    "senses": {
+      "darkvision": 120,
+      "passives": {
+        "perception": 11
+      }
+    },
+    "challengeRating": "8",
+    "proficiencyBonus": 3,
+    "xp": 3900,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/hezrou"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/hezrou",
+  "featureIds": [
+    "feat.magic-resistance",
+    "feat.stench",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.claws"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d10 + 4",
+      "damageType": "piercing"
+    },
+    "feat.claws": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 4",
+      "damageType": "slashing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.bite",
+          "count": 1
+        },
+        {
+          "featureId": "feat.claws",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes three attacks: one with its bite and two with its claws."
+    }
+  },
+  "featureTiers": {
+    "feat.stench": "dc-14"
+  }
+}

@@ -1,0 +1,115 @@
+{
+  "kind": "monster",
+  "name": "Strixhaven Campus Guide",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/22135/840/1000/1000/637743395620220861.jpeg",
+  "notes": "### Description\n\nWith cheerful dispositions and a knack for walking backward, Strixhaven campus guides lead gaggles of prospective students on tours. The guides’ gold and silver chassis are built in shapes reminiscent of the star arches surrounding Strixhaven. Embedded in their chests are holographic maps of the university’s campuses, which the guides use to provide directions. However, it’s rare for a campus guide to need its own maps, as these gregarious automatons have a gift for finding things on campus, often popping up at the most inopportune times.",
+  "type": "construct",
+  "stats": {
+    "size": "Small",
+    "alignment": "Typically Lawful Good",
+    "armorClass": 17,
+    "hitPoints": {
+      "max": 31,
+      "current": 31,
+      "diceString": "7d6 + 7"
+    },
+    "hitDice": "7d6",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 15,
+      "dexterity": 14,
+      "constitution": 13,
+      "intelligence": 10,
+      "wisdom": 12,
+      "charisma": 12
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "DEX +4",
+    "skills": "Insight +3, Persuasion +3",
+    "senses": {
+      "blindsight": 60,
+      "passives": {
+        "perception": 11
+      }
+    },
+    "challengeRating": "1",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Blinded",
+          "type": "immunity"
+        },
+        {
+          "name": "Deafened",
+          "type": "immunity"
+        },
+        {
+          "name": "Exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "Paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "Petrified",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Common plus any three languages"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "https://www.dndbeyond.com/monsters/2160335-strixhaven-campus-guide",
+      "Strixhaven: A Curriculum of Chaos, pg. 217"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.strixhaven-campus-guide-campus-knowledge",
+    "feat.strixhaven-campus-guide-univocal-speech",
+    "feat.unusual-nature",
+    "feat.multiattack",
+    "feat.slam",
+    "feat.strixhaven-campus-guide-smile-and-wave",
+    "feat.strixhaven-campus-guide-need-directions"
+  ],
+  "featureParams": {
+    "feat.slam": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d8 + 2",
+      "damageType": "bludgeoning"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.slam",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two Slam attacks."
+    }
+  }
+}

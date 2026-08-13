@@ -1,0 +1,33 @@
+{
+  "id": "feat.greater-shade-majesty-of-the-abyss-recharge-4-6",
+  "name": "Majesty of the Abyss (Recharge 4-6)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature emits a sinister burst of infernal power. All creatures within 30 feet and in direct line of sight of the creature take 19 (3d12) necrotic damage and must make a DC 17 Constitution saving throw. Those who fail the saving throw are blinded for 2 rounds; those who succeed are frightened for 2 rounds.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature emits a sinister burst of infernal power. All creatures within 30 feet and in direct line of sight of the creature take 19 (3d12) necrotic damage and must make a DC 17 Constitution saving throw. Those who fail the saving throw are blinded for 2 rounds; those who succeed are frightened for 2 rounds.",
+    "scope": "unique"
+  },
+  "budgetCost": 4,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "control"
+    ],
+    "recipeSlots": [
+      "burst"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

@@ -1,0 +1,144 @@
+{
+  "kind": "monster",
+  "name": "Lesser Death Dragon",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/30414/551/1000/1000/638046466599936549.jpeg",
+  "notes": "",
+  "type": "undead",
+  "stats": {
+    "size": "Large",
+    "alignment": "typically Chaotic Evil",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 199,
+      "current": 199,
+      "diceString": "21d10 + 84"
+    },
+    "hitDice": "21d10",
+    "speed": {
+      "walk": 40,
+      "fly": 80
+    },
+    "abilities": {
+      "strength": 20,
+      "dexterity": 10,
+      "constitution": 18,
+      "intelligence": 5,
+      "wisdom": 10,
+      "charisma": 5
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "Dex +4, Wis +4",
+    "skills": "Perception +4, Stealth +4",
+    "senses": {
+      "blindsight": 30,
+      "darkvision": 60,
+      "passives": {
+        "perception": 14
+      }
+    },
+    "challengeRating": "10",
+    "proficiencyBonus": 4,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "necrotic",
+          "type": "immunity"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "understands Common and Draconic but can't speak"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "DSotDQ",
+      "https://5e.tools/bestiary/lesser-death-dragon-dsotdq.html",
+      "Dragonlance: Shadow of the Dragon Queen, page 195"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.unusual-nature",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.claw",
+    "feat.cataclysmic-breath"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.bite",
+          "count": 1
+        },
+        {
+          "featureId": "feat.claw",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes one Bite attack and two Claw attacks."
+    },
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 9,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "2d8 + 5",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "1d8",
+        "damageType": "necrotic"
+      }
+    },
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 9,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d6 + 5",
+      "damageType": "slashing",
+      "rider": {
+        "kind": "condition-no-save",
+        "condition": "is grappled (escape DC 15) and restrained until the grapple ends, if it is a Medium or smaller creature. The creature has two claws, each of which can grapple one target."
+      }
+    },
+    "feat.cataclysmic-breath": {
+      "verb": "exhales",
+      "substance": "a wave of ghostly purple flames",
+      "areaSize": "30",
+      "areaShape": "cone",
+      "dcAbility": "constitution",
+      "ability": "dexterity",
+      "damageDice": "8d8",
+      "damageType": "necrotic",
+      "rider": {
+        "kind": "trailing-note",
+        "conditionText": "A creature dies if the breath reduces it to 0 hit points. Additionally, any Medium or smaller Humanoid killed by the breath's damage, as well as every corpse of such a creatures within the cone, becomes a zombie (see the Monster Manual) under the creature's control. The zombie acts on the creature's initiative but immediately after the creature's turn. Absent any other command, the zombie tries to kill any non-Undead creature it encounters."
+      }
+    }
+  }
+}

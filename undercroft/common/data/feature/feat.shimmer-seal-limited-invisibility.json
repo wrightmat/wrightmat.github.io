@@ -1,0 +1,29 @@
+{
+  "id": "feat.shimmer-seal-limited-invisibility",
+  "name": "Limited Invisibility",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "When the creature is on an icy surface or underwater, it is invisible. In all other terrain, the creature has advantage on Dexterity (Stealth) checks. Seals, other pinnipeds, and creatures chosen by the creature can see it.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When the creature is on an icy surface or underwater, it is invisible. In all other terrain, the creature has advantage on Dexterity (Stealth) checks. Seals, other pinnipeds, and creatures chosen by the creature can see it.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

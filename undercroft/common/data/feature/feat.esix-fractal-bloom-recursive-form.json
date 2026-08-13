@@ -1,0 +1,29 @@
+{
+  "id": "feat.esix-fractal-bloom-recursive-form",
+  "name": "Recursive Form",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "At the start of each of its turns, Esix creates 3 fractal echoes — shimmering geometric duplicates. When Esix is targeted by an attack roll, roll a d6 for each remaining echo. If any of the d6s rolls a 3 or higher, one of the duplicates is hit instead of it, and the duplicate is destroyed. Echoes last until the start of Esix’s next turn.",
+  "mechanics": {
+    "type": "passive",
+    "text": "At the start of each of its turns, Esix creates 3 fractal echoes — shimmering geometric duplicates. When Esix is targeted by an attack roll, roll a d6 for each remaining echo. If any of the d6s rolls a 3 or higher, one of the duplicates is hit instead of it, and the duplicate is destroyed. Echoes last until the start of Esix’s next turn.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

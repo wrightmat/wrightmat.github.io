@@ -1,0 +1,73 @@
+{
+  "kind": "monster",
+  "index": "killer-whale",
+  "name": "Killer Whale",
+  "type": "beast",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/killer-whale.png",
+  "stats": {
+    "size": "Huge",
+    "alignment": "unaligned",
+    "armorClass": 12,
+    "hitPoints": {
+      "max": 90,
+      "current": 90,
+      "diceString": "12d12+12"
+    },
+    "hitDice": "12d12",
+    "speed": {
+      "swim": 60
+    },
+    "abilities": {
+      "strength": 19,
+      "dexterity": 10,
+      "constitution": 13,
+      "intelligence": 3,
+      "wisdom": 12,
+      "charisma": 7
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "Perception +3",
+    "proficiencies": {
+      "defenses": [],
+      "languages": []
+    },
+    "senses": {
+      "blindsight": 120,
+      "passives": {
+        "perception": 13
+      }
+    },
+    "challengeRating": "3",
+    "proficiencyBonus": 2,
+    "xp": 700,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/killer-whale"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/killer-whale",
+  "featureIds": [
+    "feat.echolocation",
+    "feat.hold-breath",
+    "feat.keen-hearing-and-smell",
+    "feat.bite"
+  ],
+  "featureTiers": {
+    "feat.hold-breath": "30-minutes"
+  },
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "5d6 + 4",
+      "damageType": "piercing"
+    }
+  }
+}

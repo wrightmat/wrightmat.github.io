@@ -1092,6 +1092,275 @@ def register_routes():
 
     router.add("POST", r"^/sanctum/generate-note$", handle_sanctum_generate_note)
 
+    # POST /loom/suggest-feature-tags
+    #
+    # LLM-assisted bulk `budgetCost`/`tags` suggestion for the monster
+    # `feature` Library kind (undercroft/README.md's Workstream E) — the
+    # first STRUCTURED-JSON-output route in this file (every *_generate-note
+    # route above returns free two-line prose, parsed by line-splitting;
+    # this one asks Claude for a JSON object and validates it strictly,
+    # rejecting rather than half-applying a malformed response, same
+    # "never guess" posture the client-side Feature-matching pipeline
+    # already holds itself to). Grounded in two real data sources instead of
+    # free-floating judgment: the existing curated starter Features (real
+    # budgetCost/tags already authored, read live off disk so this stays
+    # accurate as that set grows) as few-shot examples, and a CR→targetBudget
+    # calibration table (CALIBRATION_TABLE below) computed once, this
+    # session, by cross-referencing every imported monster's own CR against
+    # its actual feature count (see the plan's own Workstream E — this is a
+    # small one-off analysis, not something worth recomputing live on every
+    # request, the same "flat value authored once" posture the System's own
+    # per-CR targetBudget/attackBonus/saveDC table already takes). Never
+    # auto-commits anything — this only returns suggestions for Loom's own
+    # editor UI to show inline for accept/reject, exactly the same "assisted,
+    # not automatic" spirit the rest of this session's hand-review work held
+    # to throughout.
+    #
+    # CR, targetBudget (from sys.dnd5e.json's own Combat Scaling table), and
+    # the IMPLIED average budgetCost-per-Feature at that CR level
+    # (targetBudget / that CR's own average feature count across all 331
+    # currently-imported real monsters) — given to the model as a rough
+    # per-Feature cost anchor so suggested costs trend toward summing near a
+    # monster's own targetBudget rather than floating free. Not re-derived
+    # per request (recomputing this from all monster files on every call
+    # would be slow and these ratios are stable), but not hand-guessed
+    # either — this table IS this session's own real calibration run.
+    CALIBRATION_TABLE = [
+        {"cr": "0", "targetBudget": 3, "impliedCostPerFeature": 1.5},
+        {"cr": "1/8", "targetBudget": 4, "impliedCostPerFeature": 0.9},
+        {"cr": "1/4", "targetBudget": 4, "impliedCostPerFeature": 1.6},
+        {"cr": "1/2", "targetBudget": 5, "impliedCostPerFeature": 1.0},
+        {"cr": "1", "targetBudget": 6, "impliedCostPerFeature": 1.3},
+        {"cr": "2", "targetBudget": 8, "impliedCostPerFeature": 1.7},
+        {"cr": "3", "targetBudget": 10, "impliedCostPerFeature": 2.1},
+        {"cr": "4", "targetBudget": 12, "impliedCostPerFeature": 2.4},
+        {"cr": "5", "targetBudget": 14, "impliedCostPerFeature": 2.5},
+        {"cr": "6", "targetBudget": 16, "impliedCostPerFeature": 2.8},
+        {"cr": "7", "targetBudget": 18, "impliedCostPerFeature": 3.2},
+        {"cr": "8", "targetBudget": 20, "impliedCostPerFeature": 3.4},
+        {"cr": "9", "targetBudget": 22, "impliedCostPerFeature": 3.2},
+        {"cr": "10", "targetBudget": 24, "impliedCostPerFeature": 3.5},
+        {"cr": "11", "targetBudget": 26, "impliedCostPerFeature": 3.9},
+        {"cr": "12", "targetBudget": 28, "impliedCostPerFeature": 3.7},
+        {"cr": "13", "targetBudget": 30, "impliedCostPerFeature": 3.9},
+        {"cr": "14", "targetBudget": 32, "impliedCostPerFeature": 3.5},
+        {"cr": "15", "targetBudget": 34, "impliedCostPerFeature": 3.9},
+        {"cr": "16", "targetBudget": 36, "impliedCostPerFeature": 3.8},
+        {"cr": "17", "targetBudget": 38, "impliedCostPerFeature": 3.6},
+        {"cr": "18", "targetBudget": 40, "impliedCostPerFeature": 3.6},
+        {"cr": "19", "targetBudget": 42, "impliedCostPerFeature": 3.5},
+        {"cr": "20", "targetBudget": 44, "impliedCostPerFeature": 2.9},
+        {"cr": "21", "targetBudget": 48, "impliedCostPerFeature": 3.8},
+        {"cr": "22", "targetBudget": 50, "impliedCostPerFeature": 3.8},
+        {"cr": "23", "targetBudget": 52, "impliedCostPerFeature": 3.8},
+        {"cr": "24", "targetBudget": 54, "impliedCostPerFeature": 3.9},
+        {"cr": "25", "targetBudget": 56, "impliedCostPerFeature": 4.0},
+        {"cr": "26", "targetBudget": 56, "impliedCostPerFeature": 4.0},
+        {"cr": "27", "targetBudget": 58, "impliedCostPerFeature": 4.0},
+        {"cr": "28", "targetBudget": 60, "impliedCostPerFeature": 4.0},
+        {"cr": "29", "targetBudget": 62, "impliedCostPerFeature": 4.0},
+        {"cr": "30", "targetBudget": 64, "impliedCostPerFeature": 4.5},
+    ]
+
+    FEATURE_TAG_SUGGESTION_SYSTEM_PROMPT = (
+        "You assign a budgetCost and tags to D&D 5e monster Features for a tabletop "
+        "monster generator tool. Respond with ONLY a single JSON object and nothing "
+        "else — no markdown code fences, no preamble, no commentary before or after.\n\n"
+        "The JSON object's top-level keys are EXACTLY the Feature ids given under "
+        '"Features to tag" below, one per key, no more and no fewer. Each value is an '
+        'object of this exact shape: {"budgetCost": <integer, usually 1-6>, '
+        '"behaviors": [<string>, ...], "recipeSlots": [<string>, ...], '
+        '"roles": [<string>, ...], "creatureTypes": [<string>, ...]}.\n\n'
+        "Follow the worked examples given under \"Reference: already-tagged Features\" "
+        "closely — most Features get exactly ONE behaviors tag and ONE recipeSlots tag; "
+        "roles and creatureTypes are usually empty arrays (meaning universally "
+        "compatible) unless the Feature is CLEARLY narrow to a specific role or "
+        "creature type. Reuse an existing tag word from the examples whenever one "
+        "fits — do not invent a new tag vocabulary word unless truly nothing fits.\n\n"
+        "Use the \"Reference: CR budget calibration\" table to gauge budgetCost: if a "
+        "Monster context (CR/targetBudget) is given below, the tagged Features' own "
+        "costs should sum roughly toward that CR's targetBudget, weighted so a bigger "
+        "ability (recharge-limited, legendary, wide area damage, save-or-lose) costs "
+        "more of that budget than a minor passive. If no Monster context is given, use "
+        "that CR's own implied average cost-per-Feature as a rough anchor instead.\n\n"
+        "A Feature already flagged mechanics.scope \"unique\" is still tagged normally "
+        "(that flag only affects Crucible's own native generation, not cost/tags)."
+    )
+
+    def _load_feature_tag_examples(state: ServerState, limit: int = 60) -> list:
+        feature_dir = state.root_dir / "undercroft" / "common" / "data" / "feature"
+        examples = []
+        if not feature_dir.is_dir():
+            return examples
+        for path in sorted(feature_dir.glob("*.json")):
+            try:
+                data = json.loads(path.read_text(encoding="utf-8"))
+            except (json.JSONDecodeError, OSError):
+                continue
+            tags = data.get("tags") or {}
+            budget_cost = data.get("budgetCost")
+            recipe_slots = tags.get("recipeSlots") or []
+            if not budget_cost or not recipe_slots:
+                continue
+            examples.append(
+                {
+                    "name": data.get("name", ""),
+                    "description": data.get("description", ""),
+                    "budgetCost": budget_cost,
+                    "behaviors": tags.get("behaviors") or [],
+                    "recipeSlots": recipe_slots,
+                    "roles": tags.get("roles") or [],
+                    "creatureTypes": tags.get("creatureTypes") or [],
+                }
+            )
+            if len(examples) >= limit:
+                break
+        return examples
+
+    ALLOWED_SUGGESTION_TAG_KEYS = {"behaviors", "recipeSlots", "roles", "creatureTypes"}
+
+    def _build_feature_tag_suggestion_content(state: ServerState, payload: Dict[str, Any]) -> str:
+        features = payload.get("features") or []
+        if not isinstance(features, list) or not features:
+            raise ValueError("features (a non-empty array) is required")
+        feature_lines = []
+        for entry in features:
+            if not isinstance(entry, dict) or not entry.get("id"):
+                raise ValueError("each entry in features must be an object with an id")
+            feature_lines.append(
+                f"- id: {entry['id']}\n"
+                f"  name: {entry.get('name', '')}\n"
+                f"  mechanicsType: {entry.get('mechanicsType', 'passive')}\n"
+                f"  description: {entry.get('description', '')}"
+            )
+
+        monster = payload.get("monster") or {}
+        monster_context = ""
+        if monster.get("challengeRating") or monster.get("targetBudget"):
+            monster_context = (
+                f"\nMonster context — Name: {monster.get('name', '')}, "
+                f"CR: {monster.get('challengeRating', '')}, "
+                f"targetBudget: {monster.get('targetBudget', '')}\n"
+            )
+
+        examples = _load_feature_tag_examples(state)
+        example_lines = "\n".join(
+            f"- {ex['name']} (cost {ex['budgetCost']}): behaviors={ex['behaviors']}, "
+            f"recipeSlots={ex['recipeSlots']}, roles={ex['roles']}, "
+            f"creatureTypes={ex['creatureTypes']} — {ex['description']}"
+            for ex in examples
+        )
+        calibration_lines = "\n".join(
+            f"- CR {row['cr']}: targetBudget={row['targetBudget']}, "
+            f"impliedCostPerFeature≈{row['impliedCostPerFeature']}"
+            for row in CALIBRATION_TABLE
+        )
+
+        return (
+            "Reference: already-tagged Features\n"
+            f"{example_lines}\n\n"
+            "Reference: CR budget calibration\n"
+            f"{calibration_lines}\n"
+            f"{monster_context}\n"
+            "Features to tag:\n"
+            f"{chr(10).join(feature_lines)}\n"
+        )
+
+    def handle_loom_suggest_feature_tags(request: Request) -> Response:
+        import urllib.error
+        import urllib.request
+
+        api_key = resolve_anthropic_api_key(request.state)
+        if not api_key:
+            return json_response(
+                {
+                    "error": (
+                        "Missing Anthropic API key — copy server/anthropic.local.json.example to "
+                        "server/anthropic.local.json and fill in api_key."
+                    )
+                },
+                status=HTTPStatus.BAD_REQUEST,
+            )
+        payload = require_json(request)
+        try:
+            user_content = _build_feature_tag_suggestion_content(request.state, payload)
+        except ValueError as exc:
+            return json_response({"error": str(exc)}, status=HTTPStatus.BAD_REQUEST)
+        requested_ids = {entry["id"] for entry in payload.get("features") or [] if isinstance(entry, dict) and entry.get("id")}
+
+        request_body = json.dumps(
+            {
+                "model": "claude-haiku-4-5-20251001",
+                "max_tokens": 4096,
+                "system": FEATURE_TAG_SUGGESTION_SYSTEM_PROMPT,
+                "messages": [{"role": "user", "content": user_content}],
+            }
+        ).encode("utf-8")
+        proxy_request = urllib.request.Request(
+            "https://api.anthropic.com/v1/messages",
+            data=request_body,
+            headers={
+                "Content-Type": "application/json",
+                "x-api-key": api_key,
+                "anthropic-version": "2023-06-01",
+            },
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(proxy_request, timeout=60) as upstream:
+                response_body = json.loads(upstream.read())
+        except urllib.error.HTTPError as exc:
+            detail = exc.read().decode("utf-8", errors="replace")
+            return json_response(
+                {"error": f"Anthropic API request failed ({exc.code}): {detail}"},
+                status=HTTPStatus.BAD_GATEWAY,
+            )
+        except urllib.error.URLError as exc:
+            return json_response({"error": f"Anthropic API request failed ({exc.reason})"}, status=HTTPStatus.BAD_GATEWAY)
+
+        content_blocks = response_body.get("content") or []
+        raw_text = "".join(block.get("text", "") for block in content_blocks if isinstance(block, dict)).strip()
+        if not raw_text:
+            return json_response({"error": "Anthropic API returned an empty response"}, status=HTTPStatus.BAD_GATEWAY)
+
+        # Strict validation — reject and report rather than half-apply, same
+        # "never guess" posture the client-side Feature-matching pipeline
+        # already holds itself to. A stray markdown code fence around the
+        # JSON (models do this despite instructions not to) is stripped
+        # first since that's a cosmetic wrapper, not a content problem.
+        cleaned_text = raw_text.strip()
+        if cleaned_text.startswith("```"):
+            cleaned_text = cleaned_text.split("\n", 1)[1] if "\n" in cleaned_text else ""
+            if cleaned_text.rstrip().endswith("```"):
+                cleaned_text = cleaned_text.rstrip()[:-3]
+        try:
+            parsed = json.loads(cleaned_text)
+        except json.JSONDecodeError:
+            return json_response(
+                {"error": "Anthropic API did not return valid JSON", "raw": raw_text},
+                status=HTTPStatus.BAD_GATEWAY,
+            )
+        if not isinstance(parsed, dict):
+            return json_response({"error": "Expected a JSON object of featureId -> suggestion"}, status=HTTPStatus.BAD_GATEWAY)
+
+        suggestions: Dict[str, Any] = {}
+        for feature_id, suggestion in parsed.items():
+            if feature_id not in requested_ids or not isinstance(suggestion, dict):
+                continue
+            budget_cost = suggestion.get("budgetCost")
+            if not isinstance(budget_cost, (int, float)) or budget_cost < 0:
+                continue
+            clean_suggestion: Dict[str, Any] = {"budgetCost": int(round(budget_cost))}
+            for key in ALLOWED_SUGGESTION_TAG_KEYS:
+                value = suggestion.get(key)
+                clean_suggestion[key] = [str(v) for v in value] if isinstance(value, list) else []
+            suggestions[feature_id] = clean_suggestion
+
+        missing_ids = sorted(requested_ids - suggestions.keys())
+        return json_response({"suggestions": suggestions, "missingIds": missing_ids})
+
+    router.add("POST", r"^/loom/suggest-feature-tags$", handle_loom_suggest_feature_tags)
+
     # /library/{kind}/... (POST save/delete, GET list) is retired — every
     # Library kind (including the 9 that used to be plain, unauthenticated
     # flat files under this route) is now served by the same DB-backed

@@ -1,0 +1,123 @@
+{
+  "kind": "monster",
+  "name": "Death Butterfly Swarm",
+  "image": "https://koboldpress.com/wp-content/uploads/2016/10/death-butterfly-swarm-232x300.jpg",
+  "notes": "_These enormous clouds of orange and green butterflies add a reek of putrefaction to the air, stirred by the flapping of their delicate wings._\r\n\r\n**Demon-Haunted**. A death butterfly swarm results when a rare breed of carrion-eating butterflies, drawn to the stench of great decay, feeds on the corpse of a fiend, demon, or similar creature.\r\n\r\n**Dizzying and Poisonous**. The colorful and chaotic flapping of the insects’ wings blinds and staggers those in its path, allowing the swarm to necrotize more flesh from those it overruns. Attracted to rotting material, the swarm spreads a fast-acting, poison on its victims, creating carrion it can feed on immediately.\r\n\r\n**Devour the Undead**. Undead creatures are not immune to a death butterfly swarm’s poison, and a swarm can rot an undead creature’s animating energies as easily as those of the living. Given the choice between an undead and living creature, a death butterfly swarm always attacks the undead. Such swarms find ghouls and vampires particularly appealing. Some good-aligned forces regard summoning these swarms as a necessary evil.",
+  "type": "beast",
+  "stats": {
+    "size": "Large Swarm of Tiny Beasts",
+    "alignment": "Chaotic Evil",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 60,
+      "current": 60
+    },
+    "hitDice": "11d10",
+    "speed": {
+      "walk": 5,
+      "fly": 40,
+      "hover": true
+    },
+    "abilities": {
+      "strength": 1,
+      "dexterity": 13,
+      "constitution": 10,
+      "intelligence": 1,
+      "wisdom": 12,
+      "charisma": 15
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "",
+    "skills": "",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 11
+      }
+    },
+    "challengeRating": "4",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "slashing against nonmagical weapons",
+          "type": "resistance"
+        },
+        {
+          "name": "cold",
+          "type": "vulnerability"
+        },
+        {
+          "name": "fire",
+          "type": "vulnerability"
+        },
+        {
+          "name": "charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "petrified",
+          "type": "immunity"
+        },
+        {
+          "name": "prone",
+          "type": "immunity"
+        },
+        {
+          "name": "restrained",
+          "type": "immunity"
+        },
+        {
+          "name": "petrified",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [
+      "Grassland",
+      "Forest",
+      "Urban"
+    ],
+    "sources": [
+      "ToB1",
+      "Tome of Beasts 1, pg. 71"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.death-butterfly-swarm-potent-poison",
+    "feat.death-butterfly-swarm-swarm",
+    "feat.death-butterfly-swarm-weight-of-wings",
+    "feat.multiattack",
+    "feat.death-butterfly-swarm-bites"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "text": "The creature makes a Bite attack against every target in its spaces."
+    }
+  }
+}

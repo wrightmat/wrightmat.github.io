@@ -1,0 +1,87 @@
+{
+  "kind": "monster",
+  "index": "ape",
+  "name": "Ape",
+  "type": "beast",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/ape.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "unaligned",
+    "armorClass": 12,
+    "hitPoints": {
+      "max": 19,
+      "current": 19,
+      "diceString": "3d8+6"
+    },
+    "hitDice": "3d8",
+    "speed": {
+      "walk": 30,
+      "climb": 30
+    },
+    "abilities": {
+      "strength": 16,
+      "dexterity": 14,
+      "constitution": 14,
+      "intelligence": 6,
+      "wisdom": 12,
+      "charisma": 7
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "Athletics +5, Perception +3",
+    "proficiencies": {
+      "defenses": [],
+      "languages": []
+    },
+    "senses": {
+      "passives": {
+        "perception": 13
+      }
+    },
+    "challengeRating": "1/2",
+    "proficiencyBonus": 2,
+    "xp": 100,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/ape"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/ape",
+  "featureIds": [
+    "feat.multiattack",
+    "feat.fist",
+    "feat.rock"
+  ],
+  "featureParams": {
+    "feat.fist": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d6 + 3",
+      "damageType": "bludgeoning"
+    },
+    "feat.rock": {
+      "kind": "Ranged",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "range",
+      "distance": "25/50",
+      "damageDice": "1d6 + 3",
+      "damageType": "bludgeoning"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.fist",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two fist attacks."
+    }
+  }
+}

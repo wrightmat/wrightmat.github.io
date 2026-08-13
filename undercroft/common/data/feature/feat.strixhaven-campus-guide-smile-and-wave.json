@@ -1,0 +1,32 @@
+{
+  "id": "feat.strixhaven-campus-guide-smile-and-wave",
+  "name": "Smile and Wave",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Each creature of the creature’s choice that is within 30 feet of the creature must succeed on a DC 11 Wisdom saving throw or be magically charmed by the creature for 1 hour. A charmed target must move on its turn toward the creature, trying to get within 5 feet of the creature. The target doesn’t move into obviously dangerous ground, such as a fire or a pit. Whenever the charmed target takes damage, it can repeat the saving throw, ending the effect on itself on a success. A target that successfully saves is immune to any guide’s Smile and Wave ability for the next 24 hours.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Each creature of the creature’s choice that is within 30 feet of the creature must succeed on a DC 11 Wisdom saving throw or be magically charmed by the creature for 1 hour. A charmed target must move on its turn toward the creature, trying to get within 5 feet of the creature. The target doesn’t move into obviously dangerous ground, such as a fire or a pit. Whenever the charmed target takes damage, it can repeat the saving throw, ending the effect on itself on a success. A target that successfully saves is immune to any guide’s Smile and Wave ability for the next 24 hours.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "control"
+    ],
+    "recipeSlots": [
+      "dominate"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

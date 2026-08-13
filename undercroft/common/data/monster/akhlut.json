@@ -1,0 +1,106 @@
+{
+  "kind": "monster",
+  "name": "Akhlut",
+  "notes": "",
+  "type": "beast",
+  "stats": {
+    "size": "Large",
+    "alignment": "Unaligned",
+    "armorClass": 14,
+    "hitPoints": {
+      "max": 120,
+      "current": 120,
+      "diceString": "16d10 + 32"
+    },
+    "hitDice": "16d10",
+    "speed": {
+      "walk": 40,
+      "swim": 60
+    },
+    "abilities": {
+      "strength": 19,
+      "dexterity": 15,
+      "constitution": 15,
+      "intelligence": 4,
+      "wisdom": 12,
+      "charisma": 10
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "Perception +4, Stealth +5",
+    "senses": {
+      "blindsight": 120,
+      "passives": {
+        "perception": 14
+      }
+    },
+    "challengeRating": "6",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "cold",
+          "type": "resistance"
+        }
+      ],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Tome of Beasts 2 (pg. 12)"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.echolocation",
+    "feat.hold-breath",
+    "feat.keen-hearing-and-smell",
+    "feat.pack-tactics",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.tail-slam"
+  ],
+  "featureTiers": {
+    "feat.hold-breath": "30-minutes"
+  },
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "4d6 + 4",
+      "damageType": "piercing"
+    },
+    "feat.tail-slam": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "4d8 +4",
+      "damageType": "bludgeoning"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.bite",
+          "count": 1
+        },
+        {
+          "featureId": "feat.tail-slam",
+          "count": 1
+        }
+      ],
+      "text": "The creature makes two attacks: one with its bite and one with its tail slam. It can’t make both attacks against the same target."
+    }
+  }
+}

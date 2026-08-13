@@ -1,0 +1,131 @@
+{
+  "kind": "monster",
+  "index": "wraith",
+  "name": "Wraith",
+  "type": "undead",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/wraith.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "neutral evil",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 67,
+      "current": 67,
+      "diceString": "9d8+27"
+    },
+    "hitDice": "9d8",
+    "speed": {
+      "walk": 0,
+      "fly": 60,
+      "hover": true
+    },
+    "abilities": {
+      "strength": 6,
+      "dexterity": 16,
+      "constitution": 16,
+      "intelligence": 12,
+      "wisdom": 14,
+      "charisma": 15
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "acid",
+          "type": "resistance"
+        },
+        {
+          "name": "cold",
+          "type": "resistance"
+        },
+        {
+          "name": "fire",
+          "type": "resistance"
+        },
+        {
+          "name": "lightning",
+          "type": "resistance"
+        },
+        {
+          "name": "thunder",
+          "type": "resistance"
+        },
+        {
+          "name": "bludgeoning, piercing, and slashing from nonmagical weapons that aren't silvered",
+          "type": "resistance"
+        },
+        {
+          "name": "necrotic",
+          "type": "immunity"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "Exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "Grappled",
+          "type": "immunity"
+        },
+        {
+          "name": "Paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "Petrified",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        },
+        {
+          "name": "Prone",
+          "type": "immunity"
+        },
+        {
+          "name": "Restrained",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "the languages it knew in life"
+      ]
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 12
+      }
+    },
+    "challengeRating": "5",
+    "proficiencyBonus": 3,
+    "xp": 1800,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/wraith"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/wraith",
+  "featureIds": [
+    "feat.incorporeal-movement",
+    "feat.sunlight-sensitivity",
+    "feat.life-drain-monster",
+    "feat.wraith-create-specter"
+  ],
+  "featureTiers": {
+    "feat.life-drain-monster": "wraith"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "id": "feat.sahuagin-baron-fiendish-blood",
+  "name": "Fiendish Blood",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Trigger: The creature takes Piercing or Slashing damage. Response—Constitution Saving Throw: DC 14, each creature of the creature’s choice in a 5-foot Emanation originating from the creature. Failure: 10 (3d6) Acid damage, and the target is cursed until it finishes a Short or Long Rest. While cursed, the target can’t benefit from the Invisible condition, its Speed decreases by 10 feet, and all Fiends within 120 feet of the target can sense its location regardless of interposing obstacles.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Trigger: The creature takes Piercing or Slashing damage. Response—Constitution Saving Throw: DC 14, each creature of the creature’s choice in a 5-foot Emanation originating from the creature. Failure: 10 (3d6) Acid damage, and the target is cursed until it finishes a Short or Long Rest. While cursed, the target can’t benefit from the Invisible condition, its Speed decreases by 10 feet, and all Fiends within 120 feet of the target can sense its location regardless of interposing obstacles.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "debuff"
+    ],
+    "recipeSlots": [
+      "burst"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "reaction"
+  }
+}

@@ -1,0 +1,108 @@
+{
+  "kind": "monster",
+  "name": "Prismatic Beetle Swarm",
+  "image": "https://3.bp.blogspot.com/-_UdOTpGMxyU/XNcEkuJTW9I/AAAAAAAALq0/cjBor98x2HsqODgczVEMuLmhnEp_yWwkACLcBGAs/s1600/prismatic%2Bbeetles.png",
+  "notes": "### Description\r\n\r\n>A dazzling explosion of multicolored lights erupts from this cloud of flying beetles, flashing every color of the rainbow.\r\n\r\n**Flesh-Eating Beauties**. The depths of the jungle are filled with lethal wildlife, and prismatic beetles are superlative examples of this. These flesh-eating, venomous insects distract and subdue their prey with sparkling beauty even as they devour it alive. Individual prismatic beetles sparkle like precious gems in the light; tosculi traders, gnolls, and humans often incorporate their carapaces into decorative jewelry or utilize them as special components in enchantment and illusion (pattern) spells and items.\r\n\r\n**Hypno-Paralytic**. When swarming in the thousands, these beautiful bugs create a hypnotic cascade of glimmering hues capable of enthralling creatures. As they descend on their dazed prey, the beetles’ bites slowly paralyze their victims while their toxins distract the mind with feelings of euphoria and delight.\r\n\r\n**Predator Partners**. Although carnivorous, prismatic beetles are not overly aggressive; they attack other creatures only when hungry or threatened. Even when they’re not attacking, however, they can be a threat; more than one unwary traveler has stopped to admire what they thought was a docile swarm of prismatic beetles, and became captivated. The unfortunates are often killed and eaten by lurking jungle predator, as such animals know the beetles stun and confuse prey.",
+  "type": "beast",
+  "stats": {
+    "size": "Medium swarm of Tiny beasts",
+    "alignment": "Unaligned",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 38,
+      "current": 38,
+      "diceString": "7d8 + 7"
+    },
+    "hitDice": "7d8",
+    "speed": {
+      "walk": 20,
+      "burrow": 5,
+      "fly": 30
+    },
+    "abilities": {
+      "strength": 3,
+      "dexterity": 16,
+      "constitution": 12,
+      "intelligence": 1,
+      "wisdom": 13,
+      "charisma": 2
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "",
+    "skills": "Perception +3, Stealth +5",
+    "senses": {
+      "blindsight": 10,
+      "darkvision": 30,
+      "passives": {
+        "perception": 13
+      }
+    },
+    "challengeRating": "3",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "slashing",
+          "type": "resistance"
+        },
+        {
+          "name": "charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "petrified",
+          "type": "immunity"
+        },
+        {
+          "name": "prone",
+          "type": "immunity"
+        },
+        {
+          "name": "restrained",
+          "type": "immunity"
+        },
+        {
+          "name": "stunned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [
+      "Forest"
+    ],
+    "sources": [
+      "ToB1",
+      "Tome of Beasts 1, pg. 375"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.death-butterfly-swarm-swarm",
+    "feat.prismatic-beetle-swarm-glittering-carapace",
+    "feat.prismatic-beetle-swarm-bites"
+  ]
+}

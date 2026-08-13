@@ -1,0 +1,96 @@
+{
+  "kind": "monster",
+  "index": "gladiator",
+  "name": "Gladiator",
+  "notes": "Gladiators battle for the entertainment of raucous crowds. Some gladiators are brutal pit fighters who treat each match as a life-or-death struggle, while others are professional duelists who command huge fees but rarely fight to the death.",
+  "type": "humanoid",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/gladiator.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "any alignment",
+    "armorClass": 16,
+    "hitPoints": {
+      "max": 112,
+      "current": 112,
+      "diceString": "15d8+45"
+    },
+    "hitDice": "15d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 18,
+      "dexterity": 15,
+      "constitution": 16,
+      "intelligence": 10,
+      "wisdom": 12,
+      "charisma": 15
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "STR +7, DEX +5, CON +6",
+    "skills": "Athletics +10, Intimidation +5",
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "any one language (usually Common)"
+      ]
+    },
+    "senses": {
+      "passives": {
+        "perception": 11
+      }
+    },
+    "challengeRating": "5",
+    "proficiencyBonus": 3,
+    "xp": 1800,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/gladiator"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/gladiator",
+  "featureIds": [
+    "feat.brave",
+    "feat.brute",
+    "feat.multiattack",
+    "feat.spear",
+    "feat.shield-bash",
+    "feat.parry"
+  ],
+  "featureTiers": {
+    "feat.parry": "ac-3"
+  },
+  "featureParams": {
+    "feat.multiattack": {
+      "text": "The creature makes three melee attacks or two ranged attacks."
+    },
+    "feat.shield-bash": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d4 + 4",
+      "damageType": "bludgeoning",
+      "rider": {
+        "kind": "save-or-condition",
+        "targetRestriction": "medium or smaller creature"
+      }
+    },
+    "feat.spear": {
+      "kind": "MeleeOrRanged",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "meleeDistance": "5",
+      "rangeDistance": "20/60",
+      "damageDice": "2d6 + 4",
+      "damageType": "piercing",
+      "versatile": {
+        "damageDice": "2d8 + 4"
+      }
+    }
+  }
+}

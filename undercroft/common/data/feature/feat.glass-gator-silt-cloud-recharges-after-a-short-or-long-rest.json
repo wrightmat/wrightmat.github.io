@@ -1,0 +1,33 @@
+{
+  "id": "feat.glass-gator-silt-cloud-recharges-after-a-short-or-long-rest",
+  "name": "Silt Cloud (Recharges after a Short or Long Rest)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "After taking damage while in water, the creature thrashes to stir up a 10-foot-radius cloud of silt around itself. The area inside the sphere is heavily obscured for 1 minute (10 rounds) in still water or 5 (2d4) rounds in a strong current. After stirring up the silt, the creature can move its speed.",
+  "mechanics": {
+    "type": "passive",
+    "text": "After taking damage while in water, the creature thrashes to stir up a 10-foot-radius cloud of silt around itself. The area inside the sphere is heavily obscured for 1 minute (10 rounds) in still water or 5 (2d4) rounds in a strong current. After stirring up the silt, the creature can move its speed.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "control",
+      "debuff"
+    ],
+    "recipeSlots": [
+      "spread"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "reaction"
+  }
+}

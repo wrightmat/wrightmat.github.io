@@ -1,0 +1,71 @@
+{
+  "kind": "monster",
+  "index": "plesiosaurus",
+  "name": "Plesiosaurus",
+  "type": "beast",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/plesiosaurus.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "unaligned",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 68,
+      "current": 68,
+      "diceString": "8d10+24"
+    },
+    "hitDice": "8d10",
+    "speed": {
+      "walk": 20,
+      "swim": 40
+    },
+    "abilities": {
+      "strength": 18,
+      "dexterity": 15,
+      "constitution": 16,
+      "intelligence": 2,
+      "wisdom": 12,
+      "charisma": 5
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "Perception +3, Stealth +4",
+    "proficiencies": {
+      "defenses": [],
+      "languages": []
+    },
+    "senses": {
+      "passives": {
+        "perception": 13
+      }
+    },
+    "challengeRating": "2",
+    "proficiencyBonus": 2,
+    "xp": 450,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/plesiosaurus"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/plesiosaurus",
+  "featureIds": [
+    "feat.hold-breath",
+    "feat.bite"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "3d6 + 4",
+      "damageType": "piercing"
+    }
+  },
+  "featureTiers": {
+    "feat.hold-breath": "1-hour"
+  }
+}

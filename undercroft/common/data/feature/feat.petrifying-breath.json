@@ -1,0 +1,50 @@
+{
+  "id": "feat.petrifying-breath",
+  "name": "Petrifying Breath (Recharge 5–6)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature emits a 60-foot cone of petrifying gas from its mouth. Each creature in that area must succeed on a DC 15 Constitution saving throw or take 35 (10d6) poison damage and be restrained as it begins to turn to stone. The restrained target must repeat the saving throw at the end of its next turn. On a successful save, the effect ends on the target. On a failed save, the target is petrified.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature emits a 60-foot cone of petrifying gas from its mouth. Each creature in that area must succeed on a DC 15 Constitution saving throw or take 35 (10d6) poison damage and be restrained as it begins to turn to stone. The restrained target must repeat the saving throw at the end of its next turn. On a successful save, the effect ends on the target. On a failed save, the target is petrified."
+  },
+  "budgetCost": 4,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "control"
+    ],
+    "recipeSlots": [
+      "burst"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "dragonbone-golem",
+      "name": "Petrifying Breath (Recharge 5–6)",
+      "shortName": "Dragonbone Golem",
+      "mechanics": {
+        "text": "The creature emits a 60-foot cone of petrifying gas from its mouth. Each creature in that area must succeed on a DC 15 Constitution saving throw or take 35 (10d6) poison damage and be restrained as it begins to turn to stone. The restrained target must repeat the saving throw at the end of its next turn. On a successful save, the effect ends on the target. On a failed save, the target is petrified."
+      }
+    },
+    {
+      "id": "gorgon",
+      "name": "Petrifying Breath",
+      "shortName": "Gorgon",
+      "mechanics": {
+        "text": "The monstrosity exhales petrifying gas in a 30-foot cone. Each creature in that area must succeed on a DC 13 Constitution saving throw. On a failed save, a target begins to turn to stone and is restrained. The restrained target must repeat the saving throw at the end of its next turn. On a success, the effect ends on the target. On a failure, the target is petrified until freed by the greater restoration spell or other magic."
+      }
+    }
+  ],
+  "combat": {
+    "actionCost": "action"
+  }
+}

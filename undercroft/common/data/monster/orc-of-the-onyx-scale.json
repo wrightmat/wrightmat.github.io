@@ -1,0 +1,114 @@
+{
+  "kind": "monster",
+  "name": "Orc of the Onyx Scale",
+  "notes": "",
+  "type": "humanoid",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Chaotic Evil",
+    "armorClass": 16,
+    "hitPoints": {
+      "max": 110,
+      "current": 110,
+      "diceString": "17d8 + 34"
+    },
+    "hitDice": "17d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 18,
+      "dexterity": 12,
+      "constitution": 18,
+      "intelligence": 13,
+      "wisdom": 12,
+      "charisma": 16
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "Str +6, Con +6, Wis +4",
+    "skills": "Deception +6, Intimidation +5, Stealth +7",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 11
+      }
+    },
+    "challengeRating": "7",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "one of the following: acid",
+          "type": "resistance"
+        },
+        {
+          "name": "cold",
+          "type": "resistance"
+        },
+        {
+          "name": "fire",
+          "type": "resistance"
+        },
+        {
+          "name": "lightning",
+          "type": "resistance"
+        },
+        {
+          "name": "and poison",
+          "type": "resistance"
+        }
+      ],
+      "languages": [
+        "Common",
+        "Draconic",
+        "Orc"
+      ]
+    },
+    "spells": "The orc is a 4th-level spellcaster. Its spellcasting ability is Wisdom (spell save DC 12, +4 to hit with spell attacks). It has the following druid spells prepared: Cantrips (at will): druidcraft, produce flame, shillelagh 1st level (4 slots): entangle, longstrider, speak with animals, thunderwave 2nd level (3 slots): animal messenger, barkskin",
+    "environments": [
+      "Grassland",
+      "Hill",
+      "Swamp",
+      "Underdark"
+    ],
+    "sources": [
+      "Homebrew",
+      "Based on Dragonsoul, Druid, and Orc War Chief"
+    ],
+    "saveDC": 12
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.aggressive",
+    "feat.dragonsoul-dragon-fanatic",
+    "feat.dragonsoul-fanatic-advantage",
+    "feat.limited-flight",
+    "feat.pack-tactics",
+    "feat.multiattack",
+    "feat.shortsword",
+    "feat.dragonsoul-orb-of-dragon-s-breath-3-day"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "text": "The orc attacks twice with its shortsword."
+    },
+    "feat.shortsword": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d6 + 3",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "resistance-type-damage",
+        "dice": "3d6"
+      }
+    }
+  }
+}

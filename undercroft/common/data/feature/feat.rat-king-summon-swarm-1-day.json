@@ -1,0 +1,33 @@
+{
+  "id": "feat.rat-king-summon-swarm-1-day",
+  "name": "Summon Swarm (1/Day)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature summons three swarms of rats. The swarms appear immediately within 60 feet of the creature. They can appear in spaces occupied by other creatures. The swarms act as allies of the creature. They remain for 1 hour or until the creature dies.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature summons three swarms of rats. The swarms appear immediately within 60 feet of the creature. They can appear in spaces occupied by other creatures. The swarms act as allies of the creature. They remain for 1 hour or until the creature dies.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "utility",
+      "control"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

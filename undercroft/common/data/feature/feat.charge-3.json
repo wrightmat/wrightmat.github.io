@@ -1,0 +1,55 @@
+{
+  "id": "feat.charge-3",
+  "name": "Charge",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "If the creature moves at least 10 feet straight toward a target and then hits it with a gore attack on the same turn, the target takes an extra 9 (2d8) piercing damage. If the target is a creature, it must succeed on a DC 16 Strength saving throw or be pushed up to 10 feet away and knocked prone.",
+  "mechanics": {
+    "type": "passive",
+    "text": "If the creature moves at least 10 feet straight toward a target and then hits it with a gore attack on the same turn, the target takes an extra 9 (2d8) piercing damage. If the target is a creature, it must succeed on a DC 16 Strength saving throw or be pushed up to 10 feet away and knocked prone."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "control"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "metal-minotaur",
+      "name": "Charge",
+      "shortName": "Metal Minotaur",
+      "mechanics": {
+        "text": "If the creature moves at least 10 feet straight toward a target and then hits it with a gore attack on the same turn, the target takes an extra 9 (2d8) piercing damage. If the target is a creature, it must succeed on a DC 16 Strength saving throw or be pushed up to 10 feet away and knocked prone."
+      }
+    },
+    {
+      "id": "minotaur",
+      "name": "Charge",
+      "shortName": "Minotaur",
+      "mechanics": {
+        "text": "If the monstrosity moves at least 10 ft. straight toward a target and then hits it with a gore attack on the same turn, the target takes an extra 9 (2d8) piercing damage. If the target is a creature, it must succeed on a DC 14 Strength saving throw or be pushed up to 10 ft. away and knocked prone."
+      }
+    },
+    {
+      "id": "minotaur-skeleton",
+      "name": "Charge",
+      "shortName": "Minotaur Skeleton",
+      "mechanics": {
+        "text": "If the undead moves at least 10 feet straight toward a target and then hits it with a gore attack on the same turn, the target takes an extra 9 (2d8) piercing damage. If the target is a creature, it must succeed on a DC 14 Strength saving throw or be pushed up to 10 feet away and knocked prone."
+      }
+    }
+  ]
+}

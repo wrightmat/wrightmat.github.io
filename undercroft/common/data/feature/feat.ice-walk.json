@@ -1,0 +1,24 @@
+{
+  "id": "feat.ice-walk",
+  "name": "Ice Walk",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature can move across and climb icy surfaces without needing to make an ability check. Additionally, difficult terrain composed of ice or snow doesn't cost it extra movement.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature can move across and climb icy surfaces without needing to make an ability check. Additionally, difficult terrain composed of ice or snow doesn't cost it extra movement."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

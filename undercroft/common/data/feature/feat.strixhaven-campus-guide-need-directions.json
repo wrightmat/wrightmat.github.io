@@ -1,0 +1,32 @@
+{
+  "id": "feat.strixhaven-campus-guide-need-directions",
+  "name": "Need Directions?",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature takes the Help action.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature takes the Help action.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "bonus-action"
+  }
+}

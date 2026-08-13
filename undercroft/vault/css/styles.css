@@ -26,3 +26,18 @@
 [data-budget-remaining].vault-budget-over {
   color: var(--bs-danger);
 }
+
+/* Same heading-spacing touch Repository's own .repository-preview /
+   Crucible's own [data-notes-preview] use for the identical renderMarkdown
+   output — callout/wiki-link styling there is all inline (markdown.js's own
+   applyCalloutStyling/applyWikiLinkStyling), so this is the only CSS this
+   preview actually needs. */
+[data-notes-preview] h1,
+[data-notes-preview] h2,
+[data-notes-preview] h3 {
+  margin-top: 1rem;
+}
+
+[data-notes-preview] :first-child {
+  margin-top: 0;
+}

@@ -1,0 +1,30 @@
+{
+  "id": "feat.ikuchi-ikuchi-oil",
+  "name": "Ikuchi Oil",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature constantly emits a thick, nonflammable, yellowish oil. When the creature is underwater, this oil makes the water within 30 feet of the creature difficult terrain. Each time a creature moves more than 10 feet through this area it must succeed on a DC 15 Strength saving throw or be restrained by the thick oil until the end of its next turn. A creature under the effects of a freedom of movement spell or similar magic is immune to the effects of Ikuchi Oil.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature constantly emits a thick, nonflammable, yellowish oil. When the creature is underwater, this oil makes the water within 30 feet of the creature difficult terrain. Each time a creature moves more than 10 feet through this area it must succeed on a DC 15 Strength saving throw or be restrained by the thick oil until the end of its next turn. A creature under the effects of a freedom of movement spell or similar magic is immune to the effects of Ikuchi Oil.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "control",
+      "debuff"
+    ],
+    "recipeSlots": [
+      "deny"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

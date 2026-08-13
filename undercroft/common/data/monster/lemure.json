@@ -1,0 +1,96 @@
+{
+  "kind": "monster",
+  "index": "lemure",
+  "name": "Lemure",
+  "type": "fiend",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/lemure.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "lawful evil",
+    "armorClass": 7,
+    "hitPoints": {
+      "max": 13,
+      "current": 13,
+      "diceString": "3d8"
+    },
+    "hitDice": "3d8",
+    "speed": {
+      "walk": 15
+    },
+    "abilities": {
+      "strength": 10,
+      "dexterity": 5,
+      "constitution": 11,
+      "intelligence": 1,
+      "wisdom": 11,
+      "charisma": 3
+    },
+    "initiative": {
+      "bonus": -3
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "cold",
+          "type": "resistance"
+        },
+        {
+          "name": "fire",
+          "type": "immunity"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "Frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "understands infernal but can't speak"
+      ]
+    },
+    "senses": {
+      "darkvision": 120,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "0",
+    "proficiencyBonus": 2,
+    "xp": 10,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/lemure"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/lemure",
+  "featureIds": [
+    "feat.devil-s-sight",
+    "feat.lemure-hellish-rejuvenation",
+    "feat.fist"
+  ],
+  "featureParams": {
+    "feat.fist": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 3,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d4",
+      "damageType": "bludgeoning"
+    }
+  }
+}

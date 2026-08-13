@@ -1,0 +1,25 @@
+{
+  "id": "feat.flesh-golem-aversion-of-fire",
+  "name": "Aversion of Fire",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "If the creature takes fire damage, it has disadvantage on attack rolls and ability checks until the end of its next turn.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "If the creature takes fire damage, it has disadvantage on attack rolls and ability checks until the end of its next turn."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

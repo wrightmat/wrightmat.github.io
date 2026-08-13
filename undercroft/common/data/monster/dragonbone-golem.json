@@ -1,0 +1,129 @@
+{
+  "kind": "monster",
+  "name": "Dragonbone Golem",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/21205/226/1000/1000/637707682451137391.jpeg",
+  "notes": "### Description\r\n\r\nA dragonbone golem is composed of dragon bones linked together with adamantine wire into the form of a dragon, animated by drawing on the bones’ inherent magic. Most dragon bone golems are created by powerful dragons from the bones of vanquished rivals. Each bone is etched with intricate glyphs that allow animating power to flow through the golem’s form.\r\n\r\nDragonbone golems’ resilience and obedience make them excellent lair guardians for their dragon creators, and their supernaturally fearsome presence is a strong deterrent against intrusion.",
+  "type": "construct",
+  "stats": {
+    "size": "Large",
+    "alignment": "Unaligned",
+    "armorClass": 17,
+    "hitPoints": {
+      "max": 161,
+      "current": 161,
+      "diceString": "19d10 + 57"
+    },
+    "hitDice": "19d10",
+    "speed": {
+      "walk": 40
+    },
+    "abilities": {
+      "strength": 20,
+      "dexterity": 10,
+      "constitution": 17,
+      "intelligence": 3,
+      "wisdom": 11,
+      "charisma": 10
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "11",
+    "proficiencyBonus": 4,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "Exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "Frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "Paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "Petrified",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "understands Draconic and the languages of its creator but can't speak"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "FToD",
+      "Fizban's Treasury of Dragons, pg. 183",
+      "https://www.dndbeyond.com/monsters/2059727-dragonbone-golem"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.fear-aura",
+    "feat.magic-resistance",
+    "feat.unusual-nature",
+    "feat.multiattack",
+    "feat.dragonbone-golem-pinion",
+    "feat.rend",
+    "feat.petrifying-breath"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.dragonbone-golem-pinion",
+          "count": 1
+        },
+        {
+          "featureId": "feat.rend",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes one Pinion attack and two Rend attacks."
+    },
+    "feat.rend": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 9,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 5",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "1d10",
+        "damageType": "necrotic"
+      }
+    }
+  },
+  "featureTiers": {
+    "feat.fear-aura": "dc-15",
+    "feat.petrifying-breath": "dragonbone-golem"
+  }
+}

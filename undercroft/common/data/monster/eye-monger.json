@@ -1,0 +1,71 @@
+{
+  "kind": "monster",
+  "name": "Eye Monger",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/28079/832/1000/1000/637961800761621184.jpeg",
+  "notes": "### Description\r\n\r\nWhen its large eye and mouth are closed, an eye monger looks like nothing more than a 12-foot-diameter asteroid. When it senses vibrations in the space around it, the eye monger opens its eye and reveals its true, menacing nature.\r\n\r\nAn eye monger has no use for treasure, but its belly might hold a fair amount of incidental valuables that it can’t digest, including coins, metal weapons, gemstones, and magic items that belonged to the creatures it swallowed.\r\n\r\nAlthough an eye monger doesn’t project an antimagic cone from its eye as a beholder does, magic is suppressed inside its gullet, which prevents a swallowed creature from using magic to escape.",
+  "type": "aberration",
+  "stats": {
+    "size": "Large",
+    "alignment": "Typically Lawful Evil",
+    "armorClass": 17,
+    "hitPoints": {
+      "max": 149,
+      "current": 149,
+      "diceString": "13d10 + 78"
+    },
+    "hitDice": "13d10",
+    "speed": {
+      "walk": 0,
+      "fly": 20,
+      "hover": true
+    },
+    "abilities": {
+      "strength": 21,
+      "dexterity": 6,
+      "constitution": 23,
+      "intelligence": 7,
+      "wisdom": 13,
+      "charisma": 7
+    },
+    "initiative": {
+      "bonus": -2
+    },
+    "savingThrows": "",
+    "skills": "",
+    "senses": {
+      "blindsight": 120,
+      "darkvision": 120,
+      "passives": {
+        "perception": 11
+      }
+    },
+    "challengeRating": "10",
+    "proficiencyBonus": 4,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Deep Speech"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "BAM",
+      "Spelljammer: Adventures in Space • Boo’s Astral Menagerie, pg. 21",
+      "https://www.dndbeyond.com/monsters/2821163-eye-monger"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.eye-monger-antimagic-gullet",
+    "feat.false-appearance-ambush",
+    "feat.unusual-nature",
+    "feat.eye-monger-swallowing-bite"
+  ],
+  "featureTiers": {
+    "feat.unusual-nature": "no-air",
+    "feat.false-appearance-ambush": "motionless-eyes-legs-wrapped"
+  }
+}

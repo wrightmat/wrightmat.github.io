@@ -1,0 +1,29 @@
+{
+  "id": "feat.corpse-flower-corpses",
+  "name": "Corpses",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "When first encountered, a creature contains the corpses of 1d6 + 3 Humanoids. a creature can hold the remains of up to nine Humanoids. These remains have total cover against attacks and other effects outside the creature. If the creature dies, the corpses within it can be pulled free.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When first encountered, a creature contains the corpses of 1d6 + 3 Humanoids. a creature can hold the remains of up to nine Humanoids. These remains have total cover against attacks and other effects outside the creature. If the creature dies, the corpses within it can be pulled free.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

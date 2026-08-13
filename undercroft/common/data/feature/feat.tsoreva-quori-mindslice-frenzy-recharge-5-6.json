@@ -1,0 +1,33 @@
+{
+  "id": "feat.tsoreva-quori-mindslice-frenzy-recharge-5-6",
+  "name": "Mindslice Frenzy (Recharge 5-6)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature makes four melee attacks. A creature hit by two or more of these attacks on a turn must succeed on a DC 14 Wisdom saving throw or be Frightened for 1 minute. This effect ends if the creature ends its turn 20 ft. or more away from the creature.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature makes four melee attacks. A creature hit by two or more of these attacks on a turn must succeed on a DC 14 Wisdom saving throw or be Frightened for 1 minute. This effect ends if the creature ends its turn 20 ft. or more away from the creature.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "control"
+    ],
+    "recipeSlots": [
+      "burst"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

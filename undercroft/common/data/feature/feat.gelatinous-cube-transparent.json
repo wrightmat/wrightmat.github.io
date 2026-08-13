@@ -1,0 +1,25 @@
+{
+  "id": "feat.gelatinous-cube-transparent",
+  "name": "Transparent",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Even when the ooze is in plain sight, it takes a successful DC 15 Wisdom (Perception) check to spot an ooze that has neither moved nor attacked. A creature that tries to enter the ooze's space while unaware of the ooze is surprised by the ooze.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "Even when the ooze is in plain sight, it takes a successful DC 15 Wisdom (Perception) check to spot an ooze that has neither moved nor attacked. A creature that tries to enter the ooze's space while unaware of the ooze is surprised by the ooze."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

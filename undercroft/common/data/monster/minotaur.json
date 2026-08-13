@@ -1,0 +1,85 @@
+{
+  "kind": "monster",
+  "index": "minotaur",
+  "name": "Minotaur",
+  "type": "monstrosity",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/minotaur.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "chaotic evil",
+    "armorClass": 14,
+    "hitPoints": {
+      "max": 76,
+      "current": 76,
+      "diceString": "9d10+27"
+    },
+    "hitDice": "9d10",
+    "speed": {
+      "walk": 40
+    },
+    "abilities": {
+      "strength": 18,
+      "dexterity": 11,
+      "constitution": 16,
+      "intelligence": 6,
+      "wisdom": 16,
+      "charisma": 9
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "Perception +7",
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Abyssal"
+      ]
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 17
+      }
+    },
+    "challengeRating": "3",
+    "proficiencyBonus": 2,
+    "xp": 700,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/minotaur"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/minotaur",
+  "featureIds": [
+    "feat.charge-3",
+    "feat.labyrinthine-recall",
+    "feat.reckless",
+    "feat.greataxe",
+    "feat.gore"
+  ],
+  "featureParams": {
+    "feat.greataxe": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d12 + 4",
+      "damageType": "slashing"
+    },
+    "feat.gore": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d8 + 4",
+      "damageType": "piercing"
+    }
+  },
+  "featureTiers": {
+    "feat.charge-3": "minotaur"
+  }
+}

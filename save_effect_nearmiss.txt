@@ -1,0 +1,111 @@
+=== feat.acid-breath ===
+The creature exhales acid in an area, forcing a saving throw or dealing damage.
+
+=== feat.adult-sea-dragon-tidal-breath-recharge-5-6 ===
+The creature exhales a crushing wave of frigid seawater in a 60-foot cone. Each creature in that area must make a DC 19 Dexterity saving throw. On a failure, the target takes 33 (6d10) bludgeoning damage and 33 (6d10) cold damage, and is pushed 30 feet away from the creature and knocked prone. On a successful save the creature takes half as much damage and isn’t pushed or knocked prone.
+
+=== feat.adult-topaz-dragon-desiccating-breath-recharge-5-6 ===
+The dragon exhales yellowish necrotic energy in a 60-foot cone. Each creature in that area must make a DC 17 Constitution saving throw. On a failed save, the creature takes 35 (10d6) necrotic damage and is weakened until the end of its next turn. A weakened creature has disadvantage on Strength-based ability checks and Strength saving throws, and the creature’s weapon attacks that rely on Strength deal half damage. On a successful save, the creature takes half as much damage and isn’t weakened.
+
+=== feat.aspect-of-tiamat-chromatic-flames-recharge-5-6 ===
+The creature exhales multicolored flames in a 300-foot cone. Each creature in that area must make a DC 27 Dexterity saving throw. On a failed save, the creature takes 71 (11d12) damage of a type of the creature’s choosing: acid, cold, fire, lightning, or poison. On a successful save, the creature takes half as much damage.
+
+=== feat.cold-breath ===
+The creature exhales an icy blast in an area, forcing a saving throw or dealing damage.
+
+=== feat.crimson-shade-necrotic-breath-recharge-5-6 ===
+The creature exhales shadowy energy in a 15-foot cone. Each creature in that area must make a DC 12 Dexterity saving throw, taking 18 (4d8) necrotic damage on a failed save, or half as much damage on a successful one. A humanoid slain by this attack rises 24 hours later as a creature, unless the humanoid is restored to life or its body is destroyed.
+
+=== feat.crystal-dragon-wyrmling-scintillating-breath-recharge-5-6 ===
+The creature exhales a burst of brilliant radiance in a 15-foot cone. Each creature in that area must make a DC 12 Constitution saving throw, taking 18 (4d8) radiant damage on a failed save, or half as much damage on a successful one. The creature then gains 5 temporary hit points by absorbing a portion of the radiant energy.
+
+=== feat.death-vulture-decaying-breath-recharge-6 ===
+The creature breathes necrotic energy in a 15-foot cone. Each creature in that area must make a DC 14 Constitution saving throw, taking 22 (4d10) necrotic damage on a failed save, or half as much damage on a successful one. Creatures that fail this saving throw by 5 or more also age a number of years equal to half the damage taken.
+
+=== feat.deep-drake-enervating-breath-recharge-5-6 ===
+The creature exhales pain-inducing, purple-black energy in a 90-foot line that is 5 feet wide. Each creature in the line must make a 16 Dexterity saving throw. On a failure, a creature takes 35 (10d6) necrotic damage and is stunned until the end of its next turn. On a success, a creature takes half the damage and isn't stunned.
+
+=== feat.deep-one-ink-cloud-costs-3-actions ===
+The creature exhales a 60-foot cone of inky blackness. Underwater it is as black ink, while above water it manifests as a thick cloud, and the area counts as heavily obscured. It remains until dispersed by a strong current or wind (at least 20 miles per hour). The creature can end this effect on its turn as a bonus action. Creatures who enter or begin their turn in the area must make a successful DC 22 Constitution saving throw or take 18 (4d8) poison damage.
+
+=== feat.dragon-eel-lightning-breath-recharge-6 ===
+The dragon eel exhales lightning in a 60-foot line that is 5 feet wide. Each target in that line takes 55 (10d10) lightning damage, or half damage with a successful DC 18 Dexterity saving throw.
+
+=== feat.dragon-turtle-wyrmling-steam-breath-recharge-5-6 ===
+The dragon exhales scalding steam in a 60-foot cone. Each creature in that area must make a DC 18 Constitution saving throw, taking 52 (15d6) fire damage on a failed save, or half as much damage on a successful one. Being underwater doesn't grant resistance against this damage.
+
+=== feat.dragonleaf-tree-breath-weapon-recharge-6 ===
+a creature can issue forth a breath weapon from its leaves appropriate to the dragon it honors. The creature’s breath weapon deals 49 (14d6) damage, or half damage to targets that make a successful DC 15 Dexterity saving throw. A black, copper, or green tree breathes a 60-foot line of acid; a blue or bronze tree breathes a 60-foot line of lightning; a brass, gold, or red tree breathes a 30-foot cone of fire; and a silver or white tree breathes a 30-foot cone of cold.
+
+=== feat.drakon-acid-breath-recharge-5-6 ===
+The creature exhales acidic vapors in a 15-foot cone. Each creature in that area takes 28 (8d6) acid damage, or half damage with a successful DC 13 Constitution saving throw.
+
+=== feat.dust-mephit-blinding-breath ===
+The elemental exhales a 15-foot cone of blinding dust. Each creature in that area must succeed on a DC 10 Dexterity saving throw or be blinded for 1 minute. A creature can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success.
+
+=== feat.fire-breath-monster ===
+The creature exhales fire in an area, forcing a saving throw or dealing damage.
+
+=== feat.fire-infused-water-elemental-scald-recharge-6 ===
+a creature sprays a 30-foot cone of superheated water. Each creature in the area must make a DC 12 Dexterity saving throw. On a failure, a creature takes 21 (6d6) f ire damage and is knocked prone. On a success, a creature takes half as much damage and isn’t knocked prone.
+
+=== feat.hoard-mimic-caustic-mist-recharge-5-6 ===
+The creature sprays a fine mist of acid in a 30-foot cone. Each creature in that area must make a DC 14 Dexterity saving throw. On a failed save, the creature takes 27 (6d8) acid damage and is blinded until the end of its next turn. On a successful save, the creature takes half as much damage and isn't blinded.
+
+=== feat.ice-mephit-frost-breath ===
+The elemental exhales a 15-foot cone of cold air. Each creature in that area must succeed on a DC 10 Dexterity saving throw, taking 5 (2d4) cold damage on a failed save, or half as much damage on a successful one.
+
+=== feat.krake-spawn-vomit-forth-the-deeps-1-day ===
+The creature sprays half digested food from its maw over a 15-foot cone. This acidic slurry causes 3 (1d6) acid damage and targets must make a successful DC 18 Constitution saving throw or be incapacitated until the end of their next turn.
+
+=== feat.lesser-death-dragon-cataclysmic-breath-recharge-5-6 ===
+The creature exhales a wave of ghostly purple flames in a 30-foot cone. Each creature in that area must make a DC 16 Dexterity saving throw, taking 36 (8d8) necrotic damage on a failed save, or half as much damage on a successful one. A creature dies if the breath reduces it to 0 hit points. Additionally, any Medium or smaller Humanoid killed by the breath's damage, as well as every corpse of such a creatures within the cone, becomes a zombie (see the Monster Manual) under the creature's control. The zombie acts on the creature's initiative but immediately after the creature's turn. Absent any other command, the zombie tries to kill any non-Undead creature it encounters.
+
+=== feat.lightning-breath ===
+The creature exhales lightning in an area, forcing a saving throw or dealing damage.
+
+=== feat.mindrot-thrall-acid-breath-recharge-4-6 ===
+The creature exhales a blast of acidic spores from its rotten lungs in a 15-foot cone. Each creature in that area takes 36 (8d8) acid damage, or half damage with a successful DC 13 Dexterity saving throw. If the saving throw fails, the creature is also infected with mindrot spores.
+
+=== feat.necrotic-breath-recharge-5-6 ===
+The creature exhales a dark cloud of necrotic energy in an area, forcing a saving throw or dealing damage.
+
+=== feat.poison-breath ===
+The creature exhales poisonous gas in an area, forcing a saving throw or dealing damage.
+
+=== feat.rime-worm-adult-black-ice-spray-recharge-5-6 ===
+The creature sprays slivers of ice in a line 30 feet long and 5 feet wide. All creatures in the line take 26 (4d12) necrotic damage and are blinded; a successful DC 15 Constitution saving throw prevents the blindness. A blinded creature repeats the saving throw at the end of its turn, ending the effect on itself with a successful save.
+
+=== feat.riptide-drake-buffeting-blast-recharge-5-6 ===
+The creature exhales a powerful stream of water in a 60-foot line that is 5 feet wide. Each creature in that line must make a DC 17 Dexterity saving throw. On a failure, a creature takes 38 (7d10) bludgeoning damage and becomes disoriented for 1 minute. On a success, a creature takes half the damage and isn’t disoriented. When a disoriented creature moves, it moves in a random direction. It can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success.
+
+=== feat.sea-dragon-wyrmling-tidal-breath-recharge-5-6 ===
+The dragon exhales a crushing wave of frigid seawater in a 15-foot cone. Each creature in that area must make a DC 12 Dexterity saving throw. On a failure, the target takes 11 (2d10) bludgeoning damage and 11 (2d10) cold damage, and is pushed 15 feet away from the dragon and knocked prone. On a successful save the creature takes half as much damage and isn’t pushed or knocked prone.
+
+=== feat.topaz-dragon-wyrmling-desiccating-breath-recharge-5-6 ===
+The dragon exhales yellowish necrotic energy in a 15-foot cone. Each creature in that area must make a DC 11 Constitution saving throw. On a failed save, the creature takes 21 (6d6) necrotic damage and is weakened until the end of its next turn. A weakened creature has disadvantage on Strength-based ability checks and Strength saving throws, and the creature’s weapon attacks that rely on Strength deal half damage. On a successful save, the creature takes half as much damage and isn’t weakened.
+
+=== feat.tusked-skyfish-stench-spray-recharge-5-6 ===
+The creature sprays foul‑smelling liquid in a line 20 feet long and 5 feet wide. Each creature in that line must make a successful DC 13 Constitution saving throw or become poisoned for 1 minute. If the saving throw fails by 5 or more, the creature falls unconscious for the same duration. A poisoned creature repeats the saving throw at the end of each of its turns, ending the effect on itself on a success.
+
+=== feat.vapor-lynx-poison-breath-recharge-5-6 ===
+The creature exhales a 40-foot radius poison fog, which heavily obscures a spherical area around the creature. Any breathing creature that ends its turn in the fog must make a DC 14 Constitution saving throw or become poisoned for 1d4 + 1 rounds.
+
+=== feat.young-lunar-dragon-cold-breath-recharge-5-6 ===
+The creature exhales a blast of frost in a 30-foot cone. Each creature in the cone must make a DC 15 Constitution saving throw. On a failed save, the creature takes 27 (6d8) cold damage, and its speed is halved until the end of its next turn. On a successful save, the creature takes half as much damage, and its speed isn’t reduced.
+
+=== feat.young-sea-dragon-tidal-breath-recharge-5-6 ===
+The dragon exhales a crushing wave of frigid seawater in a 30-foot cone. Each creature in that area must make a DC 16 Dexterity saving throw. On a failure, the target takes 27 (5d10) bludgeoning damage and 27 (5d10) cold damage, and is pushed 30 feet away from the dragon and knocked prone. On a successful save the creature takes half as much damage and isn’t pushed or knocked prone.
+
+=== feat.young-shadow-dragon-shadow-breath-recharge-5-6 ===
+The creature exhales shadowy flames in a 30-foot cone. Each creature in that area must make a DC 18 Dexterity saving throw, taking 56 (16d6) necrotic damage on a failed save, or half as much damage on a successful one. A humanoid reduced to 0 hit points by this damage dies, and an undead shadow rises from its corpse and acts immediately after the creature in the initiative count. The creature is under the creature’s control.
+
+=== feat.young-solar-dragon-photonic-breath-recharge-5-6 ===
+The creature exhales a flashing mote of radiant energy that travels to a point the creature can see within 120 feet of itself, then blossoms into a 20-foot-radius sphere centered on that point. Each creature in the sphere must make a DC 17 Constitution saving throw, taking 44 (8d10) radiant damage on a failed save, or half as much damage on a successful one.
+
+=== feat.young-topaz-dragon-desiccating-breath-recharge-5-6 ===
+The dragon exhales yellowish necrotic energy in a 60-foot cone. Each creature in that area must make a DC 13 Constitution saving throw. On a failed save, the creature takes 28 (8d6) necrotic damage and is weakened until the end of its next turn. A weakened creature has disadvantage on Strength-based ability checks and Strength saving throws, and the creature’s weapon attacks that rely on Strength deal half damage. On a successful save, the creature takes half as much damage and isn’t weakened.
+
+=== feat.young-wind-dragon-breath-of-gales-recharge-5-6 ===
+The creature exhales a blast of wind in a 30-foot cone. Each creature in that cone takes 11 (2d10) bludgeoning damage and is pushed 25 feet away from the creature and knocked prone; a successful DC 16 Strength saving throw halves the damage and prevents being pushed and knocked prone. Unprotected flames in the cone are extinguished, and sheltered flames (such as those in lanterns) have a 75 percent chance of being extinguished.
+

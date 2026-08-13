@@ -1,0 +1,103 @@
+{
+  "kind": "monster",
+  "name": "Topaz Dragon Wyrmling",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/21205/114/1000/1000/637707682295296513.jpeg",
+  "notes": "",
+  "type": "dragon",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Typically Chaotic Neutral",
+    "armorClass": 16,
+    "hitPoints": {
+      "max": 33,
+      "current": 33,
+      "diceString": "6d8 + 6"
+    },
+    "hitDice": "6d8",
+    "speed": {
+      "walk": 30,
+      "fly": 80,
+      "swim": 30
+    },
+    "abilities": {
+      "strength": 15,
+      "dexterity": 12,
+      "constitution": 13,
+      "intelligence": 14,
+      "wisdom": 13,
+      "charisma": 14
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "DEX +3, CON +3, WIS +3, CHA +4",
+    "skills": "Intimidation +6, Perception +5, Stealth +3",
+    "senses": {
+      "blindsight": 10,
+      "darkvision": 120,
+      "passives": {
+        "perception": 15
+      }
+    },
+    "challengeRating": "2",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Cold",
+          "type": "resistance"
+        },
+        {
+          "name": "Necrotic",
+          "type": "resistance"
+        }
+      ],
+      "languages": [
+        "Draconic"
+      ]
+    },
+    "spells": "(Psionics). The dragon casts one of the following spells, requiring no spell components and using Intelligence as the spellcasting ability (spell save DC 14v): 1/day each: bane",
+    "environments": [],
+    "sources": [
+      "https://www.dndbeyond.com/monsters/2059768-young-topaz-dragon"
+    ],
+    "saveDC": 14
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.amphibious",
+    "feat.bite",
+    "feat.desiccating-breath"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d10 + 2",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "1d4",
+        "damageType": "necrotic"
+      }
+    },
+    "feat.desiccating-breath": {
+      "verb": "exhales",
+      "substance": "yellowish necrotic energy",
+      "areaSize": "15",
+      "areaShape": "cone",
+      "dcAbility": "constitution",
+      "ability": "constitution",
+      "rider": {
+        "kind": "fail-condition",
+        "conditionText": "On a failed save, the creature takes 21 (6d6) necrotic damage and is weakened until the end of its next turn. A weakened creature has disadvantage on Strength-based ability checks and Strength saving throws, and the creature’s weapon attacks that rely on Strength deal half damage. On a successful save, the creature takes half as much damage and isn’t weakened."
+      }
+    }
+  }
+}

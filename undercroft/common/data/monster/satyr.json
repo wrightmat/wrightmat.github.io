@@ -1,0 +1,91 @@
+{
+  "kind": "monster",
+  "index": "satyr",
+  "name": "Satyr",
+  "type": "fey",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/satyr.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "chaotic neutral",
+    "armorClass": 14,
+    "hitPoints": {
+      "max": 31,
+      "current": 31,
+      "diceString": "7d8"
+    },
+    "hitDice": "7d8",
+    "speed": {
+      "walk": 40
+    },
+    "abilities": {
+      "strength": 12,
+      "dexterity": 16,
+      "constitution": 11,
+      "intelligence": 12,
+      "wisdom": 10,
+      "charisma": 14
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "",
+    "skills": "Perception +2, Performance +6, Stealth +5",
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Common",
+        "Elvish",
+        "Sylvan"
+      ]
+    },
+    "senses": {
+      "passives": {
+        "perception": 12
+      }
+    },
+    "challengeRating": "1/2",
+    "proficiencyBonus": 2,
+    "xp": 100,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/satyr"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/satyr",
+  "featureIds": [
+    "feat.magic-resistance",
+    "feat.ram",
+    "feat.shortsword",
+    "feat.shortbow"
+  ],
+  "featureParams": {
+    "feat.ram": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 3,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d4 + 1",
+      "damageType": "bludgeoning"
+    },
+    "feat.shortsword": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d6 + 3",
+      "damageType": "piercing"
+    },
+    "feat.shortbow": {
+      "kind": "Ranged",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "range",
+      "distance": "80/320",
+      "damageDice": "1d6 + 3",
+      "damageType": "piercing"
+    }
+  }
+}

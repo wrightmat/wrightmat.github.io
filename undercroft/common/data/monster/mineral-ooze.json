@@ -1,0 +1,125 @@
+{
+  "kind": "monster",
+  "name": "Mineral Ooze",
+  "notes": "",
+  "type": "ooze",
+  "stats": {
+    "size": "Large",
+    "alignment": "Neutral",
+    "armorClass": 9,
+    "hitPoints": {
+      "max": 76,
+      "current": 76,
+      "diceString": "8d10 + 32"
+    },
+    "hitDice": "8d10",
+    "speed": {
+      "walk": 20
+    },
+    "abilities": {
+      "strength": 14,
+      "dexterity": 8,
+      "constitution": 18,
+      "intelligence": 1,
+      "wisdom": 5,
+      "charisma": 3
+    },
+    "initiative": {
+      "bonus": -1
+    },
+    "savingThrows": "",
+    "skills": "",
+    "senses": {
+      "blindsight": 60,
+      "passives": {
+        "perception": 7
+      }
+    },
+    "challengeRating": "3",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "acid",
+          "type": "resistance"
+        },
+        {
+          "name": "cold",
+          "type": "resistance"
+        },
+        {
+          "name": "fire",
+          "type": "resistance"
+        },
+        {
+          "name": "blinded",
+          "type": "immunity"
+        },
+        {
+          "name": "charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "deafened",
+          "type": "immunity"
+        },
+        {
+          "name": "exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "prone",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [
+      "Underdark"
+    ],
+    "sources": [
+      "ToB2",
+      "Tome of Beasts 2, pg. 280"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.amorphous",
+    "feat.false-appearance-ambush",
+    "feat.mineral-ooze-mineralize",
+    "feat.multiattack",
+    "feat.pseudopod",
+    "feat.mineral-ooze-encase"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "text": "The creature makes two slam attacks. If both attacks hit a Medium or smaller target, the target is grappled (escape DC 12), and the creature uses its Encase on the target."
+    },
+    "feat.pseudopod": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d8 + 2",
+      "damageType": "bludgeoning",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "1d6",
+        "damageType": "acid"
+      }
+    }
+  },
+  "featureTiers": {
+    "feat.false-appearance-ambush": "oily-pool-or-rock"
+  }
+}

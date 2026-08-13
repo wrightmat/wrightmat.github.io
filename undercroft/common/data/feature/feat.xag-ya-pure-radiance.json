@@ -1,0 +1,30 @@
+{
+  "id": "feat.xag-ya-pure-radiance",
+  "name": "Pure Radiance",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "A creature that touches the creature takes 9 (1d6 + 6) radiant damage. Flammable objects that touch the xag-yi ignite and burn with a radiant fire for 1 minute. If a creature hits the xag-yi with a metallic weapon, the weapon suffers the effects of a *heat metal* spell for 1 minute.",
+  "mechanics": {
+    "type": "passive",
+    "text": "A creature that touches the creature takes 9 (1d6 + 6) radiant damage. Flammable objects that touch the xag-yi ignite and burn with a radiant fire for 1 minute. If a creature hits the xag-yi with a metallic weapon, the weapon suffers the effects of a *heat metal* spell for 1 minute.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "debuff"
+    ],
+    "recipeSlots": [
+      "spread"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

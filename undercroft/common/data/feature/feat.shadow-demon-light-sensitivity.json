@@ -1,0 +1,29 @@
+{
+  "id": "feat.shadow-demon-light-sensitivity",
+  "name": "Light Sensitivity",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "While in Bright Light, the creature has Disadvantage on ability checks and attack rolls.",
+  "mechanics": {
+    "type": "passive",
+    "text": "While in Bright Light, the creature has Disadvantage on ability checks and attack rolls.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "debuff"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

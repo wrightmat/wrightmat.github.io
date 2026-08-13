@@ -1,0 +1,29 @@
+{
+  "id": "feat.vapor-lynx-smoky-constitution",
+  "name": "Smoky Constitution",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature spends its time in both gaseous and solid form. Its unique constitution makes it immune to all fog- or gas-related spells and attacks, including its own. a creature sees clearly through light or heavy obscurement caused by fog, mist, or spells such as fog cloud.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature spends its time in both gaseous and solid form. Its unique constitution makes it immune to all fog- or gas-related spells and attacks, including its own. a creature sees clearly through light or heavy obscurement caused by fog, mist, or spells such as fog cloud.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

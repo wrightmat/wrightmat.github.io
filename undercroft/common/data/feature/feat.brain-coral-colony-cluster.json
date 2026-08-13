@@ -1,0 +1,30 @@
+{
+  "id": "feat.brain-coral-colony-cluster",
+  "name": "Colony Cluster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature consists of a Huge central spire and three Small clusters. Each cluster acts on the creature’s turn and shares its movement, allowing the central spire and the clusters to swim a total of 120 feet on the creature’s turn. A cluster can’t move further than 120 feet away from the central spire. A cluster more than 120 feet away from its central spire for more than 24 hours enters a dormant state, becoming a new brain coral after 30 days. a creature and its clusters share HP, and damage dealt to a cluster or the central spire reduces that shared total. If more than one section of the creature is included in a damaging spell or effect, such as a Dragon’s breath weapon or the lightning bolt spell, the creature makes one saving throw and takes damage as if only one of its sections was affected. Whenever the creature takes 15 damage or more in a single turn, one of its clusters is destroyed. At the end of its turn, if the creature took damage on the previous turn, it can expel one new cluster from the central spire for every 15 damage it took. The creature can’t have more than five clusters active at one time.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature consists of a Huge central spire and three Small clusters. Each cluster acts on the creature’s turn and shares its movement, allowing the central spire and the clusters to swim a total of 120 feet on the creature’s turn. A cluster can’t move further than 120 feet away from the central spire. A cluster more than 120 feet away from its central spire for more than 24 hours enters a dormant state, becoming a new brain coral after 30 days. a creature and its clusters share HP, and damage dealt to a cluster or the central spire reduces that shared total. If more than one section of the creature is included in a damaging spell or effect, such as a Dragon’s breath weapon or the lightning bolt spell, the creature makes one saving throw and takes damage as if only one of its sections was affected. Whenever the creature takes 15 damage or more in a single turn, one of its clusters is destroyed. At the end of its turn, if the creature took damage on the previous turn, it can expel one new cluster from the central spire for every 15 damage it took. The creature can’t have more than five clusters active at one time.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "utility",
+      "defense"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

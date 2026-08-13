@@ -1,0 +1,85 @@
+{
+  "kind": "monster",
+  "name": "Shadar-kai Shadow Dancer",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/25746/629/1000/1000/637880557971241592.jpeg",
+  "notes": "",
+  "type": "humanoid",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Any Alignment",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 71,
+      "current": 71,
+      "diceString": "13d8 + 13"
+    },
+    "hitDice": "13d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 12,
+      "dexterity": 16,
+      "constitution": 13,
+      "intelligence": 11,
+      "wisdom": 12,
+      "charisma": 12
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "Dex +6, Cha +4",
+    "skills": "Stealth +6",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 11
+      }
+    },
+    "challengeRating": "7",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Necrotic",
+          "type": "resistance"
+        },
+        {
+          "name": "Charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "Exhaustion",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Common",
+        "Elvish"
+      ]
+    },
+    "environments": [],
+    "sources": []
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.deathguard-warden-fey-ancestry",
+    "feat.multiattack",
+    "feat.shadar-kai-shadow-dancer-spiked-chain",
+    "feat.shadar-kai-shadow-dancer-shadow-jump"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.shadar-kai-shadow-dancer-spiked-chain",
+          "count": 3
+        }
+      ],
+      "text": "The creature makes three Spiked Chain attacks. It can use Shadow Jump after one of these attacks."
+    }
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "id": "feat.dolgaunt-tentacle",
+  "name": "Tentacle",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Melee Weapon Attack: +6 to hit, reach 15 ft., one target. Hit: 7 (1d6 + 4) bludgeoning damage. The target is grappled (escape DC 12) if it is a Large or smaller creature. Until this grapple ends, the dolgaunt can’t use the same tentacle on another target. The dolgaunt has two tentacles.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "Melee Weapon Attack: +6 to hit, reach 15 ft., one target. Hit: 7 (1d6 + 4) bludgeoning damage. The target is grappled (escape DC 12) if it is a Large or smaller creature. Until this grapple ends, the dolgaunt can’t use the same tentacle on another target. The dolgaunt has two tentacles."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "control"
+    ],
+    "recipeSlots": [
+      "dominate"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

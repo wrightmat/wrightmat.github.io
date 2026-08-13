@@ -1,0 +1,123 @@
+{
+  "kind": "monster",
+  "index": "young-green-dragon",
+  "name": "Young Green Dragon",
+  "type": "dragon",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/young-green-dragon.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "lawful evil",
+    "armorClass": 18,
+    "hitPoints": {
+      "max": 136,
+      "current": 136,
+      "diceString": "16d10+48"
+    },
+    "hitDice": "16d10",
+    "speed": {
+      "walk": 40,
+      "fly": 80,
+      "swim": 40
+    },
+    "abilities": {
+      "strength": 19,
+      "dexterity": 12,
+      "constitution": 17,
+      "intelligence": 16,
+      "wisdom": 13,
+      "charisma": 15
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "DEX +4, CON +6, WIS +4, CHA +5",
+    "skills": "Deception +5, Perception +7, Stealth +4",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Common",
+        "Draconic"
+      ]
+    },
+    "senses": {
+      "blindsight": 30,
+      "darkvision": 120,
+      "passives": {
+        "perception": 17
+      }
+    },
+    "challengeRating": "8",
+    "proficiencyBonus": 3,
+    "xp": 3900,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/young-green-dragon"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/young-green-dragon",
+  "featureIds": [
+    "feat.amphibious",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.claw",
+    "feat.poison-breath"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "2d10 + 4",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "2d6",
+        "damageType": "poison"
+      }
+    },
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 4",
+      "damageType": "slashing"
+    },
+    "feat.poison-breath": {
+      "verb": "exhales",
+      "substance": "poisonous gas",
+      "areaSize": "30",
+      "areaShape": "cone",
+      "dcAbility": "constitution",
+      "ability": "constitution",
+      "damageDice": "12d6",
+      "damageType": "poison"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.bite",
+          "count": 1
+        },
+        {
+          "featureId": "feat.claw",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes three attacks: one with its bite and two with its claws."
+    }
+  }
+}

@@ -44,6 +44,10 @@ export const SOURCES = [
     valueLabel: "API Endpoint or URL",
     placeholder: "e.g. /api/2024/classes/barbarian",
     helpTopic: "loom.source.srd",
+    // Fetch All is enabled for this source — loadSrdData already returns an
+    // array when the entered value resolves to a list endpoint (e.g.
+    // /api/2014/monsters) rather than a single record.
+    bulk: true,
   },
   {
     id: "ddb-monster",
@@ -62,6 +66,10 @@ export const SOURCES = [
     placeholder: "",
     helpTopic: "loom.source.fantasy-statblocks",
     file: true,
+    // Fetch All is enabled for this source too — a whole folder or a
+    // multi-select of individual .md files, both feeding
+    // loadFantasyStatblockDataBulk below.
+    bulk: true,
   },
 ];
 
@@ -195,6 +203,36 @@ export async function loadFantasyStatblockData(text) {
   }
   const postFence = source.slice(fenceMatch.index + fenceMatch[0].length).trim();
   return { ...parsed, _postFenceNotes: postFence };
+}
+
+// Bulk counterpart to loadFantasyStatblockData above — `files` is a
+// FileList/array of Files from either bulk file input Loom offers (plain
+// multi-select, or a whole folder via `webkitdirectory`; this function
+// doesn't care which one produced the list). Runs the exact same per-file
+// parser, so a bulk import produces byte-identical per-record shape to a
+// single manual import — just looped. `_bulkFileName` is stamped onto each
+// result (not something loadFantasyStatblockData itself produces) since
+// Fantasy Statblocks data has no `index`-style canonical slug the way SRD
+// does — the bulk-import checklist and auto-id derivation both need
+// *some* per-item label, and the source filename is the only one
+// available. A single file that fails to parse (e.g. a non-statblock .md
+// swept up in a folder select) is skipped with its error attached rather
+// than aborting the whole batch — same "one bad record doesn't kill the
+// import" reasoning the bulk-save loop itself uses.
+export async function loadFantasyStatblockDataBulk(files, onProgress) {
+  const list = Array.from(files || []);
+  const results = [];
+  for (const file of list) {
+    try {
+      const text = await readTextFile(file);
+      const parsed = await loadFantasyStatblockData(text);
+      results.push({ ...parsed, _bulkFileName: file.name });
+    } catch (error) {
+      results.push({ _bulkFileName: file.name, _bulkError: error.message });
+    }
+    onProgress?.(results.length, list.length);
+  }
+  return results;
 }
 
 // D&D Beyond content pages (classes/backgrounds/species) have no API — unlike
@@ -471,14 +509,21 @@ const LIST_FETCH_CONCURRENCY = 6;
 // Runs `fn` over `items` with at most `limit` requests in flight at once, so a
 // large list endpoint (e.g. ~500 spells) doesn't fire off hundreds of parallel
 // fetches at once.
-export async function mapWithConcurrency(items, limit, fn) {
+// `onProgress(completed, total)`, when given, fires after each item
+// resolves — a ~330-entry list (e.g. every SRD monster) takes long enough
+// that Loom's own Fetch All flow needs live feedback, not just a spinner
+// with no numbers.
+export async function mapWithConcurrency(items, limit, fn, onProgress) {
   const results = new Array(items.length);
   let cursor = 0;
+  let completed = 0;
   async function worker() {
     while (cursor < items.length) {
       const index = cursor;
       cursor += 1;
       results[index] = await fn(items[index], index);
+      completed += 1;
+      onProgress?.(completed, items.length);
     }
   }
   const workers = Array.from({ length: Math.min(limit, items.length) }, () => worker());
@@ -486,7 +531,7 @@ export async function mapWithConcurrency(items, limit, fn) {
   return results;
 }
 
-export async function loadSrdData(value) {
+export async function loadSrdData(value, onProgress) {
   const url = normalizeSrdInput(value);
   if (!url) {
     throw new Error("Enter a 5e API endpoint or slug.");
@@ -500,7 +545,39 @@ export async function loadSrdData(value) {
     if (!entries.length) {
       throw new Error("That index listing has no items to fetch.");
     }
-    return mapWithConcurrency(entries, LIST_FETCH_CONCURRENCY, (entry) => fetchSrdJson(`${SRD_BASE_URL}${entry.url}`));
+    // Per-item failures are caught and tagged (`_bulkError`, same shape
+    // loadFantasyStatblockDataBulk already uses — Loom's own checklist
+    // already renders these disabled-with-error-text) rather than thrown —
+    // confirmed live: a plain 429 partway through a ~330-entry list used to
+    // reject mapWithConcurrency's whole Promise.all, silently discarding
+    // every already-fetched item with no error surfaced anywhere but the
+    // browser console. Once ANY item hits a 429 specifically, `rateLimited`
+    // stops dispatching new requests entirely (the API's cooldown applies
+    // to the whole client, so retrying the rest immediately would just
+    // rack up more 429s) — every not-yet-started entry is tagged
+    // accordingly instead of actually re-fetched.
+    let rateLimited = false;
+    const results = await mapWithConcurrency(
+      entries,
+      LIST_FETCH_CONCURRENCY,
+      async (entry) => {
+        if (rateLimited) return { name: entry.name, _bulkFileName: entry.name, _bulkError: "Skipped — rate limited by the 5e API." };
+        try {
+          return await fetchSrdJson(`${SRD_BASE_URL}${entry.url}`);
+        } catch (error) {
+          if (/\(429\)/.test(error.message)) rateLimited = true;
+          return { name: entry.name, _bulkFileName: entry.name, _bulkError: error.message };
+        }
+      },
+      onProgress
+    );
+    if (rateLimited) {
+      // A dedicated marker (not just scanning `results` for `_bulkError`)
+      // so the caller can tell "rate limited" apart from "a few unrelated
+      // items failed to parse" and word its own summary accordingly.
+      results.rateLimited = true;
+    }
+    return results;
   }
   return data;
 }
@@ -587,31 +664,57 @@ export async function listLibraryKind(kind) {
 // no whole-tool login gate) — list()/get() just return public-only content
 // when there's no session, so this one implementation is correct for every
 // caller regardless of whether they're signed in.
+// One HTTP request per entry (the /list endpoint only returns metadata —
+// the actual body lives in a separate per-id file, see server/storage.py's
+// library_items schema) — fine at the scale this was written for, but a
+// large kind (the Feature library crossed ~1,500 entries after this
+// session's SRD monster import) means firing that many requests through
+// Promise.all AT ONCE, fully unthrottled. Confirmed live as the real cause
+// of two separate "should have matched an existing Feature but silently
+// created a duplicate one-off instead" reports (Unusual Nature, Pack
+// Tactics) — convertStatBlockToFeatures' own matching logic was verified
+// correct by hand for both (well above its match threshold); the actual
+// defect was this function's candidate pool silently missing entries
+// because their individual fetch failed under the concurrent load and got
+// swallowed here with NO logging at all, so the resulting duplicate gave no
+// hint anything had gone wrong. Fixed two ways: batched instead of fully
+// concurrent (kinder to the local dev server, matches the deliberate
+// sequential-per-monster reasoning already documented in Loom's own bulk
+// import loop above this file), and every failure is now logged instead of
+// silently discarded, so a REAL recurring gap becomes visible in the
+// console immediately instead of manifesting as a mystery duplicate.
+const FETCH_KIND_ENTRIES_BATCH_SIZE = 12;
 export async function fetchKindEntriesWithIds(dataManager, kind) {
   if (!dataManager) return [];
   const { remote } = await dataManager.list(kind, { refresh: true, includeLocal: false });
   const ids = dataManager
     .collectListEntries(remote, ["owned", "shared", "public", "items"])
     .map((entry) => entry.id);
-  const entries = await Promise.all(
-    ids.map(async (id) => {
-      try {
-        // preferLocal: false — the id list above is already forced fresh
-        // (refresh: true, includeLocal: false), but each entry's own body
-        // fetch defaults to preferring a local cache; without this override
-        // that default silently served a stale per-entry snapshot even
-        // though the list itself was current. Confirmed real bug this
-        // fixes: an NPC's locationId, corrected server-side, kept resolving
-        // to its old value here (this function backs every "list every X
-        // for filtering" helper — Forge's NPCs/Locations, Crucible's
-        // Monsters, Vault's Effects, Sanctum's Features/Resources/...),
-        // making it disappear from the Setting it now actually belongs to.
-        return { id, entity: (await dataManager.get(kind, id, { preferLocal: false }))?.payload };
-      } catch (error) {
-        return null;
-      }
-    })
-  );
+  const entries = [];
+  for (let start = 0; start < ids.length; start += FETCH_KIND_ENTRIES_BATCH_SIZE) {
+    const batch = ids.slice(start, start + FETCH_KIND_ENTRIES_BATCH_SIZE);
+    const results = await Promise.all(
+      batch.map(async (id) => {
+        try {
+          // preferLocal: false — the id list above is already forced fresh
+          // (refresh: true, includeLocal: false), but each entry's own body
+          // fetch defaults to preferring a local cache; without this override
+          // that default silently served a stale per-entry snapshot even
+          // though the list itself was current. Confirmed real bug this
+          // fixes: an NPC's locationId, corrected server-side, kept resolving
+          // to its old value here (this function backs every "list every X
+          // for filtering" helper — Forge's NPCs/Locations, Crucible's
+          // Monsters, Vault's Effects, Sanctum's Features/Resources/...),
+          // making it disappear from the Setting it now actually belongs to.
+          return { id, entity: (await dataManager.get(kind, id, { preferLocal: false }))?.payload };
+        } catch (error) {
+          console.warn(`fetchKindEntriesWithIds: failed to fetch ${kind}/${id}`, error);
+          return null;
+        }
+      })
+    );
+    entries.push(...results);
+  }
   return entries.filter(Boolean);
 }
 

@@ -9,7 +9,9 @@ import {
   createToolbarButtonGroup,
   createCollapsibleSection,
   createCompactField,
+  createSearchableCheckList,
 } from "../../common/js/lib/ui-components.js";
+import { readLockedFeatureIds, populateStringChecklist } from "../../common/js/lib/generator-kit.js";
 import { refreshTooltips } from "../../common/js/lib/tooltips.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
 import { applyMapping } from "../../common/js/lib/mapping-engine.js";
@@ -22,6 +24,9 @@ import {
   mergeImportedCharacterData,
   listAvailableMappings,
   SOURCES,
+  loadSrdData,
+  loadFantasyStatblockDataBulk,
+  normalizeSrdInput,
 } from "../../common/js/lib/content-fetch.js";
 import { convertStatBlockToFeatures, hasConvertibleStatBlock } from "../../common/js/lib/monster-feature-matching.js";
 import { initShareModal } from "../../common/js/lib/share-modal.js";
@@ -114,6 +119,24 @@ createToolbarButtonGroup([
     label: "Delete Macro",
     disabled: true,
     attrs: { "data-macro-delete": true, "data-loom-view-panel": "macros", hidden: true },
+  },
+]).forEach((button) => document.querySelector("[data-loom-toolbar-mount]")?.appendChild(button));
+// No "New Feature" here, unlike System/Macro's own groups — see the
+// Features tab's own header comment for why (a Feature created from
+// scratch here would be missing name/description/mechanics, which this
+// tab deliberately doesn't author; that still happens on the Library tab).
+createToolbarButtonGroup([
+  {
+    action: "save",
+    label: "Save Feature",
+    disabled: true,
+    attrs: { "data-feature-save": true, "data-loom-view-panel": "features", hidden: true },
+  },
+  {
+    action: "delete",
+    label: "Delete Feature",
+    disabled: true,
+    attrs: { "data-feature-delete": true, "data-loom-view-panel": "features", hidden: true },
   },
 ]).forEach((button) => document.querySelector("[data-loom-toolbar-mount]")?.appendChild(button));
 createToolbarButtonGroup([
@@ -326,6 +349,20 @@ const sourceValueInput = document.querySelector("[data-source-value]");
 const sourceFileInput = document.querySelector("[data-source-file]");
 const sourceValueLabelRow = document.querySelector("[data-source-value-label-row]");
 const sourceFetchButton = document.querySelector("[data-source-fetch]");
+const sourceFetchStatus = document.querySelector("[data-source-fetch-status]");
+// Folder-picker for Fantasy Statblocks bulk import — see loom/index.html's
+// own comment on data-source-bulk-folder for why this can't just be the
+// `multiple` sourceFileInput itself (`webkitdirectory` forces folder-only
+// mode on whichever input has it).
+const sourceBulkFolderInput = document.querySelector("[data-source-bulk-folder]");
+const sourceBulkFolderButton = document.querySelector("[data-source-bulk-folder-button]");
+const bulkImportCard = document.querySelector("[data-bulk-import-card]");
+const bulkSummary = document.querySelector("[data-bulk-summary]");
+const bulkChecklist = document.querySelector("[data-bulk-checklist]");
+const bulkSelectAllButton = document.querySelector("[data-bulk-select-all]");
+const bulkSelectNoneButton = document.querySelector("[data-bulk-select-none]");
+const bulkImportSelectedButton = document.querySelector("[data-bulk-import-selected]");
+const bulkProgress = document.querySelector("[data-bulk-progress]");
 const entitiesSummary = document.querySelector("[data-entities-summary]");
 const entitiesList = document.querySelector("[data-entities-list]");
 // Entities and Data (io) both need programmatic re-collapse later
@@ -572,6 +609,7 @@ const SNAPSHOT_HANDLERS = {
   library: { create: createLibrarySnapshot, apply: applyLibrarySnapshot },
   system: { create: createSystemSnapshot, apply: applySystemSnapshot },
   macro: { create: createMacroSnapshot, apply: applyMacroSnapshot },
+  feature: { create: createFeatureSnapshot, apply: applyFeatureSnapshot },
 };
 
 // --- Save/Rename/Delete gating -----------------------------------------
@@ -580,7 +618,7 @@ const SNAPSHOT_HANDLERS = {
 // doesn't need its own parallel tracking. Save only lights up once the
 // current state actually differs from that baseline; Rename/Delete only
 // need a real, currently-loaded item (an id), not necessarily a change.
-const cleanSnapshots = { mapping: null, library: null, system: null, macro: null };
+const cleanSnapshots = { mapping: null, library: null, system: null, macro: null, feature: null };
 
 // Declared here (a no-op placeholder, reassigned once real DOM/state is
 // ready — see buildSystemPayload/collectSystemProperties below) so
@@ -682,6 +720,10 @@ function updateToolbarState() {
   if (systemDeleteButton) systemDeleteButton.disabled = !canDeleteSystem();
   if (macroSaveButton) macroSaveButton.disabled = !canSaveMacro();
   if (macroDeleteButton) macroDeleteButton.disabled = !canDeleteMacro();
+  updateFeatureMechanicsFeedback();
+  updateFeatureEligibilityNote();
+  if (featureSaveButton) featureSaveButton.disabled = !canSaveFeature();
+  if (featureDeleteButton) featureDeleteButton.disabled = !canDeleteFeature();
   renderSystemJsonPreview();
 }
 
@@ -1214,6 +1256,11 @@ if (treeContainer) {
 function applySourceValueVisibility(active) {
   if (sourceValueInput) sourceValueInput.classList.toggle("d-none", Boolean(active.file));
   if (sourceFileInput) sourceFileInput.classList.toggle("d-none", !active.file);
+  // Folder-picker button only makes sense for a `bulk: true` + `file: true`
+  // source (Fantasy Statblocks) — SRD's own bulk fetch reads the same typed
+  // value/URL input above, no file picker needed at all.
+  sourceBulkFolderButton?.classList.toggle("d-none", !(active.bulk && active.file));
+  if (sourceFetchStatus) sourceFetchStatus.classList.add("d-none");
 }
 
 function applySourceSelection(source) {
@@ -1386,27 +1433,265 @@ if (sourceSelect) {
   updateSourceUi();
 }
 
+// Whichever file input (the `multiple` sourceFileInput, or the folder-picker
+// sourceBulkFolderInput) was used most recently — a single `<input>` can't
+// offer both a normal multi-select and `webkitdirectory` folder-picker mode
+// at once, so there are two, both feeding the same Fetch handler below.
+let pickedFiles = null;
+
+if (sourceFileInput) {
+  sourceFileInput.addEventListener("change", () => {
+    pickedFiles = sourceFileInput.files;
+  });
+}
+if (sourceBulkFolderInput) {
+  sourceBulkFolderInput.addEventListener("change", () => {
+    pickedFiles = sourceBulkFolderInput.files;
+  });
+}
+if (sourceBulkFolderButton) {
+  sourceBulkFolderButton.addEventListener("click", () => sourceBulkFolderInput?.click());
+}
+
+function setFetchStatus(text) {
+  if (!sourceFetchStatus) return;
+  sourceFetchStatus.textContent = text;
+  sourceFetchStatus.classList.toggle("d-none", !text);
+}
+
+// Fetch itself detects bulk vs. single: a list-shaped SRD result, or more
+// than one file picked for Fantasy Statblocks, routes into the checklist
+// below instead of straight into the live preview — no separate Fetch All
+// button (per explicit request: "flex the existing Fetch button INTO a
+// Fetch All when a directory is provided").
+// Summarizes a bulk-fetch result array (SRD's own `_bulkError`/`rateLimited`
+// tagging, content-fetch.js's loadSrdData — loadFantasyStatblockDataBulk
+// uses the same `_bulkError` shape but never sets `rateLimited`) into one
+// toast/status-line message — plain success when nothing failed, an
+// explicit rate-limit callout when that's why some items are missing
+// (rather than the generic "N failed" every other partial-failure gets),
+// since that one specifically means "try again later," not "something's
+// wrong with these records."
+function bulkFetchSummary(items) {
+  const total = items.length;
+  const failed = items.filter((item) => item?._bulkError).length;
+  if (!failed) return { message: `Fetched ${total} record${total === 1 ? "" : "s"}.`, ok: true };
+  const succeeded = total - failed;
+  const base = `Fetched ${succeeded} of ${total} record${total === 1 ? "" : "s"} — ${failed} failed`;
+  const message = items.rateLimited
+    ? `${base} (rate limited by the 5e API — wait a moment, then Fetch again to get the rest).`
+    : `${base}.`;
+  return { message, ok: false };
+}
+
 if (sourceFetchButton) {
   sourceFetchButton.addEventListener("click", async () => {
     const source = SOURCES.find((entry) => entry.id === sourceSelect?.value) || SOURCES[0];
-    // A `file: true` source's value is the picked File itself, not typed
-    // text — loadSourceDataRaw's own "fantasy-statblocks" case (
-    // content-fetch.js) reads it via readTextFile, same as the existing
-    // "json" source already does via readJsonFile.
-    const value = source.file ? sourceFileInput?.files?.[0] || null : (sourceValueInput?.value || "").trim();
-    if (!value) {
-      status?.show(source.file ? "Choose a file to load." : "Enter a value to fetch.", { type: "warning", timeout: 2000 });
-      return;
-    }
+    sourceFetchButton.disabled = true;
+    setFetchStatus("Fetching…");
+    // Tracks whether the try block ended in an error/partial-failure state
+    // — the finally block below only clears the status line on a clean
+    // success, so a failure (a thrown error, or a bulk fetch that came back
+    // with some items rate-limited/failed) stays visibly readable next to
+    // the Fetch button instead of silently vanishing the instant the
+    // button re-enables. Confirmed live: a 429 partway through a large SRD
+    // list used to show nothing in the app at all — only the transient
+    // error toast, easy to miss on a fetch that runs for a minute or more,
+    // and even that got wiped by an unconditional setFetchStatus("") here.
+    let statusMessage = "";
     try {
+      if (source.file) {
+        const files = Array.from(pickedFiles || []);
+        if (!files.length) {
+          status?.show("Choose a file to load.", { type: "warning", timeout: 2000 });
+          return;
+        }
+        if (files.length > 1) {
+          const onProgress = (completed, total) => setFetchStatus(`Fetching ${completed} of ${total}…`);
+          const items = await loadFantasyStatblockDataBulk(files, onProgress);
+          beginBulkImport(items);
+          const summary = bulkFetchSummary(items);
+          if (!summary.ok) statusMessage = summary.message;
+          status?.show(summary.message, { type: summary.ok ? "success" : "warning", timeout: summary.ok ? 2000 : 6000 });
+          return;
+        }
+        const raw = await loadSourceDataRaw(source, files[0]);
+        sampleData = raw;
+        if (sampleDataInput) sampleDataInput.value = JSON.stringify(sampleData, null, 2);
+        runLivePreview();
+        status?.show("Fetched.", { type: "success", timeout: 1500 });
+        return;
+      }
+      const value = (sourceValueInput?.value || "").trim();
+      if (!value) {
+        status?.show("Enter a value to fetch.", { type: "warning", timeout: 2000 });
+        return;
+      }
+      if (source.id === "srd") {
+        const onProgress = (completed, total) => setFetchStatus(`Fetching ${completed} of ${total}…`);
+        const result = await loadSrdData(value, onProgress);
+        if (Array.isArray(result)) {
+          beginBulkImport(result);
+          const summary = bulkFetchSummary(result);
+          if (!summary.ok) statusMessage = summary.message;
+          status?.show(summary.message, { type: summary.ok ? "success" : "warning", timeout: summary.ok ? 2000 : 6000 });
+          return;
+        }
+        sampleData = result;
+        if (sampleDataInput) sampleDataInput.value = JSON.stringify(sampleData, null, 2);
+        runLivePreview();
+        status?.show("Fetched.", { type: "success", timeout: 1500 });
+        return;
+      }
       const raw = await loadSourceDataRaw(source, value);
       sampleData = raw;
       if (sampleDataInput) sampleDataInput.value = JSON.stringify(sampleData, null, 2);
       runLivePreview();
       status?.show("Fetched.", { type: "success", timeout: 1500 });
     } catch (error) {
-      status?.show(`Fetch failed: ${error.message}`, { type: "error", timeout: 4000 });
+      statusMessage = `Fetch failed: ${error.message}`;
+      status?.show(statusMessage, { type: "error", timeout: 6000 });
+    } finally {
+      sourceFetchButton.disabled = false;
+      setFetchStatus(statusMessage);
     }
+  });
+}
+
+// --- Bulk import (checklist + Import Selected) -----------------------
+
+// Raw records fetched in bulk, not yet mapped — mapping is deferred to
+// import time (per checked item) rather than run eagerly on all of them,
+// since rendering the checklist just needs each item's own raw `name` and
+// doesn't need to wait on hundreds of mapping-engine runs first.
+let bulkRawItems = [];
+const bulkSelected = new Set();
+// Indices already imported this session — kept as a separate set (rather
+// than splicing bulkRawItems) so bulkSelected's existing indices stay valid;
+// renderBulkChecklist skips these instead, giving the "row disappears once
+// imported" feedback without any index-shifting bugs.
+const bulkImported = new Set();
+
+function bulkItemLabel(item) {
+  return item?.name || item?._bulkFileName || "(unnamed)";
+}
+
+function beginBulkImport(items) {
+  bulkRawItems = items;
+  bulkSelected.clear();
+  bulkImported.clear();
+  if (bulkImportCard) bulkImportCard.classList.remove("d-none");
+  if (bulkProgress) bulkProgress.textContent = "";
+  renderBulkChecklist();
+}
+
+function renderBulkChecklist() {
+  if (!bulkChecklist || !bulkSummary) return;
+  bulkChecklist.innerHTML = "";
+  if (!bulkRawItems.length) {
+    bulkSummary.textContent = "No records fetched yet.";
+    return;
+  }
+  const pending = bulkRawItems.filter((_, index) => !bulkImported.has(index));
+  const failed = pending.filter((item) => item._bulkError);
+  bulkSummary.textContent = `${bulkImported.size ? `${bulkImported.size} imported, ` : ""}${pending.length} remaining, ${
+    bulkSelected.size
+  } selected${failed.length ? `, ${failed.length} failed to parse (shown below, can't be selected)` : ""}.`;
+  bulkRawItems.forEach((item, index) => {
+    if (bulkImported.has(index)) return;
+    const row = document.createElement("div");
+    row.className = "d-flex align-items-center gap-2";
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.className = "form-check-input mt-0 flex-shrink-0";
+    checkbox.checked = bulkSelected.has(index);
+    checkbox.disabled = Boolean(item._bulkError);
+    checkbox.addEventListener("change", () => {
+      if (checkbox.checked) bulkSelected.add(index);
+      else bulkSelected.delete(index);
+      renderBulkChecklist();
+    });
+    const label = document.createElement("span");
+    label.className = item._bulkError ? "small text-danger" : "small";
+    label.textContent = item._bulkError ? `${bulkItemLabel(item)} — ${item._bulkError}` : bulkItemLabel(item);
+    row.append(checkbox, label);
+    bulkChecklist.appendChild(row);
+  });
+}
+
+if (bulkSelectAllButton) {
+  bulkSelectAllButton.addEventListener("click", () => {
+    bulkRawItems.forEach((item, index) => {
+      if (!item._bulkError && !bulkImported.has(index)) bulkSelected.add(index);
+    });
+    renderBulkChecklist();
+  });
+}
+if (bulkSelectNoneButton) {
+  bulkSelectNoneButton.addEventListener("click", () => {
+    bulkSelected.clear();
+    renderBulkChecklist();
+  });
+}
+
+if (bulkImportSelectedButton) {
+  bulkImportSelectedButton.addEventListener("click", async () => {
+    if (!mappingDefinition) {
+      status?.show("Load or build a mapping before importing.", { type: "warning", timeout: 2500 });
+      return;
+    }
+    const indices = Array.from(bulkSelected).sort((a, b) => a - b);
+    if (!indices.length) {
+      status?.show("Select at least one record to import.", { type: "warning", timeout: 2000 });
+      return;
+    }
+    bulkImportSelectedButton.disabled = true;
+    let imported = 0;
+    const failures = [];
+    // Sequential, not Promise.all — deliberately: (1) a public free API
+    // shouldn't get hundreds of parallel requests fired at once from a
+    // single click, and (2) each save's own Feature-matching
+    // (saveEntity → convertStatBlockToFeatures) benefits from running in
+    // order — a later monster in this same batch reuses a Feature an
+    // earlier one just created (e.g. "Multiattack" converging to one
+    // shared Feature instead of many near-duplicates), the same continuity
+    // a real one-at-a-time import already has.
+    for (let i = 0; i < indices.length; i += 1) {
+      const index = indices[i];
+      const rawItem = bulkRawItems[index];
+      const label = bulkItemLabel(rawItem);
+      if (bulkProgress) bulkProgress.textContent = `Importing ${i + 1} of ${indices.length} (${label})…`;
+      try {
+        const mapped = applyMapping(mappingDefinition, rawItem, ddbLookupContext);
+        const entities = deriveEntities(mapped);
+        if (!entities.length) throw new Error("Mapping produced no save-able entity.");
+        for (const entity of entities) {
+          // SRD's own `index` (e.g. "adult-black-dragon") is already a
+          // clean canonical slug — preferred over re-slugifying the
+          // display name. Fantasy Statblocks items have no `index`, so
+          // this falls back to the same default the single-save prompt
+          // itself uses. `rawItem.url` is each item's OWN detail URL (SRD
+          // only) — resolved to an absolute URL the same way a manual
+          // paste into the Fetch field would be, NOT the shared list-
+          // endpoint value sourceValueInput still holds.
+          const autoId = rawItem.index || slugify(entity.name);
+          const url = rawItem.url ? normalizeSrdInput(rawItem.url) : undefined;
+          await saveEntity(entity, { autoId, url, quiet: true });
+        }
+        imported += 1;
+        bulkImported.add(index);
+        bulkSelected.delete(index);
+        renderBulkChecklist();
+      } catch (error) {
+        failures.push({ name: label, error: error.message });
+      }
+    }
+    bulkImportSelectedButton.disabled = false;
+    loadRecentSaves();
+    const summary = `Imported ${imported} of ${indices.length}${failures.length ? `, ${failures.length} failed` : ""}.`;
+    if (bulkProgress) bulkProgress.textContent = summary;
+    status?.show(summary, { type: failures.length ? "warning" : "success", timeout: 5000 });
+    if (failures.length) console.warn("Bulk import failures:", failures);
   });
 }
 
@@ -1460,8 +1745,22 @@ function deriveEntities(mappedResult) {
   return entities;
 }
 
-async function saveEntity(entity) {
-  const id = promptKey(`Save "${entity.name}" as (id):`, slugify(entity.name));
+// `autoId`/`url`/`quiet` — all set by the bulk-import loop below, which
+// needs to save potentially hundreds of entities in a row:
+// - `autoId`: skips the id `window.prompt` (a hard blocker looped that many
+//   times) — used directly as the save id.
+// - `url`: bulk items each have their OWN source URL (one per fetched SRD
+//   monster), not the single shared `sourceValueInput` value (which for a
+//   bulk fetch holds the *list* endpoint, not any one item's own detail
+//   URL) — overrides what would otherwise be read from that shared input.
+// - `quiet`: suppresses the per-save success/Feature-matching toasts and
+//   the recent-saves reload — 300+ of each would just be noise; the bulk
+//   loop shows its own aggregate summary and reloads recent saves once at
+//   the end instead.
+// Every existing single-import call site (the Entities panel's own per-row
+// Save button) passes none of these and keeps today's exact behavior.
+async function saveEntity(entity, { autoId, url: urlOverride, quiet = false } = {}) {
+  const id = autoId || promptKey(`Save "${entity.name}" as (id):`, slugify(entity.name));
   if (!id) return;
   if (!dataManager) return;
   try {
@@ -1480,7 +1779,7 @@ async function saveEntity(entity) {
     if (currentMappingId) {
       data = { ...data, mapping: currentMappingId };
     }
-    const sourceValue = (sourceValueInput?.value || "").trim();
+    const sourceValue = urlOverride || (sourceValueInput?.value || "").trim();
     if (sourceValue) {
       data = { ...data, url: sourceValue };
     }
@@ -1535,30 +1834,48 @@ async function saveEntity(entity) {
       // this is what "every import aligns with internal data standards"
       // means in practice, not an opt-in extra step. See
       // monster-feature-matching.js's own module comment for the full
-      // reasoning and why this exact function also backs Crucible's own
-      // one-time backfill action for monsters imported before this existed.
+      // reasoning — this is one of its two call sites (Crucible's own
+      // handleSave, which bypasses this function entirely, is the other),
+      // both automatic-on-save, no manual/backfill action anywhere.
       if (hasConvertibleStatBlock(data)) {
         const existingFeatures = await fetchKindEntriesWithIds(dataManager, "feature").then(
           (entries) => entries.map((entry) => ({ id: entry.id, ...entry.entity })),
           () => []
         );
-        const { matchedCount, createdCount } = await convertStatBlockToFeatures(data, {
+        const { matchedCount, createdCount, errors } = await convertStatBlockToFeatures(data, {
           dataManager,
           existingFeatures,
           monsterSlug: slugify(id),
         });
-        if (matchedCount || createdCount) {
+        if (!quiet && (matchedCount || createdCount)) {
           status?.show(
             `Matched ${matchedCount} trait${matchedCount === 1 ? "" : "s"}/action${matchedCount === 1 ? "" : "s"} to existing Features, created ${createdCount} new one${createdCount === 1 ? "" : "s"}.`,
             { type: "info", timeout: 4000 }
           );
         }
+        // Surfaced regardless of `quiet` — a monster still saves fine with
+        // one or more of its own traits skipped (see monster-feature-
+        // matching.js's own try/catch), but that's real information loss a
+        // GM would otherwise only discover by noticing a missing Feature
+        // much later, or never (confirmed live: this is exactly how an
+        // Isonade import went unnoticed — one trait's own conversion
+        // silently failed, and before that try/catch existed it took the
+        // WHOLE monster record down with it, with no error surfaced
+        // anywhere).
+        if (errors?.length) {
+          status?.show(
+            `${entity.name || id}: ${errors.length} feature${errors.length === 1 ? "" : "s"} couldn't be converted (see console) — the rest of the monster saved fine.`,
+            { type: "warning", timeout: 6000 }
+          );
+        }
       }
     }
     await dataManager.save(entity.kind, id, data);
-    status?.show(`Saved ${entity.kind}/${id}.json.`, { type: "success", timeout: 2000 });
+    if (!quiet) {
+      status?.show(`Saved ${entity.kind}/${id}.json.`, { type: "success", timeout: 2000 });
+      loadRecentSaves();
+    }
     await autoLinkEntityToSystems(entity.kind, id, data);
-    loadRecentSaves();
   } catch (error) {
     status?.show(`Unable to save: ${error.message}`, { type: "error", timeout: 4000 });
   }
@@ -1658,7 +1975,7 @@ if (recentSavesToggle && recentSavesPanel) {
 // on the right are Import-only; Library/Systems carry their own
 // pickers/toolbars inline, so they don't need anything extra from either
 // side pane).
-const LOOM_VIEWS = ["import", "library", "systems", "macros", "users", "groups"];
+const LOOM_VIEWS = ["import", "library", "systems", "macros", "features", "users", "groups"];
 const loomViewTabsContainer = document.querySelector("[data-loom-view-tabs]");
 
 function setLoomView(view) {
@@ -1684,6 +2001,8 @@ function setLoomView(view) {
     void loomLoadLibraryTable();
   } else if (view === "macros") {
     void populateMacroSelect();
+  } else if (view === "features") {
+    void populateFeatureSelect();
   }
 }
 
@@ -2994,9 +3313,11 @@ const loomLibraryItemSection = createCollapsibleSection({
 document.querySelector("[data-loom-library-item-mount]")?.appendChild(loomLibraryItemSection.section);
 const loomLibraryInspectorCreated = document.querySelector("[data-loom-library-table-created]");
 const loomLibraryInspectorAccessed = document.querySelector("[data-loom-library-table-accessed]");
+const loomLibraryInspectorItemCount = document.querySelector("[data-loom-library-table-item-count]");
 const loomLibraryInspectorReadTier = document.querySelector("[data-loom-library-table-read-tier]");
 const loomLibraryInspectorWriteTier = document.querySelector("[data-loom-library-table-write-tier]");
 const loomLibraryInspectorOwner = document.querySelector("[data-loom-library-table-owner]");
+const loomLibraryInspectorPublic = document.querySelector("[data-loom-library-table-public]");
 const loomLibraryInspectorShareSummary = document.querySelector("[data-loom-library-table-share-summary]");
 const loomLibraryInspectorShareButton = document.querySelector("[data-loom-library-table-share]");
 let loomLibraryShareSummaryRequestToken = 0;
@@ -3184,6 +3505,10 @@ function loomRenderLibraryTypeInspector() {
   if (hasType && !loomLibraryTypeWasSelected) loomLibraryTypeSection.setCollapsed(false);
   loomLibraryTypeWasSelected = hasType;
   if (!hasType) return;
+  if (loomLibraryInspectorItemCount) {
+    const count = loomLibraryTableState.items.filter((item) => item.bucket === bucket).length;
+    loomLibraryInspectorItemCount.textContent = count.toLocaleString();
+  }
   if (loomLibraryInspectorReadTier) loomLibraryInspectorReadTier.textContent = loomFormatTier(loomLibraryKindReadTiers.get(bucket) || "free");
   if (loomLibraryInspectorWriteTier) loomLibraryInspectorWriteTier.textContent = loomFormatTier(loomLibraryKindWriteTiers.get(bucket) || "admin");
 }
@@ -3228,6 +3553,14 @@ function loomRenderLibraryInspector() {
     // same convention account.js's own row-level dropdown uses.
     loomLibraryInspectorOwner.disabled = !isLoomAdminSession() || options.length <= 1;
   }
+  if (loomLibraryInspectorPublic) {
+    loomLibraryInspectorPublic.checked = Boolean(item.is_public);
+    // Same "owner or admin" tier the server itself enforces for sharing
+    // (ensure_share_permission, server/app.py) — reuses the exact same
+    // check the item-level Delete button already gates on, rather than
+    // inventing a parallel permission rule here.
+    loomLibraryInspectorPublic.disabled = !libraryEntryAllowsDelete(item.bucket, item.id);
+  }
   void loomRenderLibraryShareSummary(item);
 }
 
@@ -3260,6 +3593,42 @@ if (loomLibraryInspectorOwner) {
       if (status) status.show(error.message || "Unable to change owner", { type: "danger" });
     } finally {
       loomLibraryInspectorOwner.disabled = !isLoomAdminSession();
+    }
+  });
+}
+
+// A shortcut for the SAME mechanism the Share modal's own "All Users"
+// share target already uses (server/shares.py: sharing/revoking with this
+// exact username is what actually flips library_items.is_public) — not a
+// second, independent way to mark something public. Kept deliberately in
+// sync rather than a parallel is_public setter, so the two surfaces can't
+// drift: toggling here calls the exact same shareWithUser/revokeShare
+// dataManager methods the modal's own "All Users" row does.
+const LOOM_ALL_USERS_USERNAME = "All Users";
+
+if (loomLibraryInspectorPublic) {
+  loomLibraryInspectorPublic.addEventListener("change", async () => {
+    const item = loomFindLibraryItem(loomLibraryTableState.selectedKey);
+    if (!item || !dataManager) return;
+    const makePublic = loomLibraryInspectorPublic.checked;
+    loomLibraryInspectorPublic.disabled = true;
+    try {
+      if (makePublic) {
+        await dataManager.shareWithUser({ contentType: item.bucket, contentId: item.id, username: LOOM_ALL_USERS_USERNAME, permissions: "view" });
+      } else {
+        await dataManager.revokeShare({ contentType: item.bucket, contentId: item.id, username: LOOM_ALL_USERS_USERNAME });
+      }
+      // Kept in sync locally (the next full table refresh would pick this
+      // up anyway, but the share summary line below reads item.is_public
+      // immediately) rather than waiting on a refetch.
+      item.is_public = makePublic;
+      if (status) status.show(makePublic ? "Marked public." : "Marked private.", { type: "success", timeout: 2000 });
+      void loomRenderLibraryShareSummary(item);
+    } catch (error) {
+      loomLibraryInspectorPublic.checked = !makePublic;
+      if (status) status.show(error.message || "Unable to change visibility", { type: "danger" });
+    } finally {
+      loomLibraryInspectorPublic.disabled = !libraryEntryAllowsDelete(item.bucket, item.id);
     }
   });
 }
@@ -3659,6 +4028,740 @@ if (libraryTemplateSelect) {
     });
   });
 }
+
+// --- Features tab (its OWN tab — NOT a section inside the Library tab) -----
+// The Library tab is the consistent raw-JSON fallback editor for every kind,
+// full stop — it never grows kind-specific structured UI (that mistake was
+// made and corrected here more than once; see this repo's own memory of the
+// correction). A kind whose shape earns a structured editor gets its own
+// `data-loom-view-panel="<kind>"` tab instead, the same way Systems and
+// Macros already each have one. This tab is the FULL structured editor for
+// `feature` — every field (id, name, description, mechanics, tags.*,
+// synergizesWith, conflictsWith) is accessible and editable here, not just
+// budgetCost/tags (undercroft/README.md's own Workstream E motivation still
+// holds: budgetCost/tags are what make a Feature eligible for Crucible's
+// native generation — an untagged Feature is invisible to it — but a GM
+// comparing near-duplicate Features, e.g. three different "Dagger" entries,
+// needs to see their actual description/mechanics differences too, not just
+// their cost/tags). `mechanics` is edited as its own small JSON textarea
+// rather than type-specific structured fields — its shape genuinely varies
+// by `mechanics.type` (passive/weapon-attack/multiattack/save-effect/
+// active), so one generic JSON box handles every variant without hand-
+// building 4+ different sub-forms; this doesn't reopen the "Library tab is
+// JSON-only" question since it's one FIELD on a dedicated tab, not the
+// whole entity replacing this tab's own structure.
+//
+// Still no New button — creating a brand-new Feature (rare; Features are
+// almost always import/conversion-produced) still starts on the Library
+// tab, where an id gets typed once; every other field is fully editable
+// here immediately afterward.
+
+mountField("feature-id", createCompactField({ type: "text", id: "loomFeatureId", label: "Id", labelClass: "form-label fw-semibold mb-0", dataAttr: "data-feature-id", disabled: true }));
+mountField("feature-name", createCompactField({ type: "text", id: "loomFeatureName", label: "Name", labelClass: "form-label fw-semibold mb-0", dataAttr: "data-feature-name" }));
+mountField(
+  "feature-description",
+  createCompactField({
+    type: "textarea", id: "loomFeatureDescription", label: "Description", labelClass: "form-label fw-semibold mb-0", controlClass: "form-control form-control-sm",
+    dataAttr: "data-feature-description", rows: 3,
+  })
+);
+mountField(
+  "feature-mechanics",
+  createCompactField({
+    type: "textarea", id: "loomFeatureMechanics", label: "Mechanics (JSON)", labelClass: "form-label fw-semibold mb-0", controlClass: "form-control form-control-sm font-monospace",
+    dataAttr: "data-feature-mechanics", rows: 5, spellcheck: "false",
+  })
+);
+mountField(
+  "feature-budget-cost",
+  createCompactField({
+    type: "number", id: "loomFeatureBudgetCost", label: "Cost Budget", labelClass: "form-label fw-semibold mb-0",
+    dataAttr: "data-feature-budget-cost", min: "0",
+  })
+);
+// "Generic" is the DEFAULT/unreviewed state, not a confirmed judgment —
+// same "empty means unreviewed, not confirmed-reusable" convention
+// budgetCost/tags already use (undercroft/README.md's own Workstream E:
+// 991 of 1070 Features had budgetCost: 0 because nobody had gotten to them
+// yet, not because they were reviewed and found unsuitable). The label
+// used to read "Generic (eligible for native generation)" — misleading,
+// since an untagged Feature (no tags.recipeSlots) is ALREADY excluded from
+// Crucible's own generation via a separate whitelist gate regardless of
+// this select's own value; see the note rendered next to the Recipe Slots
+// checklist below when it's empty.
+mountField(
+  "feature-scope",
+  createCompactField({
+    type: "select", id: "loomFeatureScope", label: "Scope", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select",
+    dataAttr: "data-feature-scope",
+    options: [
+      { value: "", label: "Generic (default — not yet reviewed for reuse)" },
+      { value: "unique", label: "Unique (confirmed — never eligible)" },
+    ],
+  })
+);
+mountField(
+  "feature-type-filter",
+  createCompactField({ type: "select", id: "loomFeatureTypeFilter", label: "Type", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select form-select-sm", dataAttr: "data-feature-type-filter" })
+);
+mountField("feature-select", createCompactField({ type: "select", id: "loomFeatureSelect", label: "Feature", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-feature-select" }));
+
+const featureTypeFilterSelect = document.querySelector("[data-feature-type-filter]");
+const featureRecordSelect = document.querySelector("[data-feature-select]");
+const featureIdInput = document.querySelector("[data-feature-id]");
+const featureNameInput = document.querySelector("[data-feature-name]");
+const featureDescriptionInput = document.querySelector("[data-feature-description]");
+const featureMechanicsTextarea = document.querySelector("[data-feature-mechanics]");
+const featureMechanicsError = document.querySelector("[data-feature-mechanics-error]");
+const featureBudgetCostInput = document.querySelector("[data-feature-budget-cost]");
+const featureScopeSelect = document.querySelector("[data-feature-scope]");
+const featureEligibilityNote = document.querySelector("[data-feature-eligibility-note]");
+const featureSuggestButton = document.querySelector("[data-feature-suggest]");
+const featureSuggestStatus = document.querySelector("[data-feature-suggest-status]");
+const featuresEmpty = document.querySelector("[data-features-empty]");
+const featuresPanel = document.querySelector("[data-features-panel]");
+const featureSaveButton = document.querySelector("[data-feature-save]");
+const featureDeleteButton = document.querySelector("[data-feature-delete]");
+function setFeatureFormVisible(visible) {
+  if (featuresEmpty) featuresEmpty.hidden = visible;
+  if (featuresPanel) featuresPanel.classList.toggle("d-none", !visible);
+}
+function mountFeatureChecklist(mountSelector, label, helpTopic) {
+  const mount = document.querySelector(mountSelector);
+  if (!mount) return null;
+  const field = createSearchableCheckList({ label, dataAttr: "data-checklist", helpTopic, maxHeight: "5rem" });
+  mount.appendChild(field);
+  return mount.querySelector("[data-checklist]");
+}
+const featureCategoriesList = mountFeatureChecklist("[data-feature-categories-mount]", "Categories");
+const featureBehaviorsList = mountFeatureChecklist("[data-feature-behaviors-mount]", "Behaviors");
+const featureRecipeSlotsList = mountFeatureChecklist("[data-feature-recipe-slots-mount]", "Recipe Slots");
+const featureRolesList = mountFeatureChecklist("[data-feature-roles-mount]", "Roles");
+const featureCreatureTypesList = mountFeatureChecklist("[data-feature-creature-types-mount]", "Creature Types");
+const featureSynergizesList = mountFeatureChecklist("[data-feature-synergizes-mount]", "Synergizes With");
+const featureConflictsList = mountFeatureChecklist("[data-feature-conflicts-mount]", "Conflicts With");
+
+// The FULL entity, loaded once per selection — a field this tab's own
+// controls don't directly own (`tiers`, `combat`, `systemIds`) still
+// round-trips untouched on Save, since Save patches this SAME object rather
+// than building a fresh one from scratch.
+let currentFeatureEntity = null;
+
+// Every vocabulary collector below does at least one server round trip;
+// recomputing all of them on EVERY single Feature selection was the actual
+// cause of a real, reported ~1s lag per click — fetchKindEntriesWithIds
+// ("feature") alone scans the FULL feature Library (1000+ records) just to
+// build the Behaviors/Categories vocabulary and the Synergizes/Conflicts
+// Feature-reference picker's own candidate list. Cached at module scope
+// instead: the whole feature Library listing is fetched ONCE and shared by
+// all three of those (and by the Feature picker select itself — see
+// populateFeatureSelect below); the System-scoped vocab (Recipe Slots/
+// Roles/Creature Types) is cached per distinct systemIds combination, since
+// most Features share the same Assigned Systems and repeat visits hit the
+// cache. Some staleness (a value saved moments ago on another Feature not
+// showing up yet) is an acceptable trade for not re-fetching on every
+// click — reset on every Save (a save might introduce a new value) and on
+// every fresh visit to this tab (populateFeatureSelect runs on every
+// `setLoomView("features")`).
+let featureLibraryEntriesCache = null;
+let featureBehaviorVocabularyCache = null;
+let featureCategoryVocabularyCache = null;
+const featureSystemVocabularyCache = new Map();
+
+function resetFeatureVocabularyCache() {
+  featureLibraryEntriesCache = null;
+  featureBehaviorVocabularyCache = null;
+  featureCategoryVocabularyCache = null;
+  featureSystemVocabularyCache.clear();
+}
+
+function loadFeatureLibraryEntries() {
+  if (!featureLibraryEntriesCache) {
+    featureLibraryEntriesCache = dataManager ? fetchKindEntriesWithIds(dataManager, "feature").catch(() => []) : Promise.resolve([]);
+  }
+  return featureLibraryEntriesCache;
+}
+
+function systemVocabKey(systemIds) {
+  return (Array.isArray(systemIds) ? systemIds.slice().sort() : []).join("|");
+}
+
+// Live vocabulary for the Behaviors checklist — the union of every
+// `tags.behaviors` value ALREADY used across the whole feature Library, not
+// a hardcoded list (this vocabulary is authored content, same as
+// recipeSlots/roles/creatureTypes below, not a fixed JS table — see
+// undercroft/README.md's "avoid hardcoding" stance). Returns `{value,
+// label}` pairs (value === label here — a behavior word like "damage" is
+// its own storage form and its own readable label) for the same shape
+// every collector below returns, so populateFeatureTagChecklists can treat
+// all of them uniformly. Cached (see the module-level comment above) —
+// shares the one loadFeatureLibraryEntries() fetch with
+// collectFeatureCategoryVocabulary and the Synergizes/Conflicts picker.
+async function collectFeatureBehaviorVocabulary() {
+  if (featureBehaviorVocabularyCache) return featureBehaviorVocabularyCache;
+  featureBehaviorVocabularyCache = (async () => {
+    const entries = await loadFeatureLibraryEntries();
+    const values = new Set();
+    entries.forEach(({ entity }) => (entity?.tags?.behaviors || []).forEach((value) => values.add(value)));
+    return Array.from(values, (value) => ({ value, label: value }));
+  })();
+  return featureBehaviorVocabularyCache;
+}
+
+// Same shape/reasoning as collectFeatureBehaviorVocabulary above, for
+// `tags.categories` (the "which tool(s) this Feature belongs to" tag —
+// "monster"/"spell"/"item"/"location" confirmed live across the current
+// Library).
+async function collectFeatureCategoryVocabulary() {
+  if (featureCategoryVocabularyCache) return featureCategoryVocabularyCache;
+  featureCategoryVocabularyCache = (async () => {
+    const entries = await loadFeatureLibraryEntries();
+    const values = new Set();
+    entries.forEach(({ entity }) => (entity?.tags?.categories || []).forEach((value) => values.add(value)));
+    return Array.from(values, (value) => ({ value, label: value }));
+  })();
+  return featureCategoryVocabularyCache;
+}
+
+// Shared by the Recipe Slots/Roles vocabulary collectors below — both are
+// Crucible-authored Library kinds scoped to a System the same way
+// crucible/js/lib/tables.js's own listKindForSystem already scopes
+// Archetype/Role/Feature lookups (mirrored locally here rather than
+// importing across tools — see this function's own callers for the
+// System-defined Creature Types case, which reads a System field directly
+// instead since it isn't a Library kind at all). `pickValue(entity, map)`
+// sets `map.set(storedValue, readableLabel)` — a Map (not a Set) since,
+// unlike Recipe Slots, a Role's own STORED tag value is its lowercase id
+// ("brute"), not its display name ("Brute") — confirmed live: every
+// Feature's own `tags.roles` uses ids, never names.
+async function collectFeatureKindNamesForSystems(kind, systemIds, pickValue) {
+  if (!dataManager) return [];
+  try {
+    const entries = await fetchKindEntriesWithIds(dataManager, kind);
+    const ids = new Set(Array.isArray(systemIds) ? systemIds : []);
+    const values = new Map();
+    entries.forEach(({ entity }) => {
+      const entitySystemIds = Array.isArray(entity?.systemIds) ? entity.systemIds : [];
+      if (ids.size && entitySystemIds.length && !entitySystemIds.some((id) => ids.has(id))) return;
+      pickValue(entity, values);
+    });
+    return Array.from(values, ([value, label]) => ({ value, label }));
+  } catch (error) {
+    return [];
+  }
+}
+
+function collectFeatureRecipeSlotVocabulary(systemIds) {
+  return collectFeatureKindNamesForSystems("monster-archetype", systemIds, (entity, values) => {
+    const recipe = entity?.recipe || {};
+    if (recipe.signatureSlot) values.set(recipe.signatureSlot, recipe.signatureSlot);
+    (recipe.requiredSlots || []).forEach((slot) => values.set(slot, slot));
+    (recipe.optionalSlots || []).forEach((slot) => values.set(slot, slot));
+  });
+}
+
+// Stored as the Role's own lowercase `id` ("brute"), never its display
+// `name` ("Brute") — confirmed live against every Feature's own
+// `tags.roles` (this was a real bug: using `.name` here produced a
+// checklist entry that could never match what's actually saved on a
+// Feature, and — worse — a Feature already tagged with the lowercase id
+// would show up as TWO separate rows, one checked one not, once the id
+// form was also present in the live vocabulary).
+function collectFeatureRoleVocabulary(systemIds) {
+  return collectFeatureKindNamesForSystems("monster-role", systemIds, (entity, values) => {
+    if (entity?.id) values.set(entity.id, entity.name || entity.id);
+  });
+}
+
+// Creature Types vocabulary — read straight off each Assigned System's own
+// `creatureTypes` array field (System-defined game-rule vocabulary, not a
+// Library kind — see crucible/CLAUDE.md's own "Creature Type is not a
+// Library kind" section), unioned across every Assigned System since a
+// Feature (unlike Crucible's single active System) can carry more than one.
+// Always the conventional "creatureTypes" field key — Loom has no
+// per-browser tool-preference concept to read Crucible's own override from.
+// Stored as the type's own lowercase `id` ("ooze"), never its display
+// `name` ("Ooze") — same real bug/fix as Roles above (confirmed live:
+// feat.acid-corrosion's own `tags.creatureTypes: ["ooze"]`).
+async function collectFeatureCreatureTypeVocabulary(systemIds) {
+  if (!dataManager || !Array.isArray(systemIds) || !systemIds.length) return [];
+  const values = new Map();
+  for (const systemId of systemIds) {
+    try {
+      const result = await dataManager.get("systems", systemId, { preferLocal: false });
+      const fields = Array.isArray(result?.payload?.fields) ? result.payload.fields : [];
+      const field = fields.find((entry) => entry.type === "array" && entry.key === "creatureTypes");
+      (field?.values || []).forEach((value) => {
+        if (value?.id) values.set(value.id, value.name || value.id);
+      });
+    } catch (error) {
+      // Best-effort per System — one missing/unreadable System shouldn't
+      // block the others from populating.
+    }
+  }
+  return Array.from(values, ([value, label]) => ({ value, label }));
+}
+
+// Bundles the three System-scoped collectors above into ONE cached promise
+// per distinct Assigned-Systems combination — most Features share the same
+// systemIds, so repeat visits within one Features-tab session hit this
+// cache instead of re-fetching monster-archetype/monster-role/each System
+// record on every click (see the module-level cache comment above).
+function loadFeatureSystemVocabulary(systemIds) {
+  const key = systemVocabKey(systemIds);
+  if (!featureSystemVocabularyCache.has(key)) {
+    featureSystemVocabularyCache.set(
+      key,
+      Promise.all([
+        collectFeatureRecipeSlotVocabulary(systemIds),
+        collectFeatureRoleVocabulary(systemIds),
+        collectFeatureCreatureTypeVocabulary(systemIds),
+      ]).then(([recipeSlots, roles, creatureTypes]) => ({ recipeSlots, roles, creatureTypes }))
+    );
+  }
+  return featureSystemVocabularyCache.get(key);
+}
+
+// Already-selected values that fell out of a live vocabulary (a Recipe Slot
+// from a deleted Archetype, say) still need to show up in the list,
+// checked — never silently drop authored data just because its source
+// vocabulary moved on. Shared by every checklist below, including the
+// Synergizes/Conflicts Feature-reference pickers.
+function withSelectedVocabulary(vocabulary, selected) {
+  const known = new Set(vocabulary.map((item) => item.value));
+  const extra = (selected || []).filter((value) => !known.has(value)).map((value) => ({ value, label: value }));
+  return [...vocabulary, ...extra];
+}
+
+// Populates the Categories/Behaviors/Recipe Slots/Roles/Creature Types
+// checklists for `entity` (a real loaded Feature, or a synthetic
+// `{...currentFeatureEntity, tags: suggestion}` shape when applying an LLM
+// suggestion — see handleSuggestFeatureTags below) — ALWAYS the full live
+// vocabulary, with `entity.tags` checked and sorted to the top via
+// populateStringChecklist's own explicit `selected` param. Never passes
+// just the checked values as the whole list (that would wipe every other
+// option from view — a real bug this function used to have).
+async function populateFeatureTagChecklists(entity) {
+  const systemIds = Array.isArray(entity?.systemIds) ? entity.systemIds : [];
+  const tags = entity?.tags || {};
+  const [categories, behaviors, systemVocabulary] = await Promise.all([
+    collectFeatureCategoryVocabulary(),
+    collectFeatureBehaviorVocabulary(),
+    loadFeatureSystemVocabulary(systemIds),
+  ]);
+  const { recipeSlots, roles, creatureTypes } = systemVocabulary;
+  const rows = [
+    [featureCategoriesList, withSelectedVocabulary(categories, tags.categories), tags.categories],
+    [featureBehaviorsList, withSelectedVocabulary(behaviors, tags.behaviors), tags.behaviors],
+    [featureRecipeSlotsList, withSelectedVocabulary(recipeSlots, tags.recipeSlots), tags.recipeSlots],
+    [featureRolesList, withSelectedVocabulary(roles, tags.roles), tags.roles],
+    [featureCreatureTypesList, withSelectedVocabulary(creatureTypes, tags.creatureTypes), tags.creatureTypes],
+  ];
+  rows.forEach(([container, items, selected]) => populateStringChecklist(container, items, selected));
+}
+
+// Synergizes With / Conflicts With — plain references to OTHER Feature ids,
+// not a tag vocabulary, so the checklist's own "vocabulary" is just every
+// other Feature in the Library (excluding this one itself, which can't
+// synergize/conflict with itself) shown by name. Shares
+// loadFeatureLibraryEntries()'s one cached fetch with the Behaviors/
+// Categories vocabulary above rather than fetching the whole Library a
+// second/third time.
+async function populateFeatureReferenceCheckLists(entity) {
+  const entries = await loadFeatureLibraryEntries();
+  const candidates = entries
+    .filter(({ id }) => id !== entity?.id)
+    .map(({ id, entity: candidate }) => ({ value: id, label: candidate?.name || id }));
+  populateStringChecklist(featureSynergizesList, withSelectedVocabulary(candidates, entity?.synergizesWith), entity?.synergizesWith);
+  populateStringChecklist(featureConflictsList, withSelectedVocabulary(candidates, entity?.conflictsWith), entity?.conflictsWith);
+}
+
+function readFeatureTagsFromChecklists() {
+  return {
+    categories: readLockedFeatureIds(featureCategoriesList),
+    behaviors: readLockedFeatureIds(featureBehaviorsList),
+    recipeSlots: readLockedFeatureIds(featureRecipeSlotsList),
+    roles: readLockedFeatureIds(featureRolesList),
+    creatureTypes: readLockedFeatureIds(featureCreatureTypesList),
+  };
+}
+
+function readFeatureReferenceLists() {
+  return {
+    synergizesWith: readLockedFeatureIds(featureSynergizesList),
+    conflictsWith: readLockedFeatureIds(featureConflictsList),
+  };
+}
+
+// Mirrors currentLibraryEntity()/updateLibraryJsonFeedback's own JSON-
+// validity contract (Library tab) for this tab's own Mechanics field —
+// returns null (never a guessed/partial object) on invalid JSON, which
+// canSaveFeature below uses to gate Save the same way canSaveLibrary does.
+function currentFeatureMechanics() {
+  try {
+    return JSON.parse(featureMechanicsTextarea?.value || "{}");
+  } catch (error) {
+    return null;
+  }
+}
+
+function updateFeatureMechanicsFeedback() {
+  if (!featureMechanicsTextarea) return;
+  const raw = featureMechanicsTextarea.value || "";
+  let message = "";
+  if (raw.trim()) {
+    try {
+      JSON.parse(raw);
+    } catch (error) {
+      message = `Invalid JSON: ${error.message}`;
+    }
+  }
+  featureMechanicsTextarea.classList.toggle("is-invalid", Boolean(message));
+  if (featureMechanicsError) {
+    featureMechanicsError.textContent = message;
+    featureMechanicsError.classList.toggle("d-none", !message);
+  }
+}
+
+// Surfaces the FULL native-generation-eligibility picture — Scope and
+// Recipe Slots together, not just Scope in isolation — since a real
+// question this tab used to leave unanswered: "Generic" alone doesn't mean
+// a Feature is actually pickable by Crucible's own generator, an untagged
+// Feature (no tags.recipeSlots) is invisible to it via a completely
+// separate whitelist gate (generator.js's own candidatesForSlot) regardless
+// of Scope. Only shown when something is actually blocking eligibility —
+// no note at all for a Feature that's both Generic and tagged, since
+// there's nothing surprising to flag there.
+function updateFeatureEligibilityNote() {
+  if (!featureEligibilityNote) return;
+  if (!currentFeatureEntity) {
+    featureEligibilityNote.classList.add("d-none");
+    return;
+  }
+  const isUnique = featureScopeSelect?.value === "unique";
+  const hasRecipeSlots = readLockedFeatureIds(featureRecipeSlotsList).length > 0;
+  let message = "";
+  if (isUnique) {
+    message = "Never eligible for Crucible's native generation (Scope: Unique).";
+  } else if (!hasRecipeSlots) {
+    message = "Not currently eligible for native generation — no Recipe Slots tagged yet (an untagged Feature is invisible to slot-fill regardless of Scope).";
+  }
+  featureEligibilityNote.textContent = message;
+  featureEligibilityNote.classList.toggle("d-none", !message);
+}
+
+// Undo/dirty-tracking snapshot for this tab — every field this tab's own
+// controls can change (id selection, name, description, mechanics text,
+// budgetCost, scope, tags, references), same "SNAPSHOT_HANDLERS[type]"
+// convention every other tab (mapping/library/system/macro) already
+// registers itself under.
+function createFeatureSnapshot() {
+  return {
+    id: featureRecordSelect?.value || "",
+    name: featureNameInput?.value || "",
+    description: featureDescriptionInput?.value || "",
+    mechanics: featureMechanicsTextarea?.value || "",
+    budgetCost: featureBudgetCostInput?.value || "",
+    scope: featureScopeSelect?.value || "",
+    tags: readFeatureTagsFromChecklists(),
+    references: readFeatureReferenceLists(),
+  };
+}
+
+function applyFeatureSnapshot(snapshot) {
+  if (!snapshot) return;
+  if (featureRecordSelect) featureRecordSelect.value = snapshot.id || "";
+  if (featureNameInput) featureNameInput.value = snapshot.name || "";
+  if (featureDescriptionInput) featureDescriptionInput.value = snapshot.description || "";
+  if (featureMechanicsTextarea) featureMechanicsTextarea.value = snapshot.mechanics || "";
+  updateFeatureMechanicsFeedback();
+  if (featureBudgetCostInput) featureBudgetCostInput.value = snapshot.budgetCost || "";
+  if (featureScopeSelect) featureScopeSelect.value = snapshot.scope || "";
+  const stampChecked = (container, selected) => {
+    if (!container) return;
+    const selectedSet = new Set(selected || []);
+    container.querySelectorAll("[data-checklist-options] input[type=checkbox]").forEach((input) => {
+      input.checked = selectedSet.has(input.value);
+    });
+  };
+  stampChecked(featureCategoriesList, snapshot.tags?.categories);
+  stampChecked(featureBehaviorsList, snapshot.tags?.behaviors);
+  stampChecked(featureRecipeSlotsList, snapshot.tags?.recipeSlots);
+  stampChecked(featureRolesList, snapshot.tags?.roles);
+  stampChecked(featureCreatureTypesList, snapshot.tags?.creatureTypes);
+  stampChecked(featureSynergizesList, snapshot.references?.synergizesWith);
+  stampChecked(featureConflictsList, snapshot.references?.conflictsWith);
+}
+
+// Resets the vocabulary cache on every fresh visit to this tab (a Save
+// elsewhere in this same session, or by another user, might have
+// introduced a new value since the cache was last built) — see the
+// module-level cache comment above. Also reuses the SAME
+// loadFeatureLibraryEntries() fetch this triggers for the Feature picker
+// itself, rather than a separate, redundant full-Library fetch.
+// Type filter (data-feature-type-filter) narrows the Feature picker below
+// by tags.categories — e.g. "monster" vs a Vault-authored "spell"/"item" —
+// so a Feature that reads as generic (feat.fire-breath's own Vault content
+// vs feat.fire-breath-monster) can be told apart without opening each one.
+// Options are the distinct categories actually present across the Library
+// right now (never a fixed hardcoded list — a new category tagged
+// elsewhere should show up here automatically), rebuilt every visit same
+// as the vocabulary caches above.
+function populateFeatureTypeFilter(entries) {
+  if (!featureTypeFilterSelect) return;
+  const current = featureTypeFilterSelect.value;
+  const categories = new Set();
+  entries.forEach(({ entity }) => (entity?.tags?.categories || []).forEach((category) => categories.add(category)));
+  featureTypeFilterSelect.innerHTML = "";
+  const all = document.createElement("option");
+  all.value = "";
+  all.textContent = "All types";
+  featureTypeFilterSelect.appendChild(all);
+  Array.from(categories)
+    .sort((a, b) => a.localeCompare(b))
+    .forEach((category) => {
+      const option = document.createElement("option");
+      option.value = category;
+      option.textContent = category.charAt(0).toUpperCase() + category.slice(1);
+      featureTypeFilterSelect.appendChild(option);
+    });
+  if (Array.from(featureTypeFilterSelect.options).some((option) => option.value === current)) {
+    featureTypeFilterSelect.value = current;
+  }
+}
+
+async function populateFeatureSelect() {
+  if (!featureRecordSelect || !dataManager) return;
+  resetFeatureVocabularyCache();
+  const current = featureRecordSelect.value;
+  const entries = await loadFeatureLibraryEntries();
+  populateFeatureTypeFilter(entries);
+  const selectedType = featureTypeFilterSelect?.value || "";
+  const visibleEntries = selectedType
+    ? entries.filter(({ entity }) => (entity?.tags?.categories || []).includes(selectedType))
+    : entries;
+  featureRecordSelect.innerHTML = "";
+  const blank = document.createElement("option");
+  blank.value = "";
+  blank.textContent = visibleEntries.length ? "Select a feature…" : "No features match this type";
+  featureRecordSelect.appendChild(blank);
+  visibleEntries
+    .slice()
+    .sort((a, b) => (a.entity?.name || a.id).localeCompare(b.entity?.name || b.id))
+    .forEach(({ id, entity }) => {
+      const option = document.createElement("option");
+      option.value = id;
+      option.textContent = entity?.name || id;
+      featureRecordSelect.appendChild(option);
+    });
+  if (Array.from(featureRecordSelect.options).some((option) => option.value === current)) {
+    featureRecordSelect.value = current;
+  }
+}
+
+featureTypeFilterSelect?.addEventListener("change", () => {
+  void populateFeatureSelect();
+});
+
+async function loadFeatureIntoEditor(id) {
+  if (!dataManager) return;
+  try {
+    // preferLocal: false — same reasoning as loadMacroIntoEditor/
+    // loadLibraryEntry: this tab is a real editor feeding a load-then-save
+    // round trip, so a stale local cache entry silently winning would mean
+    // a resave here reverts whatever's actually on the server.
+    const result = await dataManager.get("feature", id, { preferLocal: false });
+    currentFeatureEntity = result.payload || null;
+    if (!currentFeatureEntity) throw new Error("Not found");
+    setFeatureFormVisible(true);
+    if (featureIdInput) featureIdInput.value = id;
+    if (featureNameInput) featureNameInput.value = currentFeatureEntity.name || id;
+    if (featureDescriptionInput) featureDescriptionInput.value = currentFeatureEntity.description || "";
+    if (featureMechanicsTextarea) featureMechanicsTextarea.value = JSON.stringify(currentFeatureEntity.mechanics || {}, null, 2);
+    updateFeatureMechanicsFeedback();
+    if (featureBudgetCostInput) featureBudgetCostInput.value = String(currentFeatureEntity.budgetCost || 0);
+    if (featureScopeSelect) featureScopeSelect.value = currentFeatureEntity.mechanics?.scope === "unique" ? "unique" : "";
+    await Promise.all([populateFeatureTagChecklists(currentFeatureEntity), populateFeatureReferenceCheckLists(currentFeatureEntity)]);
+    if (featureSuggestStatus) featureSuggestStatus.classList.add("d-none");
+    markClean("feature");
+  } catch (error) {
+    status?.show(`Unable to load feature: ${error.message}`, { type: "error", timeout: 4000 });
+  }
+}
+
+if (featureRecordSelect) {
+  featureRecordSelect.addEventListener("change", () => {
+    if (!featureRecordSelect.value) {
+      currentFeatureEntity = null;
+      setFeatureFormVisible(false);
+      markClean("feature");
+      return;
+    }
+    void loadFeatureIntoEditor(featureRecordSelect.value);
+  });
+}
+
+wireUndoTracking(featureNameInput, "feature");
+wireUndoTracking(featureDescriptionInput, "feature");
+wireUndoTracking(featureMechanicsTextarea, "feature");
+featureMechanicsTextarea?.addEventListener("input", updateFeatureMechanicsFeedback);
+wireUndoTracking(featureBudgetCostInput, "feature");
+wireUndoTracking(featureScopeSelect, "feature");
+// A checklist's checkboxes are dynamically rebuilt rows, not one fixed
+// field — same `selector` use wireUndoTracking's own header comment
+// anticipates ("a row-holding container with dynamically added/removed
+// rows"). focusin (before the native check/uncheck) + change (after) is the
+// same two-phase capture every other field here needs, since the browser
+// already mutated the checkbox by the time any listener could see it.
+[
+  featureCategoriesList,
+  featureBehaviorsList,
+  featureRecipeSlotsList,
+  featureRolesList,
+  featureCreatureTypesList,
+  featureSynergizesList,
+  featureConflictsList,
+].forEach((container) => {
+  wireUndoTracking(container, "feature", { selector: 'input[type="checkbox"]' });
+});
+
+function canSaveFeature() {
+  return Boolean(currentFeatureEntity && featureRecordSelect?.value && currentFeatureMechanics()) && isDirty("feature");
+}
+
+function canDeleteFeature() {
+  return Boolean(currentFeatureEntity && featureRecordSelect?.value) && libraryEntryAllowsDelete("feature", featureRecordSelect.value);
+}
+
+if (featureSaveButton) {
+  featureSaveButton.addEventListener("click", async () => {
+    if (!dataManager || !currentFeatureEntity) return;
+    const id = featureRecordSelect.value;
+    const mechanics = currentFeatureMechanics();
+    if (!mechanics) {
+      status?.show("Fix the Mechanics JSON before saving.", { type: "error", timeout: 3000 });
+      return;
+    }
+    currentFeatureEntity.name = (featureNameInput?.value || "").trim() || id;
+    currentFeatureEntity.description = featureDescriptionInput?.value || "";
+    currentFeatureEntity.mechanics = mechanics;
+    currentFeatureEntity.budgetCost = Math.max(0, Math.round(Number(featureBudgetCostInput?.value)) || 0);
+    if (featureScopeSelect?.value === "unique") currentFeatureEntity.mechanics.scope = "unique";
+    else delete currentFeatureEntity.mechanics.scope;
+    currentFeatureEntity.tags = { ...(currentFeatureEntity.tags || {}), ...readFeatureTagsFromChecklists() };
+    Object.assign(currentFeatureEntity, readFeatureReferenceLists());
+    try {
+      await dataManager.save("feature", id, currentFeatureEntity);
+      status?.show(`Saved feature ${id}.`, { type: "success", timeout: 2000 });
+      markClean("feature");
+      // A new name/tag/category value from this save should be visible the
+      // next time it's needed — populateFeatureSelect resets the
+      // vocabulary cache and rebuilds the picker (in case the name changed).
+      await populateFeatureSelect();
+      featureRecordSelect.value = id;
+    } catch (error) {
+      status?.show(`Unable to save feature: ${error.message}`, { type: "error", timeout: 4000 });
+    }
+  });
+}
+
+if (featureDeleteButton) {
+  featureDeleteButton.addEventListener("click", async () => {
+    if (!dataManager || !featureRecordSelect?.value) return;
+    const id = featureRecordSelect.value;
+    if (!confirmDelete({ label: `feature "${id}"` })) return;
+    try {
+      await dataManager.delete("feature", id);
+      status?.show(`Deleted feature ${id}.`, { type: "success", timeout: 2000 });
+    } catch (error) {
+      dataManager.removeLocal("feature", id);
+      status?.show(`Removed ${id} locally (server delete failed: ${error.message}).`, { type: "warning", timeout: 4000 });
+    }
+    currentFeatureEntity = null;
+    featureRecordSelect.value = "";
+    setFeatureFormVisible(false);
+    await populateFeatureSelect();
+  });
+}
+
+// LLM-assisted starting guess (Workstream E) — POSTs this ONE Feature to
+// /loom/suggest-feature-tags. Applies the suggestion via
+// populateFeatureTagChecklists — the SAME full-vocabulary render a normal
+// load uses, just with the suggestion's own values as the checked set —
+// never wipes the other available options out of the checklists (an
+// earlier version of this function called populateStringChecklist directly
+// with ONLY the suggested values as the whole list, which did exactly
+// that). Never saves on its own; the GM still reviews and clicks Save.
+//
+// Not wrapped in recordUndoableChange — that helper snapshots synchronously
+// immediately before/after its action() runs, but populating the
+// checklists here is async (live vocabulary fetch), so the "after" snapshot
+// would be captured before the DOM actually finished updating. Skips a
+// dedicated undo-stack entry for this one action (re-selecting the Feature
+// without saving already discards it) but still calls updateToolbarState()
+// directly so Save correctly lights up once applied.
+async function handleSuggestFeatureTags() {
+  const id = featureRecordSelect?.value;
+  if (!currentFeatureEntity || !id) return;
+  const originalHtml = featureSuggestButton?.innerHTML;
+  if (featureSuggestButton) {
+    featureSuggestButton.disabled = true;
+    featureSuggestButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Suggesting…';
+  }
+  if (featureSuggestStatus) featureSuggestStatus.classList.add("d-none");
+  try {
+    // Reads the LIVE, possibly-unsaved fields rather than currentFeatureEntity's
+    // own (last-loaded) values — a description just typed in but not yet
+    // saved should still inform the suggestion.
+    const response = await fetch("/loom/suggest-feature-tags", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        features: [
+          {
+            id,
+            name: featureNameInput?.value || "",
+            description: featureDescriptionInput?.value || "",
+            mechanicsType: currentFeatureMechanics()?.type || "passive",
+          },
+        ],
+      }),
+    });
+    const payload = await response.json().catch(() => null);
+    if (!response.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
+    const suggestion = payload?.suggestions?.[id];
+    if (!suggestion) throw new Error("No suggestion returned for this Feature.");
+    if (featureBudgetCostInput) featureBudgetCostInput.value = String(suggestion.budgetCost ?? 0);
+    // Scope isn't part of the suggestion payload (a monster-boss-move
+    // "unique" judgment call the LLM route deliberately doesn't make) —
+    // left exactly as it already was. Categories isn't part of it either
+    // (which tool(s) a Feature belongs to isn't a cost/tag-style judgment
+    // call) — preserved from the real current tags, not suggested.
+    await populateFeatureTagChecklists({
+      ...currentFeatureEntity,
+      tags: {
+        categories: currentFeatureEntity.tags?.categories || [],
+        behaviors: suggestion.behaviors || [],
+        recipeSlots: suggestion.recipeSlots || [],
+        roles: suggestion.roles || [],
+        creatureTypes: suggestion.creatureTypes || [],
+      },
+    });
+    updateToolbarState();
+    if (featureSuggestStatus) {
+      featureSuggestStatus.textContent = "Suggestion applied above — review, then Save if it looks right.";
+      featureSuggestStatus.classList.remove("d-none");
+    }
+  } catch (error) {
+    status?.show(`Unable to suggest tags: ${error.message}`, { type: "error", timeout: 5000 });
+  } finally {
+    if (featureSuggestButton) {
+      featureSuggestButton.disabled = false;
+      featureSuggestButton.innerHTML = originalHtml;
+    }
+  }
+}
+featureSuggestButton?.addEventListener("click", handleSuggestFeatureTags);
 
 // --- Macro Actions editor (Library tab, kind "macro" only) -----------------
 // Same kind-gated-section pattern as populateLibraryTemplateSelect above,
@@ -5286,6 +6389,18 @@ async function init() {
     await populateMacroSelect();
     if (macroRecordSelect) macroRecordSelect.value = deepLinkMacroId;
     await loadMacroIntoEditor(deepLinkMacroId);
+  }
+
+  // Deep link from Crucible's own Inspector ("Edit Feature" button, a new
+  // tab so the GM's in-progress monster stays untouched) — same shape as
+  // the macro deep link above, lands already on the Features tab with
+  // that Feature loaded instead of a manual tab-and-select.
+  const deepLinkFeatureId = new URLSearchParams(window.location.search).get("feature");
+  if (deepLinkFeatureId) {
+    setLoomView("features");
+    await populateFeatureSelect();
+    if (featureRecordSelect) featureRecordSelect.value = deepLinkFeatureId;
+    await loadFeatureIntoEditor(deepLinkFeatureId);
   }
 
   initHelpSystem({ root: document });

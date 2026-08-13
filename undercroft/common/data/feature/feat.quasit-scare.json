@@ -1,0 +1,28 @@
+{
+  "id": "feat.quasit-scare",
+  "name": "Scare",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "One creature of the fiend's choice within 20 ft. of it must succeed on a DC 10 Wisdom saving throw or be frightened for 1 minute. The target can repeat the saving throw at the end of each of its turns, with disadvantage if the fiend is within line of sight, ending the effect on itself on a success.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "One creature of the fiend's choice within 20 ft. of it must succeed on a DC 10 Wisdom saving throw or be frightened for 1 minute. The target can repeat the saving throw at the end of each of its turns, with disadvantage if the fiend is within line of sight, ending the effect on itself on a success."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

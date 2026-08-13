@@ -1,0 +1,33 @@
+{
+  "id": "feat.timingila-breach",
+  "name": "Breach",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature swims up to its swimming speed without provoking opportunity attacks. If it breaches the water’s surface, it crashes back down, creating a wave in a 30-foot-wide, 120-foot long line that is 30 feet tall. Any Gargantuan or smaller vehicles in the line are carried up to 100 feet away from the creature and have a 50 percent chance of capsizing.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature swims up to its swimming speed without provoking opportunity attacks. If it breaches the water’s surface, it crashes back down, creating a wave in a 30-foot-wide, 120-foot long line that is 30 feet tall. Any Gargantuan or smaller vehicles in the line are carried up to 100 feet away from the creature and have a 50 percent chance of capsizing.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "mobility",
+      "control"
+    ],
+    "recipeSlots": [
+      "burst"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

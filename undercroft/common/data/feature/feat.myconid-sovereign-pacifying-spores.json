@@ -1,0 +1,32 @@
+{
+  "id": "feat.myconid-sovereign-pacifying-spores",
+  "name": "Pacifying Spores",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The myconid ejects spores at one creature it can see within 5 feet of it. The target must succeed on a DC 12 Constitution saving throw or be stunned for 1 minute. The target can repeat the saving throw at the end of each of its turns, ending the condition on itself on a success.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The myconid ejects spores at one creature it can see within 5 feet of it. The target must succeed on a DC 12 Constitution saving throw or be stunned for 1 minute. The target can repeat the saving throw at the end of each of its turns, ending the condition on itself on a success."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "control"
+    ],
+    "recipeSlots": [
+      "dominate"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "id": "feat.mage-hunter-shift-form",
+  "name": "Shift Form",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature folds into its drone-like sentry form or unfolds into its hunter form. Its game statistics are the same in each form.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature folds into its drone-like sentry form or unfolds into its hunter form. Its game statistics are the same in each form.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "bonus-action"
+  }
+}

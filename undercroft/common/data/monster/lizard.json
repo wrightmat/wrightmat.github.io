@@ -1,0 +1,68 @@
+{
+  "kind": "monster",
+  "index": "lizard",
+  "name": "Lizard",
+  "type": "beast",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/lizard.png",
+  "stats": {
+    "size": "Tiny",
+    "alignment": "unaligned",
+    "armorClass": 10,
+    "hitPoints": {
+      "max": 2,
+      "current": 2,
+      "diceString": "1d4"
+    },
+    "hitDice": "1d4",
+    "speed": {
+      "walk": 20,
+      "climb": 20
+    },
+    "abilities": {
+      "strength": 2,
+      "dexterity": 11,
+      "constitution": 10,
+      "intelligence": 1,
+      "wisdom": 8,
+      "charisma": 3
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [],
+      "languages": []
+    },
+    "senses": {
+      "darkvision": 30,
+      "passives": {
+        "perception": 9
+      }
+    },
+    "challengeRating": "0",
+    "proficiencyBonus": 2,
+    "xp": 10,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/lizard"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/lizard",
+  "featureIds": [
+    "feat.bite"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 0,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1",
+      "damageType": "piercing"
+    }
+  }
+}

@@ -1,0 +1,125 @@
+{
+  "kind": "monster",
+  "index": "invisible-stalker",
+  "name": "Invisible Stalker",
+  "type": "elemental",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/invisible-stalker.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "neutral",
+    "armorClass": 14,
+    "hitPoints": {
+      "max": 104,
+      "current": 104,
+      "diceString": "16d8+32"
+    },
+    "hitDice": "16d8",
+    "speed": {
+      "walk": 50,
+      "fly": 50,
+      "hover": true
+    },
+    "abilities": {
+      "strength": 16,
+      "dexterity": 19,
+      "constitution": 14,
+      "intelligence": 10,
+      "wisdom": 15,
+      "charisma": 11
+    },
+    "initiative": {
+      "bonus": 4
+    },
+    "savingThrows": "",
+    "skills": "Perception +8, Stealth +10",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "bludgeoning, piercing, and slashing from nonmagical weapons",
+          "type": "resistance"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "Grappled",
+          "type": "immunity"
+        },
+        {
+          "name": "Paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "Petrified",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        },
+        {
+          "name": "Prone",
+          "type": "immunity"
+        },
+        {
+          "name": "Restrained",
+          "type": "immunity"
+        },
+        {
+          "name": "Unconscious",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Auran",
+        "understands Common but doesn't speak it"
+      ]
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 18
+      }
+    },
+    "challengeRating": "6",
+    "proficiencyBonus": 3,
+    "xp": 2300,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/invisible-stalker"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/invisible-stalker",
+  "featureIds": [
+    "feat.invisible-stalker-invisibility",
+    "feat.invisible-stalker-faultless-tracker",
+    "feat.multiattack",
+    "feat.slam"
+  ],
+  "featureParams": {
+    "feat.slam": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 3",
+      "damageType": "bludgeoning"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.slam",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two slam attacks."
+    }
+  }
+}

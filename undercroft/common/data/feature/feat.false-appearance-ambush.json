@@ -25,5 +25,103 @@
     ]
   },
   "synergizesWith": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "normal-plant",
+      "name": "False Appearance (Normal Plant)",
+      "shortName": "Normal Plant",
+      "mechanics": {
+        "text": "While the creature remains motionless, it is indistinguishable from a normal plant."
+      }
+    },
+    {
+      "id": "motionless-eyes-legs-wrapped",
+      "name": "False Appearance (Eyes/Legs Wrapped)",
+      "shortName": "Eyes/Legs Wrapped",
+      "mechanics": {
+        "text": "If the creature is motionless, has its eyes and mouth closed, and has its legs wrapped around its body at the start of combat, it has advantage on its initiative roll. Moreover, if a creature hasn't observed the creature move or act, that creature must succeed on a DC 18 Intelligence (Investigation) check to discern that the creature is anything other than a creature."
+      }
+    },
+    {
+      "id": "flowering-plant",
+      "name": "False Appearance (Flowering Plant)",
+      "shortName": "Flowering Plant",
+      "mechanics": {
+        "text": "While the creature remains motionless, it is indistinguishable from other large flowering plants."
+      }
+    },
+    {
+      "id": "normal-flower",
+      "name": "False Appearance (Normal Flower)",
+      "shortName": "Normal Flower",
+      "mechanics": {
+        "text": "While the creature remains motionless, it is indistinguishable from a normal flower."
+      }
+    },
+    {
+      "id": "ordinary-kelp",
+      "name": "False Appearance (Ordinary Kelp)",
+      "shortName": "Ordinary Kelp",
+      "mechanics": {
+        "text": "While the creature remains motionless, it is indistinguishable from ordinary kelp."
+      }
+    },
+    {
+      "id": "oily-pool-or-rock",
+      "name": "False Appearance (Oily Pool or Rock)",
+      "shortName": "Oily Pool or Rock",
+      "mechanics": {
+        "text": "While the creature remains motionless, it is indistinguishable from an oily pool or wet rock."
+      }
+    },
+    {
+      "id": "mound-of-mud",
+      "name": "False Appearance (Mound of Mud)",
+      "shortName": "Mound of Mud",
+      "mechanics": {
+        "text": "While the creature remains motionless, it is indistinguishable from an ordinary mound of mud."
+      }
+    },
+    {
+      "id": "stalactite",
+      "name": "False Appearance (Stalactite)",
+      "shortName": "Stalactite",
+      "mechanics": {
+        "text": "While the creature remains motionless on the ceiling, it is indistinguishable from a normal stalactite."
+      }
+    },
+    {
+      "id": "statue-or-column",
+      "name": "False Appearance (Statue or Column)",
+      "shortName": "Statue or Column",
+      "mechanics": {
+        "text": "While the creature remains motionless, it is indistinguishable from a statue or a carved column."
+      }
+    },
+    {
+      "id": "school-of-fish",
+      "name": "False Appearance (School of Fish)",
+      "shortName": "School of Fish",
+      "mechanics": {
+        "text": "Until the creature attacks, it is indistinguishable from a large school of fish."
+      }
+    },
+    {
+      "id": "dead-shrub",
+      "name": "False Appearance (Dead Shrub)",
+      "shortName": "Dead Shrub",
+      "mechanics": {
+        "text": "While the creature remains motionless, it is indistinguishable from a dead shrub."
+      }
+    },
+    {
+      "id": "tangle-of-vines",
+      "name": "False Appearance (Tangle of Vines)",
+      "shortName": "Tangle of Vines",
+      "mechanics": {
+        "text": "While the creature remains motionless, it is indistinguishable from a tangle of vines."
+      }
+    }
+  ]
 }

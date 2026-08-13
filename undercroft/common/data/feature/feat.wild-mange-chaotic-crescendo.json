@@ -1,0 +1,33 @@
+{
+  "id": "feat.wild-mange-chaotic-crescendo",
+  "name": "Chaotic Crescendo",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "When the creature is reduced to 0 hit points, it explodes. Each creature within 15 feet of the creature must make a DC 12 Dexterity saving throw, taking 10 (2d10) lightning damage on a failed save, or half as much damage on a successful one. When the creature is reduced to 0 hit points roll once on the Sorcerer's Wild Magic table and proceed with the following effect.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When the creature is reduced to 0 hit points, it explodes. Each creature within 15 feet of the creature must make a DC 12 Dexterity saving throw, taking 10 (2d10) lightning damage on a failed save, or half as much damage on a successful one. When the creature is reduced to 0 hit points roll once on the Sorcerer's Wild Magic table and proceed with the following effect.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "control"
+    ],
+    "recipeSlots": [
+      "burst"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "reaction"
+  }
+}

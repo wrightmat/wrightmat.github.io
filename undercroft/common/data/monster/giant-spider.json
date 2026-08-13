@@ -1,0 +1,85 @@
+{
+  "kind": "monster",
+  "index": "giant-spider",
+  "name": "Giant Spider",
+  "notes": "To snare its prey, a giant spider spins elaborate webs or shoots sticky strands of webbing from its abdomen. Giant spiders are most commonly found underground, making their lairs on ceilings or in dark, web-filled crevices. Such lairs are often festooned with web cocoons holding past victims.",
+  "type": "beast",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/giant-spider.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "unaligned",
+    "armorClass": 14,
+    "hitPoints": {
+      "max": 26,
+      "current": 26,
+      "diceString": "4d10+4"
+    },
+    "hitDice": "4d10",
+    "speed": {
+      "walk": 30,
+      "climb": 30
+    },
+    "abilities": {
+      "strength": 14,
+      "dexterity": 16,
+      "constitution": 12,
+      "intelligence": 2,
+      "wisdom": 11,
+      "charisma": 4
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "",
+    "skills": "Stealth +7",
+    "proficiencies": {
+      "defenses": [],
+      "languages": []
+    },
+    "senses": {
+      "blindsight": 10,
+      "darkvision": 60,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "1",
+    "proficiencyBonus": 2,
+    "xp": 200,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/giant-spider"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/giant-spider",
+  "featureIds": [
+    "feat.spider-climb",
+    "feat.web-sense",
+    "feat.web-walker",
+    "feat.bite",
+    "feat.web"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d8 + 3",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "save-or-damage",
+        "saveDC": 11,
+        "saveAbility": "constitution",
+        "dice": "2d8",
+        "damageType": "poison",
+        "trailingNote": "If the poison damage reduces the target to 0 hit points, the target is stable but poisoned for 1 hour, even after regaining hit points, and is paralyzed while poisoned in this way."
+      }
+    }
+  },
+  "featureTiers": {
+    "feat.web": "giant-spider"
+  }
+}

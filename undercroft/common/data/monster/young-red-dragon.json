@@ -1,0 +1,118 @@
+{
+  "kind": "monster",
+  "index": "young-red-dragon",
+  "name": "Young Red Dragon",
+  "type": "dragon",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/young-red-dragon.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "chaotic evil",
+    "armorClass": 18,
+    "hitPoints": {
+      "max": 178,
+      "current": 178,
+      "diceString": "17d10+85"
+    },
+    "hitDice": "17d10",
+    "speed": {
+      "walk": 40,
+      "climb": 40,
+      "fly": 80
+    },
+    "abilities": {
+      "strength": 23,
+      "dexterity": 10,
+      "constitution": 21,
+      "intelligence": 14,
+      "wisdom": 11,
+      "charisma": 19
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "DEX +4, CON +9, WIS +4, CHA +8",
+    "skills": "Perception +8, Stealth +4",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "fire",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Common",
+        "Draconic"
+      ]
+    },
+    "senses": {
+      "blindsight": 30,
+      "darkvision": 120,
+      "passives": {
+        "perception": 18
+      }
+    },
+    "challengeRating": "10",
+    "proficiencyBonus": 4,
+    "xp": 5900,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/young-red-dragon"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/young-red-dragon",
+  "featureIds": [
+    "feat.multiattack",
+    "feat.bite",
+    "feat.claw",
+    "feat.fire-breath-monster"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 10,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "2d10 + 6",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "1d6",
+        "damageType": "fire"
+      }
+    },
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 10,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 6",
+      "damageType": "slashing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.bite",
+          "count": 1
+        },
+        {
+          "featureId": "feat.claw",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes three attacks: one with its bite and two with its claws."
+    },
+    "feat.fire-breath-monster": {
+      "verb": "exhales",
+      "substance": "fire",
+      "areaSize": "30",
+      "areaShape": "cone",
+      "dcAbility": "constitution",
+      "ability": "dexterity",
+      "damageDice": "16d6",
+      "damageType": "fire"
+    }
+  }
+}

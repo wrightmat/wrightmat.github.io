@@ -1,0 +1,29 @@
+{
+  "id": "feat.shellycoat-sunlight-sensitivity",
+  "name": "Sunlight Sensitivity",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature becomes petrified after 5 (2d4) uninterrupted rounds of exposure to direct, natural sunlight.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature becomes petrified after 5 (2d4) uninterrupted rounds of exposure to direct, natural sunlight.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "debuff"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

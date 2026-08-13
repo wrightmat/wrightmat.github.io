@@ -1,0 +1,88 @@
+{
+  "kind": "monster",
+  "index": "hill-giant",
+  "name": "Hill Giant",
+  "type": "giant",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/hill-giant.png",
+  "stats": {
+    "size": "Huge",
+    "alignment": "chaotic evil",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 105,
+      "current": 105,
+      "diceString": "10d12+40"
+    },
+    "hitDice": "10d12",
+    "speed": {
+      "walk": 40
+    },
+    "abilities": {
+      "strength": 21,
+      "dexterity": 8,
+      "constitution": 19,
+      "intelligence": 5,
+      "wisdom": 9,
+      "charisma": 6
+    },
+    "initiative": {
+      "bonus": -1
+    },
+    "savingThrows": "",
+    "skills": "Perception +2",
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Giant"
+      ]
+    },
+    "senses": {
+      "passives": {
+        "perception": 12
+      }
+    },
+    "challengeRating": "5",
+    "proficiencyBonus": 3,
+    "xp": 1800,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/hill-giant"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/hill-giant",
+  "featureIds": [
+    "feat.multiattack",
+    "feat.greatclub",
+    "feat.rock"
+  ],
+  "featureParams": {
+    "feat.greatclub": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 8,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "3d8 + 5",
+      "damageType": "bludgeoning"
+    },
+    "feat.rock": {
+      "kind": "Ranged",
+      "attackKind": "Weapon",
+      "attackBonus": 8,
+      "distanceLabel": "range",
+      "distance": "60/240",
+      "damageDice": "3d10 + 5",
+      "damageType": "bludgeoning"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.greatclub",
+          "count": 2
+        }
+      ],
+      "text": "The giant makes two greatclub attacks."
+    }
+  }
+}

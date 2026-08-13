@@ -1,0 +1,93 @@
+{
+  "kind": "monster",
+  "name": "Degenerate Titan",
+  "notes": "_This giant retains a look of daunting power despite its stooped bearing, tattered clothing, and pieces of slapdash armor strapped on wherever it fits._\r\n\r\n**Haunt Ruins**. The degenerate descendants of once-noble titans haunt the ruins where their cities once flourished. They hunt for any living thing to eat, including each other, and sometimes chase after herds of goats or other animals for miles. While they are easily distracted, they always find their way home unerringly.\r\n\r\n**Insane and Moody**. Degenerate titans are prone to insanity and unexpected mood shifts. They are fiercely territorial creatures who worship the still-active magical devices of their cities and any surviving statuary as if they were gods. Their lairs are filled with items scavenged from the city. These collections are a hodgepodge of dross and delight, as the degenerate titans are not intelligent enough to discern treasure from trash.\r\n\r\n**Primal Power**. Degenerate titans cannot command magical words of power, but they have tapped into the earth's latent mystic power to generate strange geomancy. These devolved misfits may have lost most of their former gifts, but what remains are primal powers that tap, without subtlety or skill, into the fundamental building blocks of magic.",
+  "type": "giant",
+  "stats": {
+    "size": "Huge",
+    "alignment": "Chaotic Evil",
+    "armorClass": 12,
+    "hitPoints": {
+      "max": 161,
+      "current": 161,
+      "diceString": "14d12 + 70"
+    },
+    "hitDice": "14d12",
+    "speed": {
+      "walk": 40
+    },
+    "abilities": {
+      "strength": 24,
+      "dexterity": 6,
+      "constitution": 20,
+      "intelligence": 6,
+      "wisdom": 9,
+      "charisma": 7
+    },
+    "initiative": {
+      "bonus": -2
+    },
+    "savingThrows": "",
+    "skills": "Intimidation +1, Perception +2",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 12
+      }
+    },
+    "challengeRating": "8",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Giant"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "ToB",
+      "Tome of Beasts 1, pg 381"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.magic-resistance",
+    "feat.multiattack",
+    "feat.greatclub",
+    "feat.rock",
+    "feat.degenerate-titan-earthstrike-recharge-4-6",
+    "feat.degenerate-titan-shout-of-the-void-recharge-4-6"
+  ],
+  "featureParams": {
+    "feat.greatclub": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 10,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "3d8 + 7",
+      "damageType": "bludgeoning"
+    },
+    "feat.rock": {
+      "kind": "Ranged",
+      "attackKind": "Weapon",
+      "attackBonus": 10,
+      "distanceLabel": "range",
+      "distance": "60/240",
+      "damageDice": "4d10 + 7",
+      "damageType": "bludgeoning"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.greatclub",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two greatclub attacks."
+    }
+  }
+}

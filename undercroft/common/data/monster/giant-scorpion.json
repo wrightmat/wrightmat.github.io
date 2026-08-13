@@ -1,0 +1,87 @@
+{
+  "kind": "monster",
+  "index": "giant-scorpion",
+  "name": "Giant Scorpion",
+  "type": "beast",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/giant-scorpion.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "unaligned",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 52,
+      "current": 52,
+      "diceString": "7d10+14"
+    },
+    "hitDice": "7d10",
+    "speed": {
+      "walk": 40
+    },
+    "abilities": {
+      "strength": 15,
+      "dexterity": 13,
+      "constitution": 15,
+      "intelligence": 1,
+      "wisdom": 9,
+      "charisma": 3
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [],
+      "languages": []
+    },
+    "senses": {
+      "blindsight": 60,
+      "passives": {
+        "perception": 9
+      }
+    },
+    "challengeRating": "3",
+    "proficiencyBonus": 2,
+    "xp": 700,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/giant-scorpion"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/giant-scorpion",
+  "featureIds": [
+    "feat.giant-scorpion-claw",
+    "feat.multiattack",
+    "feat.sting"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.giant-scorpion-claw",
+          "count": 2
+        },
+        {
+          "featureId": "feat.sting",
+          "count": 1
+        }
+      ],
+      "text": "The creature makes three attacks: two with its claws and one with its sting."
+    },
+    "feat.sting": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d10 + 2",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "save-or-damage",
+        "dice": "4d10",
+        "damageType": "poison"
+      }
+    }
+  }
+}

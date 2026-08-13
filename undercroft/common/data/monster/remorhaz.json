@@ -1,0 +1,73 @@
+{
+  "kind": "monster",
+  "index": "remorhaz",
+  "name": "Remorhaz",
+  "type": "monstrosity",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/remorhaz.png",
+  "stats": {
+    "size": "Huge",
+    "alignment": "unaligned",
+    "armorClass": 17,
+    "hitPoints": {
+      "max": 195,
+      "current": 195,
+      "diceString": "17d12+85"
+    },
+    "hitDice": "17d12",
+    "speed": {
+      "walk": 30,
+      "burrow": 20
+    },
+    "abilities": {
+      "strength": 24,
+      "dexterity": 13,
+      "constitution": 21,
+      "intelligence": 4,
+      "wisdom": 10,
+      "charisma": 5
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "cold",
+          "type": "immunity"
+        },
+        {
+          "name": "fire",
+          "type": "immunity"
+        }
+      ],
+      "languages": []
+    },
+    "senses": {
+      "darkvision": 60,
+      "tremorsense": 60,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "11",
+    "proficiencyBonus": 4,
+    "xp": 7200,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/remorhaz"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/remorhaz",
+  "featureIds": [
+    "feat.heated-body",
+    "feat.remorhaz-bite",
+    "feat.swallow"
+  ],
+  "featureTiers": {
+    "feat.swallow": "remorhaz",
+    "feat.heated-body": "2d6"
+  }
+}

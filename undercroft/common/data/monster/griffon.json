@@ -1,0 +1,93 @@
+{
+  "kind": "monster",
+  "index": "griffon",
+  "name": "Griffon",
+  "type": "monstrosity",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/griffon.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "unaligned",
+    "armorClass": 12,
+    "hitPoints": {
+      "max": 59,
+      "current": 59,
+      "diceString": "7d10+21"
+    },
+    "hitDice": "7d10",
+    "speed": {
+      "walk": 30,
+      "fly": 80
+    },
+    "abilities": {
+      "strength": 18,
+      "dexterity": 15,
+      "constitution": 16,
+      "intelligence": 2,
+      "wisdom": 13,
+      "charisma": 8
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "Perception +5",
+    "proficiencies": {
+      "defenses": [],
+      "languages": []
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 15
+      }
+    },
+    "challengeRating": "2",
+    "proficiencyBonus": 2,
+    "xp": 450,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/griffon"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/griffon",
+  "featureIds": [
+    "feat.keen-sight",
+    "feat.multiattack",
+    "feat.beak",
+    "feat.claws"
+  ],
+  "featureParams": {
+    "feat.beak": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d8 + 4",
+      "damageType": "piercing"
+    },
+    "feat.claws": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 4",
+      "damageType": "slashing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.beak",
+          "count": 1
+        },
+        {
+          "featureId": "feat.claws",
+          "count": 1
+        }
+      ],
+      "text": "The creature makes two attacks: one with its beak and one with its claws."
+    }
+  }
+}

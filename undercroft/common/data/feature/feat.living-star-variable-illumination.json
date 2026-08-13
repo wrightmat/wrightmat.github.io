@@ -1,0 +1,28 @@
+{
+  "id": "feat.living-star-variable-illumination",
+  "name": "Variable Illumination",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature sheds bright light in a 60- to 600-foot radius and dim light for an additional number of feet equal to the chosen radius. The creature can alter the radius as a bonus action.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature sheds bright light in a 60- to 600-foot radius and dim light for an additional number of feet equal to the chosen radius. The creature can alter the radius as a bonus action."
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,128 @@
+{
+  "kind": "monster",
+  "name": "Flameskull",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/14/487/1000/1000/636364325235118776.png",
+  "notes": "### References:\r\n\r\n* https://www.dndbeyond.com/monsters/17091-flameskull\r\n* Basic Rules, pg. 127",
+  "type": "undead",
+  "stats": {
+    "size": "Tiny",
+    "alignment": "Neutral Evil",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 40,
+      "current": 40,
+      "diceString": "9d4 + 18"
+    },
+    "hitDice": "9d4",
+    "speed": {
+      "walk": 0,
+      "fly": 40,
+      "hover": true
+    },
+    "abilities": {
+      "strength": 1,
+      "dexterity": 17,
+      "constitution": 14,
+      "intelligence": 16,
+      "wisdom": 10,
+      "charisma": 11
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "",
+    "skills": "Arcana +5, Perception +2",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 12
+      }
+    },
+    "challengeRating": "4",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Lightning",
+          "type": "resistance"
+        },
+        {
+          "name": "Necrotic",
+          "type": "resistance"
+        },
+        {
+          "name": "Piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "Cold",
+          "type": "immunity"
+        },
+        {
+          "name": "Fire",
+          "type": "immunity"
+        },
+        {
+          "name": "Poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "Frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "Paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        },
+        {
+          "name": "Prone",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Common"
+      ]
+    },
+    "spells": "The flameskull is a 5th-level spellcaster. Its spellcasting ability is Intelligence (spell save DC 13, +5 to hit with spell attacks). It requires no somatic or material components to cast its spells. The flameskull has the following wizard spells prepared: Cantrip (at will): mage hand 1st level (3 slots): magic missile, shield 2nd level (2 slots): blur, flaming sphere 3rd level (1 slot): fireball",
+    "environments": [
+      "Underdark"
+    ],
+    "sources": [
+      "MM"
+    ],
+    "saveDC": 13
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.flameskull-illumination",
+    "feat.magic-resistance",
+    "feat.flameskull-rejuvenation",
+    "feat.multiattack",
+    "feat.fire-ray"
+  ],
+  "featureParams": {
+    "feat.fire-ray": {
+      "kind": "Ranged",
+      "attackKind": "Spell",
+      "attackBonus": 5,
+      "distanceLabel": "range",
+      "distance": "30",
+      "damageDice": "3d6",
+      "damageType": "fire"
+    },
+    "feat.multiattack": {
+      "text": "The creature uses Fire Ray twice."
+    }
+  }
+}

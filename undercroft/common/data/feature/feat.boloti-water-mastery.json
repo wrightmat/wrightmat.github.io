@@ -1,0 +1,29 @@
+{
+  "id": "feat.boloti-water-mastery",
+  "name": "Water Mastery",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "a creature has advantage on attack rolls if both it and its opponent are in water. If the opponent and the creature are both on dry ground, the creature has disadvantage on attack rolls.",
+  "mechanics": {
+    "type": "passive",
+    "text": "a creature has advantage on attack rolls if both it and its opponent are in water. If the opponent and the creature are both on dry ground, the creature has disadvantage on attack rolls.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

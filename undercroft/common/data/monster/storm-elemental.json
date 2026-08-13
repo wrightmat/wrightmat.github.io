@@ -1,0 +1,141 @@
+{
+  "kind": "monster",
+  "name": "Storm Elemental",
+  "notes": "",
+  "type": "elemental",
+  "stats": {
+    "size": "Huge",
+    "alignment": "Neutral",
+    "armorClass": 12,
+    "hitPoints": {
+      "max": 152,
+      "current": 152,
+      "diceString": "16d12 + 48"
+    },
+    "hitDice": "16d12",
+    "speed": {
+      "walk": 0,
+      "swim": 60,
+      "fly": 60
+    },
+    "abilities": {
+      "strength": 18,
+      "dexterity": 21,
+      "constitution": 17,
+      "intelligence": 9,
+      "wisdom": 10,
+      "charisma": 13
+    },
+    "initiative": {
+      "bonus": 5
+    },
+    "savingThrows": "Dex +9, Con +7",
+    "skills": "",
+    "senses": {
+      "blindsight": 120,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "12",
+    "proficiencyBonus": 4,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Acid",
+          "type": "resistance"
+        },
+        {
+          "name": "Fire; Bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "Piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "and Slashing from Nonmagical Attacks",
+          "type": "resistance"
+        },
+        {
+          "name": "Cold",
+          "type": "immunity"
+        },
+        {
+          "name": "Lightning",
+          "type": "immunity"
+        },
+        {
+          "name": "Poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Thunder",
+          "type": "immunity"
+        },
+        {
+          "name": "Exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "Grappled",
+          "type": "immunity"
+        },
+        {
+          "name": "Paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "Petrified",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        },
+        {
+          "name": "Prone",
+          "type": "immunity"
+        },
+        {
+          "name": "Restrained",
+          "type": "immunity"
+        },
+        {
+          "name": "Unconscious",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Primordial"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Homebrew",
+      "https://www.dndunleashed.com/home/new-monster-storm-elemental",
+      "https://www.reddit.com/r/monsteraday/comments/np5udu/storm_elemental_cr12_a_combination_of_lightning/"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.storm-elemental-tempest-form",
+    "feat.storm-elemental-grounding",
+    "feat.magic-weapons",
+    "feat.storm-elemental-tri-nature",
+    "feat.multiattack",
+    "feat.storm-elemental-shock",
+    "feat.storm-elemental-slam",
+    "feat.storm-elemental-arc-lightning",
+    "feat.storm-elemental-thunder-pulse",
+    "feat.storm-elemental-vortex-recharge-5-6"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "text": "The creature makes two melee attacks."
+    }
+  }
+}

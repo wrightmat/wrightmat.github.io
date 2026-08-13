@@ -1,0 +1,32 @@
+{
+  "id": "feat.sahuagin-baron-trident",
+  "name": "Trident",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Melee or Ranged Attack Roll: +7, reach 5 ft. or range 20/60 ft. Hit: 13 (2d8 + 4) Piercing damage.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "Melee or Ranged Attack Roll: +7, reach 5 ft. or range 20/60 ft. Hit: 13 (2d8 + 4) Piercing damage."
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

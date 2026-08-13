@@ -1,0 +1,70 @@
+{
+  "kind": "monster",
+  "index": "cultist",
+  "name": "Cultist",
+  "notes": "Cultists swear allegiance to dark powers such as elemental princes, demon lords, or archdevils. Most conceal their loyalties to avoid being ostracized, imprisoned, or executed for their beliefs. Unlike evil acolytes, cultists often show signs of insanity in their beliefs and practices.",
+  "type": "humanoid",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/cultist.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "any non-good alignment",
+    "armorClass": 12,
+    "hitPoints": {
+      "max": 9,
+      "current": 9,
+      "diceString": "2d8"
+    },
+    "hitDice": "2d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 11,
+      "dexterity": 12,
+      "constitution": 10,
+      "intelligence": 10,
+      "wisdom": 11,
+      "charisma": 10
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "",
+    "skills": "Deception +2, Religion +2",
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "any one language (usually Common)"
+      ]
+    },
+    "senses": {
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "1/8",
+    "proficiencyBonus": 2,
+    "xp": 25,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/cultist"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/cultist",
+  "featureIds": [
+    "feat.dark-devotion",
+    "feat.scimitar"
+  ],
+  "featureParams": {
+    "feat.scimitar": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 3,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d6 + 1",
+      "damageType": "slashing"
+    }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "id": "feat.sea-lion-swimming-leap",
+  "name": "Swimming Leap",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "With a 10-foot swimming start, the creature can long jump out of or across the water up to 25 feet.",
+  "mechanics": {
+    "type": "passive",
+    "text": "With a 10-foot swimming start, the creature can long jump out of or across the water up to 25 feet.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "mobility"
+    ],
+    "recipeSlots": [
+      "escape"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

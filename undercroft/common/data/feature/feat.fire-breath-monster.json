@@ -1,0 +1,31 @@
+{
+  "id": "feat.fire-breath-monster",
+  "name": "Fire Breath",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature exhales fire in an area, forcing a saving throw or dealing damage.",
+  "mechanics": {
+    "type": "save-effect"
+  },
+  "budgetCost": 4,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "control"
+    ],
+    "recipeSlots": [
+      "burst"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

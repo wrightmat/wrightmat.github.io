@@ -1,0 +1,87 @@
+{
+  "kind": "monster",
+  "name": "Sea Spawn",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/25746/623/1000/1000/637880557959120280.jpeg",
+  "notes": "Many of the stories sung as sea chanteys and recounted in dockside taverns tell of people lost to the sea—but not merely drowned and gone. Some unfortunates taken by the ocean live on as sea spawn, haunting the waves like tortured reflections of their former selves. Coral encrusts them. Barnacles cling to their cold skin. Lungs that once filled with air can now breathe in water as well.\n\nTales provide myriad reasons for these strange transformations. Folklore warns against falling in love with a sea elf or merfolk, braving storms in hopes of a bounteous catch, and promising your heart to a sea god. Such cautionary tales disguise the deeper truth: things lurking beneath the waves strive to claim the hearts and minds of land dwellers.\n\nKrakens, morkoths, sea hags, marids, storm giants, dragon turtles (morkoths appear in this book; the others appear in the Monster Manual)—all of these and more can mark mortals as their own and claim them as minions. Unlucky folk might become beholden to such a master through a bleak bargain, or they might find themselves cursed by one. Once warped into a fishlike form, a sea spawn can’t leave the water for long without courting death.\n\nSea spawn come in a wide variety of forms. An individual might have a tentacle for an arm, the jaws of a shark, a sea urchin’s spines, a whale’s fin, octopus eyes, seaweed hair, or any combination of such qualities. Some of these piscine body parts provide them with special abilities.",
+  "type": "monstrosity",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Typically Neutral Evil",
+    "armorClass": 11,
+    "hitPoints": {
+      "max": 32,
+      "current": 32,
+      "diceString": "5d8 + 10"
+    },
+    "hitDice": "5d8",
+    "speed": {
+      "walk": 20,
+      "swim": 30
+    },
+    "abilities": {
+      "strength": 15,
+      "dexterity": 8,
+      "constitution": 15,
+      "intelligence": 6,
+      "wisdom": 10,
+      "charisma": 8
+    },
+    "initiative": {
+      "bonus": -1
+    },
+    "savingThrows": "",
+    "skills": "",
+    "senses": {
+      "darkvision": 120,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "1",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "understands Aquan and Common but can’t speak"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Mordenkainen Presents: Monsters of the Multiverse, pg. 211"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.limited-amphibiousness",
+    "feat.multiattack",
+    "feat.unarmed-strike",
+    "feat.sea-spawn-piscine-anatomy"
+  ],
+  "featureParams": {
+    "feat.unarmed-strike": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d4 + 2",
+      "damageType": "bludgeoning"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.unarmed-strike",
+          "count": 2
+        },
+        {
+          "featureId": "feat.sea-spawn-piscine-anatomy",
+          "count": 1
+        }
+      ],
+      "text": "The creature makes two Unarmed Strike attacks and one Piscine Anatomy attack."
+    }
+  }
+}

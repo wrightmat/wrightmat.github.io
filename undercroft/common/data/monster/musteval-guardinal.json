@@ -1,0 +1,97 @@
+{
+  "kind": "monster",
+  "name": "Musteval Guardinal",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/37204/499/1000/1000/638318543792959618.png",
+  "notes": "### Description\n\nMustevals are small, mousy guardinals skilled at evading danger. Their speed, stealthy nature, and illusion magic make them adept spies, scurrying through the multiverse to serve greater forces of good.\n\n#### Guardinals\n\nNomadic and peaceful, guardinals are animalistic Celestials who hail from Elysium (Irian, Syrania, and Thelanis on Eberron). Guardinals resemble Humanoids with bestial traits. In their daily interactions, guardinals embody the beauty, calm, and righteousness of their home plane.\n\nWhile guardinals are usually friendly and slow to anger, their supernatural virtue puts them at odds with the evil beings of the Lower Planes. Guardinals abhor wickedness and strike out against injustice and villainy without hesitation, determined to eradicate forces that threaten beauty and peace.",
+  "type": "celestial",
+  "stats": {
+    "size": "Small",
+    "alignment": "Typically Neutral Good",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 38,
+      "current": 38
+    },
+    "hitDice": "11d6",
+    "speed": {
+      "walk": 35
+    },
+    "abilities": {
+      "strength": 12,
+      "dexterity": 16,
+      "constitution": 11,
+      "intelligence": 14,
+      "wisdom": 15,
+      "charisma": 14
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "Dex +5, Cha +4",
+    "skills": "Perception +6, Stealth +7",
+    "senses": {
+      "passives": {
+        "perception": 16
+      }
+    },
+    "challengeRating": "2",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Radiant",
+          "type": "resistance"
+        },
+        {
+          "name": "Frightened",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Celestial",
+        "Common"
+      ]
+    },
+    "spells": "The musteval casts one of the following spells, requiring no material components and using Charisma as the spellcasting ability: At will: dancing lights 1/day each: disguise self, invisibility",
+    "environments": [],
+    "sources": [
+      "MPP",
+      "https://www.dndbeyond.com/monsters/3883554-musteval-guardinal",
+      "Planescape: Adventures in the Multiverse • Morte’s Planar Parade, pg. 33"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.multiattack",
+    "feat.bone-blade",
+    "feat.musteval-guardinal-skirmish-movement"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.bone-blade",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two Bone Blade attacks."
+    },
+    "feat.bone-blade": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d6 + 3",
+      "damageType": "slashing",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "1d6",
+        "damageType": "radiant"
+      }
+    }
+  }
+}

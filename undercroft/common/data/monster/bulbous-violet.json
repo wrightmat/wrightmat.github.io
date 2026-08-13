@@ -1,0 +1,71 @@
+{
+  "kind": "monster",
+  "name": "Bulbous Violet",
+  "image": "https://i0.wp.com/blog.worldanvil.com/wp-content/uploads/2021/03/bulbous-violet-1.jpg",
+  "notes": "",
+  "type": "plant",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Unaligned",
+    "armorClass": 12,
+    "hitPoints": {
+      "max": 38,
+      "current": 38,
+      "diceString": "7d8 + 7"
+    },
+    "hitDice": "7d8",
+    "speed": {
+      "walk": 20,
+      "climb": 20
+    },
+    "abilities": {
+      "strength": 15,
+      "dexterity": 14,
+      "constitution": 13,
+      "intelligence": 2,
+      "wisdom": 10,
+      "charisma": 2
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "",
+    "senses": {
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "1",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "acid",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "ToB2",
+      "Tome of Beasts 2, pg. 53"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.bulbous-violet-acid-sacs",
+    "feat.false-appearance-ambush",
+    "feat.bulbous-violet-flesh-sense",
+    "feat.bulbous-violet-tendril"
+  ],
+  "featureTiers": {
+    "feat.false-appearance-ambush": "flowering-plant"
+  }
+}

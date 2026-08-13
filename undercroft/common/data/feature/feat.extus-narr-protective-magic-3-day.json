@@ -1,0 +1,32 @@
+{
+  "id": "feat.extus-narr-protective-magic-3-day",
+  "name": "Protective Magic (3/Day)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Extus casts Counterspell or Shield in response to the spell’s trigger, using the same spellcasting ability as Spellcasting.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Extus casts Counterspell or Shield in response to the spell’s trigger, using the same spellcasting ability as Spellcasting.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "reaction"
+  }
+}

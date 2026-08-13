@@ -1,0 +1,33 @@
+{
+  "id": "feat.clockwork-myrmidon-grease-spray-recharge-5-6",
+  "name": "Grease Spray (Recharge 5–6)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "As a bonus action, the creature’s chest can fire a spray of alchemical grease with a range of 30 feet, covering a 10-by-10 foot square area and turning it into difficult terrain. Each creature standing in the affected area must succeed on a DC 15 Dexterity saving throw or fall prone. A creature that enters the area or ends its turn there must also succeed on a DC 15 Dexterity saving throw or fall prone. The creature can use this attack four times before its internal reservoir is emptied.",
+  "mechanics": {
+    "type": "passive",
+    "text": "As a bonus action, the creature’s chest can fire a spray of alchemical grease with a range of 30 feet, covering a 10-by-10 foot square area and turning it into difficult terrain. Each creature standing in the affected area must succeed on a DC 15 Dexterity saving throw or fall prone. A creature that enters the area or ends its turn there must also succeed on a DC 15 Dexterity saving throw or fall prone. The creature can use this attack four times before its internal reservoir is emptied.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "control",
+      "debuff"
+    ],
+    "recipeSlots": [
+      "spread"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

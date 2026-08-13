@@ -1,0 +1,29 @@
+{
+  "id": "feat.void-knight-call-of-the-void",
+  "name": "Call of the Void",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "If a creature within 5 feet of the creature attempts to move away from it, that creature must succeed on a DC 13 Strength saving throw or be unable to move away from the creature. If the creature uses magic to move, such as the misty step or freedom of movement spells, it automatically succeeds on this saving throw.",
+  "mechanics": {
+    "type": "passive",
+    "text": "If a creature within 5 feet of the creature attempts to move away from it, that creature must succeed on a DC 13 Strength saving throw or be unable to move away from the creature. If the creature uses magic to move, such as the misty step or freedom of movement spells, it automatically succeeds on this saving throw.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "control"
+    ],
+    "recipeSlots": [
+      "isolate"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

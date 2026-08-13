@@ -1,0 +1,32 @@
+{
+  "id": "feat.moonkite-planar-traveler",
+  "name": "Planar Traveler",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature can transport itself to a different plane of existence. This works like the plane shift spell, except the creature can affect only itself and a willing rider, and can’t banish an unwilling creature to another plane.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature can transport itself to a different plane of existence. This works like the plane shift spell, except the creature can affect only itself and a willing rider, and can’t banish an unwilling creature to another plane.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "mobility"
+    ],
+    "recipeSlots": [
+      "escape"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

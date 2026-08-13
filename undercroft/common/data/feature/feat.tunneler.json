@@ -1,0 +1,46 @@
+{
+  "id": "feat.tunneler",
+  "name": "Tunneler",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature can burrow through solid rock at half its burrowing speed and leaves a 5-foot-diameter tunnel in its wake.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature can burrow through solid rock at half its burrowing speed and leaves a 5-foot-diameter tunnel in its wake."
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "mobility"
+    ],
+    "recipeSlots": [
+      "escape"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "5ft",
+      "name": "Tunneler",
+      "shortName": "5 ft",
+      "mechanics": {
+        "text": "The creature can burrow through solid rock at half its burrowing speed and leaves a 5-foot-diameter tunnel in its wake."
+      }
+    },
+    {
+      "id": "10ft",
+      "name": "Tunneler",
+      "shortName": "10 ft",
+      "mechanics": {
+        "text": "The creature can burrow through solid rock at half its burrow speed and leaves a 10-foot-diameter tunnel in its wake."
+      }
+    }
+  ]
+}

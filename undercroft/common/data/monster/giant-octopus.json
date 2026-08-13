@@ -1,0 +1,80 @@
+{
+  "kind": "monster",
+  "index": "giant-octopus",
+  "name": "Giant Octopus",
+  "type": "beast",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/giant-octopus.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "unaligned",
+    "armorClass": 11,
+    "hitPoints": {
+      "max": 52,
+      "current": 52,
+      "diceString": "8d10+8"
+    },
+    "hitDice": "8d10",
+    "speed": {
+      "walk": 10,
+      "swim": 60
+    },
+    "abilities": {
+      "strength": 17,
+      "dexterity": 13,
+      "constitution": 13,
+      "intelligence": 4,
+      "wisdom": 10,
+      "charisma": 4
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "",
+    "skills": "Perception +4, Stealth +5",
+    "proficiencies": {
+      "defenses": [],
+      "languages": []
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 14
+      }
+    },
+    "challengeRating": "1",
+    "proficiencyBonus": 2,
+    "xp": 200,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/giant-octopus"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/giant-octopus",
+  "featureIds": [
+    "feat.hold-breath",
+    "feat.riptide-drake-underwater-camouflage",
+    "feat.water-breathing-monster",
+    "feat.tentacles",
+    "feat.ink-cloud"
+  ],
+  "featureTiers": {
+    "feat.hold-breath": "1-hour",
+    "feat.ink-cloud": "giant-octopus"
+  },
+  "featureParams": {
+    "feat.tentacles": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "15",
+      "damageDice": "2d6 + 3",
+      "damageType": "bludgeoning",
+      "rider": {
+        "kind": "condition-no-save",
+        "condition": "is grappled (escape DC 16). Until this grapple ends, the target is restrained, and the octopus can't use its tentacles on another target"
+      }
+    }
+  }
+}

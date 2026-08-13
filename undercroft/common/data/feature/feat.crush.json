@@ -1,0 +1,49 @@
+{
+  "id": "feat.crush",
+  "name": "Crush",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Each creature Orlassk is currently grappling must make a DC 22 Constitution saving throw, taking 18 (3d12) bludgeoning damage on a failed save, or half as much on a successful one. If this damage reduces a creature to 0 hit points, it is obliterated into dust.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Each creature Orlassk is currently grappling must make a DC 22 Constitution saving throw, taking 18 (3d12) bludgeoning damage on a failed save, or half as much on a successful one. If this damage reduces a creature to 0 hit points, it is obliterated into dust."
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "dc-22",
+      "name": "Crush",
+      "shortName": "DC 22",
+      "mechanics": {
+        "text": "Each creature Orlassk is currently grappling must make a DC 22 Constitution saving throw, taking 18 (3d12) bludgeoning damage on a failed save, or half as much on a successful one. If this damage reduces a creature to 0 hit points, it is obliterated into dust."
+      }
+    },
+    {
+      "id": "dc-16",
+      "name": "Crush (Recharge 4–6)",
+      "shortName": "DC 16",
+      "mechanics": {
+        "text": "Each creature grappled by the creature must make a DC 16 Strength saving throw, taking 23 (4d8 + 5) bludgeoning damage on a failed save, or half as much damage on a successful one."
+      }
+    }
+  ],
+  "combat": {
+    "actionCost": "action"
+  }
+}

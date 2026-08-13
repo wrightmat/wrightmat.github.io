@@ -1,0 +1,82 @@
+{
+  "kind": "monster",
+  "index": "grimlock",
+  "name": "Grimlock",
+  "type": "humanoid",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/grimlock.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "neutral evil",
+    "armorClass": 11,
+    "hitPoints": {
+      "max": 11,
+      "current": 11,
+      "diceString": "2d8+2"
+    },
+    "hitDice": "2d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 16,
+      "dexterity": 12,
+      "constitution": 12,
+      "intelligence": 9,
+      "wisdom": 8,
+      "charisma": 6
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "",
+    "skills": "Athletics +5, Perception +3, Stealth +3",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Blinded",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Undercommon"
+      ]
+    },
+    "senses": {
+      "blindsight": 30,
+      "passives": {
+        "perception": 13
+      }
+    },
+    "challengeRating": "1/4",
+    "proficiencyBonus": 2,
+    "xp": 50,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/grimlock"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/grimlock",
+  "featureIds": [
+    "feat.grimlock-blind-senses",
+    "feat.keen-hearing-and-smell",
+    "feat.camouflage",
+    "feat.spiked-bone-club"
+  ],
+  "featureParams": {
+    "feat.spiked-bone-club": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d4 + 3",
+      "damageType": "bludgeoning",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "1d4",
+        "damageType": "piercing"
+      }
+    }
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "kind": "monster",
+  "name": "Miremal",
+  "image": "https://koboldpress.com/wp-content/uploads/2018/08/miremal.jpg",
+  "notes": "_The creature emerging from the shadows of the swamp is short and lean. Its pale-skinned body is covered in fungus and moss that seems to grow directly in its flesh, and its green eyes weep bloody tears._\r\n\r\nMiremals are savage, degenerate fey who delight in crafting seemingly safe paths through treacherous swamps — though these paths are, instead, riddled with traps and ambush points.\r\n\r\n**Unreliable Guides**. Miremals hunt in packs of three to six and often serve a more powerful creature, especially one that commands potent magic. As a result, many of these paths lead unwary travelers into the grove of a green hag coven or into the lair of a black dragon.\r\n\r\n**Swamp**. Miremals have adapted from sylvan forests to the swamps: patches of red and green fungus sprout from their skin, mushrooms and branches grow haphazardly out of their bodies, and moss hangs from beneath their arms. Their eyes are forest green and are perpetually wet with bloody tears — their legends say their tears come from rage over their banishment and agony from knowing they can never return.\r\n\r\n**Hate Moss Lurkers**. Miremals are occasionally confused with moss lurkers, but the two despise one another and both consider the comparison odious.",
+  "type": "fey",
+  "stats": {
+    "size": "Small",
+    "alignment": "Chaotic Evil",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 22,
+      "current": 22,
+      "diceString": "5d6 + 5"
+    },
+    "hitDice": "5d6",
+    "speed": {
+      "walk": 30,
+      "swim": 30
+    },
+    "abilities": {
+      "strength": 10,
+      "dexterity": 16,
+      "constitution": 12,
+      "intelligence": 10,
+      "wisdom": 12,
+      "charisma": 8
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "",
+    "skills": "Perception +3, Stealth +5, Survival +3",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 13
+      }
+    },
+    "challengeRating": "1/2",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Sylvan",
+        "Umbral"
+      ]
+    },
+    "environments": [
+      "Swamp"
+    ],
+    "sources": [
+      "ToB1",
+      "Tome of Beasts 1, pg 292"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.amphibious",
+    "feat.camouflage",
+    "feat.miremal-savage-move",
+    "feat.multiattack",
+    "feat.claws",
+    "feat.bite",
+    "feat.miremal-bog-spew-recharge-5-6",
+    "feat.miremal-muddled-escape-1-day"
+  ],
+  "featureParams": {
+    "feat.claws": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d6 + 3",
+      "damageType": "slashing"
+    },
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d6 + 3",
+      "damageType": "piercing"
+    },
+    "feat.multiattack": {
+      "text": "The creature makes two attacks, one of which must be a claw attack."
+    }
+  }
+}

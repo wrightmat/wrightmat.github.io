@@ -1,0 +1,154 @@
+{
+  "kind": "monster",
+  "name": "Incandescent One",
+  "notes": "_A lucent humanoid form, made of the ocean itself, rises from the water. A scintillating heart of opalescent meteorite pulses and rotates within a translucent chest. Two brilliant eyes flare open on its glassy face and survey the area with a curious, detached aplomb._\n\nResembling a humanoid made of luminescent water, incandescent ones are celestial beings made of earthly ocean bound to a fallen star or other cosmic debris. The rock in the creature’s chest is no mere meteorite, but rather a mote of terrain from a heavenly plane that has torn through time and space. While the incandescent one’s shape approximates a human, the shimmering form of this celestial never stills, the surface of its aqueous form sheathed in soft ripples of watery “skin.”\n\n**Galactic Castaways**. The precise event that strands an incandescent one on the Material Plane is a mystery, and most often an incandescent one resigns itself to an existence far removed from its plane of origin. To the naked eye, incandescent ones appear quite similar to each other, but keen observers may note intricate details suggesting that no two incandescent ones are fully identical.\n\n**Maritime Guardians**. Incandescent ones dwell along coastlines and in the upper ranges of the ocean. Noble of intent and watchful of heart, these seafaring celestials are the bane of pirates and others that prey on the innocent. They rarely interact with the deep-dwelling pelagic devas (see page 27), but they occasionally work with pescavituses (see page 315) to aid shipwrecked humanoids or those lost at sea. Once befriended, an incandescent one remains a lifelong ally. Their wrath, however, is relentless. When an incandescent one is stirred to anger, its penetrating eyes burn with an otherworldly radiance that inspires those around it",
+  "type": "celestial",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Chaotic Evil",
+    "armorClass": 16,
+    "hitPoints": {
+      "max": 144,
+      "current": 144,
+      "diceString": "17d8 + 68"
+    },
+    "hitDice": "17d8",
+    "speed": {
+      "walk": 30,
+      "fly": 60,
+      "hover": true,
+      "swim": 60
+    },
+    "abilities": {
+      "strength": 16,
+      "dexterity": 18,
+      "constitution": 18,
+      "intelligence": 11,
+      "wisdom": 17,
+      "charisma": 18
+    },
+    "initiative": {
+      "bonus": 4
+    },
+    "savingThrows": "Con +8, Wis +7, Cha +8",
+    "skills": "Insight +7, Perception +7",
+    "senses": {
+      "truesight": 120,
+      "passives": {
+        "perception": 17
+      }
+    },
+    "challengeRating": "9",
+    "proficiencyBonus": 4,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "cold",
+          "type": "resistance"
+        },
+        {
+          "name": "radiant; bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "and slashing from nonmagical attacks",
+          "type": "resistance"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "grappled",
+          "type": "immunity"
+        },
+        {
+          "name": "poisoned",
+          "type": "immunity"
+        },
+        {
+          "name": "prone",
+          "type": "immunity"
+        },
+        {
+          "name": "restrained",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "all",
+        "telepathy 120 ft."
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Tome of Beasts 3, pg. 244"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.black-patch-flowing-form",
+    "feat.amphibious",
+    "feat.flyby",
+    "feat.incandescent-one-immortal-nature",
+    "feat.incandescent-one-luminous",
+    "feat.magic-resistance",
+    "feat.magic-weapons",
+    "feat.multiattack",
+    "feat.slam",
+    "feat.incandescent-one-astral-bolt",
+    "feat.incandescent-one-celestial-inspiration"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "text": "The creature makes two Slam attacks or three Astral Bolt attacks.",
+      "options": [
+        [
+          {
+            "featureId": "feat.slam",
+            "count": 2
+          }
+        ],
+        [
+          {
+            "featureId": "feat.incandescent-one-astral-bolt",
+            "count": 3
+          }
+        ]
+      ]
+    },
+    "feat.slam": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 8,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 4",
+      "damageType": "bludgeoning",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "4d8",
+        "damageType": "cold"
+      }
+    }
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "kind": "monster",
+  "index": "azer",
+  "name": "Azer",
+  "type": "elemental",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/azer.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "lawful neutral",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 39,
+      "current": 39,
+      "diceString": "6d8+12"
+    },
+    "hitDice": "6d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 17,
+      "dexterity": 12,
+      "constitution": 15,
+      "intelligence": 12,
+      "wisdom": 13,
+      "charisma": 10
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "CON +4",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "fire",
+          "type": "immunity"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Ignan"
+      ]
+    },
+    "senses": {
+      "passives": {
+        "perception": 11
+      }
+    },
+    "challengeRating": "2",
+    "proficiencyBonus": 2,
+    "xp": 450,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/azer"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/azer",
+  "featureIds": [
+    "feat.heated-body",
+    "feat.heated-weapons",
+    "feat.light-elemental-brilliant-illumination",
+    "feat.warhammer"
+  ],
+  "featureParams": {
+    "feat.warhammer": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d8 + 3",
+      "damageType": "bludgeoning",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "1d6",
+        "damageType": "fire"
+      },
+      "versatile": {
+        "damageDice": "1d10 + 3"
+      }
+    }
+  },
+  "featureTiers": {
+    "feat.heated-weapons": "base",
+    "feat.heated-body": "1d10"
+  }
+}

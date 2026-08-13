@@ -1,0 +1,29 @@
+{
+  "id": "feat.isonade-atmospheric-immunity",
+  "name": "Atmospheric Immunity",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature can comfortably exist at any level of the sea and suffers no penalties at any depth.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature can comfortably exist at any level of the sea and suffers no penalties at any depth.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

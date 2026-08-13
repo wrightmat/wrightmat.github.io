@@ -1,0 +1,29 @@
+{
+  "id": "feat.starlight-apparition-astral-existence",
+  "name": "Astral Existence",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature can exist only on the Astral Plane. If it is sent to a location not on the Astral Plane, the creature is destroyed.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature can exist only on the Astral Plane. If it is sent to a location not on the Astral Plane, the creature is destroyed.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

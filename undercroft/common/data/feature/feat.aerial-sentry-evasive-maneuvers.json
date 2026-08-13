@@ -1,0 +1,33 @@
+{
+  "id": "feat.aerial-sentry-evasive-maneuvers",
+  "name": "Evasive Maneuvers",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "As a reaction to being hit by an attack, the creature can use its reaction to Disengage.",
+  "mechanics": {
+    "type": "passive",
+    "text": "As a reaction to being hit by an attack, the creature can use its reaction to Disengage.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "defense",
+      "mobility"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "reaction"
+  }
+}

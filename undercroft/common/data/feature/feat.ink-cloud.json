@@ -1,0 +1,45 @@
+{
+  "id": "feat.ink-cloud",
+  "name": "Ink Cloud",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "A 20-foot-radius cloud of ink extends all around the creature if it is underwater. The area is heavily obscured for 1 minute, although a significant current can disperse the ink. After releasing the ink, the creature can use the Dash action as a bonus action.",
+  "mechanics": {
+    "type": "passive",
+    "text": "A 20-foot-radius cloud of ink extends all around the creature if it is underwater. The area is heavily obscured for 1 minute, although a significant current can disperse the ink. After releasing the ink, the creature can use the Dash action as a bonus action."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "giant-octopus",
+      "name": "Ink Cloud",
+      "shortName": "Giant Octopus",
+      "mechanics": {
+        "text": "A 20-foot-radius cloud of ink extends all around the creature if it is underwater. The area is heavily obscured for 1 minute, although a significant current can disperse the ink. After releasing the ink, the creature can use the Dash action as a bonus action."
+      }
+    },
+    {
+      "id": "octopus",
+      "name": "Ink Cloud",
+      "shortName": "Octopus",
+      "mechanics": {
+        "text": "A 5-foot-radius cloud of ink extends all around the creature if it is underwater. The area is heavily obscured for 1 minute, although a significant current can disperse the ink. After releasing the ink, the creature can use the Dash action as a bonus action."
+      }
+    }
+  ],
+  "combat": {
+    "actionCost": "action"
+  }
+}

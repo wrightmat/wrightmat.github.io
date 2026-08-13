@@ -1,0 +1,30 @@
+{
+  "id": "feat.eel-hound-slithering-bite",
+  "name": "Slithering Bite",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "When a creature moves adjacent to an enemy and makes a bite attack, it may immediately move up to 5 feet, as long as it stays within 5 feet of the enemy it attacked. If another eel hound already occupies that space, the moving eel hound can keep moving until it reaches an empty space that’s still adjacent to that same enemy.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When a creature moves adjacent to an enemy and makes a bite attack, it may immediately move up to 5 feet, as long as it stays within 5 feet of the enemy it attacked. If another eel hound already occupies that space, the moving eel hound can keep moving until it reaches an empty space that’s still adjacent to that same enemy.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "mobility",
+      "damage"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

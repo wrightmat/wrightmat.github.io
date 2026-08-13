@@ -1,0 +1,119 @@
+{
+  "kind": "monster",
+  "name": "Drakon",
+  "notes": "_These winged snakes are coastal beasts and sometimes confused with true dragons or wyverns. They are neither, but quite deadly in their own right._\n\n**Searing Acid**. Drakon fangs do not deliver venom; volatile acid constantly burbles up from a drakon's stomach and enhances its attacks. A caustic drool clings to creatures they bite, and drakons can also belch clouds of searing vapor. Their lairs reek with acidic vapors and droplets of searing liquid. \n\n**Dissolving Gaze**. The gaze of a drakon can paralyze creatures and dissolve them.\n\n**Coastal Beasts**. Drakons lair along warm, largely uninhabited coasts, where they explore the shores and the coastal shelf, spending as much time above the waves as under them. Fortunately, they rarely travel far inland.",
+  "type": "beast",
+  "stats": {
+    "size": "Large",
+    "alignment": "Unaligned",
+    "armorClass": 16,
+    "hitPoints": {
+      "max": 105,
+      "current": 105,
+      "diceString": "14d10 + 28"
+    },
+    "hitDice": "14d10",
+    "speed": {
+      "walk": 30,
+      "fly": 60,
+      "swim": 40
+    },
+    "abilities": {
+      "strength": 14,
+      "dexterity": 19,
+      "constitution": 15,
+      "intelligence": 2,
+      "wisdom": 12,
+      "charisma": 10
+    },
+    "initiative": {
+      "bonus": 4
+    },
+    "savingThrows": "",
+    "skills": "Perception +4, Stealth +7",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 14
+      }
+    },
+    "challengeRating": "5",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "acid",
+          "type": "resistance"
+        },
+        {
+          "name": "paralyzed",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [],
+    "sources": []
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.drakon-dissolving-gaze",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.tail",
+    "feat.acid-breath"
+  ],
+  "featureParams": {
+    "feat.tail": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "1d8 + 4",
+      "damageType": "bludgeoning"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.bite",
+          "count": 1
+        },
+        {
+          "featureId": "feat.tail",
+          "count": 1
+        }
+      ],
+      "text": "The creature makes one bite attack and one tail attack."
+    },
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 4",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "4d4",
+        "damageType": "acid"
+      }
+    },
+    "feat.acid-breath": {
+      "verb": "exhales",
+      "substance": "acidic vapors",
+      "areaSize": "15",
+      "areaShape": "cone",
+      "dcAbility": "constitution",
+      "damageDice": "8d6",
+      "damageType": "acid",
+      "ability": "constitution"
+    }
+  }
+}

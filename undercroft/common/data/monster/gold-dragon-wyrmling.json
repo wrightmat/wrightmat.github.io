@@ -1,0 +1,79 @@
+{
+  "kind": "monster",
+  "index": "gold-dragon-wyrmling",
+  "name": "Gold Dragon Wyrmling",
+  "type": "dragon",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/gold-dragon-wyrmling.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "lawful good",
+    "armorClass": 17,
+    "hitPoints": {
+      "max": 60,
+      "current": 60,
+      "diceString": "8d8+24"
+    },
+    "hitDice": "8d8",
+    "speed": {
+      "walk": 30,
+      "fly": 60,
+      "swim": 30
+    },
+    "abilities": {
+      "strength": 19,
+      "dexterity": 14,
+      "constitution": 17,
+      "intelligence": 14,
+      "wisdom": 11,
+      "charisma": 16
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "DEX +4, CON +5, WIS +2, CHA +5",
+    "skills": "Perception +4, Stealth +4",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "fire",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Draconic"
+      ]
+    },
+    "senses": {
+      "blindsight": 10,
+      "darkvision": 60,
+      "passives": {
+        "perception": 14
+      }
+    },
+    "challengeRating": "3",
+    "proficiencyBonus": 2,
+    "xp": 700,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/gold-dragon-wyrmling"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/gold-dragon-wyrmling",
+  "featureIds": [
+    "feat.amphibious",
+    "feat.bite",
+    "feat.gold-dragon-wyrmling-breath-weapons"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d10 + 4",
+      "damageType": "piercing"
+    }
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "kind": "monster",
+  "name": "Keelbreaker Crab",
+  "notes": "_Three figureheads rise from the tattered sails and anchor chain that drape the crab’s carapace. As the behemoth clacks its claws, the maidens depicted on the figureheads begin to wail._\n\nFew monsters strike more fear into the hearts of sailors than the keelbreaker crab. These enormous crustaceans prey on ships caught in shallow water and decorate their shells with the wreckage left behind. Keelbreaker crabs are drawn to ships carrying magical cargo, as well as to the enchanted, living figureheads that often adorn such vessels.\n\n**Living Figureheads**. The wails of a keelbreaker’s figureheads drive most who hear them mad. However, a figurehead recovered intact from a crab might be convinced to reveal the location of a hidden treasure or even chart a course to the native harbor of the ship it formerly adorned.",
+  "type": "monstrosity",
+  "stats": {
+    "size": "Huge",
+    "alignment": "Unaligned",
+    "armorClass": 16,
+    "hitPoints": {
+      "max": 157,
+      "current": 157,
+      "diceString": "15d12 + 60"
+    },
+    "hitDice": "15d12",
+    "speed": {
+      "walk": 40,
+      "swim": 40
+    },
+    "abilities": {
+      "strength": 19,
+      "dexterity": 10,
+      "constitution": 18,
+      "intelligence": 3,
+      "wisdom": 12,
+      "charisma": 10
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "Perception +5, Stealth +4",
+    "senses": {
+      "blindsight": 60,
+      "passives": {
+        "perception": 15
+      }
+    },
+    "challengeRating": "9",
+    "proficiencyBonus": 4,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Tome of Beasts 2, pg. 226"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.amphibious",
+    "feat.keelbreaker-crab-living-figureheads",
+    "feat.multiattack",
+    "feat.keelbreaker-crab-pincer",
+    "feat.keelbreaker-crab-wail"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.keelbreaker-crab-pincer",
+          "count": 2
+        }
+      ],
+      "text": "The creature can use its Wail. It then makes two pincer attacks."
+    }
+  }
+}

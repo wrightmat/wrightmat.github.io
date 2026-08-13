@@ -1,0 +1,32 @@
+{
+  "id": "feat.star-lancer-horn",
+  "name": "Horn",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Melee Weapon Attack: +6 to hit, reach 5 ft., one target. Hit: 7 (1d6 + 4) piercing damage. If the creature moved at least 20 feet straight toward the target immediately before the hit, the target takes an extra 10 (3d6) piercing damage.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Melee Weapon Attack: +6 to hit, reach 5 ft., one target. Hit: 7 (1d6 + 4) piercing damage. If the creature moved at least 20 feet straight toward the target immediately before the hit, the target takes an extra 10 (3d6) piercing damage.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

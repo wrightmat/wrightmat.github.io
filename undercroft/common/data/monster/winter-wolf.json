@@ -1,0 +1,96 @@
+{
+  "kind": "monster",
+  "index": "winter-wolf",
+  "name": "Winter Wolf",
+  "notes": "The arctic-dwelling winter wolf is as large as a dire wolf but has snow-white fur and pale blue eyes. Frost giants use these evil creatures as guards and hunting companions, putting the wolves’ deadly breath weapon to use against their foes. Winter wolves communicate with one another using growls and barks, but they speak Common and Giant well enough to follow simple conversations.",
+  "type": "monstrosity",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/winter-wolf.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "neutral evil",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 75,
+      "current": 75,
+      "diceString": "10d10+20"
+    },
+    "hitDice": "10d10",
+    "speed": {
+      "walk": 50
+    },
+    "abilities": {
+      "strength": 18,
+      "dexterity": 13,
+      "constitution": 14,
+      "intelligence": 7,
+      "wisdom": 12,
+      "charisma": 8
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "",
+    "skills": "Perception +5, Stealth +3",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "cold",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Common",
+        "Giant",
+        "Winter Wolf"
+      ]
+    },
+    "senses": {
+      "passives": {
+        "perception": 15
+      }
+    },
+    "challengeRating": "3",
+    "proficiencyBonus": 2,
+    "xp": 700,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/winter-wolf"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/winter-wolf",
+  "featureIds": [
+    "feat.keen-hearing-and-smell",
+    "feat.pack-tactics",
+    "feat.winter-wolf-snow-camouflage",
+    "feat.bite",
+    "feat.cold-breath"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 4",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "save-or-condition",
+        "saveDC": 14,
+        "saveAbility": "strength",
+        "condition": "knocked prone"
+      }
+    },
+    "feat.cold-breath": {
+      "verb": "exhales",
+      "substance": "a blast of freezing wind",
+      "areaSize": "15",
+      "areaShape": "cone",
+      "dcAbility": "constitution",
+      "ability": "dexterity",
+      "damageDice": "4d8",
+      "damageType": "cold"
+    }
+  }
+}

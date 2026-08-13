@@ -1,0 +1,31 @@
+{
+  "id": "feat.chelicerae-siphon-spell-slots",
+  "name": "Siphon Spell Slots",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature cannot replenish its spells naturally. Instead, it uses grappled spellcasters as spell reservoirs, draining uncast spells to power its own casting. Whenever the creature wishes to cast a spell, it consumes a number of spell slots from its victim equal to the spell slots necessary to cast the spell. If the victim has too few spell slots available, the creature cannot cast that spell. However, the creature can also draw out spell slots from drained spellcasters or creatures without magic ability. Instead of moving, the creature can inflict 1d4 Wisdom damage to any creature grappled in its mandibles, adding 2 spell slots to its spell reservoir for every point of damage inflicted. A victim reduced to 0 Wisdom cannot power any more magical abilities. Victims do not heal ability damage or regain spell slots while this grapple is maintained.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature cannot replenish its spells naturally. Instead, it uses grappled spellcasters as spell reservoirs, draining uncast spells to power its own casting. Whenever the creature wishes to cast a spell, it consumes a number of spell slots from its victim equal to the spell slots necessary to cast the spell. If the victim has too few spell slots available, the creature cannot cast that spell. However, the creature can also draw out spell slots from drained spellcasters or creatures without magic ability. Instead of moving, the creature can inflict 1d4 Wisdom damage to any creature grappled in its mandibles, adding 2 spell slots to its spell reservoir for every point of damage inflicted. A victim reduced to 0 Wisdom cannot power any more magical abilities. Victims do not heal ability damage or regain spell slots while this grapple is maintained.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "utility",
+      "control"
+    ],
+    "recipeSlots": [
+      "drain"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

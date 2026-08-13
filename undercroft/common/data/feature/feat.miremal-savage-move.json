@@ -1,0 +1,29 @@
+{
+  "id": "feat.miremal-savage-move",
+  "name": "Savage Move",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "If the creature surprises a creature, it gets a bonus action it can use on its first turn of combat for a claw attack, a bite attack, or a Bog Spew attack.",
+  "mechanics": {
+    "type": "passive",
+    "text": "If the creature surprises a creature, it gets a bonus action it can use on its first turn of combat for a claw attack, a bite attack, or a Bog Spew attack.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

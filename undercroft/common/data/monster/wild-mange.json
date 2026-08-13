@@ -1,0 +1,97 @@
+{
+  "kind": "monster",
+  "name": "Wild Mange",
+  "notes": "",
+  "type": "humanoid",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Chaotic Evil",
+    "armorClass": 14,
+    "hitPoints": {
+      "max": 58,
+      "current": 58,
+      "diceString": "9d8  + 18"
+    },
+    "hitDice": "9d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 15,
+      "dexterity": 14,
+      "constitution": 14,
+      "intelligence": 10,
+      "wisdom": 11,
+      "charisma": 10
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "Dex +4",
+    "skills": "",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 14
+      }
+    },
+    "challengeRating": "4",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Bludgeoning",
+          "type": "immunity"
+        },
+        {
+          "name": "Piercing",
+          "type": "immunity"
+        },
+        {
+          "name": "and Slashing from Nonmagical Attacks that aren't Silvered",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Common",
+        "Undercommon"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Homebrew"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.rampage",
+    "feat.shapechanger",
+    "feat.wild-mange-curse-of-the-wild-mange",
+    "feat.wild-mange-mad-multiattack",
+    "feat.bite",
+    "feat.wild-mange-spell-scythe",
+    "feat.wild-mange-scintillating-strobe",
+    "feat.wild-mange-shock-step",
+    "feat.wild-mange-chaotic-crescendo"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d4 + 2",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "save-or-condition",
+        "saveAbility": "constitution",
+        "saveDC": 12,
+        "condition": "cursed with Wild Mange lycanthropy"
+      }
+    }
+  }
+}

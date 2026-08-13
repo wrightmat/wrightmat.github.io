@@ -1,0 +1,70 @@
+{
+  "kind": "monster",
+  "index": "giant-shark",
+  "name": "Giant Shark",
+  "notes": "A giant shark is 30 feet long and normally found in deep oceans. Utterly fearless, it preys on anything that crosses its path, including whales and ships.",
+  "type": "beast",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/giant-shark.png",
+  "stats": {
+    "size": "Huge",
+    "alignment": "unaligned",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 126,
+      "current": 126,
+      "diceString": "11d12+55"
+    },
+    "hitDice": "11d12",
+    "speed": {
+      "swim": 50
+    },
+    "abilities": {
+      "strength": 23,
+      "dexterity": 11,
+      "constitution": 21,
+      "intelligence": 1,
+      "wisdom": 10,
+      "charisma": 5
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "Perception +3",
+    "proficiencies": {
+      "defenses": [],
+      "languages": []
+    },
+    "senses": {
+      "blindsight": 60,
+      "passives": {
+        "perception": 13
+      }
+    },
+    "challengeRating": "5",
+    "proficiencyBonus": 3,
+    "xp": 1800,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/giant-shark"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/giant-shark",
+  "featureIds": [
+    "feat.blood-frenzy",
+    "feat.water-breathing-monster",
+    "feat.bite"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 9,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "3d10 + 6",
+      "damageType": "piercing"
+    }
+  }
+}

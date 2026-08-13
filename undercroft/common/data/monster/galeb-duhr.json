@@ -1,0 +1,91 @@
+{
+  "kind": "monster",
+  "name": "Galeb Duhr",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/47138/828/1000/1000/638741964067955107.png",
+  "notes": "### Description\n\nBeings of living rock, galeb duhr seek harmony with the earth and give voice to the vibrations of stone. Their rocky bodies have limbs and facial features accented by gems, ores, and other minerals found in the surrounding earth.\n\nGaleb duhr are effectively immortal, with lifespans similar in length to mountains. They don’t experience time or perceive danger as shorter-lived species do. Galeb duhr avoid danger by hiding from other creatures. When they do reveal themselves, they speak and act ponderously, but they often know much of the surrounding land and secrets within the earth. When motivated to action, galeb duhr slam into foes and animate nearby boulders to do the same.\n\nSome mountain dwellers view galeb duhr as aloof allies and might entrust these long-lived beings with secrets or treasures for future generations. Others speak of galeb duhr songs, barely audible harmonizations by groups of galeb duhr that are said to influence earthquakes and volcanic eruptions.",
+  "type": "elemental",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Neutral",
+    "armorClass": 16,
+    "hitPoints": {
+      "max": 123,
+      "current": 123,
+      "diceString": "13d8 + 65"
+    },
+    "hitDice": "13d8",
+    "speed": {
+      "walk": 60
+    },
+    "abilities": {
+      "strength": 20,
+      "dexterity": 14,
+      "constitution": 20,
+      "intelligence": 11,
+      "wisdom": 12,
+      "charisma": 11
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "",
+    "senses": {
+      "darkvision": 60,
+      "tremorsense": 60,
+      "passives": {
+        "perception": 11
+      }
+    },
+    "challengeRating": "6",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "Exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "Frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "Paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "Petrified",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Primordial (Terran)"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "https://www.dndbeyond.com/monsters/5195002-galeb-duhr",
+      "Monster Manual (2024), pg. 127"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.galeb-duhr-avalanche-slam",
+    "feat.galeb-duhr-animate-boulders-1-day"
+  ]
+}

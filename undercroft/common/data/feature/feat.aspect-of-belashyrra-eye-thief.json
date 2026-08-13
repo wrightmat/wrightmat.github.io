@@ -1,0 +1,30 @@
+{
+  "id": "feat.aspect-of-belashyrra-eye-thief",
+  "name": "Eye Thief",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Belashyrra can see through the eyes of all creatures within 120 feet of it. It can use its Eye Ray through any creature within 120 feet of it, as though it were in that creature's space.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Belashyrra can see through the eyes of all creatures within 120 feet of it. It can use its Eye Ray through any creature within 120 feet of it, as though it were in that creature's space.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "utility",
+      "control"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,28 @@
+{
+  "id": "feat.tarrasque-move",
+  "name": "Move",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature moves up to half its speed.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The creature moves up to half its speed."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "legendary-action"
+  }
+}

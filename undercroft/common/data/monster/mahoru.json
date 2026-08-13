@@ -1,0 +1,76 @@
+{
+  "kind": "monster",
+  "name": "Mahoru",
+  "notes": ">“I saw no more terrible beast on all my journeys north than the mahoru. The white bears had their aloof majesty, the lindwurm serpentine grace, but the monster that gnawed away the pack ice beneath our feet and savaged any who fell into the water was a thing of nightmare. The men it snatched were torn apart, like rags in the mouth of a rabid dog.”\n\nA hybrid of fish and mammal, a mahoru is eight feet long and looks like a small orca with a serpentine neck and seal-like head. \n\n**Valuable Teeth and Fur.** Their heavy jaws are filled with triangular, serrated teeth adept at tearing flesh and sundering bone. Their white and black fur is highly prized for its warmth and waterproof qualities. Their pectoral fins feature stubby, claw-tipped paws. Skraeling use the mahoru’s fangs to make arrowheads or tooth-studded clubs, and the mahoru is a totem beast for many northern tribes.\n\n**Iceberg Hunters.** Relatives of the bunyip, mahoru prowl northern coasts and estuaries, hunting among the fragmenting pack ice each summer. They lurk beneath the surface, catching swimmers chunks or lurching up onto the ice to break or tilt it and send prey tumbling into the water. When necessary, they stalk beaches and riverbanks in search of carrion or unwary victims. \n\n**Work in Pairs and Packs.** Mahoru work together in mated pairs to corral everything from fish and seals to larger prey like kayaking humans and even polar bears. They gnaw at ice bridges and the frozen surface of lakes and rivers to create fragile patches that plunge unwary victims into their waiting jaws\n\n| 1d12 | Lost Appendage  |\n| ---- | --------------- |\n| 1-2  | right hand      |\n| 3-4  | left hand       |\n| 5-6  | right foot      |\n| 7-8  | left foot       |\n| 9    | right forearm   |\n| 10   | left forearm    |\n| 11   | right lower leg |\n| 12   | left lower leg  |",
+  "type": "monstrosity",
+  "stats": {
+    "size": "Large",
+    "alignment": "Unaligned",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 91,
+      "current": 91,
+      "diceString": "14d8 + 28"
+    },
+    "hitDice": "14d8",
+    "speed": {
+      "walk": 10,
+      "swim": 60
+    },
+    "abilities": {
+      "strength": 18,
+      "dexterity": 19,
+      "constitution": 14,
+      "intelligence": 3,
+      "wisdom": 12,
+      "charisma": 7
+    },
+    "initiative": {
+      "bonus": 4
+    },
+    "savingThrows": "",
+    "skills": "Perception +3, Stealth +6",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 13
+      }
+    },
+    "challengeRating": "3",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Tome of Beasts 1 (pg 281)"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.amphibious",
+    "feat.keen-sight-and-smell",
+    "feat.pack-tactics",
+    "feat.blood-frenzy",
+    "feat.bite",
+    "feat.mahoru-roar",
+    "feat.mahoru-vorpal-bite"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "3d10 + 4",
+      "damageType": "slashing"
+    }
+  }
+}

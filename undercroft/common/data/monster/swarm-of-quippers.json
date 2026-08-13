@@ -1,0 +1,105 @@
+{
+  "kind": "monster",
+  "index": "swarm-of-quippers",
+  "name": "Swarm of Quippers",
+  "type": "swarm of Tiny beasts",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/swarm-of-quippers.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "unaligned",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 28,
+      "current": 28,
+      "diceString": "8d8-8"
+    },
+    "hitDice": "8d8",
+    "speed": {
+      "walk": 0,
+      "swim": 40
+    },
+    "abilities": {
+      "strength": 13,
+      "dexterity": 16,
+      "constitution": 9,
+      "intelligence": 1,
+      "wisdom": 7,
+      "charisma": 2
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "slashing",
+          "type": "resistance"
+        },
+        {
+          "name": "Charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "Frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "Grappled",
+          "type": "immunity"
+        },
+        {
+          "name": "Paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "Petrified",
+          "type": "immunity"
+        },
+        {
+          "name": "Prone",
+          "type": "immunity"
+        },
+        {
+          "name": "Restrained",
+          "type": "immunity"
+        },
+        {
+          "name": "Stunned",
+          "type": "immunity"
+        }
+      ],
+      "languages": []
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 8
+      }
+    },
+    "challengeRating": "1",
+    "proficiencyBonus": 2,
+    "xp": 200,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/swarm-of-quippers"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/swarm-of-quippers",
+  "featureIds": [
+    "feat.blood-frenzy",
+    "feat.death-butterfly-swarm-swarm",
+    "feat.water-breathing-monster",
+    "feat.swarm-of-quippers-bites"
+  ]
+}

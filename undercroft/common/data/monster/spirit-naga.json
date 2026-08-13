@@ -1,0 +1,91 @@
+{
+  "kind": "monster",
+  "index": "spirit-naga",
+  "name": "Spirit Naga",
+  "type": "monstrosity",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/spirit-naga.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "chaotic evil",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 75,
+      "current": 75,
+      "diceString": "10d10+20"
+    },
+    "hitDice": "10d10",
+    "speed": {
+      "walk": 40
+    },
+    "abilities": {
+      "strength": 18,
+      "dexterity": 17,
+      "constitution": 14,
+      "intelligence": 16,
+      "wisdom": 15,
+      "charisma": 16
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "DEX +6, CON +5, WIS +5, CHA +6",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Abyssal",
+        "Common"
+      ]
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 12
+      }
+    },
+    "challengeRating": "8",
+    "proficiencyBonus": 3,
+    "xp": 3900,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/spirit-naga",
+    "spells": "The naga is a 10th-level spellcaster. Its spellcasting ability is Intelligence (spell save DC 14, +6 to hit with spell attacks), and it needs only verbal components to cast its spells. It has the following wizard spells prepared:\n\n- Cantrips (at will): mage hand, minor illusion, ray of frost\n- 1st level (4 slots): charm person, detect magic, sleep\n- 2nd level (3 slots): detect thoughts, hold person\n- 3rd level (3 slots): lightning bolt, water breathing\n- 4th level (3 slots): blight, dimension door\n- 5th level (2 slots): dominate person",
+    "saveDC": 14
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/spirit-naga",
+  "featureIds": [
+    "feat.rejuvenation",
+    "feat.bite"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "1d6 + 4",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "save-or-damage",
+        "dice": "7d8",
+        "damageType": "poison"
+      }
+    }
+  }
+}

@@ -1,0 +1,95 @@
+{
+  "kind": "monster",
+  "index": "cloaker",
+  "name": "Cloaker",
+  "type": "aberration",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/cloaker.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "chaotic neutral",
+    "armorClass": 14,
+    "hitPoints": {
+      "max": 78,
+      "current": 78,
+      "diceString": "12d10+12"
+    },
+    "hitDice": "12d10",
+    "speed": {
+      "walk": 10,
+      "fly": 40
+    },
+    "abilities": {
+      "strength": 17,
+      "dexterity": 15,
+      "constitution": 12,
+      "intelligence": 13,
+      "wisdom": 12,
+      "charisma": 14
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "Stealth +5",
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Deep Speech",
+        "Undercommon"
+      ]
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 11
+      }
+    },
+    "challengeRating": "8",
+    "proficiencyBonus": 3,
+    "xp": 3900,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/cloaker"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/cloaker",
+  "featureIds": [
+    "feat.damage-transfer",
+    "feat.false-appearance-ambush",
+    "feat.sunlight-sensitivity",
+    "feat.multiattack",
+    "feat.cloaker-bite",
+    "feat.tail",
+    "feat.cloaker-moan",
+    "feat.cloaker-phantasms"
+  ],
+  "featureTiers": {
+    "feat.false-appearance-ambush": "normal-plant",
+    "feat.damage-transfer": "cloaker"
+  },
+  "featureParams": {
+    "feat.tail": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "1d8 + 3",
+      "damageType": "slashing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.cloaker-bite",
+          "count": 1
+        },
+        {
+          "featureId": "feat.tail",
+          "count": 1
+        }
+      ],
+      "text": "The creature makes two attacks: one with its bite and one with its tail."
+    }
+  }
+}

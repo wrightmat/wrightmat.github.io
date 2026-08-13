@@ -1,0 +1,93 @@
+{
+  "kind": "monster",
+  "name": "Space Eel",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/28079/928/1000/1000/637961800946946294.jpeg",
+  "notes": "### Description\r\n\r\nSpace eels avoid confrontations with larger creatures unless the eels are starving. These 5-foot-long scavengers might trail a spelljamming ship and feed on barnacles they detach from the ship’s hull. Wildspace hunters try to catch and kill the eels for their meat—a task easier to describe than to accomplish.",
+  "type": "beast",
+  "stats": {
+    "size": "Small",
+    "alignment": "Unaligned",
+    "armorClass": 14,
+    "hitPoints": {
+      "max": 7,
+      "current": 7
+    },
+    "hitDice": "2d6",
+    "speed": {
+      "walk": 10,
+      "fly": 30
+    },
+    "abilities": {
+      "strength": 12,
+      "dexterity": 18,
+      "constitution": 11,
+      "intelligence": 1,
+      "wisdom": 10,
+      "charisma": 1
+    },
+    "initiative": {
+      "bonus": 4
+    },
+    "savingThrows": "",
+    "skills": "",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "1/2",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "BAM",
+      "Spelljammer: Adventures in Space • Boo’s Astral Menagerie, pg. 55"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.unusual-nature",
+    "feat.multiattack",
+    "feat.space-eel-bite",
+    "feat.tail-spine"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.space-eel-bite",
+          "count": 1
+        },
+        {
+          "featureId": "feat.tail-spine",
+          "count": 1
+        }
+      ],
+      "text": "If it isn’t attached to a creature, the eel makes one Bite attack and one Tail Spine attack."
+    },
+    "feat.tail-spine": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 3,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d4 + 1",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "save-or-condition"
+      }
+    }
+  },
+  "featureTiers": {
+    "feat.unusual-nature": "no-air-food-drink"
+  }
+}

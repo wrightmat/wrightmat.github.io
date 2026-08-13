@@ -1,0 +1,112 @@
+{
+  "kind": "monster",
+  "index": "wight",
+  "name": "Wight",
+  "type": "undead",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/wight.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "neutral evil",
+    "armorClass": 14,
+    "hitPoints": {
+      "max": 45,
+      "current": 45,
+      "diceString": "6d8+18"
+    },
+    "hitDice": "6d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 15,
+      "dexterity": 14,
+      "constitution": 16,
+      "intelligence": 10,
+      "wisdom": 13,
+      "charisma": 15
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "Perception +3, Stealth +4",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "necrotic",
+          "type": "resistance"
+        },
+        {
+          "name": "bludgeoning, piercing, and slashing from nonmagical weapons that aren't silvered",
+          "type": "resistance"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "the languages it knew in life"
+      ]
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 13
+      }
+    },
+    "challengeRating": "3",
+    "proficiencyBonus": 2,
+    "xp": 700,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/wight"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/wight",
+  "featureIds": [
+    "feat.sunlight-sensitivity",
+    "feat.multiattack",
+    "feat.life-drain-monster",
+    "feat.longsword",
+    "feat.longbow"
+  ],
+  "featureParams": {
+    "feat.longsword": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d8 + 2",
+      "damageType": "slashing",
+      "versatile": {
+        "damageDice": "1d10 + 2"
+      }
+    },
+    "feat.longbow": {
+      "kind": "Ranged",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "range",
+      "distance": "150/600",
+      "damageDice": "1d8 + 2",
+      "damageType": "piercing"
+    },
+    "feat.multiattack": {
+      "text": "The creature makes two longsword attacks or two longbow attacks. It can use its Life Drain in place of one longsword attack."
+    }
+  },
+  "featureTiers": {
+    "feat.life-drain-monster": "wight"
+  }
+}

@@ -1,0 +1,101 @@
+{
+  "kind": "monster",
+  "name": "Tusked Skyfish",
+  "notes": "_This horrid creature looks like an enormous flying jellyfish, with long, wicked tusks curving from its gaping mouth and tentacle-whiskers trailing behind it._\r\n\r\n**Alchemical Flotation**. These aerial jellyfish waft through the air like balloons, suspended by internal alchemical reactions. This mode of movement takes them almost vertically when they wish, or drifts with the winds. They can reach altitudes of 30,000 feet.\r\n\r\n**Shocking Tendrils**. Tusked skyfish catch slow-moving or inattentive prey in their tentacles, and sometimes fish in shallow lakes and streams. They can suppress their natural electrical charge, allowing them to manipulate objects or interact with other creatures safely.\r\n\r\n**Slow Mounts**. When fitted with special saddles, tusked skyfish can be ridden without harming their riders, although their slow speed makes them most suitable for casual excursions or unhurried long-distance travel. The jinnborn and genies seem to find them congenial beasts of burden, carrying as much as 4,000 pounds.",
+  "type": "aberration",
+  "stats": {
+    "size": "Large",
+    "alignment": "Lawful Good",
+    "armorClass": 14,
+    "hitPoints": {
+      "max": 102,
+      "current": 102,
+      "diceString": "12d10 + 36"
+    },
+    "hitDice": "12d10",
+    "speed": {
+      "walk": 5,
+      "fly": 20,
+      "hover": true
+    },
+    "abilities": {
+      "strength": 17,
+      "dexterity": 12,
+      "constitution": 17,
+      "intelligence": 3,
+      "wisdom": 14,
+      "charisma": 10
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "",
+    "skills": "",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 12
+      }
+    },
+    "challengeRating": "4",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "lightning",
+          "type": "immunity"
+        },
+        {
+          "name": "string",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [
+      "Desert",
+      "Grassland"
+    ],
+    "sources": [
+      "ToB1",
+      "Tome of Beasts 1, pg 391"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.tusked-skyfish-tendril-curtain",
+    "feat.multiattack",
+    "feat.gore",
+    "feat.tusked-skyfish-tentacles",
+    "feat.tusked-skyfish-stench-spray-recharge-5-6"
+  ],
+  "featureParams": {
+    "feat.gore": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d8 + 3",
+      "damageType": "piercing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.gore",
+          "count": 1
+        },
+        {
+          "featureId": "feat.tusked-skyfish-tentacles",
+          "count": 1
+        }
+      ],
+      "text": "The creature makes one gore attack and one tentacles attack."
+    }
+  }
+}

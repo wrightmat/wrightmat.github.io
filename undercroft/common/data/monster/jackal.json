@@ -1,0 +1,68 @@
+{
+  "kind": "monster",
+  "index": "jackal",
+  "name": "Jackal",
+  "type": "beast",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/jackal.png",
+  "stats": {
+    "size": "Small",
+    "alignment": "unaligned",
+    "armorClass": 12,
+    "hitPoints": {
+      "max": 3,
+      "current": 3,
+      "diceString": "1d6"
+    },
+    "hitDice": "1d6",
+    "speed": {
+      "walk": 40
+    },
+    "abilities": {
+      "strength": 8,
+      "dexterity": 15,
+      "constitution": 11,
+      "intelligence": 3,
+      "wisdom": 12,
+      "charisma": 6
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "Perception +3",
+    "proficiencies": {
+      "defenses": [],
+      "languages": []
+    },
+    "senses": {
+      "passives": {
+        "perception": 13
+      }
+    },
+    "challengeRating": "0",
+    "proficiencyBonus": 2,
+    "xp": 10,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/jackal"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/jackal",
+  "featureIds": [
+    "feat.keen-hearing-and-smell",
+    "feat.pack-tactics",
+    "feat.bite"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 1,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d4 - 1",
+      "damageType": "piercing"
+    }
+  }
+}

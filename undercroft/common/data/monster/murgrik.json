@@ -1,0 +1,108 @@
+{
+  "kind": "monster",
+  "name": "Murgrik",
+  "notes": "_This reptilian creature is built like an alligator with two extra mouths: one affixed to a stalk between its eyes and one toothy maw stretched over its belly. A batlike membrane connects its forelimbs to its body, and a tail made up of a dozen spinning tentacles propels the abomination in flight._\n\n**Marshy Nightmares**. Murgriks are consummate hunters and prefer to prey on intelligent creatures. They relish the fear their appearance provokes, and they augment this fear by generating terrifying wails from the stalks on their heads. Once they smell blood, they relentlessly attack and pursue prey until they or their prey die.\n\n**Corrupted Alligators**. Occasionally, deep parts of swamps cross planar boundaries into the Abyss. Those who study murgriks believe the creatures are ordinary alligators warped by their proximity to that plane. Their cruelty and preference for intelligent prey both lend credence to the notion that the Abyssa has influenced their mutations.\n\n**Afraid of Herons**. The only known way to deter a murgrik from attacking is to introduce a heron, real or illusory. The reason a murgrik retreats from herons is a mystery, but it may point to the existence of a demonic bird that preys on murgriks.",
+  "type": "aberration",
+  "stats": {
+    "size": "Large",
+    "alignment": "Chaotic Evil",
+    "armorClass": 18,
+    "hitPoints": {
+      "max": 152,
+      "current": 152,
+      "diceString": "16d10 + 64"
+    },
+    "hitDice": "16d10",
+    "speed": {
+      "walk": 40,
+      "fly": 20,
+      "swim": 40
+    },
+    "abilities": {
+      "strength": 23,
+      "dexterity": 10,
+      "constitution": 18,
+      "intelligence": 6,
+      "wisdom": 14,
+      "charisma": 9
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "Athletics +10, Perception +6",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 16
+      }
+    },
+    "challengeRating": "9",
+    "proficiencyBonus": 4,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "understands Deep Speech but can’t speak"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Tome of Beasts 2, pg. 263"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.blood-frenzy",
+    "feat.hold-breath",
+    "feat.keen-smell",
+    "feat.murgrik-tentacle-flight",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.tentacles",
+    "feat.murgrik-stomach-maw",
+    "feat.murgrik-unsettling-ululations-recharge-6"
+  ],
+  "featureTiers": {
+    "feat.hold-breath": "30-minutes"
+  },
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 10,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d8 + 6",
+      "damageType": "piercing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.bite",
+          "count": 1
+        },
+        {
+          "featureId": "feat.tentacles",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes three attacks: one with its bite and two with its tentacles."
+    },
+    "feat.tentacles": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 10,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "1d6 + 6",
+      "damageType": "bludgeoning",
+      "rider": {
+        "kind": "condition-no-save",
+        "condition": "is grappled (escape DC 18), if it is a Medium or smaller creature and the creature doesn't already have two other creatures grappled. Until this grapple ends, the target is restrained."
+      }
+    }
+  }
+}

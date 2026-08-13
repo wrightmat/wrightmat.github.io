@@ -1,0 +1,24 @@
+{
+  "id": "feat.nimble-escape",
+  "name": "Nimble Escape",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature can take the Disengage or Hide action as a bonus action on each of its turns.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature can take the Disengage or Hide action as a bonus action on each of its turns."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

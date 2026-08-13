@@ -1,0 +1,29 @@
+{
+  "id": "feat.lunarian-major-surface-curse",
+  "name": "Major Surface Curse",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "a creature can never be in the presence of natural light. It takes 9 (2d8) radiant damage at the beginning of its turn if it is exposed to direct moonlight or sunlight. If this damage reduces the creature to 0 hp, it dies and turns to moondust.",
+  "mechanics": {
+    "type": "passive",
+    "text": "a creature can never be in the presence of natural light. It takes 9 (2d8) radiant damage at the beginning of its turn if it is exposed to direct moonlight or sunlight. If this damage reduces the creature to 0 hp, it dies and turns to moondust.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "debuff"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

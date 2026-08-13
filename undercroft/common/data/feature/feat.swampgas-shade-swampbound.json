@@ -1,0 +1,29 @@
+{
+  "id": "feat.swampgas-shade-swampbound",
+  "name": "Swampbound",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature is bound to a region of swamp within 1 mile of its body. If the creature leaves this region, it loses its Soul Drain action until it returns to the region. If it remains outside the region, it automatically teleports back to its corpse after 24 hours, regardless of distance.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature is bound to a region of swamp within 1 mile of its body. If the creature leaves this region, it loses its Soul Drain action until it returns to the region. If it remains outside the region, it automatically teleports back to its corpse after 24 hours, regardless of distance.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "control"
+    ],
+    "recipeSlots": [
+      "isolate"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

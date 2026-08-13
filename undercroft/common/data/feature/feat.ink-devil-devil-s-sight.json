@@ -1,0 +1,29 @@
+{
+  "id": "feat.ink-devil-devil-s-sight",
+  "name": "Devil’s Sight",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Magical darkness doesn’t impede the creature’s darkvision.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Magical darkness doesn’t impede the creature’s darkvision.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,88 @@
+{
+  "kind": "monster",
+  "name": "Morphoi",
+  "notes": "_These blue-skinned humanoids wield tridents and have unusual faces with vertical eyes but no mouth or nose._\n\n**Shapeshifter Plants**. Morphoi are shape-shifting plant creatures indigenous to many islands. In their natural forms, the morphoi are androgynous beings between 5 and 6 feet tall. Their elliptical heads have eyes on both front and back. When harmed, they bleed a dark red sap.\nAs plants, the morphoi don’t need to eat. Instead, they gather nutrients from the sun and air. When posing as humanoids, they consume small amounts of food to aid their disguise, but since they have no internal digestive system, the food is just stored inside their bodies until they can spit it out.\n\n**Ship Travel**. Morphoi live in island communities and in nearby waters. Many travel by ship — usually by posing as beautiful women, handsome men, or stranded travelers. They harbor a powerful animosity toward intelligent animal life, and their disguised agents are behind many otherwise inexplicable acts of sabotage and murder.\nUnlike doppelgangers, morphoi can’t mimic specific individuals or read thoughts. Instead, they create intriguing backgrounds to go along with their disguises.\n\n**Four Eyes Always**. No matter what form they shift into, morphoi always have four eyes, never two. They can relocate their eyes to anywhere on their bodies, however, and they try to keep the second pair of eyes on the back of the head or neck (concealed by long hair or a tall collar), or the backs of the hands (under gloves but useful to peer around corners).\nAbout one in 30 morphoi are chieftains, and they have rangers, shamans, and warlocks among them. Those chosen as infiltrators are often rogues or bards. Stories tell of shapeshifted morphoi falling in love with humans, but it is impossible for the two species to interbreed.",
+  "type": "plant",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Chaotic Evil",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 33,
+      "current": 33,
+      "diceString": "6d8 + 6"
+    },
+    "hitDice": "6d8",
+    "speed": {
+      "walk": 30,
+      "swim": 30
+    },
+    "abilities": {
+      "strength": 11,
+      "dexterity": 16,
+      "constitution": 13,
+      "intelligence": 14,
+      "wisdom": 10,
+      "charisma": 15
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "",
+    "skills": "",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "1/2",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Common"
+      ]
+    },
+    "environments": [
+      "Coastal",
+      "Underwater"
+    ],
+    "sources": [
+      "ToB1",
+      "Tome of Beasts 1, pg 297"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.amphibious",
+    "feat.morphoi-immunity-to-temporal-effects",
+    "feat.morphoi-shapeshifter",
+    "feat.claws",
+    "feat.morphoi-trident",
+    "feat.shortbow"
+  ],
+  "featureParams": {
+    "feat.claws": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d8 + 3",
+      "damageType": "slashing"
+    },
+    "feat.shortbow": {
+      "kind": "Ranged",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "range",
+      "distance": "80/320",
+      "damageDice": "1d6 + 3",
+      "damageType": "piercing"
+    }
+  }
+}

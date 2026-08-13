@@ -1,0 +1,33 @@
+{
+  "id": "feat.murgrik-stomach-maw",
+  "name": "Stomach Maw",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature makes one bite attack against a Medium or smaller target it is grappling. If the attack hits, the target is also swallowed, and the grapple ends. While swallowed, the target is blinded and restrained, it has total cover against attacks and other effects outside the creature, and it takes 14 (4d6) acid damage at the start of each of the creature’s turns. The creature can only have one creature swallowed at a time. If the creature takes 20 damage or more on a single turn from the swallowed creature, the creature must succeed on a DC 14 Constitution saving throw at the end of that turn or regurgitate the creature, which falls prone in a space within 5 feet of the creature. If the creature dies, a swallowed creature is no longer restrained by it and can escape from the corpse by using 10 feet of movement, exiting prone.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature makes one bite attack against a Medium or smaller target it is grappling. If the attack hits, the target is also swallowed, and the grapple ends. While swallowed, the target is blinded and restrained, it has total cover against attacks and other effects outside the creature, and it takes 14 (4d6) acid damage at the start of each of the creature’s turns. The creature can only have one creature swallowed at a time. If the creature takes 20 damage or more on a single turn from the swallowed creature, the creature must succeed on a DC 14 Constitution saving throw at the end of that turn or regurgitate the creature, which falls prone in a space within 5 feet of the creature. If the creature dies, a swallowed creature is no longer restrained by it and can escape from the corpse by using 10 feet of movement, exiting prone.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "control"
+    ],
+    "recipeSlots": [
+      "isolate"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

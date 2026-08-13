@@ -1,0 +1,28 @@
+{
+  "id": "feat.murgaxor-blood-aegis",
+  "name": "Blood Aegis",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The AC of Murgaxor includes his Constitution modifier while he isn’t wearing armor or wielding a shield.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The AC of Murgaxor includes his Constitution modifier while he isn’t wearing armor or wielding a shield."
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

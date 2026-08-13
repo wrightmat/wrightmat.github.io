@@ -1,0 +1,25 @@
+{
+  "id": "feat.gynosphinx-magic-weapons",
+  "name": "Magic Weapons",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The sphinx's weapon attacks are magical.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The sphinx's weapon attacks are magical."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

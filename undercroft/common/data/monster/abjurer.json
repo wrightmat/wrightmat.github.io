@@ -1,0 +1,58 @@
+{
+  "kind": "monster",
+  "name": "Abjurer",
+  "notes": "",
+  "type": "humanoid",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Any Alignment",
+    "armorClass": "12 (15 with mage armor)",
+    "hitPoints": {
+      "max": 84,
+      "current": 84,
+      "diceString": "13d8 + 26"
+    },
+    "hitDice": "13d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 9,
+      "dexterity": 14,
+      "constitution": 14,
+      "intelligence": 18,
+      "wisdom": 12,
+      "charisma": 11
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "INT +8, WIS +5",
+    "skills": "Arcana +8, History +8",
+    "senses": {
+      "passives": {
+        "perception": 11
+      }
+    },
+    "challengeRating": "9",
+    "proficiencyBonus": 4,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "any four languages"
+      ]
+    },
+    "spells": "The abjurer is a 13th-level spellcaster. Its spellcasting ability is Intelligence (spell save DC 16, +8 to hit with spell attacks). The abjurer has the following wizard spells prepared: Cantrips (at will): blade ward, dancing lights, mending, message, ray of frost 1st level (4 slots): alarm, mage armor, magic missile, shield 2nd level (3 slots): arcane lock, invisibility 3rd level (3 slots): counterspell, dispel magic, fireball 4th level (3 slots): banishment, stoneskin* 5th level (2 slots): cone of cold, wall of force 6th level (1 slot): flesh to stone, globe of invulnerability 7th level (1 slot): symbol, teleport",
+    "environments": [],
+    "sources": [],
+    "saveDC": 16
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.abjurer-arcane-ward",
+    "feat.abjurer-quarterstaff"
+  ]
+}

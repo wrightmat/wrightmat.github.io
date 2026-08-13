@@ -1,0 +1,29 @@
+{
+  "id": "feat.gorthok-the-thunder-boar-relentless-recharges-after-a-short-or-long-rest",
+  "name": "Relentless (Recharges after a Short or Long Rest)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "If Gorthok takes 27 damage or less that would reduce it to 0 hit points, it is reduced to 1 hit point instead.",
+  "mechanics": {
+    "type": "passive",
+    "text": "If Gorthok takes 27 damage or less that would reduce it to 0 hit points, it is reduced to 1 hit point instead.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "endure"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,127 @@
+{
+  "kind": "monster",
+  "name": "Deathlock",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/25746/255/1000/1000/637880557331322582.jpeg",
+  "notes": "### Description\nAn overpowering urge to serve consumes the mind of a newly awakened deathlock. Any goals and ambitions it had in life that don’t please its patron fall away as its master’s desires become the purpose that drives it. The deathlock immediately resumes work on its patron’s behalf.\n\nWhatever the goal, it always reflects the patron’s interests, ranging from small-scale concerns to matters of cosmic scope. A deathlock in the thrall of a Fiend might work to destroy a specific temple dedicated to a good god, while one that serves a Great Old One might hunt for the materials needed to call forth a horrifying entity into the world. To accomplish a difficult goal, the deathlock might be forced to serve another powerful creature or might need to gather servants of its own.\n\n#### Deathlocks\nThe forging of a pact between a warlock and a patron is no minor occasion — at least not for the warlock. The consequences of breaking that pact can be dire and, in some cases, lethal. A warlock who fails to live up to a bargain with an evil patron runs the risk of rising from the dead as a deathlock, a foul Undead driven to serve its otherworldly patron.\n\nAn powerful necromancer might also discover the wicked methods of creating a deathlock and then subjugate it, acting as the deathlock’s patron.",
+  "type": "undead",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Typically Neutral Evil",
+    "armorClass": "15 (mage armor)",
+    "hitPoints": {
+      "max": 36,
+      "current": 36
+    },
+    "hitDice": "8d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 11,
+      "dexterity": 15,
+      "constitution": 10,
+      "intelligence": 14,
+      "wisdom": 12,
+      "charisma": 16
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "INT +4, CHA +5",
+    "skills": "",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 11
+      }
+    },
+    "challengeRating": "4",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Necrotic; Bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "Piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "and Slashing from Nonmagical Attacks that aren't Silvered",
+          "type": "resistance"
+        },
+        {
+          "name": "Poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "the languages it knew in life"
+      ]
+    },
+    "spells": "The deathlock casts one of the following spells, using Charisma as the spellcasting ability (spell save DC 13): At will: detect magic, disguise self, mage armor, mage hand 1/day each: dispel magic, hunger of Hadar, invisibility, spider climb",
+    "environments": [],
+    "sources": [
+      "Mordenkainen Presents: Monsters of the Multiverse, pg. 86",
+      "https://www.dndbeyond.com/monsters/2560767-deathlock"
+    ],
+    "saveDC": 13
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.turn-resistance",
+    "feat.multiattack",
+    "feat.deathly-claw",
+    "feat.grave-bolt",
+    "feat.unusual-nature"
+  ],
+  "featureParams": {
+    "feat.deathly-claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 2",
+      "damageType": "necrotic"
+    },
+    "feat.grave-bolt": {
+      "kind": "Ranged",
+      "attackKind": "Spell",
+      "attackBonus": 5,
+      "distanceLabel": "range",
+      "distance": "120",
+      "damageDice": "2d10 + 3",
+      "damageType": "necrotic"
+    },
+    "feat.multiattack": {
+      "text": "The creature makes two Deathly Claw or Grave Bolt attacks.",
+      "options": [
+        [
+          {
+            "featureId": "feat.deathly-claw",
+            "count": 2
+          }
+        ],
+        [
+          {
+            "featureId": "feat.grave-bolt",
+            "count": 2
+          }
+        ]
+      ]
+    }
+  }
+}

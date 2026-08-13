@@ -1,0 +1,66 @@
+{
+  "id": "feat.charge-2",
+  "name": "Charge",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "If the beast moves at least 20 ft. straight toward a target and then hits it with a ram attack on the same turn, the target takes an extra 7 (2d6) damage. If the target is a creature, it must succeed on a DC 13 Strength saving throw or be knocked prone.",
+  "mechanics": {
+    "type": "passive",
+    "text": "If the beast moves at least 20 ft. straight toward a target and then hits it with a ram attack on the same turn, the target takes an extra 7 (2d6) damage. If the target is a creature, it must succeed on a DC 13 Strength saving throw or be knocked prone."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "elk",
+      "name": "Charge",
+      "shortName": "Elk",
+      "mechanics": {
+        "text": "If the beast moves at least 20 ft. straight toward a target and then hits it with a ram attack on the same turn, the target takes an extra 7 (2d6) damage. If the target is a creature, it must succeed on a DC 13 Strength saving throw or be knocked prone."
+      }
+    },
+    {
+      "id": "giant-boar",
+      "name": "Charge",
+      "shortName": "Giant Boar",
+      "mechanics": {
+        "text": "If the beast moves at least 20 ft. straight toward a target and then hits it with a tusk attack on the same turn, the target takes an extra 7 (2d6) slashing damage. If the target is a creature, it must succeed on a DC 13 Strength saving throw or be knocked prone."
+      }
+    },
+    {
+      "id": "giant-elk",
+      "name": "Charge",
+      "shortName": "Giant Elk",
+      "mechanics": {
+        "text": "If the elk moves at least 20 ft. straight toward a target and then hits it with a ram attack on the same turn, the target takes an extra 7 (2d6) damage. If the target is a creature, it must succeed on a DC 14 Strength saving throw or be knocked prone."
+      }
+    },
+    {
+      "id": "giant-goat",
+      "name": "Charge",
+      "shortName": "Giant Goat",
+      "mechanics": {
+        "text": "If the beast moves at least 20 ft. straight toward a target and then hits it with a ram attack on the same turn, the target takes an extra 5 (2d4) bludgeoning damage. If the target is a creature, it must succeed on a DC 13 Strength saving throw or be knocked prone."
+      }
+    },
+    {
+      "id": "giant-sea-horse",
+      "name": "Charge",
+      "shortName": "Giant Sea Horse",
+      "mechanics": {
+        "text": "If the beast moves at least 20 ft. straight toward a target and then hits it with a ram attack on the same turn, the target takes an extra 7 (2d6) bludgeoning damage. If the target is a creature, it must succeed on a DC 11 Strength saving throw or be knocked prone."
+      }
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "id": "feat.incubus-telepathic-bond",
+  "name": "Telepathic Bond",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The fiend ignores the range restriction on its telepathy when communicating with a creature it has charmed. The two don't even need to be on the same plane of existence.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The fiend ignores the range restriction on its telepathy when communicating with a creature it has charmed. The two don't even need to be on the same plane of existence."
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

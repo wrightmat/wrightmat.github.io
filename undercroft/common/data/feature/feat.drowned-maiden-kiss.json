@@ -1,0 +1,32 @@
+{
+  "id": "feat.drowned-maiden-kiss",
+  "name": "Kiss",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature can kiss one target that is grappled and adjacent to her. The target must succeed on a DC 15 Charisma saving throw or take 1d6 Strength damage.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature can kiss one target that is grappled and adjacent to her. The target must succeed on a DC 15 Charisma saving throw or take 1d6 Strength damage.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

@@ -107,11 +107,11 @@
                         type="button"
                         data-notes-mode-toggle
                         data-bs-toggle="tooltip"
-                        data-bs-title="View"
+                        data-bs-title="Edit"
                       >
-                        <span class="iconify" data-icon="tabler:eye" aria-hidden="true" data-notes-mode-icon="view"></span>
-                        <span class="iconify d-none" data-icon="tabler:pencil" aria-hidden="true" data-notes-mode-icon="edit"></span>
-                        <span data-notes-mode-label>View</span>
+                        <span class="iconify d-none" data-icon="tabler:eye" aria-hidden="true" data-notes-mode-icon="view"></span>
+                        <span class="iconify" data-icon="tabler:pencil" aria-hidden="true" data-notes-mode-icon="edit"></span>
+                        <span data-notes-mode-label>Edit</span>
                       </button>
                       <button class="btn btn-outline-secondary btn-sm" type="button" data-generate-note>
                         <span class="iconify" data-icon="tabler:sparkles" aria-hidden="true"></span>
@@ -121,8 +121,8 @@
                     </div>
                   </div>
                   <div class="d-flex flex-column gap-2" data-notes-panel>
-                    <textarea class="form-control" rows="3" data-notes-text placeholder="Type a note, or Generate Note to have Claude write one."></textarea>
-                    <div class="d-none" data-notes-preview></div>
+                    <textarea class="form-control d-none" rows="3" data-notes-text placeholder="Type a note, or Generate Note to have Claude write one."></textarea>
+                    <div data-notes-preview></div>
                   </div>
                 </section>
               </div>
@@ -146,6 +146,53 @@
               Select a feature in the Features list to see its full detail here.
             </div>
             <div data-inspector-detail class="d-none">
+              <div class="btn-toolbar justify-content-center overflow-x-auto mb-3" role="toolbar" aria-label="Feature actions">
+                <div class="btn-group" role="group" aria-label="Feature actions" data-feature-inspector-toolbar-mount></div>
+              </div>
+              <div class="d-flex flex-column gap-2 mb-3" data-feature-basic-info>
+                <div class="d-flex align-items-center gap-2">
+                  <span class="small fw-semibold text-body-secondary">Basic Info</span>
+                  <span class="align-middle" data-help-topic="crucible.feature-basic-info" data-help-insert="replace"></span>
+                </div>
+                <div class="d-flex flex-column gap-1">
+                  <label class="form-label small mb-0 text-body-secondary">ID</label>
+                  <input type="text" class="form-control form-control-sm" data-feature-basic-id disabled />
+                </div>
+                <div class="d-flex flex-column gap-1">
+                  <label class="form-label small mb-0 text-body-secondary">Name</label>
+                  <input type="text" class="form-control form-control-sm" data-feature-basic-name disabled />
+                </div>
+                <div class="d-flex flex-column gap-1">
+                  <label class="form-label small mb-0 text-body-secondary">Description</label>
+                  <textarea class="form-control form-control-sm" rows="3" data-feature-basic-description disabled></textarea>
+                </div>
+                <div class="d-flex flex-column gap-1">
+                  <label class="form-label small mb-0 text-body-secondary">Budget Cost</label>
+                  <input type="number" min="0" class="form-control form-control-sm" data-feature-basic-budget-cost disabled />
+                </div>
+              </div>
+              <div class="d-flex flex-column gap-2 mb-3 d-none" data-multiattack-editor>
+                <div class="d-flex align-items-center justify-content-between gap-2">
+                  <span class="small fw-semibold text-body-secondary">Attacks</span>
+                  <span class="align-middle" data-help-topic="crucible.multiattack-attacks" data-help-insert="replace"></span>
+                </div>
+                <div class="d-flex flex-column gap-3" data-multiattack-options></div>
+                <p class="small text-body-secondary mb-0 d-none" data-multiattack-empty-note>
+                  No attacks listed — the text below is shown as typed rather than computed.
+                </p>
+                <button
+                  class="btn btn-outline-secondary btn-sm align-self-start"
+                  type="button"
+                  data-bs-toggle="tooltip"
+                  data-bs-title="Add an alternative combination of attacks (for a Multiattack that's a choice, like &quot;two Claws, two Bites, or one of each&quot;)"
+                  data-multiattack-add-option-button
+                >
+                  <span class="iconify" data-icon="tabler:plus" aria-hidden="true"></span>
+                  Add option
+                </button>
+              </div>
+              <div class="d-flex flex-column gap-2 mb-3 d-none" data-feature-params-editor></div>
+              <div data-inspector-json-mount></div>
               <pre class="border rounded-3 p-2 bg-body small mb-0" data-inspector-json></pre>
             </div>
           </div>

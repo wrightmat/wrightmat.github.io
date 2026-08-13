@@ -1,0 +1,107 @@
+{
+  "kind": "monster",
+  "name": "Clockwork Leech",
+  "notes": "_From a distance this creature appears to be an enormous leech. Closer observation reveals it to be a clockwork device. Blood stains its maw, which leaks a green fluid with a vaguely astringent odor._\n\n**Collectors of Blood**. Hags and other magic practitioners who require blood for their rituals and sacrifices create clockwork leeches to scout marshlands and neighboring settlements for large groups of living creatures. The leeches are designed to extract their fill and return to their controllers, who access and drain their reservoirs. Autonomous clockwork leeches continue to collect blood, but, without masters to whom they deliver it, they go through cycles of draining blood then violently disgorging it. Regardless of their purpose (or lack thereof) for obtaining blood, most clockwork leeches retreat after getting their fill.\n\n**Waterproof Swimmer**. A clockwork leech has layered copper plating that keeps water away from its inner mechanisms. These mechanisms allow the leech to propel itself through water. They can use this propelling undulation on land to make attacks with their “tails.” Leeches that don’t receive regular cleanings eventually turn green as the copper corrodes.\n\n**Unseen, Unheard, and Unfelt**. The same plating that protects the clockwork leech’s inner mechanisms also buffers noise from the gears. Its coloration allows it to blend in with marshland foliage and silty water. Finally, when it punctures a creature’s skin, it releases a sedative to numb the wound, leaving the victim unaware of the injury and subsequent blood drain. The leech doesn’t have an unlimited supply of the sedative, and a leech that hasn’t undergone maintenance for a few weeks loses its Anesthetizing Bite trait. Because the leech must remain attached to its victim to drain its blood, it prefers to attack lone or sleeping targets.\n\n**Construct Nature**. A clockwork leech doesn’t require air, food, drink, or sleep.",
+  "type": "construct",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Neutral",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 45,
+      "current": 45,
+      "diceString": "6d8 + 18"
+    },
+    "hitDice": "6d8",
+    "speed": {
+      "walk": 30,
+      "swim": 60
+    },
+    "abilities": {
+      "strength": 14,
+      "dexterity": 12,
+      "constitution": 17,
+      "intelligence": 3,
+      "wisdom": 10,
+      "charisma": 7
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "",
+    "skills": "Perception +2, Stealth +3",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 12
+      }
+    },
+    "challengeRating": "1",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "psychic",
+          "type": "immunity"
+        },
+        {
+          "name": "charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "petrified",
+          "type": "immunity"
+        },
+        {
+          "name": "poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Tome of Beasts 2, pg. 66"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.clockwork-leech-anesthetizing-bite",
+    "feat.immutable-form",
+    "feat.magic-resistance",
+    "feat.clockwork-leech-bite",
+    "feat.tail"
+  ],
+  "featureParams": {
+    "feat.tail": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "1d10 + 2",
+      "damageType": "bludgeoning"
+    }
+  }
+}

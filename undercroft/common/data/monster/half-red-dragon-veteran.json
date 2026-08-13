@@ -1,0 +1,120 @@
+{
+  "kind": "monster",
+  "index": "half-red-dragon-veteran",
+  "name": "Half-Red Dragon Veteran",
+  "type": "humanoid",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/half-red-dragon-veteran.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "any alignment",
+    "armorClass": 18,
+    "hitPoints": {
+      "max": 65,
+      "current": 65,
+      "diceString": "10d8+20"
+    },
+    "hitDice": "10d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 16,
+      "dexterity": 13,
+      "constitution": 14,
+      "intelligence": 10,
+      "wisdom": 11,
+      "charisma": 10
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "fire",
+          "type": "resistance"
+        }
+      ],
+      "languages": [
+        "Common",
+        "Draconic"
+      ]
+    },
+    "senses": {
+      "blindsight": 10,
+      "darkvision": 60,
+      "passives": {
+        "perception": 12
+      }
+    },
+    "challengeRating": "5",
+    "proficiencyBonus": 3,
+    "xp": 1800,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/half-red-dragon-veteran"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/half-red-dragon-veteran",
+  "featureIds": [
+    "feat.multiattack",
+    "feat.longsword",
+    "feat.shortsword",
+    "feat.heavy-crossbow",
+    "feat.fire-breath-monster"
+  ],
+  "featureParams": {
+    "feat.longsword": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d8 + 3",
+      "damageType": "slashing",
+      "versatile": {
+        "damageDice": "1d10 + 3"
+      }
+    },
+    "feat.shortsword": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d6 + 3",
+      "damageType": "piercing"
+    },
+    "feat.heavy-crossbow": {
+      "kind": "Ranged",
+      "attackKind": "Weapon",
+      "attackBonus": 3,
+      "distanceLabel": "range",
+      "distance": "100/400",
+      "damageDice": "1d10 + 1",
+      "damageType": "piercing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.longsword",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two longsword attacks. If it has a shortsword drawn, it can also make a shortsword attack."
+    },
+    "feat.fire-breath-monster": {
+      "verb": "exhales",
+      "substance": "fire",
+      "areaSize": "15",
+      "areaShape": "cone",
+      "dcAbility": "constitution",
+      "ability": "dexterity",
+      "damageDice": "7d6",
+      "damageType": "fire"
+    }
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "id": "feat.storm-elemental-vortex-recharge-5-6",
+  "name": "Vortex (Recharge 5–6)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature pulls all unsecured objects within 60 feet of it that aren't being worn or carried 60 feet closer to the center of its space. Each creature within 60 feet of the creature must make a DC 16 Strength saving throw. On a failed save, a creature takes 27 (5d8 + 5) bludgeoning damage, is knocked prone, and is pulled up to 60 feet toward the center of the creature's space.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature pulls all unsecured objects within 60 feet of it that aren't being worn or carried 60 feet closer to the center of its space. Each creature within 60 feet of the creature must make a DC 16 Strength saving throw. On a failed save, a creature takes 27 (5d8 + 5) bludgeoning damage, is knocked prone, and is pulled up to 60 feet toward the center of the creature's space.",
+    "scope": "unique"
+  },
+  "budgetCost": 4,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "control"
+    ],
+    "recipeSlots": [
+      "burst"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

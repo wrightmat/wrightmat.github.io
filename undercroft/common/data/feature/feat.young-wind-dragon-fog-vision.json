@@ -1,0 +1,29 @@
+{
+  "id": "feat.young-wind-dragon-fog-vision",
+  "name": "Fog Vision",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature sees normally through light or heavy obscurement caused by fog, mist, clouds, or high wind.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature sees normally through light or heavy obscurement caused by fog, mist, clouds, or high wind.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

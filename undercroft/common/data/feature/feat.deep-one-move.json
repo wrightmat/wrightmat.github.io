@@ -1,0 +1,32 @@
+{
+  "id": "feat.deep-one-move",
+  "name": "Move",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "If at least halfway submerged in water, The creature can move up to half its swim speed without provoking opportunity attacks.",
+  "mechanics": {
+    "type": "passive",
+    "text": "If at least halfway submerged in water, The creature can move up to half its swim speed without provoking opportunity attacks.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "mobility"
+    ],
+    "recipeSlots": [
+      "escape"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "legendary-action"
+  }
+}

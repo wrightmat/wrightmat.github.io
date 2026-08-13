@@ -1,0 +1,136 @@
+{
+  "kind": "monster",
+  "name": "Gypsosphinx",
+  "image": "https://static.wikia.nocookie.net/realm-of-midgard/images/f/f0/Gypsosphinx.jpg",
+  "notes": "_With black wings and a body pale as alabaster, the vulture-beaked gypsosphinx is easy to identify. As powerful servants of the gods of death and the desert, their riddles and obsessions all hinge on death and carrion. Their eyes can spot prey miles away, and the distance they climb into the sky hides their enormous size._\r\n\r\nThe pale gypsosphinx shines in the desert sun and stands out in underground tombs and caverns, yet it can conceal itself when it flies in moonlit clouds. Gypsosphinxes are found anywhere bodies are buried or left to rot, and they harvest corpses from battlefields of warring desert tribes.\r\n\r\n**Gossips and Riddlers**. Gypsosphinxes converse with intelligent undead, priests of death gods, and with other sphinxes, but they rarely gather among their own kind. They guard their territory jealously, typically claiming a necropolis as the heart of their region. Like all sphinxes, gypsosphinxes enjoy riddles. They rely on magic to solve challenging riddles they can’t solve on their own.\r\n\r\n**Night Flyers**. Unlike most of their cousins, gypsosphinxes are gifted fliers capable of diving steeply from the night sky to snatch carrion or a sleeping camel. The stroke of midnight has a special but unknown significance for the beasts.\r\n\r\n**Foretell Doom**. Occasionally, a paranoid noble seeks out a gypsosphinx and entreats the creature to reveal the time and place of his or her death, hoping to cheat fate. A gypsosphinx demands a high price for such a service, including payment in corpses of humans, unusual creatures, or near-extinct species. Even if paid, the gypsosphinx rarely honors its side of the bargain; instead, it turns its death magic against the supplicant, bringing about his or her death then and there.",
+  "type": "monstrosity",
+  "stats": {
+    "size": "Large",
+    "alignment": "Neutral Evil",
+    "armorClass": 17,
+    "hitPoints": {
+      "max": 171,
+      "current": 171,
+      "diceString": "18d10 + 72"
+    },
+    "hitDice": "18d10",
+    "speed": {
+      "walk": 40,
+      "fly": 70
+    },
+    "abilities": {
+      "strength": 20,
+      "dexterity": 14,
+      "constitution": 18,
+      "intelligence": 18,
+      "wisdom": 18,
+      "charisma": 18
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "Arcana +9, History +9, Perception +9, Religion +9",
+    "senses": {
+      "truesight": 90,
+      "passives": {
+        "perception": 19
+      }
+    },
+    "challengeRating": "14",
+    "proficiencyBonus": 5,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "and slashing from nonmagical weapons",
+          "type": "resistance"
+        },
+        {
+          "name": "psychic",
+          "type": "immunity"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Abyssal",
+        "Common",
+        "Darakhul",
+        "Sphinx"
+      ]
+    },
+    "spells": "The sphinx is a 9th-level spellcaster. Its spellcasting ability is Intelligence (spell save DC 17, +9 to hit with spell attacks). It requires no material components to cast its spells. The sphinx has the following wizard spells prepared: Cantrips (at will): mage hand, mending, minor illusion, poison spray 1st level (4 slots): comprehend languages, detect magic, identify 2nd level (3 slots): blur, darkness, locate object 3rd level (3 slots): dispel magic, glyph of warding, major image 4th level (3 slots): blight, greater invisibility 5th level (1 slot): cloudkill",
+    "environments": [
+      "Desert",
+      "Underdark",
+      "Urban"
+    ],
+    "sources": [
+      "ToB1",
+      "Tome of Beasts 1, pg 359-360"
+    ],
+    "saveDC": 17
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.inscrutable",
+    "feat.magic-weapons",
+    "feat.gypsosphinx-mystic-sight",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.claws",
+    "feat.gypsosphinx-rake",
+    "feat.gypsosphinx-bite-attack",
+    "feat.teleport",
+    "feat.gypsosphinx-cast-a-spell-costs-3-actions"
+  ],
+  "featureTiers": {
+    "feat.teleport": "60-ft"
+  },
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 10,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "3d10 + 5",
+      "damageType": "piercing"
+    },
+    "feat.claws": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 10,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "6d8 + 5",
+      "damageType": "slashing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.bite",
+          "count": 1
+        },
+        {
+          "featureId": "feat.claws",
+          "count": 2
+        }
+      ],
+      "text": "The sphinx makes one bite attack and two claw attacks."
+    }
+  }
+}

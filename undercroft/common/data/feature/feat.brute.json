@@ -1,0 +1,24 @@
+{
+  "id": "feat.brute",
+  "name": "Brute",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "A melee weapon deals one extra die of its damage when the creature hits with it (included in the attack).",
+  "mechanics": {
+    "type": "passive",
+    "text": "A melee weapon deals one extra die of its damage when the creature hits with it (included in the attack)."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

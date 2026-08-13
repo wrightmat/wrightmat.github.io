@@ -1,0 +1,87 @@
+{
+  "kind": "monster",
+  "index": "pseudodragon",
+  "name": "Pseudodragon",
+  "type": "dragon",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/pseudodragon.png",
+  "stats": {
+    "size": "Tiny",
+    "alignment": "neutral good",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 7,
+      "current": 7,
+      "diceString": "2d4+2"
+    },
+    "hitDice": "2d4",
+    "speed": {
+      "walk": 15,
+      "fly": 60
+    },
+    "abilities": {
+      "strength": 6,
+      "dexterity": 15,
+      "constitution": 13,
+      "intelligence": 10,
+      "wisdom": 12,
+      "charisma": 10
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "Perception +3, Stealth +4",
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "understands Common and Draconic but can't speak"
+      ]
+    },
+    "senses": {
+      "blindsight": 10,
+      "darkvision": 60,
+      "passives": {
+        "perception": 13
+      }
+    },
+    "challengeRating": "1/4",
+    "proficiencyBonus": 2,
+    "xp": 50,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/pseudodragon"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/pseudodragon",
+  "featureIds": [
+    "feat.keen-hearing-and-smell",
+    "feat.magic-resistance",
+    "feat.pseudodragon-limited-telepathy",
+    "feat.bite",
+    "feat.sting"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d4 + 2",
+      "damageType": "piercing"
+    },
+    "feat.sting": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d4 + 2",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "save-or-condition"
+      }
+    }
+  }
+}

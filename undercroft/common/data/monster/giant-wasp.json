@@ -1,0 +1,57 @@
+{
+  "kind": "monster",
+  "index": "giant-wasp",
+  "name": "Giant Wasp",
+  "type": "beast",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/giant-wasp.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "unaligned",
+    "armorClass": 12,
+    "hitPoints": {
+      "max": 13,
+      "current": 13,
+      "diceString": "3d8"
+    },
+    "hitDice": "3d8",
+    "speed": {
+      "walk": 10,
+      "fly": 50,
+      "swim": 50
+    },
+    "abilities": {
+      "strength": 10,
+      "dexterity": 14,
+      "constitution": 10,
+      "intelligence": 1,
+      "wisdom": 10,
+      "charisma": 3
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [],
+      "languages": []
+    },
+    "senses": {
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "1/2",
+    "proficiencyBonus": 2,
+    "xp": 100,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/giant-wasp"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/giant-wasp",
+  "featureIds": [
+    "feat.giant-wasp-sting"
+  ]
+}

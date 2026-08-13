@@ -1,0 +1,83 @@
+{
+  "kind": "monster",
+  "index": "roc",
+  "name": "Roc",
+  "type": "monstrosity",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/roc.png",
+  "stats": {
+    "size": "Gargantuan",
+    "alignment": "unaligned",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 248,
+      "current": 248,
+      "diceString": "16d20+80"
+    },
+    "hitDice": "16d20",
+    "speed": {
+      "walk": 20,
+      "fly": 120
+    },
+    "abilities": {
+      "strength": 28,
+      "dexterity": 10,
+      "constitution": 20,
+      "intelligence": 3,
+      "wisdom": 10,
+      "charisma": 9
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "DEX +4, CON +9, WIS +4, CHA +3",
+    "skills": "Perception +4",
+    "proficiencies": {
+      "defenses": [],
+      "languages": []
+    },
+    "senses": {
+      "passives": {
+        "perception": 14
+      }
+    },
+    "challengeRating": "11",
+    "proficiencyBonus": 4,
+    "xp": 7200,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/roc"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/roc",
+  "featureIds": [
+    "feat.keen-sight",
+    "feat.multiattack",
+    "feat.beak",
+    "feat.roc-talons"
+  ],
+  "featureParams": {
+    "feat.beak": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 13,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "4d8 + 9",
+      "damageType": "piercing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.beak",
+          "count": 1
+        },
+        {
+          "featureId": "feat.roc-talons",
+          "count": 1
+        }
+      ],
+      "text": "The creature makes two attacks: one with its beak and one with its talons."
+    }
+  }
+}

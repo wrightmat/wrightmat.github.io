@@ -1,0 +1,29 @@
+{
+  "id": "feat.fractine-scrying-focus",
+  "name": "Scrying Focus",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "A spellcaster can use the creature as a substitute focus when casting the scrying spell or similar magic, provided the spellcaster and the creature are within 5 feet of each other.",
+  "mechanics": {
+    "type": "passive",
+    "text": "A spellcaster can use the creature as a substitute focus when casting the scrying spell or similar magic, provided the spellcaster and the creature are within 5 feet of each other.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

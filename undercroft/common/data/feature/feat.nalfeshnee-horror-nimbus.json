@@ -1,0 +1,28 @@
+{
+  "id": "feat.nalfeshnee-horror-nimbus",
+  "name": "Horror Nimbus",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The fiend magically emits scintillating, multicolored light. Each creature within 15 feet of the fiend that can see the light must succeed on a DC 15 Wisdom saving throw or be frightened for 1 minute. A creature can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success. If a creature's saving throw is successful or the effect ends for it, the creature is immune to the fiend's Horror Nimbus for the next 24 hours.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The fiend magically emits scintillating, multicolored light. Each creature within 15 feet of the fiend that can see the light must succeed on a DC 15 Wisdom saving throw or be frightened for 1 minute. A creature can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success. If a creature's saving throw is successful or the effect ends for it, the creature is immune to the fiend's Horror Nimbus for the next 24 hours."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "id": "feat.gibbering-mouther-aberrant-ground",
+  "name": "Aberrant Ground",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The ground in a 10-foot radius around the aberration is doughlike difficult terrain. Each creature that starts its turn in that area must succeed on a DC 10 Strength saving throw or have its speed reduced to 0 until the start of its next turn.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The ground in a 10-foot radius around the aberration is doughlike difficult terrain. Each creature that starts its turn in that area must succeed on a DC 10 Strength saving throw or have its speed reduced to 0 until the start of its next turn."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

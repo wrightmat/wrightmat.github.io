@@ -1,0 +1,125 @@
+{
+  "kind": "monster",
+  "name": "Paper Drake",
+  "image": "https://koboldpress.com/wp-content/uploads/2019/05/paper-drake.jpg",
+  "notes": "_With its sharp angles and translucent skin, this draconic creature looks as if it were carefully folded from a massive sheet of paper, including its razor-sharp claws and teeth._\r\n\r\n**Book and Map Erasers**. These drakes originated in exotic lands far away, where paper is as common as parchment and vellum. They now inhabit wide stretches of the world, and they seem to have edited their origins out of history. Paper drakes are a bane to historians and spellcasters because they can erase ink and pigments, and they often do so at random simply for aesthetic purposes. They adore the possibility of a blank page, but they also sometimes erase one selectively to make beautiful patterns in the remaining ink.\r\n\r\n**Correcting Errors**. Some paper drakes have a compulsion to correct errors in text or speech, and in these cases their strange ability isn’t a nuisance. Indeed, these paper drakes help scribes correct mistakes, update outdated text, or erase entire volumes so they can be hand-lettered again with different text.\r\n\r\n**Tattoo Magicians**. Paper drakes are sometimes subjected to strange magical rituals in which wizards tattoo powerful runes and symbols onto their skin. Those who survive this process gain even stranger, esoteric abilities, such as the ability to “stamp” text or images with their feet, the ability to make illustrations move as if alive, or even the ability to erase the memory of written words from a person’s mind, much as they erase text from a page.\r\n\r\nIn their regular form, paper drakes reach just over four feet in length and weight around 30 lb. They are usually white or tan, but develop a brown or yellow tone as they age.",
+  "type": "dragon",
+  "stats": {
+    "size": "Small",
+    "alignment": "Neutral",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 78,
+      "current": 78,
+      "diceString": "12d6 + 36"
+    },
+    "hitDice": "12d6",
+    "speed": {
+      "walk": 40,
+      "fly": 100
+    },
+    "abilities": {
+      "strength": 7,
+      "dexterity": 17,
+      "constitution": 16,
+      "intelligence": 10,
+      "wisdom": 12,
+      "charisma": 13
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "",
+    "skills": "",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 11
+      }
+    },
+    "challengeRating": "2",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "paralysis",
+          "type": "immunity"
+        },
+        {
+          "name": "unconscious",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Common",
+        "Draconic",
+        "Dwarvish",
+        "Elvish"
+      ]
+    },
+    "environments": [
+      "Urban"
+    ],
+    "sources": [
+      "ToB1",
+      "Tome of Beasts 1, pg 154"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.paper-drake-shelve",
+    "feat.paper-drake-refold-recharge-5-6",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.claws",
+    "feat.tail"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 3",
+      "damageType": "piercing"
+    },
+    "feat.claws": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "3d6 + 3",
+      "damageType": "slashing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.bite",
+          "count": 1
+        },
+        {
+          "featureId": "feat.claws",
+          "count": 1
+        }
+      ],
+      "text": "The creature makes one bite attack, one claw attack, and one tail attack."
+    },
+    "feat.tail": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "5d6 + 3",
+      "damageType": "slashing",
+      "rider": {
+        "kind": "save-or-condition"
+      }
+    }
+  }
+}

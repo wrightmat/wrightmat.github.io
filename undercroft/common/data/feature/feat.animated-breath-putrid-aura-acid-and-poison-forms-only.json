@@ -1,0 +1,30 @@
+{
+  "id": "feat.animated-breath-putrid-aura-acid-and-poison-forms-only",
+  "name": "Putrid Aura (Acid and Poison Forms Only)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "A creature that starts its turn within 5 feet of the creature must succeed on a DC 15 Constitution saving throw or be poisoned until the start of its next turn. A creature that touches the creature or hits it with a melee attack takes 3 (1d6) acid damage.",
+  "mechanics": {
+    "type": "passive",
+    "text": "A creature that starts its turn within 5 feet of the creature must succeed on a DC 15 Constitution saving throw or be poisoned until the start of its next turn. A creature that touches the creature or hits it with a melee attack takes 3 (1d6) acid damage.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "debuff",
+      "control"
+    ],
+    "recipeSlots": [
+      "spread"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,32 @@
+{
+  "id": "feat.lorelei-charm",
+  "name": "Charm",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature targets one humanoid she can see within 30 feet of her. If the target can see or hear the creature, it must succeed on a DC 17 Wisdom saving throw against this magic or be charmed by the creature. The charmed target regards the creature as its one, true love, to be heeded and protected. Although the target isn’t under the creature’s control, it takes the creature’s requests or actions in the most favorable way it can. Each time the creature or her companions cause the target to take damage, directly or indirectly, it repeats the saving throw, ending the effect on itself on a success. Otherwise, the effect lasts 24 hours or until the creature is killed, is on a different plane of existence than the target, or takes a bonus action to end the effect.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature targets one humanoid she can see within 30 feet of her. If the target can see or hear the creature, it must succeed on a DC 17 Wisdom saving throw against this magic or be charmed by the creature. The charmed target regards the creature as its one, true love, to be heeded and protected. Although the target isn’t under the creature’s control, it takes the creature’s requests or actions in the most favorable way it can. Each time the creature or her companions cause the target to take damage, directly or indirectly, it repeats the saving throw, ending the effect on itself on a success. Otherwise, the effect lasts 24 hours or until the creature is killed, is on a different plane of existence than the target, or takes a bonus action to end the effect.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "control"
+    ],
+    "recipeSlots": [
+      "isolate"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

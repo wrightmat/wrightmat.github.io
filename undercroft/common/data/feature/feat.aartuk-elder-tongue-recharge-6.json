@@ -1,0 +1,32 @@
+{
+  "id": "feat.aartuk-elder-tongue-recharge-6",
+  "name": "Tongue (Recharge 6)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature tries to use its gooey tongue to snare one Large or smaller creature it can see within 30 feet of itself. The target must make a DC 12 Dexterity saving throw. On a failed save, the target is grappled by the tongue (escape DC 14) and pulled up to 25 feet toward the creature. The tongue can grapple one creature at a time.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature tries to use its gooey tongue to snare one Large or smaller creature it can see within 30 feet of itself. The target must make a DC 12 Dexterity saving throw. On a failed save, the target is grappled by the tongue (escape DC 14) and pulled up to 25 feet toward the creature. The tongue can grapple one creature at a time.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "control"
+    ],
+    "recipeSlots": [
+      "dominate"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "bonus-action"
+  }
+}

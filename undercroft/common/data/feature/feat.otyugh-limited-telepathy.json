@@ -1,0 +1,25 @@
+{
+  "id": "feat.otyugh-limited-telepathy",
+  "name": "Limited Telepathy",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The aberration can magically transmit simple messages and images to any creature within 120 ft. of it that can understand a language. This form of telepathy doesn't allow the receiving creature to telepathically respond.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The aberration can magically transmit simple messages and images to any creature within 120 ft. of it that can understand a language. This form of telepathy doesn't allow the receiving creature to telepathically respond."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

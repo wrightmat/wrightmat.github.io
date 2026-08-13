@@ -1,0 +1,119 @@
+{
+  "kind": "monster",
+  "index": "young-blue-dragon",
+  "name": "Young Blue Dragon",
+  "type": "dragon",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/young-blue-dragon.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "lawful evil",
+    "armorClass": 18,
+    "hitPoints": {
+      "max": 152,
+      "current": 152,
+      "diceString": "16d10+64"
+    },
+    "hitDice": "16d10",
+    "speed": {
+      "walk": 40,
+      "burrow": 20,
+      "fly": 80
+    },
+    "abilities": {
+      "strength": 21,
+      "dexterity": 10,
+      "constitution": 19,
+      "intelligence": 14,
+      "wisdom": 13,
+      "charisma": 17
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "DEX +4, CON +8, WIS +5, CHA +7",
+    "skills": "Perception +9, Stealth +4",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "lightning",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Common",
+        "Draconic"
+      ]
+    },
+    "senses": {
+      "blindsight": 30,
+      "darkvision": 120,
+      "passives": {
+        "perception": 19
+      }
+    },
+    "challengeRating": "9",
+    "proficiencyBonus": 4,
+    "xp": 5000,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/young-blue-dragon"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/young-blue-dragon",
+  "featureIds": [
+    "feat.multiattack",
+    "feat.bite",
+    "feat.claw",
+    "feat.lightning-breath"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 9,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "2d10 + 5",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "1d10",
+        "damageType": "lightning"
+      }
+    },
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 9,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 5",
+      "damageType": "slashing"
+    },
+    "feat.lightning-breath": {
+      "verb": "exhales",
+      "substance": "lightning",
+      "areaSize": "60",
+      "areaShape": "line",
+      "lineWidth": "5",
+      "dcAbility": "constitution",
+      "ability": "dexterity",
+      "damageDice": "10d10",
+      "damageType": "lightning"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.bite",
+          "count": 1
+        },
+        {
+          "featureId": "feat.claw",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes three attacks: one with its bite and two with its claws."
+    }
+  }
+}

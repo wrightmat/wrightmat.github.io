@@ -1,0 +1,71 @@
+{
+  "kind": "monster",
+  "index": "elephant",
+  "name": "Elephant",
+  "type": "beast",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/elephant.png",
+  "stats": {
+    "size": "Huge",
+    "alignment": "unaligned",
+    "armorClass": 12,
+    "hitPoints": {
+      "max": 76,
+      "current": 76,
+      "diceString": "8d12+24"
+    },
+    "hitDice": "8d12",
+    "speed": {
+      "walk": 40
+    },
+    "abilities": {
+      "strength": 22,
+      "dexterity": 9,
+      "constitution": 17,
+      "intelligence": 3,
+      "wisdom": 11,
+      "charisma": 6
+    },
+    "initiative": {
+      "bonus": -1
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [],
+      "languages": []
+    },
+    "senses": {
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "4",
+    "proficiencyBonus": 2,
+    "xp": 1100,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/elephant"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/elephant",
+  "featureIds": [
+    "feat.trampling-charge",
+    "feat.gore",
+    "feat.elephant-stomp"
+  ],
+  "featureParams": {
+    "feat.gore": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 8,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "3d8 + 6",
+      "damageType": "piercing"
+    }
+  },
+  "featureTiers": {
+    "feat.trampling-charge": "elephant"
+  }
+}

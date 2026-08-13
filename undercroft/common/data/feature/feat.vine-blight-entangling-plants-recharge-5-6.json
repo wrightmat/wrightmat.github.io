@@ -1,0 +1,33 @@
+{
+  "id": "feat.vine-blight-entangling-plants-recharge-5-6",
+  "name": "Entangling Plants (Recharge 5–6)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Grasping roots and vines sprout in a 15-foot radius centered on the creature, withering away after 1 minute. For the duration, that area is difficult terrain for nonplant creatures. In addition, each creature of the creature’s choice in that area when the plants appear must succeed on a DC 12 Strength saving throw or become restrained. A creature can use its action to make a DC 12 Strength check, freeing itself or another entangled creature within reach on a success.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Grasping roots and vines sprout in a 15-foot radius centered on the creature, withering away after 1 minute. For the duration, that area is difficult terrain for nonplant creatures. In addition, each creature of the creature’s choice in that area when the plants appear must succeed on a DC 12 Strength saving throw or become restrained. A creature can use its action to make a DC 12 Strength check, freeing itself or another entangled creature within reach on a success.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "control",
+      "debuff"
+    ],
+    "recipeSlots": [
+      "deny"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

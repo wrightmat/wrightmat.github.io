@@ -1,0 +1,98 @@
+{
+  "kind": "monster",
+  "name": "Iron Cobra",
+  "notes": "An iron cobra is exactly what its name implies: a metal snake with a poisonous bite. In addition to standard poisons, gnomes load this clockwork with alchemical concoctions that can paralyze creatures and cloud their minds with paranoia.\r\n\r\n**Individual Designs**. A gnome artisan values an individualized clockwork more highly than a perfectly functioning one that copies too much from another creation. For that reason, even clockworks that fit established designs, such as those described here, are seldom identical. A clockwork can be customized by adding one of the following enhancements and one potential malfunction to its stat block. You can select randomly or choose a pair of modifications that fit the temperament of the clockwork’s builder.",
+  "type": "construct",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Unaligned",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 45,
+      "current": 45,
+      "diceString": "7d8 + 14"
+    },
+    "hitDice": "7d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 12,
+      "dexterity": 16,
+      "constitution": 14,
+      "intelligence": 3,
+      "wisdom": 10,
+      "charisma": 1
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "",
+    "skills": "Stealth +7",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "4",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Poison; Bludgeoning",
+          "type": "immunity"
+        },
+        {
+          "name": "Piercing",
+          "type": "immunity"
+        },
+        {
+          "name": "and Slashing from Nonmagical Attacks that aren't Adamantine",
+          "type": "immunity"
+        },
+        {
+          "name": "Charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "Exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "Frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "Paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "Petrified",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "understands one language of its creator but can’t speak"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "MTF",
+      "https://www.dndbeyond.com/monsters/93842-iron-cobra",
+      "Mordenkainen’s Tome of Foes, pg. 125"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.magic-resistance",
+    "feat.iron-cobra-bite"
+  ]
+}

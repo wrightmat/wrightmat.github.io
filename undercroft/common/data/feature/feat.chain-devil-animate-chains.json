@@ -1,0 +1,28 @@
+{
+  "id": "feat.chain-devil-animate-chains",
+  "name": "Animate Chains",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Up to four chains the fiend can see within 60 feet of it magically sprout razor-edged barbs and animate under the fiend's control, provided that the chains aren't being worn or carried.\nEach animated chain is an object with AC 20, 20 hit points, resistance to piercing damage, and immunity to psychic and thunder damage. When the fiend uses Multiattack on its turn, it can use each animated chain to make one additional chain attack. An animated chain can grapple one creature of its own but can't make attacks while grappling. An animated chain reverts to its inanimate state if reduced to 0 hit points or if the fiend is incapacitated or dies.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "Up to four chains the fiend can see within 60 feet of it magically sprout razor-edged barbs and animate under the fiend's control, provided that the chains aren't being worn or carried.\nEach animated chain is an object with AC 20, 20 hit points, resistance to piercing damage, and immunity to psychic and thunder damage. When the fiend uses Multiattack on its turn, it can use each animated chain to make one additional chain attack. An animated chain can grapple one creature of its own but can't make attacks while grappling. An animated chain reverts to its inanimate state if reduced to 0 hit points or if the fiend is incapacitated or dies."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

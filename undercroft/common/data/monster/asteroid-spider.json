@@ -1,0 +1,106 @@
+{
+  "kind": "monster",
+  "name": "Asteroid Spider",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/25265/553/1000/1000/637861450514009347.jpeg",
+  "notes": "### Description\r\n\r\nAn asteroid spider is a menace native to Wildspace and the Astral Sea. A full-grown specimen has a body 30 feet in diameter and legs that are at least 30 feet long. When it wraps its legs tightly around its body and closes its eyes, the asteroid spider resembles nothing so much as a giant, lifeless rock in space—hence its name.\r\n\r\nAn asteroid spider has its own gravity plane and air envelope, as well as multiple spinnerets with which it can create web strands. Its living brain functions like a [spelljamming helm](https://www.dndbeyond.com/magic-items/5439867-spelljamming-helm), allowing the spider to travel through Wildspace without a ship. It often haunts asteroid belts, lurking among normal asteroids until a spelljamming ship comes close enough to be detected. The spider then snares the ship before using web strands to catch crew members and reel them toward its snapping jaws.",
+  "type": "monstrosity",
+  "stats": {
+    "size": "Gargantuan",
+    "alignment": "Typically Neutral Evil",
+    "armorClass": 17,
+    "hitPoints": {
+      "max": 348,
+      "current": 348,
+      "diceString": "2d20 + 96"
+    },
+    "hitDice": "2d20",
+    "speed": {
+      "walk": 60,
+      "fly": 60,
+      "hover": true
+    },
+    "abilities": {
+      "strength": 26,
+      "dexterity": 10,
+      "constitution": 18,
+      "intelligence": 17,
+      "wisdom": 13,
+      "charisma": 12
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "Con +9, Wis +6",
+    "skills": "Perception +11, Stealth +5",
+    "senses": {
+      "blindsight": 120,
+      "darkvision": 120,
+      "passives": {
+        "perception": 21
+      }
+    },
+    "challengeRating": "15",
+    "proficiencyBonus": 5,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "MC1",
+      "https://www.dndbeyond.com/monsters/2506147-asteroid-spider",
+      "Monstrous Compendium Volume One: Spelljammer Creatures, pg. 3"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.false-appearance-ambush",
+    "feat.legendary-resistance",
+    "feat.unusual-nature",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.asteroid-spider-web-strand",
+    "feat.reel",
+    "feat.asteroid-spider-snare-ship-1-day"
+  ],
+  "featureTiers": {
+    "feat.legendary-resistance": "3-day",
+    "feat.unusual-nature": "no-air",
+    "feat.reel": "60-ft",
+    "feat.false-appearance-ambush": "motionless-eyes-legs-wrapped"
+  },
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.asteroid-spider-web-strand",
+          "count": 2
+        },
+        {
+          "featureId": "feat.bite",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two Web Strand attacks, uses Reel, and makes two Bite attacks."
+    },
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 13,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "3d8 + 8",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "3d6",
+        "damageType": "acid"
+      }
+    }
+  }
+}

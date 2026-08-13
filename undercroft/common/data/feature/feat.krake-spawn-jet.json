@@ -1,0 +1,29 @@
+{
+  "id": "feat.krake-spawn-jet",
+  "name": "Jet",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "While underwater, the creature can take the withdraw action to jet backward at a speed of 140 feet. It must move in a straight line while using this ability.",
+  "mechanics": {
+    "type": "passive",
+    "text": "While underwater, the creature can take the withdraw action to jet backward at a speed of 140 feet. It must move in a straight line while using this ability.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "mobility"
+    ],
+    "recipeSlots": [
+      "escape"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

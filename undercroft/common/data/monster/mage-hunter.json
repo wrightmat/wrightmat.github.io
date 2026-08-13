@@ -1,0 +1,115 @@
+{
+  "kind": "monster",
+  "name": "Mage Hunter",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/22135/808/1000/1000/637743395578827049.jpeg",
+  "notes": "### Description\n\nMage hunters are hideous spider-legged creatures employed by the Oriq to pursue magic-wielders. These creatures can naturally sense magic via the glowing purple spines on their backs.\n\nA mage hunter is usually in its sentry form, a diamond-shaped drone with a heightened ability to sense and locate mages. Once it finds a quarry, the mage hunter takes on its arachnoid hunter form and pursues its targets with vicious skill.",
+  "type": "monstrosity",
+  "stats": {
+    "size": "Large",
+    "alignment": "Typically Lawful Evil",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 85,
+      "current": 85,
+      "diceString": "10d10 + 30"
+    },
+    "hitDice": "10d10",
+    "speed": {
+      "walk": 40,
+      "climb": 40,
+      "fly": 10,
+      "hover": true
+    },
+    "abilities": {
+      "strength": 19,
+      "dexterity": 15,
+      "constitution": 16,
+      "intelligence": 11,
+      "wisdom": 17,
+      "charisma": 10
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "INT +3, WIS +6, CHA +3",
+    "skills": "Perception +9, Stealth +5",
+    "senses": {
+      "blindsight": 120,
+      "passives": {
+        "perception": 19
+      }
+    },
+    "challengeRating": "5",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Blinded",
+          "type": "immunity"
+        },
+        {
+          "name": "Charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "Deafened",
+          "type": "immunity"
+        },
+        {
+          "name": "Frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "Prone",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "understands Common but can’t speak"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "https://www.dndbeyond.com/monsters/2160312-mage-hunter",
+      "Strixhaven: A Curriculum of Chaos, pg. 199"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.mage-hunter-magic-sense",
+    "feat.spider-climb",
+    "feat.mage-hunter-multiattack-hunter-form-only",
+    "feat.claw",
+    "feat.tail",
+    "feat.mage-hunter-mage-tracker-sentry-form-only",
+    "feat.mage-hunter-shift-form",
+    "feat.mage-hunter-consume-and-destroy"
+  ],
+  "featureParams": {
+    "feat.tail": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "4d8 + 4",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "condition-no-save",
+        "condition": "is grappled (escape DC 15). Until this grapple ends, the target is restrained, and the creature can't make a Tail attack against another target."
+      }
+    },
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d10 + 4",
+      "damageType": "slashing"
+    }
+  }
+}

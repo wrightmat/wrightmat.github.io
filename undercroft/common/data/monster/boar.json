@@ -1,0 +1,71 @@
+{
+  "kind": "monster",
+  "index": "boar",
+  "name": "Boar",
+  "type": "beast",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/boar.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "unaligned",
+    "armorClass": 11,
+    "hitPoints": {
+      "max": 11,
+      "current": 11,
+      "diceString": "2d8+2"
+    },
+    "hitDice": "2d8",
+    "speed": {
+      "walk": 40
+    },
+    "abilities": {
+      "strength": 13,
+      "dexterity": 11,
+      "constitution": 12,
+      "intelligence": 2,
+      "wisdom": 9,
+      "charisma": 5
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [],
+      "languages": []
+    },
+    "senses": {
+      "passives": {
+        "perception": 9
+      }
+    },
+    "challengeRating": "1/4",
+    "proficiencyBonus": 2,
+    "xp": 50,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/boar"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/boar",
+  "featureIds": [
+    "feat.boar-charge",
+    "feat.relentless-2",
+    "feat.tusk"
+  ],
+  "featureParams": {
+    "feat.tusk": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 3,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d6 + 1",
+      "damageType": "slashing"
+    }
+  },
+  "featureTiers": {
+    "feat.relentless-2": "boar"
+  }
+}

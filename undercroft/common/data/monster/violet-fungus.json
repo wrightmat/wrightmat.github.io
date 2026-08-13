@@ -1,0 +1,85 @@
+{
+  "kind": "monster",
+  "index": "violet-fungus",
+  "name": "Violet Fungus",
+  "type": "plant",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/violet-fungus.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "unaligned",
+    "armorClass": 5,
+    "hitPoints": {
+      "max": 18,
+      "current": 18,
+      "diceString": "4d8"
+    },
+    "hitDice": "4d8",
+    "speed": {
+      "walk": 5
+    },
+    "abilities": {
+      "strength": 3,
+      "dexterity": 1,
+      "constitution": 10,
+      "intelligence": 1,
+      "wisdom": 3,
+      "charisma": 1
+    },
+    "initiative": {
+      "bonus": -5
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Blinded",
+          "type": "immunity"
+        },
+        {
+          "name": "Blinded",
+          "type": "immunity"
+        },
+        {
+          "name": "Frightened",
+          "type": "immunity"
+        }
+      ],
+      "languages": []
+    },
+    "senses": {
+      "blindsight": 30,
+      "passives": {
+        "perception": 6
+      }
+    },
+    "challengeRating": "1/4",
+    "proficiencyBonus": 2,
+    "xp": 50,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/violet-fungus"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/violet-fungus",
+  "featureIds": [
+    "feat.false-appearance",
+    "feat.multiattack",
+    "feat.rotting-touch"
+  ],
+  "featureParams": {
+    "feat.rotting-touch": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 2,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "1d8",
+      "damageType": "necrotic"
+    },
+    "feat.multiattack": {
+      "text": "The creature makes 1d4 Rotting Touch attacks."
+    }
+  }
+}

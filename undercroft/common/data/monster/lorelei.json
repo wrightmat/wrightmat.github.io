@@ -1,0 +1,76 @@
+{
+  "kind": "monster",
+  "name": "Lorelei",
+  "notes": "_Lounging on large river rocks or within swirling eddies untouched by the rush of the current, these breathtakingly fey call plaintively to travelers and knights errant. They seek nothing less than the last breath of a drowning man._\n\n**Death to Men**. These callous river sirens compete with one another in manipulating and destroying male travelers. A race born from an ancient oath to the River King, a lorelei’s cruelty stems from a racial memory. A lorelei often taunts her prey for days before finally turning on it. When the opportunity presents itself, it quickly draws heavily armored warriors into deep water and kisses them as they drown.\n\n**Voluptuous Humanoids**. Although legends describe the lorelei as golden-haired and fair-skinned, they come in all varieties, each more voluptuous than the next. While most resemble sensual humans, a lorelei’s form can also include elves, dwarves, and in some recorded cases even orcs and hobgoblins—a lorelei mimics her most frequent prey.\n\n**Ignore Women**. Women travelers are vexing for the lorelei. While the siren’s powers affect women as readily as men, the lorelei lacks the urge to destroy them. Women traveling alone or in all-female groups may pass through a lorelei’s territory safely, and might even make peaceful contact. However, women who protect male companions are viewed as traitors, inspiring wrath.",
+  "type": "fey",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Chaotic Evil",
+    "armorClass": "15 (18 mage armor)",
+    "hitPoints": {
+      "max": 76,
+      "current": 76,
+      "diceString": "9d8 + 36"
+    },
+    "hitDice": "9d8",
+    "speed": {
+      "walk": 30,
+      "swim": 30
+    },
+    "abilities": {
+      "strength": 10,
+      "dexterity": 21,
+      "constitution": 18,
+      "intelligence": 16,
+      "wisdom": 16,
+      "charisma": 23
+    },
+    "initiative": {
+      "bonus": 5
+    },
+    "savingThrows": "Dex +8, Cha +9",
+    "skills": "Deception +9",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 13
+      }
+    },
+    "challengeRating": "5",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Common",
+        "Sylvan"
+      ]
+    },
+    "spells": "Spellcasting. The lorelei is an 8th-level spellcaster. Her spellcasting ability is Charisma (spell save DC 17, +9 to hit with spell attacks). She requires no material components to cast her spells. The lorelei has the following sorcerer spells prepared: Cantrips (at will): detect magic, guidance, light, mending, poison spray, prestidigitation 1st level (4 slots): comprehend languages, fog cloud, mage armor, ray of sickness 2nd level (3 slots): hold person, misty step, suggestion 3rd level (3 slots): hypnotic pattern, gaseous form, water walk 4th level (2 slots): dominate beast, ice storm",
+    "environments": [],
+    "sources": [],
+    "saveDC": 17
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.lorelei-alluring-presence",
+    "feat.lorelei-unearthly-grace",
+    "feat.lorelei-water-spirit",
+    "feat.dagger",
+    "feat.lorelei-charm",
+    "feat.lorelei-stunning-glance"
+  ],
+  "featureParams": {
+    "feat.dagger": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 8,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d4 + 5",
+      "damageType": "piercing"
+    }
+  }
+}

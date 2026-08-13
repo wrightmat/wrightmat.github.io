@@ -1,0 +1,42 @@
+{
+  "id": "feat.stench",
+  "name": "Stench",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Any creature that starts its turn within 5 ft. of the undead must succeed on a DC 10 Constitution saving throw or be poisoned until the start of its next turn. On a successful saving throw, the creature is immune to the undead's Stench for 24 hours.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Any creature that starts its turn within 5 ft. of the undead must succeed on a DC 10 Constitution saving throw or be poisoned until the start of its next turn. On a successful saving throw, the creature is immune to the undead's Stench for 24 hours."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "dc-10",
+      "name": "Stench",
+      "shortName": "DC 10",
+      "mechanics": {
+        "text": "Any creature that starts its turn within 5 ft. of the undead must succeed on a DC 10 Constitution saving throw or be poisoned until the start of its next turn. On a successful saving throw, the creature is immune to the undead's Stench for 24 hours."
+      }
+    },
+    {
+      "id": "dc-14",
+      "name": "Stench",
+      "shortName": "DC 14",
+      "mechanics": {
+        "text": "Any creature that starts its turn within 10 feet of the fiend must succeed on a DC 14 Constitution saving throw or be poisoned until the start of its next turn. On a successful saving throw, the creature is immune to the fiend's stench for 24 hours."
+      }
+    }
+  ]
+}

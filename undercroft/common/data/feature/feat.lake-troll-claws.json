@@ -1,0 +1,33 @@
+{
+  "id": "feat.lake-troll-claws",
+  "name": "Claws",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Melee Weapon Attack: +8 to hit, reach 5 ft., one target. Hit: 14 (2d8 + 5) piercing damage. If the creature hits a creature with both claw attacks in the same turn, the target creature must make a successful DC 16 Dexterity saving throw or its weapon (if any) gains a permanent and cumulative -1 penalty to damage rolls. If the penalty reaches –5, the weapon is destroyed. A damaged weapon can be repaired with appropriate artisan’s tools during a long rest.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Melee Weapon Attack: +8 to hit, reach 5 ft., one target. Hit: 14 (2d8 + 5) piercing damage. If the creature hits a creature with both claw attacks in the same turn, the target creature must make a successful DC 16 Dexterity saving throw or its weapon (if any) gains a permanent and cumulative -1 penalty to damage rolls. If the penalty reaches –5, the weapon is destroyed. A damaged weapon can be repaired with appropriate artisan’s tools during a long rest.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "debuff"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

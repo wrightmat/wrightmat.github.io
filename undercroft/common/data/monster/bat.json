@@ -1,0 +1,70 @@
+{
+  "kind": "monster",
+  "index": "bat",
+  "name": "Bat",
+  "type": "beast",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/bat.png",
+  "stats": {
+    "size": "Tiny",
+    "alignment": "unaligned",
+    "armorClass": 12,
+    "hitPoints": {
+      "max": 1,
+      "current": 1,
+      "diceString": "1d4-1"
+    },
+    "hitDice": "1d4",
+    "speed": {
+      "walk": 5,
+      "fly": 30
+    },
+    "abilities": {
+      "strength": 2,
+      "dexterity": 15,
+      "constitution": 8,
+      "intelligence": 2,
+      "wisdom": 12,
+      "charisma": 4
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [],
+      "languages": []
+    },
+    "senses": {
+      "blindsight": 60,
+      "passives": {
+        "perception": 11
+      }
+    },
+    "challengeRating": "0",
+    "proficiencyBonus": 2,
+    "xp": 10,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/bat"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/bat",
+  "featureIds": [
+    "feat.echolocation",
+    "feat.keen-hearing-and-smell",
+    "feat.bite"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 0,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1",
+      "damageType": "piercing"
+    }
+  }
+}

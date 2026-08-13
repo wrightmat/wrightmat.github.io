@@ -1,0 +1,33 @@
+{
+  "id": "feat.space-eel-bite",
+  "name": "Bite",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Melee Weapon Attack: +3 to hit, reach 5 ft., one creature. Hit: 4 (1d6 + 1) piercing damage, and the eel attaches to the target. While attached, the eel can’t make Bite attacks. Instead, the target takes 4 (1d6 + 1) piercing damage at the start of each of the eel’s turns. The eel can detach itself as a bonus action. A creature, including the target, can use its action to detach the eel.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "Melee Weapon Attack: +3 to hit, reach 5 ft., one creature. Hit: 4 (1d6 + 1) piercing damage, and the eel attaches to the target. While attached, the eel can’t make Bite attacks. Instead, the target takes 4 (1d6 + 1) piercing damage at the start of each of the eel’s turns. The eel can detach itself as a bonus action. A creature, including the target, can use its action to detach the eel."
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "debuff"
+    ],
+    "recipeSlots": [
+      "drain"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

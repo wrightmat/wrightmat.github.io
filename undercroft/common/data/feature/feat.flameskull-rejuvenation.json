@@ -1,0 +1,29 @@
+{
+  "id": "feat.flameskull-rejuvenation",
+  "name": "Rejuvenation",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "If the creature is destroyed, it regains all its hit points in 1 hour unless holy water is sprinkled on its remains or a dispel magic or remove curse spell is cast on them.",
+  "mechanics": {
+    "type": "passive",
+    "text": "If the creature is destroyed, it regains all its hit points in 1 hour unless holy water is sprinkled on its remains or a dispel magic or remove curse spell is cast on them.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "regeneration"
+    ],
+    "recipeSlots": [
+      "endure"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

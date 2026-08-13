@@ -1,0 +1,42 @@
+{
+  "id": "feat.damage-transfer",
+  "name": "Damage Transfer",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "While attached to a creature, the aberration takes only half the damage dealt to it (rounded down). and that creature takes the other half.",
+  "mechanics": {
+    "type": "passive",
+    "text": "While attached to a creature, the aberration takes only half the damage dealt to it (rounded down). and that creature takes the other half."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "cloaker",
+      "name": "Damage Transfer",
+      "shortName": "Cloaker",
+      "mechanics": {
+        "text": "While attached to a creature, the aberration takes only half the damage dealt to it (rounded down). and that creature takes the other half."
+      }
+    },
+    {
+      "id": "rug",
+      "name": "Damage Transfer",
+      "shortName": "Rug of Smothering",
+      "mechanics": {
+        "text": "While it is grappling a creature, the rug takes only half the damage dealt to it, and the creature grappled by the rug takes the other half."
+      }
+    }
+  ]
+}

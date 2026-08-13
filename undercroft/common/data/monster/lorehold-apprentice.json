@@ -1,0 +1,75 @@
+{
+  "kind": "monster",
+  "name": "Lorehold Apprentice",
+  "notes": "",
+  "type": "humanoid",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Any Alignment",
+    "armorClass": 12,
+    "hitPoints": {
+      "max": 33,
+      "current": 33,
+      "diceString": "6d8 + 6"
+    },
+    "hitDice": "6d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 10,
+      "dexterity": 14,
+      "constitution": 13,
+      "intelligence": 15,
+      "wisdom": 12,
+      "charisma": 11
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "Con +3, Int +4",
+    "skills": "History +6, Insight +3, Investigation +6",
+    "senses": {
+      "passives": {
+        "perception": 11
+      }
+    },
+    "challengeRating": "2",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Common plus any two languages"
+      ]
+    },
+    "spells": "The apprentice casts one of the following spells, requiring no material components and using Intelligence as the spellcasting ability (spell save DC 12): At will: guidance, light 1/day each: comprehend languages, locate object, mage armor",
+    "environments": [],
+    "sources": [],
+    "saveDC": 12
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.scroll-bash",
+    "feat.lorehold-apprentice-reduce-to-memory-recharge-6",
+    "feat.lorehold-apprentice-learn-from-the-past-2-day"
+  ],
+  "featureParams": {
+    "feat.scroll-bash": {
+      "kind": "Melee",
+      "attackKind": "Spell",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "30",
+      "damageDice": "1d10 + 2",
+      "damageType": "bludgeoning",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "2d8",
+        "damageType": "thunder"
+      }
+    }
+  }
+}

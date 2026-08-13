@@ -1,0 +1,133 @@
+{
+  "kind": "monster",
+  "name": "Cloud Giant Ghost",
+  "notes": "",
+  "type": "undead",
+  "stats": {
+    "size": "Huge",
+    "alignment": "Unaligned",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 104,
+      "current": 104
+    },
+    "hitDice": "16d12",
+    "speed": {
+      "walk": 40
+    },
+    "abilities": {
+      "strength": 27,
+      "dexterity": 11,
+      "constitution": 10,
+      "intelligence": 12,
+      "wisdom": 16,
+      "charisma": 17
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "Wis +7, Cha +7",
+    "senses": {
+      "darkvision": 120,
+      "passives": {
+        "perception": 17
+      }
+    },
+    "challengeRating": "9",
+    "proficiencyBonus": 4,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Cold",
+          "type": "resistance"
+        },
+        {
+          "name": "Necrotic",
+          "type": "immunity"
+        },
+        {
+          "name": "Poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "Exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "Frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "Grappled",
+          "type": "immunity"
+        },
+        {
+          "name": "Paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "Petrified",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        },
+        {
+          "name": "Prone",
+          "type": "immunity"
+        },
+        {
+          "name": "Restrained",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Common",
+        "Giant"
+      ]
+    },
+    "spells": "The ghost casts one of the following spells, using Charisma as the spellcasting ability and requiring no material components: At will: fog cloud 3/day: telekinesis 1/day: control weather",
+    "environments": [],
+    "sources": [
+      "CM",
+      "https://www.dndbeyond.com/monsters/1528958-cloud-giant-ghost",
+      "Candlekeep Mysteries, pg. 146"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.ethereal-sight",
+    "feat.incorporeal-movement",
+    "feat.regeneration",
+    "feat.multiattack",
+    "feat.spectral-weapon",
+    "feat.etherealness",
+    "feat.cloud-giant-ghost-wind-howl-recharge-6"
+  ],
+  "featureTiers": {
+    "feat.cloud-giant-ghost-wind-howl-recharge-6": "recharge-6"
+  },
+  "featureParams": {
+    "feat.spectral-weapon": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 12,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "3d8 + 8",
+      "damageType": "force"
+    },
+    "feat.multiattack": {
+      "text": "The creature makes two melee attacks."
+    }
+  }
+}

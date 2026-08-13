@@ -1,0 +1,32 @@
+{
+  "id": "feat.asteroid-spider-web-strand",
+  "name": "Web Strand",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Ranged Weapon Attack: +13 to hit, reach 120 ft., one creature. Hit: The target is grappled (escape DC 18). The web strand can be attacked and destroyed (AC 12; 20 hit points; vulnerability to fire damage; immunity to bludgeoning, poison, and psychic damage). The creature can grapple up to six creatures at a time using its web strands.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Ranged Weapon Attack: +13 to hit, reach 120 ft., one creature. Hit: The target is grappled (escape DC 18). The web strand can be attacked and destroyed (AC 12; 20 hit points; vulnerability to fire damage; immunity to bludgeoning, poison, and psychic damage). The creature can grapple up to six creatures at a time using its web strands.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "control"
+    ],
+    "recipeSlots": [
+      "isolate"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

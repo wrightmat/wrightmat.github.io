@@ -26,5 +26,39 @@
     ]
   },
   "synergizesWith": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "1-day",
+      "name": "Legendary Resistance (1/Day)",
+      "shortName": "1/Day",
+      "mechanics": {
+        "text": "If the creature fails a saving throw, it can count it as a success instead."
+      }
+    },
+    {
+      "id": "3-day",
+      "name": "Legendary Resistance (3/Day)",
+      "shortName": "3/Day",
+      "mechanics": {
+        "text": "If the creature fails a saving throw, it can choose to succeed instead."
+      }
+    },
+    {
+      "id": "4-day",
+      "name": "Legendary Resistance (4/Day)",
+      "shortName": "4/Day",
+      "mechanics": {
+        "text": "If the creature fails a saving throw, it can choose to succeed instead."
+      }
+    },
+    {
+      "id": "5-day",
+      "name": "Legendary Resistance (5/Day)",
+      "shortName": "5/Day",
+      "mechanics": {
+        "text": "If the creature fails a saving throw, it can choose to succeed instead."
+      }
+    }
+  ]
 }

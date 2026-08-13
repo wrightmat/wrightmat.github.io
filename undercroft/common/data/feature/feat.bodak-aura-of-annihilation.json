@@ -1,0 +1,32 @@
+{
+  "id": "feat.bodak-aura-of-annihilation",
+  "name": "Aura of Annihilation",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature activates or deactivates this deathly aura. While active, the aura deals 5 necrotic damage to any creature that ends its turn within 30 feet of the creature. Undead and Fiends ignore this effect.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature activates or deactivates this deathly aura. While active, the aura deals 5 necrotic damage to any creature that ends its turn within 30 feet of the creature. Undead and Fiends ignore this effect.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "spread"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "bonus-action"
+  }
+}

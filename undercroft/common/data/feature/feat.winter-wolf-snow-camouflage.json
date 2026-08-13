@@ -1,0 +1,25 @@
+{
+  "id": "feat.winter-wolf-snow-camouflage",
+  "name": "Snow Camouflage",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature has advantage on Dexterity (Stealth) checks made to hide in snowy terrain.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The creature has advantage on Dexterity (Stealth) checks made to hide in snowy terrain."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

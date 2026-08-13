@@ -1,0 +1,28 @@
+{
+  "id": "feat.deep-scion-psychic-screech-hybrid-form-only-recharges-after-a-short-or--smdkdn",
+  "name": "Psychic Screech (Hybrid Form Only; Recharges after a Short or Long Rest)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The Monstrostiy emits a terrible scream audible within 300 feet. Creatures within 30 feet of the Monstrostiy must succeed on a DC 13 Wisdom saving throw or be stunned until the end of the Monstrostiy’s next turn. In water, the psychic screech also telepathically transmits the Monstrostiy’s memories of the last 24 hours to its master, regardless of distance, so long as it and its master are in the same body of water.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The Monstrostiy emits a terrible scream audible within 300 feet. Creatures within 30 feet of the Monstrostiy must succeed on a DC 13 Wisdom saving throw or be stunned until the end of the Monstrostiy’s next turn. In water, the psychic screech also telepathically transmits the Monstrostiy’s memories of the last 24 hours to its master, regardless of distance, so long as it and its master are in the same body of water."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

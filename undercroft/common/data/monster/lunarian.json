@@ -1,0 +1,114 @@
+{
+  "kind": "monster",
+  "name": "Lunarian",
+  "notes": "_A grey humanoid wearing a dark tattered cloak and worn armor descends on glimmering, mothlike wings. In its hands it wields a halberd tipped with a cold light. Its black lidless eyes are filled with envy and sorrow._\r\n\r\n**Condemned to the Dark**. Lunarians are a race of mothlike fey originally from the moon. However, after attempting to take the moon’s power for themselves, they were cast out by a fey lord and damned to the depths of the world, never to see their lunar home again.\r\n\r\n**Angels of the Underworld**. Stories tell of lunarians helping people far below the surface, striking down monsters at the last moment. However, they never do so for free, often demanding valuable trinkets from the surface as payment for their services. If those they rescue deny them a reward or give them a bad one, they are prone to attack.\r\n\r\n> [!info] Curse: Minor Surface Curse\r\n>A creature cursed with a minor surface curse feels pain when exposed to natural light. While cursed and in sunlight or moonlight, the creature has disadvantage on attack rolls and on Wisdom (Perception) checks. The curse ends if the affected creature completes a long rest in darkness. Alternatively, the curse can be lifted early by a remove curse spell or similar magic.",
+  "type": "fey",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Chaotic Neutral",
+    "armorClass": 16,
+    "hitPoints": {
+      "max": 97,
+      "current": 97,
+      "diceString": "15d8 + 30"
+    },
+    "hitDice": "15d8",
+    "speed": {
+      "walk": 30,
+      "climb": 15,
+      "fly": 40
+    },
+    "abilities": {
+      "strength": 18,
+      "dexterity": 15,
+      "constitution": 14,
+      "intelligence": 13,
+      "wisdom": 12,
+      "charisma": 15
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "Acrobatics +5, History +4, Stealth +5, Survival +4",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 11
+      }
+    },
+    "challengeRating": "5",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "necrotic",
+          "type": "resistance"
+        },
+        {
+          "name": "poison",
+          "type": "resistance"
+        },
+        {
+          "name": "charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "poisoned",
+          "type": "immunity"
+        },
+        {
+          "name": "unconscious",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Celestial",
+        "Common",
+        "Sylvan"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "ToB2",
+      "Tome of Beasts 2, pg 245"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.lunarian-descendant-of-the-moon",
+    "feat.lunarian-major-surface-curse",
+    "feat.lunarian-moon-touched-weapons",
+    "feat.multiattack",
+    "feat.halberd",
+    "feat.lunarian-summon-shadowbeam-recharge-6"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.halberd",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two halberd attacks."
+    },
+    "feat.halberd": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "1d10 + 4",
+      "damageType": "slashing",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "1d8",
+        "damageType": "radiant"
+      }
+    }
+  }
+}

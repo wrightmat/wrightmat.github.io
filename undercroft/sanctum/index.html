@@ -181,6 +181,17 @@
                       <span class="align-middle" data-help-topic="sanctum.notes" data-help-insert="replace"></span>
                     </h2>
                     <div class="d-flex align-items-center gap-2">
+                      <button
+                        class="btn btn-outline-secondary btn-sm"
+                        type="button"
+                        data-notes-mode-toggle
+                        data-bs-toggle="tooltip"
+                        data-bs-title="Edit"
+                      >
+                        <span class="iconify d-none" data-icon="tabler:eye" aria-hidden="true" data-notes-mode-icon="view"></span>
+                        <span class="iconify" data-icon="tabler:pencil" aria-hidden="true" data-notes-mode-icon="edit"></span>
+                        <span data-notes-mode-label>Edit</span>
+                      </button>
                       <button class="btn btn-outline-secondary btn-sm" type="button" data-generate-note>
                         <span class="iconify" data-icon="tabler:sparkles" aria-hidden="true"></span>
                         Generate Note
@@ -189,7 +200,8 @@
                     </div>
                   </div>
                   <div class="d-flex flex-column gap-2" data-notes-panel>
-                    <textarea class="form-control" rows="3" data-notes-text placeholder="Type a note, or Generate Note to have Claude write one."></textarea>
+                    <textarea class="form-control d-none" rows="3" data-notes-text placeholder="Type a note, or Generate Note to have Claude write one."></textarea>
+                    <div data-notes-preview></div>
                   </div>
                 </section>
               </div>

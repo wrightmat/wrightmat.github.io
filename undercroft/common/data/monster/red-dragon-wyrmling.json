@@ -1,0 +1,93 @@
+{
+  "kind": "monster",
+  "index": "red-dragon-wyrmling",
+  "name": "Red Dragon Wyrmling",
+  "type": "dragon",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/red-dragon-wyrmling.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "chaotic evil",
+    "armorClass": 17,
+    "hitPoints": {
+      "max": 75,
+      "current": 75,
+      "diceString": "10d8+30"
+    },
+    "hitDice": "10d8",
+    "speed": {
+      "walk": 30,
+      "climb": 30,
+      "fly": 60
+    },
+    "abilities": {
+      "strength": 19,
+      "dexterity": 10,
+      "constitution": 17,
+      "intelligence": 12,
+      "wisdom": 11,
+      "charisma": 15
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "DEX +2, CON +5, WIS +2, CHA +4",
+    "skills": "Perception +4, Stealth +2",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "fire",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Draconic"
+      ]
+    },
+    "senses": {
+      "blindsight": 10,
+      "darkvision": 60,
+      "passives": {
+        "perception": 14
+      }
+    },
+    "challengeRating": "4",
+    "proficiencyBonus": 2,
+    "xp": 1100,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/red-dragon-wyrmling"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/red-dragon-wyrmling",
+  "featureIds": [
+    "feat.bite",
+    "feat.fire-breath-monster"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d10 + 4",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "1d6",
+        "damageType": "fire"
+      }
+    },
+    "feat.fire-breath-monster": {
+      "verb": "exhales",
+      "substance": "fire",
+      "areaSize": "15",
+      "areaShape": "cone",
+      "dcAbility": "constitution",
+      "ability": "dexterity",
+      "damageDice": "7d6",
+      "damageType": "fire"
+    }
+  }
+}

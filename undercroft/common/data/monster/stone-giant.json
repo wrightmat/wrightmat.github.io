@@ -1,0 +1,97 @@
+{
+  "kind": "monster",
+  "index": "stone-giant",
+  "name": "Stone Giant",
+  "type": "giant",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/stone-giant.png",
+  "stats": {
+    "size": "Huge",
+    "alignment": "neutral",
+    "armorClass": 17,
+    "hitPoints": {
+      "max": 126,
+      "current": 126,
+      "diceString": "11d12+55"
+    },
+    "hitDice": "11d12",
+    "speed": {
+      "walk": 40
+    },
+    "abilities": {
+      "strength": 23,
+      "dexterity": 15,
+      "constitution": 20,
+      "intelligence": 10,
+      "wisdom": 12,
+      "charisma": 9
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "DEX +5, CON +8, WIS +4",
+    "skills": "Athletics +12, Perception +4",
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Giant"
+      ]
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 14
+      }
+    },
+    "challengeRating": "7",
+    "proficiencyBonus": 3,
+    "xp": 2900,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/stone-giant"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/stone-giant",
+  "featureIds": [
+    "feat.stone-giant-stone-camouflage",
+    "feat.multiattack",
+    "feat.greatclub",
+    "feat.rock",
+    "feat.stone-giant-rock-catching"
+  ],
+  "featureParams": {
+    "feat.greatclub": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 9,
+      "distanceLabel": "reach",
+      "distance": "15",
+      "damageDice": "3d8 + 6",
+      "damageType": "bludgeoning"
+    },
+    "feat.rock": {
+      "kind": "Ranged",
+      "attackKind": "Weapon",
+      "attackBonus": 9,
+      "distanceLabel": "range",
+      "distance": "60/240",
+      "damageDice": "4d10 + 6",
+      "damageType": "bludgeoning",
+      "rider": {
+        "kind": "save-or-condition",
+        "saveDC": 17,
+        "saveAbility": "strength",
+        "condition": "knocked prone"
+      }
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.greatclub",
+          "count": 2
+        }
+      ],
+      "text": "The giant makes two greatclub attacks."
+    }
+  }
+}

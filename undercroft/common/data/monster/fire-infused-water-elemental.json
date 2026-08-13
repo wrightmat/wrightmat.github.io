@@ -1,0 +1,144 @@
+{
+  "kind": "monster",
+  "name": "Fire-Infused Water Elemental",
+  "notes": "_A pillar of water rises up into a humanoid shape, steam trailing f rom its boiling form._\n\n**Boiling Water**. Fire-infused water elementals are created when water elementals spend great lengths of time in superheated water, such as the borderlands between the Elemental Planes of Fire and Water, or when they are inundated with large amounts of fire magic. The elementals are irreparably changed and exist in a state between fire and water elemental. Too fiery for one and too watery for the other, they often find their way to the Material Plane, where they can carve out their own territory.\n\n**Geothermal Dwellers**. Fire-infused water elementals prefer to inhabit areas with water heated by geothermal activity, such as hot springs and geysers. They claim such locations as their homes and grow violent when creatures harm or pollute their claimed waters. Fire-infused water elementals get along well with hverhuldra (see page 206), who value the elementals for their strength and ability to discourage violence between visitors.\n\n**Elemental Nature**. A fire-infused water elemental doesn’t require air, food, drink, or sleep.",
+  "type": "elemental",
+  "stats": {
+    "size": "Huge",
+    "alignment": "Neutral",
+    "armorClass": 14,
+    "hitPoints": {
+      "max": 138,
+      "current": 138,
+      "diceString": "12d12 + 60"
+    },
+    "hitDice": "12d12",
+    "speed": {
+      "walk": 30,
+      "swim": 90
+    },
+    "abilities": {
+      "strength": 20,
+      "dexterity": 14,
+      "constitution": 20,
+      "intelligence": 5,
+      "wisdom": 10,
+      "charisma": 8
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "7",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "acid",
+          "type": "resistance"
+        },
+        {
+          "name": "cold",
+          "type": "resistance"
+        },
+        {
+          "name": "fire; bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "slashing from nonmagical attacks",
+          "type": "resistance"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "grappled",
+          "type": "immunity"
+        },
+        {
+          "name": "paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "petrified",
+          "type": "immunity"
+        },
+        {
+          "name": "poisoned",
+          "type": "immunity"
+        },
+        {
+          "name": "prone",
+          "type": "immunity"
+        },
+        {
+          "name": "restrained",
+          "type": "immunity"
+        },
+        {
+          "name": "unconscious",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Primordial (Aquan)"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Tome of Beasts 2, pg. 132"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.black-patch-flowing-form",
+    "feat.multiattack",
+    "feat.slam",
+    "feat.fire-infused-water-elemental-scald-recharge-6"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.slam",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two slam attacks."
+    },
+    "feat.slam": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 8,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d10 + 5",
+      "damageType": "bludgeoning",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "2d6",
+        "damageType": "fire"
+      }
+    }
+  }
+}

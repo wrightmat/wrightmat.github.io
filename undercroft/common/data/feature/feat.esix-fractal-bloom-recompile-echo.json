@@ -1,0 +1,32 @@
+{
+  "id": "feat.esix-fractal-bloom-recompile-echo",
+  "name": "Recompile Echo",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Esix instantly regains one lost fractal echo from its Recursive Form trait.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Esix instantly regains one lost fractal echo from its Recursive Form trait.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "legendary-action"
+  }
+}

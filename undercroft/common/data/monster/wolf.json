@@ -1,0 +1,74 @@
+{
+  "kind": "monster",
+  "index": "wolf",
+  "name": "Wolf",
+  "type": "beast",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/wolf.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "unaligned",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 11,
+      "current": 11,
+      "diceString": "2d8+2"
+    },
+    "hitDice": "2d8",
+    "speed": {
+      "walk": 40
+    },
+    "abilities": {
+      "strength": 12,
+      "dexterity": 15,
+      "constitution": 12,
+      "intelligence": 3,
+      "wisdom": 12,
+      "charisma": 6
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "Perception +3, Stealth +4",
+    "proficiencies": {
+      "defenses": [],
+      "languages": []
+    },
+    "senses": {
+      "passives": {
+        "perception": 13
+      }
+    },
+    "challengeRating": "1/4",
+    "proficiencyBonus": 2,
+    "xp": 50,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/wolf"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/wolf",
+  "featureIds": [
+    "feat.keen-hearing-and-smell",
+    "feat.pack-tactics",
+    "feat.bite"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d4 + 2",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "save-or-condition",
+        "saveDC": 11,
+        "saveAbility": "strength",
+        "condition": "knocked prone"
+      }
+    }
+  }
+}

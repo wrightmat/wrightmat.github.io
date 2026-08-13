@@ -1,0 +1,109 @@
+{
+  "kind": "monster",
+  "name": "Formian Warrior",
+  "notes": "### Description\r\n\r\nThe size of a pony, these formians exist only for battle. With powerful mandibles, sharp claws and a stinger from its abdomen, the warriors form a ferocious fighting force. They are single-minded when it comes to maintaining the order of their hive, with little pity when they attack a city. If a creature refuses to join and work for the hive, the creature is seen as chaotic and killed immediately.\r\n\r\nStanding at 4 1/2 feet high and 5 feet long, while weighing 180 pounds, its easy to see why formians are often wrongly called centaurs, especially as the formian warriors are typically the only version seen by outsiders. Instead of hands like a worker has, the warriors only have wicked two-fingered claws and large mandibles for biting and cutting. Warriors also have a painful stinger that allows them to poison their enemies.\r\n\r\n**_Efficient Tactics._** While the warriors rarely speak, in fact, they typically rely on the hive mind to communicate telepathically, they are very active when it comes to battle plans. When they know there is a battle coming, they will work with the formian commanders and devise battle plans and communicate with each other to execute their orders.",
+  "type": "monstrosity",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Lawful Evil",
+    "armorClass": 16,
+    "hitPoints": {
+      "max": 58,
+      "current": 58,
+      "diceString": "9d8 + 18"
+    },
+    "hitDice": "9d8",
+    "speed": {
+      "walk": 40,
+      "burrow": 20
+    },
+    "abilities": {
+      "strength": 17,
+      "dexterity": 15,
+      "constitution": 14,
+      "intelligence": 8,
+      "wisdom": 12,
+      "charisma": 8
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "",
+    "senses": {
+      "passives": {
+        "perception": 11
+      }
+    },
+    "challengeRating": "3",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Formian"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Homebrew",
+      "https://dumpstatadventures.com/blog/deep-dive-the-formian"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.formian-myrmarch-hive-mind",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.claws",
+    "feat.formian-warrior-stinger"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d8 + 3",
+      "damageType": "piercing"
+    },
+    "feat.claws": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d4 + 3",
+      "damageType": "piercing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.bite",
+          "count": 1
+        },
+        {
+          "featureId": "feat.claws",
+          "count": 1
+        },
+        {
+          "featureId": "feat.formian-warrior-stinger",
+          "count": 1
+        }
+      ],
+      "text": "The creature makes three attacks: one with its bite, one with its claws, and one with its stinger."
+    }
+  }
+}

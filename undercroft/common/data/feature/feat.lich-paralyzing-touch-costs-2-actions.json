@@ -1,0 +1,33 @@
+{
+  "id": "feat.lich-paralyzing-touch-costs-2-actions",
+  "name": "Paralyzing Touch (Costs 2 Actions)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature uses its Paralyzing Touch.",
+  "mechanics": {
+    "type": "legendary-action-reference",
+    "scope": "unique"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "legendary-action"
+  },
+  "legendaryActionReference": {
+    "referencedFeatureIds": [
+      "feat.paralyzing-touch"
+    ],
+    "template": "The creature uses its {names} ability, even if it has not recharged."
+  }
+}

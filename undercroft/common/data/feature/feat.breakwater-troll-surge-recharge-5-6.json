@@ -1,0 +1,33 @@
+{
+  "id": "feat.breakwater-troll-surge-recharge-5-6",
+  "name": "Surge (Recharge 5–6)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature pushes a surge of water in a 30 foot line that is 10 feet wide. Each creature in that line must make a DC 15 Strength saving throw. On a failure, a creature takes 28 (8d6) bludgeoning damage and is pushed up to 15 feet away from the creature in a direction following the line. On a success, a creature takes half the damage and isn’t pushed. The surge lasts until the start of the creature’s next turn and any creature in the line must spend 2 feet of movement for every 1 foot it moves when moving closer to the creature. If the creature uses this action while underwater, creatures in the line have disadvantage on the saving throw, and any creature in the line must spend 4 feet of movement for every 1 foot it moves when moving closer to the creature.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature pushes a surge of water in a 30 foot line that is 10 feet wide. Each creature in that line must make a DC 15 Strength saving throw. On a failure, a creature takes 28 (8d6) bludgeoning damage and is pushed up to 15 feet away from the creature in a direction following the line. On a success, a creature takes half the damage and isn’t pushed. The surge lasts until the start of the creature’s next turn and any creature in the line must spend 2 feet of movement for every 1 foot it moves when moving closer to the creature. If the creature uses this action while underwater, creatures in the line have disadvantage on the saving throw, and any creature in the line must spend 4 feet of movement for every 1 foot it moves when moving closer to the creature.",
+    "scope": "unique"
+  },
+  "budgetCost": 4,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "control"
+    ],
+    "recipeSlots": [
+      "burst"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

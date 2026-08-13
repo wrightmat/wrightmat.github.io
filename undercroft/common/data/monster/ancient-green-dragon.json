@@ -1,0 +1,143 @@
+{
+  "kind": "monster",
+  "index": "ancient-green-dragon",
+  "name": "Ancient Green Dragon",
+  "type": "dragon",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/ancient-green-dragon.png",
+  "stats": {
+    "size": "Gargantuan",
+    "alignment": "lawful evil",
+    "armorClass": 21,
+    "hitPoints": {
+      "max": 385,
+      "current": 385,
+      "diceString": "22d20+154"
+    },
+    "hitDice": "22d20",
+    "speed": {
+      "walk": 40,
+      "fly": 80,
+      "swim": 40
+    },
+    "abilities": {
+      "strength": 27,
+      "dexterity": 12,
+      "constitution": 25,
+      "intelligence": 20,
+      "wisdom": 17,
+      "charisma": 19
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "DEX +8, CON +14, WIS +10, CHA +11",
+    "skills": "Deception +11, Insight +10, Perception +17, Persuasion +11, Stealth +8",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Common",
+        "Draconic"
+      ]
+    },
+    "senses": {
+      "blindsight": 60,
+      "darkvision": 120,
+      "passives": {
+        "perception": 27
+      }
+    },
+    "challengeRating": "22",
+    "proficiencyBonus": 7,
+    "xp": 41000,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/ancient-green-dragon"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/ancient-green-dragon",
+  "featureIds": [
+    "feat.amphibious",
+    "feat.legendary-resistance",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.claw",
+    "feat.tail",
+    "feat.frightful-presence",
+    "feat.poison-breath",
+    "feat.aboleth-detect",
+    "feat.adult-black-dragon-tail-attack",
+    "feat.wing-attack"
+  ],
+  "featureTiers": {
+    "feat.legendary-resistance": "3-day",
+    "feat.frightful-presence": "dc-16",
+    "feat.wing-attack": "dc-22"
+  },
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 15,
+      "distanceLabel": "reach",
+      "distance": "15",
+      "damageDice": "2d10 + 8",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "3d6",
+        "damageType": "poison"
+      }
+    },
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 15,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "4d6 + 8",
+      "damageType": "slashing"
+    },
+    "feat.tail": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 15,
+      "distanceLabel": "reach",
+      "distance": "20",
+      "damageDice": "2d8 + 8",
+      "damageType": "bludgeoning"
+    },
+    "feat.poison-breath": {
+      "verb": "exhales",
+      "substance": "poisonous gas",
+      "areaSize": "90",
+      "areaShape": "cone",
+      "dcAbility": "constitution",
+      "ability": "constitution",
+      "damageDice": "22d6",
+      "damageType": "poison"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.bite",
+          "count": 1
+        },
+        {
+          "featureId": "feat.claw",
+          "count": 2
+        }
+      ],
+      "text": "The creature can use its Frightful Presence. It then makes three attacks: one with its bite and two with its claws."
+    }
+  }
+}

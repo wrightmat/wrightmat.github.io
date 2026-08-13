@@ -1,0 +1,33 @@
+{
+  "id": "feat.canopic-golem-spell-deflection",
+  "name": "Spell Deflection",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "In response to a spell attack missing the creature, it causes that spell to hit another creature within 120 feet of it that it can see.",
+  "mechanics": {
+    "type": "passive",
+    "text": "In response to a spell attack missing the creature, it causes that spell to hit another creature within 120 feet of it that it can see.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "defense",
+      "control"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "reaction"
+  }
+}

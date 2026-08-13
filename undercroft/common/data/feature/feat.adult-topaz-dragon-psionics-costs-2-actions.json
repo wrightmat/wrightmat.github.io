@@ -1,0 +1,39 @@
+{
+  "id": "feat.adult-topaz-dragon-psionics-costs-2-actions",
+  "name": "Psionics (Costs 2 Actions)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature uses Psychic Step or Spellcasting.",
+  "mechanics": {
+    "type": "legendary-action-reference",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "utility",
+      "mobility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "legendary-action"
+  },
+  "legendaryActionReference": {
+    "referencedFeatureIds": [
+      "feat.adult-topaz-dragon-psychic-step",
+      "feat.adult-topaz-dragon-spellcasting"
+    ],
+    "template": "The creature uses {names}."
+  }
+}

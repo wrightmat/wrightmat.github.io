@@ -1,0 +1,25 @@
+{
+  "id": "feat.assassin-assassinate",
+  "name": "Assassinate",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "During its first turn, the humanoid has advantage on attack rolls against any creature that hasn't taken a turn. Any hit the humanoid scores against a surprised creature is a critical hit.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "During its first turn, the humanoid has advantage on attack rolls against any creature that hasn't taken a turn. Any hit the humanoid scores against a surprised creature is a critical hit."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

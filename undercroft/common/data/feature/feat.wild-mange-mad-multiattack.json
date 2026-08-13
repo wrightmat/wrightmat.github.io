@@ -1,0 +1,32 @@
+{
+  "id": "feat.wild-mange-mad-multiattack",
+  "name": "Mad Multiattack",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Roll 2 (1d4) at the beginning of each of the creature's turns to determine how many attacks it can make each round. Using this pool of actions the creature can attack with its Bite or Spell Scythe in any combination.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Roll 2 (1d4) at the beginning of each of the creature's turns to determine how many attacks it can make each round. Using this pool of actions the creature can attack with its Bite or Spell Scythe in any combination.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

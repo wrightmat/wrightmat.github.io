@@ -1,0 +1,42 @@
+{
+  "id": "feat.sneak-attack",
+  "name": "Sneak Attack (1/Turn)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature deals an extra 13 (4d6) damage when it hits a target with a weapon attack and has advantage on the attack roll, or when the target is within 5 ft. of an ally of the creature that isn't incapacitated and the creature doesn't have disadvantage on the attack roll.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature deals an extra 13 (4d6) damage when it hits a target with a weapon attack and has advantage on the attack roll, or when the target is within 5 ft. of an ally of the creature that isn't incapacitated and the creature doesn't have disadvantage on the attack roll."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "4d6",
+      "name": "Sneak Attack (1/Turn)",
+      "shortName": "4d6",
+      "mechanics": {
+        "text": "The creature deals an extra 13 (4d6) damage when it hits a target with a weapon attack and has advantage on the attack roll, or when the target is within 5 ft. of an ally of the creature that isn't incapacitated and the creature doesn't have disadvantage on the attack roll."
+      }
+    },
+    {
+      "id": "2d6",
+      "name": "Sneak Attack (1/Turn)",
+      "shortName": "2d6",
+      "mechanics": {
+        "text": "The creature deals an extra 7 (2d6) damage when it hits a target with a weapon attack and has advantage on the attack roll, or when the target is within 5 ft. of an ally of the creature that isn't incapacitated and the creature doesn't have disadvantage on the attack roll."
+      }
+    }
+  ]
+}

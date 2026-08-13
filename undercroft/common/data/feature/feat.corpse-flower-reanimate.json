@@ -1,0 +1,33 @@
+{
+  "id": "feat.corpse-flower-reanimate",
+  "name": "Reanimate",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature animates one corpse in its body, turning it into a zombie (see the Monster Manual). The zombie appears in an unoccupied space within 5 feet of the creature and acts immediately after it in the initiative order. The zombie acts as an ally of the creature but isn’t under its control, and the creature’s stench clings to it (see Stench of Death).",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature animates one corpse in its body, turning it into a zombie (see the Monster Manual). The zombie appears in an unoccupied space within 5 feet of the creature and acts immediately after it in the initiative order. The zombie acts as an ally of the creature but isn’t under its control, and the creature’s stench clings to it (see Stench of Death).",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "utility",
+      "control"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "bonus-action"
+  }
+}

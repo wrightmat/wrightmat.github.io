@@ -1,0 +1,78 @@
+{
+  "kind": "monster",
+  "index": "vampire-mist",
+  "name": "Vampire, Mist Form",
+  "type": "undead",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/vampire-mist.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "lawful evil",
+    "armorClass": 16,
+    "hitPoints": {
+      "max": 144,
+      "current": 144,
+      "diceString": "17d8+68"
+    },
+    "hitDice": "17d8",
+    "speed": {
+      "fly": 20
+    },
+    "abilities": {
+      "strength": 18,
+      "dexterity": 18,
+      "constitution": 18,
+      "intelligence": 17,
+      "wisdom": 15,
+      "charisma": 18
+    },
+    "initiative": {
+      "bonus": 4
+    },
+    "savingThrows": "DEX +9, WIS +7, CHA +9",
+    "skills": "Perception +7, Stealth +9",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "necrotic",
+          "type": "resistance"
+        },
+        {
+          "name": "bludgeoning, piercing, and slashing from nonmagical weapons",
+          "type": "resistance"
+        }
+      ],
+      "languages": [
+        "the languages it knew in life"
+      ]
+    },
+    "senses": {
+      "darkvision": 120,
+      "passives": {
+        "perception": 17
+      }
+    },
+    "challengeRating": "13",
+    "proficiencyBonus": 5,
+    "xp": 10000,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/vampire-mist"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/vampire-mist",
+  "featureIds": [
+    "feat.shapechanger",
+    "feat.legendary-resistance",
+    "feat.misty-escape",
+    "feat.regeneration",
+    "feat.spider-climb",
+    "feat.vampire-mist-vampire-weaknesses",
+    "feat.move",
+    "feat.unarmed-strike",
+    "feat.bite"
+  ],
+  "featureTiers": {
+    "feat.legendary-resistance": "3-day"
+  }
+}

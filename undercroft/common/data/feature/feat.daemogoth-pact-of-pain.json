@@ -1,0 +1,30 @@
+{
+  "id": "feat.daemogoth-pact-of-pain",
+  "name": "Pact of Pain",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Using a 10-minute ritual, the creature can forge a magical bond with a willing creature it touches throughout the ritual. The creature becomes bound by the pact until it dies, the creature dies, or the pact is broken by any effect that can remove a curse. The creature chooses one spell from the necromancy or enchantment school that is 3rd level or lower. The bound creature can cast that spell using this pact, requiring no material components and using Intelligence as the spellcasting ability. When it casts the spell, the creature takes 7 (2d6) psychic damage, which can’t break the creature’s concentration on a spell. Once the bound creature casts the spell in this way, it can’t do so again until it finishes a long rest.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Using a 10-minute ritual, the creature can forge a magical bond with a willing creature it touches throughout the ritual. The creature becomes bound by the pact until it dies, the creature dies, or the pact is broken by any effect that can remove a curse. The creature chooses one spell from the necromancy or enchantment school that is 3rd level or lower. The bound creature can cast that spell using this pact, requiring no material components and using Intelligence as the spellcasting ability. When it casts the spell, the creature takes 7 (2d6) psychic damage, which can’t break the creature’s concentration on a spell. Once the bound creature casts the spell in this way, it can’t do so again until it finishes a long rest.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "utility",
+      "control"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

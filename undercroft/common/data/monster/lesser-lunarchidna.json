@@ -1,0 +1,104 @@
+{
+  "kind": "monster",
+  "name": "Lesser Lunarchidna",
+  "notes": "_A four-armed, four-legged creature in the vague shape of a human — but seemingly made of fine spider silk — moves down a tree, slowly chanting the incantation of a spell in the pale light of the full moon._\r\n\r\n**Made in Corrupt Forests**. Lunarchidnas are beings of moonlight and spider silk created in forests permeated by residual dark magic. When this magic coalesces on a spider web touched by the light of a full moon, the web animates. The web gains life and flies through the forest, gathering other webs until it collects enough silk to form a faceless, humanoid body, with four legs and four arms.\r\n\r\n**Hatred of Elves**. Lunarchidnas hate elves and love to make the creatures suffer. They poison water sources, set fire to villages, and bait monsters into stampeding through elf communities. These aberrations especially enjoy stealing away elf children to use as bait to trap the adults that come to the rescue.\r\n\r\n**Cyclical Power.** The lunarchidna’s power is tied to the moon. When the skies are dark during a new moon, the lunarchidna becomes more shadow than living web. Its mental ability dulls, and it becomes barely more than a savage animal. When a full moon brightens the night, however, the lunarchidna becomes a conduit of lunar light and can channel that power through its body. Using its heightened intellect, it makes plans, writes notes, and plots from the safety of the trees where it makes its home. In the intermittent phases of the moon, the lunarchidna is a more than capable hunter, trapping and devouring prey it encounters while retaining enough knowledge of its plans and magic to further its goals in minor ways. The lunarchidna’s statistics change cyclically as shown on the Lunarchidna Moon Phase table.",
+  "type": "aberration",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Neutral Evil",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 39,
+      "current": 39,
+      "diceString": "6d8 + 12"
+    },
+    "hitDice": "6d8",
+    "speed": {
+      "walk": 30,
+      "climb": 30
+    },
+    "abilities": {
+      "strength": 10,
+      "dexterity": 15,
+      "constitution": 14,
+      "intelligence": 6,
+      "wisdom": 12,
+      "charisma": 13
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "Perception +3, Stealth +6",
+    "senses": {
+      "blindsight": 10,
+      "darkvision": 60,
+      "passives": {
+        "perception": 13
+      }
+    },
+    "challengeRating": "2",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "poisoned",
+          "type": "immunity"
+        },
+        {
+          "name": "restrained",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Deep Speech",
+        "Elvish"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "ToB2",
+      "Tome of Beasts 2, pg 242"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.sunlight-sensitivity",
+    "feat.shadow-stealth",
+    "feat.spider-climb",
+    "feat.multiattack",
+    "feat.lesser-lunarchidna-bite",
+    "feat.claw"
+  ],
+  "featureParams": {
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d4 + 2",
+      "damageType": "slashing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.lesser-lunarchidna-bite",
+          "count": 1
+        },
+        {
+          "featureId": "feat.claw",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes one bite attack and two claw attacks."
+    }
+  }
+}

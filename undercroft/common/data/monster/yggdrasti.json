@@ -1,0 +1,114 @@
+{
+  "kind": "monster",
+  "name": "Yggdrasti",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/25265/556/1000/1000/637861450519429998.jpeg",
+  "notes": "### Description\r\n\r\nThought to be cast-off splinters of Yggdrasil, the World Tree, yggdrasti look like gigantic, dead trees covered with barnacles. They fly through Wildspace and the Astral Sea with their topmost branches leading the way and their withered roots trailing behind them. Each one has its own gravity plane and air envelope.\r\n\r\nCreatures sometimes try to hitch a ride on an yggdrasti to take advantage of its air envelope. A typical yggdrasti specimen has cavities inside its trunk in which Medium or smaller creatures can lurk.\r\n\r\nYggdrasti attack any settlements or spelljamming ships they come across without provocation. By using a [speak with plants](https://www.dndbeyond.com/spells/speak-with-plants) spell or similar magic, someone might be able to convince an yggdrasti to break off its attack, but the monster’s innate hatred of other living things is extremely difficult for it to suppress.\r\n\r\nYggdrasti sometimes make landfall and disguise themselves as ordinary trees, burying their roots in the ground to pull off the deception. They can uproot themselves at any time and use their roots to shamble awkwardly across the ground, but flying is their preferred mode of travel.",
+  "type": "plant",
+  "stats": {
+    "size": "Gargantuan",
+    "alignment": "Unaligned",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 112,
+      "current": 112,
+      "diceString": "9d20 + 18"
+    },
+    "hitDice": "9d20",
+    "speed": {
+      "walk": 30,
+      "fly": 60,
+      "hover": true
+    },
+    "abilities": {
+      "strength": 20,
+      "dexterity": 10,
+      "constitution": 15,
+      "intelligence": 3,
+      "wisdom": 10,
+      "charisma": 3
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "",
+    "senses": {
+      "blindsight": 120,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "7",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "Piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "Fire",
+          "type": "vulnerability"
+        },
+        {
+          "name": "Lightning",
+          "type": "immunity"
+        },
+        {
+          "name": "Blinded",
+          "type": "immunity"
+        },
+        {
+          "name": "Deafened",
+          "type": "immunity"
+        },
+        {
+          "name": "Exhaustion",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [
+      "Forest"
+    ],
+    "sources": [
+      "MC1",
+      "Monstrous Compendium Volume One: Spelljammer Creatures, pg. 13"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.yggdrasti-cavities",
+    "feat.false-appearance-ambush",
+    "feat.yggdrasti-lightning-conduit",
+    "feat.unusual-nature",
+    "feat.multiattack",
+    "feat.yggdrasti-root",
+    "feat.yggdrasti-lightning-discharge-3-day"
+  ],
+  "featureTiers": {
+    "feat.unusual-nature": "no-air-sleep",
+    "feat.false-appearance-ambush": "motionless-eyes-legs-wrapped"
+  },
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.yggdrasti-root",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two Root attacks and uses Lightning Discharge (if available)."
+    }
+  }
+}

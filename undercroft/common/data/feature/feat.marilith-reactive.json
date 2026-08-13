@@ -1,0 +1,25 @@
+{
+  "id": "feat.marilith-reactive",
+  "name": "Reactive",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature can take one reaction on every turn in combat.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The creature can take one reaction on every turn in combat."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

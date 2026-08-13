@@ -1,0 +1,202 @@
+[
+  {
+    "cr": "0",
+    "targetBudget": 3,
+    "monsterCount": 2,
+    "avgFeatureCount": 2.0,
+    "avgAssignedBudgetCost": 0.5,
+    "avgTaggedFeatureCount": 0.5
+  },
+  {
+    "cr": "1/8",
+    "targetBudget": 4,
+    "monsterCount": 4,
+    "avgFeatureCount": 4.5,
+    "avgAssignedBudgetCost": 1.0,
+    "avgTaggedFeatureCount": 0.8
+  },
+  {
+    "cr": "1/4",
+    "targetBudget": 4,
+    "monsterCount": 6,
+    "avgFeatureCount": 2.5,
+    "avgAssignedBudgetCost": 0.5,
+    "avgTaggedFeatureCount": 0.3
+  },
+  {
+    "cr": "1/2",
+    "targetBudget": 5,
+    "monsterCount": 10,
+    "avgFeatureCount": 4.9,
+    "avgAssignedBudgetCost": 1.2,
+    "avgTaggedFeatureCount": 1.1
+  },
+  {
+    "cr": "1",
+    "targetBudget": 6,
+    "monsterCount": 19,
+    "avgFeatureCount": 4.7,
+    "avgAssignedBudgetCost": 1.1,
+    "avgTaggedFeatureCount": 0.7
+  },
+  {
+    "cr": "2",
+    "targetBudget": 8,
+    "monsterCount": 36,
+    "avgFeatureCount": 4.8,
+    "avgAssignedBudgetCost": 0.9,
+    "avgTaggedFeatureCount": 0.8
+  },
+  {
+    "cr": "3",
+    "targetBudget": 10,
+    "monsterCount": 28,
+    "avgFeatureCount": 4.7,
+    "avgAssignedBudgetCost": 1.0,
+    "avgTaggedFeatureCount": 0.6
+  },
+  {
+    "cr": "4",
+    "targetBudget": 12,
+    "monsterCount": 30,
+    "avgFeatureCount": 5.0,
+    "avgAssignedBudgetCost": 1.6,
+    "avgTaggedFeatureCount": 0.9
+  },
+  {
+    "cr": "5",
+    "targetBudget": 14,
+    "monsterCount": 40,
+    "avgFeatureCount": 5.7,
+    "avgAssignedBudgetCost": 1.6,
+    "avgTaggedFeatureCount": 0.9
+  },
+  {
+    "cr": "6",
+    "targetBudget": 16,
+    "monsterCount": 23,
+    "avgFeatureCount": 5.7,
+    "avgAssignedBudgetCost": 1.0,
+    "avgTaggedFeatureCount": 0.6
+  },
+  {
+    "cr": "7",
+    "targetBudget": 18,
+    "monsterCount": 28,
+    "avgFeatureCount": 5.6,
+    "avgAssignedBudgetCost": 2.2,
+    "avgTaggedFeatureCount": 1.4
+  },
+  {
+    "cr": "8",
+    "targetBudget": 20,
+    "monsterCount": 14,
+    "avgFeatureCount": 5.9,
+    "avgAssignedBudgetCost": 1.6,
+    "avgTaggedFeatureCount": 0.8
+  },
+  {
+    "cr": "9",
+    "targetBudget": 22,
+    "monsterCount": 19,
+    "avgFeatureCount": 6.8,
+    "avgAssignedBudgetCost": 2.9,
+    "avgTaggedFeatureCount": 1.7
+  },
+  {
+    "cr": "10",
+    "targetBudget": 24,
+    "monsterCount": 19,
+    "avgFeatureCount": 6.9,
+    "avgAssignedBudgetCost": 3.3,
+    "avgTaggedFeatureCount": 1.5
+  },
+  {
+    "cr": "11",
+    "targetBudget": 26,
+    "monsterCount": 9,
+    "avgFeatureCount": 6.6,
+    "avgAssignedBudgetCost": 2.9,
+    "avgTaggedFeatureCount": 1.2
+  },
+  {
+    "cr": "12",
+    "targetBudget": 28,
+    "monsterCount": 11,
+    "avgFeatureCount": 7.5,
+    "avgAssignedBudgetCost": 2.4,
+    "avgTaggedFeatureCount": 1.4
+  },
+  {
+    "cr": "13",
+    "targetBudget": 30,
+    "monsterCount": 8,
+    "avgFeatureCount": 7.8,
+    "avgAssignedBudgetCost": 0.5,
+    "avgTaggedFeatureCount": 0.6
+  },
+  {
+    "cr": "14",
+    "targetBudget": 32,
+    "monsterCount": 7,
+    "avgFeatureCount": 9.1,
+    "avgAssignedBudgetCost": 1.3,
+    "avgTaggedFeatureCount": 0.9
+  },
+  {
+    "cr": "15",
+    "targetBudget": 34,
+    "monsterCount": 6,
+    "avgFeatureCount": 8.8,
+    "avgAssignedBudgetCost": 1.8,
+    "avgTaggedFeatureCount": 1.3
+  },
+  {
+    "cr": "16",
+    "targetBudget": 36,
+    "monsterCount": 6,
+    "avgFeatureCount": 9.5,
+    "avgAssignedBudgetCost": 1.8,
+    "avgTaggedFeatureCount": 1.3
+  },
+  {
+    "cr": "17",
+    "targetBudget": 38,
+    "monsterCount": 2,
+    "avgFeatureCount": 10.5,
+    "avgAssignedBudgetCost": 0.5,
+    "avgTaggedFeatureCount": 0.5
+  },
+  {
+    "cr": "19",
+    "targetBudget": 42,
+    "monsterCount": 1,
+    "avgFeatureCount": 12.0,
+    "avgAssignedBudgetCost": 3.0,
+    "avgTaggedFeatureCount": 1.0
+  },
+  {
+    "cr": "20",
+    "targetBudget": 44,
+    "monsterCount": 1,
+    "avgFeatureCount": 15.0,
+    "avgAssignedBudgetCost": 6.0,
+    "avgTaggedFeatureCount": 3.0
+  },
+  {
+    "cr": "26",
+    "targetBudget": 56,
+    "monsterCount": 1,
+    "avgFeatureCount": 14.0,
+    "avgAssignedBudgetCost": 4.0,
+    "avgTaggedFeatureCount": 2.0
+  },
+  {
+    "cr": "30",
+    "targetBudget": 64,
+    "monsterCount": 1,
+    "avgFeatureCount": 9.0,
+    "avgAssignedBudgetCost": 0.0,
+    "avgTaggedFeatureCount": 0.0
+  }
+]

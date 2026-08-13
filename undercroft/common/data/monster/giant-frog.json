@@ -1,0 +1,63 @@
+{
+  "kind": "monster",
+  "index": "giant-frog",
+  "name": "Giant Frog",
+  "type": "beast",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/giant-frog.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "unaligned",
+    "armorClass": 11,
+    "hitPoints": {
+      "max": 18,
+      "current": 18,
+      "diceString": "4d8"
+    },
+    "hitDice": "4d8",
+    "speed": {
+      "walk": 30,
+      "swim": 30
+    },
+    "abilities": {
+      "strength": 12,
+      "dexterity": 13,
+      "constitution": 11,
+      "intelligence": 2,
+      "wisdom": 10,
+      "charisma": 3
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "",
+    "skills": "Perception +2, Stealth +3",
+    "proficiencies": {
+      "defenses": [],
+      "languages": []
+    },
+    "senses": {
+      "darkvision": 30,
+      "passives": {
+        "perception": 12
+      }
+    },
+    "challengeRating": "1/4",
+    "proficiencyBonus": 2,
+    "xp": 50,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/giant-frog"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/giant-frog",
+  "featureIds": [
+    "feat.amphibious",
+    "feat.standing-leap",
+    "feat.giant-frog-bite",
+    "feat.swallow-2"
+  ],
+  "featureTiers": {
+    "feat.swallow-2": "giant-frog"
+  }
+}

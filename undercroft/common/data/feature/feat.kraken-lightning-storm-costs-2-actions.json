@@ -1,0 +1,33 @@
+{
+  "id": "feat.kraken-lightning-storm-costs-2-actions",
+  "name": "Lightning Storm (Costs 2 Actions)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature uses Lightning Storm.",
+  "mechanics": {
+    "type": "legendary-action-reference",
+    "scope": "unique"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "legendary-action"
+  },
+  "legendaryActionReference": {
+    "referencedFeatureIds": [
+      "feat.kraken-lightning-storm"
+    ],
+    "template": "The creature uses its {names} ability, even if it has not recharged."
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "id": "feat.crawling-claw-slam",
+  "name": "Slam",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Melee Attack Roll: +3, reach 5 ft. Hit: 2 Necrotic damage.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Melee Attack Roll: +3, reach 5 ft. Hit: 2 Necrotic damage.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

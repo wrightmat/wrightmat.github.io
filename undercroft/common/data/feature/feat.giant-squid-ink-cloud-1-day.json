@@ -1,0 +1,32 @@
+{
+  "id": "feat.giant-squid-ink-cloud-1-day",
+  "name": "Ink Cloud (1/Day)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Trigger: The creature takes damage while underwater. Response: The creature releases ink that fills a 15-foot Cube centered on itself, and the creature moves up to its Swim Speed. The Cube is Heavily Obscured for 1 minute or until a strong current or similar effect disperses the ink.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Trigger: The creature takes damage while underwater. Response: The creature releases ink that fills a 15-foot Cube centered on itself, and the creature moves up to its Swim Speed. The Cube is Heavily Obscured for 1 minute or until a strong current or similar effect disperses the ink."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "control",
+      "utility"
+    ],
+    "recipeSlots": [
+      "escape"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "reaction"
+  }
+}

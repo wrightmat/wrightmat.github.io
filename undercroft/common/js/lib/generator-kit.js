@@ -143,6 +143,61 @@ export function populateLockedFeaturesCheckList(container, features) {
   });
 }
 
+// Same rebuild as populateLockedFeaturesCheckList above, generalized from a
+// Library-feature id/name list to a plain string vocabulary (a System's own
+// tag words — behaviors/roles/creatureTypes/recipeSlots) — Loom's structured
+// Feature tag editor (Workstream E) uses this for all four of a Feature's
+// own `tags.*` arrays. readLockedFeatureIds above already works unchanged
+// for this shape too (it just reads checked checkbox `.value`s either way).
+//
+// `items` is either a plain string array (value === label, the common case
+// for a self-descriptive word like "damage"/"control") or a `{value, label}`
+// array (needed whenever the stored value and the human-readable label
+// genuinely differ — e.g. a Role/Creature Type's own lowercase id vs its
+// display name). `selected` is the caller's own authoritative list of
+// currently-checked values, passed explicitly rather than inferred from
+// whatever's already checked in the DOM — inferring from the DOM conflates
+// "the previous entity's checked state" with "this entity's own", and can't
+// know which of `items` should start checked on a fresh render. Checked
+// items sort to the top (each group alphabetical by label) so a Feature's
+// existing tags are immediately visible without scrolling/searching.
+export function populateStringChecklist(container, items, selected) {
+  if (!container) return;
+  const listBox = container.querySelector("[data-checklist-options]");
+  if (!listBox) return;
+  const searchInput = container.querySelector("[data-checklist-search]");
+  const selectedSet = new Set(selected || []);
+  const query = (searchInput?.value || "").trim().toLowerCase();
+  const normalized = items.map((item) => (typeof item === "string" ? { value: item, label: item } : item));
+  const ordered = normalized.slice().sort((a, b) => {
+    const aChecked = selectedSet.has(a.value);
+    const bChecked = selectedSet.has(b.value);
+    if (aChecked !== bChecked) return aChecked ? -1 : 1;
+    return a.label.localeCompare(b.label);
+  });
+  listBox.innerHTML = "";
+  ordered.forEach(({ value, label }) => {
+    const searchLabel = label.toLowerCase();
+    const row = document.createElement("div");
+    row.className = "form-check mb-0";
+    row.dataset.searchLabel = searchLabel;
+    if (query && !searchLabel.includes(query)) row.classList.add("d-none");
+    const checkboxId = `checklist-${value.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}`;
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.className = "form-check-input";
+    input.id = checkboxId;
+    input.value = value;
+    input.checked = selectedSet.has(value);
+    const labelEl = document.createElement("label");
+    labelEl.className = "form-check-label small";
+    labelEl.htmlFor = checkboxId;
+    labelEl.textContent = label;
+    row.append(input, labelEl);
+    listBox.appendChild(row);
+  });
+}
+
 // `toPressExportShape` is each tool's own record-shaping function (monster/
 // effect/location schema) — the only genuinely tool-specific piece; the
 // Blob/anchor/download mechanics around it are what were actually duplicated.

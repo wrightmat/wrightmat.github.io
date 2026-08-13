@@ -1,0 +1,96 @@
+{
+  "kind": "monster",
+  "name": "Lost Sorrowsworn",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/25746/501/1000/1000/637880557782764142.jpeg",
+  "notes": "### Description\n\nThe Shadowfell turns visitors around until they become marooned in its twisted landscape. Lost sorrowsworn—often referred to as the Lost—are representations of the anxiety and fear people experience when they can’t find their way. These sorrowsworn appear desperate and panicked.\n\nLost sorrowsworn grasp at any creatures they can reach. A victim experiences a flood of fear and panic as its mind buckles under the fury of this assault. The harder a victim’s allies fight to break the grasp, the more the victim suffers.\n\n---\n##### Sorrowsworn\nThe Shadowfell’s pervasive melancholy sometimes gives rise to strange incarnations of the plane’s bleak nature. Sorrowsworn embody the forms of suffering inherent to the shadowy landscape and visit horror on those who stumble into their midst. Each sorrowsworn personifies a different aspect of despair or distress.",
+  "type": "monstrosity",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Typicall Neutral Evil",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 78,
+      "current": 78,
+      "diceString": "12d8 + 24"
+    },
+    "hitDice": "12d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 17,
+      "dexterity": 12,
+      "constitution": 15,
+      "intelligence": 6,
+      "wisdom": 7,
+      "charisma": 5
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "",
+    "skills": "Athletics +6",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 8
+      }
+    },
+    "challengeRating": "7",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "Piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "and Slashing while in Dim Light or Darkness",
+          "type": "resistance"
+        }
+      ],
+      "languages": [
+        "Common"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "MotM",
+      "https://www.dndbeyond.com/monsters/2560863-lost-sorrowsworn"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.multiattack",
+    "feat.arm-spike",
+    "feat.lost-sorrowsworn-embrace-recharge-4-6",
+    "feat.lost-sorrowsworn-tightening-embrace"
+  ],
+  "featureParams": {
+    "feat.arm-spike": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "2d10 + 3",
+      "damageType": "piercing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.arm-spike",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two Arm Spike attacks."
+    }
+  }
+}

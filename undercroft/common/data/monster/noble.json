@@ -1,0 +1,73 @@
+{
+  "kind": "monster",
+  "index": "noble",
+  "name": "Noble",
+  "notes": "**Nobles** wield great authority and influence as members of the upper class, possessing wealth and connections that can make them as powerful as monarchs and generals. A noble often travels in the company of guards, as well as servants who are commoners.\n\nThe noble’s statistics can also be used to represent **courtiers** who aren’t of noble birth.",
+  "type": "humanoid",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/noble.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "any alignment",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 9,
+      "current": 9,
+      "diceString": "2d8"
+    },
+    "hitDice": "2d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 11,
+      "dexterity": 12,
+      "constitution": 11,
+      "intelligence": 12,
+      "wisdom": 14,
+      "charisma": 16
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "",
+    "skills": "Deception +5, Insight +4, Persuasion +5",
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "any two languages"
+      ]
+    },
+    "senses": {
+      "passives": {
+        "perception": 12
+      }
+    },
+    "challengeRating": "1/8",
+    "proficiencyBonus": 2,
+    "xp": 25,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/noble"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/noble",
+  "featureIds": [
+    "feat.rapier",
+    "feat.parry"
+  ],
+  "featureTiers": {
+    "feat.parry": "ac-3"
+  },
+  "featureParams": {
+    "feat.rapier": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 3,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d8 + 1",
+      "damageType": "piercing"
+    }
+  }
+}

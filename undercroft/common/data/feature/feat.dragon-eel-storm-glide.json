@@ -1,0 +1,29 @@
+{
+  "id": "feat.dragon-eel-storm-glide",
+  "name": "Storm Glide",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "During storms, the creature can travel through the air as if under the effects of a fly spell, except using its swim speed.",
+  "mechanics": {
+    "type": "passive",
+    "text": "During storms, the creature can travel through the air as if under the effects of a fly spell, except using its swim speed.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "mobility"
+    ],
+    "recipeSlots": [
+      "escape"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

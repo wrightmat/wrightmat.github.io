@@ -1,0 +1,103 @@
+{
+  "kind": "monster",
+  "name": "Chelicerae",
+  "notes": "_A chelicerae resembles a massive spider perched on tall, stilted legs. Most often, the disheveled body of a robed arcanist swings from its clenched mandibles._\n\n**Feed on Spellcasters**. These massive arachnids are largely confined to the great forests and occasional wastelands, although rumors do persist of sightings in the dark alleys of magocratic cities, causing trepidation among the spellcasters there. Few creatures pose such a threat to spellcasters as chelicerae.\n\n**Carry Their Prey**. Walking on high, stilted legs, these creatures resemble gigantic harvesters. More often than not, they are found with the grisly bodies of humanoids dangling from the chelicerae’s clenched mandibles.\n\n**Cocoon Arcanists**. Chelicerae stalk isolated victims, striking them with a poisonous bite and then pinning its prey within its jaws. There, their helpless body can hang for days on end as the chelicerae pursues obscure and eldritch tasks. At best, victims wake up weeks later with no memory of the events, far from home, and drained of vitality and spells. Others are stored immobilized in a thick cocoon in a high treetop until their body and mind recover. A few unlucky victims are slain and animated as walking dead to protect the chelicerae.",
+  "type": "aberration",
+  "stats": {
+    "size": "Large",
+    "alignment": "Neutral Evil",
+    "armorClass": 16,
+    "hitPoints": {
+      "max": 153,
+      "current": 153,
+      "diceString": "18d10 + 54"
+    },
+    "hitDice": "18d10",
+    "speed": {
+      "walk": 40,
+      "climb": 30
+    },
+    "abilities": {
+      "strength": 22,
+      "dexterity": 17,
+      "constitution": 17,
+      "intelligence": 14,
+      "wisdom": 15,
+      "charisma": 14
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "Dex +6, Wis +5, Cha +5",
+    "skills": "Acrobatics +6, Athletics +9, Perception +5, Stealth +6",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 15
+      }
+    },
+    "challengeRating": "7",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "--"
+      ]
+    },
+    "spells": "The chelicerae is an 8th-level spellcaster. Its spellcasting ability is Intelligence (spell save DC 13, +5 to hit with spell attacks). It requires no material components to cast its spells. The chelicerae has the following wizard spells prepared: Cantrips: acid splash, mage hand, minor illusion, true strike 1st: burning hands, detect magic, expeditious retreat, ray of sickness 2nd: hold person, invisibility, scorching ray 3rd: animate dead, haste, lightning bolt 4th: phantasmal killer",
+    "environments": [],
+    "sources": [
+      "Tome of Beasts 1, pg. 54"
+    ],
+    "saveDC": 13
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.magic-resistance",
+    "feat.chelicerae-siphon-spell-slots",
+    "feat.spider-climb",
+    "feat.multiattack",
+    "feat.chelicerae-bite",
+    "feat.claw"
+  ],
+  "featureParams": {
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 9,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "2d8 + 6",
+      "damageType": "slashing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.chelicerae-bite",
+          "count": 1
+        },
+        {
+          "featureId": "feat.claw",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes one bite attack and two claw attacks."
+    }
+  }
+}

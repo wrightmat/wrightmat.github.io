@@ -1,0 +1,28 @@
+{
+  "id": "feat.keen-hearing-and-smell",
+  "name": "Keen Hearing and Smell",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature has advantage on Wisdom (Perception) checks that rely on hearing or smell.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature has advantage on Wisdom (Perception) checks that rely on hearing or smell."
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

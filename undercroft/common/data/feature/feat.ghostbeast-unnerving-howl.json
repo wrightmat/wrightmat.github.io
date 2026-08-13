@@ -1,0 +1,30 @@
+{
+  "id": "feat.ghostbeast-unnerving-howl",
+  "name": "Unnerving Howl",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Upon first hearing the howls of a creature, a creature must succeed on a DC 14 Wisdom saving throw or become frightened for 1 minute. A creature can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success. If a creature's saving throw is successful, or the effect ends, the creature is immune to the creature's howl for 24 hours.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Upon first hearing the howls of a creature, a creature must succeed on a DC 14 Wisdom saving throw or become frightened for 1 minute. A creature can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success. If a creature's saving throw is successful, or the effect ends, the creature is immune to the creature's howl for 24 hours.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "fear",
+      "control"
+    ],
+    "recipeSlots": [
+      "threaten"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

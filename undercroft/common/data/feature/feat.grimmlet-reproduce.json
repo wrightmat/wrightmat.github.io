@@ -1,0 +1,30 @@
+{
+  "id": "feat.grimmlet-reproduce",
+  "name": "Reproduce",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "When a creature takes damage from a spell and isn’t reduced to 0 hp, a number of new grimmlets equal to the spell’s level appear in unoccupied spaces within 10 feet of the creature. If the spell is a cantrip, only one grimmlet is created. Sixteen or more grimmlets within 30 feet of each other can use their reactions to come together and form a creature swarm in a space within 5 feet of one grimmlet.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When a creature takes damage from a spell and isn’t reduced to 0 hp, a number of new grimmlets equal to the spell’s level appear in unoccupied spaces within 10 feet of the creature. If the spell is a cantrip, only one grimmlet is created. Sixteen or more grimmlets within 30 feet of each other can use their reactions to come together and form a creature swarm in a space within 5 feet of one grimmlet.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "utility",
+      "control"
+    ],
+    "recipeSlots": [
+      "spread"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

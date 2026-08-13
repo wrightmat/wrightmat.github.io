@@ -4,10 +4,10 @@
   "systemIds": [
     "sys.dnd5e"
   ],
-  "description": "A successful attack can inflict a condition on the target that spreads to another creature that touches or damages it.",
+  "description": "The creature attack can inflict a condition on the target that spreads to another creature that touches or damages it.",
   "mechanics": {
     "type": "passive-or-triggered",
-    "text": "A successful attack can inflict a condition on the target that spreads to another creature that touches or damages it."
+    "text": "The creature attack can inflict a condition on the target that spreads to another creature that touches or damages it."
   },
   "budgetCost": 2,
   "tags": {

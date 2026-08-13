@@ -1,0 +1,29 @@
+{
+  "id": "feat.myconid-sovereign-distress-spores",
+  "name": "Distress Spores",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "When the creature takes damage, all other myconids within 240 feet of it can sense its pain.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When the creature takes damage, all other myconids within 240 feet of it can sense its pain.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,95 @@
+{
+  "id": "feat.pounce",
+  "name": "Pounce",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "If the creature moves at least 30 feet straight toward a creature and then hits it with a claw attack on the same turn, that target must succeed on a DC 13 Strength saving throw or be knocked prone. If the target is prone, the creature can make one bite attack against it as a bonus action.",
+  "mechanics": {
+    "type": "passive",
+    "text": "If the creature moves at least 30 feet straight toward a creature and then hits it with a claw attack on the same turn, that target must succeed on a DC 13 Strength saving throw or be knocked prone. If the target is prone, the creature can make one bite attack against it as a bonus action."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "control"
+    ],
+    "recipeSlots": [
+      "isolate"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "allosaurus",
+      "name": "Pounce",
+      "shortName": "Allosaurus",
+      "mechanics": {
+        "text": "If the creature moves at least 30 feet straight toward a creature and then hits it with a claw attack on the same turn, that target must succeed on a DC 13 Strength saving throw or be knocked prone. If the target is prone, the creature can make one bite attack against it as a bonus action."
+      }
+    },
+    {
+      "id": "clawfoot",
+      "name": "Pounce",
+      "shortName": "Clawfoot",
+      "mechanics": {
+        "text": "If the clawfoot moves at least 20 feet straight toward a creature and then hits it with a claw attack on the same turn, that target must succeed on a DC 11 Strength saving throw or be knocked prone. If the target is prone, the clawfoot can make one bite attack against it as a bonus action."
+      }
+    },
+    {
+      "id": "lion",
+      "name": "Pounce",
+      "shortName": "Lion",
+      "mechanics": {
+        "text": "If the beast moves at least 20 ft. straight toward a creature and then hits it with a claw attack on the same turn, that target must succeed on a DC 13 Strength saving throw or be knocked prone. If the target is prone, the beast can make one bite attack against it as a bonus action."
+      }
+    },
+    {
+      "id": "panther",
+      "name": "Pounce",
+      "shortName": "Panther",
+      "mechanics": {
+        "text": "If the beast moves at least 20 ft. straight toward a creature and then hits it with a claw attack on the same turn, that target must succeed on a DC 12 Strength saving throw or be knocked prone. If the target is prone, the beast can make one bite attack against it as a bonus action."
+      }
+    },
+    {
+      "id": "saber-toothed-tiger",
+      "name": "Pounce",
+      "shortName": "Saber Toothed Tiger",
+      "mechanics": {
+        "text": "If the beast moves at least 20 ft. straight toward a creature and then hits it with a claw attack on the same turn, that target must succeed on a DC 14 Strength saving throw or be knocked prone. If the target is prone, the beast can make one bite attack against it as a bonus action."
+      }
+    },
+    {
+      "id": "tiger",
+      "name": "Pounce",
+      "shortName": "Tiger",
+      "mechanics": {
+        "text": "If the beast moves at least 20 ft. straight toward a creature and then hits it with a claw attack on the same turn, that target must succeed on a DC 13 Strength saving throw or be knocked prone. If the target is prone, the beast can make one bite attack against it as a bonus action."
+      }
+    },
+    {
+      "id": "weretiger-hybrid",
+      "name": "Pounce",
+      "shortName": "Weretiger Hybrid",
+      "mechanics": {
+        "text": "If the weretiger moves at least 15 feet straight toward a creature and then hits it with a claw attack on the same turn, that target must succeed on a DC 14 Strength saving throw or be knocked prone. If the target is prone, the weretiger can make one bite attack against it as a bonus action."
+      }
+    },
+    {
+      "id": "weretiger-tiger",
+      "name": "Pounce",
+      "shortName": "Weretiger Tiger",
+      "mechanics": {
+        "text": "If the weretiger moves at least 15 feet straight toward a creature and then hits it with a claw attack on the same turn, that target must succeed on a DC 14 Strength saving throw or be knocked prone. If the target is prone, the weretiger can make one bite attack against it as a bonus action."
+      }
+    }
+  ]
+}

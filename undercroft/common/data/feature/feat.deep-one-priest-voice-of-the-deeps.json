@@ -4,15 +4,20 @@
   "systemIds": [
     "sys.dnd5e"
   ],
-  "description": "A deep one priest may sway an audience of listeners with its rolling, droning speech, fascinating them for 5 minutes and making them dismiss or forget what they've seen recently unless they make a successful DC 13 Wisdom saving throw at the end of that period. If the saving throw succeeds, they remember whatever events the deep one sought to erase.",
+  "description": "a creature may sway an audience of listeners with its rolling, droning speech, fascinating them for 5 minutes and making them dismiss or forget what they’ve seen recently unless they make a successful DC 13 Wisdom saving throw at the end of that period. If the saving throw succeeds, they remember whatever events the creature sought to erase.",
   "mechanics": {
     "type": "passive",
-    "text": "A deep one priest may sway an audience of listeners with its rolling, droning speech, fascinating them for 5 minutes and making them dismiss or forget what they've seen recently unless they make a successful DC 13 Wisdom saving throw at the end of that period. If the saving throw succeeds, they remember whatever events the deep one sought to erase."
+    "text": "a creature may sway an audience of listeners with its rolling, droning speech, fascinating them for 5 minutes and making them dismiss or forget what they’ve seen recently unless they make a successful DC 13 Wisdom saving throw at the end of that period. If the saving throw succeeds, they remember whatever events the creature sought to erase.",
+    "scope": "unique"
   },
-  "budgetCost": 0,
+  "budgetCost": 2,
   "tags": {
-    "behaviors": [],
-    "recipeSlots": [],
+    "behaviors": [
+      "control"
+    ],
+    "recipeSlots": [
+      "dominate"
+    ],
     "roles": [],
     "creatureTypes": [],
     "categories": [

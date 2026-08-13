@@ -1,0 +1,90 @@
+{
+  "kind": "monster",
+  "index": "otyugh",
+  "name": "Otyugh",
+  "type": "aberration",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/otyugh.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "neutral",
+    "armorClass": 14,
+    "hitPoints": {
+      "max": 114,
+      "current": 114,
+      "diceString": "12d10+48"
+    },
+    "hitDice": "12d10",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 16,
+      "dexterity": 11,
+      "constitution": 19,
+      "intelligence": 6,
+      "wisdom": 13,
+      "charisma": 6
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "CON +7",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Otyugh"
+      ]
+    },
+    "senses": {
+      "darkvision": 120,
+      "passives": {
+        "perception": 11
+      }
+    },
+    "challengeRating": "5",
+    "proficiencyBonus": 3,
+    "xp": 1800,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/otyugh"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/otyugh",
+  "featureIds": [
+    "feat.otyugh-limited-telepathy",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.otyugh-tentacle",
+    "feat.otyugh-tentacle-slam"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d8 + 3",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "condition-no-save",
+        "condition": "must succeed on a DC 15 Constitution saving throw against disease or become poisoned until the disease is cured. Every 24 hours that elapse, the target must repeat the saving throw, reducing its hit point maximum by 5 (1d10) on a failure. The disease is cured on a success. The target dies if the disease reduces its hit point maximum to 0. This reduction to the target's hit point maximum lasts until the disease is cured"
+      }
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.bite",
+          "count": 1
+        },
+        {
+          "featureId": "feat.otyugh-tentacle",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes three attacks: one with its bite and two with its tentacles."
+    }
+  }
+}

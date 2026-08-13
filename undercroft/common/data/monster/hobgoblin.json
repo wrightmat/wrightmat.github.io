@@ -1,0 +1,84 @@
+{
+  "kind": "monster",
+  "index": "hobgoblin",
+  "name": "Hobgoblin",
+  "type": "humanoid",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/hobgoblin.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "lawful evil",
+    "armorClass": 18,
+    "hitPoints": {
+      "max": 11,
+      "current": 11,
+      "diceString": "2d8+2"
+    },
+    "hitDice": "2d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 13,
+      "dexterity": 12,
+      "constitution": 12,
+      "intelligence": 10,
+      "wisdom": 10,
+      "charisma": 9
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Common",
+        "Goblin"
+      ]
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "1/2",
+    "proficiencyBonus": 2,
+    "xp": 100,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/hobgoblin"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/hobgoblin",
+  "featureIds": [
+    "feat.martial-advantage",
+    "feat.longsword",
+    "feat.longbow"
+  ],
+  "featureParams": {
+    "feat.longsword": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 3,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d8 + 1",
+      "damageType": "slashing",
+      "versatile": {
+        "damageDice": "1d10 + 1"
+      }
+    },
+    "feat.longbow": {
+      "kind": "Ranged",
+      "attackKind": "Weapon",
+      "attackBonus": 3,
+      "distanceLabel": "range",
+      "distance": "150/600",
+      "damageDice": "1d8 + 1",
+      "damageType": "piercing"
+    }
+  }
+}

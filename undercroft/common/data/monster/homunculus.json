@@ -1,0 +1,87 @@
+{
+  "kind": "monster",
+  "index": "homunculus",
+  "name": "Homunculus",
+  "type": "construct",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/homunculus.png",
+  "stats": {
+    "size": "Tiny",
+    "alignment": "neutral",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 5,
+      "current": 5,
+      "diceString": "2d4"
+    },
+    "hitDice": "2d4",
+    "speed": {
+      "walk": 20,
+      "fly": 40
+    },
+    "abilities": {
+      "strength": 4,
+      "dexterity": 15,
+      "constitution": 11,
+      "intelligence": 10,
+      "wisdom": 10,
+      "charisma": 7
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "understands the languages of its creator but can't speak"
+      ]
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "0",
+    "proficiencyBonus": 2,
+    "xp": 10,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/homunculus"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/homunculus",
+  "featureIds": [
+    "feat.homunculus-telepathic-bond",
+    "feat.bite"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "save-or-condition"
+      }
+    }
+  }
+}

@@ -1,0 +1,128 @@
+{
+  "kind": "monster",
+  "index": "water-elemental",
+  "name": "Water Elemental",
+  "type": "elemental",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/water-elemental.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "neutral",
+    "armorClass": 14,
+    "hitPoints": {
+      "max": 114,
+      "current": 114,
+      "diceString": "12d10+48"
+    },
+    "hitDice": "12d10",
+    "speed": {
+      "walk": 30,
+      "swim": 90
+    },
+    "abilities": {
+      "strength": 18,
+      "dexterity": 14,
+      "constitution": 18,
+      "intelligence": 5,
+      "wisdom": 10,
+      "charisma": 8
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "acid",
+          "type": "resistance"
+        },
+        {
+          "name": "bludgeoning, piercing, and slashing from nonmagical weapons",
+          "type": "resistance"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "Grappled",
+          "type": "immunity"
+        },
+        {
+          "name": "Paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "Petrified",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        },
+        {
+          "name": "Prone",
+          "type": "immunity"
+        },
+        {
+          "name": "Restrained",
+          "type": "immunity"
+        },
+        {
+          "name": "Unconscious",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Aquan"
+      ]
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "5",
+    "proficiencyBonus": 3,
+    "xp": 1800,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/water-elemental"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/water-elemental",
+  "featureIds": [
+    "feat.black-patch-flowing-form",
+    "feat.water-elemental-freeze",
+    "feat.multiattack",
+    "feat.slam",
+    "feat.water-elemental-whelm"
+  ],
+  "featureParams": {
+    "feat.slam": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d8 + 4",
+      "damageType": "bludgeoning"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.slam",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two slam attacks."
+    }
+  }
+}

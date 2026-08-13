@@ -1,0 +1,30 @@
+{
+  "id": "feat.arcane-blast",
+  "name": "Arcane Blast",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Ranged Spell Attack against one target.",
+  "mechanics": {
+    "type": "weapon-attack"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "id": "feat.deep-one-control-tempature",
+  "name": "Control Tempature",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature selects an area of water within 100 feet no larger than a 20-foot sphere and causes it to heat to boiling or cool drastically. Any creature within that area must make a DC 21 Constitution saving throw, taking 27 (6d8) cold or fire damage on a failed save, or half as much on a successful saving throw.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature selects an area of water within 100 feet no larger than a 20-foot sphere and causes it to heat to boiling or cool drastically. Any creature within that area must make a DC 21 Constitution saving throw, taking 27 (6d8) cold or fire damage on a failed save, or half as much on a successful saving throw.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "control"
+    ],
+    "recipeSlots": [
+      "burst"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "lair-action"
+  }
+}

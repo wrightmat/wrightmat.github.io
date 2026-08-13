@@ -1,0 +1,29 @@
+{
+  "id": "feat.morphoi-shapeshifter",
+  "name": "Shapeshifter",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature can use its action to polymorph into a Medium creature or back into its true form. Its statistics are the same in each form. Any equipment the creature is carrying or wearing isn’t transformed. The creature reverts to its true form when it dies.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature can use its action to polymorph into a Medium creature or back into its true form. Its statistics are the same in each form. Any equipment the creature is carrying or wearing isn’t transformed. The creature reverts to its true form when it dies.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

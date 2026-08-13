@@ -1,0 +1,33 @@
+{
+  "id": "feat.arcane-devourer-void-tendril",
+  "name": "Void Tendril",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Melee Weapon Attack: +10 to hit, reach 15 ft., one target. Hit: 21 (3d8 + 6) force damage. If the target is concentrating on a spell, they make a DC 19 Constitution saving throw or lose concentration.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Melee Weapon Attack: +10 to hit, reach 15 ft., one target. Hit: 21 (3d8 + 6) force damage. If the target is concentrating on a spell, they make a DC 19 Constitution saving throw or lose concentration.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "control"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

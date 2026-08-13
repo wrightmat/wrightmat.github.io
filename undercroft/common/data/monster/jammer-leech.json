@@ -1,0 +1,91 @@
+{
+  "kind": "monster",
+  "name": "Jammer Leech",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/28079/879/1000/1000/637961800852099863.jpeg",
+  "notes": "### Description\r\n\r\nA jammer leech is a barnacle-like creature that begins life as a space-dwelling spore that attaches to the hull of a spelljamming ship, with the leech inside in larval form. A spore that remains attached to a ship for a few days punctures the hull and begins to develop a hard shell that roughly matches the color of the hull. The shell is affixed to the ship by a glue-like substance secreted by the leech. The shell grows until it’s about 1 foot in diameter. The leech inside is reddish-purple in color, with a body resembling that of a snail. It has a single watery eye at one end and a spiked tentacle protruding from just below the eye, which it uses to defend itself.\r\n\r\nA mated pair of leeches produces 1d6 spores every month. Some of these spores might join their parents on the hull of the ship, while others float off, waiting to attach themselves to another unwary vessel.\r\n\r\nA jammer leech damages the hull of the ship to which it is attached and absorbs magic from the ship’s [spelljamming helm](https://www.dndbeyond.com/magic-items/5439867-spelljamming-helm). It can discharge this magic from time to time as a defensive measure. If the crew of a ship becomes aware of leeches that have become attached, it’s customary for them to try to scrape the leeches off the hull rather than attack them with weapons. Killing a leech while it is attached to the ship is dangerous, because the trauma of its death can be felt by the ship’s spelljammer, who is weakened and [incapacitated](https://www.dndbeyond.com/compendium/rules/basic-rules/appendix-a-conditions#Incapacitated) by the shock.",
+  "type": "plant",
+  "stats": {
+    "size": "Tiny",
+    "alignment": "Unaligned",
+    "armorClass": 12,
+    "hitPoints": {
+      "max": 27,
+      "current": 27,
+      "diceString": "5d4 + 15"
+    },
+    "hitDice": "5d4",
+    "speed": {
+      "walk": 10
+    },
+    "abilities": {
+      "strength": 11,
+      "dexterity": 1,
+      "constitution": 16,
+      "intelligence": 1,
+      "wisdom": 10,
+      "charisma": 1
+    },
+    "initiative": {
+      "bonus": -5
+    },
+    "savingThrows": "",
+    "skills": "",
+    "senses": {
+      "darkvision": 30,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "1",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "Frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "Prone",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "BAM",
+      "Spelljammer: Adventures in Space • Boo’s Astral Menagerie, pg. 30"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.jammer-leech-spelljammer-overload",
+    "feat.unusual-nature",
+    "feat.spiked-tentacle",
+    "feat.jammer-leech-attach-to-hull",
+    "feat.jammer-leech-magical-discharge-1-day"
+  ],
+  "featureTiers": {
+    "feat.unusual-nature": "no-air-sleep"
+  },
+  "featureParams": {
+    "feat.spiked-tentacle": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 2,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d4",
+      "damageType": "piercing"
+    }
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "id": "feat.lightning-strike",
+  "name": "Lightning Strike",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The kraken magically creates a bolt of lightning, which can strike a target the kraken can see within 90 feet of it. The target must make a DC 18 Dexterity saving throw, taking 22 (4d10) lightning damage on a failed save, or half as much damage on a successful one.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The kraken magically creates a bolt of lightning, which can strike a target the kraken can see within 90 feet of it. The target must make a DC 18 Dexterity saving throw, taking 22 (4d10) lightning damage on a failed save, or half as much damage on a successful one."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "dc-18",
+      "name": "Lightning Strike",
+      "shortName": "DC 18",
+      "mechanics": {
+        "text": "The kraken magically creates a bolt of lightning, which can strike a target the kraken can see within 90 feet of it. The target must make a DC 18 Dexterity saving throw, taking 22 (4d10) lightning damage on a failed save, or half as much damage on a successful one."
+      }
+    },
+    {
+      "id": "dc-17",
+      "name": "Lightning Strike",
+      "shortName": "DC 17",
+      "mechanics": {
+        "text": "The giant hurls a magical lightning bolt at a point it can see within 500 feet of it. Each creature within 10 feet of that point must make a DC 17 Dexterity saving throw, taking 54 (12d8) lightning damage on a failed save, or half as much damage on a successful one."
+      }
+    }
+  ],
+  "combat": {
+    "actionCost": "action"
+  }
+}

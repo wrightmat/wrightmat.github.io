@@ -1,0 +1,89 @@
+{
+  "kind": "monster",
+  "index": "purple-worm",
+  "name": "Purple Worm",
+  "type": "monstrosity",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/purple-worm.png",
+  "stats": {
+    "size": "Gargantuan",
+    "alignment": "unaligned",
+    "armorClass": 18,
+    "hitPoints": {
+      "max": 247,
+      "current": 247,
+      "diceString": "15d20+90"
+    },
+    "hitDice": "15d20",
+    "speed": {
+      "walk": 50,
+      "burrow": 30
+    },
+    "abilities": {
+      "strength": 28,
+      "dexterity": 7,
+      "constitution": 22,
+      "intelligence": 1,
+      "wisdom": 8,
+      "charisma": 4
+    },
+    "initiative": {
+      "bonus": -2
+    },
+    "savingThrows": "CON +11, WIS +4",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [],
+      "languages": []
+    },
+    "senses": {
+      "blindsight": 30,
+      "tremorsense": 60,
+      "passives": {
+        "perception": 9
+      }
+    },
+    "challengeRating": "15",
+    "proficiencyBonus": 5,
+    "xp": 13000,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/purple-worm"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/purple-worm",
+  "featureIds": [
+    "feat.tunneler",
+    "feat.multiattack",
+    "feat.purple-worm-bite",
+    "feat.tail-stinger"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.purple-worm-bite",
+          "count": 1
+        }
+      ],
+      "text": "The creature makes two attacks: one with its bite and one with its stinger."
+    },
+    "feat.tail-stinger": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 9,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "3d6 + 9",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "save-or-damage",
+        "dice": "12d6",
+        "damageType": "poison"
+      }
+    }
+  },
+  "featureTiers": {
+    "feat.tunneler": "10ft"
+  }
+}

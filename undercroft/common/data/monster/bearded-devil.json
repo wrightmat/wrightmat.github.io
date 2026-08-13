@@ -1,0 +1,112 @@
+{
+  "kind": "monster",
+  "index": "bearded-devil",
+  "name": "Bearded Devil",
+  "type": "fiend",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/bearded-devil.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "lawful evil",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 52,
+      "current": 52,
+      "diceString": "8d8+16"
+    },
+    "hitDice": "8d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 16,
+      "dexterity": 15,
+      "constitution": 15,
+      "intelligence": 9,
+      "wisdom": 11,
+      "charisma": 11
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "STR +5, CON +4, WIS +2",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "cold",
+          "type": "resistance"
+        },
+        {
+          "name": "bludgeoning, piercing, and slashing from nonmagical weapons that aren't silvered",
+          "type": "resistance"
+        },
+        {
+          "name": "fire",
+          "type": "immunity"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Infernal",
+        "telepathy 120 ft."
+      ]
+    },
+    "senses": {
+      "darkvision": 120,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "3",
+    "proficiencyBonus": 2,
+    "xp": 700,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/bearded-devil"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/bearded-devil",
+  "featureIds": [
+    "feat.devil-s-sight",
+    "feat.magic-resistance",
+    "feat.bearded-devil-steadfast",
+    "feat.multiattack",
+    "feat.beard",
+    "feat.bearded-devil-glaive"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.beard",
+          "count": 1
+        },
+        {
+          "featureId": "feat.bearded-devil-glaive",
+          "count": 1
+        }
+      ],
+      "text": "The creature makes two attacks: one with its beard and one with its glaive."
+    },
+    "feat.beard": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d8 + 2",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "save-or-condition"
+      }
+    }
+  }
+}

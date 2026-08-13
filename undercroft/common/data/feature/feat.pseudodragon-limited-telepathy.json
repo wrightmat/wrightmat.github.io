@@ -1,0 +1,25 @@
+{
+  "id": "feat.pseudodragon-limited-telepathy",
+  "name": "Limited Telepathy",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The dragon can magically communicate simple ideas, emotions, and images telepathically with any creature within 100 ft. of it that can understand a language.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The dragon can magically communicate simple ideas, emotions, and images telepathically with any creature within 100 ft. of it that can understand a language."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

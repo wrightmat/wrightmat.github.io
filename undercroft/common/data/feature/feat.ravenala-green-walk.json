@@ -1,0 +1,29 @@
+{
+  "id": "feat.ravenala-green-walk",
+  "name": "Green Walk",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature can move across undergrowth, natural or magical, without needing to make an ability check and without expending additional movement.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature can move across undergrowth, natural or magical, without needing to make an ability check and without expending additional movement.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "mobility"
+    ],
+    "recipeSlots": [
+      "escape"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

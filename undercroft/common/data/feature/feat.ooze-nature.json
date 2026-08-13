@@ -1,0 +1,40 @@
+{
+  "id": "feat.ooze-nature",
+  "name": "Ooze Nature",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature doesn’t require sleep.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature doesn’t require sleep."
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [
+      "Ooze"
+    ],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "symbiotically-bound",
+      "name": "Ooze Nature (Symbiotically Bound)",
+      "shortName": "Symbiotically Bound",
+      "mechanics": {
+        "text": "The creature doesn’t require sleep. Symbiotically Bound. The creature and the fish’s life force have become entwined. They share statistics as if they were one creature and can't be separated."
+      }
+    }
+  ]
+}

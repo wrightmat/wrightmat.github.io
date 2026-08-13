@@ -1,0 +1,57 @@
+{
+  "kind": "monster",
+  "index": "giant-centipede",
+  "name": "Giant Centipede",
+  "type": "beast",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/giant-centipede.png",
+  "stats": {
+    "size": "Small",
+    "alignment": "unaligned",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 4,
+      "current": 4,
+      "diceString": "1d6+1"
+    },
+    "hitDice": "1d6",
+    "speed": {
+      "walk": 30,
+      "climb": 30
+    },
+    "abilities": {
+      "strength": 5,
+      "dexterity": 14,
+      "constitution": 12,
+      "intelligence": 1,
+      "wisdom": 7,
+      "charisma": 3
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [],
+      "languages": []
+    },
+    "senses": {
+      "blindsight": 30,
+      "passives": {
+        "perception": 8
+      }
+    },
+    "challengeRating": "1/4",
+    "proficiencyBonus": 2,
+    "xp": 50,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/giant-centipede"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/giant-centipede",
+  "featureIds": [
+    "feat.giant-centipede-bite"
+  ]
+}

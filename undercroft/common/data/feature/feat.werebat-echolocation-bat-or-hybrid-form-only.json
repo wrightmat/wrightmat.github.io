@@ -1,0 +1,29 @@
+{
+  "id": "feat.werebat-echolocation-bat-or-hybrid-form-only",
+  "name": "Echolocation (Bat or Hybrid Form Only)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature has blindsight out to a range of 60 feet as long as it’s not deafened.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature has blindsight out to a range of 60 feet as long as it’s not deafened.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

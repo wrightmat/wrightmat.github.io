@@ -1,0 +1,25 @@
+{
+  "id": "feat.spy-cunning-action",
+  "name": "Cunning Action",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "On each of its turns, the creature can use a bonus action to take the Dash, Disengage, or Hide action.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "On each of its turns, the creature can use a bonus action to take the Dash, Disengage, or Hide action."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

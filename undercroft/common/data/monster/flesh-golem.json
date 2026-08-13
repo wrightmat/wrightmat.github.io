@@ -1,0 +1,125 @@
+{
+  "kind": "monster",
+  "index": "flesh-golem",
+  "name": "Flesh Golem",
+  "type": "construct",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/flesh-golem.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "neutral",
+    "armorClass": 9,
+    "hitPoints": {
+      "max": 93,
+      "current": 93,
+      "diceString": "11d8+44"
+    },
+    "hitDice": "11d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 19,
+      "dexterity": 9,
+      "constitution": 18,
+      "intelligence": 6,
+      "wisdom": 10,
+      "charisma": 5
+    },
+    "initiative": {
+      "bonus": -1
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "lightning",
+          "type": "immunity"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "bludgeoning, piercing, and slashing from nonmagical weapons that aren't adamantine",
+          "type": "immunity"
+        },
+        {
+          "name": "Charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "Exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "Frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "Paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "Petrified",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "understands the languages of its creator but can't speak"
+      ]
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "5",
+    "proficiencyBonus": 3,
+    "xp": 1800,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/flesh-golem"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/flesh-golem",
+  "featureIds": [
+    "feat.berserk",
+    "feat.flesh-golem-aversion-of-fire",
+    "feat.immutable-form",
+    "feat.lightning-absorption",
+    "feat.magic-resistance",
+    "feat.magic-weapons",
+    "feat.multiattack",
+    "feat.slam"
+  ],
+  "featureParams": {
+    "feat.slam": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d8 + 4",
+      "damageType": "bludgeoning"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.slam",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two slam attacks."
+    }
+  },
+  "featureTiers": {
+    "feat.berserk": "flesh"
+  }
+}

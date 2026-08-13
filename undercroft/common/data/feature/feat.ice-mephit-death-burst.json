@@ -1,0 +1,25 @@
+{
+  "id": "feat.ice-mephit-death-burst",
+  "name": "Death Burst",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "When the elemental dies, it explodes in a burst of jagged ice. Each creature within 5 ft. of it must make a DC 10 Dexterity saving throw, taking 4 (1d8) slashing damage on a failed save, or half as much damage on a successful one.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "When the elemental dies, it explodes in a burst of jagged ice. Each creature within 5 ft. of it must make a DC 10 Dexterity saving throw, taking 4 (1d8) slashing damage on a failed save, or half as much damage on a successful one."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

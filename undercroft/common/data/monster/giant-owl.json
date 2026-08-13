@@ -1,0 +1,75 @@
+{
+  "kind": "monster",
+  "index": "giant-owl",
+  "name": "Giant Owl",
+  "type": "beast",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/giant-owl.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "neutral",
+    "armorClass": 12,
+    "hitPoints": {
+      "max": 19,
+      "current": 19,
+      "diceString": "3d10+3"
+    },
+    "hitDice": "3d10",
+    "speed": {
+      "walk": 5,
+      "fly": 60
+    },
+    "abilities": {
+      "strength": 13,
+      "dexterity": 15,
+      "constitution": 12,
+      "intelligence": 8,
+      "wisdom": 13,
+      "charisma": 10
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "Perception +5, Stealth +4",
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Giant Owl",
+        "understands Common",
+        "Elvish",
+        "and Sylvan but can't speak"
+      ]
+    },
+    "senses": {
+      "darkvision": 120,
+      "passives": {
+        "perception": 15
+      }
+    },
+    "challengeRating": "1/4",
+    "proficiencyBonus": 2,
+    "xp": 50,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/giant-owl"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/giant-owl",
+  "featureIds": [
+    "feat.flyby",
+    "feat.keen-hearing-and-smell",
+    "feat.talons"
+  ],
+  "featureParams": {
+    "feat.talons": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 3,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 1",
+      "damageType": "slashing"
+    }
+  }
+}

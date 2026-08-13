@@ -1,0 +1,28 @@
+{
+  "id": "feat.lich-cantrip",
+  "name": "Cantrip",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature casts a cantrip.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The creature casts a cantrip."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "legendary-action"
+  }
+}

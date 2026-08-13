@@ -1,0 +1,132 @@
+{
+  "kind": "monster",
+  "name": "Coral Drake",
+  "image": "https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/1c974924-6b69-45e1-9b1a-3b3e3bc66c17/d9c2zey-71227c0b-fecb-41fe-8cea-e58e55fc60c0.jpg?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcLzFjOTc0OTI0LTZiNjktNDVlMS05YjFhLTNiM2UzYmM2NmMxN1wvZDljMnpleS03MTIyN2MwYi1mZWNiLTQxZmUtOGNlYS1lNThlNTVmYzYwYzAuanBnIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.TsxxjbPMpBI1-wtCAJJr_Kz5BPes118YYgZJBBAIvVs",
+  "notes": "_Swimming upright, this creature peels itself from the vibrant seascape and strikes with needle-thin claws, shredding teeth, and a\r\nwickedly curved stinger._\r\n\r\n**Camouflaged Hunter**. Like a piece of moving coral, this drake’s coloration and scale patterns change to match nearby anemones, corals, seaweed, and sea urchins. This adaptation allows the creature considerable stealth in its natural habitat. It avoids combat if it can, preferring to hide and protect its young. Long serrated spines stretch from the coral drake’s body, waving in brilliant colors against a blue sea.\r\n\r\n**All Spikes and Needles**. The creature’s long snout stretches out from its narrow face and an array of spikes and slender protrusions form a jagged crown. Inside the mouth, serrated teeth form multiple ringed ridges where it’s young feed on leftover scraps of food and small parasites. Needle-thin talons spring from finned appendages, and a stinger frilled with tiny barbs curves at the end of its slender tail.\r\nA coral drake measures seven feet from the tip of its snout to its barbed stinging tail. Thin and agile, the beast weighs less than 100 lb. Both male and female coral drakes gestate their delicate eggs inside sacks within their mouths and throats. This oral incubation protects the vulnerable eggs, but only a handful ever reach maturity, because their parents use the ravenous spawn for defense.\r\n\r\n**Poisonous Lairs**. Coral drakes live in warm waters near great coral reefs. They hollow out small lairs and protect their meager hoards with the aid of the area’s natural inhabitants. Because they are immune to poison, coral drakes often choose lairs nestled in forests of poisonous sea urchins, stinging anemones, and toxic corals.\r\nAside from humankind, the coral drake harbors a great rivalry with dragon turtles. These beasts prize the same hunting grounds and nests and fight for supremacy in the richest reefs.",
+  "type": "dragon",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Neural Evil",
+    "armorClass": 16,
+    "hitPoints": {
+      "max": 127,
+      "current": 127,
+      "diceString": "15d8 + 60"
+    },
+    "hitDice": "15d8",
+    "speed": {
+      "walk": 30,
+      "swim": 60
+    },
+    "abilities": {
+      "strength": 19,
+      "dexterity": 17,
+      "constitution": 18,
+      "intelligence": 10,
+      "wisdom": 13,
+      "charisma": 10
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "Dex +6",
+    "skills": "Acrobatics +6, Perception +4, Stealth +6",
+    "senses": {
+      "darkvision": 120,
+      "passives": {
+        "perception": 17
+      }
+    },
+    "challengeRating": "7",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "cold",
+          "type": "resistance"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "poisoned",
+          "type": "immunity"
+        },
+        {
+          "name": "prone",
+          "type": "immunity"
+        },
+        {
+          "name": "unconscious",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Draconic"
+      ]
+    },
+    "environments": [
+      "Coastal",
+      "Underwater"
+    ],
+    "sources": [
+      "ToB1",
+      "Tome of Beasts 1, pg. 150"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.camouflage",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.claw",
+    "feat.coral-drake-stinger",
+    "feat.coral-drake-breath-weapon-recharge-5-6",
+    "feat.water-breathing"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d10 + 4",
+      "damageType": "piercing"
+    },
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "4d8 +4",
+      "damageType": "slashing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.bite",
+          "count": 1
+        },
+        {
+          "featureId": "feat.claw",
+          "count": 1
+        },
+        {
+          "featureId": "feat.coral-drake-stinger",
+          "count": 1
+        }
+      ],
+      "text": "The creature makes one bite attack, one claw attack, and one stinger attack."
+    }
+  }
+}

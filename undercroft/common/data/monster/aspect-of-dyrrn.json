@@ -1,0 +1,116 @@
+{
+  "kind": "monster",
+  "name": "Aspect of Dyrrn",
+  "notes": "A miniature version of [[creatures/Dyrrn]].",
+  "type": "aberration",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Chaotic Evil",
+    "armorClass": 16,
+    "hitPoints": {
+      "max": 170,
+      "current": 170,
+      "diceString": "21d8 + 86"
+    },
+    "hitDice": "21d8",
+    "speed": {
+      "walk": 40,
+      "fly": 40,
+      "hover": true
+    },
+    "abilities": {
+      "strength": 21,
+      "dexterity": 16,
+      "constitution": 17,
+      "intelligence": 26,
+      "wisdom": 23,
+      "charisma": 24
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "intelligence +15, wisdom +13, charisma +14",
+    "skills": "history +15, insight +13, perception +13",
+    "senses": {
+      "truesight": 120,
+      "passives": {
+        "perception": 23
+      }
+    },
+    "challengeRating": "11",
+    "proficiencyBonus": 4,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "poison",
+          "type": "resistance"
+        },
+        {
+          "name": "psychic",
+          "type": "resistance"
+        },
+        {
+          "name": "blinded",
+          "type": "immunity"
+        },
+        {
+          "name": "charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "poisoned",
+          "type": "immunity"
+        },
+        {
+          "name": "prone",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Deep Speech",
+        "telepathy 120 ft."
+      ]
+    },
+    "environments": [],
+    "sources": []
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.alien-mind",
+    "feat.legendary-resistance",
+    "feat.magic-resistance",
+    "feat.regeneration",
+    "feat.teleport",
+    "feat.multiattack",
+    "feat.aspect-of-dyrrn-tentacle-whip",
+    "feat.aspect-of-dyrrn-corruption",
+    "feat.aspect-of-dyrrn-extract-brain"
+  ],
+  "featureTiers": {
+    "feat.teleport": "30-ft-bonus-action",
+    "feat.legendary-resistance": "3-day",
+    "feat.alien-mind": "dc-23"
+  },
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.aspect-of-dyrrn-tentacle-whip",
+          "count": 1
+        }
+      ],
+      "text": "Dyrrn makes one Tentacle Whip attack and uses its Corruption once. Dyrrn can replace its Tentacle Whip attack with Extract Brain if it has a creature grappled."
+    }
+  }
+}

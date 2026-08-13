@@ -1,0 +1,29 @@
+{
+  "id": "feat.fractine-two-dimensionality",
+  "name": "Two-Dimensionality",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature can occupy another creature’s space and vice versa. It can move through other creatures and objects as if they were difficult terrain, but it takes 5 (1d10) force damage if it ends its turn inside an object.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature can occupy another creature’s space and vice versa. It can move through other creatures and objects as if they were difficult terrain, but it takes 5 (1d10) force damage if it ends its turn inside an object.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "mobility"
+    ],
+    "recipeSlots": [
+      "escape"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

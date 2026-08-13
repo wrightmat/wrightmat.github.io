@@ -1,0 +1,32 @@
+{
+  "id": "feat.shoal-ooze-mesmerizing-spiral",
+  "name": "Mesmerizing Spiral",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The fish inside the creature swim rapidly in a hypnotic spiral. Each creature within 20 feet of the creature that can see the fish must succeed on a DC 16 Wisdom saving throw or be incapacitated for 1 minute. While incapacitated, its speed is reduced to 0. The incapacitated creature can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success. If a creature’s saving throw is successful or the effect ends for it, the creature is immune to the Mesmerizing Spiral of all shoal oozes for the next 24 hours.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The fish inside the creature swim rapidly in a hypnotic spiral. Each creature within 20 feet of the creature that can see the fish must succeed on a DC 16 Wisdom saving throw or be incapacitated for 1 minute. While incapacitated, its speed is reduced to 0. The incapacitated creature can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success. If a creature’s saving throw is successful or the effect ends for it, the creature is immune to the Mesmerizing Spiral of all shoal oozes for the next 24 hours.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "control"
+    ],
+    "recipeSlots": [
+      "dominate"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

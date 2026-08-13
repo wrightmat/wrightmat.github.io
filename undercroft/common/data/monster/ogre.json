@@ -1,0 +1,80 @@
+{
+  "kind": "monster",
+  "index": "ogre",
+  "name": "Ogre",
+  "type": "giant",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/ogre.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "chaotic evil",
+    "armorClass": 11,
+    "hitPoints": {
+      "max": 59,
+      "current": 59,
+      "diceString": "7d10+21"
+    },
+    "hitDice": "7d10",
+    "speed": {
+      "walk": 40
+    },
+    "abilities": {
+      "strength": 19,
+      "dexterity": 8,
+      "constitution": 16,
+      "intelligence": 5,
+      "wisdom": 7,
+      "charisma": 7
+    },
+    "initiative": {
+      "bonus": -1
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Common",
+        "Giant"
+      ]
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 8
+      }
+    },
+    "challengeRating": "2",
+    "proficiencyBonus": 2,
+    "xp": 450,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/ogre"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/ogre",
+  "featureIds": [
+    "feat.greatclub",
+    "feat.javelin"
+  ],
+  "featureParams": {
+    "feat.greatclub": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d8 + 4",
+      "damageType": "bludgeoning"
+    },
+    "feat.javelin": {
+      "kind": "MeleeOrRanged",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "meleeDistance": "5",
+      "rangeDistance": "30/120",
+      "damageDice": "2d6 + 4",
+      "damageType": "piercing"
+    }
+  }
+}

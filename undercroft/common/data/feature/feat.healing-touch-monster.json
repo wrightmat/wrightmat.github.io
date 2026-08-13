@@ -1,0 +1,61 @@
+{
+  "id": "feat.healing-touch-monster",
+  "name": "Healing Touch",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The celestial touches another creature. The target magically regains 20 (4d8 + 2) hit points and is freed from any curse, disease, poison, blindness, or deafness.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The celestial touches another creature. The target magically regains 20 (4d8 + 2) hit points and is freed from any curse, disease, poison, blindness, or deafness."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "4d8",
+      "name": "Healing Touch",
+      "shortName": "4d8+2",
+      "mechanics": {
+        "text": "The celestial touches another creature. The target magically regains 20 (4d8 + 2) hit points and is freed from any curse, disease, poison, blindness, or deafness."
+      }
+    },
+    {
+      "id": "6d8",
+      "name": "Healing Touch",
+      "shortName": "6d8+3",
+      "mechanics": {
+        "text": "The celestial touches another creature. The target magically regains 30 (6d8 + 3) hit points and is freed from any curse, disease, poison, blindness, or deafness."
+      }
+    },
+    {
+      "id": "8d8",
+      "name": "Healing Touch",
+      "shortName": "8d8+4",
+      "mechanics": {
+        "text": "The celestial touches another creature. The target magically regains 40 (8d8 + 4) hit points and is freed from any curse, disease, poison, blindness, or deafness."
+      }
+    },
+    {
+      "id": "2d8",
+      "name": "Healing Touch",
+      "shortName": "2d8+2",
+      "mechanics": {
+        "text": "The celestial touches another creature with its horn. The target magically regains 11 (2d8 + 2) hit points. In addition, the touch removes all diseases and neutralizes all poisons afflicting the target."
+      }
+    }
+  ],
+  "combat": {
+    "actionCost": "action"
+  }
+}

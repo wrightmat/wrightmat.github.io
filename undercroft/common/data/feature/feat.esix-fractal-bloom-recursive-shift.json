@@ -1,0 +1,32 @@
+{
+  "id": "feat.esix-fractal-bloom-recursive-shift",
+  "name": "Recursive Shift",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Esix teleports up to 15 feet to an unoccupied space it can see.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Esix teleports up to 15 feet to an unoccupied space it can see.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "mobility"
+    ],
+    "recipeSlots": [
+      "escape"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "legendary-action"
+  }
+}

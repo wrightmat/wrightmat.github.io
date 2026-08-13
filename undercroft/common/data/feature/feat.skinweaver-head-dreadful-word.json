@@ -1,0 +1,32 @@
+{
+  "id": "feat.skinweaver-head-dreadful-word",
+  "name": "Dreadful Word",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Ranged Weapon Attack: +4 to hit, range 120/300 ft., 1 target. Hit: 11 (2d6 + 5) psychic damage.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Ranged Weapon Attack: +4 to hit, range 120/300 ft., 1 target. Hit: 11 (2d6 + 5) psychic damage.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

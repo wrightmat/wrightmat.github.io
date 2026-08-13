@@ -1,0 +1,71 @@
+{
+  "kind": "monster",
+  "index": "elk",
+  "name": "Elk",
+  "type": "beast",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/elk.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "unaligned",
+    "armorClass": 10,
+    "hitPoints": {
+      "max": 13,
+      "current": 13,
+      "diceString": "2d10+2"
+    },
+    "hitDice": "2d10",
+    "speed": {
+      "walk": 50
+    },
+    "abilities": {
+      "strength": 16,
+      "dexterity": 10,
+      "constitution": 12,
+      "intelligence": 2,
+      "wisdom": 10,
+      "charisma": 6
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [],
+      "languages": []
+    },
+    "senses": {
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "1/4",
+    "proficiencyBonus": 2,
+    "xp": 50,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/elk"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/elk",
+  "featureIds": [
+    "feat.charge-2",
+    "feat.ram",
+    "feat.elk-hooves"
+  ],
+  "featureParams": {
+    "feat.ram": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d6 + 3",
+      "damageType": "bludgeoning"
+    }
+  },
+  "featureTiers": {
+    "feat.charge-2": "elk"
+  }
+}

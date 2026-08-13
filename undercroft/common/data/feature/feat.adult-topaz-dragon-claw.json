@@ -1,0 +1,28 @@
+{
+  "id": "feat.adult-topaz-dragon-claw",
+  "name": "Claw",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature makes two Claw attacks.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature makes two Claw attacks.",
+    "scope": "unique"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "legendary-action"
+  }
+}

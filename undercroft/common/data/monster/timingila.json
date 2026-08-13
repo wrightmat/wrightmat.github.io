@@ -1,0 +1,138 @@
+{
+  "kind": "monster",
+  "name": "Timingila",
+  "notes": "_This massive shark-eel surges out of the water, opening titanic jaws large enough to bite a ship in half._\n\n**Bribable**. Wise captains traveling through timingila hunting grounds often carry tithes and offerings in hopes of placating the creatures.\n\n**Lesser Leviathan**. The timingila is one of the largest creatures in the seas. Some scholarly tomes suggest a connection between the timingila and rarer leviathans but no definitive proof has yet been found.\n\n**Master of the Seas**. The timingila is an apex predator of the oceans. It hunts whales primarily but eats anything it can catch. The timingila is fiercely territorial and considers all of the ocean its personal domain.",
+  "type": "monstrosity",
+  "stats": {
+    "size": "Gargantuan",
+    "alignment": "Neutral Evil",
+    "armorClass": 18,
+    "hitPoints": {
+      "max": 232,
+      "current": 232,
+      "diceString": "15d20 + 75"
+    },
+    "hitDice": "15d20",
+    "speed": {
+      "walk": 0,
+      "swim": 60
+    },
+    "abilities": {
+      "strength": 28,
+      "dexterity": 5,
+      "constitution": 21,
+      "intelligence": 8,
+      "wisdom": 7,
+      "charisma": 14
+    },
+    "initiative": {
+      "bonus": -3
+    },
+    "savingThrows": "Con +10, Wis +3",
+    "skills": "Perception +8, Stealth +7",
+    "senses": {
+      "blindsight": 120,
+      "passives": {
+        "perception": 18
+      }
+    },
+    "challengeRating": "15",
+    "proficiencyBonus": 5,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "cold",
+          "type": "immunity"
+        },
+        {
+          "name": "thunder",
+          "type": "immunity"
+        },
+        {
+          "name": "frightened",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "understands Abyssal",
+        "Celestial",
+        "Draconic",
+        "and Infernal but can’t speak"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Tome of Beasts 2, pg. 349"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.siege-monster",
+    "feat.multiattack",
+    "feat.swallowing-bite",
+    "feat.flipper",
+    "feat.tail-slap",
+    "feat.timingila-breach",
+    "feat.timingila-resonating-roar-recharge-5-6",
+    "feat.water-breathing"
+  ],
+  "featureParams": {
+    "feat.flipper": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 14,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 9",
+      "damageType": "bludgeoning"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.swallowing-bite",
+          "count": 1
+        },
+        {
+          "featureId": "feat.tail-slap",
+          "count": 1
+        },
+        {
+          "featureId": "feat.flipper",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes four attacks: one with its bite, one with its tail slap, and two with its flippers."
+    },
+    "feat.tail-slap": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 14,
+      "distanceLabel": "reach",
+      "distance": "20",
+      "damageDice": "2d8 + 9",
+      "damageType": "bludgeoning",
+      "rider": {
+        "kind": "save-or-condition",
+        "saveAbility": "strength",
+        "saveDC": 18,
+        "condition": "pushed up to 10 feet away and knocked prone"
+      }
+    },
+    "feat.swallowing-bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 14,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "3d10 + 9",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "save-or-condition",
+        "targetRestriction": "large or smaller creature"
+      }
+    }
+  }
+}

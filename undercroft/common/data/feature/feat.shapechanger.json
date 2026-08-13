@@ -23,5 +23,8 @@
     ]
   },
   "synergizesWith": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
 }

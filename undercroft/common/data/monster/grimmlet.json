@@ -1,0 +1,130 @@
+{
+  "kind": "monster",
+  "name": "Grimmlet",
+  "image": [
+    [
+      "Wikilink To Image"
+    ]
+  ],
+  "notes": "*A jagged shard of smoky translucent crystal, approximately the size and mass of a housecat, hovers silently across the field.*\n\n**Strange Families**. Grimmlets reproduce by creating near clones of themselves when injured by arcane energy, leading them to quickly gather in large familial swarms. Strangely, a grimmlet can only swarm with other grimmlets created from the same progenitor grimmlet, which leads the swarm. Not long after the swarm forms, it disperses, each grimmlet moving on to create new swarms through magic injury.\n\n**Whispering Menace**. Grimmlets do not speak. In fact, they never communicate with other creatures via any known form of language or telepathy, though they do seem to understand creatures of the Void. Despite this, the air around a grimmlet mutters and whispers at all times in a foul-sounding invocation. When the creature uses its innate magic, these whispers rise in volume slightly, giving canny listeners a split-second warning that something, likely unpleasant, is about to occur.",
+  "type": "monstrosity",
+  "stats": {
+    "size": "Tiny",
+    "alignment": "Unaligned",
+    "armorClass": 11,
+    "hitPoints": {
+      "max": 28,
+      "current": 28,
+      "diceString": "8d4 + 8"
+    },
+    "hitDice": "8d4",
+    "speed": {
+      "walk": 0,
+      "fly": 30,
+      "hover": true
+    },
+    "abilities": {
+      "strength": 8,
+      "dexterity": 12,
+      "constitution": 13,
+      "intelligence": 3,
+      "wisdom": 10,
+      "charisma": 14
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "",
+    "skills": "",
+    "senses": {
+      "blindsight": 60,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "1",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "and slashing from nonmagical attacks",
+          "type": "resistance"
+        },
+        {
+          "name": "psychic",
+          "type": "immunity"
+        },
+        {
+          "name": "blinded",
+          "type": "immunity"
+        },
+        {
+          "name": "charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "deafened",
+          "type": "immunity"
+        },
+        {
+          "name": "petrified",
+          "type": "immunity"
+        },
+        {
+          "name": "poisoned",
+          "type": "immunity"
+        },
+        {
+          "name": "prone",
+          "type": "immunity"
+        },
+        {
+          "name": "stunned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "understands Void Speech but can’t speak"
+      ]
+    },
+    "spells": "Innate Spellcasting (Psionics). The grimmlet’s innate spellcasting ability is Charisma (spell save DC 12, +4 to hit with spell attacks). It can innately cast the following spells, requiring no components: At will: eldritch blast, minor illusion 3/day each: color spray",
+    "environments": [],
+    "sources": [
+      "Tome of Beasts 2, pg. 186"
+    ],
+    "saveDC": 12
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.grimmlet-reproduce",
+    "feat.grimmlet-self-destruct",
+    "feat.crystal-edge"
+  ],
+  "featureParams": {
+    "feat.crystal-edge": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 3,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d4 + 1",
+      "damageType": "slashing",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "1d4",
+        "damageType": "psychic"
+      }
+    }
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "kind": "monster",
+  "index": "giant-elk",
+  "name": "Giant Elk",
+  "notes": "The majestic giant elk is rare to the point that its appearance is often taken as a foreshadowing of an important event, such as the birth of a king. Legends tell of gods that take the form of giant elk when visiting the Material Plane. Many cultures therefore believe that to hunt these creatures is to invite divine wrath.",
+  "type": "beast",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/giant-elk.png",
+  "stats": {
+    "size": "Huge",
+    "alignment": "unaligned",
+    "armorClass": 14,
+    "hitPoints": {
+      "max": 42,
+      "current": 42,
+      "diceString": "5d12+10"
+    },
+    "hitDice": "5d12",
+    "speed": {
+      "walk": 60
+    },
+    "abilities": {
+      "strength": 19,
+      "dexterity": 16,
+      "constitution": 14,
+      "intelligence": 7,
+      "wisdom": 14,
+      "charisma": 10
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "",
+    "skills": "Perception +4",
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Giant Elk",
+        "understands Common",
+        "Elvish",
+        "and Sylvan but can't speak"
+      ]
+    },
+    "senses": {
+      "passives": {
+        "perception": 14
+      }
+    },
+    "challengeRating": "2",
+    "proficiencyBonus": 2,
+    "xp": 450,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/giant-elk"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/giant-elk",
+  "featureIds": [
+    "feat.charge-2",
+    "feat.ram",
+    "feat.giant-elk-hooves"
+  ],
+  "featureParams": {
+    "feat.ram": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "2d6 + 4",
+      "damageType": "bludgeoning"
+    }
+  },
+  "featureTiers": {
+    "feat.charge-2": "giant-elk"
+  }
+}

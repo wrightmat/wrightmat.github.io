@@ -1,0 +1,142 @@
+{
+  "kind": "monster",
+  "name": "Deep One",
+  "notes": "#### Regional Effects\nThe region containing Dagon’s lair is warped by its magic, creating one or more of the following effects:\n- **Aquatic Bestiary**. Aquatic creatures of all types are drawn to Dagon’s presence; often they are only hostile to non-aquatic creatures.\n- **Unusual Weather**. Once per day, Dagon can control the weather surrounding his lair out to a 6-mile radius. The effect is identical to the control weather spell.\n- **Adverse Conditions**. Within 1 mile of the lair, Celestial creatures find the air or water difficult to breathe and tread. These creatures must make a DC 18 Constitution saving throw whenever they take a long rest. On a failed save, the creature does not benefit from that long rest. If Dagon is slain, changed weather reverts to normal as described in the spell, and the other effects fade in 1d10 days.\n\n#### Embrace of the Uncaring Sea\n_Weapon (trident), artifact (requires attunement)_\n\nBarnacles and small lampreys cover this 10-foot-long, deepblue- green weapon; no matter how many barnacles or lampreys are removed, the weapon always seems covered in them. The three mismatched tines of the trident drip salty brine at all times, and the weapon always appears wet.\n\n**Attunement**. In order to attune to Embrace of the Uncaring Sea, you must feed the lampreys that adorn its haft, dealing 8d10 necrotic damage to you, which cannot be resisted in any way. Oversized. A Medium-sized creature has disadvantage on attack rolls made with Embrace of the Uncaring Sea unless they wield the weapon two-handed.\n\n**Magic Weapon**. You have a +3 bonus to attack and damage rolls made with Embrace of the uncaring Sea. It also functions as a trident of fish command.\n\n**Brinetooth**. You deal an additional 5d6 poison damage on a successful hit with the trident.\n\n**Embrace of the Depths**. If you roll a 19 or 20 on an attack with this trident and you hit, the target must make a DC 21 Constitution saving throw or be afflicted by the crushing pressure of the sea. A creature afflicted by this cannot breathe, cast spells using verbal components, or cannot take actions or reactions. At the end of each of the target’s turns, it can repeat the saving throw, ending the effect on a success. Magic such as heal can end this affliction early. Destruction. You can destroy Embrace of the Uncaring Sea by stabbing the tines into the highest mountain within the hottest desert and leaving it to dry in the blazing sun for 100 years, at which time it crumbles into ash. If it is removed prior to the 100 years elapsing, all progress is lost.",
+  "type": "Fiend (Demon Lord)",
+  "stats": {
+    "size": "Gargantuan",
+    "alignment": "Chaotic Evil",
+    "armorClass": 19,
+    "hitPoints": {
+      "max": 472,
+      "current": 472,
+      "diceString": "35d10 + 280"
+    },
+    "hitDice": "35d10",
+    "speed": {
+      "walk": 20,
+      "swim": 60
+    },
+    "abilities": {
+      "strength": 25,
+      "dexterity": 18,
+      "constitution": 27,
+      "intelligence": 18,
+      "wisdom": 20,
+      "charisma": 19
+    },
+    "initiative": {
+      "bonus": 4
+    },
+    "savingThrows": "Dex +12, Con +16, Wis +13, Cha +12",
+    "skills": "Athletics +15, History +12, Insight +13, Intimidation +12, Perception +13",
+    "senses": {
+      "truesight": 120,
+      "passives": {
+        "perception": 23
+      }
+    },
+    "challengeRating": "26",
+    "proficiencyBonus": 8,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "cold",
+          "type": "resistance"
+        },
+        {
+          "name": "fire",
+          "type": "resistance"
+        },
+        {
+          "name": "lightning",
+          "type": "resistance"
+        },
+        {
+          "name": "poison; bludgeoning",
+          "type": "immunity"
+        },
+        {
+          "name": "piercing",
+          "type": "immunity"
+        },
+        {
+          "name": "and slashing from nonmagical weapons",
+          "type": "immunity"
+        },
+        {
+          "name": "charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Abyssal",
+        "Celestial",
+        "Common",
+        "Draconic",
+        "Giant",
+        "Infernal; telepathy 120 ft."
+      ]
+    },
+    "spells": "The Deep One’s innate spellcasting ability is Charisma (spell save DC 20, +12 to hit with spell attacks). It can cast the following spells, requiring no material components: At will: cloudkill, control water, create or destroy water, darkness, detect evil and good, detect magic, detect thoughts, magic missile (as the 4th level spell), teleport, telekinesis, tongues, water breathing 3/day each: conjure animals, conjure elemental (water elemental only), dispel magic, dominate beast, fear 1/day each: confusion, feeblemind, finger of death, hold person, hold monster, lightning bolt, stoneskin, time stop, web, wish",
+    "environments": [],
+    "sources": [
+      "Inspired by Nyarlathotep from H.P. Lovecraft and Dagon from Lovecraft and D&D",
+      "https://dr-eigenvalue.github.io/bestiary/creature/dagon"
+    ],
+    "saveDC": 20
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.legendary-resistance",
+    "feat.magic-resistance",
+    "feat.magic-weapons",
+    "feat.deep-one-unholy-aura",
+    "feat.deep-one-water-mastery",
+    "feat.multiattack",
+    "feat.deep-one-embrace-of-the-uncaring-sea",
+    "feat.claw",
+    "feat.deep-one-command-aquatic-creature-recharge-5-6",
+    "feat.deep-one-move",
+    "feat.deep-one-command-aquatic-creature-costs-2-actions",
+    "feat.deep-one-ink-cloud-costs-3-actions",
+    "feat.deep-one-maelstrom",
+    "feat.deep-one-control-tempature"
+  ],
+  "featureTiers": {
+    "feat.legendary-resistance": "1-day"
+  },
+  "featureParams": {
+    "feat.multiattack": {
+      "text": "The creature makes three melee weapon attacks."
+    },
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 15,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "4d8 + 7",
+      "damageType": "slashing",
+      "rider": {
+        "kind": "condition-no-save",
+        "condition": "is poisoned until the start of the creature's next turn"
+      }
+    }
+  }
+}

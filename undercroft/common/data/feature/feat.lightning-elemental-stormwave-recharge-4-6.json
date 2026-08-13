@@ -1,0 +1,43 @@
+{
+  "id": "feat.lightning-elemental-stormwave-recharge-4-6",
+  "name": "Stormwave (Recharge 4-6)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Each creature in the creature's space must make a DC 13 Constitution saving throw. On a failed save, a creature takes 15 (3d8 + 2) lightning damage and is paralyzed until the end of its next turn or until it takes damage. On a successful save, the creature takes half as much damage and isn't paralyzed.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Each creature in the creature's space must make a DC 13 Constitution saving throw. On a failed save, a creature takes 15 (3d8 + 2) lightning damage and is paralyzed until the end of its next turn or until it takes damage. On a successful save, the creature takes half as much damage and isn't paralyzed.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "control"
+    ],
+    "recipeSlots": [
+      "burst"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  },
+  "tiers": [
+    {
+      "id": "recharge-4to6",
+      "name": "Stormwave (Recharge 4-6)",
+      "shortName": "Recharge 4-6",
+      "mechanics": {
+        "text": "Each creature in the creature's space must make a DC 13 Constitution saving throw. On a failed save, a creature takes 15 (3d8 + 2) lightning damage and is paralyzed until the end of its next turn or until it takes damage. On a successful save, the creature takes half as much damage and isn't paralyzed."
+      }
+    }
+  ]
+}

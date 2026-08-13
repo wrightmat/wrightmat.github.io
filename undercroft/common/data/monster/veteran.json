@@ -1,0 +1,102 @@
+{
+  "kind": "monster",
+  "index": "veteran",
+  "name": "Veteran",
+  "notes": "Veterans are professional fighters that take up arms for pay or to protect something they believe in or value. Their ranks include soldiers retired from long service and warriors who never served anyone but themselves.",
+  "type": "humanoid",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/veteran.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "any alignment",
+    "armorClass": 17,
+    "hitPoints": {
+      "max": 58,
+      "current": 58,
+      "diceString": "9d8+18"
+    },
+    "hitDice": "9d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 16,
+      "dexterity": 13,
+      "constitution": 14,
+      "intelligence": 10,
+      "wisdom": 11,
+      "charisma": 10
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "",
+    "skills": "Athletics +5, Perception +2",
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "any one language (usually Common)"
+      ]
+    },
+    "senses": {
+      "passives": {
+        "perception": 12
+      }
+    },
+    "challengeRating": "3",
+    "proficiencyBonus": 2,
+    "xp": 700,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/veteran"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/veteran",
+  "featureIds": [
+    "feat.multiattack",
+    "feat.longsword",
+    "feat.shortsword",
+    "feat.heavy-crossbow"
+  ],
+  "featureParams": {
+    "feat.longsword": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d8 + 3",
+      "damageType": "slashing",
+      "versatile": {
+        "damageDice": "1d10 + 3"
+      }
+    },
+    "feat.shortsword": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d6 + 3",
+      "damageType": "piercing"
+    },
+    "feat.heavy-crossbow": {
+      "kind": "Ranged",
+      "attackKind": "Weapon",
+      "attackBonus": 3,
+      "distanceLabel": "range",
+      "distance": "100/400",
+      "damageDice": "1d10 + 1",
+      "damageType": "piercing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.longsword",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two longsword attacks. If it has a shortsword drawn, it can also make a shortsword attack."
+    }
+  }
+}

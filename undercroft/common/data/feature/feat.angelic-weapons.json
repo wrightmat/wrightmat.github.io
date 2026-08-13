@@ -1,0 +1,52 @@
+{
+  "id": "feat.angelic-weapons",
+  "name": "Angelic Weapons",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature's weapon attacks are magical. When the creature hits with any weapon, the weapon deals an extra 4d8 radiant damage (included in the attack).",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature's weapon attacks are magical. When the creature hits with any weapon, the weapon deals an extra 4d8 radiant damage (included in the attack)."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "4d8",
+      "name": "Angelic Weapons",
+      "shortName": "4d8 Radiant",
+      "mechanics": {
+        "text": "The creature's weapon attacks are magical. When the creature hits with any weapon, the weapon deals an extra 4d8 radiant damage (included in the attack)."
+      }
+    },
+    {
+      "id": "5d8",
+      "name": "Angelic Weapons",
+      "shortName": "5d8 Radiant",
+      "mechanics": {
+        "text": "The creature's weapon attacks are magical. When the creature hits with any weapon, the weapon deals an extra 5d8 radiant damage (included in the attack)."
+      }
+    },
+    {
+      "id": "6d8",
+      "name": "Angelic Weapons",
+      "shortName": "6d8 Radiant",
+      "mechanics": {
+        "text": "The creature's weapon attacks are magical. When the creature hits with any weapon, the weapon deals an extra 6d8 radiant damage (included in the attack)."
+      }
+    }
+  ]
+}

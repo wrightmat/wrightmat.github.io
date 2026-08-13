@@ -1,0 +1,32 @@
+{
+  "id": "feat.alchemy-beetle-bite",
+  "name": "Bite",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Melee Weapon Attack: +2 to hit, reach 5 ft., one target. Hit: 4 (1d6 + 1) piercing damage, plus 3 (1d6) acid, (1d6) fire, (1d6) lightning, or (1d6) cold damage.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Melee Weapon Attack: +2 to hit, reach 5 ft., one target. Hit: 4 (1d6 + 1) piercing damage, plus 3 (1d6) acid, (1d6) fire, (1d6) lightning, or (1d6) cold damage.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

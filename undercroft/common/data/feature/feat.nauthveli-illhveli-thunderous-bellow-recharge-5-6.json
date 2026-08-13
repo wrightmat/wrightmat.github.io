@@ -1,0 +1,33 @@
+{
+  "id": "feat.nauthveli-illhveli-thunderous-bellow-recharge-5-6",
+  "name": "Thunderous Bellow (Recharge 5–6)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature bellows in a 60 foot cone. Each creature in the area must make a DC 20 Dexterity saving throw. On a failure, a creature takes 54 (12d8) thunder damage and is pushed up to 15 feet away from the creature and knocked prone. On a success, a creature takes half the damage and isn’t pushed or knocked prone.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature bellows in a 60 foot cone. Each creature in the area must make a DC 20 Dexterity saving throw. On a failure, a creature takes 54 (12d8) thunder damage and is pushed up to 15 feet away from the creature and knocked prone. On a success, a creature takes half the damage and isn’t pushed or knocked prone.",
+    "scope": "unique"
+  },
+  "budgetCost": 4,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "control"
+    ],
+    "recipeSlots": [
+      "burst"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

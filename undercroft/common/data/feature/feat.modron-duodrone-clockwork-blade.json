@@ -1,0 +1,32 @@
+{
+  "id": "feat.modron-duodrone-clockwork-blade",
+  "name": "Clockwork Blade",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Melee or Ranged Attack Roll: +3 to hit, reach 5 ft. or range 30 ft. _Hit:_ 4 (1d6 + 1) Force damage. _Hit or Miss:_ The blade magically returns to the creature’s hand immediately after a ranged attack.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Melee or Ranged Attack Roll: +3 to hit, reach 5 ft. or range 30 ft. _Hit:_ 4 (1d6 + 1) Force damage. _Hit or Miss:_ The blade magically returns to the creature’s hand immediately after a ranged attack.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

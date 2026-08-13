@@ -1,0 +1,120 @@
+{
+  "kind": "monster",
+  "index": "stone-golem",
+  "name": "Stone Golem",
+  "type": "construct",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/stone-golem.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "unaligned",
+    "armorClass": 17,
+    "hitPoints": {
+      "max": 178,
+      "current": 178,
+      "diceString": "17d10+85"
+    },
+    "hitDice": "17d10",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 22,
+      "dexterity": 9,
+      "constitution": 20,
+      "intelligence": 3,
+      "wisdom": 11,
+      "charisma": 1
+    },
+    "initiative": {
+      "bonus": -1
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "psychic",
+          "type": "immunity"
+        },
+        {
+          "name": "bludgeoning, piercing, and slashing from nonmagical weapons that aren't adamantine",
+          "type": "immunity"
+        },
+        {
+          "name": "Charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "Exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "Frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "Paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "Petrified",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "understands the languages of its creator but can't speak"
+      ]
+    },
+    "senses": {
+      "darkvision": 120,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "10",
+    "proficiencyBonus": 4,
+    "xp": 5900,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/stone-golem"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/stone-golem",
+  "featureIds": [
+    "feat.immutable-form",
+    "feat.magic-resistance",
+    "feat.magic-weapons",
+    "feat.multiattack",
+    "feat.slam",
+    "feat.stone-golem-slow"
+  ],
+  "featureParams": {
+    "feat.slam": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 10,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "3d8 + 6",
+      "damageType": "bludgeoning"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.slam",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two slam attacks."
+    }
+  }
+}

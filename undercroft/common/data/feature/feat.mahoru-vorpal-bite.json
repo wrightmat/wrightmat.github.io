@@ -1,0 +1,32 @@
+{
+  "id": "feat.mahoru-vorpal-bite",
+  "name": "Vorpal Bite",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "a creature’s saw-like jaws are excel at dismembering prey. When the creature scores a critical hit, the target must succeed on a DC 14 Strength saving throw or lose an appendage.",
+  "mechanics": {
+    "type": "passive",
+    "text": "a creature’s saw-like jaws are excel at dismembering prey. When the creature scores a critical hit, the target must succeed on a DC 14 Strength saving throw or lose an appendage.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

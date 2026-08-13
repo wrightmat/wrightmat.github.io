@@ -1,0 +1,92 @@
+{
+  "kind": "monster",
+  "name": "Giant Mimic",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/7644/720/1000/1000/637084713720836025.jpeg",
+  "notes": "",
+  "type": "monstrosity",
+  "stats": {
+    "size": "Large",
+    "alignment": "Neutral",
+    "armorClass": 12,
+    "hitPoints": {
+      "max": 75,
+      "current": 75,
+      "diceString": "10d10 + 20"
+    },
+    "hitDice": "10d10",
+    "speed": {
+      "walk": 15
+    },
+    "abilities": {
+      "strength": 17,
+      "dexterity": 12,
+      "constitution": 15,
+      "intelligence": 5,
+      "wisdom": 13,
+      "charisma": 8
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "",
+    "skills": "stealth +3",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 11
+      }
+    },
+    "challengeRating": "3",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Acid",
+          "type": "immunity"
+        },
+        {
+          "name": "Prone",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "WDH",
+      "https://www.dndbeyond.com/monsters/285320-giant-mimic",
+      "Waterdeep: Dragon Heist, pg. 122"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.shapechanger",
+    "feat.mimic-adhesive-object-form-only",
+    "feat.false-appearance-ambush",
+    "feat.grappler",
+    "feat.giant-mimic-mutiattack",
+    "feat.pseudopod",
+    "feat.bite"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d8 + 3",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "1d8",
+        "damageType": "acid"
+      }
+    }
+  }
+}

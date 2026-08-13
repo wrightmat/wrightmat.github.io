@@ -1,0 +1,29 @@
+{
+  "id": "feat.glass-gator-transparency",
+  "name": "Transparency",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature has advantage on Dexterity (Stealth) checks while underwater or in dim light.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature has advantage on Dexterity (Stealth) checks while underwater or in dim light.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,91 @@
+{
+  "kind": "monster",
+  "index": "behir",
+  "name": "Behir",
+  "type": "monstrosity",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/behir.png",
+  "stats": {
+    "size": "Huge",
+    "alignment": "neutral evil",
+    "armorClass": 17,
+    "hitPoints": {
+      "max": 168,
+      "current": 168,
+      "diceString": "16d12+64"
+    },
+    "hitDice": "16d12",
+    "speed": {
+      "walk": 50,
+      "climb": 40
+    },
+    "abilities": {
+      "strength": 23,
+      "dexterity": 16,
+      "constitution": 18,
+      "intelligence": 7,
+      "wisdom": 14,
+      "charisma": 12
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "",
+    "skills": "Perception +6, Stealth +7",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "lightning",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Draconic"
+      ]
+    },
+    "senses": {
+      "darkvision": 90,
+      "passives": {
+        "perception": 16
+      }
+    },
+    "challengeRating": "11",
+    "proficiencyBonus": 4,
+    "xp": 7200,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/behir"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/behir",
+  "featureIds": [
+    "feat.multiattack",
+    "feat.bite",
+    "feat.behir-constrict",
+    "feat.behir-lightning-breath",
+    "feat.swallow"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 10,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "3d10 + 6",
+      "damageType": "piercing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.bite",
+          "count": 1
+        }
+      ],
+      "text": "The creature makes two attacks: one with its bite and one to constrict."
+    }
+  },
+  "featureTiers": {
+    "feat.swallow": "behir"
+  }
+}

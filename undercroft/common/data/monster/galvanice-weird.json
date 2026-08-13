@@ -1,0 +1,111 @@
+{
+  "kind": "monster",
+  "name": "Galvanice Weird",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/4719/679/1000/1000/636755093436157209.png",
+  "notes": "",
+  "type": "elemental",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Chaotic Neutral",
+    "armorClass": 12,
+    "hitPoints": {
+      "max": 22,
+      "current": 22,
+      "diceString": "3d8 + 9"
+    },
+    "hitDice": "3d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 14,
+      "dexterity": 10,
+      "constitution": 17,
+      "intelligence": 3,
+      "wisdom": 10,
+      "charisma": 5
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "1",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Cold; Lightning; Bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "Piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "and Slashing from Nonmagical Attacks",
+          "type": "resistance"
+        },
+        {
+          "name": "Poison",
+          "type": "immunity"
+        },
+        {
+          "name": "exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "grappled",
+          "type": "immunity"
+        },
+        {
+          "name": "paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "petrified",
+          "type": "immunity"
+        },
+        {
+          "name": "poisoned",
+          "type": "immunity"
+        },
+        {
+          "name": "prone",
+          "type": "immunity"
+        },
+        {
+          "name": "restrained",
+          "type": "immunity"
+        },
+        {
+          "name": "unconscious",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "GGR",
+      "https://www.dndbeyond.com/monsters/175704-galvanice-weird",
+      "Guildmasters’ Guide to Ravnica, pg. 209"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.galvanice-weird-death-burst",
+    "feat.galvanice-weird-slam"
+  ]
+}

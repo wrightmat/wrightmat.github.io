@@ -1,0 +1,34 @@
+{
+  "id": "feat.aspect-of-avassh-mourning-bloom",
+  "name": "Mourning Bloom",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Avassh grows a bloom of haunting roses from a point it can see within 120 feet of it, and the roses cry out with the voices of the blood that fertilizes their soil. Each creature in a 30-foot-radius sphere centered on that point must make a DC 22 Wisdom saving throw. On a failed save, a creature takes 22 (4d10) psychic damage and becomes frightened of Avassh. On a successful save, a creature takes half as much damage and is not frightened. A frightened creature must repeat the saving throw at the end of each of its turns, taking 22 (4d10) psychic damage on a failed save, and ending the effect on itself on a successful one.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Avassh grows a bloom of haunting roses from a point it can see within 120 feet of it, and the roses cry out with the voices of the blood that fertilizes their soil. Each creature in a 30-foot-radius sphere centered on that point must make a DC 22 Wisdom saving throw. On a failed save, a creature takes 22 (4d10) psychic damage and becomes frightened of Avassh. On a successful save, a creature takes half as much damage and is not frightened. A frightened creature must repeat the saving throw at the end of each of its turns, taking 22 (4d10) psychic damage on a failed save, and ending the effect on itself on a successful one.",
+    "scope": "unique"
+  },
+  "budgetCost": 4,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "fear",
+      "control"
+    ],
+    "recipeSlots": [
+      "burst"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

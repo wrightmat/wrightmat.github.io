@@ -1,0 +1,128 @@
+{
+  "kind": "monster",
+  "name": "Gray Slaad",
+  "image": "https://angrygolem-games.com/wp-content/uploads/2021/11/Gray-Slaad.jpg",
+  "notes": "",
+  "type": "Abberation",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Chaotic Neutral",
+    "armorClass": 18,
+    "hitPoints": {
+      "max": 127,
+      "current": 127,
+      "diceString": "17d8 + 51"
+    },
+    "hitDice": "17d8",
+    "speed": {
+      "walk": 40
+    },
+    "abilities": {
+      "strength": 17,
+      "dexterity": 17,
+      "constitution": 16,
+      "intelligence": 13,
+      "wisdom": 8,
+      "charisma": 14
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "",
+    "skills": "Arcana +5, Perception +6",
+    "senses": {
+      "blindsight": 60,
+      "darkvision": 60,
+      "passives": {
+        "perception": 16
+      }
+    },
+    "challengeRating": "9",
+    "proficiencyBonus": 4,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "acid",
+          "type": "resistance"
+        },
+        {
+          "name": "cold",
+          "type": "resistance"
+        },
+        {
+          "name": "fire",
+          "type": "resistance"
+        },
+        {
+          "name": "lightning",
+          "type": "resistance"
+        },
+        {
+          "name": "thunder",
+          "type": "resistance"
+        }
+      ],
+      "languages": [
+        "Slaad",
+        "telepathy 60 ft."
+      ]
+    },
+    "spells": "The slaad’s innate spellcasting ability is Charisma (spell save DC 14). The slaad can innately cast the following spells, requiring no material components: At will: detect magic, detect thoughts, invisibility (self only), mage hand, major image 2/day each: fear, fly, fireball, tongues 1/day: plane shift (self only)",
+    "environments": [
+      "Urban"
+    ],
+    "sources": [
+      "MM",
+      "https://www.dndbeyond.com/monsters/17114-gray-slaad",
+      "Monster Manual, pg. 277",
+      "https://angrygolem-games.com/monster-manual/letter-g/gray-slaad-5e-stats/"
+    ],
+    "saveDC": 14
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.magic-resistance",
+    "feat.magic-weapons",
+    "feat.regeneration",
+    "feat.shapechanger",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.claw",
+    "feat.greatsword"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d4 + 3",
+      "damageType": "piercing"
+    },
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d8 + 3",
+      "damageType": "slashing"
+    },
+    "feat.greatsword": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 3",
+      "damageType": "slashing"
+    },
+    "feat.multiattack": {
+      "text": "The creature makes three attacks: one with its bite (slaad form) and two with its claws (slaad form) or one with its greatsword (humanoid form)."
+    }
+  }
+}

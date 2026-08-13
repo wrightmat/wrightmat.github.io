@@ -76,6 +76,17 @@
             </section>
           </div>
 
+          <div class="d-flex flex-column gap-3" data-loom-view-panel="features" hidden>
+            <section class="d-flex flex-column gap-2">
+              <div class="d-flex align-items-center gap-2">
+                <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Features</h2>
+                <span class="align-middle" data-help-topic="loom.features" data-help-insert="replace"></span>
+              </div>
+              <div data-field-mount="feature-type-filter"></div>
+              <div data-field-mount="feature-select"></div>
+            </section>
+          </div>
+
           <div class="d-flex flex-column gap-3" data-loom-view-panel="library" hidden>
             <section class="d-flex flex-column gap-2">
               <div class="d-flex align-items-center gap-2">
@@ -151,6 +162,9 @@
               <button class="nav-link" type="button" role="tab" data-loom-view-tab="macros" aria-selected="false">Macros</button>
             </li>
             <li class="nav-item" role="presentation">
+              <button class="nav-link" type="button" role="tab" data-loom-view-tab="features" aria-selected="false">Features</button>
+            </li>
+            <li class="nav-item" role="presentation">
               <button class="nav-link" type="button" role="tab" data-loom-view-tab="users" aria-selected="false">Users</button>
             </li>
             <li class="nav-item" role="presentation">
@@ -195,15 +209,53 @@
                       <div class="col-12 d-flex flex-column gap-2">
                         <div data-source-value-label-row></div>
                         <div class="input-group">
+                          <!-- webkitdirectory forces the browser's folder-picker UI, which can't
+                               coexist with the plain multi-select below on one `<input>` — kept as
+                               its own hidden input, opened by this button, feeding the exact same
+                               "how many files were selected" check Fetch itself does either way.
+                               Shown only for a `bulk: true` + `file: true` source (Fantasy
+                               Statblocks today). Placed on the far left, ahead of the value/file
+                               input, so it reads as a distinct alternate-input-source affordance
+                               rather than crowding the Fetch button on the right. -->
+                          <input class="d-none" type="file" id="loomSourceBulkFolder" data-source-bulk-folder accept=".md" multiple webkitdirectory />
+                          <button class="btn btn-outline-secondary d-none" type="button" data-source-bulk-folder-button title="Choose a folder of Markdown files">
+                            <span class="iconify" data-icon="tabler:folder" aria-hidden="true"></span>
+                          </button>
                           <input class="form-control" type="text" id="loomSourceValue" data-source-value placeholder="" />
                           <!-- Shown instead of the text input above (see SOURCES' own `file: true`
                                flag, content-fetch.js) only for a source whose value is a File, not
-                               typed text — currently just Fantasy Statblocks' own markdown upload. -->
-                          <input class="form-control d-none" type="file" id="loomSourceFile" data-source-file accept=".md" />
+                               typed text — currently just Fantasy Statblocks' own markdown upload.
+                               `multiple` unconditionally: Fetch itself detects whether one file or
+                               several were chosen and branches to a single import or a bulk one — no
+                               separate bulk-only file input needed. -->
+                          <input class="form-control d-none" type="file" id="loomSourceFile" data-source-file accept=".md" multiple />
+                          <!-- Fetch itself detects a list-shaped result (SRD) or a multi-file
+                               selection (Fantasy Statblocks) and switches into bulk mode — no
+                               separate Fetch All button. -->
                           <button class="btn btn-outline-secondary" type="button" data-source-fetch>Fetch</button>
                         </div>
+                        <p class="small text-body-secondary mb-0 d-none" data-source-fetch-status></p>
                       </div>
                     </div>
+                  </div>
+                </section>
+              </div>
+            </div>
+            <div class="card shadow-theme d-none" data-bulk-import-card>
+              <div class="card-body">
+                <section class="d-flex flex-column gap-2" data-bulk-import-section>
+                  <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+                    <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0">Bulk Import</h2>
+                    <div class="d-flex align-items-center gap-2">
+                      <button class="btn btn-outline-secondary btn-sm" type="button" data-bulk-select-all>Select All</button>
+                      <button class="btn btn-outline-secondary btn-sm" type="button" data-bulk-select-none>Select None</button>
+                    </div>
+                  </div>
+                  <p class="small text-body-secondary mb-0" data-bulk-summary></p>
+                  <div class="d-flex flex-column gap-1 overflow-auto" style="max-height: 320px" data-bulk-checklist></div>
+                  <div class="d-flex align-items-center gap-2">
+                    <button class="btn btn-primary btn-sm" type="button" data-bulk-import-selected>Import Selected</button>
+                    <span class="small text-body-secondary" data-bulk-progress></span>
                   </div>
                 </section>
               </div>
@@ -346,6 +398,51 @@
             </div>
           </div>
 
+          <div class="d-flex flex-column gap-4" data-loom-view-panel="features" hidden>
+            <div class="card shadow-theme">
+              <div class="card-body">
+                <section class="d-flex flex-column gap-3" data-features-section>
+                  <div class="d-flex align-items-center gap-2">
+                    <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0">Feature Cost &amp; Tags</h2>
+                    <span class="align-middle" data-help-topic="loom.features" data-help-insert="replace"></span>
+                  </div>
+                  <p class="text-body-secondary mb-0" data-features-empty>
+                    Select a Feature from the left pane, or create a new one from the Library tab (a new Feature
+                    still needs an id typed there first — every other field can be edited here afterward).
+                  </p>
+                  <div class="d-flex flex-column gap-3 d-none" data-features-panel>
+                    <div class="row g-2">
+                      <div class="col-12 col-md-3" data-field-mount="feature-id"></div>
+                      <div class="col-12 col-md-5" data-field-mount="feature-name"></div>
+                      <div class="col-6 col-md-2" data-field-mount="feature-budget-cost"></div>
+                      <div class="col-6 col-md-2" data-field-mount="feature-scope"></div>
+                    </div>
+                    <p class="small text-body-secondary mb-0 d-none" data-feature-eligibility-note></p>
+                    <div data-field-mount="feature-description"></div>
+                    <div class="d-flex flex-column gap-1">
+                      <div data-field-mount="feature-mechanics"></div>
+                      <div class="invalid-feedback d-block mt-0 d-none" data-feature-mechanics-error></div>
+                    </div>
+                    <div data-feature-categories-mount></div>
+                    <div data-feature-behaviors-mount></div>
+                    <div data-feature-recipe-slots-mount></div>
+                    <div data-feature-roles-mount></div>
+                    <div data-feature-creature-types-mount></div>
+                    <div data-feature-synergizes-mount></div>
+                    <div data-feature-conflicts-mount></div>
+                    <div class="d-flex align-items-center gap-2">
+                      <button class="btn btn-outline-secondary btn-sm" type="button" data-feature-suggest>
+                        <span class="iconify" data-icon="tabler:sparkles" aria-hidden="true"></span>
+                        Suggest Cost &amp; Tags
+                      </button>
+                      <span class="small text-body-secondary d-none" data-feature-suggest-status></span>
+                    </div>
+                  </div>
+                </section>
+              </div>
+            </div>
+          </div>
+
           <div class="d-flex flex-column gap-4" data-loom-view-panel="groups" hidden>
             <div class="card shadow-theme">
               <div class="card-body">
@@ -452,6 +549,10 @@
               </p>
               <div class="d-flex flex-column gap-2 d-none" data-loom-library-table-type-details>
                 <div>
+                  <span class="text-body-secondary small d-block">Items</span>
+                  <span data-loom-library-table-item-count></span>
+                </div>
+                <div>
                   <span class="text-body-secondary small d-block">Viewable by</span>
                   <span data-loom-library-table-read-tier></span>
                 </div>
@@ -479,6 +580,10 @@
                 <div>
                   <span class="text-body-secondary small d-block">Owner</span>
                   <select class="form-select form-select-sm w-auto" data-loom-library-table-owner aria-label="Change owner"></select>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="loomLibraryTablePublic" data-loom-library-table-public />
+                  <label class="form-check-label small" for="loomLibraryTablePublic">Public (visible to everyone)</label>
                 </div>
                 <div class="text-body-secondary small" data-loom-library-table-share-summary>Loading access…</div>
                 <button class="btn btn-outline-primary btn-sm align-self-start" type="button" data-loom-library-table-share>

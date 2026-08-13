@@ -1,0 +1,32 @@
+{
+  "id": "feat.musteval-guardinal-skirmish-movement",
+  "name": "Skirmish Movement",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "When a creature ends its turn within 5 feet of the creature, the creature can move up to half its speed. This movement doesn’t provoke opportunity attacks.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When a creature ends its turn within 5 feet of the creature, the creature can move up to half its speed. This movement doesn’t provoke opportunity attacks.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "mobility"
+    ],
+    "recipeSlots": [
+      "escape"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "reaction"
+  }
+}

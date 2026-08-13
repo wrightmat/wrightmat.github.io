@@ -1,0 +1,102 @@
+{
+  "kind": "monster",
+  "index": "swarm-of-ravens",
+  "name": "Swarm of Ravens",
+  "type": "swarm of Tiny beasts",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/swarm-of-ravens.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "unaligned",
+    "armorClass": 12,
+    "hitPoints": {
+      "max": 24,
+      "current": 24,
+      "diceString": "7d8-7"
+    },
+    "hitDice": "7d8",
+    "speed": {
+      "walk": 10,
+      "fly": 50
+    },
+    "abilities": {
+      "strength": 6,
+      "dexterity": 14,
+      "constitution": 8,
+      "intelligence": 3,
+      "wisdom": 12,
+      "charisma": 6
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "slashing",
+          "type": "resistance"
+        },
+        {
+          "name": "Charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "Frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "Grappled",
+          "type": "immunity"
+        },
+        {
+          "name": "Paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "Petrified",
+          "type": "immunity"
+        },
+        {
+          "name": "Prone",
+          "type": "immunity"
+        },
+        {
+          "name": "Restrained",
+          "type": "immunity"
+        },
+        {
+          "name": "Stunned",
+          "type": "immunity"
+        }
+      ],
+      "languages": []
+    },
+    "senses": {
+      "passives": {
+        "perception": 15
+      }
+    },
+    "challengeRating": "1/4",
+    "proficiencyBonus": 2,
+    "xp": 50,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/swarm-of-ravens"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/swarm-of-ravens",
+  "featureIds": [
+    "feat.death-butterfly-swarm-swarm",
+    "feat.swarm-of-ravens-beaks"
+  ]
+}

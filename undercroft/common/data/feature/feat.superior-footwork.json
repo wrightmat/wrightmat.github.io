@@ -4,10 +4,10 @@
   "systemIds": [
     "sys.dnd5e"
   ],
-  "description": "The creature ignores difficult terrain and doesn't provoke opportunity attacks when it moves.",
+  "description": "The creature doesn't provoke opportunity attacks when it moves.",
   "mechanics": {
     "type": "passive-or-triggered",
-    "text": "The creature ignores difficult terrain and doesn't provoke opportunity attacks when it moves."
+    "text": "The creature doesn't provoke opportunity attacks when it moves."
   },
   "budgetCost": 1,
   "tags": {

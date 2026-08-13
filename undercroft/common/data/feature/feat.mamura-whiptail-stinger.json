@@ -1,0 +1,33 @@
+{
+  "id": "feat.mamura-whiptail-stinger",
+  "name": "Whiptail Stinger",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Melee Weapon Attack: +7 to hit, range 5 ft., one target. Hit: 8 (1d8 + 4) piercing damage, and the target must succeed on a DC 15 Constitution saving throw or take 1d6 poison damage. If the target is also poisoned by the creature’s claws, it takes another 1d6 poison damage at the start of each of its turns while the poisoning remains in effect.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Melee Weapon Attack: +7 to hit, range 5 ft., one target. Hit: 8 (1d8 + 4) piercing damage, and the target must succeed on a DC 15 Constitution saving throw or take 1d6 poison damage. If the target is also poisoned by the creature’s claws, it takes another 1d6 poison damage at the start of each of its turns while the poisoning remains in effect.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "debuff"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

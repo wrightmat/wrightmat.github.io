@@ -1,0 +1,84 @@
+{
+  "kind": "monster",
+  "index": "nightmare",
+  "name": "Nightmare",
+  "type": "fiend",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/nightmare.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "neutral evil",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 68,
+      "current": 68,
+      "diceString": "8d10+24"
+    },
+    "hitDice": "8d10",
+    "speed": {
+      "walk": 60,
+      "fly": 90
+    },
+    "abilities": {
+      "strength": 18,
+      "dexterity": 15,
+      "constitution": 16,
+      "intelligence": 10,
+      "wisdom": 13,
+      "charisma": 15
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "fire",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "understands Abyssal",
+        "Common",
+        "and Infernal but can't speak"
+      ]
+    },
+    "senses": {
+      "passives": {
+        "perception": 11
+      }
+    },
+    "challengeRating": "3",
+    "proficiencyBonus": 2,
+    "xp": 700,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/nightmare"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/nightmare",
+  "featureIds": [
+    "feat.nightmare-confer-fire-resistance",
+    "feat.light-elemental-brilliant-illumination",
+    "feat.hooves",
+    "feat.nightmare-ethereal-stride"
+  ],
+  "featureParams": {
+    "feat.hooves": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d8 + 4",
+      "damageType": "bludgeoning",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "2d6",
+        "damageType": "fire"
+      }
+    }
+  }
+}

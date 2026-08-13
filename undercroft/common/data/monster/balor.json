@@ -1,0 +1,111 @@
+{
+  "kind": "monster",
+  "index": "balor",
+  "name": "Balor",
+  "type": "fiend",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/balor.png",
+  "stats": {
+    "size": "Huge",
+    "alignment": "chaotic evil",
+    "armorClass": 19,
+    "hitPoints": {
+      "max": 262,
+      "current": 262,
+      "diceString": "21d12+126"
+    },
+    "hitDice": "21d12",
+    "speed": {
+      "walk": 40,
+      "fly": 80
+    },
+    "abilities": {
+      "strength": 26,
+      "dexterity": 15,
+      "constitution": 22,
+      "intelligence": 20,
+      "wisdom": 16,
+      "charisma": 22
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "STR +14, CON +12, WIS +9, CHA +12",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "cold",
+          "type": "resistance"
+        },
+        {
+          "name": "lightning",
+          "type": "resistance"
+        },
+        {
+          "name": "bludgeoning, piercing, and slashing from nonmagical weapons",
+          "type": "resistance"
+        },
+        {
+          "name": "fire",
+          "type": "immunity"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Abyssal",
+        "telepathy 120 ft."
+      ]
+    },
+    "senses": {
+      "truesight": 120,
+      "passives": {
+        "perception": 13
+      }
+    },
+    "challengeRating": "19",
+    "proficiencyBonus": 6,
+    "xp": 22000,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/balor"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/balor",
+  "featureIds": [
+    "feat.balor-death-throes",
+    "feat.fire-aura",
+    "feat.magic-resistance",
+    "feat.magic-weapons",
+    "feat.multiattack",
+    "feat.balor-longsword",
+    "feat.balor-whip",
+    "feat.teleport"
+  ],
+  "featureTiers": {
+    "feat.fire-aura": "wide-automatic",
+    "feat.teleport": "60-ft"
+  },
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.balor-longsword",
+          "count": 1
+        },
+        {
+          "featureId": "feat.balor-whip",
+          "count": 1
+        }
+      ],
+      "text": "The creature makes two attacks: one with its longsword and one with its whip."
+    }
+  }
+}

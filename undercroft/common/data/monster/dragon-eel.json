@@ -1,0 +1,134 @@
+{
+  "kind": "monster",
+  "name": "Dragon Eel",
+  "notes": "The dragon eel’s unmistakable slender form sports a powerful single finned tail and wicked jaws like a matched pair of serrated blades. Dragon eels vary widely in color from browns and blacks to brilliant iridescent hues in mottled patterns.\n\n**Fond of Servants**. While most dragon eels are solitary and irascible, on rare instances some form pairs or small bands—and some gather humanoid servants. \n\n**Magnetic and Lightning**. Dragon eels make their natural homes in twisting underwater cave systems and prefer magnetically-aligned,  metallic cavern formations navigable with their refined electric-sight. Some dragon eels use their constant electric auras combined with acquired alchemical reagents to electroplate portions of their golden hoard onto the walls of their dwellings. \n\n**Pirate Fleets and Dominions**. Dragon eels claim large swaths of shoreline as their demesne. Although neither particularly cruel nor righteous, a dragon eel often lords over awed tribes, allowing locals to revere it as a mighty spirit. Some dragon eels use such tribes as the core of a pirate fleet or raiding parties carried on their backs. Their ability to swim through air during storms adds to their reputation as terrible thunder spirits.\n\n**Bribable**. Their deceptive moniker sometimes lulls foolish sailors into a false confidence when they expect to face a simple if dangerous eel beast, but instead find themselves dealing with intelligent draconic kings of the coastal shallows. Wise sailors traveling through known dragon eel territory bring tithes and offerings to placate them.",
+  "type": "dragon",
+  "stats": {
+    "size": "Huge",
+    "alignment": "Neutral",
+    "armorClass": 18,
+    "hitPoints": {
+      "max": 230,
+      "current": 230,
+      "diceString": "20d12 + 100"
+    },
+    "hitDice": "20d12",
+    "speed": {
+      "walk": 20,
+      "swim": 60
+    },
+    "abilities": {
+      "strength": 26,
+      "dexterity": 12,
+      "constitution": 20,
+      "intelligence": 14,
+      "wisdom": 13,
+      "charisma": 14
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "Str +12, Dex +5, Int +6, Wis +5, Cha +6",
+    "skills": "Acrobatics +5, Athletics +12, Insight +5, Perception +6",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 16
+      }
+    },
+    "challengeRating": "12",
+    "proficiencyBonus": 4,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "lightning",
+          "type": "immunity"
+        },
+        {
+          "name": "paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "prone",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Common",
+        "Draconic",
+        "Primordial"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Tome of Beasts 1, pg. 146"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.limited-amphibiousness",
+    "feat.dragon-eel-shocking-touch",
+    "feat.dragon-eel-storm-glide",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.dragon-eel-tail-slap",
+    "feat.acid-breath",
+    "feat.lightning-breath"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.bite",
+          "count": 1
+        },
+        {
+          "featureId": "feat.dragon-eel-tail-slap",
+          "count": 1
+        }
+      ],
+      "text": "The creature makes one bite attack and one tail slap attack."
+    },
+    "feat.acid-breath": {
+      "verb": "exhales",
+      "substance": "acid",
+      "areaSize": "60",
+      "areaShape": "line",
+      "dcAbility": "constitution",
+      "ability": "dexterity",
+      "damageDice": "12d8",
+      "damageType": "acid",
+      "lineWidth": "5"
+    },
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 12,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "4d8 + 8",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "save-or-condition",
+        "saveAbility": "constitution",
+        "saveDC": 18,
+        "condition": "become paralyzed",
+        "duration": "1d4 rounds"
+      }
+    },
+    "feat.lightning-breath": {
+      "verb": "exhales",
+      "substance": "lightning",
+      "areaSize": "60",
+      "areaShape": "line",
+      "dcAbility": "constitution",
+      "damageDice": "10d10",
+      "damageType": "lightning",
+      "ability": "dexterity",
+      "lineWidth": "5"
+    }
+  }
+}

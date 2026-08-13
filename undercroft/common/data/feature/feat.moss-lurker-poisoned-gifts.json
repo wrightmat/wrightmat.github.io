@@ -1,0 +1,30 @@
+{
+  "id": "feat.moss-lurker-poisoned-gifts",
+  "name": "Poisoned Gifts",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "a creature can contaminate wells, potions, meals, or unattended beverages with poisons that induce sleep, nausea, or paralysis. Someone who drinks or eats the contaminated liquid or food must make a successful DC 11 Constitution saving throw to avoid its effect, which can be unconsciousness, poisoning, or paralysis lasting 1 hour. The effect is chosen by the creature at the time the poison is introduced.",
+  "mechanics": {
+    "type": "passive",
+    "text": "a creature can contaminate wells, potions, meals, or unattended beverages with poisons that induce sleep, nausea, or paralysis. Someone who drinks or eats the contaminated liquid or food must make a successful DC 11 Constitution saving throw to avoid its effect, which can be unconsciousness, poisoning, or paralysis lasting 1 hour. The effect is chosen by the creature at the time the poison is introduced.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "control",
+      "debuff"
+    ],
+    "recipeSlots": [
+      "isolate"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,134 @@
+{
+  "kind": "monster",
+  "name": "Death Barque",
+  "notes": "",
+  "type": "undead",
+  "stats": {
+    "size": "Gargantuan",
+    "alignment": "Neutral Evil",
+    "armorClass": 17,
+    "hitPoints": {
+      "max": 198,
+      "current": 198,
+      "diceString": "12d20 + 72"
+    },
+    "hitDice": "12d20",
+    "speed": {
+      "walk": 0,
+      "swim": 50
+    },
+    "abilities": {
+      "strength": 20,
+      "dexterity": 18,
+      "constitution": 23,
+      "intelligence": 8,
+      "wisdom": 14,
+      "charisma": 12
+    },
+    "initiative": {
+      "bonus": 4
+    },
+    "savingThrows": "Dex +8, Con +10, Wis +6",
+    "skills": "Perception +6, Stealth +7",
+    "senses": {
+      "darkvision": 120,
+      "passives": {
+        "perception": 16
+      }
+    },
+    "challengeRating": "12",
+    "proficiencyBonus": 4,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "psychic",
+          "type": "resistance"
+        },
+        {
+          "name": "necrotic",
+          "type": "immunity"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Deep Speech"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Tome of Beasts 2, pg. 268"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.immutable-form",
+    "feat.magic-resistance",
+    "feat.siege-monster",
+    "feat.turn-resistance",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.death-barque-tail-smash",
+    "feat.death-barque-shrapnel-burst",
+    "feat.necrotic-breath"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 9,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "3d10 + 5",
+      "damageType": "piercing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.bite",
+          "count": 1
+        },
+        {
+          "featureId": "feat.death-barque-tail-smash",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes three attacks: one with its bite and two with its tail smash."
+    },
+    "feat.necrotic-breath": {
+      "verb": "exhales",
+      "substance": "a dark cloud of necrotic energy",
+      "areaSize": "60",
+      "areaShape": "cone",
+      "dcAbility": "constitution",
+      "ability": "constitution",
+      "damageDice": "12d8",
+      "damageType": "necrotic"
+    }
+  }
+}

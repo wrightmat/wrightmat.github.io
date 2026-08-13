@@ -1,0 +1,76 @@
+{
+  "kind": "monster",
+  "name": "Guard Captain",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/47138/954/1000/1000/638741964241134320.jpeg",
+  "notes": "",
+  "type": "humanoid",
+  "stats": {
+    "size": "Medium or Small",
+    "alignment": "Neutral",
+    "armorClass": 18,
+    "hitPoints": {
+      "max": 75,
+      "current": 75,
+      "diceString": "10d8 + 30"
+    },
+    "hitDice": "10d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 18,
+      "dexterity": 14,
+      "constitution": 16,
+      "intelligence": 12,
+      "wisdom": 14,
+      "charisma": 13
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "Athletics +6, Perception +4",
+    "senses": {
+      "passives": {
+        "perception": 14
+      }
+    },
+    "challengeRating": "4",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Common"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "MM",
+      "https://www.dndbeyond.com/monsters/5195064-guard-captain",
+      "Monster Manual, pg. 162"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.multiattack",
+    "feat.guard-captain-javelin",
+    "feat.longsword"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "text": "The creature makes two attacks, using Javelin or Longsword in any combination."
+    },
+    "feat.longsword": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d10 + 4",
+      "damageType": "slashing"
+    }
+  }
+}

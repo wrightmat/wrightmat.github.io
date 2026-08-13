@@ -1,0 +1,108 @@
+{
+  "kind": "monster",
+  "index": "gynosphinx",
+  "name": "Gynosphinx",
+  "type": "monstrosity",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/gynosphinx.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "lawful neutral",
+    "armorClass": 17,
+    "hitPoints": {
+      "max": 136,
+      "current": 136,
+      "diceString": "16d10+48"
+    },
+    "hitDice": "16d10",
+    "speed": {
+      "walk": 40,
+      "fly": 60
+    },
+    "abilities": {
+      "strength": 18,
+      "dexterity": 15,
+      "constitution": 16,
+      "intelligence": 18,
+      "wisdom": 18,
+      "charisma": 18
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "Arcana +12, History +12, Perception +8, Religion +8",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "bludgeoning, piercing, and slashing from nonmagical weapons",
+          "type": "resistance"
+        },
+        {
+          "name": "psychic",
+          "type": "immunity"
+        },
+        {
+          "name": "Charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "Frightened",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Common",
+        "Sphinx"
+      ]
+    },
+    "senses": {
+      "truesight": 120,
+      "passives": {
+        "perception": 18
+      }
+    },
+    "challengeRating": "11",
+    "proficiencyBonus": 4,
+    "xp": 7200,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/gynosphinx",
+    "spells": "The sphinx is a 9th-level spellcaster. Its spellcasting ability is Intelligence (spell save DC 16, +8 to hit with spell attacks). It requires no material components to cast its spells. The sphinx has the following wizard spells prepared:\n\n- Cantrips (at will): mage hand, minor illusion, prestidigitation\n- 1st level (4 slots): detect magic, identify, shield\n- 2nd level (3 slots): darkness, locate object, suggestion\n- 3rd level (3 slots): dispel magic, remove curse, tongues\n- 4th level (3 slots): banishment, greater invisibility\n- 5th level (1 slot): legend lore",
+    "saveDC": 16
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/gynosphinx",
+  "featureIds": [
+    "feat.inscrutable",
+    "feat.gynosphinx-magic-weapons",
+    "feat.multiattack",
+    "feat.claw",
+    "feat.claw-attack",
+    "feat.teleport",
+    "feat.gypsosphinx-cast-a-spell-costs-3-actions"
+  ],
+  "featureTiers": {
+    "feat.teleport": "60-ft"
+  },
+  "featureParams": {
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 9,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d8 + 4",
+      "damageType": "slashing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.claw",
+          "count": 2
+        }
+      ],
+      "text": "The sphinx makes two claw attacks."
+    }
+  }
+}

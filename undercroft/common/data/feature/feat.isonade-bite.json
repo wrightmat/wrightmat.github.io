@@ -1,0 +1,33 @@
+{
+  "id": "feat.isonade-bite",
+  "name": "Bite",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Melee Weapon Attack: +14 to hit, reach 15 ft., one target. Hit: 42 (5d12+ 10) piercing damage and the target is grappled (escape DC 20). If the target was already grappled from a previous bite, it’s also swallowed whole (see below).",
+  "mechanics": {
+    "type": "passive",
+    "text": "Melee Weapon Attack: +14 to hit, reach 15 ft., one target. Hit: 42 (5d12+ 10) piercing damage and the target is grappled (escape DC 20). If the target was already grappled from a previous bite, it’s also swallowed whole (see below).",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "control"
+    ],
+    "recipeSlots": [
+      "isolate"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

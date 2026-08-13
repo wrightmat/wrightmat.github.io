@@ -1,0 +1,70 @@
+{
+  "kind": "monster",
+  "index": "shrieker",
+  "name": "Shrieker",
+  "type": "plant",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/shrieker.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "unaligned",
+    "armorClass": 5,
+    "hitPoints": {
+      "max": 13,
+      "current": 13,
+      "diceString": "3d8"
+    },
+    "hitDice": "3d8",
+    "speed": {
+      "walk": 0
+    },
+    "abilities": {
+      "strength": 1,
+      "dexterity": 1,
+      "constitution": 10,
+      "intelligence": 1,
+      "wisdom": 3,
+      "charisma": 1
+    },
+    "initiative": {
+      "bonus": -5
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Blinded",
+          "type": "immunity"
+        },
+        {
+          "name": "Blinded",
+          "type": "immunity"
+        },
+        {
+          "name": "Frightened",
+          "type": "immunity"
+        }
+      ],
+      "languages": []
+    },
+    "senses": {
+      "blindsight": 30,
+      "passives": {
+        "perception": 6
+      }
+    },
+    "challengeRating": "0",
+    "proficiencyBonus": 2,
+    "xp": 10,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/shrieker"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/shrieker",
+  "featureIds": [
+    "feat.false-appearance",
+    "feat.shrieker-shriek"
+  ]
+}

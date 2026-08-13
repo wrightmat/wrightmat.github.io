@@ -1,0 +1,90 @@
+{
+  "kind": "monster",
+  "name": "Twig Blight",
+  "notes": "",
+  "type": "plant",
+  "stats": {
+    "size": "Small",
+    "alignment": "Neutral Evil",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 4,
+      "current": 4,
+      "diceString": "1d6 + 1"
+    },
+    "hitDice": "1d6",
+    "speed": {
+      "walk": 20
+    },
+    "abilities": {
+      "strength": 6,
+      "dexterity": 13,
+      "constitution": 12,
+      "intelligence": 4,
+      "wisdom": 8,
+      "charisma": 3
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "",
+    "skills": "Stealth +3",
+    "senses": {
+      "blindsight": 60,
+      "passives": {
+        "perception": 9
+      }
+    },
+    "challengeRating": "1/8",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Fire",
+          "type": "vulnerability"
+        },
+        {
+          "name": "Blinded",
+          "type": "immunity"
+        },
+        {
+          "name": "Deafened",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "understands Common but can’t speak"
+      ]
+    },
+    "environments": [
+      "Forest"
+    ],
+    "sources": [
+      "MM",
+      "https://www.dndbeyond.com/monsters/17095-twig-blight",
+      "Basic Rules, pg. 157"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.false-appearance-ambush",
+    "feat.claws"
+  ],
+  "featureParams": {
+    "feat.claws": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 3,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d4 + 1",
+      "damageType": "piercing"
+    }
+  },
+  "featureTiers": {
+    "feat.false-appearance-ambush": "dead-shrub"
+  }
+}

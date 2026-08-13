@@ -1,0 +1,26 @@
+{
+  "id": "feat.frost-breath",
+  "name": "Frost Breath",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature exhales cold air in an area, forcing a saving throw or dealing damage.",
+  "mechanics": {
+    "type": "save-effect"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

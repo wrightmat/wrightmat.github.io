@@ -1,0 +1,96 @@
+{
+  "kind": "monster",
+  "index": "giant-vulture",
+  "name": "Giant Vulture",
+  "notes": "A giant vulture has advanced intelligence and a malevolent bent. Unlike its smaller kin, it will attack a wounded creature to hasten its end. Giant vultures have been known to haunt a thirsty, starving creature for days to enjoy its suffering.",
+  "type": "beast",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/giant-vulture.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "neutral evil",
+    "armorClass": 10,
+    "hitPoints": {
+      "max": 22,
+      "current": 22,
+      "diceString": "3d10+6"
+    },
+    "hitDice": "3d10",
+    "speed": {
+      "walk": 10,
+      "fly": 60
+    },
+    "abilities": {
+      "strength": 15,
+      "dexterity": 10,
+      "constitution": 15,
+      "intelligence": 6,
+      "wisdom": 12,
+      "charisma": 7
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "Perception +3",
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "understands Common but can't speak"
+      ]
+    },
+    "senses": {
+      "passives": {
+        "perception": 13
+      }
+    },
+    "challengeRating": "1",
+    "proficiencyBonus": 2,
+    "xp": 200,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/giant-vulture"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/giant-vulture",
+  "featureIds": [
+    "feat.keen-sight",
+    "feat.pack-tactics",
+    "feat.multiattack",
+    "feat.beak",
+    "feat.talons"
+  ],
+  "featureParams": {
+    "feat.beak": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d4 + 2",
+      "damageType": "piercing"
+    },
+    "feat.talons": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 2",
+      "damageType": "slashing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.beak",
+          "count": 1
+        },
+        {
+          "featureId": "feat.talons",
+          "count": 1
+        }
+      ],
+      "text": "The creature makes two attacks: one with its beak and one with its talons."
+    }
+  }
+}

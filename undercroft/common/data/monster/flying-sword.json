@@ -1,0 +1,111 @@
+{
+  "kind": "monster",
+  "index": "flying-sword",
+  "name": "Flying Sword",
+  "type": "construct",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/flying-sword.png",
+  "stats": {
+    "size": "Small",
+    "alignment": "unaligned",
+    "armorClass": 17,
+    "hitPoints": {
+      "max": 17,
+      "current": 17,
+      "diceString": "5d6"
+    },
+    "hitDice": "5d6",
+    "speed": {
+      "walk": 0,
+      "fly": 50,
+      "hover": true
+    },
+    "abilities": {
+      "strength": 12,
+      "dexterity": 15,
+      "constitution": 11,
+      "intelligence": 1,
+      "wisdom": 5,
+      "charisma": 1
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "DEX +4",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "psychic",
+          "type": "immunity"
+        },
+        {
+          "name": "Blinded",
+          "type": "immunity"
+        },
+        {
+          "name": "Charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "Blinded",
+          "type": "immunity"
+        },
+        {
+          "name": "Frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "Paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "Petrified",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": []
+    },
+    "senses": {
+      "blindsight": 60,
+      "passives": {
+        "perception": 7
+      }
+    },
+    "challengeRating": "1/4",
+    "proficiencyBonus": 2,
+    "xp": 50,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/flying-sword"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/flying-sword",
+  "featureIds": [
+    "feat.antimagic-susceptibility",
+    "feat.false-appearance-ambush",
+    "feat.longsword"
+  ],
+  "featureTiers": {
+    "feat.false-appearance-ambush": "normal-plant"
+  },
+  "featureParams": {
+    "feat.longsword": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 3,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d8 + 1",
+      "damageType": "slashing"
+    }
+  }
+}

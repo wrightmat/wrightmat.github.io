@@ -1,0 +1,33 @@
+{
+  "id": "feat.asteroid-spider-snare-ship-1-day",
+  "name": "Snare Ship (1/Day)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature weaves a magical web around a spelljamming ship it can see within 120 feet of itself. The web lasts for 1 minute and suppresses the magic of any spelljamming helm aboard the ship. Decks and other surfaces of the ship that aren’t enclosed become difficult terrain until the effect ends. The web is impervious to damage but is destroyed by a successful casting of dispel magic (DC 18).",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature weaves a magical web around a spelljamming ship it can see within 120 feet of itself. The web lasts for 1 minute and suppresses the magic of any spelljamming helm aboard the ship. Decks and other surfaces of the ship that aren’t enclosed become difficult terrain until the effect ends. The web is impervious to damage but is destroyed by a successful casting of dispel magic (DC 18).",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "control",
+      "debuff"
+    ],
+    "recipeSlots": [
+      "deny"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "bonus-action"
+  }
+}

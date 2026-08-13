@@ -1,0 +1,82 @@
+{
+  "kind": "monster",
+  "index": "werewolf-human",
+  "name": "Werewolf, Human Form",
+  "type": "humanoid",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/werewolf-human.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "chaotic evil",
+    "armorClass": 11,
+    "hitPoints": {
+      "max": 58,
+      "current": 58,
+      "diceString": "9d8+18"
+    },
+    "hitDice": "9d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 15,
+      "dexterity": 13,
+      "constitution": 14,
+      "intelligence": 10,
+      "wisdom": 11,
+      "charisma": 10
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "",
+    "skills": "Perception +4",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "bludgeoning, piercing, and slashing from nonmagical weapons that aren't silvered",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Common"
+      ]
+    },
+    "senses": {
+      "passives": {
+        "perception": 14
+      }
+    },
+    "challengeRating": "3",
+    "proficiencyBonus": 2,
+    "xp": 700,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/werewolf-human"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/werewolf-human",
+  "featureIds": [
+    "feat.shapechanger",
+    "feat.keen-hearing-and-smell",
+    "feat.multiattack",
+    "feat.spear"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "text": "The werewolf makes two attacks: two with its spear (humanoid form) or one with its bite and one with its claws (hybrid form)."
+    },
+    "feat.spear": {
+      "kind": "MeleeOrRanged",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "meleeDistance": "5",
+      "rangeDistance": "20/60",
+      "damageDice": "1d6 + 2",
+      "damageType": "piercing",
+      "versatile": {
+        "damageDice": "1d8 + 2"
+      }
+    }
+  }
+}

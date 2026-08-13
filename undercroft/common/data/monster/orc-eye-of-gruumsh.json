@@ -1,0 +1,72 @@
+{
+  "kind": "monster",
+  "name": "Orc Eye of Gruumsh",
+  "image": "https://5e.tools/img/bestiary/MM/Orc.webp",
+  "notes": "",
+  "type": "humanoid",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Chaotic Evil",
+    "armorClass": 16,
+    "hitPoints": {
+      "max": 45,
+      "current": 45,
+      "diceString": "6d8 + 18"
+    },
+    "hitDice": "6d8",
+    "speed": {},
+    "abilities": {
+      "strength": 16,
+      "dexterity": 12,
+      "constitution": 16,
+      "intelligence": 9,
+      "wisdom": 13,
+      "charisma": 12
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "",
+    "skills": "Intimidation +3, Religion +1",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 11
+      }
+    },
+    "challengeRating": "2",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Common",
+        "Orc"
+      ]
+    },
+    "spells": "The orc is a 3rd-level spellcaster. Its spellcasting ability is Wisdom (spell save DC 11, +3 to hit with spell attacks). The orc has the following cleric spells prepared: Cantrips (at-will): guidance, resistance, thaumaturgy 1st level (4 slots): bless, command 2nd level (2 slots): augury, spiritual weapon (spear)",
+    "environments": [
+      "Arctic",
+      "Forest",
+      "Grassland",
+      "Hill",
+      "Mountain",
+      "Swamp",
+      "Underdark"
+    ],
+    "sources": [
+      "MM",
+      "https://www.dndbeyond.com/monsters/17188-orc-eye-of-gruumsh",
+      "Monster Manual, pg. 247"
+    ],
+    "saveDC": 11
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.aggressive",
+    "feat.orc-eye-of-gruumsh-gruumsh-s-fury",
+    "feat.orc-eye-of-gruumsh-spear"
+  ]
+}

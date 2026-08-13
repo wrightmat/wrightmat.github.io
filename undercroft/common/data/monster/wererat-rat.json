@@ -1,0 +1,78 @@
+{
+  "kind": "monster",
+  "index": "wererat-rat",
+  "name": "Wererat, Rat Form",
+  "type": "humanoid",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/wererat-rat.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "lawful evil",
+    "armorClass": 12,
+    "hitPoints": {
+      "max": 33,
+      "current": 33,
+      "diceString": "6d8+6"
+    },
+    "hitDice": "6d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 10,
+      "dexterity": 15,
+      "constitution": 12,
+      "intelligence": 11,
+      "wisdom": 10,
+      "charisma": 8
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "Perception +2, Stealth +4",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "bludgeoning, piercing, and slashing from nonmagical weapons that aren't silvered",
+          "type": "immunity"
+        }
+      ],
+      "languages": []
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 12
+      }
+    },
+    "challengeRating": "2",
+    "proficiencyBonus": 2,
+    "xp": 450,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/wererat-rat"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/wererat-rat",
+  "featureIds": [
+    "feat.shapechanger",
+    "feat.keen-smell",
+    "feat.bite"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d4 + 2",
+      "damageType": "piercing",
+      "rider": {
+        "kind": "save-or-condition",
+        "targetRestriction": "humanoid"
+      }
+    }
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "kind": "monster",
+  "index": "crab",
+  "name": "Crab",
+  "type": "beast",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/crab.png",
+  "stats": {
+    "size": "Tiny",
+    "alignment": "unaligned",
+    "armorClass": 11,
+    "hitPoints": {
+      "max": 2,
+      "current": 2,
+      "diceString": "1d4"
+    },
+    "hitDice": "1d4",
+    "speed": {
+      "walk": 20,
+      "swim": 20
+    },
+    "abilities": {
+      "strength": 2,
+      "dexterity": 11,
+      "constitution": 10,
+      "intelligence": 1,
+      "wisdom": 8,
+      "charisma": 2
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "Stealth +2",
+    "proficiencies": {
+      "defenses": [],
+      "languages": []
+    },
+    "senses": {
+      "blindsight": 30,
+      "passives": {
+        "perception": 9
+      }
+    },
+    "challengeRating": "0",
+    "proficiencyBonus": 2,
+    "xp": 10,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/crab"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/crab",
+  "featureIds": [
+    "feat.amphibious",
+    "feat.claw"
+  ],
+  "featureParams": {
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 0,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1",
+      "damageType": "bludgeoning"
+    }
+  }
+}

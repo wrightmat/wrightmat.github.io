@@ -1,0 +1,124 @@
+{
+  "kind": "monster",
+  "name": "Arcanaloth",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/30836/648/1000/1000/638063941046733761.png",
+  "notes": "",
+  "type": "fiend",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Neutral Evil",
+    "armorClass": 17,
+    "hitPoints": {
+      "max": 104,
+      "current": 104,
+      "diceString": "16d8 + 32"
+    },
+    "hitDice": "16d8",
+    "speed": {
+      "walk": 30,
+      "fly": 30
+    },
+    "abilities": {
+      "strength": 17,
+      "dexterity": 12,
+      "constitution": 14,
+      "intelligence": 20,
+      "wisdom": 16,
+      "charisma": 17
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "Dex +5, Int +9, Wis +7, Cha +7",
+    "skills": "Arcana +13, Deception +9, Insight +9, Perception +7",
+    "senses": {
+      "truesight": 120,
+      "passives": {
+        "perception": 17
+      }
+    },
+    "challengeRating": "12",
+    "proficiencyBonus": 4,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Cold",
+          "type": "resistance"
+        },
+        {
+          "name": "Fire",
+          "type": "resistance"
+        },
+        {
+          "name": "Lightning; Bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "Piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "and Slashing from Nonmagical Attacks",
+          "type": "resistance"
+        },
+        {
+          "name": "Acid",
+          "type": "immunity"
+        },
+        {
+          "name": "Poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "All",
+        "Telepathy 120 ft."
+      ]
+    },
+    "spells": "The arcanaloth is a 16th-level spellcaster. Its spellcasting ability is Intelligence (spell save DC 17, +9 to hit with spell attacks). The arcanaloth has the following wizard spells prepared: Cantrips (at will): fire bolt, mage hand, minor illusion, prestidigitation 1st level (4 slots): detect magic, identify, shield, Tenser’s floating disk 2nd level (3 slots): detect thoughts, mirror image, phantasmal force, suggestion 3rd level (3 slots): counterspell, fear, fireball 4th level (3 slots): banishment, dimension door 5th level (2 slots): contact other plane, hold monster 6th level (1 slot): chain lightning 7th level (1 slot): finger of death 8th level (1 slot): mind blank",
+    "environments": [],
+    "sources": [
+      "MM",
+      "https://www.dndbeyond.com/monsters/17109-arcanaloth",
+      "Monster Manual, pg. 313"
+    ],
+    "saveDC": 17
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.magic-resistance",
+    "feat.magic-weapons",
+    "feat.claws",
+    "feat.teleport"
+  ],
+  "featureTiers": {
+    "feat.teleport": "60-ft"
+  },
+  "featureParams": {
+    "feat.claws": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d4 + 3",
+      "damageType": "slashing",
+      "rider": {
+        "kind": "save-or-damage",
+        "dice": "3d6",
+        "damageType": "poison"
+      }
+    }
+  }
+}

@@ -1,0 +1,119 @@
+{
+  "kind": "monster",
+  "index": "marilith",
+  "name": "Marilith",
+  "type": "fiend",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/marilith.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "chaotic evil",
+    "armorClass": 18,
+    "hitPoints": {
+      "max": 189,
+      "current": 189,
+      "diceString": "18d10+90"
+    },
+    "hitDice": "18d10",
+    "speed": {
+      "walk": 40
+    },
+    "abilities": {
+      "strength": 18,
+      "dexterity": 20,
+      "constitution": 20,
+      "intelligence": 18,
+      "wisdom": 16,
+      "charisma": 20
+    },
+    "initiative": {
+      "bonus": 5
+    },
+    "savingThrows": "STR +9, CON +10, WIS +8, CHA +10",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "cold",
+          "type": "resistance"
+        },
+        {
+          "name": "fire",
+          "type": "resistance"
+        },
+        {
+          "name": "lightning",
+          "type": "resistance"
+        },
+        {
+          "name": "bludgeoning, piercing, and slashing from nonmagical weapons",
+          "type": "resistance"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Abyssal",
+        "telepathy 120 ft."
+      ]
+    },
+    "senses": {
+      "truesight": 120,
+      "passives": {
+        "perception": 13
+      }
+    },
+    "challengeRating": "16",
+    "proficiencyBonus": 5,
+    "xp": 15000,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/marilith"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/marilith",
+  "featureIds": [
+    "feat.magic-resistance",
+    "feat.magic-weapons",
+    "feat.marilith-reactive",
+    "feat.multiattack",
+    "feat.longsword",
+    "feat.marilith-tail",
+    "feat.teleport",
+    "feat.parry"
+  ],
+  "featureTiers": {
+    "feat.teleport": "60-ft",
+    "feat.parry": "ac-5"
+  },
+  "featureParams": {
+    "feat.longsword": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 9,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d8 + 4",
+      "damageType": "slashing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.longsword",
+          "count": 6
+        },
+        {
+          "featureId": "feat.marilith-tail",
+          "count": 1
+        }
+      ],
+      "text": "The creature can make seven attacks: six with its longswords and one with its tail."
+    }
+  }
+}

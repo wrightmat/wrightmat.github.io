@@ -1,0 +1,30 @@
+{
+  "id": "feat.oozasis-waters-of-unfathomable-compulsion",
+  "name": "Waters of Unfathomable Compulsion",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Any creature that drinks the water of a creature or eats fruit from the plants growing in it has a dream (as the spell, save DC 16) the next time it sleeps. In this dream, the creature places a compulsion to carry out some activity as a torrent of images and sensations. When the creature awakens, it is affected by a geas spell (save DC 168, cast as a 7th-level spell) in addition to the effects of dream.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Any creature that drinks the water of a creature or eats fruit from the plants growing in it has a dream (as the spell, save DC 16) the next time it sleeps. In this dream, the creature places a compulsion to carry out some activity as a torrent of images and sensations. When the creature awakens, it is affected by a geas spell (save DC 168, cast as a 7th-level spell) in addition to the effects of dream.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "control",
+      "debuff"
+    ],
+    "recipeSlots": [
+      "dominate"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

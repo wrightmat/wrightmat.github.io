@@ -1,0 +1,98 @@
+{
+  "kind": "monster",
+  "name": "Mirror Wraith",
+  "notes": "The Mirror Wraith is an otherworldly entity that lurks within mirrors, able to emerge into the material plane to haunt and torment its victims. It embodies the theme of deception, illusion, and the reflection of one's fears.\r\n\r\nThe Mirror Wraith appears as a distorted and shadowy figure, its form ever-shifting and ethereal. Its eyes glow with a malevolent light, and its touch brings an icy chill. It may mimic the appearance of those it encounters, or an image of their greatest fear, but with a twisted and unsettling aura.",
+  "type": "undead",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Chaotic Evil",
+    "armorClass": 12,
+    "hitPoints": {
+      "max": 56,
+      "current": 56,
+      "diceString": "8d8 + 24"
+    },
+    "hitDice": "8d8",
+    "speed": {
+      "walk": 30,
+      "fly": 30,
+      "hover": true
+    },
+    "abilities": {
+      "strength": 10,
+      "dexterity": 18,
+      "constitution": 16,
+      "intelligence": 12,
+      "wisdom": 14,
+      "charisma": 16
+    },
+    "initiative": {
+      "bonus": 4
+    },
+    "savingThrows": "Dex +4, Cha +3",
+    "skills": "Stealth +7, Perception +6",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 16
+      }
+    },
+    "challengeRating": "3",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Necrotic",
+          "type": "resistance"
+        },
+        {
+          "name": "Non-magical weapons",
+          "type": "resistance"
+        },
+        {
+          "name": "Radiant",
+          "type": "vulnerability"
+        },
+        {
+          "name": "Poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Common",
+        "Abyssal"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Homebrew",
+      "Concept from Dungeons & Drams YouTube channel (\"How to Create DYNAMIC Dungeons using AI and ChatGPT\") and execution by ChatGPT-3.5"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.mirror-wraith-shadowy-mimicry",
+    "feat.shadowy-touch",
+    "feat.mirror-wraith-illusory-strike",
+    "feat.mirror-wraith-illusory-reflection",
+    "feat.incorporeal-movement"
+  ],
+  "featureParams": {
+    "feat.shadowy-touch": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d8 + 2",
+      "damageType": "necrotic"
+    }
+  }
+}

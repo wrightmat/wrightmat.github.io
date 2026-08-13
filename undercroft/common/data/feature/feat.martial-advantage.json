@@ -1,0 +1,24 @@
+{
+  "id": "feat.martial-advantage",
+  "name": "Martial Advantage",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Once per turn, the humanoid can deal an extra 7 (2d6) damage to a creature it hits with a weapon attack if that creature is within 5 ft. of an ally of the humanoid that isn't incapacitated.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Once per turn, the humanoid can deal an extra 7 (2d6) damage to a creature it hits with a weapon attack if that creature is within 5 ft. of an ally of the humanoid that isn't incapacitated."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

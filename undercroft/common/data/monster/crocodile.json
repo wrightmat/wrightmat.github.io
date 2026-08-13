@@ -1,0 +1,60 @@
+{
+  "kind": "monster",
+  "index": "crocodile",
+  "name": "Crocodile",
+  "type": "beast",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/crocodile.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "unaligned",
+    "armorClass": 12,
+    "hitPoints": {
+      "max": 19,
+      "current": 19,
+      "diceString": "3d10+3"
+    },
+    "hitDice": "3d10",
+    "speed": {
+      "walk": 20,
+      "swim": 20
+    },
+    "abilities": {
+      "strength": 15,
+      "dexterity": 10,
+      "constitution": 13,
+      "intelligence": 2,
+      "wisdom": 10,
+      "charisma": 5
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "Stealth +2",
+    "proficiencies": {
+      "defenses": [],
+      "languages": []
+    },
+    "senses": {
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "1/2",
+    "proficiencyBonus": 2,
+    "xp": 100,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/crocodile"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/crocodile",
+  "featureIds": [
+    "feat.hold-breath",
+    "feat.crocodile-bite"
+  ],
+  "featureTiers": {
+    "feat.hold-breath": "30-minutes"
+  }
+}

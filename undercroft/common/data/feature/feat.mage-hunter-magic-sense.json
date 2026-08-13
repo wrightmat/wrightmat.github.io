@@ -1,0 +1,29 @@
+{
+  "id": "feat.mage-hunter-magic-sense",
+  "name": "Magic Sense",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature knows the location of every spellcaster, active spell, and magic item within 120 feet of itself.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature knows the location of every spellcaster, active spell, and magic item within 120 feet of itself.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

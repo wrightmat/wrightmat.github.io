@@ -1,0 +1,125 @@
+{
+  "kind": "monster",
+  "name": "Breakwater Troll",
+  "notes": "_The dark water roils with motion as dozens of foam-crusted trolls surge from the waves, locked in a vicious brawl._\n\nBreakwater trolls are a coastal variety of marine troll, and they largely subsist on fish, shellfish, seals, and occasionally fisherfolk or sailors. Breakwater trolls are sometimes magically bound to protect coastal communities.\n\n**Hag Bound Trolls**. The ritual necessary to create a bound horde of breakwater trolls was devised by sea hags, who would offer communities protection in exchange for gristly tribute. Hags keep the specifics of the ritual a closely-guarded secret, but the process binds the bodies and souls of captured trolls to a stretch of shoreline. When stormy seas roll in, the bound trolls appear in a violent foamy brawl that acts as a magical wave breaker, to protect small harbors, boats, and shoreline homes.\n\n**Necessary Evil**. Breakwater trolls enjoy extreme weather events that stir up enormous and often dangerous waves. When the trolls sense an impending storm, they awake in a violent rage, attacking all creatures around them until the waves subside.\n\n**Shore Bound**. Breakwater trolls rarely leave the area where they are bound, and they fight with one another when no other creatures are present during a storm. Though they attack anything on the shore, they don’t chase victims that flee inland. Some breakwater trolls have even been observed helping those shipwrecked during a storm, though they are as likely to attack shipwrecked victims as aid them.",
+  "type": "giant",
+  "stats": {
+    "size": "Large",
+    "alignment": "Chaotic Neutral",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 105,
+      "current": 105,
+      "diceString": "10d10 + 50"
+    },
+    "hitDice": "10d10",
+    "speed": {
+      "walk": 30,
+      "swim": 30
+    },
+    "abilities": {
+      "strength": 18,
+      "dexterity": 14,
+      "constitution": 20,
+      "intelligence": 9,
+      "wisdom": 14,
+      "charisma": 7
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "Athletics +7, Perception +5",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 15
+      }
+    },
+    "challengeRating": "7",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "acid; bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "and slashing from nonmagical attacks",
+          "type": "resistance"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "petrified",
+          "type": "immunity"
+        },
+        {
+          "name": "poisoned",
+          "type": "immunity"
+        },
+        {
+          "name": "prone",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "understands Giant but can’t speak"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Tome of Beasts 3, pg. 372"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.amphibious",
+    "feat.regeneration",
+    "feat.multiattack",
+    "feat.slam",
+    "feat.water-blast",
+    "feat.breakwater-troll-surge-recharge-5-6"
+  ],
+  "featureParams": {
+    "feat.slam": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "3d6 + 4",
+      "damageType": "bludgeoning"
+    },
+    "feat.multiattack": {
+      "text": "The creature makes three Slam or Water Blast attacks. If it hits one Large or smaller creature with two Slam attacks, the target must succeed on a DC 15 Strength saving throw or be flung up to 15 feet to an unoccupied space the creature can see and knocked prone."
+    },
+    "feat.water-blast": {
+      "kind": "Ranged",
+      "attackKind": "Spell",
+      "attackBonus": 5,
+      "distanceLabel": "range",
+      "distance": "60",
+      "damageDice": "2d8 + 2",
+      "damageType": "bludgeoning",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "1d6",
+        "damageType": "cold"
+      }
+    }
+  }
+}

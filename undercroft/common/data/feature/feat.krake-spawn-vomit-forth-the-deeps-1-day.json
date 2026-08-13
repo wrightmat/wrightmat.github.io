@@ -1,0 +1,33 @@
+{
+  "id": "feat.krake-spawn-vomit-forth-the-deeps-1-day",
+  "name": "Vomit Forth the Deeps (1/Day)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature sprays half digested food from its maw over a 15-foot cone. This acidic slurry causes 3 (1d6) acid damage and targets must make a successful DC 18 Constitution saving throw or be incapacitated until the end of their next turn.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature sprays half digested food from its maw over a 15-foot cone. This acidic slurry causes 3 (1d6) acid damage and targets must make a successful DC 18 Constitution saving throw or be incapacitated until the end of their next turn.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "control"
+    ],
+    "recipeSlots": [
+      "burst"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "id": "feat.dragon-eel-shocking-touch",
+  "name": "Shocking Touch",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "a creature’s body generates a potent charge of lightning. A creature that touches or makes a successful melee attack against a creature takes 5 (1d10) lightning damage.",
+  "mechanics": {
+    "type": "passive",
+    "text": "a creature’s body generates a potent charge of lightning. A creature that touches or makes a successful melee attack against a creature takes 5 (1d10) lightning damage.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

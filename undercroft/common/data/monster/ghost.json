@@ -1,0 +1,148 @@
+{
+  "kind": "monster",
+  "index": "ghost",
+  "name": "Ghost",
+  "type": "undead",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/ghost.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "any alignment",
+    "armorClass": 11,
+    "hitPoints": {
+      "max": 45,
+      "current": 45,
+      "diceString": "10d8"
+    },
+    "hitDice": "10d8",
+    "speed": {
+      "walk": 0,
+      "fly": 40,
+      "hover": true
+    },
+    "abilities": {
+      "strength": 7,
+      "dexterity": 13,
+      "constitution": 10,
+      "intelligence": 10,
+      "wisdom": 12,
+      "charisma": 17
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "acid",
+          "type": "resistance"
+        },
+        {
+          "name": "fire",
+          "type": "resistance"
+        },
+        {
+          "name": "lightning",
+          "type": "resistance"
+        },
+        {
+          "name": "thunder",
+          "type": "resistance"
+        },
+        {
+          "name": "bludgeoning, piercing, and slashing from nonmagical weapons",
+          "type": "resistance"
+        },
+        {
+          "name": "cold",
+          "type": "immunity"
+        },
+        {
+          "name": "necrotic",
+          "type": "immunity"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "Exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "Frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "Grappled",
+          "type": "immunity"
+        },
+        {
+          "name": "Paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "Petrified",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        },
+        {
+          "name": "Prone",
+          "type": "immunity"
+        },
+        {
+          "name": "Restrained",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "any languages it knew in life"
+      ]
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 11
+      }
+    },
+    "challengeRating": "4",
+    "proficiencyBonus": 2,
+    "xp": 1100,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/ghost"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/ghost",
+  "featureIds": [
+    "feat.ethereal-sight",
+    "feat.incorporeal-movement",
+    "feat.withering-touch",
+    "feat.etherealness",
+    "feat.horrifying-visage",
+    "feat.possession"
+  ],
+  "featureParams": {
+    "feat.withering-touch": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "4d6 + 3",
+      "damageType": "necrotic"
+    }
+  },
+  "featureTiers": {
+    "feat.horrifying-visage": "ghost"
+  }
+}

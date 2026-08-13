@@ -1,0 +1,29 @@
+{
+  "id": "feat.adult-topaz-dragon-fabricate-1-day",
+  "name": "Fabricate (1/Day)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature can cast fabricate, requiring no spell components and using Intelligence as the spellcasting ability.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature can cast fabricate, requiring no spell components and using Intelligence as the spellcasting ability.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,33 @@
+{
+  "id": "feat.water-leaper-shriek",
+  "name": "Shriek",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature lets out a blood-curdling shriek. Every creature within 40 feet that can hear the creature must make a successful DC 12 Constitution saving throw or be frightened until the start of the creature’s next turn. A creature that successfully saves against the shriek is immune to the effect for 24 hours.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature lets out a blood-curdling shriek. Every creature within 40 feet that can hear the creature must make a successful DC 12 Constitution saving throw or be frightened until the start of the creature’s next turn. A creature that successfully saves against the shriek is immune to the effect for 24 hours.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "fear",
+      "control"
+    ],
+    "recipeSlots": [
+      "threaten"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

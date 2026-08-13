@@ -1,0 +1,28 @@
+{
+  "id": "feat.deathguard-warden-fey-ancestry",
+  "name": "Fey Ancestry",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature has advantage on saving throws it makes to avoid or end the charmed condition on itself, and magic can't put it to sleep.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature has advantage on saving throws it makes to avoid or end the charmed condition on itself, and magic can't put it to sleep."
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

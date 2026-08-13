@@ -1,0 +1,30 @@
+{
+  "id": "feat.eye-monger-antimagic-gullet",
+  "name": "Antimagic Gullet",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Magical effects, including those produced by spells and magic items but excluding those created by artifacts or deities, are suppressed inside the creature’s gullet. Any spell slot or charge expended by a creature in the gullet to cast a spell or activate a property of a magic item is wasted. While an effect is suppressed, it doesn’t function, but the time it spends suppressed counts against its duration. No spell or magical effect that originates outside the creature’s gullet, except one created by an artifact or a deity, can affect a creature or an object inside the gullet.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Magical effects, including those produced by spells and magic items but excluding those created by artifacts or deities, are suppressed inside the creature’s gullet. Any spell slot or charge expended by a creature in the gullet to cast a spell or activate a property of a magic item is wasted. While an effect is suppressed, it doesn’t function, but the time it spends suppressed counts against its duration. No spell or magical effect that originates outside the creature’s gullet, except one created by an artifact or a deity, can affect a creature or an object inside the gullet.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "defense",
+      "control"
+    ],
+    "recipeSlots": [
+      "deny"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,154 @@
+{
+  "kind": "monster",
+  "name": "Kalaraq Quori",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/7726/2/1000/1000/637091671682327075.png",
+  "notes": "### Description\r\n\r\n#### Quori\r\n\r\nDal Quor is the plane of dreams and is currently dominated by a dark power known as il-Lashtavar, or the Dreaming Dark. Il-Lashtavar is served by a host of aberrations that are the embodiments of dreams and nightmares — the quori. Because it is difficult for anything to physically travel to or from Dal Quor, quori in Eberron are typically encountered while possessing a host body. The [Inspired](https://www.dndbeyond.com/monsters/489058-inspired) are the most common type of willing host for the quori and are described earlier in this chapter.\r\n\r\n#### Kalaraq Quori\r\n\r\nThe most powerful quori are the kalaraqs, also known as eyebinders — entities formed of pure shadow that is outlined by a nimbus of energy. A host of disembodied eyes whirl around a kalaraq, each reflecting a consciousness the creature has consumed.\r\n\r\nKalaraq quori guide the quori race, and the Devourer of Dreams — the personal emissary of the Dreaming Dark — is of this order. Although the kalaraqs never fight one another overtly, each has its own agenda, and each hopes to someday seize the throne of the Devourer of Dreams. Because of this internal conflict, it is unusual for a kalaraq to leave Dal Quor to inhabit a mortal vessel and become one of the Inspired.",
+  "type": "aberration",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Lawful Evil",
+    "armorClass": 18,
+    "hitPoints": {
+      "max": 161,
+      "current": 161,
+      "diceString": "19d8 + 76"
+    },
+    "hitDice": "19d8",
+    "speed": {
+      "walk": 30,
+      "fly": 60,
+      "hover": true
+    },
+    "abilities": {
+      "strength": 12,
+      "dexterity": 21,
+      "constitution": 18,
+      "intelligence": 23,
+      "wisdom": 24,
+      "charisma": 25
+    },
+    "initiative": {
+      "bonus": 5
+    },
+    "savingThrows": "Int +12, Wis +13, Cha +13",
+    "skills": "Deception +13, Perception +13, Persuasion +13",
+    "senses": {
+      "truesight": 120,
+      "passives": {
+        "perception": 23
+      }
+    },
+    "challengeRating": "19",
+    "proficiencyBonus": 6,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Cold",
+          "type": "resistance"
+        },
+        {
+          "name": "Necrotic",
+          "type": "resistance"
+        },
+        {
+          "name": "Poison",
+          "type": "resistance"
+        },
+        {
+          "name": "Psychic; Bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "Piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "and Slashing from Nonmagical Attacks",
+          "type": "resistance"
+        },
+        {
+          "name": "Blinded",
+          "type": "immunity"
+        },
+        {
+          "name": "Charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "Exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "Frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "Grappled",
+          "type": "immunity"
+        },
+        {
+          "name": "Paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "Petrified",
+          "type": "immunity"
+        },
+        {
+          "name": "Prone",
+          "type": "immunity"
+        },
+        {
+          "name": "Restrained",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "All",
+        "Telepathy 120 ft."
+      ]
+    },
+    "spells": "(Psionics). The quori’s spellcasting ability is Intelligence (spell save DC 16). It can innately cast the following spells, requiring no components: at will: charm person 3/day each: detect thoughts, disguise self, suggestion 1/day: dominate person, dream",
+    "environments": [],
+    "sources": [
+      "ERLW",
+      "Eberron: Rising from the Last War, pg. 306"
+    ],
+    "saveDC": 16
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.multiattack",
+    "feat.arcane-blast",
+    "feat.kalaraq-quori-soul-binding",
+    "feat.kalaraq-quori-mind-seed-1-day",
+    "feat.kalaraq-quori-swarm-of-eyes-recharge-6",
+    "feat.possession",
+    "feat.all-around-vision",
+    "feat.incorporeal-movement",
+    "feat.magic-resistance"
+  ],
+  "featureParams": {
+    "feat.arcane-blast": {
+      "kind": "Ranged",
+      "attackKind": "Spell",
+      "attackBonus": 13,
+      "distanceLabel": "range",
+      "distance": "120",
+      "damageDice": "1d10 + 7",
+      "damageType": "force"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.kalaraq-quori-soul-binding",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two Soul Binding attacks. Alternatively, it can make four attacks with Arcane Blast."
+    }
+  }
+}

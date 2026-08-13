@@ -4,10 +4,11 @@
   "systemIds": [
     "sys.dnd5e"
   ],
-  "description": "The creature can magically charm a creature it can see, which must succeed on a saving throw or be charmed for a time.",
+  "description": "One humanoid the creature can see within 30 feet of it must succeed on a DC 15 Wisdom saving throw or be magically charmed for 1 day. The charmed target obeys the creature's verbal or telepathic commands. If the target suffers any harm or receives a suicidal command, it can repeat the saving throw, ending the effect on a success. If the target successfully saves against the effect, or if the effect on it ends, the target is immune to this creature's Charm for the next 24 hours. The creature can have only one target charmed at a time. If it charms another, the effect on the previous target ends.",
   "mechanics": {
     "type": "passive",
-    "text": "The creature can magically charm a creature it can see, which must succeed on a saving throw or be charmed for a time."
+    "text": "One humanoid the creature can see within 30 feet of it must succeed on a DC 15 Wisdom saving throw or be magically charmed for 1 day. The charmed target obeys the creature's verbal or telepathic commands. If the target suffers any harm or receives a suicidal command, it can repeat the saving throw, ending the effect on a success. If the target successfully saves against the effect, or if the effect on it ends, the target is immune to this creature's Charm for the next 24 hours. The creature can have only one target charmed at a time. If it charms another, the effect on the previous target ends.",
+    "scope": "unique"
   },
   "budgetCost": 2,
   "tags": {
@@ -24,5 +25,8 @@
     ]
   },
   "synergizesWith": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
 }

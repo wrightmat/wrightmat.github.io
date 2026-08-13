@@ -1,0 +1,86 @@
+{
+  "kind": "monster",
+  "index": "awakened-tree",
+  "name": "Awakened Tree",
+  "notes": "An awakened tree is an ordinary tree given sentience and mobility by the awaken spell or similar magic.",
+  "type": "plant",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/awakened-tree.png",
+  "stats": {
+    "size": "Huge",
+    "alignment": "unaligned",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 59,
+      "current": 59,
+      "diceString": "7d12+14"
+    },
+    "hitDice": "7d12",
+    "speed": {
+      "walk": 20
+    },
+    "abilities": {
+      "strength": 19,
+      "dexterity": 6,
+      "constitution": 15,
+      "intelligence": 10,
+      "wisdom": 10,
+      "charisma": 7
+    },
+    "initiative": {
+      "bonus": -2
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "fire",
+          "type": "vulnerability"
+        }
+      ],
+      "languages": [
+        "one language known by its creator"
+      ]
+    },
+    "senses": {
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "2",
+    "proficiencyBonus": 2,
+    "xp": 450,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/awakened-tree"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/awakened-tree",
+  "featureIds": [
+    "feat.false-appearance-ambush",
+    "feat.slam"
+  ],
+  "featureTiers": {
+    "feat.false-appearance-ambush": "normal-plant"
+  },
+  "featureParams": {
+    "feat.slam": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "3d6 + 4",
+      "damageType": "bludgeoning"
+    }
+  }
+}

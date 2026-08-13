@@ -1,0 +1,33 @@
+{
+  "id": "feat.fractine-mirrored-damage",
+  "name": "Mirrored Damage",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "In response to being damaged by a creature it can see within 120 feet of itself, the creature forces that creature to make a DC 16 Constitution saving throw. On a failed save, the creature takes 24 (8d6) force damage. On a successful save, the creature takes half as much damage.",
+  "mechanics": {
+    "type": "passive",
+    "text": "In response to being damaged by a creature it can see within 120 feet of itself, the creature forces that creature to make a DC 16 Constitution saving throw. On a failed save, the creature takes 24 (8d6) force damage. On a successful save, the creature takes half as much damage.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "defense",
+      "damage"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "reaction"
+  }
+}

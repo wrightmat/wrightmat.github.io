@@ -1,0 +1,32 @@
+{
+  "id": "feat.gem-stalker-protective-link",
+  "name": "Protective Link",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "When another creature the monstrosity can see within 30 feet of it is about to take damage, the monstrosity reduces that damage by 10 (3d6). The monstrosity then takes damage equal to that amount.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When another creature the monstrosity can see within 30 feet of it is about to take damage, the monstrosity reduces that damage by 10 (3d6). The monstrosity then takes damage equal to that amount.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "endure"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "reaction"
+  }
+}

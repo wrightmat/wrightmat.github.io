@@ -1,0 +1,29 @@
+{
+  "id": "feat.dolgrim-dual-consciousness",
+  "name": "Dual Consciousness",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature has advantage on saving throws against being blinded, charmed, deafened, frightened, stunned, and knocked unconscious.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature has advantage on saving throws against being blinded, charmed, deafened, frightened, stunned, and knocked unconscious.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "adapt"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

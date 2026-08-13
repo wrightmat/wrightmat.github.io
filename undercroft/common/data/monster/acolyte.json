@@ -1,0 +1,71 @@
+{
+  "kind": "monster",
+  "index": "acolyte",
+  "name": "Acolyte",
+  "notes": "Acolytes are junior members of a clergy, usually answerable to a priest. They perform a variety of functions in a temple and are granted minor spellcasting power by their deities.",
+  "type": "humanoid",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/acolyte.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "any alignment",
+    "armorClass": 10,
+    "hitPoints": {
+      "max": 9,
+      "current": 9,
+      "diceString": "2d8"
+    },
+    "hitDice": "2d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 10,
+      "dexterity": 10,
+      "constitution": 10,
+      "intelligence": 10,
+      "wisdom": 14,
+      "charisma": 11
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "Medicine +4, Religion +2",
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "any one language (usually Common)"
+      ]
+    },
+    "senses": {
+      "passives": {
+        "perception": 12
+      }
+    },
+    "challengeRating": "1/4",
+    "proficiencyBonus": 2,
+    "xp": 50,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/acolyte",
+    "spells": "The acolyte is a 1st-level spellcaster. Its spellcasting ability is Wisdom (spell save DC 12, +4 to hit with spell attacks). The acolyte has following cleric spells prepared:\n\n- Cantrips (at will): light, sacred flame, thaumaturgy\n- 1st level (3 slots): bless, cure wounds, sanctuary",
+    "saveDC": 12
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/acolyte",
+  "featureIds": [
+    "feat.club"
+  ],
+  "featureParams": {
+    "feat.club": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 2,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d4",
+      "damageType": "bludgeoning"
+    }
+  }
+}

@@ -1,0 +1,119 @@
+{
+  "kind": "monster",
+  "name": "Aartuk Elder",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/28079/771/1000/1000/637961800642907022.jpeg",
+  "notes": "### Description\n\nAartuks are baleful plant creatures that live to wage war. Beholders destroyed their original home world and scattered the survivors across the Material Plane.\n\nAartuk cells can be found throughout Wildspace, including aboard spelljamming ships whose former crews were either murdered or forcibly ejected by a band of aartuks.\n\nAn aartuk’s body is shaped like a five-pointed star and is covered with thick, flexible bark. The tips of its branch-like extremities end in suction cups that allow the creature to climb on vertical surfaces and along ceilings. Each suction cup houses three retractable pseudopods that are used to manipulate small objects.\n\nThe head of an aartuk surmounts a 6-foot-tall stalk that can be extruded from the center of the star. The head contains the aartuk’s sensory organs, including a long tongue that the creature uses as a weapon.\n\nAn aartuk’s preferred method of attack is to shoot forth its gooey tongue and use it to drag enemies toward the center of its body so that it can batter them with its powerful branches. It can also spit pellets of radiant energy.\n\nThe Aartuk language is made up of rustling sounds, snaps, pops, and hisses. It has no written form.",
+  "type": "plant",
+  "stats": {
+    "size": "Large",
+    "alignment": "Typically Lawful Evil",
+    "armorClass": 16,
+    "hitPoints": {
+      "max": 75,
+      "current": 75,
+      "diceString": "10d10 + 20"
+    },
+    "hitDice": "10d10",
+    "speed": {
+      "walk": 20,
+      "climb": 20
+    },
+    "abilities": {
+      "strength": 18,
+      "dexterity": 10,
+      "constitution": 15,
+      "intelligence": 12,
+      "wisdom": 14,
+      "charisma": 12
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 12
+      }
+    },
+    "challengeRating": "3",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Aartuk"
+      ]
+    },
+    "spells": "(Psionics): The aartuk casts one of the following spells, requiring no spell components and using Wisdom as the spellcasting ability (spell save DC 12): 1/day each: calm emotions, detect magic, sending",
+    "environments": [
+      "Desert",
+      "Mountain",
+      "Underdark"
+    ],
+    "sources": [
+      "BAM",
+      "Spelljammer: Adventures in Space • Boo’s Astral Menagerie, pg. 8",
+      "https://www.dndbeyond.com/monsters/2821141-aartuk-elder"
+    ],
+    "saveDC": 12
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.spider-climb",
+    "feat.multiattack",
+    "feat.branch",
+    "feat.radiant-pellet",
+    "feat.aartuk-elder-tongue-recharge-6"
+  ],
+  "featureParams": {
+    "feat.branch": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "2d6 + 4",
+      "damageType": "bludgeoning"
+    },
+    "feat.radiant-pellet": {
+      "kind": "Ranged",
+      "attackKind": "Spell",
+      "attackBonus": 4,
+      "distanceLabel": "range",
+      "distance": "60",
+      "damageDice": "4d4",
+      "damageType": "radiant"
+    },
+    "feat.multiattack": {
+      "text": "The creature makes two Branch attacks, two Radiant Pellet attacks, or one of each.",
+      "options": [
+        [
+          {
+            "featureId": "feat.branch",
+            "count": 2
+          }
+        ],
+        [
+          {
+            "featureId": "feat.radiant-pellet",
+            "count": 2
+          }
+        ],
+        [
+          {
+            "featureId": "feat.branch",
+            "count": 1
+          },
+          {
+            "featureId": "feat.radiant-pellet",
+            "count": 1
+          }
+        ]
+      ]
+    }
+  }
+}

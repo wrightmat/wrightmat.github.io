@@ -1,0 +1,29 @@
+{
+  "id": "feat.esthetic-spelljamming",
+  "name": "Spelljamming",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature has the properties of a spelljamming helm (see the Astral Adventurer’s Guide), but only its reigar creator can attune to it.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature has the properties of a spelljamming helm (see the Astral Adventurer’s Guide), but only its reigar creator can attune to it.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

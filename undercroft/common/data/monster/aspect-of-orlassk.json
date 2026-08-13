@@ -1,0 +1,118 @@
+{
+  "kind": "monster",
+  "name": "Aspect of Orlassk",
+  "notes": "A miniature version of [[Orlassk]].",
+  "type": "aberration",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Lawful Evil",
+    "armorClass": 17,
+    "hitPoints": {
+      "max": 102,
+      "current": 102,
+      "diceString": "12d8 + 54"
+    },
+    "hitDice": "12d8",
+    "speed": {
+      "walk": 40,
+      "fly": 40,
+      "hover": true
+    },
+    "abilities": {
+      "strength": 22,
+      "dexterity": 14,
+      "constitution": 20,
+      "intelligence": 25,
+      "wisdom": 23,
+      "charisma": 24
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "intelligence +13, wisdom +12, charisma +13",
+    "skills": "athletics +14, arcana +13, perception +12",
+    "senses": {
+      "truesight": 120,
+      "passives": {
+        "perception": 22
+      }
+    },
+    "challengeRating": "11",
+    "proficiencyBonus": 4,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "psychic",
+          "type": "resistance"
+        },
+        {
+          "name": "poison; bludgeoning",
+          "type": "immunity"
+        },
+        {
+          "name": "piercing",
+          "type": "immunity"
+        },
+        {
+          "name": "and slashing damage from attacks made with weapons that aren’t adamantine or byeshk",
+          "type": "immunity"
+        },
+        {
+          "name": "blinded",
+          "type": "immunity"
+        },
+        {
+          "name": "charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "poisoned",
+          "type": "immunity"
+        },
+        {
+          "name": "prone",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Deep Speech",
+        "telepathy 120 ft."
+      ]
+    },
+    "environments": [],
+    "sources": []
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.alien-mind",
+    "feat.legendary-resistance",
+    "feat.magic-resistance",
+    "feat.aspect-of-orlassk-marble-claws",
+    "feat.aspect-of-orlassk-master-of-stone",
+    "feat.regeneration",
+    "feat.multiattack",
+    "feat.aspect-of-orlassk-marble-claw",
+    "feat.crush"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "text": "Orlassk makes one attack with its marble claws and then uses Crush."
+    }
+  },
+  "featureTiers": {
+    "feat.legendary-resistance": "3-day",
+    "feat.alien-mind": "dc-21",
+    "feat.crush": "dc-22"
+  }
+}

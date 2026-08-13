@@ -1,0 +1,33 @@
+{
+  "id": "feat.dusk-hag-dream-eater",
+  "name": "Dream Eater",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "When an unconscious creature the hag can see within 30 feet of her regains consciousness, the hag can force the creature to make a DC 15 Wisdom saving throw. Unless the save succeeds, the creature takes 11 (2d10) psychic damage, and the hag regains hit points equal to the amount of damage taken.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When an unconscious creature the hag can see within 30 feet of her regains consciousness, the hag can force the creature to make a DC 15 Wisdom saving throw. Unless the save succeeds, the creature takes 11 (2d10) psychic damage, and the hag regains hit points equal to the amount of damage taken.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "regeneration"
+    ],
+    "recipeSlots": [
+      "drain"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "reaction"
+  }
+}

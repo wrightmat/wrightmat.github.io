@@ -1,0 +1,30 @@
+{
+  "id": "feat.possessed-pillar-steal-weapons",
+  "name": "Steal Weapons",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The eldritch magic that powers the creature produces a magnetic power that seizes metal objects that touch it, including metal weapons. When a creature successfully strikes the creature with a metal melee weapon, the attacker must make a successful DC 15 Strength or Dexterity saving throw or the weapon becomes stuck to the creature until the creature releases it or is destroyed. The saving throw uses the same ability as the attack used. The creature can release all metal weapons stuck to it whenever it wants. a creature always drops all weapons stuck to it when it believes it’s no longer threatened. This ability affects armor only during a grapple.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The eldritch magic that powers the creature produces a magnetic power that seizes metal objects that touch it, including metal weapons. When a creature successfully strikes the creature with a metal melee weapon, the attacker must make a successful DC 15 Strength or Dexterity saving throw or the weapon becomes stuck to the creature until the creature releases it or is destroyed. The saving throw uses the same ability as the attack used. The creature can release all metal weapons stuck to it whenever it wants. a creature always drops all weapons stuck to it when it believes it’s no longer threatened. This ability affects armor only during a grapple.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "control",
+      "debuff"
+    ],
+    "recipeSlots": [
+      "isolate"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

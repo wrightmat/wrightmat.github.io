@@ -1,0 +1,85 @@
+{
+  "kind": "monster",
+  "index": "imp",
+  "name": "Imp",
+  "type": "fiend",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/imp.png",
+  "stats": {
+    "size": "Tiny",
+    "alignment": "lawful evil",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 10,
+      "current": 10,
+      "diceString": "3d4+3"
+    },
+    "hitDice": "3d4",
+    "speed": {
+      "walk": 20,
+      "fly": 40
+    },
+    "abilities": {
+      "strength": 6,
+      "dexterity": 17,
+      "constitution": 13,
+      "intelligence": 11,
+      "wisdom": 12,
+      "charisma": 14
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "",
+    "skills": "Deception +4, Insight +3, Persuasion +4, Stealth +5",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "cold",
+          "type": "resistance"
+        },
+        {
+          "name": "bludgeoning, piercing, and slashing from nonmagical weapons that aren't silvered",
+          "type": "resistance"
+        },
+        {
+          "name": "fire",
+          "type": "immunity"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Infernal",
+        "Common"
+      ]
+    },
+    "senses": {
+      "darkvision": 120,
+      "passives": {
+        "perception": 11
+      }
+    },
+    "challengeRating": "1",
+    "proficiencyBonus": 2,
+    "xp": 200,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/imp"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/imp",
+  "featureIds": [
+    "feat.shapechanger",
+    "feat.devil-s-sight",
+    "feat.magic-resistance",
+    "feat.imp-sting-bite-in-beast-form",
+    "feat.invisibility"
+  ]
+}

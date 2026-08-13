@@ -1,0 +1,82 @@
+{
+  "kind": "monster",
+  "name": "Bagiennik",
+  "notes": "_With webbed claws, bulbous eyes, and two nostril-slits that ooze an oily black substance, the creature is not quite hideous—but it might be, if most of it wasn’t concealed by a thick coating of muck and mud._\n\n**Bathing Uglies**. When a bagiennik is alone, it spends its time bathing in local springs, rivers, and marshes. The creature sifts through the muck and silt, extracting substances that enhance its oily secretions. If anything disturbs the creature during its languorous bathing sessions, it angrily retaliates. Once a bagiennik has bathed for four hours it seeks a target for mischief or charity.\n\n**Unpredictable Moods**. One never knows what to expect with a bagiennik. The same creature might aid an injured traveler one day, smear that person with corrosive, acidic oil the next day, and then extend tender care to the burned victim of its own psychotic behavior. If the creature feels beneficent, it heals injured animals or even diseased or injured villagers. If a bagiennik visits a settlement, the ill and infirm approach it cautiously while everyone else hides to avoid provoking its wrath. When a bagiennik leaves its bath in an angry mood, it raves and seeks out animals or humanoids to spray its oil onto. If a victim drops to 0 hit points, the foul-tempered bagiennik applies healing oil to stabilize them, grumbling all the while.\n\n**Acid Oils**. Collecting a dead bagiennik’s black oils must be done within an hour of the creature’s death. A successful DC 15 Wisdom (Medicine) check yields one vial of acid, or two vials if the result was 20 or higher. A bagiennik can use these chemicals either to heal or to harm, but no alchemist or healer has figured out how to reproduce the healing effects. Other than their acidic effect, the secretions lose all potency within moments of being removed from a bagiennik. A bagiennik weighs 250 lb., plus a coating of 20 to 50 lb. of mud and muck.",
+  "type": "aberration",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Chaotic Neutral",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 75,
+      "current": 75,
+      "diceString": "10d8 + 30"
+    },
+    "hitDice": "10d8",
+    "speed": {
+      "walk": 30,
+      "swim": 40
+    },
+    "abilities": {
+      "strength": 16,
+      "dexterity": 18,
+      "constitution": 16,
+      "intelligence": 9,
+      "wisdom": 16,
+      "charisma": 11
+    },
+    "initiative": {
+      "bonus": 4
+    },
+    "savingThrows": "",
+    "skills": "Perception +5",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 15
+      }
+    },
+    "challengeRating": "3",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Common"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Tome of Beasts 1, pg. 31"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.bagiennik-healing-oil",
+    "feat.multiattack",
+    "feat.claw",
+    "feat.bagiennik-acid-spray"
+  ],
+  "featureParams": {
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "4d6 + 4",
+      "damageType": "slashing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.claw",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two claw attacks."
+    }
+  }
+}

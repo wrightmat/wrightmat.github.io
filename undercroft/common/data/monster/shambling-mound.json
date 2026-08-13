@@ -1,0 +1,99 @@
+{
+  "kind": "monster",
+  "index": "shambling-mound",
+  "name": "Shambling Mound",
+  "type": "plant",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/shambling-mound.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "unaligned",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 136,
+      "current": 136,
+      "diceString": "16d10+48"
+    },
+    "hitDice": "16d10",
+    "speed": {
+      "walk": 20,
+      "swim": 20
+    },
+    "abilities": {
+      "strength": 18,
+      "dexterity": 8,
+      "constitution": 16,
+      "intelligence": 5,
+      "wisdom": 10,
+      "charisma": 5
+    },
+    "initiative": {
+      "bonus": -1
+    },
+    "savingThrows": "",
+    "skills": "Stealth +2",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "cold",
+          "type": "resistance"
+        },
+        {
+          "name": "fire",
+          "type": "resistance"
+        },
+        {
+          "name": "lightning",
+          "type": "immunity"
+        },
+        {
+          "name": "Blinded",
+          "type": "immunity"
+        },
+        {
+          "name": "Blinded",
+          "type": "immunity"
+        },
+        {
+          "name": "Exhaustion",
+          "type": "immunity"
+        }
+      ],
+      "languages": []
+    },
+    "senses": {
+      "blindsight": 60,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "5",
+    "proficiencyBonus": 3,
+    "xp": 1800,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/shambling-mound"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/shambling-mound",
+  "featureIds": [
+    "feat.lightning-absorption",
+    "feat.multiattack",
+    "feat.slam",
+    "feat.shambling-mound-engulf"
+  ],
+  "featureParams": {
+    "feat.slam": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d8 + 4",
+      "damageType": "bludgeoning"
+    },
+    "feat.multiattack": {
+      "text": "The creature makes two slam attacks. If both attacks hit a Medium or smaller target, the target is grappled (escape DC 14), and the creature uses its Engulf on it."
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "id": "feat.raven-mimicry",
+  "name": "Mimicry",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The beast can mimic simple sounds it has heard, such as a person whispering, a baby crying, or an animal chittering. A creature that hears the sounds can tell they are imitations with a successful DC 10 Wisdom (Insight) check.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The beast can mimic simple sounds it has heard, such as a person whispering, a baby crying, or an animal chittering. A creature that hears the sounds can tell they are imitations with a successful DC 10 Wisdom (Insight) check."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

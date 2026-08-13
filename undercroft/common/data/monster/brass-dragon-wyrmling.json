@@ -1,0 +1,78 @@
+{
+  "kind": "monster",
+  "index": "brass-dragon-wyrmling",
+  "name": "Brass Dragon Wyrmling",
+  "type": "dragon",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/brass-dragon-wyrmling.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "chaotic good",
+    "armorClass": 16,
+    "hitPoints": {
+      "max": 16,
+      "current": 16,
+      "diceString": "3d8+3"
+    },
+    "hitDice": "3d8",
+    "speed": {
+      "walk": 30,
+      "burrow": 15,
+      "fly": 60
+    },
+    "abilities": {
+      "strength": 15,
+      "dexterity": 10,
+      "constitution": 13,
+      "intelligence": 10,
+      "wisdom": 11,
+      "charisma": 13
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "DEX +2, CON +3, WIS +2, CHA +3",
+    "skills": "Perception +4, Stealth +2",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "fire",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Draconic"
+      ]
+    },
+    "senses": {
+      "blindsight": 10,
+      "darkvision": 60,
+      "passives": {
+        "perception": 14
+      }
+    },
+    "challengeRating": "1",
+    "proficiencyBonus": 2,
+    "xp": 100,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/brass-dragon-wyrmling"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/brass-dragon-wyrmling",
+  "featureIds": [
+    "feat.bite",
+    "feat.brass-dragon-wyrmling-breath-weapons"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d10 + 2",
+      "damageType": "piercing"
+    }
+  }
+}

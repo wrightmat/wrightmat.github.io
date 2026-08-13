@@ -1,0 +1,147 @@
+{
+  "kind": "monster",
+  "name": "Riptide Drake",
+  "notes": "_This sinuous, eel-like dragon swims gracefully through the water, its current shifting and roiling at the dragon’s command._\n\nRiptide drakes are underwater predators who exert control over the flow of water and exploit this ability to aid in their hunts.\n\n**Cruel Seas**. The drakes enjoy catching creatures unaccustomed to the underwater environment off guard. They delight in battering and disorienting their prey and watch as their victims drown or become lost in the deep. The carnivorous dragons feast on the bloated corpses of creatures that have succumbed to the dangers of the sea.\n\n**Desirous of Leadership**. Riptide drakes seek worthy leaders and grow bored without direction. They follow powerful aquatic dragons, dragon turtles, or watery fiends. A riptide drake remains faithful to its superior, unless the leader betrays them, driving the creature to seek terrible vengeance and new leadership.",
+  "type": "dragon",
+  "stats": {
+    "size": "Large",
+    "alignment": "Lawful Evil",
+    "armorClass": 17,
+    "hitPoints": {
+      "max": 231,
+      "current": 231,
+      "diceString": "22d10 + 110"
+    },
+    "hitDice": "22d10",
+    "speed": {
+      "walk": 20,
+      "swim": 60
+    },
+    "abilities": {
+      "strength": 22,
+      "dexterity": 9,
+      "constitution": 20,
+      "intelligence": 11,
+      "wisdom": 16,
+      "charisma": 10
+    },
+    "initiative": {
+      "bonus": -1
+    },
+    "savingThrows": "Dex +3",
+    "skills": "Athletics +10, Perception +7, Survival +7",
+    "senses": {
+      "blindsight": 120,
+      "darkvision": 60,
+      "passives": {
+        "perception": 1
+      }
+    },
+    "challengeRating": "11",
+    "proficiencyBonus": 4,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "cold",
+          "type": "resistance"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "poisoned",
+          "type": "immunity"
+        },
+        {
+          "name": "unconscious",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Aquan",
+        "Draconic"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Tome of Beasts 3, pg. 155"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.amphibious",
+    "feat.echolocation",
+    "feat.riptide-drake-underwater-camouflage",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.slam",
+    "feat.riptide-drake-sonic-pulse",
+    "feat.buffeting-blast",
+    "feat.riptide-drake-manipulate-currents"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 10,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "4d8 + 6",
+      "damageType": "piercing"
+    },
+    "feat.slam": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 10,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "4d6 + 6",
+      "damageType": "bludgeoning"
+    },
+    "feat.multiattack": {
+      "text": "The creature makes three Sonic Pulse attacks or one Bite attack and two Slam attacks.",
+      "options": [
+        [
+          {
+            "featureId": "feat.riptide-drake-sonic-pulse",
+            "count": 3
+          }
+        ],
+        [
+          {
+            "featureId": "feat.bite",
+            "count": 1
+          },
+          {
+            "featureId": "feat.slam",
+            "count": 2
+          }
+        ]
+      ]
+    },
+    "feat.buffeting-blast": {
+      "verb": "exhales",
+      "substance": "a powerful stream of water",
+      "areaSize": "60",
+      "areaShape": "line",
+      "dcAbility": "constitution",
+      "ability": "dexterity",
+      "rider": {
+        "kind": "fail-condition",
+        "conditionText": "On a failure, a creature takes 38 (7d10) bludgeoning damage and becomes disoriented for 1 minute. On a success, a creature takes half the damage and isn’t disoriented. When a disoriented creature moves, it moves in a random direction. It can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success."
+      },
+      "lineWidth": "5"
+    }
+  },
+  "featureTiers": {
+    "feat.echolocation": "no-water"
+  }
+}

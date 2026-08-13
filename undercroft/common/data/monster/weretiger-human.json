@@ -1,0 +1,90 @@
+{
+  "kind": "monster",
+  "index": "weretiger-human",
+  "name": "Weretiger, Human Form",
+  "type": "humanoid",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/weretiger-human.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "neutral",
+    "armorClass": 12,
+    "hitPoints": {
+      "max": 120,
+      "current": 120,
+      "diceString": "16d8+48"
+    },
+    "hitDice": "16d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 17,
+      "dexterity": 15,
+      "constitution": 16,
+      "intelligence": 10,
+      "wisdom": 13,
+      "charisma": 11
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "Perception +5, Stealth +4",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "bludgeoning, piercing, and slashing from nonmagical weapons that aren't silvered",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Common"
+      ]
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 15
+      }
+    },
+    "challengeRating": "4",
+    "proficiencyBonus": 2,
+    "xp": 1100,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/weretiger-human"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/weretiger-human",
+  "featureIds": [
+    "feat.shapechanger",
+    "feat.keen-hearing-and-smell",
+    "feat.multiattack",
+    "feat.scimitar",
+    "feat.longbow"
+  ],
+  "featureParams": {
+    "feat.scimitar": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d6 + 3",
+      "damageType": "slashing"
+    },
+    "feat.longbow": {
+      "kind": "Ranged",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "range",
+      "distance": "150/600",
+      "damageDice": "1d8 + 2",
+      "damageType": "piercing"
+    },
+    "feat.multiattack": {
+      "text": "In humanoid form, the weretiger makes two scimitar attacks or two longbow attacks. In hybrid form, it can attack like a humanoid or make two claw attacks."
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "id": "feat.adult-topaz-dragon-psychic-step",
+  "name": "Psychic Step",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature magically teleports to an unoccupied space it can see within 60 feet of it.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature magically teleports to an unoccupied space it can see within 60 feet of it.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "mobility"
+    ],
+    "recipeSlots": [
+      "escape"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "bonus-action"
+  }
+}

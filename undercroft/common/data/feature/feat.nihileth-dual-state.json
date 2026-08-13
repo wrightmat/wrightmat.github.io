@@ -1,0 +1,30 @@
+{
+  "id": "feat.nihileth-dual-state",
+  "name": "Dual State",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "a creature exists upon the Material Plane in one of two forms and can switch between them at will. In its material form, it has resistance to damage from nonmagical weapons. In its ethereal form, it is immune to damage from nonmagical weapons. The creature’s ethereal form appears as a dark purple outline of its material form, with a blackish-purple haze within. a creature in ethereal form can move through air as though it were water, with a fly speed of 40 feet.",
+  "mechanics": {
+    "type": "passive",
+    "text": "a creature exists upon the Material Plane in one of two forms and can switch between them at will. In its material form, it has resistance to damage from nonmagical weapons. In its ethereal form, it is immune to damage from nonmagical weapons. The creature’s ethereal form appears as a dark purple outline of its material form, with a blackish-purple haze within. a creature in ethereal form can move through air as though it were water, with a fly speed of 40 feet.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "defense",
+      "mobility"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

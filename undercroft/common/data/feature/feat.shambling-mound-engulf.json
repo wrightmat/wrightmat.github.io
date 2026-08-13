@@ -1,0 +1,28 @@
+{
+  "id": "feat.shambling-mound-engulf",
+  "name": "Engulf",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The plant engulfs a Medium or smaller creature grappled by it. The engulfed target is blinded, restrained, and unable to breathe, and it must succeed on a DC 14 Constitution saving throw at the start of each of the plant's turns or take 13 (2d8 + 4) bludgeoning damage. If the plant moves, the engulfed target moves with it. The plant can have only one creature engulfed at a time.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The plant engulfs a Medium or smaller creature grappled by it. The engulfed target is blinded, restrained, and unable to breathe, and it must succeed on a DC 14 Constitution saving throw at the start of each of the plant's turns or take 13 (2d8 + 4) bludgeoning damage. If the plant moves, the engulfed target moves with it. The plant can have only one creature engulfed at a time."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

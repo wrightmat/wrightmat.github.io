@@ -1,0 +1,24 @@
+{
+  "id": "feat.web-walker",
+  "name": "Web Walker",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature ignores movement restrictions caused by webbing.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature ignores movement restrictions caused by webbing."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

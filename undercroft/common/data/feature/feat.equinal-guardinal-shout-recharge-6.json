@@ -1,0 +1,33 @@
+{
+  "id": "feat.equinal-guardinal-shout-recharge-6",
+  "name": "Shout (Recharge 6)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature lets out a booming shout. Each creature within 30 feet of the creature must succeed on a DC 14 Constitution saving throw or have the stunned condition until the end of the creature's next turn.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature lets out a booming shout. Each creature within 30 feet of the creature must succeed on a DC 14 Constitution saving throw or have the stunned condition until the end of the creature's next turn.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "control"
+    ],
+    "recipeSlots": [
+      "burst"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

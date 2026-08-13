@@ -1,0 +1,25 @@
+{
+  "id": "feat.aboleth-mucous-cloud",
+  "name": "Mucous Cloud",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "While underwater, the aberration is surrounded by transformative mucus. A creature that touches the aberration or that hits it with a melee attack while within 5 ft. of it must make a DC 14 Constitution saving throw. On a failure, the creature is diseased for 1d4 hours. The diseased creature can breathe only underwater.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "While underwater, the aberration is surrounded by transformative mucus. A creature that touches the aberration or that hits it with a melee attack while within 5 ft. of it must make a DC 14 Constitution saving throw. On a failure, the creature is diseased for 1d4 hours. The diseased creature can breathe only underwater."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

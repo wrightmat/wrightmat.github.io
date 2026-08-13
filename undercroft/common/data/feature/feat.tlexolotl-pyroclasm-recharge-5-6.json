@@ -1,0 +1,32 @@
+{
+  "id": "feat.tlexolotl-pyroclasm-recharge-5-6",
+  "name": "Pyroclasm (Recharge 5–6)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Gouts of molten lava erupt from the creature’s body. Each creature in a 30-foot-radius sphere centered on the creature must make a DC 15 Dexterity saving throw. On a failed saving throw, a creature takes 21 (6d6) fire damage and 21 (6d6) bludgeoning damage. On a successful saving throw, a creature takes half as much damage.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Gouts of molten lava erupt from the creature’s body. Each creature in a 30-foot-radius sphere centered on the creature must make a DC 15 Dexterity saving throw. On a failed saving throw, a creature takes 21 (6d6) fire damage and 21 (6d6) bludgeoning damage. On a successful saving throw, a creature takes half as much damage.",
+    "scope": "unique"
+  },
+  "budgetCost": 4,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "burst"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

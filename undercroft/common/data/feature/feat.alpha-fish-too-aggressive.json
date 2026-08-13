@@ -1,0 +1,29 @@
+{
+  "id": "feat.alpha-fish-too-aggressive",
+  "name": "Too Aggressive",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature attacks anything it thinks is threatening, even inanimate objects or illusions. It automatically fails ability checks and saving throws to detect or see through illusions.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature attacks anything it thinks is threatening, even inanimate objects or illusions. It automatically fails ability checks and saving throws to detect or see through illusions.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "debuff"
+    ],
+    "recipeSlots": [
+      "trick"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

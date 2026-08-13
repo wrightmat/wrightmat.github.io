@@ -1,0 +1,87 @@
+{
+  "kind": "monster",
+  "name": "Mind Flayer",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/30833/421/1000/1000/638063863513745427.png",
+  "notes": "### Description\r\n\r\nMind flayers, also called illithids, are the scourge of sentient creatures across countless worlds. Psionic tyrants, slavers, and interdimensional voyagers, they are insidious masterminds that harvest entire races for their own twisted ends. Four tentacles snake from their octopus-like heads, flexing in hungry anticipation when sentient creatures come near.\r\n\r\nIn eons past, illithids controlled empires that spanned many worlds. They subjugated and consequently warped whole races of humanoid slaves, including the githyanki and githzerai, the grimlocks, and the kuo-toa. Conjoined by a collective consciousness, the illithids hatch plots as far-reaching and evil as their fathomless minds can conceive.\r\n\r\nSince the fall of their empires, illithid collectives on the Material Plane have resided in the Underdark.\r\n\r\n_**Psionic Commanders.**_ Mind flayers possess psionic powers that enable them to control the minds of creatures such as troglodytes, grimlocks, quaggoths, and ogres. Illithids prefer to communicate via telepathy and use their telepathy when issuing commands to their thralls.\r\n\r\nWhen an illithid meets strong resistance, it avoids initial combat as it orders its thralls to attack. Like physical extensions of the illithid’s thoughts, these thralls interpose themselves between the mind flayer and its foes, sacrificing their lives so that their master can escape.\r\n\r\n_**Hive Mind Colonies.**_ Solitary mind flayers are likely rogues and outcasts. Most illithids belong to a colony of sibling mind flayers devoted to an elder brain — a massive brain-like being that resides in a briny pool near the center of a mind flayer community. From its pool, an elder brain telepathically dictates its desires to each individual mind flayer within 5 miles of it, for it is able to hold multiple mental conversations at once.\r\n\r\n_**Hunger of the Mind.**_ Illithids subsist on the brains of humanoids. The brains provide enzymes, hormones, and psychic energy necessary for their survival. An illithid healthy from a brain-rich diet secretes a thin glaze of mucus that coats its mauve skin.\r\n\r\nAn illithid experiences euphoria as it devours the brain of a humanoid, along with its memories, personality, and innermost fears. Mind flayers will sometimes harvest a brain rather than devour it, using it as part of some alien experiment or transforming it into an intellect devourer.",
+  "type": "aberration",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Lawful Evil",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 71,
+      "current": 71,
+      "diceString": "13d8 + 13"
+    },
+    "hitDice": "13d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 11,
+      "dexterity": 12,
+      "constitution": 12,
+      "intelligence": 19,
+      "wisdom": 17,
+      "charisma": 17
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "Int +7, Wis +6, Cha +6",
+    "skills": "Arcana +7, Deception +6, Insight +6, Perception +6, Persuasion +6, Stealth +4",
+    "senses": {
+      "darkvision": 120,
+      "passives": {
+        "perception": 16
+      }
+    },
+    "challengeRating": "7",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Deep Speech",
+        "Telepathy 120 ft.",
+        "Undercommon"
+      ]
+    },
+    "spells": "(Psionics). The mind flayer’s innate spellcasting ability is Intelligence (spell save DC 15). It can innately cast the following spells, requiring no components: At will: detect thoughts, levitate 1/day each: dominate monster, plane shift (self only)",
+    "environments": [
+      "Underdark"
+    ],
+    "sources": [
+      "MM",
+      "https://www.dndbeyond.com/monsters/17104-mind-flayer",
+      "Monster Manual, pg. 222"
+    ],
+    "saveDC": 15
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.magic-resistance",
+    "feat.tentacles",
+    "feat.extract-brain",
+    "feat.mind-flayer-arcanist-mind-blast-recharge-5-6"
+  ],
+  "featureParams": {
+    "feat.tentacles": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d10 + 4",
+      "damageType": "psychic",
+      "rider": {
+        "kind": "save-or-condition",
+        "saveAbility": "intelligence",
+        "saveDC": 15,
+        "condition": "stunned until this grapple ends"
+      }
+    }
+  }
+}

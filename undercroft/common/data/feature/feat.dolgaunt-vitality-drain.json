@@ -1,0 +1,33 @@
+{
+  "id": "feat.dolgaunt-vitality-drain",
+  "name": "Vitality Drain",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "One creature grappled by a tentacle of the creature must make a DC 11 Constitution saving throw. On a failed save, the target takes 9 (2d8) necrotic damage, and the creature regains a number of hit points equal to half the necrotic damage taken.",
+  "mechanics": {
+    "type": "passive",
+    "text": "One creature grappled by a tentacle of the creature must make a DC 11 Constitution saving throw. On a failed save, the target takes 9 (2d8) necrotic damage, and the creature regains a number of hit points equal to half the necrotic damage taken.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "regeneration"
+    ],
+    "recipeSlots": [
+      "drain"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

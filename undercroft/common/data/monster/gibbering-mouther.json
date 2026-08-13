@@ -1,0 +1,77 @@
+{
+  "kind": "monster",
+  "index": "gibbering-mouther",
+  "name": "Gibbering Mouther",
+  "type": "aberration",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/gibbering-mouther.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "neutral",
+    "armorClass": 9,
+    "hitPoints": {
+      "max": 67,
+      "current": 67,
+      "diceString": "9d8+27"
+    },
+    "hitDice": "9d8",
+    "speed": {
+      "walk": 10,
+      "swim": 10
+    },
+    "abilities": {
+      "strength": 10,
+      "dexterity": 8,
+      "constitution": 16,
+      "intelligence": 3,
+      "wisdom": 10,
+      "charisma": 6
+    },
+    "initiative": {
+      "bonus": -1
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Prone",
+          "type": "immunity"
+        }
+      ],
+      "languages": []
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "2",
+    "proficiencyBonus": 2,
+    "xp": 450,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/gibbering-mouther"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/gibbering-mouther",
+  "featureIds": [
+    "feat.gibbering-mouther-aberrant-ground",
+    "feat.gibbering-mouther-gibbering",
+    "feat.multiattack",
+    "feat.gibbering-mouther-bites",
+    "feat.gibbering-mouther-blinding-spittle"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.gibbering-mouther-bites",
+          "count": 1
+        }
+      ],
+      "text": "The creature makes one bite attack and, if it can, uses its Blinding Spittle."
+    }
+  }
+}

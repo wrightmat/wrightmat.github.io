@@ -1,0 +1,32 @@
+{
+  "id": "feat.skinweaver-head-vicious-bite",
+  "name": "Vicious Bite",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Melee Weapon Attack: +5 to hit, reach 5 ft., 1 target. Hit: 6 (2d6) necrotic damage.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Melee Weapon Attack: +5 to hit, reach 5 ft., 1 target. Hit: 6 (2d6) necrotic damage.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

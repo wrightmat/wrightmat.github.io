@@ -1,0 +1,27 @@
+{
+  "id": "feat.invisibility",
+  "name": "Invisibility",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature magically turns invisible until it attacks, or until its concentration ends (as if concentrating on a spell). Any equipment the creature wears or carries is invisible with it.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature magically turns invisible until it attacks, or until its concentration ends (as if concentrating on a spell). Any equipment the creature wears or carries is invisible with it."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

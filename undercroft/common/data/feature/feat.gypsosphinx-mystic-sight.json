@@ -1,0 +1,29 @@
+{
+  "id": "feat.gypsosphinx-mystic-sight",
+  "name": "Mystic Sight",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "a creature sees death coming and can foretell the manner of a person's death. This ability does not come with any urge to share that information. Gypsosphinxes are notorious for hinting, teasing, and even lying about a creature's death ('If we fight, I will kill you and eat your heart. I have seen it', is a favorite bluff).",
+  "mechanics": {
+    "type": "passive",
+    "text": "a creature sees death coming and can foretell the manner of a person's death. This ability does not come with any urge to share that information. Gypsosphinxes are notorious for hinting, teasing, and even lying about a creature's death ('If we fight, I will kill you and eat your heart. I have seen it', is a favorite bluff).",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

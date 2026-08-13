@@ -1,0 +1,32 @@
+{
+  "id": "feat.adult-topaz-dragon-essential-reduction-costs-3-actions",
+  "name": "Essential Reduction (Costs 3 Actions)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The dragon targets a creature or an object not being worn or carried that it can see within 60 feet of it. The target must succeed on a DC 17 Constitution saving throw or take 28 (8d6) necrotic damage. If this damage reduces the target to 0 hit points, it crumbles to dust.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The dragon targets a creature or an object not being worn or carried that it can see within 60 feet of it. The target must succeed on a DC 17 Constitution saving throw or take 28 (8d6) necrotic damage. If this damage reduces the target to 0 hit points, it crumbles to dust.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "legendary-action"
+  }
+}

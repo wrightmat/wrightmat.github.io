@@ -1,0 +1,32 @@
+{
+  "id": "feat.kobold-chieftain-springspike-shield-5-rest",
+  "name": "Springspike Shield (5/rest)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "When the creature is hit by a melee attack within 5 feet, the creature can fire one of its shield spikes at the attacker. The attacker takes 3 (1d6) piercing damage plus 3 (1d6) poison damage.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When the creature is hit by a melee attack within 5 feet, the creature can fire one of its shield spikes at the attacker. The attacker takes 3 (1d6) piercing damage plus 3 (1d6) poison damage.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "reaction"
+  }
+}

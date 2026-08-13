@@ -1,0 +1,29 @@
+{
+  "id": "feat.library-automaton-extra-dimensional-book-repository",
+  "name": "Extra-Dimensional Book Repository",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "A small door on the chest of the creature opens into an extra‑dimensional bookcase. This bookcase functions exactly as a bag of holding except that it can store only written materials such as books, scrolls, tomes, parchment, folders, notebooks, spellbooks, and the like.",
+  "mechanics": {
+    "type": "passive",
+    "text": "A small door on the chest of the creature opens into an extra‑dimensional bookcase. This bookcase functions exactly as a bag of holding except that it can store only written materials such as books, scrolls, tomes, parchment, folders, notebooks, spellbooks, and the like.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

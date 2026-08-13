@@ -1,0 +1,28 @@
+{
+  "id": "feat.deep-scion-change-shape",
+  "name": "Change Shape",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature transforms into a hybrid form (humanoid-piscine) or back into its true form, which is humanlike. Its statistics, other than its speed, are the same in each form. Any equipment it is wearing or carrying isn’t transformed. The creature reverts to its true form if it dies.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The creature transforms into a hybrid form (humanoid-piscine) or back into its true form, which is humanlike. Its statistics, other than its speed, are the same in each form. Any equipment it is wearing or carrying isn’t transformed. The creature reverts to its true form if it dies."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "bonus-action"
+  }
+}

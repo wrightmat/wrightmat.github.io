@@ -1,0 +1,32 @@
+{
+  "id": "feat.storm-elemental-shock",
+  "name": "Shock",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Melee Weapon Attack: +9 to hit, reach 0 ft., one target. Hit: 22 (5d8) lightning damage. This attack is made with advantage against a target wearing metal armor.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Melee Weapon Attack: +9 to hit, reach 0 ft., one target. Hit: 22 (5d8) lightning damage. This attack is made with advantage against a target wearing metal armor.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

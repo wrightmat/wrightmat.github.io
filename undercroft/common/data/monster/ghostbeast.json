@@ -1,0 +1,87 @@
+{
+  "kind": "monster",
+  "name": "Ghostbeast",
+  "notes": "",
+  "type": "monstrosity",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Chaotic Evil",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 105,
+      "current": 105,
+      "diceString": "14d8 + 42"
+    },
+    "hitDice": "14d8",
+    "speed": {
+      "walk": 40
+    },
+    "abilities": {
+      "strength": 14,
+      "dexterity": 17,
+      "constitution": 16,
+      "intelligence": 8,
+      "wisdom": 11,
+      "charisma": 6
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "Dex +6, Wis +3",
+    "skills": "",
+    "senses": {
+      "darkvision": 120,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "5",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Homebrew"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.magic-resistance",
+    "feat.ghostbeast-unnerving-howl",
+    "feat.pack-tactics",
+    "feat.multiattack",
+    "feat.claw"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.claw",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two claw attacks."
+    },
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d8 + 2",
+      "damageType": "slashing",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "2d6",
+        "damageType": "necrotic"
+      }
+    }
+  }
+}

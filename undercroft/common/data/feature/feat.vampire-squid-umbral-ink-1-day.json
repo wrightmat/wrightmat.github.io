@@ -1,0 +1,33 @@
+{
+  "id": "feat.vampire-squid-umbral-ink-1-day",
+  "name": "Umbral Ink (1/Day)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Trigger: The vampire squid takes damage while underwater. Response: The vampire squid releases ink that fills a 10-foot cube centered on itself, and the vampire squid moves up to its swim speed. Any creature in the area when the ink releases, or starting their turn in the cube, takes 2d6 necrotic damage. The cube is heavily obscured for 1 minute or until a strong current or similar effect disperses the ink.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "Trigger: The vampire squid takes damage while underwater. Response: The vampire squid releases ink that fills a 10-foot cube centered on itself, and the vampire squid moves up to its swim speed. Any creature in the area when the ink releases, or starting their turn in the cube, takes 2d6 necrotic damage. The cube is heavily obscured for 1 minute or until a strong current or similar effect disperses the ink."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "control",
+      "mobility"
+    ],
+    "recipeSlots": [
+      "escape"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "reaction"
+  }
+}

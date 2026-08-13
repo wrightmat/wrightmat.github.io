@@ -1,0 +1,29 @@
+{
+  "id": "feat.strixhaven-campus-guide-univocal-speech",
+  "name": "Univocal Speech",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "When the creature speaks, any creature that knows at least one language and can hear the creature understands what it says.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When the creature speaks, any creature that knows at least one language and can hear the creature understands what it says.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,25 @@
+{
+  "id": "feat.bearded-devil-steadfast",
+  "name": "Steadfast",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The fiend can't be frightened while it can see an allied creature within 30 feet of it.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The fiend can't be frightened while it can see an allied creature within 30 feet of it."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

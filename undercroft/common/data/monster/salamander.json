@@ -1,0 +1,94 @@
+{
+  "kind": "monster",
+  "index": "salamander",
+  "name": "Salamander",
+  "type": "elemental",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/salamander.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "neutral evil",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 90,
+      "current": 90,
+      "diceString": "12d10+24"
+    },
+    "hitDice": "12d10",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 18,
+      "dexterity": 14,
+      "constitution": 15,
+      "intelligence": 11,
+      "wisdom": 10,
+      "charisma": 12
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "bludgeoning, piercing, and slashing from nonmagical weapons",
+          "type": "resistance"
+        },
+        {
+          "name": "cold",
+          "type": "vulnerability"
+        },
+        {
+          "name": "fire",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Ignan"
+      ]
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "5",
+    "proficiencyBonus": 3,
+    "xp": 1800,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/salamander"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/salamander",
+  "featureIds": [
+    "feat.heated-body",
+    "feat.heated-weapons",
+    "feat.multiattack",
+    "feat.salamander-spear",
+    "feat.salamander-tail"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.salamander-spear",
+          "count": 1
+        },
+        {
+          "featureId": "feat.salamander-tail",
+          "count": 1
+        }
+      ],
+      "text": "The creature makes two attacks: one with its spear and one with its tail."
+    }
+  },
+  "featureTiers": {
+    "feat.heated-weapons": "base",
+    "feat.heated-body": "2d6"
+  }
+}

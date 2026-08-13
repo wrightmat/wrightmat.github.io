@@ -1,0 +1,121 @@
+{
+  "kind": "monster",
+  "index": "adult-brass-dragon",
+  "name": "Adult Brass Dragon",
+  "type": "dragon",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/adult-brass-dragon.png",
+  "stats": {
+    "size": "Huge",
+    "alignment": "chaotic good",
+    "armorClass": 18,
+    "hitPoints": {
+      "max": 172,
+      "current": 172,
+      "diceString": "15d12+75"
+    },
+    "hitDice": "15d12",
+    "speed": {
+      "walk": 40,
+      "burrow": 40,
+      "fly": 80
+    },
+    "abilities": {
+      "strength": 23,
+      "dexterity": 10,
+      "constitution": 21,
+      "intelligence": 14,
+      "wisdom": 13,
+      "charisma": 17
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "DEX +5, CON +10, WIS +6, CHA +8",
+    "skills": "History +7, Perception +11, Persuasion +8, Stealth +5",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "fire",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Common",
+        "Draconic"
+      ]
+    },
+    "senses": {
+      "blindsight": 60,
+      "darkvision": 120,
+      "passives": {
+        "perception": 21
+      }
+    },
+    "challengeRating": "13",
+    "proficiencyBonus": 5,
+    "xp": 10000,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/adult-brass-dragon"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/adult-brass-dragon",
+  "featureIds": [
+    "feat.legendary-resistance",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.claw",
+    "feat.tail",
+    "feat.frightful-presence",
+    "feat.adult-brass-dragon-breath-weapons",
+    "feat.aboleth-detect",
+    "feat.adult-black-dragon-tail-attack",
+    "feat.wing-attack"
+  ],
+  "featureTiers": {
+    "feat.legendary-resistance": "3-day"
+  },
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 11,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "2d10 + 6",
+      "damageType": "piercing"
+    },
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 11,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 6",
+      "damageType": "slashing"
+    },
+    "feat.tail": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 11,
+      "distanceLabel": "reach",
+      "distance": "15",
+      "damageDice": "2d8 + 6",
+      "damageType": "bludgeoning"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.bite",
+          "count": 1
+        },
+        {
+          "featureId": "feat.claw",
+          "count": 2
+        }
+      ],
+      "text": "The creature can use its Frightful Presence. It then makes three attacks: one with its bite and two with its claws."
+    }
+  }
+}

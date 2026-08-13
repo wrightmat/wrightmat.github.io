@@ -1,0 +1,30 @@
+{
+  "id": "feat.extradimensional-touch",
+  "name": "Extradimensional Touch",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Melee Spell Attack against one target.",
+  "mechanics": {
+    "type": "weapon-attack"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

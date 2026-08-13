@@ -1,0 +1,125 @@
+{
+  "kind": "monster",
+  "name": "Ravenala",
+  "image": "https://i.pinimg.com/474x/22/fe/96/22fe9676a9544b013f31d215c34eafde.jpg",
+  "notes": "_Ravenalas guard tropical forests and watch after local flora and fauna. Their heads are crowned by long-stemmed, green-paddled fronds and spiked seed pods, and their dangling arms end in hooked wooden talons._\r\n\r\n**Leafy Advisors**. Tribal humanoids respect and venerate ravenelas, and sometimes seek their advice or magical aid at times of great need. Ravenalas seldom interact with other species unless approached and questioned.\r\n\r\n**Prisoners Lamentation**. Unlike treants, ravenalas avoid physical conflict in favor of magical responses. If annoyed, they imprison hostile creatures within their trunks rather than killing or eating them. Trapped creatures must sing their own lament as they are carried off to a distant, dangerous locale.\r\n\r\nRavenalas grow to about 20 feet tall and can weigh 1,800 lb.",
+  "type": "plant",
+  "stats": {
+    "size": "Large",
+    "alignment": "Unaligned",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 126,
+      "current": 126,
+      "diceString": "12d10 + 60"
+    },
+    "hitDice": "12d10",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 20,
+      "dexterity": 10,
+      "constitution": 20,
+      "intelligence": 12,
+      "wisdom": 16,
+      "charisma": 12
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "Wis +6, Cha +4",
+    "skills": "",
+    "senses": {
+      "passives": {
+        "perception": 13
+      }
+    },
+    "challengeRating": "5",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "fire",
+          "type": "vulnerability"
+        },
+        {
+          "name": "cold",
+          "type": "vulnerability"
+        },
+        {
+          "name": "blinded",
+          "type": "immunity"
+        },
+        {
+          "name": "deafened",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Common",
+        "Druidic",
+        "Elvish",
+        "Sylvan"
+      ]
+    },
+    "spells": "The ravenala’s innate spellcasting ability is Wisdom (spell save DC 14). It can innately cast the following spells, requiring no material components: At will: entangle, sleep 1/day each: heal, wall of thorns",
+    "environments": [
+      "Coastal",
+      "Forest"
+    ],
+    "sources": [
+      "ToB1",
+      "Tome of Beasts 1, pg 321"
+    ],
+    "saveDC": 14
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.magic-resistance",
+    "feat.ravenala-green-walk",
+    "feat.multiattack",
+    "feat.slam",
+    "feat.ravenala-bursting-pod",
+    "feat.ravenala-lamenting-engulfment"
+  ],
+  "featureParams": {
+    "feat.slam": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 8,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d6 + 5",
+      "damageType": "bludgeoning"
+    },
+    "feat.multiattack": {
+      "text": "The creature makes two slam attacks or two bursting pod attacks.",
+      "options": [
+        [
+          {
+            "featureId": "feat.slam",
+            "count": 2
+          }
+        ],
+        [
+          {
+            "featureId": "feat.ravenala-bursting-pod",
+            "count": 2
+          }
+        ]
+      ]
+    }
+  }
+}

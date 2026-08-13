@@ -1,0 +1,29 @@
+{
+  "id": "feat.canopic-golem-limited-spell-immunity",
+  "name": "Limited Spell Immunity",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature automatically succeeds on saving throws against spells of 7th level or lower, and the attack rolls of such spells always miss it.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature automatically succeeds on saving throws against spells of 7th level or lower, and the attack rolls of such spells always miss it.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

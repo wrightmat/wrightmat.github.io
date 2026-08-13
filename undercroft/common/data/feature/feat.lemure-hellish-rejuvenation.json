@@ -1,0 +1,25 @@
+{
+  "id": "feat.lemure-hellish-rejuvenation",
+  "name": "Hellish Rejuvenation",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "A fiend that dies in the Nine Hells comes back to life with all its hit points in 1d10 days unless it is killed by a good-aligned creature with a bless spell cast on that creature or its remains are sprinkled with holy water.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "A fiend that dies in the Nine Hells comes back to life with all its hit points in 1d10 days unless it is killed by a good-aligned creature with a bless spell cast on that creature or its remains are sprinkled with holy water."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

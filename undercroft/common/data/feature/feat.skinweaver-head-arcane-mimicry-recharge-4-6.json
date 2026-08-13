@@ -1,0 +1,33 @@
+{
+  "id": "feat.skinweaver-head-arcane-mimicry-recharge-4-6",
+  "name": "Arcane Mimicry (Recharge 4-6)",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature can use one attack or spell of 10th level or below that has been used in the last round and within 50 feet of the creature. This is considered to be a standard action, even if the original attack or spell was a bonus action. If the power is an attack, the creature’s attack bonus is +4 and its damage modifier is +5.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature can use one attack or spell of 10th level or below that has been used in the last round and within 50 feet of the creature. This is considered to be a standard action, even if the original attack or spell was a bonus action. If the power is an attack, the creature’s attack bonus is +4 and its damage modifier is +5.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "utility",
+      "damage"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

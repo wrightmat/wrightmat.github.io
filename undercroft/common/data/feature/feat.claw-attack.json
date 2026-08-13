@@ -1,0 +1,27 @@
+{
+  "id": "feat.claw-attack",
+  "name": "Claw Attack",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The sphinx makes one claw attack.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The sphinx makes one claw attack."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "legendary-action"
+  }
+}

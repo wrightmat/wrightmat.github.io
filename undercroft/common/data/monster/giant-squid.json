@@ -1,0 +1,106 @@
+{
+  "kind": "monster",
+  "name": "Giant Squid",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/47138/882/1000/1000/638741964144226871.png",
+  "notes": "",
+  "type": "beast",
+  "stats": {
+    "size": "Huge",
+    "alignment": "Unaligned",
+    "armorClass": 12,
+    "hitPoints": {
+      "max": 120,
+      "current": 120,
+      "diceString": "16d12 + 16"
+    },
+    "hitDice": "16d12",
+    "speed": {
+      "walk": 5,
+      "swim": 80
+    },
+    "abilities": {
+      "strength": 23,
+      "dexterity": 14,
+      "constitution": 12,
+      "intelligence": 5,
+      "wisdom": 11,
+      "charisma": 4
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "Perception +6",
+    "senses": {
+      "darkvision": 120,
+      "passives": {
+        "perception": 16
+      }
+    },
+    "challengeRating": "6",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "string",
+          "type": "resistance"
+        },
+        {
+          "name": "string",
+          "type": "vulnerability"
+        },
+        {
+          "name": "string",
+          "type": "immunity"
+        },
+        {
+          "name": "string",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "--"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Monster Manual, pg. 360",
+      "https://www.dndbeyond.com/monsters/5195028-giant-squid"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.multiattack",
+    "feat.bite",
+    "feat.giant-squid-tentacle",
+    "feat.giant-squid-ink-cloud-1-day",
+    "feat.water-breathing"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.bite",
+          "count": 1
+        },
+        {
+          "featureId": "feat.giant-squid-tentacle",
+          "count": 1
+        }
+      ],
+      "text": "The creature makes one Bite attack and one Tentacle attack."
+    },
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 9,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "4d10 + 6",
+      "damageType": "piercing"
+    }
+  }
+}

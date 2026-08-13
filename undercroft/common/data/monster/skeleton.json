@@ -1,0 +1,96 @@
+{
+  "kind": "monster",
+  "index": "skeleton",
+  "name": "Skeleton",
+  "type": "undead",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/skeleton.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "lawful evil",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 13,
+      "current": 13,
+      "diceString": "2d8+4"
+    },
+    "hitDice": "2d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 10,
+      "dexterity": 14,
+      "constitution": 15,
+      "intelligence": 6,
+      "wisdom": 8,
+      "charisma": 5
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "bludgeoning",
+          "type": "vulnerability"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        },
+        {
+          "name": "Exhaustion",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "understands all languages it spoke in life but can't speak"
+      ]
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 9
+      }
+    },
+    "challengeRating": "1/4",
+    "proficiencyBonus": 2,
+    "xp": 50,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/skeleton"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/skeleton",
+  "featureIds": [
+    "feat.shortsword",
+    "feat.shortbow"
+  ],
+  "featureParams": {
+    "feat.shortsword": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d6 + 2",
+      "damageType": "piercing"
+    },
+    "feat.shortbow": {
+      "kind": "Ranged",
+      "attackKind": "Weapon",
+      "attackBonus": 4,
+      "distanceLabel": "range",
+      "distance": "80/320",
+      "damageDice": "1d6 + 2",
+      "damageType": "piercing"
+    }
+  }
+}

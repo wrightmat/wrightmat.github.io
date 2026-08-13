@@ -1,0 +1,72 @@
+{
+  "kind": "monster",
+  "index": "mammoth",
+  "name": "Mammoth",
+  "notes": "A mammoth is an elephantine creature with thick fur and long tusks. Stockier and fiercer than normal elephants, mammoths inhabit a wide range of climes, from subarctic to subtropical.",
+  "type": "beast",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/mammoth.png",
+  "stats": {
+    "size": "Huge",
+    "alignment": "unaligned",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 126,
+      "current": 126,
+      "diceString": "11d12+55"
+    },
+    "hitDice": "11d12",
+    "speed": {
+      "walk": 40
+    },
+    "abilities": {
+      "strength": 24,
+      "dexterity": 9,
+      "constitution": 21,
+      "intelligence": 3,
+      "wisdom": 11,
+      "charisma": 6
+    },
+    "initiative": {
+      "bonus": -1
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [],
+      "languages": []
+    },
+    "senses": {
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "6",
+    "proficiencyBonus": 3,
+    "xp": 2300,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/mammoth"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/mammoth",
+  "featureIds": [
+    "feat.trampling-charge",
+    "feat.gore",
+    "feat.mammoth-stomp"
+  ],
+  "featureParams": {
+    "feat.gore": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 10,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "4d8 + 7",
+      "damageType": "piercing"
+    }
+  },
+  "featureTiers": {
+    "feat.trampling-charge": "mammoth"
+  }
+}

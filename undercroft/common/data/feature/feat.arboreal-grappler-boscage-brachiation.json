@@ -1,0 +1,29 @@
+{
+  "id": "feat.arboreal-grappler-boscage-brachiation",
+  "name": "Boscage Brachiation",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature doesn’t provoke opportunity attacks when it moves out of an enemy’s reach by climbing.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature doesn’t provoke opportunity attacks when it moves out of an enemy’s reach by climbing.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "mobility"
+    ],
+    "recipeSlots": [
+      "escape"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,79 @@
+{
+  "kind": "monster",
+  "index": "bandit",
+  "name": "Bandit",
+  "notes": "**Bandits** rove in gangs and are sometimes led by thugs, veterans, or spellcasters. Not all bandits are evil. Oppression, drought, disease, or famine can often drive otherwise honest folk to a life of banditry.\n\n**Pirates** are bandits of the high seas. They might be freebooters interested only in treasure and murder, or they might be privateers sanctioned by the crown to attack and plunder an enemy nation’s vessels.",
+  "type": "humanoid",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/bandit.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "any non-lawful alignment",
+    "armorClass": 12,
+    "hitPoints": {
+      "max": 11,
+      "current": 11,
+      "diceString": "2d8+2"
+    },
+    "hitDice": "2d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 11,
+      "dexterity": 12,
+      "constitution": 12,
+      "intelligence": 10,
+      "wisdom": 10,
+      "charisma": 10
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "any one language (usually Common)"
+      ]
+    },
+    "senses": {
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "1/8",
+    "proficiencyBonus": 2,
+    "xp": 25,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/bandit"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/bandit",
+  "featureIds": [
+    "feat.scimitar",
+    "feat.light-crossbow"
+  ],
+  "featureParams": {
+    "feat.scimitar": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 3,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d6 + 1",
+      "damageType": "slashing"
+    },
+    "feat.light-crossbow": {
+      "kind": "Ranged",
+      "attackKind": "Weapon",
+      "attackBonus": 3,
+      "distanceLabel": "range",
+      "distance": "80/320",
+      "damageDice": "1d8 + 1",
+      "damageType": "piercing"
+    }
+  }
+}

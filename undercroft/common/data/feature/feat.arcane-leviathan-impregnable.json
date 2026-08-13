@@ -1,0 +1,29 @@
+{
+  "id": "feat.arcane-leviathan-impregnable",
+  "name": "Impregnable",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "If the creature is subjected to an effect that allows it to make a saving throw to take only half damage, the creature instead takes no damage if it succeeds on the saving throw, and only half damage if it fails.",
+  "mechanics": {
+    "type": "passive",
+    "text": "If the creature is subjected to an effect that allows it to make a saving throw to take only half damage, the creature instead takes no damage if it succeeds on the saving throw, and only half damage if it fails.",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "endure"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

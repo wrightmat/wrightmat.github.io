@@ -1,0 +1,112 @@
+{
+  "kind": "monster",
+  "name": "Dragonleaf Tree",
+  "notes": "_The dragon-headed leaves of these oak trees sometimes rustle despite the lack of wind, betraying a hint of their draconic power._\r\n\r\n**Gifts among Dragons**. These magnificent trees are imbued with some characteristics of their draconic masters. While most groves consist of only one type of dragonleaf tree, dragons sometimes make gifts of them to cement a pact or as a show of fealty. The dragon giving the tree relinquishes command of the plant as part of the deal. This accounts for mixed groves belonging to especially powerful dragon lords.\r\n\r\n**Silent Guardians**. Dragonleaf trees use fairly simple tactics to deter potential intruders. They remain motionless or allow the breeze to jostle their leaves to appear inconspicuous. Once enough targets enter the grove, the trees fire razor sharp leaves at or breathe on their targets, adjusting their position to make better use of their weapons.\r\n\r\n**Long Memories**. Dragonleaf trees live up to 1,000 years. They stand 15 feet tall and weigh 3,000 lb, but ancient specimens can reach heights of 45 feet. Growing a new dragonleaf tree requires a cutting from an existing tree at least 50 years old, which the tree’s master imbues with power, sacrificing the use of its breath weapon for a month. While this time barely registers on a dragon’s whole lifespan, it still carefully considers the creation of a new tree, for fear that others might discover its temporary weakness.",
+  "type": "plant",
+  "stats": {
+    "size": "Large",
+    "alignment": "Unaligned",
+    "armorClass": 16,
+    "hitPoints": {
+      "max": 152,
+      "current": 152,
+      "diceString": "16d10 + 64"
+    },
+    "hitDice": "16d10",
+    "speed": {
+      "walk": 5
+    },
+    "abilities": {
+      "strength": 16,
+      "dexterity": 10,
+      "constitution": 19,
+      "intelligence": 3,
+      "wisdom": 12,
+      "charisma": 17
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "",
+    "senses": {
+      "blindsight": 120,
+      "passives": {
+        "perception": 11
+      }
+    },
+    "challengeRating": "8",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "A dragonleaf tree enjoys the same immunities as its progenitor. Black",
+          "type": "immunity"
+        },
+        {
+          "name": "copper",
+          "type": "immunity"
+        },
+        {
+          "name": "and green trees are immune to acid damage; blue and bronze trees are immune to lightning damage; brass",
+          "type": "immunity"
+        },
+        {
+          "name": "gold",
+          "type": "immunity"
+        },
+        {
+          "name": "and red trees are immune to fire damage; and silver and white trees are immune to cold damage.",
+          "type": "immunity"
+        },
+        {
+          "name": "blinded",
+          "type": "immunity"
+        },
+        {
+          "name": "deafened",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "can understand the language of its creator or designated master"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "ToB",
+      "Tome of Beasts 1, pg 147"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.dragonleaf-tree-loyal-to-dragon-master",
+    "feat.dragonleaf-tree-weaknesses",
+    "feat.slam",
+    "feat.leaves",
+    "feat.dragonleaf-tree-breath-weapon-recharge-6"
+  ],
+  "featureParams": {
+    "feat.slam": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "10d10 + 3",
+      "damageType": "bludgeoning"
+    },
+    "feat.leaves": {
+      "kind": "Ranged",
+      "attackKind": "Weapon",
+      "attackBonus": 3,
+      "distanceLabel": "range",
+      "distance": "30/60",
+      "damageDice": "10d8",
+      "damageType": "slashing"
+    }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "id": "feat.snowflake-ooze-freezing-aura",
+  "name": "Freezing Aura",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "At the start of each of the creature’s turns, each creature within 5 feet of it takes 2 (1d4) cold damage.",
+  "mechanics": {
+    "type": "passive",
+    "text": "At the start of each of the creature’s turns, each creature within 5 feet of it takes 2 (1d4) cold damage.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "burst"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

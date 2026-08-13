@@ -1,0 +1,154 @@
+{
+  "kind": "monster",
+  "name": "Swampgas Shade",
+  "notes": "_An ethereal shadow of hatred and swampgas haunts the fens, and seeks to duplicate its own tragic demise._\n\nA swampgas shade is the aggrieved soul of a humanoid murdered in a swamp. Mired in muck, the body cannot decompose, and spawns an undead instead. The soul is trapped on the Material Plane, tied to the area within a mile of its corpse.\n\nThe soul grows furious at its condition as time passes, eventually combining with swampgas to form a ghostly undead that lashes out at others, whispering in the ears of the living.\n\n**Restless Slumber**. The swampgas shade can be put to rest by finding and properly interring its corpse outside the swamp. Otherwise, the shade returns to haunt the swamp anew shortly after being slain.\n\n**Vile Compact**. Dark powers often seek out swampgas shades, promising relief from their eternal torture if they can ensnare souls of those they kill. As it kills others, it traps their souls, which it barters in exchange for its freedom.",
+  "type": "undead",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Neutral Evil",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 39,
+      "current": 39,
+      "diceString": "6d8 + 12"
+    },
+    "hitDice": "6d8",
+    "speed": {
+      "walk": 0,
+      "fly": 40,
+      "hover": true
+    },
+    "abilities": {
+      "strength": 6,
+      "dexterity": 17,
+      "constitution": 15,
+      "intelligence": 8,
+      "wisdom": 12,
+      "charisma": 8
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "Wis +3",
+    "skills": "Stealth +5",
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 10
+      }
+    },
+    "challengeRating": "2",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "acid",
+          "type": "resistance"
+        },
+        {
+          "name": "cold",
+          "type": "resistance"
+        },
+        {
+          "name": "fire",
+          "type": "resistance"
+        },
+        {
+          "name": "lightning",
+          "type": "resistance"
+        },
+        {
+          "name": "thunder; bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "and slashing from nonmagical attacks",
+          "type": "resistance"
+        },
+        {
+          "name": "radiant",
+          "type": "vulnerability"
+        },
+        {
+          "name": "necrotic",
+          "type": "immunity"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "grappled",
+          "type": "immunity"
+        },
+        {
+          "name": "paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "petrified",
+          "type": "immunity"
+        },
+        {
+          "name": "poisoned",
+          "type": "immunity"
+        },
+        {
+          "name": "prone",
+          "type": "immunity"
+        },
+        {
+          "name": "restrained",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "understands all languages it knew in life but can’t speak"
+      ]
+    },
+    "environments": [
+      "Swamp"
+    ],
+    "sources": [
+      "ToB3",
+      "Tome of Beasts 3"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.amorphous",
+    "feat.swampgas-shade-rejuvenation",
+    "feat.swampgas-shade-swampbound",
+    "feat.camouflage",
+    "feat.unusual-nature",
+    "feat.swampgas-shade-soul-drain",
+    "feat.haunting-murmurs",
+    "feat.swampgas-shade-swampland-stealth"
+  ],
+  "featureParams": {
+    "feat.haunting-murmurs": {
+      "kind": "Ranged",
+      "attackKind": "Spell",
+      "attackBonus": 3,
+      "distanceLabel": "range",
+      "distance": "60",
+      "damageDice": "1d8 + 3",
+      "damageType": "psychic"
+    }
+  }
+}

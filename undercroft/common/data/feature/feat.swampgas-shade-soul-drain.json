@@ -1,0 +1,33 @@
+{
+  "id": "feat.swampgas-shade-soul-drain",
+  "name": "Soul Drain",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Melee Weapon Attack: +5 to hit, reach 5 ft., one creature. Hit: 12 (2d8 + 3) psychic damage, and the target's Charisma score is reduced by 1d4. The target dies if this reduces its Charisma to 0. Otherwise, the reduction lasts until the target finishes a short or long rest. If a Humanoid dies from this attack, it can’t be restored to life until the creature is put to rest (see the Rejuvenation trait).",
+  "mechanics": {
+    "type": "passive",
+    "text": "Melee Weapon Attack: +5 to hit, reach 5 ft., one creature. Hit: 12 (2d8 + 3) psychic damage, and the target's Charisma score is reduced by 1d4. The target dies if this reduces its Charisma to 0. Otherwise, the reduction lasts until the target finishes a short or long rest. If a Humanoid dies from this attack, it can’t be restored to life until the creature is put to rest (see the Rejuvenation trait).",
+    "scope": "unique"
+  },
+  "budgetCost": 3,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "debuff"
+    ],
+    "recipeSlots": [
+      "drain"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

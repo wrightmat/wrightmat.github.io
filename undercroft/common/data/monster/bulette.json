@@ -1,0 +1,74 @@
+{
+  "kind": "monster",
+  "index": "bulette",
+  "name": "Bulette",
+  "type": "monstrosity",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/bulette.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "unaligned",
+    "armorClass": 17,
+    "hitPoints": {
+      "max": 94,
+      "current": 94,
+      "diceString": "9d10+45"
+    },
+    "hitDice": "9d10",
+    "speed": {
+      "walk": 40,
+      "burrow": 40
+    },
+    "abilities": {
+      "strength": 19,
+      "dexterity": 11,
+      "constitution": 21,
+      "intelligence": 2,
+      "wisdom": 10,
+      "charisma": 5
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "Perception +6",
+    "proficiencies": {
+      "defenses": [],
+      "languages": []
+    },
+    "senses": {
+      "darkvision": 60,
+      "tremorsense": 60,
+      "passives": {
+        "perception": 16
+      }
+    },
+    "challengeRating": "5",
+    "proficiencyBonus": 3,
+    "xp": 1800,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/bulette"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/bulette",
+  "featureIds": [
+    "feat.standing-leap",
+    "feat.bite",
+    "feat.bulette-deadly-leap"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "4d12 + 4",
+      "damageType": "piercing"
+    }
+  },
+  "featureTiers": {
+    "feat.standing-leap": "30-15"
+  }
+}

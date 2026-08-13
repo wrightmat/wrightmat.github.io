@@ -1,0 +1,110 @@
+{
+  "kind": "monster",
+  "index": "storm-giant",
+  "name": "Storm Giant",
+  "type": "giant",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/storm-giant.png",
+  "stats": {
+    "size": "Huge",
+    "alignment": "chaotic good",
+    "armorClass": 16,
+    "hitPoints": {
+      "max": 230,
+      "current": 230,
+      "diceString": "20d12+100"
+    },
+    "hitDice": "20d12",
+    "speed": {
+      "walk": 50,
+      "swim": 50
+    },
+    "abilities": {
+      "strength": 29,
+      "dexterity": 14,
+      "constitution": 20,
+      "intelligence": 16,
+      "wisdom": 18,
+      "charisma": 18
+    },
+    "initiative": {
+      "bonus": 2
+    },
+    "savingThrows": "STR +14, CON +10, WIS +9, CHA +9",
+    "skills": "Arcana +8, Athletics +14, History +8, Perception +9",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "cold",
+          "type": "resistance"
+        },
+        {
+          "name": "lightning",
+          "type": "immunity"
+        },
+        {
+          "name": "thunder",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Common",
+        "Giant"
+      ]
+    },
+    "senses": {
+      "passives": {
+        "perception": 19
+      }
+    },
+    "challengeRating": "13",
+    "proficiencyBonus": 5,
+    "xp": 10000,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/storm-giant",
+    "spells": "The giant's innate spellcasting ability is Charisma (spell save DC 17). It can innately cast the following spells, requiring no material components:\n\nAt will: detect magic, feather fall, levitate, light\n3/day each: control weather, water breathing",
+    "saveDC": 17
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/storm-giant",
+  "featureIds": [
+    "feat.amphibious",
+    "feat.multiattack",
+    "feat.greatsword",
+    "feat.rock",
+    "feat.lightning-strike"
+  ],
+  "featureParams": {
+    "feat.greatsword": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 14,
+      "distanceLabel": "reach",
+      "distance": "10",
+      "damageDice": "6d6 + 9",
+      "damageType": "slashing"
+    },
+    "feat.rock": {
+      "kind": "Ranged",
+      "attackKind": "Weapon",
+      "attackBonus": 14,
+      "distanceLabel": "range",
+      "distance": "60/240",
+      "damageDice": "4d12 + 9",
+      "damageType": "bludgeoning"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.greatsword",
+          "count": 2
+        }
+      ],
+      "text": "The giant makes two greatsword attacks."
+    }
+  },
+  "featureTiers": {
+    "feat.lightning-strike": "dc-17"
+  }
+}

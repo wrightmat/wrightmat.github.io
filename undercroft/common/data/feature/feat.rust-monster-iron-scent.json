@@ -1,0 +1,25 @@
+{
+  "id": "feat.rust-monster-iron-scent",
+  "name": "Iron Scent",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature can pinpoint, by scent, the location of ferrous metal within 30 feet of it.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The creature can pinpoint, by scent, the location of ferrous metal within 30 feet of it."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,153 @@
+{
+  "kind": "monster",
+  "name": "Void Knight",
+  "image": [
+    [
+      "Wikilink To Image"
+    ]
+  ],
+  "notes": "",
+  "type": "construct",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Lawful Evil",
+    "armorClass": 18,
+    "hitPoints": {
+      "max": 153,
+      "current": 153,
+      "diceString": "18d8 + 72"
+    },
+    "hitDice": "18d8",
+    "speed": {
+      "walk": 20
+    },
+    "abilities": {
+      "strength": 22,
+      "dexterity": 7,
+      "constitution": 18,
+      "intelligence": 12,
+      "wisdom": 16,
+      "charisma": 10
+    },
+    "initiative": {
+      "bonus": -2
+    },
+    "savingThrows": "Str +10, Con +8, Wis +7",
+    "skills": "Athletics +10, Perception +7",
+    "senses": {
+      "blindsight": 120,
+      "passives": {
+        "perception": 17
+      }
+    },
+    "challengeRating": "10",
+    "proficiencyBonus": 4,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "and slashing from nonmagical attacks",
+          "type": "resistance"
+        },
+        {
+          "name": "force",
+          "type": "immunity"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "blinded",
+          "type": "immunity"
+        },
+        {
+          "name": "charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "deafened",
+          "type": "immunity"
+        },
+        {
+          "name": "exhausted",
+          "type": "immunity"
+        },
+        {
+          "name": "frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "petrified",
+          "type": "immunity"
+        },
+        {
+          "name": "poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Void Speech",
+        "telepathy 120 ft."
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "ToB3",
+      "Tome of Beasts 3, pg. 386"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.void-knight-call-of-the-void",
+    "feat.unusual-nature",
+    "feat.void-knight-immoveable",
+    "feat.void-knight-implosive-end",
+    "feat.multiattack",
+    "feat.void-knight-void-gauntlet",
+    "feat.void-bolt",
+    "feat.void-knight-pull-of-the-void-recharge-5-6"
+  ],
+  "featureParams": {
+    "feat.void-bolt": {
+      "kind": "Ranged",
+      "attackKind": "Spell",
+      "attackBonus": 7,
+      "distanceLabel": "range",
+      "distance": "120",
+      "damageDice": "4d8 + 3",
+      "damageType": "force"
+    },
+    "feat.multiattack": {
+      "text": "The creature makes two Void Gauntlet attacks or three Void Bolt attacks.",
+      "options": [
+        [
+          {
+            "featureId": "feat.void-knight-void-gauntlet",
+            "count": 2
+          }
+        ],
+        [
+          {
+            "featureId": "feat.void-bolt",
+            "count": 3
+          }
+        ]
+      ]
+    }
+  }
+}

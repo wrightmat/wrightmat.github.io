@@ -1,0 +1,118 @@
+{
+  "kind": "monster",
+  "name": "Bodak",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/25746/189/1000/1000/637880557219852317.jpeg",
+  "notes": "",
+  "type": "undead",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Typically Chaotic Evil",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 58,
+      "current": 58,
+      "diceString": "9d8 + 18"
+    },
+    "hitDice": "9d8",
+    "speed": {
+      "walk": 30
+    },
+    "abilities": {
+      "strength": 15,
+      "dexterity": 16,
+      "constitution": 15,
+      "intelligence": 7,
+      "wisdom": 12,
+      "charisma": 12
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "",
+    "skills": "Perception +4, Stealth +6",
+    "senses": {
+      "darkvision": 120,
+      "passives": {
+        "perception": 14
+      }
+    },
+    "challengeRating": "6",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Cold",
+          "type": "resistance"
+        },
+        {
+          "name": "Fire; Bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "Piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "and Slashing from Nonmagical Attacks",
+          "type": "resistance"
+        },
+        {
+          "name": "Necrotic",
+          "type": "immunity"
+        },
+        {
+          "name": "Poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "Frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Abyssal",
+        "the languages it knew in life"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "https://www.dndbeyond.com/monsters/2560744-bodak"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.bodak-death-gaze",
+    "feat.bodak-sunlight-hypersensitivity",
+    "feat.unusual-nature",
+    "feat.fist",
+    "feat.bodak-withering-gaze",
+    "feat.bodak-aura-of-annihilation"
+  ],
+  "featureParams": {
+    "feat.fist": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d4 + 2",
+      "damageType": "bludgeoning",
+      "rider": {
+        "kind": "secondary-damage",
+        "dice": "2d8",
+        "damageType": "necrotic"
+      }
+    }
+  }
+}

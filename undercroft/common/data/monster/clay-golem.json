@@ -1,0 +1,133 @@
+{
+  "kind": "monster",
+  "index": "clay-golem",
+  "name": "Clay Golem",
+  "type": "construct",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/clay-golem.png",
+  "stats": {
+    "size": "Large",
+    "alignment": "unaligned",
+    "armorClass": 14,
+    "hitPoints": {
+      "max": 133,
+      "current": 133,
+      "diceString": "14d10+56"
+    },
+    "hitDice": "14d10",
+    "speed": {
+      "walk": 20
+    },
+    "abilities": {
+      "strength": 20,
+      "dexterity": 9,
+      "constitution": 18,
+      "intelligence": 3,
+      "wisdom": 8,
+      "charisma": 1
+    },
+    "initiative": {
+      "bonus": -1
+    },
+    "savingThrows": "",
+    "skills": "",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "acid",
+          "type": "immunity"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "psychic",
+          "type": "immunity"
+        },
+        {
+          "name": "bludgeoning, piercing, and slashing from nonmagical weapons that aren't adamantine",
+          "type": "immunity"
+        },
+        {
+          "name": "Charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "Exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "Frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "Paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "Petrified",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "understands the languages of its creator but can't speak"
+      ]
+    },
+    "senses": {
+      "darkvision": 60,
+      "passives": {
+        "perception": 9
+      }
+    },
+    "challengeRating": "9",
+    "proficiencyBonus": 4,
+    "xp": 5000,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/clay-golem"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/clay-golem",
+  "featureIds": [
+    "feat.clay-golem-acid-absorption",
+    "feat.berserk",
+    "feat.immutable-form",
+    "feat.magic-resistance",
+    "feat.magic-weapons",
+    "feat.multiattack",
+    "feat.slam",
+    "feat.clay-golem-haste"
+  ],
+  "featureParams": {
+    "feat.slam": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 8,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d10 + 5",
+      "damageType": "bludgeoning",
+      "rider": {
+        "kind": "condition-no-save",
+        "condition": "must succeed on a DC 15 Constitution saving throw or have its hit point maximum reduced by an amount equal to the damage taken. The target dies if this attack reduces its hit point maximum to 0. The reduction lasts until removed by the greater restoration spell or other magic"
+      }
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.slam",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two slam attacks."
+    }
+  },
+  "featureTiers": {
+    "feat.berserk": "clay"
+  }
+}

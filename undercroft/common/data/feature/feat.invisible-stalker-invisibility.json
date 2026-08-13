@@ -1,0 +1,25 @@
+{
+  "id": "feat.invisible-stalker-invisibility",
+  "name": "Invisibility",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature is invisible.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The creature is invisible."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

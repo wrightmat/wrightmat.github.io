@@ -1,0 +1,153 @@
+{
+  "kind": "monster",
+  "name": "Shadow Demon",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/47139/234/1000/1000/638741964625976308.png",
+  "notes": "### Description\n\nShadow demons form when exceptionally wicked demons are destroyed and prevented from reconstituting their physical forms in the Abyss. This might occur due to divine intervention, when a demon is destroyed in the Abyss, or under more unusual circumstances. Shadow demons are the incorporeal remnants of these destroyed demons’ evil. They usually vaguely resemble their former shapes, but some take purposefully deceptive shapes. Many lurk in dark places or venture out only at night to hide their true forms from those they manipulate.\n\nShadow demons seek ways to regain their former might and take revenge on those who destroyed them. They often ingratiate themselves with more powerful demons or mortal spellcasters, bargaining with and coercing others into restoring them to power. Many try to claim or corrupt souls to restore their fiendish forms, while some shadow demons seek wicked relics or nexuses of profane magic. It typically takes shadow demons centuries to recover their demonic power, if they ever do.\n\nParticularly powerful demons might return as multiple shadow demons after being defeated. These fiendish entities each think they’re the true manifestation of their past self and hunt one another to recover their power.\n\nIn rare cases, Fiends other than demons might adopt forms similar to shadow demons.",
+  "type": "fiend",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Chaotic Evil",
+    "armorClass": 14,
+    "hitPoints": {
+      "max": 66,
+      "current": 66,
+      "diceString": "12d8 + 12"
+    },
+    "hitDice": "12d8",
+    "speed": {
+      "walk": 30,
+      "fly": 30,
+      "hover": true
+    },
+    "abilities": {
+      "strength": 1,
+      "dexterity": 17,
+      "constitution": 12,
+      "intelligence": 14,
+      "wisdom": 13,
+      "charisma": 14
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "DEX +5, CHA +4",
+    "skills": "Stealth +7",
+    "senses": {
+      "darkvision": 120,
+      "passives": {
+        "perception": 11
+      }
+    },
+    "challengeRating": "4",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Acid",
+          "type": "resistance"
+        },
+        {
+          "name": "Bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "Cold",
+          "type": "resistance"
+        },
+        {
+          "name": "Fire",
+          "type": "resistance"
+        },
+        {
+          "name": "Lightning",
+          "type": "resistance"
+        },
+        {
+          "name": "Piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "Slashing",
+          "type": "resistance"
+        },
+        {
+          "name": "Thunder",
+          "type": "resistance"
+        },
+        {
+          "name": "Radiant",
+          "type": "vulnerability"
+        },
+        {
+          "name": "Necrotic",
+          "type": "immunity"
+        },
+        {
+          "name": "Poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "Grappled",
+          "type": "immunity"
+        },
+        {
+          "name": "Paralyzed",
+          "type": "immunity"
+        },
+        {
+          "name": "Petrified",
+          "type": "immunity"
+        },
+        {
+          "name": "Poisoned",
+          "type": "immunity"
+        },
+        {
+          "name": "Prone",
+          "type": "immunity"
+        },
+        {
+          "name": "Restrained",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Abyssal",
+        "Telepathy 120 ft."
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Monster Manual (2024), pg. 273"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.shadow-demon-demonic-restoration",
+    "feat.incorporeal-movement",
+    "feat.shadow-demon-light-sensitivity",
+    "feat.umbral-claw",
+    "feat.shadow-stealth"
+  ],
+  "featureTiers": {
+    "feat.shadow-stealth": "no-bonus-action"
+  },
+  "featureParams": {
+    "feat.umbral-claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "3d8 + 3",
+      "damageType": "psychic"
+    }
+  }
+}

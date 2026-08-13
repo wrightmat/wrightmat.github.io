@@ -1,0 +1,32 @@
+{
+  "id": "feat.swampgas-shade-swampland-stealth",
+  "name": "Swampland Stealth",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature takes the Hide action. It must be in swampy terrain to use this bonus action.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature takes the Hide action. It must be in swampy terrain to use this bonus action.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "bonus-action"
+  }
+}

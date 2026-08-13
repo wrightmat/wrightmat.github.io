@@ -1,0 +1,33 @@
+{
+  "id": "feat.tsoreva-quori-flickering-psychoport",
+  "name": "Flickering Psychoport",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature teleports up to 30 ft. to an unoccupied space within 5 ft. of a creature. Until the end of its turn, attacks against the creature are made with disadvantage.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature teleports up to 30 ft. to an unoccupied space within 5 ft. of a creature. Until the end of its turn, attacks against the creature are made with disadvantage.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "mobility",
+      "defense"
+    ],
+    "recipeSlots": [
+      "escape"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

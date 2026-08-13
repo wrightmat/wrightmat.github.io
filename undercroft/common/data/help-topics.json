@@ -421,6 +421,22 @@
       "href": "../loom/index.html#loom-library"
     },
     {
+      "id": "loom.features",
+      "title": "Features",
+      "summary": "The full structured editor for a Feature — id, name, description, mechanics, tags, and cross-references — not just Cost Budget/tags.",
+      "details": [
+        "Select an existing Feature to edit every field: Description, Mechanics (as JSON — its shape varies by mechanics.type, so this is one flexible box rather than a different form per type), Categories, Behaviors/Recipe Slots/Roles/Creature Types, and Synergizes With/Conflicts With (references to other Features).",
+        "Useful for comparing near-duplicate Features (e.g. several \"Dagger\" entries) side by side — switch between them and see exactly what differs in their description/mechanics.",
+        "A brand-new Feature still starts on the Library tab (type an id there) — every other field is fully editable here immediately afterward.",
+        "Cost Budget is a rough points value (most Features run 1-6) — Crucible sums a monster's own Features' costs for display, weighted against its Combat Scaling level's own target budget.",
+        "Scope \"Generic\" is the DEFAULT — it means \"not yet reviewed for reuse\", not \"confirmed reusable\". A Feature created during import (its id often has a monster-slug prefix) starts out Generic even though nobody's checked whether it's actually generalizable yet — same as an untagged budgetCost/tags. Only set Scope \"Unique\" once you've actually confirmed an ability can't be tiered or merged with anything else; don't assume a monster-specific-looking id means it should be Unique.",
+        "A note appears below Scope whenever a Feature ISN'T currently eligible for native generation — either because Scope is Unique, or because it has no Recipe Slots tagged yet (an untagged Feature is invisible to Crucible's own slot-fill regardless of Scope). No note means it's currently eligible.",
+        "\"Suggest Cost & Tags\" asks an LLM for a starting guess at Behaviors/Recipe Slots/Roles/Creature Types/Cost Budget, grounded in the already-tagged starter Features and a real CR/budget calibration table — it never saves anything on its own; review the suggestion, then save if it looks right."
+      ],
+      "category": "Loom",
+      "href": "../loom/index.html#loom-features"
+    },
+    {
       "id": "loom.macros",
       "title": "Macros",
       "summary": "A dedicated tab for authoring Macros — the ordered list of actions a Macro runs when triggered, from the Dashboard's Macro board widget or a Journal note.",
@@ -1141,6 +1157,29 @@
       "details": [
         "Every feature shown here was chosen for synergy with what's already selected and for not conflicting with it — traversal never adds a feature that fights with one already picked.",
         "This list is exactly what's saved with the monster — there's no separate hidden layer of mechanics behind it."
+      ],
+      "category": "Crucible",
+      "href": "../crucible/index.html#crucible-features"
+    },
+    {
+      "id": "crucible.multiattack-attacks",
+      "title": "Multiattack — Attacks",
+      "summary": "List which of this monster's own Features it attacks with and how many times — the description above computes itself from this list and stays in sync if you rename or edit one of those Features.",
+      "details": [
+        "Add options for a genuine choice (\"two Claws, two Bites, or one of each\") — use \"Add option\" to add an alternative combination; each option gets its own row list. A single option shows no extra chrome, since that's the common case.",
+        "If a Multiattack's phrasing is too irregular to represent this way, leave it as one empty option — the original imported text is shown exactly as typed instead.",
+        "Multiattack itself is one shared Feature across every monster (like Bite or Claw) — this list is this monster's own data, not shared, and saves when you save the monster."
+      ],
+      "category": "Crucible",
+      "href": "../crucible/index.html#crucible-features"
+    },
+    {
+      "id": "crucible.feature-basic-info",
+      "title": "Feature — Basic Info",
+      "summary": "ID, Name, Description, and Budget Cost for the selected Feature.",
+      "details": [
+        "Editable here only for a Feature marked Unique (Loom's own Scope field) — those belong to this one monster alone, so changing them can't affect anything else.",
+        "A shared Feature (Bite, Claw, Amphibious, and most everything else) is used by many monsters at once, so these fields stay read-only here — use Edit Feature to open it in Loom instead."
       ],
       "category": "Crucible",
       "href": "../crucible/index.html#crucible-features"

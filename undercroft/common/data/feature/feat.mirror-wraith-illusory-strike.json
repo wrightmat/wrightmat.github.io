@@ -1,0 +1,33 @@
+{
+  "id": "feat.mirror-wraith-illusory-strike",
+  "name": "Illusory Strike",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Ranged Spell Attack: +3 to hit, range 30 ft., one target. Hit: 10 (3d6) psychic damage. The target must make a DC 13 Wisdom saving throw or be frightened until the end of its next turn.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Ranged Spell Attack: +3 to hit, range 30 ft., one target. Hit: 10 (3d6) psychic damage. The target must make a DC 13 Wisdom saving throw or be frightened until the end of its next turn.",
+    "scope": "unique"
+  },
+  "budgetCost": 2,
+  "tags": {
+    "behaviors": [
+      "damage",
+      "fear"
+    ],
+    "recipeSlots": [
+      "damage"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "combat": {
+    "actionCost": "action"
+  }
+}

@@ -1,0 +1,84 @@
+{
+  "kind": "monster",
+  "name": "Deep One Cultist",
+  "notes": "*With enormous eyes, a wide mouth, and almost no chin, the deep ones are hideous, fishlike folk, often hunched and scaled when encountered in coastal villages.* \n\n**Elder Gods**. In their fully grown form, the deep ones are an ocean-dwelling race that worships elder gods such as Father Dagon and Mother Hydra, and they dwell in deep water darkness. They’ve intermarried with coastal humans to create human-deep one hybrids.\n\n**Coastal Raiders**. The deep ones keep to themselves in isolated coastal villages and settlements in the ocean for long periods, and then turn suddenly, at the command of their patron gods, into strong, relentless raiders, seizing territory, slaves, and wealth all along the coasts.Some deep ones have even founded small kingdoms lasting generations in backwater reaches or distant chilled seas.\n\n**Demand Sacrifices**. They demand tolls from mariners frequently; those who do not leave tribute to them at certain islands or along certain straits find the fish escape their nets, or the storms shatter their hulls and drown their sailors. Over time, some seafaring nations have found it more profitable to ally themselves with the deep ones; this is the first step in their patient plans to dominate and rule.",
+  "type": "humanoid",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Chaotic Evil",
+    "armorClass": 13,
+    "hitPoints": {
+      "max": 91,
+      "current": 91,
+      "diceString": "14d8 + 28"
+    },
+    "hitDice": "14d8",
+    "speed": {
+      "walk": 30,
+      "swim": 30
+    },
+    "abilities": {
+      "strength": 16,
+      "dexterity": 12,
+      "constitution": 14,
+      "intelligence": 10,
+      "wisdom": 8,
+      "charisma": 12
+    },
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": "Str +5, Con +4, Cha +3",
+    "skills": "",
+    "senses": {
+      "darkvision": 120,
+      "passives": {
+        "perception": 9
+      }
+    },
+    "challengeRating": "2",
+    "proficiencyBonus": 2,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "cold",
+          "type": "resistance"
+        },
+        {
+          "name": "fire",
+          "type": "vulnerability"
+        }
+      ],
+      "languages": [
+        "Common",
+        "Void Speech"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "Tome of Beasts 1 (pg 73) - listed as simply \"Deep One\""
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.amphibious",
+    "feat.deep-one-priest-frenzied-rage",
+    "feat.lightless-depths",
+    "feat.deep-one-priest-ocean-change",
+    "feat.claws"
+  ],
+  "featureParams": {
+    "feat.claws": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 5,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d8 + 3",
+      "damageType": "slashing"
+    }
+  }
+}

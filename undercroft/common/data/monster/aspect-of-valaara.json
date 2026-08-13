@@ -1,0 +1,136 @@
+{
+  "kind": "monster",
+  "name": "Aspect of Valaara",
+  "notes": "A miniature version of [[Valaara]].",
+  "type": "aberration",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Neutral Evil",
+    "armorClass": 16,
+    "hitPoints": {
+      "max": 121,
+      "current": 121,
+      "diceString": "19d8 + 45"
+    },
+    "hitDice": "19d8",
+    "speed": {
+      "walk": 40,
+      "fly": 40,
+      "hover": true
+    },
+    "abilities": {
+      "strength": 16,
+      "dexterity": 20,
+      "constitution": 16,
+      "intelligence": 24,
+      "wisdom": 22,
+      "charisma": 25
+    },
+    "initiative": {
+      "bonus": 5
+    },
+    "savingThrows": "intelligence +14, wisdom +13, charisma +14",
+    "skills": "arcana +14, deception +14",
+    "senses": {
+      "truesight": 120,
+      "passives": {
+        "perception": 23
+      }
+    },
+    "challengeRating": "10",
+    "proficiencyBonus": 4,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "and slashing from nonmagical attacks",
+          "type": "resistance"
+        },
+        {
+          "name": "Poison",
+          "type": "immunity"
+        },
+        {
+          "name": "Psychic",
+          "type": "immunity"
+        },
+        {
+          "name": "blinded",
+          "type": "immunity"
+        },
+        {
+          "name": "charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "poisoned",
+          "type": "immunity"
+        },
+        {
+          "name": "prone",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Deep Speech",
+        "telepathy 120 ft."
+      ]
+    },
+    "environments": [],
+    "sources": []
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.alien-mind",
+    "feat.legendary-resistance",
+    "feat.magic-resistance",
+    "feat.regeneration",
+    "feat.teleport",
+    "feat.multiattack",
+    "feat.chitinous-claw",
+    "feat.chitinous-spine",
+    "feat.aspect-of-valaara-summon-swarm"
+  ],
+  "featureTiers": {
+    "feat.teleport": "30-ft-bonus-action",
+    "feat.legendary-resistance": "3-day",
+    "feat.alien-mind": "dc-22"
+  },
+  "featureParams": {
+    "feat.chitinous-claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "2d10 + 4",
+      "damageType": "slashing"
+    },
+    "feat.chitinous-spine": {
+      "kind": "Ranged",
+      "attackKind": "Weapon",
+      "attackBonus": 7,
+      "distanceLabel": "range",
+      "distance": "60/180",
+      "damageDice": "3d6 + 4",
+      "damageType": "piercing"
+    },
+    "feat.multiattack": {
+      "text": "Valaara makes two attacks from any of the options below."
+    }
+  }
+}

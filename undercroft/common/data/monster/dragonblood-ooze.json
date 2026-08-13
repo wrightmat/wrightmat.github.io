@@ -1,0 +1,130 @@
+{
+  "kind": "monster",
+  "name": "Dragonblood Ooze",
+  "image": "https://www.dndbeyond.com/avatars/thumbnails/21205/223/1000/1000/637707682446769838.jpeg",
+  "notes": "Magic-minded artisans have long incorporated parts of dragons’ bodies into magic items, crafting dragon hide into armor and forging weapons from claws and teeth. Alchemists have found beneficial uses for dragon blood, but ill-advised experiments have also given rise to dragonblood oozes.\r\n\r\nThe congealed blood of a dragon given mobility and hunger, the ooze tries to shape itself into a draconic form. It cannot hold a coherent shape for long and soon collapses into an amorphous heap. Similarly, it tries to manifest a breath weapon but manages only to spew forth part of its own body that it then reels back in.",
+  "type": "ooze",
+  "stats": {
+    "size": "Large",
+    "alignment": "Unaligned",
+    "armorClass": 14,
+    "hitPoints": {
+      "max": 68,
+      "current": 68,
+      "diceString": "8d10 + 24"
+    },
+    "hitDice": "8d10",
+    "speed": {
+      "walk": 20,
+      "climb": 20
+    },
+    "abilities": {
+      "strength": 18,
+      "dexterity": 6,
+      "constitution": 17,
+      "intelligence": 2,
+      "wisdom": 12,
+      "charisma": 10
+    },
+    "initiative": {
+      "bonus": -2
+    },
+    "savingThrows": "",
+    "skills": "Perception +4, Stealth +4",
+    "senses": {
+      "blindsight": 120,
+      "passives": {
+        "perception": 14
+      }
+    },
+    "challengeRating": "5",
+    "proficiencyBonus": 3,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "Acid",
+          "type": "resistance"
+        },
+        {
+          "name": "Cold",
+          "type": "resistance"
+        },
+        {
+          "name": "Fire",
+          "type": "resistance"
+        },
+        {
+          "name": "Lightning",
+          "type": "resistance"
+        },
+        {
+          "name": "Poison",
+          "type": "resistance"
+        },
+        {
+          "name": "Blinded",
+          "type": "immunity"
+        },
+        {
+          "name": "Charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "Deafened",
+          "type": "immunity"
+        },
+        {
+          "name": "Exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "Frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "Grappled",
+          "type": "immunity"
+        },
+        {
+          "name": "Prone",
+          "type": "immunity"
+        },
+        {
+          "name": "Restrained",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "understands Draconic and the languages of its creator but can't speak"
+      ]
+    },
+    "environments": [],
+    "sources": [
+      "FToD",
+      "Fizban's Treasury of Dragons, pg. 182",
+      "https://www.dndbeyond.com/monsters/2059726-dragonblood-ooze"
+    ]
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.amorphous",
+    "feat.spider-climb",
+    "feat.multiattack",
+    "feat.dragonblood-ooze-pseudopod",
+    "feat.dragonblood-ooze-slime-breath-recharge-6"
+  ],
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.dragonblood-ooze-pseudopod",
+          "count": 2
+        }
+      ],
+      "text": "The creature makes two Pseudopod attacks. The creature can replace one Pseudopod attack with its Slime Breath, if available."
+    }
+  }
+}

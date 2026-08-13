@@ -1,0 +1,140 @@
+{
+  "kind": "monster",
+  "name": "Aspect of Avassh",
+  "notes": "A miniature version of [[Avassh]].",
+  "type": "aberration",
+  "stats": {
+    "size": "Medium",
+    "alignment": "Neutral Evil",
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 135,
+      "current": 135,
+      "diceString": "15d8 + 75"
+    },
+    "hitDice": "15d8",
+    "speed": {
+      "walk": 40,
+      "climb": 40,
+      "fly": 40,
+      "hover": true
+    },
+    "abilities": {
+      "strength": 19,
+      "dexterity": 16,
+      "constitution": 20,
+      "intelligence": 24,
+      "wisdom": 22,
+      "charisma": 22
+    },
+    "initiative": {
+      "bonus": 3
+    },
+    "savingThrows": "intelligence +14, wisdom +13, charisma +13",
+    "skills": "arcana +14, nature +14, perception +13, survival +13",
+    "senses": {
+      "truesight": 120,
+      "passives": {
+        "perception": 23
+      }
+    },
+    "challengeRating": "10",
+    "proficiencyBonus": 4,
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "bludgeoning",
+          "type": "resistance"
+        },
+        {
+          "name": "piercing",
+          "type": "resistance"
+        },
+        {
+          "name": "and slashing from nonmagical attacks",
+          "type": "resistance"
+        },
+        {
+          "name": "poison",
+          "type": "immunity"
+        },
+        {
+          "name": "psychic",
+          "type": "immunity"
+        },
+        {
+          "name": "blinded",
+          "type": "immunity"
+        },
+        {
+          "name": "charmed",
+          "type": "immunity"
+        },
+        {
+          "name": "exhaustion",
+          "type": "immunity"
+        },
+        {
+          "name": "frightened",
+          "type": "immunity"
+        },
+        {
+          "name": "petrified",
+          "type": "immunity"
+        },
+        {
+          "name": "poisoned",
+          "type": "immunity"
+        },
+        {
+          "name": "prone",
+          "type": "immunity"
+        }
+      ],
+      "languages": [
+        "Deep Speech",
+        "telepathy 120 ft."
+      ]
+    },
+    "environments": [],
+    "sources": []
+  },
+  "mapping": "fantasy-statblocks-monster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "featureIds": [
+    "feat.alien-mind",
+    "feat.aspect-of-avassh-blight-spores",
+    "feat.legendary-resistance",
+    "feat.magic-resistance",
+    "feat.regeneration",
+    "feat.aspect-of-avassh-ruinous-seed",
+    "feat.multiattack",
+    "feat.aspect-of-avassh-ligneous-claw",
+    "feat.aspect-of-avassh-thrashing-vines",
+    "feat.aspect-of-avassh-mourning-bloom",
+    "feat.aspect-of-avassh-rootbinding",
+    "feat.teleport"
+  ],
+  "featureTiers": {
+    "feat.teleport": "30-ft-move",
+    "feat.legendary-resistance": "3-day",
+    "feat.alien-mind": "dc-22"
+  },
+  "featureParams": {
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.aspect-of-avassh-ligneous-claw",
+          "count": 1
+        },
+        {
+          "featureId": "feat.aspect-of-avassh-thrashing-vines",
+          "count": 1
+        }
+      ],
+      "text": "Avassh makes one Ligneous Claw attack and one Thrashing Vines attack."
+    }
+  }
+}

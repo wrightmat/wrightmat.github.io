@@ -1,0 +1,103 @@
+{
+  "kind": "monster",
+  "index": "xorn",
+  "name": "Xorn",
+  "type": "elemental",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "image": "https://www.dnd5eapi.co/api/images/monsters/xorn.png",
+  "stats": {
+    "size": "Medium",
+    "alignment": "neutral",
+    "armorClass": 19,
+    "hitPoints": {
+      "max": 73,
+      "current": 73,
+      "diceString": "7d8+42"
+    },
+    "hitDice": "7d8",
+    "speed": {
+      "walk": 20,
+      "burrow": 20
+    },
+    "abilities": {
+      "strength": 17,
+      "dexterity": 10,
+      "constitution": 22,
+      "intelligence": 11,
+      "wisdom": 10,
+      "charisma": 11
+    },
+    "initiative": {
+      "bonus": 0
+    },
+    "savingThrows": "",
+    "skills": "Perception +6, Stealth +3",
+    "proficiencies": {
+      "defenses": [
+        {
+          "name": "piercing and slashing from nonmagical weapons that aren't adamantine",
+          "type": "resistance"
+        }
+      ],
+      "languages": [
+        "Terran"
+      ]
+    },
+    "senses": {
+      "darkvision": 60,
+      "tremorsense": 60,
+      "passives": {
+        "perception": 16
+      }
+    },
+    "challengeRating": "5",
+    "proficiencyBonus": 3,
+    "xp": 1800,
+    "url": "https://www.dnd5eapi.co/api/2014/monsters/xorn"
+  },
+  "mapping": "5e-api-monster",
+  "url": "https://www.dnd5eapi.co/api/2014/monsters/xorn",
+  "featureIds": [
+    "feat.earth-glide",
+    "feat.camouflage",
+    "feat.xorn-treasure-sense",
+    "feat.multiattack",
+    "feat.bite",
+    "feat.claw"
+  ],
+  "featureParams": {
+    "feat.bite": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "3d6 + 3",
+      "damageType": "piercing"
+    },
+    "feat.claw": {
+      "kind": "Melee",
+      "attackKind": "Weapon",
+      "attackBonus": 6,
+      "distanceLabel": "reach",
+      "distance": "5",
+      "damageDice": "1d6 + 3",
+      "damageType": "slashing"
+    },
+    "feat.multiattack": {
+      "attacks": [
+        {
+          "featureId": "feat.claw",
+          "count": 3
+        },
+        {
+          "featureId": "feat.bite",
+          "count": 1
+        }
+      ],
+      "text": "The creature makes three claw attacks and one bite attack."
+    }
+  }
+}

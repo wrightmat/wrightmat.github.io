@@ -1,0 +1,29 @@
+{
+  "id": "feat.bulbous-violet-flesh-sense",
+  "name": "Flesh Sense",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature can pinpoint, by scent, the location of fleshbased creatures within 60 feet of it.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The creature can pinpoint, by scent, the location of fleshbased creatures within 60 feet of it.",
+    "scope": "unique"
+  },
+  "budgetCost": 1,
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command"
+    ],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}
