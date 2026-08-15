@@ -1,0 +1,24 @@
+{
+  "id": "feat.self-wielding",
+  "name": "Self-Wielding",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The item functions on its own, hovering nearby, without needing to be physically held.",
+  "mechanics": {
+    "type": "active",
+    "text": "On activation, the item hovers in place and provides its own normal benefit as if being worn/wielded, leaving the user's hands free."
+  },
+  "budgetCost": 3,
+  "tags": {
+    "categories": [
+      "item"
+    ],
+    "propertyHints": [
+      "utility"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

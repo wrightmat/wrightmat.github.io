@@ -1,0 +1,25 @@
+{
+  "id": "feat.divine-consultation",
+  "name": "Divine Consultation",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Puts the user in contact with a higher power for guidance — an omen, a truthful answer, or a reply to a direct question.",
+  "mechanics": {
+    "type": "active",
+    "text": "On activation, the user receives guidance from an entity beyond their own knowledge — an omen about a course of action, a truthful answer to a posed question, or similar oracular insight. The exact form (a single open question, a yes/no question, an omen roll) varies by source and isn't structured further here."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "utility"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

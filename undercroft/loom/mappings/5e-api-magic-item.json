@@ -1,0 +1,48 @@
+{
+  "type": "with",
+  "$source": "srd",
+  "$description": "5e API — Magic Items (SRD)",
+  "$defaultSourceValue": "https://www.dnd5eapi.co/api/2014/magic-items",
+  "bindings": {
+    "itemStats": {
+      "type": "custom",
+      "fn": "srdItemStats"
+    }
+  },
+  "body": {
+    "type": "object",
+    "fields": {
+      "kind": {
+        "type": "custom",
+        "fn": "srdItemKindFromStats"
+      },
+      "index": {
+        "type": "field",
+        "bind": "@index"
+      },
+      "name": {
+        "type": "custom",
+        "fn": "srdItemNameFromStats"
+      },
+      "notes": {
+        "type": "field",
+        "bind": "@itemStats.description"
+      },
+      "systemIds": {
+        "type": "custom",
+        "fn": "srdVaultSystemIds"
+      },
+      "url": {
+        "type": "custom",
+        "fn": "srdAbsoluteUrl",
+        "args": {
+          "path": "url"
+        }
+      },
+      "stats": {
+        "type": "field",
+        "bind": "@itemStats"
+      }
+    }
+  }
+}

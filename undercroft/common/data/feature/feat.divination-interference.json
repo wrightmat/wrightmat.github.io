@@ -1,0 +1,25 @@
+{
+  "id": "feat.divination-interference",
+  "name": "Divination Interference",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Feeds false information to divination magic targeting the subject, rather than blocking it outright.",
+  "mechanics": {
+    "type": "active",
+    "text": "While active, divination spells and magical effects that would reveal true information about the target instead reveal whatever false information (featureParams.falseInfo) the user chose on activation. Distinct from feat.divination-immunity (blocks divination outright rather than deceiving it)."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "utility"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

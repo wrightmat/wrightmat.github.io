@@ -1,0 +1,34 @@
+{
+  "kind": "effect",
+  "index": "aid",
+  "name": "Aid",
+  "notes": "Your spell bolsters your allies with toughness and resolve. Choose up to three creatures within range. Each target's hit point maximum and current hit points increase by 5 for the duration.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/spells/aid",
+  "mapping": "5e-api-spell",
+  "properties": {
+    "form": "spell"
+  },
+  "featureIds": [
+    "feat.healing"
+  ],
+  "featureParams": {
+    "feat.healing": {
+      "scaling": {
+        "by": "slot",
+        "values": {
+          "2": "5",
+          "3": "10",
+          "4": "15",
+          "5": "20",
+          "6": "25",
+          "7": "30",
+          "8": "35",
+          "9": "40"
+        }
+      }
+    }
+  }
+}

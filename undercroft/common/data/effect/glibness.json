@@ -1,0 +1,24 @@
+{
+  "kind": "effect",
+  "index": "glibness",
+  "name": "Glibness",
+  "notes": "Until the spell ends, when you make a Charisma check, you can replace the number you roll with a 15. Additionally, no matter what you say, magic that would determine if you are telling the truth indicates that you are being truthful.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/spells/glibness",
+  "mapping": "5e-api-spell",
+  "properties": {
+    "form": "spell"
+  },
+  "featureIds": [
+    "feat.modifies-roll"
+  ],
+  "featureParams": {
+    "feat.modifies-roll": {
+      "rollType": "charisma checks",
+      "mode": "fixed",
+      "value": 15
+    }
+  }
+}

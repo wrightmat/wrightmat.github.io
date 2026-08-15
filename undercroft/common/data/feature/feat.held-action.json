@@ -1,0 +1,25 @@
+{
+  "id": "feat.held-action",
+  "name": "Held Action",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Primes an effect now that only takes place later, once a stated trigger condition is met.",
+  "mechanics": {
+    "type": "active",
+    "text": "On activation, the user defines both a trigger condition and a stored effect (featureParams.triggerCondition, featureParams.storedEffect). The stored effect takes place automatically the first time that condition is met, then this Feature is spent."
+  },
+  "budgetCost": 4,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "utility"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

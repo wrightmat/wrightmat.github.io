@@ -1,0 +1,21 @@
+{
+  "kind": "effect",
+  "index": "potion-of-healing-supreme",
+  "name": "Potion of Supreme Healing",
+  "notes": "Potion, very rare\n\nYou regain 10d4 + 20 hit points when you drink this potion. The potion's red liquid glimmers when agitated.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/magic-items/potion-of-healing-supreme",
+  "mapping": "5e-api-magic-item",
+  "properties": {
+    "rarity": "very-rare",
+    "form": "potion"
+  },
+  "featureIds": [
+    "feat.mending-pulse"
+  ],
+  "featureTiers": {
+    "feat.mending-pulse": "tier-4"
+  }
+}

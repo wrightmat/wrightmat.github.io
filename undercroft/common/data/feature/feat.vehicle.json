@@ -1,0 +1,24 @@
+{
+  "id": "feat.vehicle",
+  "name": "Vehicle",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The item itself is (or becomes) a rideable/pilotable vehicle with its own Armor Class and Hit Points.",
+  "mechanics": {
+    "type": "active",
+    "text": "The vehicle's own Armor Class and Hit Points live in this record's own featureParams.ac/hp — a real object with its own statistics, separate from its pilot's/passengers' own."
+  },
+  "budgetCost": 6,
+  "tags": {
+    "categories": [
+      "item"
+    ],
+    "propertyHints": [
+      "utility"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

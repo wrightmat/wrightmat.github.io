@@ -1,0 +1,36 @@
+{
+  "kind": "effect",
+  "index": "flaming-sphere",
+  "name": "Flaming Sphere",
+  "notes": "A 5-foot-diameter sphere of fire appears in an unoccupied space of your choice within range and lasts for the duration. Any creature that ends its turn within 5 feet of the sphere must make a dexterity saving throw. The creature takes 2d6 fire damage on a failed save, or half as much damage on a successful one.\n\nAs a bonus action, you can move the sphere up to 30 feet. If you ram the sphere into a creature, that creature must make the saving throw against the sphere's damage, and the sphere stops moving this turn.\n\nWhen you move the sphere, you can direct it over barriers up to 5 feet tall and jump it across pits up to 10 feet wide. The sphere ignites flammable objects not being worn or carried, and it sheds bright light in a 20-foot radius and dim light for an additional 20 feet.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/spells/flaming-sphere",
+  "mapping": "5e-api-spell",
+  "properties": {
+    "form": "spell"
+  },
+  "featureIds": [
+    "feat.damage"
+  ],
+  "featureParams": {
+    "feat.damage": {
+      "resolutionKind": "attack",
+      "damageType": "fire",
+      "scaling": {
+        "by": "slot",
+        "values": {
+          "2": "2d6",
+          "3": "3d6",
+          "4": "4d6",
+          "5": "5d6",
+          "6": "6d6",
+          "7": "7d6",
+          "8": "8d6",
+          "9": "9d6"
+        }
+      }
+    }
+  }
+}

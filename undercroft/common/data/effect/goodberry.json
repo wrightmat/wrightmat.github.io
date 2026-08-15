@@ -1,0 +1,31 @@
+{
+  "kind": "effect",
+  "index": "goodberry",
+  "name": "Goodberry",
+  "notes": "Up to ten berries appear in your hand and are infused with magic for the duration. A creature can use its action to eat one berry. Eating a berry restores 1 hit point, and the berry provides enough nourishment to sustain a creature for a day.\n\nThe berries lose their potency if they have not been consumed within 24 hours of the casting of this spell.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/spells/goodberry",
+  "mapping": "5e-api-spell",
+  "properties": {
+    "form": "spell"
+  },
+  "featureIds": [
+    "feat.healing",
+    "feat.resource-production"
+  ],
+  "featureParams": {
+    "feat.healing": {
+      "scaling": {
+        "by": "flat",
+        "values": {
+          "1": "1"
+        }
+      }
+    },
+    "feat.resource-production": {
+      "resourceText": "enough food to sustain one creature for a day, per berry"
+    }
+  }
+}

@@ -1,11 +1,25 @@
 {
   "type": "object",
   "$source": "srd",
+  "$description": "5e API — Species/Races (SRD)",
+  "$defaultSourceValue": "https://www.dnd5eapi.co/api/2014/races",
   "fields": {
-    "kind": { "type": "field", "bind": "='species'" },
-    "name": { "type": "field", "bind": "@name" },
-    "description": { "type": "field", "bind": "@size_description" },
-    "traits": { "type": "field", "bind": "@traits" },
+    "kind": {
+      "type": "field",
+      "bind": "='species'"
+    },
+    "name": {
+      "type": "field",
+      "bind": "@name"
+    },
+    "description": {
+      "type": "field",
+      "bind": "@size_description"
+    },
+    "traits": {
+      "type": "field",
+      "bind": "@traits"
+    },
     "variants": {
       "type": "pipeline",
       "source": "@subraces",
@@ -15,9 +29,18 @@
           "item": {
             "type": "object",
             "fields": {
-              "name": { "type": "field", "bind": "@name" },
-              "source": { "type": "field", "bind": "='5e API'" },
-              "description": { "type": "field", "bind": "@desc" },
+              "name": {
+                "type": "field",
+                "bind": "@name"
+              },
+              "source": {
+                "type": "field",
+                "bind": "='5e API'"
+              },
+              "description": {
+                "type": "field",
+                "bind": "@desc"
+              },
               "features": {
                 "type": "pipeline",
                 "source": "@features",
@@ -27,8 +50,14 @@
                     "item": {
                       "type": "object",
                       "fields": {
-                        "name": { "type": "field", "bind": "@name" },
-                        "description": { "type": "field", "bind": "@desc" }
+                        "name": {
+                          "type": "field",
+                          "bind": "@name"
+                        },
+                        "description": {
+                          "type": "field",
+                          "bind": "@desc"
+                        }
                       }
                     }
                   }

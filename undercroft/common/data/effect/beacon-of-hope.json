@@ -1,0 +1,22 @@
+{
+  "kind": "effect",
+  "index": "beacon-of-hope",
+  "name": "Beacon of Hope",
+  "notes": "This spell bestows hope and vitality. Choose any number of creatures within range. For the duration, each target has advantage on wisdom saving throws and death saving throws, and regains the maximum number of hit points possible from any healing.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/spells/beacon-of-hope",
+  "mapping": "5e-api-spell",
+  "properties": {
+    "form": "spell"
+  },
+  "featureIds": [
+    "feat.grants-advantage"
+  ],
+  "featureParams": {
+    "feat.grants-advantage": {
+      "rollType": "wisdom saving throws and death saving throws"
+    }
+  }
+}

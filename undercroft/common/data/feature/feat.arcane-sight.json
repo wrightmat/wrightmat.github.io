@@ -2,7 +2,7 @@
   "id": "feat.arcane-sight",
   "name": "Arcane Sight",
   "systemIds": ["sys.dnd5e"],
-  "description": "The wielder's eyes flare with insight, revealing a target's weaknesses and hidden nature.",
+  "description": "Reveals a target's resistances, immunities, and any hidden or illusory nature.",
   "mechanics": {
     "type": "active",
     "text": "On activation, reveals one target's resistances, immunities, and any hidden or illusory nature for a short duration."

@@ -1,0 +1,25 @@
+{
+  "id": "feat.impose-condition",
+  "name": "Impose Condition",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Forces a target to make a saving throw or suffer a condition, with no damage attached.",
+  "mechanics": {
+    "type": "active",
+    "text": "On activation, a target that fails a saving throw suffers a condition — no damage involved at all (see feat.area-damage-burst/feat.extra-damage for the damage-bearing versions of this same save shape). Which condition, save ability/DC, and duration live in this record's own featureParams."
+  },
+  "budgetCost": 6,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "control"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

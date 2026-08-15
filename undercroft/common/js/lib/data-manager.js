@@ -432,6 +432,29 @@ export class DataManager {
     return { id, payload };
   }
 
+  // Browsers disagree on exactly how a full storage quota surfaces
+  // (Chrome/Edge/Safari: DOMException name "QuotaExceededError"; older
+  // Firefox: name "NS_ERROR_DOM_QUOTA_REACHED"; both also expose code 22
+  // per the legacy DOM exception codes) — checked defensively across all
+  // three rather than trusting one browser's own naming.
+  _isQuotaExceededError(error) {
+    return Boolean(error) && (error.name === "QuotaExceededError" || error.name === "NS_ERROR_DOM_QUOTA_REACHED" || error.code === 22);
+  }
+
+  // For a signed-in user the local bucket cache is entirely disposable —
+  // the server copy (already written by the time save() ever calls this)
+  // is authoritative, and listLocal/getLocal transparently re-hydrate from
+  // an empty bucket on the next read. Wiping it is therefore a SAFE way to
+  // recover room after a QuotaExceededError, unlike removeLocal (which only
+  // ever drops one record) — see save()'s own retry below.
+  clearLocalBucket(bucket) {
+    try {
+      this._writeLocal(bucket, {});
+    } catch (error) {
+      console.warn("DataManager: unable to clear local bucket", bucket, error);
+    }
+  }
+
   removeLocal(bucket, id) {
     const records = this.listLocal(bucket);
     if (id in records) {
@@ -830,6 +853,10 @@ export class DataManager {
       throw new Error("Record id is required");
     }
     if (mode === "local" || (mode === "auto" && !this.isAuthenticated())) {
+      // The ONLY copy for an anonymous/local-mode save — a failure here
+      // (most commonly QuotaExceededError once a bucket's whole-array
+      // localStorage blob grows past the browser's per-origin cap) really
+      // is data loss, so this still throws.
       this.saveLocal(bucket, id, payload);
       this._listCache.delete(`${bucket}`);
       this._ownedCache.clear();
@@ -841,7 +868,39 @@ export class DataManager {
       body: payload,
       auth: true,
     });
-    this.saveLocal(bucket, id, payload);
+    // The server write above is the AUTHORITATIVE copy for a signed-in
+    // user — this local write is purely a read-acceleration cache. Left
+    // unguarded, a QuotaExceededError here (confirmed live: a growing
+    // `feature`/`effect` bucket's whole-array JSON blob exceeding the
+    // browser's per-origin localStorage cap during a large bulk import)
+    // propagated as if the ENTIRE save had failed, even though the real,
+    // authoritative server copy had already succeeded — every caller
+    // (Loom's saveEntity, vault-feature-matching.js's own per-Feature
+    // saves) treated a perfectly good save as an error, discarding
+    // recoverable in-progress conversion state along the way. Best-effort
+    // only: never lets a stale/oversized local cache turn a successful
+    // save into a reported failure. On a genuine quota hit specifically
+    // (not just any local-write error), self-heals by purging THIS one
+    // bucket's stale cache and retrying once — otherwise the bucket would
+    // stay permanently over quota and silently fail this same way on every
+    // future save, forever, once it first happened. Anything OTHER than a
+    // quota error (a truly unexpected local-storage failure) still only
+    // warns, same as before — no reason to nuke a healthy bucket's cache
+    // over an unrelated problem.
+    try {
+      this.saveLocal(bucket, id, payload);
+    } catch (error) {
+      if (this._isQuotaExceededError(error)) {
+        this.clearLocalBucket(bucket);
+        try {
+          this.saveLocal(bucket, id, payload);
+        } catch (retryError) {
+          console.warn(`DataManager: local cache still over quota for ${bucket}/${id} after purging (server save still succeeded)`, retryError);
+        }
+      } else {
+        console.warn(`DataManager: local cache write failed for ${bucket}/${id} (server save still succeeded)`, error);
+      }
+    }
     this._listCache.delete(`${bucket}`);
     this._ownedCache.clear();
     this._emit("workbench:content-saved", { bucket, id, payload, source: "remote", response: result });

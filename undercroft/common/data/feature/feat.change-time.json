@@ -1,0 +1,26 @@
+{
+  "id": "feat.change-time",
+  "name": "Change Time",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Stops or alters the flow of time around the user, letting them act while everyone/everything else is frozen.",
+  "mechanics": {
+    "type": "active",
+    "text": "While active, the user takes featureParams.extraTurns extra turns in a row while time is stopped for everyone else — the effect ends immediately if the user affects anyone/anything other than themselves or their own held/worn possessions."
+  },
+  "budgetCost": 10,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "utility",
+      "combat"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

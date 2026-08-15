@@ -1,0 +1,24 @@
+{
+  "id": "feat.identify",
+  "name": "Identify",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Reveals a magic item's own properties, or what spells are currently affecting a touched creature or object.",
+  "mechanics": {
+    "type": "active",
+    "text": "On activation, learn a touched item's properties, how to use them, attunement requirement, and remaining charges (if any); or, touching a creature instead, learn what spells currently affect it. A particular, narrowly-named effect kept as its own Feature rather than folded into feat.detection (which senses presence/direction, not a target's own magical properties)."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "categories": [
+      "spell"
+    ],
+    "propertyHints": [
+      "utility"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

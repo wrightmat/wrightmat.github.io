@@ -1,0 +1,25 @@
+{
+  "id": "feat.communication",
+  "name": "Communication",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Lets the user exchange messages with a specific creature or entity across a distance they otherwise couldn't reach.",
+  "mechanics": {
+    "type": "active",
+    "text": "On activation, the user can send and/or receive messages with a specific creature, entity, or group of linked creatures beyond normal speech range — mentally, telepathically, or otherwise. Distinct from feat.comprehend-language (understanding a language you otherwise couldn't) and feat.detection (sensing something's presence/direction)."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "utility"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

@@ -13,8 +13,13 @@ import { fetchKindEntriesWithIds } from "../../../common/js/lib/content-fetch.js
 // this module keeps working unchanged. slugify moved with it since
 // loadCombatScalingLevels (and this file's other lookups) depend on it.
 import { slugify, loadCombatScalingLevels } from "../../../common/js/lib/combat-scaling.js";
+// loadAbilityFieldDefs moved to common/js/lib/generator-kit.js once Vault
+// needed the exact same System-ability-reading logic (its own feature-
+// params-editor ability select) — re-exported below so every existing
+// importer of this module keeps working unchanged.
+import { loadAbilityFieldDefs } from "../../../common/js/lib/generator-kit.js";
 
-export { loadCombatScalingLevels };
+export { loadCombatScalingLevels, loadAbilityFieldDefs };
 
 async function listKindForSystem(dataManager, kind, systemId) {
   const entries = await fetchKindEntriesWithIds(dataManager, kind);
@@ -100,40 +105,6 @@ export async function listArrayFieldOptions(dataManager, systemId) {
       .map((entry) => ({ key: entry.key, label: entry.label || entry.key }));
   } catch (error) {
     return [];
-  }
-}
-
-// The active System's own "abilities" object field's children (key +
-// shortName) — read here instead of hardcoding the six D&D ability keys/
-// labels a second time (stats.js#deriveAbilities and app.js#renderStats both
-// used to carry their own independent copy). Falls back to the standard
-// six-ability D&D set if the System defines no "abilities" field, so a
-// System with none authored yet still produces a usable stat block rather
-// than an empty one.
-const DEFAULT_ABILITY_FIELD_DEFS = [
-  { key: "strength", label: "STR" },
-  { key: "dexterity", label: "DEX" },
-  { key: "constitution", label: "CON" },
-  { key: "intelligence", label: "INT" },
-  { key: "wisdom", label: "WIS" },
-  { key: "charisma", label: "CHA" },
-];
-
-export async function loadAbilityFieldDefs(dataManager, systemId) {
-  if (!dataManager || !systemId) return DEFAULT_ABILITY_FIELD_DEFS;
-  try {
-    const result = await dataManager.get("systems", systemId, { preferLocal: false });
-    const fields = Array.isArray(result?.payload?.fields) ? result.payload.fields : [];
-    const field = fields.find((entry) => entry.type === "object" && entry.key === "abilities");
-    const defs = (field?.children || [])
-      .map((child) => ({
-        key: String(child.key || "").replace(/^abilities\./, ""),
-        label: child.shortName || child.label || "",
-      }))
-      .filter((entry) => entry.key && entry.label);
-    return defs.length ? defs : DEFAULT_ABILITY_FIELD_DEFS;
-  } catch (error) {
-    return DEFAULT_ABILITY_FIELD_DEFS;
   }
 }
 

@@ -1,0 +1,25 @@
+{
+  "id": "feat.ac-minimum",
+  "name": "AC Minimum",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Sets a floor under the wearer's own AC, without replacing the normal calculation the way a fixed AC would.",
+  "mechanics": {
+    "type": "active",
+    "text": "While active, the wearer's own AC can't be less than featureParams.minimum, regardless of armor worn — other bonuses (a shield, a spell) can still raise it above that floor. Distinct from feat.set-ac (replaces the AC calculation outright) and feat.protection-bonus (an additive bonus, no floor concept at all)."
+  },
+  "budgetCost": 4,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "defense"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

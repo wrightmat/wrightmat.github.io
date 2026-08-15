@@ -1,0 +1,25 @@
+{
+  "id": "feat.obscurement",
+  "name": "Obscurement",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Fills an area with fog, smoke, or darkness that blocks vision.",
+  "mechanics": {
+    "type": "active",
+    "text": "On activation, an area becomes lightly or heavily obscured (this record's own featureParams.level) until the effect ends."
+  },
+  "budgetCost": 3,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "control"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

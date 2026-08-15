@@ -1,0 +1,51 @@
+{
+  "id": "feat.skill-bonus",
+  "name": "Skill Bonus",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Sharpens the creature's aptitude at one specific skill or check.",
+  "mechanics": {
+    "type": "active",
+    "text": "While active, grants advantage on the chosen check, or a flat bonus, depending on tier. Which skill lives in this record's own featureParams.skill — the tier ladder (how strong the bonus is) is independent of which skill it applies to."
+  },
+  "budgetCost": 3,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "buff"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "advantage",
+      "name": "Advantage",
+      "shortName": "Adv",
+      "budgetCost": 3
+    },
+    {
+      "id": "plus-2",
+      "name": "+2 Bonus",
+      "shortName": "+2",
+      "budgetCost": 6
+    },
+    {
+      "id": "plus-5",
+      "name": "+5 Bonus",
+      "shortName": "+5",
+      "budgetCost": 10
+    },
+    {
+      "id": "plus-10",
+      "name": "+10 Bonus",
+      "shortName": "+10",
+      "budgetCost": 16
+    }
+  ]
+}

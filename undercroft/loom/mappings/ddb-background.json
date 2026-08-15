@@ -1,18 +1,58 @@
 {
   "type": "object",
   "$source": "ddb",
+  "$description": "D&D Beyond Background",
   "fields": {
-    "kind": { "type": "field", "bind": "@kind" },
-    "index": { "type": "custom", "fn": "slug" },
-    "name": { "type": "field", "bind": "@name" },
-    "url": { "type": "field", "bind": "@url" },
-    "ability_scores": { "type": "custom", "fn": "ddbBackgroundAbilityScores" },
-    "feat": { "type": "custom", "fn": "ddbBackgroundFeat" },
-    "proficiencies": { "type": "custom", "fn": "ddbBackgroundProficiencies" },
-    "proficiency_choices": { "type": "custom", "fn": "emptyList" },
-    "equipment_options": { "type": "custom", "fn": "ddbEquipmentOptions", "args": { "path": "traits.equipment" } },
-    "description": { "type": "field", "bind": "@descLines" },
-    "source": { "type": "field", "bind": "@source" },
-    "traits": { "type": "field", "bind": "@traits" }
+    "kind": {
+      "type": "field",
+      "bind": "@kind"
+    },
+    "index": {
+      "type": "custom",
+      "fn": "slug"
+    },
+    "name": {
+      "type": "field",
+      "bind": "@name"
+    },
+    "url": {
+      "type": "field",
+      "bind": "@url"
+    },
+    "ability_scores": {
+      "type": "custom",
+      "fn": "ddbBackgroundAbilityScores"
+    },
+    "feat": {
+      "type": "custom",
+      "fn": "ddbBackgroundFeat"
+    },
+    "proficiencies": {
+      "type": "custom",
+      "fn": "ddbBackgroundProficiencies"
+    },
+    "proficiency_choices": {
+      "type": "custom",
+      "fn": "emptyList"
+    },
+    "equipment_options": {
+      "type": "custom",
+      "fn": "ddbEquipmentOptions",
+      "args": {
+        "path": "traits.equipment"
+      }
+    },
+    "description": {
+      "type": "field",
+      "bind": "@descLines"
+    },
+    "source": {
+      "type": "field",
+      "bind": "@source"
+    },
+    "traits": {
+      "type": "field",
+      "bind": "@traits"
+    }
   }
 }

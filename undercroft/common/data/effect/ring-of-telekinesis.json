@@ -1,0 +1,24 @@
+{
+  "kind": "effect",
+  "index": "ring-of-telekinesis",
+  "name": "Ring of Telekinesis",
+  "notes": "Ring, very rare (requires attunement)\n\nWhile wearing this ring, you can cast the telekinesis spell at will, but you can target only objects that aren't being worn or carried.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/magic-items/ring-of-telekinesis",
+  "mapping": "5e-api-magic-item",
+  "properties": {
+    "rarity": "very-rare",
+    "form": "ring"
+  },
+  "featureIds": [
+    "feat.cast-a-spell",
+    "feat.requires-attunement"
+  ],
+  "featureParams": {
+    "feat.cast-a-spell": {
+      "spellName": "telekinesis"
+    }
+  }
+}

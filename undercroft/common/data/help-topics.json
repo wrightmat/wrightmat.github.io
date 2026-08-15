@@ -382,6 +382,18 @@
       "href": "../loom/index.html#loom-selection"
     },
     {
+      "id": "loom.source.markdown-effect",
+      "title": "Markdown Item/Spell File",
+      "summary": "Upload an Obsidian vault note for a magic item or spell — structural markers (a #tag line, an italic type/rarity line, bold field labels) map to Effect fields; the rest is scanned for known Features the same way an SRD-imported Effect is.",
+      "details": [
+        "Works with the markdown-item and markdown-spell mappings — pick whichever matches the file(s) you're importing.",
+        "A file's own name (not any text inside it) becomes the Effect's name, since none of these notes state their own name inline.",
+        "A file with no italic type/rarity line at all (a mundane/lore item with no real stat block) imports fine — it just carries no rarity/attunement/charges and whatever candidate Features its prose happens to match."
+      ],
+      "category": "Loom",
+      "href": "../loom/index.html#loom-selection"
+    },
+    {
       "id": "loom.libraryTable",
       "title": "Library Contents",
       "summary": "Every saved item across every owner, with details and Share in the right-pane inspector.",
@@ -1263,6 +1275,17 @@
         "Add a Feature from the select below the list at any time; going over budget is allowed and shown as a warning in the Remaining figure rather than blocked outright.",
         "Every Feature shown was chosen for synergy with what's already selected and for not conflicting with it during generation — hand-adding one doesn't run that same check, so a manual add can introduce a conflict traversal would have avoided.",
         "Target/Spent/Remaining recompute live on every add or remove, using the same budget math the automatic generator itself uses."
+      ],
+      "category": "Vault",
+      "href": "../vault/index.html#vault-features"
+    },
+    {
+      "id": "vault.feature-basic-info",
+      "title": "Feature — Basic Info",
+      "summary": "ID, Name, Description, and Budget Cost for the selected Feature.",
+      "details": [
+        "Always read-only here — every Vault Feature is shared across many spells/items by design, so changing one from a single Effect's own inspector would silently change it everywhere else it's used too.",
+        "Use Edit Feature to open it in Loom instead, if it genuinely needs changing."
       ],
       "category": "Vault",
       "href": "../vault/index.html#vault-features"

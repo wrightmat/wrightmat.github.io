@@ -1,0 +1,25 @@
+{
+  "id": "feat.temporary-hit-points",
+  "name": "Temporary Hit Points",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Grants a buffer of temporary hit points.",
+  "mechanics": {
+    "type": "active",
+    "text": "On activation, grants temporary hit points equal to this record's own featureParams.dice."
+  },
+  "budgetCost": 3,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "defense"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

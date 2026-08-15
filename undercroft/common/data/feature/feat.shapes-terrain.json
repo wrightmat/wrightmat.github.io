@@ -1,0 +1,25 @@
+{
+  "id": "feat.shapes-terrain",
+  "name": "Shapes Terrain",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Physically reshapes stone, earth, or similar material into a new, lasting form.",
+  "mechanics": {
+    "type": "active",
+    "text": "On activation, physically reshapes an area of stone, earth, or similar material into a new form of the user's choosing — a REAL, lasting physical change, distinct from feat.terrain-illusion (only how the terrain is perceived, not its actual shape)."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "utility"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

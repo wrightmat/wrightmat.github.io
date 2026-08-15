@@ -71,6 +71,19 @@ export const SOURCES = [
     // loadFantasyStatblockDataBulk below.
     bulk: true,
   },
+  {
+    id: "markdown-effect",
+    label: "Markdown (Item/Spell)",
+    valueLabel: "Markdown file",
+    // Same "value is a File, not typed text" reasoning as fantasy-statblocks
+    // above.
+    placeholder: "",
+    helpTopic: "loom.source.markdown-effect",
+    file: true,
+    // A whole Obsidian vault folder of item/spell notes, same bulk pattern
+    // as fantasy-statblocks — see loadMarkdownEffectDataBulk below.
+    bulk: true,
+  },
 ];
 
 // The browser's own SyntaxError for malformed JSON only ever gives a
@@ -227,6 +240,231 @@ export async function loadFantasyStatblockDataBulk(files, onProgress) {
       const text = await readTextFile(file);
       const parsed = await loadFantasyStatblockData(text);
       results.push({ ...parsed, _bulkFileName: file.name });
+    } catch (error) {
+      results.push({ _bulkFileName: file.name, _bulkError: error.message });
+    }
+    onProgress?.(results.length, list.length);
+  }
+  return results;
+}
+
+// Strips the three markdown-noise shapes that show up inside Obsidian vault
+// prose but never inside the 5e API's own desc text: a piped link
+// `[label](url)` (Staff of the Gatekeeper's own spell-menu links) collapses
+// to its own label, a bare wikilink `[[Page Name]]` collapses to the page
+// name, and an inline Dice Roller span `` `dice:8d6` ``/`` `dice:1d4 + 1` ``
+// (confirmed live: 6 of the _srd/spells files use this instead of writing
+// their own damage dice as plain text — Fireball's own "takes `dice:8d6`
+// fire damage" was silently unmatched by every damage-clause regex before
+// this) collapses to its own bare formula. All three so downstream regexes
+// (spell-menu parsing, clause recognizers, parseMarkdownSpellMechanic) see
+// the same plain "cure wounds"/"Nymm, the Crown"/"8d6" text the SRD's own
+// desc fields already give them, not markup they were never written to
+// expect.
+function stripMarkdownNoise(text) {
+  return String(text || "")
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+    .replace(/\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/g, "$1")
+    .replace(/`dice:\s*([^`]+)`/gi, "$1");
+}
+
+// A `**Label.**`/`**Label**.`/`**_Label._**` bold lead-in at the very START
+// of a paragraph — this Obsidian vault's own real convention for a named
+// sub-ability (Staff of the Gatekeeper's own "**Druidic Ritual**. After
+// successfully...", Orb of Dragonkind's own "**Spells.** The orb has 7
+// charges...", Dragon Mask's own "**_Damage Absorption._** You have
+// resistance..." — all 3 real shapes confirmed live) — normalized to the
+// `***Label.***` triple-star shape vault-feature-matching.js's own
+// extractBoldLabel already recognizes (that shape comes from the 5e API's
+// own desc text instead, e.g. "***Curse.*** This armor is cursed..."), so a
+// markdown-sourced candidate unit's own named lead-in is recognized exactly
+// like a JSON-sourced one, with zero changes needed to the shared clause-
+// recognizer pipeline. A paragraph with no such lead-in is returned
+// unchanged.
+function normalizeBoldLeadIn(paragraph) {
+  const match = paragraph.match(/^[*_]{2,4}\s*([^*_]+?)\s*[*_]{2,4}\.?\s*/);
+  if (!match) return paragraph;
+  const label = match[1].replace(/\.$/, "").trim();
+  if (!label) return paragraph;
+  const rest = paragraph.slice(match[0].length);
+  return `***${label}.*** ${rest}`.trim();
+}
+
+// The general markdown structural scanner behind the "markdown-effect"
+// source: reads an Obsidian vault note (a magic item or spell, one per
+// file — confirmed live against ~70 real files under dnd-eberron/other and
+// dnd-eberron/_srd/spells) for its own structural markers — a leading
+// `#tag` line, an italic type/rarity-or-level line, bold "**Label:**
+// value"/"**Label**: value" stat-block lines (both real: a spell's own
+// Casting Time/Range/Components/Duration always use the colon-inside form
+// and always lead the body; a mundane-equipment item's own Damage/Damage
+// Type/Properties/Range/Weight fields use colon-OUTSIDE instead, and — a
+// real, confirmed difference — TRAIL the description rather than leading
+// it, so these are recognized WHEREVER they appear in the body, not just
+// in a fixed leading block), then body paragraphs, tables, and a trailing
+// "### References" section — WITHOUT any 5e-specific interpretation of what
+// those markers mean. That interpretation (item rarity/attunement/charges,
+// spell level/school) is markdownItemStats/markdownSpellStats's own job
+// (mapping-custom-functions.js), the same layering loadFantasyStatblockData
+// above already establishes (raw structural parse here, meaning built on
+// top of it there). Neither of these real files ever states its own
+// name inline — the filename is the only name available, so `fileName` is
+// threaded through explicitly (mirroring loadFantasyStatblockDataBulk's own
+// `_bulkFileName` stamp, but available even for a single-file import here).
+export function parseMarkdownEffectSource(text, fileName) {
+  const rawLines = String(text || "").replace(/\r\n/g, "\n").split("\n");
+  let i = 0;
+  const nextNonBlank = (from) => {
+    let j = from;
+    while (j < rawLines.length && rawLines[j].trim() === "") j++;
+    return j;
+  };
+
+  // 1. Tag line — the first non-blank line, when it carries at least one
+  // "#tag" token (every real file does: "#item", or "#srd #spell #school").
+  let tags = [];
+  i = nextNonBlank(i);
+  if (i < rawLines.length && /(^|\s)#[\w-]+/.test(rawLines[i])) {
+    tags = [...rawLines[i].matchAll(/#([\w-]+)/g)].map((m) => m[1].toLowerCase());
+    i++;
+  }
+
+  // 2. Header/type line — the next non-blank line, ONLY when it's entirely
+  // wrapped in a single pair of `*…*` or `_..._` markers (an item's own
+  // "*Wondrous item, very rare (requires attunement)*", a spell's own
+  // "*3rd-level evocation*"). A genuinely mundane/lore item (Cloak of Many
+  // Fashions, Speaking Stone — confirmed real, no stat block at all) simply
+  // has no line matching this shape, and headerLine correctly stays null
+  // rather than misreading its first prose paragraph as one.
+  let headerLine = null;
+  i = nextNonBlank(i);
+  if (i < rawLines.length) {
+    const trimmed = rawLines[i].trim();
+    const wrapped = trimmed.match(/^(\*|_)([^*_]+)\1$/);
+    if (wrapped) {
+      headerLine = stripMarkdownNoise(wrapped[2]).trim();
+      i++;
+    }
+  }
+
+  // 3. Body: paragraphs (bullet lines kept intact, one candidate unit each
+  // — see srdSplitBullets, mapping-custom-functions.js), bold stat-block
+  // fields, tables, headings, and the trailing References section.
+  const paragraphs = [];
+  const fields = {};
+  const tables = [];
+  const references = [];
+  let higherLevel = "";
+  let notesLine = "";
+  let buffer = [];
+  let inReferences = false;
+
+  const flushParagraph = () => {
+    if (!buffer.length) return;
+    const para = stripMarkdownNoise(buffer.join("\n")).trim();
+    buffer = [];
+    if (!para) return;
+    if (/^\*{3}At Higher Levels\*{3}\.?/i.test(para)) {
+      higherLevel = para.replace(/^\*{3}At Higher Levels\*{3}\.?\s*/i, "").trim();
+      return;
+    }
+    const notesMatch = para.match(/^_?Notes:\s*(.+?)_?$/i);
+    if (notesMatch) {
+      notesLine = notesMatch[1].trim();
+      return;
+    }
+    paragraphs.push(normalizeBoldLeadIn(para));
+  };
+
+  for (; i < rawLines.length; i++) {
+    const line = rawLines[i];
+    const trimmed = line.trim();
+
+    if (trimmed === "") {
+      flushParagraph();
+      continue;
+    }
+
+    const headingMatch = trimmed.match(/^(#{2,6})\s+(.+)$/);
+    if (headingMatch) {
+      flushParagraph();
+      const headingText = stripMarkdownNoise(headingMatch[2]).trim();
+      if (/^references$/i.test(headingText)) {
+        inReferences = true;
+        continue;
+      }
+      inReferences = false;
+      // Any OTHER heading (a variant sub-item like Dragon Mask's own
+      // "### Black Dragon Mask", or an aside like Orb of Dragonkind's own
+      // "#### Destroying an Orb") is folded back into the paragraph stream
+      // as its own short paragraph rather than dropped — real mechanical
+      // text sometimes follows it, and the heading text itself is at worst
+      // an inert extra candidate unit (never classified as a Feature, no
+      // clause recognizer matches a bare name).
+      paragraphs.push(headingText);
+      continue;
+    }
+
+    if (inReferences) {
+      if (trimmed) references.push(trimmed.replace(/^\*\s*/, ""));
+      continue;
+    }
+
+    // A bold stat-block field line, either convention (see this function's
+    // own module comment). Checked on every line, not just a fixed leading
+    // block — Alchemist's Fire's own fields trail its description instead
+    // of leading it. Neither shape can ever also match a bold ABILITY
+    // lead-in (step 4's own normalizeBoldLeadIn territory below): that
+    // shape's own closing `**` is followed by a period or nothing at all,
+    // never a bare `:`.
+    const fieldMatch = trimmed.match(/^\*\*([^*:]+):\*\*\s*(.+)$/) || trimmed.match(/^\*\*([^*:]+)\*\*:\s*(.+)$/);
+    if (fieldMatch) {
+      flushParagraph();
+      fields[fieldMatch[1].trim()] = stripMarkdownNoise(fieldMatch[2]).trim();
+      continue;
+    }
+
+    if (trimmed.startsWith("|")) {
+      flushParagraph();
+      const tableLines = [trimmed];
+      while (i + 1 < rawLines.length && rawLines[i + 1].trim().startsWith("|")) {
+        i++;
+        tableLines.push(rawLines[i].trim());
+      }
+      // Obsidian's own block-reference line ("^some-id") immediately after
+      // a table — not part of the table itself, consumed and discarded.
+      if (i + 1 < rawLines.length && /^\^[\w-]+$/.test(rawLines[i + 1].trim())) {
+        i++;
+      }
+      tables.push(tableLines.join("\n"));
+      continue;
+    }
+
+    // An Obsidian dice-roller embed ("`dice: [[Page^block]]`", Trinkets of
+    // the Planes' own shape) or a standalone image embed — neither is
+    // prose, both dropped rather than becoming a nonsense candidate unit.
+    if (/^`dice:/i.test(trimmed) || /^!\[.*\]\(.*\)$/.test(trimmed)) {
+      continue;
+    }
+
+    buffer.push(line);
+  }
+  flushParagraph();
+
+  const name = String(fileName || "").replace(/\.md$/i, "");
+  return { name, tags, headerLine, fields, paragraphs, tables, higherLevel, notesLine, references };
+}
+
+// Bulk counterpart to parseMarkdownEffectSource above — same "one bad file
+// doesn't kill the batch" contract as loadFantasyStatblockDataBulk (this
+// parser essentially never throws, but a future stricter version might).
+export async function loadMarkdownEffectDataBulk(files, onProgress) {
+  const list = Array.from(files || []);
+  const results = [];
+  for (const file of list) {
+    try {
+      const text = await readTextFile(file);
+      results.push(parseMarkdownEffectSource(text, file.name));
     } catch (error) {
       results.push({ _bulkFileName: file.name, _bulkError: error.message });
     }
@@ -838,6 +1076,13 @@ export async function loadSourceData(source, value, dataManager) {
       }
       const text = await readTextFile(value);
       return loadFantasyStatblockData(text);
+    }
+    case "markdown-effect": {
+      if (!value) {
+        throw new Error("Select a markdown item/spell file to load.");
+      }
+      const text = await readTextFile(value);
+      return parseMarkdownEffectSource(text, value.name);
     }
     case "manual": {
       const trimmed = (value || "").trim();

@@ -1,0 +1,25 @@
+{
+  "id": "feat.feather-fall",
+  "name": "Feather Fall",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Slows the wearer's own falls, so they take no damage from falling.",
+  "mechanics": {
+    "type": "active",
+    "text": "While active, the wearer descends slowly when falling and takes no falling damage."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "mobility"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,18 @@
+{
+  "kind": "effect",
+  "index": "adamantine-armor",
+  "name": "Adamantine Armor",
+  "notes": "Armor (medium or heavy, but not hide), uncommon\n\nThis suit of armor is reinforced with adamantine, one of the hardest substances in existence. While you're wearing it, any critical hit against you becomes a normal hit.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/magic-items/adamantine-armor",
+  "mapping": "5e-api-magic-item",
+  "properties": {
+    "rarity": "uncommon",
+    "form": "armor"
+  },
+  "featureIds": [
+    "feat.no-critical-hits"
+  ]
+}

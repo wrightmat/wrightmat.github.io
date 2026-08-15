@@ -4,7 +4,7 @@
   "systemIds": [
     "sys.dnd5e"
   ],
-  "description": "Channels spellcasting through a focus tuned to strike true.",
+  "description": "While wielded as a spellcasting focus, grants a bonus to spell attack rolls.",
   "mechanics": {
     "type": "active",
     "text": "While wielded as a spellcasting focus, grants a bonus to spell attack rolls."

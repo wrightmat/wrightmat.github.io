@@ -2,7 +2,7 @@
   "id": "feat.mending-pulse",
   "name": "Mending Pulse",
   "systemIds": ["sys.dnd5e"],
-  "description": "A wave of restorative energy closes wounds and steadies the body.",
+  "description": "Restores lost hit points to one creature touched or within short range.",
   "mechanics": {
     "type": "active",
     "text": "On activation, restores lost hit points to one creature touched or within short range — the amount scales with tier, from a Common-tier trickle up to a Very-Rare-tier flood."

@@ -1,0 +1,25 @@
+{
+  "id": "feat.no-critical-hits",
+  "name": "No Critical Hits",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Any critical hit against you becomes a normal hit.",
+  "mechanics": {
+    "type": "active",
+    "text": "While worn/wielded, a critical hit against the wearer becomes a normal hit instead."
+  },
+  "budgetCost": 8,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "defense"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

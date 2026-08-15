@@ -1,0 +1,24 @@
+{
+  "kind": "effect",
+  "index": "hypnotic-pattern",
+  "name": "Hypnotic Pattern",
+  "notes": "You create a twisting pattern of colors that weaves through the air inside a 30-foot cube within range. The pattern appears for a moment and vanishes. Each creature in the area who sees the pattern must make a wisdom saving throw. On a failed save, the creature becomes charmed for the duration. While charmed by this spell, the creature is incapacitated and has a speed of 0.\n\nThe spell ends for an affected creature if it takes any damage or if someone else uses an action to shake the creature out of its stupor.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/spells/hypnotic-pattern",
+  "mapping": "5e-api-spell",
+  "properties": {
+    "form": "spell"
+  },
+  "featureIds": [
+    "feat.impose-condition"
+  ],
+  "featureParams": {
+    "feat.impose-condition": {
+      "condition": "charmed",
+      "saveAbility": "wisdom",
+      "duration": "the duration"
+    }
+  }
+}

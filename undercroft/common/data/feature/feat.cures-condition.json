@@ -1,0 +1,25 @@
+{
+  "id": "feat.cures-condition",
+  "name": "Cures Condition",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Ends a disease, condition, curse, or dying state afflicting the target.",
+  "mechanics": {
+    "type": "active",
+    "text": "On activation, ends an ongoing ailment on the target — a disease, a specific condition, a curse, exhaustion, or the dying state (0 HP) — rather than restoring hit points. Which ailment(s) it can end varies by source and isn't structured further here."
+  },
+  "budgetCost": 3,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "healing"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,36 @@
+{
+  "type": "with",
+  "$source": "markdown-effect",
+  "$description": "Markdown (Obsidian) — Magic Item",
+  "bindings": {
+    "itemStats": {
+      "type": "custom",
+      "fn": "markdownItemStats"
+    }
+  },
+  "body": {
+    "type": "object",
+    "fields": {
+      "kind": {
+        "type": "custom",
+        "fn": "srdItemKindFromStats"
+      },
+      "name": {
+        "type": "custom",
+        "fn": "srdItemNameFromStats"
+      },
+      "notes": {
+        "type": "field",
+        "bind": "@itemStats.description"
+      },
+      "systemIds": {
+        "type": "custom",
+        "fn": "srdVaultSystemIds"
+      },
+      "stats": {
+        "type": "field",
+        "bind": "@itemStats"
+      }
+    }
+  }
+}

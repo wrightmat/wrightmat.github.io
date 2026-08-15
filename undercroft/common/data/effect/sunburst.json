@@ -1,0 +1,33 @@
+{
+  "kind": "effect",
+  "index": "sunburst",
+  "name": "Sunburst",
+  "notes": "Brilliant sunlight flashes in a 60-foot radius centered on a point you choose within range. Each creature in that light must make a constitution saving throw. On a failed save, a creature takes 12d6 radiant damage and is blinded for 1 minute. On a successful save, it takes half as much damage and isn't blinded by this spell. Undead and oozes have disadvantage on this saving throw.\n\nA creature blinded by this spell makes another constitution saving throw at the end of each of its turns. On a successful save, it is no longer blinded.\n\nThis spell dispels any darkness in its area that was created by a spell.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/spells/sunburst",
+  "mapping": "5e-api-spell",
+  "properties": {
+    "form": "spell"
+  },
+  "featureIds": [
+    "feat.damage"
+  ],
+  "featureParams": {
+    "feat.damage": {
+      "resolutionKind": "save",
+      "saveAbility": "constitution",
+      "saveEffect": "half",
+      "damageType": "radiant",
+      "areaShape": "cylinder",
+      "areaSize": 60,
+      "scaling": {
+        "by": "slot",
+        "values": {
+          "8": "12d6"
+        }
+      }
+    }
+  }
+}

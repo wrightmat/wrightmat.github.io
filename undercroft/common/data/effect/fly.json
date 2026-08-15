@@ -1,0 +1,23 @@
+{
+  "kind": "effect",
+  "index": "fly",
+  "name": "Fly",
+  "notes": "You touch a willing creature. The target gains a flying speed of 60 feet for the duration. When the spell ends, the target falls if it is still aloft, unless it can stop the fall.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/spells/fly",
+  "mapping": "5e-api-spell",
+  "properties": {
+    "form": "spell"
+  },
+  "featureIds": [
+    "feat.speed-modification"
+  ],
+  "featureParams": {
+    "feat.speed-modification": {
+      "speedType": "flying",
+      "distance": 60
+    }
+  }
+}

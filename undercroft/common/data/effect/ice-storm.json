@@ -1,0 +1,38 @@
+{
+  "kind": "effect",
+  "index": "ice-storm",
+  "name": "Ice Storm",
+  "notes": "A hail of rock-hard ice pounds to the ground in a 20-foot-radius, 40-foot-high cylinder centered on a point within range. Each creature in the cylinder must make a dexterity saving throw. A creature takes 2d8 bludgeoning damage and 4d6 cold damage on a failed save, or half as much damage on a successful one.\n\nHailstones turn the storm's area of effect into difficult terrain until the end of your next turn.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/spells/ice-storm",
+  "mapping": "5e-api-spell",
+  "properties": {
+    "form": "spell"
+  },
+  "featureIds": [
+    "feat.damage"
+  ],
+  "featureParams": {
+    "feat.damage": {
+      "resolutionKind": "save",
+      "saveAbility": "dexterity",
+      "saveEffect": "half",
+      "damageType": "bludgeoning",
+      "areaShape": "cylinder",
+      "areaSize": 20,
+      "scaling": {
+        "by": "slot",
+        "values": {
+          "4": "2d8 + 4d6",
+          "5": "3d8 + 4d6",
+          "6": "4d8 + 4d6",
+          "7": "5d8 + 4d6",
+          "8": "6d8 + 4d6",
+          "9": "7d8 + 4d6"
+        }
+      }
+    }
+  }
+}

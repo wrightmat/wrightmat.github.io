@@ -1,16 +1,44 @@
 {
   "type": "object",
   "$source": "ddb",
+  "$description": "D&D Beyond Class",
   "fields": {
-    "kind": { "type": "field", "bind": "@kind" },
-    "index": { "type": "custom", "fn": "slug" },
-    "name": { "type": "field", "bind": "@name" },
-    "primary_ability": { "type": "custom", "fn": "ddbPrimaryAbility" },
-    "hit_die": { "type": "custom", "fn": "ddbHitDie" },
-    "proficiency_choices": { "type": "custom", "fn": "ddbProficiencyChoices" },
-    "proficiencies": { "type": "custom", "fn": "ddbProficiencies" },
-    "saving_throws": { "type": "custom", "fn": "ddbSavingThrows" },
-    "starting_equipment_options": { "type": "custom", "fn": "ddbEquipmentOptions" },
+    "kind": {
+      "type": "field",
+      "bind": "@kind"
+    },
+    "index": {
+      "type": "custom",
+      "fn": "slug"
+    },
+    "name": {
+      "type": "field",
+      "bind": "@name"
+    },
+    "primary_ability": {
+      "type": "custom",
+      "fn": "ddbPrimaryAbility"
+    },
+    "hit_die": {
+      "type": "custom",
+      "fn": "ddbHitDie"
+    },
+    "proficiency_choices": {
+      "type": "custom",
+      "fn": "ddbProficiencyChoices"
+    },
+    "proficiencies": {
+      "type": "custom",
+      "fn": "ddbProficiencies"
+    },
+    "saving_throws": {
+      "type": "custom",
+      "fn": "ddbSavingThrows"
+    },
+    "starting_equipment_options": {
+      "type": "custom",
+      "fn": "ddbEquipmentOptions"
+    },
     "subclasses": {
       "type": "pipeline",
       "source": "@subclasses",
@@ -20,15 +48,30 @@
           "item": {
             "type": "object",
             "fields": {
-              "index": { "type": "custom", "fn": "slug" },
-              "name": { "type": "field", "bind": "@name" },
-              "url": { "type": "field", "bind": "@root.url" }
+              "index": {
+                "type": "custom",
+                "fn": "slug"
+              },
+              "name": {
+                "type": "field",
+                "bind": "@name"
+              },
+              "url": {
+                "type": "field",
+                "bind": "@root.url"
+              }
             }
           }
         }
       ]
     },
-    "url": { "type": "field", "bind": "@url" },
-    "coreTraits": { "type": "field", "bind": "@coreTraits" }
+    "url": {
+      "type": "field",
+      "bind": "@url"
+    },
+    "coreTraits": {
+      "type": "field",
+      "bind": "@coreTraits"
+    }
   }
 }

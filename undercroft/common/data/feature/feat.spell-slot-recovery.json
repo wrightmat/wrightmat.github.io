@@ -1,0 +1,24 @@
+{
+  "id": "feat.spell-slot-recovery",
+  "name": "Spell Slot Recovery",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Restores an expended spell slot.",
+  "mechanics": {
+    "type": "active",
+    "text": "On activation, regains one expended spell slot."
+  },
+  "budgetCost": 5,
+  "tags": {
+    "categories": [
+      "item"
+    ],
+    "propertyHints": [
+      "utility"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

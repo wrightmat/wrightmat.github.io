@@ -1,0 +1,24 @@
+{
+  "id": "feat.spell-reflection",
+  "name": "Spell Reflection",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Turns a spell back on its own caster.",
+  "mechanics": {
+    "type": "active",
+    "text": "On a reaction, redirects a spell back at the creature that cast it."
+  },
+  "budgetCost": 7,
+  "tags": {
+    "categories": [
+      "item"
+    ],
+    "propertyHints": [
+      "defense"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

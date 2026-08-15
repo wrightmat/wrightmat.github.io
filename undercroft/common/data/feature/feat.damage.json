@@ -1,0 +1,25 @@
+{
+  "id": "feat.damage",
+  "name": "Damage",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Deals damage via an attack roll or a saving throw — its own primary damage output, not a bonus layered onto something else.",
+  "mechanics": {
+    "type": "active",
+    "text": "Resolves as either an attack roll or a saving throw (this record's own featureParams.resolutionKind), dealing featureParams.damageType damage, optionally in an area (featureParams.areaShape/areaSize). The dice value lives in featureParams.scaling — one dice entry per spell slot/character level (a single-entry ladder for a fixed, non-scaling value) — never split out into tiers, since a scaling entry means nothing without knowing which level it belongs to. Distinct from feat.extra-damage (a bonus stacked ON TOP of an existing attack, e.g. a flaming weapon) and feat.area-damage-burst (an item's own fixed-dice area burst, no scaling axis at all) — this is for a record's own sole, primary damage source, whether that record is a spell or an item."
+  },
+  "budgetCost": 6,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "damage"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,48 @@
+{
+  "type": "with",
+  "$source": "srd",
+  "$description": "5e API — Spells (SRD)",
+  "$defaultSourceValue": "https://www.dnd5eapi.co/api/2014/spells",
+  "bindings": {
+    "spellStats": {
+      "type": "custom",
+      "fn": "srdSpellStats"
+    }
+  },
+  "body": {
+    "type": "object",
+    "fields": {
+      "kind": {
+        "type": "field",
+        "bind": "='effect'"
+      },
+      "index": {
+        "type": "field",
+        "bind": "@index"
+      },
+      "name": {
+        "type": "field",
+        "bind": "@name"
+      },
+      "notes": {
+        "type": "field",
+        "bind": "@spellStats.description"
+      },
+      "systemIds": {
+        "type": "custom",
+        "fn": "srdVaultSystemIds"
+      },
+      "url": {
+        "type": "custom",
+        "fn": "srdAbsoluteUrl",
+        "args": {
+          "path": "url"
+        }
+      },
+      "stats": {
+        "type": "field",
+        "bind": "@spellStats"
+      }
+    }
+  }
+}

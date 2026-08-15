@@ -1,0 +1,29 @@
+{
+  "kind": "effect",
+  "index": "protection-from-poison",
+  "name": "Protection from Poison",
+  "notes": "You touch a creature. If it is poisoned, you neutralize the poison. If more than one poison afflicts the target, you neutralize one poison that you know is present, or you neutralize one at random.\n\nFor the duration, the target has advantage on saving throws against being poisoned, and it has resistance to poison damage.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/spells/protection-from-poison",
+  "mapping": "5e-api-spell",
+  "properties": {
+    "form": "spell"
+  },
+  "featureIds": [
+    "feat.damage-modification",
+    "feat.saving-throw-advantage"
+  ],
+  "featureTiers": {
+    "feat.damage-modification": "resistance"
+  },
+  "featureParams": {
+    "feat.damage-modification": {
+      "damageType": "poison"
+    },
+    "feat.saving-throw-advantage": {
+      "against": "being poisoned, and it has resistance to poison damage"
+    }
+  }
+}

@@ -40,6 +40,12 @@
       "name": "+3",
       "shortName": "+3",
       "budgetCost": 21
+    },
+    {
+      "id": "plus-5",
+      "name": "+5",
+      "shortName": "+5",
+      "budgetCost": 40
     }
   ]
 }

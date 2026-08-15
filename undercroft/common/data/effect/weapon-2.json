@@ -1,0 +1,21 @@
+{
+  "kind": "effect",
+  "index": "weapon-2",
+  "name": "Weapon, +2",
+  "notes": "Weapon (any), rare\n\nYou have a +2 bonus to attack and damage rolls made with this magic weapon.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/magic-items/weapon-2",
+  "mapping": "5e-api-magic-item",
+  "properties": {
+    "rarity": "rare",
+    "form": "weapon"
+  },
+  "featureIds": [
+    "feat.weapon-enhancement"
+  ],
+  "featureTiers": {
+    "feat.weapon-enhancement": "plus-2"
+  }
+}

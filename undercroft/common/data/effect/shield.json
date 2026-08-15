@@ -1,0 +1,26 @@
+{
+  "kind": "effect",
+  "index": "shield",
+  "name": "Shield",
+  "notes": "An invisible barrier of magical force appears and protects you. Until the start of your next turn, you have a +5 bonus to AC, including against the triggering attack, and you take no damage from magic missile.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/spells/shield",
+  "mapping": "5e-api-spell",
+  "properties": {
+    "form": "spell"
+  },
+  "featureIds": [
+    "feat.protection-bonus"
+  ],
+  "featureParams": {
+    "feat.protection-bonus": {
+      "ac": true,
+      "savingThrows": false
+    }
+  },
+  "featureTiers": {
+    "feat.protection-bonus": "plus-5"
+  }
+}

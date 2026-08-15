@@ -1,11 +1,28 @@
 {
   "type": "object",
   "$source": "srd",
+  "$description": "5e API — Backgrounds (SRD)",
+  "$defaultSourceValue": "https://www.dnd5eapi.co/api/2014/backgrounds",
   "fields": {
-    "kind": { "type": "field", "bind": "='background'" },
-    "name": { "type": "field", "bind": "@name" },
-    "description": { "type": "field", "bind": "@feature.desc" },
-    "source": { "type": "field", "bind": "='5e API'" },
-    "traits": { "type": "field", "bind": "@feature" }
+    "kind": {
+      "type": "field",
+      "bind": "='background'"
+    },
+    "name": {
+      "type": "field",
+      "bind": "@name"
+    },
+    "description": {
+      "type": "field",
+      "bind": "@feature.desc"
+    },
+    "source": {
+      "type": "field",
+      "bind": "='5e API'"
+    },
+    "traits": {
+      "type": "field",
+      "bind": "@feature"
+    }
   }
 }

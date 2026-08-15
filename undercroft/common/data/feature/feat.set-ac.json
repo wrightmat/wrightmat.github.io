@@ -1,0 +1,25 @@
+{
+  "id": "feat.set-ac",
+  "name": "Set AC",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Replaces the wearer's own AC calculation with a fixed formula, rather than adding to it.",
+  "mechanics": {
+    "type": "active",
+    "text": "While active, the wearer's own AC becomes featureParams.base (plus their own featureParams.modifier ability modifier, if set) instead of being calculated normally — REPLACES the AC calculation outright, unlike feat.protection-bonus (an additive bonus on top of whatever AC the wearer already has) or feat.ac-minimum (a floor, letting other bonuses still exceed it)."
+  },
+  "budgetCost": 5,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "defense"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

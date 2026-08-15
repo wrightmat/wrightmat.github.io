@@ -26,9 +26,11 @@ import {
   SOURCES,
   loadSrdData,
   loadFantasyStatblockDataBulk,
+  loadMarkdownEffectDataBulk,
   normalizeSrdInput,
 } from "../../common/js/lib/content-fetch.js";
 import { convertStatBlockToFeatures, hasConvertibleStatBlock } from "../../common/js/lib/monster-feature-matching.js";
+import { convertSpellOrItemToFeatures, hasConvertibleSpellItemStats } from "../../common/js/lib/vault-feature-matching.js";
 import { initShareModal } from "../../common/js/lib/share-modal.js";
 import { allowsDelete, confirmDelete } from "../../common/js/lib/ownership.js";
 import { roleRank } from "../../common/js/lib/data-manager.js";
@@ -1278,6 +1280,16 @@ function enterMappingMode(definition) {
   if (mappingDescriptionInput) {
     mappingDescriptionInput.value = (definition && typeof definition === "object" && definition.$description) || "";
   }
+  // A source that ships its own well-known list endpoint (the 5e API's own
+  // documented URLs) pre-fills it here so picking the mapping alone is
+  // enough to fetch everything of that kind — the user can still edit it
+  // down to one specific item's own URL, or leave it as-is for a bulk
+  // "Fetch All". Only ever applied on a freshly loaded mapping (this
+  // function's own entry point), never overwrites an in-progress edit to
+  // the SAME mapping's own value.
+  if (sourceValueInput && definition?.$defaultSourceValue) {
+    sourceValueInput.value = definition.$defaultSourceValue;
+  }
   if (dataTypeSelect) {
     const dataType = definition && typeof definition === "object" ? definition.$dataType : null;
     dataTypeSelect.value = dataType === "character" ? "character" : "other";
@@ -1453,6 +1465,17 @@ if (sourceBulkFolderButton) {
   sourceBulkFolderButton.addEventListener("click", () => sourceBulkFolderInput?.click());
 }
 
+// Which bulk loader a `file: true, bulk: true` source's own multi-file pick
+// feeds into — every such source parses its own files independently (no
+// mapping-engine involvement yet, same "raw records first, map at import
+// time" reasoning beginBulkImport's own comment already gives), so this is
+// the one place that raw-parse choice has to dispatch on the selected
+// source rather than always assuming Fantasy Statblocks.
+const BULK_FILE_LOADERS = {
+  "fantasy-statblocks": loadFantasyStatblockDataBulk,
+  "markdown-effect": loadMarkdownEffectDataBulk,
+};
+
 function setFetchStatus(text) {
   if (!sourceFetchStatus) return;
   sourceFetchStatus.textContent = text;
@@ -1508,7 +1531,8 @@ if (sourceFetchButton) {
         }
         if (files.length > 1) {
           const onProgress = (completed, total) => setFetchStatus(`Fetching ${completed} of ${total}…`);
-          const items = await loadFantasyStatblockDataBulk(files, onProgress);
+          const bulkLoader = BULK_FILE_LOADERS[source.id] || loadFantasyStatblockDataBulk;
+          const items = await bulkLoader(files, onProgress);
           beginBulkImport(items);
           const summary = bulkFetchSummary(items);
           if (!summary.ok) statusMessage = summary.message;
@@ -1865,6 +1889,42 @@ async function saveEntity(entity, { autoId, url: urlOverride, quiet = false } = 
         if (errors?.length) {
           status?.show(
             `${entity.name || id}: ${errors.length} feature${errors.length === 1 ? "" : "s"} couldn't be converted (see console) — the rest of the monster saved fine.`,
+            { type: "warning", timeout: 6000 }
+          );
+        }
+      }
+    } else if (entity.kind === "effect") {
+      // Vault's own spell/item counterpart to the monster branch above —
+      // same automatic-on-save, no manual/backfill action anywhere. Never
+      // both fire on the same record: hasConvertibleStatBlock keys off
+      // monster's own ABILITY_GROUP_KEYS stats shape, this one off an
+      // Effect's own stats.mechanic/stats.name shape (see
+      // vault-feature-matching.js's own hasConvertibleSpellItemStats).
+      if (
+        (!Array.isArray(data.systemIds) || !data.systemIds.length) &&
+        mappingDefinition?.$source === "srd"
+      ) {
+        data = { ...data, systemIds: ["sys.dnd5e"] };
+      }
+      if (hasConvertibleSpellItemStats(data)) {
+        const existingFeatures = await fetchKindEntriesWithIds(dataManager, "feature").then(
+          (entries) => entries.map((entry) => ({ id: entry.id, ...entry.entity })),
+          () => []
+        );
+        const { matchedCount, createdCount, errors } = await convertSpellOrItemToFeatures(data, {
+          dataManager,
+          existingFeatures,
+          effectSlug: slugify(id),
+        });
+        if (!quiet && (matchedCount || createdCount)) {
+          status?.show(
+            `Matched ${matchedCount} feature${matchedCount === 1 ? "" : "s"} to existing Features, created ${createdCount} new one${createdCount === 1 ? "" : "s"}.`,
+            { type: "info", timeout: 4000 }
+          );
+        }
+        if (errors?.length) {
+          status?.show(
+            `${entity.name || id}: ${errors.length} feature${errors.length === 1 ? "" : "s"} couldn't be converted (see console) — the rest of the effect saved fine.`,
             { type: "warning", timeout: 6000 }
           );
         }
@@ -6167,7 +6227,6 @@ if (mappingSelect) {
     if (!id) return;
     try {
       await loadMapping(id);
-      status?.show(`Loaded ${id}.`, { type: "success", timeout: 1500 });
     } catch (error) {
       status?.show(`Unable to load mapping: ${error.message}`, { type: "error", timeout: 4000 });
     }

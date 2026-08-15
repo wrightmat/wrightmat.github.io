@@ -1,0 +1,25 @@
+{
+  "id": "feat.revives-dead",
+  "name": "Revives Dead",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Returns a dead creature to life.",
+  "mechanics": {
+    "type": "active",
+    "text": "On activation, a dead creature returns to life (with 1 hit point, or its full hit points, depending on the source) — how long it can have been dead, and what else the effect cures/repairs along the way, varies by source and isn't structured further here."
+  },
+  "budgetCost": 5,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "healing"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

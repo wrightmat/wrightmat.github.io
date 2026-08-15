@@ -1,0 +1,24 @@
+{
+  "id": "feat.summoned-object",
+  "name": "Summoned Object",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Conjures a nonliving object.",
+  "mechanics": {
+    "type": "active",
+    "text": "On activation, a nonliving object comes into being. The specific object varies too much item to item to structure generically — see this Effect's own notes."
+  },
+  "budgetCost": 3,
+  "tags": {
+    "categories": [
+      "item"
+    ],
+    "propertyHints": [
+      "utility"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

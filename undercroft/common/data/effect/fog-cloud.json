@@ -1,0 +1,22 @@
+{
+  "kind": "effect",
+  "index": "fog-cloud",
+  "name": "Fog Cloud",
+  "notes": "You create a 20-foot-radius sphere of fog centered on a point within range. The sphere spreads around corners, and its area is heavily obscured. It lasts for the duration or until a wind of moderate or greater speed (at least 10 miles per hour) disperses it.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/spells/fog-cloud",
+  "mapping": "5e-api-spell",
+  "properties": {
+    "form": "spell"
+  },
+  "featureIds": [
+    "feat.obscurement"
+  ],
+  "featureParams": {
+    "feat.obscurement": {
+      "level": "heavily obscured"
+    }
+  }
+}

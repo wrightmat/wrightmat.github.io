@@ -1,6 +1,8 @@
 {
   "type": "object",
   "$source": "srd",
+  "$description": "5e API — Monsters (SRD)",
+  "$defaultSourceValue": "https://www.dnd5eapi.co/api/2014/monsters",
   "fields": {
     "kind": {
       "type": "field",

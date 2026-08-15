@@ -1,0 +1,25 @@
+{
+  "id": "feat.darkvision",
+  "name": "Darkvision",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Grants or extends the ability to see in the dark.",
+  "mechanics": {
+    "type": "active",
+    "text": "While active, grants darkvision out to the range in this record's own featureParams.range (or extends existing darkvision to at least that range)."
+  },
+  "budgetCost": 3,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "utility"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

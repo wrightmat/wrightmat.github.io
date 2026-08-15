@@ -1,0 +1,25 @@
+{
+  "id": "feat.truesight",
+  "name": "Truesight",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Grants truesight — seeing through illusions and into the Ethereal Plane — out to a range.",
+  "mechanics": {
+    "type": "active",
+    "text": "While active, grants truesight out to the range in this record's own featureParams.range."
+  },
+  "budgetCost": 6,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "utility"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

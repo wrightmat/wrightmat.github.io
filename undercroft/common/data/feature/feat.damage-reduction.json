@@ -1,0 +1,24 @@
+{
+  "id": "feat.damage-reduction",
+  "name": "Damage Reduction",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Reduces incoming damage by a flat amount on a reaction.",
+  "mechanics": {
+    "type": "active",
+    "text": "On a reaction, reduces damage from a hit by this record's own featureParams.reductionDice."
+  },
+  "budgetCost": 4,
+  "tags": {
+    "categories": [
+      "item"
+    ],
+    "propertyHints": [
+      "defense"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

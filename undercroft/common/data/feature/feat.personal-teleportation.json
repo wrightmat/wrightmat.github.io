@@ -1,0 +1,24 @@
+{
+  "id": "feat.personal-teleportation",
+  "name": "Personal Teleportation",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Instantly relocates the user (and whatever they're wearing/carrying) to a familiar nearby spot on the same plane, on command.",
+  "mechanics": {
+    "type": "active",
+    "text": "On activation, the user (and everything worn/carried) teleports to a location within this record's own featureParams.range feet, on the same plane. Distinct from feat.planar-travel (crosses planes entirely) and Crucible's own feat.teleport (a monster's passive teleport-as-part-of-its-move, not a user-activated item power)."
+  },
+  "budgetCost": 4,
+  "tags": {
+    "categories": [
+      "item"
+    ],
+    "propertyHints": [
+      "mobility"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,25 @@
+{
+  "kind": "effect",
+  "index": "ring-of-jumping",
+  "name": "Ring of Jumping",
+  "notes": "Ring, uncommon (requires attunement)\n\nWhile wearing this ring, you can cast the jump spell from it as a bonus action at will, but can target only yourself when you do so.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/magic-items/ring-of-jumping",
+  "mapping": "5e-api-magic-item",
+  "properties": {
+    "rarity": "uncommon",
+    "form": "ring",
+    "activation": "bonus-action"
+  },
+  "featureIds": [
+    "feat.cast-a-spell",
+    "feat.requires-attunement"
+  ],
+  "featureParams": {
+    "feat.cast-a-spell": {
+      "spellName": "jump"
+    }
+  }
+}

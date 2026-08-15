@@ -1,0 +1,26 @@
+{
+  "id": "feat.transforms-creature",
+  "name": "Transforms Creature",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Wholesale replaces a creature's own game statistics with a different creature's, for the duration.",
+  "mechanics": {
+    "type": "active",
+    "text": "While active, the target's game statistics are replaced by those of a different creature (chosen at activation, subject to whatever restriction the source material states — a challenge rating cap, a creature type ban, etc.), retaining only what its own source text says survives the change. Distinct from feat.summoned-companion (a new creature appears, rather than an existing one changing shape) and feat.illusory-disguise (only the target's appearance changes, not its actual statistics)."
+  },
+  "budgetCost": 3,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "utility",
+      "combat"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

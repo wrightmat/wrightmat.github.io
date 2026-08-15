@@ -1,0 +1,24 @@
+{
+  "id": "feat.charges",
+  "name": "Charges",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Powers its own other properties from a limited, regenerating pool of charges.",
+  "mechanics": {
+    "type": "active",
+    "text": "Has a maximum number of charges and regains some of them on a schedule — this record's own featureParams.max/rechargeFormula. Zero cost on its own: whichever OTHER Feature this item's charges actually power already carries its own budget cost, so this Feature exists purely to make the charge economy itself visible and generatable, not to double-charge for it."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "categories": [
+      "item"
+    ],
+    "propertyHints": [
+      "utility"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

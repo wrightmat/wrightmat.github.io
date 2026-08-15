@@ -1,0 +1,25 @@
+{
+  "kind": "effect",
+  "index": "robe-of-useful-items",
+  "name": "Robe of Useful Items",
+  "notes": "Wondrous item, uncommon\n\nThis robe has cloth patches of various shapes and colors covering it. While wearing the robe, you can use an action to detach one of the patches, causing it to become the object or creature it represents. Once the last patch is removed, the robe becomes an ordinary garment.\n\nThe robe has two of each of the following patches:\n\nDagger\n\nBullseye lantern (filled and lit)\n\nSteel mirror\n\n10-foot pole\n\nHempen rope (50 feet, coiled)\n\nSack\n\nIn addition, the robe has 4d4 other patches. The GM chooses the patches or determines them randomly.\n\n| d100 | Patch |\n\n|---|---|\n\n| 01-08 | Bag of 100 gp |\n\n| 09-15 | Silver coffer (1 foot long, 6 inches wide and deep) worth 500 gp |\n\n| 16-22 | Iron door (up to 10 feet wide and 10 feet high, barred on one side of your choice), which you can place in an opening you can reach; it conforms to fit the opening, attaching and hinging itself |\n\n| 23-30 | 10 gems worth 100 gp each |\n\n| 31-44 | Wooden ladder (24 feet long) 45-51 A riding horse with saddle bags |\n\n| 52-59 | Pit (a cube 10 feet on a side), which you can place on the ground within 10 feet of you |\n\n| 60-68 | 4 potions of healing |\n\n| 69-75 | Rowboat (12 feet long) |\n\n| 76-83 | Spell scroll containing one spell of 1st to 3rd level |\n\n| 84-90 | 2 mastiffs |\n\n| 91-96 | Window (2 feet by 4 feet, up to 2 feet deep), which you can place on a vertical surface you can reach |\n\n| 97-100 | Portable ram |",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/magic-items/robe-of-useful-items",
+  "mapping": "5e-api-magic-item",
+  "properties": {
+    "rarity": "uncommon",
+    "form": "wondrous-item",
+    "activation": "action"
+  },
+  "featureIds": [
+    "feat.random-effect",
+    "feat.summoned-object"
+  ],
+  "featureParams": {
+    "feat.random-effect": {
+      "optionCount": 12
+    }
+  }
+}

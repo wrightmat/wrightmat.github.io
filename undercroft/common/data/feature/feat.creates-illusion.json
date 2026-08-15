@@ -1,0 +1,25 @@
+{
+  "id": "feat.creates-illusion",
+  "name": "Creates Illusion",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Conjures a false sound, image, or copy of a creature/object that isn't really there.",
+  "mechanics": {
+    "type": "active",
+    "text": "On activation, creates a false sensory impression — an image, sound, or both — of an object, creature, or phenomenon within range. Purely illusory; it has no physical effect of its own beyond what perceiving it might cause."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "utility"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

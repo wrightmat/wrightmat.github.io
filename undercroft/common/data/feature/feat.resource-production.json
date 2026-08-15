@@ -1,0 +1,24 @@
+{
+  "id": "feat.resource-production",
+  "name": "Resource Production",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Produces a consumable resource (water, food, and the like) on demand.",
+  "mechanics": {
+    "type": "active",
+    "text": "On activation, produces some amount of a consumable resource — this record's own featureParams.resourceText."
+  },
+  "budgetCost": 1,
+  "tags": {
+    "categories": [
+      "item"
+    ],
+    "propertyHints": [
+      "utility"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

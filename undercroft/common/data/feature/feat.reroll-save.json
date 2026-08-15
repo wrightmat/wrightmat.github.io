@@ -1,0 +1,24 @@
+{
+  "id": "feat.reroll-save",
+  "name": "Reroll Save",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Turns a failed saving throw into a success.",
+  "mechanics": {
+    "type": "active",
+    "text": "When the user fails a saving throw, this can be used to turn that failure into a success instead."
+  },
+  "budgetCost": 6,
+  "tags": {
+    "categories": [
+      "item"
+    ],
+    "propertyHints": [
+      "defense"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

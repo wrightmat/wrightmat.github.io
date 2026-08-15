@@ -1,0 +1,31 @@
+{
+  "kind": "effect",
+  "index": "demon-armor",
+  "name": "Demon Armor",
+  "notes": "Armor (plate), very rare (requires attunement)\n\nWhile wearing this armor, you gain a +1 bonus to AC, and you can understand and speak Abyssal. In addition, the armor's clawed gauntlets turn unarmed strikes with your hands into magic weapons that deal slashing damage, with a +1 bonus to attack rolls and damage rolls and a damage die of 1d8.\n\n***Curse.*** Once you don this cursed armor, you can't doff it unless you are targeted by the remove curse spell or similar magic. While wearing the armor, you have disadvantage on attack rolls against demons and on saving throws against their spells and special abilities.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/magic-items/demon-armor",
+  "mapping": "5e-api-magic-item",
+  "properties": {
+    "rarity": "very-rare",
+    "form": "armor"
+  },
+  "featureIds": [
+    "feat.protection-bonus",
+    "feat.curse",
+    "feat.requires-attunement"
+  ],
+  "featureTiers": {
+    "feat.protection-bonus": "plus-1"
+  },
+  "featureParams": {
+    "feat.protection-bonus": {
+      "alsoSavingThrows": false
+    },
+    "feat.curse": {
+      "curseText": "Once you don this cursed armor, you can't doff it unless you are targeted by the remove curse spell or similar magic. While wearing the armor, you have disadvantage on attack rolls against demons and on saving throws against their spells and special abilities."
+    }
+  }
+}

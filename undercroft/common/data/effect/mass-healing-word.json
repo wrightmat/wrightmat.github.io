@@ -1,0 +1,33 @@
+{
+  "kind": "effect",
+  "index": "mass-healing-word",
+  "name": "Mass Healing Word",
+  "notes": "As you call out words of restoration, up to six creatures of your choice that you can see within range regain hit points equal to 1d4 + your spellcasting ability modifier. This spell has no effect on undead or constructs.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/spells/mass-healing-word",
+  "mapping": "5e-api-spell",
+  "properties": {
+    "form": "spell"
+  },
+  "featureIds": [
+    "feat.healing"
+  ],
+  "featureParams": {
+    "feat.healing": {
+      "scaling": {
+        "by": "slot",
+        "values": {
+          "3": "1d4 + MOD",
+          "4": "2d4 + MOD",
+          "5": "3d4 + MOD",
+          "6": "4d4 + MOD",
+          "7": "5d4 + MOD",
+          "8": "6d4 + MOD",
+          "9": "7d4 + MOD"
+        }
+      }
+    }
+  }
+}

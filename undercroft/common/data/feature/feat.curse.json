@@ -1,0 +1,24 @@
+{
+  "id": "feat.curse",
+  "name": "Curse",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Attuning to (or otherwise bonding with) this item inflicts an ongoing curse, which lingers even after the item is removed.",
+  "mechanics": {
+    "type": "active",
+    "text": "The curse's own specific drawback lives in this record's own featureParams.curseText — it varies too much item to item (forced vulnerability, disadvantage on attacks/saves, forced behavior, and more) to fully structure, but always ends only via remove curse or similar magic, never by simply removing the item."
+  },
+  "budgetCost": -4,
+  "tags": {
+    "categories": [
+      "item"
+    ],
+    "propertyHints": [
+      "drawback"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,22 @@
+{
+  "kind": "effect",
+  "index": "create-or-destroy-water",
+  "name": "Create or Destroy Water",
+  "notes": "You either create or destroy water.\n\n***Create Water.*** You create up to 10 gallons of clean water within range in an open container. Alternatively, the water falls as rain in a 30-foot cube within range.\n\n***Destroy Water.*** You destroy up to 10 gallons of water in an open container within range. Alternatively, you destroy fog in a 30-foot cube within range.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/spells/create-or-destroy-water",
+  "mapping": "5e-api-spell",
+  "properties": {
+    "form": "spell"
+  },
+  "featureIds": [
+    "feat.resource-production"
+  ],
+  "featureParams": {
+    "feat.resource-production": {
+      "resourceText": "up to 10 gallons of clean water"
+    }
+  }
+}

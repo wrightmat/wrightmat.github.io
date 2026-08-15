@@ -1,0 +1,29 @@
+{
+  "id": "feat.ranged-damage-bonus",
+  "name": "Ranged Damage Bonus",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Boosts damage dealt with ranged weapons, but not the attack roll itself.",
+  "mechanics": {
+    "type": "active",
+    "text": "While worn/held, grants a bonus to damage rolls made with ranged weapons — damage only, never the attack roll (see feat.weapon-enhancement for the combined attack-and-damage bonus)."
+  },
+  "budgetCost": 3,
+  "tags": {
+    "categories": [
+      "item"
+    ],
+    "propertyHints": [
+      "damage"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": [],
+  "tiers": [
+    { "id": "plus-1", "name": "+1", "shortName": "+1", "budgetCost": 3 },
+    { "id": "plus-2", "name": "+2", "shortName": "+2", "budgetCost": 6 },
+    { "id": "plus-3", "name": "+3", "shortName": "+3", "budgetCost": 9 }
+  ]
+}

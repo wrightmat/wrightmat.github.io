@@ -1,0 +1,25 @@
+{
+  "id": "feat.attacker-disadvantage",
+  "name": "Attacker Disadvantage",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Anyone attacking the wearer has disadvantage on the attack roll.",
+  "mechanics": {
+    "type": "active",
+    "text": "While active, attacks against the wearer are made with disadvantage — either all attacks or just spell attacks, depending on this record's own featureParams.attackType."
+  },
+  "budgetCost": 6,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "defense"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

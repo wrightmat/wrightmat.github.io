@@ -1,0 +1,24 @@
+{
+  "id": "feat.extraplanar-refuge",
+  "name": "Extraplanar Refuge",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Instantly transports a group to a safe, self-contained extraplanar sanctuary, where they can rest and recover before returning.",
+  "mechanics": {
+    "type": "active",
+    "text": "On activation, transports the user and a large group of willing creatures to a self-contained extraplanar refuge, where visitors heal over time and don't age, until the user ends the effect or its own limited duration expires."
+  },
+  "budgetCost": 7,
+  "tags": {
+    "categories": [
+      "item"
+    ],
+    "propertyHints": [
+      "utility"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

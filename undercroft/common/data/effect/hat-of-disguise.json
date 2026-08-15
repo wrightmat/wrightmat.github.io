@@ -1,0 +1,25 @@
+{
+  "kind": "effect",
+  "index": "hat-of-disguise",
+  "name": "Hat of Disguise",
+  "notes": "Wondrous item, uncommon (requires attunement)\n\nWhile wearing this hat, you can use an action to cast the disguise self spell from it at will. The spell ends if the hat is removed.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/magic-items/hat-of-disguise",
+  "mapping": "5e-api-magic-item",
+  "properties": {
+    "rarity": "uncommon",
+    "form": "wondrous-item",
+    "activation": "action"
+  },
+  "featureIds": [
+    "feat.cast-a-spell",
+    "feat.requires-attunement"
+  ],
+  "featureParams": {
+    "feat.cast-a-spell": {
+      "spellName": "disguise self"
+    }
+  }
+}

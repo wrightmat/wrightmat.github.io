@@ -1,0 +1,25 @@
+{
+  "kind": "effect",
+  "index": "guidance",
+  "name": "Guidance",
+  "notes": "You touch one willing creature. Once before the spell ends, the target can roll a d4 and add the number rolled to one ability check of its choice. It can roll the die before or after making the ability check. The spell then ends.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/spells/guidance",
+  "mapping": "5e-api-spell",
+  "properties": {
+    "form": "spell"
+  },
+  "featureIds": [
+    "feat.modifies-roll"
+  ],
+  "featureParams": {
+    "feat.modifies-roll": {
+      "rollType": "ability check",
+      "mode": "bonus-die",
+      "die": "d4",
+      "sign": "add"
+    }
+  }
+}

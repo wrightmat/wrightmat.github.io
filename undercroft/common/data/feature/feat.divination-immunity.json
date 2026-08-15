@@ -1,0 +1,25 @@
+{
+  "id": "feat.divination-immunity",
+  "name": "Divination Immunity",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Hides the wearer from divination magic and magical scrying.",
+  "mechanics": {
+    "type": "active",
+    "text": "While active, the wearer can't be targeted by divination magic or perceived through magical scrying sensors."
+  },
+  "budgetCost": 5,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "defense"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

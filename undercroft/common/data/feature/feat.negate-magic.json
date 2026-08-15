@@ -1,0 +1,25 @@
+{
+  "id": "feat.negate-magic",
+  "name": "Negate Magic",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Ends or prevents another spell/magical effect outright, rather than resisting or countering its damage.",
+  "mechanics": {
+    "type": "active",
+    "text": "On activation, an ongoing spell/magical effect ends, or a spell being cast fails outright — for a spell above a certain level, this usually requires a successful ability check against the spell's own level. Distinct from feat.damage-modification (resists/is immune to a damage TYPE, not the spell itself) and feat.cures-condition (ends a specific ailment already inflicted, not the spell causing it)."
+  },
+  "budgetCost": 3,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "utility"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

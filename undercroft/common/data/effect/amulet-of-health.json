@@ -1,0 +1,27 @@
+{
+  "kind": "effect",
+  "index": "amulet-of-health",
+  "name": "Amulet of Health",
+  "notes": "Wondrous item, rare (requires attunement)\n\nYour Constitution score is 19 while you wear this amulet. It has no effect on you if your Constitution is already 19 or higher",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/magic-items/amulet-of-health",
+  "mapping": "5e-api-magic-item",
+  "properties": {
+    "rarity": "rare",
+    "form": "wondrous-item"
+  },
+  "featureIds": [
+    "feat.ability-score-increase",
+    "feat.requires-attunement"
+  ],
+  "featureTiers": {
+    "feat.ability-score-increase": "set-19"
+  },
+  "featureParams": {
+    "feat.ability-score-increase": {
+      "ability": "constitution"
+    }
+  }
+}

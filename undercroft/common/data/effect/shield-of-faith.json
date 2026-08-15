@@ -1,0 +1,26 @@
+{
+  "kind": "effect",
+  "index": "shield-of-faith",
+  "name": "Shield of Faith",
+  "notes": "A shimmering field appears and surrounds a creature of your choice within range, granting it a +2 bonus to AC for the duration.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/spells/shield-of-faith",
+  "mapping": "5e-api-spell",
+  "properties": {
+    "form": "spell"
+  },
+  "featureIds": [
+    "feat.protection-bonus"
+  ],
+  "featureTiers": {
+    "feat.protection-bonus": "plus-2"
+  },
+  "featureParams": {
+    "feat.protection-bonus": {
+      "ac": true,
+      "savingThrows": false
+    }
+  }
+}
