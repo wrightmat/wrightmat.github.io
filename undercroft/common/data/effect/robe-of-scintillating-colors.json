@@ -36,5 +36,8 @@
       "max": 3,
       "rechargeFormula": "1d3"
     }
+  },
+  "featureTiers": {
+    "feat.impose-condition": "severe"
   }
 }

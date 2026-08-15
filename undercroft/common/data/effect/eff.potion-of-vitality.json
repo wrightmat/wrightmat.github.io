@@ -5,7 +5,9 @@
     "sys.dnd5e"
   ],
   "signatureFeatureId": null,
-  "featureIds": [],
+  "featureIds": [
+    "feat.cures-condition"
+  ],
   "properties": {
     "rarity": "rare",
     "form": "potion"

@@ -12,5 +12,13 @@
     "rarity": "rare",
     "form": "scroll"
   },
-  "featureIds": []
+  "featureIds": [
+    "feat.cast-a-spell"
+  ],
+  "featureParams": {
+    "feat.cast-a-spell": {
+      "spellName": "the spell inscribed on it",
+      "spellLevel": 5
+    }
+  }
 }

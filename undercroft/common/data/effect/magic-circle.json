@@ -22,5 +22,8 @@
     "feat.condition-immunity": {
       "condition": "being charmed, frightened, or possessed by the chosen creature type"
     }
+  },
+  "featureTiers": {
+    "feat.condition-immunity": "moderate"
   }
 }

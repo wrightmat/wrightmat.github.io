@@ -28,5 +28,8 @@
       "max": 12,
       "rechargeFormula": null
     }
+  },
+  "featureTiers": {
+    "feat.saving-throw-advantage": "broad"
   }
 }

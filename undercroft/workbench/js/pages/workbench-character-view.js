@@ -5416,6 +5416,16 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     return "";
   }
 
+  // A component's `binding` (writes to/reads from the character) and its
+  // `sourceBinding` (reads a choice list from the System) must never share
+  // the same key name. The contexts below are checked in priority order and
+  // the live character's own draft data wins before the System's own lookup
+  // list does — so if both use the same key, the moment a character gets a
+  // real value for it, this starts resolving to THAT value instead of the
+  // System's list, silently collapsing the dropdown to empty. Not validated
+  // or warned about anywhere in the editor — give the System-side lookup
+  // field a distinct (usually plural) name from the character-side field it
+  // populates: `heritages` vs. `heritage`, `backgrounds` vs. `background`.
   function resolveSourceBindingValue(bindingOrComponent) {
     const normalized = normalizeBinding(bindingOrComponent);
     if (!normalized) {

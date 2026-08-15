@@ -16,7 +16,8 @@
     "feat.saving-throw-advantage"
   ],
   "featureTiers": {
-    "feat.damage-modification": "resistance"
+    "feat.damage-modification": "resistance",
+    "feat.saving-throw-advantage": "narrow"
   },
   "featureParams": {
     "feat.damage-modification": {

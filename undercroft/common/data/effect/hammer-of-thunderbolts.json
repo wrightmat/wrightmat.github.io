@@ -24,7 +24,8 @@
   ],
   "featureTiers": {
     "feat.weapon-enhancement": "plus-1",
-    "feat.ability-score-increase": "increase-4"
+    "feat.ability-score-increase": "increase-4",
+    "feat.impose-condition": "severe"
   },
   "featureParams": {
     "feat.ability-score-increase": {

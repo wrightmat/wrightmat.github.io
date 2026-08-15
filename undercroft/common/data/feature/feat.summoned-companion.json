@@ -7,11 +7,12 @@
   "description": "Conjures a living creature that fights or works alongside its user.",
   "mechanics": {
     "type": "active",
-    "text": "On activation, a living creature comes into being under the user's control (or friendly to them) for some duration. The specific creature and its own stats live only in this Effect's own notes — too varied to structure generically."
+    "text": "On activation, a living creature comes into being under the user's control (or friendly to them) for some duration. The specific creature and its own stats live only in this Effect's own notes — too varied to structure generically. Cost tier is keyed to the summoned creature's own challenge rating — used by both spells and items alike, unlike feat.damage's own spell-level ladder, since a summon's real power tracks the creature itself, not the level of whatever conjured it (confirmed live: many summon spells state their own CR ceiling directly, e.g. Conjure Elemental's own 'challenge rating 5 or lower')."
   },
-  "budgetCost": 8,
+  "budgetCost": 3,
   "tags": {
     "categories": [
+      "spell",
       "item"
     ],
     "propertyHints": [
@@ -20,5 +21,37 @@
   },
   "synergizesWith": [],
   "dependsOn": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "minor",
+      "name": "Minor",
+      "shortName": "CR 0–1",
+      "budgetCost": 3,
+      "mechanics": {
+        "type": "active",
+        "text": "A weak or purely-utility summon, challenge rating 0–1 — a familiar, a basic undead servant, a single Tiny animal."
+      }
+    },
+    {
+      "id": "moderate",
+      "name": "Moderate",
+      "shortName": "CR 2–4",
+      "budgetCost": 8,
+      "mechanics": {
+        "type": "active",
+        "text": "A genuine combatant, challenge rating 2–4 — most Conjure Animals/Woodland Beings-tier summons, a mount, a griffon."
+      }
+    },
+    {
+      "id": "major",
+      "name": "Major",
+      "shortName": "CR 5+",
+      "budgetCost": 14,
+      "mechanics": {
+        "type": "active",
+        "text": "A genuinely dangerous ally, challenge rating 5 or higher — Conjure Elemental/Fey-tier summons, a bound djinni. Also appropriate (regardless of raw CR) for access to a creature TYPE whose own traits matter more than its challenge rating, e.g. a celestial's resistances/healing — GM judgment call, same as any tier."
+      }
+    }
+  ]
 }

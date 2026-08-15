@@ -18,5 +18,8 @@
     "feat.impose-condition": {
       "condition": "blinded"
     }
+  },
+  "featureTiers": {
+    "feat.impose-condition": "minor"
   }
 }

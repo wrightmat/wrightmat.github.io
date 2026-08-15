@@ -4155,8 +4155,8 @@ mountField(
     type: "select", id: "loomFeatureScope", label: "Scope", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select",
     dataAttr: "data-feature-scope",
     options: [
-      { value: "", label: "Generic (default — not yet reviewed for reuse)" },
-      { value: "unique", label: "Unique (confirmed — never eligible)" },
+      { value: "", label: "Generic (usable by any monster)" },
+      { value: "unique", label: "Unique (not eligible for Crucible generation)" },
     ],
   })
 );
@@ -4483,29 +4483,24 @@ function updateFeatureMechanicsFeedback() {
   }
 }
 
-// Surfaces the FULL native-generation-eligibility picture — Scope and
-// Recipe Slots together, not just Scope in isolation — since a real
-// question this tab used to leave unanswered: "Generic" alone doesn't mean
-// a Feature is actually pickable by Crucible's own generator, an untagged
-// Feature (no tags.recipeSlots) is invisible to it via a completely
-// separate whitelist gate (generator.js's own candidatesForSlot) regardless
-// of Scope. Only shown when something is actually blocking eligibility —
-// no note at all for a Feature that's both Generic and tagged, since
-// there's nothing surprising to flag there.
+// Flags a real question the Scope field alone doesn't answer: even a
+// Generic Feature is invisible to Crucible's own generator until it's
+// tagged with at least one Recipe Slot (generator.js's own
+// candidatesForSlot is a whitelist gate, separate from Scope entirely).
+// Scope's own eligibility meaning (Unique = never eligible) is stated
+// directly in its own select option now, so this note only ever needs to
+// cover the Recipe Slots half — nothing shown for a Feature that's already
+// tagged, since there's nothing surprising left to flag.
 function updateFeatureEligibilityNote() {
   if (!featureEligibilityNote) return;
   if (!currentFeatureEntity) {
     featureEligibilityNote.classList.add("d-none");
     return;
   }
-  const isUnique = featureScopeSelect?.value === "unique";
   const hasRecipeSlots = readLockedFeatureIds(featureRecipeSlotsList).length > 0;
-  let message = "";
-  if (isUnique) {
-    message = "Never eligible for Crucible's native generation (Scope: Unique).";
-  } else if (!hasRecipeSlots) {
-    message = "Not currently eligible for native generation — no Recipe Slots tagged yet (an untagged Feature is invisible to slot-fill regardless of Scope).";
-  }
+  const message = hasRecipeSlots
+    ? ""
+    : "Not currently eligible for native generation — no Recipe Slots tagged yet (an untagged Feature is invisible to slot-fill regardless of Scope).";
   featureEligibilityNote.textContent = message;
   featureEligibilityNote.classList.toggle("d-none", !message);
 }
@@ -4590,10 +4585,34 @@ function populateFeatureTypeFilter(entries) {
   }
 }
 
-async function populateFeatureSelect() {
+// `preserveSelection` (default true) re-selects whatever was already
+// picked once reloading finishes, IF it's still among the visible options
+// — right after Save (the feature you just edited should stay selected)
+// and on this tab's own initial load both want that. Switching the Type
+// filter is the one caller that wants the opposite: a features list
+// filtered to a different type almost never still contains the
+// previously-selected feature, and even when it happens to, landing back
+// on "whatever was picked before I changed Type" reads as the Type change
+// not having done anything — so that one caller passes false and always
+// lands on the blank "Select a feature…" option instead.
+async function populateFeatureSelect({ preserveSelection = true } = {}) {
   if (!featureRecordSelect || !dataManager) return;
-  resetFeatureVocabularyCache();
   const current = featureRecordSelect.value;
+  // Immediate, synchronous feedback before the slow part below even
+  // starts — loadFeatureLibraryEntries can take a real moment, and
+  // leaving the select showing its own previous option during that wait
+  // gave no indication anything was happening at all (confirmed real
+  // complaint: it "sits on the previously selected feature until the
+  // loading finishes, which can take a while, and is confusing").
+  featureRecordSelect.innerHTML = "";
+  const loadingOption = document.createElement("option");
+  loadingOption.value = "";
+  loadingOption.textContent = "Loading…";
+  loadingOption.disabled = true;
+  featureRecordSelect.appendChild(loadingOption);
+  featureRecordSelect.value = "";
+
+  resetFeatureVocabularyCache();
   const entries = await loadFeatureLibraryEntries();
   populateFeatureTypeFilter(entries);
   const selectedType = featureTypeFilterSelect?.value || "";
@@ -4614,13 +4633,13 @@ async function populateFeatureSelect() {
       option.textContent = entity?.name || id;
       featureRecordSelect.appendChild(option);
     });
-  if (Array.from(featureRecordSelect.options).some((option) => option.value === current)) {
+  if (preserveSelection && Array.from(featureRecordSelect.options).some((option) => option.value === current)) {
     featureRecordSelect.value = current;
   }
 }
 
 featureTypeFilterSelect?.addEventListener("change", () => {
-  void populateFeatureSelect();
+  void populateFeatureSelect({ preserveSelection: false });
 });
 
 async function loadFeatureIntoEditor(id) {

@@ -19,5 +19,8 @@
       "condition": "compelled to move in a chosen direction",
       "saveAbility": "wisdom"
     }
+  },
+  "featureTiers": {
+    "feat.impose-condition": "moderate"
   }
 }

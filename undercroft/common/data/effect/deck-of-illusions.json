@@ -14,7 +14,8 @@
     "activation": "action"
   },
   "featureIds": [
-    "feat.random-effect"
+    "feat.random-effect",
+    "feat.creates-illusion"
   ],
   "featureParams": {
     "feat.random-effect": {

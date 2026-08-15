@@ -19,7 +19,32 @@
   ],
   "featureParams": {
     "feat.random-effect": {
-      "optionCount": 6
+      "options": [
+        {
+          "name": "Bead of Blessing",
+          "text": "Casts bless."
+        },
+        {
+          "name": "Bead of Curing",
+          "text": "Casts cure wounds (2nd level) or lesser restoration."
+        },
+        {
+          "name": "Bead of Favor",
+          "text": "Casts greater restoration."
+        },
+        {
+          "name": "Bead of Smiting",
+          "text": "Casts branding smite."
+        },
+        {
+          "name": "Bead of Summons",
+          "text": "Casts planar ally."
+        },
+        {
+          "name": "Bead of Wind Walking",
+          "text": "Casts wind walk."
+        }
+      ]
     }
   }
 }

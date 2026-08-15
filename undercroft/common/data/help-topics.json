@@ -84,7 +84,11 @@
       "details": [
         "Every component in the library uses a consistent icon and name so they're easy to tell apart at a glance.",
         "Dropping a component onto the canvas gives it sensible default styling and labels, which you can then customize in the properties panel.",
-        "Repeaters and Containers keep their own nested components together, with quick buttons to duplicate or remove them."
+        "Repeaters and Containers keep their own nested components together, with quick buttons to duplicate or remove them.",
+        "A rated/dot-style count (filled segments, e.g. Stress or Harm) is a Track, not a Toggle — Toggle is for a single named state, Track is for a count.",
+        "A single yes/no checkbox is an Input (checkbox) with one option — it stores the option label when checked, nothing when unchecked, rather than a plain true/false.",
+        "For content that only applies to one branch of a character (e.g. one set of abilities per sub-type), a Tabs Container with one tab per branch is usually simpler than trying to filter a single list by another field's value.",
+        "A computed field (a total, a modifier) is just a Text component with a formula binding (=sum(...), etc.) — see Bindings & Formulas Reference — not a separately stored value."
       ],
       "category": "Template Builder",
       "href": "docs.html#template-library"
@@ -441,8 +445,8 @@
         "Useful for comparing near-duplicate Features (e.g. several \"Dagger\" entries) side by side — switch between them and see exactly what differs in their description/mechanics.",
         "A brand-new Feature still starts on the Library tab (type an id there) — every other field is fully editable here immediately afterward.",
         "Cost Budget is a rough points value (most Features run 1-6) — Crucible sums a monster's own Features' costs for display, weighted against its Combat Scaling level's own target budget.",
-        "Scope \"Generic\" is the DEFAULT — it means \"not yet reviewed for reuse\", not \"confirmed reusable\". A Feature created during import (its id often has a monster-slug prefix) starts out Generic even though nobody's checked whether it's actually generalizable yet — same as an untagged budgetCost/tags. Only set Scope \"Unique\" once you've actually confirmed an ability can't be tiered or merged with anything else; don't assume a monster-specific-looking id means it should be Unique.",
-        "A note appears below Scope whenever a Feature ISN'T currently eligible for native generation — either because Scope is Unique, or because it has no Recipe Slots tagged yet (an untagged Feature is invisible to Crucible's own slot-fill regardless of Scope). No note means it's currently eligible.",
+        "Scope \"Generic\" means this Feature is set up generally enough to be used for any monster — the default, and correct for the vast majority of Features. \"Unique\" means it's not eligible for Crucible's native generation at all; don't assume a monster-specific-looking id means it should be Unique — check whether it's actually irreducible (2+ real mechanical differences from anything else) before marking it that way.",
+        "A note appears below Scope whenever a Feature has no Recipe Slots tagged yet — an untagged Feature is invisible to Crucible's own slot-fill regardless of Scope, so it won't show up in native generation until it's tagged. No note means it's currently eligible.",
         "\"Suggest Cost & Tags\" asks an LLM for a starting guess at Behaviors/Recipe Slots/Roles/Creature Types/Cost Budget, grounded in the already-tagged starter Features and a real CR/budget calibration table — it never saves anything on its own; review the suggestion, then save if it looks right."
       ],
       "category": "Loom",

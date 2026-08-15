@@ -21,6 +21,6 @@
     }
   },
   "featureTiers": {
-    "feat.protection-bonus": "plus-5"
+    "feat.protection-bonus": "temp-plus-5"
   }
 }

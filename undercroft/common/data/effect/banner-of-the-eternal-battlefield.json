@@ -19,5 +19,8 @@
     "feat.condition-immunity": {
       "condition": "frightened condition"
     }
+  },
+  "featureTiers": {
+    "feat.condition-immunity": "minor"
   }
 }

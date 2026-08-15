@@ -23,5 +23,8 @@
       "condition": "restrained by the entangling plants until the spell ends",
       "saveAbility": "strength"
     }
+  },
+  "featureTiers": {
+    "feat.impose-condition": "moderate"
   }
 }

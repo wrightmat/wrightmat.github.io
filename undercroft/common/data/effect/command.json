@@ -19,5 +19,8 @@
       "condition": "compelled to follow a one-word command",
       "saveAbility": "wisdom"
     }
+  },
+  "featureTiers": {
+    "feat.impose-condition": "moderate"
   }
 }

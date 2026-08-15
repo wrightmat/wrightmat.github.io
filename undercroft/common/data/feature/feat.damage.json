@@ -7,9 +7,9 @@
   "description": "Deals damage via an attack roll or a saving throw — its own primary damage output, not a bonus layered onto something else.",
   "mechanics": {
     "type": "active",
-    "text": "Resolves as either an attack roll or a saving throw (this record's own featureParams.resolutionKind), dealing featureParams.damageType damage, optionally in an area (featureParams.areaShape/areaSize). The dice value lives in featureParams.scaling — one dice entry per spell slot/character level (a single-entry ladder for a fixed, non-scaling value) — never split out into tiers, since a scaling entry means nothing without knowing which level it belongs to. Distinct from feat.extra-damage (a bonus stacked ON TOP of an existing attack, e.g. a flaming weapon) and feat.area-damage-burst (an item's own fixed-dice area burst, no scaling axis at all) — this is for a record's own sole, primary damage source, whether that record is a spell or an item."
+    "text": "Resolves as either an attack roll or a saving throw (this record's own featureParams.resolutionKind), dealing featureParams.damageType damage, optionally in an area (featureParams.areaShape/areaSize). The literal dice live in featureParams.scaling — one dice entry per spell slot/character level (a single-entry ladder for a fixed, non-scaling value) — which this Feature's own tier below doesn't replace or duplicate: the tier is a budget-relevant power classification (roughly, how strong a damage source this record represents overall), scaling is the exact numbers a GM reads off at the table. A record with no tier chosen falls back to this Feature's own base budgetCost (tier-1, the cheapest). Distinct from feat.extra-damage (a bonus stacked ON TOP of an existing attack, e.g. a flaming weapon) and feat.area-damage-burst (an item's own fixed-dice area burst, no scaling axis at all) — this is for a record's own sole, primary damage source, whether that record is a spell or an item."
   },
-  "budgetCost": 6,
+  "budgetCost": 1,
   "tags": {
     "categories": [
       "spell",
@@ -21,5 +21,43 @@
   },
   "synergizesWith": [],
   "dependsOn": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "tier-1",
+      "name": "Minor",
+      "shortName": "Cantrip",
+      "budgetCost": 1
+    },
+    {
+      "id": "tier-2",
+      "name": "Lesser",
+      "shortName": "1st–2nd",
+      "budgetCost": 3
+    },
+    {
+      "id": "tier-3",
+      "name": "Moderate",
+      "shortName": "3rd–4th",
+      "budgetCost": 6
+    },
+    {
+      "id": "tier-4",
+      "name": "Greater",
+      "shortName": "5th–6th",
+      "budgetCost": 10
+    },
+    {
+      "id": "tier-5",
+      "name": "Major",
+      "shortName": "7th–8th",
+      "budgetCost": 13
+    },
+    {
+      "id": "tier-6",
+      "name": "Supreme",
+      "shortName": "9th",
+      "budgetCost": 16
+    }
+  ]
 }

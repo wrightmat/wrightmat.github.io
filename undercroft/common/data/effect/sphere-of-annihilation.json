@@ -15,16 +15,27 @@
   },
   "featureIds": [
     "feat.random-effect",
-    "feat.impose-condition"
+    "feat.damage"
   ],
   "featureParams": {
     "feat.random-effect": {
       "optionCount": 3
     },
-    "feat.impose-condition": {
-      "condition": "touched by it",
+    "feat.damage": {
+      "resolutionKind": "save",
       "saveAbility": "dexterity",
-      "saveDC": 13
+      "saveDC": 13,
+      "saveEffect": "none",
+      "damageType": "force",
+      "scaling": {
+        "by": "flat",
+        "values": {
+          "1": "4d10"
+        }
+      }
     }
+  },
+  "featureTiers": {
+    "feat.impose-condition": "minor"
   }
 }

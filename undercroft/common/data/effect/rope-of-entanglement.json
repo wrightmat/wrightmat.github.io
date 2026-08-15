@@ -27,5 +27,8 @@
       "ac": 20,
       "hp": 20
     }
+  },
+  "featureTiers": {
+    "feat.impose-condition": "moderate"
   }
 }

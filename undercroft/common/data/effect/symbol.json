@@ -20,5 +20,8 @@
       "saveAbility": "wisdom",
       "duration": "1 minute"
     }
+  },
+  "featureTiers": {
+    "feat.impose-condition": "severe"
   }
 }

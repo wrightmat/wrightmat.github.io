@@ -7,11 +7,12 @@
   "description": "Its outcome is chosen from a table — by die roll, by deliberate choice among named options, or both — rather than being one fixed effect.",
   "mechanics": {
     "type": "active",
-    "text": "On activation, consult this Effect's own table (see its notes) — this record's own featureParams.optionCount is how many entries it has. The specific options are too varied to structure generically; this Feature exists so the item is still correctly counted as having a real, budget-relevant effect rather than none at all."
+    "text": "On activation, consult this Effect's own table. Where the individual entries are worth naming, this record's own featureParams.options carries them as a real list ([{name, text}, ...]) — the exact same per-record options shape Crucible's own Multiattack already uses for its own attack-reference list (crucible/js/app.js's multiattackOptionGroups), reused here rather than reinvented: a shared Feature can't hold 27 different items' own option lists on itself, so the list lives in featureParams like every other per-record number this Feature system tracks. featureParams.optionCount is the fallback/residual count — either the whole table when naming every entry isn't worth the effort (a large flavor-heavy d100 table), or the count of entries left over once the genuinely feature-worthy ones have their own real Features assigned alongside this one (see Robe of Useful Items, which pairs this with feat.summoned-object for its own named patches and keeps optionCount only for its own '4d4 other patches')."
   },
   "budgetCost": 5,
   "tags": {
     "categories": [
+      "spell",
       "item"
     ],
     "propertyHints": [

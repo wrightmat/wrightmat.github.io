@@ -7,7 +7,7 @@
   "description": "A general ward that makes the wearer harder to hit and harder to affect.",
   "mechanics": {
     "type": "active",
-    "text": "While worn or carried, grants a bonus to AC and to saving throws."
+    "text": "While worn or carried, grants a bonus to AC and to saving throws. The plus-N tiers below assume a PERMANENT bonus (an always-on item) — confirmed real mismatch: Shield's own reaction-triggered, one-round +5 AC got costed against the plus-5 tier's own 40-point permanent-item price, landing at +1233% over its own target. The two temp-* tiers exist for exactly that shape (a spell's own short-lived bonus), priced against what a clean single-feature spell of that level actually needs, not against a permanent item's own value."
   },
   "budgetCost": 7,
   "tags": {
@@ -46,6 +46,26 @@
       "name": "+5",
       "shortName": "+5",
       "budgetCost": 40
+    },
+    {
+      "id": "temp-plus-2",
+      "name": "+2 (Temporary)",
+      "shortName": "+2 temp",
+      "budgetCost": 3,
+      "mechanics": {
+        "type": "active",
+        "text": "A sustained but temporary +2 bonus to AC (and saving throws if applicable) — lasts only as long as the spell/effect itself (typically requiring concentration), not permanent."
+      }
+    },
+    {
+      "id": "temp-plus-5",
+      "name": "+5 (Reactive)",
+      "shortName": "+5 reactive",
+      "budgetCost": 5,
+      "mechanics": {
+        "type": "active",
+        "text": "A single-round, reaction-triggered +5 bonus to AC — active only until the start of the target's next turn, not sustained or permanent."
+      }
     }
   ]
 }

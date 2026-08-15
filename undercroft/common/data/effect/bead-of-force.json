@@ -14,7 +14,8 @@
     "activation": "action"
   },
   "featureIds": [
-    "feat.area-damage-burst"
+    "feat.area-damage-burst",
+    "feat.impose-condition"
   ],
   "featureParams": {
     "feat.area-damage-burst": {
@@ -25,6 +26,13 @@
       "damageDice": "5d4",
       "damageType": "force",
       "saveEffect": "none"
+    },
+    "feat.impose-condition": {
+      "condition": "trapped inside an impenetrable sphere of force",
+      "duration": "1 minute"
     }
+  },
+  "featureTiers": {
+    "feat.impose-condition": "severe"
   }
 }

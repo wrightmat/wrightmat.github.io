@@ -1,0 +1,51 @@
+{
+  "id": "feat.modifies-initiative",
+  "name": "Modifies Initiative",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Improves the user's own initiative rolls.",
+  "mechanics": {
+    "type": "active",
+    "text": "While active, the user rolls initiative with advantage, or with a flat bonus, depending on tier. Same tier ladder as feat.skill-bonus, reused rather than reinvented — initiative is its own roll type, not a skill check, so it's kept as its own Feature rather than folded into that one, but the underlying magnitude ladder (advantage/+2/+5/+10) is identical."
+  },
+  "budgetCost": 3,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "utility"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "advantage",
+      "name": "Advantage",
+      "shortName": "Adv",
+      "budgetCost": 3
+    },
+    {
+      "id": "plus-2",
+      "name": "+2 Bonus",
+      "shortName": "+2",
+      "budgetCost": 6
+    },
+    {
+      "id": "plus-5",
+      "name": "+5 Bonus",
+      "shortName": "+5",
+      "budgetCost": 10
+    },
+    {
+      "id": "plus-10",
+      "name": "+10 Bonus",
+      "shortName": "+10",
+      "budgetCost": 16
+    }
+  ]
+}

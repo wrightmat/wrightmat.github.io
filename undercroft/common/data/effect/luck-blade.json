@@ -17,7 +17,8 @@
     "feat.weapon-enhancement",
     "feat.cast-a-spell",
     "feat.requires-attunement",
-    "feat.protection-bonus"
+    "feat.protection-bonus",
+    "feat.reroll"
   ],
   "featureTiers": {
     "feat.weapon-enhancement": "plus-1",
@@ -30,6 +31,9 @@
     "feat.protection-bonus": {
       "ac": false,
       "savingThrows": true
+    },
+    "feat.reroll": {
+      "rollType": "attack roll, ability check, or saving throw"
     }
   }
 }

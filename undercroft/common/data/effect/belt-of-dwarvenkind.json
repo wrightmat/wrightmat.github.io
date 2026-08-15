@@ -22,7 +22,8 @@
   "featureTiers": {
     "feat.skill-bonus": "advantage",
     "feat.damage-modification": "resistance",
-    "feat.ability-score-increase": "increase-2"
+    "feat.ability-score-increase": "increase-2",
+    "feat.saving-throw-advantage": "narrow"
   },
   "featureParams": {
     "feat.skill-bonus": {

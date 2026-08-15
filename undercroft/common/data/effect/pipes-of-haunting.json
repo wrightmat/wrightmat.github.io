@@ -27,5 +27,8 @@
       "saveDC": 15,
       "duration": "1 minute"
     }
+  },
+  "featureTiers": {
+    "feat.impose-condition": "minor"
   }
 }

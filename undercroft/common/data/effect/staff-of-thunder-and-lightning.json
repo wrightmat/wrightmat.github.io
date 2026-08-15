@@ -20,7 +20,8 @@
     "feat.requires-attunement"
   ],
   "featureTiers": {
-    "feat.weapon-enhancement": "plus-2"
+    "feat.weapon-enhancement": "plus-2",
+    "feat.impose-condition": "severe"
   },
   "featureParams": {
     "feat.extra-damage": {

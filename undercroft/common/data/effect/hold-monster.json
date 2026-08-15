@@ -19,5 +19,8 @@
       "condition": "paralyzed",
       "saveAbility": "wisdom"
     }
+  },
+  "featureTiers": {
+    "feat.impose-condition": "extreme"
   }
 }

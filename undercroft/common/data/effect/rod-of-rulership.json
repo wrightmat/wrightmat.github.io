@@ -24,5 +24,8 @@
       "saveDC": 15,
       "duration": "8 hours"
     }
+  },
+  "featureTiers": {
+    "feat.impose-condition": "moderate"
   }
 }

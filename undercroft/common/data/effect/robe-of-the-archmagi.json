@@ -20,5 +20,8 @@
     "feat.saving-throw-advantage": {
       "against": "spells and other magical effects"
     }
+  },
+  "featureTiers": {
+    "feat.saving-throw-advantage": "broad"
   }
 }

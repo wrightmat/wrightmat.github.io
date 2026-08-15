@@ -474,6 +474,14 @@ export function createCheckField({
   return wrapper;
 }
 
+// Order: Undo, Redo -> New/Add/Generate -> Import -> Save -> Export -> Print
+// -> Rename -> Duplicate -> Delete, using only the slots a toolbar actually
+// needs. Keep a single cluster to 6 buttons or fewer — confirmed real
+// problem past that point (Workbench's own left-pane toolbar started
+// wrapping/scrolling once a 7th button was added, twice). Hitting the limit
+// means designing an alternative WITH the user (a secondary toolbar, moving
+// the action to a more relevant location, a dropdown of less-common
+// actions) — never just letting the cluster keep growing.
 export function createToolbarButtonGroup(items = []) {
   return items.map(
     ({ action, label, icon, variant: variantOverride, onClick, visible = true, disabled = false, primary = false, attrs = {} }) => {

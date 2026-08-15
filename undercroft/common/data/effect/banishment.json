@@ -19,5 +19,8 @@
       "condition": "banished",
       "saveAbility": "charisma"
     }
+  },
+  "featureTiers": {
+    "feat.impose-condition": "severe"
   }
 }

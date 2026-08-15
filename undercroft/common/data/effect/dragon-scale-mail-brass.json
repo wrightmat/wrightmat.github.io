@@ -20,7 +20,8 @@
   ],
   "featureTiers": {
     "feat.damage-modification": "resistance",
-    "feat.protection-bonus": "plus-1"
+    "feat.protection-bonus": "plus-1",
+    "feat.saving-throw-advantage": "moderate"
   },
   "featureParams": {
     "feat.damage-modification": {

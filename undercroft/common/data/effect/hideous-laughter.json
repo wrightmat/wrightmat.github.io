@@ -19,5 +19,8 @@
       "condition": "prone",
       "saveAbility": "wisdom"
     }
+  },
+  "featureTiers": {
+    "feat.impose-condition": "minor"
   }
 }

@@ -15,7 +15,8 @@
     "feat.protection-bonus",
     "feat.skill-bonus",
     "feat.damage-modification",
-    "feat.requires-attunement"
+    "feat.requires-attunement",
+    "feat.skill-debuff"
   ],
   "featureTiers": {
     "feat.protection-bonus": "plus-1",
@@ -31,7 +32,10 @@
       "skill": "perception"
     },
     "feat.damage-modification": {
-      "damageType": "psychic"
+      "damageType": "poison and psychic"
+    },
+    "feat.skill-debuff": {
+      "skill": "insight"
     }
   }
 }

@@ -24,5 +24,8 @@
       "speedType": "flying",
       "distance": 30
     }
+  },
+  "featureTiers": {
+    "feat.summoned-companion": "minor"
   }
 }

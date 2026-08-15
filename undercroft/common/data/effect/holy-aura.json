@@ -19,5 +19,8 @@
       "condition": "blinded until the spell ends",
       "saveAbility": "constitution"
     }
+  },
+  "featureTiers": {
+    "feat.impose-condition": "minor"
   }
 }

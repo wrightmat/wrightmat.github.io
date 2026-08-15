@@ -22,5 +22,8 @@
     "feat.condition-immunity": {
       "condition": "poison automatically succeed on this saving throw"
     }
+  },
+  "featureTiers": {
+    "feat.condition-immunity": "moderate"
   }
 }

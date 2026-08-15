@@ -7,9 +7,9 @@
   "description": "Restores lost hit points, either a flat amount or a value that scales by spell slot/character level.",
   "mechanics": {
     "type": "active",
-    "text": "On use, restores hit points. An item's own healing is usually one fixed value (featureParams.healingDice); a spell's own healing usually scales instead — featureParams.scaling carries the full ladder, one dice entry per spell slot/character level, never split out into tiers since a scaling entry means nothing without knowing which level it belongs to. Distinct from feat.mending-pulse, whose own fixed tiers exist specifically for the Potion of Healing family's own values."
+    "text": "On use, restores hit points. An item's own healing is usually one fixed value (featureParams.healingDice); a spell's own healing usually scales instead — featureParams.scaling carries the full ladder, one dice entry per spell slot/character level. This Feature's own tier below doesn't replace or duplicate that: the tier is a budget-relevant power classification (roughly, how strong a healing source this record represents overall — costed lower than feat.damage's equivalent tier, matching this ruleset's own existing asymmetry that healing is priced below damage at the same power level), scaling is the exact numbers a GM reads off at the table. A record with no tier chosen falls back to this Feature's own base budgetCost (tier-1, the cheapest). Distinct from feat.mending-pulse, whose own fixed tiers exist specifically for the Potion of Healing family's own values."
   },
-  "budgetCost": 4,
+  "budgetCost": 1,
   "tags": {
     "categories": [
       "spell",
@@ -21,5 +21,43 @@
   },
   "synergizesWith": [],
   "dependsOn": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "tier-1",
+      "name": "Minor",
+      "shortName": "Cantrip",
+      "budgetCost": 1
+    },
+    {
+      "id": "tier-2",
+      "name": "Lesser",
+      "shortName": "1st–2nd",
+      "budgetCost": 2
+    },
+    {
+      "id": "tier-3",
+      "name": "Moderate",
+      "shortName": "3rd–4th",
+      "budgetCost": 4
+    },
+    {
+      "id": "tier-4",
+      "name": "Greater",
+      "shortName": "5th–6th",
+      "budgetCost": 7
+    },
+    {
+      "id": "tier-5",
+      "name": "Major",
+      "shortName": "7th–8th",
+      "budgetCost": 9
+    },
+    {
+      "id": "tier-6",
+      "name": "Supreme",
+      "shortName": "9th",
+      "budgetCost": 11
+    }
+  ]
 }

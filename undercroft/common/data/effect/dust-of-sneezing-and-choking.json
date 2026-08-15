@@ -22,5 +22,8 @@
       "saveAbility": "constitution",
       "saveDC": 15
     }
+  },
+  "featureTiers": {
+    "feat.impose-condition": "minor"
   }
 }
