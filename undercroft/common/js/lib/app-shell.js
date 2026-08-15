@@ -522,6 +522,15 @@ function showFeedback(status, feedback, fallbackMessage) {
   }
 }
 
+// Builds and inserts the real `<header>` into the page's own
+// `[data-app-shell-header]` mount point before anything else here runs.
+// Caution for any code that reads a header-internal element (a pane-toggle
+// button, a settings-slot mount): querying it via a module-top-level `const`
+// only works if that line runs AFTER this function already has — several
+// real bugs (a `const` capturing `null` before the header existed yet) came
+// from exactly this ordering mistake. Prefer a live `document.querySelector`
+// at the point of use, or place the eager query provably after this call in
+// the same synchronous script.
 export function initAppShell({
   root = document,
   namespace = "default",

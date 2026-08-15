@@ -18,7 +18,8 @@
     "feat.impose-condition"
   ],
   "featureTiers": {
-    "feat.damage-modification": "vulnerability"
+    "feat.damage-modification": "vulnerability",
+    "feat.impose-condition": "severe"
   },
   "featureParams": {
     "feat.damage-modification": {

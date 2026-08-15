@@ -18,5 +18,8 @@
     "feat.condition-immunity": {
       "condition": "frightened and gains temporary hit points equal to your spellcasting ability modifier at the start of each of its turns"
     }
+  },
+  "featureTiers": {
+    "feat.condition-immunity": "minor"
   }
 }

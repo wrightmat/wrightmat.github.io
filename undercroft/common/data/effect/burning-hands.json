@@ -37,5 +37,8 @@
         }
       }
     }
+  },
+  "featureTiers": {
+    "feat.damage": "tier-2"
   }
 }

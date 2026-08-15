@@ -20,5 +20,8 @@
     "feat.saving-throw-advantage": {
       "against": "harmful gases and vapors (such as cloudkill and stinking cloud effects, inhaled poisons, and the breath weapons of some dragons)"
     }
+  },
+  "featureTiers": {
+    "feat.saving-throw-advantage": "narrow"
   }
 }

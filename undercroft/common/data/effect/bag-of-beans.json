@@ -14,7 +14,8 @@
   },
   "featureIds": [
     "feat.temporary-hit-points",
-    "feat.random-effect"
+    "feat.random-effect",
+    "feat.area-damage-burst"
   ],
   "featureParams": {
     "feat.temporary-hit-points": {
@@ -22,6 +23,15 @@
     },
     "feat.random-effect": {
       "optionCount": 12
+    },
+    "feat.area-damage-burst": {
+      "areaShape": "radius",
+      "areaSize": 10,
+      "saveAbility": "dexterity",
+      "saveDC": 15,
+      "damageDice": "5d4",
+      "damageType": "fire",
+      "saveEffect": "half"
     }
   }
 }

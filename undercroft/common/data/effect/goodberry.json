@@ -27,5 +27,8 @@
     "feat.resource-production": {
       "resourceText": "enough food to sustain one creature for a day, per berry"
     }
+  },
+  "featureTiers": {
+    "feat.healing": "tier-2"
   }
 }

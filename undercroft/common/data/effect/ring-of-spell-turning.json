@@ -20,5 +20,8 @@
     "feat.saving-throw-advantage": {
       "against": "any spell that targets only you (not in an area of effect)"
     }
+  },
+  "featureTiers": {
+    "feat.saving-throw-advantage": "broad"
   }
 }

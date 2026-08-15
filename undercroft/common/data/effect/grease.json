@@ -19,5 +19,8 @@
       "condition": "prone",
       "saveAbility": "dexterity"
     }
+  },
+  "featureTiers": {
+    "feat.impose-condition": "minor"
   }
 }

@@ -31,5 +31,8 @@
         }
       }
     }
+  },
+  "featureTiers": {
+    "feat.healing": "tier-2"
   }
 }

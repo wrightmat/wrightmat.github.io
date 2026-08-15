@@ -26,5 +26,8 @@
         }
       }
     }
+  },
+  "featureTiers": {
+    "feat.healing": "tier-4"
   }
 }

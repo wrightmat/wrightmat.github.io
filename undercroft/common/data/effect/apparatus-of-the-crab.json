@@ -14,7 +14,8 @@
     "activation": "action"
   },
   "featureIds": [
-    "feat.random-effect"
+    "feat.random-effect",
+    "feat.vehicle"
   ],
   "featureParams": {
     "feat.random-effect": {

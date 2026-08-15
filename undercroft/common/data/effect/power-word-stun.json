@@ -18,5 +18,8 @@
     "feat.impose-condition": {
       "condition": "stunned"
     }
+  },
+  "featureTiers": {
+    "feat.impose-condition": "severe"
   }
 }

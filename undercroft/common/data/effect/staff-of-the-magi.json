@@ -28,7 +28,8 @@
   ],
   "featureTiers": {
     "feat.weapon-enhancement": "plus-2",
-    "feat.spell-attack-bonus": "plus-2"
+    "feat.spell-attack-bonus": "plus-2",
+    "feat.saving-throw-advantage": "broad"
   },
   "featureParams": {
     "feat.saving-throw-advantage": {

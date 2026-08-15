@@ -24,5 +24,8 @@
     "feat.attacker-disadvantage": {
       "attackType": "spell"
     }
+  },
+  "featureTiers": {
+    "feat.saving-throw-advantage": "broad"
   }
 }

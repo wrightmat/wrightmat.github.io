@@ -56,5 +56,8 @@
       ],
       "saveDC": 18
     }
+  },
+  "featureTiers": {
+    "feat.impose-condition": "moderate"
   }
 }

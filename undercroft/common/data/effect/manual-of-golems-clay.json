@@ -14,5 +14,8 @@
   },
   "featureIds": [
     "feat.summoned-companion"
-  ]
+  ],
+  "featureTiers": {
+    "feat.summoned-companion": "major"
+  }
 }

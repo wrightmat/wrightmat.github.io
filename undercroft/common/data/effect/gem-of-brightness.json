@@ -31,5 +31,8 @@
       "max": 50,
       "rechargeFormula": null
     }
+  },
+  "featureTiers": {
+    "feat.impose-condition": "minor"
   }
 }

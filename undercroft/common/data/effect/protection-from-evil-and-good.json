@@ -26,5 +26,9 @@
     "feat.saving-throw-advantage": {
       "against": "an effect it is already charmed, frightened, or possessed by, from those creature types"
     }
+  },
+  "featureTiers": {
+    "feat.condition-immunity": "moderate",
+    "feat.saving-throw-advantage": "situational"
   }
 }

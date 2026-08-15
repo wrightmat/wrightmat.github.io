@@ -19,5 +19,8 @@
       "condition": "charmed",
       "saveAbility": "wisdom"
     }
+  },
+  "featureTiers": {
+    "feat.impose-condition": "moderate"
   }
 }

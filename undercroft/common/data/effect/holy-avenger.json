@@ -19,7 +19,8 @@
     "feat.requires-attunement"
   ],
   "featureTiers": {
-    "feat.weapon-enhancement": "plus-3"
+    "feat.weapon-enhancement": "plus-3",
+    "feat.saving-throw-advantage": "broad"
   },
   "featureParams": {
     "feat.extra-damage": {

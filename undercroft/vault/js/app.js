@@ -1043,6 +1043,12 @@ function lockControlDescriptionText(feature, record) {
 
 function randomEffectDescriptionText(feature, record) {
   const params = record.featureParams?.[feature.id];
+  const named = Array.isArray(params?.options) ? params.options : [];
+  if (named.length) {
+    const names = named.map((entry) => entry?.name).filter(Boolean);
+    const residual = params?.optionCount ? `, plus ${params.optionCount} more (see its notes)` : "";
+    return `Consult this Effect's own table: ${names.join(", ")}${residual}.`;
+  }
   if (!params?.optionCount) return feature.description || "";
   return `Consult this Effect's own table (${params.optionCount} options) — see its notes.`;
 }

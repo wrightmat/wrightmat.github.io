@@ -19,5 +19,8 @@
       "condition": "can't speak a deliberate lie",
       "saveAbility": "charisma"
     }
+  },
+  "featureTiers": {
+    "feat.impose-condition": "moderate"
   }
 }

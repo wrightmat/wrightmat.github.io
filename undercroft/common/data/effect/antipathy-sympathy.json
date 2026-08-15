@@ -19,5 +19,8 @@
       "condition": "frightened",
       "saveAbility": "wisdom"
     }
+  },
+  "featureTiers": {
+    "feat.impose-condition": "minor"
   }
 }

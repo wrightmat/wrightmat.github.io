@@ -16,15 +16,28 @@
   "featureIds": [
     "feat.weapon-enhancement",
     "feat.extra-damage",
-    "feat.requires-attunement"
+    "feat.requires-attunement",
+    "feat.skill-bonus",
+    "feat.impose-condition"
   ],
   "featureTiers": {
-    "feat.weapon-enhancement": "plus-3"
+    "feat.weapon-enhancement": "plus-3",
+    "feat.skill-bonus": "plus-10",
+    "feat.impose-condition": "extreme"
   },
   "featureParams": {
     "feat.extra-damage": {
       "damageDice": "4d6",
       "damageType": "necrotic"
+    },
+    "feat.skill-bonus": {
+      "skill": "strength"
+    },
+    "feat.impose-condition": {
+      "condition": "paralyzed",
+      "saveAbility": "strength",
+      "saveDC": 17,
+      "duration": "1 minute"
     }
   }
 }

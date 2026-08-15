@@ -7,9 +7,9 @@
   "description": "Forces a target to make a saving throw or suffer a condition, with no damage attached.",
   "mechanics": {
     "type": "active",
-    "text": "On activation, a target that fails a saving throw suffers a condition — no damage involved at all (see feat.area-damage-burst/feat.extra-damage for the damage-bearing versions of this same save shape). Which condition, save ability/DC, and duration live in this record's own featureParams."
+    "text": "On activation, a target that fails a saving throw suffers a condition — no damage involved at all (see feat.area-damage-burst/feat.extra-damage for the damage-bearing versions of this same save shape). Which condition, save ability/DC, and duration live in this record's own featureParams. Cost scales by how severe the imposed condition actually is (this Feature's own tier below) rather than needing a separate one-off Feature per condition word — budget analysis confirmed a flat cost here tracked the level/rarity curve no better than feat.damage's own flat cost did, for the same reason (real power varies a lot — paralyzed and prone are not remotely the same threat — and a single flat number can't say so)."
   },
-  "budgetCost": 6,
+  "budgetCost": 2,
   "tags": {
     "categories": [
       "spell",
@@ -21,5 +21,47 @@
   },
   "synergizesWith": [],
   "dependsOn": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "minor",
+      "name": "Minor",
+      "shortName": "Minor",
+      "budgetCost": 2,
+      "mechanics": {
+        "type": "active",
+        "text": "A condition that's a real inconvenience but rarely swings a fight on its own — frightened, blinded, deafened, prone, grappled, and similar."
+      }
+    },
+    {
+      "id": "moderate",
+      "name": "Moderate",
+      "shortName": "Moderate",
+      "budgetCost": 4,
+      "mechanics": {
+        "type": "active",
+        "text": "A condition with real tactical weight — poisoned, charmed, restrained, exhausted, possessed, and similar."
+      }
+    },
+    {
+      "id": "severe",
+      "name": "Severe",
+      "shortName": "Severe",
+      "budgetCost": 7,
+      "mechanics": {
+        "type": "active",
+        "text": "A condition that effectively takes the target out of the fight — stunned, incapacitated, unconscious, banished, and similar."
+      }
+    },
+    {
+      "id": "extreme",
+      "name": "Extreme",
+      "shortName": "Extreme",
+      "budgetCost": 10,
+      "mechanics": {
+        "type": "active",
+        "text": "The most dangerous save-or-suffer outcomes in the game — paralyzed, petrified — where a failed save routinely means auto-crits and total helplessness."
+      }
+    }
+  ]
 }

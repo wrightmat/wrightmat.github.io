@@ -19,5 +19,8 @@
       "condition": "charmed",
       "duration": "30 days"
     }
+  },
+  "featureTiers": {
+    "feat.impose-condition": "moderate"
   }
 }

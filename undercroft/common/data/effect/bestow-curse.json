@@ -29,5 +29,8 @@
       "damageDice": "1d8",
       "damageType": "necrotic"
     }
+  },
+  "featureTiers": {
+    "feat.impose-condition": "moderate"
   }
 }

@@ -7,9 +7,9 @@
   "description": "Only works while attuned to it, and attunement is a scarce resource shared across everything a creature carries.",
   "mechanics": {
     "type": "active",
-    "text": "This item does nothing until its owner attunes to it, and a creature can only be attuned to a limited number of items at once — a real cost independent of whatever else this item does."
+    "text": "This item does nothing until its owner attunes to it, and a creature can only be attuned to a limited number of items at once — a real cost independent of whatever else this item does. Zero budget cost, not a refund — it's a resource-allocation constraint (limited attunement slots), not a debilitating drawback the way feat.curse is; the earlier -2 was set by loose analogy to feat.curse's own -4 rather than independently reasoned, and — being extremely common on Rare+ items (55-70% of them) — was quietly working against the exact tier that budget analysis found was already most under-target."
   },
-  "budgetCost": -2,
+  "budgetCost": 0,
   "tags": {
     "categories": [
       "item"

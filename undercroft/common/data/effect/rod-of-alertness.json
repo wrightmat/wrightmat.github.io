@@ -17,11 +17,13 @@
     "feat.skill-bonus",
     "feat.spell-menu",
     "feat.protection-bonus",
-    "feat.requires-attunement"
+    "feat.requires-attunement",
+    "feat.modifies-initiative"
   ],
   "featureTiers": {
     "feat.skill-bonus": "advantage",
-    "feat.protection-bonus": "plus-1"
+    "feat.protection-bonus": "plus-1",
+    "feat.modifies-initiative": "advantage"
   },
   "featureParams": {
     "feat.skill-bonus": {

@@ -21,5 +21,8 @@
       "condition": "restrained",
       "trigger": "hit"
     }
+  },
+  "featureTiers": {
+    "feat.impose-condition": "moderate"
   }
 }

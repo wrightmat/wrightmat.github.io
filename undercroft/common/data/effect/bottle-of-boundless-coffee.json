@@ -10,5 +10,12 @@
     "rarity": "common",
     "form": "wondrous-item"
   },
-  "featureIds": []
+  "featureIds": [
+    "feat.resource-production"
+  ],
+  "featureParams": {
+    "feat.resource-production": {
+      "resourceText": "coffee, on demand (1-in-20 chance the bottle refuses for the next hour)"
+    }
+  }
 }

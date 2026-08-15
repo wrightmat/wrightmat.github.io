@@ -18,5 +18,8 @@
     "feat.condition-immunity": {
       "condition": "poison and being frightened"
     }
+  },
+  "featureTiers": {
+    "feat.condition-immunity": "moderate"
   }
 }

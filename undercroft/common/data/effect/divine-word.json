@@ -19,5 +19,8 @@
       "condition": "deafened, blinded, and/or stunned depending on the target's current hit points",
       "saveAbility": "charisma"
     }
+  },
+  "featureTiers": {
+    "feat.impose-condition": "severe"
   }
 }

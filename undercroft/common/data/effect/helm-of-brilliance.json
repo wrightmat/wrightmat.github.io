@@ -21,7 +21,8 @@
     "feat.spell-menu"
   ],
   "featureTiers": {
-    "feat.damage-modification": "resistance"
+    "feat.damage-modification": "resistance",
+    "feat.impose-condition": "minor"
   },
   "featureParams": {
     "feat.damage-modification": {

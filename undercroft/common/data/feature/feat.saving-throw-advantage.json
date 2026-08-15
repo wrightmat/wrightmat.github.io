@@ -7,9 +7,9 @@
   "description": "Grants advantage on saving throws against a category of effects or sources.",
   "mechanics": {
     "type": "active",
-    "text": "While active, grants advantage on saving throws against whatever this record's own featureParams.against names (a spell, a category of magic, a specific threat, ...)."
+    "text": "While active, grants advantage on saving throws against whatever this record's own featureParams.against names (a spell, a category of magic, a specific threat, ...). Cost tier is keyed to how BROAD that category is — advantage against one specific poison is worth far less than advantage against spells generally, and a flat cost couldn't say so."
   },
-  "budgetCost": 5,
+  "budgetCost": 1,
   "tags": {
     "categories": [
       "spell",
@@ -21,5 +21,47 @@
   },
   "synergizesWith": [],
   "dependsOn": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "situational",
+      "name": "Situational",
+      "shortName": "Situational",
+      "budgetCost": 1,
+      "mechanics": {
+        "type": "active",
+        "text": "Only relevant in one already-triggered scenario — e.g. a new save against an effect the target is already suffering from, not a standing defense."
+      }
+    },
+    {
+      "id": "narrow",
+      "name": "Narrow",
+      "shortName": "Narrow",
+      "budgetCost": 3,
+      "mechanics": {
+        "type": "active",
+        "text": "Against one specific hazard or damage source — a poison, a named gas/vapor, a single spell."
+      }
+    },
+    {
+      "id": "moderate",
+      "name": "Moderate",
+      "shortName": "Moderate",
+      "budgetCost": 6,
+      "mechanics": {
+        "type": "active",
+        "text": "Against a whole creature type's own signature abilities — e.g. a dragon's Frightful Presence and breath weapon together."
+      }
+    },
+    {
+      "id": "broad",
+      "name": "Broad",
+      "shortName": "Broad",
+      "budgetCost": 12,
+      "mechanics": {
+        "type": "active",
+        "text": "Against spells and magical effects generally — a sweeping, standing defense against nearly all hostile magic."
+      }
+    }
+  ]
 }

@@ -41,5 +41,8 @@
       "max": 7,
       "rechargeFormula": "1d6 + 1"
     }
+  },
+  "featureTiers": {
+    "feat.impose-condition": "minor"
   }
 }

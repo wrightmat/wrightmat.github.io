@@ -26,5 +26,8 @@
       "saveAbility": "wisdom",
       "saveDC": 17
     }
+  },
+  "featureTiers": {
+    "feat.impose-condition": "severe"
   }
 }

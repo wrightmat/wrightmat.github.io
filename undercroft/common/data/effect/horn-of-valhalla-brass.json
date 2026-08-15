@@ -21,5 +21,8 @@
     "target": 12,
     "spent": 1,
     "remaining": 11
+  },
+  "featureTiers": {
+    "feat.summoned-companion": "moderate"
   }
 }

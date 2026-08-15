@@ -27,5 +27,8 @@
     "feat.random-effect": {
       "optionCount": 8
     }
+  },
+  "featureTiers": {
+    "feat.summoned-companion": "minor"
   }
 }

@@ -20,5 +20,8 @@
       "saveAbility": "constitution",
       "duration": "the duration"
     }
+  },
+  "featureTiers": {
+    "feat.impose-condition": "minor"
   }
 }

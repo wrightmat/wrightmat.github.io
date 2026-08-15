@@ -1,0 +1,25 @@
+{
+  "id": "feat.reroll",
+  "name": "Reroll",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Rerolls an attack roll, ability check, or saving throw the user dislikes, taking the new result even if it's worse.",
+  "mechanics": {
+    "type": "active",
+    "text": "No action required — the user can call on this to reroll one attack roll, ability check, or saving throw (featureParams.rollType, when narrower than all three). The second roll must be used, even if it's worse. Distinct from feat.reroll-save (guarantees a failed saving throw becomes a success outright, no second roll at risk) — this is weaker, a real gamble rather than a guarantee, and priced accordingly."
+  },
+  "budgetCost": 4,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "utility"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

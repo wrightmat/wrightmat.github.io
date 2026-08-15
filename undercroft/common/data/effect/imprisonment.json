@@ -23,5 +23,8 @@
       "condition": "bound by the spell",
       "saveAbility": "wisdom"
     }
+  },
+  "featureTiers": {
+    "feat.impose-condition": "severe"
   }
 }

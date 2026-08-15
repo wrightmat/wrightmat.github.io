@@ -19,5 +19,8 @@
       "condition": "restrained",
       "saveAbility": "dexterity"
     }
+  },
+  "featureTiers": {
+    "feat.impose-condition": "moderate"
   }
 }

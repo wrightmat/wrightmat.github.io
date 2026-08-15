@@ -16,5 +16,8 @@
   "featureIds": [
     "feat.requires-attunement",
     "feat.summoned-companion"
-  ]
+  ],
+  "featureTiers": {
+    "feat.summoned-companion": "moderate"
+  }
 }

@@ -19,5 +19,8 @@
     "feat.healing": {
       "healingDice": "2d8+2"
     }
+  },
+  "featureTiers": {
+    "feat.healing": "tier-3"
   }
 }

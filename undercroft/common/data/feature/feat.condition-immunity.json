@@ -7,9 +7,9 @@
   "description": "Wards the body against a single debilitating condition.",
   "mechanics": {
     "type": "active",
-    "text": "On activation, grants immunity to one condition (set when authored) for 1 hour."
+    "text": "On activation, grants immunity to one condition (set when authored) for 1 hour. Same severity ladder as feat.impose-condition (its own inverse), reused rather than reinvented — being immune to paralysis is roughly as impactful as being able to inflict it."
   },
-  "budgetCost": 5,
+  "budgetCost": 2,
   "tags": {
     "categories": [
       "spell",
@@ -21,5 +21,47 @@
   },
   "synergizesWith": [],
   "dependsOn": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "minor",
+      "name": "Minor",
+      "shortName": "Minor",
+      "budgetCost": 2,
+      "mechanics": {
+        "type": "active",
+        "text": "Immune to a condition that's a real inconvenience but rarely swings a fight on its own — frightened, blinded, deafened, prone, grappled, and similar."
+      }
+    },
+    {
+      "id": "moderate",
+      "name": "Moderate",
+      "shortName": "Moderate",
+      "budgetCost": 4,
+      "mechanics": {
+        "type": "active",
+        "text": "Immune to a condition with real tactical weight — poisoned, charmed, restrained, exhausted, possessed, and similar."
+      }
+    },
+    {
+      "id": "severe",
+      "name": "Severe",
+      "shortName": "Severe",
+      "budgetCost": 7,
+      "mechanics": {
+        "type": "active",
+        "text": "Immune to a condition that would otherwise effectively take the target out of the fight — stunned, incapacitated, unconscious, banished, and similar."
+      }
+    },
+    {
+      "id": "extreme",
+      "name": "Extreme",
+      "shortName": "Extreme",
+      "budgetCost": 10,
+      "mechanics": {
+        "type": "active",
+        "text": "Immune to the most dangerous save-or-suffer outcomes in the game — paralyzed, petrified."
+      }
+    }
+  ]
 }
