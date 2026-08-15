@@ -1,0 +1,35 @@
+{
+  "kind": "effect",
+  "index": "false-life",
+  "name": "False Life",
+  "notes": "Bolstering yourself with a necromantic facsimile of life, you gain 1d4 + 4 temporary hit points for the duration.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/spells/false-life",
+  "mapping": "5e-api-spell",
+  "properties": {
+    "form": "spell"
+  },
+  "featureIds": [
+    "feat.healing"
+  ],
+  "featureParams": {
+    "feat.healing": {
+      "scaling": {
+        "by": "slot",
+        "values": {
+          "1": "1d4 + 4",
+          "2": "1d4 + 9",
+          "3": "1d4 + 14",
+          "4": "1d4 + 19",
+          "5": "1d4 + 24",
+          "6": "1d4 + 29",
+          "7": "1d4 + 34",
+          "8": "1d4 + 39",
+          "9": "1d4 + 44"
+        }
+      }
+    }
+  }
+}

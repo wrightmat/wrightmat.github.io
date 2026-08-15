@@ -1,0 +1,24 @@
+{
+  "id": "feat.planar-travel",
+  "name": "Planar Travel",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Lets the user step into another plane of existence and back.",
+  "mechanics": {
+    "type": "active",
+    "text": "On activation, the user (and everything worn/carried) travels to another plane, returning under their own control later."
+  },
+  "budgetCost": 5,
+  "tags": {
+    "categories": [
+      "item"
+    ],
+    "propertyHints": [
+      "mobility"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

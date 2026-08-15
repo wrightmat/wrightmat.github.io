@@ -1,0 +1,24 @@
+{
+  "id": "feat.summoned-weapon",
+  "name": "Summoned Weapon",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Conjures a weapon that then acts on its own.",
+  "mechanics": {
+    "type": "active",
+    "text": "On activation, a weapon comes into being and fights independently, similar to feat.animated-weapon but conjured from nothing rather than being the item itself."
+  },
+  "budgetCost": 6,
+  "tags": {
+    "categories": [
+      "item"
+    ],
+    "propertyHints": [
+      "summon"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

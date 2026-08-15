@@ -1,0 +1,24 @@
+{
+  "id": "feat.summoned-companion",
+  "name": "Summoned Companion",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Conjures a living creature that fights or works alongside its user.",
+  "mechanics": {
+    "type": "active",
+    "text": "On activation, a living creature comes into being under the user's control (or friendly to them) for some duration. The specific creature and its own stats live only in this Effect's own notes — too varied to structure generically."
+  },
+  "budgetCost": 8,
+  "tags": {
+    "categories": [
+      "item"
+    ],
+    "propertyHints": [
+      "summon"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

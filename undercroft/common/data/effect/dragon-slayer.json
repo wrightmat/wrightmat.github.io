@@ -1,0 +1,28 @@
+{
+  "kind": "effect",
+  "index": "dragon-slayer",
+  "name": "Dragon Slayer",
+  "notes": "Weapon (any sword), rare\n\nYou gain a +1 bonus to attack and damage rolls made with this magic weapon.\n\nWhen you hit a dragon with this weapon, the dragon takes an extra 3d6 damage of the weapon's type. For the purpose of this weapon, \"dragon\" refers to any creature with the dragon type, including dragon turtles and wyverns.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/magic-items/dragon-slayer",
+  "mapping": "5e-api-magic-item",
+  "properties": {
+    "rarity": "rare",
+    "form": "weapon"
+  },
+  "featureIds": [
+    "feat.weapon-enhancement",
+    "feat.extra-damage"
+  ],
+  "featureTiers": {
+    "feat.weapon-enhancement": "plus-1"
+  },
+  "featureParams": {
+    "feat.extra-damage": {
+      "damageDice": "3d6",
+      "damageType": "weapon"
+    }
+  }
+}

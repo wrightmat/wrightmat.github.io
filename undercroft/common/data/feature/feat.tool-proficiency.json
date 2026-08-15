@@ -1,0 +1,24 @@
+{
+  "id": "feat.tool-proficiency",
+  "name": "Tool Proficiency",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Grants proficiency with a tool the wearer might not otherwise have.",
+  "mechanics": {
+    "type": "active",
+    "text": "While worn/held, grants proficiency with whatever tool this record's own featureParams.tool names — or, when unset, whatever tool the item itself transforms into/represents."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "categories": [
+      "item"
+    ],
+    "propertyHints": [
+      "utility"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

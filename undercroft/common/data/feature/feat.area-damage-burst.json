@@ -1,0 +1,26 @@
+{
+  "id": "feat.area-damage-burst",
+  "name": "Area Damage Burst",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Unleashes a burst of damaging energy in an area, resisted by a saving throw.",
+  "mechanics": {
+    "type": "active",
+    "text": "On activation, deals damage in an area to everyone caught in it, each resisted by a saving throw; the shape/size, save, damage, and any secondary effect are this record's own featureParams."
+  },
+  "budgetCost": 7,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "damage",
+      "area"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

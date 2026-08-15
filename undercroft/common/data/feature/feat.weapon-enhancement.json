@@ -4,7 +4,7 @@
   "systemIds": [
     "sys.dnd5e"
   ],
-  "description": "A magical edge (or ammunition) that strikes truer and harder than steel alone.",
+  "description": "Grants a bonus to attack and damage rolls made with this weapon or ammunition.",
   "mechanics": {
     "type": "active",
     "text": "Grants a bonus to attack and damage rolls made with this weapon or ammunition."
@@ -40,6 +40,16 @@
       "name": "+3",
       "shortName": "+3",
       "budgetCost": 16
+    },
+    {
+      "id": "special",
+      "name": "Special",
+      "shortName": "Spc",
+      "budgetCost": 5,
+      "mechanics": {
+        "type": "active",
+        "text": "Lets the wielder use their own spellcasting ability instead of the weapon's usual ability for its attack and damage rolls, upgrades its damage die, and makes it magical if it wasn't already."
+      }
     }
   ]
 }

@@ -1,0 +1,25 @@
+{
+  "id": "feat.illusory-disguise",
+  "name": "Illusory Disguise",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Changes how the user (or a willing target) looks, without changing what they actually are.",
+  "mechanics": {
+    "type": "active",
+    "text": "While active, the target's own appearance — including clothing, armor, and equipment — looks different, purely as an illusion; their actual physical form, statistics, and capabilities are unchanged."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "utility"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

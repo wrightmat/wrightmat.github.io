@@ -1,0 +1,24 @@
+{
+  "id": "feat.expertise",
+  "name": "Expertise",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Doubles the user's own proficiency bonus for a specific, narrow check.",
+  "mechanics": {
+    "type": "active",
+    "text": "While active, the user's own proficiency bonus is doubled for the specific check this item names."
+  },
+  "budgetCost": 3,
+  "tags": {
+    "categories": [
+      "item"
+    ],
+    "propertyHints": [
+      "utility"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

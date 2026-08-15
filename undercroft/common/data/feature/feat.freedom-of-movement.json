@@ -4,25 +4,22 @@
   "systemIds": [
     "sys.dnd5e"
   ],
-  "description": "The creature ignores difficult terrain, and magical effects can't reduce its speed or cause it to be restrained. It can spend 5 feet of movement to escape from nonmagical restraints or being grappled.",
+  "description": "Ignores difficult terrain and can't be magically slowed, paralyzed, or restrained.",
   "mechanics": {
-    "type": "passive",
-    "text": "The creature ignores difficult terrain, and magical effects can't reduce its speed or cause it to be restrained. It can spend 5 feet of movement to escape from nonmagical restraints or being grappled."
+    "type": "active",
+    "text": "While active, difficult terrain costs the wearer no extra movement, and magic can neither reduce their speed nor cause them to be paralyzed or restrained."
   },
-  "budgetCost": 1,
+  "budgetCost": 7,
   "tags": {
-    "behaviors": [
-      "mobility"
-    ],
-    "recipeSlots": [
-      "escape"
-    ],
-    "roles": [],
-    "creatureTypes": [],
     "categories": [
-      "monster"
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "defense"
     ]
   },
   "synergizesWith": [],
+  "dependsOn": [],
   "conflictsWith": []
 }

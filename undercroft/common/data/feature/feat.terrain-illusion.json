@@ -1,0 +1,25 @@
+{
+  "id": "feat.terrain-illusion",
+  "name": "Terrain Illusion",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Makes a whole area of terrain look, sound, and smell like a different kind of terrain.",
+  "mechanics": {
+    "type": "active",
+    "text": "While active, an area of terrain appears (to sight, sound, and smell) to be a different kind of terrain than it actually is — the ground's own general shape doesn't change, only how it's perceived. Distinct from feat.creates-illusion (a single discrete object/creature/sound), this covers a whole area at once."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "utility"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

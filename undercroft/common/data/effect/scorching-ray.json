@@ -1,0 +1,29 @@
+{
+  "kind": "effect",
+  "index": "scorching-ray",
+  "name": "Scorching Ray",
+  "notes": "You create three rays of fire and hurl them at targets within range. You can hurl them at one target or several.\n\nMake a ranged spell attack for each ray. On a hit, the target takes 2d6 fire damage.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/spells/scorching-ray",
+  "mapping": "5e-api-spell",
+  "properties": {
+    "form": "spell"
+  },
+  "featureIds": [
+    "feat.damage"
+  ],
+  "featureParams": {
+    "feat.damage": {
+      "resolutionKind": "attack",
+      "damageType": "fire",
+      "scaling": {
+        "by": "slot",
+        "values": {
+          "2": "2d6"
+        }
+      }
+    }
+  }
+}

@@ -21,6 +21,25 @@
 // safe to call on every save rather than gating on "is this the first
 // save" — this is also what repairs a monster imported before this module
 // existed, the next time it's opened and saved.
+//
+// The kind-agnostic matching/dedup/tiering/options machinery this module
+// relies on (findMatch, resolveTemplateId, the choice-effect `options`
+// mechanism, tier resolution, id/slug helpers) now lives in
+// feature-import-core.js, shared with Vault's own spell/item importer
+// (vault-feature-matching.js) — this file keeps only what's genuinely about
+// PARSING 5e monster stat-block prose.
+import {
+  normalizeName,
+  cappedSlug,
+  cappedDisplayName,
+  resolveTemplateId,
+  findMatch,
+  baseAbilityName,
+  resolveNamedTier,
+  detectChoiceEffectGroup,
+  splitEmbeddedEffectOptions,
+  saveOptionsFeature,
+} from "./feature-import-core.js";
 
 const ABILITY_GROUP_KEYS = ["traits", "actions", "bonusActions", "reactions", "legendaryActions", "lairActions"];
 
@@ -38,53 +57,6 @@ const ACTION_COST_BY_GROUP_KEY = {
   legendaryActions: "legendary-action",
   lairActions: "lair-action",
 };
-
-// A trait/action name recurs across many creatures far more often than its
-// exact mechanic does (5e's own templated writing conventions) — but not
-// always (a monster's "Frenzied Rage" and another's happen to share a name
-// while doing genuinely different things). So matching leans on BOTH
-// signals, and name is now a real GATE, not just a threshold-lowering
-// nicety: two mechanics whose names share nothing in common ("Slam" vs
-// "Tail") never collapse together no matter how similar their generic
-// attack-roll boilerplate reads — confirmed live: this is exactly how Air
-// Elemental's own "Slam" false-matched Adult Black Dragon's unrelated
-// "Tail" before this fix (see findMatch below). Two bars for the two ways
-// a name CAN relate without being identical:
-//  - exact name match — a low bar is enough (5e's own templated writing
-//    repeats a name far more reliably than its exact mechanic — e.g.
-//    "Legendary Resistance (3/Day)." vs another creature's "(2/Day).").
-//  - partial name overlap (shares at least one significant word — e.g.
-//    "Fire Breath"/"Poison Breath" both containing "breath") — needs a
-//    meaningfully closer description match to still count, since sharing
-//    one generic word alone is weak evidence (confirmed live: this
-//    exact pair, before the numeric-token fix in significantTokens below,
-//    scored high enough on shared breath-weapon boilerplate to wrongly
-//    match Adult Red Dragon's Fire Breath to Adult Green Dragon's own
-//    Poison Breath Feature).
-// No name relation at all never qualifies, full stop — regardless of
-// description similarity.
-const NAME_MATCH_SIMILARITY_THRESHOLD = 0.25;
-const PARTIAL_NAME_MATCH_SIMILARITY_THRESHOLD = 0.5;
-
-// Domain words common enough across nearly every monster trait/action
-// (creature, damage, target, ...) that including them in the similarity
-// score would wash out what actually distinguishes one mechanic from
-// another — excluded the same way a search engine excludes stopwords.
-// The attack-roll boilerplate ("Melee Weapon Attack: +N to hit, reach N
-// ft., one target.") is the single biggest offender: two entirely
-// different creatures' simple weapon attacks share nearly every word of
-// that template, so without excluding it, a short attack description's
-// jaccard score is dominated by boilerplate rather than by what actually
-// differs (damage type, dice, any rider effect) — confirmed live: 5e API's
-// Acolyte "Club" (bludgeoning) false-matched Aboleth's unrelated "Tail"
-// (also bludgeoning) at 0.75 similarity purely on melee/weapon/attack/hit/
-// reach overlap, wiping out Club's own Feature and its damage entirely.
-const STOPWORDS = new Set([
-  "a", "an", "the", "of", "to", "and", "or", "its", "it", "is", "are", "this", "that", "with", "on", "in", "at",
-  "as", "by", "if", "for", "from", "when", "while", "can", "must", "not", "no", "one", "target", "targets",
-  "creature", "creatures", "damage", "each", "another", "instead", "must", "make", "makes",
-  "melee", "ranged", "weapon", "spell", "attack", "hit", "reach",
-]);
 
 // Descriptors too generic/common to safely stand in as "this refers to the
 // monster" on their own (age/size adjectives, common-word overlaps with
@@ -200,312 +172,6 @@ function knownNameSubstitute(text, monsterName, creatureType) {
     }
     return `${word} ${genericWord}${possessive || ""}`;
   });
-}
-
-function slugify(text) {
-  return String(text || "")
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
-}
-
-// Strips a trailing "(N/Day)"-style frequency count and trailing period(s)
-// before comparing — the one systematic per-creature variation 5e's own
-// templated trait names carry (e.g. "Legendary Resistance (3/Day).").
-function normalizeName(name) {
-  return String(name || "")
-    .trim()
-    .replace(/\s*\([^)]*\)\s*$/, "")
-    .replace(/\.+$/, "")
-    .toLowerCase()
-    .trim();
-}
-
-// Only strips the trailing period(s) DDB/Fantasy-Statblocks source data
-// tends to carry on a trait name — keeps the "(N/Day)" count, since a
-// freshly-created one-off feature is scoped to just this one monster and
-// that count is genuinely useful, faithful detail on a name that was never
-// going to generalize anyway.
-function displayName(name) {
-  return String(name || "").trim().replace(/\.+$/, "");
-}
-
-// Feature ids and display names are used as filesystem-adjacent storage
-// keys (dataManager.save writes a file keyed by id) and shown as labels —
-// an unbounded trait.name (malformed source data, e.g. a statblock file
-// whose YAML `name:` field somehow ended up holding an entire ability's
-// full paragraph instead of a short label — this isn't hypothetical:
-// confirmed live, an Isonade import's own "Swallow" trait had its whole
-// multi-sentence description sitting in `name`) can otherwise produce an
-// id hundreds of characters long. That id then fails to save, and — since
-// nothing here used to catch a per-trait failure — the resulting exception
-// propagated all the way up and aborted the ENTIRE monster's conversion,
-// silently taking the whole import down with it (the monster record itself
-// was never saved, with no error surfaced anywhere). Capped independently
-// of validating trait.name's CONTENT — this is defense-in-depth against
-// any future malformed source, not an attempt to detect or repair it; see
-// the try/catch around each trait's own processing below for the other
-// half of that fix (one bad trait can no longer take the whole monster
-// down, regardless of why it failed).
-const MAX_SLUG_LENGTH = 60;
-const MAX_DISPLAY_NAME_LENGTH = 100;
-
-// Deterministic, not for security — just enough entropy that two
-// different overlong names sharing their first MAX_SLUG_LENGTH characters
-// don't collide into the same id after truncation.
-function shortHash(text) {
-  let hash = 0;
-  for (let i = 0; i < text.length; i++) {
-    hash = (Math.imul(31, hash) + text.charCodeAt(i)) | 0;
-  }
-  return Math.abs(hash).toString(36);
-}
-
-function cappedSlug(name) {
-  const slug = slugify(name);
-  if (slug.length <= MAX_SLUG_LENGTH) return slug;
-  return `${slug.slice(0, MAX_SLUG_LENGTH)}-${shortHash(slug)}`;
-}
-
-function cappedDisplayName(name) {
-  const display = displayName(name);
-  if (display.length <= MAX_DISPLAY_NAME_LENGTH) return display;
-  return `${display.slice(0, MAX_DISPLAY_NAME_LENGTH - 1).trimEnd()}…`;
-}
-
-// A generated shared-template id (`feat.<slug(name)>` — parseWeaponAttack's
-// feat.bite/feat.claw convention, extended to parseSaveEffect's own breath-
-// weapon templates too) can coincidentally collide with an EXISTING Feature
-// that isn't actually a valid match for this monster-category pool at
-// all — a different System, or (confirmed live: "Fire Breath" is also the
-// name of a real Vault spell/item Feature, `feat.fire-breath`, sharing this
-// same `feature` Library kind under a completely different category) a
-// totally unrelated kind of content that just happens to slugify to the
-// same id. The caller's own `candidatePool` already filters those out for
-// MATCHING purposes, but that filtering does nothing to protect a CREATE —
-// `dataManager.save` writes unconditionally by id, so creating a new
-// monster-category template at a colliding id would silently overwrite
-// that unrelated Feature's own content instead of coexisting with it.
-// Checked against the FULL unfiltered `existingFeatures` (not
-// candidatePool) specifically so it also catches a collision candidatePool
-// itself already excluded from view.
-function isReusableTemplateCandidate(feature) {
-  const categories = feature.tags?.categories;
-  return !Array.isArray(categories) || !categories.length || categories.includes("monster");
-}
-function resolveTemplateId(baseId, existingFeatures) {
-  const pool = existingFeatures || [];
-  const collision = pool.find((feature) => feature.id === baseId);
-  if (!collision || isReusableTemplateCandidate(collision)) return baseId;
-  let suffix = 2;
-  let candidateId = `${baseId}-monster`;
-  // Each bumped candidate slot needs the SAME reusability check the base id
-  // just got above it — not just "is this id already taken". Confirmed
-  // live: Adult Red Dragon's own "Fire Breath" collided with an unrelated
-  // pre-existing feat.fire-breath (a single-target spell-like Feature, not
-  // monster-category), correctly bumped to feat.fire-breath-monster — but
-  // that candidate was ALREADY a perfectly good, reusable monster-category
-  // save-effect template (created by an earlier import), and the old loop
-  // treated "already exists" alone as blocking, bumping straight past it to
-  // feat.fire-breath-monster-2 instead of reusing it. Ancient Red Dragon
-  // then repeated the same mistake against -2, landing on -3 — three
-  // dragons with the literal same ability name fragmented across three
-  // different ids instead of sharing one.
-  let occupant = pool.find((feature) => feature.id === candidateId);
-  while (occupant && !isReusableTemplateCandidate(occupant)) {
-    candidateId = `${baseId}-monster-${suffix}`;
-    suffix += 1;
-    occupant = pool.find((feature) => feature.id === candidateId);
-  }
-  return candidateId;
-}
-
-function significantTokens(text) {
-  const words = String(text || "")
-    .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, " ")
-    .split(/\s+/)
-    // A bare number (attack bonus, total damage, reach in feet, a dice
-    // count like "2d8") is kept regardless of length — confirmed live: Air
-    // Elemental's own "Slam" ("+8 to hit, reach 5 ft., ... 14 (2d8 + 5)
-    // bludgeoning") false-matched Adult Black Dragon's unrelated "Tail"
-    // (+11/reach 15/15 (2d8 + 6) bludgeoning) at a coincidentally-identical
-    // "2d8" — the length>2 filter below was stripping every other
-    // differentiating number (8, 5, 14, 11, 15, 6) as noise, leaving only
-    // the boilerplate word overlap plus one coincidentally-shared dice
-    // notation to compare against. Alphabetic words still need length>2 to
-    // exclude real stopword-shaped noise ("to", "by", "if", ...).
-    .filter((word) => (word.length > 2 || /^\d+$/.test(word)) && !STOPWORDS.has(word));
-  return new Set(words);
-}
-
-function jaccardFromTokens(a, b) {
-  if (!a.size || !b.size) return 0;
-  let intersection = 0;
-  a.forEach((word) => {
-    if (b.has(word)) intersection += 1;
-  });
-  const union = a.size + b.size - intersection;
-  return union ? intersection / union : 0;
-}
-
-function jaccardSimilarity(textA, textB) {
-  return jaccardFromTokens(significantTokens(textA), significantTokens(textB));
-}
-
-// A short, boilerplate-heavy simple-attack one-liner ("Melee Weapon
-// Attack: +N to hit, reach N ft., one target. Hit: N (NdN) TYPE damage.")
-// only ever has a handful of significant tokens once the template itself
-// is subtracted out — too few for a jaccard ratio to be trustworthy at
-// either the exact-name or partial-name bar below, since one or two
-// coincidentally-shared tokens (a matching damage type, or the same dice
-// notation two differently-sized creatures happen to both roll) can carry
-// a disproportionate share of a tiny set. Confirmed live, twice, even
-// after the numeric-token fix above: Deep One Priest's "Claws" (+6/2d6+4
-// slashing) false-matched Adult Black Dragon's unrelated "Tail", and
-// separately a hand-authored "Claws" false-matched a DIFFERENT creature's
-// "Claws" despite meaningfully different to-hit/damage numbers — same
-// exact name, same dice, still NOT the same mechanic. Below this token
-// count, on either side, the required threshold jumps to near-total
-// agreement regardless of how closely the names relate.
-const MIN_SIGNIFICANT_TOKENS_FOR_LOOSE_MATCH = 8;
-const SHORT_TEXT_SIMILARITY_THRESHOLD = 0.85;
-
-// 5e's own writing is heavily templated around a "roll against a number"
-// clause — a weapon attack's "+N to hit" or an area/save effect's "DC N
-// <ability> saving throw" — and everything around that clause (reach/
-// range, "one target", "Hit:", "taking N (dice) TYPE damage on a failed
-// save, or half as much damage on a successful one", ...) is boilerplate
-// shared near-verbatim across completely unrelated monsters. That
-// boilerplate alone is often enough significant-token PADDING to push a
-// short ability's token count past MIN_SIGNIFICANT_TOKENS_FOR_LOOSE_MATCH,
-// even though almost none of the padding is genuinely distinguishing — the
-// one or two tokens that actually matter (a damage TYPE word, an ability
-// score name, a DC number) are just a couple words among many, so a
-// jaccard score built mostly from shared boilerplate barely notices when
-// they're wrong. Confirmed live TWICE, re-importing the adult chromatic
-// dragons through the 5e API: Bite (a to-hit weapon attack with an
-// elemental rider — parseWeaponAttack's own end-anchored pattern
-// deliberately declines to structure this, see its own comment, leaving it
-// to findMatch) false-matched across completely different damage types
-// (Blue Dragon's own lightning-rider Bite matched Dragon Eel's unrelated
-// one, Red Dragon's matched Young Topaz Dragon's, Green/White Dragon's
-// both matched Black Dragon's own acid-rider Bite); separately, Breath (a
-// DC-based area save, a totally different boilerplate shape with no "to
-// hit" at all) false-matched the same way across different elements
-// (Blue Dragon's own breath matched Black Dragon's acid one; Red Dragon's
-// matched Green Dragon's poison one; White Dragon's matched an unrelated
-// monster's necrotic one). A bare presence check, not a full structural
-// match like parseWeaponAttack's own pattern — deliberately broad (also
-// catches e.g. Frightful Presence's "DC N Wisdom saving throw", which
-// SHOULD vary by a dragon's own Charisma but was found collapsed onto one
-// shared DC too) since forcing the strict threshold is the safe direction
-// to err in a false positive here: the cost is just a missed auto-merge
-// opportunity (an already-common, already-tolerated outcome throughout
-// this session's own consolidation work), never a wrong one.
-const TEMPLATED_MECHANICAL_TEXT_PATTERN = /\+\d+\s+to hit|\bDC\s*\d+\s+\w+\s+saving throw\b/i;
-
-// True when two texts are IDENTICAL once every digit run is masked out, but
-// their actual digit runs (in order) differ — i.e. "the exact same sentence
-// shape, with different numbers plugged in." A purely mechanical check (no
-// grammar/sentence-structure guessing, same safety property
-// knownNameSubstitute's own multi-word-slice matching already relies on),
-// so it can't misfire on genuinely different wording — only on genuinely
-// identical wording with different numbers, which is exactly the case
-// findMatch's own jaccard threshold can't reliably catch (see its call
-// site's own comment).
-function sameShapeDifferentNumbers(a, b) {
-  const digitsA = (String(a || "").match(/\d+/g) || []).join(",");
-  const digitsB = (String(b || "").match(/\d+/g) || []).join(",");
-  if (digitsA === digitsB) return false;
-  return String(a || "").replace(/\d+/g, " ") === String(b || "").replace(/\d+/g, " ");
-}
-
-// Best-scoring qualifying candidate as `{feature, tierId}` (tierId null
-// unless the winning representation was a tier's own text), or null
-// (meaning: create a new one-off feature for this trait instead).
-//
-// Scores a candidate's own base description AND every one of its `tiers`
-// (when present) as separate representations, keeping whichever one scores
-// best — not just the base description. A tiered Feature's base text is
-// deliberately generic/parameter-free (e.g. Teleport's "a short distance"),
-// so it reads nothing like any specific monster's own numbers; comparing
-// only against it would make a re-imported monster whose exact ability is
-// already captured as a tier (same wording, once name-substituted) fail to
-// match at all and spawn a fresh duplicate — confirmed live: Arcanaloth's
-// own "up to 60 feet" Teleport scores far below either match threshold
-// against feat.teleport's generic base text alone, but scores ~1.0 against
-// that Feature's own "60-ft" tier text, since that tier's text IS this
-// exact monster's own original wording (name-substituted) already.
-function findMatch(trait, candidates) {
-  const traitName = normalizeName(trait.name);
-  const traitDescription = trait.description || "";
-  const traitTokens = significantTokens(traitDescription);
-  const traitLooksTemplated = TEMPLATED_MECHANICAL_TEXT_PATTERN.test(traitDescription);
-  let best = null;
-  let bestTierId = null;
-  let bestScore = 0;
-  candidates.forEach((feature) => {
-    const featureName = normalizeName(feature.name);
-    const nameMatches = Boolean(traitName) && traitName === featureName;
-    // jaccardSimilarity already tokenizes+dedups via significantTokens —
-    // reused as-is on the (short) names rather than a second bespoke
-    // name-overlap function.
-    const nameOverlaps = !nameMatches && jaccardSimilarity(traitName, featureName) > 0;
-    if (!nameMatches && !nameOverlaps) return; // names aren't even close — never merge, regardless of description
-    const representations = [{ tierId: null, text: feature.description || feature.mechanics?.text || "" }];
-    if (Array.isArray(feature.tiers)) {
-      feature.tiers.forEach((tier) => {
-        if (tier?.mechanics?.text) representations.push({ tierId: tier.id, text: tier.mechanics.text });
-      });
-    }
-    representations.forEach(({ tierId, text }) => {
-      // A long-enough paragraph differing from a candidate's BASE
-      // description in nothing but its embedded numbers can clear even the
-      // strict SHORT_TEXT threshold above, since jaccard similarity barely
-      // notices one differing token out of twenty-plus shared ones —
-      // confirmed live: Frightful Presence's own DC (which should vary by
-      // each dragon's own Charisma) scores ~0.93 similar to a differently-
-      // worded dragon's identical-except-DC text, comfortably above 0.85.
-      // That's precisely the shape Tiers exist to capture (same mechanic, a
-      // real differing parameter — Teleport's distance, Legendary
-      // Resistance's frequency), never something safe to silently collapse
-      // onto one shared value. Only guards the BASE description
-      // (tierId === null) — matching against an EXISTING tier's own text
-      // already requires it, verbatim; this never blocks that.
-      if (tierId === null && sameShapeDifferentNumbers(traitDescription, text)) return;
-      const featureTokens = significantTokens(text);
-      const similarity = jaccardFromTokens(traitTokens, featureTokens);
-      // An EXACT name match always uses the lenient threshold, even for
-      // short/templated text — confirmed live: Amphibious ("The creature
-      // can breathe air and water.") only has 3-4 significant tokens after
-      // stopword-filtering, so it used to hit the strict 0.85 short-text
-      // bar below; one source's extra filler word ("...can breathe BOTH
-      // air and water") dropped its similarity to 0.75, just under that
-      // bar, and two monsters' plainly-identical Amphibious traits stayed
-      // split as separate Features. The strict short-text bar exists to
-      // protect the WEAK-evidence case (partial/no name match, so content
-      // similarity is the only signal) — once the name has already
-      // confirmed a match, `sameShapeDifferentNumbers` above is what
-      // actually protects against a false merge (two same-named abilities
-      // with genuinely different numbers), not this threshold on top of
-      // it. Short/templated text without an exact name match still needs
-      // the strict bar — that's the genuinely risky combination (weak name
-      // signal AND weak content signal).
-      const requiredThreshold = nameMatches
-        ? NAME_MATCH_SIMILARITY_THRESHOLD
-        : traitLooksTemplated || TEMPLATED_MECHANICAL_TEXT_PATTERN.test(text) || Math.min(traitTokens.size, featureTokens.size) < MIN_SIGNIFICANT_TOKENS_FOR_LOOSE_MATCH
-          ? SHORT_TEXT_SIMILARITY_THRESHOLD
-          : PARTIAL_NAME_MATCH_SIMILARITY_THRESHOLD;
-      if (similarity >= requiredThreshold && similarity > bestScore) {
-        best = feature;
-        bestTierId = tierId;
-        bestScore = similarity;
-      }
-    });
-  });
-  return best ? { feature: best, tierId: bestTierId } : null;
 }
 
 const COUNT_WORD_VALUES = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8 };
@@ -1253,83 +919,6 @@ function parseSaveEffect(text) {
   return null;
 }
 
-// Written generically (any "Base Name (N/Day)" or "Base Name (Recharge
-// N[-6])" ability), not hardcoded to "Legendary Resistance" specifically —
-// those are just the common real-world cases. A shared Feature whose
-// incoming trait name carries one of these suffixes represents a
-// genuinely SCALING ability (how often it's available), not a flavor
-// variant — reuses Vault's own `tiers` shape (feature.tiers: [{id, name,
-// shortName, mechanics}]) with a per-tier `mechanics.text` instead of
-// Vault's per-tier `budgetCost`, since a monster Feature's tiers vary by
-// frequency, not gp value. Only ever called once findMatch has already
-// found a same-mechanic match (same thresholds as any other trait) — this
-// never changes WHETHER something matches, only what happens once it has:
-// instead of silently discarding the frequency difference (or, worse,
-// letting the SAME base ability at different frequencies proliferate into
-// separate one-off Features — confirmed live: 15 separate "Legendary
-// Resistance (N/Day)" files before this), it's recorded as a tier on the
-// ONE shared Feature. Returns the tier id to record on the monster's own
-// record.featureTiers, or null if the trait's name doesn't carry either
-// suffix at all — a Recharge-tagged ability whose OTHER numbers (damage,
-// area, DC, ...) also vary per monster (the common case — confirmed live:
-// "Acid Breath (Recharge 4-6)" vs "Acid Breath (Recharge 5-6)" are
-// genuinely different abilities, not just a recharge-value difference)
-// won't even reach here, since findMatch's own description-similarity gate
-// already keeps those from matching in the first place.
-// `[\d\-‐-―]` — a "Recharge N-M" range can arrive with any of
-// several dash-like characters depending on source (plain ASCII hyphen,
-// or a genuine en dash "–"/em dash "—" from a copy-pasted 5e sourcebook
-// PDF/site) — confirmed live: Adult Topaz Dragon's own "(Recharge 5–6)"
-// used a real Unicode en dash (U+2013), which the plain ASCII `\-` alone
-// silently failed to match, leaving its own suffix unstripped while its
-// Wyrmling/Young siblings' bare (non-suffixed) names matched fine —
-// fragmenting one shared ability across different template ids.
-const NAMED_TIER_PATTERNS = [
-  { pattern: /\((\d+)\/Day\)\s*$/i, tierId: (m) => `${m[1]}-day`, shortName: (m) => `${m[1]}/Day` },
-  { pattern: /\(Recharge\s*([\d‐-―\-]+)\)\s*$/i, tierId: (m) => `recharge-${m[1].replace(/[‐-―\-]/g, "to")}`, shortName: (m) => `Recharge ${m[1]}` },
-];
-// Strips the same trailing "(Recharge N-M)"/"(N/Day)" suffix
-// NAMED_TIER_PATTERNS matches, but for computing a weapon-attack/save-effect
-// shared TEMPLATE's own id/slug — these two branches match/create purely by
-// NAME (see their own comments below), so without this a monster whose
-// source data happens to keep the frequency suffix in the trait name
-// ("Tidal Breath (Recharge 5-6)") would never collapse into the same
-// template as another monster's otherwise-identical ability whose source
-// happened to drop it ("Tidal Breath" bare) — confirmed live: Adult Sea
-// Dragon vs Young/Wyrmling Sea Dragon's own Tidal Breath. The template
-// itself carries no numbers (bare stub description) either way, so unlike
-// resolveNamedTier's own job (preserving genuinely differing per-tier TEXT)
-// there's nothing frequency-specific to preserve here — the two abilities
-// really are the exact same template regardless of source-text spelling.
-function baseAbilityName(name) {
-  let stripped = String(name || "");
-  for (const { pattern } of NAMED_TIER_PATTERNS) stripped = stripped.replace(pattern, "");
-  return stripped.trim() || name;
-}
-async function resolveNamedTier(trait, match, dataManager, substitutedDescription) {
-  const name = String(trait.name || "");
-  let tierMatch = null;
-  let found = null;
-  for (const entry of NAMED_TIER_PATTERNS) {
-    const result = name.match(entry.pattern);
-    if (result) {
-      tierMatch = result;
-      found = entry;
-      break;
-    }
-  }
-  if (!found) return null;
-  const tierId = found.tierId(tierMatch);
-  const tiers = Array.isArray(match.tiers) ? match.tiers : [];
-  let tier = tiers.find((entry) => entry.id === tierId);
-  if (!tier) {
-    tier = { id: tierId, name: cappedDisplayName(trait.name), shortName: found.shortName(tierMatch), mechanics: { text: substitutedDescription || "" } };
-    match.tiers = [...tiers, tier];
-    await dataManager.save("feature", match.id, match);
-  }
-  return tierId;
-}
-
 // A trait's own description opens with an attack-roll/save line — a strong
 // signal it's a genuinely SEPARATE ability describing its own hit/save
 // resolution from scratch, never a sub-effect of a preceding "roll/pick one
@@ -1339,134 +928,6 @@ async function resolveNamedTier(trait, match, dataManager, substitutedDescriptio
 // below to know where a choice-effect list ends.
 function looksLikeIndependentAbility(description) {
   return /^(Melee|Ranged)\s+(Weapon|Spell\s+)?Attack/i.test(String(description || "").trim());
-}
-
-// A small, narrowly-anchored set of real 5e phrasings for "this ability
-// resolves into one of several named sub-effects, listed as SEPARATE
-// {name, desc} entries in the raw stat block" — Iron Cobra's own "...or
-// suffer one random poison effect:" (followed by "1. Poison Damage:"/
-// "2. Confusion:"/"3. Paralysis:" as their own numbered entries) and Gem
-// Stalker's own "...one of the following effects occurs, determined by the
-// kind of dragon that created it:" (followed by "Amethyst."/"Crystal."/
-// etc. as their own plain-named entries) are the two confirmed real shapes.
-// Deliberately NOT a loose "ends with a colon" heuristic — that would risk
-// swallowing a genuinely unrelated NEXT ability whenever a source happens
-// to end a sentence with one for other reasons.
-const CHOICE_LEAD_IN_PATTERN = /(?:suffer one random [\w\s]+ effect|one of the following effects occurs(?:,\s*determined by [^:.]+)?)\s*:?\s*$/i;
-const NUMBERED_SUB_EFFECT_NAME_PATTERN = /^(\d+)\.\s*(.+?):?\s*$/;
-
-// Detects the multi-ENTRY shape above, starting at `entries[startIndex]`.
-// Returns `{consumedCount, options: [{name, text}]}` — `consumedCount` is
-// how many FOLLOWING entries were absorbed as this one ability's own
-// `options` (the caller skips past them, they never become their own
-// standalone Features) — or `null` when this entry isn't a choice lead-in,
-// or when fewer than 2 qualifying sub-effect entries follow it (a "choice"
-// of one thing isn't a choice; falls through to being treated as an
-// ordinary standalone trait instead, same safe-fallback discipline as
-// every other pattern in this file: never guess, never partially match).
-// A numbered list (Iron Cobra's shape) keeps consuming as long as the
-// numbering stays sequential — an unambiguous, self-terminating signal.
-// A plain-named list (Gem Stalker's shape) has no such marker, so
-// consumption there stops at the first entry that looks like an
-// independent ability, or after a small generous cap (8) — enough for any
-// real 5e sub-effect table, small enough that a genuinely mismatched
-// source can't silently swallow the rest of the monster's own ability list.
-function detectChoiceEffectGroup(entries, startIndex) {
-  const lead = entries[startIndex];
-  if (!lead?.description || !CHOICE_LEAD_IN_PATTERN.test(lead.description)) return null;
-  const options = [];
-  let i = startIndex + 1;
-  let expectedNumber = 1;
-  let sawNumbering = false;
-  while (i < entries.length) {
-    const entry = entries[i];
-    if (!entry?.name || !entry?.description) break;
-    if (looksLikeIndependentAbility(entry.description)) break;
-    const numbered = String(entry.name).match(NUMBERED_SUB_EFFECT_NAME_PATTERN);
-    if (numbered) {
-      if (Number(numbered[1]) !== expectedNumber) break; // numbering broke — this entry belongs to something else
-      sawNumbering = true;
-      expectedNumber += 1;
-    } else if (sawNumbering) {
-      break; // a numbered list ends the moment an entry drops the numbering
-    }
-    const name = (numbered ? numbered[2] : String(entry.name)).replace(/\.\s*$/, "").trim();
-    options.push({ name, text: String(entry.description).trim() });
-    i += 1;
-    if (!sawNumbering && options.length >= 8) break;
-  }
-  if (options.length < 2) return null;
-  return { consumedCount: i - startIndex - 1, options };
-}
-
-// The OTHER real shape: the choice is already ONE entry's own multi-
-// paragraph text ("The creature uses one of the following breath
-// weapons.\nFire Breath. ...\nWeakening Breath. ...") rather than split
-// across separate {name, desc} entries — dragon Breath Weapons' own shape,
-// never actually split by the source/importer, just left as flat opaque
-// prose today. Anchored on literal embedded newlines (this pipeline's own
-// sources always preserve them verbatim) so an ordinary single-paragraph
-// trait (the overwhelming majority) never matches at all. A single
-// non-conforming line anywhere in the tail bails the WHOLE split (never a
-// wrong partial structure), same discipline as every other pattern here.
-function splitEmbeddedEffectOptions(description) {
-  const raw = String(description || "");
-  if (!raw.includes("\n")) return null;
-  const lines = raw
-    .split("\n")
-    .map((line) => line.trim())
-    .filter(Boolean);
-  if (lines.length < 3) return null; // intro + at least 2 named options
-  const [intro, ...rest] = lines;
-  const options = [];
-  for (const line of rest) {
-    const match = line.match(/^([A-Z][\w '’-]+?)\.\s+(.+)$/);
-    if (!match) return null;
-    options.push({ name: match[1].trim(), text: match[2].trim() });
-  }
-  if (options.length < 2) return null;
-  return { intro, options };
-}
-
-// Shared by both detectChoiceEffectGroup's and splitEmbeddedEffectOptions'
-// own call sites in the main loop below: creates (or, on re-import,
-// refreshes) the ONE Feature representing a choice-effect trait, always a
-// monster-specific one-off (`feat.<monsterSlug>-<trait-slug>` — matched
-// content is never shared across monsters, same reasoning Multiattack's
-// own content already gets) with `mechanics.scope: "unique"` and `options`
-// populated. Returns the saved Feature's own id.
-async function saveOptionsFeature(trait, intro, options, ctx) {
-  const { candidatePool, monsterSlug, systemId, actionCost, record, dataManager, result } = ctx;
-  const substitutedIntro = knownNameSubstitute(intro, record?.name, record?.type);
-  const featureId = `feat.${monsterSlug}-${cappedSlug(trait.name)}`;
-  let feature = candidatePool.find((entry) => entry.id === featureId);
-  if (!feature) {
-    feature = {
-      id: featureId,
-      name: cappedDisplayName(trait.name),
-      systemIds: systemId ? [systemId] : [],
-      description: substitutedIntro || "",
-      mechanics: { type: "passive", scope: "unique", text: substitutedIntro || "" },
-      budgetCost: 0,
-      tags: { behaviors: [], recipeSlots: [], roles: [], creatureTypes: [], categories: ["monster"] },
-      synergizesWith: [],
-      conflictsWith: [],
-      ...(actionCost ? { combat: { actionCost } } : {}),
-    };
-    result.createdCount += 1;
-  } else {
-    feature.description = substitutedIntro || "";
-    if (feature.mechanics && typeof feature.mechanics.text === "string") feature.mechanics.text = substitutedIntro || "";
-    result.matchedCount += 1;
-  }
-  feature.options = options.map((option) => ({
-    id: slugify(option.name),
-    name: option.name,
-    mechanics: { text: knownNameSubstitute(option.text, record?.name, record?.type) },
-  }));
-  await dataManager.save("feature", feature.id, feature);
-  if (!candidatePool.includes(feature)) candidatePool.push(feature);
-  return feature.id;
 }
 
 // `existingFeatures` — every `feature` Library entry already loaded by the
@@ -1577,10 +1038,11 @@ export async function convertStatBlockToFeatures(record, { dataManager, existing
       // Cobra's Bite ended up split into 3 meaningless separate "Features"
       // and Gem Stalker's Crystal Dart ended up truncated at its own
       // choice-lead-in colon with its 5 named effects orphaned.
-      const choiceGroup = detectChoiceEffectGroup(entries, entryIndex);
+      const choiceGroup = detectChoiceEffectGroup(entries, entryIndex, looksLikeIndependentAbility);
       if (choiceGroup) {
         const optionsFeatureId = await saveOptionsFeature(trait, trait.description, choiceGroup.options, {
-          candidatePool, monsterSlug, systemId, actionCost, record, dataManager, result,
+          candidatePool, recordSlug: monsterSlug, systemId, actionCost, category: "monster",
+          substitute: (text) => knownNameSubstitute(text, record?.name, record?.type), dataManager, result,
         });
         featureIds.push(optionsFeatureId);
         if (!nameToFeatureId.has(normalizeName(trait.name))) nameToFeatureId.set(normalizeName(trait.name), optionsFeatureId);
@@ -1595,7 +1057,8 @@ export async function convertStatBlockToFeatures(record, { dataManager, existing
       const embeddedOptions = splitEmbeddedEffectOptions(trait.description);
       if (embeddedOptions) {
         const optionsFeatureId = await saveOptionsFeature(trait, embeddedOptions.intro, embeddedOptions.options, {
-          candidatePool, monsterSlug, systemId, actionCost, record, dataManager, result,
+          candidatePool, recordSlug: monsterSlug, systemId, actionCost, category: "monster",
+          substitute: (text) => knownNameSubstitute(text, record?.name, record?.type), dataManager, result,
         });
         featureIds.push(optionsFeatureId);
         if (!nameToFeatureId.has(normalizeName(trait.name))) nameToFeatureId.set(normalizeName(trait.name), optionsFeatureId);
@@ -1668,7 +1131,7 @@ export async function convertStatBlockToFeatures(record, { dataManager, existing
       const parsedAttack =
         parseWeaponAttack(trait.description) || parseWeaponAttackWithVersatile(trait.description) || parseWeaponAttackWithRider(trait.description);
       if (parsedAttack) {
-        const templateId = resolveTemplateId(`feat.${cappedSlug(baseAbilityName(trait.name))}`, existingFeatures);
+        const templateId = resolveTemplateId(`feat.${cappedSlug(baseAbilityName(trait.name))}`, existingFeatures, ["monster"], "monster");
         let template = candidatePool.find((feature) => feature.id === templateId);
         if (template) {
           result.matchedCount += 1;
@@ -1710,7 +1173,7 @@ export async function convertStatBlockToFeatures(record, { dataManager, existing
       // differ per monster.
       const parsedSaveEffect = parseSaveEffect(substitutedDescription);
       if (parsedSaveEffect) {
-        const templateId = resolveTemplateId(`feat.${cappedSlug(baseAbilityName(trait.name))}`, existingFeatures);
+        const templateId = resolveTemplateId(`feat.${cappedSlug(baseAbilityName(trait.name))}`, existingFeatures, ["monster"], "monster");
         let template = candidatePool.find((feature) => feature.id === templateId);
         if (template) {
           result.matchedCount += 1;

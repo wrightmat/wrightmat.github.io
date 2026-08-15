@@ -1,0 +1,25 @@
+{
+  "kind": "effect",
+  "index": "pass-without-trace",
+  "name": "Pass Without Trace",
+  "notes": "A veil of shadows and silence radiates from you, masking you and your companions from detection. For the duration, each creature you choose within 30 feet of you (including you) has a +10 bonus to Dexterity (Stealth) checks and can't be tracked except by magical means. A creature that receives this bonus leaves behind no tracks or other traces of its passage.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/spells/pass-without-trace",
+  "mapping": "5e-api-spell",
+  "properties": {
+    "form": "spell"
+  },
+  "featureIds": [
+    "feat.skill-bonus"
+  ],
+  "featureTiers": {
+    "feat.skill-bonus": "plus-10"
+  },
+  "featureParams": {
+    "feat.skill-bonus": {
+      "skill": "stealth"
+    }
+  }
+}

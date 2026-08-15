@@ -4,10 +4,10 @@
   "systemIds": [
     "sys.dnd5e"
   ],
-  "description": "Grants a new way of moving, matching the creature's own walking speed.",
+  "description": "Grants a new way of moving.",
   "mechanics": {
     "type": "active",
-    "text": "On activation or while worn, grants a climbing, swimming, burrowing, or flying speed (depending on tier) equal to the creature's walking speed."
+    "text": "On activation or while worn, grants a climbing, swimming, burrowing, or flying speed. Which kind of speed and how far lives entirely in this record's own featureParams — a speed's own type is meaningless without its own distance attached, so the two are never split across tiers and params."
   },
   "budgetCost": 5,
   "tags": {
@@ -22,31 +22,5 @@
   },
   "synergizesWith": [],
   "dependsOn": [],
-  "conflictsWith": [],
-  "tiers": [
-    {
-      "id": "climbing",
-      "name": "Climbing Speed",
-      "shortName": "Climb",
-      "budgetCost": 5
-    },
-    {
-      "id": "swimming",
-      "name": "Swimming Speed",
-      "shortName": "Swim",
-      "budgetCost": 5
-    },
-    {
-      "id": "burrowing",
-      "name": "Burrowing Speed",
-      "shortName": "Burrow",
-      "budgetCost": 8
-    },
-    {
-      "id": "flying",
-      "name": "Flying Speed",
-      "shortName": "Fly",
-      "budgetCost": 14
-    }
-  ]
+  "conflictsWith": []
 }

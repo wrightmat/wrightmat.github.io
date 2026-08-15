@@ -1,14 +1,36 @@
 {
   "type": "object",
   "$source": "ddb",
+  "$description": "D&D Beyond Species",
   "fields": {
-    "kind": { "type": "field", "bind": "@kind" },
-    "name": { "type": "field", "bind": "@name" },
-    "url": { "type": "field", "bind": "@url" },
-    "description": { "type": "field", "bind": "@descLines" },
-    "type": { "type": "field", "bind": "@coreTraits.creatureType" },
-    "size": { "type": "field", "bind": "@coreTraits.size" },
-    "speed": { "type": "custom", "fn": "ddbSpeciesSpeed" },
+    "kind": {
+      "type": "field",
+      "bind": "@kind"
+    },
+    "name": {
+      "type": "field",
+      "bind": "@name"
+    },
+    "url": {
+      "type": "field",
+      "bind": "@url"
+    },
+    "description": {
+      "type": "field",
+      "bind": "@descLines"
+    },
+    "type": {
+      "type": "field",
+      "bind": "@coreTraits.creatureType"
+    },
+    "size": {
+      "type": "field",
+      "bind": "@coreTraits.size"
+    },
+    "speed": {
+      "type": "custom",
+      "fn": "ddbSpeciesSpeed"
+    },
     "traits": {
       "type": "pipeline",
       "source": "@namedTraits",
@@ -18,8 +40,14 @@
           "item": {
             "type": "object",
             "fields": {
-              "name": { "type": "field", "bind": "@name" },
-              "description": { "type": "custom", "fn": "joinLines" }
+              "name": {
+                "type": "field",
+                "bind": "@name"
+              },
+              "description": {
+                "type": "custom",
+                "fn": "joinLines"
+              }
             }
           }
         }
@@ -34,10 +62,22 @@
           "item": {
             "type": "object",
             "fields": {
-              "name": { "type": "field", "bind": "@name" },
-              "url": { "type": "field", "bind": "@root.url" },
-              "source": { "type": "field", "bind": "@source" },
-              "description": { "type": "field", "bind": "@descLines" },
+              "name": {
+                "type": "field",
+                "bind": "@name"
+              },
+              "url": {
+                "type": "field",
+                "bind": "@root.url"
+              },
+              "source": {
+                "type": "field",
+                "bind": "@source"
+              },
+              "description": {
+                "type": "field",
+                "bind": "@descLines"
+              },
               "features": {
                 "type": "pipeline",
                 "source": "@features",
@@ -47,9 +87,18 @@
                     "item": {
                       "type": "object",
                       "fields": {
-                        "name": { "type": "field", "bind": "@name" },
-                        "level": { "type": "field", "bind": "@level" },
-                        "description": { "type": "field", "bind": "@descLines" }
+                        "name": {
+                          "type": "field",
+                          "bind": "@name"
+                        },
+                        "level": {
+                          "type": "field",
+                          "bind": "@level"
+                        },
+                        "description": {
+                          "type": "field",
+                          "bind": "@descLines"
+                        }
                       }
                     }
                   }

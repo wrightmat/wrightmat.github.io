@@ -1,0 +1,37 @@
+{
+  "kind": "effect",
+  "index": "insect-plague",
+  "name": "Insect Plague",
+  "notes": "Swarming, biting locusts fill a 20-foot-radius sphere centered on a point you choose within range. The sphere spreads around corners. The sphere remains for the duration, and its area is lightly obscured. The sphere's area is difficult terrain.\n\nWhen the area appears, each creature in it must make a constitution saving throw. A creature takes 4d10 piercing damage on a failed save, or half as much damage on a successful one. A creature must also make this saving throw when it enters the spell's area for the first time on a turn or ends its turn there.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/spells/insect-plague",
+  "mapping": "5e-api-spell",
+  "properties": {
+    "form": "spell"
+  },
+  "featureIds": [
+    "feat.damage"
+  ],
+  "featureParams": {
+    "feat.damage": {
+      "resolutionKind": "save",
+      "saveAbility": "constitution",
+      "saveEffect": "half",
+      "damageType": "piercing",
+      "areaShape": "sphere",
+      "areaSize": 20,
+      "scaling": {
+        "by": "slot",
+        "values": {
+          "5": "4d10",
+          "6": "5d10",
+          "7": "6d10",
+          "8": "7d10",
+          "9": "8d10"
+        }
+      }
+    }
+  }
+}

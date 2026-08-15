@@ -1,0 +1,24 @@
+{
+  "id": "feat.planar-portal",
+  "name": "Planar Portal",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Opens a two-way portal to another world or plane of existence.",
+  "mechanics": {
+    "type": "active",
+    "text": "On activation, opens a two-way portal to another world or plane, chosen by the GM, until it's closed again."
+  },
+  "budgetCost": 6,
+  "tags": {
+    "categories": [
+      "item"
+    ],
+    "propertyHints": [
+      "utility"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

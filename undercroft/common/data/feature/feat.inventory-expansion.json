@@ -1,0 +1,24 @@
+{
+  "id": "feat.inventory-expansion",
+  "name": "Inventory Expansion",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Holds far more than its own outside dimensions should allow.",
+  "mechanics": {
+    "type": "active",
+    "text": "Provides extradimensional or otherwise oversized storage — the specific capacity lives only in this Effect's own notes."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "categories": [
+      "item"
+    ],
+    "propertyHints": [
+      "utility"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

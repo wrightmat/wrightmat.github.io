@@ -1,0 +1,24 @@
+{
+  "id": "feat.modifies-roll",
+  "name": "Modifies Roll",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Lets the wearer forgo rolling a d20 for a specific kind of roll and take a fixed result instead.",
+  "mechanics": {
+    "type": "active",
+    "text": "Instead of rolling the d20 for this record's own featureParams.rollType, the user can take featureParams.value on the die. Distinct from feat.reroll-save (rolls again) and a flat bonus (adds to whatever's rolled) — this replaces the roll outright."
+  },
+  "budgetCost": 4,
+  "tags": {
+    "categories": [
+      "item"
+    ],
+    "propertyHints": [
+      "buff"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

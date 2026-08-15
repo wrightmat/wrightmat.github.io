@@ -1,0 +1,25 @@
+{
+  "id": "feat.instant-kill",
+  "name": "Instant Kill",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Outright kills the target with no attack roll or saving throw, subject to a stated limit.",
+  "mechanics": {
+    "type": "active",
+    "text": "On activation, the target dies instantly if featureParams.limit is met (e.g. a hit point ceiling) — otherwise this has no effect at all."
+  },
+  "budgetCost": 10,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "combat"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,25 @@
+{
+  "kind": "effect",
+  "index": "protection-from-energy",
+  "name": "Protection From Energy",
+  "notes": "For the duration, the willing creature you touch has resistance to one damage type of your choice: acid, cold, fire, lightning, or thunder.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/spells/protection-from-energy",
+  "mapping": "5e-api-spell",
+  "properties": {
+    "form": "spell"
+  },
+  "featureIds": [
+    "feat.damage-modification"
+  ],
+  "featureTiers": {
+    "feat.damage-modification": "resistance"
+  },
+  "featureParams": {
+    "feat.damage-modification": {
+      "damageType": "one"
+    }
+  }
+}

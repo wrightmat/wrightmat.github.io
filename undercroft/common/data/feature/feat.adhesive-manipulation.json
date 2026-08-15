@@ -1,0 +1,24 @@
+{
+  "id": "feat.adhesive-manipulation",
+  "name": "Adhesive Manipulation",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Either creates a near-permanent magical bond between two objects, or instantly dissolves one.",
+  "mechanics": {
+    "type": "active",
+    "text": "On use, either bonds two objects together (a bond strong enough that only a handful of specific counters can break it) or dissolves an existing adhesive bond, including a magical one — this record's own featureParams.mode."
+  },
+  "budgetCost": 4,
+  "tags": {
+    "categories": [
+      "item"
+    ],
+    "propertyHints": [
+      "utility"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

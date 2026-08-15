@@ -1,0 +1,25 @@
+{
+  "id": "feat.forced-movement",
+  "name": "Forced Movement",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Pushes, pulls, or otherwise shoves a target a set distance.",
+  "mechanics": {
+    "type": "active",
+    "text": "On a hit or effect, the target is forcibly moved by the distance in this record's own featureParams.distance."
+  },
+  "budgetCost": 3,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "control"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

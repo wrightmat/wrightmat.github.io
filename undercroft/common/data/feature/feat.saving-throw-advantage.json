@@ -1,0 +1,25 @@
+{
+  "id": "feat.saving-throw-advantage",
+  "name": "Saving Throw Advantage",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Grants advantage on saving throws against a category of effects or sources.",
+  "mechanics": {
+    "type": "active",
+    "text": "While active, grants advantage on saving throws against whatever this record's own featureParams.against names (a spell, a category of magic, a specific threat, ...)."
+  },
+  "budgetCost": 5,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "defense"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

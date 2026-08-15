@@ -1,0 +1,36 @@
+{
+  "type": "with",
+  "$source": "markdown-effect",
+  "$description": "Markdown (Obsidian) — Spell",
+  "bindings": {
+    "spellStats": {
+      "type": "custom",
+      "fn": "markdownSpellStats"
+    }
+  },
+  "body": {
+    "type": "object",
+    "fields": {
+      "kind": {
+        "type": "field",
+        "bind": "='effect'"
+      },
+      "name": {
+        "type": "field",
+        "bind": "@spellStats.name"
+      },
+      "notes": {
+        "type": "field",
+        "bind": "@spellStats.description"
+      },
+      "systemIds": {
+        "type": "custom",
+        "fn": "srdVaultSystemIds"
+      },
+      "stats": {
+        "type": "field",
+        "bind": "@spellStats"
+      }
+    }
+  }
+}

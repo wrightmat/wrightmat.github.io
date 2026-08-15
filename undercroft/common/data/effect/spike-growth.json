@@ -1,0 +1,30 @@
+{
+  "kind": "effect",
+  "index": "spike-growth",
+  "name": "Spike Growth",
+  "notes": "The ground in a 20-foot radius centered on a point within range twists and sprouts hard spikes and thorns. The area becomes difficult terrain for the duration. When a creature moves into or within the area, it takes 2d4 piercing damage for every 5 feet it travels.\n\nThe transformation of the ground is camouflaged to look natural. Any creature that can't see the area at the time the spell is cast can make a Wisdom (Perception) check against your spell save DC to recognize the terrain as hazardous before entering it.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/spells/spike-growth",
+  "mapping": "5e-api-spell",
+  "properties": {
+    "form": "spell"
+  },
+  "featureIds": [
+    "feat.difficult-terrain",
+    "feat.damage"
+  ],
+  "featureParams": {
+    "feat.damage": {
+      "resolutionKind": "none (per 5 feet moved)",
+      "damageType": "piercing",
+      "scaling": {
+        "by": "flat",
+        "values": {
+          "1": "2d4"
+        }
+      }
+    }
+  }
+}

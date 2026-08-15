@@ -4,84 +4,25 @@
   "systemIds": [
     "sys.dnd5e"
   ],
-  "description": "Lets the item's user cast a specific spell (named in the item's own notes), without expending a spell slot of their own.",
+  "description": "Lets the item's user cast a specific spell, without expending a spell slot of their own.",
   "mechanics": {
     "type": "active",
-    "text": "On activation, casts a predetermined spell once — which spell is fixed by the item, but its level (and so its tier here) varies by item."
+    "text": "On activation, casts a predetermined spell once. Which spell (name, level, and save DC if it has one) lives entirely in this record's own featureParams — spell level means nothing without the spell's own name attached, so the two are never split across tiers and params."
   },
   "budgetCost": 3,
   "tags": {
     "categories": [
-      "spell",
       "item"
     ],
     "propertyHints": [
       "utility"
-    ]
+    ],
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": []
   },
   "synergizesWith": [],
   "dependsOn": [],
-  "conflictsWith": [],
-  "tiers": [
-    {
-      "id": "cantrip",
-      "name": "Cantrip",
-      "shortName": "0",
-      "budgetCost": 1
-    },
-    {
-      "id": "level-1",
-      "name": "1st Level",
-      "shortName": "1st",
-      "budgetCost": 3
-    },
-    {
-      "id": "level-2",
-      "name": "2nd Level",
-      "shortName": "2nd",
-      "budgetCost": 5
-    },
-    {
-      "id": "level-3",
-      "name": "3rd Level",
-      "shortName": "3rd",
-      "budgetCost": 7
-    },
-    {
-      "id": "level-4",
-      "name": "4th Level",
-      "shortName": "4th",
-      "budgetCost": 9
-    },
-    {
-      "id": "level-5",
-      "name": "5th Level",
-      "shortName": "5th",
-      "budgetCost": 11
-    },
-    {
-      "id": "level-6",
-      "name": "6th Level",
-      "shortName": "6th",
-      "budgetCost": 14
-    },
-    {
-      "id": "level-7",
-      "name": "7th Level",
-      "shortName": "7th",
-      "budgetCost": 17
-    },
-    {
-      "id": "level-8",
-      "name": "8th Level",
-      "shortName": "8th",
-      "budgetCost": 20
-    },
-    {
-      "id": "level-9",
-      "name": "9th Level",
-      "shortName": "9th",
-      "budgetCost": 24
-    }
-  ]
+  "conflictsWith": []
 }

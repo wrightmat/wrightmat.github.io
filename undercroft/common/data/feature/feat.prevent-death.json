@@ -1,0 +1,25 @@
+{
+  "id": "feat.prevent-death",
+  "name": "Prevent Death",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Negates the next fatal blow or instant-kill effect against the target, then ends.",
+  "mechanics": {
+    "type": "active",
+    "text": "The first time the target would die while this is active — dropping to 0 hit points from damage, or being subjected to an instant-kill effect — that death is negated instead (the target drops to 1 hit point if it was damage), and this Feature ends. Distinct from feat.revives-dead (restores an already-dead creature, rather than preventing the death in the first place)."
+  },
+  "budgetCost": 6,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "defense"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

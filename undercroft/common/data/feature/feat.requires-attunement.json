@@ -1,0 +1,24 @@
+{
+  "id": "feat.requires-attunement",
+  "name": "Requires Attunement",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Only works while attuned to it, and attunement is a scarce resource shared across everything a creature carries.",
+  "mechanics": {
+    "type": "active",
+    "text": "This item does nothing until its owner attunes to it, and a creature can only be attuned to a limited number of items at once — a real cost independent of whatever else this item does."
+  },
+  "budgetCost": -2,
+  "tags": {
+    "categories": [
+      "item"
+    ],
+    "propertyHints": [
+      "drawback"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

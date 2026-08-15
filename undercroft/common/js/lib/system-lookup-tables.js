@@ -137,6 +137,17 @@ export function deriveLookupTables(systemPayload) {
       shortName: entry.shortName,
     })),
     senses: valuesOf(fields, "senses").map((entry) => ({ id: entry.sourceId, name: String(entry.name || "").toLowerCase() })),
+    // sys.dnd5e.json's own "rarity"/"form"/"activation" fields — Vault's
+    // own generator-property vocabulary (see vault/CLAUDE.md). Plain
+    // value-name lists (no sourceId — nothing in DDB's own numeric scheme
+    // needs these), resolved live off the System record so mapping-custom-
+    // functions.js's own srdItemProperties can match SRD source text
+    // against whatever this System's own author actually named each value
+    // TODAY, rather than a second, hardcoded copy of the same vocabulary
+    // going stale the moment someone renames/adds/removes a value in Loom.
+    rarities: valuesOf(fields, "rarity").map((entry) => entry.name),
+    itemForms: valuesOf(fields, "form").map((entry) => entry.name),
+    activationTypes: valuesOf(fields, "activation").map((entry) => entry.name),
     // Legacy SIZES exposed the short DDB size code ("tiny"/"sm"/"med"/...) as
     // `value` (matched directly against DDB's own raw size strings in
     // mapping-custom-functions.js's determineSize) — the System's own field

@@ -2240,6 +2240,174 @@ frontmatter's own terse `source:` field, e.g. `"MM"`), not left mixed into
 the notes text. No heading found at all (not every statblock has one) — the
 whole text is notes, `sources` from this path stays empty.
 
+### Feature-import pipeline is now shared across Crucible and Vault (`common/js/lib/feature-import-core.js`, `common/js/lib/feature-params-editor.js`)
+
+Everything documented above about `monster-feature-matching.js` — matching by
+name/description similarity (`findMatch`), collision-safe shared-template ids
+(`resolveTemplateId`/`isReusableTemplateCandidate`), the `options` choice-
+effect menu (`detectChoiceEffectGroup`/`splitEmbeddedEffectOptions`/
+`saveOptionsFeature`), named-tier resolution (`resolveNamedTier`/
+`NAMED_TIER_PATTERNS`/`baseAbilityName`), and the id/slug helpers — now lives
+in `feature-import-core.js`, a kind-agnostic module neither Crucible's nor
+Vault's own importer hardcodes anything monster/spell/item-specific into.
+`monster-feature-matching.js` itself keeps only what's genuinely about
+PARSING 5e monster stat-block prose (`parseWeaponAttack`/`parseSaveEffect`/
+Multiattack extraction/`knownNameSubstitute`'s monster-name genericizing) and
+imports the shared pieces it needs. The two functions that used to hardcode
+`"monster"` now take the caller's own category set instead:
+`isReusableTemplateCandidate(feature, allowedCategories)`/
+`resolveTemplateId(baseId, existingFeatures, allowedCategories, suffixWord)`
+— Crucible passes `["monster"]`/`"monster"`, Vault passes
+`["spell", "item"]`/`"effect"`. `saveOptionsFeature`'s ctx object is
+similarly generic now: `category` (the Feature's own `tags.categories`
+entry), `recordSlug` (id-prefix for a record-scoped one-off, was
+`monsterSlug`), and `substitute` (the caller's own name-genericizing
+function — monster's own `knownNameSubstitute` closure, or identity for a
+source with nothing to genericize) replace the old monster-only params.
+
+Crucible's own weapon-attack/rider/save-effect/`options` editor UI
+(previously the *only* place any of that could be edited — hand-editing the
+raw JSON below was the only alternative) moved out of `crucible/js/app.js`
+into `feature-params-editor.js` as `createFeatureParamsEditor(hooks)`, an
+injectable factory rather than a set of module-level functions closing over
+Crucible's own globals. `hooks`: `getRecord()` (the record currently being
+edited), `onParamsChanged()` (called after a `featureParams` patch — the
+caller owns persisting+re-rendering), `saveFeature(feature)` (persists an
+`options`-menu edit, which writes to the Feature record itself, never the
+current record's own `featureParams`), `onFeatureSaved(feature)`, and
+`getAbilityFieldDefs()` (the active System's own ability key/label list, for
+the weapon-attack/save-effect ability-score selects — Vault's own instance
+returns `[]` since none of its own mechanics types reference an ability
+score, and those branches simply never render for anything Vault's own
+candidatePool can produce). Both Crucible and Vault instantiate one of these
+at module load and call `.renderFeatureParamsEditor(feature, container)`
+from their own feature-selection handler. **No tier-editing UI exists
+anywhere in the suite** — a Feature's own `tiers` array is still only ever
+authored through Loom's generic Library JSON editor; this extraction didn't
+change that.
+
+### Vault's own spell/item import (`common/js/lib/vault-feature-matching.js`, `5e-api-spell.json`, `5e-api-magic-item.json`)
+
+Mirrors monster import's own architecture (`convertSpellOrItemToFeatures`
+turns an Effect's own imported `stats` into real `featureIds`, called
+automatically on every save — Loom's `saveEntity` for a bulk/Mapping-tool
+import, Vault's own `handleSave` for the same reason Crucible's bypasses
+`saveEntity`) but with one deliberate difference: **the mapping does the
+structured-field extraction, not a prose parser.** The 5e API gives a
+spell's own damage/save/healing shape as literal JSON
+(`damage.damage_at_slot_level`, `dc.dc_type`/`dc_success`,
+`heal_at_slot_level`) rather than English sentences to regex against, so
+there's no `parseWeaponAttack`/`parseSaveEffect`-equivalent text parser here
+at all — `5e-api-spell.json`'s own `srdSpellStats` custom function
+(`mapping-custom-functions.js`) builds the target `stats` shape directly
+from those fields in one pass (bound once via a `with` node, the same
+`profSplit`-style pattern the monster mapping already uses for its own
+multi-field subcomputations), and `vault-feature-matching.js` only ever
+matches/creates a Feature from that already-structured data.
+
+An Effect record's own `stats` contract (consumed then deleted by
+`convertSpellOrItemToFeatures`, same "consumed, not left dangling" pattern
+monster import's own `delete stats[groupKey]` follows) —
+
+For a spell (`5e-api-spell.json`):
+
+```json
+"stats": {
+  "name": "Fireball", "level": 3, "school": "Evocation",
+  "castingTime": "1 action", "range": "150 feet",
+  "components": "V, S, M (A tiny ball of bat guano and sulfur.)",
+  "duration": "Instantaneous", "concentration": false, "ritual": false,
+  "description": "...", "higherLevel": "...",
+  "mechanic": {
+    "kind": "damage", "resolutionKind": "save",
+    "saveAbility": "dexterity", "saveEffect": "half", "damageType": "fire",
+    "areaShape": "sphere", "areaSize": 20,
+    "scaling": { "by": "slot", "values": { "3": "8d6", "4": "9d6", "...": "..." } }
+  }
+}
+```
+
+`mechanic.kind` is `"damage"` (→ `mechanics.type: "spell-damage"`),
+`"heal"` (→ `"spell-healing"`), or absent — a buff/utility/condition-only
+spell (Bless, Hold Person — confirmed live against the real 5e API: the
+overwhelming majority of non-damage/non-healing spells) has no recognized
+mechanic at all, and gets the exact same faithful fallback an unparseable
+monster trait gets: a record-scoped one-off Feature
+(`feat.<effectSlug>-<slug>`, `mechanics.scope: "unique"`) holding
+`stats.description` verbatim, immediately editable, never silently dropped.
+`scaling.values` is a `{level: diceString}` map taken directly from the
+source's own `damage_at_slot_level`/`damage_at_character_level`/
+`heal_at_slot_level` — `scaling.by` is `"slot"` or `"character-level"`
+depending on which the source provided (Fire Bolt's own cantrip scaling is
+character-level; a leveled spell like Fireball/Cure Wounds is slot-level).
+**Never resolved into a Feature tier** — unlike a monster's own Recharge/
+N-per-Day frequency (a fixed property of that one monster), a spell's own
+slot level is chosen fresh at every cast, so the whole scaling table lives
+on the shared template's own `featureParams` and Vault's own
+`spellDamageDescriptionText`/`spellHealingDescriptionText`
+(`vault/js/app.js`) render the lowest level as the headline number plus
+every other level as a trailing scaling note, rather than picking one.
+
+For a magic item (`5e-api-magic-item.json`):
+
+```json
+"stats": {
+  "name": "Ring of Protection", "category": "Ring", "rarity": "Rare",
+  "requiresAttunement": true, "description": "...",
+  "variantGroup": null, "variantTier": null,
+  "mechanic": { "kind": "passive-bonus", "bonusValue": 1, "bonusTarget": "AC and saving throws while wearing this ring" }
+}
+```
+
+A rarity-linked bonus family (Weapon +1/+2/+3, Armor +1/+2/+3, Ammunition
++1/+2/+3, Wand of the War Mage +1/+2/+3) is given to us **already grouped by
+the SRD itself** — confirmed live against the real 5e API: the parent list
+entry ("Weapon, +1, +2, or +3") carries `variant: false` plus a `variants`
+array naming each concrete child; each child carries `variant: true` and its
+own `index` prefixed with the parent's own slug ("weapon-1" → group
+"weapon"). The parent row isn't a concrete item a GM would ever hand a
+player — `srdItemStats` returns `null` for it, and `5e-api-magic-item.json`'s
+own `kind`/`name` fields (`srdItemKindFromStats`/`srdItemNameFromStats`)
+both read that as "skip this row" (`undefined`, never `""` — `deriveEntities`
+in `loom/js/app.js` treats an empty-string kind as a valid, if blank,
+entity, so the distinction matters). Each CHILD becomes its own Effect
+record, `stats.variantGroup`/`stats.variantTier` telling
+`vault-feature-matching.js`'s own `resolvePassiveBonusFeature` to fold it
+into ONE shared Feature (named after the group, e.g. "weapon") as a
+**Feature tier** rather than a live-computed `featureParams` field — unlike a
+spell's own per-cast slot level, a specific owned magic item really is
+exactly one fixed rarity/bonus tier, precisely what Tiers already model.
+Every other magic item's remaining prose (paragraph 1 onward, after the
+flavor/rarity header and any `stats.charges` clause are stripped out) is
+segmented into `stats.candidateUnits` — one per paragraph, or one per `"* "`
+bullet within a paragraph — and each unit is matched independently against
+`vault-feature-matching.js`'s own clause-recognizer library, the same
+"process every atomic unit on its own" treatment monster import already
+gives a stat block's traits/actions. One Effect can produce several
+Features this way (a multi-ability item genuinely needs several), never one
+blob named after the item — see that module's own top comment for why the
+first version of this pipeline got that wrong, and its `CLAUSE_RECOGNIZERS`
+list for the concrete recognized shapes. A unit matching nothing recognized
+still becomes its own small one-off Feature scoped to just that one clause,
+never the item's whole remaining text.
+
+**Tiers vs featureParams, as a suite-wide rule, not just a spell/item one:**
+tiers are for a small closed set of named variants of the same mechanic (a
+record picks exactly one); featureParams are for an open-ended axis. The
+finer point that took two rounds to get right: set size alone doesn't
+decide it — a value only becomes a tier when it's a magnitude ladder that's
+genuinely *independent* of whatever "which X" param the Feature also
+carries (resistance/immunity/vulnerability is independent of *which*
+damage type). A value that's only meaningful *paired with* a companion
+free-text value (a spell's own level means nothing without its own name) is
+one compound fact, and both halves stay in featureParams together — never
+split across the tiers/params boundary, the same rule this suite already
+applies to never splitting a name from its own data elsewhere. Check
+whether an existing Feature already models the same axis (its tier ids, or
+lack of tiers, reused verbatim) before inventing a new shape — keeps every
+Feature free of one System's own hardcoded vocabulary, so the same shape
+could serve a different System later.
+
 ### Event naming
 
 Some cross-module events use an `undercroft:*` prefix; others a leftover

@@ -1,0 +1,25 @@
+{
+  "id": "feat.hover",
+  "name": "Hover",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Lets the wearer float just above the ground, ignoring difficult terrain and unstable/nonsolid surfaces.",
+  "mechanics": {
+    "type": "active",
+    "text": "While active, the wearer moves just above the ground rather than across it — crossing water, lava, or other nonsolid/unstable surfaces freely and leaving no tracks, without granting a true flying speed."
+  },
+  "budgetCost": 3,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "mobility"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

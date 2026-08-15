@@ -1,0 +1,25 @@
+{
+  "id": "feat.prevent-decay",
+  "name": "Prevent Decay",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Halts decay and prevents a corpse or object from further deteriorating.",
+  "mechanics": {
+    "type": "active",
+    "text": "While active, the target is protected from decay and can't become undead. Time spent under this effect doesn't count against any related time limit (such as a resurrection spell's own deadline)."
+  },
+  "budgetCost": 1,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "utility"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

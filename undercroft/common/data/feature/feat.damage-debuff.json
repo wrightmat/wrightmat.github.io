@@ -1,0 +1,25 @@
+{
+  "id": "feat.damage-debuff",
+  "name": "Damage Debuff",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Reduces the damage the target itself deals — the inverse of a damage bonus.",
+  "mechanics": {
+    "type": "active",
+    "text": "While active, the target's own damage output is reduced, as described in featureParams.reduction (e.g. half damage with Strength-based weapon attacks)."
+  },
+  "budgetCost": 3,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "debuff"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

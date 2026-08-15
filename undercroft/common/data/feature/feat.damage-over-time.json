@@ -1,0 +1,24 @@
+{
+  "id": "feat.damage-over-time",
+  "name": "Damage Over Time",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Inflicts a recurring wound that keeps dealing damage each turn until it's ended.",
+  "mechanics": {
+    "type": "active",
+    "text": "On a hit, the target takes recurring damage at the start of each of its own turns (this record's own featureParams.damageDice/damageType) until the effect ends, typically via its own saving throw or a check."
+  },
+  "budgetCost": 6,
+  "tags": {
+    "categories": [
+      "item"
+    ],
+    "propertyHints": [
+      "damage"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

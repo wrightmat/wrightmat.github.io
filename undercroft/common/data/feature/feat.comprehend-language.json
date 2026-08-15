@@ -1,0 +1,25 @@
+{
+  "id": "feat.comprehend-language",
+  "name": "Comprehend Language",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Lets the user understand and/or communicate in a way they otherwise couldn't — a spoken/written language, or a normally-mute creature type.",
+  "mechanics": {
+    "type": "active",
+    "text": "While active, the user can understand (and often speak with) something they otherwise couldn't — another spoken/written language, or beasts/plants/other normally-uncommunicative creatures. Which one lives in this record's own featureParams.understands, when the source names it specifically."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "utility"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

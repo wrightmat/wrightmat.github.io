@@ -1,0 +1,17 @@
+{
+  "kind": "effect",
+  "index": "water-breathing",
+  "name": "Water Breathing",
+  "notes": "This spell gives a maximum of ten willing creatures within range and you can see, the ability to breathe underwater until the end of its term. Affected creatures also retain their normal breathing pattern.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/spells/water-breathing",
+  "mapping": "5e-api-spell",
+  "properties": {
+    "form": "spell"
+  },
+  "featureIds": [
+    "feat.water-breathing"
+  ]
+}

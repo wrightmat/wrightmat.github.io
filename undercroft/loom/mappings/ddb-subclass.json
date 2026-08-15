@@ -1,6 +1,7 @@
 {
   "type": "pipeline",
   "$source": "ddb",
+  "$description": "D&D Beyond Subclass",
   "source": "@subclasses",
   "steps": [
     {
@@ -8,20 +9,53 @@
       "item": {
         "type": "object",
         "fields": {
-          "kind": { "type": "field", "bind": "='subclass'" },
-          "index": { "type": "custom", "fn": "slug" },
-          "url": { "type": "field", "bind": "@root.url" },
-          "name": { "type": "field", "bind": "@name" },
+          "kind": {
+            "type": "field",
+            "bind": "='subclass'"
+          },
+          "index": {
+            "type": "custom",
+            "fn": "slug"
+          },
+          "url": {
+            "type": "field",
+            "bind": "@root.url"
+          },
+          "name": {
+            "type": "field",
+            "bind": "@name"
+          },
           "class": {
             "type": "object",
             "fields": {
-              "index": { "type": "custom", "fn": "slug", "args": { "path": "root.name" } },
-              "url": { "type": "field", "bind": "@root.url" },
-              "name": { "type": "field", "bind": "@root.name" }
+              "index": {
+                "type": "custom",
+                "fn": "slug",
+                "args": {
+                  "path": "root.name"
+                }
+              },
+              "url": {
+                "type": "field",
+                "bind": "@root.url"
+              },
+              "name": {
+                "type": "field",
+                "bind": "@root.name"
+              }
             }
           },
-          "summary": { "type": "field", "bind": "@descLines.0" },
-          "description": { "type": "custom", "fn": "joinLines", "args": { "skip": 1 } },
+          "summary": {
+            "type": "field",
+            "bind": "@descLines.0"
+          },
+          "description": {
+            "type": "custom",
+            "fn": "joinLines",
+            "args": {
+              "skip": 1
+            }
+          },
           "features": {
             "type": "pipeline",
             "source": "@features",
@@ -31,9 +65,18 @@
                 "item": {
                   "type": "object",
                   "fields": {
-                    "name": { "type": "field", "bind": "@name" },
-                    "level": { "type": "field", "bind": "@level" },
-                    "description": { "type": "custom", "fn": "joinLines" }
+                    "name": {
+                      "type": "field",
+                      "bind": "@name"
+                    },
+                    "level": {
+                      "type": "field",
+                      "bind": "@level"
+                    },
+                    "description": {
+                      "type": "custom",
+                      "fn": "joinLines"
+                    }
                   }
                 }
               }

@@ -1,0 +1,81 @@
+{
+  "id": "feat.ability-score-increase",
+  "name": "Ability Score Increase",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Boosts one of the creature's ability scores, from a small edge up through a score no mortal frame reaches naturally.",
+  "mechanics": {
+    "type": "active",
+    "text": "While active, either sets the chosen ability score to a fixed value or increases it by a flat amount, depending on tier. Which ability lives in this record's own featureParams.ability, not on the shared Feature — the tier ladder itself (how HIGH the score goes) is independent of which score is being raised."
+  },
+  "budgetCost": 3,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "buff"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "set-19",
+      "name": "Set to 19",
+      "shortName": "19",
+      "budgetCost": 4
+    },
+    {
+      "id": "set-21",
+      "name": "Set to 21",
+      "shortName": "21",
+      "budgetCost": 6
+    },
+    {
+      "id": "set-23",
+      "name": "Set to 23",
+      "shortName": "23",
+      "budgetCost": 9
+    },
+    {
+      "id": "set-25",
+      "name": "Set to 25",
+      "shortName": "25",
+      "budgetCost": 10
+    },
+    {
+      "id": "set-27",
+      "name": "Set to 27",
+      "shortName": "27",
+      "budgetCost": 15
+    },
+    {
+      "id": "set-29",
+      "name": "Set to 29",
+      "shortName": "29",
+      "budgetCost": 22
+    },
+    {
+      "id": "increase-1",
+      "name": "Increase by 1",
+      "shortName": "+1",
+      "budgetCost": 3
+    },
+    {
+      "id": "increase-2",
+      "name": "Increase by 2",
+      "shortName": "+2",
+      "budgetCost": 6
+    },
+    {
+      "id": "increase-4",
+      "name": "Increase by 4",
+      "shortName": "+4",
+      "budgetCost": 10
+    }
+  ]
+}

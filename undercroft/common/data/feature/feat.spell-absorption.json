@@ -1,0 +1,24 @@
+{
+  "id": "feat.spell-absorption",
+  "name": "Spell Absorption",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Cancels an incoming spell and stores its energy for later use.",
+  "mechanics": {
+    "type": "active",
+    "text": "On a reaction, absorbs a spell targeting only the user, canceling its effect and storing its energy — usable later to power something else, up to a limit."
+  },
+  "budgetCost": 7,
+  "tags": {
+    "categories": [
+      "item"
+    ],
+    "propertyHints": [
+      "defense"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

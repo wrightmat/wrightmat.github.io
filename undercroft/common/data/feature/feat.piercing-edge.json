@@ -2,7 +2,7 @@
   "id": "feat.piercing-edge",
   "name": "Piercing Edge",
   "systemIds": ["sys.dnd5e"],
-  "description": "The effect cuts through defenses that would normally blunt it.",
+  "description": "The paired damaging effect ignores resistance to its damage type.",
   "mechanics": {
     "type": "passive",
     "text": "The paired damaging effect ignores resistance to its damage type."

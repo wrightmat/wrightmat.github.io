@@ -1,0 +1,54 @@
+{
+  "kind": "effect",
+  "index": "staff-of-fire",
+  "name": "Staff of Fire",
+  "notes": "Staff, very rare (requires attunement by a druid, sorcerer, warlock, or wizard)\n\nYou have resistance to fire damage while you hold this staff.\n\nThe staff has 10 charges. While holding it, you can use an action to expend 1 or more of its charges to cast one of the following spells from it, using your spell save DC: burning hands (1 charge), fireball (3 charges), or wall of fire (4 charges).\n\nThe staff regains 1d6 + 4 expended charges daily at dawn. If you expend the last charge, roll a d20. On a 1, the staff blackens, crumbles into cinders, and is destroyed.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/magic-items/staff-of-fire",
+  "mapping": "5e-api-magic-item",
+  "charges": {
+    "max": 10,
+    "rechargeFormula": "1d6 + 4"
+  },
+  "properties": {
+    "rarity": "very-rare",
+    "form": "staff",
+    "activation": "action"
+  },
+  "featureIds": [
+    "feat.damage-modification",
+    "feat.spell-menu",
+    "feat.requires-attunement",
+    "feat.charges"
+  ],
+  "featureTiers": {
+    "feat.damage-modification": "resistance"
+  },
+  "featureParams": {
+    "feat.damage-modification": {
+      "damageType": "fire"
+    },
+    "feat.spell-menu": {
+      "spells": [
+        {
+          "name": "burning hands",
+          "charges": 1
+        },
+        {
+          "name": "fireball",
+          "charges": 3
+        },
+        {
+          "name": "wall of fire",
+          "charges": 4
+        }
+      ]
+    },
+    "feat.charges": {
+      "max": 10,
+      "rechargeFormula": "1d6 + 4"
+    }
+  }
+}

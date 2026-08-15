@@ -1,0 +1,26 @@
+{
+  "id": "feat.barrier",
+  "name": "Barrier",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Erects a barrier that certain creatures can't pass or reach through.",
+  "mechanics": {
+    "type": "active",
+    "text": "While active, a barrier fills featureParams.shape — fixed in place or moving with the user — that featureParams.exemptions can't pass or reach through, though anyone exempted can act normally at or across it."
+  },
+  "budgetCost": 3,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "defense",
+      "utility"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

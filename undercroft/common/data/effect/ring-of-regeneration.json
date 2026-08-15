@@ -1,0 +1,24 @@
+{
+  "kind": "effect",
+  "index": "ring-of-regeneration",
+  "name": "Ring of Regeneration",
+  "notes": "Ring, very rare (requires attunement)\n\nWhile wearing this ring, you regain 1d6 hit points every 10 minutes, provided that you have at least 1 hit point. If you lose a body part, the ring causes the missing part to regrow and return to full functionality after 1d6 + 1 days if you have at least 1 hit point the whole time.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/magic-items/ring-of-regeneration",
+  "mapping": "5e-api-magic-item",
+  "properties": {
+    "rarity": "very-rare",
+    "form": "ring"
+  },
+  "featureIds": [
+    "feat.healing",
+    "feat.requires-attunement"
+  ],
+  "featureParams": {
+    "feat.healing": {
+      "healingDice": "1d6"
+    }
+  }
+}

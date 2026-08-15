@@ -1,0 +1,26 @@
+{
+  "id": "feat.grants-advantage",
+  "name": "Grants Advantage",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Gives the target advantage on a specific roll type — attack rolls, saving throws, or a described combination — rather than a flat bonus.",
+  "mechanics": {
+    "type": "active",
+    "text": "While active, the target rolls twice and takes the higher result on featureParams.rollType. Distinct from feat.skill-bonus (a specific skill/ability check, tiered advantage/+2/+5) and feat.modifies-roll (a fixed numeric or bonus-die modifier, not advantage)."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "utility",
+      "combat"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

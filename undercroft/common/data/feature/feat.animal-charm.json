@@ -1,0 +1,24 @@
+{
+  "id": "feat.animal-charm",
+  "name": "Animal Charm",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Wins over a nearby creature via a contested check, turning it friendly.",
+  "mechanics": {
+    "type": "active",
+    "text": "When a qualifying creature comes within range, a contested check determines whether it becomes friendly and follows the user's commands for as long as the effect is maintained."
+  },
+  "budgetCost": 4,
+  "tags": {
+    "categories": [
+      "item"
+    ],
+    "propertyHints": [
+      "control"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

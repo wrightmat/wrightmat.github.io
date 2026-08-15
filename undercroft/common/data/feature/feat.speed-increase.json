@@ -1,0 +1,25 @@
+{
+  "id": "feat.speed-increase",
+  "name": "Speed Increase",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Increases the creature's own walking speed.",
+  "mechanics": {
+    "type": "active",
+    "text": "While active, changes the wearer's own walking speed — doubling it, setting a floor beneath which it never falls, or adding a flat bonus, depending on this record's own featureParams.mode. Distinct from feat.speed-modification, which GRANTS an entirely new movement type (climbing/swimming/burrowing/flying) rather than changing the existing walking speed."
+  },
+  "budgetCost": 4,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "mobility"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

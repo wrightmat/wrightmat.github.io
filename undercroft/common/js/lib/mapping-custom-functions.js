@@ -41,6 +41,229 @@ export function createMappingCustomFunctions({
 // (a bare number; an array of {index, name} ability refs). Not derivable via
 // the formula engine (no string-splitting/regex functions), and fuzzier than
 // a clean rename — hence a custom function rather than a `field` bind.
+// Short 5e API ability-score index ("dex") -> the full lowercase word
+// ("dexterity") vault-feature-matching.js's own featureParams.saveAbility
+// convention expects — mirrors parseSaveEffect's own `ability` field
+// (monster-feature-matching.js), which always stores the full word too. A
+// module-level constant, not a property on the returned custom-functions
+// object below — every custom function is invoked as a bare `fn(...args)`
+// call by mapping-engine.js's own runCustom (`const fn = customFunctions[name];
+// fn(...args)`, never `customFunctions[name](...)`), so `this` inside a
+// shorthand method there is never bound to that object.
+const ABILITY_INDEX_TO_NAME = { str: "strength", dex: "dexterity", con: "constitution", int: "intelligence", wis: "wisdom", cha: "charisma" };
+
+// A "this X has N charges..."/"...regains M expended charges daily at
+// dawn..." clause is Effect-level activation data (mirrors Vault's own
+// Activation generator-property field, see vault/CLAUDE.md), never Feature
+// content — extracted here, structurally, so it never becomes a candidate
+// ability unit that vault-feature-matching.js's own clause-recognizers
+// would otherwise have to (mis)classify. Best-effort: a charges clause
+// that doesn't match either pattern just stays in the remaining prose and
+// becomes an ordinary (likely residual/unmatched) candidate unit instead —
+// never a hard failure. Module-level (not a property on the returned
+// custom-functions object) for the same bare-call reason as
+// ABILITY_INDEX_TO_NAME above.
+const WORD_TO_NUMBER = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10 };
+
+function srdExtractCharges(paragraphs) {
+  const joined = paragraphs.join(" ");
+  const maxMatch = joined.match(/has (\d+) charges/i);
+  // Several real items count their own limited-use resource with a
+  // different noun than "charges" entirely — Necklace of Fireballs' own
+  // "1d6 + 3 beads", Dust of Dryness' own "1d6 + 4 pinches" — and the
+  // count itself is sometimes a DICE FORMULA, not a fixed number (kept as
+  // a string in that case, same convention `rechargeFormula` already
+  // uses, since `Number("1d6 + 3")` is meaningless). Checked only when the
+  // plain "has N charges" pattern above didn't already match.
+  // Anchored near the start of its own sentence — confirmed live (Wand of
+  // Binding) that an unanchored search over the WHOLE joined text can
+  // match a per-option charge cost buried in an unrelated spell-menu
+  // clause ("hold monster (5 charges)") instead of the item's own real
+  // total, which always appears at the very start of its own sentence.
+  const qtyMatch = !maxMatch && joined.match(/(?:^|\.\s+)[\w\s]{0,40}?(\d+d\d+(?:\s*\+\s*\d+)?|\d+) (?:charges|beads|pinches|doses)\b/i);
+  // Chime of Opening's own "The chime can be used ten times" — a genuinely
+  // different vocabulary again (uses, not charges/beads/pinches), with a
+  // spelled-out number rather than a digit.
+  const usedTimesMatch = !maxMatch && !qtyMatch && joined.match(/can be used (\w+) times\b/i);
+  // "expended" is optional — confirmed real: this vault's own custom items
+  // often phrase the same clause as "regains 1d6 charges daily at dawn"
+  // (Amulet of the Black Skull), never using the 5e API's own "expended"
+  // wording at all. Widening this costs nothing for text that DOES say
+  // "expended" — still matches identically.
+  const rechargeMatch = joined.match(/regains ([\w\s+d]+?) (?:expended )?charges?[^.]*/i);
+  if (!maxMatch && !qtyMatch && !usedTimesMatch && !rechargeMatch) return { charges: null, remaining: paragraphs };
+  const maxValue = maxMatch
+    ? Number(maxMatch[1])
+    : qtyMatch
+      ? (/^\d+$/.test(qtyMatch[1]) ? Number(qtyMatch[1]) : qtyMatch[1].replace(/\s+/g, ""))
+      : usedTimesMatch
+        ? WORD_TO_NUMBER[usedTimesMatch[1].toLowerCase()] || null
+        : null;
+  const charges = {
+    ...(maxValue !== null && maxValue !== undefined ? { max: maxValue } : {}),
+    ...(rechargeMatch ? { rechargeFormula: rechargeMatch[1].trim() } : {}),
+  };
+  // The charges sentence is usually its own paragraph (or two, split
+  // across the granting-paragraph and a later regain-paragraph) — but NOT
+  // always: confirmed live (Helm of Teleportation, and the vast majority of
+  // wand/staff/rod items) that the SAME paragraph very often carries both
+  // the charges grant AND the item's own real ability text in one breath
+  // ("This wand has 7 charges. While holding it, you can use an action to
+  // cast the magic missile spell from it. ..."). Stripping the WHOLE
+  // paragraph whenever it merely CONTAINS a charges clause silently
+  // discarded the real ability text right along with it — confirmed as the
+  // single largest cause of magic items importing with zero Features at
+  // all (26+ items in one real bulk-import sweep). Fixed by stripping only
+  // the matching SENTENCE(S) within each paragraph (naive split on ". ",
+  // good enough here since neither charges phrasing itself ever contains an
+  // internal period), keeping the rest of that paragraph's own sentences as
+  // a real candidate unit.
+  // The beads/pinches/doses/charges-count check below is anchored near the
+  // START of its own sentence (`^.{0,40}?`) — confirmed live (Wand of
+  // Binding) that an UNANCHORED version wrongly stripped an entire real
+  // "cast one of the following spells" clause, because "hold monster (5
+  // charges) or hold person (2 charges)" — each spell's own PER-OPTION
+  // charge cost, deep inside an unrelated sentence — matched the same
+  // bare "N charges" shape as the item's own real total-charges
+  // declaration, which always appears at the very start of its own
+  // sentence in every real example checked.
+  const remaining = paragraphs
+    .map((paragraph) =>
+      paragraph
+        .split(/(?<=\.)\s+/)
+        .filter(
+          (sentence) =>
+            !/\bhas \d+ charges\b/i.test(sentence) &&
+            !/regains [\w\s+d]+ (?:expended )?charges?/i.test(sentence) &&
+            !/^.{0,40}?\b(?:\d+d\d+(?:\s*\+\s*\d+)?|\d+)\s+(?:charges|beads|pinches|doses)\b/i.test(sentence) &&
+            !/can be used \w+ times\b/i.test(sentence)
+        )
+        .join(" ")
+        .trim()
+    )
+    .filter(Boolean);
+  return { charges, remaining };
+}
+
+// Vault's own generator-property fields (Rarity/Activation/Item Form) are
+// System-agnostic BY DESIGN in Vault's own code (`vault/js/lib/tables.js`'s
+// `getSystemPropertyTypes` has zero hardcoded notion of what "Rarity" even
+// is — it reads whichever of the active System's own fields happen to carry
+// a cost/targetBudget shape) — but THIS file is the 5e-API-specific mapping
+// layer, whose entire job is translating one concrete source's own
+// vocabulary into the target shape. Hardcoding sys.dnd5e's own field KEYS
+// ("rarity"/"form"/"activation" — the property names this function returns)
+// here is correct, not a repeat of the "don't hardcode System concepts"
+// rule — that rule is about the SHARED/generic code (vault-feature-
+// matching.js, tables.js), which still has no idea these concepts exist;
+// only this SRD-specific mapping does, exactly the same way
+// `resolveCreatureType` above already looks up the System's own
+// creatureTypes vocabulary for monster import.
+//
+// What must NOT be hardcoded here is the System's own DATA — which values
+// actually exist for Rarity/Item Form/Activation, and what their ids are.
+// `slugify(value.name)` (tables.js's own `toLegacyPropertyType`) is
+// duplicated below as a pure algorithm only (matches tables.js's own
+// `slugify` byte for byte); the VALUE NAMES themselves are read live off
+// the System record every time via `resolveLivePropertyValue`, never a
+// second hardcoded copy of that vocabulary — a Loom edit to any of those
+// fields (rename/add/remove a value) takes effect on the very next import
+// with zero code changes here, same guarantee `resolveCreatureType` above
+// already gives monster import for its own `creatureTypes` field.
+function slugifyPropertyValueName(name) {
+  return String(name || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
+// Matches a raw SRD-sourced name/phrase against the System's own LIVE list
+// of value names for one property field (`env.lookupTables.rarities`/
+// `.itemForms`/`.activationTypes` — system-lookup-tables.js's own
+// `deriveLookupTables`, the exact same live-read mechanism
+// `resolveCreatureType` above already uses for `creatureTypes`). Case-
+// insensitive, with a trailing-"s" fold in EITHER direction so the SRD's
+// own plural category names ("Wondrous Items") resolve against the
+// System's own singular value name ("Wondrous Item") without needing a
+// hardcoded alias table for that one case — confirmed live against every
+// one of the 10 real `equipment_category.name` values the whole 362-item
+// SRD magic-items list actually uses: every one that has a corresponding
+// System value resolves this way; "Ammunition" (5 real items) has no
+// matching System value at all and correctly returns `null` rather than
+// guessing. Returns `null` (never a fabricated id) when nothing in the
+// System's own live list matches.
+function resolveLivePropertyValue(candidateName, liveNames) {
+  if (!candidateName) return null;
+  const target = String(candidateName).trim().toLowerCase();
+  if (!target) return null;
+  const strippedTarget = target.replace(/s$/, "");
+  const names = Array.isArray(liveNames) ? liveNames : [];
+  const match = names.find((name) => {
+    const n = String(name || "").trim().toLowerCase();
+    return n === target || n === strippedTarget || n.replace(/s$/, "") === target;
+  });
+  return match || null;
+}
+
+// Best-effort activation CONCEPT detection from an item's own prose — "use
+// an action to..."/"as a bonus action..."/"as a reaction..." are the three
+// real phrasings confirmed across charged/activated items, checked in
+// specificity order (an item that mentions "as a bonus action" also almost
+// always contains the bare word "action" elsewhere, so the more specific
+// phrasing must win). Returns the raw matched CONCEPT text, not a System
+// value id — resolveLivePropertyValue (called from srdItemProperties
+// below) is what turns this into whichever real Activation value the
+// System actually defines. A genuinely passive item (Ring of Protection,
+// always-on, no activation verb at all in its own text) correctly returns
+// `null` — omitted, not guessed, the same "missing data degrades
+// gracefully" rule `computeBudget` (vault/js/lib/generator.js) already
+// relies on for every property type.
+function srdDetectActivationConcept(text) {
+  if (/\bas a bonus action\b/i.test(text)) return "bonus action";
+  if (/\bas a reaction\b/i.test(text)) return "reaction";
+  if (/\buse(?:s)? an action\b/i.test(text)) return "action";
+  return null;
+}
+
+// Builds the `stats.properties` object `vault-feature-matching.js` copies
+// straight onto `record.properties` — Vault's own native
+// `{[propertyType.id]: valueId}` shape (see generator.js's own
+// `generateEffect` output, and `resolveProperties`), so an imported Effect
+// looks structurally identical to a hand-generated one, the same
+// "structurally identical to native output" goal `featureIds` already
+// serves. Every value is resolved against the System's own LIVE field
+// data (`lookupTables`, threaded in from mapping-engine.js's own `env` —
+// see resolveCreatureType above for the identical pattern already
+// established for monster import) — never a hardcoded copy of what values
+// exist. Only ever sets a key once its own source value is confidently
+// resolved against that live list — never a partial/guessed entry.
+function srdItemProperties({ rarityName, categoryName, activationText }, lookupTables) {
+  const properties = {};
+  const rarityMatch = resolveLivePropertyValue(rarityName, lookupTables?.rarities);
+  if (rarityMatch) properties.rarity = slugifyPropertyValueName(rarityMatch);
+  const formMatch = resolveLivePropertyValue(categoryName, lookupTables?.itemForms);
+  if (formMatch) properties.form = slugifyPropertyValueName(formMatch);
+  const activationConcept = activationText ? srdDetectActivationConcept(activationText) : null;
+  const activationMatch = activationConcept ? resolveLivePropertyValue(activationConcept, lookupTables?.activationTypes) : null;
+  if (activationMatch) properties.activation = slugifyPropertyValueName(activationMatch);
+  return properties;
+}
+
+// Splits a paragraph on its own "* "-prefixed bullet lines (Boots of the
+// Winterlands' own real shape: an intro paragraph immediately followed by
+// 3 separate bulleted abilities) into one candidate unit per bullet —
+// confirmed live against the real 5e API, not a guess. A paragraph with no
+// bullets at all is returned as a single-element array unchanged.
+function srdSplitBullets(paragraph) {
+  const lines = String(paragraph || "")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+  const bulletLines = lines.filter((line) => line.startsWith("*"));
+  if (bulletLines.length < 2) return [paragraph];
+  return bulletLines.map((line) => line.replace(/^\*\s*/, "").trim());
+}
+
 function parseHitDie(text) {
   const match = /d\s*(\d+)/i.exec(text || "");
   return match ? Number(match[1]) : null;
@@ -812,6 +1035,192 @@ function splitFantasyStatblockNotes(raw) {
   return { notes, references };
 }
 
+// Splits a markdown-effect item's own italic header line ("Weapon (claws),
+// legendary (requires attunement by a monk)", "Wondrous Item, Very Rare,
+// Requires Attunement", "Potion, rare") into the same {category, rarity,
+// requiresAttunement} pieces srdItemStats reads straight off separate 5e
+// API fields. Two real attunement phrasings confirmed live across this
+// vault's own files: parenthesized ("(requires attunement...)", the 5e
+// API's own convention) and a bare trailing comma clause ("..., Requires
+// Attunement", several of this vault's own custom items use this instead).
+// Category/rarity are then just "whatever's left of a two-part comma
+// split" — category itself is allowed its own internal parens (a weapon's
+// own "(claws)"/"(any axe)" qualifier), which is exactly why this splits on
+// the LAST comma rather than the first.
+// This vault's own equipment category names that share zero characters
+// with the matching System Item Form value's own name (so
+// resolveLivePropertyValue's substring-free exact/plural-fold match can
+// never bridge them) — "Adventuring gear (consumable)" (Alchemist's Fire),
+// "Adventuring gear" more generally, confirmed live against sys.dnd5e's own
+// "Equipment" value. Kept here, not vault-feature-matching.js — this is
+// THIS markdown vault's own vocabulary, the same "SRD-specific mapping
+// layer is the sanctioned place for source vocabulary" reasoning
+// resolveCreatureType/srdItemProperties above already follow.
+const MARKDOWN_ITEM_FORM_ALIASES = { "adventuring gear": "Equipment" };
+
+// The bare form-matching hint for an item's own category — strips a
+// trailing parenthetical SUBTYPE qualifier ("Weapon (claws)" -> "Weapon",
+// "Armor (studded leather)" -> "Armor", "Adventuring gear (consumable)" ->
+// "Adventuring gear") before matching against the System's own Item Form
+// vocabulary, then applies the alias table above. The qualifier itself is
+// NOT dropped from `category` (the full string stays in stats.category for
+// display/notes) — it's excluded from the MATCH attempt only, mirroring how
+// the 5e API's own equipment_category.name never carries this kind of
+// suffix at all, so resolveLivePropertyValue's plain exact-match already
+// works for it unmodified.
+function resolveMarkdownItemFormHint(category) {
+  const bare = String(category || "").replace(/\s*\([^)]*\)\s*$/, "").trim();
+  return MARKDOWN_ITEM_FORM_ALIASES[bare.toLowerCase()] || bare;
+}
+
+function parseMarkdownItemHeaderLine(headerLine) {
+  const raw = String(headerLine || "");
+  if (!raw) return { category: "", rarity: "", requiresAttunement: false };
+  const requiresAttunement = /requires attunement/i.test(raw);
+  let cleaned = raw.replace(/\(requires attunement[^)]*\)/i, "").trim();
+  cleaned = cleaned.replace(/,?\s*requires attunement.*$/i, "").trim();
+  cleaned = cleaned.replace(/,\s*$/, "");
+  const commaIndex = cleaned.lastIndexOf(",");
+  if (commaIndex === -1) return { category: cleaned, rarity: "", requiresAttunement };
+  return {
+    category: cleaned.slice(0, commaIndex).trim(),
+    rarity: cleaned.slice(commaIndex + 1).trim(),
+    requiresAttunement,
+  };
+}
+
+// Same idea for a spell's own italic header line ("3rd-level evocation",
+// "Evocation cantrip", "1st-level divination (ritual)") — level/school are
+// otherwise only ever given inline in this vault's own markdown, never as
+// separate fields the way the 5e API's own `level`/`school.name` are.
+function parseMarkdownSpellHeaderLine(headerLine) {
+  const raw = String(headerLine || "");
+  const ritual = /\(ritual\)/i.test(raw);
+  const cantripMatch = raw.match(/^([a-z][a-z\s]*?)\s+cantrip\b/i);
+  if (cantripMatch) return { level: 0, school: cantripMatch[1].trim(), ritual };
+  const leveledMatch = raw.match(/^(\d+)\w{2}-level\s+([a-z]+)/i);
+  if (leveledMatch) return { level: Number(leveledMatch[1]), school: leveledMatch[2].trim(), ritual };
+  return { level: 0, school: "", ritual };
+}
+
+// Expands a "base dice at base level, +increment dice per level above base"
+// slot/character-level scaling clause into the same `{level: diceString}`
+// ladder the 5e API's own damage_at_slot_level/damage_at_character_level
+// already give srdSpellStats — e.g. base level 3, "8d6", increment "1d6" ->
+// {3:"8d6", 4:"9d6", ..., 9:"14d6"}. Falls back to a single-entry ladder
+// (just the base level) when the increment die doesn't match the base die's
+// own size — a real formula this simple arithmetic can't safely guess at,
+// same "degrade gracefully rather than fabricate" rule this whole pipeline
+// already follows for charges/activation detection.
+function expandMarkdownDiceLadder(baseLevel, baseDice, incrementDice, maxLevel) {
+  const base = String(baseDice || "").match(/^(\d+)d(\d+)$/i);
+  const inc = String(incrementDice || "").match(/^(\d+)d(\d+)$/i);
+  if (!base || !inc || base[2] !== inc[2]) return { [baseLevel]: baseDice };
+  const sides = base[2];
+  const baseCount = Number(base[1]);
+  const incCount = Number(inc[1]);
+  const values = {};
+  for (let level = baseLevel; level <= maxLevel; level++) {
+    values[level] = `${baseCount + (level - baseLevel) * incCount}d${sides}`;
+  }
+  return values;
+}
+
+// A cantrip's own character-level scaling is stated as explicit thresholds
+// in prose ("...when you reach 5th level (2d6), 11th level (3d6), and 17th
+// level (4d6)"), not a uniform per-level formula the way a leveled spell's
+// own higher-level slot scaling is — parsed as literal (level, dice) pairs
+// rather than via expandMarkdownDiceLadder above. Returns null (not a
+// single-entry object) when no such clause is found, so the caller can tell
+// "this spell has no cantrip scaling" apart from "scaling parsed to one
+// entry" and fall through to the slot-scaling check instead.
+function parseMarkdownCantripScaling(description, baseDice) {
+  const matches = [...String(description || "").matchAll(/(\d+)\w{2}\s*level\s*\((\d+d\d+)\)/gi)];
+  if (!matches.length) return null;
+  const values = { 1: baseDice };
+  matches.forEach((m) => {
+    values[Number(m[1])] = m[2];
+  });
+  return values;
+}
+
+// Best-effort reconstruction of the same `stats.mechanic` shape srdSpellStats
+// reads straight off the 5e API's own structured `damage`/`heal_at_slot_level`
+// fields, but derived from prose instead — this vault's own markdown spells
+// have no such structured fields at all. Three real damage phrasings and one
+// healing phrasing confirmed live across the _srd/spells sample: an attack
+// roll ("Make a ranged spell attack... On a hit, the target takes 1d10 force
+// damage"), a save-for-half ("must make a Dexterity saving throw. A target
+// takes 8d6 fire damage on a failed save, or half as much damage on a
+// successful one"), a binary save ("must succeed on a Dexterity saving throw
+// or take 1d6 acid damage"), and a flat heal ("regains a number of hit points
+// equal to 1d8 + your spellcasting ability modifier"). Deliberately narrower
+// than a full NLP parse — a spell whose own text doesn't match one of these
+// four shapes (the overwhelming majority: buff/utility spells like Bless)
+// correctly returns null, same as srdSpellStats' own `mechanic` for those,
+// falling through to the ordinary candidateUnits clause-recognizer pipeline.
+function parseMarkdownSpellMechanic(description, higherLevel, level) {
+  const baseLevel = level || 1;
+  const text = String(description || "");
+
+  const healMatch = text.match(/regains? (?:a number of )?hit points equal to (\d+d\d+)/i);
+  if (healMatch) {
+    const baseDice = healMatch[1];
+    const slotMatch = String(higherLevel || "").match(/heal(?:ing)? increases by (\d+d\d+) for each slot level above (\d+)\w{2}/i);
+    const values = slotMatch ? expandMarkdownDiceLadder(Number(slotMatch[2]), baseDice, slotMatch[1], 9) : { [baseLevel]: baseDice };
+    return { kind: "heal", scaling: { by: "slot", values } };
+  }
+
+  const attackMatch = text.match(/make an? (?:ranged|melee) spell attack[^.]*\.\s*On a hit,[^.]*?takes?\s*(\d+d\d+(?:\s*\+\s*\d+)?)\s*(\w+) damage/i);
+  const saveHalfMatch =
+    !attackMatch &&
+    text.match(
+      /must make an? (\w+) saving throw\.?\s*[^.]*?takes?\s*(\d+d\d+(?:\s*\+\s*\d+)?)\s*(\w+) damage on a failed save,?\s*or half as much damage on a successful one/i
+    );
+  const saveBinaryMatch = !attackMatch && !saveHalfMatch && text.match(/must succeed on an? (\w+) saving throw or takes?\s*(\d+d\d+(?:\s*\+\s*\d+)?)\s*(\w+) damage/i);
+  const damageMatch = attackMatch || saveHalfMatch || saveBinaryMatch;
+  if (!damageMatch) return null;
+
+  let resolutionKind;
+  let saveAbility;
+  let saveEffect;
+  let damageDice;
+  let damageType;
+  if (attackMatch) {
+    resolutionKind = "attack";
+    [, damageDice, damageType] = attackMatch;
+  } else if (saveHalfMatch) {
+    resolutionKind = "save";
+    [, saveAbility, damageDice, damageType] = saveHalfMatch;
+    saveEffect = "half";
+  } else {
+    resolutionKind = "save";
+    [, saveAbility, damageDice, damageType] = saveBinaryMatch;
+    saveEffect = "none";
+  }
+  const baseDice = damageDice.replace(/\s+/g, "");
+
+  const cantripValues = parseMarkdownCantripScaling(text, baseDice);
+  let values = cantripValues;
+  if (!values) {
+    const slotMatch = String(higherLevel || "").match(/damage increases by (\d+d\d+) for each slot level above (\d+)\w{2}/i);
+    values = slotMatch ? expandMarkdownDiceLadder(Number(slotMatch[2]), baseDice, slotMatch[1], 9) : { [baseLevel]: baseDice };
+  }
+
+  const areaMatch = text.match(/(\d+)-foot (cone|line|sphere|radius|cube)/i);
+
+  return {
+    kind: "damage",
+    resolutionKind,
+    saveAbility: saveAbility ? saveAbility.toLowerCase() : undefined,
+    saveEffect,
+    damageType: damageType ? damageType.toLowerCase() : undefined,
+    areaShape: areaMatch ? areaMatch[2].toLowerCase() : undefined,
+    areaSize: areaMatch ? Number(areaMatch[1]) : undefined,
+    scaling: { by: cantripValues ? "character-level" : "slot", values },
+  };
+}
+
 // --- Registered custom functions (referenced by name from mapping JSON) ---
 
 return {
@@ -896,6 +1305,276 @@ return {
     const text = String(raw);
     if (/^https?:\/\//i.test(text)) return text;
     return `https://www.dnd5eapi.co${text.startsWith("/") ? text : `/${text}`}`;
+  },
+
+  // Same reasoning/hardcoded value as srdMonsterSystemIds above, kept as its
+  // own function per this file's own "each mapping's own intent stays
+  // legible at the call site" convention — used by 5e-api-spell.json/
+  // 5e-api-magic-item.json instead of srdMonsterSystemIds.
+  srdVaultSystemIds() {
+    return ["sys.dnd5e"];
+  },
+
+  // Builds Vault's own `stats` shape (see vault-feature-matching.js's own
+  // module comment for the contract) from a raw 5e API spell record in ONE
+  // pass — every field below is read from the SAME raw object, and the
+  // `mechanic` classification genuinely needs several of them together
+  // (damage vs heal vs neither, attack vs save), which doesn't decompose
+  // cleanly into independent per-field binds the way a flat rename does.
+  // Bound once via a `with` binding (5e-api-spell.json's own top-level
+  // node) and read by every sibling field that needs a piece of it, rather
+  // than recomputed per field.
+  //
+  // A spell with no recognized damage/heal shape (the overwhelming
+  // majority — Bless, Hold Person, most buff/utility spells) is NOT left
+  // as one opaque blob anymore: its own desc paragraphs become
+  // `stats.candidateUnits`, one candidate ability unit per paragraph (or
+  // per bullet within a paragraph), for vault-feature-matching.js's own
+  // clause-recognizer library to classify — the same "decompose into
+  // atomic units" treatment a monster's own traits array already gets for
+  // free from its source data, which a spell/item's own prose has to earn
+  // through this segmentation step instead.
+  srdSpellStats(context, args, env) {
+    const s = context.root || context;
+    const descArr = Array.isArray(s.desc) ? s.desc : [];
+    const description = descArr.join("\n\n");
+    const higherLevel = Array.isArray(s.higher_level) && s.higher_level.length ? s.higher_level.join("\n\n") : "";
+    const componentsList = Array.isArray(s.components) ? s.components.join(", ") : "";
+    const components = s.material ? `${componentsList} (${s.material})` : componentsList;
+
+    let mechanic = null;
+    const scalingValues = s.damage?.damage_at_slot_level || s.damage?.damage_at_character_level;
+    if (s.damage && scalingValues) {
+      const abilityIndex = s.dc?.dc_type?.index;
+      mechanic = {
+        kind: "damage",
+        resolutionKind: s.dc ? "save" : "attack",
+        saveAbility: s.dc ? ABILITY_INDEX_TO_NAME[abilityIndex] || abilityIndex : undefined,
+        saveEffect: s.dc ? s.dc.dc_success : undefined,
+        damageType: s.damage.damage_type?.index,
+        areaShape: s.area_of_effect?.type,
+        areaSize: s.area_of_effect?.size,
+        scaling: { by: s.damage.damage_at_slot_level ? "slot" : "character-level", values: scalingValues },
+      };
+    } else if (s.heal_at_slot_level) {
+      mechanic = { kind: "heal", scaling: { by: "slot", values: s.heal_at_slot_level } };
+    }
+
+    const candidateUnits = mechanic ? [] : descArr.flatMap((p) => srdSplitBullets(p));
+    // "Spell" is itself one of sys.dnd5e's own real Item Form values (its
+    // own `cost: 0` — a spell effect spends nothing extra for its own
+    // form, unlike a physical Weapon/Wand/Ring) — resolved against the
+    // System's own LIVE Item Form list (same `resolveLivePropertyValue`
+    // mechanism srdItemProperties uses), never hardcoded as a bare "spell"
+    // slug, so a Loom rename of that value is picked up automatically.
+    // Rarity/Activation don't apply to a spell the way they do a physical
+    // item (5e's own rules never assign a spell a rarity or an activation
+    // type distinct from its own casting time), so only `form` is set
+    // here. `level` (the Undercroft-analogue of a "spell tier") is
+    // deliberately left as its own plain `stats.level` field rather than
+    // forced into a Vault property — there is no existing System-level
+    // property for it yet; see this module's own history for the follow-up
+    // this needs once spell import is actually exercised.
+    const spellFormMatch = resolveLivePropertyValue("Spell", env?.lookupTables?.itemForms);
+    const properties = spellFormMatch ? { form: slugifyPropertyValueName(spellFormMatch) } : {};
+
+    return {
+      name: s.name,
+      level: s.level,
+      school: s.school?.name,
+      castingTime: s.casting_time,
+      range: s.range,
+      components,
+      duration: s.duration,
+      concentration: Boolean(s.concentration),
+      ritual: Boolean(s.ritual),
+      description,
+      higherLevel,
+      mechanic,
+      candidateUnits,
+      properties,
+    };
+  },
+
+  // Same "build the whole thing in one pass" reasoning as srdSpellStats
+  // above, for a raw 5e API magic item. Returns `null` for a variant-GROUP
+  // row (`variant: false` with a non-empty `variants` list, e.g. "Weapon,
+  // +1, +2, or +3") — that row isn't a concrete item a GM would ever hand a
+  // player, its own listed children are (confirmed live against
+  // /api/2014/magic-items/weapon and its own child /weapon-1, /weapon-2,
+  // /weapon-3 rows). 5e-api-magic-item.json's own `kind`/`name` fields both
+  // read `null` here as "skip this row" (see srdItemKindFromStats/
+  // srdItemNameFromStats below) — Loom's bulk-import loop already treats a
+  // missing kind/name as "mapping produced no save-able entity" and moves
+  // on, the same tolerant skip an unrelated malformed row already gets.
+  //
+  // The flat "+N bonus to X" regex this function used to run itself is
+  // GONE — that was a real design mistake: it always produced an
+  // `item-passive-bonus` Feature no matter what the bonus was actually to,
+  // conflating a Ring of Protection's own "AC and saving throws" grant
+  // (a `feat.protection-bonus` concept) with a weapon/armor's own intrinsic
+  // enhancement bonus (the genuinely different `item-passive-bonus`
+  // concept the variant-family case below still legitimately needs). Any
+  // non-variant item's own remaining prose now goes through the SAME
+  // `candidateUnits` clause-recognizer pipeline spells use, which can tell
+  // those two shapes apart correctly (see vault-feature-matching.js).
+  srdItemStats(context, args, env) {
+    const s = context.root || context;
+    const isVariant = Boolean(s.variant);
+    const hasVariants = Array.isArray(s.variants) && s.variants.length > 0;
+    if (!isVariant && hasVariants) return null;
+
+    const descArr = Array.isArray(s.desc) ? s.desc : [];
+    const description = descArr.join("\n\n");
+    // Paragraph 0 is always the flavor/category/rarity header line (e.g.
+    // "Wondrous item, uncommon (requires attunement)") — confirmed live
+    // across every real item shape checked, from a single-clause Ring of
+    // Protection to a multi-paragraph Sun Blade. Never candidate Feature
+    // content; already captured below as category/rarity/requiresAttunement.
+    const bodyParagraphs = descArr.slice(1);
+
+    let variantGroup = null;
+    let variantTier = null;
+    let mechanic = null;
+    if (isVariant) {
+      // A child row's own `index` carries its parent's own slug as a
+      // prefix ("weapon-1" -> "weapon") — the 5e API gives no more direct
+      // parent back-reference than this on a CHILD row (only the PARENT
+      // lists its own children, never the reverse).
+      const match = String(s.index || "").match(/^(.*)-(\d+)$/);
+      if (match) {
+        variantGroup = match[1];
+        variantTier = { id: `plus-${match[2]}`, name: `+${match[2]}` };
+        mechanic = { kind: "passive-bonus", bonusText: description };
+      }
+    }
+
+    const { charges, remaining } = mechanic ? { charges: null, remaining: [] } : srdExtractCharges(bodyParagraphs);
+    const candidateUnits = mechanic ? [] : remaining.flatMap((p) => srdSplitBullets(p));
+    const properties = srdItemProperties(
+      {
+        rarityName: s.rarity?.name,
+        categoryName: s.equipment_category?.name,
+        activationText: description,
+      },
+      env?.lookupTables
+    );
+
+    return {
+      name: s.name,
+      category: s.equipment_category?.name,
+      rarity: s.rarity?.name,
+      requiresAttunement: /requires attunement/i.test(descArr[0] || ""),
+      description,
+      charges,
+      properties,
+      variantGroup,
+      variantTier,
+      mechanic,
+      candidateUnits,
+    };
+  },
+
+  // `undefined` (never `""`) specifically so deriveEntities' own
+  // `typeof item.kind === "string"` check correctly treats a skipped
+  // variant-group row as "no entity produced" — an empty string would
+  // still pass that check and save a blank-named record.
+  srdItemKindFromStats(context) {
+    return context.itemStats ? "effect" : undefined;
+  },
+  srdItemNameFromStats(context) {
+    return context.itemStats?.name;
+  },
+
+  // Builds the SAME `stats` shape srdItemStats builds above, from
+  // parseMarkdownEffectSource's own generic structural parse
+  // (content-fetch.js) instead of a raw 5e API record — markdown-item.json's
+  // own `with` binding names this `itemStats` too, so it's read by the exact
+  // same srdItemKindFromStats/srdItemNameFromStats above with zero
+  // duplication, and consumed by vault-feature-matching.js's own
+  // convertSpellOrItemToFeatures completely unchanged. `mechanic`/
+  // `variantGroup`/`variantTier` stay null — a markdown vault file has no
+  // structured "this is a +1/+2/+3 of a family" signal the way a 5e API
+  // variant CHILD row's own `index` does, so every markdown item goes
+  // through the ordinary candidateUnits clause-recognizer path, same as any
+  // non-variant SRD item.
+  markdownItemStats(context, args, env) {
+    const s = context.root || context;
+    const { category, rarity, requiresAttunement } = parseMarkdownItemHeaderLine(s.headerLine);
+    const paragraphs = Array.isArray(s.paragraphs) ? s.paragraphs : [];
+    // Mundane-equipment fields (Alchemist's Fire's own "**Damage**: 1d4" /
+    // "**Damage Type**: Fire" / "**Properties**: Improvised Weapon" / ...) —
+    // no established stats shape for these the way a spell's own Casting
+    // Time/Range/Duration already have (5e API magic items never carry this
+    // shape at all), so they're folded into the plain description text
+    // rather than silently dropped. Not added to candidateUnits — a bare
+    // "Label: value" line never matches a clause recognizer, so there's no
+    // risk of a phantom Feature, only lost information if omitted.
+    const fieldLines = Object.entries(s.fields || {}).map(([key, value]) => `${key}: ${value}`);
+    const description = [...paragraphs, ...fieldLines].join("\n\n");
+    const { charges, remaining } = srdExtractCharges(paragraphs);
+    const candidateUnits = remaining.flatMap((p) => srdSplitBullets(p));
+    const properties = srdItemProperties(
+      { rarityName: rarity, categoryName: resolveMarkdownItemFormHint(category), activationText: description },
+      env?.lookupTables
+    );
+
+    return {
+      name: s.name || "",
+      category,
+      rarity,
+      requiresAttunement,
+      description,
+      charges,
+      properties,
+      variantGroup: null,
+      variantTier: null,
+      mechanic: null,
+      candidateUnits,
+    };
+  },
+
+  // Same "build the whole thing in one pass" reasoning as srdSpellStats
+  // above, from parseMarkdownEffectSource's own generic parse instead of a
+  // raw 5e API record. `mechanic` is recovered from prose via
+  // parseMarkdownSpellMechanic (best-effort — see that function's own
+  // comment) rather than read off a structured `damage`/`heal_at_slot_level`
+  // field, since this vault's own markdown spells have neither.
+  markdownSpellStats(context, args, env) {
+    const s = context.root || context;
+    const { level, school, ritual } = parseMarkdownSpellHeaderLine(s.headerLine);
+    const fields = s.fields || {};
+    const castingTime = fields["Casting Time"] || "";
+    const range = fields["Range"] || "";
+    const components = fields["Components"] || "";
+    const duration = fields["Duration"] || "";
+    const concentration = /concentration/i.test(duration);
+
+    const paragraphs = Array.isArray(s.paragraphs) ? s.paragraphs : [];
+    const description = paragraphs.join("\n\n");
+    const higherLevel = s.higherLevel || "";
+    const mechanic = parseMarkdownSpellMechanic(description, higherLevel, level);
+    const candidateUnits = mechanic ? [] : paragraphs.flatMap((p) => srdSplitBullets(p));
+
+    const spellFormMatch = resolveLivePropertyValue("Spell", env?.lookupTables?.itemForms);
+    const properties = spellFormMatch ? { form: slugifyPropertyValueName(spellFormMatch) } : {};
+
+    return {
+      name: s.name || "",
+      level,
+      school,
+      castingTime,
+      range,
+      components,
+      duration,
+      concentration,
+      ritual,
+      description,
+      higherLevel,
+      mechanic,
+      candidateUnits,
+      properties,
+    };
   },
 
   // D&D Beyond's own monster-service `senses` (confirmed via a real live

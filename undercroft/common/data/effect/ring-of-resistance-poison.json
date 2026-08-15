@@ -1,0 +1,27 @@
+{
+  "kind": "effect",
+  "index": "ring-of-resistance-poison",
+  "name": "Ring of Poison Resistance",
+  "notes": "Ring, rare (requires attunement)\n\nYou have resistance to poison damage while wearing this amethyst ring.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/magic-items/ring-of-resistance-poison",
+  "mapping": "5e-api-magic-item",
+  "properties": {
+    "rarity": "rare",
+    "form": "ring"
+  },
+  "featureIds": [
+    "feat.damage-modification",
+    "feat.requires-attunement"
+  ],
+  "featureTiers": {
+    "feat.damage-modification": "resistance"
+  },
+  "featureParams": {
+    "feat.damage-modification": {
+      "damageType": "poison"
+    }
+  }
+}

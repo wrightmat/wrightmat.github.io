@@ -1,0 +1,29 @@
+{
+  "kind": "effect",
+  "index": "divine-favor",
+  "name": "Divine Favor",
+  "notes": "Your prayer empowers you with divine radiance. Until the spell ends, your weapon attacks deal an extra 1d4 radiant damage on a hit.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/spells/divine-favor",
+  "mapping": "5e-api-spell",
+  "properties": {
+    "form": "spell"
+  },
+  "featureIds": [
+    "feat.damage"
+  ],
+  "featureParams": {
+    "feat.damage": {
+      "resolutionKind": "attack",
+      "damageType": "radiant",
+      "scaling": {
+        "by": "slot",
+        "values": {
+          "1": "1d4"
+        }
+      }
+    }
+  }
+}

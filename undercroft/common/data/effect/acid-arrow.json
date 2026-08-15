@@ -1,0 +1,36 @@
+{
+  "kind": "effect",
+  "index": "acid-arrow",
+  "name": "Acid Arrow",
+  "notes": "A shimmering green arrow streaks toward a target within range and bursts in a spray of acid. Make a ranged spell attack against the target. On a hit, the target takes 4d4 acid damage immediately and 2d4 acid damage at the end of its next turn. On a miss, the arrow splashes the target with acid for half as much of the initial damage and no damage at the end of its next turn.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/spells/acid-arrow",
+  "mapping": "5e-api-spell",
+  "properties": {
+    "form": "spell"
+  },
+  "featureIds": [
+    "feat.damage"
+  ],
+  "featureParams": {
+    "feat.damage": {
+      "resolutionKind": "attack",
+      "damageType": "acid",
+      "scaling": {
+        "by": "slot",
+        "values": {
+          "2": "4d4",
+          "3": "5d4",
+          "4": "6d4",
+          "5": "7d4",
+          "6": "8d4",
+          "7": "9d4",
+          "8": "10d4",
+          "9": "11d4"
+        }
+      }
+    }
+  }
+}

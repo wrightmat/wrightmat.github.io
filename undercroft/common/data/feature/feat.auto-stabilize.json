@@ -1,0 +1,24 @@
+{
+  "id": "feat.auto-stabilize",
+  "name": "Auto-Stabilize",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Automatically stabilizes the wearer whenever they're dying.",
+  "mechanics": {
+    "type": "active",
+    "text": "While worn, the wearer automatically stabilizes whenever they are dying at the start of their turn."
+  },
+  "budgetCost": 4,
+  "tags": {
+    "categories": [
+      "item"
+    ],
+    "propertyHints": [
+      "defense"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

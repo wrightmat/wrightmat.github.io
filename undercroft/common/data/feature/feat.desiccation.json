@@ -1,0 +1,24 @@
+{
+  "id": "feat.desiccation",
+  "name": "Desiccation",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Removes water from an area, reducing it to a compact, storable form.",
+  "mechanics": {
+    "type": "active",
+    "text": "On use, a volume of water is removed and compacted for storage/transport, reversible later by releasing it again."
+  },
+  "budgetCost": 3,
+  "tags": {
+    "categories": [
+      "item"
+    ],
+    "propertyHints": [
+      "utility"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,24 @@
+{
+  "id": "feat.animated-weapon",
+  "name": "Animated Weapon",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The weapon fights on its own, hovering and attacking independently.",
+  "mechanics": {
+    "type": "active",
+    "text": "On activation, the weapon hovers and makes its own attacks using its wielder's own attack bonus and damage modifier, without needing to be held."
+  },
+  "budgetCost": 5,
+  "tags": {
+    "categories": [
+      "item"
+    ],
+    "propertyHints": [
+      "utility"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

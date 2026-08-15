@@ -1,0 +1,45 @@
+{
+  "id": "feat.damage-modification",
+  "name": "Damage Modification",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Wards the body against — or opens it further to — a single kind of harm.",
+  "mechanics": {
+    "type": "active",
+    "text": "On activation, grants resistance, immunity, or vulnerability (depending on tier) to one damage type for 1 hour. Which damage type lives in this record's own featureParams.damageType — the tier (how the damage type affects you) is independent of which type it is."
+  },
+  "budgetCost": 5,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "defense"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "resistance",
+      "name": "Resistance",
+      "shortName": "Resist",
+      "budgetCost": 5
+    },
+    {
+      "id": "immunity",
+      "name": "Immunity",
+      "shortName": "Immune",
+      "budgetCost": 9
+    },
+    {
+      "id": "vulnerability",
+      "name": "Vulnerability",
+      "shortName": "Vuln",
+      "budgetCost": -3
+    }
+  ]
+}

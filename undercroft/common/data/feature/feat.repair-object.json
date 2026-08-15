@@ -1,0 +1,25 @@
+{
+  "id": "feat.repair-object",
+  "name": "Repair Object",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Physically repairs damage to a nonliving object.",
+  "mechanics": {
+    "type": "active",
+    "text": "On activation, repairs a break, tear, or other physical damage to a touched object, up to featureParams.sizeLimit — doesn't restore lost magic to the object."
+  },
+  "budgetCost": 1,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "utility"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

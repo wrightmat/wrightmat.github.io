@@ -1,0 +1,25 @@
+{
+  "id": "feat.extra-damage",
+  "name": "Extra Damage",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Deals additional damage on a hit, on top of whatever it's attached to already deals.",
+  "mechanics": {
+    "type": "active",
+    "text": "On a hit, deals extra damage. Which dice and damage type live in this record's own featureParams — one is meaningless without the other, so the two are never split across tiers and params."
+  },
+  "budgetCost": 4,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "damage"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

@@ -4,7 +4,7 @@
   "systemIds": [
     "sys.dnd5e"
   ],
-  "description": "Reinforces armor or a shield well beyond its mundane make.",
+  "description": "Grants a bonus to Armor Class.",
   "mechanics": {
     "type": "active",
     "text": "While worn/wielded, grants a bonus to Armor Class."

@@ -2,7 +2,7 @@
   "id": "feat.called-shot",
   "name": "Called Shot",
   "systemIds": ["sys.dnd5e"],
-  "description": "Once a weakness is exposed, the wielder can strike it precisely for greater effect.",
+  "description": "Against a target whose weaknesses have been revealed, deals additional damage or applies an extra condition.",
   "mechanics": {
     "type": "active",
     "text": "Against a target whose weaknesses have been revealed, this effect deals additional damage or applies an extra condition."

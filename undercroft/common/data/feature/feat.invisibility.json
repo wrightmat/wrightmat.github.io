@@ -4,24 +4,22 @@
   "systemIds": [
     "sys.dnd5e"
   ],
-  "description": "The creature magically turns invisible until it attacks, or until its concentration ends (as if concentrating on a spell). Any equipment the creature wears or carries is invisible with it.",
+  "description": "Turns the user (and possibly others nearby) invisible.",
   "mechanics": {
-    "type": "passive",
-    "text": "The creature magically turns invisible until it attacks, or until its concentration ends (as if concentrating on a spell). Any equipment the creature wears or carries is invisible with it."
+    "type": "active",
+    "text": "On activation, the user (and possibly nearby creatures/objects) becomes invisible for some duration."
   },
-  "budgetCost": 0,
+  "budgetCost": 5,
   "tags": {
-    "behaviors": [],
-    "recipeSlots": [],
-    "roles": [],
-    "creatureTypes": [],
     "categories": [
-      "monster"
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "utility"
     ]
   },
   "synergizesWith": [],
-  "conflictsWith": [],
-  "combat": {
-    "actionCost": "action"
-  }
+  "dependsOn": [],
+  "conflictsWith": []
 }

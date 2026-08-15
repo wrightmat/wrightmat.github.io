@@ -1,0 +1,25 @@
+{
+  "id": "feat.create-light-darkness",
+  "name": "Create Light/Darkness",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Sheds bright and/or dim light out to a set radius, or fills an area with magical darkness that even darkvision can't see through — the same source-radius shape in opposite directions.",
+  "mechanics": {
+    "type": "active",
+    "text": "While active, this record's own featureParams.mode picks the direction: `light` sheds bright light out to featureParams.brightRadius feet (when set) and dim light out to featureParams.dimRadius feet, both measured from the source; `darkness` fills a sphere out to featureParams.radius feet with magical darkness — even darkvision can't see through it, and nonmagical light can't illuminate it."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "utility"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

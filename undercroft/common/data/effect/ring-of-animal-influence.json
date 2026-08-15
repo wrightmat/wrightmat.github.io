@@ -1,0 +1,43 @@
+{
+  "kind": "effect",
+  "index": "ring-of-animal-influence",
+  "name": "Ring of Animal Influence",
+  "notes": "Ring, rare\n\nThis ring has 3 charges, and it regains 1d3 expended charges daily at dawn. While wearing the ring, you can use an action to expend 1 of its charges to cast one of the following spells:\n\nAnimal friendship (save DC 13)\n\nFear (save DC 13), targeting only beasts that have an Intelligence of 3 or lower\n\nSpeak with animals",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/magic-items/ring-of-animal-influence",
+  "mapping": "5e-api-magic-item",
+  "charges": {
+    "max": 3,
+    "rechargeFormula": "1d3"
+  },
+  "properties": {
+    "rarity": "rare",
+    "form": "ring",
+    "activation": "action"
+  },
+  "featureIds": [
+    "feat.charges",
+    "feat.spell-menu"
+  ],
+  "featureParams": {
+    "feat.charges": {
+      "max": 3,
+      "rechargeFormula": "1d3"
+    },
+    "feat.spell-menu": {
+      "spells": [
+        {
+          "name": "Animal friendship (save DC 13)"
+        },
+        {
+          "name": "Fear (save DC 13), targeting only beasts that have an Intelligence of 3 or lower"
+        },
+        {
+          "name": "Speak with animals"
+        }
+      ]
+    }
+  }
+}

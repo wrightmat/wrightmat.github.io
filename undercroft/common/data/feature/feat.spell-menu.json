@@ -1,0 +1,24 @@
+{
+  "id": "feat.spell-menu",
+  "name": "Spell Menu",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Lets the item's user cast one of several possible spells from it.",
+  "mechanics": {
+    "type": "active",
+    "text": "On activation, casts one of a menu of predetermined spells. Which spells (names and any per-spell charge cost), and the item's own save DC if it has one, live entirely in this record's own featureParams — the same 'compound fact stays together' reasoning as feat.cast-a-spell, extended to a whole menu instead of one fixed spell. Mirrors how a monster's own Multiattack references its other attacks rather than being its own attack."
+  },
+  "budgetCost": 5,
+  "tags": {
+    "categories": [
+      "item"
+    ],
+    "propertyHints": [
+      "utility"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,25 @@
+{
+  "id": "feat.lock-control",
+  "name": "Lock Control",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Locks, unlocks, opens, or closes a door, latch, or similar object from a distance.",
+  "mechanics": {
+    "type": "active",
+    "text": "On activation, targeted at a door, chest, or similar object, this record's own featureParams.action (lock/unlock/open/close) happens to it. Which action varies by source — Arcane Lock locks, Knock unlocks, Chime of Opening opens."
+  },
+  "budgetCost": 3,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "utility"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

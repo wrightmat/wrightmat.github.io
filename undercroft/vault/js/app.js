@@ -16,6 +16,19 @@ import { bindCollapsibleToggle } from "../../common/js/lib/collapsible.js";
 import { listFeaturesForSystem, listEffectsForSystem, getSystemPropertyTypes, getSystemClasses } from "./lib/tables.js";
 import { generateEffect, computeBudget, matchesCategory, rerollPropertyValue, resolveFeatureBudgetCost } from "./lib/generator.js";
 import { createEffectRecord, toPressExportShape } from "./lib/effect-schema.js";
+import { convertSpellOrItemToFeatures, hasConvertibleSpellItemStats } from "../../common/js/lib/vault-feature-matching.js";
+// Same shared weapon-attack/rider/save-effect/options editor Crucible's own
+// Inspector uses (feature-params-editor.js) — see that module's own comment
+// for why it moved out of Crucible into a shared home. Vault's own
+// mechanics types (item-passive-bonus, see vault-feature-matching.js —
+// feat.damage/feat.healing both use the ordinary "active" type, dispatched
+// by feature id instead) don't need any of the weapon-attack/save-effect
+// branches this editor also renders, but a pinned/locked Feature from
+// outside Vault's own spell/item category pool (never produced by
+// generation, only possible via hand-edited JSON) could theoretically still
+// be one — instantiated the same way regardless, so nothing crashes on that
+// edge case.
+import { createFeatureParamsEditor } from "../../common/js/lib/feature-params-editor.js";
 import { generateEffectNote } from "./lib/llm-note.js";
 import { createDirtyGate } from "../../common/js/lib/dirty-gate.js";
 import {
@@ -28,6 +41,7 @@ import {
   generateNoteForRecord,
   renderRequiredSelectOptions,
   renderOptionalSelectOptions,
+  loadAbilityFieldDefs,
 } from "../../common/js/lib/generator-kit.js";
 import { allowsDelete, refreshOwnershipCatalog, confirmDelete } from "../../common/js/lib/ownership.js";
 import { initToolSettings } from "../../common/js/lib/tool-settings.js";
@@ -49,6 +63,42 @@ let propertyTypes = [];
 // populateCastingClassSelect).
 let classes = [];
 let currentRecord = null;
+// Which row in the Features list the Inspector panel is currently showing
+// — same module-level tracking Crucible's own selectedFeatureId uses, so
+// the Edit Feature toolbar button (registered once, at init) can look up
+// the right feature at click time.
+let selectedFeatureId = null;
+// Read once per System reload (reloadReferenceData) — the active System's
+// own ability fields, e.g. so an "active"-type Feature's own `ability`
+// param (Ability Score Increase's own "which ability" choice) renders as a
+// real select instead of free text (see feature-params-editor.js's own
+// ABILITY_LIKE_PARAM_KEYS).
+let abilityFieldDefs = [];
+const featureParamsEditor = createFeatureParamsEditor({
+  getRecord: () => currentRecord,
+  // A tier change (renderFeatureTierEditor) is now reached through this
+  // SAME hook as an ordinary params edit — recomputeBudget before
+  // refreshEffectView, same as addFeature/removeFeature already do,
+  // because renderBudget only recomputes when record.budget is unset
+  // (`record.budget || recomputeBudget(record)`) and would otherwise show
+  // a stale total after a tier change specifically (budget depends on
+  // featureTiers, never on featureParams — recomputing on every params
+  // edit too is harmless, just a no-op for the ones that don't affect it).
+  onParamsChanged: () => {
+    if (currentRecord) recomputeBudget(currentRecord);
+    refreshEffectView();
+  },
+  saveFeature: (feature) => dataManager.save("feature", feature.id, feature),
+  onFeatureSaved: () => refreshEffectView(),
+  getAbilityFieldDefs: () => abilityFieldDefs,
+  // Drives the "Delete Parameter" toolbar button's own enabled state —
+  // independent of selectedFeatureId (Edit Feature's own gate), since a
+  // Feature can be selected in the list with no param row selected within
+  // its own generic active-params grid yet.
+  onParamSelectionChanged: (hasSelection) => {
+    if (elements.deleteParamButton) elements.deleteParamButton.disabled = !hasSelection;
+  },
+});
 // View/Edit toggle for the Notes box — same button as Repository's own
 // Edit/View button (undercroft/repository/js/app.js#applyMode) for the
 // identical concept, and the same behavior Crucible/Forge/Sanctum's own
@@ -85,6 +135,31 @@ createToolbarButtonGroup([
   { action: "export", label: "Export JSON", disabled: true, attrs: { "data-export-effect": true } },
   { action: "delete", label: "Delete", disabled: true, attrs: { "data-delete-effect": true } },
 ]).forEach((button) => document.querySelector("[data-effect-toolbar-mount]")?.appendChild(button));
+createToolbarButtonGroup([
+  {
+    label: "Edit Feature",
+    icon: "tabler:external-link",
+    disabled: true,
+    attrs: { "data-edit-feature-button": true },
+    onClick: () => {
+      const feature = findById(features, selectedFeatureId);
+      if (feature) window.open(`../loom/index.html?feature=${encodeURIComponent(feature.id)}`, "_blank", "noopener");
+    },
+  },
+  {
+    label: "Delete Parameter",
+    icon: "tabler:trash",
+    variant: "outline-danger",
+    disabled: true,
+    attrs: { "data-delete-param-button": true },
+    // Select-then-delete for the generic active-params grid's own rows
+    // (feature-params-editor.js's own setSelectedParam/deleteSelectedParam)
+    // — this button's own enabled state is driven by the editor's
+    // onParamSelectionChanged hook below, not by selectedFeatureId, since a
+    // Feature can be selected with no param row selected within it yet.
+    onClick: () => featureParamsEditor.deleteSelectedParam(),
+  },
+]).forEach((button) => document.querySelector("[data-feature-inspector-toolbar-mount]")?.appendChild(button));
 document.querySelector("[data-effect-empty-state]")?.appendChild(
   createEmptyStateCard({
     message: "Nothing selected yet. Pick an existing Effect above, or fill in the fields and click Generate Effect.",
@@ -161,6 +236,13 @@ const elements = {
   inspectorEmpty: document.querySelector("[data-inspector-empty]"),
   inspectorDetail: document.querySelector("[data-inspector-detail]"),
   inspectorJson: document.querySelector("[data-inspector-json]"),
+  featureParamsEditor: document.querySelector("[data-feature-params-editor]"),
+  featureBasicId: document.querySelector("[data-feature-basic-id]"),
+  featureBasicName: document.querySelector("[data-feature-basic-name]"),
+  featureBasicDescription: document.querySelector("[data-feature-basic-description]"),
+  featureBasicBudgetCost: document.querySelector("[data-feature-basic-budget-cost]"),
+  editFeatureButton: document.querySelector("[data-edit-feature-button]"),
+  deleteParamButton: document.querySelector("[data-delete-param-button]"),
 };
 
 // Adopts each section's existing static `[data-xxx-panel]` markup (its own
@@ -179,6 +261,21 @@ const elements = {
     content: document.querySelector("[data-inspector-panel]"),
   });
   document.querySelector("[data-inspector-mount]")?.appendChild(inspectorSection.section);
+
+  // Collapsed by default (raw JSON is a power-user/debugging view, not
+  // something a GM needs open by default the way the structured Basic
+  // Info/tier/params editors above it are) — same "adopt the existing
+  // static element as content" pattern as every other createCollapsibleSection
+  // call here, mirroring Crucible's own identical Raw JSON section exactly.
+  // elements.inspectorJson keeps working unchanged (its own querySelector
+  // ref stays valid after appendChild relocates the element).
+  document.querySelector("[data-inspector-json-mount]")?.appendChild(
+    createCollapsibleSection({
+      label: "Raw JSON",
+      collapsed: true,
+      content: document.querySelector("[data-inspector-json]"),
+    }).section
+  );
 
   document.querySelector("[data-identity-mount]")?.appendChild(
     createCollapsibleSection({
@@ -404,6 +501,7 @@ function populateAddFeatureSelect() {
   elements.addFeatureSelect.appendChild(createPlaceholderOption());
   features
     .filter((feature) => !selectedIds.has(feature.id))
+    .sort((a, b) => (a.name || a.id).localeCompare(b.name || b.id))
     .forEach((feature) => {
       const option = document.createElement("option");
       option.value = feature.id;
@@ -416,7 +514,7 @@ async function reloadReferenceData() {
   const systemId = currentSystemId();
   const budgetCeilingField = getBudgetCeilingFieldPreference(systemId);
   let fetchedFeatures;
-  [fetchedFeatures, propertyTypes, classes] = await Promise.all([
+  [fetchedFeatures, propertyTypes, classes, abilityFieldDefs] = await Promise.all([
     listFeaturesForSystem(dataManager, systemId),
     // `|| undefined` (not the stored "" directly) so an unconfigured System
     // falls through to getSystemPropertyTypes's own "rarity" default instead
@@ -424,6 +522,7 @@ async function reloadReferenceData() {
     // combatScalingField/creatureTypeField `|| undefined` call pattern.
     getSystemPropertyTypes(dataManager, systemId, budgetCeilingField || undefined),
     getSystemClasses(dataManager, systemId),
+    loadAbilityFieldDefs(dataManager, systemId),
   ]);
   // The shared `feature` kind also holds Sanctum's location features and
   // Crucible's monster features (tagged accordingly) — filtered here, once,
@@ -505,7 +604,17 @@ function renderIdentity(record) {
         label: propertyType.label || propertyType.id,
         type: "select",
         value: record.properties?.[propertyType.id] || "",
-        options: (propertyType.values || []).map((value) => ({ value: value.id, label: value.label || value.id })),
+        // A leading blank option — createFieldBox's own select only ever
+        // sets `select.value` when a matching option is present (see its
+        // own comment); with none of these `option.value`s ever "" before,
+        // an effect with no resolved value for this property type (a
+        // markdown-imported mundane item has no rarity at all — confirmed
+        // real: Alchemist's Fire, Elixir of Health) silently rendered
+        // whatever the browser defaults an unselected <select> to — its
+        // FIRST option, "Common" — indistinguishable from an effect that
+        // genuinely resolved to that value. Same "(random)"-style honesty
+        // propertyValueLabel above already gives note-generation text.
+        options: [{ value: "", label: "—" }, ...(propertyType.values || []).map((value) => ({ value: value.id, label: value.label || value.id }))],
         colClass: "col-6 col-md-3",
         editable: true,
         rerollable: true,
@@ -539,6 +648,7 @@ function selectFeatureRow(featureId) {
     row.classList.toggle("vault-feature-selected", row.dataset.featureRow === featureId);
   });
   const feature = findById(features, featureId);
+  selectedFeatureId = feature ? featureId : null;
   if (!feature) {
     elements.inspectorEmpty?.classList.remove("d-none");
     elements.inspectorDetail?.classList.add("d-none");
@@ -546,7 +656,525 @@ function selectFeatureRow(featureId) {
   }
   elements.inspectorEmpty?.classList.add("d-none");
   elements.inspectorDetail?.classList.remove("d-none");
+  renderFeatureBasicInfo(feature);
+  featureParamsEditor.renderFeatureParamsEditor(feature, elements.featureParamsEditor);
   if (elements.inspectorJson) elements.inspectorJson.textContent = JSON.stringify(feature, null, 2);
+}
+
+// Mirrors Crucible's own renderFeatureBasicInfo/updateFeatureBasicInfo
+// exactly (crucible/js/app.js) — editable here only for a Feature marked
+// Unique (Loom's own Scope field), same gating reasoning. In practice every
+// one of Vault's own spell/item Features is shared across many Effects by
+// design (this whole atomic-Feature model exists specifically so they
+// are), so these three fields read as permanently disabled here — Edit
+// Feature (opens Loom) is the real editing path, exactly like Crucible's
+// own non-unique Features already work today.
+function renderFeatureBasicInfo(feature) {
+  if (elements.featureBasicId) elements.featureBasicId.value = feature.id;
+  if (elements.featureBasicName) elements.featureBasicName.value = feature.name || "";
+  if (elements.featureBasicDescription) elements.featureBasicDescription.value = feature.description || "";
+  if (elements.featureBasicBudgetCost) elements.featureBasicBudgetCost.value = String(feature.budgetCost ?? 0);
+
+  const isUnique = feature.mechanics?.scope === "unique";
+  [elements.featureBasicName, elements.featureBasicDescription, elements.featureBasicBudgetCost].forEach((field) => {
+    if (field) field.disabled = !isUnique;
+  });
+  if (elements.editFeatureButton) elements.editFeatureButton.disabled = false;
+}
+
+// Saves straight through dataManager.save("feature", ...) — a Feature-
+// record edit, not an Effect-record one, so the Effect's own dirty-
+// gate/Save button don't apply, same immediate-save path Crucible's own
+// version uses. description/mechanics.text kept in sync when both are
+// plain strings, matching every prior migration this session's own
+// convention for a plain "passive"/"active" Feature.
+async function updateFeatureBasicInfo(feature, patch) {
+  Object.assign(feature, patch);
+  if ("description" in patch && feature.mechanics && typeof feature.mechanics.text === "string") {
+    feature.mechanics.text = patch.description;
+  }
+  await dataManager.save("feature", feature.id, feature);
+  renderFeatureList(currentRecord);
+}
+
+elements.featureBasicName?.addEventListener("change", () => {
+  const feature = findById(features, selectedFeatureId);
+  if (feature) updateFeatureBasicInfo(feature, { name: elements.featureBasicName.value });
+});
+elements.featureBasicDescription?.addEventListener("change", () => {
+  const feature = findById(features, selectedFeatureId);
+  if (feature) updateFeatureBasicInfo(feature, { description: elements.featureBasicDescription.value });
+});
+elements.featureBasicBudgetCost?.addEventListener("change", () => {
+  const feature = findById(features, selectedFeatureId);
+  if (!feature) return;
+  const value = Math.max(0, Math.round(Number(elements.featureBasicBudgetCost.value)) || 0);
+  elements.featureBasicBudgetCost.value = String(value);
+  updateFeatureBasicInfo(feature, { budgetCost: value });
+});
+
+// A shared parameterized template's own live-computed description text —
+// same "shared, number-free template Feature plus per-record data on the
+// record" convention Crucible's weaponAttackDescriptionText/
+// saveEffectDescriptionText (crucible/js/app.js) already use, for Vault's
+// own new mechanics types (vault-feature-matching.js). `params.scaling.values`
+// is a `{level: diceString}` map straight from the 5e API's own
+// damage_at_slot_level/damage_at_character_level/heal_at_slot_level shape —
+// the LOWEST level entry is the headline number, every other level becomes
+// a trailing scaling note rather than picking just one (unlike a monster's
+// own Recharge/Day frequency tiers, a spell's own slot level is chosen
+// fresh at every cast, not a fixed property of this one Effect record).
+function scalingNoteText(scaling) {
+  const entries = Object.entries(scaling?.values || {}).sort((a, b) => Number(a[0]) - Number(b[0]));
+  if (entries.length < 2) return "";
+  const label = scaling.by === "slot" ? "slot level" : "character level";
+  return ` Scales by ${label}: ${entries.map(([level, dice]) => `${level} — ${dice}`).join(", ")}.`;
+}
+
+// feat.damage's own render — shared by every effect (spell or item) whose
+// own primary damage resolved cleanly (see vault-feature-matching.js's own
+// `mechanic.kind === "damage"` fast path), not just spells, despite the
+// scaling-ladder shape being far more common for a spell's own damage.
+function damageDescriptionText(feature, record) {
+  const params = record.featureParams?.[feature.id];
+  const entries = Object.entries(params?.scaling?.values || {}).sort((a, b) => Number(a[0]) - Number(b[0]));
+  if (!entries.length) return feature.description || "";
+  const [, baseDice] = entries[0];
+  const damageType = params.damageType || "";
+  const resolution =
+    params.resolutionKind === "save"
+      ? `Each target must make a ${params.saveAbility || ""} saving throw, taking ${baseDice} ${damageType} damage on a failure${params.saveEffect === "half" ? ", or half as much on a success" : ""}.`
+      : `On a hit, the target takes ${baseDice} ${damageType} damage.`;
+  const area = params.areaShape && params.areaSize ? ` Affects a ${params.areaSize}-foot ${params.areaShape}.` : "";
+  return `${resolution}${area}${scalingNoteText(params.scaling)}`;
+}
+
+// Only reached for a NON-variant flat-bonus item (Ring of Protection) — a
+// variant-family item (Weapon +1/+2/+3) is a Feature with `tiers` instead,
+// whose own per-tier `mechanics.text` already carries the full sentence
+// (see vault-feature-matching.js's own resolvePassiveBonusFeature), so
+// featureDescriptionText's own tier-resolution below never reaches this.
+function itemPassiveBonusDescriptionText(feature, record) {
+  const params = record.featureParams?.[feature.id];
+  if (!params) return feature.description || "";
+  return `You have a +${params.bonusValue} bonus to ${params.bonusTarget}.`;
+}
+
+// The generic clause-recognized Features below (vault-feature-matching.js's
+// own CLAUSE_RECOGNIZERS) all share `mechanics.type: "active"` — the same
+// generic type Vault's own pre-existing starter Features already use — so
+// unlike item-passive-bonus they can't be told apart by TYPE alone (same
+// reason feat.damage/feat.healing, despite being just as parameterized,
+// are also dispatched by id below rather than a dedicated mechanics type).
+// Dispatched by id instead, right below. Each of these
+// still resolves its OWN tier text first when tiered (featureDescriptionText's
+// own tier-resolution below runs before any of this is reached), so these
+// functions only ever handle the tier-LESS compound-fact case (params
+// carrying everything) or the independent-magnitude case with no tier
+// currently selected — a genuinely tiered Feature with a real tier picked
+// never reaches here at all.
+// The four functions below all build ONE self-sufficient sentence combining
+// this record's own tier (the magnitude — resistance/+2/Set to 19/...) with
+// its own params (the "which X" — damage type/skill/ability). Previously
+// the tier alone showed via a live <select> right in the Features list row
+// and only the "which X" half needed spelling out here; now that the tier
+// picker lives in the Inspector instead (feature-params-editor.js's own
+// renderFeatureTierEditor), the list row's own description text is the
+// ONLY place the tier's magnitude is visible at a glance, so every one of
+// these has to say both halves plainly.
+function damageModificationDescriptionText(feature, record) {
+  const params = record.featureParams?.[feature.id];
+  const tier = feature.tiers?.find((entry) => entry.id === record.featureTiers?.[feature.id]);
+  if (!params?.damageType) return feature.description || "";
+  const verb = tier?.id === "immunity" ? "Immune to" : tier?.id === "vulnerability" ? "Vulnerable to" : "Resistant to";
+  return `${verb} ${params.damageType} damage.`;
+}
+
+function skillBonusDescriptionText(feature, record) {
+  const params = record.featureParams?.[feature.id];
+  const tier = feature.tiers?.find((entry) => entry.id === record.featureTiers?.[feature.id]);
+  if (!params?.skill) return feature.description || "";
+  const bonus = tier?.id === "advantage" ? "Advantage on" : tier?.shortName ? `A ${tier.shortName} bonus to` : "A bonus to";
+  return `${bonus} ${params.skill} checks.`;
+}
+
+function abilityScoreIncreaseDescriptionText(feature, record) {
+  const params = record.featureParams?.[feature.id];
+  const tier = feature.tiers?.find((entry) => entry.id === record.featureTiers?.[feature.id]);
+  if (!params?.ability) return feature.description || "";
+  const ability = params.ability.charAt(0).toUpperCase() + params.ability.slice(1);
+  if (tier?.id?.startsWith("set-")) return `Sets the ${ability} score to ${tier.shortName}.`;
+  if (tier?.id?.startsWith("increase-")) return `Increases the ${ability} score by ${tier.shortName}.`;
+  return `Applies to the ${ability} score.`;
+}
+
+function protectionBonusDescriptionText(feature, record) {
+  const params = record.featureParams?.[feature.id];
+  const tier = feature.tiers?.find((entry) => entry.id === record.featureTiers?.[feature.id]);
+  const bonus = tier?.shortName || "a";
+  const alsoSaves = params?.alsoSavingThrows ?? (params?.ac && params?.savingThrows);
+  return alsoSaves ? `Grants ${bonus} bonus to AC and saving throws.` : `Grants ${bonus} bonus to AC.`;
+}
+
+function setAcDescriptionText(feature, record) {
+  const params = record.featureParams?.[feature.id];
+  if (!params?.base) return feature.description || "";
+  const modifier = params.modifier ? ` + the wearer's own ${params.modifier} modifier` : "";
+  return `The wearer's own AC becomes ${params.base}${modifier}.`;
+}
+
+function acMinimumDescriptionText(feature, record) {
+  const params = record.featureParams?.[feature.id];
+  if (!params?.minimum) return feature.description || "";
+  return `The wearer's own AC can't be less than ${params.minimum}.`;
+}
+
+// `spellName`/`spellLevel` are one compound fact (never split into a tier —
+// see feature-import-core.js's own module comment on why) — this Feature
+// has no tiers at all, so this is the ONLY render path for it.
+function castASpellDescriptionText(feature, record) {
+  const params = record.featureParams?.[feature.id];
+  if (!params?.spellName) return feature.description || "";
+  const level = params.spellLevel ? ` (${params.spellLevel})` : "";
+  const dc = params.saveDC ? `, save DC ${params.saveDC}` : "";
+  return `Casts ${params.spellName}${level}${dc}.`;
+}
+
+// `speedType`/`distance` are likewise one compound fact — no tiers.
+function speedModificationDescriptionText(feature, record) {
+  const params = record.featureParams?.[feature.id];
+  if (!params?.speedType) return feature.description || "";
+  const distance = typeof params.distance === "number" ? `${params.distance} feet` : `equal to your ${params.distance}`;
+  return `Grants a ${params.speedType} speed ${distance}.`;
+}
+
+// `damageDice`/`damageType` are one compound fact (like `feat.cast-a-spell`'s
+// own spellName/spellLevel) — never split into a tier. `saveDC`/
+// `saveAbility`/`saveEffect` are only present for the save-conditional
+// shape (Arrow of Slaying: fails a save to take it in full, half on a
+// success) — absent entirely for a plain unconditional grant (Flame Tongue).
+function extraDamageDescriptionText(feature, record) {
+  const params = record.featureParams?.[feature.id];
+  if (!params?.damageDice) return feature.description || "";
+  const base = `Deals an extra ${params.damageDice} ${params.damageType || ""} damage`;
+  // `saveAbility`, not `saveDC`, is the real "is this a save-conditional
+  // clause at all" signal now — a spell's own save DC is never a literal
+  // number in its own text (vault-feature-matching.js's own
+  // `extra-damage` recognizer only ever sets `saveDC` when the source text
+  // actually states one, but still sets `saveAbility`/`saveEffect` for a
+  // spell's DC-less save clause).
+  if (!params.saveAbility) return `${base} on a hit.`;
+  const half = params.saveEffect === "half" ? ", or half as much on a success" : "";
+  const dc = params.saveDC ? `DC ${params.saveDC} ` : "";
+  return `${base} on a failed ${dc}${params.saveAbility} saving throw${half}.`;
+}
+
+function darkvisionDescriptionText(feature, record) {
+  const params = record.featureParams?.[feature.id];
+  if (!params?.range) return feature.description || "";
+  return `Grants darkvision out to ${params.range} feet.`;
+}
+
+// `curseText` is the curse's own specific drawback, preserved verbatim
+// (see vault-feature-matching.js's own "Curse" clause dispatch) since the
+// actual mechanic varies too much item to item to structure further.
+function curseDescriptionText(feature, record) {
+  const params = record.featureParams?.[feature.id];
+  if (!params?.curseText) return feature.description || "";
+  return params.curseText;
+}
+
+function savingThrowAdvantageDescriptionText(feature, record) {
+  const params = record.featureParams?.[feature.id];
+  if (!params?.against) return feature.description || "";
+  return `Grants advantage on saving throws against ${params.against}.`;
+}
+
+// An item's own healing is usually one fixed value (`healingDice`); a
+// spell's own healing usually scales instead (`scaling`, the same
+// {by, values} ladder shape feat.damage's own render uses) — checked first
+// since a record carrying both would mean the scaling ladder is the real
+// data and healingDice is stale/redundant.
+function healingDescriptionText(feature, record) {
+  const params = record.featureParams?.[feature.id];
+  const entries = Object.entries(params?.scaling?.values || {}).sort((a, b) => Number(a[0]) - Number(b[0]));
+  if (entries.length) {
+    const [, baseDice] = entries[0];
+    return `Restores ${baseDice} hit points.${scalingNoteText(params.scaling)}`;
+  }
+  if (!params?.healingDice) return feature.description || "";
+  return `Restores ${params.healingDice} hit points.`;
+}
+
+function attackerDisadvantageDescriptionText(feature, record) {
+  const params = record.featureParams?.[feature.id];
+  if (!params?.attackType) return feature.description || "";
+  const scope = params.attackType === "spell" ? "Spell attacks" : "Attacks";
+  return `${scope} against the wearer are made with disadvantage.`;
+}
+
+// Mirrors Crucible's own multiattackDescriptionText (crucible/js/app.js) —
+// the same Multiattack-shaped concept, applied to a menu of spells instead
+// of a menu of attacks.
+function spellMenuDescriptionText(feature, record) {
+  const params = record.featureParams?.[feature.id];
+  const spells = Array.isArray(params?.spells) ? params.spells : [];
+  if (!spells.length) return feature.description || "";
+  const list = spells.map((s) => (s.charges ? `${s.name} (${s.charges} charge${s.charges === 1 ? "" : "s"})` : s.name)).join(", ");
+  const dc = params.saveDC ? ` Spells cast this way use a save DC of ${params.saveDC}.` : "";
+  return `On activation, casts one of the following: ${list}.${dc}`;
+}
+
+function chargesDescriptionText(feature, record) {
+  const params = record.featureParams?.[feature.id];
+  if (!params?.max) return feature.description || "";
+  const recharge = params.rechargeFormula ? ` Regains ${params.rechargeFormula} expended charges daily at dawn.` : "";
+  return `Has ${params.max} charges.${recharge}`;
+}
+
+function imposeConditionDescriptionText(feature, record) {
+  const params = record.featureParams?.[feature.id];
+  if (!params?.condition) return feature.description || "";
+  const duration = params.duration ? ` for ${params.duration}` : "";
+  // `saveDC` is optional — a spell's own text never states a literal DC
+  // (vault-feature-matching.js's own `impose-condition` recognizer only
+  // sets it when the source text actually has one).
+  const dc = params.saveDC ? `DC ${params.saveDC} ` : "";
+  const trigger =
+    params.trigger === "hit"
+      ? "On a hit,"
+      : params.trigger === "automatic"
+        ? ""
+        : `On a failed ${dc}${params.saveAbility || ""} saving throw,`;
+  return `${trigger} the target becomes ${params.condition}${duration}.`.trim();
+}
+
+function speedIncreaseDescriptionText(feature, record) {
+  const params = record.featureParams?.[feature.id];
+  if (!params?.mode) return feature.description || "";
+  if (params.mode === "double") return "Doubles the wearer's own walking speed.";
+  if (params.mode === "minimum") return `Sets the wearer's own walking speed to at least ${params.distance} feet.`;
+  if (params.mode === "dash") return "Lets the wearer take the Dash action as a bonus action.";
+  return `Increases the wearer's own walking speed by ${params.distance} feet.`;
+}
+
+function jumpIncreaseDescriptionText(feature, record) {
+  const params = record.featureParams?.[feature.id];
+  if (!params?.multiplier) return feature.description || "";
+  return `Multiplies the wearer's own jump distance by ${params.multiplier}.`;
+}
+
+function weaponProficiencyDescriptionText(feature, record) {
+  const params = record.featureParams?.[feature.id];
+  if (!params?.weapons) return feature.description || "";
+  return `Grants proficiency with ${params.weapons}.`;
+}
+
+function modifiesRollDescriptionText(feature, record) {
+  const params = record.featureParams?.[feature.id];
+  const rollType = params?.rollType || "roll";
+  if (params?.mode === "bonus-die") {
+    if (!params.die) return feature.description || "";
+    const subtract = params.sign === "subtract";
+    return `Rolls ${params.die} and ${subtract ? "subtracts it from" : "adds it to"} the ${rollType}.`;
+  }
+  if (!params?.value) return feature.description || "";
+  return `Instead of rolling for a ${rollType} roll, the user can take ${params.value} on the die.`;
+}
+
+// `params` is null (not just missing `tool`) for the common "proficient
+// with whatever tool this transforms into/represents" case (see the
+// `tool-proficiency` clause recognizer, vault-feature-matching.js) — falls
+// back to the shared Feature's own generic description text for that case,
+// same convention every params-optional render function here already uses.
+function toolProficiencyDescriptionText(feature, record) {
+  const params = record.featureParams?.[feature.id];
+  if (!params?.tool) return feature.description || "";
+  return `Grants proficiency with ${params.tool}.`;
+}
+
+function personalTeleportationDescriptionText(feature, record) {
+  const params = record.featureParams?.[feature.id];
+  if (!params?.range) return feature.description || "";
+  return `On activation, teleports the user (and everything worn/carried) to a familiar location within ${params.range} feet, on the same plane.`;
+}
+
+function vehicleDescriptionText(feature, record) {
+  const params = record.featureParams?.[feature.id];
+  if (!params?.ac) return feature.description || "";
+  return `AC ${params.ac}, ${params.hp} hit points.`;
+}
+
+function resourceProductionDescriptionText(feature, record) {
+  const params = record.featureParams?.[feature.id];
+  if (!params?.resourceText) return feature.description || "";
+  return `Produces ${params.resourceText}.`;
+}
+
+function obscurementDescriptionText(feature, record) {
+  const params = record.featureParams?.[feature.id];
+  if (!params?.level) return feature.description || "";
+  return `Fills an area with a ${params.level} cloud.`;
+}
+
+function detectionDescriptionText(feature, record) {
+  const params = record.featureParams?.[feature.id];
+  if (!params?.detects) return feature.description || "";
+  const range = params.range ? ` within ${params.range} ${params.rangeUnit || "feet"}` : "";
+  return `Reveals the presence or direction of ${params.detects}${range}.`;
+}
+
+function createLightDarknessDescriptionText(feature, record) {
+  const params = record.featureParams?.[feature.id];
+  if (params?.mode === "darkness") {
+    if (!params.radius) return feature.description || "";
+    return `Fills a ${params.radius}-foot-radius sphere with magical darkness.`;
+  }
+  if (!params?.dimRadius && !params?.brightRadius) return feature.description || "";
+  if (params.brightRadius) return `Sheds bright light out to ${params.brightRadius} feet and dim light out to ${params.dimRadius} feet.`;
+  return `Sheds dim light out to ${params.dimRadius} feet.`;
+}
+
+function lockControlDescriptionText(feature, record) {
+  const params = record.featureParams?.[feature.id];
+  if (!params?.action) return feature.description || "";
+  return `${params.action[0].toUpperCase()}${params.action.slice(1)}s a door, chest, or similar object.`;
+}
+
+function randomEffectDescriptionText(feature, record) {
+  const params = record.featureParams?.[feature.id];
+  if (!params?.optionCount) return feature.description || "";
+  return `Consult this Effect's own table (${params.optionCount} options) — see its notes.`;
+}
+
+function adhesiveManipulationDescriptionText(feature, record) {
+  const params = record.featureParams?.[feature.id];
+  if (!params?.mode) return feature.description || "";
+  return params.mode === "bond" ? "Bonds two objects together, near-permanently." : "Instantly dissolves an adhesive bond, including a magical one.";
+}
+
+function truesightDescriptionText(feature, record) {
+  const params = record.featureParams?.[feature.id];
+  if (!params?.range) return feature.description || "";
+  return `Grants truesight out to ${params.range} feet.`;
+}
+
+function damageReductionDescriptionText(feature, record) {
+  const params = record.featureParams?.[feature.id];
+  if (!params?.reductionDice) return feature.description || "";
+  return `On a reaction, reduces damage from a hit by ${params.reductionDice}.`;
+}
+
+function forcedMovementDescriptionText(feature, record) {
+  const params = record.featureParams?.[feature.id];
+  if (!params?.distance) return feature.description || "";
+  return `Pushes the target ${params.distance} feet away.`;
+}
+
+function damageOverTimeDescriptionText(feature, record) {
+  const params = record.featureParams?.[feature.id];
+  if (!params?.damageDice) return feature.description || "";
+  return `The target takes ${params.damageDice} ${params.damageType || ""} damage at the start of each of its own turns, until ended.`;
+}
+
+function temporaryHitPointsDescriptionText(feature, record) {
+  const params = record.featureParams?.[feature.id];
+  if (!params?.dice) return feature.description || "";
+  return `Grants ${params.dice} temporary hit points.`;
+}
+
+function grantsAdvantageDescriptionText(feature, record) {
+  const params = record.featureParams?.[feature.id];
+  if (!params?.rollType) return feature.description || "";
+  return `Grants advantage on ${params.rollType}.`;
+}
+
+// Mirrors damageDescriptionText's own sentence shape, but every value
+// here is the item's own literal fixed number (see vault-feature-
+// matching.js's own CLAUSE_RECOGNIZERS "area-damage-save-half"/"-binary")
+// rather than a caster-scaled `scaling` table — an item has no spell slot
+// to scale by.
+function areaDamageBurstDescriptionText(feature, record) {
+  const params = record.featureParams?.[feature.id];
+  if (!params?.damageDice) return feature.description || "";
+  const dc = params.saveDC ? `DC ${params.saveDC} ` : "";
+  const rider = params.rider ? ` and ${params.rider}` : "";
+  const half = params.saveEffect === "half" ? " On a success, a target takes half as much damage." : "";
+  const area = params.areaShape && params.areaSize ? `In a ${params.areaSize}-foot ${params.areaShape}, e` : "E";
+  return `${area}ach target must make a ${dc}${params.saveAbility || ""} saving throw, taking ${params.damageDice} ${params.damageType || ""} damage on a failure${rider}.${half}`;
+}
+
+// Featureless-param Features (no per-record data at all needed to render —
+// "No Critical Hits"/"Water Breathing" always mean the same thing) just use
+// their own shared static description, same as any plain "passive" Feature.
+const FEATURE_ID_DESCRIPTION_TEXT = {
+  "feat.damage-modification": damageModificationDescriptionText,
+  "feat.skill-bonus": skillBonusDescriptionText,
+  "feat.ability-score-increase": abilityScoreIncreaseDescriptionText,
+  "feat.protection-bonus": protectionBonusDescriptionText,
+  "feat.set-ac": setAcDescriptionText,
+  "feat.ac-minimum": acMinimumDescriptionText,
+  "feat.cast-a-spell": castASpellDescriptionText,
+  "feat.speed-modification": speedModificationDescriptionText,
+  "feat.darkvision": darkvisionDescriptionText,
+  "feat.temporary-hit-points": temporaryHitPointsDescriptionText,
+  "feat.area-damage-burst": areaDamageBurstDescriptionText,
+  "feat.curse": curseDescriptionText,
+  "feat.spell-menu": spellMenuDescriptionText,
+  "feat.extra-damage": extraDamageDescriptionText,
+  "feat.damage": damageDescriptionText,
+  "feat.saving-throw-advantage": savingThrowAdvantageDescriptionText,
+  "feat.healing": healingDescriptionText,
+  "feat.attacker-disadvantage": attackerDisadvantageDescriptionText,
+  "feat.charges": chargesDescriptionText,
+  "feat.impose-condition": imposeConditionDescriptionText,
+  "feat.speed-increase": speedIncreaseDescriptionText,
+  "feat.jump-increase": jumpIncreaseDescriptionText,
+  "feat.weapon-proficiency": weaponProficiencyDescriptionText,
+  "feat.modifies-roll": modifiesRollDescriptionText,
+  "feat.tool-proficiency": toolProficiencyDescriptionText,
+  "feat.personal-teleportation": personalTeleportationDescriptionText,
+  "feat.vehicle": vehicleDescriptionText,
+  "feat.resource-production": resourceProductionDescriptionText,
+  "feat.obscurement": obscurementDescriptionText,
+  "feat.detection": detectionDescriptionText,
+  "feat.create-light-darkness": createLightDarknessDescriptionText,
+  "feat.lock-control": lockControlDescriptionText,
+  "feat.random-effect": randomEffectDescriptionText,
+  "feat.adhesive-manipulation": adhesiveManipulationDescriptionText,
+  "feat.truesight": truesightDescriptionText,
+  "feat.damage-reduction": damageReductionDescriptionText,
+  "feat.forced-movement": forcedMovementDescriptionText,
+  "feat.damage-over-time": damageOverTimeDescriptionText,
+  "feat.grants-advantage": grantsAdvantageDescriptionText,
+};
+
+// Single entry point renderFeatureList (below) and any future selected-
+// feature detail view call — resolves a selected tier's own text first
+// (same priority Crucible's own renderFeatureList gives feature.tiers),
+// then whichever live-computed text this Feature's own mechanics.type OR
+// (for the generic `"active"` clause-recognized Features) own id needs,
+// then the shared Feature's own static description for anything else (a
+// plain "passive" Feature, or a record-scoped one-off created for a
+// genuinely unrecognized spell/item clause).
+function featureDescriptionText(feature, record, featureId) {
+  const tier = feature?.tiers?.find((entry) => entry.id === record.featureTiers?.[featureId]);
+  if (tier?.mechanics?.text) return tier.mechanics.text;
+  const byId = FEATURE_ID_DESCRIPTION_TEXT[feature?.id];
+  if (byId) return byId(feature, record);
+  switch (feature?.mechanics?.type) {
+    case "item-passive-bonus":
+      return itemPassiveBonusDescriptionText(feature, record);
+    default:
+      // A pure tier ladder with no dedicated description function above
+      // (Weapon Enhancement, Spell Attack Bonus, Ranged Damage Bonus,
+      // General Bonus, Mending Pulse, ...) — the tier's own terse name
+      // ("+2", "Superior") means nothing without the feature's own name
+      // for context, unlike a monster's own self-descriptive tier names
+      // (Crucible's "Legendary Resistance (3/Day)"), so it's prefixed
+      // here rather than shown alone.
+      return tier ? `${tier.name}${tier.shortName && tier.shortName !== tier.name ? ` (${tier.shortName})` : ""} — ${feature?.description || ""}` : feature?.description || "";
+  }
 }
 
 function renderFeatureList(record) {
@@ -555,8 +1183,6 @@ function renderFeatureList(record) {
   record.featureIds.forEach((featureId) => {
     const feature = findById(features, featureId);
     const isSignature = featureId === record.signatureFeatureId;
-    const hasTiers = Array.isArray(feature?.tiers) && feature.tiers.length > 0;
-    const selectedTierId = record.featureTiers?.[featureId];
     const cost = resolveFeatureBudgetCost(feature || {}, record.featureTiers || {});
 
     const row = document.createElement("div");
@@ -578,29 +1204,6 @@ function renderFeatureList(record) {
       badge.textContent = "Signature";
       header.appendChild(badge);
     }
-    // Only a feature that actually scales (feat.mending-pulse's Healing,
-    // feat.giant-strength, ...) gets this — every other feature keeps the
-    // exact same row shape it always had. Changing it recomputes the badge
-    // and the whole budget readout together, same as add/remove already do.
-    if (hasTiers) {
-      const tierSelect = document.createElement("select");
-      tierSelect.className = "form-select form-select-sm";
-      tierSelect.style.maxWidth = "10rem";
-      feature.tiers.forEach((tier) => {
-        const option = document.createElement("option");
-        option.value = tier.id;
-        option.textContent = tier.shortName ? `${tier.name} (${tier.shortName})` : tier.name;
-        option.selected = tier.id === selectedTierId;
-        tierSelect.appendChild(option);
-      });
-      tierSelect.addEventListener("click", (event) => event.stopPropagation());
-      tierSelect.addEventListener("change", () => {
-        currentRecord.featureTiers = { ...(currentRecord.featureTiers || {}), [featureId]: tierSelect.value };
-        recomputeBudget(currentRecord);
-        refreshEffectView();
-      });
-      header.appendChild(tierSelect);
-    }
     const costBadge = document.createElement("span");
     costBadge.className = `badge ${cost < 0 ? "text-bg-success" : "text-bg-secondary"}`;
     costBadge.textContent = cost >= 0 ? `Cost ${cost}` : `Refund ${Math.abs(cost)}`;
@@ -608,7 +1211,7 @@ function renderFeatureList(record) {
 
     const description = document.createElement("div");
     description.className = "small text-body-secondary";
-    description.textContent = feature?.description || "";
+    description.textContent = feature ? featureDescriptionText(feature, record, featureId) : "";
 
     info.append(header, description);
 
@@ -662,8 +1265,9 @@ function addFeature(featureId) {
   if (!currentRecord.featureIds.includes(featureId)) currentRecord.featureIds.push(featureId);
   // A freshly added tiered feature starts at its own first (cheapest) tier
   // — same "always a real, well-defined tier" guarantee generateEffect's
-  // own output gives — so the tier <select> in renderFeatureList always has
-  // something valid selected rather than defaulting silently.
+  // own output gives — so the Inspector's own tier select (feature-params-
+  // editor.js's renderFeatureTierEditor) always has something valid
+  // selected rather than defaulting silently.
   const feature = findById(features, featureId);
   if (Array.isArray(feature?.tiers) && feature.tiers.length) {
     currentRecord.featureTiers = { ...(currentRecord.featureTiers || {}) };
@@ -762,6 +1366,26 @@ async function handleSave() {
   currentRecord.name = elements.nameInput?.value || "";
   currentRecord.notes = elements.notesText?.value || "";
   try {
+    // Every Effect save gets its remaining raw stats.mechanic (an imported
+    // spell/item's own recognized structured mechanic, or unrecognized
+    // stats.description) converted into a real Feature reference,
+    // unconditionally — mirrors Crucible's own handleSave exactly (see
+    // vault-feature-matching.js's own module comment). Loom's saveEntity
+    // already does this for imports made through Loom; this save bypasses
+    // saveEntity entirely (writes straight to dataManager.save), so it
+    // needs the same call directly. Idempotent — hasConvertibleSpellItemStats
+    // is false once nothing's left to convert (the converter deletes
+    // record.stats once consumed), so this is a safe no-op on every
+    // subsequent save of the same record.
+    let conversionErrors = [];
+    if (hasConvertibleSpellItemStats(currentRecord)) {
+      const conversionResult = await convertSpellOrItemToFeatures(currentRecord, {
+        dataManager,
+        existingFeatures: features,
+        effectSlug: currentRecord.id,
+      });
+      conversionErrors = conversionResult?.errors || [];
+    }
     // Default mode ("auto") matters here exactly like Crucible/Forge's save:
     // an anonymous GM saves locally to their own browser, a signed-in user
     // gets a real owned/shareable record — Vault has no whole-tool login gate.
@@ -771,7 +1395,14 @@ async function handleSave() {
     currentEffectId = currentRecord.id;
     await populateEffectSelect();
     updateActionButtons();
-    status?.show("Saved.", { type: "success", timeout: 1500 });
+    if (conversionErrors.length) {
+      status?.show(
+        `Saved, but ${conversionErrors.length} feature${conversionErrors.length === 1 ? "" : "s"} couldn't be converted (see console).`,
+        { type: "warning", timeout: 5000 }
+      );
+    } else {
+      status?.show("Saved.", { type: "success", timeout: 1500 });
+    }
   } catch (error) {
     status?.show(`Unable to save: ${error.message}`, { type: "error", timeout: 4000 });
   }
@@ -914,7 +1545,19 @@ async function init() {
       return;
     }
     try {
-      const result = await dataManager.get("effect", id);
+      // preferLocal: false — `id` always comes from elements.effectSelect,
+      // populated by listEffectsForSystem's own fetchKindEntriesWithIds
+      // (`includeLocal: false`), so it's already guaranteed to be a
+      // server-known effect; defaulting to a local-preferring get() here
+      // silently served a stale per-record snapshot whenever the server
+      // copy changed after this browser's own local cache of it was first
+      // populated (confirmed live: Arrow of Slaying's own corrected
+      // featureIds never appeared in Vault after a direct data fix, even
+      // though Loom's own equally-fresh fetch showed it immediately) — the
+      // exact same bug fetchKindEntriesWithIds' own comment already
+      // documents and fixes for the list-then-fetch-each path, just missed
+      // at this single-record load path.
+      const result = await dataManager.get("effect", id, { preferLocal: false });
       if (!result?.payload) {
         status?.show("Unable to load that effect.", { type: "error", timeout: 4000 });
         return;

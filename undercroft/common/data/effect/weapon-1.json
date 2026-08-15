@@ -1,0 +1,21 @@
+{
+  "kind": "effect",
+  "index": "weapon-1",
+  "name": "Weapon, +1",
+  "notes": "Weapon (any), uncommon\n\nYou have a +1 bonus to attack and damage rolls made with this magic weapon.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/magic-items/weapon-1",
+  "mapping": "5e-api-magic-item",
+  "properties": {
+    "rarity": "uncommon",
+    "form": "weapon"
+  },
+  "featureIds": [
+    "feat.weapon-enhancement"
+  ],
+  "featureTiers": {
+    "feat.weapon-enhancement": "plus-1"
+  }
+}

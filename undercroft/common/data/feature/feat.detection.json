@@ -1,0 +1,25 @@
+{
+  "id": "feat.detection",
+  "name": "Detection",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Reveals the presence or direction of something otherwise hidden.",
+  "mechanics": {
+    "type": "active",
+    "text": "On activation, reveals the presence, direction, or nature of whatever this record's own featureParams.detects names — optionally out to featureParams.range/rangeUnit when the source states a fixed sensing distance."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "utility"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

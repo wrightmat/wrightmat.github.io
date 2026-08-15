@@ -1,0 +1,25 @@
+{
+  "id": "feat.jump-increase",
+  "name": "Jump Increase",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Multiplies the distance the creature can jump.",
+  "mechanics": {
+    "type": "active",
+    "text": "While active, multiplies the wearer's own jump distance by this record's own featureParams.multiplier."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "mobility"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

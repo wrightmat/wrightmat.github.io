@@ -1,0 +1,25 @@
+{
+  "id": "feat.skill-debuff",
+  "name": "Skill Debuff",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Imposes disadvantage on a specific skill or check — the inverse of Skill Bonus.",
+  "mechanics": {
+    "type": "active",
+    "text": "While active, the target has disadvantage on featureParams.skill checks."
+  },
+  "budgetCost": 3,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "debuff"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

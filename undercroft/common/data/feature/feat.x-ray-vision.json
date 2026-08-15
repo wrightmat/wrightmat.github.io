@@ -1,0 +1,24 @@
+{
+  "id": "feat.x-ray-vision",
+  "name": "X-Ray Vision",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Lets the user see through solid matter for a short time.",
+  "mechanics": {
+    "type": "active",
+    "text": "On activation, the user can see into and through solid matter for a limited time, up to some thickness of material."
+  },
+  "budgetCost": 5,
+  "tags": {
+    "categories": [
+      "item"
+    ],
+    "propertyHints": [
+      "utility"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

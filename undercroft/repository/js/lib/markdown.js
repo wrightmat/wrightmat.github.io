@@ -405,7 +405,13 @@ export function renderMarkdown(
     return container;
   }
   ensureCalloutRenderer(marked);
-  const html = DOMPurify.sanitize(marked.parse(withLinks, { async: false }));
+  // `breaks: true` — plain CommonMark treats a single newline inside a
+  // paragraph as a soft wrap (rendered as a space, invisible), only a
+  // BLANK line starts a new paragraph. Every Notes-style field across this
+  // suite is typed like a casual text box (hit Enter, expect a line
+  // break), not authored CommonMark prose, so without this a note that
+  // looks multi-line in Edit mode silently runs together in View mode.
+  const html = DOMPurify.sanitize(marked.parse(withLinks, { async: false, breaks: true }));
   container.innerHTML = html;
   applyWikiLinkStyling(container, { onNavigate });
   applyDiceRollers(container, { status, interactive: interactiveDice, dataManager });

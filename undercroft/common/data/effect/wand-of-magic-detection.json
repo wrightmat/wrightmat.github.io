@@ -1,0 +1,32 @@
+{
+  "kind": "effect",
+  "index": "wand-of-magic-detection",
+  "name": "Wand of Magic Detection",
+  "notes": "Wand, uncommon\n\nThis wand has 3 charges. While holding it, you can expend 1 charge as an action to cast the detect magic spell from it. The wand regains 1d3 expended charges daily at dawn.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/magic-items/wand-of-magic-detection",
+  "mapping": "5e-api-magic-item",
+  "charges": {
+    "max": 3,
+    "rechargeFormula": "1d3"
+  },
+  "properties": {
+    "rarity": "uncommon",
+    "form": "wand"
+  },
+  "featureIds": [
+    "feat.cast-a-spell",
+    "feat.charges"
+  ],
+  "featureParams": {
+    "feat.cast-a-spell": {
+      "spellName": "detect magic"
+    },
+    "feat.charges": {
+      "max": 3,
+      "rechargeFormula": "1d3"
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "id": "feat.water-walking",
+  "name": "Water Walking",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Lets the wearer stand on and cross any liquid surface as if it were solid ground.",
+  "mechanics": {
+    "type": "active",
+    "text": "While active, liquid surfaces support the wearer's own weight as if they were solid ground."
+  },
+  "budgetCost": 3,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "mobility"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

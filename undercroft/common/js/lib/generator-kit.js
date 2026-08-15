@@ -251,3 +251,41 @@ export async function generateNoteForRecord({ record, elements, status, generate
     }
   }
 }
+
+// The active System's own "abilities" object field's children (key +
+// shortName) — read here instead of every caller carrying its own copy.
+// Previously duplicated verbatim between Crucible's and Forge's own
+// lib/tables.js (both re-export from here now, unchanged call sites);
+// Vault imports it directly for its own feature-params-editor ability
+// select (see vault/js/app.js). Not one of the three-tool "generate/save/
+// export/note" flow functions above (this module's own header comment) —
+// it's a narrower, independently reusable helper any tool reading System
+// ability data needs, which is why Forge already had its own copy too.
+// Falls back to the standard six-ability D&D set if the System defines no
+// "abilities" field, so a System with none authored yet still works.
+const DEFAULT_ABILITY_FIELD_DEFS = [
+  { key: "strength", label: "STR" },
+  { key: "dexterity", label: "DEX" },
+  { key: "constitution", label: "CON" },
+  { key: "intelligence", label: "INT" },
+  { key: "wisdom", label: "WIS" },
+  { key: "charisma", label: "CHA" },
+];
+
+export async function loadAbilityFieldDefs(dataManager, systemId) {
+  if (!dataManager || !systemId) return DEFAULT_ABILITY_FIELD_DEFS;
+  try {
+    const result = await dataManager.get("systems", systemId, { preferLocal: false });
+    const fields = Array.isArray(result?.payload?.fields) ? result.payload.fields : [];
+    const field = fields.find((entry) => entry.type === "object" && entry.key === "abilities");
+    const defs = (field?.children || [])
+      .map((child) => ({
+        key: String(child.key || "").replace(/^abilities\./, ""),
+        label: child.shortName || child.label || "",
+      }))
+      .filter((entry) => entry.key && entry.label);
+    return defs.length ? defs : DEFAULT_ABILITY_FIELD_DEFS;
+  } catch (error) {
+    return DEFAULT_ABILITY_FIELD_DEFS;
+  }
+}
