@@ -5,5 +5,5 @@
   "icon": "tabler:users",
   "readTier": "free",
   "writeTier": "gm",
-  "metadataFields": ["type", "systemId", "settingId", "templateId"]
+  "metadataFields": ["type", "systemId", "settingId", "templateId", "campaignDayIndex", "campaignMinutesOfDay"]
 }

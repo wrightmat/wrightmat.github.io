@@ -2523,22 +2523,96 @@ async function init() {
 
   document.querySelector("[data-json-mount]")?.appendChild(jsonDataPanel.section);
 
+  // `?monster=<id>` — a cross-tool deep link (Repository's own kind-
+  // reference chips route here via KIND_TOOL_ROUTE, see repository/js/app.js),
+  // same `?param=<id>`-read-at-bootstrap convention Orrery's own `?map=` and
+  // Loom's own `?feature=` already establish. A monster record only carries
+  // its own System (Crucible has no Setting concept at all — see
+  // populateMonsterSelect's own comment); a bulk-imported bestiary entry may
+  // carry no systemIds at all, in which case the System cascade below is
+  // skipped and reloadReferenceData()'s own current/default System list is
+  // trusted to already include it (the suite-wide "no tag = universal"
+  // convention). Dispatches a real "change" event to actually load the
+  // monster rather than duplicating monsterSelect's own change-handler body.
+  // Two-phase, not one straight-line await chain — same "show the linked
+  // record first, load everything else in the background" fix Sanctum's
+  // own deep link needed once a campaign had enough saved content for the
+  // full System reference-data reload to be genuinely slow. Phase 1
+  // (awaited, blocks return): render THIS monster directly (reusing
+  // renderMonster + the same dirty-baseline call monsterSelect's own
+  // change handler makes — not that handler itself, since it reads the id
+  // off monsterSelect.value, which has no matching <option> yet this
+  // early). Phase 2 (fired but not awaited): the System reference-data
+  // reload populates monsterSelect's own option list; a real "change"
+  // event re-dispatched at the end puts the picker's own displayed
+  // selection in sync.
+  async function applyDeepLinkParams() {
+    const params = new URLSearchParams(window.location.search);
+    const monsterId = params.get("monster");
+    if (!monsterId) return false;
+    try {
+      const result = await dataManager.get("monster", monsterId, { preferLocal: false });
+      const payload = result?.payload || {};
+      const targetSystemId = payload.systemIds?.[0] || null;
+      // Phase 1 — the monster itself, on screen as fast as one fetch allows.
+      currentMonsterId = monsterId;
+      updateGenerationFieldsVisibility();
+      renderMonster({ ...payload, id: monsterId });
+      dirtyGate.markClean(toPressExportShape(currentRecord));
+      updateActionButtons();
+      // Phase 2 — deliberately not awaited here; runs after this function
+      // has already returned `true`. NOT handleSystemSelectChange (which
+      // resets currentMonsterId and calls renderMonster(null) before its
+      // own reloadReferenceData) — that wiped the monster Phase 1 had
+      // ALREADY rendered, leaving the screen blank for however long the
+      // System's own reference-data fetch takes instead of just quietly
+      // finishing in the background behind an already-correct view.
+      // Setting systemSelect's own value directly and calling
+      // reloadReferenceData() straight (same fetch, minus the reset) keeps
+      // Phase 1's render on screen the whole time. monsterSelect's own
+      // value is set without dispatching "change" for the same reason —
+      // the monster is already loaded and correctly shown; re-dispatching
+      // would only re-fetch and re-render it a second time for no benefit.
+      void (async () => {
+        try {
+          if (targetSystemId && elements.systemSelect) {
+            elements.systemSelect.value = targetSystemId;
+          }
+          await reloadReferenceData();
+          if (elements.monsterSelect) elements.monsterSelect.value = monsterId;
+        } catch (error) {
+          // Phase 1 already succeeded — a background failure here just
+          // leaves the picker under-populated, not worth an error toast on
+          // top of a page that's already showing real content.
+        }
+      })();
+      return true;
+    } catch (error) {
+      status?.show("Unable to open the linked record.", { type: "error", timeout: 3000 });
+      return false;
+    }
+  }
+
   // If a campaign group is active (the header's Campaign dropdown) and that
   // group has its own System assigned, default Crucible's System select to
   // it — a real, GM-chosen fact about the campaign being played, not a
   // guess — to make mid-campaign generation faster. Falls through to the
   // original "nothing chosen yet" placeholder whenever there's no active
   // group, or its System isn't one this tool's own list actually contains.
+  // An explicit `?monster=` deep link always wins over both.
   const systems = await populateSystemSelect();
-  const groupContext = await resolveGroupContext(dataManager).catch(() => null);
-  const defaultSystemId = pickGroupDefaultId(groupContext, "systemId", systems);
-  if (defaultSystemId) {
-    elements.systemSelect.value = defaultSystemId;
-    await handleSystemSelectChange();
-  } else {
-    await reloadReferenceData();
+  const deepLinked = await applyDeepLinkParams();
+  if (!deepLinked) {
+    const groupContext = await resolveGroupContext(dataManager).catch(() => null);
+    const defaultSystemId = pickGroupDefaultId(groupContext, "systemId", systems);
+    if (defaultSystemId) {
+      elements.systemSelect.value = defaultSystemId;
+      await handleSystemSelectChange();
+    } else {
+      await reloadReferenceData();
+    }
+    renderMonster(null);
   }
-  renderMonster(null);
 
   initHelpSystem();
   refreshTooltips();

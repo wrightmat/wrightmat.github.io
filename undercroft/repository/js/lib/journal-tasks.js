@@ -6,7 +6,15 @@
 // sync; whether checking one off *also* appends a "✅ YYYY-MM-DD" completion
 // stamp (Obsidian's own Tasks plugin convention) is Repository's own
 // settings toggle, plumbed through as toggleTaskLine's `appendStamp` option.
-const TASK_LINE_PATTERN = /^(\s*[-*+]\s+\[)([ xX])(\]\s*)(.*)$/;
+// The optional `(?:>\s?)*` prefix tolerates one or more blockquote markers
+// before the list marker — a `[!quest]` objective line in the PAGE's own raw
+// body reads as `> - [ ] ...`, not `- [ ] ...` (the ">" is only stripped once
+// parseCallout pulls a callout's bodyRaw out on its own — see
+// journal-quests.js's own extractQuests). Without this, extractTaskLines run
+// against a whole page (markdown.js's own applyTaskCheckboxes) silently found
+// zero task lines for anything inside a callout, leaving those checkboxes
+// permanently disabled — confirmed real bug, not a hypothetical.
+const TASK_LINE_PATTERN = /^((?:>\s?)*\s*[-*+]\s+\[)([ xX])(\]\s*)(.*)$/;
 const COMPLETION_STAMP_PATTERN = /\s*✅\s*\d{4}-\d{2}-\d{2}\s*$/;
 
 function todayStamp() {
@@ -18,12 +26,17 @@ function todayStamp() {
 // Every `- [ ]`/`- [x]` line, in document order — positionally paired with
 // marked's own rendered checkboxes below (both are the same top-to-bottom
 // scan of the same text), same convention journal-outline.js's heading
-// pairing already uses for its own repo-heading-<index> ids.
+// pairing already uses for its own repo-heading-<index> ids. `checked`/
+// `text` come from the same regex match every caller used to re-run
+// separately (`taskLineText`'s own exec, callers' own checked-state
+// guesses) — surfaced here once so a quest callout's own objective list
+// (journal-quests.js) doesn't need a second pass over the same lines.
 export function extractTaskLines(body) {
   const lines = String(body || "").split("\n");
   const tasks = [];
   lines.forEach((line, index) => {
-    if (TASK_LINE_PATTERN.test(line)) tasks.push({ line: index });
+    const match = TASK_LINE_PATTERN.exec(line);
+    if (match) tasks.push({ line: index, checked: match[2].toLowerCase() === "x", text: match[4] });
   });
   return tasks;
 }

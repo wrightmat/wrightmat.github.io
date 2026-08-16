@@ -18,6 +18,14 @@
           <section class="d-flex flex-column gap-3">
             <div class="btn-toolbar justify-content-center" role="toolbar" aria-label="Repository actions">
               <div class="btn-group" role="group" data-page-toolbar-mount>
+                <!-- One button, three stages (View -> Edit -> Relationships ->
+                     View, cyclic) — icon/label always describe what clicking
+                     switches TO, same idiom applyMode already used for the
+                     original two-stage version (see js/app.js's own
+                     updateModeButtonDisplay). Folded Relationships in here
+                     rather than a separate button so this toolbar's own
+                     button count stays at 7 total (6 page-action buttons +
+                     this one) instead of 8. -->
                 <button
                   class="btn btn-outline-secondary p-2"
                   type="button"
@@ -32,6 +40,9 @@
                   </span>
                   <span class="d-none" data-repository-mode-icon="edit">
                     <span class="iconify fs-5" data-icon="tabler:pencil" aria-hidden="true"></span>
+                  </span>
+                  <span class="d-none" data-repository-mode-icon="relationships">
+                    <span class="iconify fs-5" data-icon="tabler:affiliate" aria-hidden="true"></span>
                   </span>
                   <span class="visually-hidden" data-repository-mode-label>View</span>
                 </button>
@@ -90,6 +101,53 @@
                 data-repository-body
               ></textarea>
               <div class="d-none border rounded-3 bg-body p-3 repository-preview" style="flex: 1 1 0; min-height: 0; overflow-y: auto" data-repository-preview></div>
+            </div>
+          </div>
+
+          <!-- A read-only graph over already-written content (wikilinks +
+               quest titles + code-block references) — see
+               repository/js/lib/relationships-graph.js. A separate
+               top-level view from the page editor above (the third stage of
+               the left pane's own View/Edit/Relationships button — see
+               js/app.js's own advanceRepositoryStage), not a per-page
+               panel, since it's scoped to the whole workspace, not
+               whichever page happens to be loaded. -->
+          <div class="d-none card shadow-theme h-100" data-repository-relationships style="min-height: 0;">
+            <div class="card-body d-flex flex-column gap-2" style="min-height: 0;">
+              <div class="repository-graph-stage" data-repository-graph-container>
+                <div class="repository-graph-content" data-repository-graph-content>
+                  <svg data-repository-graph-svg viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid meet"></svg>
+                </div>
+                <!-- Which node kinds are drawn — checkboxes are built into
+                     data-repository-graph-filter-menu at runtime (js/app.js's
+                     own renderGraphFilterOptions), one per kind actually
+                     present in the current graph, since the set of kinds
+                     varies by workspace. data-bs-auto-close="outside" so
+                     checking several boxes in a row doesn't close the menu
+                     after each click. -->
+                <div class="repository-graph-filter" data-repository-graph-filter>
+                  <div class="dropdown">
+                    <button
+                      class="btn btn-outline-secondary btn-sm dropdown-toggle"
+                      type="button"
+                      data-bs-toggle="dropdown"
+                      data-bs-auto-close="outside"
+                      aria-expanded="false"
+                    >
+                      <span class="iconify" data-icon="tabler:filter" aria-hidden="true"></span>
+                      <span class="visually-hidden">Filter by type</span>
+                    </button>
+                    <div class="dropdown-menu p-2" data-repository-graph-filter-menu style="min-width: 12rem"></div>
+                  </div>
+                </div>
+                <div
+                  class="repository-graph-controls d-flex align-items-center gap-2 flex-wrap"
+                  data-repository-graph-controls
+                >
+                  <div class="btn-group btn-group-sm" role="group" aria-label="Relationships zoom controls" data-repository-graph-toolbar-mount></div>
+                </div>
+              </div>
+              <div class="d-none" data-repository-graph-empty></div>
             </div>
           </div>
         </main>

@@ -40,6 +40,18 @@ from .auth import (
 )
 from .builtins import builtin_catalog
 from .config import ConfigLoader
+from .integrations import (
+    EncryptionUnavailable,
+    clear_deployment_secret,
+    clear_ha_connection,
+    get_ha_connection,
+    list_deployment_secrets,
+    resolve_deployment_secret,
+    resolve_ha_credentials,
+    save_deployment_secret,
+    save_ha_connection,
+    update_ha_connection_url,
+)
 from .roles import role_rank
 from .router import Request, Response, Router
 from .shares import (
@@ -1092,6 +1104,411 @@ def register_routes():
 
     router.add("POST", r"^/sanctum/generate-note$", handle_sanctum_generate_note)
 
+    # --- Home Assistant integration -----------------------------------------
+    #
+    # A GM's own connection to their Home Assistant instance (base_url + a
+    # long-lived access token), proxied server-side rather than called
+    # directly from the browser the way the Lighting widget's WLED devices
+    # are — HA doesn't send CORS headers by default, and keeping the token
+    # here means it's stored encrypted (integrations.py) and never handed
+    # back to the client after the save that set it. gm+ tier gated, same bar
+    # as WLED devices/soundboard clips/token library — this is GM-run-the-
+    # table infrastructure. Every proxy call below is urllib-only, matching
+    # every other external-fetch route in this file (google-fonts-metadata,
+    # ddb-proxy, the *_generate-note routes above) — no HTTP client
+    # dependency.
+    def require_gm(request: Request) -> User:
+        user = require_user(request)
+        if role_rank(user.tier) < role_rank("gm"):
+            raise AuthError("GM tier or higher required")
+        return user
+
+    def normalize_ha_base_url(raw: str) -> str:
+        trimmed = (raw or "").strip()
+        if not trimmed:
+            return ""
+        if not trimmed.lower().startswith(("http://", "https://")):
+            trimmed = f"http://{trimmed}"
+        return trimmed.rstrip("/")
+
+    # Best-effort — HA's own error responses are usually a small JSON body
+    # ({"message": "Unauthorized"} for a bad token, say) far more useful for
+    # debugging than the bare status code alone. Logged server-side only
+    # (see each call site below) — never included in the response sent to
+    # the client, which only ever gets the generic "Home Assistant returned
+    # N" (DataManager's own 5xx sanitization would strip more detail than
+    # this anyway; see home-assistant.js's own comment on that).
+    def _read_ha_error_body(exc) -> str:
+        try:
+            return exc.read().decode("utf-8", errors="replace")[:500]
+        except Exception:
+            return ""
+
+    # GET /home-assistant/connection — {configured, baseUrl} only, never the
+    # token (see integrations.py's own header comment on why).
+    def handle_get_ha_connection(request: Request) -> Response:
+        user = require_gm(request)
+        return json_response(get_ha_connection(request.state, user.id))
+
+    router.add("GET", r"^/home-assistant/connection$", handle_get_ha_connection)
+
+    # POST /home-assistant/connection — the ONE time the plaintext token
+    # crosses the wire; encrypted immediately and never echoed back.
+    def handle_save_ha_connection(request: Request) -> Response:
+        user = require_gm(request)
+        payload = require_json(request)
+        base_url = normalize_ha_base_url(payload.get("baseUrl", ""))
+        token = str(payload.get("token") or "").strip()
+        if not base_url:
+            return json_response({"error": "Base URL is required"}, status=HTTPStatus.BAD_REQUEST)
+        existing = get_ha_connection(request.state, user.id)
+        # A blank token on an edit means "keep the one already saved," not
+        # "clear it" — re-pasting a long-lived access token just to fix a
+        # typo'd URL is real friction this avoids. Only valid when a
+        # connection already exists; a brand-new one still needs a real
+        # token, same as before.
+        if not token:
+            if not existing.get("configured"):
+                return json_response({"error": "Base URL and token are both required"}, status=HTTPStatus.BAD_REQUEST)
+            update_ha_connection_url(request.state, user.id, base_url)
+            return json_response(get_ha_connection(request.state, user.id))
+        try:
+            save_ha_connection(request.state, user.id, base_url, token)
+        except EncryptionUnavailable as exc:
+            return json_response({"error": str(exc)}, status=HTTPStatus.SERVICE_UNAVAILABLE)
+        return json_response(get_ha_connection(request.state, user.id))
+
+    router.add("POST", r"^/home-assistant/connection$", handle_save_ha_connection)
+
+    # POST /home-assistant/connection/clear — this server has no do_DELETE at
+    # all (see /custom-fonts/delete's own comment), same reasoning here.
+    def handle_clear_ha_connection(request: Request) -> Response:
+        user = require_gm(request)
+        clear_ha_connection(request.state, user.id)
+        return json_response({"ok": True})
+
+    router.add("POST", r"^/home-assistant/connection/clear$", handle_clear_ha_connection)
+
+    # Shared by the two live-proxy routes below — a Response to return
+    # immediately covers both "not connected yet" (expected, most accounts)
+    # and "cryptography isn't installed" (a deploy-time gap, not a user
+    # mistake) with the status code each actually deserves, rather than
+    # forcing both through one generic exception type.
+    def resolve_ha_credentials_or_response(request: Request, user: User):
+        try:
+            credentials = resolve_ha_credentials(request.state, user.id)
+        except EncryptionUnavailable as exc:
+            return None, json_response({"error": str(exc)}, status=HTTPStatus.SERVICE_UNAVAILABLE)
+        if not credentials:
+            return None, json_response(
+                {"error": "Home Assistant isn't connected yet — set it up first."}, status=HTTPStatus.BAD_REQUEST
+            )
+        return credentials, None
+
+    # GET /home-assistant/entities — proxies HA's own /api/states, trimmed
+    # down to {entityId, domain, friendlyName} per entry (never the full
+    # state/attributes payload — sensor readings etc. have no reason to
+    # leave HA just to populate a device picker). Backs the populated
+    # entity selects in both the Lighting widget's "Add an HA light" flow
+    # and the Macro action editor (Loom).
+    def handle_ha_entities(request: Request) -> Response:
+        import urllib.error
+        import urllib.request
+
+        user = require_gm(request)
+        credentials, error = resolve_ha_credentials_or_response(request, user)
+        if error:
+            return error
+        proxy_request = urllib.request.Request(
+            f"{credentials['baseUrl']}/api/states",
+            headers={"Authorization": f"Bearer {credentials['token']}", "Accept": "application/json"},
+            method="GET",
+        )
+        try:
+            with urllib.request.urlopen(proxy_request, timeout=15) as upstream:
+                body = json.loads(upstream.read())
+        except urllib.error.HTTPError as exc:
+            detail = _read_ha_error_body(exc)
+            logging.warning("Home Assistant /api/states call failed: %s %s", exc.code, detail)
+            return json_response({"error": f"Home Assistant returned {exc.code}"}, status=HTTPStatus.BAD_GATEWAY)
+        except urllib.error.URLError as exc:
+            logging.warning("Unable to reach Home Assistant at %s: %s", credentials["baseUrl"], exc.reason)
+            return json_response({"error": f"Unable to reach Home Assistant ({exc.reason})"}, status=HTTPStatus.BAD_GATEWAY)
+        except (json.JSONDecodeError, TypeError):
+            return json_response({"error": "Home Assistant returned an unexpected response"}, status=HTTPStatus.BAD_GATEWAY)
+
+        entities = []
+        for state in body if isinstance(body, list) else []:
+            entity_id = state.get("entity_id") if isinstance(state, dict) else None
+            if not entity_id:
+                continue
+            friendly_name = (state.get("attributes") or {}).get("friendly_name") or entity_id
+            entities.append({"entityId": entity_id, "domain": entity_id.split(".", 1)[0], "friendlyName": friendly_name})
+        return json_response({"entities": entities})
+
+    router.add("GET", r"^/home-assistant/entities$", handle_ha_entities)
+
+    # GET /home-assistant/entity-state?entityId=... — unlike /entities above
+    # (trimmed to just what a picker needs), this proxies ONE entity's real
+    # /api/states/{entity_id} and returns the light-relevant fields a live
+    # control surface needs (on/off, brightness, color, which color modes it
+    # actually supports) — still curated, not a raw passthrough of HA's own
+    # attributes blob, just curated for a different consumer (ha-light.js's
+    # own render, not a dropdown).
+    def handle_ha_entity_state(request: Request) -> Response:
+        import urllib.error
+        import urllib.parse
+        import urllib.request
+
+        user = require_gm(request)
+        credentials, error = resolve_ha_credentials_or_response(request, user)
+        if error:
+            return error
+        query = urllib.parse.parse_qs(urllib.parse.urlsplit(request.handler.path).query)
+        entity_id = (query.get("entityId", [""])[0] or "").strip()
+        if not entity_id:
+            return json_response({"error": "entityId is required"}, status=HTTPStatus.BAD_REQUEST)
+        proxy_request = urllib.request.Request(
+            f"{credentials['baseUrl']}/api/states/{urllib.parse.quote(entity_id, safe='.')}",
+            headers={"Authorization": f"Bearer {credentials['token']}", "Accept": "application/json"},
+            method="GET",
+        )
+        try:
+            with urllib.request.urlopen(proxy_request, timeout=15) as upstream:
+                state = json.loads(upstream.read())
+        except urllib.error.HTTPError as exc:
+            detail = _read_ha_error_body(exc)
+            if exc.code == 404:
+                return json_response({"error": f'No entity "{entity_id}" on this Home Assistant instance.'}, status=HTTPStatus.NOT_FOUND)
+            logging.warning("Home Assistant /api/states/%s call failed: %s %s", entity_id, exc.code, detail)
+            return json_response({"error": f"Home Assistant returned {exc.code}"}, status=HTTPStatus.BAD_GATEWAY)
+        except urllib.error.URLError as exc:
+            logging.warning("Unable to reach Home Assistant at %s: %s", credentials["baseUrl"], exc.reason)
+            return json_response({"error": f"Unable to reach Home Assistant ({exc.reason})"}, status=HTTPStatus.BAD_GATEWAY)
+        except (json.JSONDecodeError, TypeError):
+            return json_response({"error": "Home Assistant returned an unexpected response"}, status=HTTPStatus.BAD_GATEWAY)
+
+        attributes = state.get("attributes") if isinstance(state, dict) else {}
+        attributes = attributes if isinstance(attributes, dict) else {}
+        return json_response(
+            {
+                "entityId": entity_id,
+                "state": state.get("state") if isinstance(state, dict) else None,
+                "brightness": attributes.get("brightness"),
+                "rgbColor": attributes.get("rgb_color"),
+                "supportedColorModes": attributes.get("supported_color_modes") or [],
+                "friendlyName": attributes.get("friendly_name") or entity_id,
+            }
+        )
+
+    router.add("GET", r"^/home-assistant/entity-state$", handle_ha_entity_state)
+
+    # POST /home-assistant/call-service — the one action route, generic
+    # enough to cover both "control a device" and "trigger a routine": a
+    # routine is just domain="script"/"scene"/"automation". entityId is
+    # merged into the body as entity_id alongside whatever extra `data` the
+    # caller supplies (e.g. brightness/rgb_color for a light.turn_on).
+    def handle_ha_call_service(request: Request) -> Response:
+        import urllib.error
+        import urllib.request
+
+        user = require_gm(request)
+        credentials, error = resolve_ha_credentials_or_response(request, user)
+        if error:
+            return error
+        payload = require_json(request)
+        domain = str(payload.get("domain") or "").strip()
+        service = str(payload.get("service") or "").strip()
+        entity_id = str(payload.get("entityId") or "").strip()
+        if not domain or not service:
+            return json_response({"error": "domain and service are both required"}, status=HTTPStatus.BAD_REQUEST)
+        extra_data = payload.get("data") if isinstance(payload.get("data"), dict) else {}
+        body = dict(extra_data)
+        if entity_id:
+            body["entity_id"] = entity_id
+        proxy_request = urllib.request.Request(
+            f"{credentials['baseUrl']}/api/services/{domain}/{service}",
+            data=json.dumps(body).encode("utf-8"),
+            headers={
+                "Authorization": f"Bearer {credentials['token']}",
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+            },
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(proxy_request, timeout=15) as upstream:
+                upstream.read()
+        except urllib.error.HTTPError as exc:
+            detail = _read_ha_error_body(exc)
+            logging.warning("Home Assistant /api/services/%s/%s call failed: %s %s", domain, service, exc.code, detail)
+            return json_response({"error": f"Home Assistant returned {exc.code}"}, status=HTTPStatus.BAD_GATEWAY)
+        except urllib.error.URLError as exc:
+            logging.warning("Unable to reach Home Assistant at %s: %s", credentials["baseUrl"], exc.reason)
+            return json_response({"error": f"Unable to reach Home Assistant ({exc.reason})"}, status=HTTPStatus.BAD_GATEWAY)
+        return json_response({"ok": True})
+
+    router.add("POST", r"^/home-assistant/call-service$", handle_ha_call_service)
+
+    # --- Audio transcription (optional, for the Audio Recorder widget) -----
+    #
+    # A GM-managed LIST of transcription servers, deployment-wide (not
+    # per-account) — same reasoning deployment_secrets' own CREATE TABLE
+    # comment (storage.py) and integrations.py's own header comment give.
+    # Admin-tier to add/edit/delete an entry (changing the list affects every
+    # account's recordings, not just the person editing it — a stricter bar
+    # than the Home Assistant connection above, which only ever affects its
+    # own owner); gm+ to just read the list (any GM using the Audio Recorder
+    # widget needs that to populate its own server picker).
+    def require_admin(request: Request) -> User:
+        user = require_user(request)
+        if role_rank(user.tier) < role_rank("admin"):
+            raise AuthError("Admin tier required")
+        return user
+
+    # GET /admin/transcription-servers — [{id, label, baseUrl, hasKey}] —
+    # never the key itself (same masking as get_ha_connection above).
+    def handle_list_transcription_servers(request: Request) -> Response:
+        require_gm(request)
+        return json_response({"servers": list_deployment_secrets(request.state, "whisper")})
+
+    router.add("GET", r"^/admin/transcription-servers$", handle_list_transcription_servers)
+
+    # POST /admin/transcription-servers — upsert (create or edit) one entry,
+    # keyed by a client-generated id (crypto.randomUUID(), same convention
+    # board.js's own randomId uses for anything with no natural unique key).
+    # The one time a plaintext API key (if any) crosses the wire; encrypted
+    # immediately and never echoed back. Leaving the key blank on an edit of
+    # an entry that already has one clears it — unlike Home Assistant's
+    # token (always required, so blank there means "keep existing"), a
+    # transcription server's key is optional to begin with, so blank has an
+    # unambiguous meaning of its own: no key.
+    def handle_save_transcription_server(request: Request) -> Response:
+        require_admin(request)
+        payload = require_json(request)
+        entry_id = str(payload.get("id") or "").strip()
+        label = str(payload.get("label") or "").strip()
+        # The FULL endpoint URL, not a base this route appends a fixed
+        # suffix to — deliberately not assuming every OpenAI-API-compatible
+        # server routes its transcription endpoint at the exact same path
+        # OpenAI itself uses. Whatever a given server's own docs (its
+        # FastAPI /docs page, typically, for a Python one) say the real
+        # transcription endpoint is, that's what goes here, verbatim — see
+        # handle_audio_transcribe_chunk below, which posts to this URL
+        # directly with no suffix of its own.
+        base_url = str(payload.get("baseUrl") or "").strip()
+        # Genuinely per-server, not a suite-wide constant — see
+        # deployment_secrets' own CREATE TABLE comment (storage.py) for the
+        # confirmed real bug this fixes (OpenAI's own "whisper-1" hardcoded
+        # into every request, 404ing against any self-hosted server that
+        # doesn't have a model by that exact name loaded). Blank is valid —
+        # handle_audio_transcribe_chunk falls back to "whisper-1" itself,
+        # correct for OpenAI's own real API and a reasonable default
+        # elsewhere too.
+        model = str(payload.get("model") or "").strip()
+        token = str(payload.get("token") or "").strip()
+        if not entry_id or not base_url:
+            return json_response({"error": "An id and a server URL are both required"}, status=HTTPStatus.BAD_REQUEST)
+        try:
+            save_deployment_secret(request.state, "whisper", entry_id, label, base_url, model, token)
+        except EncryptionUnavailable as exc:
+            return json_response({"error": str(exc)}, status=HTTPStatus.SERVICE_UNAVAILABLE)
+        return json_response({"servers": list_deployment_secrets(request.state, "whisper")})
+
+    router.add("POST", r"^/admin/transcription-servers$", handle_save_transcription_server)
+
+    def handle_clear_transcription_server(request: Request) -> Response:
+        require_admin(request)
+        params = getattr(request, "params")
+        clear_deployment_secret(request.state, "whisper", params["id"])
+        return json_response({"servers": list_deployment_secrets(request.state, "whisper")})
+
+    router.add("POST", r"^/admin/transcription-servers/(?P<id>[^/]+)/clear$", handle_clear_transcription_server)
+
+    # POST /audio/transcribe-chunk — body is the raw audio bytes for ONE
+    # recording chunk (a few minutes, never the whole session — see
+    # audio-recorder.js's own header comment on why recording is chunked at
+    # all), Content-Type set to whatever MediaRecorder produced (audio/webm,
+    # typically). Nothing server-side ever needs to PARSE multipart — the
+    # client sends a plain binary body; this route builds the multipart
+    # request on the way OUT, matching OpenAI's own /v1/audio/transcriptions
+    # request shape (multipart form, "file" + "model" fields) — but posts it
+    # to the saved server's own baseUrl EXACTLY as entered, no suffix
+    # appended (see handle_save_transcription_server's own comment on why:
+    # not every self-hosted "OpenAI-compatible" server actually routes that
+    # exact path the same way OpenAI does). Nothing is written to disk here;
+    # the chunk is received, forwarded, and discarded, same "local-only, the
+    # server never persists your session audio" property the widget itself
+    # promises.
+    def handle_audio_transcribe_chunk(request: Request) -> Response:
+        import urllib.error
+        import urllib.parse
+        import urllib.request
+        import uuid
+
+        require_gm(request)
+        query = urllib.parse.parse_qs(urllib.parse.urlsplit(request.handler.path).query)
+        server_id = (query.get("serverId", [""])[0] or "").strip()
+        if not server_id:
+            return json_response({"error": "No transcription server selected."}, status=HTTPStatus.BAD_REQUEST)
+        config = resolve_deployment_secret(request.state, "whisper", server_id)
+        if not config:
+            return json_response(
+                {"error": "That transcription server no longer exists — pick another one."},
+                status=HTTPStatus.BAD_REQUEST,
+            )
+        audio_bytes = request.raw_body()
+        if not audio_bytes:
+            return json_response({"error": "No audio data received"}, status=HTTPStatus.BAD_REQUEST)
+        content_type = request.headers.get("Content-Type") or "audio/webm"
+
+        model = config.get("model") or "whisper-1"
+        boundary = uuid.uuid4().hex
+        body = b"".join(
+            [
+                f"--{boundary}\r\n".encode("utf-8"),
+                f'Content-Disposition: form-data; name="model"\r\n\r\n{model}\r\n'.encode("utf-8"),
+                f"--{boundary}\r\n".encode("utf-8"),
+                f'Content-Disposition: form-data; name="file"; filename="chunk.webm"\r\n'
+                f"Content-Type: {content_type}\r\n\r\n".encode("utf-8"),
+                audio_bytes,
+                f"\r\n--{boundary}--\r\n".encode("utf-8"),
+            ]
+        )
+        headers = {"Content-Type": f"multipart/form-data; boundary={boundary}"}
+        if config.get("token"):
+            headers["Authorization"] = f"Bearer {config['token']}"
+
+        proxy_request = urllib.request.Request(config["baseUrl"], data=body, headers=headers, method="POST")
+        try:
+            with urllib.request.urlopen(proxy_request, timeout=60) as upstream:
+                result = json.loads(upstream.read())
+        except urllib.error.HTTPError as exc:
+            try:
+                detail = exc.read().decode("utf-8", errors="replace")[:500]
+            except Exception:
+                detail = ""
+            # exc.url (not config["baseUrl"]) — reflects the actual final
+            # URL urllib requested, including any redirect it may have
+            # followed, so a saved URL that looks right but isn't quite
+            # (a stray trailing slash, http vs https, a redirect landing
+            # somewhere unexpected) shows up here rather than staying
+            # invisible.
+            logging.warning("Transcription server call failed: %s %s (requested %s, model=%r)", exc.code, detail, getattr(exc, "url", config["baseUrl"]), model)
+            return json_response({"error": f"Transcription server returned {exc.code}"}, status=HTTPStatus.BAD_GATEWAY)
+        except urllib.error.URLError as exc:
+            logging.warning("Unable to reach the transcription server at %s: %s", config["baseUrl"], exc.reason)
+            return json_response(
+                {"error": f"Unable to reach the transcription server ({exc.reason})"}, status=HTTPStatus.BAD_GATEWAY
+            )
+        except (json.JSONDecodeError, TypeError):
+            return json_response(
+                {"error": "Transcription server returned an unexpected response"}, status=HTTPStatus.BAD_GATEWAY
+            )
+        return json_response({"text": str(result.get("text") or "").strip()})
+
+    router.add("POST", r"^/audio/transcribe-chunk$", handle_audio_transcribe_chunk)
+
     # POST /loom/suggest-feature-tags
     #
     # LLM-assisted bulk `budgetCost`/`tags` suggestion for the monster
@@ -1614,6 +2031,8 @@ def register_routes():
         setting_id = data.get("setting_id")
         template_id = data.get("template_id")
         properties = data.get("properties")
+        campaign_day_index = data.get("campaign_day_index")
+        campaign_minutes_of_day = data.get("campaign_minutes_of_day")
         group = group_store.update_group(
             request.state,
             user,
@@ -1623,6 +2042,8 @@ def register_routes():
             setting_id=setting_id,
             template_id=template_id,
             properties=properties,
+            campaign_day_index=campaign_day_index,
+            campaign_minutes_of_day=campaign_minutes_of_day,
         )
         return json_response(group)
 

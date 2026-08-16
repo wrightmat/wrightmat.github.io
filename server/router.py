@@ -71,6 +71,12 @@ class Request:
 
         return json.loads(self._body_bytes.decode("utf-8"))
 
+    # The pre-drained body as-is, for a route whose body isn't JSON at all
+    # (audio/transcribe-chunk's raw audio bytes) — no separate read from the
+    # socket, same already-buffered bytes .json() itself decodes from.
+    def raw_body(self) -> bytes:
+        return self._body_bytes
+
 
 class Response:
     def __init__(self, status: int = 200, body: Any | None = None, headers: Optional[Dict[str, str]] = None):

@@ -1,0 +1,9 @@
+# Optional. This server otherwise runs on the Python standard library alone
+# (see undercroft/README.md's Getting Started) — this file exists only for
+# features that genuinely need something stdlib can't do:
+#   - cryptography: encrypts account-tied third-party credentials at rest
+#     (currently: the Home Assistant integration's access token). Not
+#     required to run the server at all; only the Home Assistant routes
+#     check for it, and they fail with a clear message if it's missing.
+# Install with: pip install -r server/requirements.txt
+cryptography

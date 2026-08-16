@@ -115,6 +115,11 @@ export function createCollapsibleSection({
   content,
   className = "d-flex flex-column gap-3",
   panelClassName = "d-flex flex-column gap-3",
+  // The suite's standard section-header treatment (uppercase, fs-6) reads
+  // as too heavy in a small, already-compact context (a dashboard widget
+  // card, e.g.) — overridable per caller rather than only ever the one
+  // fixed weight every existing caller still gets by default.
+  headingClassName = "text-uppercase fs-6 fw-semibold text-body-secondary mb-0",
   // Set false when the caller needs fully custom click behavior (e.g. a
   // toggle that's conditionally gated, or that triggers a re-render on
   // expand) — bindCollapsibleToggle's own click handler can't express that,
@@ -139,7 +144,7 @@ export function createCollapsibleSection({
   const labelWrap = document.createElement("div");
   labelWrap.className = "d-flex align-items-center gap-2";
   const heading = document.createElement("h2");
-  heading.className = "text-uppercase fs-6 fw-semibold text-body-secondary mb-0";
+  heading.className = headingClassName;
   heading.textContent = label;
   labelWrap.appendChild(heading);
   if (helpTopic) {

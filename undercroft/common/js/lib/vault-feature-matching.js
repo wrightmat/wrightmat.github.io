@@ -328,6 +328,53 @@ function recognizeDamageTypeChoiceTable(joinedText) {
 const KNOWN_CONDITION_WORDS =
   "charmed|frightened|paralyzed|poisoned|stunned|unconscious|restrained|incapacitated|blinded|deafened|petrified|grappled|prone|invisible|exhausted|possessed";
 
+// Auto-classifies which of feat.impose-condition's own four tiers (Minor/
+// Moderate/Severe/Extreme — see that record's own per-tier mechanics.text)
+// a specific 5e condition word falls into, so every "Impose Condition"
+// clause recognizer below lands with the RIGHT tier picked automatically
+// instead of always leaving tierId null and making the GM guess (confirmed
+// real gap: every recognizer using this featureName hardcoded tierId: null,
+// unconditionally). Mirrors feat.impose-condition.json's own tier text
+// exactly — keep both in sync if that record's own grouping ever changes.
+// "invisible" (in KNOWN_CONDITION_WORDS for pattern-matching purposes only
+// — some clauses legitimately impose it as a save-or-suffer effect) has no
+// listed tier in that record at all and is deliberately left unmapped
+// rather than guessed; "banished" (mentioned in the Severe tier's own text)
+// isn't a KNOWN_CONDITION_WORDS entry at all, so it never reaches here.
+const CONDITION_TIER = {
+  frightened: "minor",
+  blinded: "minor",
+  deafened: "minor",
+  prone: "minor",
+  grappled: "minor",
+  poisoned: "moderate",
+  charmed: "moderate",
+  restrained: "moderate",
+  exhausted: "moderate",
+  possessed: "moderate",
+  stunned: "severe",
+  incapacitated: "severe",
+  unconscious: "severe",
+  paralyzed: "extreme",
+  petrified: "extreme",
+};
+const CONDITION_TIER_ORDER = ["minor", "moderate", "severe", "extreme"];
+
+function resolveConditionTier(condition) {
+  return CONDITION_TIER[String(condition || "").trim().toLowerCase()] || null;
+}
+
+// For a two-condition choice ("blinded or deafened", your choice) — the
+// MORE severe of the two, since a GM budgeting for this should be charged
+// for the worse case a target could actually land in, not the milder one.
+function resolveMoreSevereConditionTier(conditionA, conditionB) {
+  const tierA = resolveConditionTier(conditionA);
+  const tierB = resolveConditionTier(conditionB);
+  if (!tierA) return tierB;
+  if (!tierB) return tierA;
+  return CONDITION_TIER_ORDER.indexOf(tierB) > CONDITION_TIER_ORDER.indexOf(tierA) ? tierB : tierA;
+}
+
 const CLAUSE_RECOGNIZERS = [
   {
     // "resistance/immunity/vulnerability to ACID damage" / "Resistance
@@ -693,6 +740,46 @@ const CLAUSE_RECOGNIZERS = [
     build: () => ({ featureName: "No Critical Hits", tierId: null, params: null }),
   },
   {
+    // A pure action-economy restriction with no damage/condition attached —
+    // the Slow spell's own real, exact phrasing ("it can't use reactions")
+    // — confirmed as a genuine gap before this existed: `grep`ing this whole
+    // file/mapping-custom-functions.js for "Reaction" found zero matches, so
+    // any spell/item using this clause silently lost it entirely. Shares
+    // feat.action-restricted with the bonus-action/action tiers below
+    // rather than being its own Feature — all three are the same "can't
+    // take X" shape, just naming a different piece of the action economy —
+    // and NOT folded into Impose Condition, since this isn't one of the
+    // named 5e conditions (frightened/poisoned/etc.), just a standalone
+    // restriction some effects apply entirely on their own, separate from
+    // (and often layered with) an actual condition. Real data uses both
+    // "can't take reactions" (e.g. confusion, wand-of-fear) and "can't use
+    // reactions" (Slow itself) — matched interchangeably here.
+    name: "restrict-reactions",
+    pattern: /can't (?:take|use) reactions/i,
+    build: () => ({ featureName: "Action Restricted", tierId: "reaction", params: null }),
+  },
+  {
+    // Same shape as restrict-reactions above, for a target's bonus action
+    // instead — no boilerplate SRD spell uses this exact clause today (Slow
+    // itself instead XORs action-vs-bonus-action, a different mechanic not
+    // modeled here), but custom/homebrew spell text does say this plainly,
+    // and this Feature's own "Bonus Actions" tier exists specifically so
+    // that case isn't silently dropped the same way reactions were before
+    // restrict-reactions existed.
+    name: "restrict-bonus-actions",
+    pattern: /can't (?:take|use) (?:a |an )?bonus actions?/i,
+    build: () => ({ featureName: "Action Restricted", tierId: "bonus-action", params: null }),
+  },
+  {
+    // Same shape again, for a target's action outright — the Dream spell's
+    // own real phrasing ("can't take actions or move") is the reference
+    // case; the "or move" clause is a separate movement restriction not
+    // modeled by this Feature.
+    name: "restrict-actions",
+    pattern: /can't take actions\b/i,
+    build: () => ({ featureName: "Action Restricted", tierId: "action", params: null }),
+  },
+  {
     // "you can breathe underwater" / "you can breathe air and water" —
     // OR the spell's own real 3rd-person phrasing (Water Breathing itself,
     // confirmed live): "gives ... the ability to breathe underwater" —
@@ -923,7 +1010,7 @@ const CLAUSE_RECOGNIZERS = [
     pattern: /succeed on an? (?:DC\s*(\d+)\s*)?(\w+) saving throw or (?:become|be) ([a-z][a-z\s]*?)(?:\s+for\s+([\w\s]+?))?(?:\.|,|;)/i,
     build: (m) => ({
       featureName: "Impose Condition",
-      tierId: null,
+      tierId: resolveConditionTier(m[3]),
       params: {
         condition: m[3].trim(),
         saveAbility: m[2].toLowerCase(),
@@ -939,7 +1026,7 @@ const CLAUSE_RECOGNIZERS = [
     // the save fields since there's genuinely no save involved.
     name: "impose-condition-on-hit",
     pattern: /on a hit,? the target is ([a-z][a-z\s]*?)(?:\.|,|;| until)/i,
-    build: (m) => ({ featureName: "Impose Condition", tierId: null, params: { condition: m[1].trim(), trigger: "hit" } }),
+    build: (m) => ({ featureName: "Impose Condition", tierId: resolveConditionTier(m[1]), params: { condition: m[1].trim(), trigger: "hit" } }),
   },
   {
     // Same "Impose Condition" concept as the base recognizer above, but with
@@ -957,7 +1044,7 @@ const CLAUSE_RECOGNIZERS = [
     ),
     build: (m) => ({
       featureName: "Impose Condition",
-      tierId: null,
+      tierId: resolveConditionTier(m[3]),
       params: {
         condition: m[3].toLowerCase(),
         saveAbility: m[2].toLowerCase(),
@@ -983,7 +1070,7 @@ const CLAUSE_RECOGNIZERS = [
     ),
     build: (m) => ({
       featureName: "Impose Condition",
-      tierId: null,
+      tierId: resolveConditionTier(m[3]),
       params: {
         condition: m[3].toLowerCase(),
         saveAbility: m[2].toLowerCase(),
@@ -1007,7 +1094,7 @@ const CLAUSE_RECOGNIZERS = [
     ),
     build: (m) => ({
       featureName: "Impose Condition",
-      tierId: null,
+      tierId: resolveConditionTier(m[3]),
       params: {
         condition: m[3].toLowerCase(),
         saveAbility: m[2].toLowerCase(),
@@ -1028,7 +1115,7 @@ const CLAUSE_RECOGNIZERS = [
     ),
     build: (m) => ({
       featureName: "Impose Condition",
-      tierId: null,
+      tierId: resolveConditionTier(m[3]),
       params: {
         condition: m[3].toLowerCase(),
         saveAbility: m[2].toLowerCase(),
@@ -1050,7 +1137,7 @@ const CLAUSE_RECOGNIZERS = [
     ),
     build: (m) => ({
       featureName: "Impose Condition",
-      tierId: null,
+      tierId: resolveMoreSevereConditionTier(m[2], m[3]),
       params: {
         condition: `${m[2].toLowerCase()} or ${m[3].toLowerCase()}`,
         saveAbility: m[1].toLowerCase(),
@@ -1066,7 +1153,7 @@ const CLAUSE_RECOGNIZERS = [
     // otherwise false-positive on unrelated sentences.
     name: "impose-condition-automatic",
     pattern: /you become (charmed|frightened|poisoned|paralyzed|stunned|restrained|blinded|deafened|incapacitated)(?:\s+by\s+[\w\s]+?)?\s+for\s+([\w\s]+?)(?:\.|,|;)/i,
-    build: (m) => ({ featureName: "Impose Condition", tierId: null, params: { condition: m[1].toLowerCase(), trigger: "automatic", duration: m[2].trim() } }),
+    build: (m) => ({ featureName: "Impose Condition", tierId: resolveConditionTier(m[1]), params: { condition: m[1].toLowerCase(), trigger: "automatic", duration: m[2].trim() } }),
   },
   {
     // "the boots double your walking speed" (Boots of Speed) — a
@@ -1876,6 +1963,23 @@ async function convertCandidateUnit(rawText, ctx) {
   return [];
 }
 
+// feat.damage's own six tiers are deliberately spell-level-shaped
+// (Cantrip/1st–2nd/3rd–4th/5th–6th/7th–8th/9th — see that record's own
+// `shortName` values) — a spell's own parsed `stats.level` (srdSpellStats/
+// markdownSpellStats in mapping-custom-functions.js both already return it)
+// maps onto them directly. Returns null for anything without a numeric
+// level (every item — items have no spell-level concept at all), leaving
+// featureTiers untouched for those, same as before this existed.
+function resolveSpellDamageTier(level) {
+  if (!Number.isFinite(level)) return null;
+  if (level <= 0) return "tier-1";
+  if (level <= 2) return "tier-2";
+  if (level <= 4) return "tier-3";
+  if (level <= 6) return "tier-4";
+  if (level <= 8) return "tier-5";
+  return "tier-6";
+}
+
 // `record` — an already-mapped Effect record (5e-api-spell.json/
 // 5e-api-magic-item.json's own output, or a hand-authored one carrying the
 // same `stats` shape). Three paths, tried in priority order per record:
@@ -1944,6 +2048,14 @@ export async function convertSpellOrItemToFeatures(record, { dataManager, existi
         areaSize: mechanic.areaSize,
         scaling: mechanic.scaling,
       };
+      // Confirmed real gap, not just for markdown-sourced spells: this
+      // branch never set a tier at all, for ANY spell (SRD or hand-authored
+      // markdown alike) — feat.damage.json's own comment already documents
+      // the fallback ("no tier chosen falls back to tier-1, the cheapest"),
+      // meaning every damage spell imported through here silently landed
+      // at the CHEAPEST possible budget tier regardless of its real level.
+      const damageTier = resolveSpellDamageTier(stats.level);
+      if (damageTier) featureTiers[template.id] = damageTier;
     } else if (mechanic?.kind === "heal") {
       // Reuses the SAME feat.healing an item's own flat-healing clause
       // already matches onto (see the `flat-healing` clause recognizer

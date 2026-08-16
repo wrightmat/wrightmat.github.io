@@ -42,6 +42,27 @@
         </div>
 
         <main class="workbench-main flex-grow-1 p-3 overflow-auto">
+          <div class="card shadow-theme mb-3">
+            <div class="card-body">
+              <div data-location-graph-mount></div>
+              <div class="d-flex flex-column gap-2" data-location-graph-panel>
+                <div class="sanctum-location-graph-stage" data-location-graph-container>
+                  <div class="sanctum-location-graph-content" data-location-graph-content>
+                    <svg data-location-graph-svg viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid meet"></svg>
+                  </div>
+                  <div
+                    class="sanctum-location-graph-controls d-flex align-items-center gap-2 flex-wrap"
+                    data-location-graph-controls
+                  >
+                    <div class="btn-group btn-group-sm" role="group" aria-label="Location graph navigation" data-location-graph-nav-mount></div>
+                    <div class="btn-group btn-group-sm" role="group" aria-label="Location graph zoom controls" data-location-graph-toolbar-mount></div>
+                  </div>
+                </div>
+                <div class="d-none" data-location-graph-empty></div>
+              </div>
+            </div>
+          </div>
+
           <div class="d-flex flex-column gap-3" data-location-empty-state></div>
 
           <div class="d-flex flex-column gap-3 d-none" data-location-display>

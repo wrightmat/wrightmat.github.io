@@ -1713,6 +1713,69 @@ exportLocationTemplateButton.addEventListener("click", async () => {
 
 speciesLastNameFormSelect.addEventListener("change", () => toggleSpeciesLastNamesVisibility());
 
+// `?npc=<id>` — a cross-tool deep link (Repository's own kind-reference
+// chips route here via KIND_TOOL_ROUTE, see repository/js/app.js), same
+// `?param=<id>`-read-at-bootstrap convention Orrery's own `?map=` and Loom's
+// own `?feature=` already establish. An npc record only carries its own
+// System/Setting (systemIds/settingIds — never a locationId, confirmed
+// against the real schema), so the cascade here only needs those two levels,
+// not a third for Location the way Sanctum's own deep link does.
+//
+// Two-phase, not one straight-line await chain — same "show the linked
+// record first, load everything else in the background" fix Sanctum's own
+// deep link needed once a campaign had enough saved NPCs/Locations for the
+// full cascade to be genuinely slow. Phase 1 (awaited, blocks return):
+// render THIS npc directly (reusing renderNpc + the same dirty-baseline
+// call npcSelect's own change handler makes — not that handler itself,
+// since it reads the id off npcSelect.value, which has no matching
+// <option> yet this early). Phase 2 (fired but not awaited): the System/
+// Setting cascade populates npcSelect's own option list (scoped by
+// Setting) and species/archetype reference data; a real "change" event
+// re-dispatched at the end both puts the picker's own displayed selection
+// in sync and re-renders with anything reference-data-dependent resolved.
+async function applyDeepLinkParams() {
+  const params = new URLSearchParams(window.location.search);
+  const npcId = params.get("npc");
+  if (!npcId) return false;
+  try {
+    const result = await dataManager.get("npc", npcId);
+    const payload = result?.payload || {};
+    const targetSystemId = payload.systemIds?.[0] || null;
+    const targetSettingId = payload.settingIds?.[0] || null;
+    // Phase 1 — the NPC itself, on screen as fast as one fetch allows.
+    currentNpcId = npcId;
+    updateGenerationFieldsVisibility();
+    renderNpc({ ...payload, id: npcId });
+    dirtyGate.markClean(toPressExportShape(currentRecord));
+    // Phase 2 — deliberately not awaited here; runs after this function has
+    // already returned `true`.
+    void (async () => {
+      try {
+        if (targetSystemId) {
+          systemSelect.value = targetSystemId;
+          await handleSystemSelectChange();
+        }
+        if (targetSettingId) {
+          settingSelect.value = targetSettingId;
+          await handleSettingSelectChange();
+        }
+        if (npcSelect) {
+          npcSelect.value = npcId;
+          npcSelect.dispatchEvent(new Event("change"));
+        }
+      } catch (error) {
+        // Phase 1 already succeeded — a background failure here just
+        // leaves the picker under-populated, not worth an error toast on
+        // top of a page that's already showing real content.
+      }
+    })();
+    return true;
+  } catch (error) {
+    status?.show("Unable to open the linked record.", { type: "error", timeout: 3000 });
+    return false;
+  }
+}
+
 // --- Init ----------------------------------------------------------------
 
 async function init() {
@@ -1808,23 +1871,25 @@ async function init() {
   // whenever there's no active group, or its System/Setting isn't one this
   // tool's own lists actually contain.
   const systems = await populateSystemSelect();
-  const groupContext = await resolveGroupContext(dataManager).catch(() => null);
-  const defaultSystemId = pickGroupDefaultId(groupContext, "systemId", systems);
-  if (defaultSystemId) {
-    systemSelect.value = defaultSystemId;
-    const settings = await handleSystemSelectChange();
-    const defaultSettingId = pickGroupDefaultId(groupContext, "settingId", settings);
-    if (defaultSettingId) {
-      settingSelect.value = defaultSettingId;
-      await handleSettingSelectChange();
+  const deepLinked = await applyDeepLinkParams();
+  if (!deepLinked) {
+    const groupContext = await resolveGroupContext(dataManager).catch(() => null);
+    const defaultSystemId = pickGroupDefaultId(groupContext, "systemId", systems);
+    if (defaultSystemId) {
+      systemSelect.value = defaultSystemId;
+      const settings = await handleSystemSelectChange();
+      const defaultSettingId = pickGroupDefaultId(groupContext, "settingId", settings);
+      if (defaultSettingId) {
+        settingSelect.value = defaultSettingId;
+        await handleSettingSelectChange();
+      }
+    } else {
+      await populateSettingSelect("");
+      await populateLocationSelectOptions("");
+      await populateNpcSelect();
     }
-  } else {
-    await populateSettingSelect("");
-    await populateLocationSelectOptions("");
-    await populateNpcSelect();
+    renderNpc(null);
   }
-
-  renderNpc(null);
   initHelpSystem({ root: document });
   refreshTooltips(document);
 }

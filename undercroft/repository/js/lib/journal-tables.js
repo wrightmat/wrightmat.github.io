@@ -65,7 +65,13 @@ function isSeparatorRowLine(line) {
 // line immediately after are still detected (so the scan only has to run
 // once) but filtered out by both public functions below — an ordinary,
 // unnamed table is left completely alone.
-function scanTables(body) {
+// Exported so journal-story-board.js can reuse the exact same GFM
+// table-scanning primitive for its own Nodes/Edges tables — a
+// [!story-board] callout's tables have no `^blockId` marker at all (that's
+// this file's own named-table-specific concept), but the underlying
+// "find every `| a | b |` + separator-row table in this text" scan is
+// identical, and worth having exactly one implementation of.
+export function scanTables(body) {
   const lines = String(body || "").replace(/\r\n/g, "\n").split("\n");
   const tables = [];
   let index = 0;

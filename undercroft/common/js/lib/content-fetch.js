@@ -956,6 +956,31 @@ export async function fetchKindEntriesWithIds(dataManager, kind) {
   return entries.filter(Boolean);
 }
 
+// {id, name}, straight off the /list response — ZERO per-record fetches,
+// unlike fetchKindEntriesWithIds above. The list endpoint's own rows already
+// carry the record's own title (server/storage.py's library_items table has
+// a real `title` column, populated at save time — see _title_from_payload)
+// alongside id/ownership, with no separate per-id GET needed at all. Only
+// good for callers that need a name-sorted list or a name->id lookup and
+// NOTHING else about the record (findKindReferenceRecord below is the
+// motivating case) — anything that needs the record's own tags/fields to
+// FILTER (matchesSystem, matchesCategory, ...) still has to fall back to
+// fetchKindEntriesWithIds, since those fields only exist in each record's
+// own full payload, not on its /list row. Confirmed real fix, not a
+// micro-optimization: a kind with hundreds of saved entries (`effect`
+// crossed 700, `feature` crossed 1,500 after this session's SRD bulk
+// imports) made every name lookup against it — a kind-reference chip's
+// hover preview, its click-to-navigate, a wiki-link-to-reference
+// conversion — cost that many individual HTTP round trips just to check
+// one name.
+export async function fetchKindEntrySummaries(dataManager, kind) {
+  if (!dataManager) return [];
+  const { remote } = await dataManager.list(kind, { refresh: true, includeLocal: false });
+  return dataManager
+    .collectListEntries(remote, ["owned", "shared", "public", "items"])
+    .map((entry) => ({ id: entry.id, name: entry.title || entry.id }));
+}
+
 // Every Location belonging to `settingId` — shared by Sanctum (its own
 // Location editor) and Forge (its Location picker for NPC generation), which
 // used to each carry an identical, independently-maintained copy of this
@@ -978,7 +1003,18 @@ export async function listLocationsForSetting(dataManager, settingId) {
           : [];
       return ids.includes(settingId);
     })
-    .map((entry) => ({ id: entry.id, name: entry.entity.name || entry.id, parentId: entry.entity.parentId || null }));
+    .map((entry) => ({
+      id: entry.id,
+      name: entry.entity.name || entry.id,
+      parentId: entry.entity.parentId || null,
+      // Added for Sanctum's Location Graph view (connectedTo/typeId drive
+      // its peer-link edges and node sizing) — free to include, the full
+      // record's already in memory from fetchKindEntriesWithIds above.
+      // Forge's own consumer of this same shared helper only reads
+      // id/name, so it's unaffected by the wider shape.
+      connectedTo: Array.isArray(entry.entity.connectedTo) ? entry.entity.connectedTo : [],
+      typeId: entry.entity.typeId || null,
+    }));
 }
 
 // `value` is "kind/id" for a single saved entry, or "kind/*" (or bare "kind")

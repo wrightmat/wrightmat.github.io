@@ -1,0 +1,57 @@
+{
+  "kind": "location",
+  "name": "Exploration Structure - Room 1",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "settingIds": [
+    "eberron"
+  ],
+  "typeId": "complex",
+  "purposeId": "protection",
+  "environment": "desert",
+  "featureIds": [
+    "feat.ley-line-confluence",
+    "feat.sacred-ground",
+    "feat.shop",
+    "feat.black-market"
+  ],
+  "assets": [
+    {
+      "kind": "resource",
+      "refId": "res.minor-nonmagical-care-jorasco",
+      "label": "Minor Non-magical Care (House Jorasco)"
+    },
+    {
+      "kind": "resource",
+      "refId": "res.translation-sivis",
+      "label": "Translation (House Sivis)"
+    },
+    {
+      "kind": "resource",
+      "refId": "res.remove-curse-jorasco",
+      "label": "Remove Curse (House Jorasco)"
+    }
+  ],
+  "needs": [
+    {
+      "kind": "resource",
+      "refId": "res.trade-routes",
+      "label": "Fresh Trade Routes"
+    },
+    {
+      "kind": "resource",
+      "refId": "res.tindertwig",
+      "label": "Tindertwig"
+    },
+    {
+      "kind": "resource",
+      "refId": "res.exotic-spices",
+      "label": "Exotic Spices"
+    }
+  ],
+  "parentId": "loc_1a9a320e-053b-4b79-9962-115777ea8e01",
+  "connectedTo": [],
+  "notes": "",
+  "id": "loc_33801841-5352-4e79-9f22-5d34c6f9bc06"
+}

@@ -21,8 +21,27 @@ import { getIconTokens } from "../../../common/js/lib/icon-picker.js";
 import { resolveBinding } from "../../../common/js/lib/bindings.js";
 import { evaluateFormula } from "../../../common/js/lib/formula-engine.js";
 import { allowsDelete } from "../../../common/js/lib/ownership.js";
+import { buildKindToolUrl, kindToolLabel } from "../../../common/js/lib/kind-tool-route.js";
 import { resolveImageDimension } from "./base-maps.js";
 import { getDefaultView as getTypeDefaultView } from "./map-model.js";
+
+// A referenced marker's own "open the real thing" link — shared by both
+// restricted-viewer consumers (the Dashboard's Map widget, Orrery's own
+// view-mode render path) so a marker's link-out button always resolves the
+// exact same way regardless of which one is showing it. Only ever needs the
+// id already sitting on the marker itself (refId) plus, for a journal
+// reference, whichever specific heading/quest anchor is selected (refAnchor)
+// — never a fetch of the full referenced record.
+export function resolveMarkerLinkTarget(markerElement) {
+  if (!markerElement?.refKind || !markerElement?.refId) return null;
+  const extraParams =
+    markerElement.refKind === "journal" && markerElement.refAnchor?.value
+      ? { heading: markerElement.refAnchor.value }
+      : undefined;
+  const url = buildKindToolUrl(markerElement.refKind, markerElement.refId, { extraParams });
+  if (!url) return null;
+  return { url, toolLabel: kindToolLabel(markerElement.refKind) };
+}
 
 // Returns null when nothing should be filtered (hasFullAccess, or the map
 // has no authored Views at all — "no Views configured yet" defaults to
@@ -1030,9 +1049,14 @@ export function buildRestrictedMapOptions({
       // "completely stopped updating" after nothing more than clicking a
       // token once.
       onDragStateChange?.(false);
-      if (isMarkerDraggable(layer, markerElement)) {
-        onMarkerClicked?.(layer, markerElement, dotEl);
-      }
+      // Fires for EVERY marker click now, not just a draggable one — a
+      // restricted viewer clicking a marker they don't own used to do
+      // nothing at all, silently, even when it referenced a real NPC/
+      // location/spell/journal page they'd want to open. The 4th arg tells
+      // the caller which popover fits: their own draggable token gets the
+      // existing icon/color editor, anything else with a reference gets a
+      // link-out button instead (see resolveMarkerLinkTarget above).
+      onMarkerClicked?.(layer, markerElement, dotEl, isMarkerDraggable(layer, markerElement));
     },
     onDoorClick,
     // Never passed for a full-access viewer — the GM must be able to freely

@@ -90,6 +90,16 @@
   margin-top: 0;
 }
 
+/* GFM task-list items ("- [ ] Todo") — Obsidian hides the bullet in front
+   of these (only a real checkbox, no glyph beside it); marked's own GFM
+   rendering doesn't distinguish a task-list `<li>` from an ordinary one, so
+   without this every checkbox still shows a plain bullet next to it too.
+   `:has()` finds a task-list item without marked needing to tag it with a
+   distinguishing class of its own. */
+.repository-preview li:has(> input[type="checkbox"]) {
+  list-style: none;
+}
+
 /* Wikipedia-style link convention: blue for a page that exists, red for one
    that doesn't yet (a "redlink") — clicking a redlink starts a new page
    pre-filled with that title (see markdown.js's onNavigate handling). */
@@ -154,4 +164,335 @@
 .repository-preview mark[data-repo-search-mark].repository-search-mark-active {
   background: var(--bs-warning);
   outline: 2px solid var(--bs-warning-border-subtle);
+}
+
+/* Relationships — a read-only graph over already-written content (see
+   repository/js/lib/relationships-graph.js), rendered through the shared
+   common/js/lib/graph-view.js engine. Stage/content/controls positioning
+   mirrors Sanctum's own Location Graph exactly (sanctum/css/styles.css) —
+   both are the same shared engine, just under this tool's own class
+   prefix (graph-view.js's own classPrefix option) so the two tools' CSS
+   never collides. */
+.repository-graph-stage {
+  position: relative;
+  height: 100%;
+  min-height: 20rem;
+  overflow: hidden;
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+  cursor: grab;
+  touch-action: none;
+}
+
+.repository-graph-stage.is-panning {
+  cursor: grabbing;
+}
+
+.repository-graph-content {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 100%;
+  height: 100%;
+  transform-origin: center;
+  user-select: none;
+}
+
+.repository-graph-content.is-interacting {
+  will-change: transform;
+}
+
+.repository-graph-content svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.repository-graph-controls {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  z-index: 2;
+  background: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius-lg);
+  padding: 0.5rem;
+  user-select: none;
+}
+
+/* Type filter — same floating-chrome treatment as .repository-graph-controls
+   above, mirrored to the opposite corner so the two never compete for the
+   same space. */
+.repository-graph-filter {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 2;
+}
+
+.repository-graph-edge {
+  stroke: var(--bs-secondary-color);
+  stroke-width: 1.5;
+}
+
+/* wikilink (solid) vs reference (dashed) vs quest (dotted) — the force
+   layout itself treats every edge identically, this is the only place
+   they're told apart visually. */
+.repository-graph-edge-reference {
+  stroke-dasharray: 5 4;
+}
+
+.repository-graph-edge-quest {
+  stroke-dasharray: 1 3;
+}
+
+.repository-graph-edge-selected {
+  stroke: var(--bs-primary);
+  stroke-width: 2.5;
+}
+
+.repository-graph-node {
+  cursor: pointer;
+}
+
+.repository-graph-node:focus-visible {
+  outline: none;
+}
+
+.repository-graph-node-circle {
+  fill: var(--bs-tertiary-bg);
+  stroke: var(--bs-secondary-color);
+  stroke-width: 1.5;
+  transition: fill 0.1s ease, stroke 0.1s ease;
+}
+
+.repository-graph-node:hover .repository-graph-node-circle,
+.repository-graph-node:focus-visible .repository-graph-node-circle {
+  fill: var(--bs-body-bg);
+  stroke: var(--bs-primary);
+}
+
+.repository-graph-node-selected .repository-graph-node-circle {
+  stroke: var(--bs-primary);
+  stroke-width: 3;
+}
+
+/* A journal page is the "home base" node kind — a touch bigger and
+   filled, so pages read as the graph's own anchors at a glance among the
+   quests/entities clustered around them. */
+.repository-graph-node[data-node-kind="journal"] .repository-graph-node-circle {
+  fill: var(--bs-secondary-bg);
+}
+
+.repository-graph-node-icon {
+  font-size: 0.85rem;
+  color: var(--bs-body-color);
+}
+
+.repository-graph-node-label {
+  fill: var(--bs-body-color);
+  font-size: 0.7rem;
+  pointer-events: none;
+}
+
+/* Story Board — the editable planning canvas (repository/js/lib/
+   story-board-canvas.js), mounted directly into a rendered [!story-board]
+   callout's own content. Freeform mode's stage/content positioning
+   mirrors the same pan-zoom convention Relationships/Location Graph
+   already use (common/js/lib/pan-zoom.js's own header comment) — but with
+   ONE deliberate difference from that precedent, below. */
+.story-board-stage {
+  position: relative;
+  height: 100%;
+  min-height: 24rem;
+  overflow: hidden;
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+  cursor: grab;
+  touch-action: none;
+  background: var(--bs-tertiary-bg);
+}
+
+.story-board-stage.is-panning {
+  cursor: grabbing;
+}
+
+/* FIXED at story-board-canvas.js's own CANVAS_W/CANVAS_H (1000x700), unlike
+   Relationships/Location Graph's own `.content` (which stays 100% of its
+   stage). Those two only ever draw INSIDE one SVG, whose own viewBox
+   handles mapping "1000x700 design units" to however many pixels the SVG
+   actually renders at — a single, self-consistent coordinate system. This
+   canvas instead layers a plain HTML card layer (raw CSS px, no scaling of
+   its own) OVER an SVG edge layer (viewBox-scaled) as SIBLINGS — if this
+   box were 100% of a variably-sized stage, the SVG's internal viewBox
+   scaling and the card layer's literal-pixel positions would each be
+   mapping "1000 design units" to a DIFFERENT actual pixel width, and an
+   edge line would visibly detach from the card it's meant to connect to
+   (confirmed real bug, not cosmetic: dragging a node moved a line, but
+   never the RIGHT line's endpoint on screen, only in the underlying data —
+   the SVG and the card layer simply disagreed about where x=500 actually
+   is). Pinning this box to the exact same 1000x700 pixel size the SVG's
+   own viewBox already assumes makes both layers share one coordinate
+   system 1:1; PanZoomController's own transform (translate + scale,
+   applied to this whole box) is then the ONLY scaling in play, same as
+   the graph views' own SVG-internal scaling — just moved one level up. */
+.story-board-content {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 1000px;
+  height: 700px;
+  transform-origin: center;
+  user-select: none;
+}
+
+.story-board-content.is-interacting {
+  will-change: transform;
+}
+
+.story-board-edge-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+  /* Relying on DOM order alone (svg appended before the card layer) left
+     stacking order at the mercy of whatever else creates a stacking
+     context — a dragged card's own `transform` can get compositor-
+     promoted mid-gesture in some browsers, which is enough to paint it
+     behind an edge line that DOM order alone would otherwise put it above.
+     An explicit z-index below the card layer's own makes "edges always
+     behind cards" true regardless. */
+  z-index: 0;
+}
+
+.story-board-edge {
+  stroke: var(--bs-secondary-color);
+  stroke-width: 1.5;
+}
+
+.story-board-card-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.story-board-node-card {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  max-width: 9rem;
+  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+  background: var(--bs-body-bg);
+  font-size: 0.8rem;
+  cursor: grab;
+  touch-action: none;
+  box-shadow: var(--bs-box-shadow-sm);
+}
+
+.story-board-node-card:active {
+  cursor: grabbing;
+}
+
+/* Dashed border, no fill — visually distinct until promoted, per the
+   plan's own explicit ask. */
+.story-board-node-placeholder {
+  border-style: dashed;
+  color: var(--bs-secondary-color);
+}
+
+.story-board-node-selected {
+  border-color: var(--bs-primary);
+  border-width: 2px;
+  box-shadow: 0 0 0 2px rgba(var(--bs-primary-rgb), 0.25);
+}
+
+.story-board-node-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Swimlane mode — a plain CSS grid, node cards flow normally inside their
+   own cell rather than being absolutely positioned (no pan/zoom needed
+   here, the grid itself scrolls if it's larger than the card). */
+.story-board-swimlane {
+  display: grid;
+  gap: 1px;
+  background: var(--bs-border-color);
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+  overflow: auto;
+  max-height: 30rem;
+}
+
+.story-board-swimlane-corner,
+.story-board-swimlane-header {
+  background: var(--bs-tertiary-bg);
+  padding: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: center;
+  position: sticky;
+}
+
+/* Stage headers occupy the TOP row (stick to the top edge on vertical
+   scroll); lane headers occupy the LEFT column (stick to the left edge on
+   horizontal scroll instead) — story-board-canvas.js's own renderSwimlane
+   tags each with its own modifier class so CSS can tell them apart; both
+   previously just inherited the shared `.story-board-swimlane-header`
+   rule's `top: 0`, which only made sense for the stage row and left a lane
+   header stuck to the wrong edge. A slightly heavier bottom/right border
+   than the grid's own 1px hairlines marks where the header row/column ends
+   and the body begins, so the table reads as a table at a glance instead
+   of a uniform grid of same-looking cells. */
+.story-board-swimlane-corner {
+  top: 0;
+  left: 0;
+  z-index: 2;
+  border-bottom: 2px solid var(--bs-border-color);
+  border-right: 2px solid var(--bs-border-color);
+}
+
+.story-board-swimlane-header-stage {
+  top: 0;
+  z-index: 1;
+  border-bottom: 2px solid var(--bs-border-color);
+}
+
+.story-board-swimlane-header-lane {
+  left: 0;
+  z-index: 1;
+  border-right: 2px solid var(--bs-border-color);
+}
+
+.story-board-swimlane-cell {
+  background: var(--bs-body-bg);
+  padding: 0.5rem;
+  min-height: 4rem;
+}
+
+/* A plain, body-colored placeholder for every grid position the explicit
+   Add Lane/Add Stage columns/rows create but nothing actually occupies
+   (story-board-canvas.js's own renderSwimlane) — without these, that space
+   is simply unfilled and shows the grid container's own hairline-gap
+   background as a solid stripe instead of blending into the table. */
+.story-board-swimlane-filler {
+  background: var(--bs-body-bg);
+}
+
+.story-board-swimlane-cell .story-board-node-card {
+  position: static;
+  transform: none;
+  width: 100%;
+}
+
+.story-board-inspector {
+  width: 16rem;
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+  padding: 0.75rem;
+  background: var(--bs-body-bg);
 }

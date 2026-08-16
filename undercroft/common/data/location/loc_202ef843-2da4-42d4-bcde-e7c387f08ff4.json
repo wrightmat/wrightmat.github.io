@@ -1,0 +1,43 @@
+{
+  "kind": "location",
+  "name": "Exploration Structure - Room 5",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "settingIds": [
+    "eberron"
+  ],
+  "typeId": "structure",
+  "purposeId": "recreation",
+  "environment": "desert",
+  "featureIds": [
+    "feat.black-market",
+    "feat.smugglers-tunnels",
+    "feat.corrupt-officials"
+  ],
+  "assets": [
+    {
+      "kind": "resource",
+      "refId": "res.dragonshard-eberron-large",
+      "label": "Eberron Dragonshard, Large"
+    }
+  ],
+  "needs": [
+    {
+      "kind": "resource",
+      "refId": "res.rare-gemstones",
+      "label": "Rare Gemstones"
+    },
+    {
+      "kind": "resource",
+      "refId": "res.clean-water",
+      "label": "Clean Water"
+    }
+  ],
+  "parentId": "loc_1a9a320e-053b-4b79-9962-115777ea8e01",
+  "connectedTo": [
+    "loc_66fddbb3-a721-449e-ba51-81e513e66cde"
+  ],
+  "notes": "",
+  "id": "loc_202ef843-2da4-42d4-bcde-e7c387f08ff4"
+}

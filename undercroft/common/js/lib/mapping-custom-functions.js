@@ -1178,7 +1178,22 @@ function parseMarkdownSpellMechanic(description, higherLevel, level) {
       /must make an? (\w+) saving throw\.?\s*[^.]*?takes?\s*(\d+d\d+(?:\s*\+\s*\d+)?)\s*(\w+) damage on a failed save,?\s*or half as much damage on a successful one/i
     );
   const saveBinaryMatch = !attackMatch && !saveHalfMatch && text.match(/must succeed on an? (\w+) saving throw or takes?\s*(\d+d\d+(?:\s*\+\s*\d+)?)\s*(\w+) damage/i);
-  const damageMatch = attackMatch || saveHalfMatch || saveBinaryMatch;
+  // Last-resort fallback — the three patterns above all require exact PHB
+  // boilerplate wording; a hand-authored custom spell that just says
+  // something like "the target takes 3d6 fire damage" without that exact
+  // surrounding structure matched NONE of them and silently lost its own
+  // damage entirely (confirmed real bug: the very first non-SRD spell
+  // tested this way came through with no damage at all). This only
+  // requires the dice + damage-type phrase itself to appear ANYWHERE in
+  // the text — it can't reliably tell attack from save-for-half from
+  // save-binary the way the stricter patterns above can (there's no
+  // boilerplate left to read that distinction from), so it defaults to the
+  // single most common real shape (a save for half damage), reading
+  // whichever saving-throw ability is mentioned anywhere in the text if
+  // any. Still far better than attaching no damage at all.
+  const looseMatch =
+    !attackMatch && !saveHalfMatch && !saveBinaryMatch && text.match(/(\d+d\d+(?:\s*\+\s*\d+)?)\s*(\w+) damage/i);
+  const damageMatch = attackMatch || saveHalfMatch || saveBinaryMatch || looseMatch;
   if (!damageMatch) return null;
 
   let resolutionKind;
@@ -1193,10 +1208,16 @@ function parseMarkdownSpellMechanic(description, higherLevel, level) {
     resolutionKind = "save";
     [, saveAbility, damageDice, damageType] = saveHalfMatch;
     saveEffect = "half";
-  } else {
+  } else if (saveBinaryMatch) {
     resolutionKind = "save";
     [, saveAbility, damageDice, damageType] = saveBinaryMatch;
     saveEffect = "none";
+  } else {
+    resolutionKind = "save";
+    [, damageDice, damageType] = looseMatch;
+    saveEffect = "half";
+    const abilityMatch = text.match(/(\w+) saving throw/i);
+    saveAbility = abilityMatch ? abilityMatch[1] : undefined;
   }
   const baseDice = damageDice.replace(/\s+/g, "");
 

@@ -1,0 +1,57 @@
+{
+  "id": "feat.action-restricted",
+  "name": "Action Restricted",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Prevents the target from taking a specific kind of action-economy action for a duration — a pure action-economy restriction, no damage or named condition involved.",
+  "mechanics": {
+    "type": "active",
+    "text": "On activation, a target loses the ability to take the restricted action-economy action (this Feature's own tier below) for the stated duration. Not the same as a condition that ALSO restricts actions among other things (Incapacitated, Paralyzed, Stunned, Unconscious — see feat.impose-condition for those) — this models JUST a standalone 'can't take X' restriction some spells/effects apply entirely on its own (the Slow spell's own real text is the reference case for the Reactions tier: 'it can't use reactions'). Duration lives in this record's own featureParams."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "control"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": [],
+  "tiers": [
+    {
+      "id": "bonus-action",
+      "name": "Bonus Actions",
+      "shortName": "Bonus Actions",
+      "budgetCost": 2,
+      "mechanics": {
+        "type": "active",
+        "text": "The target can't take bonus actions — the narrowest of the three restrictions, since most creatures' turn-to-turn power sits in their action, not their bonus action."
+      }
+    },
+    {
+      "id": "reaction",
+      "name": "Reactions",
+      "shortName": "Reactions",
+      "budgetCost": 3,
+      "mechanics": {
+        "type": "active",
+        "text": "The target can't take reactions — shuts down opportunity attacks and any other reaction-triggered ability (the Slow spell's own real case)."
+      }
+    },
+    {
+      "id": "action",
+      "name": "Actions",
+      "shortName": "Actions",
+      "budgetCost": 6,
+      "mechanics": {
+        "type": "active",
+        "text": "The target can't take actions at all — the most severe of the three, since it shuts down attacks and spellcasting outright (the Dream spell's own real case: 'can't take actions or move')."
+      }
+    }
+  ]
+}

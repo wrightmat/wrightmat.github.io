@@ -10,6 +10,7 @@
 // imported from.
 import { extractOutline } from "./journal-outline.js";
 import { extractNamedTables } from "./journal-tables.js";
+import { extractQuests } from "./journal-quests.js";
 
 const MIRROR_STYLE_PROPS = [
   "boxSizing",
@@ -139,6 +140,40 @@ function headingCandidates(entries, title, query) {
     .map((heading) => ({ kind: "heading", label: heading.text, insertText: heading.text }));
 }
 
+// A bare [[Quest Title]] resolves at the same top-level "title" stage a
+// page title does (repository/js/app.js's own resolveWikiLinkTarget falls
+// back to the quest index) — quest titles don't get a separate parse
+// stage, they're a second candidate list merged into "title"/"heading"'s
+// own results. Workspace-wide (every page's own quests), same scope
+// journal-quests.js's own buildQuestIndex uses.
+function questTitleCandidates(entries, query) {
+  const q = query.trim().toLowerCase();
+  const seen = new Set();
+  const results = [];
+  entries.forEach((entry) => {
+    extractQuests(entry?.payload?.body).forEach((quest) => {
+      const key = quest.title.toLowerCase();
+      if (seen.has(key)) return;
+      if (q && !key.includes(q)) return;
+      seen.add(key);
+      results.push({ kind: "quest", label: quest.title, insertText: quest.title });
+    });
+  });
+  return results.slice(0, 20);
+}
+
+// The [[Page#...]] equivalent — quests scoped to just that one page,
+// alongside headingCandidates' own real headings.
+function questHeadingCandidates(entries, title, query) {
+  const entry = findEntryByTitle(entries, title);
+  if (!entry) return [];
+  const q = query.trim().toLowerCase();
+  return extractQuests(entry.payload?.body)
+    .filter((quest) => !q || quest.title.toLowerCase().includes(q))
+    .slice(0, 20)
+    .map((quest) => ({ kind: "quest", label: quest.title, insertText: quest.title }));
+}
+
 function tableCandidates(entries, title, query) {
   const entry = findEntryByTitle(entries, title);
   if (!entry) return [];
@@ -149,7 +184,10 @@ function tableCandidates(entries, title, query) {
     .map((table) => ({ kind: "table", label: `^${table.blockId}`, insertText: table.blockId }));
 }
 
-const KIND_ICON = { title: "tabler:file-text", heading: "tabler:heading", table: "tabler:table" };
+// "quest" reuses the same icon journal-callouts.js's own CALLOUT_TYPES.quest
+// entry uses, for visual consistency between the callout itself and its
+// autocomplete suggestion.
+const KIND_ICON = { title: "tabler:file-text", heading: "tabler:heading", table: "tabler:table", quest: "tabler:map-2" };
 
 // attachWikiLinkAutocomplete(textarea, {getEntries}) — `getEntries` is a
 // callback (not a plain array) since app.js's own `entries` list is
@@ -271,8 +309,13 @@ export function attachWikiLinkAutocomplete(textarea, { getEntries } = {}) {
     }
     const entries = getEntries?.() || [];
     let nextCandidates;
-    if (parsed.stage === "title") nextCandidates = titleCandidates(entries, parsed.query);
-    else if (parsed.stage === "heading") nextCandidates = headingCandidates(entries, parsed.title, parsed.query);
+    // "title"/"heading" each merge in quest titles alongside their own
+    // real candidates — a quest isn't a separate parse stage, it resolves
+    // through the same [[Quest Title]]/[[Page#Quest Title]] syntax pages
+    // and headings already use (see resolveWikiLinkTarget in app.js).
+    if (parsed.stage === "title") nextCandidates = [...titleCandidates(entries, parsed.query), ...questTitleCandidates(entries, parsed.query)];
+    else if (parsed.stage === "heading")
+      nextCandidates = [...headingCandidates(entries, parsed.title, parsed.query), ...questHeadingCandidates(entries, parsed.title, parsed.query)];
     else nextCandidates = tableCandidates(entries, parsed.title, parsed.query);
     if (!nextCandidates.length) {
       hide();

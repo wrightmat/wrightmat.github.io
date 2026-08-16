@@ -33,6 +33,9 @@ import { el } from "../dom.js";
 import { renderMarkdown } from "../../../../repository/js/lib/markdown.js";
 import { buildTitleIndex } from "../../../../repository/js/lib/journal-links.js";
 import { startEncounter, deterministicEncounterId } from "../../../../repository/js/lib/journal-encounter.js";
+import { extractOutline, findHeadingByText } from "../../../../repository/js/lib/journal-outline.js";
+import { extractQuests } from "../../../../repository/js/lib/journal-quests.js";
+import { buildCalloutRaw } from "../../../../repository/js/lib/journal-story-board.js";
 
 // Kinds with an actual print-card rendering of their own — mirrors the exact
 // set the old Card widget's KIND_WIDGET_MAP entries covered (npc/location/
@@ -92,6 +95,10 @@ function ensurePickerModal() {
               <label class="form-label" for="undercroft-handout-template">Template</label>
               <select class="form-select" id="undercroft-handout-template" data-handout-template></select>
             </div>
+            <div class="d-none" data-handout-anchor-group>
+              <label class="form-label" for="undercroft-handout-anchor">Show</label>
+              <select class="form-select" id="undercroft-handout-anchor" data-handout-anchor></select>
+            </div>
             <div class="text-danger small min-h-1" data-handout-error></div>
           </div>
           <div class="modal-footer">
@@ -129,6 +136,8 @@ export async function openHandoutPicker({ dataManager } = {}) {
   const itemSelect = modalElement.querySelector("[data-handout-item]");
   const templateSelect = modalElement.querySelector("[data-handout-template]");
   const templateGroup = modalElement.querySelector("[data-handout-template-group]");
+  const anchorSelect = modalElement.querySelector("[data-handout-anchor]");
+  const anchorGroup = modalElement.querySelector("[data-handout-anchor-group]");
   const errorBox = modalElement.querySelector("[data-handout-error]");
   const confirmButton = modalElement.querySelector("[data-handout-confirm]");
 
@@ -141,6 +150,29 @@ export async function openHandoutPicker({ dataManager } = {}) {
     templateGroup?.classList.toggle("d-none", NO_TEMPLATE_KINDS.has(kindSelect?.value || ""));
   }
   updateTemplateGroupVisibility();
+
+  // Anchor options (Whole Page / a heading / a quest) only make sense for
+  // journal-kind selections, and depend on the currently-selected item's own
+  // body — repopulated from `currentEntries` (kept in sync by
+  // populateItemSelect below) whenever either the kind or the item changes.
+  let currentEntries = [];
+  function updateAnchorSelect() {
+    if (!anchorSelect || !anchorGroup) return;
+    const isJournal = (kindSelect?.value || "") === "journal";
+    anchorGroup.classList.toggle("d-none", !isJournal);
+    anchorSelect.innerHTML = "";
+    anchorSelect.appendChild(new Option("Whole page", ""));
+    if (!isJournal) return;
+    const entry = currentEntries.find((candidate) => candidate.id === itemSelect?.value);
+    const record = entry?.entity ?? entry?.payload ?? null;
+    const body = record?.body || "";
+    extractOutline(body).forEach((heading) => {
+      anchorSelect.appendChild(new Option(`${"— ".repeat(heading.depth)}${heading.text}`, `heading:${heading.text}`));
+    });
+    extractQuests(body).forEach((quest) => {
+      anchorSelect.appendChild(new Option(`Quest: ${quest.title}`, `quest:${quest.title}`));
+    });
+  }
 
   let templates = [];
   try {
@@ -172,22 +204,27 @@ export async function openHandoutPicker({ dataManager } = {}) {
     const remoteIds = new Set(entries.map((entry) => entry.id));
     const local = (dataManager.listLocalEntries(kindSelect.value) || []).filter((entry) => !remoteIds.has(entry.id));
     const combined = [...entries, ...local];
+    currentEntries = combined;
     itemSelect.innerHTML = "";
     if (!combined.length) {
       itemSelect.appendChild(new Option(`No saved ${kindSelect.value} entries yet`, ""));
+      updateAnchorSelect();
       return;
     }
     combined
       .slice()
       .sort((a, b) => labelForEntry(a).localeCompare(labelForEntry(b)))
       .forEach((entry) => itemSelect.appendChild(new Option(labelForEntry(entry), entry.id)));
+    updateAnchorSelect();
   }
 
   const onKindChange = () => {
     updateTemplateGroupVisibility();
     void populateItemSelect();
   };
+  const onItemChange = () => updateAnchorSelect();
   kindSelect?.addEventListener("change", onKindChange);
+  itemSelect?.addEventListener("change", onItemChange);
   await populateItemSelect();
 
   return new Promise((resolve) => {
@@ -196,6 +233,7 @@ export async function openHandoutPicker({ dataManager } = {}) {
       if (settled) return;
       settled = true;
       kindSelect?.removeEventListener("change", onKindChange);
+      itemSelect?.removeEventListener("change", onItemChange);
       confirmButton?.removeEventListener("click", onConfirm);
       modalElement.removeEventListener("hidden.bs.modal", onHidden);
       resolve(result);
@@ -207,8 +245,14 @@ export async function openHandoutPicker({ dataManager } = {}) {
         if (errorBox) errorBox.textContent = "Choose an item to add.";
         return;
       }
+      let anchor = null;
+      const anchorValue = kind === "journal" ? anchorSelect?.value || "" : "";
+      if (anchorValue) {
+        const separatorIndex = anchorValue.indexOf(":");
+        anchor = { type: anchorValue.slice(0, separatorIndex), value: anchorValue.slice(separatorIndex + 1) };
+      }
       modal?.hide();
-      finish({ kind, id, templateId: templateSelect?.value || "" });
+      finish({ kind, id, templateId: templateSelect?.value || "", anchor });
     };
     const onHidden = () => finish(null);
     confirmButton?.addEventListener("click", onConfirm);
@@ -240,6 +284,7 @@ export function initHandoutWidget(
   const kind = contentRef?.kind;
   const id = contentRef?.id;
   const templateId = contentRef?.templateId || "";
+  const anchor = contentRef?.anchor || null;
   if (!container || !dataManager || !kind || !id) {
     return { destroy() {} };
   }
@@ -295,6 +340,42 @@ export function initHandoutWidget(
     renderTarget.appendChild(card);
   }
 
+  // Slices a journal page's raw body down to just one anchored fragment —
+  // a heading's own section (through the next same-or-higher-level heading,
+  // or end of doc) or a single quest's own standalone callout (reconstructed
+  // via journal-story-board.js's own buildCalloutRaw, the same primitive
+  // that file's read-modify-write cycle already uses, rather than a second
+  // "rebuild one callout's raw text" implementation here). Falls back to the
+  // whole body if the anchor can no longer be found (a stale reference —
+  // the page was edited since this Handout was configured), same tolerance
+  // Repository's own selectPage scroll-resolution already gives a missing
+  // heading/quest anchor.
+  function sliceBodyByAnchor(body, entryAnchor) {
+    if (!entryAnchor || !entryAnchor.value) return body;
+    if (entryAnchor.type === "heading") {
+      const outline = extractOutline(body);
+      const index = findHeadingByText(body, entryAnchor.value);
+      if (index === -1) return body;
+      const target = outline[index];
+      const lines = body.split("\n");
+      let endLine = lines.length;
+      for (let i = index + 1; i < outline.length; i += 1) {
+        if (outline[i].level <= target.level) {
+          endLine = outline[i].line;
+          break;
+        }
+      }
+      return lines.slice(target.line, endLine).join("\n");
+    }
+    if (entryAnchor.type === "quest") {
+      const targetKey = entryAnchor.value.trim().toLowerCase();
+      const quest = extractQuests(body).find((candidate) => candidate.title.trim().toLowerCase() === targetKey);
+      if (!quest) return body;
+      return buildCalloutRaw({ type: "quest", fold: quest.fold, title: quest.title }, quest.bodyRaw);
+    }
+    return body;
+  }
+
   // Journal pages are plain markdown prose, not a fixed-size print card —
   // they need scrolling for whatever length the GM wrote, not the
   // width-based scale-to-fit renderTemplatedCard's applyScale handles below,
@@ -307,9 +388,28 @@ export function initHandoutWidget(
   async function renderJournalEntry(entity) {
     applyScale = null;
     let titleIndex = null;
+    // `validKindIds`/`kindLabels` — the same pair Repository's own
+    // renderPreview fetches once via loadLibraryKinds() and passes through
+    // to renderMarkdown so a `` `npc:Name` ``/`` `location:Name` `` span
+    // turns into a real icon+name chip. Missing here entirely was a
+    // confirmed real bug — every kind-reference span in a Handout journal
+    // page rendered as plain unconverted inline code (literally
+    // "npc:Berosalia Hart") instead of matching how Repository itself
+    // shows the exact same page. `onOpenReference` is deliberately left
+    // unset — chips render correctly but stay non-interactive here, same
+    // as wiki-links a few lines below (a player clicking through into
+    // another tool entirely would defeat the point of a spotlighted
+    // fragment, the same reasoning that comment already gives).
+    let validKindIds = new Set();
+    let kindLabels = {};
     try {
-      const journalEntries = await fetchKindEntriesWithIds(dataManager, "journal");
+      const [journalEntries, kinds] = await Promise.all([
+        fetchKindEntriesWithIds(dataManager, "journal"),
+        loadLibraryKinds(),
+      ]);
       titleIndex = buildTitleIndex(journalEntries.map((entry) => ({ id: entry.id, payload: entry.entity })));
+      validKindIds = new Set((kinds || []).map((kind) => kind.id));
+      kindLabels = Object.fromEntries((kinds || []).map((kind) => [kind.id, kind.label || kind.id]));
     } catch (error) {
       titleIndex = null;
     }
@@ -329,7 +429,7 @@ export function initHandoutWidget(
     card.style.overflowY = "auto";
     card.appendChild(el("div", "fw-semibold fs-5", entity?.title || "Untitled page"));
     card.appendChild(
-      renderMarkdown(entity?.body || "", {
+      renderMarkdown(sliceBodyByAnchor(entity?.body || "", anchor), {
         resolveWikiLink: titleIndex ? (title) => titleIndex.resolve(title) : undefined,
         status,
         dataManager,
@@ -353,6 +453,8 @@ export function initHandoutWidget(
         interactiveMacros: canToggleVisibility,
         groupContext: { groupId, shareToken },
         ensureWidget,
+        validKindIds,
+        kindLabels,
       })
     );
     container.appendChild(card);

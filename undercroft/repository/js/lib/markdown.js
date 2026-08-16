@@ -35,12 +35,21 @@ import { applyMacroBlocks } from "./journal-macro.js";
 // journal-kind-reference.js's own header comment for why dice/encounter/
 // macro (and journal/kind) are excluded from it.
 import { applyKindReferenceBlocks } from "./journal-kind-reference.js";
+// `` `date:<dayIndex>` `` inline code spans — same "post-process a rendered
+// <code> element" treatment, but not a kind reference (there's no "date"
+// Library entity); see journal-date.js's own header comment.
+import { applyDateReferences } from "./journal-date.js";
 // `> [!type]` callout blockquotes — parsing/color-icon lookup lives in
 // journal-callouts.js (same split as journal-encounter.js's own
 // parseEncounterBlock: that module parses, this one renders); see
 // ensureCalloutRenderer/applyCalloutStyling below for how the two halves fit
 // together.
-import { parseCallout, resolveCalloutStyle } from "./journal-callouts.js";
+import { parseCallout, resolveCalloutStyle, resolveColor } from "./journal-callouts.js";
+// Quest-specific decoration for a `[!quest]` callout's own title row — see
+// applyCalloutStyling's own quest branch below. Everything else about a
+// quest callout renders through the exact same generic path every other
+// callout type does.
+import { computeQuestStatus, QUEST_STATUS_META } from "./journal-quests.js";
 // `^blockId` marker lines under a named, rollable table — stripped from the
 // raw text before rendering, same stage as rewriteWikiLinks below, since
 // CommonMark doesn't know that syntax and would otherwise render a stray
@@ -91,6 +100,29 @@ function buildLinkTarget(prefix, value, heading) {
 // suite actually uses.
 const CODE_SPAN_SPLIT_PATTERN = /(`[^`\n]*`)/g;
 
+// A GFM task-list line with NOTHING (or only trailing whitespace) after its
+// own `[ ]`/`[x]` marker — `- [ ]` on its own, meant as a plain unlabeled
+// checkbox — can fail to render an actual checkbox `<input>` at all in
+// marked's own GFM extension, falling back to plain list text instead
+// (confirmed against Obsidian, which renders these fine — this is a
+// marked-specific edge case, not a markdown authoring mistake). Appending a
+// zero-width space gives marked SOME real inline content to anchor the
+// checkbox+text rendering to; invisible to the reader, and this only ever
+// runs on the render-time copy — the stored source is never touched.
+// Tolerates the same optional blockquote prefix (`> - [ ]`, inside a
+// `[!quest]` callout) journal-tasks.js's own TASK_LINE_PATTERN does.
+const EMPTY_TASK_LINE_PATTERN = /^((?:>\s?)*\s*[-*+]\s+\[[ xX]\])\s*$/;
+// U+200B zero-width space, via String.fromCharCode (not a literal invisible
+// character in this source file) so it's unambiguous on disk and in any
+// future diff.
+const ZERO_WIDTH_SPACE = String.fromCharCode(0x200b);
+function ensureNonEmptyTaskContent(rawBody) {
+  return String(rawBody || "")
+    .split("\n")
+    .map((line) => (EMPTY_TASK_LINE_PATTERN.test(line) ? `${line.replace(/\s+$/, "")} ${ZERO_WIDTH_SPACE}` : line))
+    .join("\n");
+}
+
 function rewriteWikiLinks(rawBody, resolveWikiLink) {
   return String(rawBody || "")
     .split(CODE_SPAN_SPLIT_PATTERN)
@@ -105,9 +137,16 @@ function rewriteWikiLinksInSegment(rawBody, resolveWikiLink) {
     const resolved = typeof resolveWikiLink === "function" ? resolveWikiLink(trimmedTitle) : null;
     const label = (aliasLabel || trimmedTitle).trim();
     // A heading anchor only makes sense for a link that actually resolves —
-    // a not-yet-created page has nothing to jump to inside it.
+    // a not-yet-created page has nothing to jump to inside it. The link's
+    // own explicit `#Heading` always wins; `resolved.heading` is a resolver
+    // supplying an IMPLICIT one — e.g. a bare [[Quest Title]] that only
+    // matched via a quest-title index (repository/js/app.js's own
+    // resolveWikiLinkTarget) carries the quest's own title here, so the
+    // link still lands on that quest's own callout, not just the top of
+    // its page, despite no #Heading ever being typed.
+    const effectiveHeading = (heading || resolved?.heading || "").trim();
     const target = resolved?.id
-      ? buildLinkTarget("journal", resolved.id, (heading || "").trim())
+      ? buildLinkTarget("journal", resolved.id, effectiveHeading)
       : buildLinkTarget("journal-missing", trimmedTitle);
     return `[${label}](${target})`;
   });
@@ -156,6 +195,22 @@ function applyWikiLinkStyling(container, { onNavigate } = {}) {
       event.preventDefault();
       onNavigate?.(isMissing ? { missing: true, title: value } : { missing: false, id: value, heading });
     });
+  });
+}
+
+// Runs AFTER applyWikiLinkStyling — every internal wiki-link anchor already
+// had its own `href` removed by that point (see above), so a plain
+// `a[href]` selector here only ever finds genuine external links (a real
+// `[text](https://...)` markdown link, a mailto:, ...), never re-touches an
+// internal one. `rel="noopener noreferrer"` is the standard, required
+// pairing with `target="_blank"` — without it, the opened page gets a live
+// `window.opener` reference back to this one.
+function applyExternalLinkTargets(container) {
+  container.querySelectorAll("a[href]").forEach((anchor) => {
+    const href = anchor.getAttribute("href") || "";
+    if (!href || href.startsWith("#")) return;
+    anchor.target = "_blank";
+    anchor.rel = "noopener noreferrer";
   });
 }
 
@@ -282,6 +337,52 @@ function ensureCalloutRenderer(marked) {
 // foldable callout only — the rotating chevron and its `toggle` listener.
 // `<details>`/`<summary>` already provide the actual open/close behavior
 // natively, no click handling needed here at all.
+// Quest-specific: a status badge (Not Started/Active/Complete), derived from
+// the checkboxes already rendered inside this callout's own content — reuses
+// computeQuestStatus (journal-quests.js) rather than re-deriving the
+// not-started/active/complete rule a second time. Factored out of
+// applyCalloutStyling's own loop (called from there on first render) so
+// app.js's own handleToggleTask can also call it directly after toggling one
+// checkbox — checking a box doesn't trigger a full renderPreview (see that
+// function's own comment, it would disturb scroll position), so without this
+// the badge would otherwise sit stale until the next full render. Reuses the
+// existing badge element (by its own stable class) on every call after the
+// first rather than rebuilding it, so this is cheap enough to call on every
+// single toggle.
+export function refreshQuestBadge(calloutEl) {
+  if (!calloutEl || calloutEl.dataset.callout !== "quest") return;
+  const titleEl = calloutEl.firstElementChild;
+  if (!titleEl) return;
+  const contentEl = calloutEl.querySelector(":scope > .callout-content");
+  const checkboxes = Array.from(contentEl?.querySelectorAll('input[type="checkbox"]') || []);
+  const status = computeQuestStatus(checkboxes.map((checkbox) => ({ checked: checkbox.checked })));
+  const meta = QUEST_STATUS_META[status] || QUEST_STATUS_META["not-started"];
+  const badgeColor = resolveColor(meta.color);
+  let badge = titleEl.querySelector(":scope > .callout-quest-badge");
+  if (!badge) {
+    badge = el("span", "callout-quest-badge");
+    badge.style.display = "inline-flex";
+    badge.style.alignItems = "center";
+    badge.style.marginLeft = "auto";
+    badge.style.padding = "0.05rem 0.5rem";
+    badge.style.borderRadius = "999px";
+    badge.style.fontSize = "0.72em";
+    badge.style.fontWeight = "600";
+    // Inserted before the chevron (if this callout is foldable and already
+    // has one) so a foldable quest reads [title] [badge] [chevron], not
+    // [title] [chevron] [badge] — matters on a later call only; on the very
+    // first call (from applyCalloutStyling, before the chevron is ever
+    // added) this just appends, same net order either way.
+    const chevron = titleEl.querySelector(":scope > .iconify[data-icon^='tabler:chevron']");
+    if (chevron) titleEl.insertBefore(badge, chevron);
+    else titleEl.appendChild(badge);
+  }
+  badge.textContent = meta.label;
+  badge.style.color = badgeColor.value;
+  badge.style.background = `rgba(${badgeColor.rgbValue}, 0.15)`;
+  badge.style.border = `1px solid rgba(${badgeColor.rgbValue}, 0.35)`;
+}
+
 function applyCalloutStyling(container) {
   container.querySelectorAll("[data-callout]").forEach((calloutEl) => {
     const style = resolveCalloutStyle(calloutEl.dataset.callout);
@@ -306,6 +407,9 @@ function applyCalloutStyling(container) {
       titleEl.style.padding = "0.5rem 0.75rem";
       titleEl.style.fontWeight = "600";
       titleEl.style.color = style.value;
+      if (calloutEl.dataset.callout === "quest") {
+        refreshQuestBadge(calloutEl);
+      }
       if (calloutEl.tagName === "DETAILS") {
         titleEl.style.cursor = "pointer";
         const chevron = el("span", "iconify");
@@ -369,7 +473,14 @@ function applyCalloutStyling(container) {
 // stays fully synchronous). Interactive unconditionally (unlike
 // interactiveEncounters/interactiveDice/interactiveMacros above) — opening
 // a reference is read-only, the same as clicking a wiki-link, not a GM-only
-// action like starting combat or firing a macro.
+// action like starting combat or firing a macro. `activeCalendar` is the
+// active Setting's own `.calendar` field (or omitted/null when there isn't
+// one) — same pre-fetched-by-the-caller convention, used only by
+// `` `date:...` `` chips (journal-date.js); omitted, a date chip still
+// renders, just as a plain "Day <N>" reading instead of a formatted date.
+// `currentDayIndex` is the ambient campaign date (same pre-fetched
+// convention) — only consulted by a `` `date:current` ``/`` `date:today` ``
+// span; omitted, that chip reads "No campaign date set" instead.
 export function renderMarkdown(
   rawBody,
   {
@@ -389,10 +500,12 @@ export function renderMarkdown(
     validKindIds,
     kindLabels,
     onOpenReference,
+    activeCalendar,
+    currentDayIndex,
   } = {}
 ) {
   const container = document.createElement("div");
-  const withLinks = stripNamedTableMarkers(rewriteWikiLinks(rawBody, resolveWikiLink));
+  const withLinks = ensureNonEmptyTaskContent(stripNamedTableMarkers(rewriteWikiLinks(rawBody, resolveWikiLink)));
   const marked = window.marked;
   const DOMPurify = window.DOMPurify;
   if (!marked || !DOMPurify) {
@@ -414,10 +527,12 @@ export function renderMarkdown(
   const html = DOMPurify.sanitize(marked.parse(withLinks, { async: false, breaks: true }));
   container.innerHTML = html;
   applyWikiLinkStyling(container, { onNavigate });
+  applyExternalLinkTargets(container);
   applyDiceRollers(container, { status, interactive: interactiveDice, dataManager });
   applyEncounterBlocks(container, { interactive: interactiveEncounters, onStartEncounter });
   applyMacroBlocks(container, { status, interactive: interactiveMacros, dataManager, groupContext, ensureWidget, onWledDevicesChange });
-  applyKindReferenceBlocks(container, { validKindIds, kindLabels, interactive: Boolean(onOpenReference), onOpenReference });
+  applyKindReferenceBlocks(container, { validKindIds, kindLabels, interactive: Boolean(onOpenReference), onOpenReference, dataManager });
+  applyDateReferences(container, { activeCalendar, currentDayIndex });
   applyCalloutStyling(container);
   // Off by default at this layer — Repository's own editor always opts in;
   // handout.js's player-facing rendering leaves this false so a checkbox on

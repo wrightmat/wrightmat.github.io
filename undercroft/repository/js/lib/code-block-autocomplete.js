@@ -12,16 +12,22 @@ import { fetchKindEntriesWithIds, loadLibraryKinds } from "../../../common/js/li
 import { QUICK_DICE } from "../../../common/js/lib/widgets/dice-roll.js";
 import { EXCLUDED_KINDS, iconFor } from "./journal-kind-reference.js";
 
-// macro/encounter/dice are always recognized, even before the full kind
-// list below has loaded — the three special-cased prefixes this dropdown
-// (and markdown.js's own rendering) already understood before generic kind
-// references existed. Rebuilt once loadLibraryKinds() resolves (see
-// attachCodeBlockAutocomplete below) to also recognize every other kind.
-let PREFIX_PATTERN = /^(macro|encounter|dice)\s*:\s*/i;
+// macro/encounter/dice/date are always recognized, even before the full
+// kind list below has loaded — the special-cased prefixes this dropdown
+// (and markdown.js's own rendering) already understand outside the generic
+// kind-reference system. `date` is never a Library kind (journal-date.js's
+// own header comment — there's no "date" entity to look up), so it can
+// never come from loadLibraryKinds() the way every other kind's own prefix
+// does; it has to be hardcoded here alongside macro/encounter/dice.
+// Rebuilt once loadLibraryKinds() resolves (see attachCodeBlockAutocomplete
+// below) to also recognize every real kind.
+let PREFIX_PATTERN = /^(macro|encounter|dice|date)\s*:\s*/i;
 
 function buildPrefixPattern(kindIds) {
-  const extra = (kindIds || []).filter((id) => !EXCLUDED_KINDS.has(id) && id !== "macro" && id !== "encounter" && id !== "dice");
-  const alternation = ["macro", "encounter", "dice", ...extra].join("|");
+  const extra = (kindIds || []).filter(
+    (id) => !EXCLUDED_KINDS.has(id) && id !== "macro" && id !== "encounter" && id !== "dice" && id !== "date"
+  );
+  const alternation = ["macro", "encounter", "dice", "date", ...extra].join("|");
   return new RegExp(`^(${alternation})\\s*:\\s*`, "i");
 }
 
@@ -110,6 +116,15 @@ function diceCandidates(query) {
   }));
 }
 
+// The only real completion `date:` has — a fixed day index isn't something
+// to complete from a list, but `current` (the ambient campaign date) is
+// worth surfacing since it's easy to forget exists otherwise.
+function dateCandidates(query) {
+  const q = query.trim().toLowerCase();
+  if (q && !"current".startsWith(q)) return [];
+  return [{ kind: "date", label: "current", insertText: "current" }];
+}
+
 // Every kind that isn't macro/encounter/dice — same shape as macroCandidates
 // above, just parameterized on which kind's own saved entries to offer.
 async function genericCandidates(dataManager, kindId, query) {
@@ -137,6 +152,7 @@ const KIND_ICON = {
   monster: "tabler:paw",
   npc: "tabler:user",
   dice: "tabler:dice-5",
+  date: "tabler:calendar-star",
 };
 
 export function attachCodeBlockAutocomplete(textarea, { dataManager } = {}) {
@@ -274,6 +290,7 @@ export function attachCodeBlockAutocomplete(textarea, { dataManager } = {}) {
     if (parsed.type === "macro") nextCandidates = await macroCandidates(dataManager, parsed.query);
     else if (parsed.type === "encounter") nextCandidates = await encounterCandidates(dataManager, parsed.query);
     else if (parsed.type === "dice") nextCandidates = diceCandidates(parsed.query);
+    else if (parsed.type === "date") nextCandidates = dateCandidates(parsed.query);
     else nextCandidates = await genericCandidates(dataManager, parsed.type, parsed.query);
     if (token !== requestToken) return; // superseded by a later keystroke
     if (!nextCandidates.length) {

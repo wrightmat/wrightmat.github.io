@@ -8,6 +8,7 @@
 // field labels) and macro-runner.js's per-step toasts read from this ONE
 // place, so a label can't drift between "what you authored" and "what ran."
 import { WLED_MACRO_ACTIONS } from "./wled.js";
+import { HA_MACRO_ACTIONS } from "./home-assistant.js";
 import { SOUNDBOARD_MACRO_ACTIONS } from "./soundboard.js";
 import { COMBAT_MACRO_ACTIONS } from "./combat-tracker.js";
 import { CHARACTER_MACRO_ACTIONS } from "./character-sheet.js";
@@ -17,6 +18,7 @@ import { CALENDAR_MACRO_ACTIONS } from "./calendar.js";
 
 export const MACRO_ACTION_CATALOG = {
   wled: { label: "WLED", actions: WLED_MACRO_ACTIONS },
+  homeAssistant: { label: "Home Assistant", actions: HA_MACRO_ACTIONS },
   soundboard: { label: "Soundboard", actions: SOUNDBOARD_MACRO_ACTIONS },
   handout: {
     label: "Handout",
