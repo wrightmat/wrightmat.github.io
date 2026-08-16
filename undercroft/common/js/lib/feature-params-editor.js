@@ -176,6 +176,20 @@ export function createFeatureParamsEditor(hooks) {
         })
       )
     );
+    // The selected tier's own `mechanics.text` — e.g. feat.impose-condition's
+    // own per-tier Minor/Moderate/Severe/Extreme descriptions ("frightened,
+    // blinded, ... " vs "stunned, incapacitated, ..."). That data already
+    // existed on every tiered Feature but had NO UI surface anywhere before
+    // this — a GM picking a tier had only its bare name to go on, with no
+    // way to tell what any of them actually mean without opening raw JSON.
+    const selectedTier = feature.tiers.find((tier) => tier.id === selected);
+    const tierText = selectedTier?.mechanics?.text;
+    if (tierText) {
+      const description = document.createElement("p");
+      description.className = "small text-body-secondary mb-0";
+      description.textContent = tierText;
+      wrapper.appendChild(description);
+    }
     return wrapper;
   }
 

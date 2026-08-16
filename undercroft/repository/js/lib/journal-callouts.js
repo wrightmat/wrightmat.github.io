@@ -47,7 +47,11 @@ const BOOTSTRAP_COLORS = {
   secondary: { hex: "#6c757d", rgb: "108, 117, 125" },
 };
 
-function resolveColor(name) {
+// Exported so journal-quests.js's own QUEST_STATUS_META (a not-started/
+// active/complete badge, not a callout type) can resolve the same
+// Bootstrap-named colors a callout's own icon/border already use, rather
+// than inventing a second color system.
+export function resolveColor(name) {
   const entry = BOOTSTRAP_COLORS[name] || BOOTSTRAP_COLORS.secondary;
   return {
     value: `var(--bs-${name}, ${entry.hex})`,
@@ -76,6 +80,20 @@ export const CALLOUT_TYPES = {
   bug: { icon: "tabler:bug", color: "pink" },
   example: { icon: "tabler:list-details", color: "purple" },
   quote: { icon: "tabler:quote", color: "secondary", aliases: ["cite"] },
+  // Not one of Obsidian's own 13 built-ins — this suite's own addition, a
+  // GM-authored quest embedded in whatever page it naturally arises from
+  // (see journal-quests.js). Parsing/collapsibility/nesting all already
+  // work generically for any [!type]; this is the one entry needed to give
+  // it a real look instead of DEFAULT_CALLOUT's generic gray.
+  quest: { icon: "tabler:map-2", color: "purple" },
+  // This suite's other own addition — deliberately authored planning
+  // structure (see journal-story-board.js), not something derived from
+  // other content. Rendered as a plain callout (its own raw Nodes/Edges
+  // tables) through this generic path; Repository's own app.js separately
+  // upgrades a rendered `[data-callout="story-board"]` element into a live
+  // interactive canvas — see that file's own header comment for why that
+  // stays out of markdown.js itself.
+  "story-board": { icon: "tabler:layout-board-split", color: "teal" },
 };
 
 const DEFAULT_CALLOUT = { icon: "tabler:message-circle", color: "secondary" };

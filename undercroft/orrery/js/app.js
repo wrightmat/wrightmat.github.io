@@ -14,6 +14,8 @@ import { initAuthControls } from "../../common/js/lib/auth-ui.js";
 import { refreshTooltips, disposeTooltips } from "../../common/js/lib/tooltips.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
 import { fetchKindEntriesWithIds, loadLibraryKinds } from "../../common/js/lib/content-fetch.js";
+import { extractOutline } from "../../repository/js/lib/journal-outline.js";
+import { extractQuests } from "../../repository/js/lib/journal-quests.js";
 import { createTokenImageField } from "../../common/js/lib/token-picker.js";
 import { getIconTokens } from "../../common/js/lib/icon-picker.js";
 import { refreshOwnershipCatalog, createCharacterOwnershipPrimer, confirmDelete, matchesOwner } from "../../common/js/lib/ownership.js";
@@ -78,6 +80,7 @@ import {
   resolveLightOrigin,
   snapMarkerPositionToGrid as snapMarkerPositionToGridShared,
   buildRestrictedMapOptions,
+  resolveMarkerLinkTarget,
 } from "./lib/map-viewer.js";
 
 const state = {
@@ -3150,6 +3153,58 @@ function renderLayerOverlays() {
 // callback at all to opt a feature out" convention the widget's own map.js
 // already established, rather than scattering `restricted ? undefined :
 // ...` through every closure above.
+// A minimal popover for a restricted viewer's marker click — a marker they
+// can't drag (not their own character token) but that references a real
+// Library record, the same "used to do nothing at all on click" gap fixed
+// for the Dashboard's own Map widget (see that file's own
+// openMarkerLinkPopover, which this mirrors — Orrery's restricted view has
+// no shared DOM-building module with the widget beyond map-viewer.js's pure
+// resolveMarkerLinkTarget, so each builds its own small popover using its
+// own existing host/lifecycle conventions).
+let restrictedMarkerLinkPopover = null;
+function closeRestrictedMarkerLinkPopover() {
+  restrictedMarkerLinkPopover?.remove();
+  restrictedMarkerLinkPopover = null;
+  document.removeEventListener("pointerdown", onOutsideRestrictedMarkerLinkPointerDown, true);
+}
+function onOutsideRestrictedMarkerLinkPointerDown(event) {
+  if (restrictedMarkerLinkPopover && !restrictedMarkerLinkPopover.contains(event.target)) {
+    closeRestrictedMarkerLinkPopover();
+  }
+}
+function openRestrictedMarkerLinkPopover(markerElement, dotEl) {
+  const target = resolveMarkerLinkTarget(markerElement);
+  if (!target) return;
+  closeRestrictedMarkerLinkPopover();
+  const popover = document.createElement("div");
+  popover.className = "orrery-floating-panel d-flex flex-column gap-1 p-2";
+  popover.style.position = "fixed";
+  popover.style.width = "12rem";
+  popover.style.zIndex = "1040";
+  const rect = dotEl?.getBoundingClientRect?.();
+  const hostRect = mapContainer.getBoundingClientRect();
+  const top = rect ? rect.bottom + 4 : hostRect.top + 4;
+  const left = rect ? Math.min(rect.left, hostRect.right - 200) : hostRect.left + 4;
+  popover.style.top = `${top}px`;
+  popover.style.left = `${Math.max(hostRect.left + 4, left)}px`;
+
+  if (markerElement.label) {
+    const title = document.createElement("div");
+    title.className = "small fw-semibold text-truncate";
+    title.textContent = markerElement.label;
+    popover.appendChild(title);
+  }
+  const link = document.createElement("a");
+  link.className = "btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1";
+  link.href = target.url;
+  link.innerHTML = `<span class="iconify" data-icon="tabler:external-link" aria-hidden="true"></span> Open in ${target.toolLabel}`;
+  popover.appendChild(link);
+
+  mapContainer.appendChild(popover);
+  restrictedMarkerLinkPopover = popover;
+  document.addEventListener("pointerdown", onOutsideRestrictedMarkerLinkPointerDown, true);
+}
+
 function renderRestrictedLayerOverlays(overlay) {
   primeCharacterPayloadCache();
   primeCharacterOwnershipCatalog();
@@ -3165,6 +3220,9 @@ function renderRestrictedLayerOverlays(overlay) {
       onMarkerMoved: (layer, markerElement, snappedPosition) =>
         void persistRestrictedMarkerMove(layer, markerElement, snappedPosition),
       onDoorToggled: (layer, elementId) => void toggleDoorRestricted(layer.id, elementId),
+      onMarkerClicked: (layer, markerElement, dotEl, draggable) => {
+        if (!draggable) openRestrictedMarkerLinkPopover(markerElement, dotEl);
+      },
       onDragStateChange: (dragging) => {
         isDraggingRestrictedMarker = dragging;
       },
@@ -4384,6 +4442,18 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
   entitySelect.disabled = true;
   container.appendChild(entityField);
 
+  // Only meaningful for a journal-kind reference — matches
+  // common/js/lib/widgets/handout.js's own picker exactly: Whole Page, or
+  // one of the selected page's own headings/quests, so a marker can point
+  // at a specific quest the same granularity a Handout can already show.
+  // Hidden (not just disabled) whenever the kind isn't journal, same
+  // "irrelevant field stays out of the way" convention every other
+  // kind-specific field in this panel already follows.
+  const anchorField = createFormFloatingField({ type: "select", label: "Show" });
+  const anchorSelect = anchorField.querySelector("select");
+  anchorField.classList.add("d-none");
+  container.appendChild(anchorField);
+
   // Below Entity, not above — Image is very often auto-inherited FROM
   // whichever entity gets picked (entitySelect's own "change" handler,
   // below), so grouping it visually right after the picker it depends on
@@ -4540,8 +4610,15 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
     }
   }
 
+  // Kept across calls so updateAnchorSelect (below) can look up the
+  // currently-selected journal entity's own body without a second fetch —
+  // fetchKindEntriesWithIds' own {id, entity} entries already carry the
+  // full payload, not just a summary.
+  let entitySelectEntries = [];
+
   async function populateEntitySelect(kind, selectedId) {
     entitySelect.innerHTML = "";
+    entitySelectEntries = [];
     if (!kind || !dataManager) {
       entitySelect.disabled = true;
       return;
@@ -4557,18 +4634,59 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
     } catch (error) {
       entries = [];
     }
+    entitySelectEntries = entries;
+    // `.title` fallback — a journal page's own payload has no `.name` field
+    // at all (its display field is `.title`), so this fell through straight
+    // to the raw record id ("journal_4ai1dhb4...") for every journal
+    // reference, both in the option label AND the sort order. Confirmed
+    // real bug, not a naming preference.
+    const displayName = (entry) => entry.entity?.name || entry.entity?.title || entry.id;
     entries
       .slice()
-      .sort((a, b) => (a.entity?.name || a.id).localeCompare(b.entity?.name || b.id))
+      .sort((a, b) => displayName(a).localeCompare(displayName(b)))
       .forEach((entry) => {
         const option = document.createElement("option");
         option.value = entry.id;
-        option.textContent = entry.entity?.name || entry.id;
+        option.textContent = displayName(entry);
         entitySelect.appendChild(option);
       });
     if (selectedId && entries.some((entry) => entry.id === selectedId)) {
       entitySelect.value = selectedId;
     }
+  }
+
+  // Populates the "Show" select from whichever journal entity is currently
+  // chosen — Whole Page plus every heading/quest on that page, same shape
+  // handout.js's own picker builds. `savedAnchor` (only used the FIRST time
+  // this panel opens for an already-linked marker) restores whatever anchor
+  // was previously picked, once its own option actually exists in the list.
+  function updateAnchorSelect(savedAnchor) {
+    const isJournal = kindSelect.value === "journal";
+    anchorField.classList.toggle("d-none", !isJournal);
+    anchorSelect.innerHTML = "";
+    anchorSelect.appendChild(new Option("Whole page", ""));
+    if (!isJournal) return;
+    const entry = entitySelectEntries.find((candidate) => candidate.id === entitySelect.value);
+    const body = entry?.entity?.body || "";
+    extractOutline(body).forEach((heading) => {
+      anchorSelect.appendChild(new Option(`${"— ".repeat(heading.depth)}${heading.text}`, `heading:${heading.text}`));
+    });
+    extractQuests(body).forEach((quest) => {
+      anchorSelect.appendChild(new Option(`Quest: ${quest.title}`, `quest:${quest.title}`));
+    });
+    if (savedAnchor?.type && savedAnchor?.value) {
+      const savedValue = `${savedAnchor.type}:${savedAnchor.value}`;
+      if (Array.from(anchorSelect.options).some((option) => option.value === savedValue)) {
+        anchorSelect.value = savedValue;
+      }
+    }
+  }
+
+  // The label a specific anchor (heading/quest) would inherit — plain text,
+  // no leading dashes/"Quest:" prefix (those are just the Show select's own
+  // display formatting), since this feeds the marker's actual Label field.
+  function anchorDisplayLabel(anchor) {
+    return anchor?.value || "";
   }
 
   const kinds = await getLibraryKinds();
@@ -4580,6 +4698,16 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
   });
   kindSelect.value = markerElement.refKind || "";
   await populateEntitySelect(markerElement.refKind, markerElement.refId);
+  updateAnchorSelect(markerElement.refAnchor);
+  // Baseline for the anchor handler's own "still looks auto-inherited, safe
+  // to refine further" check below — whatever the label would currently
+  // read as from the MOST specific thing already selected (the anchor if
+  // one's picked, otherwise the entity's own name). Recomputed fresh on
+  // every render, since a kind/entity change tears this whole panel down
+  // and rebuilds it (see kindSelect/entitySelect's own change handlers).
+  let lastAutoLabel = markerElement.refAnchor
+    ? anchorDisplayLabel(markerElement.refAnchor)
+    : entitySelect.selectedOptions[0]?.textContent || "";
   await refreshPreview();
 
   // A newer invocation (triggered by one of the character-data cache
@@ -4603,6 +4731,22 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
     applyMarkerElementChange("marker reference kind", () => {
       markerElement.refKind = kind;
       markerElement.refId = "";
+      markerElement.refAnchor = null;
+      // label/image are "copy once at pick-time, stays user-editable after"
+      // (see entitySelect's own change handler just below) — once set, a
+      // LATER entity pick never overwrites them again, which is correct
+      // within the same kind but left a stale Character's own portrait/name
+      // permanently attached to a marker after switching its reference kind
+      // to something else entirely (a Journal Page, say) — confirmed real
+      // bug, not by design. A kind change means whatever was inherited from
+      // the OLD kind's own entity no longer applies, so both reset here,
+      // clearing the way for the new kind's own entity pick to inherit
+      // fresh. outlineColor is deliberately NOT reset — it's inherited from
+      // the signed-in user's own Favorite Color account setting, not from
+      // the referenced entity, so it stays valid regardless of what kind
+      // this marker points at.
+      markerElement.label = "";
+      markerElement.image = "";
     });
   });
 
@@ -4643,6 +4787,10 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
       }
       applyMarkerElementChange("marker reference entity", () => {
         markerElement.refId = refId;
+        // A different entity (even the same kind) has its own headings/
+        // quests — whatever anchor was picked for the PREVIOUS one almost
+        // certainly doesn't mean the same thing (or exist at all) here.
+        markerElement.refAnchor = null;
         if (!markerElement.label && option && option.value) {
           markerElement.label = option.textContent;
         }
@@ -4654,6 +4802,29 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
         }
       });
     })();
+  });
+
+  anchorSelect.addEventListener("change", () => {
+    const value = anchorSelect.value;
+    let anchor = null;
+    if (value) {
+      const separatorIndex = value.indexOf(":");
+      anchor = { type: value.slice(0, separatorIndex), value: value.slice(separatorIndex + 1) };
+    }
+    // The label should follow the MOST specific thing selected — picking a
+    // heading/quest within a Journal Page is more specific than the page
+    // itself, so it becomes the new label the same way picking the entity
+    // itself already does. Only when the current label still looks
+    // auto-inherited (matches lastAutoLabel, computed above from whatever
+    // was most-specific BEFORE this change) — a label the GM typed in by
+    // hand is never overwritten.
+    const nextAutoLabel = anchor ? anchorDisplayLabel(anchor) : entitySelect.selectedOptions[0]?.textContent || "";
+    applyMarkerElementChange("marker reference anchor", () => {
+      markerElement.refAnchor = anchor;
+      if (nextAutoLabel && (!markerElement.label || markerElement.label === lastAutoLabel)) {
+        markerElement.label = nextAutoLabel;
+      }
+    });
   });
 
   // Deliberately NOT applyMarkerElementChange — same reasoning as Layer's

@@ -458,9 +458,9 @@
       "summary": "A dedicated tab for authoring Macros — the ordered list of actions a Macro runs when triggered, from the Dashboard's Macro board widget or a Journal note.",
       "details": [
         "Macros are a real Library kind (creator-tier gated, shareable) — this tab is a purpose-built editor for that same data, the same relationship the Systems tab has to the System kind. The generic Library tab can still open a Macro as raw JSON like any other kind.",
-        "Each action row targets one widget type (WLED, Soundboard, Handout, Combat, ...) — the fields shown change to match what that type actually needs (a device alias, a clip id, a contentRef, ...).",
+        "Each action row targets one widget type (WLED, Home Assistant, Soundboard, Handout, Combat, ...) — the fields shown change to match what that type actually needs (a device alias, an entity, a clip id, a contentRef, ...).",
         "Actions run top to bottom — order matters (e.g. dim the lights, then play the sting).",
-        "A WLED action's device is a free-text alias, never a literal IP — the GM running the macro maps it to one of their own saved devices the first time it's triggered, so the same Macro works for anyone's own lighting rig."
+        "A WLED action's device is a free-text alias, never a literal IP — the GM running the macro maps it to one of their own saved devices the first time it's triggered, so the same Macro works for anyone's own lighting rig. A Home Assistant action targets a live entity picked from a dropdown instead, with no alias step — the first time you try to use one, you'll be prompted to connect your own Home Assistant instance (a URL and an access token), remembered after that."
       ],
       "category": "Loom",
       "href": "../loom/index.html#loom-macros"
@@ -1365,6 +1365,18 @@
       "href": "../sanctum/index.html#sanctum-relationships"
     },
     {
+      "id": "sanctum.locationGraph",
+      "title": "Location Graph",
+      "summary": "A visual diagram of how every Location in this Setting relates to the others — containment (Parent) and peer connections (Connected To) — not a spatial layout.",
+      "details": [
+        "This is a relationship diagram, not a coordinate-precise map — node positions are computed automatically and carry no meaning beyond roughly grouping related Locations together. For a real spatial/tactical map, use Orrery instead.",
+        "Solid lines are Parent/Child containment; dashed lines are Connected To peer links (roads, tunnels, corridors).",
+        "Click any node to load that Location into the editor below, the same as picking it from the Location dropdown."
+      ],
+      "category": "Sanctum",
+      "href": "../sanctum/index.html#sanctum-location-graph"
+    },
+    {
       "id": "sanctum.notes",
       "title": "Notes (optional)",
       "summary": "Optional. Type your own note directly, or use Generate Note to have Claude write one from this Location's resolved Identity and Features.",
@@ -1526,6 +1538,19 @@
       ],
       "category": "Repository",
       "href": "../repository/index.html#repository-tags"
+    },
+    {
+      "id": "repository.quests",
+      "title": "Quests",
+      "summary": "A [!quest] callout, with an ordinary markdown checklist inside it, IS a quest — no separate quest editor or record.",
+      "details": [
+        "Write > [!quest] Quest Name, then a normal markdown checklist underneath for objectives — status (Not Started/Active/Complete) is shown automatically, worked out from how many boxes are checked, not something you set yourself.",
+        "Reference an NPC, location, monster, or anything else right inside an objective the same way you would anywhere else on the page: `npc:Name`, `location:Name`, and so on.",
+        "[[Quest Name]] links to a quest the same way [[Page Title]] links to a page — page titles are checked first, so a quest link only ever kicks in when no page has that exact title. [[Page Title#Quest Name]] is always unambiguous, even if two different pages each have a quest with the same name.",
+        "A quest is scoped to the page it's written on — its title only needs to be unique on that one page."
+      ],
+      "category": "Repository",
+      "href": "../repository/index.html#repository-quests"
     }
   ]
 }

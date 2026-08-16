@@ -1,4 +1,4 @@
-import { PanZoomController } from "./pan-zoom.js";
+import { PanZoomController } from "../../../common/js/lib/pan-zoom.js";
 
 function clearContainer(container) {
   while (container.firstChild) {

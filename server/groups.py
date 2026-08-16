@@ -125,6 +125,15 @@ def _load_group_row(state: ServerState, group_id: str) -> Optional[Dict[str, Any
         "system_id": payload.get("systemId"),
         "setting_id": payload.get("settingId"),
         "template_id": payload.get("templateId"),
+        # The campaign's own tracked "what date is it in the fiction"
+        # state — same conceptual tier as system_id/setting_id above (a
+        # GM advances it over time, every tool reads the same value via
+        # this one Group). dayIndex mirrors the Calendar widget's own
+        # existing day-count representation (0 = an arbitrary campaign-
+        # start epoch, negative = before it); minutesOfDay is 0-1439.
+        # Both None until a GM actually sets one — no forced default.
+        "campaign_day_index": payload.get("campaignDayIndex"),
+        "campaign_minutes_of_day": payload.get("campaignMinutesOfDay"),
         "properties": payload.get("properties") or [],
         "property_values": payload.get("propertyValues") or {},
         "created_at": meta_row["created_at"],
@@ -285,6 +294,8 @@ def _serialize_group(row, members: List[Dict[str, Any]], share_link: Optional[Di
         "system_id": row["system_id"] if "system_id" in row.keys() else None,
         "setting_id": row["setting_id"] if "setting_id" in row.keys() else None,
         "template_id": row["template_id"] if "template_id" in row.keys() else None,
+        "campaign_day_index": row["campaign_day_index"] if "campaign_day_index" in row.keys() else None,
+        "campaign_minutes_of_day": row["campaign_minutes_of_day"] if "campaign_minutes_of_day" in row.keys() else None,
         "properties": row["properties"] if "properties" in row.keys() else [],
         "propertyValues": row["property_values"] if "property_values" in row.keys() else {},
         "created_at": row["created_at"],
@@ -818,6 +829,13 @@ def _access_row_to_group_fields(row) -> Dict[str, Any]:
         "system_id": metadata.get("systemId"),
         "setting_id": metadata.get("settingId"),
         "template_id": metadata.get("templateId"),
+        # Available here (the cheap metadata-column path list_groups uses)
+        # because group.json's own metadataFields lists these two — the
+        # same reason systemId/settingId above are readable without a full
+        # JSON-file fetch. This is the path resolveGroupContext's own
+        # listGroups() call actually reads.
+        "campaign_day_index": metadata.get("campaignDayIndex"),
+        "campaign_minutes_of_day": metadata.get("campaignMinutesOfDay"),
         "created_at": row["created_at"],
         "modified_at": row["modified_at"],
     }
@@ -1000,6 +1018,8 @@ def update_group(
     setting_id: Optional[str] = None,
     template_id: Optional[str] = None,
     properties: Optional[List[Dict[str, Any]]] = None,
+    campaign_day_index: Optional[int] = None,
+    campaign_minutes_of_day: Optional[int] = None,
 ) -> Dict[str, Any]:
     from . import storage
 
@@ -1040,6 +1060,16 @@ def update_group(
         # anything useful client-side, it can't corrupt anything else.
         row["properties"] = properties if isinstance(properties, list) else []
         updated = True
+    # No "blank clears it" here — these are integers (0 is a real, valid
+    # day index: the campaign's own start epoch), not strings, so the only
+    # signal available is "was this argument passed at all" — same as
+    # every other field above, just without a string to strip.
+    if campaign_day_index is not None:
+        row["campaign_day_index"] = campaign_day_index
+        updated = True
+    if campaign_minutes_of_day is not None:
+        row["campaign_minutes_of_day"] = campaign_minutes_of_day
+        updated = True
     # The Party Inventory property starts as a generic placeholder (no
     # System exists yet at create_group time) — the first time a GM
     # actually assigns a System to this campaign, upgrade it to mirror
@@ -1075,6 +1105,8 @@ def update_group(
             "systemId": row["system_id"],
             "settingId": row["setting_id"],
             "templateId": row["template_id"],
+            "campaignDayIndex": row["campaign_day_index"],
+            "campaignMinutesOfDay": row["campaign_minutes_of_day"],
             "properties": row["properties"],
             "propertyValues": row["property_values"],
         }
@@ -1235,6 +1267,8 @@ def get_group_share_details(state: ServerState, token: str) -> Dict[str, Any]:
             "system_id": row["system_id"],
             "setting_id": row["setting_id"],
             "template_id": row["template_id"],
+            "campaign_day_index": row["campaign_day_index"],
+            "campaign_minutes_of_day": row["campaign_minutes_of_day"],
         },
         "members": members,
         "available": available,

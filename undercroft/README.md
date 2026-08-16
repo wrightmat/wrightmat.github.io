@@ -17,6 +17,8 @@ Undercroft is a vanilla JavaScript + Bootstrap (CDN) front end with a small Pyth
 
 `web-server.py` reads `server.config.json` (repo root) for host/port (default `127.0.0.1:8000`), session length, the SQLite database path (`data/database.sqlite`, created automatically), and a default admin account (`admin`/`admin`) seeded for local development. Pass `--config <path>` to point at a different config file.
 
+The server otherwise runs on the Python standard library alone. One optional dependency — `pip install -r server/requirements.txt` — is only needed for the Home Assistant integration's credential encryption; everything else works with no install step at all.
+
 ---
 
 ## The Tools

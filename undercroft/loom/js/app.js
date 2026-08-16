@@ -37,6 +37,7 @@ import { roleRank } from "../../common/js/lib/data-manager.js";
 import { createSortable } from "../../common/js/lib/dnd.js";
 import { loadClipLibrary, getAllClips } from "../../common/js/lib/audio-clip-library.js";
 import { MACRO_ACTION_CATALOG } from "../../common/js/lib/widgets/macro-action-catalog.js";
+import { listHaEntities } from "../../common/js/lib/widgets/home-assistant.js";
 import { HANDOUT_KINDS, KIND_LABELS as HANDOUT_KIND_LABELS } from "../../common/js/lib/widgets/handout.js";
 import {
   PROPERTY_TYPES,
@@ -200,6 +201,14 @@ document.querySelector("[data-macro-add-action-mount]")?.appendChild(
     label: "Add Action",
     className: "p-1",
     attrs: { "data-macro-add-action": true },
+  })
+);
+document.querySelector("[data-feature-add-tier-mount]")?.appendChild(
+  createIconButton({
+    icon: "tabler:plus",
+    label: "Add Tier",
+    className: "p-1",
+    attrs: { "data-feature-add-tier": true },
   })
 );
 document.querySelector("[data-loom-group-add-property-mount]")?.appendChild(
@@ -4176,6 +4185,9 @@ const featureMechanicsError = document.querySelector("[data-feature-mechanics-er
 const featureBudgetCostInput = document.querySelector("[data-feature-budget-cost]");
 const featureScopeSelect = document.querySelector("[data-feature-scope]");
 const featureEligibilityNote = document.querySelector("[data-feature-eligibility-note]");
+const featureTiersList = document.querySelector("[data-feature-tiers]");
+const featureTiersEmpty = document.querySelector("[data-feature-tiers-empty]");
+const featureAddTierButton = document.querySelector("[data-feature-add-tier]");
 const featureSuggestButton = document.querySelector("[data-feature-suggest]");
 const featureSuggestStatus = document.querySelector("[data-feature-suggest-status]");
 const featuresEmpty = document.querySelector("[data-features-empty]");
@@ -4202,10 +4214,16 @@ const featureSynergizesList = mountFeatureChecklist("[data-feature-synergizes-mo
 const featureConflictsList = mountFeatureChecklist("[data-feature-conflicts-mount]", "Conflicts With");
 
 // The FULL entity, loaded once per selection — a field this tab's own
-// controls don't directly own (`tiers`, `combat`, `systemIds`) still
-// round-trips untouched on Save, since Save patches this SAME object rather
-// than building a fresh one from scratch.
+// controls don't directly own (`combat`, `systemIds`) still round-trips
+// untouched on Save, since Save patches this SAME object rather than
+// building a fresh one from scratch.
 let currentFeatureEntity = null;
+
+// The Tiers list's own in-progress array — same "flat array is the source
+// of truth while editing" convention macroEditorActions already uses (see
+// that array's own comment), not currentFeatureEntity.tiers directly, so a
+// reorder/add/remove can re-render freely before Save patches it back in.
+let featureEditorTiers = [];
 
 // Every vocabulary collector below does at least one server round trip;
 // recomputing all of them on EVERY single Feature selection was the actual
@@ -4505,9 +4523,146 @@ function updateFeatureEligibilityNote() {
   featureEligibilityNote.classList.toggle("d-none", !message);
 }
 
+// Tiers editor — same row-list shape as the Macros tab's own
+// macroEditorActions/renderMacroActionsEditor (add/remove/reorder a flat
+// array, re-render the whole list on any change), reusing that same tab's
+// generic macroFieldRow/macroTextInput/macroTextarea/macroNumberInput DOM
+// builders directly rather than duplicating them — those are plain field
+// builders with no macro-specific logic despite the name.
+function updateFeatureTier(index, patch) {
+  recordUndoableChange("feature", () => {
+    if (!featureEditorTiers[index]) return;
+    featureEditorTiers[index] = { ...featureEditorTiers[index], ...patch };
+    renderFeatureTiersEditor();
+  });
+}
+
+function removeFeatureTier(index) {
+  recordUndoableChange("feature", () => {
+    featureEditorTiers.splice(index, 1);
+    renderFeatureTiersEditor();
+  });
+}
+
+function reorderFeatureTiers(oldIndex, newIndex) {
+  if (oldIndex === newIndex) return;
+  recordUndoableChange("feature", () => {
+    const [moved] = featureEditorTiers.splice(oldIndex, 1);
+    featureEditorTiers.splice(newIndex, 0, moved);
+    renderFeatureTiersEditor();
+  });
+}
+
+function renderFeatureTierRow(tier, index) {
+  const row = document.createElement("div");
+  row.className = "d-flex flex-column gap-2 border rounded p-2";
+
+  const headerRow = document.createElement("div");
+  headerRow.className = "d-flex align-items-start gap-2";
+
+  const handle = document.createElement("span");
+  handle.className = "iconify text-body-secondary mt-2";
+  handle.dataset.icon = "tabler:grip-vertical";
+  handle.setAttribute("data-sortable-handle", "");
+  handle.setAttribute("aria-hidden", "true");
+  handle.style.cursor = "grab";
+  headerRow.appendChild(handle);
+
+  const fieldsRow = document.createElement("div");
+  fieldsRow.className = "row g-2 flex-grow-1";
+  const idCol = document.createElement("div");
+  idCol.className = "col-12 col-md-3";
+  idCol.appendChild(
+    macroFieldRow("Id", macroTextInput(tier.id, "minor", (value) => updateFeatureTier(index, { id: value.trim() })))
+  );
+  const nameCol = document.createElement("div");
+  nameCol.className = "col-12 col-md-4";
+  nameCol.appendChild(
+    macroFieldRow("Name", macroTextInput(tier.name, "Minor", (value) => updateFeatureTier(index, { name: value })))
+  );
+  const shortNameCol = document.createElement("div");
+  shortNameCol.className = "col-12 col-md-3";
+  shortNameCol.appendChild(
+    macroFieldRow(
+      "Short Name",
+      macroTextInput(tier.shortName, "Minor", (value) => updateFeatureTier(index, { shortName: value }))
+    )
+  );
+  const budgetCol = document.createElement("div");
+  budgetCol.className = "col-12 col-md-2";
+  budgetCol.appendChild(
+    macroFieldRow(
+      "Cost Budget",
+      macroNumberInput(tier.budgetCost, (value) => updateFeatureTier(index, { budgetCost: value ?? 0 }))
+    )
+  );
+  fieldsRow.append(idCol, nameCol, shortNameCol, budgetCol);
+  headerRow.appendChild(fieldsRow);
+
+  const removeButton = document.createElement("button");
+  removeButton.type = "button";
+  removeButton.className = "btn btn-outline-danger btn-sm p-1";
+  removeButton.setAttribute("aria-label", "Remove tier");
+  removeButton.title = "Remove tier";
+  removeButton.innerHTML = `<span class="iconify" data-icon="tabler:trash" aria-hidden="true"></span>`;
+  removeButton.addEventListener("click", () => removeFeatureTier(index));
+  headerRow.appendChild(removeButton);
+
+  row.appendChild(headerRow);
+
+  // Tier `mechanics.text` is the only per-tier mechanics field surfaced
+  // here — every existing tiered Feature (feat.impose-condition,
+  // feat.damage, feat.action-restricted) keeps `mechanics.type` identical
+  // to the parent Feature's own mechanics.type across all its tiers, so
+  // that value is copied from the parent (currentFeatureMechanics()) on
+  // Save rather than duplicated as its own field per row here.
+  row.appendChild(
+    macroFieldRow(
+      "Tier Description",
+      macroTextarea(tier.mechanics?.text, "What this tier means…", (value) =>
+        updateFeatureTier(index, { mechanics: { ...(featureEditorTiers[index]?.mechanics || {}), text: value } })
+      )
+    )
+  );
+
+  return row;
+}
+
+let featureTiersSortable = null;
+
+function renderFeatureTiersEditor() {
+  if (!featureTiersList) return;
+  featureTiersList.innerHTML = "";
+  if (featureTiersEmpty) featureTiersEmpty.classList.toggle("d-none", featureEditorTiers.length > 0);
+  featureEditorTiers.forEach((tier, index) => {
+    featureTiersList.appendChild(renderFeatureTierRow(tier || {}, index));
+  });
+  if (featureTiersSortable) {
+    featureTiersSortable.destroy();
+    featureTiersSortable = null;
+  }
+  if (featureEditorTiers.length > 1) {
+    featureTiersSortable = createSortable(featureTiersList, {
+      onEnd(event) {
+        if (event.oldIndex === event.newIndex) return;
+        reorderFeatureTiers(event.oldIndex, event.newIndex);
+      },
+    });
+  }
+}
+
+if (featureAddTierButton) {
+  featureAddTierButton.addEventListener("click", () => {
+    recordUndoableChange("feature", () => {
+      featureEditorTiers.push({ id: "", name: "", shortName: "", budgetCost: 0, mechanics: { text: "" } });
+      renderFeatureTiersEditor();
+    });
+  });
+}
+
 // Undo/dirty-tracking snapshot for this tab — every field this tab's own
 // controls can change (id selection, name, description, mechanics text,
-// budgetCost, scope, tags, references), same "SNAPSHOT_HANDLERS[type]"
+// budgetCost, scope, tags, references, tiers), same "SNAPSHOT_HANDLERS[type]"
 // convention every other tab (mapping/library/system/macro) already
 // registers itself under.
 function createFeatureSnapshot() {
@@ -4518,6 +4673,7 @@ function createFeatureSnapshot() {
     mechanics: featureMechanicsTextarea?.value || "",
     budgetCost: featureBudgetCostInput?.value || "",
     scope: featureScopeSelect?.value || "",
+    tiers: JSON.parse(JSON.stringify(featureEditorTiers)),
     tags: readFeatureTagsFromChecklists(),
     references: readFeatureReferenceLists(),
   };
@@ -4532,6 +4688,8 @@ function applyFeatureSnapshot(snapshot) {
   updateFeatureMechanicsFeedback();
   if (featureBudgetCostInput) featureBudgetCostInput.value = snapshot.budgetCost || "";
   if (featureScopeSelect) featureScopeSelect.value = snapshot.scope || "";
+  featureEditorTiers = Array.isArray(snapshot.tiers) ? snapshot.tiers : [];
+  renderFeatureTiersEditor();
   const stampChecked = (container, selected) => {
     if (!container) return;
     const selectedSet = new Set(selected || []);
@@ -4660,6 +4818,10 @@ async function loadFeatureIntoEditor(id) {
     updateFeatureMechanicsFeedback();
     if (featureBudgetCostInput) featureBudgetCostInput.value = String(currentFeatureEntity.budgetCost || 0);
     if (featureScopeSelect) featureScopeSelect.value = currentFeatureEntity.mechanics?.scope === "unique" ? "unique" : "";
+    featureEditorTiers = Array.isArray(currentFeatureEntity.tiers)
+      ? JSON.parse(JSON.stringify(currentFeatureEntity.tiers))
+      : [];
+    renderFeatureTiersEditor();
     await Promise.all([populateFeatureTagChecklists(currentFeatureEntity), populateFeatureReferenceCheckLists(currentFeatureEntity)]);
     if (featureSuggestStatus) featureSuggestStatus.classList.add("d-none");
     markClean("feature");
@@ -4672,6 +4834,8 @@ if (featureRecordSelect) {
   featureRecordSelect.addEventListener("change", () => {
     if (!featureRecordSelect.value) {
       currentFeatureEntity = null;
+      featureEditorTiers = [];
+      renderFeatureTiersEditor();
       setFeatureFormVisible(false);
       markClean("feature");
       return;
@@ -4721,12 +4885,37 @@ if (featureSaveButton) {
       status?.show("Fix the Mechanics JSON before saving.", { type: "error", timeout: 3000 });
       return;
     }
+    // Every tier needs its own non-blank, unique id — it's the storage key
+    // record.featureTiers[feature.id] resolves against elsewhere (Vault/
+    // Crucible's own renderFeatureTierEditor), so a blank or duplicate id
+    // here would silently break that lookup rather than fail loudly at
+    // save time.
+    const tierIds = featureEditorTiers.map((tier) => (tier.id || "").trim());
+    if (tierIds.some((tierId) => !tierId)) {
+      status?.show("Every tier needs an id before saving.", { type: "error", timeout: 3000 });
+      return;
+    }
+    if (new Set(tierIds).size !== tierIds.length) {
+      status?.show("Tier ids must be unique.", { type: "error", timeout: 3000 });
+      return;
+    }
     currentFeatureEntity.name = (featureNameInput?.value || "").trim() || id;
     currentFeatureEntity.description = featureDescriptionInput?.value || "";
     currentFeatureEntity.mechanics = mechanics;
     currentFeatureEntity.budgetCost = Math.max(0, Math.round(Number(featureBudgetCostInput?.value)) || 0);
     if (featureScopeSelect?.value === "unique") currentFeatureEntity.mechanics.scope = "unique";
     else delete currentFeatureEntity.mechanics.scope;
+    if (featureEditorTiers.length) {
+      currentFeatureEntity.tiers = featureEditorTiers.map((tier) => ({
+        id: (tier.id || "").trim(),
+        name: tier.name || "",
+        shortName: tier.shortName || tier.name || "",
+        budgetCost: Math.max(0, Math.round(Number(tier.budgetCost)) || 0),
+        mechanics: { type: mechanics.type, text: tier.mechanics?.text || "" },
+      }));
+    } else {
+      delete currentFeatureEntity.tiers;
+    }
     currentFeatureEntity.tags = { ...(currentFeatureEntity.tags || {}), ...readFeatureTagsFromChecklists() };
     Object.assign(currentFeatureEntity, readFeatureReferenceLists());
     try {
@@ -4889,6 +5078,16 @@ function macroTextInput(value, placeholder, onChange) {
   return input;
 }
 
+function macroTextarea(value, placeholder, onChange) {
+  const textarea = document.createElement("textarea");
+  textarea.className = "form-control form-control-sm font-monospace";
+  textarea.rows = 3;
+  if (placeholder) textarea.placeholder = placeholder;
+  textarea.value = value ?? "";
+  textarea.addEventListener("change", () => onChange(textarea.value));
+  return textarea;
+}
+
 function macroNumberInput(value, onChange) {
   const input = document.createElement("input");
   input.type = "number";
@@ -4987,6 +5186,40 @@ function renderMacroParamField(fieldName, action, onUpdate) {
       return macroFieldRow("Effect index", macroNumberInput(params.fx, (v) => setParam({ fx: v })));
     case "segmentId":
       return macroFieldRow("Segment id (optional)", macroNumberInput(params.segmentId, (v) => setParam({ segmentId: v })));
+    case "entityId": {
+      // Populated from Home Assistant's own live entity list rather than a
+      // free-text field — same "pick from what actually exists" shape
+      // macroKindEntitySelect already gives every Library-kind reference
+      // field above, just backed by a live external fetch instead of a
+      // saved Library kind. Not domain-restricted here (unlike the Lighting
+      // widget's own "Add an HA light" flow, which only wants light.*) —
+      // this action can target any entity in any domain.
+      const select = macroSelect([{ value: "", label: "Loading…" }], params.entityId || "", (v) => setParam({ entityId: v }));
+      void listHaEntities(dataManager, { status }).then((entities) => {
+        const current = select.value || params.entityId || "";
+        select.innerHTML = "";
+        [
+          { value: "", label: entities.length ? "Select an entity…" : "No entities loaded — check your Home Assistant connection" },
+          ...entities.map((entity) => ({ value: entity.entityId, label: `${entity.friendlyName} (${entity.entityId})` })),
+        ].forEach(({ value, label }) => {
+          const option = document.createElement("option");
+          option.value = value;
+          option.textContent = label;
+          option.selected = value === current;
+          select.appendChild(option);
+        });
+      });
+      return macroFieldRow("Entity", select);
+    }
+    case "domain":
+      return macroFieldRow("Domain", macroTextInput(params.domain, "e.g. light, switch, script", (v) => setParam({ domain: v })));
+    case "service":
+      return macroFieldRow("Service", macroTextInput(params.service, "e.g. turn_on, set_temperature", (v) => setParam({ service: v })));
+    case "data":
+      return macroFieldRow(
+        "Extra data (JSON, optional)",
+        macroTextarea(params.data, '{"brightness": 200}', (v) => setParam({ data: v }))
+      );
     case "clipId": {
       const select = macroSelect(macroClipOptions(), params.clipId || "", (v) => setParam({ clipId: v }));
       void loadClipLibrary().then(() => {
@@ -6479,6 +6712,41 @@ async function init() {
     await populateFeatureSelect();
     if (featureRecordSelect) featureRecordSelect.value = deepLinkFeatureId;
     await loadFeatureIntoEditor(deepLinkFeatureId);
+  }
+
+  // Deep link from Repository's own kind-reference chips (KIND_TOOL_ROUTE,
+  // see repository/js/app.js) for `system` — same shape as the macro/feature
+  // deep links above, lands already on the Systems tab with that System
+  // loaded. systemSelect's own options are already populated (above), not
+  // scoped by anything else, so this needs no cascade.
+  const deepLinkSystemId = new URLSearchParams(window.location.search).get("system");
+  if (deepLinkSystemId) {
+    setLoomView("systems");
+    if (systemSelect) systemSelect.value = deepLinkSystemId;
+    await loadSystemIntoEditor(deepLinkSystemId);
+  }
+
+  // Deep link for every OTHER kind authored through Loom's generic Library
+  // editor (monster-archetype/role, location-type/purpose, resource, class,
+  // subclass, background, species, variant, ...) — one shared `?library=
+  // <kindId>:<id>` param rather than one param per kind, since they all go
+  // through this exact same table+editor regardless of which kind. Mirrors
+  // the type-filter + selectedKey bookkeeping saveLibraryEntry's own success
+  // path already does (this file, above) rather than a second copy of it.
+  const deepLinkLibraryValue = new URLSearchParams(window.location.search).get("library");
+  if (deepLinkLibraryValue) {
+    const separatorIndex = deepLinkLibraryValue.indexOf(":");
+    const kind = separatorIndex === -1 ? "" : deepLinkLibraryValue.slice(0, separatorIndex);
+    const id = separatorIndex === -1 ? "" : deepLinkLibraryValue.slice(separatorIndex + 1);
+    if (kind && id) {
+      setLoomView("library");
+      loomLibraryTableState.selectedType = kind;
+      if (loomLibraryTableTypeSelect) loomLibraryTableTypeSelect.value = kind;
+      await loomLoadLibraryTable({ refresh: true });
+      loomLibraryTableState.selectedKey = `${kind}:${id}`;
+      if (loomLibraryTableSelect) loomLibraryTableSelect.value = loomLibraryTableState.selectedKey;
+      await loadLibraryEntry(kind, id);
+    }
   }
 
   initHelpSystem({ root: document });

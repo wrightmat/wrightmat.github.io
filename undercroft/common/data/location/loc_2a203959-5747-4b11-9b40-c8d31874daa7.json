@@ -1,0 +1,44 @@
+{
+  "kind": "location",
+  "name": "Exploration Structure - Room 2",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "settingIds": [
+    "eberron"
+  ],
+  "typeId": "complex",
+  "purposeId": "governance",
+  "environment": "desert",
+  "featureIds": [
+    "feat.seat-of-power",
+    "feat.fortified-walls",
+    "feat.under-siege",
+    "feat.corrupted"
+  ],
+  "assets": [
+    {
+      "kind": "resource",
+      "refId": "res.arcane-lock-kundarak",
+      "label": "Arcane Lock (House Kundarak)"
+    }
+  ],
+  "needs": [
+    {
+      "kind": "resource",
+      "refId": "res.timber",
+      "label": "Timber"
+    },
+    {
+      "kind": "resource",
+      "refId": "res.arcane-reagents",
+      "label": "Arcane Reagents"
+    }
+  ],
+  "parentId": "loc_1a9a320e-053b-4b79-9962-115777ea8e01",
+  "connectedTo": [
+    "loc_33801841-5352-4e79-9f22-5d34c6f9bc06"
+  ],
+  "notes": "",
+  "id": "loc_2a203959-5747-4b11-9b40-c8d31874daa7"
+}

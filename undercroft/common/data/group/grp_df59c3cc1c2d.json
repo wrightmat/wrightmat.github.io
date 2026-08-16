@@ -5,6 +5,8 @@
   "systemId": "sys.dnd5e",
   "settingId": "eberron",
   "templateId": "tpl.d-d-party",
+  "campaignDayIndex": 17925,
+  "campaignMinutesOfDay": 540,
   "properties": [
     {
       "type": "array",

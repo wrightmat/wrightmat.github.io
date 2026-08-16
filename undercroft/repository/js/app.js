@@ -1,4 +1,5 @@
-import { initAppShell, resolveToolContextPath, resolveToolHref } from "../../common/js/lib/app-shell.js";
+import { initAppShell, resolveToolContextPath } from "../../common/js/lib/app-shell.js";
+import { buildKindToolUrl } from "../../common/js/lib/kind-tool-route.js";
 import { initAuthControls } from "../../common/js/lib/auth-ui.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
 import { refreshTooltips } from "../../common/js/lib/tooltips.js";
@@ -8,13 +9,20 @@ import { fetchKindEntriesWithIds, loadLibraryKinds } from "../../common/js/lib/c
 import { openContentPicker } from "../../common/js/lib/widgets/content-picker.js";
 import { allowsDelete, refreshOwnershipCatalog, confirmDelete } from "../../common/js/lib/ownership.js";
 import { renderTagBadges, renderTagDatalist, buildTagInputRow } from "../../common/js/lib/widgets/tag-editor.js";
-import { renderMarkdown } from "./lib/markdown.js";
+import { renderMarkdown, refreshQuestBadge } from "./lib/markdown.js";
 import { buildTitleIndex, findBacklinks } from "./lib/journal-links.js";
+import { extractQuests, buildQuestIndex } from "./lib/journal-quests.js";
+import { resolveGroupContext } from "../../common/js/lib/widgets/group-context.js";
 import { buildGroupTree, getDisplayPills, parseTag } from "./lib/journal-tags.js";
-import { extractOutline } from "./lib/journal-outline.js";
+import { extractOutline, findHeadingByText } from "./lib/journal-outline.js";
 import { toggleTaskLine, taskLineText, updateCheckboxLineText } from "./lib/journal-tasks.js";
 import { startEncounter, deterministicEncounterId } from "./lib/journal-encounter.js";
-import { extractContentReferences, findKindReferenceRecord, EXCLUDED_KINDS } from "./lib/journal-kind-reference.js";
+import { extractContentReferences, findKindReferenceRecord, EXCLUDED_KINDS, iconFor } from "./lib/journal-kind-reference.js";
+import { wikiLinkPattern } from "./lib/wiki-link-syntax.js";
+import { createForceGraph } from "../../common/js/lib/graph-view.js";
+import { buildRelationshipsGraph } from "./lib/relationships-graph.js";
+import { extractStoryBoards, updateStoryBoardInPage, serializeStoryBoard } from "./lib/journal-story-board.js";
+import { mountStoryBoard } from "./lib/story-board-canvas.js";
 import { attachWikiLinkAutocomplete } from "./lib/wiki-link-autocomplete.js";
 import { attachCodeBlockAutocomplete } from "./lib/code-block-autocomplete.js";
 import { createToolbarButtonGroup, createCollapsibleSection, createEmptyStateCard, createIconButton } from "../../common/js/lib/ui-components.js";
@@ -70,6 +78,21 @@ const relatedListEl = document.querySelector("[data-repository-related-list]");
 const backlinksListEl = document.querySelector("[data-repository-backlinks-list]");
 const outlineListEl = document.querySelector("[data-repository-outline-list]");
 const settingsSlotEl = document.querySelector("[data-repository-settings-slot]");
+
+// Relationships — a separate top-level view from the page editor above
+// (see applyMainView), not a per-page panel; toggled as the third stage of
+// the page toolbar's own View/Edit button (see updateModeButtonDisplay) —
+// no button of its own. See repository/js/lib/relationships-graph.js for
+// the data it renders.
+const relationshipsEl = document.querySelector("[data-repository-relationships]");
+const graphContainerEl = document.querySelector("[data-repository-graph-container]");
+const graphContentEl = document.querySelector("[data-repository-graph-content]");
+const graphSvgEl = document.querySelector("[data-repository-graph-svg]");
+const graphControlsEl = document.querySelector("[data-repository-graph-controls]");
+const graphToolbarMountEl = document.querySelector("[data-repository-graph-toolbar-mount]");
+const graphEmptyEl = document.querySelector("[data-repository-graph-empty]");
+const graphFilterEl = document.querySelector("[data-repository-graph-filter]");
+const graphFilterMenuEl = document.querySelector("[data-repository-graph-filter-menu]");
 
 // A generic, reusable settings modal (common/js/lib/tool-settings.js) — the
 // gear button it builds mounts into settingsSlotEl (the header, to the left
@@ -195,6 +218,7 @@ const modeToggleButton = document.querySelector('[data-action="toggle-mode"]');
 // permanent target for `d-none` regardless of what Iconify does inside it.
 const modeEyeIconEl = modeToggleButton?.querySelector('[data-repository-mode-icon="view"]');
 const modePencilIconEl = modeToggleButton?.querySelector('[data-repository-mode-icon="edit"]');
+const modeRelationshipsIconEl = modeToggleButton?.querySelector('[data-repository-mode-icon="relationships"]');
 const modeLabelEl = modeToggleButton?.querySelector("[data-repository-mode-label]");
 
 // The whole in-memory saved-page list — re-fetched after every save/delete
@@ -272,6 +296,43 @@ function ensureLibraryKinds() {
       .catch(() => []);
   }
   return libraryKindsPromise;
+}
+
+// The active campaign's own Setting `.calendar` — read SYNCHRONOUSLY by
+// renderPreview via `` `date:...` `` chips, same "fetched once up front,
+// chips just don't appear yet until this resolves" grace period
+// validKindIds/kindLabelsMap above already accept. Re-resolved whenever the
+// active campaign changes (the header's own Campaign dropdown) — not on
+// every campaign-date advance, since that changes WHICH day it is, never
+// WHICH calendar vocabulary is being read against.
+let activeCalendar = null;
+// The ambient campaign date itself — read SYNCHRONOUSLY by renderPreview via
+// `` `date:current` ``/`` `date:today` `` chips (journal-date.js), same
+// grace period as activeCalendar above. Unlike activeCalendar, this is ALSO
+// refreshed live off the same "undercroft:campaign-date-changed" event the
+// Calendar widget itself broadcasts on every advance (see the listener near
+// the bottom of this file) — a fixed calendar vocabulary only changes when
+// the active campaign itself changes, but the ambient date changes far more
+// often, and a `date:current` reference is the whole point of exposing it.
+let activeCampaignDayIndex = null;
+async function refreshActiveCalendar() {
+  let groupContext = null;
+  try {
+    groupContext = await resolveGroupContext(dataManager, {});
+  } catch (error) {
+    groupContext = null;
+  }
+  activeCampaignDayIndex = Number.isFinite(groupContext?.campaignDayIndex) ? groupContext.campaignDayIndex : null;
+  if (!groupContext?.settingId) {
+    activeCalendar = null;
+    return;
+  }
+  try {
+    const result = await dataManager.get("setting", groupContext.settingId, { preferLocal: false });
+    activeCalendar = result?.payload?.calendar || null;
+  } catch (error) {
+    activeCalendar = null;
+  }
 }
 
 // Merges the remote list (fetchKindEntriesWithIds — {id, entity}) with
@@ -635,10 +696,34 @@ function updateToolbarState() {
   if (modeToggleButton) modeToggleButton.disabled = !hasSelection;
 }
 
-// One button, not a two-way radio group — clicking it steps to the OTHER
-// mode each time, same toggle-not-select idiom as Handout/Map/Combat
-// Tracker's own visibility button (setRightAction) elsewhere in this suite.
-// Icon/label/tooltip always describe what clicking will switch TO.
+// One button, three stages (View -> Edit -> Relationships -> View, cyclic —
+// see advanceRepositoryStage), not a row of separate toggles. Icon/label/
+// tooltip always describe what clicking will switch TO, the same
+// idiom Handout/Map/Combat Tracker's own visibility button (setRightAction)
+// already uses for a two-stage toggle, generalized to three. Derives the
+// CURRENT stage from (mainView, currentMode) rather than tracking a third
+// piece of state directly, since mainView/currentMode together already fully
+// describe it: "relationships" whenever mainView says so, else currentMode.
+function updateModeButtonDisplay() {
+  const stage = mainView === "relationships" ? "relationships" : currentMode;
+  modeEyeIconEl?.classList.add("d-none");
+  modePencilIconEl?.classList.add("d-none");
+  modeRelationshipsIconEl?.classList.add("d-none");
+  let nextIconEl = modePencilIconEl;
+  let nextLabel = "Edit";
+  if (stage === "edit") {
+    nextIconEl = modeRelationshipsIconEl;
+    nextLabel = "Relationships";
+  } else if (stage === "relationships") {
+    nextIconEl = modeEyeIconEl;
+    nextLabel = "View";
+  }
+  nextIconEl?.classList.remove("d-none");
+  if (modeLabelEl) modeLabelEl.textContent = nextLabel;
+  modeToggleButton?.setAttribute("data-bs-title", nextLabel);
+  refreshTooltips();
+}
+
 function applyMode(mode) {
   currentMode = mode;
   const isView = mode === "view";
@@ -646,13 +731,7 @@ function applyMode(mode) {
   formatToolbarEl?.classList.toggle("d-none", isView);
   previewEl?.classList.toggle("d-none", !isView);
   previewEl?.classList.toggle("d-flex", isView);
-  // Showing the eye while in Edit mode (the icon describes what clicking
-  // switches TO, not the current state) and vice versa.
-  modeEyeIconEl?.classList.toggle("d-none", isView);
-  modePencilIconEl?.classList.toggle("d-none", !isView);
-  if (modeLabelEl) modeLabelEl.textContent = isView ? "Edit" : "View";
-  modeToggleButton?.setAttribute("data-bs-title", isView ? "Edit" : "View");
-  refreshTooltips();
+  updateModeButtonDisplay();
   if (isView) renderPreview();
 }
 
@@ -749,12 +828,33 @@ function toggleMode() {
   });
 }
 
+// Page titles resolve first; a bare [[Quest Title]] only ever falls back to
+// the quest index when no page has that title (rare in practice, but a
+// page named after its own most prominent quest could otherwise ever
+// collide) — a resolved quest match carries its own title as `heading` so
+// the link lands on that quest's own callout, not just the top of its
+// page, even though the author never typed an explicit #Heading. An
+// explicit [[Page#Quest Title]] link never goes through this at all — its
+// own heading segment already rides along untouched. Both indexes are built
+// once per render (not once per link) — buildQuestIndex scans and re-lexes
+// every page's raw body, expensive enough to matter with several links on
+// one page.
+function resolveWikiLinkTarget(title, titleIndex, questIndex) {
+  const pageMatch = titleIndex.resolve(title);
+  if (pageMatch) return pageMatch;
+  const questMatch = questIndex.resolve(title);
+  if (!questMatch) return null;
+  return { id: questMatch.pageId, title: questMatch.title, heading: questMatch.title };
+}
+
 function renderPreview() {
   if (!previewEl || !workingPayload) return;
+  destroyMountedStoryBoards();
   previewEl.innerHTML = "";
   const titleIndex = buildTitleIndex(entries);
+  const questIndex = buildQuestIndex(entries);
   const node = renderMarkdown(workingPayload.body, {
-    resolveWikiLink: (title) => titleIndex.resolve(title),
+    resolveWikiLink: (title) => resolveWikiLinkTarget(title, titleIndex, questIndex),
     onNavigate: (target) => handleWikiLinkNavigate(target),
     status,
     interactiveCheckboxes: true,
@@ -776,6 +876,11 @@ function renderPreview() {
     validKindIds,
     kindLabels: kindLabelsMap,
     onOpenReference: (kindId, name) => void handleOpenReference(kindId, name),
+    // Empty until refreshActiveCalendar resolves — same grace period as
+    // validKindIds above; a `` `date:...` `` chip just reads as a plain
+    // "Day <N>" until then.
+    activeCalendar,
+    currentDayIndex: activeCampaignDayIndex,
   });
   previewEl.appendChild(node);
   // Positional pairing with the Outline panel's own entries (extractOutline
@@ -783,6 +888,99 @@ function renderPreview() {
   // order, is what jumpToHeading scrolls to in View mode.
   previewEl.querySelectorAll("h1, h2, h3, h4, h5, h6").forEach((heading, index) => {
     heading.id = `repo-heading-${index}`;
+  });
+  // Same positional-pairing convention as headings above, so a quest title
+  // can be resolved as a second class of in-page anchor (see
+  // findQuestByTitle/selectPage) without inventing a parallel navigation
+  // mechanism. extractQuests only ever finds TOP-LEVEL [!quest] callouts
+  // (marked's own lexer keeps a nested blockquote's tokens off the
+  // top-level array) — a quest callout nested inside another callout would
+  // still match this DOM query but not extractQuests' own scan, misaligning
+  // the pairing; quests aren't expected to be authored that way, same
+  // "well-formed document" assumption the heading pairing above already
+  // makes.
+  previewEl.querySelectorAll('[data-callout="quest"]').forEach((questEl, index) => {
+    questEl.id = `repo-quest-${index}`;
+  });
+  mountStoryBoardsInPreview();
+}
+
+// Upgrades every rendered `[data-callout="story-board"]` element (plain
+// structure/tables from the same generic callout path quest uses) into a
+// live interactive canvas — deliberately NOT part of markdown.js's own
+// renderMarkdown pipeline, so a story board only ever becomes interactive
+// here, in Repository's own editor; anywhere else this markdown renders
+// (Handout, Sanctum's Notes field) it stays a plain, read-only callout
+// showing its raw tables, matching the plan's own "GM planning tool, not a
+// player-facing surface" scope.
+let mountedStoryBoards = [];
+
+function destroyMountedStoryBoards() {
+  mountedStoryBoards.forEach((instance) => instance.destroy());
+  mountedStoryBoards = [];
+}
+
+// A node's own Ref cell only needs an ICON here (which depends solely on
+// its kind, not the specific record) — no fetch needed, so this stays
+// synchronous. iconFor (journal-kind-reference.js) is the exact same
+// lookup an inline `` `kindId:Name` `` chip already uses.
+function resolveStoryBoardRefIcon(ref) {
+  const raw = String(ref || "").trim();
+  if (!raw) return null;
+  const colonIndex = raw.indexOf(":");
+  if (colonIndex === -1) return null;
+  const kind = raw.slice(0, colonIndex).trim().toLowerCase();
+  if (kind === "quest") return { icon: "tabler:map-2" };
+  return { icon: iconFor(kind) };
+}
+
+function mountStoryBoardsInPreview() {
+  if (!previewEl || !workingPayload) return;
+  const boards = extractStoryBoards(workingPayload.body || "");
+  // Matched by DOCUMENT-ORDER POSITION, not by comparing rendered title
+  // text back against extractStoryBoards' own raw title — a title
+  // containing inline markdown (e.g. "The *Real* Culprit") would render
+  // with that markup stripped by the browser, silently breaking a
+  // text-based match. Both this DOM query and extractStoryBoards walk the
+  // same document in the same order (marked's own lexer, twice), so a
+  // plain index correspondence is exact and simpler — same reasoning the
+  // repo-quest-<index> pairing above already relies on.
+  previewEl.querySelectorAll('[data-callout="story-board"]').forEach((calloutEl, index) => {
+    const board = boards[index];
+    const contentEl = calloutEl.querySelector(":scope > .callout-content");
+    if (!board || !contentEl) return;
+    contentEl.innerHTML = "";
+    const mountPoint = document.createElement("div");
+    contentEl.appendChild(mountPoint);
+    // Every edit here just updates workingPayload/the dirty state, same as
+    // typing in the title/tags/body textarea does elsewhere in this file —
+    // Repository has no autosave anywhere, a Story Board edit doesn't get
+    // an exception to that. `instance` is assigned after mountStoryBoard
+    // returns, but onMutate is never called synchronously during that same
+    // call — only later, from a real user action — so the closure always
+    // sees the assigned value by the time it actually runs.
+    let instance;
+    instance = mountStoryBoard(mountPoint, {
+      model: board.model,
+      resolveRef: resolveStoryBoardRefIcon,
+      status,
+      onMutate: (mutateFn) => {
+        const nextBody = updateStoryBoardInPage(workingPayload.body, board.title, mutateFn);
+        if (nextBody === workingPayload.body) return;
+        workingPayload.body = nextBody;
+        if (bodyTextarea) bodyTextarea.value = nextBody;
+        updateToolbarState();
+        // Re-syncs THIS one board's own instance with the freshly
+        // re-parsed model, rather than a full renderPreview() — which
+        // would tear down and rebuild every mounted board on the page,
+        // including this one, mid-interaction.
+        const refreshed = extractStoryBoards(nextBody).find(
+          (entry) => entry.title.trim().toLowerCase() === board.title.trim().toLowerCase()
+        );
+        if (refreshed) instance.update(refreshed.model);
+      },
+    });
+    mountedStoryBoards.push(instance);
   });
 }
 
@@ -809,7 +1007,15 @@ function handleToggleTask(lineIndex, checkboxEl) {
   recordHistory("toggle task", () => {
     workingPayload.body = toggleTaskLine(workingPayload.body, lineIndex, { appendStamp });
   });
-  if (checkboxEl) updateCheckboxLineText(checkboxEl, taskLineText(workingPayload.body, lineIndex));
+  if (checkboxEl) {
+    updateCheckboxLineText(checkboxEl, taskLineText(workingPayload.body, lineIndex));
+    // A toggled objective inside a [!quest] callout changes that quest's own
+    // derived status — refreshed directly (not via a full renderPreview,
+    // same reasoning this function's own header comment already gives for
+    // not re-rendering on every toggle) rather than left stale until the
+    // next full render.
+    refreshQuestBadge(checkboxEl.closest('[data-callout="quest"]'));
+  }
   updateToolbarState();
 }
 
@@ -978,23 +1184,26 @@ const REFERENCE_PREVIEW_MODAL_ID = "repository-reference-preview-modal";
 // there's no single "open this record's editor" route to jump to across
 // tools, so this shows a lightweight read-only preview in place instead,
 // same reasoning journal-macro.js's/journal-encounter.js's own chips stay
-// self-contained rather than navigating away from the page being read.
-//
-// `map` is the one exception: unlike every other kind, a map IS a whole
-// live view (Orrery's own pan/zoom/layers/fog), not a few lines of
-// description worth a static preview — so this navigates straight to
-// Orrery with that map loaded (`?map=<id>`, same deep link a spotlighted
-// map's own link already uses — see journal-encounter.js's own
-// resolveToolHref usage for the identical cross-tool navigation pattern)
-// instead of opening the read-only modal.
+// self-contained rather than opening a whole other tool. Every kind now
+// navigates straight to its own owning tool with that record selected —
+// `{tool, param}`, a `?<param>=<id>` deep link the target tool's own
+// bootstrap reads (same pattern `map`'s own `?map=<id>` originally
+// established for Orrery, generalized to every other kind here). Kinds
+// authored through Loom's generic Library editor (no dedicated tool of
+// their own) all share Loom's own `?library=<kindId>:<id>` param instead of
+// one param per kind — see loom/js/app.js's own bootstrap for why one
+// generic param covers all of them. `character`/`template` reuse
+// Workbench's existing generic `?record=<bucket>:<id>` param rather than a
+// second one — no new bootstrap needed on that end at all.
 async function handleOpenReference(kindId, id) {
   const record = await findKindReferenceRecord(dataManager, kindId, id);
   if (!record) {
     status?.show(`Couldn't find that ${kindLabelsMap[kindId] || kindId}.`, { type: "error", timeout: 3000 });
     return;
   }
-  if (kindId === "map") {
-    window.location.href = `${resolveToolHref("orrery", resolveToolContextPath())}?map=${encodeURIComponent(record.id)}`;
+  const url = buildKindToolUrl(kindId, record.id);
+  if (url) {
+    window.location.href = url;
     return;
   }
   showReferencePreview(record);
@@ -1030,6 +1239,95 @@ function showReferencePreview(record) {
       ? window.bootstrap.Modal.getOrCreateInstance(modal)
       : null;
   bsModal?.show();
+}
+
+// Obsidian requires every referenceable thing (a spell, a magic item) to be
+// its own page, so a vault migrated into Undercroft often still has
+// [[Wiki Links]] pointing at what are now real Library records (a saved
+// resource/effect/etc.) instead of the page they used to be. This scans the
+// CURRENT page for exactly that: a wikilink whose title does NOT match any
+// real page or quest (an intentional page/quest link is left alone) but
+// DOES match a real Library record by name, and rewrites it to that
+// record's own `` `kindId:Name` `` reference syntax — the same generic
+// kind-reference chip every other part of this suite already renders.
+// One reviewed, single-undo-step edit (recordHistory), not a silent/
+// automatic conversion running on every render — a wrong match (a
+// same-named page and resource, say) is far easier to catch and undo this
+// way than to notice it happened invisibly. Scoped to the current page
+// only, not a workspace-wide sweep — matches everything else in this
+// editor operating on "the page that's open," and keeps one click's own
+// blast radius small.
+async function handleConvertWikiLinksToReferences() {
+  if (!workingPayload) return;
+  await ensureLibraryKinds();
+  const body = workingPayload.body || "";
+  const titleIndex = buildTitleIndex(entries);
+  const questIndex = buildQuestIndex(entries);
+
+  // Same code-span protection markdown.js's own rewriteWikiLinks applies at
+  // render time — a literal `` `[[Example]]` `` meant as documentation text
+  // should never be rewritten just because its title happens to match a
+  // real record. Splitting on a capturing group keeps the code spans
+  // themselves in the result at the odd indices, skipped below.
+  const codeSpanPattern = /(`[^`\n]*`)/g;
+  const segments = body.split(codeSpanPattern);
+
+  const kindIds = Array.from(validKindIds).filter((id) => !EXCLUDED_KINDS.has(id));
+  const kindEntriesCache = new Map();
+  const loadKindEntries = (kindId) => {
+    if (!kindEntriesCache.has(kindId)) {
+      kindEntriesCache.set(kindId, fetchKindEntriesWithIds(dataManager, kindId).catch(() => []));
+    }
+    return kindEntriesCache.get(kindId);
+  };
+
+  const replacements = new Map(); // raw "[[...]]" text -> replacement text
+  for (let i = 0; i < segments.length; i += 2) {
+    const segment = segments[i];
+    const pattern = wikiLinkPattern();
+    let match;
+    while ((match = pattern.exec(segment))) {
+      const raw = match[0];
+      if (replacements.has(raw)) continue;
+      const title = (match[1] || "").trim();
+      if (!title) continue;
+      if (titleIndex.resolve(title) || questIndex.resolve(title)) continue; // a real page/quest link — leave it alone
+      const normalized = title.toLowerCase();
+      for (const kindId of kindIds) {
+        const list = await loadKindEntries(kindId);
+        const found = list.find(({ id, entity }) => {
+          if (String(id).toLowerCase() === normalized) return true;
+          const name = String(entity?.name || entity?.title || "").trim().toLowerCase();
+          return name === normalized;
+        });
+        if (found) {
+          const displayName = found.entity?.name || found.entity?.title || title;
+          replacements.set(raw, `\`${kindId}:${displayName}\``);
+          break;
+        }
+      }
+    }
+  }
+
+  if (!replacements.size) {
+    status?.show("No wiki-links matching a saved Library record were found on this page.", { type: "info", timeout: 3500 });
+    return;
+  }
+
+  recordHistory("convert wiki-links to references", () => {
+    let nextBody = workingPayload.body;
+    replacements.forEach((replacement, raw) => {
+      nextBody = nextBody.split(raw).join(replacement);
+    });
+    workingPayload.body = nextBody;
+  });
+  if (bodyTextarea) bodyTextarea.value = workingPayload.body;
+  updateToolbarState();
+  if (currentMode === "view") renderPreview();
+  status?.show(
+    `Converted ${replacements.size} wiki-link${replacements.size === 1 ? "" : "s"} to reference${replacements.size === 1 ? "" : "s"}.`,
+    { type: "success", timeout: 3000 }
+  );
 }
 
 function renderBacklinks() {
@@ -1219,10 +1517,32 @@ function jumpToHeading(heading, index) {
   bodyTextarea.scrollTop = finalScrollTop;
 }
 
+// "editor" (the existing per-page title/body/preview surface) or
+// "relationships" (a workspace-wide read-only graph — see
+// relationships-graph.js) — mutually exclusive, toggled by the left pane's
+// own "Relationships" button. applyMainView is the one place that decides
+// all three panels' (editorEmptyEl/editorEl/relationshipsEl) visibility
+// together, called from renderEditor (whenever the selection changes) and
+// from the toggle button itself (whenever the view changes).
+let mainView = "editor";
+
+function applyMainView() {
+  const showRelationships = mainView === "relationships";
+  relationshipsEl?.classList.toggle("d-none", !showRelationships);
+  if (showRelationships) {
+    editorEmptyEl?.classList.add("d-none");
+    editorEl?.classList.add("d-none");
+  } else {
+    const hasSelection = Boolean(selectedId) && Boolean(workingPayload);
+    editorEmptyEl?.classList.toggle("d-none", hasSelection);
+    editorEl?.classList.toggle("d-none", !hasSelection);
+  }
+  updateModeButtonDisplay();
+}
+
 function renderEditor() {
   const hasSelection = Boolean(selectedId) && Boolean(workingPayload);
-  editorEmptyEl?.classList.toggle("d-none", hasSelection);
-  editorEl?.classList.toggle("d-none", !hasSelection);
+  applyMainView();
   if (!hasSelection) return;
   if (titleInput) titleInput.value = workingPayload.title || "";
   if (bodyTextarea) bodyTextarea.value = workingPayload.body || "";
@@ -1231,6 +1551,191 @@ function renderEditor() {
   renderRelated();
   renderBacklinks();
   renderOutline();
+}
+
+// Journal/quest icons chosen to match their own callout/reference-chip
+// look elsewhere (journal-quests.js's status badge, journal-callouts.js's
+// own CALLOUT_TYPES.quest entry); every other kind reuses iconFor
+// (journal-kind-reference.js) — the same lookup its own inline `` `kindId:
+// Name` `` chips already use — rather than a second hardcoded table.
+function relationshipsNodeIcon(node) {
+  if (node.kind === "journal") return "tabler:notebook";
+  if (node.kind === "quest") return "tabler:map-2";
+  return iconFor(node.kind);
+}
+
+function relationshipsNodeRadius(node) {
+  if (node.kind === "journal") return 22;
+  if (node.kind === "quest") return 18;
+  return 14;
+}
+
+let relationshipsGraph = null;
+// Cached for the session (per buildRelationshipsGraph's own header
+// comment) — null after a save/delete (see handleSave/handleDelete) so the
+// next time the view opens it recomputes rather than showing stale data;
+// never recomputed just because the view was already open.
+let relationshipsData = null;
+
+// Kinds currently HIDDEN (unchecked in the filter menu) — a Set of node
+// `kind` values (see relationships-graph.js's own addNode), not a positive
+// "visible kinds" list, so a kind this workspace hasn't shown yet defaults
+// to visible the first time it appears rather than needing to be explicitly
+// opted into. Persists across a `relationshipsData` recompute (a save
+// invalidating the cache shouldn't reset which types a GM chose to hide).
+let graphHiddenKinds = new Set();
+
+function kindLabelForFilter(kind) {
+  if (kind === "journal") return "Journal Pages";
+  if (kind === "quest") return "Quests";
+  return kindLabelsMap[kind] || kind;
+}
+
+// Node/edge shape only — never touches relationshipsData itself, so toggling
+// a checkbox just re-filters and redraws (relationshipsGraph.setGraph) from
+// the one already-computed graph rather than rebuilding it.
+function filterGraphData(data, hiddenKinds) {
+  const nodes = (data?.nodes || []).filter((node) => !hiddenKinds.has(node.kind));
+  const visibleIds = new Set(nodes.map((node) => node.id));
+  const edges = (data?.edges || []).filter((edge) => visibleIds.has(edge.a) && visibleIds.has(edge.b));
+  return { nodes, edges };
+}
+
+function redrawRelationshipsGraph() {
+  relationshipsGraph?.setGraph(filterGraphData(relationshipsData, graphHiddenKinds));
+}
+
+// Rebuilds the filter menu's own checkboxes from whichever kinds are
+// actually present in `data` right now — journal/quest first (the two
+// structural node kinds every graph has), everything else alphabetical by
+// its own registered Library label. Checked state reads from
+// `graphHiddenKinds`, not reset here, so re-opening the view or a
+// post-save recompute doesn't silently un-hide a kind the GM chose to hide.
+function renderGraphFilterOptions(data) {
+  if (!graphFilterMenuEl) return;
+  const kinds = Array.from(new Set((data?.nodes || []).map((node) => node.kind))).sort((a, b) => {
+    const rank = (kind) => (kind === "journal" ? 0 : kind === "quest" ? 1 : 2);
+    const rankDiff = rank(a) - rank(b);
+    return rankDiff !== 0 ? rankDiff : kindLabelForFilter(a).localeCompare(kindLabelForFilter(b));
+  });
+  graphFilterMenuEl.innerHTML = "";
+  if (!kinds.length) {
+    graphFilterMenuEl.appendChild(el("p", "text-body-secondary small mb-0 px-1", "Nothing to filter yet."));
+    return;
+  }
+  kinds.forEach((kind) => {
+    const inputId = `repo-graph-filter-${kind}`;
+    const wrapper = el("div", "form-check");
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.className = "form-check-input";
+    input.id = inputId;
+    input.checked = !graphHiddenKinds.has(kind);
+    input.addEventListener("change", () => {
+      if (input.checked) graphHiddenKinds.delete(kind);
+      else graphHiddenKinds.add(kind);
+      redrawRelationshipsGraph();
+    });
+    const label = document.createElement("label");
+    label.className = "form-check-label small";
+    label.setAttribute("for", inputId);
+    label.textContent = kindLabelForFilter(kind);
+    wrapper.append(input, label);
+    graphFilterMenuEl.appendChild(wrapper);
+  });
+}
+
+function initRelationshipsGraph() {
+  if (!graphContainerEl || !graphContentEl || !graphSvgEl) return;
+  relationshipsGraph = createForceGraph({
+    container: graphContainerEl,
+    content: graphContentEl,
+    svg: graphSvgEl,
+    emptyMount: graphEmptyEl,
+    onSelect: (nodeId) => handleRelationshipsNodeSelect(nodeId),
+    getNodeRadius: relationshipsNodeRadius,
+    getNodeIcon: relationshipsNodeIcon,
+    classPrefix: "repository-graph",
+    emptyIcon: "tabler:affiliate",
+    emptyMessage: "Nothing connected yet — add a [[wikilink]], a [!quest], or a `kind:Name` reference to a page.",
+    // Lower than graph-view.js's own 0.75 default — a workspace with many
+    // pages/entities needs to zoom out further than Location Graph's own
+    // (much smaller) map ever does to see the whole shape at once.
+    minZoom: 0.2,
+  });
+  // Same reason Sanctum's own Location Graph stops this event from
+  // bubbling to `container` — otherwise PanZoomController's own
+  // setPointerCapture (fired on every pointerdown regardless of target)
+  // hijacks the click these zoom buttons (and the filter dropdown below)
+  // need.
+  graphControlsEl?.addEventListener("pointerdown", (event) => event.stopPropagation());
+  graphFilterEl?.addEventListener("pointerdown", (event) => event.stopPropagation());
+  [
+    { icon: "tabler:zoom-out", label: "Zoom out", onClick: () => relationshipsGraph.zoomBy(-0.25) },
+    { icon: "tabler:refresh", label: "Reset zoom", onClick: () => relationshipsGraph.reset() },
+    { icon: "tabler:zoom-in", label: "Zoom in", onClick: () => relationshipsGraph.zoomBy(0.25) },
+  ].forEach((config) => graphToolbarMountEl?.appendChild(createIconButton(config)));
+}
+
+async function loadAndRenderRelationships() {
+  if (!relationshipsGraph) return;
+  if (!relationshipsData) {
+    await ensureLibraryKinds();
+    try {
+      relationshipsData = await buildRelationshipsGraph(dataManager, { validKindIds });
+    } catch (error) {
+      relationshipsData = { nodes: [], edges: [] };
+      status?.show("Unable to build the Relationships graph.", { type: "error" });
+    }
+  }
+  renderGraphFilterOptions(relationshipsData);
+  redrawRelationshipsGraph();
+}
+
+// A node's own {pageId, questTitle, refKind, refId} (attached directly by
+// relationships-graph.js, not re-derived from the id string — see that
+// file's own addNode comment for why) drives navigation: journal/quest
+// nodes switch back to the page editor (the same "resolve page + anchor"
+// path wikilinks already use), any other kind reuses the exact same
+// reference-preview handleOpenReference already gives a kind-reference
+// chip's own click.
+function handleRelationshipsNodeSelect(nodeId) {
+  const node = (relationshipsData?.nodes || []).find((entry) => entry.id === nodeId);
+  if (!node) return;
+  if (node.kind === "journal") {
+    mainView = "editor";
+    applyMainView();
+    selectPage(node.pageId, { remember: false });
+    return;
+  }
+  if (node.kind === "quest") {
+    mainView = "editor";
+    applyMainView();
+    selectPage(node.pageId, { heading: node.questTitle || "", remember: false });
+    return;
+  }
+  void handleOpenReference(node.refKind, node.refId);
+}
+
+// The page toolbar's single mode button now cycles View -> Edit ->
+// Relationships -> View (see updateModeButtonDisplay for how it derives
+// which stage is "current" from mainView+currentMode together). Folding
+// Relationships in here instead of giving it a fourth toolbar button keeps
+// this pane's total button count at 7 (6 page-action buttons + this one).
+async function advanceRepositoryStage() {
+  if (mainView === "relationships") {
+    mainView = "editor";
+    applyMode("view");
+    applyMainView();
+    return;
+  }
+  if (currentMode === "view") {
+    toggleMode();
+    return;
+  }
+  mainView = "relationships";
+  applyMainView();
+  await loadAndRenderRelationships();
 }
 
 // previewEl's own scrollTop for whichever page is currently selected, keyed
@@ -1247,11 +1752,14 @@ function captureScrollMemory() {
   }
 }
 
-function findHeadingByText(body, headingText) {
-  const target = (headingText || "").trim().toLowerCase();
+// Same shape as findHeadingByText (now journal-outline.js's own, imported
+// above), over quest titles instead of headings —
+// see selectPage's own anchor-resolution chain for how the two combine.
+function findQuestByTitle(body, title) {
+  const target = (title || "").trim().toLowerCase();
   if (!target) return -1;
-  const outline = extractOutline(body);
-  return outline.findIndex((heading) => (heading.text || "").trim().toLowerCase() === target);
+  const quests = extractQuests(body);
+  return quests.findIndex((quest) => (quest.title || "").trim().toLowerCase() === target);
 }
 
 // history.pushState/replaceState both go through here — `?page=<id>` (or no
@@ -1300,6 +1808,26 @@ function clearSelection() {
 // position — arriving via a link is a fresh "read from the start," not a
 // "continue where I left off."
 //
+// A brief highlight pulse on whatever a heading/quest link just landed on —
+// scrollIntoView alone gives no feedback at all when the target was already
+// fully visible (a short page, or a link back to a heading near the top),
+// which read as "the link did nothing" even though navigation genuinely
+// worked. Inline styles (not a CSS class + animation) for the same
+// cross-tool-reuse reason every other bit of this renderer already uses
+// them — this can fire on a page rendered inside handout.js's Dashboard
+// widget too, which never loads Repository's own stylesheet.
+function flashElement(target) {
+  if (!target) return;
+  target.style.transition = "box-shadow 0.2s ease";
+  target.style.boxShadow = "0 0 0 3px var(--bs-primary, #0d6efd)";
+  window.setTimeout(() => {
+    target.style.boxShadow = "";
+    window.setTimeout(() => {
+      target.style.transition = "";
+    }, 300);
+  }, 700);
+}
+
 // `pushHistory: false` is only ever passed by the popstate handler itself —
 // every other caller is a genuine new navigation step the browser's own
 // back/forward buttons should be able to retrace.
@@ -1324,8 +1852,18 @@ function selectPage(id, { heading = "", remember = true, pushHistory = true } = 
   updateToolbarState();
   if (pushHistory) pushPageHistory(id);
   const headingIndex = findHeadingByText(workingPayload.body, heading);
+  // A quest title is checked as a second class of in-page anchor whenever
+  // it doesn't match a real heading — same "resolve page + anchor"
+  // navigation headings already get, no parallel mechanism.
+  const questIndex = headingIndex < 0 ? findQuestByTitle(workingPayload.body, heading) : -1;
   if (headingIndex >= 0) {
-    previewEl?.querySelector(`#repo-heading-${headingIndex}`)?.scrollIntoView({ block: "start" });
+    const target = previewEl?.querySelector(`#repo-heading-${headingIndex}`);
+    target?.scrollIntoView({ block: "start" });
+    flashElement(target);
+  } else if (questIndex >= 0) {
+    const target = previewEl?.querySelector(`#repo-quest-${questIndex}`);
+    target?.scrollIntoView({ block: "start" });
+    flashElement(target);
   } else if (remember && scrollMemory.has(id)) {
     if (previewEl) previewEl.scrollTop = scrollMemory.get(id);
   } else if (previewEl) {
@@ -1364,6 +1902,10 @@ async function handleSave() {
   }
   draftEntry = null;
   cleanSnapshot = JSON.stringify(workingPayload);
+  // Stale after any real content change — recomputed the next time the
+  // Relationships view opens, not eagerly here (see
+  // loadAndRenderRelationships's own "computed on demand" comment).
+  relationshipsData = null;
   await refreshEntries();
   updateToolbarState();
   status?.show("Saved.", { type: "success", timeout: 1500 });
@@ -1380,6 +1922,7 @@ async function handleDelete() {
     return;
   }
   clearSelection();
+  relationshipsData = null;
   await refreshEntries();
   status?.show("Deleted.", { type: "success", timeout: 1500 });
 }
@@ -1426,7 +1969,7 @@ newButton?.addEventListener("click", () => createDraftEntry());
 duplicateButton?.addEventListener("click", () => handleDuplicate());
 saveButton?.addEventListener("click", () => void handleSave());
 deleteButton?.addEventListener("click", () => void handleDelete());
-modeToggleButton?.addEventListener("click", () => toggleMode());
+modeToggleButton?.addEventListener("click", () => void advanceRepositoryStage());
 
 // Live (every keystroke) for dirty-gating feedback — Save should enable the
 // instant you type, not just once you blur. The undo entry itself is
@@ -1950,6 +2493,25 @@ function insertCallout(textarea) {
   textarea.setSelectionRange(typeStart, typeStart + "note".length);
 }
 
+// A blank [!story-board] callout — same "insert the standard shape, leave
+// the title selected to overtype" convention insertCallout above already
+// uses. Empty Nodes/Edges tables (serializeStoryBoard's own regular
+// output, run over a fully-empty model — the same shape the visual
+// editor's own toolbar Add Node/Add Lane/Add Stage actions build up from
+// once this is on the page and Repository re-renders it as a live
+// canvas). Reusable NAMED starter skeletons (a library of pre-populated
+// layouts to spawn from) are real future work, not built this pass — this
+// is deliberately just "start a blank one," the one action every board
+// needs regardless.
+function insertStoryBoard(textarea) {
+  const { lineStart, lineEnd } = selectedLineRange(textarea);
+  const blank = serializeStoryBoard({ layoutMode: "freeform", lanes: [], stages: [], nodes: [], edges: [] });
+  const template = [`> [!story-board]+ New Story Board`, ...blank.split("\n").map((line) => (line ? `> ${line}` : ">"))].join("\n");
+  replaceTextareaSelection(textarea, lineStart, lineEnd, template);
+  const titleStart = lineStart + "> [!story-board]+ ".length;
+  textarea.setSelectionRange(titleStart, titleStart + "New Story Board".length);
+}
+
 if (bodyTextarea) {
   const styleGroup = document.querySelector("[data-repository-format-style-mount]");
   const headingGroup = document.querySelector("[data-repository-format-heading-mount]");
@@ -2136,6 +2698,21 @@ if (bodyTextarea) {
   insertGroup?.appendChild(
     buildFormatButton({ icon: "tabler:message-2", label: "Callout", onClick: () => insertCallout(bodyTextarea) })
   );
+  insertGroup?.appendChild(
+    buildFormatButton({ icon: "tabler:layout-board-split", label: "Story Board", onClick: () => insertStoryBoard(bodyTextarea) })
+  );
+  // Not built via buildFormatButton — this transforms existing content
+  // (async, resolving each wikilink against the Library) rather than
+  // inserting at the cursor, so it doesn't fit that helper's synchronous
+  // "run once, then re-derive toggle states" shape.
+  insertGroup?.appendChild(
+    createIconButton({
+      icon: "tabler:replace",
+      label: "Convert wiki-links to references",
+      kind: "compact",
+      onClick: () => void handleConvertWikiLinksToReferences(),
+    })
+  );
 
   // Keeps every toggle button's pressed state in sync with wherever the
   // cursor/selection actually is, not just immediately after a click —
@@ -2170,6 +2747,7 @@ window.addEventListener("popstate", (event) => {
 updateToolbarState();
 refreshTooltips();
 void initHelpSystem({ root: document });
+initRelationshipsGraph();
 // Fetched once, up front — validKindIds/kindLabelsMap need to be populated
 // before the FIRST renderPreview/renderRelated call can turn a
 // `` `kindId:Name` `` block into a chip. If a page's already selected and
@@ -2180,14 +2758,42 @@ void ensureLibraryKinds().then(() => {
   if (currentMode === "view") renderPreview();
   void renderRelated();
 });
+void refreshActiveCalendar().then(() => {
+  if (currentMode === "view") renderPreview();
+});
+// The header's own Campaign dropdown — a different campaign can mean a
+// different Setting, so its calendar vocabulary needs re-resolving too
+// (data-manager.js's own setActiveGroup emits this on every switch).
+window.addEventListener("workbench:active-group-changed", () => {
+  void refreshActiveCalendar().then(() => {
+    if (currentMode === "view") renderPreview();
+  });
+});
+// Advancing the campaign date from a Calendar widget (this tab, another tab,
+// another dashboard entirely) broadcasts this — updates the cached day index
+// directly (no re-fetch needed, the event payload already carries it — see
+// data-manager.js's own setCampaignDate) and re-renders so any
+// `` `date:current` `` chip on the currently-viewed page reflects it
+// immediately, the same live-propagation the Calendar widget itself gives.
+window.addEventListener("undercroft:campaign-date-changed", (event) => {
+  const dayIndex = event.detail?.dayIndex;
+  activeCampaignDayIndex = Number.isFinite(dayIndex) ? dayIndex : null;
+  if (currentMode === "view") renderPreview();
+});
 void refreshEntries().then(() => {
   // A bookmarked/reloaded `?page=<id>` deep-links straight to that page —
   // resolved AFTER entries load, since findEntry needs the fetched list.
   // replacePageHistory (not push) either way, establishing a clean baseline
   // state object for this initial load rather than relying purely on the
   // popstate handler's own URL-parsing fallback above.
-  const requestedId = new URLSearchParams(window.location.search).get("page") || "";
+  const deepLinkParams = new URLSearchParams(window.location.search);
+  const requestedId = deepLinkParams.get("page") || "";
   const resolvedId = requestedId && findEntry(requestedId) ? requestedId : "";
-  if (resolvedId) selectPage(resolvedId, { remember: true, pushHistory: false });
+  // `?heading=<text>` — a marker/reference deep link into a specific
+  // heading or quest anchor (see kind-tool-route.js's own journal route
+  // and Orrery's marker "Open in Repository" link-out) — selectPage's own
+  // `heading` option already resolves either kind of anchor uniformly.
+  const requestedHeading = deepLinkParams.get("heading") || "";
+  if (resolvedId) selectPage(resolvedId, { heading: requestedHeading, remember: true, pushHistory: false });
   replacePageHistory(resolvedId);
 });

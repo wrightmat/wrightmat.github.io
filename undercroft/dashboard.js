@@ -19,6 +19,7 @@ import { initSoundboardWidget } from "./common/js/lib/widgets/soundboard.js";
 import { initDiceRollerWidget } from "./common/js/lib/widgets/dice-roller.js";
 import { initCalculatorWidget } from "./common/js/lib/widgets/calculator.js";
 import { initWledWidget, resolveWledDeviceByAlias, normalizeWledDeviceList, saveWledDevices } from "./common/js/lib/widgets/wled.js";
+import { initAudioRecorderWidget } from "./common/js/lib/widgets/audio-recorder.js";
 import { initBoardWidget } from "./common/js/lib/widgets/board.js";
 import { openContentPicker } from "./common/js/lib/widgets/content-picker.js";
 import { resolveGroupContext } from "./common/js/lib/widgets/group-context.js";
@@ -195,7 +196,7 @@ const WIDGET_CATALOG = [
   },
   {
     id: "wled",
-    label: "Lighting (WLED)",
+    label: "Lighting",
     icon: "tabler:bulb",
     multiple: true,
     // Account-scoped device config (wledDevices, above) with no campaign/
@@ -221,6 +222,23 @@ const WIDGET_CATALOG = [
         // every other follower in the suite.
         dataManager: ctx.dataManager,
         groupContext: ctx.groupContext,
+      }),
+  },
+  {
+    id: "audioRecorder",
+    label: "Audio Recorder",
+    icon: "tabler:microphone",
+    // GM-only, local-only — no campaign/role concept at all, same bar as
+    // Lighting above. One at a time is the sane default for "recording this
+    // session's audio"; revisit `multiple` if a real need for more than one
+    // concurrent recording ever comes up.
+    canAdd: () => dataManager.meetsTier("gm"),
+    init: (container, ctx) =>
+      initAudioRecorderWidget(container, {
+        contentRef: ctx.contentRef,
+        setContentRef: ctx.setContentRef,
+        status: ctx.status,
+        dataManager: ctx.dataManager,
       }),
   },
   {
@@ -445,12 +463,12 @@ const WIDGET_CATALOG = [
     // Tier OR campaign ownership — same rule/reasoning as Combat Tracker's
     // own canAdd just above.
     canAdd: () => dataManager.meetsTier("gm") || groupContext?.access === "owner",
-    // Picks which Setting's calendar vocabulary (months, weekday names —
-    // authored in Sanctum) this instance tracks a running day count
-    // against. If the picked Setting has no `.calendar` defined, the widget
-    // itself shows a message and offers to pick a different one — not
-    // caught here.
-    pickContentRef: (ctx) => pickCalendarContentRef(ctx.dataManager),
+    // No pickContentRef any more — the Setting this widget tracks a day
+    // count against is now the campaign's own ambient one (whatever the
+    // active Group's own settingId is, same tier as its systemId), not a
+    // per-widget pick. contentRef only still holds this instance's own
+    // display preferences (whether to show/auto-tick time of day) — see
+    // calendar.js's own header comment.
     init: (container, ctx) =>
       initCalendarWidget(container, {
         contentRef: ctx.contentRef,
@@ -460,6 +478,7 @@ const WIDGET_CATALOG = [
         status: ctx.status,
         groupId: ctx.groupContext?.groupId || "",
         shareToken: ctx.groupContext?.shareToken || ctx.shareParam || "",
+        groupContext: ctx.groupContext,
         canToggleVisibility: ctx.groupContext?.access === "owner" && !ctx.forcePlayerView,
         setRightAction: ctx.setRightAction,
         instanceId: ctx.instanceId,
@@ -508,15 +527,6 @@ function findCatalogEntry(widgetType) {
 async function pickLibraryContentRef(dataManager, kind, title) {
   const id = await openContentPicker({ dataManager, kind, title });
   return id ? { id } : null;
-}
-
-// Calendar's own contentRef shape is `{settingId, dayIndex}`, not the plain
-// `{id}` pickLibraryContentRef above returns — dayIndex starts at 0 (day
-// 0 = campaign start) and is mutated afterward via setContentRef, same as
-// every other field this picker doesn't need to know about.
-async function pickCalendarContentRef(dataManager) {
-  const id = await openContentPicker({ dataManager, kind: "setting", title: "Choose a Setting" });
-  return id ? { settingId: id, dayIndex: 0 } : null;
 }
 
 function generateInstanceId() {
@@ -2328,22 +2338,15 @@ function findActiveWidgetInstance(widgetType) {
 // the first already-mounted-but-hidden instance of that type if one exists
 // (nothing ambiguous about reusing the only candidate — the "which of
 // possibly several" problem only applies when picking among MULTIPLE), else
-// adds a brand new one. Calendar's own contentRef needs a Setting picked
-// before it can be added at all (unlike Clock, which needs nothing) — see
-// pickCalendarContentRef; a cancelled picker means "create" simply does
-// nothing; makeLiveWidgetMacroAction's own null-widgetInstance check reports
-// that the same way a truly-missing widget always has.
+// adds a brand new one — Calendar needs no contentRef to add any more than
+// Clock does, now that the Setting it tracks is the campaign's own ambient
+// one rather than a per-widget pick.
 async function ensureLiveWidgetInstance(widgetType) {
   const active = findActiveWidgetInstance(widgetType);
   if (active) return active;
   const mountedCandidate = layout.widgets.find((widget) => widget.widgetType === widgetType && mounted.get(widget.instanceId));
   if (mountedCandidate) return mounted.get(mountedCandidate.instanceId) || null;
-  let contentRef = null;
-  if (widgetType === "calendar") {
-    contentRef = await pickCalendarContentRef(dataManager);
-    if (!contentRef) return null;
-  }
-  const instance = addWidget(widgetType, contentRef);
+  const instance = addWidget(widgetType, null);
   return instance ? mounted.get(instance.instanceId) || null : null;
 }
 

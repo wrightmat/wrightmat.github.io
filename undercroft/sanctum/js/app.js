@@ -27,6 +27,7 @@ import {
 } from "./lib/tables.js";
 import { generateLocation, rerollAxis, matchesCategory } from "./lib/generator.js";
 import { createLocationRecord, toPressExportShape } from "./lib/location-schema.js";
+import { createLocationGraph } from "./lib/location-graph.js";
 import { generateLocationNote } from "./lib/llm-note.js";
 import { allowsDelete, refreshOwnershipCatalog, confirmDelete } from "../../common/js/lib/ownership.js";
 import {
@@ -90,6 +91,20 @@ let locationCleanSnapshot = null;
 // Ownership metadata for Locations in the current Setting, same role/shape
 // as settingCatalog above — used only for the Delete button's access gate.
 let locationCatalog = new Map();
+// Built in init() (needs elements.locationGraph* to exist first) — read by
+// reloadLocationsForSetting/renderLocation, both top-level functions, so
+// this needs to be a module-level reference rather than local to init().
+let locationGraph = null;
+// The graph's own Back button — kept so its disabled state can track
+// locationHistory's length (see selectLocation/goBackLocation below).
+let locationGraphBackButton = null;
+// A stack of previously-visited Location ids (or null for "nothing
+// selected"), most-recent-last — pushed by selectLocation on every REAL
+// navigation (graph click or dropdown pick, not a Save/Generate/Delete
+// side-effect, which calls renderLocation directly and never touches this),
+// popped by goBackLocation. Ordinary browser-back semantics: no forward
+// stack, since nothing here asked for one.
+let locationHistory = [];
 
 // Built and mounted before `elements` below queries for these buttons by
 // their data-*-setting/data-*-location attributes, so every existing
@@ -239,6 +254,13 @@ const elements = {
   inspectorEmpty: document.querySelector("[data-inspector-empty]"),
   inspectorDetail: document.querySelector("[data-inspector-detail]"),
   inspectorJson: document.querySelector("[data-inspector-json]"),
+  locationGraphNavMount: document.querySelector("[data-location-graph-nav-mount]"),
+  locationGraphToolbarMount: document.querySelector("[data-location-graph-toolbar-mount]"),
+  locationGraphContainer: document.querySelector("[data-location-graph-container]"),
+  locationGraphContent: document.querySelector("[data-location-graph-content]"),
+  locationGraphControls: document.querySelector("[data-location-graph-controls]"),
+  locationGraphSvg: document.querySelector("[data-location-graph-svg]"),
+  locationGraphEmpty: document.querySelector("[data-location-graph-empty]"),
 };
 
 const jsonDataPanel = createJsonDataPanel({
@@ -389,6 +411,7 @@ async function reloadLocationsForSetting(settingId) {
   populateLocationSelect();
   populateParentSelect();
   populateAddConnectionSelect();
+  locationGraph?.setLocations(locationsInSetting);
   await refreshLocationCatalog(locationsInSetting.map((location) => location.id));
   if (currentRecord) renderChildrenList(currentRecord);
   updateActionButtons();
@@ -1225,6 +1248,11 @@ function refreshEditableLists() {
 
 function renderLocation(record) {
   currentRecord = record;
+  // record?.id, not currentLocationId — a freshly-generated, not-yet-saved
+  // record has an id but no graph node yet (harmless no-op highlight); this
+  // stays correct regardless of whether currentLocationId happens to be in
+  // sync with `record` at this particular call site.
+  locationGraph?.setSelected(record?.id ?? null);
   if (!record) {
     locationCleanSnapshot = null;
     elements.emptyState?.classList.remove("d-none");
@@ -1557,6 +1585,21 @@ function initCollapsibles() {
     }).section
   );
 
+  // Scoped to the whole current SETTING, not just whichever single
+  // Location happens to be loaded below — expanded by default (unlike
+  // Relationships) since it doubles as a way to pick a starting Location,
+  // not just a fact panel about one already selected.
+  document.querySelector("[data-location-graph-mount]")?.appendChild(
+    createCollapsibleSection({
+      label: "Location Graph",
+      helpTopic: "sanctum.locationGraph",
+      collapsed: false,
+      className: "d-flex flex-column gap-2",
+      panelClassName: "d-flex flex-column gap-2",
+      content: document.querySelector("[data-location-graph-panel]"),
+    }).section
+  );
+
   document.querySelector("[data-identity-mount]")?.appendChild(
     createCollapsibleSection({
       label: "Identity",
@@ -1671,6 +1714,52 @@ async function init() {
   dataManager = auth.dataManager;
 
   initCollapsibles();
+
+  locationGraph = createLocationGraph({
+    container: elements.locationGraphContainer,
+    content: elements.locationGraphContent,
+    svg: elements.locationGraphSvg,
+    emptyMount: elements.locationGraphEmpty,
+    onSelect: (id) => void selectLocation(id),
+    getLocationTypeScale: (typeId) => findById(locationTypes, typeId)?.scale,
+  });
+  // Floating overlay on top of the canvas (Orrery's own
+  // .orrery-floating-panel treatment), not a toolbar row above it — the
+  // controls div sits INSIDE the pan-zoom container but is a sibling of
+  // its content/svg, so it stays corner-pinned regardless of pan/zoom.
+  // Same reason each graph node stops its own pointerdown from bubbling
+  // (see location-graph.js's render()): being inside the container means a
+  // click here would otherwise also reach PanZoomController's own
+  // pointerdown handler first and hijack it via setPointerCapture.
+  elements.locationGraphControls?.addEventListener("pointerdown", (event) => event.stopPropagation());
+
+  // Back travels through selectLocation's own navigation history (both
+  // graph clicks and dropdown picks push onto it — see selectLocation);
+  // Home is just shorthand for selecting nothing, which already resets the
+  // graph to the whole-Setting view (location-graph.js's own
+  // computeVisibleNodes). Built directly via createIconButton, not
+  // createToolbarButtonGroup — neither is a New/Save/Delete-shaped CRUD
+  // action, same reasoning Loom's own Property Inspector toolbar uses
+  // createIconButton directly for its non-preset buttons.
+  locationGraphBackButton = createIconButton({
+    icon: "tabler:arrow-back-up",
+    label: "Back",
+    attrs: { disabled: true },
+    onClick: () => void goBackLocation(),
+  });
+  elements.locationGraphNavMount?.appendChild(locationGraphBackButton);
+  elements.locationGraphNavMount?.appendChild(
+    createIconButton({
+      icon: "tabler:home",
+      label: "Home (deselect, show the whole Setting)",
+      onClick: () => void goHomeLocation(),
+    })
+  );
+  [
+    { icon: "tabler:zoom-out", label: "Zoom out", onClick: () => locationGraph.zoomBy(-0.25) },
+    { icon: "tabler:refresh", label: "Reset zoom", onClick: () => locationGraph.reset() },
+    { icon: "tabler:zoom-in", label: "Zoom in", onClick: () => locationGraph.zoomBy(0.25) },
+  ].forEach((config) => elements.locationGraphToolbarMount?.appendChild(createIconButton(config)));
 
   elements.generateButton?.addEventListener("click", handleGenerate);
   elements.generateMultiRoomButton?.addEventListener("click", () => void handleGenerateMultiRoom());
@@ -1932,9 +2021,24 @@ async function init() {
     }
   });
 
-  elements.locationSelect?.addEventListener("change", async () => {
-    const id = elements.locationSelect.value;
-    currentLocationId = id || null;
+  // Named (not inline) so the Location Graph's own node-click handler can
+  // call this exact same path — same reasoning handleSystemSelectChange/
+  // handleSettingSelectChange are already named for. Sets the select's own
+  // value too, so a graph click and picking from the dropdown stay
+  // indistinguishable from each other regardless of which one triggered it.
+  // `recordHistory` — false only when goBackLocation itself is the one
+  // calling this, so navigating BACK doesn't also push the state you just
+  // left onto the stack (which would make Back loop instead of unwind). A
+  // genuine no-op re-selection (picking the already-loaded Location again)
+  // never pushes either — nothing actually changed.
+  async function selectLocation(id, { recordHistory = true } = {}) {
+    const nextId = id || null;
+    if (recordHistory && nextId !== currentLocationId) {
+      locationHistory.push(currentLocationId);
+      updateLocationBackButton();
+    }
+    if (elements.locationSelect) elements.locationSelect.value = id || "";
+    currentLocationId = nextId;
     updateGenerationFieldsVisibility();
     if (!id) {
       renderLocation(null);
@@ -1951,6 +2055,25 @@ async function init() {
     } catch (error) {
       status?.show(`Unable to load location: ${error.message}`, { type: "error", timeout: 4000 });
     }
+  }
+
+  function updateLocationBackButton() {
+    if (locationGraphBackButton) locationGraphBackButton.disabled = !locationHistory.length;
+  }
+
+  async function goBackLocation() {
+    if (!locationHistory.length) return;
+    const previousId = locationHistory.pop();
+    updateLocationBackButton();
+    await selectLocation(previousId, { recordHistory: false });
+  }
+
+  async function goHomeLocation() {
+    await selectLocation(null);
+  }
+
+  elements.locationSelect?.addEventListener("change", () => {
+    void selectLocation(elements.locationSelect.value);
   });
 
   elements.deleteLocationButton?.addEventListener("click", async () => {
@@ -1991,30 +2114,108 @@ async function init() {
     }
   });
 
+  // `?location=<id>` / `?setting=<id>` — a cross-tool deep link (Repository's
+  // own kind-reference chips route here via KIND_TOOL_ROUTE, see
+  // repository/js/app.js) straight to one specific record, same
+  // `?param=<id>`-read-at-bootstrap convention Orrery's own `?map=` and
+  // Loom's own `?feature=` already establish.
+  //
+  // Two-phase, not one straight-line await chain — confirmed real
+  // slowness: the original version resolved the location's own System/
+  // Setting and ran the FULL cascade (reloadReferenceData's 8 parallel
+  // fetches for the whole System, then EVERY Location in the Setting for
+  // the picker) before ever calling selectLocation, so a deep link into a
+  // large campaign sat on a blank screen through all of that before
+  // showing the one record it actually linked to.
+  // Phase 1 (awaited, blocks return): fetch just the target Location and
+  // render it — selectLocation's own fetch+render, nothing else touched.
+  // Phase 2 (fired but NOT awaited): the System/Setting cascade + full
+  // picker population, entirely in the background — the record is already
+  // on screen by the time this resolves. Feature/Resource/connected-
+  // location names may briefly show as raw ids (renderLocation tolerates
+  // features/resources/locationsInSetting still being their initial empty
+  // arrays) until this lands and its own final selectLocation call
+  // re-renders with everything resolved.
+  async function applyDeepLinkParams() {
+    const params = new URLSearchParams(window.location.search);
+    const locationId = params.get("location");
+    const settingId = params.get("setting");
+    if (!locationId && !settingId) return false;
+    try {
+      let targetSettingId = settingId;
+      let targetSystemId = null;
+      if (locationId) {
+        const result = await dataManager.get("location", locationId, { preferLocal: false });
+        const payload = result?.payload || {};
+        targetSettingId = targetSettingId || payload.settingIds?.[0] || payload.settingId || null;
+        targetSystemId = payload.systemIds?.[0] || payload.systemId || null;
+        // Phase 1 — the record itself, on screen as fast as one fetch allows.
+        await selectLocation(locationId, { recordHistory: false });
+      }
+      if (!targetSystemId && targetSettingId) {
+        const settingResult = await dataManager.get("setting", targetSettingId, { preferLocal: false });
+        targetSystemId = settingResult?.payload?.systemIds?.[0] || null;
+      }
+      // Phase 2 — deliberately not awaited here; runs after this function
+      // has already returned `true`.
+      void (async () => {
+        try {
+          if (targetSystemId && elements.systemSelect) {
+            elements.systemSelect.value = targetSystemId;
+            await handleSystemSelectChange();
+          }
+          if (targetSettingId && elements.settingSelect) {
+            elements.settingSelect.value = targetSettingId;
+            await handleSettingSelectChange();
+          }
+          // handleSystemSelectChange/handleSettingSelectChange both reset
+          // currentLocationId and render the empty state as part of their
+          // own normal cascade (the same thing picking a different System/
+          // Setting by hand would do) — this restores the deep-linked
+          // Location, now with every name/list Phase 1 didn't have yet.
+          if (locationId) await selectLocation(locationId, { recordHistory: false });
+        } catch (error) {
+          // Phase 1 already succeeded — a background failure here just
+          // leaves the pickers under-populated, not worth surfacing as an
+          // error toast on top of a page that's already showing real content.
+        }
+      })();
+      return true;
+    } catch (error) {
+      status?.show("Unable to open the linked record.", { type: "error", timeout: 3000 });
+      return false;
+    }
+  }
+
   // If a campaign group is active (the header's Campaign dropdown) and that
   // group has its own System/Setting assigned, default Sanctum's own
   // pickers to THOSE specifically — a real, GM-chosen fact about the
   // campaign being played, not a guess — to make mid-campaign generation
   // faster. Falls through to the original "nothing chosen yet" sequence
   // whenever there's no active group, or its System/Setting isn't one this
-  // tool's own lists actually contain.
+  // tool's own lists actually contain. An explicit `?location=`/`?setting=`
+  // deep link always wins over both — a real place to go always beats a
+  // guess.
   const systems = await populateSystemSelect();
-  const groupContext = await resolveGroupContext(dataManager).catch(() => null);
-  const defaultSystemId = pickGroupDefaultId(groupContext, "systemId", systems);
-  if (defaultSystemId) {
-    elements.systemSelect.value = defaultSystemId;
-    const settings = await handleSystemSelectChange();
-    const defaultSettingId = pickGroupDefaultId(groupContext, "settingId", settings);
-    if (defaultSettingId) {
-      elements.settingSelect.value = defaultSettingId;
-      await handleSettingSelectChange();
+  const deepLinked = await applyDeepLinkParams();
+  if (!deepLinked) {
+    const groupContext = await resolveGroupContext(dataManager).catch(() => null);
+    const defaultSystemId = pickGroupDefaultId(groupContext, "systemId", systems);
+    if (defaultSystemId) {
+      elements.systemSelect.value = defaultSystemId;
+      const settings = await handleSystemSelectChange();
+      const defaultSettingId = pickGroupDefaultId(groupContext, "settingId", settings);
+      if (defaultSettingId) {
+        elements.settingSelect.value = defaultSettingId;
+        await handleSettingSelectChange();
+      }
+    } else {
+      await reloadReferenceData();
+      await populateSettingSelect(currentSystemId());
+      populateSettingForm(null);
+      await reloadLocationsForSetting(null);
+      renderLocation(null);
     }
-  } else {
-    await reloadReferenceData();
-    await populateSettingSelect(currentSystemId());
-    populateSettingForm(null);
-    await reloadLocationsForSetting(null);
-    renderLocation(null);
   }
 
   initHelpSystem();

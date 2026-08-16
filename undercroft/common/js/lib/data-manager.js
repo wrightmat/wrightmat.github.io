@@ -1038,6 +1038,135 @@ export class DataManager {
     });
   }
 
+  // Home Assistant connection — {configured, baseUrl} only; the server
+  // never returns the token itself after the save that set it (see
+  // server/integrations.py's own header comment on why).
+  async getHaConnection() {
+    if (!this.isAuthenticated()) {
+      return { configured: false, baseUrl: "" };
+    }
+    return this._request("/home-assistant/connection", { method: "GET", auth: true });
+  }
+
+  async saveHaConnection({ baseUrl, token }) {
+    if (!this.isAuthenticated()) {
+      throw new Error("Sign in to connect Home Assistant.");
+    }
+    return this._request("/home-assistant/connection", { method: "POST", body: { baseUrl, token }, auth: true });
+  }
+
+  async clearHaConnection() {
+    if (!this.isAuthenticated()) {
+      throw new Error("Sign in to manage your Home Assistant connection.");
+    }
+    return this._request("/home-assistant/connection/clear", { method: "POST", auth: true });
+  }
+
+  // Trimmed {entityId, domain, friendlyName}[] — see app.py's own
+  // handle_ha_entities for why the full HA state payload never leaves the
+  // server.
+  async listHaEntities() {
+    if (!this.isAuthenticated()) {
+      return { entities: [] };
+    }
+    return this._request("/home-assistant/entities", { method: "GET", auth: true });
+  }
+
+  // One entity's live state — {entityId, state, brightness, rgbColor,
+  // supportedColorModes, friendlyName} — for a light control surface (see
+  // ha-light.js). Distinct from listHaEntities above, which only returns
+  // enough to populate a picker.
+  async getHaEntityState(entityId) {
+    if (!this.isAuthenticated() || !entityId) {
+      return null;
+    }
+    return this._request(`/home-assistant/entity-state?entityId=${encodeURIComponent(entityId)}`, {
+      method: "GET",
+      auth: true,
+    });
+  }
+
+  // One generic action — "control a device" and "trigger a routine" are the
+  // same call underneath (a routine is just domain: "script"/"scene"/
+  // "automation") — see home-assistant.js's own HA_MACRO_ACTIONS.
+  async callHaService({ domain, service, entityId, data } = {}) {
+    if (!this.isAuthenticated()) {
+      throw new Error("Sign in to control Home Assistant.");
+    }
+    return this._request("/home-assistant/call-service", {
+      method: "POST",
+      body: { domain, service, entityId, data },
+      auth: true,
+    });
+  }
+
+  // Not routed through _request — that helper always JSON-encodes the body,
+  // and this needs to send one recording chunk's raw audio bytes with its
+  // own Content-Type instead. Mirrors _request's own auth-header handling
+  // and error-message extraction so this still behaves the same way as
+  // every other call here for an unauthenticated/failed request. `serverId`
+  // picks which of the deployment's own saved transcription servers to use
+  // (see listTranscriptionServers below) — sent as a query param since the
+  // body here is the raw audio, not JSON.
+  async transcribeAudioChunk(blob, serverId) {
+    if (!this.isAuthenticated()) {
+      throw new Error("Sign in to use live transcription.");
+    }
+    const fetchImpl = this._requireFetch();
+    const headers = { "Content-Type": blob.type || "audio/webm" };
+    if (this._session?.token) headers["Authorization"] = `Bearer ${this._session.token}`;
+    const response = await fetchImpl(this._url(`/audio/transcribe-chunk?serverId=${encodeURIComponent(serverId || "")}`), {
+      method: "POST",
+      headers,
+      body: blob,
+      cache: "no-store",
+    });
+    let data = null;
+    try {
+      data = await response.json();
+    } catch (error) {
+      // A non-JSON response only happens on an unexpected server error —
+      // the message fallback below covers it.
+    }
+    if (!response.ok) {
+      throw new Error((data && data.error) || "Transcription failed for this chunk.");
+    }
+    return data;
+  }
+
+  // Deployment-wide LIST of transcription servers — [{id, label, baseUrl,
+  // hasKey}]; the API key (if any) is never returned (see
+  // server/integrations.py's own header comment on why). List works for any
+  // signed-in gm+ account (populating its own server picker); save/delete
+  // are admin-only server-side.
+  async listTranscriptionServers() {
+    if (!this.isAuthenticated()) {
+      return { servers: [] };
+    }
+    return this._request("/admin/transcription-servers", { method: "GET", auth: true });
+  }
+
+  // Upserts one entry — `id` present and matching an existing entry edits
+  // it in place; a new (client-generated) id creates one. Returns the
+  // refreshed list.
+  async saveTranscriptionServer({ id, label, baseUrl, model, token }) {
+    if (!this.isAuthenticated()) {
+      throw new Error("Sign in to manage transcription servers.");
+    }
+    return this._request("/admin/transcription-servers", {
+      method: "POST",
+      body: { id, label, baseUrl, model, token },
+      auth: true,
+    });
+  }
+
+  async deleteTranscriptionServer(id) {
+    if (!this.isAuthenticated()) {
+      throw new Error("Sign in to manage transcription servers.");
+    }
+    return this._request(`/admin/transcription-servers/${encodeURIComponent(id)}/clear`, { method: "POST", auth: true });
+  }
+
   async updateContentOwner(bucket, id, username) {
     if (!username) {
       throw new Error("Username is required");
@@ -1117,7 +1246,7 @@ export class DataManager {
     return payload;
   }
 
-  async updateGroup({ id, name, systemId, settingId, templateId, properties } = {}) {
+  async updateGroup({ id, name, systemId, settingId, templateId, properties, campaignDayIndex, campaignMinutesOfDay } = {}) {
     if (!id) {
       throw new Error("Group id is required");
     }
@@ -1131,12 +1260,38 @@ export class DataManager {
     // The Group Properties SCHEMA (Loom's own Group tab) — not a value
     // write, see updateGroupPropertyValue below for that.
     if (properties !== undefined) body.properties = properties;
+    // The campaign's own tracked "what date is it in the fiction" — same
+    // conceptual tier as systemId/settingId above. setCampaignDate below
+    // is the purpose-named entry point most callers actually want; this
+    // stays generic so a future combined save (e.g. a Loom Group editor
+    // field) can still set it alongside other Group fields in one request.
+    if (campaignDayIndex !== undefined) body.campaign_day_index = campaignDayIndex;
+    if (campaignMinutesOfDay !== undefined) body.campaign_minutes_of_day = campaignMinutesOfDay;
     const payload = await this._request(`/groups/${encodeURIComponent(id)}`, {
       method: "POST",
       body,
       auth: true,
     });
     this._groupCache = null;
+    return payload;
+  }
+
+  // Thin, purpose-named wrapper over updateGroup for the one common write
+  // every campaign-date UI (the Calendar widget, currently the only one)
+  // actually needs — advance the day, optionally the time of day too.
+  // Emits its own event (unlike updateGroup itself, which has no reason to
+  // — most callers already re-render off their own await) since the
+  // ambient date is meant to be visible to every tool: more than one
+  // Calendar widget can be on the same dashboard at once, each reading
+  // this same shared value, and only the ONE that made this particular
+  // change already knows to re-render itself.
+  async setCampaignDate(groupId, { dayIndex, minutesOfDay } = {}) {
+    const payload = await this.updateGroup({ id: groupId, campaignDayIndex: dayIndex, campaignMinutesOfDay: minutesOfDay });
+    this._emit("undercroft:campaign-date-changed", {
+      groupId,
+      dayIndex: payload?.campaign_day_index,
+      minutesOfDay: payload?.campaign_minutes_of_day,
+    });
     return payload;
   }
 

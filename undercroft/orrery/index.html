@@ -321,6 +321,16 @@
          no retry once Leaflet actually finishes loading. See
          undercroft/index.html for why other pages ARE reordered. -->
     <script defer src="https://cdn.jsdelivr.net/npm/@iconify/iconify@3.1.1/dist/iconify.min.js"></script>
+    <!-- Not previously loaded here at all — the "Show" anchor picker in the
+         marker Journal Page Reference editor (js/app.js's own
+         updateAnchorSelect) calls repository/js/lib/journal-quests.js's own
+         extractQuests, which requires window.marked.lexer and silently
+         returns [] (no error, no quests, ever) without it — confirmed real
+         bug, not a content-authoring issue. Only marked itself is needed
+         here (extractQuests only lexes, it never calls marked.parse or
+         DOMPurify.sanitize), unlike Repository/Handout's own full markdown
+         rendering. -->
+    <script defer src="https://cdn.jsdelivr.net/npm/marked@18.0.7/lib/marked.umd.min.js"></script>
     <script
       defer
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"

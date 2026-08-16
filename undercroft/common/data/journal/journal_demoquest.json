@@ -1,0 +1,9 @@
+{
+  "title": "Test — Quests",
+  "body": "This page demonstrates the `[!quest]` callout: title = quest name, objectives = a normal GFM checklist, and status (Not Started / Active / Complete) is derived automatically from how many objectives are checked. Objective lines can also carry inline entity references — try clicking the `npc`/`location` chips below.\n\n> [!quest]+ Find the Missing Shipment\n> A caravan bound for the coast never arrived. Something — or someone — got to it first.\n>\n> - [ ] Question the dockhands about the caravan's last known route\n> - [ ] Search the warehouse for signs of forced entry\n> - [ ] Track down `npc:Berosalia Hart`, the caravan's broker\n\n> [!quest]+ Secure Passage to Duskvol\n> The party needs safe passage into `location:Duskvol` before word of the missing shipment spreads.\n>\n> - [x] Bribe the harbor watch\n> - [x] Forge a set of travel papers\n> - [ ] Book passage on a ship not tied to the smugglers\n\n> [!quest]+ Deliver the Sealed Letter\n> A simple courier job — deliver `npc:Berosalia Hart`'s letter, no questions asked.\n>\n> - [x] Retrieve the letter from the drop point\n> - [x] Avoid the city watch's checkpoints\n> - [x] Hand the letter off in `location:Duskvol`\n\nQuest titles are linkable too — this sentence links directly to [[Find the Missing Shipment]], which resolves straight to the quest above (not a page), since nothing on this workspace shares that title as a page.\n",
+  "tags": [
+    "test-page"
+  ],
+  "refs": [],
+  "parentId": ""
+}

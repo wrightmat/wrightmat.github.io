@@ -1637,22 +1637,92 @@ async function init() {
 
   document.querySelector("[data-json-mount]")?.appendChild(jsonDataPanel.section);
 
+  // `?effect=<id>` — a cross-tool deep link (Repository's own kind-reference
+  // chips route here via KIND_TOOL_ROUTE, see repository/js/app.js), same
+  // `?param=<id>`-read-at-bootstrap convention Orrery's own `?map=` and
+  // Loom's own `?feature=` already establish. Vault has no Setting concept
+  // (same as Crucible), so System alone is the scope. Dispatches a real
+  // "change" event to actually load the effect rather than duplicating
+  // effectSelect's own change-handler body a second time here.
+  // Two-phase, not one straight-line await chain — same "show the linked
+  // record first, load everything else in the background" fix Sanctum's
+  // own deep link needed once a campaign had enough saved content for the
+  // full System reference-data reload to be genuinely slow. Phase 1
+  // (awaited, blocks return): render THIS effect directly (reusing
+  // renderEffect + the same dirty-baseline call effectSelect's own change
+  // handler makes — not that handler itself, since it reads the id off
+  // effectSelect.value, which has no matching <option> yet this early).
+  // Phase 2 (fired but not awaited): the System reference-data reload
+  // populates effectSelect's own option list; a real "change" event
+  // re-dispatched at the end puts the picker's own displayed selection in
+  // sync.
+  async function applyDeepLinkParams() {
+    const params = new URLSearchParams(window.location.search);
+    const effectId = params.get("effect");
+    if (!effectId) return false;
+    try {
+      const result = await dataManager.get("effect", effectId, { preferLocal: false });
+      const payload = result?.payload || {};
+      const targetSystemId = payload.systemIds?.[0] || null;
+      // Phase 1 — the effect itself, on screen as fast as one fetch allows.
+      currentEffectId = effectId;
+      updateGenerationFieldsVisibility();
+      renderEffect({ ...payload, id: effectId });
+      dirtyGate.markClean(toPressExportShape(currentRecord));
+      updateActionButtons();
+      // Phase 2 — deliberately not awaited here; runs after this function
+      // has already returned `true`. NOT handleSystemSelectChange (which
+      // resets currentEffectId and calls renderEffect(null) before its own
+      // reloadReferenceData) — that wiped the effect Phase 1 had ALREADY
+      // rendered, leaving the screen blank for the ~700-record Effect
+      // catalog fetch's own full duration instead of just quietly finishing
+      // in the background behind an already-correct view. Setting
+      // systemSelect's own value directly and calling reloadReferenceData()
+      // straight (same reference-data fetch, minus the reset) keeps Phase
+      // 1's render on screen the whole time. effectSelect's own value is set
+      // without dispatching "change" for the same reason — the effect is
+      // already loaded and correctly shown; re-dispatching would only
+      // re-fetch and re-render it a second time for no benefit.
+      void (async () => {
+        try {
+          if (targetSystemId && elements.systemSelect) {
+            elements.systemSelect.value = targetSystemId;
+          }
+          await reloadReferenceData();
+          if (elements.effectSelect) elements.effectSelect.value = effectId;
+        } catch (error) {
+          // Phase 1 already succeeded — a background failure here just
+          // leaves the picker under-populated, not worth an error toast on
+          // top of a page that's already showing real content.
+        }
+      })();
+      return true;
+    } catch (error) {
+      status?.show("Unable to open the linked record.", { type: "error", timeout: 3000 });
+      return false;
+    }
+  }
+
   // If a campaign group is active (the header's Campaign dropdown) and that
   // group has its own System assigned, default Vault's System select to it
   // — a real, GM-chosen fact about the campaign being played, not a guess —
   // to make mid-campaign generation faster. Falls through to the original
   // "nothing chosen yet" placeholder whenever there's no active group, or
-  // its System isn't one this tool's own list actually contains.
+  // its System isn't one this tool's own list actually contains. An
+  // explicit `?effect=` deep link always wins over both.
   const systems = await populateSystemSelect();
-  const groupContext = await resolveGroupContext(dataManager).catch(() => null);
-  const defaultSystemId = pickGroupDefaultId(groupContext, "systemId", systems);
-  if (defaultSystemId) {
-    elements.systemSelect.value = defaultSystemId;
-    await handleSystemSelectChange();
-  } else {
-    await reloadReferenceData();
+  const deepLinked = await applyDeepLinkParams();
+  if (!deepLinked) {
+    const groupContext = await resolveGroupContext(dataManager).catch(() => null);
+    const defaultSystemId = pickGroupDefaultId(groupContext, "systemId", systems);
+    if (defaultSystemId) {
+      elements.systemSelect.value = defaultSystemId;
+      await handleSystemSelectChange();
+    } else {
+      await reloadReferenceData();
+    }
+    renderEffect(null);
   }
-  renderEffect(null);
 
   initHelpSystem();
   refreshTooltips();

@@ -32,6 +32,7 @@ import {
   getGridCellSize,
   markerPositionToLocalPixel,
   renderShapeElement,
+  resolveMarkerLinkTarget,
 } from "../../../../orrery/js/lib/map-viewer.js";
 import {
   createVectorPathElement,
@@ -1128,6 +1129,43 @@ export function initMapWidget(
     document.addEventListener("pointerdown", onOutsidePointerDown, true);
   }
 
+  // A minimal sibling of openMarkerEditor above, for a marker this viewer
+  // can't drag (not their own character token) but that still references a
+  // real Library record — a plain click on one of those used to do nothing
+  // at all. Just the marker's own label and a link out to wherever that
+  // record actually lives (Vault, Forge, Repository, ...), reusing the same
+  // markerEditorPopover/closeMarkerEditor/onOutsidePointerDown lifecycle
+  // (only one floating panel open at a time either way).
+  function openMarkerLinkPopover(markerElement, dotEl) {
+    const target = resolveMarkerLinkTarget(markerElement);
+    if (!target) return;
+    closeMarkerEditor();
+    const popover = el("div", "orrery-floating-panel d-flex flex-column gap-1 p-2");
+    popover.style.position = "fixed";
+    popover.style.width = "12rem";
+    popover.style.zIndex = "1040";
+    const rect = dotEl?.getBoundingClientRect?.();
+    const hostRect = viewerHost.getBoundingClientRect();
+    const top = rect ? rect.bottom + 4 : hostRect.top + 4;
+    const left = rect ? Math.min(rect.left, hostRect.right - 200) : hostRect.left + 4;
+    popover.style.top = `${top}px`;
+    popover.style.left = `${Math.max(hostRect.left + 4, left)}px`;
+
+    if (markerElement.label) {
+      const title = el("div", "small fw-semibold text-truncate", markerElement.label);
+      popover.appendChild(title);
+    }
+    const link = document.createElement("a");
+    link.className = "btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1";
+    link.href = target.url;
+    link.innerHTML = `<span class="iconify" data-icon="tabler:external-link" aria-hidden="true"></span> Open in ${target.toolLabel}`;
+    popover.appendChild(link);
+
+    viewerHost.appendChild(popover);
+    markerEditorPopover = popover;
+    document.addEventListener("pointerdown", onOutsidePointerDown, true);
+  }
+
   // Fires the fetch for every character-linked marker whose Vision Range is
   // actually Bound/Formula (a plain literal Text value needs no fetch at
   // all — resolveMarkerVisionRangeCells only ever calls getCharacterPayload
@@ -1202,7 +1240,13 @@ export function initMapWidget(
         onMarkerMoved: (layer, markerElement, snappedPosition) =>
           void persistMarkerMove(layer.id, markerElement.id, snappedPosition),
         onDoorToggled: (layer, elementId) => void toggleDoor(layer, elementId),
-        onMarkerClicked: (layer, markerElement, dotEl) => openMarkerEditor(layer, markerElement, dotEl),
+        onMarkerClicked: (layer, markerElement, dotEl, draggable) => {
+          if (draggable) {
+            openMarkerEditor(layer, markerElement, dotEl);
+          } else {
+            openMarkerLinkPopover(markerElement, dotEl);
+          }
+        },
         onDragStateChange: (dragging) => {
           isDraggingMarker = dragging;
         },

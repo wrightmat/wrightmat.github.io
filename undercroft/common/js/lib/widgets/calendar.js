@@ -9,13 +9,19 @@
 // record of its own, just a running day/time — see server/groups.py's own
 // _INLINE_SPOTLIGHT_KINDS).
 //
-// `contentRef` = `{ settingId, dayIndex, time }` — `settingId` is picked
-// once via the Content Picker when the widget is added and never changes
-// after that (Map/Handout's own convention: pick again by removing and
-// re-adding, not by editing in place); `dayIndex` (day 0 = campaign start,
-// negative days go before it) and `time` (see normalizeTime below) are this
-// instance's own running state, mutated via setContentRef exactly like
-// Clock's own `filled`.
+// The day/time themselves, and which Setting they're read against, are NOT
+// this widget's own contentRef any more — they're ambient campaign state,
+// the same conceptual tier as the active Group's own systemId/settingId
+// (see group-context.js's own resolveGroupContext, which this widget's
+// `groupContext` param comes from, and data-manager.js's own
+// setCampaignDate). Every Calendar widget on a dashboard reads/writes the
+// SAME shared day/time — advancing it from one instance is reflected in
+// every other one immediately (see the "undercroft:campaign-date-changed"
+// event this file listens for below), not an independent running count per
+// widget the way it used to be. `contentRef` now only holds this ONE
+// instance's own display preferences — `{ time: { enabled, autoTickEnabled,
+// autoTickSeconds, autoTickMinutes } }` — whether THIS card shows/manages
+// the time-of-day section at all, not the time value itself.
 import { el } from "../dom.js";
 import { connectLiveStream } from "../live.js";
 import { resolveIsSpotlighted, resolveSpotlightData } from "../spotlight.js";
@@ -41,11 +47,14 @@ export const CALENDAR_MACRO_ACTIONS = {
 const POLL_INTERVAL_MS = 5000;
 const MINUTES_PER_DAY = 1440;
 
-// `calendar.months` must be non-empty — callers branch around this
-// themselves (see describeDate) rather than pretending a missing month
-// structure is "a 365-day placeholder year," which would just show a
-// confusing blank month name.
-function formatCalendarDate(calendar, dayIndex) {
+// Exported — repository/js/lib/journal-date.js's own `date:` reference
+// chip formats against this exact same implementation, not a second copy,
+// so a date reads identically whether it's this widget or a journal page
+// doing the formatting. `calendar.months` must be non-empty — callers
+// branch around this themselves (see describeDate) rather than pretending a
+// missing month structure is "a 365-day placeholder year," which would
+// just show a confusing blank month name.
+export function formatCalendarDate(calendar, dayIndex) {
   const months = calendar.months;
   const totalDays = months.reduce((sum, month) => sum + (Number(month.days) || 0), 0) || 1;
   const yearsElapsed = Math.floor(dayIndex / totalDays);
@@ -82,7 +91,9 @@ function formatMoonPhase(cycle, dayIndex) {
   return "Waning";
 }
 
-function describeDate(calendar, dayIndex) {
+// Exported for the same reason formatCalendarDate is — journal-date.js's
+// own `date:` chip reuses this directly.
+export function describeDate(calendar, dayIndex) {
   const epoch = calendar?.epochLabel ? ` ${calendar.epochLabel}` : "";
   const months = calendar?.months || [];
   if (!months.length) {
@@ -94,7 +105,8 @@ function describeDate(calendar, dayIndex) {
   return `${weekdayPrefix}${dayOfMonth} ${monthName}, ${year}${epoch}`;
 }
 
-function formatTimeOfDay(minutesOfDay) {
+// Exported for the same reason formatCalendarDate is.
+export function formatTimeOfDay(minutesOfDay) {
   const raw = Number(minutesOfDay) || 0;
   const total = ((raw % MINUTES_PER_DAY) + MINUTES_PER_DAY) % MINUTES_PER_DAY;
   const hours = Math.floor(total / 60);
@@ -163,18 +175,30 @@ function renderMonthGrid(container, calendar, dayIndex, onDayClick) {
 
 // Read-only display — shared by the GM's own view and every follower/
 // second-screen view, so the calendar always reads identically everywhere.
-// `headingExtra` (the month/day-stepper buttons), `time` (only passed by
-// followers — the GM's own author view renders its own interactive time
-// section instead, see initCalendarWidget's own render()), and `onDayClick`
-// (also author-only — followers never get a clickable grid) are all optional.
-function renderCalendarView(container, calendar, dayIndex, { headingExtra, time, onDayClick } = {}) {
+// `headingExtra` (the month/year-stepper buttons), `headingContent` (the
+// GM's own click-to-edit Month/Year heading, see buildEditableHeading below
+// — followers never get this, they keep the plain describeDate() text),
+// `time` (only passed by followers — the GM's own author view renders its
+// own interactive time section instead, see initCalendarWidget's own
+// render()), and `onDayClick` (also author-only — followers never get a
+// clickable grid) are all optional.
+function renderCalendarView(container, calendar, dayIndex, { headingExtra, headingContent, time, onDayClick } = {}) {
   container.innerHTML = "";
   const wrap = el("div", "d-flex flex-column gap-2");
-  // flex-wrap — the date text plus both a Month and a Day stepper group
-  // (each with its own text label) can be wider than a narrow dashboard
-  // card; wrapping to a second line beats clipping or overflowing.
-  const headingRow = el("div", "d-flex align-items-center justify-content-between gap-2 flex-wrap");
-  headingRow.appendChild(el("div", "fw-semibold", describeDate(calendar, dayIndex)));
+  // NOT flex-wrap on this row — the stepper buttons (headingExtra) need to
+  // stay pinned in place always, including the moment an edit control
+  // (buildEditableHeading's own <select>/<input>) appears and the date
+  // text's own natural width grows; wrapping the whole ROW to a second line
+  // at that moment was moving the buttons out from under the pointer.
+  // Instead the date text itself is the one that flexes/shrinks (flex-grow,
+  // min-width: 0 below) — its OWN internal flex-wrap (buildEditableHeading's
+  // own `heading` div) still lets IT wrap onto a second line on a narrow
+  // card, which is the piece that can afford to.
+  const headingRow = el("div", "d-flex align-items-center justify-content-between gap-2 flex-nowrap");
+  const headingNode = headingContent || el("div", "fw-semibold", describeDate(calendar, dayIndex));
+  headingNode.style.flex = "1 1 auto";
+  headingNode.style.minWidth = "0";
+  headingRow.appendChild(headingNode);
   if (headingExtra) headingRow.appendChild(headingExtra);
   wrap.appendChild(headingRow);
 
@@ -192,6 +216,127 @@ function renderCalendarView(container, calendar, dayIndex, { headingExtra, time,
   }
 
   container.appendChild(wrap);
+}
+
+// The GM's own click-to-edit date heading — "Weekday, Day Month, Year
+// Epoch" as separate DOM pieces (not describeDate's own single string) so
+// Month/Year can each be clicked into an editable control: a <select> for
+// Month (jump to that month, same day-of-month, current year — onSetMonth),
+// a number <input> for Year (jump to the same month/day in that year —
+// onSetYear). Both start, and end, as plain inline text — "hidden until
+// clicked," not a pair of permanently-visible form controls — swapping back
+// after a commit (change/Enter) or an abandoned edit (blur with no change).
+// Falls back to plain describeDate() text when the calendar has no months
+// at all — there's no month list to build a <select> from, and no reliable
+// "days per year" figure to shift Year by either.
+function buildEditableHeading(calendar, dayIndex, { onSetMonth, onSetYear }) {
+  const months = calendar?.months || [];
+  const heading = el("div", "fw-semibold d-flex align-items-center flex-wrap");
+  heading.style.gap = "0.2rem";
+  if (!months.length) {
+    heading.textContent = describeDate(calendar, dayIndex);
+    return heading;
+  }
+  const epoch = calendar?.epochLabel ? ` ${calendar.epochLabel}` : "";
+  const { year, monthIndex, monthName, dayOfMonth, weekdayName } = formatCalendarDate(calendar, dayIndex);
+
+  function styleEditableField(span) {
+    span.style.cursor = "pointer";
+    // text-decoration, not border-bottom — a border sits inside the inline
+    // box's own layout (padding/height), which nudged this span (and with
+    // it, the whole text line it's part of) up slightly compared to plain
+    // text next to it. text-decoration is pure paint, never affects layout
+    // or line height, so the line stays straight either way.
+    span.style.textDecorationLine = "underline";
+    span.style.textDecorationStyle = "dashed";
+    span.style.textDecorationColor = "var(--bs-secondary-color, #6c757d)";
+    span.style.textUnderlineOffset = "2px";
+  }
+
+  if (weekdayName) heading.appendChild(document.createTextNode(`${weekdayName}, `));
+  heading.appendChild(document.createTextNode(`${dayOfMonth} `));
+
+  const monthSpan = el("span", "");
+  monthSpan.textContent = monthName;
+  monthSpan.title = "Click to change month";
+  styleEditableField(monthSpan);
+  // Plain unstyled controls, not Bootstrap's form-select/form-control-sm —
+  // those add a border, background, and (for select) a chevron/padding
+  // that's a lot of extra width for an inline heading to absorb, which is
+  // exactly what was pushing the Year control (and the stepper buttons
+  // beside it) onto a second line. Sized/colored to blend into the
+  // surrounding heading text instead ("hidden until clicked" extends to
+  // "unobtrusive once clicked into", not just before).
+  function styleInlineControl(control) {
+    control.style.border = "none";
+    control.style.background = "transparent";
+    control.style.padding = "0";
+    control.style.font = "inherit";
+    control.style.color = "inherit";
+    control.style.outline = "none";
+    control.style.cursor = "pointer";
+  }
+
+  monthSpan.addEventListener("click", () => {
+    const select = document.createElement("select");
+    select.className = "d-inline-block";
+    styleInlineControl(select);
+    select.style.maxWidth = "9rem";
+    months.forEach((month, index) => {
+      const option = new Option(month.name || `Month ${index + 1}`, String(index));
+      if (index === monthIndex) option.selected = true;
+      select.appendChild(option);
+    });
+    monthSpan.replaceWith(select);
+    select.focus();
+    select.addEventListener("change", () => onSetMonth(Number(select.value)));
+    select.addEventListener(
+      "blur",
+      () => {
+        if (select.isConnected) select.replaceWith(monthSpan);
+      },
+      { once: true }
+    );
+  });
+  heading.appendChild(monthSpan);
+  heading.appendChild(document.createTextNode(", "));
+
+  const yearSpan = el("span", "");
+  yearSpan.textContent = String(year);
+  yearSpan.title = "Click to change year";
+  styleEditableField(yearSpan);
+  yearSpan.addEventListener("click", () => {
+    const input = document.createElement("input");
+    input.type = "number";
+    input.className = "d-inline-block";
+    styleInlineControl(input);
+    input.style.width = `${String(year).length + 2}ch`;
+    input.value = String(year);
+    input.addEventListener("input", () => {
+      input.style.width = `${Math.max(String(input.value).length, String(year).length) + 2}ch`;
+    });
+    yearSpan.replaceWith(input);
+    input.focus();
+    input.select();
+    const commit = () => {
+      const next = Number(input.value);
+      if (Number.isFinite(next) && next !== year) onSetYear(next);
+    };
+    input.addEventListener("change", commit);
+    input.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") input.blur();
+    });
+    input.addEventListener(
+      "blur",
+      () => {
+        if (input.isConnected) input.replaceWith(yearSpan);
+      },
+      { once: true }
+    );
+  });
+  heading.appendChild(yearSpan);
+  if (epoch) heading.appendChild(document.createTextNode(epoch));
+  return heading;
 }
 
 function renderFollowerEmpty(container) {
@@ -254,12 +399,12 @@ function initFollowerCalendar(container, { dataManager, groupId = "", shareToken
   };
 }
 
+// No more `minutesOfDay` here — that's the ambient value now (this
+// widget's own `minutesOfDay` variable, sourced from groupContext/the
+// campaign-date-changed event), not a per-instance display preference.
 function normalizeTime(raw) {
   return {
     enabled: Boolean(raw?.enabled),
-    minutesOfDay: Number.isFinite(Number(raw?.minutesOfDay))
-      ? ((Number(raw.minutesOfDay) % MINUTES_PER_DAY) + MINUTES_PER_DAY) % MINUTES_PER_DAY
-      : 480,
     // Auto-tick — same shape as Clock's own autoTickEnabled/autoTickSeconds,
     // plus autoTickMinutes (how much game time each tick advances), so a GM
     // can set e.g. "6 real seconds = 1 game minute" or "1 real second = 10
@@ -300,6 +445,14 @@ export function initCalendarWidget(
     status,
     groupId = "",
     shareToken = "",
+    // Whatever dashboard.js already resolved via resolveGroupContext for
+    // this render pass — read once at mount for settingId/the initial
+    // day/time (a Setting reassignment triggers dashboard.js's own full
+    // rebuild via workbench:active-group-changed, same as every other
+    // groupContext-driven widget, so this never needs to re-resolve
+    // mid-lifetime); day/time themselves stay live afterward via the
+    // campaign-date-changed event below, not by re-reading this object.
+    groupContext,
     canToggleVisibility = false,
     setRightAction,
     instanceId = "",
@@ -323,13 +476,15 @@ export function initCalendarWidget(
     return initFollowerCalendar(container, { dataManager, groupId, shareToken, followId: instanceId, setTitle });
   }
 
-  // settingId is picked once via the Content Picker before this widget is
-  // even added (dashboard.js's own pickContentRef convention, same as Map/
-  // Handout) and never changes after that — picking a different Setting
-  // means removing this widget and adding a new one, same as Map/Handout's
-  // own "pick again" story.
-  const settingId = contentRef?.settingId || "";
-  let dayIndex = Number(contentRef?.dayIndex) || 0;
+  // The campaign's own ambient Setting/day/time (see this file's own header
+  // comment) — settingId is fixed for this instance's lifetime (reassigning
+  // the campaign's Setting rebuilds the whole dashboard); dayIndex/
+  // minutesOfDay stay live via handleCampaignDateChanged below, updated
+  // either by THIS instance's own writes or another instance's/another
+  // tab's.
+  const settingId = groupContext?.settingId || "";
+  let dayIndex = Number(groupContext?.campaignDayIndex) || 0;
+  let minutesOfDay = Number(groupContext?.campaignMinutesOfDay) || 0;
   let time = normalizeTime(contentRef?.time);
   let destroyed = false;
   let visible = false;
@@ -376,7 +531,12 @@ export function initCalendarWidget(
   async function pushVisibleUpdate() {
     if (!visible || !instanceId || !groupId) return;
     try {
-      await dataManager.updateSpotlightData({ groupId, kind: "calendar", id: instanceId, data: { settingId, dayIndex, time } });
+      await dataManager.updateSpotlightData({
+        groupId,
+        kind: "calendar",
+        id: instanceId,
+        data: { settingId, dayIndex, time: { ...time, minutesOfDay } },
+      });
     } catch (error) {
       // Best-effort — a follower just won't see this particular change yet.
     }
@@ -385,6 +545,10 @@ export function initCalendarWidget(
   async function toggleVisibility() {
     if (!groupId || !instanceId) {
       status?.show("No active campaign to show this to.", { type: "warning", timeout: 2500 });
+      return;
+    }
+    if (!settingId) {
+      status?.show("This campaign has no Setting assigned yet — nothing to show.", { type: "warning", timeout: 2500 });
       return;
     }
     try {
@@ -402,7 +566,7 @@ export function initCalendarWidget(
           contentType: "calendar",
           contentId: instanceId,
           skipShare: true,
-          data: { settingId, dayIndex, time },
+          data: { settingId, dayIndex, time: { ...time, minutesOfDay } },
         });
         status?.show("Showing to the table.", { type: "success", timeout: 2000 });
       }
@@ -425,17 +589,37 @@ export function initCalendarWidget(
     autoTickTimer = createReliableInterval(() => advanceTime(time.autoTickMinutes), time.autoTickSeconds * 1000);
   }
 
-  function persistState(patch) {
+  // The ambient write — day and/or minutesOfDay. Optimistic (renders
+  // immediately off the local variables, same responsiveness the old
+  // purely-local contentRef write had) with the actual server write and its
+  // own cross-instance broadcast (data-manager.js's own
+  // "undercroft:campaign-date-changed" event, see handleCampaignDateChanged
+  // below) following in the background — a failure just leaves a toast, the
+  // next successful write (or another instance's own) will still catch this
+  // one up.
+  function persistDate(patch) {
     if (patch.dayIndex !== undefined) dayIndex = patch.dayIndex;
-    if (patch.time !== undefined) time = patch.time;
-    setContentRef?.({ settingId, dayIndex, time });
+    if (patch.minutesOfDay !== undefined) minutesOfDay = patch.minutesOfDay;
     render();
     startAutoTick();
     void pushVisibleUpdate();
+    void dataManager.setCampaignDate(groupId, { dayIndex, minutesOfDay }).catch((error) => {
+      status?.show(error?.message || "Unable to update the campaign date.", { type: "error" });
+    });
+  }
+
+  // The per-instance display-preference write (whether this card shows/
+  // auto-ticks time at all) — local to this widget, same shape/mechanism
+  // every other widget's own contentRef write already uses.
+  function persistTimeConfig(patch) {
+    time = { ...time, ...patch };
+    setContentRef?.({ time });
+    render();
+    startAutoTick();
   }
 
   function advanceDay(deltaDays) {
-    persistState({ dayIndex: dayIndex + deltaDays });
+    persistDate({ dayIndex: dayIndex + deltaDays });
   }
 
   // Walks month-by-month (not a fixed day count — months can have different
@@ -461,21 +645,51 @@ export function initCalendarWidget(
       }
     }
     const targetMonthDays = Number(calendar.months[idx].days) || 1;
-    persistState({ dayIndex: firstOfMonth + (Math.min(dayOfMonth, targetMonthDays) - 1) });
+    persistDate({ dayIndex: firstOfMonth + (Math.min(dayOfMonth, targetMonthDays) - 1) });
+  }
+
+  // Shifts by whole years — the same month/day-of-month, `deltaYears` years
+  // later (or earlier). Replaces the old Day stepper's own single-arrow
+  // buttons in the toolbar (see render() below) — clicking any visible day
+  // in the month grid already jumps straight to it, so a day-by-day stepper
+  // was redundant; a year-by-year one wasn't available at all before. Also
+  // what the editable Year heading (buildEditableHeading's own onSetYear)
+  // computes its jump through, via setYear just below.
+  function advanceYear(deltaYears) {
+    const calendar = settingRecord?.calendar;
+    if (!calendar?.months?.length || !deltaYears) return;
+    const totalDays = calendar.months.reduce((sum, month) => sum + (Number(month.days) || 0), 0) || 1;
+    persistDate({ dayIndex: dayIndex + deltaYears * totalDays });
+  }
+
+  function setMonth(targetMonthIndex) {
+    const calendar = settingRecord?.calendar;
+    if (!calendar?.months?.length) return;
+    const { monthIndex } = formatCalendarDate(calendar, dayIndex);
+    advanceMonth(targetMonthIndex - monthIndex);
+  }
+
+  function setYear(targetYear) {
+    const calendar = settingRecord?.calendar;
+    if (!calendar?.months?.length) return;
+    const { year } = formatCalendarDate(calendar, dayIndex);
+    advanceYear(targetYear - year);
   }
 
   // Rolls over into dayIndex when minutesOfDay crosses midnight in either
   // direction, so advancing time never leaves the calendar's own date out
-  // of sync with the clock.
+  // of sync with the clock. Both land in the same persistDate call (one
+  // ambient write), not two — a day-crossing time advance is never visible
+  // to another reader half-updated.
   function advanceTime(deltaMinutes) {
-    const total = time.minutesOfDay + deltaMinutes;
+    const total = minutesOfDay + deltaMinutes;
     const dayDelta = Math.floor(total / MINUTES_PER_DAY);
-    const minutesOfDay = ((total % MINUTES_PER_DAY) + MINUTES_PER_DAY) % MINUTES_PER_DAY;
-    persistState({ dayIndex: dayIndex + dayDelta, time: { ...time, minutesOfDay } });
+    const nextMinutesOfDay = ((total % MINUTES_PER_DAY) + MINUTES_PER_DAY) % MINUTES_PER_DAY;
+    persistDate({ dayIndex: dayIndex + dayDelta, minutesOfDay: nextMinutesOfDay });
   }
 
   function updateTime(patch) {
-    persistState({ time: { ...time, ...patch } });
+    persistTimeConfig(patch);
   }
 
   // --- Macro action support (common/js/lib/widgets/macro-runner.js) ---
@@ -522,7 +736,7 @@ export function initCalendarWidget(
     if (!time.enabled) return section;
 
     const timeRow = el("div", "d-flex align-items-center gap-2");
-    timeRow.appendChild(el("div", "fs-6 fw-semibold", formatTimeOfDay(time.minutesOfDay)));
+    timeRow.appendChild(el("div", "fs-6 fw-semibold", formatTimeOfDay(minutesOfDay)));
     const minusHour = iconButton("tabler:chevron-left", "Back 1 hour");
     minusHour.addEventListener("click", () => advanceTime(-60));
     const plusHour = iconButton("tabler:chevron-right", "Forward 1 hour");
@@ -587,7 +801,9 @@ export function initCalendarWidget(
         el(
           "p",
           "text-body-secondary small mb-0",
-          settingId ? "This Setting has no calendar defined — add one in Sanctum." : "No Setting picked."
+          settingId
+            ? "This Setting has no calendar defined — add one in Sanctum."
+            : "This campaign has no Setting assigned yet — assign one to use the Calendar widget."
         )
       );
       setTitle?.("Calendar");
@@ -597,8 +813,11 @@ export function initCalendarWidget(
     setTitle?.(settingRecord?.name ? `${settingRecord.name} Calendar` : "Calendar");
 
     // Two clearly separate, clearly labeled groups — double chevrons (a
-    // bigger step) for Month, single chevrons for Day, plus text labels, so
-    // the two are never confused for each other at a glance.
+    // bigger step) for Month, single chevrons for Year, plus text labels, so
+    // the two are never confused for each other at a glance. Year replaces
+    // the old Day stepper here — a day-by-day stepper was redundant with
+    // clicking any visible day in the month grid below (onDayClick), and a
+    // year-by-year jump wasn't available anywhere before this.
     const stepGroup = el("div", "d-flex align-items-center gap-2 flex-shrink-0");
     const monthGroup = el("div", "d-flex align-items-center gap-1");
     monthGroup.appendChild(el("span", "small text-body-secondary", "Month"));
@@ -608,15 +827,15 @@ export function initCalendarWidget(
     plusMonth.addEventListener("click", () => advanceMonth(1));
     monthGroup.append(minusMonth, plusMonth);
 
-    const dayGroup = el("div", "d-flex align-items-center gap-1");
-    dayGroup.appendChild(el("span", "small text-body-secondary", "Day"));
-    const minusDay = iconButton("tabler:chevron-left", "Back one day");
-    minusDay.addEventListener("click", () => advanceDay(-1));
-    const plusDay = iconButton("tabler:chevron-right", "Forward one day");
-    plusDay.addEventListener("click", () => advanceDay(1));
-    dayGroup.append(minusDay, plusDay);
+    const yearGroup = el("div", "d-flex align-items-center gap-1");
+    yearGroup.appendChild(el("span", "small text-body-secondary", "Year"));
+    const minusYear = iconButton("tabler:chevron-left", "Back one year");
+    minusYear.addEventListener("click", () => advanceYear(-1));
+    const plusYear = iconButton("tabler:chevron-right", "Forward one year");
+    plusYear.addEventListener("click", () => advanceYear(1));
+    yearGroup.append(minusYear, plusYear);
 
-    stepGroup.append(monthGroup, dayGroup);
+    stepGroup.append(monthGroup, yearGroup);
 
     const wrap = el("div", "d-flex flex-column gap-2 flex-grow-1");
     wrap.style.minHeight = "0";
@@ -628,11 +847,27 @@ export function initCalendarWidget(
     // any visible day of the current month instead of stepping one at a time.
     renderCalendarView(displayHost, calendar, dayIndex, {
       headingExtra: stepGroup,
-      onDayClick: (targetDayIndex) => persistState({ dayIndex: targetDayIndex }),
+      headingContent: buildEditableHeading(calendar, dayIndex, { onSetMonth: setMonth, onSetYear: setYear }),
+      onDayClick: (targetDayIndex) => persistDate({ dayIndex: targetDayIndex }),
     });
     wrap.appendChild(displayHost);
     wrap.appendChild(renderTimeSection());
     container.appendChild(wrap);
+  }
+
+  // Keeps this instance's own day/time mirror current with whatever ANY
+  // Calendar widget — this one, another instance on the same dashboard, or
+  // another of the GM's own tabs — just wrote via setCampaignDate, without
+  // needing this instance to re-fetch or re-resolve anything: the event
+  // already carries the new values. Filtered to this widget's own campaign
+  // (a GM could in principle have widgets from more than one group's own
+  // history mounted at once, though not simultaneously visible in
+  // practice) so an unrelated campaign's own date change is ignored.
+  function handleCampaignDateChanged(event) {
+    if (destroyed || event.detail?.groupId !== groupId) return;
+    if (event.detail?.dayIndex !== undefined) dayIndex = Number(event.detail.dayIndex) || 0;
+    if (event.detail?.minutesOfDay !== undefined) minutesOfDay = Number(event.detail.minutesOfDay) || 0;
+    render();
   }
 
   async function boot() {
@@ -642,6 +877,7 @@ export function initCalendarWidget(
     void refreshVisibility();
   }
   void boot();
+  window.addEventListener("undercroft:campaign-date-changed", handleCampaignDateChanged);
 
   return {
     runMacroAction,
@@ -654,6 +890,7 @@ export function initCalendarWidget(
     async destroy(removed) {
       destroyed = true;
       stopAutoTick();
+      window.removeEventListener("undercroft:campaign-date-changed", handleCampaignDateChanged);
       container.innerHTML = "";
       if (removed && visible && groupId && instanceId) {
         try {

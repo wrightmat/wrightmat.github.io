@@ -38,3 +38,15 @@ export function extractOutline(body) {
     return { ...heading, depth };
   });
 }
+
+// Case-insensitive exact match against a page's own outline — returns the
+// matching entry's index, or -1. Promoted here from repository/js/app.js
+// (a private function of the same name/shape) once a second caller
+// (common/js/lib/widgets/handout.js's own anchor-aware spotlight) needed
+// it too, rather than a second copy.
+export function findHeadingByText(body, headingText) {
+  const target = (headingText || "").trim().toLowerCase();
+  if (!target) return -1;
+  const outline = extractOutline(body);
+  return outline.findIndex((heading) => (heading.text || "").trim().toLowerCase() === target);
+}

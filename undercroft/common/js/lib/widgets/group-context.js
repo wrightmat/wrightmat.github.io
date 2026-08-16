@@ -32,6 +32,11 @@ export async function resolveGroupContext(dataManager, { shareToken = "" } = {})
           groupName: group.name || "",
           systemId: group.system_id || "",
           settingId: group.setting_id || "",
+          // `?? null`, not `|| ""` — 0 is a real, meaningful day index (the
+          // campaign's own start epoch), not an absent value the way an
+          // empty string id would be.
+          campaignDayIndex: group.campaign_day_index ?? null,
+          campaignMinutesOfDay: group.campaign_minutes_of_day ?? null,
           shareToken,
           access: dataManager.isAuthenticated() ? "share" : "viewer",
         };
@@ -73,6 +78,8 @@ export async function resolveGroupContext(dataManager, { shareToken = "" } = {})
           groupName: match.name || active.name || "",
           systemId: match.system_id || "",
           settingId: match.setting_id || "",
+          campaignDayIndex: match.campaign_day_index ?? null,
+          campaignMinutesOfDay: match.campaign_minutes_of_day ?? null,
           shareToken: "",
           access: ownerId === userId ? "owner" : "member",
         };
@@ -82,7 +89,16 @@ export async function resolveGroupContext(dataManager, { shareToken = "" } = {})
       // resort, matching the pre-existing behavior, rather than breaking
       // group access entirely over a failed lookup.
     }
-    return { groupId: active.groupId, groupName: active.name || "", systemId: "", settingId: "", shareToken: "", access: "owner" };
+    return {
+      groupId: active.groupId,
+      groupName: active.name || "",
+      systemId: "",
+      settingId: "",
+      campaignDayIndex: null,
+      campaignMinutesOfDay: null,
+      shareToken: "",
+      access: "owner",
+    };
   }
   return null;
 }

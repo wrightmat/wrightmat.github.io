@@ -145,6 +145,63 @@ def init_storage_db(state: ServerState) -> None:
         )
         """
     )
+    # Account-tied third-party integration credentials (currently: Home
+    # Assistant's own base_url + access token) — deliberately its own table
+    # rather than a key in users.settings (see integrations.py's own header
+    # comment): that JSON blob round-trips to the client on every load, and a
+    # real secret has no business living somewhere that does. `provider` is a
+    # plain string, not an enum, so a second integration later (a different
+    # base_url + token shape) is just another row, no schema change.
+    # encrypted_token is Fernet ciphertext (integrations.py), never plaintext.
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS integration_credentials (
+            user_id INTEGER NOT NULL,
+            provider TEXT NOT NULL,
+            base_url TEXT,
+            encrypted_token BLOB,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (user_id, provider),
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+        """
+    )
+    # The deployment-wide sibling of integration_credentials above — for a
+    # third-party credential that's shared by the whole install rather than
+    # tied to one account (currently: transcription servers — a GM-managed
+    # LIST of them, e.g. one per homelab box, not a single deployment-wide
+    # singleton). No user_id at all, deliberately a separate table rather
+    # than a NULL/sentinel user_id in integration_credentials — this
+    # codebase never turns SQLite FK enforcement on (see the migration
+    # functions' own comments below), so a sentinel would technically work
+    # today, but a table honestly shaped for "no owner" is worth the few
+    # extra lines over relying on that. `(provider, id)` is the composite
+    # primary key — `id` is a client-generated key so more than one entry
+    # can exist per provider (add/edit/delete/select, same shape as WLED's
+    # own known-devices list — see wled.js); `label` is the human-chosen
+    # display name. `model` is the model identifier to send in each
+    # transcription request's own "model" form field — genuinely per-
+    # server, not a suite-wide constant: a self-hosted server only
+    # recognizes whatever model it actually has loaded (confirmed real:
+    # OpenAI's own "whisper-1" 404's against a self-hosted server that
+    # doesn't have a model by that name), so this can't be hardcoded the
+    # way it originally was. encrypted_token same Fernet-ciphertext
+    # convention as above, still optional — most self-hosted transcription
+    # servers need no API key.
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS deployment_secrets (
+            provider TEXT NOT NULL,
+            id TEXT NOT NULL,
+            label TEXT,
+            base_url TEXT,
+            model TEXT,
+            encrypted_token BLOB,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (provider, id)
+        )
+        """
+    )
     # Must run before any index creation below: on a pre-existing database,
     # every CREATE TABLE IF NOT EXISTS above is a no-op against whatever
     # shape that table already has on disk (shares missing
@@ -156,6 +213,8 @@ def init_storage_db(state: ServerState) -> None:
     _migrate_groups_table_add_system_id(conn)
     _migrate_groups_table_add_setting_id(conn)
     _migrate_shares_table_for_group_targets(conn)
+    _migrate_deployment_secrets_table_for_multi_entry(conn)
+    _migrate_deployment_secrets_table_add_model(conn)
     # Group is being migrated onto the same generic library_items/flat-JSON
     # model System/Character/Map already use (see _migrate_groups_to_library_
     # items's own comment) — group_members/shares/group_logs stay relational
@@ -325,6 +384,64 @@ def _migrate_shares_table_for_group_targets(conn: sqlite3.Connection) -> None:
         """
     )
     conn.execute("DROP TABLE _legacy_shares")
+
+
+def _migrate_deployment_secrets_table_for_multi_entry(conn: sqlite3.Connection) -> None:
+    # One-time (idempotent) migration for a database that already has this
+    # suite's original single-row-per-provider deployment_secrets shape
+    # (provider TEXT PRIMARY KEY, no id/label columns) — the transcription
+    # server config briefly shipped that way before becoming a real add/
+    # edit/delete list of named servers. SQLite can't redefine a PRIMARY KEY
+    # via ALTER TABLE, so this rebuilds the table (rename, recreate via
+    # init_storage_db's own CREATE TABLE above, copy rows across, drop the
+    # renamed original), same pattern _migrate_shares_table_for_group_targets
+    # above uses. Any pre-existing row is preserved under a generated id
+    # ("default"), its own base_url doubling as its label, rather than
+    # silently dropped — even though it predates this table having any UI to
+    # fix a wrong URL, it's still real data someone saved.
+    columns = {row["name"] for row in conn.execute("PRAGMA table_info(deployment_secrets)")}
+    if not columns or "id" in columns:
+        return
+    conn.execute("ALTER TABLE deployment_secrets RENAME TO _legacy_deployment_secrets")
+    conn.execute(
+        """
+        CREATE TABLE deployment_secrets (
+            provider TEXT NOT NULL,
+            id TEXT NOT NULL,
+            label TEXT,
+            base_url TEXT,
+            encrypted_token BLOB,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (provider, id)
+        )
+        """
+    )
+    conn.execute(
+        """
+        INSERT INTO deployment_secrets (provider, id, label, base_url, encrypted_token, updated_at)
+        SELECT provider, 'default', base_url, base_url, encrypted_token, updated_at
+        FROM _legacy_deployment_secrets
+        """
+    )
+    conn.execute("DROP TABLE _legacy_deployment_secrets")
+
+
+def _migrate_deployment_secrets_table_add_model(conn: sqlite3.Connection) -> None:
+    # Idempotent add-column migration for a deployment_secrets table that
+    # predates the "model" column — the transcription server list originally
+    # hardcoded "whisper-1" (OpenAI's own model identifier) into every
+    # request instead of letting each server declare its own. Confirmed a
+    # real bug: a self-hosted server with a different model loaded 404's
+    # against that hardcoded value. A nullable column needs no full table
+    # rebuild (unlike _migrate_deployment_secrets_table_for_multi_entry's
+    # PRIMARY KEY reshape above) — a plain ALTER TABLE ADD COLUMN is safe and
+    # cheap to run on every startup once the column already exists. Must run
+    # after that migration, not before — this table might not exist in its
+    # final (provider, id) shape yet on a database old enough to need both.
+    columns = {row["name"] for row in conn.execute("PRAGMA table_info(deployment_secrets)")}
+    if not columns or "model" in columns:
+        return
+    conn.execute("ALTER TABLE deployment_secrets ADD COLUMN model TEXT")
 
 
 def _table_references_groups(conn: sqlite3.Connection, table_name: str) -> bool:

@@ -1,13 +1,27 @@
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
 // See handleWheel's own comment for why this needs to be magnitude-based
-// rather than a flat per-event step. Bumped up from the initial 0.001 —
-// that made a mouse-wheel notch feel right but left trackpad pinch/scroll
-// feeling too slow.
-const WHEEL_ZOOM_SENSITIVITY = 0.0014;
+// rather than a flat per-event step. Bumped up from the initial 0.001, then
+// doubled again to 0.0028 — confirmed as the preferred trackpad feel via
+// Sanctum's own Location Graph (which started as a per-instance override,
+// see the constructor's own wheelZoomSensitivity option, before this
+// became the shared default both tools now use).
+const WHEEL_ZOOM_SENSITIVITY = 0.0028;
 
 export class PanZoomController {
-  constructor({ container, content, view, onChange, minZoom = 0.25, maxZoom = 4 } = {}) {
+  constructor({
+    container,
+    content,
+    view,
+    onChange,
+    minZoom = 0.25,
+    maxZoom = 4,
+    // Per-instance override — Sanctum's Location Graph wants faster
+    // trackpad/wheel zoom than Orrery's own map (see location-graph.js's
+    // own call site), so this can't stay the single shared module constant
+    // every instance was locked to before.
+    wheelZoomSensitivity = WHEEL_ZOOM_SENSITIVITY,
+  } = {}) {
     if (!container || !content) {
       throw new Error("PanZoomController requires container and content elements");
     }
@@ -16,6 +30,7 @@ export class PanZoomController {
     this.onChange = typeof onChange === "function" ? onChange : null;
     this.minZoom = minZoom;
     this.maxZoom = maxZoom;
+    this.wheelZoomSensitivity = wheelZoomSensitivity;
     this.view = {
       zoom: 1,
       pan: { x: 0, y: 0 },
@@ -88,10 +103,11 @@ export class PanZoomController {
       // buttons zoom slowly" mismatch. Exponential scaling by deltaY keeps
       // the perceived zoom RATE tied to actual scroll/gesture distance,
       // consistent regardless of how many events the browser splits a
-      // gesture into. WHEEL_ZOOM_SENSITIVITY is tuned so a single mouse-
-      // wheel notch (deltaY ~100) still zooms by ~10%, matching the old
-      // flat-factor feel for that case.
-      const zoomFactor = Math.exp(-event.deltaY * WHEEL_ZOOM_SENSITIVITY);
+      // gesture into. The default WHEEL_ZOOM_SENSITIVITY is tuned so a
+      // single mouse-wheel notch (deltaY ~100) still zooms by ~10%,
+      // matching the old flat-factor feel for that case; this.
+      // wheelZoomSensitivity is the per-instance override of that default.
+      const zoomFactor = Math.exp(-event.deltaY * this.wheelZoomSensitivity);
       const nextZoom = clamp(this.view.zoom * zoomFactor, this.minZoom, this.maxZoom);
       if (nextZoom === this.view.zoom) {
         return;

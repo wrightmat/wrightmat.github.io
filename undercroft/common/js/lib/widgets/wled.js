@@ -11,10 +11,10 @@
 // configuration, not just one specific rig.
 //
 // Two persistence scopes, matching Clock's own instance-vs-shared split:
-//  - The list of known devices ({ip,label}) is account-wide (GM-tied, not
-//    per-widget-card) — dashboard.js owns it via persistSetting, the same
-//    local+server merge-patch sync layout/background use, passed in here as
-//    `devices`/`onDevicesChange`.
+//  - The list of known devices ({type,ip,entityId,label}) is account-wide
+//    (GM-tied, not per-widget-card) — dashboard.js owns it via
+//    persistSetting, the same local+server merge-patch sync layout/
+//    background use, passed in here as `devices`/`onDevicesChange`.
 //  - Which device THIS card is currently showing/controlling is per-instance
 //    state — small enough to live directly in this widget's own contentRef
 //    (the same generic per-instance slot Clock/Calendar/Browser already
@@ -22,10 +22,30 @@
 //    comment), not a Library kind of its own. `multiple: true` in the
 //    dashboard catalog — a GM with two lighting zones adds the widget twice,
 //    each pointed at its own device.
+//
+// This widget generalized from "WLED control panel" to "Lighting" — a known
+// device is now either a real WLED instance (type: "wled", its own rich
+// segment/effect/palette JSON API, handled entirely in this file) or an HA
+// `light.*` entity (type: "haLight", a much smaller on/off + brightness +
+// color surface — see ha-light.js). Kept as two separate driver modules
+// rather than merging their JSON shapes into one, since they don't share
+// one; this file is the composer that picks which driver to call based on
+// the selected device's own type. Follow-a-Clock and Advanced Mode stay
+// WLED-only for now — extending either to HA lights is a reasonable later
+// addition, not something either device type needs to function today.
 import { el } from "../dom.js";
 import { resolveActiveSpotlightId, resolveSpotlightData } from "../spotlight.js";
 import { connectLiveStream } from "../live.js";
 import { createReliableInterval } from "../reliable-interval.js";
+import { listHaEntities, ensureHaConnection, manageHaConnection } from "./home-assistant.js";
+import {
+  fetchHaLightState,
+  setHaLightPower,
+  setHaLightBrightness,
+  setHaLightColor,
+  haLightSupportsBrightness,
+  haLightSupportsColor,
+} from "./ha-light.js";
 
 // Phase 2 — "Follow a Clock": deliberately reuses the exact same spotlight/
 // group-log transport every other follower in this suite already polls
@@ -38,7 +58,12 @@ import { createReliableInterval } from "../reliable-interval.js";
 const FOLLOW_POLL_INTERVAL_MS = 5000;
 
 const DEFAULT_CONFIG = {
+  // Absent/"wled" on any card saved before the Lighting generalization —
+  // selectedIp being set is exactly what "wled" already implies, so no
+  // migration step is needed for existing saved cards.
+  selectedType: "wled",
   selectedIp: "",
+  selectedEntityId: "",
   followEnabled: false,
   // "brightness" maps the clock's fill percentage onto master brightness;
   // "segments" lights up a prefix of followSegmentIds proportional to fill
@@ -141,8 +166,16 @@ export function initWledWidget(
 
   let config = { ...DEFAULT_CONFIG, ...(contentRef || {}) };
   let deviceList = Array.isArray(devices) ? devices.slice() : [];
-  let deviceState = null; // last full /json GET (state + info + effects + palettes)
-  let presets = {}; // id -> {n: name, ...}
+  let deviceState = null; // last full /json GET (state + info + effects + palettes) — WLED only
+  let presets = {}; // id -> {n: name, ...} — WLED only
+  let haLightState = null; // last {state, brightness, rgbColor, supportedColorModes, friendlyName} — HA light only
+  // The Add-device form's own type toggle (WLED vs HA Light) — local UI
+  // state, not persisted; defaults to whichever type the currently-selected
+  // device already is, so re-opening the form to add a SECOND device of the
+  // same kind doesn't require re-picking the type every time.
+  let addDeviceType = "wled";
+  let haEntityOptions = []; // populated lazily when the Add-device form switches to HA Light
+  let haEntityLoadFailed = false; // distinguishes "still loading" from "the fetch actually failed" in the placeholder below
   // Which segment id(s) the Basic controls below apply to — empty means
   // "the device's own main segment" (WLED's own top-level bri/on/col/fx/pal
   // shorthand), matching the old page's identical seg-array-or-bare-field
@@ -185,7 +218,56 @@ export function initWledWidget(
     return normalizeWledBase(config.selectedIp);
   }
 
+  function currentDeviceType() {
+    return config.selectedType === "haLight" ? "haLight" : "wled";
+  }
+
+  // Dispatches to whichever driver the currently-selected device type
+  // needs — WLED's own /json+presets fetch, or a single HA entity-state
+  // read (ha-light.js). Both set loading/loadError/render the same way, so
+  // every caller below (selectDevice, the manual Refresh button, sendRaw's
+  // own post-command refresh) stays type-agnostic.
   async function refreshState({ silent = false } = {}) {
+    if (currentDeviceType() === "haLight") {
+      await refreshHaLightState({ silent });
+      return;
+    }
+    await refreshWledState({ silent });
+  }
+
+  async function refreshHaLightState({ silent = false } = {}) {
+    const entityId = config.selectedEntityId;
+    if (!entityId) {
+      haLightState = null;
+      loadError = "";
+      render();
+      return;
+    }
+    if (!silent) {
+      loading = true;
+      loadError = "";
+      render();
+    }
+    try {
+      const state = await fetchHaLightState(dataManager, entityId);
+      if (destroyed) return;
+      if (!state) throw new Error(`Unable to reach "${entityId}" — check your Home Assistant connection.`);
+      haLightState = state;
+      loadError = "";
+      if (typeof setTitle === "function") setTitle(state.friendlyName ? `— ${state.friendlyName}` : "");
+    } catch (error) {
+      if (destroyed) return;
+      haLightState = null;
+      loadError = (error && error.message) || "Unable to reach this light.";
+    } finally {
+      if (!destroyed) {
+        loading = false;
+        render();
+      }
+    }
+  }
+
+  async function refreshWledState({ silent = false } = {}) {
     const base = currentBase();
     if (!base) {
       deviceState = null;
@@ -348,9 +430,32 @@ export function initWledWidget(
     followLiveStream.subscribe("group_log", () => void refreshFollow());
   }
 
-  function selectDevice(ip) {
-    persistInstanceConfig({ selectedIp: ip });
+  // A composite key so ONE <select> can list both device types without
+  // colliding (a WLED IP and an HA entity id live in different namespaces
+  // entirely) — encode/decode kept together so renderDeviceRow's population
+  // and selectDevice's parsing can never drift out of sync with each other.
+  function deviceKey(device) {
+    return device.type === "haLight" ? `haLight::${device.entityId}` : `wled::${device.ip}`;
+  }
+
+  function currentSelectionKey() {
+    return currentDeviceType() === "haLight" ? `haLight::${config.selectedEntityId || ""}` : `wled::${config.selectedIp || ""}`;
+  }
+
+  function hasSelection() {
+    return currentDeviceType() === "haLight" ? Boolean(config.selectedEntityId) : Boolean(config.selectedIp);
+  }
+
+  function selectDevice(key) {
+    const [type, id] = String(key || "").split("::");
+    if (type === "haLight") {
+      persistInstanceConfig({ selectedType: "haLight", selectedEntityId: id || "", selectedIp: "" });
+    } else {
+      persistInstanceConfig({ selectedType: "wled", selectedIp: id || "", selectedEntityId: "" });
+    }
     targetSegmentIds.clear();
+    deviceState = null;
+    haLightState = null;
     void refreshState();
     syncFollowWatch();
   }
@@ -367,34 +472,36 @@ export function initWledWidget(
     select.appendChild(blank);
     deviceList.forEach((device) => {
       const option = document.createElement("option");
-      option.value = device.ip;
-      option.textContent = device.label || device.ip;
+      option.value = deviceKey(device);
+      option.textContent = device.label || (device.type === "haLight" ? device.entityId : device.ip);
       select.appendChild(option);
     });
-    select.value = config.selectedIp || "";
+    select.value = hasSelection() ? currentSelectionKey() : "";
     select.addEventListener("change", () => selectDevice(select.value));
     row.appendChild(select);
 
     const addButton = iconButton("tabler:plus", "Add a device");
     addButton.addEventListener("click", () => {
       showAddDevice = !showAddDevice;
+      addDeviceType = currentDeviceType();
       render();
     });
     row.appendChild(addButton);
 
     const refreshButton = iconButton("tabler:refresh", "Reconnect / refresh");
-    refreshButton.disabled = !config.selectedIp;
+    refreshButton.disabled = !hasSelection();
     refreshButton.addEventListener("click", () => void refreshState());
     row.appendChild(refreshButton);
 
     const removeButton = iconButton("tabler:trash", "Forget this device", { variant: "outline-danger" });
-    removeButton.disabled = !config.selectedIp;
+    removeButton.disabled = !hasSelection();
     removeButton.addEventListener("click", () => {
-      const ip = config.selectedIp;
-      if (!ip) return;
-      persistDevices(deviceList.filter((device) => device.ip !== ip));
-      persistInstanceConfig({ selectedIp: "" });
+      if (!hasSelection()) return;
+      const key = currentSelectionKey();
+      persistDevices(deviceList.filter((device) => deviceKey(device) !== key));
+      persistInstanceConfig({ selectedIp: "", selectedEntityId: "" });
       deviceState = null;
+      haLightState = null;
       syncFollowWatch();
       render();
     });
@@ -404,9 +511,13 @@ export function initWledWidget(
     // than a separate row of their own — same active/pressed styling
     // iconButton already gives any toggle, just fewer rows competing for
     // space on a small widget card (see this widget's own render() for
-    // what each one shows/hides).
+    // what each one shows/hides). Both stay WLED-only for now — see this
+    // file's own header comment on why HA lights don't get Follow/Advanced
+    // yet.
+    const isWledSelected = currentDeviceType() === "wled" && Boolean(config.selectedIp);
     const followButton = iconButton("tabler:clock", "Follow a Clock", { active: config.followEnabled });
-    followButton.disabled = !config.selectedIp;
+    followButton.disabled = !isWledSelected;
+    followButton.title = isWledSelected ? "Follow a Clock" : "Follow a Clock (WLED devices only)";
     followButton.addEventListener("click", () => {
       const next = !config.followEnabled;
       persistInstanceConfig({ followEnabled: next });
@@ -416,7 +527,8 @@ export function initWledWidget(
     row.appendChild(followButton);
 
     const advancedButton = iconButton("tabler:code", "Advanced Mode", { active: advancedExpanded });
-    advancedButton.disabled = !config.selectedIp;
+    advancedButton.disabled = !isWledSelected;
+    advancedButton.title = isWledSelected ? "Advanced Mode" : "Advanced Mode (WLED devices only)";
     advancedButton.addEventListener("click", () => {
       advancedExpanded = !advancedExpanded;
       render();
@@ -426,13 +538,55 @@ export function initWledWidget(
     return row;
   }
 
+  // Two device types, two rows — a type toggle on its own line (WLED vs HA
+  // light/group), then a second line that always holds the device
+  // select/input, Label, and the +/x buttons together — a free-text IP
+  // (WLED, unauthenticated LAN device, no directory to pick from) or a
+  // populated select of live HA entities (HA has a real directory to pick
+  // from, via listHaEntities — the "populated select" this widget's own
+  // generalization was built around). Two separate rows, not one, since
+  // type+device+label+buttons genuinely doesn't fit on one physical line at
+  // this widget's normal card width — confirmed real problem trying it as
+  // one row.
   function renderAddDeviceForm() {
-    const form = el("div", "d-flex flex-wrap align-items-center gap-1");
-    const ipInput = document.createElement("input");
-    ipInput.type = "text";
-    ipInput.className = "form-control form-control-sm";
-    ipInput.style.maxWidth = "10rem";
-    ipInput.placeholder = "IP or hostname";
+    const form = el("div", "d-flex flex-column gap-1");
+
+    const typeRow = el("div", "d-flex align-items-center gap-1");
+    const typeSelect = document.createElement("select");
+    typeSelect.className = "form-select form-select-sm";
+    typeSelect.style.maxWidth = "12rem";
+    [
+      ["wled", "WLED"],
+      ["haLight", "HA light/group"],
+    ].forEach(([value, optionLabel]) => {
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = optionLabel;
+      option.selected = value === addDeviceType;
+      typeSelect.appendChild(option);
+    });
+    typeSelect.addEventListener("change", () => {
+      addDeviceType = typeSelect.value;
+      render();
+    });
+    typeRow.appendChild(typeSelect);
+
+    // Only when HA is the selected type — the one entry point for fixing a
+    // wrong Home Assistant base URL or disconnecting entirely. Confirmed a
+    // real gap without this: ensureHaConnection (invoked below when the
+    // entity picker loads) only ever prompts once, the first time there's
+    // no connection at all — once configured, however wrong, there was no
+    // way back into that modal short of clearing the row directly in the
+    // database.
+    if (addDeviceType === "haLight") {
+      const manageButton = el("button", "btn btn-sm btn-outline-secondary", "Manage connection");
+      manageButton.type = "button";
+      manageButton.addEventListener("click", () => void manageHaConnection({ dataManager, status }));
+      typeRow.appendChild(manageButton);
+    }
+    form.appendChild(typeRow);
+
+    const fieldsRow = el("div", "d-flex flex-wrap align-items-center gap-1");
 
     const labelInput = document.createElement("input");
     labelInput.type = "text";
@@ -440,57 +594,139 @@ export function initWledWidget(
     labelInput.style.maxWidth = "9rem";
     labelInput.placeholder = "Label (optional)";
 
-    // Distinct from Label on purpose — this is the stable name a shared
-    // Macro action references this device by (see runWledMacroAction
-    // below), not what shows up in this dropdown. Keeping it separate means
+    // WLED-only — this is the stable name a shared `wled`-type Macro action
+    // references this device by (see runWledMacroAction below), not what
+    // shows up in this dropdown. Keeping it separate from Label means
     // renaming how a device displays here never breaks a macro that already
-    // references it, and vice versa. Also settable later, without typing a
-    // whole new device, via the Macro board's own "no device aliased ..."
-    // resolution prompt.
+    // references it. HA's own macro actions (home-assistant.js) target an
+    // entityId directly — there's no alias-resolution step for them at all,
+    // so an HA-light entry has nothing to put here.
     const aliasInput = document.createElement("input");
     aliasInput.type = "text";
     aliasInput.className = "form-control form-control-sm";
     aliasInput.style.maxWidth = "9rem";
     aliasInput.placeholder = "Macro alias (optional)";
 
-    const confirmAdd = () => {
-      const base = normalizeWledBase(ipInput.value);
-      if (!base) {
-        ipInput.focus();
-        return;
-      }
-      if (deviceList.some((device) => device.ip === base)) {
-        status?.show?.("That device is already saved.", { type: "warning", timeout: 2400 });
-        return;
-      }
-      const label = labelInput.value.trim();
-      const alias = aliasInput.value.trim();
-      persistDevices([...deviceList, { ip: base, label, alias }]);
-      showAddDevice = false;
-      selectDevice(base);
-    };
+    let confirmAdd = () => {};
 
-    [ipInput, labelInput, aliasInput].forEach((input) => {
-      input.addEventListener("keydown", (event) => {
-        if (event.key === "Enter") {
-          event.preventDefault();
-          confirmAdd();
-        }
+    if (addDeviceType === "haLight") {
+      const entitySelect = document.createElement("select");
+      entitySelect.className = "form-select form-select-sm";
+      entitySelect.style.maxWidth = "12rem";
+      const populateEntitySelect = () => {
+        const previous = entitySelect.value;
+        entitySelect.innerHTML = "";
+        const blank = document.createElement("option");
+        blank.value = "";
+        blank.textContent = haEntityOptions.length
+          ? "Select a light…"
+          : haEntityLoadFailed
+            ? "Unable to load lights — see the error above"
+            : "Loading…";
+        entitySelect.appendChild(blank);
+        haEntityOptions.forEach((entity) => {
+          const option = document.createElement("option");
+          option.value = entity.entityId;
+          option.textContent = entity.friendlyName;
+          option.selected = entity.entityId === previous;
+          entitySelect.appendChild(option);
+        });
+      };
+      populateEntitySelect();
+      // Prompts to connect (ensureHaConnection's own modal) only if this
+      // account hasn't already — a no-op resolve(true) otherwise, same
+      // "connect once, remembered" flow every entry point into HA shares.
+      void ensureHaConnection({ dataManager, status }).then((connected) => {
+        if (!connected || destroyed) return;
+        // "light" covers both a real HA Light Group helper AND a Hubitat
+        // "Group Dimmer" virtual device (Hubitat's own driver for combining
+        // several bulbs into one dimmer, synced into HA as an ordinary
+        // light.* entity by the Hubitat integration — confirmed against a
+        // real instance; this is what "Group Dimmer" in HA's UI turned out
+        // to mean). "group" stays in the list defensively for HA's own
+        // classic Group platform, which can expose a homogeneous group
+        // under its own group.* domain instead.
+        void listHaEntities(dataManager, { domainFilter: ["light", "group"], status }).then((entities) => {
+          if (destroyed) return;
+          haEntityOptions = entities;
+          haEntityLoadFailed = entities.length === 0;
+          populateEntitySelect();
+        });
       });
+
+      confirmAdd = () => {
+        const entityId = entitySelect.value;
+        if (!entityId) {
+          status?.show?.("Pick a light first.", { type: "warning", timeout: 2400 });
+          return;
+        }
+        if (deviceList.some((device) => device.type === "haLight" && device.entityId === entityId)) {
+          status?.show?.("That device is already saved.", { type: "warning", timeout: 2400 });
+          return;
+        }
+        // Falls back to HA's own friendly name (already fetched to build
+        // this very picker) rather than the raw entityId — confirmed real
+        // gap: leaving Label blank (its whole point being optional) meant
+        // the device row/select showed "light.living_room_lamp" forever
+        // instead of what the picker itself already displayed.
+        const selectedEntity = haEntityOptions.find((entity) => entity.entityId === entityId);
+        const label = labelInput.value.trim() || selectedEntity?.friendlyName || "";
+        persistDevices([...deviceList, { type: "haLight", entityId, label }]);
+        showAddDevice = false;
+        selectDevice(`haLight::${entityId}`);
+      };
+
+      fieldsRow.append(entitySelect, labelInput);
+    } else {
+      const ipInput = document.createElement("input");
+      ipInput.type = "text";
+      ipInput.className = "form-control form-control-sm";
+      ipInput.style.maxWidth = "10rem";
+      ipInput.placeholder = "IP or hostname";
+
+      confirmAdd = () => {
+        const base = normalizeWledBase(ipInput.value);
+        if (!base) {
+          ipInput.focus();
+          return;
+        }
+        if (deviceList.some((device) => device.type !== "haLight" && device.ip === base)) {
+          status?.show?.("That device is already saved.", { type: "warning", timeout: 2400 });
+          return;
+        }
+        const label = labelInput.value.trim();
+        const alias = aliasInput.value.trim();
+        persistDevices([...deviceList, { type: "wled", ip: base, label, alias }]);
+        showAddDevice = false;
+        selectDevice(`wled::${base}`);
+      };
+
+      fieldsRow.append(ipInput, labelInput, aliasInput);
+    }
+
+    // Delegated rather than per-input — covers whichever fields the branch
+    // above actually added, without each one needing its own listener.
+    // Excludes SELECT so Enter still navigates the entity dropdown normally
+    // instead of submitting early.
+    fieldsRow.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" && event.target.tagName !== "SELECT") {
+        event.preventDefault();
+        confirmAdd();
+      }
     });
 
-    const addButton = el("button", "btn btn-sm btn-primary", "Add");
-    addButton.type = "button";
-    addButton.addEventListener("click", confirmAdd);
+    const addButton = iconButton("tabler:plus", "Add", { variant: "primary" });
+    addButton.addEventListener("click", () => confirmAdd());
+    fieldsRow.appendChild(addButton);
 
-    const cancelButton = el("button", "btn btn-sm btn-outline-secondary", "Cancel");
-    cancelButton.type = "button";
+    const cancelButton = iconButton("tabler:x", "Cancel");
     cancelButton.addEventListener("click", () => {
       showAddDevice = false;
       render();
     });
+    fieldsRow.appendChild(cancelButton);
 
-    form.append(ipInput, labelInput, aliasInput, addButton, cancelButton);
+    form.appendChild(fieldsRow);
     return form;
   }
 
@@ -519,7 +755,7 @@ export function initWledWidget(
     return wrap;
   }
 
-  function renderBasicControls() {
+  function renderWledBasicControls() {
     const seg = mainSegment();
     const isOn = targetSegmentIds.size ? Boolean(seg?.on) : Boolean(deviceState?.state?.on);
     const bri = targetSegmentIds.size ? seg?.bri ?? 128 : deviceState?.state?.bri ?? 128;
@@ -749,6 +985,120 @@ export function initWledWidget(
     return panel;
   }
 
+  // The HA-light equivalent of renderWledBasicControls above — deliberately
+  // small: on/off, a brightness slider (0-255, same scale WLED's own slider
+  // uses so nothing about the slider markup itself needed to change), and a
+  // color picker only when haLightSupportsColor says this entity actually
+  // reports a color-capable mode. No effects/palettes/presets/segments —
+  // those are WLED-specific concepts with no HA equivalent; anything beyond
+  // this common surface (a specific media_player command, a script/scene
+  // trigger) belongs in the Macro system's own "Call a service" action
+  // (home-assistant.js), not a live control here.
+  // Every command below updates haLightState LOCALLY right after a
+  // successful call, instead of re-fetching from HA — confirmed real bug
+  // otherwise: HA's REST API accepts and returns from a service call before
+  // the entity's own state has actually caught up (especially with a real
+  // physical bulb reporting back), so an immediate re-fetch reads the STALE
+  // value and the control shown is always one interaction behind what you
+  // just did. Same "trust what we just told the device" reasoning WLED's
+  // own sendRaw already uses, just genuinely necessary here rather than a
+  // nice-to-have — WLED's own device applies+reports state synchronously
+  // with no such lag. This can drift from the true state if something else
+  // changes the light (an HA automation, another user) — the device row's
+  // own Refresh button is the way back to a real read, same reconciliation
+  // model WLED already relies on (it has no live-push either).
+  function renderHaLightBasicControls() {
+    const wrap = el("div", "d-flex flex-column gap-2");
+    const entityId = config.selectedEntityId;
+    const isOn = haLightState?.state === "on";
+    const brightness = Number.isFinite(haLightState?.brightness) ? haLightState.brightness : 128;
+
+    const powerBriRow = el("div", "d-flex align-items-center gap-2");
+    const powerButton = el("button", `btn btn-sm ${isOn ? "btn-primary" : "btn-outline-secondary"}`, isOn ? "On" : "Off");
+    powerButton.type = "button";
+    powerButton.addEventListener("click", async () => {
+      const nextOn = !isOn;
+      try {
+        await setHaLightPower(dataManager, entityId, nextOn);
+        haLightState = { ...(haLightState || {}), state: nextOn ? "on" : "off" };
+        render();
+      } catch (error) {
+        status?.show?.(error?.message || "Unable to send command to this light.", { type: "error", timeout: 3000 });
+      }
+    });
+    powerBriRow.appendChild(powerButton);
+
+    // Gated on the entity's own reported capability now, matching the color
+    // picker's own gate just below — previously always shown regardless,
+    // which meant a plain on/off entity (a switch-like group, no brightness
+    // channel at all) got a slider that silently no-op'd on every move.
+    if (haLightSupportsBrightness(haLightState)) {
+      const briInput = document.createElement("input");
+      briInput.type = "range";
+      // 3, not HA's own raw-scale minimum of 1 — matches
+      // setHaLightBrightness's own MIN_SAFE_BRIGHTNESS floor (ha-light.js);
+      // the slider shouldn't offer a value that gets silently translated
+      // into "off" downstream. See that constant's own comment for why.
+      briInput.min = "3";
+      briInput.max = "255";
+      briInput.value = String(brightness);
+      briInput.className = "form-range flex-grow-1";
+      briInput.setAttribute("aria-label", "Brightness");
+
+      // A plain inline label to the slider's own right, not a tooltip/
+      // popup — a floating value bubble was tried first and confirmed a
+      // real overflow bug (positioned by percentage, it could render
+      // partway outside the widget/viewport at the high end and force a
+      // scrollbar). A label in normal document flow has no positioning
+      // math to get wrong. Percentage computed the same way HA's own
+      // percent-based UI would (round(value/255*100)), so it matches what
+      // HA's own dashboard would call the same level. Fixed width so the
+      // slider itself doesn't visibly resize as the label's own text
+      // width changes between "3%" and "100%".
+      const brightnessPercent = (value) => Math.round((Number(value) / 255) * 100);
+      const briLabel = el("span", "small text-body-secondary text-end", `${brightnessPercent(briInput.value)}%`);
+      briLabel.style.minWidth = "2.5rem";
+      briInput.addEventListener("input", () => {
+        briLabel.textContent = `${brightnessPercent(briInput.value)}%`;
+      });
+      briInput.addEventListener("change", async () => {
+        const nextBrightness = Number(briInput.value);
+        try {
+          await setHaLightBrightness(dataManager, entityId, nextBrightness);
+          haLightState = { ...(haLightState || {}), state: "on", brightness: nextBrightness };
+          render();
+        } catch (error) {
+          status?.show?.(error?.message || "Unable to send command to this light.", { type: "error", timeout: 3000 });
+        }
+      });
+      powerBriRow.append(briInput, briLabel);
+    }
+    wrap.appendChild(powerBriRow);
+
+    if (haLightSupportsColor(haLightState)) {
+      const colorRow = el("div", "d-flex align-items-center gap-2");
+      colorRow.appendChild(el("label", "small text-body-secondary mb-0", "Color"));
+      const colorInput = document.createElement("input");
+      colorInput.type = "color";
+      colorInput.className = "form-control form-control-color";
+      colorInput.value = Array.isArray(haLightState?.rgbColor) ? rgbToHex(haLightState.rgbColor) : "#ffffff";
+      colorInput.addEventListener("change", async () => {
+        const rgb = hexToRgb(colorInput.value);
+        try {
+          await setHaLightColor(dataManager, entityId, rgb);
+          haLightState = { ...(haLightState || {}), state: "on", rgbColor: rgb };
+          render();
+        } catch (error) {
+          status?.show?.(error?.message || "Unable to send command to this light.", { type: "error", timeout: 3000 });
+        }
+      });
+      colorRow.appendChild(colorInput);
+      wrap.appendChild(colorRow);
+    }
+
+    return wrap;
+  }
+
   function render() {
     if (destroyed) return;
     container.innerHTML = "";
@@ -762,8 +1112,10 @@ export function initWledWidget(
     // device row now (renderDeviceRow) — this just shows/hides each
     // section's own content in place, right where its toggle button is,
     // rather than a separate always-visible header row for a section that
-    // might not even be in use.
-    if (config.selectedIp && config.followEnabled) {
+    // might not even be in use. Both stay WLED-only (see this file's own
+    // header comment).
+    const isWledSelected = currentDeviceType() === "wled" && Boolean(config.selectedIp);
+    if (isWledSelected && config.followEnabled) {
       wrap.appendChild(renderFollowSection());
     }
 
@@ -771,13 +1123,15 @@ export function initWledWidget(
       wrap.appendChild(el("div", "small text-body-secondary", "Connecting…"));
     } else if (loadError) {
       wrap.appendChild(el("div", "small text-danger", loadError));
-    } else if (!config.selectedIp) {
+    } else if (!hasSelection() && currentDeviceType() === "wled") {
       wrap.appendChild(el("div", "small text-body-secondary", "Add a WLED device's IP address or hostname to get started."));
-    } else if (deviceState) {
-      wrap.appendChild(renderBasicControls());
+    } else if (currentDeviceType() === "haLight" && haLightState) {
+      wrap.appendChild(renderHaLightBasicControls());
+    } else if (currentDeviceType() === "wled" && deviceState) {
+      wrap.appendChild(renderWledBasicControls());
     }
 
-    if (config.selectedIp && advancedExpanded) {
+    if (isWledSelected && advancedExpanded) {
       wrap.appendChild(renderAdvancedSection());
     }
 
@@ -826,7 +1180,7 @@ export function initWledWidget(
   }
 
   render();
-  if (config.selectedIp) void refreshState();
+  if (hasSelection()) void refreshState();
   syncFollowWatch();
 
   return {
@@ -858,16 +1212,34 @@ export const WLED_MACRO_ACTIONS = {
 // header comment. Exported so every reader of the account-wide device list
 // (dashboard.js's own settings load, fetchWledDevices below) normalizes it
 // exactly the same way, rather than each keeping its own copy of this
-// filter/trim logic to drift out of sync.
+// filter/trim logic to drift out of sync. Handles both device types now —
+// a WLED entry needs a real `ip`, an HA-light entry needs a real
+// `entityId`; a bare/legacy entry (no `type` at all, from before the
+// Lighting generalization) is treated as "wled", matching DEFAULT_CONFIG's
+// own selectedType fallback.
 export function normalizeWledDeviceList(list) {
   return Array.isArray(list)
     ? list
-        .filter((entry) => entry && typeof entry.ip === "string" && entry.ip.trim())
-        .map((entry) => ({
-          ip: entry.ip.trim(),
-          label: typeof entry.label === "string" ? entry.label.trim() : "",
-          alias: typeof entry.alias === "string" ? entry.alias.trim() : "",
-        }))
+        .filter((entry) => {
+          if (!entry) return false;
+          if (entry.type === "haLight") return typeof entry.entityId === "string" && entry.entityId.trim();
+          return typeof entry.ip === "string" && entry.ip.trim();
+        })
+        .map((entry) =>
+          entry.type === "haLight"
+            ? {
+                type: "haLight",
+                entityId: entry.entityId.trim(),
+                label: typeof entry.label === "string" ? entry.label.trim() : "",
+                alias: typeof entry.alias === "string" ? entry.alias.trim() : "",
+              }
+            : {
+                type: "wled",
+                ip: entry.ip.trim(),
+                label: typeof entry.label === "string" ? entry.label.trim() : "",
+                alias: typeof entry.alias === "string" ? entry.alias.trim() : "",
+              }
+        )
     : [];
 }
 
@@ -985,7 +1357,12 @@ function ensureAliasPromptModal() {
 // fails with no way to fix it in the moment: the GM aliases it right here
 // and the macro keeps going.
 export async function promptForWledAlias({ dataManager, status, alias, devices }) {
-  const deviceList = normalizeWledDeviceList(devices);
+  // WLED-only — an HA-light entry has no `.ip` at all, and this whole flow
+  // (alias resolution for a `wled`-type macro action's own `target`) only
+  // ever runs for that action type in the first place (see macro-runner.js's
+  // own `if (action?.type === "wled")` gate), so an HA-light entry showing
+  // up here would just be a broken, irrelevant option.
+  const deviceList = normalizeWledDeviceList(devices).filter((device) => device.type !== "haLight");
   if (!deviceList.length) {
     status?.show?.(
       `No WLED device aliased "${alias}", and none saved to pick from yet — add one in the WLED widget first.`,

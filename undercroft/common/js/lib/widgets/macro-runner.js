@@ -15,6 +15,7 @@
 // them (see spotlight.js's own resolveSpotlightData: any (kind,id) pair
 // works, posted by anyone).
 import { runWledMacroAction, resolveWledDeviceByAlias, promptForWledAlias } from "./wled.js";
+import { runHaMacroAction } from "./home-assistant.js";
 import { runSoundboardMacroAction } from "./soundboard.js";
 import { runCombatMacroAction } from "./combat-tracker.js";
 import { runCharacterMacroAction } from "./character-sheet.js";
@@ -112,6 +113,7 @@ function makeLiveWidgetMacroAction(label) {
 
 const ACTION_HANDLERS = {
   wled: runWledMacroAction,
+  homeAssistant: runHaMacroAction,
   soundboard: runSoundboardMacroAction,
   combat: runCombatMacroAction,
   character: runCharacterMacroAction,

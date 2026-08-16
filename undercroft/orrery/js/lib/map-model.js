@@ -199,7 +199,7 @@ export function createGridCell({ key, coord, gridType = "square" } = {}) {
 // error/hidden state for an inapplicable field" precedent a wall's own
 // doorState follows on a plain (non-door) wall.
 export function createMarkerElement({
-  refKind = "", refId = "", label = "", image = "", outlineColor = "", position, sizeCells = 1, opacity = 1,
+  refKind = "", refId = "", refAnchor = null, label = "", image = "", outlineColor = "", position, sizeCells = 1, opacity = 1,
   visionRangeBinding = "", visionRangeFormula = "", visionRangeText = "0",
 } = {}) {
   return {
@@ -207,6 +207,15 @@ export function createMarkerElement({
     kind: "marker",
     refKind,
     refId,
+    // Meaningful only when refKind === "journal" — `null` (the default)
+    // means the whole page, same as Handout's own contentRef.anchor;
+    // `{type: "heading"|"quest", value}` narrows it to one heading's own
+    // section or one quest's own callout, matching the exact same
+    // reference-target granularity common/js/lib/widgets/handout.js's own
+    // picker offers for a journal-kind selection — see
+    // orrery/js/app.js's own renderMarkerElementSelectionEditor for where
+    // it's populated/read.
+    refAnchor,
     label,
     image,
     outlineColor,
