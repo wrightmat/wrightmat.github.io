@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Undercroft Repository</title>
     <script src="../common/js/theme-init.js"></script>
-    <link rel="stylesheet" href="../common/vendor/bootstrap/bootstrap.min.css" />
     <link rel="stylesheet" href="../common/css/shell.css" />
     <link rel="stylesheet" href="css/styles.css" />
   </head>
@@ -17,36 +16,15 @@
         <div data-pane-content="left">
           <section class="d-flex flex-column gap-3">
             <div class="btn-toolbar justify-content-center" role="toolbar" aria-label="Repository actions">
-              <div class="btn-group" role="group" data-page-toolbar-mount>
-                <!-- One button, three stages (View -> Edit -> Relationships ->
-                     View, cyclic) — icon/label always describe what clicking
-                     switches TO, same idiom applyMode already used for the
-                     original two-stage version (see js/app.js's own
-                     updateModeButtonDisplay). Folded Relationships in here
-                     rather than a separate button so this toolbar's own
-                     button count stays at 7 total (6 page-action buttons +
-                     this one) instead of 8. -->
-                <button
-                  class="btn btn-outline-secondary p-2"
-                  type="button"
-                  data-action="toggle-mode"
-                  disabled
-                  data-bs-toggle="tooltip"
-                  data-bs-placement="bottom"
-                  data-bs-title="View"
-                >
-                  <span data-repository-mode-icon="view">
-                    <span class="iconify fs-5" data-icon="tabler:eye" aria-hidden="true"></span>
-                  </span>
-                  <span class="d-none" data-repository-mode-icon="edit">
-                    <span class="iconify fs-5" data-icon="tabler:pencil" aria-hidden="true"></span>
-                  </span>
-                  <span class="d-none" data-repository-mode-icon="relationships">
-                    <span class="iconify fs-5" data-icon="tabler:affiliate" aria-hidden="true"></span>
-                  </span>
-                  <span class="visually-hidden" data-repository-mode-label>View</span>
-                </button>
-              </div>
+              <!-- New/Duplicate/Save/Delete built in here by js/app.js's own
+                   createToolbarButtonGroup call; Undo/Redo get their own
+                   little two-button group right after (data-page-undo-
+                   toolbar-mount, ms-2 gap) — same convention every other
+                   tool's toolbar now uses. View/Edit moved out to the center
+                   pane's own header row (see main's own data-repository-
+                   header below), it's no longer part of this toolbar. -->
+              <div class="btn-group" role="group" data-page-toolbar-mount></div>
+              <div class="btn-group ms-2" role="group" data-page-undo-toolbar-mount></div>
             </div>
           </section>
           <div class="d-flex gap-2">
@@ -61,93 +39,122 @@
           <div class="d-flex flex-column gap-1" data-repository-page-tree></div>
         </div>
 
-        <main class="workbench-main flex-grow-1 p-3 overflow-auto">
-          <div data-editor-empty-mount></div>
-          <div class="d-none card shadow-theme h-100" data-repository-editor style="min-height: 0;">
-            <div class="card-body d-flex flex-column gap-3" style="min-height: 0; overflow: hidden;">
-              <div class="d-flex align-items-center gap-2 flex-wrap flex-shrink-0">
-                <input
-                  class="form-control form-control-lg border-0 bg-transparent px-0"
-                  style="flex: 1 1 0%; min-width: 0;"
-                  type="text"
-                  placeholder="Untitled page"
-                  aria-label="Page title"
-                  data-repository-title
-                />
-                <!-- A lightweight markdown-formatting toolbar, NOT a
-                     rich-text/WYSIWYG editor — every button wraps/prefixes
-                     the textarea's own current selection with real Markdown
-                     syntax directly (see js/app.js's own
-                     applyMarkdownWrap/applyMarkdownLinePrefix/
-                     toggleBold/toggleHeadingLevel/insertCallout/
-                     createTablePickerPopover), so the page's body stays
-                     plain, valid Markdown the whole time. Sits beside the
-                     title (not its own full row) so Edit mode doesn't push
-                     the textarea down — .btn-toolbar's own flex-wrap lets
-                     the button groups drop below the title on a narrow
-                     window instead of overflowing. Hidden in View mode
-                     alongside the textarea itself (applyMode). -->
-                <div class="btn-toolbar flex-shrink-0" role="toolbar" aria-label="Formatting" data-repository-format-toolbar>
-                  <div class="btn-group" role="group" data-repository-format-style-mount></div>
-                  <div class="btn-group ms-1" role="group" data-repository-format-heading-mount></div>
-                  <div class="btn-group ms-1" role="group" data-repository-format-block-mount></div>
-                  <div class="btn-group ms-1" role="group" data-repository-format-insert-mount></div>
-                </div>
-              </div>
-              <textarea
-                class="form-control font-monospace"
-                style="flex: 1 1 0; min-height: 0; resize: none"
-                placeholder="Write in Markdown…"
-                data-repository-body
-              ></textarea>
-              <div class="d-none border rounded-3 bg-body p-3 repository-preview" style="flex: 1 1 0; min-height: 0; overflow-y: auto" data-repository-preview></div>
+        <main class="workbench-main flex-grow-1 p-3 overflow-auto d-flex flex-column gap-3">
+          <!-- The suite-wide Mode/View header — the "Select a page..."
+               empty-state message (condensed, left-aligned, no card — see
+               js/app.js's own createEmptyStateCard "inline" variant call,
+               only ever visible while Mode=Page with nothing selected) flush
+               on the left, ms-auto pushing Mode (Page/Relationships/
+               Timeline, a real labeled button group, js/app.js's own
+               createModeToggleGroup call) plus, to its left, a View cycle
+               button (View<->Edit, only rendered while Mode=Page — a
+               per-PAGE concern, absent on Relationships/Timeline) to the
+               right regardless of whether the empty-state message is
+               present. See js/app.js's own applyActiveTab/setActiveTab/
+               renderPageViewToggle. -->
+          <div class="d-flex align-items-center gap-2 flex-shrink-0" data-repository-header>
+            <div data-editor-empty-mount></div>
+            <div class="d-flex align-items-center gap-2 ms-auto">
+              <div data-repository-view-toggle-mount></div>
+              <div data-repository-mode-toggle-mount></div>
             </div>
           </div>
 
-          <!-- A read-only graph over already-written content (wikilinks +
-               quest titles + code-block references) — see
-               repository/js/lib/relationships-graph.js. A separate
-               top-level view from the page editor above (the third stage of
-               the left pane's own View/Edit/Relationships button — see
-               js/app.js's own advanceRepositoryStage), not a per-page
-               panel, since it's scoped to the whole workspace, not
-               whichever page happens to be loaded. -->
-          <div class="d-none card shadow-theme h-100" data-repository-relationships style="min-height: 0;">
-            <div class="card-body d-flex flex-column gap-2" style="min-height: 0;">
-              <div class="repository-graph-stage" data-repository-graph-container>
-                <div class="repository-graph-content" data-repository-graph-content>
-                  <svg data-repository-graph-svg viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid meet"></svg>
-                </div>
-                <!-- Which node kinds are drawn — checkboxes are built into
-                     data-repository-graph-filter-menu at runtime (js/app.js's
-                     own renderGraphFilterOptions), one per kind actually
-                     present in the current graph, since the set of kinds
-                     varies by workspace. data-bs-auto-close="outside" so
-                     checking several boxes in a row doesn't close the menu
-                     after each click. -->
-                <div class="repository-graph-filter" data-repository-graph-filter>
-                  <div class="dropdown">
-                    <button
-                      class="btn btn-outline-secondary btn-sm dropdown-toggle"
-                      type="button"
-                      data-bs-toggle="dropdown"
-                      data-bs-auto-close="outside"
-                      aria-expanded="false"
-                    >
-                      <span class="iconify" data-icon="tabler:filter" aria-hidden="true"></span>
-                      <span class="visually-hidden">Filter by type</span>
-                    </button>
-                    <div class="dropdown-menu p-2" data-repository-graph-filter-menu style="min-width: 12rem"></div>
+          <div class="flex-grow-1 d-flex flex-column" style="min-height: 0;">
+            <div class="d-none card shadow-theme h-100" data-repository-editor style="min-height: 0;">
+              <div class="card-body d-flex flex-column gap-3" style="min-height: 0; overflow: hidden;">
+                <div class="d-flex align-items-center gap-2 flex-wrap flex-shrink-0">
+                  <input
+                    class="form-control form-control-lg border-0 bg-transparent px-0"
+                    style="flex: 1 1 0%; min-width: 0;"
+                    type="text"
+                    placeholder="Untitled page"
+                    aria-label="Page title"
+                    data-repository-title
+                  />
+                  <!-- A lightweight markdown-formatting toolbar, NOT a
+                       rich-text/WYSIWYG editor — every button wraps/prefixes
+                       the textarea's own current selection with real Markdown
+                       syntax directly (see js/app.js's own
+                       applyMarkdownWrap/applyMarkdownLinePrefix/
+                       toggleBold/toggleHeadingLevel/insertCallout/
+                       createTablePickerPopover), so the page's body stays
+                       plain, valid Markdown the whole time. Sits beside the
+                       title (not its own full row) so Edit mode doesn't push
+                       the textarea down — .btn-toolbar's own flex-wrap lets
+                       the button groups drop below the title on a narrow
+                       window instead of overflowing. Hidden in View mode
+                       alongside the textarea itself (applyMode). -->
+                  <div class="btn-toolbar flex-shrink-0" role="toolbar" aria-label="Formatting" data-repository-format-toolbar>
+                    <div class="btn-group" role="group" data-repository-format-style-mount></div>
+                    <div class="btn-group ms-1" role="group" data-repository-format-heading-mount></div>
+                    <div class="btn-group ms-1" role="group" data-repository-format-block-mount></div>
+                    <div class="btn-group ms-1" role="group" data-repository-format-insert-mount></div>
                   </div>
                 </div>
-                <div
-                  class="repository-graph-controls d-flex align-items-center gap-2 flex-wrap"
-                  data-repository-graph-controls
-                >
-                  <div class="btn-group btn-group-sm" role="group" aria-label="Relationships zoom controls" data-repository-graph-toolbar-mount></div>
-                </div>
+                <textarea
+                  class="form-control font-monospace"
+                  style="flex: 1 1 0; min-height: 0; resize: none"
+                  placeholder="Write in Markdown…"
+                  data-repository-body
+                ></textarea>
+                <div class="d-none border rounded-3 bg-body p-3 repository-preview" style="flex: 1 1 0; min-height: 0; overflow-y: auto" data-repository-preview></div>
               </div>
-              <div class="d-none" data-repository-graph-empty></div>
+            </div>
+
+            <!-- A read-only graph over already-written content (wikilinks +
+                 quest titles + code-block references) — see
+                 repository/js/lib/relationships-graph.js. -->
+            <div class="d-none card shadow-theme h-100" data-repository-relationships style="min-height: 0;">
+              <div class="card-body d-flex flex-column gap-2" style="min-height: 0;">
+                <div class="repository-graph-stage" data-repository-graph-container>
+                  <div class="repository-graph-content" data-repository-graph-content>
+                    <svg data-repository-graph-svg viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid meet"></svg>
+                  </div>
+                  <!-- Which node kinds are drawn — checkboxes are built into
+                       data-repository-graph-filter-menu at runtime (js/app.js's
+                       own renderGraphFilterOptions), one per kind actually
+                       present in the current graph, since the set of kinds
+                       varies by workspace. data-bs-auto-close="outside" so
+                       checking several boxes in a row doesn't close the menu
+                       after each click. -->
+                  <div class="repository-graph-filter" data-repository-graph-filter>
+                    <div class="dropdown">
+                      <button
+                        class="btn btn-outline-secondary btn-sm dropdown-toggle"
+                        type="button"
+                        data-bs-toggle="dropdown"
+                        data-bs-auto-close="outside"
+                        aria-expanded="false"
+                      >
+                        <span class="iconify" data-icon="tabler:filter" aria-hidden="true"></span>
+                        <span class="visually-hidden">Filter by type</span>
+                      </button>
+                      <div class="dropdown-menu p-2" data-repository-graph-filter-menu style="min-width: 12rem"></div>
+                    </div>
+                  </div>
+                  <div
+                    class="repository-graph-controls d-flex align-items-center gap-2 flex-wrap"
+                    data-repository-graph-controls
+                  >
+                    <div class="btn-group btn-group-sm" role="group" aria-label="Relationships zoom controls" data-repository-graph-toolbar-mount></div>
+                  </div>
+                </div>
+                <div class="d-none" data-repository-graph-empty></div>
+              </div>
+            </div>
+
+            <!-- A computed, day-sorted list of every `date:` reference
+                 across the workspace (repository/js/lib/journal-timeline.js)
+                 — same "computed on demand, not a new authored entity"
+                 principle Relationships above already establishes. A plain
+                 grouped list, not graph-view.js's force-directed engine — a
+                 timeline is an ordered axis, not a network. -->
+            <div class="d-none card shadow-theme h-100" data-repository-timeline style="min-height: 0;">
+              <div class="card-body d-flex flex-column gap-2" style="min-height: 0; overflow-y: auto;">
+                <div data-repository-timeline-list></div>
+                <div class="d-none" data-repository-timeline-empty></div>
+              </div>
             </div>
           </div>
         </main>

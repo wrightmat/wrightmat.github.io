@@ -58,5 +58,13 @@ export function createIdbStore(dbName, storeName, { keyPath } = {}) {
     async clear() {
       return withStore("readwrite", (store) => store.clear());
     },
+    // Deletes one record by its own store key (the value `put` resolved to,
+    // for an auto-incrementing store) — for a caller that needs to remove
+    // only ITS OWN entries rather than wiping the whole shared store (see
+    // audio-recorder.js's own per-session cleanup for why `clear()` alone
+    // isn't safe when more than one logical "session" can share a store).
+    async delete(key) {
+      return withStore("readwrite", (store) => store.delete(key));
+    },
   };
 }

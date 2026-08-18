@@ -228,10 +228,14 @@ const WIDGET_CATALOG = [
     id: "audioRecorder",
     label: "Audio Recorder",
     icon: "tabler:microphone",
-    // GM-only, local-only — no campaign/role concept at all, same bar as
-    // Lighting above. One at a time is the sane default for "recording this
-    // session's audio"; revisit `multiple` if a real need for more than one
-    // concurrent recording ever comes up.
+    // GM-only, local-only recording/transcription — same bar as Lighting
+    // above. One at a time is the sane default for "recording this session's
+    // audio"; revisit `multiple` if a real need for more than one concurrent
+    // recording ever comes up. groupId/shareToken ARE passed through now
+    // (unlike most of this widget's own local-only design) — only for its
+    // combined session-record export, which reads (never writes) the active
+    // campaign's own Game Log to interleave with the transcript; nothing
+    // about the recording itself becomes shared/server-side because of this.
     canAdd: () => dataManager.meetsTier("gm"),
     init: (container, ctx) =>
       initAudioRecorderWidget(container, {
@@ -239,6 +243,8 @@ const WIDGET_CATALOG = [
         setContentRef: ctx.setContentRef,
         status: ctx.status,
         dataManager: ctx.dataManager,
+        groupId: ctx.groupContext?.groupId || "",
+        shareToken: ctx.groupContext?.shareToken || "",
       }),
   },
   {

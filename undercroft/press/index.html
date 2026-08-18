@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Undercroft Press</title>
     <script src="../common/js/theme-init.js"></script>
-    <link rel="stylesheet" href="../common/vendor/bootstrap/bootstrap.min.css" />
     <link rel="stylesheet" href="../common/vendor/bootstrap-icons/bootstrap-icons.css" />
     <link rel="stylesheet" href="../common/css/shell.css" />
     <link rel="stylesheet" href="css/styles.css" />
@@ -20,72 +19,61 @@
             <section class="d-flex flex-column gap-3">
               <div class="btn-toolbar justify-content-center" role="toolbar" aria-label="Press actions">
                 <div class="btn-group" role="group" data-press-toolbar-mount></div>
+                <div class="btn-group ms-2" role="group" data-press-undo-toolbar-mount></div>
               </div>
-              <div class="d-flex flex-column gap-3" id="press-palette">
-                <div class="d-flex justify-content-between align-items-center">
-                  <h3 class="h6 mb-0 text-uppercase fw-semibold text-body-secondary d-flex align-items-center gap-2">
-                    <span>Palette</span>
-                    <span class="align-middle" data-help-topic="press.palette" data-help-insert="replace"></span>
-                  </h3>
+
+              <!-- Selections — moved from the center pane. Reciprocal
+                   collapse behavior with Palette below (see js/app.js's own
+                   initPressCollapsibles/updatePressSelectionPaletteCollapse):
+                   while nothing is selected, this starts expanded and
+                   Palette starts collapsed; the moment a Template is picked,
+                   this collapses and Palette expands instead. -->
+              <div data-selection-mount></div>
+              <div class="d-flex flex-column gap-3" data-selection-panel>
+                  <div class="d-flex flex-column gap-2">
+                    <div data-inspector-mount="source-select"></div>
+                    <div id="sourceInputContainer" class="d-flex flex-column gap-2"></div>
+                  </div>
+                  <div class="d-flex flex-column gap-2" id="press-templates">
+                    <div data-inspector-mount="template-select"></div>
+                    <div data-inspector-mount="format-select"></div>
+                    <div data-inspector-mount="orientation-select"></div>
+                  </div>
+                  <div class="d-flex justify-content-end">
+                    <button class="btn btn-outline-primary" id="generateButton">Generate Print</button>
+                  </div>
                 </div>
+
+              <div data-palette-mount></div>
+              <div class="d-flex flex-column gap-3" data-palette-panel>
                 <div class="d-grid gap-2" data-press-palette></div>
               </div>
+
               <div data-sample-data-mount></div>
               <div class="mt-auto" data-json-mount></div>
             </section>
         </div>
 
         <main class="workbench-main flex-grow-1 p-3 overflow-auto d-flex flex-column gap-4">
-            <div class="card shadow-theme">
-              <div class="card-body">
-                <div data-selection-mount></div>
-                <div class="d-flex flex-column gap-3" data-selection-panel>
-                    <div class="row g-3 align-items-start">
-                      <div class="col-12 col-lg-6" data-inspector-mount="source-select"></div>
-                      <div class="col-12 col-lg-6 d-flex flex-column gap-2">
-                        <div id="sourceInputContainer" class="d-flex flex-column gap-2"></div>
-                      </div>
-                    </div>
-                    <div class="row g-3 align-items-start" id="press-templates">
-                      <div class="col-12 col-lg-4" data-inspector-mount="template-select"></div>
-                      <div class="col-12 col-lg-4" data-inspector-mount="format-select"></div>
-                      <div class="col-12 col-lg-4" data-inspector-mount="orientation-select"></div>
-                    </div>
-                    <div class="d-flex justify-content-end">
-                      <button class="btn btn-outline-primary" id="generateButton">Generate Print</button>
-                    </div>
-                  </div>
-              </div>
-            </div>
+            <!-- The print surface now makes up the entire center pane — no
+                 more separate Selections card above it (moved to the left
+                 pane). Print itself (this tool's own one true primary
+                 action, formerly the toolbar's filled-blue button) sits
+                 upper-left, in the space that freed up; the Mode toggle
+                 (Live Preview/Grid View — createModeToggleGroup, replacing
+                 the old nav-tabs) sits upper-right, ms-auto-pushed same as
+                 every other tool's own Mode/View header. -->
             <div class="card shadow-theme">
               <div class="card-header bg-body-tertiary d-flex align-items-center justify-content-between flex-wrap gap-2">
-                <div class="d-flex align-items-center gap-3">
-                  <ul class="nav nav-tabs" role="tablist" data-view-tabs>
-                    <li class="nav-item" role="presentation">
-                      <button
-                        class="nav-link active py-1 px-2"
-                        type="button"
-                        role="tab"
-                        aria-selected="true"
-                        data-view-tab="preview"
-                        data-bs-toggle="tooltip"
-                        data-bs-placement="bottom"
-                        data-bs-title="The full sheet as it will print, one physical page at a time"
-                      >Live Preview</button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                      <button
-                        class="nav-link py-1 px-2"
-                        type="button"
-                        role="tab"
-                        aria-selected="false"
-                        data-view-tab="grid"
-                        data-bs-toggle="tooltip"
-                        data-bs-placement="bottom"
-                        data-bs-title="Front and back of one specific card/chip at a time — where Make Unique targets a per-item override"
-                      >Grid View</button>
-                    </li>
-                  </ul>
+                <div class="d-flex align-items-center gap-3 flex-wrap">
+                  <button
+                    class="btn btn-primary btn-sm"
+                    type="button"
+                    id="printButton"
+                  >
+                    <span class="iconify" data-icon="tabler:printer" aria-hidden="true"></span>
+                    Print
+                  </button>
                   <div class="press-guide-legend" data-canvas-guide-legend hidden></div>
                 </div>
                 <div class="btn-group btn-group-sm" role="group" aria-label="Canvas zoom">
@@ -161,6 +149,7 @@
                     >+</button>
                   </div>
                 </div>
+                <div class="d-flex align-items-center gap-2 ms-auto" data-press-mode-toggle-mount></div>
               </div>
               <div class="card-body bg-body-secondary">
                 <div data-view-panel="preview">
@@ -179,17 +168,23 @@
         <div data-pane-content="right">
             <div data-template-properties-mount></div>
             <div class="d-flex flex-column gap-4" data-template-panel data-template-inspector>
-              <div class="btn-toolbar justify-content-center" role="toolbar" aria-label="Template actions">
-                <div class="btn-group" role="group" data-template-toolbar-mount></div>
-              </div>
               <div class="d-flex flex-column gap-3">
                 <div data-inspector-mount="template-id"></div>
                 <div data-inspector-mount="template-name"></div>
-                <div data-inspector-mount="template-description"></div>
                 <div data-inspector-mount="template-type"></div>
+                <div data-inspector-mount="template-description"></div>
+              </div>
+              <!-- Same collapsible-group shape as the Component Inspector's own
+                   Text/Colors/Border/Behavior/Advanced groups just below
+                   (data-inspector-text-group etc.) — a plain heading div as the
+                   first child, everything after it becomes the collapsible body
+                   (see makeInspectorGroupCollapsible). -->
+              <div class="d-flex flex-column gap-2" data-inspector-template-text-group>
+                <div class="text-uppercase fs-6 fw-semibold text-body-secondary">Text</div>
                 <div data-inspector-mount="template-base-font"></div>
               </div>
-              <div class="d-flex flex-column gap-2">
+              <div class="d-flex flex-column gap-2" data-inspector-template-formats-group>
+                <div class="text-uppercase fs-6 fw-semibold text-body-secondary">Formats</div>
                 <div data-inspector-mount="template-formats"></div>
                 <div class="row g-2 align-items-end" data-custom-size-form>
                   <div class="col-4" data-inspector-mount="custom-size-label"></div>
@@ -200,44 +195,38 @@
                   </div>
                 </div>
               </div>
-              <div data-inspector-mount="template-sources"></div>
-              <section
-                class="border rounded-3 bg-body p-3 d-flex flex-column gap-3"
+              <div class="d-flex flex-column gap-2" data-inspector-template-sources-group>
+                <div class="text-uppercase fs-6 fw-semibold text-body-secondary">Supported Sources</div>
+                <div data-inspector-mount="template-sources"></div>
+              </div>
+              <div
+                class="d-flex flex-column gap-2"
                 id="press-page-bindings"
                 data-template-page-bindings
+                data-inspector-page-bindings-group
               >
-                <div class="d-flex align-items-center justify-content-between">
-                  <div class="d-flex align-items-center gap-2">
-                    <h3 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Page Bindings</h3>
-                    <span class="align-middle" data-help-topic="press.page-bindings" data-help-insert="replace"></span>
-                  </div>
-                  <span data-page-bindings-toggle-mount></span>
+                <div class="d-flex align-items-center gap-2">
+                  <span class="text-uppercase fs-6 fw-semibold text-body-secondary">Page Bindings</span>
+                  <span class="align-middle" data-help-topic="press.page-bindings" data-help-insert="replace"></span>
                 </div>
-                <div class="d-flex flex-column gap-3" data-page-bindings-panel>
-                  <div data-inspector-mount="template-front-repeat"></div>
-                  <div data-inspector-mount="template-back-repeat"></div>
-                  <div data-inspector-mount="template-front-data"></div>
-                  <div data-inspector-mount="template-back-data"></div>
+                <div data-inspector-mount="template-front-repeat"></div>
+                <div data-inspector-mount="template-back-repeat"></div>
+                <div data-inspector-mount="template-front-data"></div>
+                <div data-inspector-mount="template-back-data"></div>
+              </div>
+              <div class="d-flex flex-column gap-2" data-template-card-group data-inspector-grid-properties-group hidden>
+                <div class="text-uppercase fs-6 fw-semibold text-body-secondary">Grid Properties</div>
+                <div class="row g-2">
+                  <div class="col-6" data-inspector-mount="template-card-width"></div>
+                  <div class="col-6" data-inspector-mount="template-card-height"></div>
+                  <div class="col-6" data-inspector-mount="template-card-gutter"></div>
+                  <div class="col-6" data-inspector-mount="template-card-safe-inset"></div>
+                  <div class="col-6" data-inspector-mount="template-card-bleed"></div>
+                  <div class="col-6" data-inspector-mount="template-card-corner-radius"></div>
+                  <div class="col-6" data-inspector-mount="template-card-columns"></div>
+                  <div class="col-6" data-inspector-mount="template-card-rows"></div>
                 </div>
-              </section>
-              <section class="border rounded-3 bg-body p-3 d-flex flex-column gap-3" data-template-card-group hidden>
-                <div class="d-flex align-items-center justify-content-between">
-                  <h3 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Grid Properties</h3>
-                  <span data-card-toggle-mount></span>
-                </div>
-                <div class="d-flex flex-column gap-3" data-card-panel>
-                  <div class="row g-2">
-                    <div class="col-6" data-inspector-mount="template-card-width"></div>
-                    <div class="col-6" data-inspector-mount="template-card-height"></div>
-                    <div class="col-6" data-inspector-mount="template-card-gutter"></div>
-                    <div class="col-6" data-inspector-mount="template-card-safe-inset"></div>
-                    <div class="col-6" data-inspector-mount="template-card-bleed"></div>
-                    <div class="col-6" data-inspector-mount="template-card-corner-radius"></div>
-                    <div class="col-6" data-inspector-mount="template-card-columns"></div>
-                    <div class="col-6" data-inspector-mount="template-card-rows"></div>
-                  </div>
-                </div>
-              </section>
+              </div>
             </div>
           <hr class="border-body-tertiary opacity-50 my-2" />
           <div data-component-properties-mount></div>

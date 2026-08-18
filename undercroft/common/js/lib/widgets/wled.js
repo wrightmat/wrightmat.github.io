@@ -32,7 +32,12 @@
 // one; this file is the composer that picks which driver to call based on
 // the selected device's own type. Follow-a-Clock and Advanced Mode stay
 // WLED-only for now — extending either to HA lights is a reasonable later
-// addition, not something either device type needs to function today.
+// addition, not something either device type needs to function today. Live
+// Poll (below) is the reverse case — HA-only, since only an HA light's
+// state can change from outside this widget entirely (a physical switch,
+// another HA automation); a WLED device only ever changes because THIS
+// widget (or its own app/API directly) told it to, so there's nothing
+// external for a WLED card to poll for.
 import { el } from "../dom.js";
 import { resolveActiveSpotlightId, resolveSpotlightData } from "../spotlight.js";
 import { connectLiveStream } from "../live.js";
@@ -57,6 +62,18 @@ import {
 // resolveActiveSpotlightId every poll, never a baked-in instance id.
 const FOLLOW_POLL_INTERVAL_MS = 5000;
 
+// HA light state can change from OUTSIDE this widget entirely (a physical
+// switch, Google Home, an HA automation) — unlike WLED's own Follow-a-Clock
+// above, this isn't pushing state out on a schedule, it's periodically
+// checking whether HA's own state drifted from what this card last showed.
+// Off by default (config.haLivePollEnabled) and a much coarser 30s, not
+// FOLLOW_POLL_INTERVAL_MS's 5s — a live table-lighting cue needs to react
+// fast; noticing "someone flipped the physical switch" doesn't, and this
+// polls even while nobody's looking at the dashboard tab, so the interval
+// deliberately errs slow rather than hammering the GM's own HA instance for
+// every idle card left open between sessions.
+const HA_POLL_INTERVAL_MS = 30000;
+
 const DEFAULT_CONFIG = {
   // Absent/"wled" on any card saved before the Lighting generalization —
   // selectedIp being set is exactly what "wled" already implies, so no
@@ -70,6 +87,11 @@ const DEFAULT_CONFIG = {
   // — a real dot-clock look, not just a dimmer.
   followMode: "brightness",
   followSegmentIds: [],
+  // Opt-in per card (see HA_POLL_INTERVAL_MS's own comment on why this
+  // isn't just always-on) — absent on any card saved before this existed,
+  // which correctly defaults to false (no behavior change for an existing
+  // card until a GM turns it on).
+  haLivePollEnabled: false,
 };
 
 function normalizeWledBase(raw) {
@@ -199,6 +221,10 @@ export function initWledWidget(
   // config.followEnabled and a device is selected (see syncFollowWatch).
   let followTimer = null;
   let followLiveStream = null;
+  // HA light live-poll's own handle — only running while config.haLivePollEnabled,
+  // an HA light is selected, and the widget hasn't been destroyed (see
+  // syncHaPollWatch).
+  let haPollTimer = null;
   // Dedupes identical clock states between polls so an unchanged clock
   // doesn't repeatedly re-POST the same brightness/segment state to the
   // device every 5s for no reason.
@@ -430,6 +456,21 @@ export function initWledWidget(
     followLiveStream.subscribe("group_log", () => void refreshFollow());
   }
 
+  // Started/stopped whenever haLivePollEnabled or the selected device
+  // changes — mirrors syncFollowWatch's own shape, just polling HA's own
+  // entity-state endpoint (fetchHaLightState, silently — no loading spinner
+  // for a background poll the GM didn't explicitly ask for) instead of
+  // pushing a clock's fill outward. Never runs for a WLED device or while
+  // the toggle is off, same "don't poll with nothing to check" guard.
+  function syncHaPollWatch() {
+    if (haPollTimer) {
+      haPollTimer.stop();
+      haPollTimer = null;
+    }
+    if (currentDeviceType() !== "haLight" || !config.haLivePollEnabled || !config.selectedEntityId || !dataManager) return;
+    haPollTimer = createReliableInterval(() => void refreshHaLightState({ silent: true }), HA_POLL_INTERVAL_MS);
+  }
+
   // A composite key so ONE <select> can list both device types without
   // colliding (a WLED IP and an HA entity id live in different namespaces
   // entirely) — encode/decode kept together so renderDeviceRow's population
@@ -458,6 +499,7 @@ export function initWledWidget(
     haLightState = null;
     void refreshState();
     syncFollowWatch();
+    syncHaPollWatch();
   }
 
   function renderDeviceRow() {
@@ -503,6 +545,7 @@ export function initWledWidget(
       deviceState = null;
       haLightState = null;
       syncFollowWatch();
+      syncHaPollWatch();
       render();
     });
     row.appendChild(removeButton);
@@ -534,6 +577,24 @@ export function initWledWidget(
       render();
     });
     row.appendChild(advancedButton);
+
+    // HA-light-only, mirroring Follow/Advanced's own WLED-only gating —
+    // opt-in per card (HA_POLL_INTERVAL_MS's own comment on why), so this
+    // stays off until a GM deliberately wants this card to notice state
+    // changes made outside Undercroft.
+    const isHaSelected = currentDeviceType() === "haLight" && Boolean(config.selectedEntityId);
+    const livePollButton = iconButton("tabler:activity", "Live Poll (every 30s)", { active: config.haLivePollEnabled });
+    livePollButton.disabled = !isHaSelected;
+    livePollButton.title = isHaSelected
+      ? "Live Poll — check for state changes made outside Undercroft every 30s"
+      : "Live Poll (HA light/group devices only)";
+    livePollButton.addEventListener("click", () => {
+      const next = !config.haLivePollEnabled;
+      persistInstanceConfig({ haLivePollEnabled: next });
+      syncHaPollWatch();
+      render();
+    });
+    row.appendChild(livePollButton);
 
     return row;
   }
@@ -1182,6 +1243,7 @@ export function initWledWidget(
   render();
   if (hasSelection()) void refreshState();
   syncFollowWatch();
+  syncHaPollWatch();
 
   return {
     runMacroAction,
@@ -1189,6 +1251,7 @@ export function initWledWidget(
       destroyed = true;
       if (followTimer) followTimer.stop();
       followLiveStream?.close();
+      if (haPollTimer) haPollTimer.stop();
       container.innerHTML = "";
     },
   };

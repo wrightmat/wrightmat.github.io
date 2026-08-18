@@ -78,6 +78,7 @@ from .storage import (
     list_bucket,
     list_owned_content,
     save_item,
+    search_content,
     update_owner,
 )
 TOUCH_FLUSH_INTERVAL_SECONDS = 30
@@ -1943,6 +1944,23 @@ def register_routes():
         return json_response(payload)
 
     router.add("GET", r"^/content/owned$", handle_owned_content)
+
+    # GET /content/search?q=<term> — the suite-wide header search
+    # (common/js/lib/suite-search.js). Anonymous users get an empty result
+    # here (nothing server-side is theirs); the client falls back to
+    # searching its own local-only saved content in that case instead.
+    def handle_content_search(request: Request) -> Response:
+        user = request.handler.current_user()
+        query = request.handler.path.split("?", 1)
+        term = ""
+        if len(query) > 1 and query[1]:
+            from urllib.parse import parse_qs
+
+            term = parse_qs(query[1]).get("q", [""])[0]
+        results = search_content(request.state, user, term) if user else []
+        return json_response({"results": results})
+
+    router.add("GET", r"^/content/search$", handle_content_search)
 
     def ensure_share_permission(
         request: Request,

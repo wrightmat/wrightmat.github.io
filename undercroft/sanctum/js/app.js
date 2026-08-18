@@ -12,6 +12,7 @@ import {
   createCompactField,
   createFieldBox,
   createSearchableCheckList,
+  createModeToggleGroup,
 } from "../../common/js/lib/ui-components.js";
 import {
   listLocationTypesForSystem,
@@ -27,7 +28,9 @@ import {
 } from "./lib/tables.js";
 import { generateLocation, rerollAxis, matchesCategory } from "./lib/generator.js";
 import { createLocationRecord, toPressExportShape } from "./lib/location-schema.js";
-import { createLocationGraph } from "./lib/location-graph.js";
+import { renderRelationshipEditor } from "../../common/js/lib/relationship-editor.js";
+import { buildRelationshipGraph, fetchAllRelationships, saveRelationship, deleteRelationship } from "../../common/js/lib/relationship-graph.js";
+import { createForceGraph } from "../../common/js/lib/graph-view.js";
 import { generateLocationNote } from "./lib/llm-note.js";
 import { allowsDelete, refreshOwnershipCatalog, confirmDelete } from "../../common/js/lib/ownership.js";
 import {
@@ -52,6 +55,9 @@ import { renderMarkdown } from "../../repository/js/lib/markdown.js";
 const ASSET_NEED_KINDS = ["resource", "npc", "monster", "effect"];
 
 let status = null;
+let undoStack = null;
+let performUndo = null;
+let performRedo = null;
 let dataManager = null;
 let locationTypes = [];
 let locationPurposes = [];
@@ -91,20 +97,63 @@ let locationCleanSnapshot = null;
 // Ownership metadata for Locations in the current Setting, same role/shape
 // as settingCatalog above — used only for the Delete button's access gate.
 let locationCatalog = new Map();
-// Built in init() (needs elements.locationGraph* to exist first) — read by
-// reloadLocationsForSetting/renderLocation, both top-level functions, so
-// this needs to be a module-level reference rather than local to init().
-let locationGraph = null;
-// The graph's own Back button — kept so its disabled state can track
-// locationHistory's length (see selectLocation/goBackLocation below).
-let locationGraphBackButton = null;
-// A stack of previously-visited Location ids (or null for "nothing
-// selected"), most-recent-last — pushed by selectLocation on every REAL
-// navigation (graph click or dropdown pick, not a Save/Generate/Delete
-// side-effect, which calls renderLocation directly and never touches this),
-// popped by goBackLocation. Ordinary browser-back semantics: no forward
-// stack, since nothing here asked for one.
-let locationHistory = [];
+
+// Whole-record snapshot undo — same shape/reasoning as Repository's own
+// recordHistory/field-commit-debounce pair (repository/js/app.js), reusing
+// buildLocationSnapshot() (defined below, referenced here since function
+// declarations hoist) so a Name/Notes edit — not synced onto currentRecord
+// until Save/Export, same as Crucible's buildRecordForSave — is captured
+// too. Restoring goes through renderLocation, which already writes record.
+// name/record.notes back into their live input fields. Generate Multi-Room
+// (handleGenerateMultiRoom) is deliberately NOT wrapped — it's a bulk save
+// of several NEW records straight to the server, not an edit to the
+// currently open one, so there's nothing in-memory for undo to meaningfully
+// step back through.
+function recordSnapshot() {
+  return JSON.stringify(buildLocationSnapshot());
+}
+
+function recordHistory(label, applyChange) {
+  if (!currentRecord) {
+    applyChange();
+    return;
+  }
+  const before = recordSnapshot();
+  applyChange();
+  const after = recordSnapshot();
+  if (before !== after) undoStack.push({ label, before, after });
+}
+
+function applyRecordSnapshot(json) {
+  if (!json) return;
+  renderLocation(JSON.parse(json));
+}
+
+const FIELD_COMMIT_DEBOUNCE_MS = 600;
+let fieldCommitTimer = 0;
+let fieldCommitLabel = "";
+let fieldEditBaseline = null;
+
+function commitFieldEdit() {
+  window.clearTimeout(fieldCommitTimer);
+  fieldCommitTimer = 0;
+  if (!currentRecord || fieldEditBaseline === null) return;
+  const after = recordSnapshot();
+  if (after !== fieldEditBaseline) undoStack.push({ label: fieldCommitLabel, before: fieldEditBaseline, after });
+  fieldEditBaseline = null;
+}
+
+function scheduleFieldCommit(label) {
+  if (fieldEditBaseline === null) fieldEditBaseline = recordSnapshot();
+  fieldCommitLabel = label;
+  window.clearTimeout(fieldCommitTimer);
+  fieldCommitTimer = window.setTimeout(commitFieldEdit, FIELD_COMMIT_DEBOUNCE_MS);
+}
+
+function flushFieldCommitOnUndoRedo(event) {
+  const key = (event.key || "").toLowerCase();
+  if ((event.ctrlKey || event.metaKey) && key === "z") commitFieldEdit();
+}
 
 // Built and mounted before `elements` below queries for these buttons by
 // their data-*-setting/data-*-location attributes, so every existing
@@ -116,7 +165,7 @@ createToolbarButtonGroup([
   { action: "delete", label: "Delete Setting", disabled: true, attrs: { "data-delete-setting": true } },
 ]).forEach((button) => document.querySelector("[data-setting-toolbar-mount]")?.appendChild(button));
 createToolbarButtonGroup([
-  { action: "generate", icon: "tabler:map-2", label: "Generate Single Location", primary: true, attrs: { "data-generate-location": true } },
+  { action: "generate", icon: "tabler:map-2", label: "Generate Single Location", attrs: { "data-generate-location": true } },
   // Generates and SAVES a whole connected set of sub-locations in one action
   // (see handleGenerateMultiRoom) — unlike Generate Single Location, which
   // only ever produces one unsaved record for the GM to review/rename/Save
@@ -124,15 +173,25 @@ createToolbarButtonGroup([
   // it auto-names and saves everything immediately. Deliberately not
   // "dungeon"-specific — a multi-room result could be a Complex's rooms, a
   // Settlement's districts, or a market's stalls, depending on what Type/
-  // Purpose resolve to.
+  // Purpose resolve to. Sanctum has two "New"-slot Generate actions where
+  // every other tool in this pass has one — both stay outline-primary
+  // (the shared `generate` preset's own default) and lead the toolbar, ahead
+  // of the standard Save/Duplicate/Delete/Undo/Redo cluster.
   { action: "generate", icon: "tabler:stack-2", label: "Generate Multi-Room Location", attrs: { "data-generate-multi-room": true } },
   { action: "save", label: "Save", disabled: true, attrs: { "data-save-location": true } },
-  { action: "export", label: "Export JSON", disabled: true, attrs: { "data-export-location": true } },
+  { action: "duplicate", label: "Duplicate", disabled: true, attrs: { "data-duplicate-location": true } },
   { action: "delete", label: "Delete", disabled: true, attrs: { "data-delete-location": true } },
 ]).forEach((button) => document.querySelector("[data-location-toolbar-mount]")?.appendChild(button));
+// A small visual break, not a functional one — same convention every other
+// tool's toolbar now uses (see forge/js/app.js's own comment).
+createToolbarButtonGroup([
+  { action: "undo", label: "Undo", attrs: { "data-undo-location": true } },
+  { action: "redo", label: "Redo", attrs: { "data-redo-location": true } },
+]).forEach((button) => document.querySelector("[data-location-undo-toolbar-mount]")?.appendChild(button));
 document.querySelector("[data-location-empty-state]")?.appendChild(
   createEmptyStateCard({
     message: "Nothing selected yet. Pick an existing Location above, or fill in the fields and click Generate Location.",
+    variant: "inline",
   })
 );
 
@@ -177,7 +236,6 @@ mountField(
 // own Name box) — per explicit, repeated feedback that every tool's
 // center-pane properties should look and act the same, Sanctum included.
 mountField("location-name", createFieldBox({ key: "name", label: "Name", editable: true, colClass: null, dataAttr: "data-location-name" }));
-mountField("parent-select", createCompactField({ type: "select", id: "sanctumParentSelect", label: "Parent", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-parent-select" }));
 mountField("setting-name", createCompactField({ type: "text", id: "sanctumSettingName", label: "Name", dataAttr: "data-setting-name" }));
 mountField("setting-description", createCompactField({ type: "textarea", id: "sanctumSettingDescription", label: "Description", dataAttr: "data-setting-description", rows: 2 }));
 mountField("calendar-days-per-week", createCompactField({ type: "number", id: "sanctumCalendarDaysPerWeek", label: "Days per week", dataAttr: "data-calendar-days-per-week", min: 0, step: 1 }));
@@ -200,14 +258,21 @@ const elements = {
   environmentOverride: document.querySelector("[data-environment-override]"),
   lockedFeatures: document.querySelector("[data-locked-features]"),
   generateMultiRoomButton: document.querySelector("[data-generate-multi-room]"),
-  parentSelect: document.querySelector("[data-parent-select]"),
-  connectedToList: document.querySelector("[data-connected-to-list]"),
-  addConnectionSelect: document.querySelector("[data-add-connection-select]"),
-  addConnectionButton: document.querySelector("[data-add-connection-button]"),
-  childrenList: document.querySelector("[data-children-list]"),
+  locationRelationships: document.querySelector("[data-location-relationships]"),
+  modeToggleMount: document.querySelector("[data-sanctum-mode-toggle-mount]"),
+  relationshipsListMount: document.querySelector("[data-relationships-list-mount]"),
+  relationshipsGraphWrap: document.querySelector("[data-relationships-graph-wrap]"),
+  relationshipsGraphContainer: document.querySelector("[data-relationships-graph-container]"),
+  relationshipsGraphContent: document.querySelector("[data-relationships-graph-content]"),
+  relationshipsGraphSvg: document.querySelector("[data-relationships-graph-svg]"),
+  relationshipsGraphControls: document.querySelector("[data-relationships-graph-controls]"),
+  relationshipsGraphToolbarMount: document.querySelector("[data-relationships-graph-toolbar-mount]"),
+  relationshipsGraphEmpty: document.querySelector("[data-relationships-graph-empty]"),
   generateButton: document.querySelector("[data-generate-location]"),
   saveButton: document.querySelector("[data-save-location]"),
-  exportButton: document.querySelector("[data-export-location]"),
+  duplicateButton: document.querySelector("[data-duplicate-location]"),
+  undoButton: document.querySelector("[data-undo-location]"),
+  redoButton: document.querySelector("[data-redo-location]"),
   emptyState: document.querySelector("[data-location-empty-state]"),
   display: document.querySelector("[data-location-display]"),
   nameInput: document.querySelector("[data-location-name]"),
@@ -254,19 +319,20 @@ const elements = {
   inspectorEmpty: document.querySelector("[data-inspector-empty]"),
   inspectorDetail: document.querySelector("[data-inspector-detail]"),
   inspectorJson: document.querySelector("[data-inspector-json]"),
-  locationGraphNavMount: document.querySelector("[data-location-graph-nav-mount]"),
-  locationGraphToolbarMount: document.querySelector("[data-location-graph-toolbar-mount]"),
-  locationGraphContainer: document.querySelector("[data-location-graph-container]"),
-  locationGraphContent: document.querySelector("[data-location-graph-content]"),
-  locationGraphControls: document.querySelector("[data-location-graph-controls]"),
-  locationGraphSvg: document.querySelector("[data-location-graph-svg]"),
-  locationGraphEmpty: document.querySelector("[data-location-graph-empty]"),
 };
 
 const jsonDataPanel = createJsonDataPanel({
   label: "JSON Data",
   getData: () => (currentRecord ? toPressExportShape(currentRecord) : null),
+  onExport: () => handleExport(),
 });
+
+const selectionsSection = createCollapsibleSection({
+  label: "Selections",
+  collapsed: false,
+  content: document.querySelector("[data-selections-panel]"),
+});
+document.querySelector("[data-selections-mount]")?.appendChild(selectionsSection.section);
 
 function slugify(name) {
   return (
@@ -406,14 +472,88 @@ async function loadSettingIntoForm(id) {
   }
 }
 
+// Every "Parent of"/"Connected to" `relationship` record touching a
+// location:* id, PLUS any not-yet-migrated legacy value still sitting on a
+// location's own raw parentId/connectedTo fields (see location-schema.js's
+// own header comment) turned into real relationship records the first time
+// they're seen. Idempotent — checked against the current edge set before
+// creating anything, so running this on every Setting load never creates a
+// duplicate, and a Setting with nothing left to migrate does zero writes.
+// This is what makes "no separate Sanctum relationship concept" true for
+// EXISTING campaign data, not just newly authored ones.
+async function migrateLegacyLocationRelationships(rawLocations) {
+  const edges = await fetchAllRelationships(dataManager).catch(() => []);
+  const existingKeys = new Set(
+    edges
+      .filter((edge) => edge.fromKind === "location" && edge.toKind === "location")
+      .map((edge) => `${edge.fromId}|${edge.toId}|${edge.type}`)
+  );
+  const toCreate = [];
+  rawLocations.forEach((location) => {
+    if (location.parentId && location.parentId !== location.id) {
+      const key = `${location.parentId}|${location.id}|Parent of`;
+      if (!existingKeys.has(key)) {
+        existingKeys.add(key);
+        toCreate.push({ fromKind: "location", fromId: location.parentId, toKind: "location", toId: location.id, type: "Parent of" });
+      }
+    }
+    (location.connectedTo || []).forEach((otherId) => {
+      if (!otherId || otherId === location.id) return;
+      // Connected To was always checked bidirectionally (A→B and B→A treated
+      // as the same tie) — a single "Connected to" edge, either direction,
+      // satisfies both sides, same as the old field's own dedup convention.
+      if (existingKeys.has(`${location.id}|${otherId}|Connected to`) || existingKeys.has(`${otherId}|${location.id}|Connected to`)) return;
+      existingKeys.add(`${location.id}|${otherId}|Connected to`);
+      toCreate.push({ fromKind: "location", fromId: location.id, toKind: "location", toId: otherId, type: "Connected to" });
+    });
+  });
+  if (toCreate.length) {
+    await Promise.all(toCreate.map((edge) => saveRelationship(dataManager, edge).catch(() => {})));
+  }
+  return [...edges, ...toCreate];
+}
+
+// Attaches DERIVED parentId/connectedTo onto each location — the ONLY
+// source of truth for both, now that they're `relationship` records rather
+// than fields on the Location itself. Every existing consumer
+// (collectDescendantLocations, renameChildRoomsIfConfirmed) reads these two
+// properties off a `locationsInSetting` entry exactly as before and needs
+// no changes — only WHERE the values come from changed.
+function applyDerivedLocationHierarchy(rawLocations, edges) {
+  const idSet = new Set(rawLocations.map((location) => location.id));
+  return rawLocations.map((location) => {
+    const parentEdge = edges.find(
+      (edge) =>
+        edge.fromKind === "location" &&
+        edge.toKind === "location" &&
+        edge.toId === location.id &&
+        edge.type === "Parent of" &&
+        idSet.has(edge.fromId)
+    );
+    const connectedTo = edges
+      .filter(
+        (edge) =>
+          edge.fromKind === "location" &&
+          edge.toKind === "location" &&
+          edge.type === "Connected to" &&
+          (edge.fromId === location.id || edge.toId === location.id)
+      )
+      .map((edge) => (edge.fromId === location.id ? edge.toId : edge.fromId))
+      .filter((id) => idSet.has(id) && id !== location.id);
+    return { ...location, parentId: parentEdge ? parentEdge.fromId : null, connectedTo };
+  });
+}
+
 async function reloadLocationsForSetting(settingId) {
-  locationsInSetting = settingId ? await listLocationsForSetting(dataManager, settingId) : [];
+  const rawLocations = settingId ? await listLocationsForSetting(dataManager, settingId) : [];
+  if (rawLocations.length) {
+    const edges = await migrateLegacyLocationRelationships(rawLocations);
+    locationsInSetting = applyDerivedLocationHierarchy(rawLocations, edges);
+  } else {
+    locationsInSetting = [];
+  }
   populateLocationSelect();
-  populateParentSelect();
-  populateAddConnectionSelect();
-  locationGraph?.setLocations(locationsInSetting);
   await refreshLocationCatalog(locationsInSetting.map((location) => location.id));
-  if (currentRecord) renderChildrenList(currentRecord);
   updateActionButtons();
 }
 
@@ -449,48 +589,6 @@ function populateLocationSelect() {
   updateGenerationFieldsVisibility();
 }
 
-function populateParentSelect() {
-  if (!elements.parentSelect) return;
-  const previous = elements.parentSelect.value;
-  elements.parentSelect.innerHTML = "";
-  const blank = document.createElement("option");
-  blank.value = "";
-  blank.textContent = "(none — top level)";
-  elements.parentSelect.appendChild(blank);
-  locationsInSetting
-    .filter((location) => location.id !== currentLocationId)
-    .forEach((location) => {
-      const option = document.createElement("option");
-      option.value = location.id;
-      option.textContent = location.name || location.id;
-      elements.parentSelect.appendChild(option);
-    });
-  if (locationsInSetting.some((location) => location.id === previous)) elements.parentSelect.value = previous;
-}
-
-function populateAddConnectionSelect() {
-  if (!elements.addConnectionSelect) return;
-  const connected = new Set(currentRecord?.connectedTo || []);
-  elements.addConnectionSelect.innerHTML = "";
-  const candidates = locationsInSetting.filter((location) => location.id !== currentLocationId && !connected.has(location.id));
-  if (!candidates.length) {
-    const placeholder = document.createElement("option");
-    placeholder.value = "";
-    placeholder.textContent = "(no other locations in this Setting yet)";
-    elements.addConnectionSelect.appendChild(placeholder);
-    elements.addConnectionSelect.disabled = true;
-    if (elements.addConnectionButton) elements.addConnectionButton.disabled = true;
-    return;
-  }
-  elements.addConnectionSelect.disabled = false;
-  if (elements.addConnectionButton) elements.addConnectionButton.disabled = false;
-  candidates.forEach((location) => {
-    const option = document.createElement("option");
-    option.value = location.id;
-    option.textContent = location.name || location.id;
-    elements.addConnectionSelect.appendChild(option);
-  });
-}
 
 // --- Reference data (location-type/location-purpose/feature/resource/species/npc/monster/effect) ----
 async function reloadReferenceData() {
@@ -969,11 +1067,6 @@ function featureLabel(id) {
   return sharedFeatureLabel(features, id);
 }
 
-function locationLabel(id) {
-  const location = findById(locationsInSetting, id);
-  return location ? location.name || location.id : id;
-}
-
 // Type/Purpose/Environment as field boxes (createFieldBox, same shared
 // look Forge's/Crucible's/Vault's own Identity fields use) — editable
 // selects, each with its own reroll button, rebuilt fresh every render the
@@ -1037,13 +1130,19 @@ function renderFeatureList(record) {
 
 function removeFeature(featureId) {
   if (!currentRecord) return;
-  currentRecord.featureIds = currentRecord.featureIds.filter((id) => id !== featureId);
+  const feature = findById(features, featureId);
+  recordHistory(`remove ${feature?.name || "feature"}`, () => {
+    currentRecord.featureIds = currentRecord.featureIds.filter((id) => id !== featureId);
+  });
   refreshEditableLists();
 }
 
 function addFeature(featureId) {
   if (!currentRecord || !featureId) return;
-  if (!currentRecord.featureIds.includes(featureId)) currentRecord.featureIds.push(featureId);
+  const feature = findById(features, featureId);
+  recordHistory(`add ${feature?.name || "feature"}`, () => {
+    if (!currentRecord.featureIds.includes(featureId)) currentRecord.featureIds.push(featureId);
+  });
   refreshEditableLists();
 }
 
@@ -1083,11 +1182,11 @@ function renderReferenceList(container, entries, onRemove) {
 
 function renderAssetsAndNeeds(record) {
   renderReferenceList(elements.assetList, record.assets || [], (index) => {
-    currentRecord.assets.splice(index, 1);
+    recordHistory("remove asset", () => currentRecord.assets.splice(index, 1));
     refreshEditableLists();
   });
   renderReferenceList(elements.needList, record.needs || [], (index) => {
-    currentRecord.needs.splice(index, 1);
+    recordHistory("remove need", () => currentRecord.needs.splice(index, 1));
     refreshEditableLists();
   });
 }
@@ -1095,11 +1194,13 @@ function renderAssetsAndNeeds(record) {
 function addAssetOrNeed(listKey, kind, refId) {
   if (!currentRecord || !refId) return;
   const entity = findById(entityListForKind(kind), refId);
-  currentRecord[listKey].push({
-    kind,
-    refId,
-    label: entity?.name || refId,
-    description: entity?.description || "",
+  recordHistory(`add ${listKey === "assets" ? "asset" : "need"}`, () => {
+    currentRecord[listKey].push({
+      kind,
+      refId,
+      label: entity?.name || refId,
+      description: entity?.description || "",
+    });
   });
   refreshEditableLists();
 }
@@ -1124,46 +1225,169 @@ function collectDescendantLocations(locationId) {
   return descendants;
 }
 
-function renderConnectedToList(record) {
-  if (!elements.connectedToList) return;
-  elements.connectedToList.innerHTML = "";
-  const connections = record.connectedTo || [];
-  if (!connections.length) {
-    elements.connectedToList.innerHTML = '<p class="small text-body-secondary mb-0">Not connected to any other location yet.</p>';
-    return;
-  }
-  connections.forEach((id) => {
-    const row = createListRow({
-      title: locationLabel(id),
-      onRemove: () => {
-        currentRecord.connectedTo = currentRecord.connectedTo.filter((entry) => entry !== id);
-        renderConnectedToList(currentRecord);
-        populateAddConnectionSelect();
-        jsonDataPanel.render();
-        updateActionButtons();
+// --- Relationships -----------------------------------------------------
+//
+// The suite-wide relationship graph — same shared relationship-editor.js/
+// relationship-graph.js pair Forge/Crucible/Workbench use (see that pair's
+// own header comments for the full mechanism). Containment ("Parent of")
+// and adjacency ("Connected to") are just two of this tool's own suggested
+// types now, not a separate bespoke concept — Children needs no dedicated
+// list either, since an incoming "Parent of" edge from another Location
+// already shows up in THIS Location's own list automatically, the exact
+// same mechanism that makes Forge's Factions work with no special flag.
+// locationsInSetting's own derived parentId/connectedTo (see
+// reloadLocationsForSetting's own migrateLegacyLocationRelationships/
+// applyDerivedLocationHierarchy) still back the dungeon-rename cascade —
+// this section is a separate, GENERIC editor over the same underlying
+// `relationship` records, not a competing source.
+const RELATIONSHIP_TARGET_KINDS = [
+  { id: "npc", label: "NPC" },
+  { id: "location", label: "Location" },
+  { id: "monster", label: "Monster" },
+  { id: "character", label: "Character" },
+];
+const RELATIONSHIP_TYPE_SUGGESTIONS = [
+  "Parent of",
+  "Connected to",
+  "Owned by",
+  "Sacred to",
+  "Haunted by",
+  "Guarded by",
+  "Home to",
+  "Ruled by",
+];
+
+// "location" (the existing Identity/Features/Assets & Needs/NPC Config/
+// Notes card stack) or "relationships" (a full-pane List/Graph view over
+// this Location's own relationship edges) — mutually exclusive Modes,
+// switched by the suite-wide Mode toggle group (createModeToggleGroup) in
+// the header row above the main pane, exactly mirroring Forge/Crucible/
+// Repository's own split.
+let mode = "location";
+let relationshipsForceGraph = null;
+let relationshipsIconByKind = {};
+
+function renderModeToggle() {
+  if (!elements.modeToggleMount) return;
+  // Nothing to relate until a Location exists — disabled (not hidden) until
+  // then, via createButtonCheckGroup's own disabled/tooltip option support
+  // (ui-components.js), the same mechanism every other tool's Relationships
+  // option now uses too (previously each hand-rolled an identical
+  // post-render querySelector('input[value="relationships"]').disabled
+  // patch — consolidated onto this one shared mechanism instead).
+  createModeToggleGroup({
+    container: elements.modeToggleMount,
+    ariaLabel: "Sanctum view",
+    options: [
+      { value: "location", icon: "tabler:map-pin", label: "Location" },
+      {
+        value: "relationships",
+        icon: "tabler:affiliate",
+        label: "Relationships",
+        disabled: !currentRecord,
+        tooltip: currentRecord ? undefined : "Select or generate a Location first",
       },
-      removeLabel: "Remove connection",
-    });
-    elements.connectedToList.appendChild(row);
+    ],
+    value: mode,
+    onChange: (next) => setMode(next),
   });
 }
 
-// Children are never stored — always computed from the Setting's location
-// list by filtering on parentId, exactly like Forge's settingIds filtering.
-function renderChildrenList(record) {
-  if (!elements.childrenList) return;
-  elements.childrenList.innerHTML = "";
-  const children = locationsInSetting.filter((location) => location.parentId === (currentLocationId || record?.id));
-  if (!children.length) {
-    elements.childrenList.textContent = "(none yet)";
+function setMode(nextMode) {
+  mode = nextMode;
+  const isRelationships = mode === "relationships";
+  elements.display?.classList.toggle("d-none", isRelationships || !currentRecord);
+  elements.locationRelationships?.classList.toggle("d-none", !isRelationships);
+  renderModeToggle();
+  if (isRelationships) void refreshRelationshipsSection();
+}
+
+function ensureRelationshipsForceGraph() {
+  if (relationshipsForceGraph || !elements.relationshipsGraphContainer) return relationshipsForceGraph;
+  relationshipsForceGraph = createForceGraph({
+    container: elements.relationshipsGraphContainer,
+    content: elements.relationshipsGraphContent,
+    svg: elements.relationshipsGraphSvg,
+    emptyMount: elements.relationshipsGraphEmpty,
+    getNodeRadius: (node) => (node.kind === "location" && node.id === `location:${currentRecord?.id}` ? 20 : 14),
+    getNodeIcon: (node) => relationshipsIconByKind?.[node.kind] || null,
+    getEdgeLabel: (edge) => edge.type || null,
+    classPrefix: "relationship-graph",
+    emptyIcon: "tabler:affiliate",
+    emptyMessage: "No relationships yet.",
+    defaultZoom: 1.4,
+  });
+  elements.relationshipsGraphControls?.addEventListener("pointerdown", (event) => event.stopPropagation());
+  [
+    { icon: "tabler:zoom-out", label: "Zoom out", onClick: () => relationshipsForceGraph.zoomBy(-0.25) },
+    { icon: "tabler:refresh", label: "Reset zoom", onClick: () => relationshipsForceGraph.reset() },
+    { icon: "tabler:zoom-in", label: "Zoom in", onClick: () => relationshipsForceGraph.zoomBy(0.25) },
+  ].forEach((config) => elements.relationshipsGraphToolbarMount?.appendChild(createIconButton(config)));
+  return relationshipsForceGraph;
+}
+
+async function refreshRelationshipsList() {
+  if (!elements.relationshipsListMount) return;
+  // No Location loaded — clear rather than leave a stale prior Location's
+  // own relationships on screen (confirmed real bug pattern this session:
+  // the same gap in Workbench's own equivalent, fixed the same way there).
+  if (!currentRecord?.id) {
+    elements.relationshipsListMount.innerHTML =
+      '<p class="small text-body-secondary mb-0">Select or generate a Location to see its relationships.</p>';
     return;
   }
-  children.forEach((child) => {
-    const row = document.createElement("div");
-    row.textContent = child.name || child.id;
-    elements.childrenList.appendChild(row);
+  await renderRelationshipEditor({
+    container: elements.relationshipsListMount,
+    sourceKind: "location",
+    sourceId: currentRecord.id,
+    targetKinds: RELATIONSHIP_TARGET_KINDS,
+    typeSuggestions: RELATIONSHIP_TYPE_SUGGESTIONS,
+    dataManager,
+    status,
+    onChange: () => {
+      void refreshRelationshipsList();
+      void refreshRelationshipsGraph();
+      // A "Parent of"/"Connected to" edge just changed — re-derive so the
+      // dungeon-generation rename cascade stays in sync immediately, not
+      // just after the next Setting reload.
+      void refreshLocationHierarchyFromRelationships();
+    },
   });
 }
+
+async function refreshRelationshipsGraph() {
+  const forceGraph = ensureRelationshipsForceGraph();
+  if (!forceGraph || !currentRecord?.id) return;
+  try {
+    const { nodes, edges, iconByKind } = await buildRelationshipGraph(dataManager, {
+      nodes: [{ kind: "location", id: currentRecord.id, label: currentRecord.name || currentRecord.id }],
+    });
+    relationshipsIconByKind = iconByKind;
+    forceGraph.setGraph({ nodes, edges });
+  } catch (error) {
+    status?.show?.("Unable to build the Relationships graph.", { type: "error" });
+  }
+}
+
+async function refreshRelationshipsSection() {
+  await refreshRelationshipsList();
+  void refreshRelationshipsGraph();
+}
+
+// Re-derives locationsInSetting's own parentId/connectedTo from the current
+// `relationship` records without a full Setting reload — cheap (one
+// fetchAllRelationships call, no migration pass needed since nothing new
+// legacy is ever introduced after the first load) and keeps
+// collectDescendantLocations/renameChildRoomsIfConfirmed correct the moment
+// a GM adds or removes a "Parent of"/"Connected to" edge through the
+// generic Relationships editor above, not just after the next reload.
+async function refreshLocationHierarchyFromRelationships() {
+  if (!locationsInSetting.length) return;
+  const edges = await fetchAllRelationships(dataManager).catch(() => []);
+  locationsInSetting = applyDerivedLocationHierarchy(locationsInSetting, edges);
+}
+
+renderModeToggle();
 
 // --- Full render / refresh ---------------------------------------------------
 
@@ -1182,7 +1406,6 @@ function buildLocationSnapshot() {
     notes: elements.notesText?.value || "",
     systemIds: currentSystemId() ? [currentSystemId()] : [],
     settingIds: (currentSettingId || elements.settingSelect?.value) ? [currentSettingId || elements.settingSelect.value] : [],
-    parentId: elements.parentSelect?.value || null,
     ...collectNpcConfigFromForm(),
   };
 }
@@ -1233,7 +1456,7 @@ function applyNotesMode(mode) {
 function updateActionButtons() {
   const hasRecord = Boolean(currentRecord);
   if (elements.saveButton) elements.saveButton.disabled = !canSaveLocation();
-  if (elements.exportButton) elements.exportButton.disabled = !hasRecord;
+  if (elements.duplicateButton) elements.duplicateButton.disabled = !hasRecord;
   if (elements.deleteLocationButton) elements.deleteLocationButton.disabled = !canDeleteLocation();
 }
 
@@ -1248,37 +1471,31 @@ function refreshEditableLists() {
 
 function renderLocation(record) {
   currentRecord = record;
-  // record?.id, not currentLocationId — a freshly-generated, not-yet-saved
-  // record has an id but no graph node yet (harmless no-op highlight); this
-  // stays correct regardless of whether currentLocationId happens to be in
-  // sync with `record` at this particular call site.
-  locationGraph?.setSelected(record?.id ?? null);
+  renderModeToggle();
   if (!record) {
     locationCleanSnapshot = null;
     elements.emptyState?.classList.remove("d-none");
     elements.display?.classList.add("d-none");
     updateActionButtons();
     jsonDataPanel.render();
+    if (mode === "relationships") void refreshRelationshipsSection();
     return;
   }
   elements.emptyState?.classList.add("d-none");
-  elements.display?.classList.remove("d-none");
+  elements.display?.classList.toggle("d-none", mode === "relationships");
   if (elements.nameInput) elements.nameInput.value = record.name || "";
   renderIdentity(record);
   renderFeatureList(record);
   renderAssetsAndNeeds(record);
   populateAddFeatureSelect();
   populateNpcConfigForm(record);
-  if (elements.parentSelect) elements.parentSelect.value = record.parentId || "";
-  renderConnectedToList(record);
-  populateAddConnectionSelect();
-  renderChildrenList(record);
   if (elements.notesText) elements.notesText.value = record.notes || "";
   if (notesMode === "view") renderNotesPreview();
   elements.inspectorEmpty?.classList.remove("d-none");
   elements.inspectorDetail?.classList.add("d-none");
   updateActionButtons();
   jsonDataPanel.render();
+  if (mode === "relationships") void refreshRelationshipsSection();
 }
 
 function readLockedFeatureIds() {
@@ -1306,7 +1523,7 @@ function handleGenerate() {
     // Freshly generated content is always unsaved, regardless of whatever
     // baseline a previously loaded/saved Location left behind.
     locationCleanSnapshot = null;
-    renderLocation(record);
+    recordHistory("generate location", () => renderLocation(record));
     status?.show("Location generated.", { type: "success", timeout: 1500 });
   } catch (error) {
     status?.show(`Unable to generate: ${error.message}`, { type: "error", timeout: 4000 });
@@ -1416,7 +1633,21 @@ async function handleGenerateMultiRoom() {
       // Prefaced with the parent's name — "Room 1" alone collides once more
       // than one multi-room Location exists in the same Setting.
       room.name = `${parentRecord.name} - Room ${index + 1}`;
-      room.parentId = parentRecord.id;
+      await dataManager.save("location", room.id, toPressExportShape(room));
+      // Containment/adjacency are `relationship` records now (see
+      // location-schema.js's own header comment), not fields on the room
+      // itself — created AFTER the room's own save succeeds, since a
+      // `relationship` record referencing an id that was never actually
+      // persisted would be an orphan. `room.id` is already stable at this
+      // point (createLocationRecord stamps it up front), so this is safe
+      // even though the room record was just written moments ago.
+      await saveRelationship(dataManager, {
+        fromKind: "location",
+        fromId: parentRecord.id,
+        toKind: "location",
+        toId: room.id,
+        type: "Parent of",
+      });
       if (rooms.length) {
         // Branching-tree layout: mostly connects to the room just placed
         // (a snaking path), occasionally branches back to an earlier one —
@@ -1424,9 +1655,14 @@ async function handleGenerateMultiRoom() {
         // algorithm later without touching room generation at all.
         const connectToPrevious = rooms.length === 1 || Math.random() < 0.6;
         const targetIndex = connectToPrevious ? rooms.length - 1 : Math.floor(Math.random() * (rooms.length - 1));
-        room.connectedTo = [rooms[targetIndex].id];
+        await saveRelationship(dataManager, {
+          fromKind: "location",
+          fromId: room.id,
+          toKind: "location",
+          toId: rooms[targetIndex].id,
+          type: "Connected to",
+        });
       }
-      await dataManager.save("location", room.id, toPressExportShape(room));
       rooms.push(room);
     }
 
@@ -1508,7 +1744,6 @@ async function handleSave() {
   // future-proofs a place reachable from more than one Setting.
   currentRecord.systemIds = currentSystemId() ? [currentSystemId()] : [];
   currentRecord.settingIds = settingId ? [settingId] : [];
-  currentRecord.parentId = elements.parentSelect?.value || null;
   Object.assign(currentRecord, collectNpcConfigFromForm());
   const id = currentLocationId || slugify(name);
   currentRecord.id = id;
@@ -1534,7 +1769,19 @@ function handleExport() {
   exportRecordAsJson(currentRecord, toPressExportShape);
 }
 
+function handleDuplicate() {
+  if (!currentRecord) return;
+  const source = buildLocationSnapshot();
+  const duplicate = createLocationRecord({ ...source, name: `${source.name || "Location"} Copy` }, null);
+  locationCleanSnapshot = null;
+  currentLocationId = null;
+  if (elements.locationSelect) elements.locationSelect.value = "";
+  renderLocation(duplicate);
+  status?.show("Duplicated — not yet saved.", { type: "info", timeout: 2000 });
+}
+
 async function handleGenerateNote() {
+  const before = currentRecord ? recordSnapshot() : null;
   const success = await generateNoteForRecord({
     record: currentRecord,
     elements,
@@ -1560,7 +1807,14 @@ async function handleGenerateNote() {
   });
   // Programmatic .value assignment doesn't fire input/change, so the
   // delegated dirty-check listener won't see this — refresh explicitly.
-  if (success) updateActionButtons();
+  if (success) {
+    if (before !== null) {
+      const after = recordSnapshot();
+      if (after !== before) undoStack.push({ label: "generate note", before, after });
+    }
+    if (notesMode === "view") renderNotesPreview();
+    updateActionButtons();
+  }
 }
 
 // --- Wiring ------------------------------------------------------------------
@@ -1582,21 +1836,6 @@ function initCollapsibles() {
       label: "Inspector",
       collapsed: false,
       content: document.querySelector("[data-inspector-panel]"),
-    }).section
-  );
-
-  // Scoped to the whole current SETTING, not just whichever single
-  // Location happens to be loaded below — expanded by default (unlike
-  // Relationships) since it doubles as a way to pick a starting Location,
-  // not just a fact panel about one already selected.
-  document.querySelector("[data-location-graph-mount]")?.appendChild(
-    createCollapsibleSection({
-      label: "Location Graph",
-      helpTopic: "sanctum.locationGraph",
-      collapsed: false,
-      className: "d-flex flex-column gap-2",
-      panelClassName: "d-flex flex-column gap-2",
-      content: document.querySelector("[data-location-graph-panel]"),
     }).section
   );
 
@@ -1628,17 +1867,6 @@ function initCollapsibles() {
       className: "d-flex flex-column gap-2",
       panelClassName: "d-flex flex-column gap-2",
       content: document.querySelector("[data-assets-needs-panel]"),
-    }).section
-  );
-
-  document.querySelector("[data-relationships-mount]")?.appendChild(
-    createCollapsibleSection({
-      label: "Relationships",
-      helpTopic: "sanctum.relationships",
-      collapsed: true,
-      className: "d-flex flex-column gap-2",
-      panelClassName: "d-flex flex-column gap-2",
-      content: document.querySelector("[data-relationships-panel]"),
     }).section
   );
 
@@ -1706,8 +1934,24 @@ function initCollapsibles() {
 }
 
 async function init() {
-  const shell = initAppShell({ namespace: "sanctum", storagePrefix: "undercroft.sanctum.undo" });
+  const shell = initAppShell({
+    namespace: "sanctum",
+    storagePrefix: "undercroft.sanctum.undo",
+    onUndo: (entry) => {
+      if (!entry) return null;
+      applyRecordSnapshot(entry.before);
+      return { message: entry.label ? `Undid ${entry.label}` : "Undid last action" };
+    },
+    onRedo: (entry) => {
+      if (!entry) return null;
+      applyRecordSnapshot(entry.after);
+      return { message: entry.label ? `Redid ${entry.label}` : "Redid last action" };
+    },
+  });
   status = shell.status;
+  undoStack = shell.undoStack;
+  performUndo = shell.undo;
+  performRedo = shell.redo;
   const auth = initAuthControls({
     status,
   });
@@ -1715,57 +1959,19 @@ async function init() {
 
   initCollapsibles();
 
-  locationGraph = createLocationGraph({
-    container: elements.locationGraphContainer,
-    content: elements.locationGraphContent,
-    svg: elements.locationGraphSvg,
-    emptyMount: elements.locationGraphEmpty,
-    onSelect: (id) => void selectLocation(id),
-    getLocationTypeScale: (typeId) => findById(locationTypes, typeId)?.scale,
-  });
-  // Floating overlay on top of the canvas (Orrery's own
-  // .orrery-floating-panel treatment), not a toolbar row above it — the
-  // controls div sits INSIDE the pan-zoom container but is a sibling of
-  // its content/svg, so it stays corner-pinned regardless of pan/zoom.
-  // Same reason each graph node stops its own pointerdown from bubbling
-  // (see location-graph.js's render()): being inside the container means a
-  // click here would otherwise also reach PanZoomController's own
-  // pointerdown handler first and hijack it via setPointerCapture.
-  elements.locationGraphControls?.addEventListener("pointerdown", (event) => event.stopPropagation());
-
-  // Back travels through selectLocation's own navigation history (both
-  // graph clicks and dropdown picks push onto it — see selectLocation);
-  // Home is just shorthand for selecting nothing, which already resets the
-  // graph to the whole-Setting view (location-graph.js's own
-  // computeVisibleNodes). Built directly via createIconButton, not
-  // createToolbarButtonGroup — neither is a New/Save/Delete-shaped CRUD
-  // action, same reasoning Loom's own Property Inspector toolbar uses
-  // createIconButton directly for its non-preset buttons.
-  locationGraphBackButton = createIconButton({
-    icon: "tabler:arrow-back-up",
-    label: "Back",
-    attrs: { disabled: true },
-    onClick: () => void goBackLocation(),
-  });
-  elements.locationGraphNavMount?.appendChild(locationGraphBackButton);
-  elements.locationGraphNavMount?.appendChild(
-    createIconButton({
-      icon: "tabler:home",
-      label: "Home (deselect, show the whole Setting)",
-      onClick: () => void goHomeLocation(),
-    })
-  );
-  [
-    { icon: "tabler:zoom-out", label: "Zoom out", onClick: () => locationGraph.zoomBy(-0.25) },
-    { icon: "tabler:refresh", label: "Reset zoom", onClick: () => locationGraph.reset() },
-    { icon: "tabler:zoom-in", label: "Zoom in", onClick: () => locationGraph.zoomBy(0.25) },
-  ].forEach((config) => elements.locationGraphToolbarMount?.appendChild(createIconButton(config)));
-
   elements.generateButton?.addEventListener("click", handleGenerate);
   elements.generateMultiRoomButton?.addEventListener("click", () => void handleGenerateMultiRoom());
   elements.saveButton?.addEventListener("click", handleSave);
-  elements.exportButton?.addEventListener("click", handleExport);
+  elements.duplicateButton?.addEventListener("click", handleDuplicate);
+  elements.undoButton?.addEventListener("click", () => performUndo());
+  elements.redoButton?.addEventListener("click", () => performRedo());
   elements.generateNoteButton?.addEventListener("click", handleGenerateNote);
+  elements.nameInput?.addEventListener("input", () => scheduleFieldCommit("edit name"));
+  elements.nameInput?.addEventListener("keydown", flushFieldCommitOnUndoRedo);
+  elements.nameInput?.addEventListener("change", () => commitFieldEdit());
+  elements.notesText?.addEventListener("input", () => scheduleFieldCommit("edit notes"));
+  elements.notesText?.addEventListener("keydown", flushFieldCommitOnUndoRedo);
+  elements.notesText?.addEventListener("change", () => commitFieldEdit());
   elements.notesModeToggle?.addEventListener("click", () => {
     // Notes isn't written back into currentRecord until Save/Export — see
     // buildRecordForSave-equivalent call sites (handleSave/handleExport) —
@@ -1785,7 +1991,10 @@ async function init() {
   elements.identityFields?.addEventListener("change", (event) => {
     const target = event.target.closest("[data-editable-identity]");
     if (!target || !currentRecord) return;
-    currentRecord[target.dataset.editableIdentity] = target.value || null;
+    const key = target.dataset.editableIdentity;
+    recordHistory(`edit ${key}`, () => {
+      currentRecord[key] = target.value || null;
+    });
     jsonDataPanel.render();
   });
 
@@ -1797,7 +2006,10 @@ async function init() {
   elements.identityFields?.addEventListener("click", (event) => {
     const button = event.target.closest("[data-reroll-attribute]");
     if (!button || !currentRecord) return;
-    currentRecord = rerollAxis(currentRecord, { locationTypes, locationPurposes, environmentPropertyType }, currentSystemId(), button.dataset.rerollAttribute);
+    const attribute = button.dataset.rerollAttribute;
+    recordHistory(`reroll ${attribute}`, () => {
+      currentRecord = rerollAxis(currentRecord, { locationTypes, locationPurposes, environmentPropertyType }, currentSystemId(), attribute);
+    });
     renderIdentity(currentRecord);
     jsonDataPanel.render();
   });
@@ -1900,23 +2112,17 @@ async function init() {
   });
   elements.moonCycleRows?.addEventListener("input", updateSettingToolbarState);
 
-  elements.addConnectionButton?.addEventListener("click", () => {
-    const id = elements.addConnectionSelect?.value;
-    if (!id || !currentRecord) return;
-    if (!currentRecord.connectedTo.includes(id)) currentRecord.connectedTo.push(id);
-    renderConnectedToList(currentRecord);
-    populateAddConnectionSelect();
-    jsonDataPanel.render();
-    updateActionButtons();
-  });
-
   // Delegated live-dirty-check: any text/number/range/select edit anywhere
-  // in the Location display (Name, Notes, Identity selects, Parent select,
+  // in the Location display (Name, Notes, Identity selects,
   // NPC Generation Config fields) re-evaluates whether Save should light
   // up, without needing an individual listener wired to every single field.
-  // Add/remove actions (Features/Assets/Needs/Connected To) are button
-  // clicks, not input/change events, so they already call
-  // updateActionButtons() explicitly at their own call sites above.
+  // Add/remove actions (Features/Assets/Needs) are button clicks, not
+  // input/change events, so they already call updateActionButtons()
+  // explicitly at their own call sites above. Relationships (Parent of/
+  // Connected to included) are handled entirely by the shared
+  // relationship-editor.js component and never touch currentRecord/
+  // isLocationDirty at all — they're their own `relationship` records,
+  // saved independently the moment they're added or removed.
   elements.display?.addEventListener("input", updateActionButtons);
   elements.display?.addEventListener("change", updateActionButtons);
 
@@ -2021,22 +2227,8 @@ async function init() {
     }
   });
 
-  // Named (not inline) so the Location Graph's own node-click handler can
-  // call this exact same path — same reasoning handleSystemSelectChange/
-  // handleSettingSelectChange are already named for. Sets the select's own
-  // value too, so a graph click and picking from the dropdown stay
-  // indistinguishable from each other regardless of which one triggered it.
-  // `recordHistory` — false only when goBackLocation itself is the one
-  // calling this, so navigating BACK doesn't also push the state you just
-  // left onto the stack (which would make Back loop instead of unwind). A
-  // genuine no-op re-selection (picking the already-loaded Location again)
-  // never pushes either — nothing actually changed.
-  async function selectLocation(id, { recordHistory = true } = {}) {
+  async function selectLocation(id) {
     const nextId = id || null;
-    if (recordHistory && nextId !== currentLocationId) {
-      locationHistory.push(currentLocationId);
-      updateLocationBackButton();
-    }
     if (elements.locationSelect) elements.locationSelect.value = id || "";
     currentLocationId = nextId;
     updateGenerationFieldsVisibility();
@@ -2055,21 +2247,6 @@ async function init() {
     } catch (error) {
       status?.show(`Unable to load location: ${error.message}`, { type: "error", timeout: 4000 });
     }
-  }
-
-  function updateLocationBackButton() {
-    if (locationGraphBackButton) locationGraphBackButton.disabled = !locationHistory.length;
-  }
-
-  async function goBackLocation() {
-    if (!locationHistory.length) return;
-    const previousId = locationHistory.pop();
-    updateLocationBackButton();
-    await selectLocation(previousId, { recordHistory: false });
-  }
-
-  async function goHomeLocation() {
-    await selectLocation(null);
   }
 
   elements.locationSelect?.addEventListener("change", () => {
@@ -2093,12 +2270,26 @@ async function init() {
         } too? They won't make much sense without their parent.`
       );
     try {
+      const deletedIds = [currentLocationId];
       await dataManager.delete("location", currentLocationId);
       if (deleteDescendants) {
         for (const descendant of descendants) {
           await dataManager.delete("location", descendant.id);
+          deletedIds.push(descendant.id);
         }
       }
+      // Deleting a Location leaves whatever `relationship` records pointed
+      // at it as true orphans — harmless (the graph/hierarchy derivation
+      // already ignores any edge whose other end isn't in the current
+      // Setting's own id set, same as a dangling parentId always was), but
+      // best-effort cleaned up here rather than left to accumulate forever.
+      const deletedIdSet = new Set(deletedIds);
+      const relationships = await fetchAllRelationships(dataManager).catch(() => []);
+      await Promise.all(
+        relationships
+          .filter((edge) => deletedIdSet.has(edge.fromId) || deletedIdSet.has(edge.toId))
+          .map((edge) => deleteRelationship(dataManager, edge.id).catch(() => {}))
+      );
       status?.show(
         deleteDescendants
           ? `Deleted, along with ${descendants.length} child location${descendants.length === 1 ? "" : "s"}.`
@@ -2150,7 +2341,7 @@ async function init() {
         targetSettingId = targetSettingId || payload.settingIds?.[0] || payload.settingId || null;
         targetSystemId = payload.systemIds?.[0] || payload.systemId || null;
         // Phase 1 — the record itself, on screen as fast as one fetch allows.
-        await selectLocation(locationId, { recordHistory: false });
+        await selectLocation(locationId);
       }
       if (!targetSystemId && targetSettingId) {
         const settingResult = await dataManager.get("setting", targetSettingId, { preferLocal: false });
@@ -2173,7 +2364,7 @@ async function init() {
           // own normal cascade (the same thing picking a different System/
           // Setting by hand would do) — this restores the deep-linked
           // Location, now with every name/list Phase 1 didn't have yet.
-          if (locationId) await selectLocation(locationId, { recordHistory: false });
+          if (locationId) await selectLocation(locationId);
         } catch (error) {
           // Phase 1 already succeeded — a background failure here just
           // leaves the pickers under-populated, not worth surfacing as an

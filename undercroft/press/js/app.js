@@ -1,4 +1,4 @@
-import { bindCollapsibleToggle, createCollapseToggleButton, setElementCollapsed } from "../../common/js/lib/collapsible.js";
+import { createCollapseToggleButton, setElementCollapsed } from "../../common/js/lib/collapsible.js";
 import { bindCopyButton } from "../../common/js/lib/clipboard.js";
 import { COMPONENT_ICONS } from "../../common/js/lib/component-icons.js";
 import {
@@ -28,6 +28,7 @@ import {
   createButtonCheckGroup,
   createCheckField,
   createCompactField,
+  createModeToggleGroup,
 } from "../../common/js/lib/ui-components.js";
 import { createFormulaToggleField, createHalfWidthNumberField, createFieldRow } from "../../common/js/lib/inspector-fields.js";
 import { createSortable } from "../../common/js/lib/dnd.js";
@@ -89,22 +90,30 @@ import {
 } from "../../common/js/lib/font-library.js";
 
 // Built and mounted before any of the querySelector/getElementById lines
-// below query these buttons (Print by id, the rest by data-action), so
-// every existing selector/disabled-state call site elsewhere in this file
-// keeps working unchanged. Import/Export icons deviate from their preset
-// defaults (upload/download here, not file-import/file-export) — preserved
-// exactly, not "fixed" to the preset. Print is Press's own "one true primary
-// activity" per the style guide, hence primary: true and its position right
-// after Redo.
+// below query these buttons (by data-action/data-template-*), so every
+// existing selector/disabled-state call site elsewhere in this file keeps
+// working unchanged. New/Save/Duplicate/Delete Template consolidated here
+// (Duplicate/Delete used to live in their own right-pane toolbar row,
+// data-template-toolbar-mount — now removed) — same New/Save/Duplicate/
+// Delete/Undo/Redo order and single left-pane toolbar cluster every other
+// tool uses. Print moved OUT of this cluster entirely — it's Press's own
+// one true primary action, not a New/Save/Duplicate/Delete/Undo/Redo slot —
+// and is now a standalone static button in the center pane (index.html,
+// id="printButton", queried by id below same as before). Import/Export
+// moved into the JSON Data panel's own onImport/onExport instead of living
+// here as standalone buttons — see jsonDataPanel's own construction below.
+createToolbarButtonGroup([
+  { action: "new", label: "New Template", attrs: { "data-action": "new-template" } },
+  { action: "save", label: "Save", attrs: { "data-action": "save-layout" } },
+  { action: "duplicate", label: "Duplicate Template", attrs: { "data-template-duplicate": true } },
+  { action: "delete", label: "Delete Template", visible: false, attrs: { "data-template-delete": true } },
+]).forEach((button) => document.querySelector("[data-press-toolbar-mount]")?.appendChild(button));
+// A small visual break, not a functional one — same convention every other
+// tool's toolbar now uses (see forge/js/app.js's own comment).
 createToolbarButtonGroup([
   { action: "undo", label: "Undo", attrs: { "data-action": "undo-layout" } },
   { action: "redo", label: "Redo", attrs: { "data-action": "redo-layout" } },
-  { action: "print", label: "Print", primary: true, attrs: { id: "printButton" } },
-  { action: "new", label: "New Template", attrs: { "data-action": "new-template" } },
-  { action: "import", icon: "tabler:upload", label: "Import", attrs: { "data-action": "import-layout" } },
-  { action: "save", label: "Save", attrs: { "data-action": "save-layout" } },
-  { action: "export", icon: "tabler:download", label: "Export", attrs: { "data-action": "export-layout" } },
-]).forEach((button) => document.querySelector("[data-press-toolbar-mount]")?.appendChild(button));
+]).forEach((button) => document.querySelector("[data-press-undo-toolbar-mount]")?.appendChild(button));
 
 // The Component/Template Inspector's individually-toggled property fields
 // (createFormFloatingField/createButtonCheckGroup/createCheckField/
@@ -144,15 +153,19 @@ function mountInspectorField(key, element) {
 // didn't exist yet). All read/written externally via the same data-*
 // attribute query convention every other field in this file already uses —
 // these mount calls only build the markup.
-mountInspectorField("template-id", createCompactField({ type: "text", id: "templateId", label: "ID", dataAttr: "data-template-id" }));
-mountInspectorField("template-name", createCompactField({ type: "text", id: "templateName", label: "Name", dataAttr: "data-template-name" }));
-mountInspectorField(
-  "template-description",
-  createCompactField({ type: "textarea", id: "templateDescription", label: "Description", dataAttr: "data-template-description", rows: 2 })
-);
+// ID/Name/Description/Type/Base font specifically use createFormFloatingField
+// (the condensed "label folded into the box" shape) rather than
+// createCompactField — matching the identity/metadata fields in Workbench's
+// own Template Properties panel, which made the same switch. The rest of
+// this file's Template/Grid Properties fields (grid-packed pairs like
+// Width/Height, and the Formats/Sources multi-selects createFormFloatingField
+// has no "select-multiple" support for) stay on createCompactField, same as
+// Workbench kept those in the "dense grid-packed field" category.
+mountInspectorField("template-id", createFormFloatingField({ type: "text", id: "templateId", label: "ID", dataAttr: "data-template-id", placeholder: " " }));
+mountInspectorField("template-name", createFormFloatingField({ type: "text", id: "templateName", label: "Name", dataAttr: "data-template-name", placeholder: " " }));
 mountInspectorField(
   "template-type",
-  createCompactField({
+  createFormFloatingField({
     type: "select",
     id: "templateType",
     label: "Type",
@@ -165,8 +178,21 @@ mountInspectorField(
   })
 );
 mountInspectorField(
+  "template-description",
+  createFormFloatingField({
+    type: "textarea",
+    id: "templateDescription",
+    label: "Description",
+    dataAttr: "data-template-description",
+    placeholder: " ",
+    // Bootstrap's form-floating needs an explicit height on textareas —
+    // same fixed rows*24 formula Workbench's identical field uses.
+    style: "min-height: 48px",
+  })
+);
+mountInspectorField(
   "template-base-font",
-  createCompactField({ type: "text", id: "templateBaseFont", label: "Base font", dataAttr: "data-template-base-font", autocomplete: "off" })
+  createFormFloatingField({ type: "text", id: "templateBaseFont", label: "Base font", dataAttr: "data-template-base-font", autocomplete: "off", placeholder: " " })
 );
 mountInspectorField(
   "template-formats",
@@ -820,8 +846,12 @@ const cardPageNav = document.querySelector("[data-card-page-nav]");
 const cardPagePrevButton = document.querySelector("[data-card-page-prev]");
 const cardPageNextButton = document.querySelector("[data-card-page-next]");
 const cardPageLabel = document.querySelector("[data-card-page-label]");
-const viewTabButtons = Array.from(document.querySelectorAll("[data-view-tab]"));
-const gridViewTabButton = document.querySelector('[data-view-tab="grid"]');
+// Mode toggle (createModeToggleGroup) replaces the old nav-tabs pair —
+// rebuilds fresh on every renderModeToggle() call, so there's no persistent
+// "grid tab button" reference the way the old static nav-link was; the
+// "disabled while this template has no real grid" state (updateGridViewAvailability)
+// is instead re-applied to the freshly-built radio input each render.
+const modeToggleMount = document.querySelector("[data-press-mode-toggle-mount]");
 const viewControlsPreview = document.querySelector('[data-view-controls="preview"]');
 const viewControlsGrid = document.querySelector('[data-view-controls="grid"]');
 const viewPanelPreview = document.querySelector('[data-view-panel="preview"]');
@@ -857,6 +887,16 @@ const layoutEmptyState = document.querySelector("[data-layout-empty]");
 // their own definitions further down the file — is safe; this closure only
 // runs when jsonDataPanel.render() is actually called, always well after
 // full module evaluation.
+// The old toolbar's own "Import"/"Export" buttons (data-action="import-
+// layout"/"export-layout") were confirmed dead code before this pass — no
+// click handler existed anywhere for either, in this file or elsewhere.
+// Export gets a real implementation here (same Blob/anchor/download shape
+// every other tool's own JSON export uses, over this panel's own getData
+// output); Import has no well-defined "apply this back" meaning to build
+// against — getData below returns a fully RESOLVED preview (template +
+// bindings + data already merged), not the editable Template/Component
+// source of truth, so there's nothing coherent to round-trip it into. Left
+// out rather than fabricated.
 const jsonDataPanel = createJsonDataPanel({
   label: "JSON Data",
   id: "press-json",
@@ -867,6 +907,22 @@ const jsonDataPanel = createJsonDataPanel({
     }
     const previewData = resolveBasePreviewData();
     return buildTemplatePreview(context.template, previewData);
+  },
+  onExport: () => {
+    const context = getSelectionContext();
+    if (!context.template) {
+      status?.show("Select a template to export.", { type: "info", timeout: 2000 });
+      return;
+    }
+    const previewData = resolveBasePreviewData();
+    const data = buildTemplatePreview(context.template, previewData);
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${context.template.id || "press-preview"}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
   },
 });
 
@@ -920,11 +976,10 @@ const templateBackRepeatInput = document.querySelector("[data-template-back-repe
 // templateToggle/templatePanel used to be queried here as static markup;
 // the section is now built inside initPressCollapsibles() instead (see
 // there), since it needs to run after applyTemplateCollapse's own `let`
-// declaration further down this file. pageBindingsPanel's own content
-// markup is untouched (Page Bindings uses the toggle-only migration shape,
-// to preserve its <h3> heading level — see initPressCollapsibles), so it's
-// still queried directly here; only its toggle button is now JS-built.
-const pageBindingsPanel = document.querySelector("[data-page-bindings-panel]");
+// declaration further down this file. Page Bindings/Grid Properties now use
+// the same makeInspectorGroupCollapsible mechanism the Component Inspector's
+// own groups do (initPressCollapsibles), which builds its own body wrapper
+// from static markup directly — no separate panel div to query here anymore.
 const templateSaveButton = document.querySelector("[data-template-save]");
 // Built and mounted before the querySelector lines just below, so every
 // existing selector/disabled-state/title call site elsewhere in this file
@@ -934,30 +989,15 @@ const templateSaveButton = document.querySelector("[data-template-save]");
 // text — attrs' own data-bs-title, applied after the label-driven one
 // inside createIconButton, overrides just the tooltip without touching
 // aria-label.
-createToolbarButtonGroup([
-  { action: "duplicate", label: "Duplicate Template", attrs: { "data-template-duplicate": true } },
-  {
-    icon: "tabler:eraser",
-    variant: "outline-secondary",
-    label: "Clear all uniqueness",
-    attrs: {
-      "data-template-clear-uniqueness": true,
-      "data-bs-title": "Clear all per-card uniqueness on this template",
-    },
-  },
-  {
-    action: "delete",
-    label: "Delete Template",
-    visible: false,
-    attrs: { "data-template-delete": true },
-  },
-]).forEach((button) => document.querySelector("[data-template-toolbar-mount]")?.appendChild(button));
+// Clear all uniqueness itself is now built as one of the Template
+// Properties collapsible section's own header `actions` (see
+// initPressCollapsibles below) rather than a standalone toolbar row — same
+// data-template-clear-uniqueness attribute, so the click listener further
+// below still finds it unchanged.
 
 const templateDuplicateButton = document.querySelector("[data-template-duplicate]");
 const templateClearUniquenessButton = document.querySelector("[data-template-clear-uniqueness]");
 const templateDeleteButton = document.querySelector("[data-template-delete]");
-const cardPanel = document.querySelector("[data-card-panel]");
-// cardToggle (toggle-only migration shape, preserves its <h3> heading) and
 // componentToggle/componentPanel (full section migration) are now built
 // inside initPressCollapsibles() instead of queried here — see there.
 const inspectorSection = document.querySelector("[data-component-inspector]");
@@ -1163,6 +1203,10 @@ let gridViewIndex = 0;
 // that's the only place a component selection maps unambiguously to one
 // specific card (the page-grid view can show several cards per page).
 let activeViewTab = "preview";
+// Re-applied to the Mode toggle's own "grid" radio input on every
+// renderModeToggle() rebuild (see updateGridViewAvailability) — the toggle
+// itself has no persistent DOM node the way the old static nav-link did.
+let gridViewAvailable = true;
 let selectedNodeId = null;
 let nodeCounter = 0;
 let editablePages = { front: null, back: null };
@@ -1184,6 +1228,7 @@ let lastSavedLayout = null;
 let isSaving = false;
 let isGenerating = false;
 let applySelectionCollapse = null;
+let applyPaletteCollapse = null;
 let applyTemplateCollapse = null;
 let applyPageBindingsCollapse = null;
 let applyCardCollapse = null;
@@ -5217,19 +5262,38 @@ function templateHasGrid(template) {
   return columns > 1 || rows > 1;
 }
 
-function updateGridViewAvailability(template) {
-  if (!gridViewTabButton) return;
-  const available = templateHasGrid(template);
-  gridViewTabButton.disabled = !available;
-  gridViewTabButton.classList.toggle("disabled", !available);
-  gridViewTabButton.setAttribute("aria-disabled", available ? "false" : "true");
-  const title = available
+// The suite-wide Mode control (createModeToggleGroup) — Live Preview/Grid
+// View replace the old nav-tabs pair, mounted upper-right of the print
+// surface's own header row same as every other tool's own Mode toggle. No
+// View toggle alongside it — these two options ARE the mode, there's no
+// secondary axis within either.
+function renderModeToggle() {
+  if (!modeToggleMount) return;
+  const gridTooltip = gridViewAvailable
     ? "Front and back of one specific card/chip at a time — where Make Unique targets a per-item override"
     : "Not available — this template's grid is 1×1 (Template Properties → Columns/Rows), so there's nothing to page through beyond a single card/chip";
-  gridViewTabButton.setAttribute("data-bs-title", title);
-  if (window.bootstrap?.Tooltip) {
-    window.bootstrap.Tooltip.getOrCreateInstance(gridViewTabButton).setContent({ ".tooltip-inner": title });
-  }
+  createModeToggleGroup({
+    container: modeToggleMount,
+    ariaLabel: "Press view",
+    options: [
+      { value: "preview", icon: "tabler:eye", label: "Live Preview" },
+      { value: "grid", icon: "tabler:layout-grid", label: "Grid View", tooltip: gridTooltip },
+    ],
+    value: activeViewTab,
+    onChange: (next) => setActiveViewTab(next),
+  });
+  // createModeToggleGroup has no per-option `disabled` passthrough (same
+  // reasoning Workbench's own Template-tier gating already worked around) —
+  // a native disabled radio input is the simplest equivalent: the browser
+  // itself refuses to check it, so onChange never fires for it.
+  const gridInput = modeToggleMount.querySelector('input[value="grid"]');
+  if (gridInput) gridInput.disabled = !gridViewAvailable;
+}
+
+function updateGridViewAvailability(template) {
+  const available = templateHasGrid(template);
+  gridViewAvailable = available;
+  renderModeToggle();
   // Don't strand the user on a view that just became unavailable (e.g.
   // columns/rows edited down to 1x1 while Grid View was already open).
   if (!available && activeViewTab === "grid") {
@@ -5238,13 +5302,9 @@ function updateGridViewAvailability(template) {
 }
 
 function setActiveViewTab(tab) {
-  if (tab === "grid" && gridViewTabButton?.disabled) return;
+  if (tab === "grid" && !gridViewAvailable) return;
   activeViewTab = tab === "grid" ? "grid" : "preview";
-  viewTabButtons.forEach((button) => {
-    const isActive = button.dataset.viewTab === activeViewTab;
-    button.classList.toggle("active", isActive);
-    button.setAttribute("aria-selected", isActive ? "true" : "false");
-  });
+  renderModeToggle();
   setElementVisible(viewControlsPreview, activeViewTab === "preview");
   setElementVisible(viewControlsGrid, activeViewTab === "grid");
   setElementVisible(viewPanelPreview, activeViewTab === "preview", "block");
@@ -5612,6 +5672,9 @@ async function handleGeneratePrint() {
     if (applySelectionCollapse) {
       applySelectionCollapse(true);
     }
+    if (applyPaletteCollapse) {
+      applyPaletteCollapse(false);
+    }
     const mismatchWarning = describeBindingMismatch(context.template, data);
     if (status) {
       if (mismatchWarning) {
@@ -5658,13 +5721,20 @@ async function handleGeneratePrint() {
 // "not applicable to this node type" still hides in full (heading, toggle,
 // and body together); this collapse state only governs the body's
 // visibility while the group itself is shown.
+// Returns a `setCollapsed(next)` the caller can use to drive this group's
+// state programmatically (button chrome + body visibility together) — e.g.
+// setInspectorMode below force-expands/collapses Page Bindings and Grid
+// Properties when switching between Template/Component edit modes. The
+// original 5 Component Inspector groups (Text/Colors/Border/Behavior/
+// Advanced) have no such external driver and simply ignore the return
+// value, same as before this existed.
 function makeInspectorGroupCollapsible(selector, { defaultCollapsed = true } = {}) {
   const group = document.querySelector(selector);
-  if (!group) return;
+  if (!group) return null;
   const heading = group.firstElementChild;
-  if (!heading) return;
+  if (!heading) return null;
   const bodyChildren = Array.from(group.children).slice(1);
-  if (!bodyChildren.length) return;
+  if (!bodyChildren.length) return null;
   const body = document.createElement("div");
   body.className = "d-flex flex-column gap-2";
   bodyChildren.forEach((child) => body.appendChild(child));
@@ -5672,7 +5742,7 @@ function makeInspectorGroupCollapsible(selector, { defaultCollapsed = true } = {
   headerRow.className = "d-flex align-items-center justify-content-between gap-2";
   group.insertBefore(headerRow, heading);
   headerRow.appendChild(heading);
-  const { button } = createCollapseToggleButton({
+  const { button, setCollapsed } = createCollapseToggleButton({
     label: heading.textContent || "section",
     collapsed: defaultCollapsed,
     onToggle: (collapsed) => {
@@ -5682,6 +5752,12 @@ function makeInspectorGroupCollapsible(selector, { defaultCollapsed = true } = {
   headerRow.appendChild(button);
   setElementCollapsed(body, defaultCollapsed);
   group.appendChild(body);
+  return {
+    setCollapsed: (next) => {
+      setCollapsed(next);
+      setElementCollapsed(body, next);
+    },
+  };
 }
 
 function initInspectorGroupCollapsibles() {
@@ -5690,25 +5766,6 @@ function initInspectorGroupCollapsibles() {
   makeInspectorGroupCollapsible("[data-inspector-border-group]");
   makeInspectorGroupCollapsible("[data-inspector-behavior-group]");
   makeInspectorGroupCollapsible("[data-inspector-advanced]");
-}
-
-// Builds and mounts a collapsible-section chevron toggle via the shared
-// factory, for a header whose other content (label, help span) stays
-// static HTML — the section-level createCollapsibleSection isn't used here
-// since it would rebuild the whole header as an <h2>, but Page
-// Bindings/Grid Properties are nested one level deeper and use <h3> for
-// their heading; forcing them through the full factory would silently
-// change that heading level. Mirrors Orrery's own identically-shaped local
-// helper.
-function createCollapsibleToggleButton(mountSelector, collapsed) {
-  const button = createIconButton({
-    icon: "tabler:chevron-right",
-    className: "collapsible-toggle",
-    includeToggleLabel: true,
-  });
-  button.setAttribute("aria-expanded", collapsed ? "false" : "true");
-  document.querySelector(mountSelector)?.appendChild(button);
-  return button;
 }
 
 function initPressCollapsibles() {
@@ -5726,29 +5783,62 @@ function initPressCollapsibles() {
   document.querySelector("[data-selection-mount]")?.appendChild(selectionsSection.section);
   applySelectionCollapse = selectionsSection.setCollapsed;
 
+  // Palette — collapsed by default, expanded the moment Selections itself
+  // collapses (same trigger point as applySelectionCollapse(true) below —
+  // the reciprocal Selections-collapses/Palette-expands behavior the user
+  // asked for), rather than staying always-expanded like the old
+  // always-visible left-pane section did.
+  const paletteSection = createCollapsibleSection({
+    label: "Palette",
+    helpTopic: "press.palette",
+    collapsed: true,
+    content: document.querySelector("[data-palette-panel]"),
+  });
+  document.querySelector("[data-palette-mount]")?.appendChild(paletteSection.section);
+  applyPaletteCollapse = paletteSection.setCollapsed;
+
   const templateSection = createCollapsibleSection({
     label: "Template Properties",
     collapsed: false,
     className: "d-flex flex-column gap-4",
+    // Formerly its own toolbar row (data-template-toolbar-mount, removed
+    // now that New/Save/Duplicate/Delete Template live in the left-pane
+    // toolbar) — Clear Uniqueness is template-scoped, not part of that
+    // six-button set, so it stays here as a header action instead.
+    actions: [
+      {
+        icon: "tabler:eraser",
+        variant: "outline-secondary",
+        label: "Clear all uniqueness",
+        attrs: {
+          "data-template-clear-uniqueness": true,
+          "data-bs-title": "Clear all per-card uniqueness on this template",
+        },
+      },
+    ],
     content: document.querySelector("[data-template-panel]"),
   });
   templateSection.section.setAttribute("data-template-properties", "");
   document.querySelector("[data-template-properties-mount]")?.appendChild(templateSection.section);
   applyTemplateCollapse = templateSection.setCollapsed;
 
-  const pageBindingsToggle = createCollapsibleToggleButton("[data-page-bindings-toggle-mount]", false);
-  applyPageBindingsCollapse = bindCollapsibleToggle(pageBindingsToggle, pageBindingsPanel, {
-    collapsed: false,
-    expandLabel: "Expand page bindings",
-    collapseLabel: "Collapse page bindings",
-  });
-
-  const cardToggle = createCollapsibleToggleButton("[data-card-toggle-mount]", false);
-  applyCardCollapse = bindCollapsibleToggle(cardToggle, cardPanel, {
-    collapsed: false,
-    expandLabel: "Expand card properties",
-    collapseLabel: "Collapse card properties",
-  });
+  // Template Properties' own sub-groups — same makeInspectorGroupCollapsible
+  // mechanism (and same visual result: no border box, plain uppercase
+  // heading, chevron toggle) the Component Inspector's Text/Colors/Border/
+  // Behavior/Advanced groups already use just below
+  // (initInspectorGroupCollapsibles), rather than the old bordered-box +
+  // <h3> shape Page Bindings/Grid Properties used to have. Text/Formats/
+  // Supported Sources are new groupings (previously always-visible, flat
+  // fields) so they default collapsed, matching that same precedent; Page
+  // Bindings/Grid Properties keep their own prior default of starting
+  // expanded — only their styling changed, not that behavior.
+  makeInspectorGroupCollapsible("[data-inspector-template-text-group]");
+  makeInspectorGroupCollapsible("[data-inspector-template-formats-group]");
+  makeInspectorGroupCollapsible("[data-inspector-template-sources-group]");
+  const pageBindingsGroup = makeInspectorGroupCollapsible("[data-inspector-page-bindings-group]", { defaultCollapsed: false });
+  applyPageBindingsCollapse = pageBindingsGroup?.setCollapsed || (() => {});
+  const gridPropertiesGroup = makeInspectorGroupCollapsible("[data-inspector-grid-properties-group]", { defaultCollapsed: false });
+  applyCardCollapse = gridPropertiesGroup?.setCollapsed || (() => {});
 
   const componentSection = createCollapsibleSection({
     label: "Component Properties",
@@ -7286,9 +7376,11 @@ function wireEvents() {
       renderPreview();
     });
   }
-  viewTabButtons.forEach((button) => {
-    button.addEventListener("click", () => setActiveViewTab(button.dataset.viewTab));
-  });
+  // Mode toggle's own click handling lives inside renderModeToggle itself
+  // (createModeToggleGroup's own onChange) — it rebuilds fresh on every
+  // call, so there's no persistent listener to wire here the way the old
+  // static nav-tab buttons needed.
+  renderModeToggle();
   if (gridViewPrevButton) {
     gridViewPrevButton.addEventListener("click", () => {
       if (gridViewIndex <= 0) return;

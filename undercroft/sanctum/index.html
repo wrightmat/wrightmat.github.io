@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Undercroft Sanctum</title>
     <script src="../common/js/theme-init.js"></script>
-    <link rel="stylesheet" href="../common/vendor/bootstrap/bootstrap.min.css" />
     <link rel="stylesheet" href="../common/css/shell.css" />
     <link rel="stylesheet" href="css/styles.css" />
   </head>
@@ -17,53 +16,47 @@
         <div data-pane-content="left">
           <div class="btn-toolbar justify-content-center" role="toolbar" aria-label="Location actions">
             <div class="btn-group" role="group" data-location-toolbar-mount></div>
+            <div class="btn-group ms-2" role="group" data-location-undo-toolbar-mount></div>
           </div>
 
-          <section class="d-flex flex-column gap-2" id="sanctum-system">
+          <div data-selections-mount></div>
+          <div class="d-flex flex-column gap-2" data-selections-panel>
             <div data-field-mount="system-select"></div>
-          </section>
-
-          <section class="d-flex flex-column gap-2" id="sanctum-setting-picker">
             <div data-field-mount="setting-select"></div>
-          </section>
-
-          <section class="d-flex flex-column gap-2" id="sanctum-location-picker">
             <div data-field-mount="location-select"></div>
-          </section>
 
-          <section class="d-flex flex-column gap-2" id="sanctum-overrides" data-generation-fields>
-            <div data-field-mount="type-override"></div>
-            <div data-field-mount="purpose-override"></div>
-            <div data-field-mount="environment-override"></div>
-            <div data-field-mount="locked-features"></div>
-          </section>
+            <div class="d-flex flex-column gap-2" id="sanctum-overrides" data-generation-fields>
+              <div data-field-mount="type-override"></div>
+              <div data-field-mount="purpose-override"></div>
+              <div data-field-mount="environment-override"></div>
+              <div data-field-mount="locked-features"></div>
+            </div>
+          </div>
 
           <div class="mt-auto" id="sanctum-json" data-json-mount></div>
         </div>
 
         <main class="workbench-main flex-grow-1 p-3 overflow-auto">
-          <div class="card shadow-theme mb-3">
-            <div class="card-body">
-              <div data-location-graph-mount></div>
-              <div class="d-flex flex-column gap-2" data-location-graph-panel>
-                <div class="sanctum-location-graph-stage" data-location-graph-container>
-                  <div class="sanctum-location-graph-content" data-location-graph-content>
-                    <svg data-location-graph-svg viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid meet"></svg>
-                  </div>
-                  <div
-                    class="sanctum-location-graph-controls d-flex align-items-center gap-2 flex-wrap"
-                    data-location-graph-controls
-                  >
-                    <div class="btn-group btn-group-sm" role="group" aria-label="Location graph navigation" data-location-graph-nav-mount></div>
-                    <div class="btn-group btn-group-sm" role="group" aria-label="Location graph zoom controls" data-location-graph-toolbar-mount></div>
-                  </div>
-                </div>
-                <div class="d-none" data-location-graph-empty></div>
-              </div>
+          <!-- The suite-wide Mode header — the "Nothing selected yet"
+               empty-state message (condensed, left-aligned, no card — see
+               js/app.js's own createEmptyStateCard "inline" variant call)
+               flush on the left, ms-auto pushing Mode (Location/Relationships,
+               a real labeled button group) to the right regardless of
+               whether the empty-state message is present. Same
+               createModeToggleGroup pattern Repository/Forge/Crucible's own
+               header uses — see js/app.js's own renderModeToggle.
+               Relationships mode always shows graph+list together now — no
+               separate View toggle. The whole-Setting Location Graph
+               overview that used to sit here as its own always-visible card
+               is gone — it's reachable the same way every other tool's
+               Relationships graph is now: switch to Relationships mode
+               above. -->
+          <div class="d-flex align-items-center gap-2 mb-3" data-sanctum-header>
+            <div data-location-empty-state></div>
+            <div class="d-flex align-items-center gap-2 ms-auto">
+              <div data-sanctum-mode-toggle-mount></div>
             </div>
           </div>
-
-          <div class="d-flex flex-column gap-3" data-location-empty-state></div>
 
           <div class="d-flex flex-column gap-3 d-none" data-location-display>
             <div class="card shadow-theme">
@@ -116,30 +109,6 @@
                         <span class="iconify" data-icon="tabler:plus" aria-hidden="true"></span>
                         Add
                       </button>
-                    </div>
-                  </div>
-              </div>
-            </div>
-
-            <div class="card shadow-theme">
-              <div class="card-body">
-                <div data-relationships-mount></div>
-                  <div class="d-flex flex-column gap-2" data-relationships-panel hidden>
-                    <div data-field-mount="parent-select"></div>
-                    <div class="d-flex flex-column gap-2">
-                      <label class="form-label fw-semibold mb-0">Connected To</label>
-                      <div class="d-flex flex-column gap-2" data-connected-to-list></div>
-                      <div class="d-flex gap-2 align-items-center">
-                        <select class="form-select" data-add-connection-select></select>
-                        <button class="btn btn-outline-secondary flex-shrink-0 d-flex align-items-center gap-1" type="button" data-add-connection-button>
-                          <span class="iconify" data-icon="tabler:plus" aria-hidden="true"></span>
-                          Add
-                        </button>
-                      </div>
-                    </div>
-                    <div class="d-flex flex-column gap-1">
-                      <label class="form-label fw-semibold mb-0">Children</label>
-                      <div class="small text-body-secondary" data-children-list></div>
                     </div>
                   </div>
               </div>
@@ -226,6 +195,34 @@
                   </div>
                 </section>
               </div>
+            </div>
+          </div>
+
+          <!-- Relationships — a second, mutually-exclusive Mode (not a card
+               inside Location mode anymore) — see js/app.js's own setMode.
+               Same shared relationship-editor.js/relationship-graph.js pair
+               every other kind uses (Forge/Crucible/Workbench) — no
+               Sanctum-specific Parent/Connected-To/Children UI anymore.
+               "Parent of" and "Connected to" are just two of this tool's own
+               suggested types (js/app.js's own RELATIONSHIP_TYPE_SUGGESTIONS);
+               Children falls out of the same mechanism that makes Forge's
+               Factions work — an incoming "Parent of" edge from another
+               Location shows up in THIS list automatically, no separate
+               "children" concept or query needed. -->
+          <div class="d-none card shadow-theme" data-location-relationships>
+            <div class="card-body d-flex flex-column gap-2">
+              <div data-relationships-graph-wrap>
+                <div class="relationship-graph-stage" data-relationships-graph-container>
+                  <div class="relationship-graph-content" data-relationships-graph-content>
+                    <svg data-relationships-graph-svg viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid meet"></svg>
+                  </div>
+                  <div class="relationship-graph-controls d-flex align-items-center gap-2" data-relationships-graph-controls>
+                    <div class="btn-group btn-group-sm" role="group" aria-label="Relationships zoom controls" data-relationships-graph-toolbar-mount></div>
+                  </div>
+                </div>
+                <div class="d-none" data-relationships-graph-empty></div>
+              </div>
+              <div data-relationships-list-mount></div>
             </div>
           </div>
         </main>

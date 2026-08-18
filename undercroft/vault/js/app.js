@@ -11,8 +11,12 @@ import {
   createIconButton,
   createFieldBox,
   createSearchableCheckList,
+  createModeToggleGroup,
 } from "../../common/js/lib/ui-components.js";
 import { bindCollapsibleToggle } from "../../common/js/lib/collapsible.js";
+import { renderRelationshipEditor } from "../../common/js/lib/relationship-editor.js";
+import { buildRelationshipGraph } from "../../common/js/lib/relationship-graph.js";
+import { createForceGraph } from "../../common/js/lib/graph-view.js";
 import { listFeaturesForSystem, listEffectsForSystem, getSystemPropertyTypes, getSystemClasses } from "./lib/tables.js";
 import { generateEffect, computeBudget, matchesCategory, rerollPropertyValue, resolveFeatureBudgetCost } from "./lib/generator.js";
 import { createEffectRecord, toPressExportShape } from "./lib/effect-schema.js";
@@ -54,6 +58,9 @@ import { resolveGroupContext, pickGroupDefaultId } from "../../common/js/lib/wid
 import { renderMarkdown } from "../../repository/js/lib/markdown.js";
 
 let status = null;
+let undoStack = null;
+let performUndo = null;
+let performRedo = null;
 let dataManager = null;
 let features = [];
 let propertyTypes = [];
@@ -126,15 +133,77 @@ let currentEffectId = null;
 // this exact pattern.
 const dirtyGate = createDirtyGate({ buildSnapshot: () => toPressExportShape(buildRecordForSave()) });
 
+// Whole-record snapshot undo — same shape/reasoning as Crucible's own
+// recordHistory/field-commit-debounce pair (crucible/js/app.js), reusing
+// buildRecordForSave() (defined below, referenced here since function
+// declarations hoist) so a Name/Notes edit — not synced onto currentRecord
+// until Save/Export, see that function's own comment — is captured too.
+// Restoring goes through renderEffect, which already writes record.name/
+// record.notes back into their live input fields. Feature-params sub-edits
+// (routed through the shared featureParamsEditor) are intentionally NOT
+// wrapped here, same scoping decision as Crucible's — that mutation happens
+// inside a shared module this pass isn't touching.
+function recordSnapshot() {
+  return JSON.stringify(buildRecordForSave());
+}
+
+function recordHistory(label, applyChange) {
+  if (!currentRecord) {
+    applyChange();
+    return;
+  }
+  const before = recordSnapshot();
+  applyChange();
+  const after = recordSnapshot();
+  if (before !== after) undoStack.push({ label, before, after });
+}
+
+function applyRecordSnapshot(json) {
+  if (!json) return;
+  renderEffect(JSON.parse(json));
+}
+
+const FIELD_COMMIT_DEBOUNCE_MS = 600;
+let fieldCommitTimer = 0;
+let fieldCommitLabel = "";
+let fieldEditBaseline = null;
+
+function commitFieldEdit() {
+  window.clearTimeout(fieldCommitTimer);
+  fieldCommitTimer = 0;
+  if (!currentRecord || fieldEditBaseline === null) return;
+  const after = recordSnapshot();
+  if (after !== fieldEditBaseline) undoStack.push({ label: fieldCommitLabel, before: fieldEditBaseline, after });
+  fieldEditBaseline = null;
+}
+
+function scheduleFieldCommit(label) {
+  if (fieldEditBaseline === null) fieldEditBaseline = recordSnapshot();
+  fieldCommitLabel = label;
+  window.clearTimeout(fieldCommitTimer);
+  fieldCommitTimer = window.setTimeout(commitFieldEdit, FIELD_COMMIT_DEBOUNCE_MS);
+}
+
+function flushFieldCommitOnUndoRedo(event) {
+  const key = (event.key || "").toLowerCase();
+  if ((event.ctrlKey || event.metaKey) && key === "z") commitFieldEdit();
+}
+
 // Built and mounted before `elements` below queries for these buttons by
 // their data-*-effect attribute, so every existing selector/disabled-state
 // call site elsewhere in this file keeps working unchanged.
 createToolbarButtonGroup([
-  { action: "generate", icon: "tabler:sparkles", label: "Generate Effect", primary: true, attrs: { "data-generate-effect": true } },
+  { action: "generate", icon: "tabler:sparkles", label: "Generate Effect", attrs: { "data-generate-effect": true } },
   { action: "save", label: "Save", disabled: true, attrs: { "data-save-effect": true } },
-  { action: "export", label: "Export JSON", disabled: true, attrs: { "data-export-effect": true } },
+  { action: "duplicate", label: "Duplicate", disabled: true, attrs: { "data-duplicate-effect": true } },
   { action: "delete", label: "Delete", disabled: true, attrs: { "data-delete-effect": true } },
 ]).forEach((button) => document.querySelector("[data-effect-toolbar-mount]")?.appendChild(button));
+// A small visual break, not a functional one — same convention every other
+// tool's toolbar now uses (see forge/js/app.js's own comment).
+createToolbarButtonGroup([
+  { action: "undo", label: "Undo", attrs: { "data-undo-effect": true } },
+  { action: "redo", label: "Redo", attrs: { "data-redo-effect": true } },
+]).forEach((button) => document.querySelector("[data-effect-undo-toolbar-mount]")?.appendChild(button));
 createToolbarButtonGroup([
   {
     label: "Edit Feature",
@@ -163,6 +232,7 @@ createToolbarButtonGroup([
 document.querySelector("[data-effect-empty-state]")?.appendChild(
   createEmptyStateCard({
     message: "Nothing selected yet. Pick an existing Effect above, or fill in the fields and click Generate Effect.",
+    variant: "inline",
   })
 );
 
@@ -214,8 +284,10 @@ const elements = {
   lockedFeatures: document.querySelector("[data-locked-features]"),
   generateButton: document.querySelector("[data-generate-effect]"),
   saveButton: document.querySelector("[data-save-effect]"),
-  exportButton: document.querySelector("[data-export-effect]"),
+  duplicateButton: document.querySelector("[data-duplicate-effect]"),
   deleteButton: document.querySelector("[data-delete-effect]"),
+  undoButton: document.querySelector("[data-undo-effect]"),
+  redoButton: document.querySelector("[data-redo-effect]"),
   emptyState: document.querySelector("[data-effect-empty-state]"),
   display: document.querySelector("[data-effect-display]"),
   nameInput: document.querySelector("[data-effect-name]"),
@@ -243,6 +315,16 @@ const elements = {
   featureBasicBudgetCost: document.querySelector("[data-feature-basic-budget-cost]"),
   editFeatureButton: document.querySelector("[data-edit-feature-button]"),
   deleteParamButton: document.querySelector("[data-delete-param-button]"),
+  effectRelationships: document.querySelector("[data-effect-relationships]"),
+  modeToggleMount: document.querySelector("[data-vault-mode-toggle-mount]"),
+  relationshipsListMount: document.querySelector("[data-relationships-list-mount]"),
+  relationshipsGraphWrap: document.querySelector("[data-relationships-graph-wrap]"),
+  relationshipsGraphContainer: document.querySelector("[data-relationships-graph-container]"),
+  relationshipsGraphContent: document.querySelector("[data-relationships-graph-content]"),
+  relationshipsGraphSvg: document.querySelector("[data-relationships-graph-svg]"),
+  relationshipsGraphControls: document.querySelector("[data-relationships-graph-controls]"),
+  relationshipsGraphToolbarMount: document.querySelector("[data-relationships-graph-toolbar-mount]"),
+  relationshipsGraphEmpty: document.querySelector("[data-relationships-graph-empty]"),
 };
 
 // Adopts each section's existing static `[data-xxx-panel]` markup (its own
@@ -316,7 +398,15 @@ const elements = {
 const jsonDataPanel = createJsonDataPanel({
   label: "JSON Data",
   getData: () => (currentRecord ? toPressExportShape(currentRecord) : null),
+  onExport: () => handleExport(),
 });
+
+const selectionsSection = createCollapsibleSection({
+  label: "Selections",
+  collapsed: false,
+  content: document.querySelector("[data-selections-panel]"),
+});
+document.querySelector("[data-selections-mount]")?.appendChild(selectionsSection.section);
 
 function currentSystemId() {
   return elements.systemSelect?.value || "";
@@ -1260,25 +1350,30 @@ function buildRecordForSave() {
 
 function removeFeature(featureId) {
   if (!currentRecord) return;
-  currentRecord.featureIds = currentRecord.featureIds.filter((id) => id !== featureId);
-  if (currentRecord.signatureFeatureId === featureId) currentRecord.signatureFeatureId = null;
+  const feature = findById(features, featureId);
+  recordHistory(`remove ${feature?.name || "feature"}`, () => {
+    currentRecord.featureIds = currentRecord.featureIds.filter((id) => id !== featureId);
+    if (currentRecord.signatureFeatureId === featureId) currentRecord.signatureFeatureId = null;
+  });
   recomputeBudget(currentRecord);
   refreshEffectView();
 }
 
 function addFeature(featureId) {
   if (!currentRecord || !featureId) return;
-  if (!currentRecord.featureIds.includes(featureId)) currentRecord.featureIds.push(featureId);
   // A freshly added tiered feature starts at its own first (cheapest) tier
   // — same "always a real, well-defined tier" guarantee generateEffect's
   // own output gives — so the Inspector's own tier select (feature-params-
   // editor.js's renderFeatureTierEditor) always has something valid
   // selected rather than defaulting silently.
   const feature = findById(features, featureId);
-  if (Array.isArray(feature?.tiers) && feature.tiers.length) {
-    currentRecord.featureTiers = { ...(currentRecord.featureTiers || {}) };
-    if (!currentRecord.featureTiers[featureId]) currentRecord.featureTiers[featureId] = feature.tiers[0].id;
-  }
+  recordHistory(`add ${feature?.name || "feature"}`, () => {
+    if (!currentRecord.featureIds.includes(featureId)) currentRecord.featureIds.push(featureId);
+    if (Array.isArray(feature?.tiers) && feature.tiers.length) {
+      currentRecord.featureTiers = { ...(currentRecord.featureTiers || {}) };
+      if (!currentRecord.featureTiers[featureId]) currentRecord.featureTiers[featureId] = feature.tiers[0].id;
+    }
+  });
   recomputeBudget(currentRecord);
   refreshEffectView();
 }
@@ -1312,7 +1407,7 @@ function applyNotesMode(mode) {
 function updateActionButtons() {
   const hasRecord = Boolean(currentRecord);
   if (elements.saveButton) elements.saveButton.disabled = !hasRecord || !dirtyGate.isDirty();
-  if (elements.exportButton) elements.exportButton.disabled = !hasRecord;
+  if (elements.duplicateButton) elements.duplicateButton.disabled = !hasRecord;
   if (elements.deleteButton) {
     elements.deleteButton.disabled = !hasRecord || !dirtyGate.hasSaved() || !effectAllowsDelete(currentEffectId);
   }
@@ -1320,15 +1415,17 @@ function updateActionButtons() {
 
 function renderEffect(record) {
   currentRecord = record;
+  renderModeToggle();
   if (!record) {
     elements.emptyState?.classList.remove("d-none");
     elements.display?.classList.add("d-none");
     updateActionButtons();
     jsonDataPanel.render();
+    if (mode === "relationships") void refreshRelationshipsSection();
     return;
   }
   elements.emptyState?.classList.add("d-none");
-  elements.display?.classList.remove("d-none");
+  elements.display?.classList.toggle("d-none", mode === "relationships");
   if (elements.nameInput) elements.nameInput.value = record.name || "";
   renderIdentity(record);
   renderFeatureList(record);
@@ -1340,7 +1437,144 @@ function renderEffect(record) {
   elements.inspectorDetail?.classList.add("d-none");
   updateActionButtons();
   jsonDataPanel.render();
+  if (mode === "relationships") void refreshRelationshipsSection();
 }
+
+// --- Relationships -----------------------------------------------------
+//
+// Vault's own target-kind whitelist and type-suggestion vocabulary for the
+// shared relationship-editor.js/relationship-graph.js modules — see that
+// pair's own header comments for the full suite-wide mechanism, and Forge's
+// own app.js for the first tool this pattern shipped on. Item/spell-
+// flavored suggestions, not social or ecological ones — an Effect's own
+// natural relationships read differently than an NPC's or a Monster's.
+const RELATIONSHIP_TARGET_KINDS = [
+  { id: "npc", label: "NPC" },
+  { id: "location", label: "Location" },
+  { id: "monster", label: "Monster" },
+  { id: "character", label: "Character" },
+  { id: "effect", label: "Effect" },
+];
+const RELATIONSHIP_TYPE_SUGGESTIONS = [
+  "Requires",
+  "Counters",
+  "Variant of",
+  "Crafted from",
+  "Found in",
+];
+
+// "effect" (the existing Identity/Features/Notes card stack) or
+// "relationships" (a full-pane List/Graph view over this Effect's own
+// relationship edges) — mutually exclusive Modes, switched by the
+// suite-wide Mode toggle group (createModeToggleGroup) in the header row
+// above the main pane, exactly mirroring Forge/Crucible/Sanctum's own split.
+let mode = "effect";
+let relationshipsForceGraph = null;
+let relationshipsIconByKind = {};
+
+function renderModeToggle() {
+  if (!elements.modeToggleMount) return;
+  // Nothing to relate until an Effect exists — disabled (not hidden) until
+  // then, via createButtonCheckGroup's own disabled/tooltip option support
+  // (ui-components.js), the same mechanism every other tool's Relationships
+  // option now uses too (previously each hand-rolled an identical
+  // post-render querySelector('input[value="relationships"]').disabled
+  // patch — consolidated onto this one shared mechanism instead).
+  createModeToggleGroup({
+    container: elements.modeToggleMount,
+    ariaLabel: "Vault view",
+    options: [
+      { value: "effect", icon: "tabler:sparkles", label: "Effect" },
+      {
+        value: "relationships",
+        icon: "tabler:affiliate",
+        label: "Relationships",
+        disabled: !currentRecord,
+        tooltip: currentRecord ? undefined : "Select or generate an Effect first",
+      },
+    ],
+    value: mode,
+    onChange: (next) => setMode(next),
+  });
+}
+
+function setMode(nextMode) {
+  mode = nextMode;
+  const isRelationships = mode === "relationships";
+  elements.display?.classList.toggle("d-none", isRelationships || !currentRecord);
+  elements.effectRelationships?.classList.toggle("d-none", !isRelationships);
+  renderModeToggle();
+  if (isRelationships) void refreshRelationshipsSection();
+}
+
+function ensureRelationshipsForceGraph() {
+  if (relationshipsForceGraph || !elements.relationshipsGraphContainer) return relationshipsForceGraph;
+  relationshipsForceGraph = createForceGraph({
+    container: elements.relationshipsGraphContainer,
+    content: elements.relationshipsGraphContent,
+    svg: elements.relationshipsGraphSvg,
+    emptyMount: elements.relationshipsGraphEmpty,
+    getNodeRadius: (node) => (node.kind === "effect" && node.id === `effect:${currentRecord?.id}` ? 20 : 14),
+    getNodeIcon: (node) => relationshipsIconByKind?.[node.kind] || null,
+    getEdgeLabel: (edge) => edge.type || null,
+    classPrefix: "relationship-graph",
+    emptyIcon: "tabler:affiliate",
+    emptyMessage: "No relationships yet.",
+    defaultZoom: 1.4,
+  });
+  elements.relationshipsGraphControls?.addEventListener("pointerdown", (event) => event.stopPropagation());
+  [
+    { icon: "tabler:zoom-out", label: "Zoom out", onClick: () => relationshipsForceGraph.zoomBy(-0.25) },
+    { icon: "tabler:refresh", label: "Reset zoom", onClick: () => relationshipsForceGraph.reset() },
+    { icon: "tabler:zoom-in", label: "Zoom in", onClick: () => relationshipsForceGraph.zoomBy(0.25) },
+  ].forEach((config) => elements.relationshipsGraphToolbarMount?.appendChild(createIconButton(config)));
+  return relationshipsForceGraph;
+}
+
+async function refreshRelationshipsList() {
+  if (!elements.relationshipsListMount) return;
+  // No Effect loaded — clear rather than leave a stale prior Effect's own
+  // relationships on screen.
+  if (!currentRecord?.id) {
+    elements.relationshipsListMount.innerHTML =
+      '<p class="small text-body-secondary mb-0">Select or generate an Effect to see its relationships.</p>';
+    return;
+  }
+  await renderRelationshipEditor({
+    container: elements.relationshipsListMount,
+    sourceKind: "effect",
+    sourceId: currentRecord.id,
+    targetKinds: RELATIONSHIP_TARGET_KINDS,
+    typeSuggestions: RELATIONSHIP_TYPE_SUGGESTIONS,
+    dataManager,
+    status,
+    onChange: () => {
+      void refreshRelationshipsList();
+      void refreshRelationshipsGraph();
+    },
+  });
+}
+
+async function refreshRelationshipsGraph() {
+  const forceGraph = ensureRelationshipsForceGraph();
+  if (!forceGraph || !currentRecord?.id) return;
+  try {
+    const { nodes, edges, iconByKind } = await buildRelationshipGraph(dataManager, {
+      nodes: [{ kind: "effect", id: currentRecord.id, label: currentRecord.name || currentRecord.id }],
+    });
+    relationshipsIconByKind = iconByKind;
+    forceGraph.setGraph({ nodes, edges });
+  } catch (error) {
+    status?.show?.("Unable to build the Relationships graph.", { type: "error" });
+  }
+}
+
+async function refreshRelationshipsSection() {
+  await refreshRelationshipsList();
+  void refreshRelationshipsGraph();
+}
+
+renderModeToggle();
 
 function handleGenerate() {
   try {
@@ -1360,7 +1594,7 @@ function handleGenerate() {
     currentEffectId = null;
     if (elements.effectSelect) elements.effectSelect.value = "";
     updateGenerationFieldsVisibility();
-    renderEffect(record);
+    recordHistory("generate effect", () => renderEffect(record));
     status?.show("Effect generated.", { type: "success", timeout: 1500 });
   } catch (error) {
     status?.show(`Unable to generate: ${error.message}`, { type: "error", timeout: 4000 });
@@ -1437,7 +1671,27 @@ function handleExport() {
   exportRecordAsJson(currentRecord, toPressExportShape);
 }
 
+function generateEffectId() {
+  const suffix =
+    typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+      ? crypto.randomUUID()
+      : `${Date.now().toString(16)}-${Math.random().toString(16).slice(2)}`;
+  return `eff_${suffix}`;
+}
+
+function handleDuplicate() {
+  if (!currentRecord) return;
+  const source = buildRecordForSave();
+  const duplicate = { ...source, id: generateEffectId(), name: `${source.name || "Effect"} Copy` };
+  dirtyGate.markDirty();
+  currentEffectId = null;
+  if (elements.effectSelect) elements.effectSelect.value = "";
+  renderEffect(duplicate);
+  status?.show("Duplicated — not yet saved.", { type: "info", timeout: 2000 });
+}
+
 async function handleGenerateNote() {
+  const before = currentRecord ? recordSnapshot() : null;
   const success = await generateNoteForRecord({
     record: currentRecord,
     elements,
@@ -1463,7 +1717,14 @@ async function handleGenerateNote() {
       };
     },
   });
-  if (success) updateActionButtons();
+  if (success) {
+    if (before !== null) {
+      const after = recordSnapshot();
+      if (after !== before) undoStack.push({ label: "generate note", before, after });
+    }
+    if (notesMode === "view") renderNotesPreview();
+    updateActionButtons();
+  }
 }
 
 async function init() {
@@ -1471,8 +1732,21 @@ async function init() {
     namespace: "vault",
     storagePrefix: "undercroft.vault.undo",
     settingsSlotAttr: "data-vault-settings-slot",
+    onUndo: (entry) => {
+      if (!entry) return null;
+      applyRecordSnapshot(entry.before);
+      return { message: entry.label ? `Undid ${entry.label}` : "Undid last action" };
+    },
+    onRedo: (entry) => {
+      if (!entry) return null;
+      applyRecordSnapshot(entry.after);
+      return { message: entry.label ? `Redid ${entry.label}` : "Redid last action" };
+    },
   });
   status = shell.status;
+  undoStack = shell.undoStack;
+  performUndo = shell.undo;
+  performRedo = shell.redo;
   const auth = initAuthControls({
     status,
   });
@@ -1489,8 +1763,10 @@ async function init() {
 
   elements.generateButton?.addEventListener("click", handleGenerate);
   elements.saveButton?.addEventListener("click", handleSave);
-  elements.exportButton?.addEventListener("click", handleExport);
   elements.deleteButton?.addEventListener("click", handleDelete);
+  elements.duplicateButton?.addEventListener("click", handleDuplicate);
+  elements.undoButton?.addEventListener("click", () => performUndo());
+  elements.redoButton?.addEventListener("click", () => performRedo());
   elements.generateNoteButton?.addEventListener("click", handleGenerateNote);
   elements.addFeatureButton?.addEventListener("click", () => {
     const featureId = elements.addFeatureSelect?.value;
@@ -1503,7 +1779,9 @@ async function init() {
     const select = event.target.closest("[data-editable-property]");
     if (!select || !currentRecord) return;
     const key = select.dataset.editableProperty;
-    currentRecord.properties = { ...(currentRecord.properties || {}), [key]: select.value };
+    recordHistory(`edit ${key}`, () => {
+      currentRecord.properties = { ...(currentRecord.properties || {}), [key]: select.value };
+    });
     recomputeBudget(currentRecord);
     // Form's own value gates Spell Levels' visibility (see renderIdentity) —
     // only a Form change needs the whole Identity grid rebuilt to reflect
@@ -1523,7 +1801,9 @@ async function init() {
     const propertyType = propertyTypes.find((entry) => entry.id === key);
     const pick = rerollPropertyValue(propertyType, currentRecord.properties?.[key]);
     if (!pick) return;
-    currentRecord.properties = { ...(currentRecord.properties || {}), [key]: pick.id };
+    recordHistory(`reroll ${key}`, () => {
+      currentRecord.properties = { ...(currentRecord.properties || {}), [key]: pick.id };
+    });
     recomputeBudget(currentRecord);
     renderIdentity(currentRecord);
     refreshEffectView();
@@ -1624,8 +1904,18 @@ async function init() {
   // actually runs (see buildRecordForSave) — without this, editing either
   // field wouldn't re-enable an already-saved record's Save button until
   // some unrelated re-render happened to call updateActionButtons() again.
-  elements.nameInput?.addEventListener("input", updateActionButtons);
-  elements.notesText?.addEventListener("input", updateActionButtons);
+  elements.nameInput?.addEventListener("input", () => {
+    scheduleFieldCommit("edit name");
+    updateActionButtons();
+  });
+  elements.nameInput?.addEventListener("keydown", flushFieldCommitOnUndoRedo);
+  elements.nameInput?.addEventListener("change", () => commitFieldEdit());
+  elements.notesText?.addEventListener("input", () => {
+    scheduleFieldCommit("edit notes");
+    updateActionButtons();
+  });
+  elements.notesText?.addEventListener("keydown", flushFieldCommitOnUndoRedo);
+  elements.notesText?.addEventListener("change", () => commitFieldEdit());
   elements.notesModeToggle?.addEventListener("click", () => {
     // Notes isn't written back into currentRecord until Save/Export (see
     // buildRecordForSave) — switching to View needs the live textarea

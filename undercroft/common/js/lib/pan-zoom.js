@@ -2,10 +2,9 @@ const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
 // See handleWheel's own comment for why this needs to be magnitude-based
 // rather than a flat per-event step. Bumped up from the initial 0.001, then
-// doubled again to 0.0028 — confirmed as the preferred trackpad feel via
-// Sanctum's own Location Graph (which started as a per-instance override,
-// see the constructor's own wheelZoomSensitivity option, before this
-// became the shared default both tools now use).
+// doubled again to 0.0028 — confirmed as the preferred trackpad feel across
+// this module's own consumers (Orrery's map, every tool's Relationships
+// graph via graph-view.js).
 const WHEEL_ZOOM_SENSITIVITY = 0.0028;
 
 export class PanZoomController {
@@ -16,10 +15,8 @@ export class PanZoomController {
     onChange,
     minZoom = 0.25,
     maxZoom = 4,
-    // Per-instance override — Sanctum's Location Graph wants faster
-    // trackpad/wheel zoom than Orrery's own map (see location-graph.js's
-    // own call site), so this can't stay the single shared module constant
-    // every instance was locked to before.
+    // Per-instance override, for a future consumer that wants different
+    // trackpad/wheel-zoom feel than the shared default above.
     wheelZoomSensitivity = WHEEL_ZOOM_SENSITIVITY,
   } = {}) {
     if (!container || !content) {

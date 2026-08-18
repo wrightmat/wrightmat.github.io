@@ -2498,6 +2498,16 @@ export function renderMapLayers(overlay, baseMapManager, map, options = {}) {
       // completely normally regardless, same "only the thing you actually
       // armed responds" precedent Draw/Shape/Measure already follow.
       const isPaintTarget = Boolean(options.paintModeActive) && options.paintTargetLayerId === layer.id;
+      // Deliberately NOT given the same fallback-without-selecting-a-layer
+      // escape hatch onPathClick/markers get below (isVectorLayerInteractive/
+      // isMarkerDraggable) — a grid layer's own hit target is one element
+      // covering the ENTIRE map, not discrete elements at specific points,
+      // so making it fallback-interactive whenever nothing is selected would
+      // swallow every click across the whole map (blocking panning
+      // entirely, and always highlighting a cell) rather than only
+      // responding where something actually is, which is what the fallback
+      // is meant to do for markers/vectors. Grid cells stay reachable only
+      // via explicit layer selection or the paint tool, same as before.
       element = createGridLayerElement(baseMapManager, map, layer, {
         isInteractive: isSelected || isPaintTarget,
         selectedCells: isGridCellsSelected ? selection.cells : [],
@@ -2517,7 +2527,24 @@ export function renderMapLayers(overlay, baseMapManager, map, options = {}) {
       element = createRasterLayerElement(layer, renderState);
     } else if (layer.type === "marker") {
       element = createMarkerLayerElement(baseMapManager, map, layer, {
-        isInteractive: isSelected,
+        // isLayerSelected OR this specific layer is "armed"
+        // (options.armedMarkerLayerId, app.js's own setSelection/
+        // selectMarkerElementForDrag) — NOT the wider isSelected. This only
+        // gates the container's OWN empty-space click (onEmptyClick,
+        // "place a new marker here") and its crosshair cursor, not whether
+        // existing markers are clickable (that's isMarkerDraggable below,
+        // already covering the fallback-without-selecting-a-layer case on
+        // its own). Using isSelected here meant that fallback-selecting a
+        // single marker (isMarkerElementSelected, one of isSelected's own
+        // branches) ALSO armed "click elsewhere on this layer places a new
+        // marker" — confirmed real bug: clicking off a fallback-selected
+        // marker to deselect it silently placed a brand new one instead.
+        // armedMarkerLayerId is what correctly keeps "select layer, then
+        // rapidly place/nudge several markers" fluid (isLayerSelected alone
+        // would go false the instant the first marker gets placed/clicked,
+        // since selection.kind becomes "marker-element" then) while still
+        // excluding a fresh fallback click that never armed the layer.
+        isInteractive: isLayerSelected || options.armedMarkerLayerId === layer.id,
         selectedElementId: isMarkerElementSelected ? selection.id : null,
         isMarkerDraggable: options.isMarkerDraggable ? (markerElement) => options.isMarkerDraggable(layer, markerElement) : undefined,
         onEmptyClick: options.onMarkerLayerEmptyClick ? (position, event) => options.onMarkerLayerEmptyClick(layer, position, event) : undefined,

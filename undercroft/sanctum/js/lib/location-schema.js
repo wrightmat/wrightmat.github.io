@@ -35,8 +35,15 @@ export function createLocationRecord(generated, existingId) {
     featureIds: [],
     assets: [],
     needs: [],
-    parentId: null,
-    connectedTo: [],
+    // Containment (was `parentId`) and adjacency (was `connectedTo`) are no
+    // longer fields on the Location record itself — both are now just
+    // `relationship` records ("Parent of"/"Connected to" types), the same
+    // suite-wide graph every other kind uses (common/js/lib/
+    // relationship-graph.js). A record loaded from before this change may
+    // still carry these keys in its raw JSON; nothing in this tool reads
+    // them anymore (see reloadLocationsForSetting's own migration step,
+    // sanctum/js/app.js), so they're harmless leftover data, never
+    // reintroduced by this schema going forward.
     notes: "",
     ...generated,
     id: existingId || `loc_${randomId()}`,

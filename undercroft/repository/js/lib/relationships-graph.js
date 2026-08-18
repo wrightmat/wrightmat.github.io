@@ -57,7 +57,7 @@ export async function buildRelationshipsGraph(dataManager, { validKindIds } = {}
   // Deduped per (unordered pair, type) — the same page linking the same
   // target twice (two separate [[Title]] mentions, say) still draws one
   // edge, same "one edge, however many times it's written" convention
-  // Location Graph's own connectedTo dedup already establishes.
+  // Sanctum's own "Connected to" dedup already establishes.
   function addEdge(a, b, type) {
     if (!a || !b || a === b) return;
     const key = `${[a, b].sort().join("|")}|${type}`;

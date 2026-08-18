@@ -1206,6 +1206,21 @@ export class DataManager {
     return payload;
   }
 
+  // Server-side half of the suite-wide header search (common/js/lib/
+  // suite-search.js) — every kind at once, filtered to this signed-in
+  // user's own owned/shared content (see storage.py's own search_content).
+  // Uncached (unlike list/listOwnedContent above) — a search box firing a
+  // fresh query on every keystroke has nothing sensible to cache against.
+  // Returns [] uncalled for an anonymous session — nothing server-side is
+  // an anonymous user's to own/be shared, so suite-search.js skips this
+  // call entirely rather than making a request guaranteed to 401.
+  async searchContent(query) {
+    if (!this.isAuthenticated() || !query || !query.trim()) return [];
+    const params = new URLSearchParams({ q: query.trim() });
+    const payload = await this._request(`/content/search?${params.toString()}`, { method: "GET", auth: true });
+    return Array.isArray(payload?.results) ? payload.results : [];
+  }
+
   // includeMemberGroups (opt-in) also lists groups you don't own but have a
   // character added to (server's own ?scope=member — see groups.py's own
   // list_groups) — what auth-ui.js's account-menu campaign selector wants

@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Undercroft Orrery</title>
     <script src="../common/js/theme-init.js"></script>
-    <link rel="stylesheet" href="../common/vendor/bootstrap/bootstrap.min.css" />
     <link rel="stylesheet" href="../common/vendor/leaflet/leaflet.css" />
     <link rel="stylesheet" href="../common/vendor/bootstrap-icons/bootstrap-icons.css" />
     <link rel="stylesheet" href="../common/css/shell.css" />
@@ -23,12 +22,14 @@
             <section class="d-flex flex-column gap-3">
               <div class="btn-toolbar justify-content-center" role="toolbar" aria-label="Orrery actions">
                 <div class="btn-group" role="group" data-map-toolbar-mount></div>
+                <div class="btn-group ms-2" role="group" data-map-undo-toolbar-mount></div>
               </div>
             </section>
 
-            <section class="d-flex flex-column gap-2">
+            <div data-selections-mount></div>
+            <div class="d-flex flex-column gap-2" data-selections-panel>
               <div data-field-mount="map-select"></div>
-            </section>
+            </div>
 
             <section class="d-flex flex-column gap-3">
               <div class="d-flex align-items-center justify-content-between">
@@ -238,7 +239,7 @@
               </dl>
             </div>
           </div>
-          <div class="position-absolute top-0 start-0 w-100 h-100 p-3 d-flex flex-column gap-3 d-none" data-map-empty-state></div>
+          <div class="orrery-empty-state d-none" data-map-empty-state></div>
         </main>
 
         <div data-pane-content="right">

@@ -1,17 +1,19 @@
 // A generic force-directed relationship diagram — SVG nodes/edges, a small
 // hand-rolled deterministic spring simulation, click/hover/selection, and
-// pan/zoom (common/js/lib/pan-zoom.js) — extracted from Sanctum's own
-// Location Graph (sanctum/js/lib/location-graph.js) once a second consumer
-// (Repository's Relationships view, repository/js/lib/relationships-graph.js)
-// needed the exact same engine over a completely different kind of node/edge
-// data. This module has NO domain knowledge at all — it takes a plain
-// `{nodes: [{id, label, radius?}], edges: [{a, b, type}]}` shape and a
-// couple of small callbacks; every caller owns turning its own real data
-// (Locations' parentId/connectedTo, or Repository's wikilinks/references)
-// into that shape itself. See location-graph.js's own header comment for
-// why a force layout (not a tree/org-chart) is the right shape for THIS
-// suite's kind of data in the first place — that reasoning doesn't need
-// repeating per caller, just the mechanism.
+// pan/zoom (common/js/lib/pan-zoom.js) — originally extracted from Sanctum's
+// own Location Graph (since removed — every tool's relationship graph is
+// reached through its own Relationships mode now, see relationship-graph.js/
+// relationship-editor.js) once a second consumer (Repository's Relationships
+// view, repository/js/lib/relationships-graph.js) needed the exact same
+// engine over a completely different kind of node/edge data. This module
+// has NO domain knowledge at all — it takes a plain `{nodes: [{id, label,
+// radius?}], edges: [{a, b, type}]}` shape and a couple of small callbacks;
+// every caller owns turning its own real data (a Location's parentId/
+// connectedTo, an NPC/Monster/Effect's own relationship edges, or
+// Repository's wikilinks/references) into that shape itself. A force layout
+// (not a tree/org-chart) is the right shape here since node position carries
+// no meaning beyond "roughly near its related neighbors" — none of this
+// suite's relationship data is inherently hierarchical or spatial.
 //
 // `classPrefix` (default "graph") namespaces every CSS class this renders
 // (`<prefix>-node`, `<prefix>-edge`, ...) — each caller's OWN stylesheet
@@ -20,9 +22,7 @@
 // elsewhere in the suite solve the same problem with inline styles instead;
 // a graph's per-node/edge styling is complex enough that CSS classes stay
 // the right tool here, just kept from colliding across tools via the
-// prefix). Sanctum's own adapter passes "sanctum-graph" (matching its
-// already-shipped CSS in sanctum/css/styles.css unchanged) so this
-// extraction is a pure refactor there, not a visual change.
+// prefix).
 import { PanZoomController } from "./pan-zoom.js";
 import { createEmptyStateCard } from "./ui-components.js";
 
@@ -65,10 +65,10 @@ function truncateLabel(name, max = 16) {
 // BFS depth from every root, used only to seed initial ring positions
 // before the simulation refines them — never meaningful on its own.
 // `resolveParent(node, idSet) => parentId|null` is the ONE piece of domain
-// knowledge a caller can optionally supply (Location Graph's own adapter
-// passes one built from parentId, so a Region→Settlements hierarchy still
-// seeds as a sensible starting tree exactly like it always has); omitted
-// entirely (Relationships' own adapter, which has no single-parent
+// knowledge a caller can optionally supply, for a hierarchical dataset (a
+// single-parent tree like Region→Settlements) that wants a sensible starting
+// shape instead of every node seeding as its own root; omitted entirely
+// (every current consumer — Relationships' own adapter has no single-parent
 // hierarchy to speak of), every node is simply its own root — the
 // simulation's own repulsion/spring/centering forces still do the real
 // clustering work either way, this only affects how good the FIRST frame
@@ -208,20 +208,25 @@ function applySelectionClasses(svg, selectedId, classPrefix) {
 }
 
 // `getNodeRadius(node) => number` — required, every caller has SOME notion
-// of node sizing (Location Graph: location-type's own scale field;
-// Relationships: a node's own kind). `getNodeIcon(node) => iconName|null`
-// — optional; when supplied, an iconify glyph renders centered in the node
-// (via a small <foreignObject> — the only practical way to place an HTML
-// custom element like <span class="iconify"> inside SVG), letting
-// Relationships show an NPC/Location/Page/... icon per node using each
-// kind's own already-registered icon (loadLibraryKinds()) rather than a
-// new hardcoded lookup table; omitted (Location Graph's own adapter), nodes
-// render as plain circles exactly as they always have.
-function render(svg, nodes, edges, positions, { selectedId, getNodeRadius, getNodeIcon, onSelect, classPrefix }) {
+// of node sizing (every Relationships graph across the suite: a node's own
+// kind, sized up for the record centered on). `getNodeIcon(node) =>
+// iconName|null` — optional; when supplied, an iconify glyph renders
+// centered in the node (via a small <foreignObject> — the only practical
+// way to place an HTML custom element like <span class="iconify"> inside
+// SVG), letting Relationships show an NPC/Location/Page/... icon per node
+// using each kind's own already-registered icon (loadLibraryKinds())
+// rather than a new hardcoded lookup table; omitted, nodes render as plain
+// circles exactly as they always have. `getEdgeLabel(edge) => string|null`
+// — optional; when supplied, a small text label renders at each edge's own
+// midpoint (the relationship-graph.js consumers' own edge `type`, e.g.
+// "Member of") — omitted (Repository's own existing adapter, unchanged),
+// edges render exactly as they always have with no label text at all.
+function render(svg, nodes, edges, positions, { selectedId, getNodeRadius, getNodeIcon, getEdgeLabel, onSelect, classPrefix }) {
   while (svg.firstChild) svg.removeChild(svg.firstChild);
   const edgeGroup = svgEl("g", { class: `${classPrefix}-edges` });
+  const edgeLabelGroup = svgEl("g", { class: `${classPrefix}-edge-labels` });
   const nodeGroup = svgEl("g", { class: `${classPrefix}-nodes` });
-  svg.append(edgeGroup, nodeGroup);
+  svg.append(edgeGroup, edgeLabelGroup, nodeGroup);
 
   edges.forEach((edge) => {
     const a = positions.get(edge.a);
@@ -238,6 +243,18 @@ function render(svg, nodes, edges, positions, { selectedId, getNodeRadius, getNo
     line.dataset.a = edge.a;
     line.dataset.b = edge.b;
     edgeGroup.appendChild(line);
+
+    const labelText = typeof getEdgeLabel === "function" ? getEdgeLabel(edge) : null;
+    if (labelText) {
+      const label = svgEl("text", {
+        class: `${classPrefix}-edge-label`,
+        x: (a.x + b.x) / 2,
+        y: (a.y + b.y) / 2,
+        "text-anchor": "middle",
+      });
+      label.textContent = labelText;
+      edgeLabelGroup.appendChild(label);
+    }
   });
 
   nodes.forEach((node) => {
@@ -253,11 +270,11 @@ function render(svg, nodes, edges, positions, { selectedId, getNodeRadius, getNo
       "aria-label": node.label || node.id,
     });
     g.dataset.nodeId = node.id;
-    // Harmless empty string for a caller (Location Graph) whose nodes
-    // don't carry a `kind` at all — lets a caller that DOES have more than
-    // one node kind (Repository's Relationships view: journal/quest/npc/
-    // location/...) style them apart via a plain CSS attribute selector
-    // without this module needing to know what any of those kinds mean.
+    // Harmless empty string for a caller whose nodes don't carry a `kind`
+    // at all — lets a caller that DOES have more than one node kind
+    // (Repository's Relationships view: journal/quest/npc/location/...)
+    // style them apart via a plain CSS attribute selector without this
+    // module needing to know what any of those kinds mean.
     g.dataset.nodeKind = node.kind || "";
     const circle = svgEl("circle", { r: radius, class: `${classPrefix}-node-circle` });
     const title = svgEl("title");
@@ -298,11 +315,11 @@ function render(svg, nodes, edges, positions, { selectedId, getNodeRadius, getNo
     g.appendChild(label);
     // Stops this pointerdown from ever reaching `container`'s own listener
     // (PanZoomController's drag-to-pan handler) — confirmed real bug
-    // without this in Location Graph: the container calls setPointerCapture
-    // on every pointerdown regardless of target, which hijacks the
-    // subsequent synthesized "click" event before it ever reaches this
-    // node, so clicking a node silently did nothing. A plain click (no
-    // drag) on the node itself never needs to pan anyway.
+    // without this: the container calls setPointerCapture on every
+    // pointerdown regardless of target, which hijacks the subsequent
+    // synthesized "click" event before it ever reaches this node, so
+    // clicking a node silently did nothing. A plain click (no drag) on the
+    // node itself never needs to pan anyway.
     g.addEventListener("pointerdown", (event) => event.stopPropagation());
     const select = () => onSelect?.(node.id);
     g.addEventListener("click", select);
@@ -323,6 +340,13 @@ function render(svg, nodes, edges, positions, { selectedId, getNodeRadius, getNo
 // when there's nothing to graph. `onSelect(id)` — called on node
 // click/Enter. `resolveParent(node, idSet) => parentId|null` — optional,
 // see computeDepths' own comment.
+// `edgeLabelZoomThreshold` — only meaningful alongside `getEdgeLabel`; a
+// relationship-graph.js consumer's own edge-type text (e.g. "Member of")
+// stays hidden until zoomed in at least this far, so a graph with many
+// edges doesn't read as a wall of overlapping text at the default zoom —
+// see the `${classPrefix}-content` class this toggles, and the CSS rule
+// each caller's own stylesheet defines for it (shell.css's own
+// `.relationship-graph-content` block is the one real consumer today).
 export function createForceGraph({
   container,
   content,
@@ -331,6 +355,7 @@ export function createForceGraph({
   onSelect,
   getNodeRadius,
   getNodeIcon,
+  getEdgeLabel,
   resolveParent,
   classPrefix = "graph",
   emptyIcon = "tabler:route-off",
@@ -338,9 +363,15 @@ export function createForceGraph({
   defaultZoom = 2.0,
   minZoom = 0.75,
   maxZoom = 6,
+  edgeLabelZoomThreshold = 1.75,
 }) {
   if (!container || !content || !svg) {
     return { setGraph() {}, setSelected() {}, zoomBy() {}, reset() {}, destroy() {} };
+  }
+
+  function updateEdgeLabelVisibility(zoom) {
+    if (typeof getEdgeLabel !== "function") return;
+    content.classList.toggle(`${classPrefix}-edge-labels-visible`, zoom >= edgeLabelZoomThreshold);
   }
 
   const panZoom = new PanZoomController({
@@ -349,7 +380,9 @@ export function createForceGraph({
     view: { zoom: defaultZoom },
     minZoom,
     maxZoom,
+    onChange: (view) => updateEdgeLabelVisibility(view.zoom),
   });
+  updateEdgeLabelVisibility(defaultZoom);
 
   let lastIdKey = null;
   let positions = new Map();
@@ -399,7 +432,7 @@ export function createForceGraph({
       );
       lastIdKey = idKey;
     }
-    render(svg, currentNodes, currentEdges, positions, { selectedId, getNodeRadius, getNodeIcon, onSelect, classPrefix });
+    render(svg, currentNodes, currentEdges, positions, { selectedId, getNodeRadius, getNodeIcon, getEdgeLabel, onSelect, classPrefix });
   }
 
   function setSelected(id) {

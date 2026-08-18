@@ -1006,14 +1006,15 @@ export async function listLocationsForSetting(dataManager, settingId) {
     .map((entry) => ({
       id: entry.id,
       name: entry.entity.name || entry.id,
+      // parentId/connectedTo — read by Sanctum's own
+      // migrateLegacyLocationRelationships, a one-time pass converting any
+      // still-legacy scalar values into real `relationship` records; free
+      // to include regardless, the full record's already in memory from
+      // fetchKindEntriesWithIds above. Forge's own consumer of this same
+      // shared helper only reads id/name, so it's unaffected by the wider
+      // shape.
       parentId: entry.entity.parentId || null,
-      // Added for Sanctum's Location Graph view (connectedTo/typeId drive
-      // its peer-link edges and node sizing) — free to include, the full
-      // record's already in memory from fetchKindEntriesWithIds above.
-      // Forge's own consumer of this same shared helper only reads
-      // id/name, so it's unaffected by the wider shape.
       connectedTo: Array.isArray(entry.entity.connectedTo) ? entry.entity.connectedTo : [],
-      typeId: entry.entity.typeId || null,
     }));
 }
 

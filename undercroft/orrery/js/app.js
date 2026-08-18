@@ -1,6 +1,22 @@
 import { bindCollapsibleToggle } from "../../common/js/lib/collapsible.js";
 import { initAppShell } from "../../common/js/lib/app-shell.js";
-import { createJsonDataPanel, createIconButton, createToolbarButtonGroup, createCompactField, createButtonCheckGroup, createCheckField, createIconPickerField, createFormFloatingField, createEmptyStateCard } from "../../common/js/lib/ui-components.js";
+import {
+  createJsonDataPanel,
+  createIconButton,
+  createToolbarButtonGroup,
+  createCompactField,
+  createButtonCheckGroup,
+  createCheckField,
+  createIconPickerField,
+  createFormFloatingField,
+  createEmptyStateCard,
+  // Aliased — inspector-fields.js's own createCollapsibleSection (positional
+  // title/fields/{defaultCollapsed} form) is already imported under the bare
+  // name below; this is the OTHER, object-arg createCollapsibleSection
+  // (label/content/actions/helpTopic), needed here only for the new
+  // Selections section.
+  createCollapsibleSection as createFullCollapsibleSection,
+} from "../../common/js/lib/ui-components.js";
 import { createFieldRow, createHalfWidthNumberField, createCollapsibleSection } from "../../common/js/lib/inspector-fields.js";
 import { exportRecordAsJson } from "../../common/js/lib/generator-kit.js";
 import {
@@ -39,6 +55,7 @@ import {
   updateBaseMapType,
   updateMapTimestamp,
   resolveInitialView,
+  randomId,
 } from "./lib/map-model.js";
 import { BaseMapManager } from "./lib/base-maps.js";
 // The shared map-rendering core (also used by the Dashboard's Map widget —
@@ -248,11 +265,11 @@ const baseMapManager = new BaseMapManager({
 
 // Small local helpers for two button shapes this file uses that don't map
 // cleanly onto createIconButton's "compact"/"toolbar" kinds: a plain-link
-// "About X" help tooltip (same shape already hand-built for the JSON Data
-// panel's own help button below, via jsonHelpButton) and a small
-// btn-group-sm "Add X" action with a visually-hidden label (compact sizing,
-// but WITH a hidden label span, unlike every other compact-kind button in
-// the suite).
+// "About X" help tooltip (used for the Layers/Groups/Map Properties/
+// Selection section headers below — JSON Data's own equivalent was removed,
+// see jsonDataPanel's own construction) and a small btn-group-sm "Add X"
+// action with a visually-hidden label (compact sizing, but WITH a hidden
+// label span, unlike every other compact-kind button in the suite).
 function createHelpButton(title, label) {
   const button = document.createElement("button");
   button.type = "button";
@@ -275,16 +292,22 @@ function withHiddenLabel(button, label) {
 // Built and mounted before `elements` below queries for these buttons by
 // their data-action/data-add-*/data-selection-clear attribute, so every
 // existing selector/disabled-state call site elsewhere in this file keeps
-// working unchanged.
+// working unchanged. New/Save/Duplicate/Delete/Undo/Redo, in that order —
+// Import/Export moved into the JSON Data panel's own onImport/onExport
+// (see jsonDataPanel's own construction below) instead of living here as
+// standalone buttons.
+createToolbarButtonGroup([
+  { action: "new", icon: "tabler:map-plus", label: "New Map", attrs: { "data-action": "new-map" } },
+  { action: "save", label: "Save Map", disabled: true, attrs: { "data-action": "save-layout" } },
+  { action: "duplicate", label: "Duplicate Map", attrs: { "data-action": "duplicate-map" } },
+  { action: "delete", label: "Delete Map", disabled: true, attrs: { "data-action": "delete-map" } },
+]).forEach((button) => document.querySelector("[data-map-toolbar-mount]")?.appendChild(button));
+// A small visual break, not a functional one — same convention every other
+// tool's toolbar now uses (see forge/js/app.js's own comment).
 createToolbarButtonGroup([
   { action: "undo", label: "Undo", attrs: { "data-action": "undo-layout" } },
   { action: "redo", label: "Redo", attrs: { "data-action": "redo-layout" } },
-  { action: "new", icon: "tabler:map-plus", label: "New Map", attrs: { "data-action": "new-map" } },
-  { action: "save", label: "Save Map", disabled: true, attrs: { "data-action": "save-layout" } },
-  { action: "import", icon: "tabler:upload", label: "Import", attrs: { "data-action": "import-layout" } },
-  { action: "export", icon: "tabler:download", label: "Export", attrs: { "data-action": "export-layout" } },
-  { action: "delete", label: "Delete Map", disabled: true, attrs: { "data-action": "delete-map" } },
-]).forEach((button) => document.querySelector("[data-map-toolbar-mount]")?.appendChild(button));
+]).forEach((button) => document.querySelector("[data-map-undo-toolbar-mount]")?.appendChild(button));
 
 document.querySelector("[data-add-layer-mount]")?.append(
   withHiddenLabel(
@@ -386,6 +409,17 @@ mountField(
     dataAttr: "data-map-select", helpTopic: "orrery.maps",
   })
 );
+// Selections — expanded by default, matching every other tool's own
+// left-pane Selections section. Just the one Map select here, but wrapped
+// in the same collapsible shape for suite-wide consistency.
+{
+  const selectionsSection = createFullCollapsibleSection({
+    label: "Selections",
+    collapsed: false,
+    content: document.querySelector("[data-selections-panel]"),
+  });
+  document.querySelector("[data-selections-mount]")?.appendChild(selectionsSection.section);
+}
 // Same icon+text+tooltip toggle shape Press's own align-x/align-y groups
 // use (createButtonCheckGroup already supports it natively) — was plain
 // text-only buttons before, the one field in this panel not matching the
@@ -525,9 +559,8 @@ const elements = {
   initialPositionY: document.querySelector("[data-map-initial-position-y]"),
   newMapButton: document.querySelector('[data-action="new-map"]'),
   saveMapButton: document.querySelector('[data-action="save-layout"]'),
+  duplicateMapButton: document.querySelector('[data-action="duplicate-map"]'),
   deleteMapButton: document.querySelector('[data-action="delete-map"]'),
-  importButton: document.querySelector('[data-action="import-layout"]'),
-  exportButton: document.querySelector('[data-action="export-layout"]'),
   mapMain: document.querySelector("[data-map-main]"),
   baseMapRadios: Array.from(document.querySelectorAll("[data-base-map-option]")),
   baseMapSettings: Array.from(document.querySelectorAll("[data-base-map-settings]")),
@@ -604,24 +637,23 @@ const elements = {
   viewPan: document.querySelector("[data-view-pan]"),
 };
 
+// Assigned once the hidden file-picker input is actually built (see the
+// Import/Export wiring further below, in the same place it always lived) —
+// onImport just needs a stable closure to call into once that's ready,
+// same reasoning applyMapSnapshot/watchCurrentMap etc. below are also only
+// resolved at click time, well after every declaration in this module has
+// run.
+let importInput = null;
 const jsonDataPanel = createJsonDataPanel({
   label: "JSON Data",
   getData: () => state.map,
+  // Reuses the same Blob/anchor/download mechanics Crucible/Vault/Sanctum
+  // already share for "download this record as a .json file" — an identity
+  // shape function, since a map export is a portable copy of itself, not a
+  // Press-ingestion shape like those tools' own records.
+  onExport: () => exportRecordAsJson(state.map, (map) => map),
+  onImport: () => importInput?.click(),
 });
-// Orrery's JSON Data section keeps one extra element beyond the shared
-// factory's own markup — a "what is this" help tooltip next to the heading
-// (distinct from the copy/collapse controls) — inserted directly into the
-// label group the factory already built.
-const jsonHelpButton = document.createElement("button");
-jsonHelpButton.type = "button";
-jsonHelpButton.className = "btn btn-link p-0 text-body-secondary";
-jsonHelpButton.setAttribute("data-bs-toggle", "tooltip");
-jsonHelpButton.setAttribute("data-bs-placement", "top");
-jsonHelpButton.setAttribute("data-bs-title", "Preview the current map model and verify exported data.");
-jsonHelpButton.setAttribute("aria-label", "About JSON preview");
-jsonHelpButton.innerHTML = '<span class="iconify" data-icon="tabler:help" aria-hidden="true"></span>';
-jsonDataPanel.header.firstElementChild?.appendChild(jsonHelpButton);
-
 const renderJsonPreview = jsonDataPanel.render;
 
 // Wraps the raw preview renderer so every one of this file's many renderJson()
@@ -751,14 +783,16 @@ function setMapActionsEnabled(enabled) {
   });
   if (elements.groupAdd) elements.groupAdd.disabled = !enabled;
   if (elements.viewAdd) elements.viewAdd.disabled = !enabled;
-  // Import/Export both act on state.map directly with no map-existence
-  // check of their own (same "nothing gates them but a real map being
-  // loaded" reasoning as Add Layer/Group/View above) — Export would
-  // otherwise happily dump the harmless placeholder createMapModel() as
-  // if it were real map data, and Import would silently overwrite it
-  // instead of visibly failing.
-  if (elements.importButton) elements.importButton.disabled = !enabled;
-  if (elements.exportButton) elements.exportButton.disabled = !enabled;
+  // Import/Export/Duplicate all act on state.map directly with no
+  // map-existence check of their own (same "nothing gates them but a real
+  // map being loaded" reasoning as Add Layer/Group/View above) — Export
+  // would otherwise happily dump the harmless placeholder createMapModel()
+  // as if it were real map data, Import would silently overwrite it
+  // instead of visibly failing, and Duplicate would have nothing real to
+  // copy.
+  if (jsonDataPanel.importButton) jsonDataPanel.importButton.disabled = !enabled;
+  if (jsonDataPanel.exportButton) jsonDataPanel.exportButton.disabled = !enabled;
+  if (elements.duplicateMapButton) elements.duplicateMapButton.disabled = !enabled;
   // Delete has its own, more specific gate (mapAllowsDelete — ownership,
   // not just "is a map loaded"), reapplied by updateMapToolbarState once a
   // real map is actually loaded — only force it OFF here when there's no
@@ -1366,7 +1400,29 @@ function autoSaveHistoryEntry(entry) {
     });
 }
 
+// Which marker layer (if any) is "armed" — its own empty-map-space click
+// places a new marker there (createMarkerLayerElement's onEmptyClick,
+// map-viewer.js). Deliberately NOT the same thing as "this layer's own
+// marker-element is the current selection": explicitly selecting the Layer
+// itself arms it (below), and placing/clicking a marker WHILE its layer is
+// already armed keeps it armed (so rapid "click empty space, click empty
+// space, ..." placement, or nudging an existing marker mid-session, both
+// stay fluid) — but fallback-clicking an existing marker directly (see
+// isLayerFallbackInteractive) does NOT arm its layer, so clicking elsewhere
+// afterward falls through to panning/deselecting instead of silently
+// placing a brand new marker. Confirmed real bug this fixes: a
+// fallback-selected marker's own layer looked "selected" (isSelected,
+// map-viewer.js's renderMapLayers, since isMarkerElementSelected is one of
+// its own OR'd branches) purely from having clicked one marker, arming
+// empty-click placement for a layer the user never actually chose to edit.
+let armedMarkerLayerId = null;
+
 function setSelection(kind, id = null, extra = {}) {
+  if (kind === "layer") {
+    armedMarkerLayerId = id;
+  } else if (!(kind === "marker-element" && extra.layerId === armedMarkerLayerId)) {
+    armedMarkerLayerId = null;
+  }
   state.selection = {
     kind,
     id,
@@ -2614,6 +2670,15 @@ function updateTileLayerElementPosition(layer, element) {
 // onMove/onUp, silently ending the gesture the instant the DOM node it
 // targets gets swapped out.
 function selectMarkerElementForDrag(layer, markerElement, dotEl) {
+  // Bypasses setSelection (see this function's own header comment on why),
+  // so it needs its own copy of setSelection's armedMarkerLayerId logic:
+  // stays armed only if this marker's layer was ALREADY the armed one
+  // (clicking/dragging a marker mid-placement-session); a fresh fallback
+  // click on a marker whose layer was never explicitly selected does not
+  // arm it. See armedMarkerLayerId's own comment for the full reasoning.
+  if (armedMarkerLayerId !== layer.id) {
+    armedMarkerLayerId = null;
+  }
   state.selection = { kind: "marker-element", id: markerElement.id, layerId: layer.id, cells: [], anchor: null };
   renderSelection();
   setPanelFocus(true);
@@ -2817,15 +2882,13 @@ function primeCharacterOwnershipCatalog() {
   characterOwnershipPrimer.prime(ids, () => renderLayerOverlays());
 }
 
-// Supplying isMarkerDraggable at all (below) means lib/map-viewer.js's own
-// isInteractive fallback (`draggable = Boolean(options.isInteractive)`)
-// never runs for a marker layer — so the "this layer must actually be the
-// current selection" gate that fallback implements (renderMapLayers' own
-// isSelected, computed the same 4-way way there) has to be replicated here
-// too, or a full-access viewer would regress to EVERY marker on EVERY layer
-// being draggable at once, without even selecting the Marker Layer first —
-// a real behavior change, not just a fix.
-function isMarkerLayerSelected(layer) {
+// Generic despite the narrow-sounding original name (was
+// isMarkerLayerSelected — renamed since isLayerFallbackInteractive below
+// reuses it for grid/vector layers too, not just markers): is THIS layer
+// the effective current selection, whether that's the layer itself or one
+// of the four selection kinds that scope to a specific layer's own child
+// (a grid-cells range, a single marker element, a single vector path).
+function isLayerSelected(layer) {
   return (
     (state.selection.kind === "layer" && state.selection.id === layer.id) ||
     (state.selection.kind === "grid-cells" && state.selection.layerId === layer.id) ||
@@ -2834,16 +2897,56 @@ function isMarkerLayerSelected(layer) {
   );
 }
 
+// True while any click-based gesture tool (Draw/Shape/Wall/Light/Measure/
+// Ping) is armed — these all claim map clicks for their own purpose, and
+// letting fallback click-to-select also respond to the same click was
+// confirmed as a real bug once already (see map-viewer.js's own comment on
+// createMarkerLayerElement for the "every marker always clickable" version
+// of this same mistake): a Measure click landing on a marker underneath
+// selected the marker instead of taking a measurement. Draw/Shape/Wall/
+// Light each keep a dedicated module-level flag; Measure/Ping don't (no
+// equivalent state to read besides their own toggle button's own class).
+function isAnyGestureToolActive() {
+  return Boolean(
+    drawModeActive ||
+      shapeModeActive ||
+      wallModeActive ||
+      lightModeActive ||
+      elements.measureToggle?.classList.contains("active") ||
+      elements.pingToggle?.classList.contains("active")
+  );
+}
+
+// Lets a marker/grid-cell/vector element be clicked directly without first
+// selecting its owning Layer from the left pane — the fallback hit-testing
+// the user asked for: click whatever's actually under the cursor, topmost
+// wins (ordinary DOM stacking already resolves that for markers/vectors,
+// same as an already-selected layer's own elements do today; a grid
+// layer's overlay is one full-map-covering element per layer, so the same
+// "later in map.layers paints on top and wins" stacking applies there too).
+// Selecting a Layer still narrows this down to just that layer (the
+// isLayerSelected branch), matching the existing "select the layer, then
+// its own elements become clickable" behavior exactly — this only ADDS the
+// "nothing selected yet" case, it doesn't change what happens once
+// something is. Suppressed entirely while a gesture tool is armed, so this
+// can never reopen the bug isMarkerDraggableForFullAccess originally fixed.
+function isLayerFallbackInteractive(layer) {
+  if (isAnyGestureToolActive()) return false;
+  if (state.selection.kind === null) return true;
+  return isLayerSelected(layer);
+}
+
 // Only ever used from the full-access render path now (renderLayerOverlays
 // below branches to a completely separate, restricted render for anyone
 // without full map access — see renderRestrictedLayerOverlays, which pulls
 // its own equivalent marker-drag policy from map-viewer.js's shared
 // buildRestrictedMapOptions instead of a second copy here) — so this only
-// has one job left: the GM/owner/admin can drag any marker on the
-// currently-selected layer, matching the tool's original behavior (must
-// select the Marker Layer first).
+// has one job left: the GM/owner/admin can click-select (and, on the same
+// gesture, drag) any marker on the currently-selected layer, OR — now —
+// any marker at all when no layer is selected yet (isLayerFallbackInteractive
+// already covers the selected-layer case as one of its own branches).
 function isMarkerDraggableForFullAccess(layer) {
-  return isMarkerLayerSelected(layer);
+  return isLayerFallbackInteractive(layer);
 }
 
 function renderLayerOverlays() {
@@ -2889,6 +2992,19 @@ function renderLayerOverlays() {
     viewerTier: getEffectiveViewerTier(),
     hasFullAccess: true,
     isMarkerDraggable: isMarkerDraggableForFullAccess,
+    // Whether THIS layer's own empty-click-places-a-marker should be armed
+    // — see armedMarkerLayerId's own comment. Kept separate from
+    // isMarkerDraggable/isLayerFallbackInteractive on purpose: an existing
+    // marker can be fallback-clickable (select/drag it) on a layer that
+    // ISN'T armed for placing new ones.
+    armedMarkerLayerId,
+    // Same fallback click-to-select for vector paths/shapes/doors (already
+    // has this exact escape hatch — built for the Dashboard Map widget,
+    // which has no layer-selection concept at all) as markers get above.
+    // Grid layers deliberately don't get this — see the grid branch's own
+    // comment in map-viewer.js for why (a grid overlay covers the whole
+    // map, so fallback-interactive there would swallow every click).
+    isVectorLayerInteractive: isLayerFallbackInteractive,
     selection: state.selection,
     activeGroup,
     // Orrery's own authoring view needs to resolve vision Bindings too —
@@ -7012,6 +7128,50 @@ function setupActionEvents() {
       setSelection(null);
     });
   }
+
+  // Same "click off to deselect" convenience for the map canvas itself —
+  // previously there was none: every actual interactive element
+  // (marker/grid-cell/vector-path/layer-handle) already stops propagation
+  // on its own pointerdown, so a click on genuinely empty map space always
+  // reaches this listener untouched, but nothing here ever acted on it.
+  // Confirmed real gap once isLayerFallbackInteractive shipped: clicking
+  // off a fallback-selected marker (no longer adding a stray new marker,
+  // see armedMarkerLayerId) still just did nothing instead of deselecting
+  // it. A plain "click" listener won't work here the way it does for the
+  // left pane above — panning is a real pointerdown-drag-pointerup gesture
+  // over this same element, and browsers still fire a native "click" at
+  // the end of one regardless of how far the pointer traveled — so this
+  // tracks movement itself and only deselects a genuine no-movement click,
+  // same convention beginMarkerDrag/bindLayerDrag already use elsewhere in
+  // this file (onDragEnd only fires once real movement happened; a
+  // never-moved gesture calls onClick instead).
+  mapContainer.addEventListener("pointerdown", (event) => {
+    if (
+      event.button !== 0 ||
+      state.selection.kind === null ||
+      isAnyGestureToolActive() ||
+      event.target.closest("button, input, select, textarea, a")
+    ) {
+      return;
+    }
+    const startX = event.clientX;
+    const startY = event.clientY;
+    let moved = false;
+    const onMove = (moveEvent) => {
+      if (moveEvent.clientX !== startX || moveEvent.clientY !== startY) {
+        moved = true;
+      }
+    };
+    const onUp = () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      if (!moved) {
+        setSelection(null);
+      }
+    };
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+  });
 }
 
 function setupMapEvents() {
@@ -7086,6 +7246,23 @@ function setupMapEvents() {
       markMapClean();
       watchCurrentMap(null);
       status.show("Started a new map.", { type: "info", timeout: 1500 });
+    });
+  }
+
+  if (elements.duplicateMapButton) {
+    elements.duplicateMapButton.addEventListener("click", () => {
+      // Clones the CURRENT map (not a blank createMapModel() the way New
+      // Map does) — same recipe as Repository's own handleDuplicate: fresh
+      // id so it saves as new rather than overwriting, " Copy" suffix on
+      // the name, left dirty (an unsaved copy until explicitly saved).
+      const duplicate = JSON.parse(JSON.stringify(state.map));
+      duplicate.id = randomId();
+      duplicate.name = `${state.map.name || "Map"} Copy`;
+      mapExistsOnServer = false;
+      applyMapSnapshot(JSON.stringify(duplicate));
+      if (elements.mapSelect) elements.mapSelect.value = "";
+      watchCurrentMap(null);
+      status.show(`Duplicated as "${duplicate.name}".`, { type: "success", timeout: 2000 });
     });
   }
 
@@ -7179,48 +7356,40 @@ function setupMapEvents() {
     });
   }
 
-  if (elements.exportButton) {
-    // Reuses the same Blob/anchor/download mechanics Crucible/Vault/Sanctum
-    // already share for "download this record as a .json file" — an
-    // identity shape function, since a map export is a portable copy of
-    // itself, not a Press-ingestion shape like those tools' own records.
-    elements.exportButton.addEventListener("click", () => {
-      exportRecordAsJson(state.map, (map) => map);
-    });
-  }
-
-  if (elements.importButton) {
-    const importInput = document.createElement("input");
-    importInput.type = "file";
-    importInput.accept = "application/json";
-    importInput.className = "d-none";
-    importInput.addEventListener("change", async () => {
-      const file = importInput.files?.[0];
-      importInput.value = "";
-      if (!file) return;
-      let parsed;
-      try {
-        parsed = JSON.parse(await file.text());
-      } catch (error) {
-        status.show("That file isn't valid JSON.", { type: "error", timeout: 3000 });
-        return;
-      }
-      if (!parsed || !Array.isArray(parsed.layers) || !parsed.baseMap || typeof parsed.baseMap !== "object") {
-        status.show("That file doesn't look like an Orrery map.", { type: "error", timeout: 3000 });
-        return;
-      }
-      // Funnels through the same snapshot path New/Load/Undo/Redo already
-      // use, so history/dirty-state/JSON-preview stay consistent — left
-      // dirty (not markMapClean()) since an imported file is unsaved
-      // content until the user explicitly hits Save.
-      applyMapSnapshot(JSON.stringify(parsed));
-      if (elements.mapSelect) elements.mapSelect.value = "";
-      watchCurrentMap(null);
-      status.show(`Imported "${state.map.name || "map"}".`, { type: "success", timeout: 2000 });
-    });
-    document.body.appendChild(importInput);
-    elements.importButton.addEventListener("click", () => importInput.click());
-  }
+  // Export's own click handling is wired directly at construction
+  // (jsonDataPanel's own onExport, above) — no separate listener needed
+  // here. Import's own button click is wired the same way (onImport), but
+  // the hidden file-picker input itself still needs building — assigned to
+  // the module-level `importInput` onImport already closes over.
+  importInput = document.createElement("input");
+  importInput.type = "file";
+  importInput.accept = "application/json";
+  importInput.className = "d-none";
+  importInput.addEventListener("change", async () => {
+    const file = importInput.files?.[0];
+    importInput.value = "";
+    if (!file) return;
+    let parsed;
+    try {
+      parsed = JSON.parse(await file.text());
+    } catch (error) {
+      status.show("That file isn't valid JSON.", { type: "error", timeout: 3000 });
+      return;
+    }
+    if (!parsed || !Array.isArray(parsed.layers) || !parsed.baseMap || typeof parsed.baseMap !== "object") {
+      status.show("That file doesn't look like an Orrery map.", { type: "error", timeout: 3000 });
+      return;
+    }
+    // Funnels through the same snapshot path New/Load/Undo/Redo already
+    // use, so history/dirty-state/JSON-preview stay consistent — left
+    // dirty (not markMapClean()) since an imported file is unsaved
+    // content until the user explicitly hits Save.
+    applyMapSnapshot(JSON.stringify(parsed));
+    if (elements.mapSelect) elements.mapSelect.value = "";
+    watchCurrentMap(null);
+    status.show(`Imported "${state.map.name || "map"}".`, { type: "success", timeout: 2000 });
+  });
+  document.body.appendChild(importInput);
 
   if (elements.mapSelect) {
     elements.mapSelect.addEventListener("change", () => {
@@ -7393,7 +7562,10 @@ initHelpSystem({ root: document });
 markMapClean();
 if (elements.mapEmptyState) {
   elements.mapEmptyState.appendChild(
-    createEmptyStateCard({ icon: "tabler:map", message: "Select a map above, or click New Map to start one." })
+    createEmptyStateCard({
+      message: "Select a map from the list, or click New Map to start one.",
+      variant: "inline",
+    })
   );
 }
 // Hides everything renderAll() above just painted (the harmless, never-

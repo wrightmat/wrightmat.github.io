@@ -14,7 +14,19 @@ import { createRootInsertionHandler } from "../lib/root-inserter.js";
 import { expandPane } from "../../../common/js/lib/panes.js";
 import { refreshTooltips } from "../../../common/js/lib/tooltips.js";
 import { bindCollapsibleToggle } from "../../../common/js/lib/collapsible.js";
-import { createJsonDataPanel, createToolbarButtonGroup, createIconButton, createCompactField } from "../../../common/js/lib/ui-components.js";
+import {
+  createJsonDataPanel,
+  createIconButton,
+  createCompactField,
+  // Aliased — inspector-fields.js's own createCollapsibleSection (positional
+  // title/fields/{defaultCollapsed} form, used throughout this file for the
+  // Component Inspector's Text/Colors/Border/Behavior/Advanced groups) is
+  // already imported under the bare name below; this is the OTHER, object-
+  // arg createCollapsibleSection (label/content/actions/helpTopic), needed
+  // here only for the Palette section's own full collapsible + Clear-canvas
+  // action button.
+  createCollapsibleSection as createFullCollapsibleSection,
+} from "../../../common/js/lib/ui-components.js";
 import {
   listBuiltinSystems,
   listBuiltinTemplates,
@@ -74,12 +86,13 @@ import {
   DEFAULT_FONT_FAMILY,
 } from "../../../common/js/lib/font-library.js";
 
-// Relocated from the old standalone template.html/template.js — now one of
-// three views on Workbench's unified page (see js/pages/workbench.js), which
-// owns the single initAppShell call (status/undoStack), DataManager, auth,
-// help system, and tier gating (Template is gated to "gm" at the tab level
-// via data-requires-tier, not a whole-page initTierGate here anymore).
-export async function initTemplateView({ status, undoStack, dataManager }) {
+// Relocated from the old standalone template.html/template.js — now the
+// Template mode of Workbench's unified page (see js/pages/workbench.js),
+// which owns the single initAppShell call (status/undoStack), DataManager,
+// auth, help system, and tier gating (Template is gated to "gm" at the Mode
+// toggle level — see workbench.js's own renderModeToggle — not a whole-page
+// initTierGate here anymore).
+export async function initTemplateView({ status, undoStack, dataManager, onStateChange }) {
   function sessionUser() {
     return dataManager.session?.user || null;
   }
@@ -279,28 +292,11 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
 
   await initializeBuiltins();
 
-  // Built and mounted before Object.assign(elements, {...}) below queries
-  // these buttons by their data-action/data-delete-template attribute, so
-  // every existing selector/disabled-state call site elsewhere in this file
-  // keeps working unchanged. Unlike the shell-level toolbar in workbench.js,
-  // this cluster maps cleanly onto createToolbarButtonGroup's own
-  // New/Save/Duplicate/Delete presets with no icon/variant overrides needed.
-  createToolbarButtonGroup([
-    { action: "new", label: "New Template", attrs: { "data-action": "new-template" } },
-    {
-      action: "save",
-      label: "Save",
-      visible: false,
-      attrs: { "data-action": "save-template", "data-workbench-view-panel": "template" },
-    },
-    {
-      action: "duplicate",
-      label: "Duplicate Template",
-      visible: false,
-      attrs: { "data-action": "duplicate-template", "data-duplicate-template": true },
-    },
-    { action: "delete", label: "Delete Template", visible: false, attrs: { "data-delete-template": true } },
-  ]).forEach((button) => document.querySelector("[data-template-toolbar-mount]")?.appendChild(button));
+  // New/Save/Duplicate/Delete Template are now built in workbench.js's own
+  // left-pane toolbar cluster (consolidated with Undo/Redo, per the
+  // suite-wide New/Save/Duplicate/Delete/Undo/Redo button order) — this
+  // file only queries them below by the same data-action/data-delete-
+  // template attributes it always used, unaffected by where they're built.
 
   // replaceWith, not appendChild — see press/js/app.js's mountInspectorField
   // for why: an appended-into wrapper stays an empty-but-in-flow flex item
@@ -316,7 +312,7 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
   }
   mountField(
     "template-select",
-    createCompactField({ type: "select", id: "template-select", label: "Active template", labelClass: "form-label fw-semibold text-body-secondary", controlClass: "form-select", dataAttr: "data-template-select" })
+    createCompactField({ type: "select", id: "template-select", label: "Template", labelClass: "form-label fw-semibold text-body-secondary", controlClass: "form-select", dataAttr: "data-template-select" })
   );
   mountField("new-template-id", createCompactField({ type: "text", id: "new-template-id", label: "Template ID", dataAttr: "data-new-template-id", name: "id", required: true, placeholder: "e.g. tpl.custom" }));
   mountField("new-template-title", createCompactField({ type: "text", id: "new-template-title", label: "Template Title", dataAttr: "data-new-template-title", name: "title", required: true, placeholder: "e.g. Hero Sheet" }));
@@ -353,8 +349,6 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     saveButton: document.querySelector('[data-action="save-template"]'),
     undoButton: document.querySelector('[data-action="undo-template"]'),
     redoButton: document.querySelector('[data-action="redo-template"]'),
-    clearButton: document.querySelector('[data-action="clear-canvas"]'),
-    exportButton: document.querySelector('[data-action="export-template"]'),
     newTemplateButton: document.querySelector('[data-action="new-template"]'),
     duplicateTemplateButton: document.querySelector('[data-action="duplicate-template"]'),
     deleteTemplateButton: document.querySelector('[data-delete-template]'),
@@ -364,11 +358,10 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     newTemplateVersion: document.querySelector("[data-new-template-version]"),
     newTemplateSystem: document.querySelector("[data-new-template-system]"),
     newTemplateModalTitle: document.querySelector("[data-new-template-modal-title]"),
-    templateMeta: document.querySelector("[data-template-meta]"),
     rightPane: document.querySelector('[data-pane="right"]'),
     rightPaneToggle: document.querySelector('[data-pane-toggle="right"]'),
     templateProperties: document.querySelector("[data-template-properties]"),
-    selectionsPanel: document.querySelector("[data-selections-panel]"),
+    palettePanel: document.querySelector("[data-palette-panel]"),
     templatePropertiesPanel: document.querySelector("[data-template-properties-panel]"),
     componentPropertiesPanel: document.querySelector("[data-component-properties-panel]"),
     patternModal: document.getElementById("workbench-pattern-modal"),
@@ -417,15 +410,41 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     elements.componentPropertiesPanel,
     { collapsed: true }
   );
-  bindCollapsibleToggle(
-    createSectionToggleButton("[data-selections-toggle-mount]", false),
-    elements.selectionsPanel,
-    { collapsed: false }
-  );
+  // Palette — collapsed by default, auto-expanded the moment a template is
+  // selected (see setPaletteCollapsed's own call sites below). Clear canvas
+  // lives in this section's own header (one of createFullCollapsibleSection's
+  // `actions`) — the same position the old static "Drag into canvas" hint
+  // used to occupy, now an actual action instead of a hint.
+  const paletteSection = createFullCollapsibleSection({
+    label: "Palette",
+    helpTopic: "template.library",
+    collapsed: true,
+    actions: [{ icon: "tabler:eraser", label: "Clear canvas", variant: "outline-danger", onClick: () => clearCanvas() }],
+    content: elements.palettePanel,
+  });
+  document.querySelector("[data-palette-mount]")?.appendChild(paletteSection.section);
+  const [clearCanvasButton] = paletteSection.actionButtons;
+  elements.clearButton = clearCanvasButton;
+
+  function setPaletteCollapsed(collapsed) {
+    paletteSection.setCollapsed(collapsed);
+  }
+
+  function handleExportTemplate() {
+    const data = serializeTemplateState();
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${data.id || "template"}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
 
   const templateJsonPanel = createJsonDataPanel({
     label: "JSON Data",
     getData: () => serializeTemplateState(),
+    onExport: handleExportTemplate,
   });
   document.querySelector("[data-template-json-mount]")?.appendChild(templateJsonPanel.section);
 
@@ -488,84 +507,94 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
   loadTemplateRecords();
   initializeSharedTemplateHandling();
 
+  // Extracted from the template <select>'s own change handler so
+  // workbench.js can also drive it programmatically (auto-loading a
+  // character's own template when switching from Character to Template
+  // mode) — same load path either way, not a second copy of it. The
+  // select's own displayed value doesn't need to be set here first:
+  // applyTemplateData's own ensureTemplateSelectValue() call already syncs
+  // it to whatever actually finished loading, on every path below.
+  async function selectTemplateById(selectedId) {
+    if (!selectedId) {
+      state.template = null;
+      state.components = [];
+      state.selectedId = null;
+      containerActiveTabs.clear();
+      componentCollapsedState.clear();
+      componentCounter = 0;
+      renderCanvas();
+      renderInspector();
+      ensureTemplateSelectValue();
+      syncTemplateActions();
+      return;
+    }
+    const metadata = templateCatalog.get(selectedId);
+    if (!metadata) {
+      status.show("Template metadata unavailable.", { type: "warning", timeout: 2200 });
+      return;
+    }
+    if (state.template?.id === selectedId && state.template?.origin === metadata.source) {
+      return;
+    }
+    if (metadata.source === "draft") {
+      status.show("Save the template before reloading it.", { type: "info", timeout: 2200 });
+      ensureTemplateSelectValue();
+      return;
+    }
+    try {
+      let payload = null;
+      if (metadata.source === "builtin" && metadata.path) {
+        const response = await fetch(metadata.path);
+        payload = await response.json();
+        markBuiltinAvailable("templates", metadata.id || selectedId);
+      } else {
+        const shareToken = metadata.shareToken || "";
+        // preferLocal: false — same reasoning as workbench-character-
+        // view.js's own template fetch: this is a load-then-edit round
+        // trip, and a stale local copy would silently shadow anything
+        // saved elsewhere (Loom, a direct data fix, another tab).
+        const result = await dataManager.get("templates", selectedId, {
+          preferLocal: false,
+          shareToken,
+        });
+        payload = result?.payload || null;
+      }
+      if (!payload) {
+        throw new Error("Template payload missing");
+      }
+      const label = payload.title || metadata.title || selectedId;
+      const schema = payload.schema || payload.system || metadata.schema || "";
+      registerTemplateRecord(
+        {
+          id: payload.id || selectedId,
+          title: label,
+          schema,
+          source: metadata.source || "remote",
+          path: metadata.path,
+          shareToken: metadata.shareToken,
+        },
+        { syncOption: true }
+      );
+      applyTemplateData(payload, {
+        origin: metadata.source || "remote",
+        emitStatus: true,
+        statusMessage: `Loaded ${label}`,
+        shareToken: metadata.shareToken || "",
+      });
+    } catch (error) {
+      console.error("Unable to load template", error);
+      if (metadata.source === "builtin") {
+        markBuiltinMissing("templates", metadata.id || selectedId);
+      }
+      status.show("Failed to load template", { type: "error", timeout: 2500 });
+    }
+  }
+
   if (elements.templateSelect) {
     const builtinOptions = listBuiltinTemplates().map((tpl) => ({ value: tpl.id, label: tpl.title }));
     populateSelect(elements.templateSelect, builtinOptions, { placeholder: "Select template" });
-    elements.templateSelect.addEventListener("change", async () => {
-      const selectedId = elements.templateSelect.value;
-      if (!selectedId) {
-        state.template = null;
-        state.components = [];
-        state.selectedId = null;
-        containerActiveTabs.clear();
-        componentCollapsedState.clear();
-        componentCounter = 0;
-        renderCanvas();
-        renderInspector();
-        ensureTemplateSelectValue();
-        syncTemplateActions();
-        return;
-      }
-      const metadata = templateCatalog.get(selectedId);
-      if (!metadata) {
-        status.show("Template metadata unavailable.", { type: "warning", timeout: 2200 });
-        return;
-      }
-      if (state.template?.id === selectedId && state.template?.origin === metadata.source) {
-        return;
-      }
-      if (metadata.source === "draft") {
-        status.show("Save the template before reloading it.", { type: "info", timeout: 2200 });
-        ensureTemplateSelectValue();
-        return;
-      }
-      try {
-        let payload = null;
-        if (metadata.source === "builtin" && metadata.path) {
-          const response = await fetch(metadata.path);
-          payload = await response.json();
-          markBuiltinAvailable("templates", metadata.id || selectedId);
-        } else {
-          const shareToken = metadata.shareToken || "";
-          // preferLocal: false — same reasoning as workbench-character-
-          // view.js's own template fetch: this is a load-then-edit round
-          // trip, and a stale local copy would silently shadow anything
-          // saved elsewhere (Loom, a direct data fix, another tab).
-          const result = await dataManager.get("templates", selectedId, {
-            preferLocal: false,
-            shareToken,
-          });
-          payload = result?.payload || null;
-        }
-        if (!payload) {
-          throw new Error("Template payload missing");
-        }
-        const label = payload.title || metadata.title || selectedId;
-        const schema = payload.schema || payload.system || metadata.schema || "";
-        registerTemplateRecord(
-          {
-            id: payload.id || selectedId,
-            title: label,
-            schema,
-            source: metadata.source || "remote",
-            path: metadata.path,
-            shareToken: metadata.shareToken,
-          },
-          { syncOption: true }
-        );
-        applyTemplateData(payload, {
-          origin: metadata.source || "remote",
-          emitStatus: true,
-          statusMessage: `Loaded ${label}`,
-          shareToken: metadata.shareToken || "",
-        });
-      } catch (error) {
-        console.error("Unable to load template", error);
-        if (metadata.source === "builtin") {
-          markBuiltinMissing("templates", metadata.id || selectedId);
-        }
-        status.show("Failed to load template", { type: "error", timeout: 2500 });
-      }
+    elements.templateSelect.addEventListener("change", () => {
+      void selectTemplateById(elements.templateSelect.value);
     });
   }
 
@@ -968,6 +997,14 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     const source = raw && typeof raw === "object" ? raw : {};
     return {
       fontColor: typeof source.fontColor === "string" && source.fontColor.trim() ? source.fontColor.trim() : DEFAULT_TEMPLATE_COLORS.fontColor,
+      // Same Binding/Formula pair every other color field in this tool has —
+      // Font Default now uses the shared createColorPickerField (Template
+      // Properties), not a plain native color input, so it needs somewhere
+      // to hold a non-literal value too. fontColor itself always stays a
+      // real, padded-in literal (see the field above) — these two are only
+      // ever non-empty when a binding/formula is actively overriding it.
+      fontColorBinding: typeof source.fontColorBinding === "string" ? source.fontColorBinding.trim() : "",
+      fontColorFormula: typeof source.fontColorFormula === "string" ? source.fontColorFormula.trim() : "",
     };
   }
 
@@ -1390,17 +1427,10 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     });
   }
 
-  if (elements.clearButton) {
-    elements.clearButton.addEventListener("click", () => {
-      clearCanvas();
-    });
-  }
-
-  if (elements.exportButton) {
-    elements.exportButton.addEventListener("click", () => {
-      status.show("Export coming soon", { type: "info", timeout: 2000 });
-    });
-  }
+  // Clear canvas's own click handler is wired directly on construction
+  // (paletteSection's own `actions` config above) — no separate listener
+  // needed here. Export moved into the JSON Data panel's own onExport
+  // (handleExportTemplate, same place) — no standalone toolbar button left.
 
   async function handleDeleteTemplateRequest() {
     if (!state.template?.id) {
@@ -2027,7 +2057,6 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
       { syncOption: true }
     );
     ensureTemplateSelectValue();
-    updateTemplateMeta();
   }
 
   function expandTemplatePropertiesSection() {
@@ -2194,6 +2223,11 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
   }
 
   function syncTemplateActions() {
+    // Universal choke point — called after every field edit, load, New/
+    // Duplicate/Delete/Save — so this is also where workbench.js's own
+    // inline empty-state message (Mode/View header) learns a template
+    // became active/inactive, without a dedicated event for every call site.
+    if (typeof onStateChange === "function") onStateChange();
     const hasTemplate = Boolean(state.template);
     if (elements.saveButton) {
       const canWrite = dataManager.hasWriteAccess("templates");
@@ -2241,8 +2275,6 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
       elements.duplicateTemplateButton.disabled = !canDuplicate;
       elements.duplicateTemplateButton.setAttribute("aria-disabled", canDuplicate ? "false" : "true");
     }
-
-    updateTemplateMeta();
 
     if (elements.deleteTemplateButton) {
       applyDeleteTemplateButtonState(elements.deleteTemplateButton);
@@ -4472,6 +4504,11 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     renderInspector();
     ensureTemplateSelectValue();
     updateSystemContext(template.schema).catch(() => {});
+    // Palette starts collapsed (nothing to drag INTO yet) — expand it the
+    // moment a template actually becomes active, loaded or freshly created,
+    // since applyTemplateData is the one funnel both paths go through.
+    setPaletteCollapsed(false);
+    if (typeof onStateChange === "function") onStateChange();
     if (emitStatus && statusMessage) {
       status.show(statusMessage, { type: "success", timeout: 2000 });
     }
@@ -4568,22 +4605,6 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     templateCreationContext = { mode: "new", duplicateComponents: null, sourceTitle: "" };
   }
 
-  function createTemplateField({ labelText, control, id }) {
-    const wrapper = document.createElement("div");
-    const label = document.createElement("label");
-    label.className = "form-label fw-semibold text-body-secondary";
-    label.textContent = labelText;
-    const fieldId = id || toId(["template", labelText]);
-    if (fieldId) {
-      control.id = fieldId;
-      control.dataset.templateField = fieldId;
-      label.setAttribute("for", fieldId);
-    }
-    wrapper.appendChild(label);
-    wrapper.appendChild(control);
-    return wrapper;
-  }
-
   function renderTemplateProperties() {
     if (!elements.templateProperties) {
       return;
@@ -4607,20 +4628,25 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     form.className = "d-flex flex-column gap-3";
     form.addEventListener("submit", (event) => event.preventDefault());
 
-    const nameInput = document.createElement("input");
-    nameInput.type = "text";
-    nameInput.className = "form-control";
-    nameInput.placeholder = "Template name";
-    nameInput.value = state.template.title || "";
-    nameInput.disabled = !canEdit;
-
-    const idInput = document.createElement("input");
-    idInput.type = "text";
-    idInput.className = "form-control";
+    // ID, Name, System, Type, Version, Description — the fixed identity/
+    // metadata block every template has, always visible (unlike the Text/
+    // Colors/Border sections below, this is never collapsed). Each is just
+    // the shared createFormFloatingField (common/js/lib/ui-components.js)
+    // called directly — the same generic factory Component Properties'
+    // own createTextInput/createTextarea/createNumberInput wrap, except
+    // those are keyed by a component's uid specifically; there's no
+    // component here, and with only 6 one-off fields a second, purely
+    // template-scoped wrapper layer wasn't earning its keep.
+    const idField = createFormFloatingField({ id: "template-id", label: "ID", placeholder: " ", disabled: !canEdit, readonly: true });
+    const idInput = idField.querySelector("input");
     idInput.value = state.template.id || "";
-    idInput.readOnly = true;
-    idInput.disabled = !canEdit;
+    idInput.dataset.templateField = "template-id";
+    form.appendChild(idField);
 
+    const nameField = createFormFloatingField({ id: "template-title", label: "Name", placeholder: "Template name", disabled: !canEdit });
+    const nameInput = nameField.querySelector("input");
+    nameInput.value = state.template.title || "";
+    nameInput.dataset.templateField = "template-title";
     nameInput.addEventListener("input", (event) => {
       const nextTitle = event.target.value || "";
       const previousId = state.template?.id || "";
@@ -4633,71 +4659,120 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
       syncTemplateRecord({ previousId });
       syncTemplateActions();
     });
+    form.appendChild(nameField);
 
-    form.appendChild(createTemplateField({ labelText: "ID", control: idInput, id: "template-id" }));
-    form.appendChild(createTemplateField({ labelText: "Name", control: nameInput, id: "template-title" }));
+    const systemOptions = Array.from(systemCatalog.values())
+      .map((entry) => ({ value: entry.id, label: entry.title || entry.id }))
+      .filter((option) => option.value)
+      .sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: "base" }));
+    const systemField = createFormFloatingField({ type: "select", id: "template-system", label: "System", options: [], disabled: !canEdit });
+    const systemSelect = systemField.querySelector("select");
+    systemSelect.dataset.templateField = "template-system";
+    // populateSelect (the same helper every other select in this file
+    // uses) rather than passing `options` above directly — its own
+    // disabled/selected placeholder option (unlike a plain value="" entry)
+    // can't be re-selected once a real system is chosen, same "system is a
+    // one-way choice, not toggleable back to none" behavior this field
+    // already had.
+    populateSelect(systemSelect, systemOptions, { placeholder: "Select system" });
+    systemSelect.value = state.template.schema || "";
+    systemSelect.addEventListener("change", (event) => {
+      const nextSchema = (event.target.value || "").trim();
+      state.template.schema = nextSchema;
+      syncTemplateRecord({ previousId: state.template.id });
+      updateSystemContext(nextSchema).catch(() => {});
+      syncTemplateActions();
+    });
+    form.appendChild(systemField);
 
-    const typeSelect = document.createElement("select");
-    typeSelect.className = "form-select";
-    typeSelect.disabled = !canEdit;
+    const currentTypeRaw = state.template.type || "sheet";
+    const currentType = currentTypeRaw.toLowerCase();
     const typeOptions = [
       { value: "sheet", label: "Sheet" },
       { value: "reference", label: "Reference" },
     ];
-    typeOptions.forEach((option) => {
-      const opt = document.createElement("option");
-      opt.value = option.value;
-      opt.textContent = option.label;
-      typeSelect.appendChild(opt);
-    });
-    const currentTypeRaw = state.template.type || "sheet";
-    const currentType = currentTypeRaw.toLowerCase();
     if (!typeOptions.some((option) => option.value === currentType)) {
-      const opt = document.createElement("option");
-      opt.value = currentType;
-      opt.textContent = currentTypeRaw;
-      typeSelect.appendChild(opt);
+      typeOptions.push({ value: currentType, label: currentTypeRaw });
     }
+    const typeField = createFormFloatingField({ type: "select", id: "template-type", label: "Type", options: typeOptions, disabled: !canEdit });
+    const typeSelect = typeField.querySelector("select");
+    typeSelect.dataset.templateField = "template-type";
     typeSelect.value = typeOptions.find((option) => option.value === currentType)?.value || currentType || "sheet";
     typeSelect.addEventListener("change", (event) => {
       state.template.type = event.target.value;
       syncTemplateActions();
     });
-    form.appendChild(createTemplateField({ labelText: "Type", control: typeSelect, id: "template-type" }));
+    form.appendChild(typeField);
 
-    const descriptionInput = document.createElement("textarea");
-    descriptionInput.className = "form-control";
-    descriptionInput.rows = 3;
-    descriptionInput.placeholder = "Add a short description";
+    // Previously display-only (data-template-meta's "ID: … • Version: …"
+    // text, now removed — both halves are real fields here instead). Same
+    // `state.template.version` the New Template modal's own
+    // new-template-version field seeds on creation.
+    const versionField = createFormFloatingField({ id: "template-version", label: "Version", placeholder: "0.1", disabled: !canEdit });
+    const versionInput = versionField.querySelector("input");
+    versionInput.value = state.template.version || "";
+    versionInput.dataset.templateField = "template-version";
+    versionInput.addEventListener("input", (event) => {
+      state.template.version = event.target.value || "";
+      syncTemplateActions();
+    });
+    form.appendChild(versionField);
+
+    const descriptionField = createFormFloatingField({
+      type: "textarea",
+      id: "template-description",
+      label: "Description",
+      placeholder: "Add a short description",
+      disabled: !canEdit,
+      // Bootstrap's form-floating needs an explicit height on textareas —
+      // same fixed formula createTextarea (Component Properties) uses.
+      style: "min-height: 72px",
+    });
+    const descriptionInput = descriptionField.querySelector("textarea");
     descriptionInput.value = state.template.description || "";
-    descriptionInput.disabled = !canEdit;
+    descriptionInput.dataset.templateField = "template-description";
     descriptionInput.addEventListener("input", (event) => {
       state.template.description = event.target.value || "";
       syncTemplateActions();
     });
-    form.appendChild(createTemplateField({ labelText: "Description", control: descriptionInput, id: "template-description" }));
+    form.appendChild(descriptionField);
+
+    // ---- Text / Colors / Border — the same three collapsible sections
+    // (collapsed by default, forced open if anything inside is already
+    // set) Component Properties gives a component, just holding the
+    // template-wide equivalents: Base Font under Text, the Text-default/
+    // Background swatch row under Colors, and the sheet's own Border
+    // geometry under Border.
 
     // The Template-level "base font" — has no "Default" option of its own
     // (excludeDefault: true — a template can't inherit from itself) and, if
     // left unset, shows the raw effective fallback (DEFAULT_FONT_FAMILY)
     // rather than a labeled option, same convention as any other raw CSS
     // font-family value neither tool has a matching library entry for.
+    // form-floating wrapper built by hand (not createFormFloatingField)
+    // since attachFontFamilyAutocomplete needs the input already inside its
+    // real .form-floating parent before it attaches — same requirement
+    // createFontFamilyControl's own identical treatment has.
+    const baseFontWrapper = document.createElement("div");
+    baseFontWrapper.className = "form-floating";
     const baseFontInput = document.createElement("input");
     baseFontInput.type = "text";
     baseFontInput.className = "form-control";
+    baseFontInput.id = "template-base-font";
     baseFontInput.autocomplete = "off";
     baseFontInput.disabled = !canEdit;
+    baseFontInput.dataset.templateField = "template-base-font";
     const currentBaseFamily =
       typeof state.template.baseFontFamily === "string" ? state.template.baseFontFamily.trim() : "";
     const matchedBaseOption = findFontOptionByFamily(currentBaseFamily);
     baseFontInput.value = matchedBaseOption ? matchedBaseOption.label : currentBaseFamily || DEFAULT_FONT_FAMILY;
-    const baseFontField = createTemplateField({
-      labelText: "Base font",
-      control: baseFontInput,
-      id: "template-base-font",
-    });
-    form.appendChild(baseFontField);
-    // Runs AFTER baseFontInput has a DOM parent (baseFontField, above) —
+    baseFontInput.placeholder = DEFAULT_FONT_FAMILY;
+    const baseFontLabel = document.createElement("label");
+    baseFontLabel.className = "fw-semibold";
+    baseFontLabel.setAttribute("for", "template-base-font");
+    baseFontLabel.textContent = "Base font";
+    baseFontWrapper.append(baseFontInput, baseFontLabel);
+    // Runs AFTER baseFontInput has a DOM parent (baseFontWrapper, above) —
     // same requirement as createFontFamilyControl's own note.
     attachFontFamilyAutocomplete(baseFontInput, {
       onSelect: (option) => {
@@ -4718,37 +4793,67 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
       excludeDefault: true,
     });
 
-    // Font Default — the ONLY true template-wide fallback (resolveComponentColorsForPreview
-    // here, resolveComponentColors in workbench-character-view.js): every
-    // component's own Text falls back to this when blank. Native
-    // <input type="color"> on purpose — this one is meant to always hold a
-    // real, simple literal color, never clearable, and a color input can't
-    // be empty by construction, which is exactly the guarantee needed here.
     state.template.defaults = normalizeTemplateDefaults(state.template.defaults);
-    const fontDefaultInput = document.createElement("input");
-    fontDefaultInput.type = "color";
-    fontDefaultInput.className = "form-control form-control-color";
-    fontDefaultInput.value = state.template.defaults.fontColor;
-    fontDefaultInput.disabled = !canEdit;
-    fontDefaultInput.title = "Default font color";
-    fontDefaultInput.addEventListener("input", () => {
-      state.template.defaults.fontColor = fontDefaultInput.value;
-      syncTemplateActions();
-      renderCanvas();
-    });
-    form.appendChild(createTemplateField({ labelText: "Font Default", control: fontDefaultInput, id: "template-font-default" }));
 
-    // Background/Border below are NOT fallbacks for anything — they're the
-    // sheet's own literal, visible appearance (applied to the canvas root
-    // above). Same createColorPickerField every component's own Colors
-    // section already uses (common/js/lib/color-picker.js) — the same
-    // Clear/unset (checkered-X) handling and the same Binding/Formula
-    // capability, not a simplified one-off; a plain <input type="color">
-    // can never actually represent "cleared" (it always shows a solid
-    // color), which is exactly why Clear looked broken with the previous
-    // version of this control even though the underlying data really was
-    // being cleared.
-    form.appendChild(
+    // Text/Background — one row, same `.template-color-grid` two-up layout
+    // createColorRow gives a component's own color swatches. Text (Font
+    // Default) is the ONLY true per-component fallback (resolveComponent
+    // ColorsForPreview here, resolveComponentColors in workbench-character-
+    // view.js): every component's own Text falls back to this when blank —
+    // its onClear resets to a real literal rather than truly emptying it,
+    // preserving that "always a real color" guarantee even though this is
+    // now the same clearable/bindable createColorPickerField every other
+    // swatch in this tool uses, not a plain never-empty native color input.
+    // Background is NOT a fallback for anything — it's the sheet's own
+    // literal, visible appearance (applied to the canvas root) — kept in
+    // this same row purely because it's the sheet's other single-color
+    // setting, visually paired the same way a component's own Text/
+    // Background sit side by side.
+    const defaultsColorGrid = document.createElement("div");
+    defaultsColorGrid.className = "template-color-grid";
+    defaultsColorGrid.style.gridTemplateColumns = "repeat(2, minmax(0, 1fr))";
+    defaultsColorGrid.append(
+      createColorPickerField("Text", {
+        value: state.template.defaults.fontColor || "",
+        defaultValue: DEFAULT_TEMPLATE_COLORS.fontColor,
+        bindingValue: state.template.defaults.fontColorFormula
+          ? `=${state.template.defaults.fontColorFormula}`
+          : state.template.defaults.fontColorBinding || "",
+        evaluate: evaluateTemplateColorPreview,
+        onManualChange: (value) => {
+          state.template.defaults.fontColor = value || DEFAULT_TEMPLATE_COLORS.fontColor;
+          syncTemplateActions();
+          renderCanvas();
+        },
+        onBindingChange: (raw) => {
+          const trimmed = raw.trim();
+          if (trimmed.startsWith("=")) {
+            state.template.defaults.fontColorFormula = trimmed.slice(1).trim();
+            state.template.defaults.fontColorBinding = "";
+          } else {
+            state.template.defaults.fontColorBinding = trimmed;
+            state.template.defaults.fontColorFormula = "";
+          }
+          syncTemplateActions();
+          renderCanvas();
+        },
+        onClear: () => {
+          state.template.defaults.fontColor = DEFAULT_TEMPLATE_COLORS.fontColor;
+          state.template.defaults.fontColorBinding = "";
+          state.template.defaults.fontColorFormula = "";
+          syncTemplateActions();
+          renderCanvas();
+        },
+      }),
+      // Background below is NOT a fallback for anything — see the block
+      // comment above. Same createColorPickerField every component's own
+      // Colors section already uses (common/js/lib/color-picker.js) — the
+      // same Clear/unset (checkered-X) handling and the same Binding/
+      // Formula capability, not a simplified one-off; a plain
+      // <input type="color"> can never actually represent "cleared" (it
+      // always shows a solid color), which is exactly why Clear looked
+      // broken with the previous version of this control even though the
+      // underlying data really was being cleared.
       createColorPickerField("Background", {
         value: state.template.backgroundColor || "",
         defaultValue: COLOR_FIELD_MAP.background.default,
@@ -4783,25 +4888,33 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
       })
     );
 
-    form.appendChild(createTemplateBorderControls(canEdit));
+    form.appendChild(
+      createCollapsibleSection("Text", [baseFontWrapper], {
+        defaultCollapsed: true,
+        forceOpen: Boolean(currentBaseFamily),
+      })
+    );
 
-    const systemSelect = document.createElement("select");
-    systemSelect.className = "form-select";
-    systemSelect.disabled = !canEdit;
-    const systemOptions = Array.from(systemCatalog.values())
-      .map((entry) => ({ value: entry.id, label: entry.title || entry.id }))
-      .filter((option) => option.value)
-      .sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: "base" }));
-    populateSelect(systemSelect, systemOptions, { placeholder: "Select system" });
-    systemSelect.value = state.template.schema || "";
-    systemSelect.addEventListener("change", (event) => {
-      const nextSchema = (event.target.value || "").trim();
-      state.template.schema = nextSchema;
-      syncTemplateRecord({ previousId: state.template.id });
-      updateSystemContext(nextSchema).catch(() => {});
-      syncTemplateActions();
-    });
-    form.appendChild(createTemplateField({ labelText: "System", control: systemSelect, id: "template-system" }));
+    const colorsForceOpen =
+      Boolean(state.template.backgroundColor || state.template.backgroundColorBinding || state.template.backgroundColorFormula) ||
+      Boolean(
+        (state.template.defaults.fontColor && state.template.defaults.fontColor !== DEFAULT_TEMPLATE_COLORS.fontColor) ||
+          state.template.defaults.fontColorBinding ||
+          state.template.defaults.fontColorFormula
+      );
+    form.appendChild(
+      createCollapsibleSection("Colors", [defaultsColorGrid], {
+        defaultCollapsed: true,
+        forceOpen: colorsForceOpen,
+      })
+    );
+
+    form.appendChild(
+      createCollapsibleSection("Border", [createTemplateBorderControls(canEdit)], {
+        defaultCollapsed: true,
+        forceOpen: Boolean(state.template.borderStyle),
+      })
+    );
 
     elements.templateProperties.appendChild(form);
     restoreTemplatePropertiesFocus(focusSnapshot);
@@ -5571,11 +5684,11 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
   // updateComponent) — only the Style-select/Width/Sides change handlers
   // are template-specific rewrites of createBorderControls' own.
   function createTemplateBorderControls(canEdit) {
+    // No "Border" heading of its own — the outer "Border" SECTION heading
+    // (createCollapsibleSection, renderTemplateProperties) already says
+    // what this is, same as createBorderControls' own identical note for
+    // a component's Border section.
     const wrapper = document.createElement("div");
-    const heading = document.createElement("div");
-    heading.className = "form-label fw-semibold text-body-secondary";
-    heading.textContent = "Border";
-    wrapper.appendChild(heading);
     const body = document.createElement("div");
     body.className = "d-flex flex-column gap-2";
 
@@ -6112,6 +6225,25 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
   // Background/Border aren't per-component fallbacks at all.
   const TEMPLATE_DEFAULT_COLOR_MAP = { text: "fontColor" };
 
+  // Font Default's own Formula-then-Binding-then-literal precedence — same
+  // shape resolveTemplateColorForPreview gives the sheet's own Background/
+  // Border, just read off state.template.defaults (one level deeper) instead
+  // of state.template directly, since a per-component fallback's Binding/
+  // Formula pair lives alongside it there (normalizeTemplateDefaults).
+  function resolveTemplateDefaultColorForPreview(defaultKey, templateDefaults) {
+    const formula = templateDefaults[`${defaultKey}Formula`];
+    if (formula) {
+      const result = evaluatePreviewFormula(formula);
+      if (typeof result === "string" && result.trim()) return result.trim();
+    }
+    const binding = templateDefaults[`${defaultKey}Binding`];
+    if (binding) {
+      const resolved = resolvePreviewBindingValue(binding);
+      if (typeof resolved === "string" && resolved.trim()) return resolved.trim();
+    }
+    return templateDefaults[defaultKey] || "";
+  }
+
   function resolveComponentColorsForPreview(component) {
     let overridden = null;
     Object.values(COLOR_FIELD_MAP).forEach(({ prop, bindingProp }) => {
@@ -6133,7 +6265,7 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
       const current = (overridden || component)[prop];
       if (typeof current !== "string" || !current.trim()) {
         if (!overridden) overridden = { ...component };
-        overridden[prop] = templateDefaults[defaultKey];
+        overridden[prop] = resolveTemplateDefaultColorForPreview(defaultKey, templateDefaults);
       }
     });
     return overridden || component;
@@ -8160,19 +8292,6 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     });
   }
 
-  function updateTemplateMeta() {
-    if (!elements.templateMeta) {
-      return;
-    }
-    if (!hasActiveTemplate()) {
-      elements.templateMeta.textContent = "No template selected";
-      return;
-    }
-    const templateId = state.template?.id || "—";
-    const version = state.template?.version || "—";
-    elements.templateMeta.textContent = `ID: ${templateId || "—"} • Version: ${version || "—"}`;
-  }
-
   function ensureTemplateSelectValue() {
     if (!elements.templateSelect) return;
     const id = state.template?.id || "";
@@ -8288,5 +8407,15 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     applyRedoEntry: handleRedoEntry,
     hasUnsavedChanges: hasUnsavedTemplateChanges,
     markClean: markTemplateClean,
+    // Read by workbench.js's own renderEmptyState — the Mode/View header's
+    // inline empty-state message shows only while Mode=Template AND no
+    // template is active yet.
+    hasActiveTemplate,
+    // Called by workbench.js's setMode when switching from Character to
+    // Template mode with a character loaded, to auto-load that character's
+    // own template — same function the <select>'s own change handler
+    // calls, so there's exactly one load path regardless of how it's
+    // triggered.
+    selectTemplateById,
   };
 }

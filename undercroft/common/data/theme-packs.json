@@ -1,0 +1,46 @@
+{
+  "packs": [
+    {
+      "id": "default",
+      "label": "Undercroft (Default)",
+      "stylesheet": "vendor/bootstrap/bootstrap.min.css",
+      "swatch": "#0d6efd"
+    },
+    {
+      "id": "flatly",
+      "label": "Flatly",
+      "stylesheet": "vendor/bootswatch/flatly/bootstrap.min.css",
+      "swatch": "#2c3e50"
+    },
+    {
+      "id": "journal",
+      "label": "Journal",
+      "stylesheet": "vendor/bootswatch/journal/bootstrap.min.css",
+      "swatch": "#eb6864"
+    },
+    {
+      "id": "spacelab",
+      "label": "Spacelab",
+      "stylesheet": "vendor/bootswatch/spacelab/bootstrap.min.css",
+      "swatch": "#446e9b"
+    },
+    {
+      "id": "superhero",
+      "label": "Superhero",
+      "stylesheet": "vendor/bootswatch/superhero/bootstrap.min.css",
+      "swatch": "#df6919"
+    },
+    {
+      "id": "vapor",
+      "label": "Vapor",
+      "stylesheet": "vendor/bootswatch/vapor/bootstrap.min.css",
+      "swatch": "#6f42c1"
+    },
+    {
+      "id": "sketchy",
+      "label": "Sketchy",
+      "stylesheet": "vendor/bootswatch/sketchy/bootstrap.min.css",
+      "swatch": "#333333"
+    }
+  ]
+}

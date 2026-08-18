@@ -9,9 +9,13 @@ import {
   createEmptyStateCard,
   createCompactField,
   createFieldBox,
+  createModeToggleGroup,
 } from "../../common/js/lib/ui-components.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
 import { refreshTooltips } from "../../common/js/lib/tooltips.js";
+import { renderRelationshipEditor } from "../../common/js/lib/relationship-editor.js";
+import { buildRelationshipGraph } from "../../common/js/lib/relationship-graph.js";
+import { createForceGraph } from "../../common/js/lib/graph-view.js";
 import { initToolSettings } from "../../common/js/lib/tool-settings.js";
 import { bindCollapsibleToggle } from "../../common/js/lib/collapsible.js";
 import {
@@ -57,11 +61,19 @@ import { renderMarkdown } from "../../repository/js/lib/markdown.js";
 // below, so every existing selector/disabled-state call site elsewhere in
 // this file keeps working unchanged.
 createToolbarButtonGroup([
-  { action: "generate", icon: "tabler:dice-5", label: "Generate NPC", primary: true, attrs: { "data-generate-npc": true } },
+  { action: "generate", icon: "tabler:users", label: "Generate NPC", attrs: { "data-generate-npc": true } },
   { action: "save", label: "Save", disabled: true, attrs: { "data-save-npc": true } },
-  { action: "export", label: "Export JSON", disabled: true, attrs: { "data-export-npc": true } },
+  { action: "duplicate", label: "Duplicate", disabled: true, attrs: { "data-duplicate-npc": true } },
   { action: "delete", label: "Delete", disabled: true, attrs: { "data-delete-npc": true } },
 ]).forEach((button) => document.querySelector("[data-npc-toolbar-mount]")?.appendChild(button));
+// A small visual break, not a functional one — same physical Undo/Redo
+// buttons, just their own little two-button group with a gap before it
+// (`ms-2` on the mount div), same convention every other tool's toolbar
+// now uses.
+createToolbarButtonGroup([
+  { action: "undo", label: "Undo", attrs: { "data-undo-npc": true } },
+  { action: "redo", label: "Redo", attrs: { "data-redo-npc": true } },
+]).forEach((button) => document.querySelector("[data-npc-undo-toolbar-mount]")?.appendChild(button));
 document.querySelector("[data-export-location-template-mount]")?.appendChild(
   createIconButton({
     icon: "tabler:printer",
@@ -74,6 +86,7 @@ document.querySelector("[data-export-location-template-mount]")?.appendChild(
 document.querySelector("[data-npc-empty-state]")?.appendChild(
   createEmptyStateCard({
     message: "Nothing selected yet. Pick an existing NPC above, or fill in the fields and click Generate NPC.",
+    variant: "inline",
   })
 );
 
@@ -190,13 +203,34 @@ const noteModeEyeIcon = document.querySelector('[data-note-mode-icon="view"]');
 const noteModePencilIcon = document.querySelector('[data-note-mode-icon="edit"]');
 const noteModeLabel = document.querySelector("[data-note-mode-label]");
 
+const npcRelationshipsEl = document.querySelector("[data-npc-relationships]");
+const modeToggleMountEl = document.querySelector("[data-forge-mode-toggle-mount]");
+const relationshipsListMount = document.querySelector("[data-relationships-list-mount]");
+const relationshipsGraphWrap = document.querySelector("[data-relationships-graph-wrap]");
+const relationshipsGraphContainer = document.querySelector("[data-relationships-graph-container]");
+const relationshipsGraphContent = document.querySelector("[data-relationships-graph-content]");
+const relationshipsGraphSvg = document.querySelector("[data-relationships-graph-svg]");
+const relationshipsGraphEmpty = document.querySelector("[data-relationships-graph-empty]");
+const relationshipsGraphControls = document.querySelector("[data-relationships-graph-controls]");
+const relationshipsGraphToolbarMount = document.querySelector("[data-relationships-graph-toolbar-mount]");
+
 const saveButton = document.querySelector("[data-save-npc]");
-const exportButton = document.querySelector("[data-export-npc]");
+const duplicateButton = document.querySelector("[data-duplicate-npc]");
 const deleteButton = document.querySelector("[data-delete-npc]");
+const undoButton = document.querySelector("[data-undo-npc]");
+const redoButton = document.querySelector("[data-redo-npc]");
 const jsonDataPanel = createJsonDataPanel({
   label: "JSON Data",
   getData: () => (currentRecord ? toPressExportShape(currentRecord) : {}),
+  onExport: () => handleExportNpc(),
 });
+
+const selectionsSection = createCollapsibleSection({
+  label: "Selections",
+  collapsed: false,
+  content: document.querySelector("[data-selections-panel]"),
+});
+document.querySelector("[data-selections-mount]")?.appendChild(selectionsSection.section);
 
 // Adopts each section's existing static `[data-xxx-panel]` markup (its own
 // content stays hand-authored HTML — only the header+chevron wrapper is
@@ -283,6 +317,9 @@ const speciesLastNamesTextarea = document.querySelector("[data-species-last-name
 const speciesLastNamesGroup = document.querySelector("[data-species-last-names-group]");
 
 let status = null;
+let undoStack = null;
+let performUndo = null;
+let performRedo = null;
 let tables = null;
 let currentLocation = null;
 // The active Setting's own full record (not just its id) — needed for its
@@ -304,6 +341,60 @@ let currentRecord = null;
 // (every edit/reroll patches it directly, unlike Crucible's separate input
 // fields), so the snapshot is just its own export shape.
 const dirtyGate = createDirtyGate({ buildSnapshot: () => (currentRecord ? toPressExportShape(currentRecord) : null) });
+
+// Whole-record snapshot undo — same shape/reasoning as Repository's own
+// recordHistory/field-commit-debounce pair (repository/js/app.js): snapshot
+// currentRecord before a mutation, apply it, push an undo entry only if the
+// JSON actually changed. Coarser than field-level diffing, consistent with
+// this file's existing "patch currentRecord directly, no diffing" style.
+function recordHistory(label, applyChange) {
+  if (!currentRecord) {
+    applyChange();
+    return;
+  }
+  const before = JSON.stringify(currentRecord);
+  applyChange();
+  const after = JSON.stringify(currentRecord);
+  if (before !== after) undoStack.push({ label, before, after });
+}
+
+function applyRecordSnapshot(json) {
+  if (!json) return;
+  renderNpc(JSON.parse(json));
+}
+
+// Debounced commit for live-typed fields (Identity/4D/Stats/Note inputs,
+// which patch currentRecord directly on every keystroke without a full
+// renderNpc) — one undo entry per burst of typing, not one per keystroke.
+// See Repository's own FIELD_COMMIT_DEBOUNCE_MS comment for why the keydown
+// flush listener is needed (app-shell's global Ctrl+Z handler would
+// otherwise fire before an in-flight debounce window commits).
+const FIELD_COMMIT_DEBOUNCE_MS = 600;
+let fieldCommitTimer = 0;
+let fieldCommitLabel = "";
+let fieldEditBaseline = null;
+
+function commitFieldEdit() {
+  window.clearTimeout(fieldCommitTimer);
+  fieldCommitTimer = 0;
+  if (!currentRecord || fieldEditBaseline === null) return;
+  const after = JSON.stringify(currentRecord);
+  if (after !== fieldEditBaseline) undoStack.push({ label: fieldCommitLabel, before: fieldEditBaseline, after });
+  fieldEditBaseline = null;
+}
+
+function scheduleFieldCommit(label) {
+  if (fieldEditBaseline === null) fieldEditBaseline = JSON.stringify(currentRecord);
+  fieldCommitLabel = label;
+  window.clearTimeout(fieldCommitTimer);
+  fieldCommitTimer = window.setTimeout(commitFieldEdit, FIELD_COMMIT_DEBOUNCE_MS);
+}
+
+function flushFieldCommitOnUndoRedo(event) {
+  const key = (event.key || "").toLowerCase();
+  if ((event.ctrlKey || event.metaKey) && key === "z") commitFieldEdit();
+}
+
 let selectedFieldKey = null;
 // Guards the Location inspector's own async fetch (updateInspector below)
 // against a race: if the GM selects a different field (or a different
@@ -786,18 +877,20 @@ function renderStats(stats) {
 // jumping the edited input's cursor).
 function refreshActionButtons() {
   saveButton.disabled = !currentRecord || !dirtyGate.isDirty();
-  exportButton.disabled = !currentRecord;
+  duplicateButton.disabled = !currentRecord;
   deleteButton.disabled = !currentRecord || !dirtyGate.hasSaved() || !npcAllowsDelete(currentNpcId);
 }
 
 function renderNpc(record) {
   currentRecord = record;
   npcEmptyState.classList.toggle("d-none", Boolean(record));
-  npcDisplay.classList.toggle("d-none", !record);
+  npcDisplay.classList.toggle("d-none", !record || mode === "relationships");
   refreshActionButtons();
+  renderModeToggle();
 
   if (!record) {
     jsonDataPanel.render();
+    if (mode === "relationships") void refreshRelationshipsSection();
     return;
   }
   // See normalizeStats' own comment — a pure failsafe, folding any stray
@@ -915,7 +1008,162 @@ function renderNpc(record) {
   if (selectedFieldKey) {
     updateInspector();
   }
+  if (mode === "relationships") void refreshRelationshipsSection();
 }
+
+// --- Relationships ---------------------------------------------------------
+//
+// Forge's own target-kind whitelist and type-suggestion vocabulary for the
+// shared relationship-editor.js/relationship-graph.js modules (see that
+// pair's own header comments for the full suite-wide mechanism). No
+// "Organization" concept lives here at all — an NPC other NPCs point at
+// with "Member of" edges just shows those rows in ITS OWN Relationships
+// list too, the reverse direction of the exact same query every NPC runs.
+const RELATIONSHIP_TARGET_KINDS = [
+  { id: "npc", label: "NPC" },
+  { id: "location", label: "Location" },
+  { id: "monster", label: "Monster" },
+  { id: "character", label: "Character" },
+];
+const RELATIONSHIP_TYPE_SUGGESTIONS = [
+  "Member of",
+  "Leads",
+  "Allied with",
+  "Enemy of",
+  "Parent of",
+  "Child of",
+  "Sibling of",
+  "Married to",
+  "Mentor of",
+  "Rival of",
+];
+
+// "npc" (the existing Identity/4D/Stats/Notes card stack) or
+// "relationships" (a full-pane List/Graph view over this NPC's own
+// relationship edges) — mutually exclusive Modes, switched by the
+// suite-wide Mode toggle group (createModeToggleGroup) in the header row
+// above the main pane, exactly mirroring Repository's own Page-vs-
+// Relationships split. Relationships is no longer a collapsible card
+// inside NPC mode — see setMode/renderModeToggle below.
+let mode = "npc";
+let relationshipsForceGraph = null;
+
+function renderModeToggle() {
+  if (!modeToggleMountEl) return;
+  // Nothing to relate until an NPC exists — disabled (not hidden) until
+  // then, via createButtonCheckGroup's own disabled/tooltip option support
+  // (ui-components.js), the same mechanism every other tool's Relationships
+  // option now uses too (previously each hand-rolled an identical
+  // post-render querySelector('input[value="relationships"]').disabled
+  // patch — consolidated onto this one shared mechanism instead).
+  createModeToggleGroup({
+    container: modeToggleMountEl,
+    ariaLabel: "Forge view",
+    options: [
+      { value: "npc", icon: "tabler:users", label: "NPC" },
+      {
+        value: "relationships",
+        icon: "tabler:affiliate",
+        label: "Relationships",
+        disabled: !currentRecord,
+        tooltip: currentRecord ? undefined : "Select or generate an NPC first",
+      },
+    ],
+    value: mode,
+    onChange: (next) => setMode(next),
+  });
+}
+
+function setMode(nextMode) {
+  mode = nextMode;
+  const isRelationships = mode === "relationships";
+  npcDisplay?.classList.toggle("d-none", isRelationships || !currentRecord);
+  npcRelationshipsEl?.classList.toggle("d-none", !isRelationships);
+  renderModeToggle();
+  if (isRelationships) void refreshRelationshipsSection();
+}
+
+function ensureRelationshipsForceGraph() {
+  if (relationshipsForceGraph || !relationshipsGraphContainer) return relationshipsForceGraph;
+  relationshipsForceGraph = createForceGraph({
+    container: relationshipsGraphContainer,
+    content: relationshipsGraphContent,
+    svg: relationshipsGraphSvg,
+    emptyMount: relationshipsGraphEmpty,
+    getNodeRadius: (node) => (node.kind === "npc" && node.id === `npc:${currentRecord?.id}` ? 20 : 14),
+    getNodeIcon: (node) => relationshipsIconByKind?.[node.kind] || null,
+    // The relationship's own type ("Member of," "Leads," ...) as small text
+    // over its line — see graph-view.js's own edgeLabelZoomThreshold for why
+    // this stays hidden until zoomed in past the default.
+    getEdgeLabel: (edge) => edge.type || null,
+    classPrefix: "relationship-graph",
+    emptyIcon: "tabler:affiliate",
+    emptyMessage: "No relationships yet.",
+    defaultZoom: 1.4,
+  });
+  // Same reason Sanctum's own Relationships graph / Repository's own
+  // Relationships stop this event from bubbling to `container` —
+  // PanZoomController's own setPointerCapture (fired on every pointerdown
+  // regardless of target) otherwise hijacks the click these zoom buttons
+  // need.
+  relationshipsGraphControls?.addEventListener("pointerdown", (event) => event.stopPropagation());
+  [
+    { icon: "tabler:zoom-out", label: "Zoom out", onClick: () => relationshipsForceGraph.zoomBy(-0.25) },
+    { icon: "tabler:refresh", label: "Reset zoom", onClick: () => relationshipsForceGraph.reset() },
+    { icon: "tabler:zoom-in", label: "Zoom in", onClick: () => relationshipsForceGraph.zoomBy(0.25) },
+  ].forEach((config) => relationshipsGraphToolbarMount?.appendChild(createIconButton(config)));
+  return relationshipsForceGraph;
+}
+
+let relationshipsIconByKind = {};
+
+async function refreshRelationshipsList() {
+  if (!relationshipsListMount) return;
+  // No NPC loaded — clear rather than leave a stale prior NPC's own
+  // relationships on screen.
+  if (!currentRecord?.id) {
+    relationshipsListMount.innerHTML = '<p class="small text-body-secondary mb-0">Select or generate an NPC to see its relationships.</p>';
+    return;
+  }
+  await renderRelationshipEditor({
+    container: relationshipsListMount,
+    sourceKind: "npc",
+    sourceId: currentRecord.id,
+    targetKinds: RELATIONSHIP_TARGET_KINDS,
+    typeSuggestions: RELATIONSHIP_TYPE_SUGGESTIONS,
+    dataManager,
+    status,
+    onChange: () => {
+      void refreshRelationshipsList();
+      void refreshRelationshipsGraph();
+    },
+  });
+}
+
+async function refreshRelationshipsGraph() {
+  const forceGraph = ensureRelationshipsForceGraph();
+  if (!forceGraph || !currentRecord?.id) return;
+  try {
+    const { nodes, edges, iconByKind } = await buildRelationshipGraph(dataManager, {
+      nodes: [{ kind: "npc", id: currentRecord.id, label: currentRecord.name || currentRecord.id }],
+    });
+    relationshipsIconByKind = iconByKind;
+    forceGraph.setGraph({ nodes, edges });
+  } catch (error) {
+    status?.show("Unable to build the Relationships graph.", { type: "error" });
+  }
+}
+
+// currentRecord.id is always set by the time this is reachable — renderNpc
+// only calls this from its own post-record-loaded path, and createNpcRecord/
+// the load-existing-NPC path (js/lib/npc-schema.js) both always stamp one,
+// even for a freshly generated, not-yet-saved NPC.
+async function refreshRelationshipsSection() {
+  await refreshRelationshipsList();
+  void refreshRelationshipsGraph();
+}
+
+renderModeToggle();
 
 // --- Manual overrides ----------------------------------------------------
 // Blank ("Random") is the default in every select; a non-blank value is
@@ -1383,7 +1631,7 @@ generateButton.addEventListener("click", () => {
     currentNpcId = null;
     if (npcSelect) npcSelect.value = "";
     updateGenerationFieldsVisibility();
-    renderNpc(record);
+    recordHistory("generate NPC", () => renderNpc(record));
   } catch (error) {
     status?.show(`Unable to generate: ${error.message}`, { type: "error", timeout: 4000 });
   }
@@ -1393,7 +1641,10 @@ generateButton.addEventListener("click", () => {
   container.addEventListener("click", (event) => {
     const button = event.target.closest("[data-reroll-attribute]");
     if (!button || !currentRecord || !tables) return;
-    renderNpc(rerollAttribute(currentRecord, tables, effectiveSpeciesLocation(), button.dataset.rerollAttribute));
+    const attribute = button.dataset.rerollAttribute;
+    recordHistory(`reroll ${attribute}`, () => {
+      renderNpc(rerollAttribute(currentRecord, tables, effectiveSpeciesLocation(), attribute));
+    });
   });
 });
 
@@ -1423,6 +1674,7 @@ function handleIdentityFieldInput(event) {
   const input = event.target.closest("[data-editable-field]");
   if (!input || !currentRecord) return;
   const field = input.dataset.editableField;
+  scheduleFieldCommit(`edit ${field}`);
   if (field === "name") {
     currentRecord = { ...currentRecord, name: input.value };
   } else if (field === "location") {
@@ -1446,6 +1698,12 @@ function handleIdentityFieldInput(event) {
 identityFields.addEventListener("input", handleIdentityFieldInput);
 fourDFields.addEventListener("input", handleIdentityFieldInput);
 nameMount?.addEventListener("input", handleIdentityFieldInput);
+identityFields.addEventListener("keydown", flushFieldCommitOnUndoRedo);
+fourDFields.addEventListener("keydown", flushFieldCommitOnUndoRedo);
+nameMount?.addEventListener("keydown", flushFieldCommitOnUndoRedo);
+identityFields.addEventListener("change", () => commitFieldEdit());
+fourDFields.addEventListener("change", () => commitFieldEdit());
+nameMount?.addEventListener("change", () => commitFieldEdit());
 
 // Typing directly into a Stats field keeps the record in sync the same way
 // — ability scores also live-update their (+N) modifier suffix alongside,
@@ -1459,6 +1717,7 @@ statsFields.addEventListener("input", (event) => {
   const input = event.target.closest("[data-editable-field]");
   if (!input || !currentRecord?.stats) return;
   const field = input.dataset.editableField;
+  scheduleFieldCommit(`edit ${field}`);
   if (field === "currentHp" || field === "maxHp") {
     const numericValue = Number(input.value) || 0;
     const hpKey = field === "currentHp" ? "current" : "max";
@@ -1483,6 +1742,8 @@ statsFields.addEventListener("input", (event) => {
   jsonDataPanel.render();
   refreshActionButtons();
 });
+statsFields.addEventListener("keydown", flushFieldCommitOnUndoRedo);
+statsFields.addEventListener("change", () => commitFieldEdit());
 
 generateNoteButton.addEventListener("click", async () => {
   if (!currentRecord) return;
@@ -1491,8 +1752,10 @@ generateNoteButton.addEventListener("click", async () => {
   generateNoteButton.innerHTML = '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> Generating…';
   try {
     const note = await generateCharacterNote(currentRecord);
-    currentRecord = { ...currentRecord, note };
-    renderNpc(currentRecord);
+    recordHistory("generate note", () => {
+      currentRecord = { ...currentRecord, note };
+      renderNpc(currentRecord);
+    });
     status?.show("Note generated.", { type: "success", timeout: 1500 });
   } catch (error) {
     status?.show(`Unable to generate note: ${error.message}`, { type: "error", timeout: 5000 });
@@ -1507,10 +1770,13 @@ generateNoteButton.addEventListener("click", async () => {
 // renderNpc — resetting .value mid-edit would jump the cursor.
 noteText.addEventListener("input", () => {
   if (!currentRecord) return;
+  scheduleFieldCommit("edit note");
   currentRecord = { ...currentRecord, note: noteText.value };
   jsonDataPanel.render();
   refreshActionButtons();
 });
+noteText.addEventListener("keydown", flushFieldCommitOnUndoRedo);
+noteText.addEventListener("change", () => commitFieldEdit());
 
 // View/Edit toggle for the Note box itself — same button as Repository's
 // own Edit/View button (undercroft/repository/js/app.js#applyMode) for the
@@ -1600,7 +1866,7 @@ deleteButton.addEventListener("click", async () => {
   }
 });
 
-exportButton.addEventListener("click", () => {
+function handleExportNpc() {
   if (!currentRecord) return;
   const record = toPressExportShape(currentRecord);
   const blob = new Blob([JSON.stringify(record, null, 2)], { type: "application/json" });
@@ -1610,7 +1876,28 @@ exportButton.addEventListener("click", () => {
   link.download = `${currentRecord.name || currentRecord.id}.json`;
   link.click();
   URL.revokeObjectURL(url);
+}
+
+function generateNpcId() {
+  const suffix =
+    typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+      ? crypto.randomUUID()
+      : `${Date.now().toString(16)}-${Math.random().toString(16).slice(2)}`;
+  return `npc_${suffix}`;
+}
+
+duplicateButton.addEventListener("click", () => {
+  if (!currentRecord) return;
+  const duplicate = { ...currentRecord, id: generateNpcId(), name: `${currentRecord.name || "NPC"} Copy` };
+  dirtyGate.markDirty();
+  currentNpcId = null;
+  if (npcSelect) npcSelect.value = "";
+  renderNpc(duplicate);
+  status?.show("Duplicated — not yet saved.", { type: "info", timeout: 2000 });
 });
+
+undoButton.addEventListener("click", () => performUndo());
+redoButton.addEventListener("click", () => performRedo());
 
 // Named (not an inline listener) so the init flow below can also call this
 // directly when auto-selecting the active campaign group's own System.
@@ -1783,8 +2070,21 @@ async function init() {
     namespace: "forge",
     storagePrefix: "undercroft.forge.undo",
     settingsSlotAttr: "data-forge-settings-slot",
+    onUndo: (entry) => {
+      if (!entry) return null;
+      applyRecordSnapshot(entry.before);
+      return { message: entry.label ? `Undid ${entry.label}` : "Undid last action" };
+    },
+    onRedo: (entry) => {
+      if (!entry) return null;
+      applyRecordSnapshot(entry.after);
+      return { message: entry.label ? `Redid ${entry.label}` : "Redid last action" };
+    },
   });
   status = shell.status;
+  undoStack = shell.undoStack;
+  performUndo = shell.undo;
+  performRedo = shell.redo;
   const auth = initAuthControls({
     status,
   });

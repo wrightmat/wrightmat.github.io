@@ -1,4 +1,12 @@
 {
+  "id": "ghomuth",
+  "template": "tpl.5e.flex-basic",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "data": {},
+  "url": "117384722",
+  "mapping": "ddb-character",
   "kind": "character",
   "name": "Ghomuth",
   "image": "https://www.dndbeyond.com/avatars/57495/323/1581111423-117384722.jpeg?width=150&height=150&fit=crop&quality=95&auto=webp",
@@ -9,7 +17,7 @@
     "name": "Ghomuth",
     "race": "Locathah",
     "class": "Barbarian",
-    "level": 6,
+    "level": 7,
     "levels": {
       "level_monk": 0,
       "level_multiclass": 0
@@ -18,7 +26,7 @@
     "classes": [
       {
         "name": "Barbarian",
-        "level": 6,
+        "level": 7,
         "subclass": "Path of the Zealot"
       }
     ]
@@ -27,23 +35,11 @@
   "conditions": [],
   "stats": {
     "hitPoints": {
-      "max": 65,
-      "current": 47,
-      "temp": 0
+      "max": 75,
+      "current": 75,
+      "temp": 9
     },
     "armorClass": 6,
-    "abilities": {
-      "strength": 25,
-      "dexterity": 14,
-      "constitution": 16,
-      "intelligence": 7,
-      "wisdom": 10,
-      "charisma": 8
-    },
-    "alignment": "Lawful Neutral",
-    "initiative": {
-      "bonus": 2
-    },
     "senses": {
       "passives": {
         "perception": 13,
@@ -57,6 +53,19 @@
       "climb": 0,
       "fly": 0,
       "swim": 30
+    },
+    "abilities": {
+      "strength": 25,
+      "dexterity": 14,
+      "constitution": 16,
+      "intelligence": 7,
+      "wisdom": 10,
+      "charisma": 8
+    },
+    "alignment": "Lawful Neutral",
+    "initiative": {
+      "bonus": 2,
+      "advantage": true
     },
     "savingThrows": [
       {
@@ -817,23 +826,6 @@
       "description": ""
     },
     {
-      "name": "Warrior of the Gods: Expend Dice",
-      "range": {
-        "range": null,
-        "longRange": null,
-        "aoeType": null,
-        "aoeSize": null,
-        "hasAoeSpecialDescription": false,
-        "minimumRange": null
-      },
-      "longRange": null,
-      "attackBonus": 0,
-      "damage": "1d12",
-      "damageType": null,
-      "notes": "",
-      "description": "<p>A divine entity helps ensure you can continue the fight. You have a pool of four d12s that you can spend to heal yourself. As a Bonus Action, you can expend dice from the pool, roll them, and regain a number of Hit Points equal to the roll&rsquo;s total.</p>\r\n<p>Your pool regains all expended dice when you finish a Long Rest.</p>\r\n<p>The pool&rsquo;s maximum number of dice increases by one when you reach Barbarian levels 6 (5 dice), 12 (6 dice), and 17 (7 dice).</p>"
-    },
-    {
       "name": "Divine Fury (Necrotic)",
       "range": {
         "range": null,
@@ -866,6 +858,23 @@
       "damageType": "Thunder",
       "notes": "",
       "description": "<p>You can channel divine power into your strikes. On each of your turns while your Rage is active, the first creature you hit with a weapon or an Unarmed Strike takes extra damage equal to 1d6 plus half your Barbarian level (round down). The extra damage is Necrotic or Radiant; you choose the type each time you deal the damage.</p>"
+    },
+    {
+      "name": "Warrior of the Gods: Expend Dice",
+      "range": {
+        "range": null,
+        "longRange": null,
+        "aoeType": null,
+        "aoeSize": null,
+        "hasAoeSpecialDescription": false,
+        "minimumRange": null
+      },
+      "longRange": null,
+      "attackBonus": 0,
+      "damage": "1d12",
+      "damageType": null,
+      "notes": "",
+      "description": "<p>A divine entity helps ensure you can continue the fight. You have a pool of four d12s that you can spend to heal yourself. As a Bonus Action, you can expend dice from the pool, roll them, and regain a number of Hit Points equal to the roll&rsquo;s total.</p>\r\n<p>Your pool regains all expended dice when you finish a Long Rest.</p>\r\n<p>The pool&rsquo;s maximum number of dice increases by one when you reach Barbarian levels 6 (5 dice), 12 (6 dice), and 17 (7 dice).</p>"
     },
     {
       "name": "Handaxe",
@@ -981,11 +990,5 @@
     "personalityTraits": "I once ran twenty-five miles without stopping to warn to my clan of an approaching orc horde. I’d do it again if I had to.\nI have a lesson for every situation, drawn from observing nature.",
     "size": "Medium"
   },
-  "spells": [],
-  "systemIds": [
-    "sys.dnd5e"
-  ],
-  "id": "ghomuth",
-  "data": {},
-  "template": "tpl.5e.flex-basic"
+  "spells": []
 }

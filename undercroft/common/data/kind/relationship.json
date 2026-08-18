@@ -1,0 +1,8 @@
+{
+  "id": "relationship",
+  "label": "Relationship",
+  "plural": "Relationships",
+  "icon": "tabler:affiliate",
+  "readTier": "free",
+  "writeTier": "free"
+}

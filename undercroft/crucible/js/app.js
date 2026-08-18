@@ -11,6 +11,7 @@ import {
   createIconButton,
   createFieldBox,
   createSearchableCheckList,
+  createModeToggleGroup,
 } from "../../common/js/lib/ui-components.js";
 import { bindCollapsibleToggle } from "../../common/js/lib/collapsible.js";
 import {
@@ -62,8 +63,14 @@ import { allowsDelete, refreshOwnershipCatalog, confirmDelete } from "../../comm
 import { createTokenImageField } from "../../common/js/lib/token-picker.js";
 import { initToolSettings } from "../../common/js/lib/tool-settings.js";
 import { abilityModifier, averageDiceRoll, computeAttackBonus, computeSaveDC, computeAverageDamage } from "../../common/js/lib/dnd-rules.js";
+import { renderRelationshipEditor } from "../../common/js/lib/relationship-editor.js";
+import { buildRelationshipGraph } from "../../common/js/lib/relationship-graph.js";
+import { createForceGraph } from "../../common/js/lib/graph-view.js";
 
 let status = null;
+let undoStack = null;
+let performUndo = null;
+let performRedo = null;
 let dataManager = null;
 let creatureTypes = [];
 let archetypes = [];
@@ -107,15 +114,79 @@ let currentMonsterId = null;
 // on the server to target (see common/js/lib/dirty-gate.js).
 const dirtyGate = createDirtyGate({ buildSnapshot: () => toPressExportShape(buildRecordForSave()) });
 
+// Whole-record snapshot undo — same shape/reasoning as Repository's own
+// recordHistory/field-commit-debounce pair (repository/js/app.js). Snapshots
+// use buildRecordForSave() (not currentRecord directly) so a Name/Notes edit
+// — which only lands on currentRecord at Save/Export time, see
+// buildRecordForSave's own comment — is still captured; restoring a snapshot
+// goes through renderMonster, which already writes record.name/record.notes
+// back into their live input fields. Feature-params sub-edits (Multiattack/
+// weapon-attack/save-effect, routed through the shared featureParamsEditor)
+// are intentionally NOT wrapped here — that mutation happens inside a shared
+// module this pass isn't touching, consistent with scoping undo to this
+// file's own primary mutation points (reroll, feature add/remove, Generate,
+// Name/Notes/Stats edits) rather than every nested editing surface.
+function recordSnapshot() {
+  return JSON.stringify(buildRecordForSave());
+}
+
+function recordHistory(label, applyChange) {
+  if (!currentRecord) {
+    applyChange();
+    return;
+  }
+  const before = recordSnapshot();
+  applyChange();
+  const after = recordSnapshot();
+  if (before !== after) undoStack.push({ label, before, after });
+}
+
+function applyRecordSnapshot(json) {
+  if (!json) return;
+  renderMonster(JSON.parse(json));
+}
+
+const FIELD_COMMIT_DEBOUNCE_MS = 600;
+let fieldCommitTimer = 0;
+let fieldCommitLabel = "";
+let fieldEditBaseline = null;
+
+function commitFieldEdit() {
+  window.clearTimeout(fieldCommitTimer);
+  fieldCommitTimer = 0;
+  if (!currentRecord || fieldEditBaseline === null) return;
+  const after = recordSnapshot();
+  if (after !== fieldEditBaseline) undoStack.push({ label: fieldCommitLabel, before: fieldEditBaseline, after });
+  fieldEditBaseline = null;
+}
+
+function scheduleFieldCommit(label) {
+  if (fieldEditBaseline === null) fieldEditBaseline = recordSnapshot();
+  fieldCommitLabel = label;
+  window.clearTimeout(fieldCommitTimer);
+  fieldCommitTimer = window.setTimeout(commitFieldEdit, FIELD_COMMIT_DEBOUNCE_MS);
+}
+
+function flushFieldCommitOnUndoRedo(event) {
+  const key = (event.key || "").toLowerCase();
+  if ((event.ctrlKey || event.metaKey) && key === "z") commitFieldEdit();
+}
+
 // Built and mounted before `elements` below queries for these buttons by
 // their data-*-monster attribute, so every existing selector/disabled-state
 // call site elsewhere in this file keeps working unchanged.
 createToolbarButtonGroup([
-  { action: "generate", label: "Generate Monster", primary: true, attrs: { "data-generate-monster": true } },
+  { action: "generate", label: "Generate Monster", attrs: { "data-generate-monster": true } },
   { action: "save", label: "Save", disabled: true, attrs: { "data-save-monster": true } },
-  { action: "export", label: "Export JSON", disabled: true, attrs: { "data-export-monster": true } },
+  { action: "duplicate", label: "Duplicate", disabled: true, attrs: { "data-duplicate-monster": true } },
   { action: "delete", label: "Delete", disabled: true, attrs: { "data-delete-monster": true } },
 ]).forEach((button) => document.querySelector("[data-monster-toolbar-mount]")?.appendChild(button));
+// A small visual break, not a functional one — same convention every other
+// tool's toolbar now uses (see forge/js/app.js's own comment).
+createToolbarButtonGroup([
+  { action: "undo", label: "Undo", attrs: { "data-undo-monster": true } },
+  { action: "redo", label: "Redo", attrs: { "data-redo-monster": true } },
+]).forEach((button) => document.querySelector("[data-monster-undo-toolbar-mount]")?.appendChild(button));
 createToolbarButtonGroup([
   {
     label: "Edit Feature",
@@ -131,6 +202,7 @@ createToolbarButtonGroup([
 document.querySelector("[data-monster-empty-state]")?.appendChild(
   createEmptyStateCard({
     message: "Nothing selected yet. Pick an existing Monster above, or fill in the fields and click Generate Monster.",
+    variant: "inline",
   })
 );
 
@@ -195,8 +267,10 @@ const elements = {
   lockedFeatures: document.querySelector("[data-locked-features]"),
   generateButton: document.querySelector("[data-generate-monster]"),
   saveButton: document.querySelector("[data-save-monster]"),
+  duplicateButton: document.querySelector("[data-duplicate-monster]"),
   deleteButton: document.querySelector("[data-delete-monster]"),
-  exportButton: document.querySelector("[data-export-monster]"),
+  undoButton: document.querySelector("[data-undo-monster]"),
+  redoButton: document.querySelector("[data-redo-monster]"),
   emptyState: document.querySelector("[data-monster-empty-state]"),
   display: document.querySelector("[data-monster-display]"),
   nameInput: document.querySelector("[data-monster-name]"),
@@ -211,6 +285,16 @@ const elements = {
   budgetRemaining: document.querySelector("[data-budget-remaining]"),
   recipeCard: document.querySelector("[data-recipe-card]"),
   recipeSummary: document.querySelector("[data-recipe-summary]"),
+  monsterRelationships: document.querySelector("[data-monster-relationships]"),
+  modeToggleMount: document.querySelector("[data-crucible-mode-toggle-mount]"),
+  relationshipsListMount: document.querySelector("[data-relationships-list-mount]"),
+  relationshipsGraphWrap: document.querySelector("[data-relationships-graph-wrap]"),
+  relationshipsGraphContainer: document.querySelector("[data-relationships-graph-container]"),
+  relationshipsGraphContent: document.querySelector("[data-relationships-graph-content]"),
+  relationshipsGraphSvg: document.querySelector("[data-relationships-graph-svg]"),
+  relationshipsGraphControls: document.querySelector("[data-relationships-graph-controls]"),
+  relationshipsGraphToolbarMount: document.querySelector("[data-relationships-graph-toolbar-mount]"),
+  relationshipsGraphEmpty: document.querySelector("[data-relationships-graph-empty]"),
   statsFields: document.querySelector("[data-stats-fields]"),
   notesText: document.querySelector("[data-notes-text]"),
   notesPreview: document.querySelector("[data-notes-preview]"),
@@ -330,7 +414,15 @@ const elements = {
 const jsonDataPanel = createJsonDataPanel({
   label: "JSON Data",
   getData: () => (currentRecord ? toPressExportShape(currentRecord) : null),
+  onExport: () => handleExport(),
 });
+
+const selectionsSection = createCollapsibleSection({
+  label: "Selections",
+  collapsed: false,
+  content: document.querySelector("[data-selections-panel]"),
+});
+document.querySelector("[data-selections-mount]")?.appendChild(selectionsSection.section);
 
 function currentSystemId() {
   return elements.systemSelect?.value || "";
@@ -1652,8 +1744,11 @@ function recomputeMonsterBudget(record) {
 // Signature Effect was chosen.
 function removeFeature(featureId) {
   if (!currentRecord || !Array.isArray(currentRecord.featureIds)) return;
-  currentRecord.featureIds = currentRecord.featureIds.filter((id) => id !== featureId);
-  if (currentRecord.signatureFeatureId === featureId) currentRecord.signatureFeatureId = null;
+  const feature = findById(features, featureId);
+  recordHistory(`remove ${feature?.name || "feature"}`, () => {
+    currentRecord.featureIds = currentRecord.featureIds.filter((id) => id !== featureId);
+    if (currentRecord.signatureFeatureId === featureId) currentRecord.signatureFeatureId = null;
+  });
   dirtyGate.markDirty();
   recomputeMonsterBudget(currentRecord);
   renderFeatureList(currentRecord);
@@ -1665,7 +1760,10 @@ function removeFeature(featureId) {
 
 function addFeature(featureId) {
   if (!currentRecord || !featureId || !Array.isArray(currentRecord.featureIds)) return;
-  if (!currentRecord.featureIds.includes(featureId)) currentRecord.featureIds.push(featureId);
+  const feature = findById(features, featureId);
+  recordHistory(`add ${feature?.name || "feature"}`, () => {
+    if (!currentRecord.featureIds.includes(featureId)) currentRecord.featureIds.push(featureId);
+  });
   dirtyGate.markDirty();
   recomputeMonsterBudget(currentRecord);
   renderFeatureList(currentRecord);
@@ -2043,7 +2141,7 @@ function updateActionButtons() {
   if (elements.deleteButton) {
     elements.deleteButton.disabled = !hasRecord || !dirtyGate.hasSaved() || !monsterAllowsDelete(currentMonsterId);
   }
-  if (elements.exportButton) elements.exportButton.disabled = !hasRecord;
+  if (elements.duplicateButton) elements.duplicateButton.disabled = !hasRecord;
 }
 
 // One button, not a two-way radio group — clicking it steps to the OTHER
@@ -2081,15 +2179,17 @@ function applyNotesMode(mode) {
 
 function renderMonster(record) {
   currentRecord = record;
+  renderModeToggle();
   if (!record) {
     elements.emptyState?.classList.remove("d-none");
     elements.display?.classList.add("d-none");
     updateActionButtons();
     jsonDataPanel.render();
+    if (mode === "relationships") void refreshRelationshipsSection();
     return;
   }
   elements.emptyState?.classList.add("d-none");
-  elements.display?.classList.remove("d-none");
+  elements.display?.classList.toggle("d-none", mode === "relationships");
   if (elements.nameInput) elements.nameInput.value = record.name || "";
   // Rebuilt each render, like Identity below — image isn't read from the DOM
   // at save time the way name/notes are (see buildRecordForSave); it commits
@@ -2128,7 +2228,143 @@ function renderMonster(record) {
   elements.inspectorDetail?.classList.add("d-none");
   updateActionButtons();
   jsonDataPanel.render();
+  if (mode === "relationships") void refreshRelationshipsSection();
 }
+
+// --- Relationships -----------------------------------------------------
+//
+// Crucible's own target-kind whitelist and type-suggestion vocabulary for
+// the shared relationship-editor.js/relationship-graph.js modules — see
+// that pair's own header comments for the full suite-wide mechanism, and
+// Forge's own app.js for the first tool this pattern shipped on. Ecology/
+// territory ties, not social ones — a Monster's own suggestions read
+// differently than an NPC's.
+const RELATIONSHIP_TARGET_KINDS = [
+  { id: "npc", label: "NPC" },
+  { id: "location", label: "Location" },
+  { id: "monster", label: "Monster" },
+  { id: "character", label: "Character" },
+];
+const RELATIONSHIP_TYPE_SUGGESTIONS = [
+  "Prey of",
+  "Predator of",
+  "Pack with",
+  "Serves",
+  "Shares territory with",
+];
+
+// "monster" (the existing Identity/Features/Stats/Notes card stack) or
+// "relationships" (a full-pane List/Graph view over this Monster's own
+// relationship edges) — mutually exclusive Modes, switched by the
+// suite-wide Mode toggle group (createModeToggleGroup) in the header row
+// above the main pane, exactly mirroring Forge/Repository's own split.
+let mode = "monster";
+let relationshipsForceGraph = null;
+let relationshipsIconByKind = {};
+
+function renderModeToggle() {
+  if (!elements.modeToggleMount) return;
+  // Nothing to relate until a Monster exists — disabled (not hidden) until
+  // then, via createButtonCheckGroup's own disabled/tooltip option support
+  // (ui-components.js), the same mechanism every other tool's Relationships
+  // option now uses too (previously each hand-rolled an identical
+  // post-render querySelector('input[value="relationships"]').disabled
+  // patch — consolidated onto this one shared mechanism instead).
+  createModeToggleGroup({
+    container: elements.modeToggleMount,
+    ariaLabel: "Crucible view",
+    options: [
+      { value: "monster", icon: "tabler:skull", label: "Monster" },
+      {
+        value: "relationships",
+        icon: "tabler:affiliate",
+        label: "Relationships",
+        disabled: !currentRecord,
+        tooltip: currentRecord ? undefined : "Select or generate a Monster first",
+      },
+    ],
+    value: mode,
+    onChange: (next) => setMode(next),
+  });
+}
+
+function setMode(nextMode) {
+  mode = nextMode;
+  const isRelationships = mode === "relationships";
+  elements.display?.classList.toggle("d-none", isRelationships || !currentRecord);
+  elements.monsterRelationships?.classList.toggle("d-none", !isRelationships);
+  renderModeToggle();
+  if (isRelationships) void refreshRelationshipsSection();
+}
+
+function ensureRelationshipsForceGraph() {
+  if (relationshipsForceGraph || !elements.relationshipsGraphContainer) return relationshipsForceGraph;
+  relationshipsForceGraph = createForceGraph({
+    container: elements.relationshipsGraphContainer,
+    content: elements.relationshipsGraphContent,
+    svg: elements.relationshipsGraphSvg,
+    emptyMount: elements.relationshipsGraphEmpty,
+    getNodeRadius: (node) => (node.kind === "monster" && node.id === `monster:${currentRecord?.id}` ? 20 : 14),
+    getNodeIcon: (node) => relationshipsIconByKind?.[node.kind] || null,
+    getEdgeLabel: (edge) => edge.type || null,
+    classPrefix: "relationship-graph",
+    emptyIcon: "tabler:affiliate",
+    emptyMessage: "No relationships yet.",
+    defaultZoom: 1.4,
+  });
+  elements.relationshipsGraphControls?.addEventListener("pointerdown", (event) => event.stopPropagation());
+  [
+    { icon: "tabler:zoom-out", label: "Zoom out", onClick: () => relationshipsForceGraph.zoomBy(-0.25) },
+    { icon: "tabler:refresh", label: "Reset zoom", onClick: () => relationshipsForceGraph.reset() },
+    { icon: "tabler:zoom-in", label: "Zoom in", onClick: () => relationshipsForceGraph.zoomBy(0.25) },
+  ].forEach((config) => elements.relationshipsGraphToolbarMount?.appendChild(createIconButton(config)));
+  return relationshipsForceGraph;
+}
+
+async function refreshRelationshipsList() {
+  if (!elements.relationshipsListMount) return;
+  // No Monster loaded — clear rather than leave a stale prior Monster's own
+  // relationships on screen.
+  if (!currentRecord?.id) {
+    elements.relationshipsListMount.innerHTML =
+      '<p class="small text-body-secondary mb-0">Select or generate a Monster to see its relationships.</p>';
+    return;
+  }
+  await renderRelationshipEditor({
+    container: elements.relationshipsListMount,
+    sourceKind: "monster",
+    sourceId: currentRecord.id,
+    targetKinds: RELATIONSHIP_TARGET_KINDS,
+    typeSuggestions: RELATIONSHIP_TYPE_SUGGESTIONS,
+    dataManager,
+    status,
+    onChange: () => {
+      void refreshRelationshipsList();
+      void refreshRelationshipsGraph();
+    },
+  });
+}
+
+async function refreshRelationshipsGraph() {
+  const forceGraph = ensureRelationshipsForceGraph();
+  if (!forceGraph || !currentRecord?.id) return;
+  try {
+    const { nodes, edges, iconByKind } = await buildRelationshipGraph(dataManager, {
+      nodes: [{ kind: "monster", id: currentRecord.id, label: currentRecord.name || currentRecord.id }],
+    });
+    relationshipsIconByKind = iconByKind;
+    forceGraph.setGraph({ nodes, edges });
+  } catch (error) {
+    status?.show?.("Unable to build the Relationships graph.", { type: "error" });
+  }
+}
+
+async function refreshRelationshipsSection() {
+  await refreshRelationshipsList();
+  void refreshRelationshipsGraph();
+}
+
+renderModeToggle();
 
 function readLockedFeatureIds() {
   return sharedReadLockedFeatureIds(elements.lockedFeatures);
@@ -2162,7 +2398,7 @@ async function handleGenerate() {
     currentMonsterId = null;
     if (elements.monsterSelect) elements.monsterSelect.value = "";
     updateGenerationFieldsVisibility();
-    renderMonster(record);
+    recordHistory("generate monster", () => renderMonster(record));
     status?.show("Monster generated.", { type: "success", timeout: 1500 });
   } catch (error) {
     status?.show(`Unable to generate: ${error.message}`, { type: "error", timeout: 4000 });
@@ -2242,7 +2478,27 @@ function handleExport() {
   exportRecordAsJson(currentRecord, toPressExportShape);
 }
 
+function generateMonsterId() {
+  const suffix =
+    typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+      ? crypto.randomUUID()
+      : `${Date.now().toString(16)}-${Math.random().toString(16).slice(2)}`;
+  return `mon_${suffix}`;
+}
+
+function handleDuplicate() {
+  if (!currentRecord) return;
+  const source = buildRecordForSave();
+  const duplicate = { ...source, id: generateMonsterId(), name: `${source.name || "Monster"} Copy` };
+  dirtyGate.markDirty();
+  currentMonsterId = null;
+  if (elements.monsterSelect) elements.monsterSelect.value = "";
+  renderMonster(duplicate);
+  status?.show("Duplicated — not yet saved.", { type: "info", timeout: 2000 });
+}
+
 async function handleGenerateNote() {
+  const before = currentRecord ? recordSnapshot() : null;
   const success = await generateNoteForRecord({
     record: currentRecord,
     elements,
@@ -2283,7 +2539,14 @@ async function handleGenerateNote() {
       };
     },
   });
-  if (success) updateActionButtons();
+  if (success) {
+    if (before !== null) {
+      const after = recordSnapshot();
+      if (after !== before) undoStack.push({ label: "generate note", before, after });
+    }
+    if (notesMode === "view") renderNotesPreview();
+    updateActionButtons();
+  }
 }
 
 async function init() {
@@ -2291,8 +2554,21 @@ async function init() {
     namespace: "crucible",
     storagePrefix: "undercroft.crucible.undo",
     settingsSlotAttr: "data-crucible-settings-slot",
+    onUndo: (entry) => {
+      if (!entry) return null;
+      applyRecordSnapshot(entry.before);
+      return { message: entry.label ? `Undid ${entry.label}` : "Undid last action" };
+    },
+    onRedo: (entry) => {
+      if (!entry) return null;
+      applyRecordSnapshot(entry.after);
+      return { message: entry.label ? `Redid ${entry.label}` : "Redid last action" };
+    },
   });
   status = shell.status;
+  undoStack = shell.undoStack;
+  performUndo = shell.undo;
+  performRedo = shell.redo;
   const auth = initAuthControls({
     status,
   });
@@ -2310,7 +2586,9 @@ async function init() {
   elements.generateButton?.addEventListener("click", handleGenerate);
   elements.saveButton?.addEventListener("click", handleSave);
   elements.deleteButton?.addEventListener("click", handleDelete);
-  elements.exportButton?.addEventListener("click", handleExport);
+  elements.duplicateButton?.addEventListener("click", handleDuplicate);
+  elements.undoButton?.addEventListener("click", () => performUndo());
+  elements.redoButton?.addEventListener("click", () => performRedo());
   elements.generateNoteButton?.addEventListener("click", handleGenerateNote);
   elements.addFeatureButton?.addEventListener("click", () => {
     const featureId = elements.addFeatureSelect?.value;
@@ -2419,8 +2697,18 @@ async function init() {
   // actually runs (see buildRecordForSave) — without this, editing either
   // field wouldn't re-enable an already-saved record's Save button until
   // some unrelated re-render happened to call updateActionButtons() again.
-  elements.nameInput?.addEventListener("input", updateActionButtons);
-  elements.notesText?.addEventListener("input", updateActionButtons);
+  elements.nameInput?.addEventListener("input", () => {
+    scheduleFieldCommit("edit name");
+    updateActionButtons();
+  });
+  elements.nameInput?.addEventListener("keydown", flushFieldCommitOnUndoRedo);
+  elements.nameInput?.addEventListener("change", () => commitFieldEdit());
+  elements.notesText?.addEventListener("input", () => {
+    scheduleFieldCommit("edit notes");
+    updateActionButtons();
+  });
+  elements.notesText?.addEventListener("keydown", flushFieldCommitOnUndoRedo);
+  elements.notesText?.addEventListener("change", () => commitFieldEdit());
   elements.notesModeToggle?.addEventListener("click", () => {
     // Notes isn't written back into currentRecord until Save/Export (see
     // buildRecordForSave) — switching to View needs the live textarea value,
@@ -2440,6 +2728,7 @@ async function init() {
     const input = event.target.closest("[data-editable-stat]");
     if (!input || !currentRecord?.stats) return;
     const key = input.dataset.editableStat;
+    scheduleFieldCommit(`edit ${key}`);
     const stats = currentRecord.stats;
     if (key.startsWith("ability:")) {
       const abilityKey = key.slice("ability:".length);
@@ -2496,6 +2785,8 @@ async function init() {
     jsonDataPanel.render();
     updateActionButtons();
   });
+  elements.statsFields?.addEventListener("keydown", flushFieldCommitOnUndoRedo);
+  elements.statsFields?.addEventListener("change", () => commitFieldEdit());
 
   // Per-field reroll button (createFieldBox's own `rerollable` option) —
   // same convention Forge's Identity/4D fields use. Only wired for the
@@ -2505,7 +2796,10 @@ async function init() {
   elements.identityFields?.addEventListener("click", (event) => {
     const button = event.target.closest("[data-reroll-attribute]");
     if (!button || !currentRecord) return;
-    renderMonster(rerollAttribute(currentRecord, { creatureTypes, archetypes, roles, features }, currentSystemId(), button.dataset.rerollAttribute));
+    const attribute = button.dataset.rerollAttribute;
+    recordHistory(`reroll ${attribute}`, () => {
+      renderMonster(rerollAttribute(currentRecord, { creatureTypes, archetypes, roles, features }, currentSystemId(), attribute));
+    });
   });
 
   // Picking a Creature Type/Archetype/Role keeps currentRecord in sync —
@@ -2516,7 +2810,9 @@ async function init() {
     const target = event.target.closest("[data-editable-identity]");
     if (!target || !currentRecord) return;
     const key = target.dataset.editableIdentity;
-    currentRecord = { ...currentRecord, [key]: target.value || null };
+    recordHistory(`edit ${key}`, () => {
+      currentRecord = { ...currentRecord, [key]: target.value || null };
+    });
     jsonDataPanel.render();
     updateActionButtons();
   });

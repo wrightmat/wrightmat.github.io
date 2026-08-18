@@ -1,9 +1,13 @@
 // Records a whole GM session's audio locally in the browser — GM-only,
-// local-only by design (see the plan this was built from): nothing here is
-// shared, spotlighted, or persisted server-side. Not shown on the second-
-// screen table mirror, same reasoning board.js's own header comment gives
-// for itself (a private GM tool, not table-facing content) — this widget
-// type stays out of dashboard.js's own TABLE_WIDGET_TYPES.
+// local-only by design (see the plan this was built from): the recording
+// itself is never shared, spotlighted, or persisted server-side. Not shown
+// on the second-screen table mirror, same reasoning board.js's own header
+// comment gives for itself (a private GM tool, not table-facing content) —
+// this widget type stays out of dashboard.js's own TABLE_WIDGET_TYPES. One
+// exception to "local-only": the combined session-record export (see
+// downloadCombinedSessionRecord) READS the active campaign's own Game Log
+// (server-side, shared) to interleave with the transcript — nothing is ever
+// written back to it from here.
 //
 // Recording is chunked (default 5 min/chunk, configurable) rather than one
 // continuous multi-hour capture, for two reasons: optional live
@@ -30,6 +34,7 @@ import { createIdbStore } from "../idb-store.js";
 import { promptConnectionModal } from "../connection-modal.js";
 import { createIconButton, createCollapsibleSection } from "../ui-components.js";
 import { disposeTooltips, refreshTooltips } from "../tooltips.js";
+import { formatTimestamp, parseTimestamp, summarizeLogEntry } from "./game-log.js";
 
 const DEFAULT_CONFIG = {
   chunkMinutes: 5,
@@ -152,7 +157,10 @@ async function manageTranscriptionServer({ dataManager, status, existing }) {
   return saved ? { id, deleted } : null;
 }
 
-export function initAudioRecorderWidget(container, { contentRef, setContentRef, status, dataManager } = {}) {
+export function initAudioRecorderWidget(
+  container,
+  { contentRef, setContentRef, status, dataManager, groupId = "", shareToken = "" } = {}
+) {
   if (!container) {
     return { destroy() {} };
   }
@@ -168,6 +176,16 @@ export function initAudioRecorderWidget(container, { contentRef, setContentRef, 
   let sessionId = "";
   let chunkIndex = 0;
   let chunkStartMs = 0;
+  // Real wall-clock time, alongside the relative elapsedMs/chunkStartMs
+  // this widget already tracked — captured directly at the moments that
+  // matter (session start, each chunk's own start) rather than derived as
+  // sessionStartedAt + offset, since elapsedMs stops advancing during a
+  // pause and a derived value would drift off the real clock by however
+  // long the pauses added up to. This is what makes the combined session-
+  // record export (downloadCombinedSessionRecord below) able to interleave
+  // transcript lines with Game Log entries by actual time-of-day.
+  let sessionStartedAt = ""; // ISO string
+  let chunkStartedAtReal = ""; // ISO string, current in-progress chunk
   let elapsedMs = 0;
   let elapsedTimer = null;
   let permissionError = "";
@@ -186,6 +204,13 @@ export function initAudioRecorderWidget(container, { contentRef, setContentRef, 
   let chunksInMemory = [];
   let transcriptLines = []; // {startOffsetMs, text}
   let transcriptFilterText = "";
+  // The actual IndexedDB store keys handleChunkFinished's own put() resolved
+  // to for THIS session's chunks — not sessionId, since the store is
+  // auto-incrementing (its "key" field is just data, not the real primary
+  // key). stopRecording() deletes exactly these, never the whole store, so
+  // a prior crashed session's own still-unrecovered chunks (and any future
+  // session's) are never touched by this session's own cleanup.
+  let sessionDbKeys = [];
 
   // The deployment's own known transcription servers — fetched once at
   // mount and re-fetched after any add/edit/delete (manageTranscriptionServer
@@ -239,6 +264,7 @@ export function initAudioRecorderWidget(container, { contentRef, setContentRef, 
   async function beginChunk() {
     currentParts = [];
     chunkStartMs = elapsedMs;
+    chunkStartedAtReal = new Date().toISOString();
     const options = mimeType ? { mimeType } : {};
     try {
       recorder = new MediaRecorder(mediaStream, options);
@@ -253,7 +279,7 @@ export function initAudioRecorderWidget(container, { contentRef, setContentRef, 
       const finishedMimeType = recorder?.mimeType || mimeType || "audio/webm";
       const blob = new Blob(currentParts, { type: finishedMimeType });
       const shouldContinue = recordingState === "recording";
-      void handleChunkFinished(blob, chunkStartMs);
+      void handleChunkFinished(blob, chunkStartMs, chunkStartedAtReal);
       if (shouldContinue) void beginChunk();
     };
     // 1s timeslice — keeps the browser's own internal buffer bounded across
@@ -276,13 +302,14 @@ export function initAudioRecorderWidget(container, { contentRef, setContentRef, 
     }, chunkMs);
   }
 
-  async function handleChunkFinished(blob, startOffsetMs) {
+  async function handleChunkFinished(blob, startOffsetMs, startedAtReal) {
     if (destroyed) return;
     const index = chunkIndex++;
-    const record = { index, blob, startOffsetMs, mimeType: blob.type };
+    const record = { index, blob, startOffsetMs, startedAtReal, mimeType: blob.type };
     chunksInMemory.push(record);
     try {
-      await idbStore.put({ key: `${sessionId}::${index}`, sessionId, ...record });
+      const dbKey = await idbStore.put({ key: `${sessionId}::${index}`, sessionId, ...record });
+      sessionDbKeys.push(dbKey);
     } catch (error) {
       // Best-effort durability backstop — a failed IDB write doesn't lose
       // the chunk itself, it's still in chunksInMemory for this session.
@@ -292,7 +319,7 @@ export function initAudioRecorderWidget(container, { contentRef, setContentRef, 
       try {
         const result = await dataManager.transcribeAudioChunk(blob, config.transcriptionServerId);
         if (destroyed) return;
-        transcriptLines.push({ startOffsetMs, text: (result?.text || "").trim() });
+        transcriptLines.push({ startOffsetMs, startedAtReal, text: (result?.text || "").trim() });
         transcriptLines.sort((a, b) => a.startOffsetMs - b.startOffsetMs);
       } catch (error) {
         status?.show?.(error?.message || "Transcription failed for this chunk — recording continues.", {
@@ -318,12 +345,14 @@ export function initAudioRecorderWidget(container, { contentRef, setContentRef, 
     }
     mimeType = pickMimeType();
     sessionId = randomId();
+    sessionStartedAt = new Date().toISOString();
     chunkIndex = 0;
     elapsedMs = 0;
     chunksInMemory = [];
     transcriptLines = [];
     recordingState = "recording";
     settingsCollapsed = true;
+    sessionDbKeys = [];
     await beginChunk();
     startElapsedTimer();
     render();
@@ -370,8 +399,12 @@ export function initAudioRecorderWidget(container, { contentRef, setContentRef, 
     }
     mediaStream?.getTracks().forEach((track) => track.stop());
     mediaStream = null;
+    // Only THIS session's own IDB backup copies — never idbStore.clear(),
+    // which would also wipe any other session's chunks sharing this same
+    // store (see sessionDbKeys' own comment above; confirmed real bug when
+    // this used clear() instead).
     try {
-      await idbStore.clear();
+      await Promise.all(sessionDbKeys.map((dbKey) => idbStore.delete(dbKey)));
     } catch (error) {
       // Not fatal — the chunks already downloaded/are downloadable from
       // chunksInMemory regardless.
@@ -452,8 +485,51 @@ export function initAudioRecorderWidget(container, { contentRef, setContentRef, 
   }
 
   function downloadTranscript() {
-    const text = transcriptLines.map((line) => `[${formatElapsed(line.startOffsetMs)}] ${line.text}`).join("\n");
+    const text = transcriptLines
+      .map((line) => `[${formatElapsed(line.startOffsetMs)} · ${formatTimestamp(line.startedAtReal) || "?"}] ${line.text}`)
+      .join("\n");
     downloadBlob(new Blob([text], { type: "text/plain;charset=utf-8" }), `session-${sessionId}-transcript.txt`);
+  }
+
+  // Interleaves this session's own transcript with the campaign's Game Log
+  // (chat/rolls/spotlights) into one chronological plain-text record —
+  // possible now that both sides carry a real (not just relative) timestamp:
+  // the transcript's own startedAtReal (see this file's own header comment
+  // on why it's captured directly rather than derived from elapsedMs), and
+  // the Game Log's own server-stamped created_at. limit: 200 is the
+  // server's own hard cap on one /groups/{id}/log fetch (groups.py's
+  // _sanitize_log_limit) — a session chattier than that only gets its most
+  // recent 200 entries here, same ceiling the Game Log widget itself is
+  // bound by.
+  async function downloadCombinedSessionRecord() {
+    if (!groupId && !shareToken) return;
+    let log;
+    try {
+      log = await dataManager.getGroupLog({ groupId, shareToken, limit: 200 });
+    } catch (error) {
+      status?.show?.(error?.message || "Unable to load the Game Log for the combined record.", { type: "error" });
+      return;
+    }
+    const logEntries = Array.isArray(log?.entries)
+      ? log.entries.filter((entry) => entry?.type !== "spotlight-update")
+      : [];
+    const combined = [
+      ...transcriptLines
+        .filter((line) => line.startedAtReal)
+        .map((line) => ({
+          atMs: parseTimestamp(line.startedAtReal),
+          text: `Transcript: "${line.text || "(no speech detected)"}"`,
+        })),
+      ...logEntries.map((entry) => ({
+        atMs: parseTimestamp(entry.created_at),
+        text: `${entry.author?.name || "System"}: ${summarizeLogEntry(entry)}`,
+      })),
+    ].sort((a, b) => a.atMs - b.atMs);
+    const lines = combined.map(({ atMs, text }) => `[${atMs ? new Date(atMs).toLocaleString() : "?"}] ${text}`);
+    downloadBlob(
+      new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" }),
+      `session-${sessionId}-combined-record.txt`
+    );
   }
 
   function renderSettings() {
@@ -592,6 +668,10 @@ export function initAudioRecorderWidget(container, { contentRef, setContentRef, 
     timerNode = el("div", "font-monospace", formatElapsed(elapsedMs));
     row.appendChild(timerNode);
 
+    if (sessionStartedAt) {
+      row.appendChild(el("span", "small text-body-secondary", `started ${formatTimestamp(sessionStartedAt)}`));
+    }
+
     const canStartFresh = recordingState === "idle" || recordingState === "stopped";
     const isPaused = recordingState === "paused";
     const isRecording = recordingState === "recording";
@@ -653,6 +733,18 @@ export function initAudioRecorderWidget(container, { contentRef, setContentRef, 
           onClick: downloadTranscript,
         })
       );
+      // Only when there's an active campaign to pull a Game Log from at
+      // all — same gate the Game Log widget itself uses to decide whether
+      // it has anything to show (see game-log.js's own render()).
+      if (groupId || shareToken) {
+        buttonGroup.appendChild(
+          createIconButton({
+            icon: "tabler:notebook",
+            label: "Download combined session record (transcript + Game Log)",
+            onClick: () => void downloadCombinedSessionRecord(),
+          })
+        );
+      }
     }
     row.appendChild(buttonGroup);
 
@@ -678,7 +770,9 @@ export function initAudioRecorderWidget(container, { contentRef, setContentRef, 
         `${entry.index + 1} · ${formatElapsed(entry.startOffsetMs)}`
       );
       pill.type = "button";
-      pill.title = `Download ${chunkFilename(entry)}`;
+      pill.title = entry.startedAtReal
+        ? `Download ${chunkFilename(entry)} (started ${formatTimestamp(entry.startedAtReal)})`
+        : `Download ${chunkFilename(entry)}`;
       pill.addEventListener("click", () => downloadChunk(entry));
       list.appendChild(pill);
     });
@@ -712,7 +806,9 @@ export function initAudioRecorderWidget(container, { contentRef, setContentRef, 
     } else {
       visibleLines.forEach((line) => {
         const row = el("div", "");
-        row.appendChild(el("span", "text-body-secondary font-monospace me-1", `[${formatElapsed(line.startOffsetMs)}]`));
+        const realTime = formatTimestamp(line.startedAtReal);
+        const stamp = realTime ? `[${formatElapsed(line.startOffsetMs)} · ${realTime}]` : `[${formatElapsed(line.startOffsetMs)}]`;
+        row.appendChild(el("span", "text-body-secondary font-monospace me-1", stamp));
         row.appendChild(document.createTextNode(line.text || "(no speech detected)"));
         list.appendChild(row);
       });
@@ -751,12 +847,28 @@ export function initAudioRecorderWidget(container, { contentRef, setContentRef, 
     refreshTooltips(container);
   }
 
+  // A closed/crashed tab mid-chunk loses that chunk outright — it only
+  // reaches IndexedDB at chunk completion (handleChunkFinished above), so
+  // whatever's in currentParts right now is pure JS-heap state. This can't
+  // save it (there's no reliable synchronous flush of an in-progress
+  // MediaRecorder on unload), only warn loudly enough that a GM mid-session
+  // doesn't close the tab by accident. Standard "set returnValue" shape —
+  // the browser supplies its own generic confirmation text, no custom
+  // message is actually shown by any modern browser.
+  function handleBeforeUnload(event) {
+    if (recordingState !== "recording" && recordingState !== "paused") return;
+    event.preventDefault();
+    event.returnValue = "";
+  }
+  window.addEventListener("beforeunload", handleBeforeUnload);
+
   render();
   void refreshTranscriptionServers();
 
   return {
     destroy() {
       destroyed = true;
+      window.removeEventListener("beforeunload", handleBeforeUnload);
       stopElapsedTimer();
       if (chunkCycleTimer) clearTimeout(chunkCycleTimer);
       // Recording is left running across a widget re-mount only in the

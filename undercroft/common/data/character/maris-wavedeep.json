@@ -1,4 +1,12 @@
 {
+  "id": "maris-wavedeep",
+  "template": "tpl.5e.flex-basic",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "data": {},
+  "url": "159871601",
+  "mapping": "ddb-character",
   "kind": "character",
   "name": "Maris Wavedeep",
   "image": "https://www.dndbeyond.com/avatars/54575/480/1581111423-159871601.jpeg?width=150&height=150&fit=crop&quality=95&auto=webp",
@@ -9,10 +17,10 @@
     "name": "Maris Wavedeep",
     "race": "Triton",
     "class": "Warlock",
-    "level": 5,
+    "level": 6,
     "levels": {
       "level_monk": 0,
-      "level_multiclass": 0
+      "level_multiclass": 1
     },
     "inspiration": false,
     "classes": [
@@ -20,6 +28,10 @@
         "name": "Warlock",
         "level": 5,
         "subclass": "The Fathomless (TCoE)"
+      },
+      {
+        "name": "Sorcerer",
+        "level": 1
       }
     ]
   },
@@ -27,23 +39,11 @@
   "conditions": [],
   "stats": {
     "hitPoints": {
-      "max": 48,
-      "current": 42,
+      "max": 56,
+      "current": 56,
       "temp": 0
     },
     "armorClass": 13,
-    "abilities": {
-      "strength": 10,
-      "dexterity": 14,
-      "constitution": 14,
-      "intelligence": 12,
-      "wisdom": 9,
-      "charisma": 18
-    },
-    "alignment": "Neutral Good",
-    "initiative": {
-      "bonus": 2
-    },
     "senses": {
       "passives": {
         "perception": 9,
@@ -58,6 +58,18 @@
       "climb": 0,
       "fly": 0,
       "swim": 40
+    },
+    "abilities": {
+      "strength": 10,
+      "dexterity": 14,
+      "constitution": 14,
+      "intelligence": 12,
+      "wisdom": 9,
+      "charisma": 18
+    },
+    "alignment": "Neutral Good",
+    "initiative": {
+      "bonus": 2
     },
     "savingThrows": [
       {
@@ -85,8 +97,8 @@
         "name": "constitution",
         "friendlyName": "Constitution",
         "shortName": "CON",
-        "value": 2,
-        "proficiency": 0,
+        "value": 5,
+        "proficiency": 3,
         "advantage": false,
         "disadvantage": false
       },
@@ -343,6 +355,16 @@
     "pp": 0
   },
   "inventory": [
+    {
+      "name": "Uncommon Glamerweave",
+      "quantity": 1,
+      "weight": 0,
+      "notes": "<p>Glamerweave is clothing imbued with harmless illusory magic. While wearing the common version of these clothes, you can use a bonus action to create a moving illusory pattern within the cloth.</p>\r\n<p>Uncommon glamerweave can have the pattern rise from the cloth. For example, a glamerweave gown might be wreathed in harmless, illusory flames, while a glamerweave hat might have illusory butterflies fluttering around it.</p>\r\n<p>When you make a Charisma (Performance) or Charisma (Persuasion) check while wearing the uncommon version of glamerweave, you can roll a d4 and add the number rolled to the check. Once you use this property, it can’t be used again until the next dawn.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": true,
+      "isEquipped": true
+    },
     {
       "name": "Leather",
       "quantity": 1,
@@ -655,6 +677,18 @@
       "description": "<p>At your GM's discretion, you can take a Dark Bargain.</p>",
       "level": null,
       "limitedUse": null
+    },
+    {
+      "name": "Character Threads",
+      "description": "<p>Threads are aspects added to characters at any time during their career that have a specific short or long-term goal.</p>",
+      "level": null,
+      "limitedUse": null
+    },
+    {
+      "name": "Runestones",
+      "description": "<p>At the beginning of the <em>Northlands Sagas</em> adventure path, each player should draw one Runestone randomly.</p>",
+      "level": null,
+      "limitedUse": null
     }
   ],
   "features": [
@@ -759,6 +793,46 @@
       "description": "<p>Your patron grants you a magical secret called an arcanum. Choose one level 9 Warlock spell as this arcanum.</p>\r\n<p>You can cast your arcanum spell once without expending a spell slot, and you must finish a Long Rest before you can cast it in this way again. You regain all uses of your Mystic Arcanum when you finish a Long Rest.</p>"
     },
     {
+      "name": "Core Sorcerer Traits",
+      "description": "<p>As a Level 1 Character:</p>\r\n<ul>\r\n<li>Gain all the traits in the Core Sorcerer Traits table.</li>\r\n<li>Gain the Sorcerer’s level 1 features.</li>\r\n</ul>\r\n<table class=\"table-compendium table--left-all\" style=\"--sb-table-row-bg-hover: #b3d3df; --sb-table-row-bg-dark: #d7e8ee; --sb-table-row-bg-light: #f1f7f9; --dark-sb-table-row-bg-light: #5e7982; --dark-sb-table-row-bg-dark: #5c7f8c; --dark-sb-table-row-bg-hover: #78a2b0;\"><caption>Core Sorcerer Traits</caption>\r\n<thead></thead>\r\n<tbody>\r\n<tr>\r\n<th>Primary Ability</th>\r\n<td>Charisma</td>\r\n</tr>\r\n<tr>\r\n<th>Hit Point Die</th>\r\n<td>D6 per Sorcerer level</td>\r\n</tr>\r\n<tr>\r\n<th>Saving Throw Proficiencies</th>\r\n<td>Constitution and Charisma</td>\r\n</tr>\r\n<tr>\r\n<th>Skill Proficiencies</th>\r\n<td><em>Choose 2:</em> Arcana, Deception, Insight, Intimidation, Persuasion, or Religion</td>\r\n</tr>\r\n<tr>\r\n<th>Weapon Proficiencies</th>\r\n<td>Simple weapons</td>\r\n</tr>\r\n<tr>\r\n<th>Armor Training</th>\r\n<td>None</td>\r\n</tr>\r\n<tr>\r\n<th>Starting Equipment</th>\r\n<td><em>Choose A or B:</em> (A) Spear, 2 Daggers, Arcane Focus (crystal), Dungeoneer’s Pack, and 28 GP; or (B) 50 GP</td>\r\n</tr>\r\n</tbody>\r\n</table>"
+    },
+    {
+      "name": "Spellcasting",
+      "description": "<p>Drawing from your innate magic, you can cast spells.</p>\r\n<p><strong><em>Cantrips.</em></strong> You know four Sorcerer cantrips of your choice. Whenever you gain a Sorcerer level, you can replace one of your cantrips from this feature with another Sorcerer cantrip of your choice.</p>\r\n<p>When you reach Sorcerer levels 4 and 10, you learn another Sorcerer cantrip of your choice, as shown in the Cantrips column of the Sorcerer Features table.</p>\r\n<p><strong><em>Spell Slots.</em></strong> The Sorcerer Features table shows how many spell slots you have to cast your level 1+ spells. You regain all expended slots when you finish a Long Rest.</p>\r\n<p><strong><em>Prepared Spells of Level 1+.</em></strong> You prepare the list of level 1+ spells that are available for you to cast with this feature. To start, choose two level 1 Sorcerer spells.</p>\r\n<p>The number of spells on your list increases as you gain Sorcerer levels, as shown in the Prepared Spells column of the Sorcerer Features table. Whenever that number increases, choose additional Sorcerer spells until the number of spells on your list matches the number in the Sorcerer Features table. The chosen spells must be of a level for which you have spell slots. For example, if you’re a level 3 Sorcerer, your list of prepared spells can include six Sorcerer spells of level 1 or 2 in any combination.</p>\r\n<p>If another Sorcerer feature gives you spells that you always have prepared, those spells don’t count against the number of spells you can prepare with this feature, but those spells otherwise count as Sorcerer spells for you.</p>\r\n<p><strong><em>Changing Your Prepared Spells.</em></strong> Whenever you gain a Sorcerer level, you can replace one spell on your list with another Sorcerer spell for which you have spell slots.</p>\r\n<p><strong><em>Spellcasting Ability.</em></strong> Charisma is your spellcasting ability for your Sorcerer spells.</p>\r\n<p><strong><em>Spellcasting Focus.</em></strong> You can use an Arcane Focus as a Spellcasting Focus for your Sorcerer spells.</p>"
+    },
+    {
+      "name": "Innate Sorcery",
+      "description": "<p>An event in your past left an indelible mark on you, infusing you with simmering magic. As a Bonus Action, you can unleash that magic for 1 minute, during which you gain the following benefits:</p>\r\n<div class=\"effect-info\">\r\n<ul>\r\n<li>The spell save DC of your Sorcerer spells increases by 1.</li>\r\n<li>You have Advantage on the attack rolls of Sorcerer spells you cast.</li>\r\n</ul>\r\n<p>You can use this feature twice, and you regain all expended uses of it when you finish a Long Rest.</p>\r\n</div>"
+    },
+    {
+      "name": "Font of Magic",
+      "description": "<p>You can tap into the wellspring of magic within yourself. This wellspring is represented by Sorcery Points, which allow you to create a variety of magical effects.</p>\r\n<p>You have 2 Sorcery Points, and you gain more as you reach higher levels, as shown in the Sorcery Points column of the Sorcerer Features table. You can’t have more Sorcery Points than the number shown in the table for your level. You regain all expended Sorcery Points when you finish a Long Rest.</p>\r\n<p>You can use your Sorcery Points to fuel the options below, along with other features, such as Metamagic, that use those points.</p>\r\n<p><strong><em>Converting Spell Slots to Sorcery Points.</em></strong> You can expend a spell slot to gain a number of Sorcery Points equal to the slot’s level (no action required).</p>\r\n<p><strong><em>Creating Spell Slots.</em></strong> As a Bonus Action, you can transform unexpended Sorcery Points into one spell slot. The Creating Spell Slots table shows the cost of creating a spell slot of a given level, and it lists the minimum Sorcerer level you must be to create a slot. You can create a spell slot no higher than level 5.</p>\r\n<p>Any spell slot you create with this feature vanishes when you finish a Long Rest.</p>\r\n<table class=\"table-compendium\" style=\"--sb-table-row-bg-hover: #b3d3df; --sb-table-row-bg-dark: #d7e8ee; --sb-table-row-bg-light: #f1f7f9; --dark-sb-table-row-bg-light: #5e7982; --dark-sb-table-row-bg-dark: #5c7f8c; --dark-sb-table-row-bg-hover: #78a2b0;\"><caption>Creating Spell Slots</caption>\r\n<thead>\r\n<tr>\r\n<th>Spell Slot Level</th>\r\n<th>Sorcery Point Cost</th>\r\n<th>Min. Sorcerer Level</th>\r\n</tr>\r\n</thead>\r\n<tbody>\r\n<tr>\r\n<td>1</td>\r\n<td>2</td>\r\n<td>2</td>\r\n</tr>\r\n<tr>\r\n<td>2</td>\r\n<td>3</td>\r\n<td>3</td>\r\n</tr>\r\n<tr>\r\n<td>3</td>\r\n<td>5</td>\r\n<td>5</td>\r\n</tr>\r\n<tr>\r\n<td>4</td>\r\n<td>6</td>\r\n<td>7</td>\r\n</tr>\r\n<tr>\r\n<td>5</td>\r\n<td>7</td>\r\n<td>9</td>\r\n</tr>\r\n</tbody>\r\n</table>"
+    },
+    {
+      "name": "Metamagic",
+      "description": "<p>Because your magic flows from within, you can alter your spells to suit your needs; you gain two Metamagic options of your choice from &ldquo;Metamagic Options&rdquo; later in this class’s description. You use the chosen options to temporarily modify spells you cast. To use an option, you must spend the number of Sorcery Points that it costs.</p>\r\n<p>You can use only one Metamagic option on a spell when you cast it unless otherwise noted in one of those options.</p>\r\n<p>Whenever you gain a Sorcerer level, you can replace one of your Metamagic options with one you don’t know. You gain two more options at Sorcerer level 10 and two more at Sorcerer level 17.</p>"
+    },
+    {
+      "name": "Sorcerer Subclass",
+      "description": "<p>You gain a Sorcerer subclass of your choice. A subclass is a specialization that grants you features at certain Sorcerer levels. For the rest of your career, you gain each of your subclass’s features that are of your Sorcerer level or lower.</p>"
+    },
+    {
+      "name": "Sorcerous Restoration",
+      "description": "<p>When you finish a Short Rest, you can regain expended Sorcery Points, but no more than a number equal to half your Sorcerer level (round down). Once you use this feature, you can’t do so again until you finish a Long Rest.</p>"
+    },
+    {
+      "name": "Sorcery Incarnate",
+      "description": "<p>If you have no uses of Innate Sorcery left, you can use it if you spend 2 Sorcery Points when you take the Bonus Action to activate it.</p>\r\n<p>In addition, while your Innate Sorcery feature is active, you can use up to two of your Metamagic options on each spell you cast.</p>"
+    },
+    {
+      "name": "Arcane Apotheosis",
+      "description": "<p>While your Innate Sorcery feature is active, you can use one Metamagic option on each of your turns without spending Sorcery Points on it.</p>"
+    },
+    {
+      "name": "Metamagic Options",
+      "description": "<p>The following options are available to your Metamagic feature. The options are presented in alphabetical order.</p>"
+    },
+    {
       "name": "Ability Score Increases",
       "description": "<p>When determining your character’s ability scores, increase one score by 2 and increase a different score by 1, or increase three different scores by 1. Follow this rule regardless of the method you use to determine the scores, such as rolling or point buy. The &ldquo;Quick Build&rdquo; section for your character’s class offers suggestions on which scores to increase. You can follow those suggestions or ignore them, but you can’t raise any of your scores above 20.</p>"
     },
@@ -813,6 +887,14 @@
     {
       "name": "Dark Bargain",
       "description": "<p>At your GM's discretion, you can take a Dark Bargain.</p>"
+    },
+    {
+      "name": "Character Threads",
+      "description": "<p>Threads are aspects added to characters at any time during their career that have a specific short or long-term goal.</p>"
+    },
+    {
+      "name": "Runestones",
+      "description": "<p>At the beginning of the <em>Northlands Sagas</em> adventure path, each player should draw one Runestone randomly.</p>"
     }
   ],
   "proficiencies": {
@@ -828,8 +910,11 @@
     ],
     "senses": [],
     "other": [
+      "Performance",
+      "Persuasion",
       "Innate Speed (Swimming)",
       "Darkvision",
+      "Choose a Sorcerer Skill Proficiency ",
       "Subclass",
       "Enable Pact Weapon",
       "Charisma Score",
@@ -1023,6 +1108,101 @@
           "dc": null,
           "effect": "Utility",
           "duration": "1 Minute (Time)"
+        },
+        {
+          "name": "Light",
+          "level": 0,
+          "prepared": false,
+          "castingTime": "A",
+          "range": {
+            "origin": "Touch",
+            "rangeValue": 0,
+            "aoeType": null,
+            "aoeValue": null
+          },
+          "school": "Evocation",
+          "source": "class",
+          "concentration": false,
+          "ritual": false,
+          "components": [
+            "V",
+            "M"
+          ],
+          "toHit": null,
+          "dc": null,
+          "effect": "Creation",
+          "duration": "1 Hour (Time)"
+        },
+        {
+          "name": "Lightning Lure",
+          "level": 0,
+          "prepared": false,
+          "castingTime": "A",
+          "range": {
+            "origin": "Self",
+            "rangeValue": 15,
+            "aoeType": null,
+            "aoeValue": null
+          },
+          "school": "Evocation",
+          "source": "class",
+          "concentration": false,
+          "ritual": false,
+          "components": [
+            "V"
+          ],
+          "toHit": null,
+          "dc": 15,
+          "effect": "Damage",
+          "duration": " (Instantaneous)"
+        },
+        {
+          "name": "Prestidigitation",
+          "level": 0,
+          "prepared": false,
+          "castingTime": "A",
+          "range": {
+            "origin": "Ranged",
+            "rangeValue": 10,
+            "aoeType": null,
+            "aoeValue": null
+          },
+          "school": "Transmutation",
+          "source": "class",
+          "concentration": false,
+          "ritual": false,
+          "components": [
+            "V",
+            "S"
+          ],
+          "toHit": null,
+          "dc": null,
+          "effect": "Utility",
+          "duration": "1 Hour (Time)"
+        },
+        {
+          "name": "Sorcerous Burst",
+          "level": 0,
+          "prepared": false,
+          "castingTime": "A",
+          "range": {
+            "origin": "Ranged",
+            "rangeValue": 120,
+            "aoeType": null,
+            "aoeValue": null
+          },
+          "school": "Evocation",
+          "source": "class",
+          "concentration": false,
+          "ritual": false,
+          "components": [
+            "V",
+            "S"
+          ],
+          "toHit": 7,
+          "dc": null,
+          "effect": null,
+          "duration": " (Instantaneous)"
         }
       ]
     },
@@ -1175,6 +1355,56 @@
           "dc": 15,
           "effect": "Damage",
           "duration": " (Instantaneous)"
+        },
+        {
+          "name": "Mage Armor",
+          "level": 1,
+          "prepared": false,
+          "castingTime": "A",
+          "range": {
+            "origin": "Touch",
+            "rangeValue": 0,
+            "aoeType": null,
+            "aoeValue": null
+          },
+          "school": "Abjuration",
+          "source": "class",
+          "concentration": false,
+          "ritual": false,
+          "components": [
+            "V",
+            "S",
+            "M"
+          ],
+          "toHit": null,
+          "dc": null,
+          "effect": "Buff",
+          "duration": "8 Hour (Time)"
+        },
+        {
+          "name": "Chromatic Orb",
+          "level": 1,
+          "prepared": false,
+          "castingTime": "A",
+          "range": {
+            "origin": "Ranged",
+            "rangeValue": 90,
+            "aoeType": null,
+            "aoeValue": null
+          },
+          "school": "Evocation",
+          "source": "class",
+          "concentration": false,
+          "ritual": false,
+          "components": [
+            "V",
+            "S",
+            "M"
+          ],
+          "toHit": 7,
+          "dc": null,
+          "effect": "Damage",
+          "duration": " (Instantaneous)"
         }
       ]
     },
@@ -1286,11 +1516,5 @@
         }
       ]
     }
-  ],
-  "systemIds": [
-    "sys.dnd5e"
-  ],
-  "id": "maris-wavedeep",
-  "data": {},
-  "template": "tpl.5e.flex-basic"
+  ]
 }

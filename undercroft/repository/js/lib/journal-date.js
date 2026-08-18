@@ -8,10 +8,9 @@
 // formatCalendarDate/describeDate rather than a second implementation.
 //
 // Purely informational, unlike dice/encounter/macro — no click action.
-// Determining what's overdue, ordering events chronologically, or a
-// timeline view are all real future uses of this data, deliberately not
-// built here; this pass only establishes the reference type itself and
-// renders it correctly formatted.
+// Determining what's overdue is still out of scope, but ordering events
+// chronologically is now built — see extractDateReferences below and
+// journal-timeline.js, which consumes it.
 import { el } from "../../../common/js/lib/dom.js";
 import { describeDate } from "../../../common/js/lib/widgets/calendar.js";
 
@@ -69,6 +68,46 @@ function buildDateChip(dayIndex, label, calendar, { isCurrent = false } = {}) {
   return button;
 }
 
+// Same match/parse as applyDateReferences below, factored out so
+// journal-timeline.js can extract the reference list from a page's own RAW
+// markdown body (buildTimeline has no rendered DOM to scan — it fetches
+// every page's stored body directly, same as extractQuests/
+// extractContentReferences already do for quests/kind-reference chips) —
+// this is that same "parse independent of render" split, just for dates.
+// Raw markdown text uses backticks directly (` ``date:30`` ` — not yet a
+// `<code>` element the way applyDateReferences' own DOM pass sees it), so
+// this is a plain global, un-anchored scan rather than DATE_CODE_PATTERN's
+// own single already-extracted-span match.
+const DATE_MARKDOWN_PATTERN = /`date:\s*(-?\d+|current|today)\s*(?:\|\s*([^`]+))?`/gi;
+
+function parseDateMatch(rawValue, rawLabel) {
+  const raw = rawValue.toLowerCase();
+  const label = (rawLabel || "").trim();
+  const isCurrent = raw === "current" || raw === "today";
+  if (isCurrent) return { dayIndex: null, isCurrent: true, label };
+  const dayIndex = Number(raw);
+  if (!Number.isFinite(dayIndex)) return null;
+  return { dayIndex, isCurrent: false, label };
+}
+
+// Every `` `date:...` `` reference in one page's own raw body —
+// `[{dayIndex, isCurrent, label}]`, day-unsorted (buildTimeline's own job,
+// across every page at once). `dayIndex` is null for an `isCurrent` entry
+// — resolved against the live ambient day only by the caller that actually
+// has it (same split applyDateReferences' own `currentDayIndex` param
+// already establishes), never baked in here.
+export function extractDateReferences(body) {
+  const text = String(body || "");
+  const results = [];
+  let match;
+  DATE_MARKDOWN_PATTERN.lastIndex = 0;
+  while ((match = DATE_MARKDOWN_PATTERN.exec(text))) {
+    const parsed = parseDateMatch(match[1], match[2]);
+    if (parsed) results.push(parsed);
+  }
+  return results;
+}
+
 // Runs after marked+DOMPurify, same stage as applyDiceRollers/
 // applyEncounterBlocks/applyMacroBlocks — CommonMark's own backtick syntax
 // already turned `` `date:...` `` into a plain <code>...</code>; this finds
@@ -84,15 +123,13 @@ export function applyDateReferences(container, { activeCalendar, currentDayIndex
   container.querySelectorAll("code").forEach((codeEl) => {
     const match = DATE_CODE_PATTERN.exec(codeEl.textContent.trim());
     if (!match) return;
-    const label = (match[2] || "").trim();
-    const raw = match[1].toLowerCase();
-    if (raw === "current" || raw === "today") {
+    const parsed = parseDateMatch(match[1], match[2]);
+    if (!parsed) return;
+    if (parsed.isCurrent) {
       const dayIndex = Number.isFinite(currentDayIndex) ? currentDayIndex : null;
-      codeEl.replaceWith(buildDateChip(dayIndex, label, activeCalendar, { isCurrent: true }));
+      codeEl.replaceWith(buildDateChip(dayIndex, parsed.label, activeCalendar, { isCurrent: true }));
       return;
     }
-    const dayIndex = Number(raw);
-    if (!Number.isFinite(dayIndex)) return;
-    codeEl.replaceWith(buildDateChip(dayIndex, label, activeCalendar));
+    codeEl.replaceWith(buildDateChip(parsed.dayIndex, parsed.label, activeCalendar));
   });
 }
