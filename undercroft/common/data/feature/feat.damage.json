@@ -26,37 +26,37 @@
     {
       "id": "tier-1",
       "name": "Minor",
-      "shortName": "Cantrip",
+      "shortName": "1–7 dmg",
       "budgetCost": 1
     },
     {
       "id": "tier-2",
       "name": "Lesser",
-      "shortName": "1st–2nd",
+      "shortName": "8–14 dmg",
       "budgetCost": 3
     },
     {
       "id": "tier-3",
       "name": "Moderate",
-      "shortName": "3rd–4th",
+      "shortName": "15–25 dmg",
       "budgetCost": 6
     },
     {
       "id": "tier-4",
       "name": "Greater",
-      "shortName": "5th–6th",
+      "shortName": "26–38 dmg",
       "budgetCost": 10
     },
     {
       "id": "tier-5",
       "name": "Major",
-      "shortName": "7th–8th",
+      "shortName": "39–50 dmg",
       "budgetCost": 13
     },
     {
       "id": "tier-6",
       "name": "Supreme",
-      "shortName": "9th",
+      "shortName": "51+ dmg",
       "budgetCost": 16
     }
   ]

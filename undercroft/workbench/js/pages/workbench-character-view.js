@@ -38,6 +38,9 @@ import {
   buildSystemPreviewData,
 } from "../lib/component-data.js";
 import { initGameLogWidget, SPOTLIGHT_KIND_LABELS, SPOTLIGHT_KIND_ICONS, SPOTLIGHT_INLINE_KINDS } from "../../../common/js/lib/widgets/game-log.js";
+import { renderRelationshipEditor } from "../../../common/js/lib/relationship-editor.js";
+import { buildRelationshipGraph } from "../../../common/js/lib/relationship-graph.js";
+import { createForceGraph } from "../../../common/js/lib/graph-view.js";
 import { createSpotlightPanel } from "../../../common/js/lib/widgets/spotlight-panel.js";
 import { watchActiveSpotlights } from "../../../common/js/lib/spotlight-inbox.js";
 import { createSpotlightTitleCache, resolveActiveSpotlightId } from "../../../common/js/lib/spotlight.js";
@@ -52,13 +55,14 @@ import { showConfirmModal } from "../../../common/js/lib/confirm-modal.js";
 import { watchGroupForChanges, persistGroupPropertyValue } from "../../../common/js/lib/group-live-sync.js";
 import { collectSystemFields } from "../../../common/js/lib/system-schema.js";
 
-// Relocated from the old standalone character.html/character.js — now one of
-// three views on Workbench's unified page (see js/pages/workbench.js), which
-// owns the single initAppShell call (status/undoStack), DataManager, auth,
-// and help system. The Play/Edit distinction is still state.mode ("view"/
-// "edit") exactly as before, just now driven by the outer view-tab switcher
-// via the returned setMode() instead of an in-page toggle-mode button.
-export async function initCharacterView({ status, undoStack, dataManager }) {
+// Relocated from the old standalone character.html/character.js — now the
+// Character mode of Workbench's unified page (see js/pages/workbench.js),
+// which owns the single initAppShell call (status/undoStack), DataManager,
+// auth, and help system. The View/Edit distinction is still state.mode
+// ("view"/"edit") exactly as before, just now driven by the outer suite-wide
+// View toggle (createCycleToggleButton) via the returned setMode() instead
+// of an in-page toggle-mode button.
+export async function initCharacterView({ status, undoStack, dataManager, onStateChange }) {
   // This page's own Dice tool pane (see the quick-dice wiring below) can
   // roll at any time once it's open — warm up the 3D overlay (and the
   // user's chosen theme) now instead of on the first roll click.
@@ -508,8 +512,8 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     canvasRoot: document.querySelector("[data-character-canvas-root]"),
     undoButton: document.querySelector('[data-action="undo-character"]'),
     redoButton: document.querySelector('[data-action="redo-character"]'),
-    exportButton: document.querySelector('[data-action="export-character"]'),
     newCharacterButton: document.querySelector('[data-action="new-character"]'),
+    duplicateCharacterButton: document.querySelector('[data-action="duplicate-character"]'),
     addCharacterModeBlank: document.querySelector('[data-add-character-mode="blank"]'),
     addCharacterModeImport: document.querySelector('[data-add-character-mode="import"]'),
     addCharacterSubmitBlank: document.querySelector('[data-add-character-submit="blank"]'),
@@ -528,11 +532,19 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     saveButton: document.querySelector('[data-action="save-character"]'),
     deleteCharacterButton: document.querySelector('[data-delete-character]'),
     reimportCharacterButton: document.querySelector('[data-reimport-character]'),
-    viewToggle: document.querySelector('[data-action="toggle-mode"]'),
-    modeIndicator: document.querySelector("[data-mode-indicator]"),
     notesSection: document.querySelector("[data-notes-section]"),
     noteEditor: document.querySelector("[data-note-editor]"),
     notesPanel: document.querySelector("[data-notes-panel]"),
+    relationshipsMount: document.querySelector("[data-relationships-mount]"),
+    relationshipsPanel: document.querySelector("[data-relationships-panel]"),
+    relationshipsListMount: document.querySelector("[data-relationships-list-mount]"),
+    relationshipsGraphWrap: document.querySelector("[data-relationships-graph-wrap]"),
+    relationshipsGraphContainer: document.querySelector("[data-relationships-graph-container]"),
+    relationshipsGraphContent: document.querySelector("[data-relationships-graph-content]"),
+    relationshipsGraphSvg: document.querySelector("[data-relationships-graph-svg]"),
+    relationshipsGraphControls: document.querySelector("[data-relationships-graph-controls]"),
+    relationshipsGraphToolbarMount: document.querySelector("[data-relationships-graph-toolbar-mount]"),
+    relationshipsGraphEmpty: document.querySelector("[data-relationships-graph-empty]"),
     diceSection: document.querySelector("[data-dice-section]"),
     diceForm: document.querySelector("[data-dice-form]"),
     diceExpression: document.querySelector("[data-dice-expression]"),
@@ -547,7 +559,13 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     newCharacterForm: document.querySelector("[data-new-character-form]"),
     newCharacterName: document.querySelector("[data-new-character-name]"),
     newCharacterTemplate: document.querySelector("[data-new-character-template]"),
-    groupShareSection: document.querySelector("[data-group-share-section]"),
+    // The mode-gate ([data-workbench-mode-panel="character"]) lives on the
+    // OUTER section (workbench.js's own applyPanelVisibility, a `.d-none`
+    // class toggle) — this INNER wrapper is what renderGroupSharePanel
+    // itself shows/hides for relevance, deliberately a separate element so
+    // the two independent toggles (which mode is active vs. is there
+    // anything to claim right now) never fight over the same node.
+    groupShareRelevant: document.querySelector("[data-group-share-relevant]"),
     groupSharePanel: document.querySelector("[data-group-share-panel]"),
     groupShareStatus: document.querySelector("[data-group-share-status]"),
     gameLogSection: document.querySelector("[data-game-log-section]"),
@@ -598,6 +616,15 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     applyNotesCollapse = notesSection.setCollapsed;
     syncCollapsedStateOnClick(notesSection.toggle, notesState);
   }
+  if (elements.relationshipsMount && elements.relationshipsPanel) {
+    const relationshipsSection = createCollapsibleSection({
+      label: "Relationships",
+      helpTopic: "character.relationships",
+      collapsed: true,
+      content: elements.relationshipsPanel,
+    });
+    elements.relationshipsMount.appendChild(relationshipsSection.section);
+  }
   {
     const diceSectionBuilt = createCollapsibleSection({
       label: "Dice Roller",
@@ -637,6 +664,13 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     document.querySelector("[data-group-share-mount]")?.appendChild(groupShareSectionBuilt.section);
     elements.groupShareToggle = groupShareSectionBuilt.toggle;
     applyGroupShareCollapse = groupShareSectionBuilt.setCollapsed;
+    // Establishes the initial hidden state right away — every OTHER call to
+    // renderGroupSharePanel() is reactive (fires from the pending-share-
+    // token flow, a claim/refresh, etc.), so without this the common case
+    // (no share token at all — most characters are just opened directly)
+    // never calls it even once, leaving the section in its static-HTML
+    // default (visible) indefinitely.
+    renderGroupSharePanel();
   }
   {
     const gameLogToggleButton = createIconButton({
@@ -660,6 +694,13 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
   const characterJsonPanel = createJsonDataPanel({
     label: "JSON Data",
     getData: () => state.draft || {},
+    onExport: () => {
+      if (!state.draft) {
+        status.show("Nothing to export yet.", { type: "info", timeout: 2000 });
+        return;
+      }
+      exportDraft();
+    },
   });
   document.querySelector("[data-character-json-mount]")?.appendChild(characterJsonPanel.section);
   const renderPreview = characterJsonPanel.render;
@@ -714,7 +755,6 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
   loadTemplateRecords();
   loadCharacterRecords();
   void refreshGroupsForPicker();
-  syncModeIndicator();
   renderCanvas();
   renderPreview();
   syncCharacterActions();
@@ -798,19 +838,15 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       });
     }
 
-    if (elements.exportButton) {
-      elements.exportButton.addEventListener("click", () => {
-        if (!state.draft) {
-          status.show("Nothing to export yet.", { type: "info", timeout: 2000 });
-          return;
-        }
-        exportDraft();
-      });
-    }
-
     if (elements.newCharacterButton) {
       elements.newCharacterButton.addEventListener("click", () => {
         openNewCharacterDialog();
+      });
+    }
+
+    if (elements.duplicateCharacterButton) {
+      elements.duplicateCharacterButton.addEventListener("click", () => {
+        void duplicateCharacter();
       });
     }
 
@@ -869,12 +905,6 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       elements.saveButton.addEventListener("click", async () => {
         await persistDraft({ silent: false });
         syncCharacterActions();
-      });
-    }
-
-    if (elements.viewToggle) {
-      elements.viewToggle.addEventListener("click", () => {
-        void setMode(state.mode === "edit" ? "view" : "edit");
       });
     }
 
@@ -1309,6 +1339,11 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
   }
 
   function syncCharacterActions() {
+    // Universal choke point — called after every load/New/Save/Delete/clear
+    // — so this is also where workbench.js's own inline empty-state message
+    // (Mode/View header) learns a character became active/inactive, without
+    // a dedicated event for every call site.
+    if (typeof onStateChange === "function") onStateChange();
     const draftHasId = Boolean(state.draft?.id);
     const metadata = draftHasId ? characterCatalog.get(state.draft.id) || null : null;
     const updateToolbarButton = (button, { disabled, disabledTitle, enabledTitle }) => {
@@ -1343,7 +1378,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       && state.draft.id === groupShareState.viewOnlyCharacterId;
     const locked = state.viewLocked || shareViewActive;
 
-    updateToolbarButton(elements.exportButton, {
+    updateToolbarButton(characterJsonPanel.exportButton, {
       disabled: !draftHasId || locked,
       disabledTitle: locked
         ? "Group characters must be claimed before exporting."
@@ -1368,6 +1403,19 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
         : !canEditRecord || !canWrite
         ? "You don't have permission to save this character."
         : "No changes to save.",
+    });
+
+    // Unlike Save, doesn't care about unsaved changes or edit permission on
+    // the SOURCE record — duplicating writes a brand new record, it never
+    // touches the one being copied. Just needs something to copy and write
+    // access in general.
+    updateToolbarButton(elements.duplicateCharacterButton, {
+      disabled: !draftHasId || locked || !canWrite,
+      disabledTitle: !draftHasId
+        ? "Select a character first."
+        : locked
+        ? "Group characters must be claimed before duplicating."
+        : "You don't have permission to create characters.",
     });
 
     // Only meaningful for a character that actually carries both
@@ -1395,7 +1443,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
         canWrite &&
         !locked &&
         state.mode === "edit" &&
-        document.body.dataset.workbenchView === "edit";
+        document.body.dataset.workbenchMode === "character";
       elements.reimportCharacterButton.classList.toggle("d-none", !showReimport);
       updateToolbarButton(elements.reimportCharacterButton, {
         disabled: !showReimport,
@@ -1407,22 +1455,22 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       return;
     }
     // Delete Character now lives in the shared left-pane toolbar rather than
-    // a standalone button with its own data-workbench-view-panel tag — it
+    // a standalone button with its own data-workbench-mode-panel tag — it
     // already has this classList.toggle("d-none", ...) below, and tagging it
-    // for view-switching too would just fight over the same class (the
-    // generic panel-toggle in workbench.js's setWorkbenchView always runs
-    // LAST on a tab click, so it would win over whatever this function
-    // decided about permissions the last time a character loaded). Folding
-    // "only in Edit view" into THIS check instead — reading
-    // document.body.dataset.workbenchView directly, the same shared signal
-    // updateNowShowingVisibility's own comment already established — is the one
-    // owner. That still needs this function to actually re-run on every
-    // view switch, not just the edit/play ones setMode itself covers —
-    // confirmed real gap: switching from Edit to the Template tab never
-    // called setMode at all (only "edit"/"play" do), so this never re-ran,
+    // for mode-switching too would just fight over the same class (the
+    // generic panel-toggle in workbench.js's applyPanelVisibility always
+    // runs LAST on a mode/view change, so it would win over whatever this
+    // function decided about permissions the last time a character loaded).
+    // Folding "only in Edit view" into THIS check instead — reading
+    // document.body.dataset.workbenchMode directly, the same shared signal
+    // updateNowShowingVisibility's own comment already established — is the
+    // one owner. That still needs this function to actually re-run on every
+    // mode/view switch, not just the ones setMode itself covers — confirmed
+    // real gap: switching from Character/Edit to Template never called
+    // setMode at all (only mode === "character" does), so this never re-ran,
     // and the button — visible from Edit — simply stayed visible. Fixed by
-    // exporting this function so workbench.js's setWorkbenchView can call
-    // it on every tab click, not just edit/play ones (see its own comment).
+    // exporting this function so workbench.js's setMode can call it on
+    // every mode switch, not just the character one (see its own comment).
     //
     // Delete is deliberately wider than canEditRecord: an admin can delete
     // any character regardless of ownership (server's is_owner() already
@@ -1431,7 +1479,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     const isAdmin = dataManager.getUserTier() === "admin";
     const canDeleteRecord = draftHasId && (isAdmin || canEditRecord);
     const showDelete =
-      canDeleteRecord && canWrite && state.mode === "edit" && document.body.dataset.workbenchView === "edit";
+      canDeleteRecord && canWrite && state.mode === "edit" && document.body.dataset.workbenchMode === "character";
     elements.deleteCharacterButton.classList.toggle("d-none", !showDelete);
     if (!showDelete) {
       elements.deleteCharacterButton.disabled = true;
@@ -2248,7 +2296,6 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       renderCanvas();
       renderPreview();
     }
-    syncModeIndicator();
     syncCharacterActions();
   }
 
@@ -2433,11 +2480,11 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
   // for the same simple, always-current status display every other surface
   // in the suite now uses.
   // Two independent conditions decide whether this section shows at all: an
-  // active spotlight AND the current top-level view being Play/Edit — Now
+  // active spotlight AND the current top-level mode being Character — Now
   // Showing has no place in the Template editor, where there's no "now"
-  // being played. workbench.js sets document.body.dataset.workbenchView on
-  // every view switch; this section no longer carries
-  // data-workbench-view-panel itself (removed from index.html), so this is
+  // being played. workbench.js sets document.body.dataset.workbenchMode on
+  // every mode switch; this section no longer carries
+  // data-workbench-mode-panel itself (removed from index.html), so this is
   // the only thing gating it. Bootstrap's .d-flex/.d-none utility classes are
   // both declared `!important`, so toggling between them (never the plain
   // `hidden` attribute, which a `!important` `display` class silently
@@ -2446,8 +2493,8 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     if (!elements.nowShowingSection) {
       return;
     }
-    const viewAllows = document.body.dataset.workbenchView !== "template";
-    const shouldShow = Boolean(hasActive) && viewAllows;
+    const modeAllows = document.body.dataset.workbenchMode !== "template";
+    const shouldShow = Boolean(hasActive) && modeAllows;
     elements.nowShowingSection.classList.toggle("d-none", !shouldShow);
     elements.nowShowingSection.classList.toggle("d-flex", shouldShow);
   }
@@ -2675,11 +2722,32 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
   }
 
   function renderGroupSharePanel() {
-    if (!elements.groupShareSection) {
+    if (!elements.groupShareRelevant) {
       return;
     }
     const hasToken = Boolean(groupShareState.token);
-    elements.groupShareSection.hidden = !hasToken;
+    const available = Array.isArray(groupShareState.available) ? groupShareState.available : [];
+    // Hidden whenever there's nothing actionable — no share token at all
+    // (the common case: this character was opened directly, not via a
+    // group invite link), or a token but every character in the group is
+    // already claimed. Loading/error are still "something is happening,"
+    // so those keep the section visible with its own message; only the
+    // terminal "nothing to claim" state hides it entirely (header
+    // included), rather than staying expanded to show an empty-feeling
+    // "no unclaimed characters" line no one asked to see.
+    // setElementVisible (NOT `.hidden`) — this element carries `.d-flex`,
+    // and the native [hidden] UA rule carries no !important, so it silently
+    // loses to Bootstrap's own !important display utility (see dom.js's own
+    // comment on setElementVisible for the general case; this element is
+    // exactly that trap). Targets a dedicated inner wrapper, not the outer
+    // [data-group-share-section] itself — that outer element is also
+    // gated by workbench.js's own Character/Template mode toggle
+    // (data-workbench-mode-panel, a `.d-none` class flip); putting BOTH
+    // toggles on one element would have them fight over the same node
+    // (whichever last set an inline style vs. a class would win, not
+    // "both conditions must hold").
+    const relevant = hasToken && (groupShareState.loading || groupShareState.error || available.length > 0);
+    setElementVisible(elements.groupShareRelevant, relevant);
     if (!hasToken) {
       setGroupShareStatus("");
       syncCharacterToolbarVisibility();
@@ -2711,14 +2779,10 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       setGroupShareStatus("");
       return;
     }
-    const available = Array.isArray(groupShareState.available) ? groupShareState.available : [];
     if (!available.length) {
-      const empty = document.createElement("div");
-      empty.className = "text-body-secondary small";
-      empty.textContent = "No unclaimed characters are available in this group.";
-      container.appendChild(empty);
-      const message = dataManager.isAuthenticated() ? "" : "Sign in to claim a character.";
-      setGroupShareStatus(message);
+      // Section is already hidden (see `relevant` above) — nothing left
+      // to render here, just clear any leftover status text.
+      setGroupShareStatus("");
       return;
     }
     available.forEach((member) => {
@@ -3049,7 +3113,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     await syncGameLogContext();
     renderCanvas();
     renderPreview();
-    syncModeIndicator();
+    void refreshRelationshipsSection();
     syncCharacterActions();
     syncNotesEditor();
     let templateId = "";
@@ -3236,6 +3300,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       syncNotesEditor();
       renderCanvas();
       renderPreview();
+      void refreshRelationshipsSection();
       syncCharacterOptions();
       syncCharacterActions();
       syncCharacterToolbarVisibility();
@@ -3303,6 +3368,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       markCharacterClean();
       renderCanvas();
       renderPreview();
+      void refreshRelationshipsSection();
       syncCharacterActions();
       state.shareToken = "";
       clearGameLogContext();
@@ -3422,7 +3488,6 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
           : "Select a character or campaign to view a sheet.";
       elements.canvasRoot.appendChild(createCanvasPlaceholder(message, { variant: "root" }));
       refreshTooltips(elements.canvasRoot);
-      syncModeIndicator();
       return;
     }
     if (!state.template?.id) {
@@ -3437,7 +3502,6 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
           : createUntemplatedCharacterPrompt()
       );
       refreshTooltips(elements.canvasRoot);
-      syncModeIndicator();
       return;
     }
     if (!state.components.length) {
@@ -3445,7 +3509,6 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
         createCanvasPlaceholder("This template has no components yet.", { variant: "root" })
       );
       refreshTooltips(elements.canvasRoot);
-      syncModeIndicator();
       return;
     }
     const fragment = document.createDocumentFragment();
@@ -3457,7 +3520,6 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     });
     elements.canvasRoot.appendChild(fragment);
     refreshTooltips(elements.canvasRoot);
-    syncModeIndicator();
   }
 
   // renderCanvas's own placeholder for a character with no `template` at
@@ -3813,6 +3875,17 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     });
   }
 
+  // True only for a plain field-shaped object that has a real "value"
+  // property of its own (e.g. Saving Throws/Skills' `{name, proficiency,
+  // friendlyName, value}` item) — an array never has one (Array.prototype
+  // has no own "value" key), so Blades in the Dark's bare
+  // `playbooks.Cutter` abilities array is unaffected. Shared between
+  // resolveRepeaterItemValue's read side and resolveRepeaterItemPath's
+  // write side so the two can't disagree about which case they're in.
+  function itemHasOwnValueField(item) {
+    return item !== null && typeof item === "object" && !Array.isArray(item) && Object.prototype.hasOwnProperty.call(item, "value");
+  }
+
   // Resolves ONE item-template node's own value against a single repeater
   // item's data — Press's own per-item context convention: an object
   // item's fields are spread directly into scope ("@name" means item.name,
@@ -3822,22 +3895,26 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
   // Input/Toggle/Select Group/Track item nodes to make them real, editable
   // controls instead of read-only text.
   //
-  // "@value" always means "this item itself," checked before the object/
-  // primitive branch below — previously only reachable for a primitive item
-  // (`typeof item !== "object"`), since a Repeater item is normally either a
-  // primitive or a field-shaped object where `@value` would otherwise try
-  // to walk a literal `.value` property. Source-driven Tabs (Container's own
-  // tabLabelsSourceBinding) need this to also work when the item genuinely
-  // **is** an array or object — e.g. Blades in the Dark's restructured
-  // `playbooks.Cutter`, a bare abilities array with no wrapping object at
-  // all — "@value" there has to mean the array itself, not a nonexistent
-  // `.value` property on it.
+  // "@value" means "this item itself," checked before the object/primitive
+  // branch below — EXCEPT when the item is a plain object with its own
+  // real "value" field (itemHasOwnValueField above), which needs to resolve
+  // as a normal property lookup instead, or that field becomes permanently
+  // unreachable (confirmed real regression: the D&D Character - Tabs
+  // template's Saving Throws/Skills repeater items are exactly this shape,
+  // and their own "@value"-bound modifier Input started rendering "bound to
+  // list/object data" instead of the actual number once the whole-item
+  // convention below was added for a different, unrelated case). That
+  // convention itself still exists for source-driven Tabs (Container's own
+  // tabLabelsSourceBinding), which need "@value" to work when the item
+  // genuinely **is** an array with nothing to shadow — e.g. Blades in the
+  // Dark's restructured `playbooks.Cutter`, a bare abilities array with no
+  // wrapping object at all.
   function resolveRepeaterItemValue(item, raw) {
     const text = typeof raw === "string" ? raw.trim() : "";
     if (!text.startsWith("@")) return raw;
     const path = text.slice(1).split(".").map((segment) => segment.trim()).filter(Boolean);
     if (!path.length) return undefined;
-    if (path.length === 1 && path[0] === "value") {
+    if (path.length === 1 && path[0] === "value" && !itemHasOwnValueField(item)) {
       return item;
     }
     if (item === null || typeof item !== "object") {
@@ -3856,7 +3933,13 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
   // array index, then the item-relative binding's own path segments (same
   // parsing resolveRepeaterItemValue uses) — except the primitive-array
   // "@value" case, which IS the item itself, so it resolves to just
-  // [...repeaterPath, index] with no further segment.
+  // [...repeaterPath, index] with no further segment. Same
+  // itemHasOwnValueField disambiguation as the read side: an object item
+  // with its own real "value" field writes to that field
+  // ([...itemSlotPath, "value"]), not over the whole item slot — reads the
+  // item's CURRENT value via getValueAtPath to decide, since this function
+  // (unlike resolveRepeaterItemValue) is only ever given the index, not the
+  // item itself.
   function resolveRepeaterItemPath(component, index, raw) {
     const repeaterPath = resolveBindingPath(component?.binding);
     if (!repeaterPath) return null;
@@ -3864,10 +3947,14 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     if (!text.startsWith("@")) return null;
     const itemPath = text.slice(1).split(".").map((segment) => segment.trim()).filter(Boolean);
     if (!itemPath.length) return null;
+    const itemSlotPath = [...repeaterPath, String(index)];
     if (itemPath.length === 1 && itemPath[0] === "value") {
-      return [...repeaterPath, String(index)];
+      if (itemHasOwnValueField(getValueAtPath(itemSlotPath))) {
+        return [...itemSlotPath, "value"];
+      }
+      return itemSlotPath;
     }
-    return [...repeaterPath, String(index), ...itemPath];
+    return [...itemSlotPath, ...itemPath];
   }
 
   // The write-back counterpart to resolveRepeaterItemValue — lets an Input/
@@ -5615,6 +5702,14 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     const source = raw && typeof raw === "object" ? raw : {};
     return {
       fontColor: typeof source.fontColor === "string" && source.fontColor.trim() ? source.fontColor.trim() : "#ffffff",
+      // Same Binding/Formula pair every other color field has — Font
+      // Default is now the shared createColorPickerField (Template
+      // Properties, workbench-template-view.js), not a plain native color
+      // input, so it needs somewhere to hold a non-literal value too.
+      // fontColor itself always stays a real, padded-in literal (above) —
+      // these two are only ever non-empty when actively overriding it.
+      fontColorBinding: typeof source.fontColorBinding === "string" ? source.fontColorBinding.trim() : "",
+      fontColorFormula: typeof source.fontColorFormula === "string" ? source.fontColorFormula.trim() : "",
     };
   }
 
@@ -5629,6 +5724,29 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
   // appearance, applied once to the canvas/sheet root, not resolved
   // per-component here at all.
   const TEMPLATE_DEFAULT_COLOR_KEYS = { textColor: "fontColor" };
+
+  // Font Default's own Formula-then-Binding-then-literal precedence — same
+  // shape resolveTemplateColor below gives the sheet's own Background/
+  // Border, just read off state.template.defaults (one level deeper)
+  // instead of state.template directly, since a per-component fallback's
+  // Binding/Formula pair lives alongside it there (normalizeTemplateDefaults).
+  function resolveTemplateDefaultColor(defaultKey, templateDefaults) {
+    const formula = templateDefaults[`${defaultKey}Formula`];
+    if (formula) {
+      try {
+        const result = evaluateFormulaWithLookup(formula, getBindingContext(), { rollDice: rollDiceExpression });
+        if (typeof result === "string" && result.trim()) return result.trim();
+      } catch (error) {
+        console.warn(`Character editor: unable to evaluate template default ${defaultKey} formula`, error);
+      }
+    }
+    const binding = templateDefaults[`${defaultKey}Binding`];
+    if (binding) {
+      const resolved = getBindingValue(binding);
+      if (typeof resolved === "string" && resolved.trim()) return resolved.trim();
+    }
+    return templateDefaults[defaultKey] || "";
+  }
 
   // The template's own sheet-wide Background/Border color — same
   // Formula-then-Binding-then-literal precedence resolveComponentColors
@@ -5690,7 +5808,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       const current = (overridden || component)[colorProp];
       if (typeof current !== "string" || !current.trim()) {
         if (!overridden) overridden = { ...component };
-        overridden[colorProp] = templateDefaults[defaultKey];
+        overridden[colorProp] = resolveTemplateDefaultColor(defaultKey, templateDefaults);
       }
     });
     return overridden || component;
@@ -5802,7 +5920,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       const current = (overridden || node)[colorProp];
       if (typeof current !== "string" || !current.trim()) {
         if (!overridden) overridden = { ...node };
-        overridden[colorProp] = templateDefaults[defaultKey];
+        overridden[colorProp] = resolveTemplateDefaultColor(defaultKey, templateDefaults);
       }
     });
     return overridden || node;
@@ -6421,6 +6539,60 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     await startNewCharacter({ id: trimmedId, name: trimmedName, templateId: trimmedTemplate });
   }
 
+  // Clones the currently-loaded character into a brand new record — same
+  // "generate a fresh id, register it, persist silently" tail
+  // startNewCharacter uses below, except the source is the CURRENT draft's
+  // own data (Template/systemIds/sheet values all carried over) instead of
+  // a blank template-only shape.
+  async function duplicateCharacter() {
+    if (!state.draft?.id) {
+      status.show("Select a character to duplicate.", { type: "warning", timeout: 2000 });
+      return;
+    }
+    const sourceName = state.draft.title || state.draft.name || state.draft.id;
+    const duplicateName = `${sourceName} Copy`;
+    let id = "";
+    do {
+      id = generateCharacterId(duplicateName);
+    } while (id && characterCatalog.has(id));
+    if (!id) {
+      status.show("Unable to generate a character ID. Try again.", { type: "error", timeout: 2400 });
+      return;
+    }
+    const draft = cloneCharacter(state.draft);
+    draft.id = id;
+    draft.title = duplicateName;
+    if (draft.data && typeof draft.data === "object") {
+      draft.data = { ...draft.data, name: duplicateName };
+    }
+    state.character = cloneCharacter(draft);
+    state.draft = cloneCharacter(draft);
+    state.characterOrigin = "local";
+    const user = sessionUser();
+    registerCharacterRecord({
+      id,
+      title: duplicateName,
+      template: draft.template || "",
+      source: "local",
+      ownership: user ? "owned" : "local",
+      ownerId: user?.id ?? null,
+      ownerUsername: user?.username ?? "",
+      ownerTier: user?.tier ?? "",
+    });
+    if (elements.characterSelect) {
+      elements.characterSelect.value = id;
+    }
+    await persistDraft({ silent: true });
+    syncNotesEditor();
+    renderCanvas();
+    renderPreview();
+    void refreshRelationshipsSection();
+    syncCharacterActions();
+    state.shareToken = "";
+    clearGameLogContext();
+    status.show(`Duplicated as "${duplicateName}"`, { type: "success", timeout: 2000 });
+  }
+
   async function startNewCharacter({ id, name, templateId }) {
     const trimmedName = (name || "").trim();
     const trimmedTemplate = (templateId || "").trim();
@@ -6489,7 +6661,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     syncNotesEditor();
     renderCanvas();
     renderPreview();
-    syncModeIndicator();
+    void refreshRelationshipsSection();
     syncCharacterActions();
     state.shareToken = "";
     clearGameLogContext();
@@ -6774,7 +6946,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     syncNotesEditor();
     renderCanvas();
     renderPreview();
-    syncModeIndicator();
+    void refreshRelationshipsSection();
     syncCharacterActions();
     state.shareToken = "";
     clearGameLogContext();
@@ -6863,7 +7035,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       syncNotesEditor();
       renderCanvas();
       renderPreview();
-      syncModeIndicator();
+      void refreshRelationshipsSection();
       syncCharacterActions();
       clearGameLogContext();
     }
@@ -7127,9 +7299,8 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     return remoteSucceeded;
   }
 
-  // Driven by the outer Play/Edit view-tab switcher (see workbench.js) as
-  // well as the (now-vestigial, only present if the old markup is reused
-  // somewhere) in-page toggle button above.
+  // Driven by the outer suite-wide View toggle (createCycleToggleButton,
+  // see workbench.js's own setSubView).
   async function setMode(nextMode) {
     if (state.viewLocked) return;
     if (nextMode !== "view" && nextMode !== "edit") return;
@@ -7139,49 +7310,8 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       renderPreview();
     }
     state.mode = nextMode;
-    syncModeIndicator();
     renderCanvas();
     syncCharacterActions();
-  }
-
-  function syncModeIndicator() {
-    if (elements.modeIndicator) {
-      elements.modeIndicator.textContent = state.mode === "edit" ? "Editing" : "Viewing";
-    }
-    if (elements.viewToggle) {
-      const icon = elements.viewToggle.querySelector("[data-mode-icon]");
-      const label = elements.viewToggle.querySelector("[data-mode-label]");
-      // Edit mode also has to be reachable with no character loaded — Party
-      // Data mode (loadGroupPartyView) renders a Template with no character
-      // at all, and its group-bound fields need Edit mode to be selectable
-      // for a GM to freely edit them (isGroupBindingBlocked/
-      // isGroupPropertyEditable are the actual permission gate; this is just
-      // whether the toggle is reachable at all).
-      const hasContent = Boolean(state.draft?.id) || Boolean(state.template?.id);
-      const locked = state.viewLocked || !hasContent;
-      let tooltipTitle = "";
-      if (!hasContent) {
-        tooltipTitle = "Select a character or campaign to enable editing.";
-      } else if (state.viewLocked) {
-        tooltipTitle = "Group characters are view-only until claimed.";
-      } else {
-        tooltipTitle = state.mode === "edit" ? "Switch to view mode" : "Switch to edit mode";
-      }
-      const isEditing = hasContent && !state.viewLocked && state.mode === "edit";
-      elements.viewToggle.disabled = locked;
-      elements.viewToggle.classList.toggle("disabled", locked);
-      elements.viewToggle.setAttribute("aria-disabled", locked ? "true" : "false");
-      elements.viewToggle.setAttribute("title", tooltipTitle);
-      elements.viewToggle.setAttribute("data-bs-title", tooltipTitle);
-      elements.viewToggle.setAttribute("aria-pressed", isEditing ? "true" : "false");
-      if (icon) {
-        icon.setAttribute("data-icon", isEditing ? "tabler:edit" : "tabler:eye");
-      }
-      if (label) {
-        label.textContent = isEditing ? "Edit mode" : "View mode";
-      }
-      refreshTooltips(elements.viewToggle.parentElement || elements.viewToggle);
-    }
   }
 
   function syncNotesEditor(force = false) {
@@ -7223,6 +7353,104 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     // comment on state for why those two aren't the same thing.
     const id = state.draft?.id || (state.partyMode && state.groupContext ? `party:${state.groupContext.groupId}` : "session");
     return `undercroft.workbench.character.notes.${id}`;
+  }
+
+  // --- Relationships -----------------------------------------------------
+  //
+  // The active character's own target-kind whitelist and type-suggestion
+  // vocabulary for the shared relationship-editor.js/relationship-graph.js
+  // modules — see that pair's own header comments for the full suite-wide
+  // mechanism, and Forge's own app.js for the first tool this pattern
+  // shipped on. Reputation tracking lands here: `type: "Reputation with"`,
+  // target a Faction NPC, `value` holds whatever standing the GM sets.
+  const RELATIONSHIP_TARGET_KINDS = [
+    { id: "npc", label: "NPC" },
+    { id: "location", label: "Location" },
+    { id: "monster", label: "Monster" },
+    { id: "character", label: "Character" },
+  ];
+  const RELATIONSHIP_TYPE_SUGGESTIONS = [
+    "Ally of",
+    "Rival of",
+    "Mentor",
+    "Family",
+    "Reputation with",
+  ];
+
+  let relationshipsForceGraph = null;
+  let relationshipsIconByKind = {};
+
+  function ensureRelationshipsForceGraph() {
+    if (relationshipsForceGraph || !elements.relationshipsGraphContainer) return relationshipsForceGraph;
+    relationshipsForceGraph = createForceGraph({
+      container: elements.relationshipsGraphContainer,
+      content: elements.relationshipsGraphContent,
+      svg: elements.relationshipsGraphSvg,
+      emptyMount: elements.relationshipsGraphEmpty,
+      getNodeRadius: (node) => (node.kind === "character" && node.id === `character:${state.draft?.id}` ? 20 : 14),
+      getNodeIcon: (node) => relationshipsIconByKind?.[node.kind] || null,
+      getEdgeLabel: (edge) => edge.type || null,
+      classPrefix: "relationship-graph",
+      emptyIcon: "tabler:affiliate",
+      emptyMessage: "No relationships yet.",
+      defaultZoom: 1.4,
+    });
+    elements.relationshipsGraphControls?.addEventListener("pointerdown", (event) => event.stopPropagation());
+    [
+      { icon: "tabler:zoom-out", label: "Zoom out", onClick: () => relationshipsForceGraph.zoomBy(-0.25) },
+      { icon: "tabler:refresh", label: "Reset zoom", onClick: () => relationshipsForceGraph.reset() },
+      { icon: "tabler:zoom-in", label: "Zoom in", onClick: () => relationshipsForceGraph.zoomBy(0.25) },
+    ].forEach((config) => elements.relationshipsGraphToolbarMount?.appendChild(createIconButton(config)));
+    return relationshipsForceGraph;
+  }
+
+  async function refreshRelationshipsList() {
+    if (!elements.relationshipsListMount) return;
+    // No character loaded (Party Data mode — loadGroupPartyView's own
+    // state.draft = {}) — clear rather than leave a stale prior
+    // character's own relationships on screen.
+    if (!state.draft?.id) {
+      elements.relationshipsListMount.innerHTML =
+        '<p class="small text-body-secondary mb-0">Select a character to see its relationships.</p>';
+      return;
+    }
+    await renderRelationshipEditor({
+      container: elements.relationshipsListMount,
+      sourceKind: "character",
+      sourceId: state.draft.id,
+      targetKinds: RELATIONSHIP_TARGET_KINDS,
+      typeSuggestions: RELATIONSHIP_TYPE_SUGGESTIONS,
+      dataManager,
+      status,
+      onChange: () => {
+        void refreshRelationshipsList();
+        void refreshRelationshipsGraph();
+      },
+    });
+  }
+
+  async function refreshRelationshipsGraph() {
+    const forceGraph = ensureRelationshipsForceGraph();
+    if (!forceGraph || !state.draft?.id) return;
+    try {
+      const { nodes, edges, iconByKind } = await buildRelationshipGraph(dataManager, {
+        nodes: [{ kind: "character", id: state.draft.id, label: state.draft.name || state.draft.title || state.draft.id }],
+      });
+      relationshipsIconByKind = iconByKind;
+      forceGraph.setGraph({ nodes, edges });
+    } catch (error) {
+      status?.show?.("Unable to build the Relationships graph.", { type: "error" });
+    }
+  }
+
+  // Called whenever the ACTIVE character changes (loadCharacter/
+  // startNewCharacter/the Import Character flow) — not on every
+  // renderPreview() (dozens of call sites, most just re-rendering an
+  // in-progress edit to the same character), which would re-fetch the
+  // relationship list far more often than the data could plausibly change.
+  async function refreshRelationshipsSection() {
+    await refreshRelationshipsList();
+    void refreshRelationshipsGraph();
   }
 
   function cloneCharacter(payload) {
@@ -7330,5 +7558,15 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     // edit/play ones setMode itself already covers — see
     // syncCharacterActions' own showDelete comment for the gap this closes.
     refreshToolbar: syncCharacterActions,
+    // Read by workbench.js's own renderEmptyState — the Mode/View header's
+    // inline empty-state message shows only while Mode=Character AND no
+    // character is loaded yet, same draftHasId check syncCharacterActions
+    // itself already uses.
+    hasActiveCharacter: () => Boolean(state.draft?.id),
+    // Read by workbench.js's setMode when switching from Character to
+    // Template mode, to auto-load whichever template this character is
+    // actually built on (state.draft.template — the same field
+    // reloadTemplateIfActive above already checks).
+    getActiveTemplateId: () => state.draft?.template || null,
   };
 }

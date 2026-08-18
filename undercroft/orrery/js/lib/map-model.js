@@ -1,4 +1,6 @@
-const randomId = () => {
+// Exported — app.js's own Duplicate Map action needs a fresh id for the
+// clone, same scheme every other id in this model already uses.
+export const randomId = () => {
   if (typeof crypto !== "undefined" && crypto.randomUUID) {
     return crypto.randomUUID();
   }

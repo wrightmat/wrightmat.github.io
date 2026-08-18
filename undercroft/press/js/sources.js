@@ -5,7 +5,7 @@ const sources = [
     description: "",
     input: {
       type: "text",
-      label: "Character URL/ID, or a classes/backgrounds/species page URL",
+      label: "Source URL/ID",
       placeholder: "https://www.dndbeyond.com/classes/2190875-barbarian",
       helpTopic: "press.source.ddb",
     },

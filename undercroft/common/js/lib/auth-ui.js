@@ -212,8 +212,16 @@ export function initAuthControls({
     container.innerHTML = "";
     const button = document.createElement("button");
     button.type = "button";
-    button.className = "btn btn-outline-secondary";
-    button.textContent = "Login / Register";
+    button.className = "btn btn-outline-secondary d-inline-flex align-items-center gap-2 undercroft-auth-trigger";
+    button.setAttribute("aria-label", "Login / Register");
+    const icon = document.createElement("span");
+    icon.className = "iconify fs-5";
+    icon.dataset.icon = "tabler:login";
+    icon.setAttribute("aria-hidden", "true");
+    const label = document.createElement("span");
+    label.className = "undercroft-auth-login-label";
+    label.textContent = "Login / Register";
+    button.append(icon, label);
     button.addEventListener("click", () => openModal("login"));
     container.appendChild(button);
   }
@@ -310,21 +318,25 @@ export function initAuthControls({
         `;
       })
       .join("");
+    const tierLabel = manager.describeTier(user.tier) || user.tier || "";
+    const identityLine = `${escapeHtml(user.username)} (${escapeHtml(tierLabel)})`;
     dropdown.innerHTML = `
       <button
-        class="btn btn-outline-secondary dropdown-toggle d-inline-flex align-items-center gap-2 py-1"
+        class="btn btn-outline-secondary dropdown-toggle d-inline-flex align-items-center gap-2 undercroft-auth-trigger"
         type="button"
         data-bs-toggle="dropdown"
         aria-expanded="false"
         data-auth-menu-toggle
+        aria-label="Account menu — logged in as ${escapeHtml(user.username)}"
       >
-        <span class="d-flex flex-column align-items-start lh-sm">
-          <span>Logged in: ${escapeHtml(user.username)}</span>
-          ${activeStillExists ? `<span class="text-body-secondary" style="font-size: 0.7rem;">Campaign: ${escapeHtml(active.name)}</span>` : ""}
+        <span class="iconify fs-5" data-icon="tabler:user-circle" aria-hidden="true"></span>
+        <span class="undercroft-auth-text flex-column align-items-start" style="width: 10rem;">
+          <span class="undercroft-auth-username text-truncate w-100">${identityLine}</span>
+          ${activeStillExists ? `<span class="undercroft-auth-campaign text-body-secondary text-truncate w-100">${escapeHtml(active.name)}</span>` : ""}
         </span>
       </button>
       <ul class="dropdown-menu dropdown-menu-end undercroft-auth-dropdown">
-        <li><span class="dropdown-item-text text-body-secondary">Tier: ${escapeHtml(manager.describeTier(user.tier) || user.tier || "")}</span></li>
+        <li><span class="dropdown-item-text text-body-secondary">${identityLine}</span></li>
         <li><a class="dropdown-item" href="${resolvedAccountHref}" data-auth-settings>Account Settings</a></li>
         <li><hr class="dropdown-divider" /></li>
         ${

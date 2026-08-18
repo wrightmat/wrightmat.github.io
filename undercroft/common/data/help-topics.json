@@ -157,6 +157,20 @@
       "href": "docs.html#character-dice"
     },
     {
+      "id": "character.relationships",
+      "title": "Relationships",
+      "summary": "Tie this character to any other record — an NPC, a Location, a Monster, another Character — with a label you type yourself: \"Ally of,\" \"Rival of,\" \"Reputation with,\" anything.",
+      "details": [
+        "Pick a target kind, choose the specific record, then type a relationship (a small suggestion list appears, but any text works).",
+        "Reputation with a faction or NPC works the same way — use \"Reputation with\" as the type, and the Value field to record where you stand (Friendly, Hostile, a number, whatever your table uses).",
+        "Relationships show up on BOTH ends automatically — link yourself as \"Member of\" an Organization's own NPC record, and that record's own list shows you back.",
+        "List shows every relationship as text; Graph (the icon next to the section title) shows the same data as a visual web, centered on this character.",
+        "Open jumps straight to the other record's own tool (Forge/Sanctum/Crucible/Workbench, whichever owns that kind)."
+      ],
+      "category": "Character Sheet",
+      "href": "docs.html#character-relationships"
+    },
+    {
       "id": "collaboration.shares",
       "title": "Sharing & Collaboration",
       "summary": "Grant access via direct shares, reusable share links, or Campaign Groups.",
@@ -260,6 +274,7 @@
       "title": "D&D Beyond URLs & IDs",
       "summary": "Paste a D&D Beyond URL or ID; the value stays local while building your print job.",
       "details": [
+        "Accepts a character URL/ID, or a classes/backgrounds/species page URL.",
         "Use an official or homebrew URL/ID; content stays in the browser for layout mapping.",
         "You can paste a full URL or the numeric/slug ID from D&D Beyond; Workbench reads it locally for layout mapping.",
         "Use share links when possible to avoid permissions issues while you preview cards or sheets.",
@@ -441,13 +456,26 @@
       "title": "Features",
       "summary": "The full structured editor for a Feature — id, name, description, mechanics, tags, and cross-references — not just Cost Budget/tags.",
       "details": [
-        "Select an existing Feature to edit every field: Description, Mechanics (as JSON — its shape varies by mechanics.type, so this is one flexible box rather than a different form per type), Categories, Behaviors/Recipe Slots/Roles/Creature Types, and Synergizes With/Conflicts With (references to other Features).",
+        "Select an existing Feature to edit every field: Description, Mechanics Type/Notes (see that field's own help topic), Categories, Behaviors/Recipe Slots/Roles/Creature Types, and Synergizes With/Conflicts With (references to other Features).",
         "Useful for comparing near-duplicate Features (e.g. several \"Dagger\" entries) side by side — switch between them and see exactly what differs in their description/mechanics.",
         "A brand-new Feature still starts on the Library tab (type an id there) — every other field is fully editable here immediately afterward.",
         "Cost Budget is a rough points value (most Features run 1-6) — Crucible sums a monster's own Features' costs for display, weighted against its Combat Scaling level's own target budget.",
         "Scope \"Generic\" means this Feature is set up generally enough to be used for any monster — the default, and correct for the vast majority of Features. \"Unique\" means it's not eligible for Crucible's native generation at all; don't assume a monster-specific-looking id means it should be Unique — check whether it's actually irreducible (2+ real mechanical differences from anything else) before marking it that way.",
         "A note appears below Scope whenever a Feature has no Recipe Slots tagged yet — an untagged Feature is invisible to Crucible's own slot-fill regardless of Scope, so it won't show up in native generation until it's tagged. No note means it's currently eligible.",
         "\"Suggest Cost & Tags\" asks an LLM for a starting guess at Behaviors/Recipe Slots/Roles/Creature Types/Cost Budget, grounded in the already-tagged starter Features and a real CR/budget calibration table — it never saves anything on its own; review the suggestion, then save if it looks right."
+      ],
+      "category": "Loom",
+      "href": "../loom/index.html#loom-features"
+    },
+    {
+      "id": "loom.featureMechanics",
+      "title": "Mechanics Type & Notes",
+      "summary": "What kind of ability this Feature is, and how it actually works — read by Crucible/Vault, not shown to a GM directly.",
+      "details": [
+        "Type doesn't show up anywhere in Forge/Crucible/Sanctum/Vault's own generated output — it tells Crucible's and Vault's shared Feature editor which specialized controls to offer once this Feature is attached to a generated Monster or Effect there. Weapon Attack and Save Effect each get a dedicated attack-bonus/save-DC editor; Active gets a generic parameters grid; Passive, Passive or Triggered, Multiattack, Drawback, and Legendary Action Reference get no extra editing surface beyond this Feature's own fields.",
+        "Passive is the most common Type by far — a Feature that's always just true, with nothing to configure per-monster. Reach for Active only when a value genuinely varies per record (an ability score increase, a scaling number) and needs its own input.",
+        "Notes is free-form prose describing the mechanic in enough implementation detail to write or verify a stat block from — distinct from the plain-language Description field above it, which is what a GM reads. Not every Feature needs Notes filled in; many Passives are self-explanatory from their Description alone.",
+        "Picking the wrong Type won't corrupt anything, but it will make the wrong (or no) editing controls appear wherever this Feature gets used in Crucible or Vault — match it to what the Feature actually does, not to how important it feels."
       ],
       "category": "Loom",
       "href": "../loom/index.html#loom-features"
@@ -962,6 +990,19 @@
       "href": "../forge/index.html#forge-note"
     },
     {
+      "id": "forge.relationships",
+      "title": "Relationships",
+      "summary": "Tie this NPC to any other record — another NPC, a Location, a Monster, a Character — with a label you type yourself: \"Member of,\" \"Leads,\" \"Enemy of,\" anything.",
+      "details": [
+        "Pick a target kind, choose the specific record, then type a relationship (a small suggestion list appears, but any text works).",
+        "Relationships show up on BOTH ends automatically — add \"Member of\" from three different NPCs pointing at the same one, and that one's own list shows all three members right back, with no extra setup. That's also how a Faction works here: there's no separate Organization type to pick, an NPC just becomes one the moment other records relate to it that way.",
+        "List shows every relationship as text; Graph (the icon next to the section title) shows the same data as a visual web, centered on this NPC.",
+        "Open jumps straight to the other record's own tool (Forge/Sanctum/Crucible/Workbench, whichever owns that kind)."
+      ],
+      "category": "Forge",
+      "href": "../forge/index.html#forge-relationships"
+    },
+    {
       "id": "forge.speciesWeights",
       "title": "Species Weights",
       "summary": "Each row picks a saved Species Name Profile and its relative weight for this location — this is what Forge draws from to roll a new NPC's Species and Name.",
@@ -1235,6 +1276,19 @@
       "href": "../crucible/index.html#crucible-notes"
     },
     {
+      "id": "crucible.relationships",
+      "title": "Relationships",
+      "summary": "Tie this Monster to any other record — an NPC, a Location, another Monster, a Character — with a label you type yourself: \"Prey of,\" \"Pack with,\" \"Serves,\" anything.",
+      "details": [
+        "Pick a target kind, choose the specific record, then type a relationship (a small suggestion list appears, but any text works).",
+        "Relationships show up on BOTH ends automatically — link a monster as \"Pack with\" another, and the other's own list shows the same tie right back.",
+        "List shows every relationship as text; Graph (the icon next to the section title) shows the same data as a visual web, centered on this Monster.",
+        "Open jumps straight to the other record's own tool (Forge/Sanctum/Crucible/Workbench, whichever owns that kind)."
+      ],
+      "category": "Crucible",
+      "href": "../crucible/index.html#crucible-relationships"
+    },
+    {
       "id": "vault.lockedFeatures",
       "title": "Locked Features",
       "summary": "Pin one or more Features to guarantee they're included in generation, instead of leaving traversal to pick everything on its own.",
@@ -1306,6 +1360,19 @@
       "href": "../vault/index.html#vault-notes"
     },
     {
+      "id": "vault.relationships",
+      "title": "Relationships",
+      "summary": "Tie this Effect to any other record — an NPC, a Monster, a Location, a Character, or another Effect — with a label you type yourself: \"Requires,\" \"Counters,\" \"Variant of,\" anything.",
+      "details": [
+        "Pick a target kind, choose the specific record, then type a relationship (a small suggestion list appears — including \"Requires,\" \"Counters,\" \"Variant of,\" \"Crafted from,\" and \"Found in\" — but any text works).",
+        "Relationships show up on BOTH ends automatically — link an effect as a \"Variant of\" another, and the other's own list shows the same tie right back.",
+        "List shows every relationship as text; Graph (the View toggle above) shows the same data as a visual web, centered on this Effect.",
+        "Open jumps straight to the other record's own tool (Forge/Sanctum/Crucible/Workbench, whichever owns that kind)."
+      ],
+      "category": "Vault",
+      "href": "../vault/index.html#vault-relationships"
+    },
+    {
       "id": "sanctum.lockedFeatures",
       "title": "Locked Features",
       "summary": "Pin one or more Features to guarantee they're included, instead of leaving traversal to pick everything on its own.",
@@ -1355,26 +1422,15 @@
     {
       "id": "sanctum.relationships",
       "title": "Relationships",
-      "summary": "How this Location connects to others in the same Setting — one Parent (containment) and any number of Connected To peer links.",
+      "summary": "Tie this Location to any other record — an NPC, a Monster, a Character, or another Location — with a label you type yourself: \"Parent of,\" \"Connected to,\" \"Owned by,\" anything.",
       "details": [
-        "Parent is containment (a settlement's parent is its region) — the Parent select lists other Locations in the same Setting. Children are never stored directly; they're computed as whichever Locations list this one as their parent.",
-        "Connected To is a peer link (a road, a tunnel) — it's bidirectional and only needs to be added from one side; the other Location shows the connection automatically.",
-        "Relationships always start empty on a freshly generated Location — set them deliberately once you know how this place fits into the rest of the Setting."
+        "Pick a target kind, choose the specific record, then type a relationship (a small suggestion list appears — including \"Parent of\" for containment and \"Connected to\" for a peer link like a road or tunnel — but any text works).",
+        "Relationships show up on BOTH ends automatically. A settlement's own region shows \"Parent of → the settlement\"; the settlement itself shows \"← Parent of\" back. \"Children\" work the same way — every Location another Location points at with \"Parent of\" just shows up in that child's own list, no separate concept needed.",
+        "List shows every relationship as text; Graph (the View toggle above) shows the same data as a visual web, centered on this Location.",
+        "Open jumps straight to the other record's own tool (Forge/Sanctum/Crucible/Workbench, whichever owns that kind)."
       ],
       "category": "Sanctum",
       "href": "../sanctum/index.html#sanctum-relationships"
-    },
-    {
-      "id": "sanctum.locationGraph",
-      "title": "Location Graph",
-      "summary": "A visual diagram of how every Location in this Setting relates to the others — containment (Parent) and peer connections (Connected To) — not a spatial layout.",
-      "details": [
-        "This is a relationship diagram, not a coordinate-precise map — node positions are computed automatically and carry no meaning beyond roughly grouping related Locations together. For a real spatial/tactical map, use Orrery instead.",
-        "Solid lines are Parent/Child containment; dashed lines are Connected To peer links (roads, tunnels, corridors).",
-        "Click any node to load that Location into the editor below, the same as picking it from the Location dropdown."
-      ],
-      "category": "Sanctum",
-      "href": "../sanctum/index.html#sanctum-location-graph"
     },
     {
       "id": "sanctum.notes",
@@ -1551,6 +1607,58 @@
       ],
       "category": "Repository",
       "href": "../repository/index.html#repository-quests"
+    },
+    {
+      "id": "repository.storyBoard",
+      "title": "Story Boards",
+      "summary": "A [!story-board] callout, with a couple of metadata lines plus a Nodes table and an Edges table, IS an interactive planning board — no separate Library kind.",
+      "details": [
+        "Write > [!story-board] Board Name, then Layout: freeform or swimlane, and (for swimlane) Lanes: and Stages: as comma-separated lists.",
+        "The Nodes table lists each card: its own Node name (also its reference key for the Edges table), an optional Type (ref/placeholder), an optional Ref (a kindId:Name or quest:Title compound reference, same syntax as an inline reference chip), and freeform Lane/Stage/X/Y/Color.",
+        "The Edges table connects nodes by name: From, To, and an optional Label.",
+        "A board is scoped to the page it's written on, and multiple boards are allowed per page — same 'unique per page' convention Quests use.",
+        "Switch between Freeform (drag cards anywhere) and Swimlane (lane × stage grid) at any time from the canvas toolbar — both layouts are stored on the same node, so switching never loses data."
+      ],
+      "category": "Repository",
+      "href": "../repository/index.html#repository-story-board"
+    },
+    {
+      "id": "repository.relationships",
+      "title": "Relationships",
+      "summary": "A read-only diagram of how your existing pages, quests, and referenced Library content connect to each other — built automatically from what's already written, not something you author separately.",
+      "details": [
+        "Every [[Page Title]] wikilink draws a page-to-page connection; a link that matches a quest's own title instead connects to that quest.",
+        "Every inline reference (npc:, location:, monster:, and so on) anywhere on a page draws a connection from that page to the referenced record.",
+        "Computed when you open the view (or after a page save), not kept live — it deliberately does NOT ingest a Story Board's own internal planning layout, since that's a separate GM-only planning surface, not existing campaign content."
+      ],
+      "category": "Repository",
+      "href": "../repository/index.html#repository-relationships"
+    },
+    {
+      "id": "repository.timeline",
+      "title": "Timeline",
+      "summary": "A day-sorted list of every `date:` reference across the whole workspace, grouped by day — built automatically from what's already written, same as Relationships.",
+      "details": [
+        "Every `date:<day>` (or `date:current`/`date:today`) reference on any page shows up here, grouped under its own day heading and formatted using the active Setting's own calendar.",
+        "A \"Today\" divider splits past entries from upcoming ones, using the same live ambient date the Calendar widget itself reads/writes.",
+        "Click any entry to jump straight to the page it came from.",
+        "Computed when you open the tab (or after a page save), not kept live — same \"computed on demand\" principle Relationships uses."
+      ],
+      "category": "Repository",
+      "href": "../repository/index.html#repository-timeline"
+    },
+    {
+      "id": "repository.date",
+      "title": "Date References",
+      "summary": "A `date:<day>` inline code span renders as a formatted date chip against your campaign's active calendar — a deadline, a discovered-on date, or a due date attached to a quest or objective.",
+      "details": [
+        "`date:123` shows Day 123 formatted using the active Setting's own calendar (or a plain \"Day 123\" if that Setting has none). Negative numbers count backward from the campaign's own Day 0 start.",
+        "`date:current` (or `date:today`) always shows the campaign's own live ambient date, wherever it's read, rather than a fixed day baked into the page.",
+        "Add a custom label with a pipe: `date:30|Festival begins` shows \"Festival begins: <formatted date>\".",
+        "Purely informational — a date chip has no click action; it doesn't yet drive overdue tracking or a timeline view."
+      ],
+      "category": "Repository",
+      "href": "../repository/index.html#repository-date"
     }
   ]
 }

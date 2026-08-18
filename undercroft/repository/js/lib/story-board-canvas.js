@@ -11,7 +11,7 @@
 // never touches the other. Freeform reuses common/js/lib/pan-zoom.js
 // directly for the corkboard's own pan/zoom; node drag is self-contained
 // pointerdown/move/up handling (not a separate "click" listener after the
-// fact) — same lesson Location Graph's own node-click bug already taught
+// fact) — same lesson graph-view.js's own node-click bug already taught
 // this suite: PanZoomController's container calls setPointerCapture on
 // every pointerdown regardless of target, so a node's own pointerdown must
 // stopPropagation before that ever happens, whether or not a real drag
@@ -27,7 +27,7 @@
 import { el } from "../../../common/js/lib/dom.js";
 import { PanZoomController } from "../../../common/js/lib/pan-zoom.js";
 import { resolveColor } from "./journal-callouts.js";
-import { createFormFloatingField, createButtonCheckGroup, createIconButton } from "../../../common/js/lib/ui-components.js";
+import { createFormFloatingField, createCycleToggleButton, createIconButton } from "../../../common/js/lib/ui-components.js";
 import { refreshTooltips, disposeTooltips } from "../../../common/js/lib/tooltips.js";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
@@ -119,7 +119,18 @@ function withStages(stages) {
 // (Handout's own convention) and resolves to a new `kindId:Name` ref
 // string, or null if cancelled — used by the node inspector's own
 // "Promote to real content" and "Change reference" actions.
-export function mountStoryBoard(container, { model, onMutate, resolveRef, openRefPicker, status } = {}) {
+// `modeSlot` — optional; the reserved `.callout-mode-slot` element
+// markdown.js's own applyCalloutStyling builds into EVERY callout's title
+// bar (generic, not story-board-specific — see that function's own
+// comment). When given, the Corkboard/Swimlane View toggle
+// (ui-components.js's own createCycleToggleButton — a single cycling
+// button, the suite-wide View shape, NOT the two-button check-group this
+// used before) mounts there instead of inside this module's own internal
+// toolbar, which then keeps only "Add node." Omitted, the toggle falls
+// back to living in the internal toolbar (keeps this function usable
+// standalone, without requiring a caller to also thread a title-bar slot
+// through).
+export function mountStoryBoard(container, { model, onMutate, resolveRef, openRefPicker, status, modeSlot } = {}) {
   if (!container) return { update() {}, destroy() {} };
 
   let currentModel = model || { layoutMode: "freeform", lanes: [], stages: [], nodes: [], edges: [] };
@@ -137,6 +148,39 @@ export function mountStoryBoard(container, { model, onMutate, resolveRef, openRe
     return currentModel.nodes.find((node) => node.id === id) || null;
   }
 
+  // The suite-wide View control (ui-components.js's own
+  // createCycleToggleButton) — ONE button cycling between Swimlane and
+  // Corkboard, icon+tooltip only, describing what clicking switches TO.
+  // Mounts into `modeSlot` (the callout's own title bar) when given,
+  // otherwise falls back into this module's own internal toolbar — either
+  // way this is the SAME rebuild-fresh-on-every-render() function, just
+  // appended to a different host.
+  function renderLayoutModeToggle() {
+    // Swimlane first — a saved board's own layoutMode (Swimlane for
+    // anything hand-authored with Lanes/Stages already filled in) is the
+    // more common initial state, so the toggle offers switching TO
+    // Corkboard first when starting from Swimlane, matching how a GM is
+    // more likely to actually use this.
+    return createCycleToggleButton({
+      states: [
+        {
+          value: "swimlane",
+          icon: "tabler:layout-grid",
+          label: "Swimlane",
+          tooltip: "Swimlane — a grid of Lane × Stage, each node placed in one cell",
+        },
+        {
+          value: "freeform",
+          icon: "tabler:layout-board",
+          label: "Corkboard",
+          tooltip: "Corkboard — free placement, drag nodes anywhere, draw edges between them",
+        },
+      ],
+      value: currentModel.layoutMode,
+      onSelect: (next) => applyMutation(withLayoutMode(next)),
+    });
+  }
+
   // --- Toolbar ---------------------------------------------------------
   // Sits directly above the node canvas/grid only (see render() below,
   // which nests this inside the same column as the stage — not the whole
@@ -144,41 +188,7 @@ export function mountStoryBoard(container, { model, onMutate, resolveRef, openRe
   // nodes themselves, not above the inspector panel too.
   function renderToolbar() {
     const bar = el("div", "d-flex align-items-center gap-2 flex-wrap mb-2");
-    const modeGroup = createButtonCheckGroup({
-      ariaLabel: "Layout mode",
-      name: `story-board-mode-${randomId()}`,
-      size: "sm",
-      // Swimlane first (left), Corkboard second (right) — a saved board's
-      // own layoutMode (Swimlane for anything hand-authored with Lanes/
-      // Stages already filled in) is the more common initial/default state,
-      // so it reads better positioned first. Icon-only by request — `text`
-      // is deliberately "" (not omitted; createButtonCheckGroup would
-      // otherwise set textContent to the literal string "undefined"), the
-      // tooltip alone names each mode.
-      options: [
-        {
-          id: `mode-swimlane-${randomId()}`,
-          value: "swimlane",
-          text: "",
-          icon: "tabler:layout-grid",
-          tooltip: "Swimlane — a grid of Lane × Stage, each node placed in one cell",
-        },
-        {
-          id: `mode-freeform-${randomId()}`,
-          value: "freeform",
-          text: "",
-          icon: "tabler:layout-board",
-          tooltip: "Corkboard — free placement, drag nodes anywhere, draw edges between them",
-        },
-      ],
-    });
-    modeGroup.querySelectorAll("input").forEach((input) => {
-      input.checked = input.value === currentModel.layoutMode;
-      input.addEventListener("change", () => {
-        if (input.checked) applyMutation(withLayoutMode(input.value));
-      });
-    });
-    bar.appendChild(modeGroup);
+    if (!modeSlot) bar.appendChild(renderLayoutModeToggle());
 
     // Add Lane/Add Stage moved OUT of this toolbar entirely — see
     // renderSwimlane's own `+` cells at the actual edge of the grid they
@@ -630,6 +640,12 @@ export function mountStoryBoard(container, { model, onMutate, resolveRef, openRe
     // toolbar rebuild and audio-recorder.js's own render().
     disposeTooltips(container);
     container.innerHTML = "";
+    if (modeSlot) {
+      disposeTooltips(modeSlot);
+      modeSlot.innerHTML = "";
+      modeSlot.appendChild(renderLayoutModeToggle());
+      refreshTooltips(modeSlot);
+    }
     const body = el("div", "d-flex gap-3");
     body.style.minHeight = "0";
     // The toolbar (Add Node included) lives INSIDE this column, sized to
@@ -672,6 +688,15 @@ export function mountStoryBoard(container, { model, onMutate, resolveRef, openRe
       panZoom?.destroy();
       disposeTooltips(container);
       container.innerHTML = "";
+      // modeSlot lives in markdown.js's own rendered DOM, not inside
+      // `container` — this module still owns whatever it mounted there, so
+      // it cleans that up itself rather than leaving an orphaned toggle
+      // (and a stuck tooltip) behind once this story board's own
+      // .callout-content is torn down or re-rendered.
+      if (modeSlot) {
+        disposeTooltips(modeSlot);
+        modeSlot.innerHTML = "";
+      }
     },
   };
 }

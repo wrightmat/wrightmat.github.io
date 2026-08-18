@@ -336,8 +336,9 @@ export function generateLocation(locationTypes, locationPurposes, features, reso
     featureIds: selectedFeatures.map((entry) => entry.id),
     assets,
     needs,
-    parentId: null,
-    connectedTo: [],
+    // Relationships (parentId/connectedTo, formerly) are never generated —
+    // they're `relationship` records now (common/js/lib/relationship-graph.js),
+    // added deliberately by the GM afterward, same as before.
     notes: "",
   };
 }

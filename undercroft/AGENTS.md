@@ -20,7 +20,7 @@
 - When creating functions, ensure that names don't conflict (avoid 'function' has already been declared errors). If functions names are similar, then first ensure that no duplication of functionality is created - reuse functions when possible).
 - Wrap each page module in an IIFE (`(() => { /* page code */ })();`) so a double-evaluated script doesn't clash on top-level `const` declarations. Run `scripts/check-modules.mjs` before committing changes to Workbench editors — it catches duplicate-identifier regressions like this across shared libraries and page entry points.
 - When updating HTML, ensure assets are referenced relative to this directory so the Python server can host them without extra configuration.
-- Keep documentation current. Any workflow or data shape changes must be reflected in the relevant Markdown files alongside code updates.
+- Keep documentation current. `undercroft/README.md` is the only suite-level Markdown doc (this file describes agent conventions, not what the suite does — see the Project Overview above); a new tool, workflow, or data-shape change belongs there. Everything else — how a function or module works — belongs in a code comment, not a separate Markdown file.
 - CSS additions must include a rationale in the PR summary when Bootstrap utilities are insufficient.
 
 ## Testing & Validation

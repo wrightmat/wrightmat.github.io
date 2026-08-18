@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Undercroft Loom</title>
     <script src="../common/js/theme-init.js"></script>
-    <link rel="stylesheet" href="../common/vendor/bootstrap/bootstrap.min.css" />
     <link rel="stylesheet" href="../common/css/shell.css" />
     <link rel="stylesheet" href="css/styles.css" />
   </head>
@@ -17,6 +16,7 @@
         <div data-pane-content="left">
           <div class="btn-toolbar justify-content-center overflow-x-auto" role="toolbar" aria-label="Loom actions">
             <div class="btn-group" role="group" aria-label="Loom actions" data-loom-toolbar-mount></div>
+            <div class="btn-group ms-2" role="group" data-loom-undo-toolbar-mount></div>
           </div>
 
           <div class="d-flex flex-column gap-4" data-loom-view-panel="import">
@@ -56,69 +56,51 @@
           </div>
 
           <div class="d-flex flex-column gap-4" data-loom-view-panel="systems" hidden>
-            <section class="d-flex flex-column gap-2">
-              <div class="d-flex align-items-center gap-2">
-                <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Systems</h2>
-                <span class="align-middle" data-help-topic="loom.systems" data-help-insert="replace"></span>
-              </div>
+            <div data-systems-selections-mount></div>
+            <div class="d-flex flex-column gap-2" data-systems-selections-panel>
               <div data-field-mount="system-select"></div>
-            </section>
+            </div>
             <div class="mt-auto" data-system-json-mount></div>
           </div>
 
           <div class="d-flex flex-column gap-3" data-loom-view-panel="macros" hidden>
-            <section class="d-flex flex-column gap-2">
-              <div class="d-flex align-items-center gap-2">
-                <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Macros</h2>
-                <span class="align-middle" data-help-topic="loom.macros" data-help-insert="replace"></span>
-              </div>
+            <div data-macros-selections-mount></div>
+            <div class="d-flex flex-column gap-2" data-macros-selections-panel>
               <div data-field-mount="macro-select"></div>
-            </section>
+            </div>
           </div>
 
           <div class="d-flex flex-column gap-3" data-loom-view-panel="features" hidden>
-            <section class="d-flex flex-column gap-2">
-              <div class="d-flex align-items-center gap-2">
-                <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Features</h2>
-                <span class="align-middle" data-help-topic="loom.features" data-help-insert="replace"></span>
-              </div>
+            <div data-features-selections-mount></div>
+            <div class="d-flex flex-column gap-2" data-features-selections-panel>
               <div data-field-mount="feature-type-filter"></div>
               <div data-field-mount="feature-select"></div>
-            </section>
+            </div>
           </div>
 
           <div class="d-flex flex-column gap-3" data-loom-view-panel="library" hidden>
-            <section class="d-flex flex-column gap-2">
-              <div class="d-flex align-items-center gap-2">
-                <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Library Contents</h2>
-                <span class="align-middle" data-help-topic="loom.libraryTable" data-help-insert="replace"></span>
-              </div>
+            <div data-library-selections-mount></div>
+            <div class="d-flex flex-column gap-2" data-library-selections-panel>
               <div data-field-mount="library-table-type"></div>
               <div data-field-mount="library-table-select"></div>
               <div class="text-body-secondary small" data-loom-library-table-message hidden></div>
-            </section>
+            </div>
           </div>
 
           <div class="d-flex flex-column gap-3" data-loom-view-panel="users" hidden>
-            <section class="d-flex flex-column gap-2">
-              <div class="d-flex align-items-center gap-2">
-                <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Users</h2>
-                <span class="align-middle" data-help-topic="accounts.roles" data-help-insert="replace"></span>
-              </div>
+            <div data-users-selections-mount></div>
+            <div class="d-flex flex-column gap-2" data-users-selections-panel>
               <div data-field-mount="users-tier-filter"></div>
               <div data-field-mount="users-select"></div>
-            </section>
+            </div>
           </div>
 
           <div class="d-flex flex-column gap-3" data-loom-view-panel="groups" hidden>
-            <section class="d-flex flex-column gap-2">
-              <div class="d-flex align-items-center gap-2">
-                <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Groups</h2>
-                <span class="align-middle" data-help-topic="campaign.groups" data-help-insert="replace"></span>
-              </div>
+            <div data-groups-selections-mount></div>
+            <div class="d-flex flex-column gap-2" data-groups-selections-panel>
               <div data-field-mount="groups-select"></div>
               <div class="text-body-secondary small" data-loom-groups-message hidden></div>
-            </section>
+            </div>
           </div>
 
           <!-- Not wrapped in a data-loom-view-panel — shown for every tab,
@@ -419,13 +401,13 @@
                     </div>
                     <p class="small text-body-secondary mb-0 d-none" data-feature-eligibility-note></p>
                     <div data-field-mount="feature-description"></div>
-                    <div class="d-flex flex-column gap-1">
-                      <div data-field-mount="feature-mechanics"></div>
-                      <div class="invalid-feedback d-block mt-0 d-none" data-feature-mechanics-error></div>
+                    <div class="row g-2">
+                      <div class="col-12 col-md-4" data-field-mount="feature-mechanics-type"></div>
+                      <div class="col-12 col-md-8" data-field-mount="feature-mechanics-text"></div>
                     </div>
                     <section class="d-flex flex-column gap-2">
                       <div class="d-flex align-items-center justify-content-between gap-2">
-                        <h3 class="fs-6 fw-semibold text-body-secondary mb-0">Tiers</h3>
+                        <label class="form-label fw-semibold mb-0">Tiers</label>
                         <span data-feature-add-tier-mount></span>
                       </div>
                       <p class="small text-body-secondary mb-0" data-feature-tiers-empty>

@@ -33,12 +33,16 @@ function watermarkKey(scope) {
 // off by the viewer's own UTC offset (displaying the raw UTC clock digits,
 // unconverted, as if they were already local — which is exactly why it read
 // as "showing UTC" rather than merely "off by a few minutes").
-function normalizeTimestamp(value) {
+// Exported — the Audio Recorder widget's own combined session-record export
+// (audio-recorder.js) sorts transcript lines and Game Log entries into one
+// chronological document, and needs this exact same UTC-string normalization
+// to compare their timestamps correctly against each other.
+export function normalizeTimestamp(value) {
   if (!value) return "";
   return /[zZ]|[+-]\d{2}:?\d{2}$/.test(value) ? value : `${value}Z`;
 }
 
-function parseTimestamp(value) {
+export function parseTimestamp(value) {
   if (!value) return 0;
   return Date.parse(normalizeTimestamp(value)) || 0;
 }
@@ -227,7 +231,48 @@ function describeEntry(entry, { getCachedTitle, ensureTitleCached, onTitleLoaded
   return { before: entry?.message || "", detail: "", after: "", href: "" };
 }
 
-function formatTimestamp(value) {
+// A plain-text one-liner for the same entry describeEntry above renders as
+// DOM — used by the Audio Recorder widget's own combined session-record
+// export (audio-recorder.js), which has no title cache/async-fetch
+// machinery of its own to resolve a spotlighted record's real name the way
+// the live widget does, so a spotlight entry here always reads as its
+// generic kind article ("a Monster") rather than the specific record title.
+// Kept in sync with describeEntry's own branches by hand (not literally
+// shared code — that function is DOM+title-cache-shaped in a way a plain
+// string return can't reuse directly), so update both together if either
+// entry type's phrasing changes.
+export function summarizeLogEntry(entry) {
+  if (entry?.type === "spotlight") {
+    const kind = String(entry.payload?.kind || "").trim();
+    const genericArticle = SPOTLIGHT_KIND_LABELS[kind] || (kind ? `a "${kind}"` : "something");
+    let detail = "";
+    if (kind === "clock") detail = entry.payload?.data?.name || "";
+    else if (kind === "browser") detail = entry.payload?.data?.url || "";
+    return `Showed ${detail || genericArticle} to the table`;
+  }
+  if (entry?.type === "spotlight-clear") {
+    return "Stopped showing to the table";
+  }
+  if (entry?.type === "roll") {
+    const payload = entry.payload || {};
+    const label = typeof payload.label === "string" ? payload.label.trim() : "";
+    const notation =
+      typeof payload.expression === "string" && payload.expression.trim()
+        ? payload.expression.trim()
+        : typeof payload.notation === "string" && payload.notation.trim()
+          ? payload.notation.trim()
+          : "";
+    const total = payload.total !== undefined && payload.total !== null ? payload.total : "";
+    let text = label && notation ? `${label} (${notation})` : label || notation || "Roll";
+    if (total || total === 0) text += ` → ${total}`;
+    const verdict = typeof payload.verdict === "string" ? payload.verdict.trim() : "";
+    if (verdict) text += ` — ${verdict}`;
+    return text;
+  }
+  return entry?.message || "";
+}
+
+export function formatTimestamp(value) {
   if (!value) return "";
   const date = new Date(normalizeTimestamp(value));
   if (Number.isNaN(date.getTime())) return value;

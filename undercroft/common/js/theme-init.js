@@ -9,12 +9,31 @@
 // deferred: either would let parsing continue past it, reintroducing the
 // exact flash this exists to prevent.
 //
+// Also emits the page's ONE Bootstrap stylesheet <link> via document.write
+// — the same "must win the race against first paint" reasoning applies to
+// WHICH palette loads, not just light/dark. Every page's own <head> no
+// longer hand-writes that <link> itself (see common/js/lib/theme.js's own
+// comment on applyThemePack for the full picture) — this script is its sole
+// source now. Deliberately convention-based, NOT a fetch() of
+// common/data/theme-packs.json: an async fetch can't finish before the
+// parser reaches the point document.write needs to run, which would
+// reintroduce the exact flash this exists to prevent. theme.js's own
+// loadThemePacks() reads that manifest separately, later, only for the
+// picker UI's display labels/swatches — never for this critical path.
+//
 // Kept independent from common/js/lib/theme.js's own initThemeControls —
-// that one wires the header's theme buttons and runs later, after <body>
-// exists; this one only ever needs to win the race against first paint.
+// that one wires the header's theme/palette controls and runs later, after
+// <body> exists; this one only ever needs to win the race against first
+// paint.
 (function () {
   const storageKey = "undercroft.workbench.theme";
+  const packStorageKey = "undercroft.workbench.theme-pack";
   const THEMES = ["light", "system", "dark"];
+  // Matches common/data/theme-packs.json's own `id` values — alphanumeric
+  // + hyphens only, so a malformed/stale localStorage value can't produce
+  // an unexpected href (no slashes or `..`, deliberately not just trusting
+  // the stored string).
+  const PACK_ID_PATTERN = /^[a-z0-9-]+$/;
   const prefersDark = () =>
     typeof window !== "undefined" &&
     window.matchMedia &&
@@ -50,4 +69,26 @@
     apply("system");
     console.warn("Unable to read theme preference", error);
   }
+
+  let packId = "default";
+  try {
+    const storedPack = localStorage.getItem(packStorageKey);
+    if (storedPack && PACK_ID_PATTERN.test(storedPack)) {
+      packId = storedPack;
+    }
+  } catch (error) {
+    console.warn("Unable to read theme pack preference", error);
+  }
+  const relativeHref =
+    packId === "default"
+      ? "vendor/bootstrap/bootstrap.min.css"
+      : `vendor/bootswatch/${packId}/bootstrap.min.css`;
+  // Resolved against THIS script's own URL, not the page's — document.
+  // currentScript is reliable here specifically because this script is
+  // synchronous/non-module/non-deferred (see the file comment above), and
+  // its own path is always "<pageDir>/.../common/js/theme-init.js" on every
+  // page, one level up (../) from common/'s own root.
+  const commonBase = new URL("../", document.currentScript.src);
+  const stylesheetUrl = new URL(relativeHref, commonBase).href;
+  document.write(`<link rel="stylesheet" href="${stylesheetUrl}" data-undercroft-bootstrap-link>`);
 })();

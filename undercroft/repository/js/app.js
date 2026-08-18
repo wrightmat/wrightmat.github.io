@@ -2,7 +2,7 @@ import { initAppShell, resolveToolContextPath } from "../../common/js/lib/app-sh
 import { buildKindToolUrl } from "../../common/js/lib/kind-tool-route.js";
 import { initAuthControls } from "../../common/js/lib/auth-ui.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
-import { refreshTooltips } from "../../common/js/lib/tooltips.js";
+import { disposeTooltips, refreshTooltips } from "../../common/js/lib/tooltips.js";
 import { DataManager } from "../../common/js/lib/data-manager.js";
 import { resolveApiBase } from "../../common/js/lib/api.js";
 import { fetchKindEntriesWithIds, loadLibraryKinds } from "../../common/js/lib/content-fetch.js";
@@ -22,10 +22,19 @@ import { wikiLinkPattern } from "./lib/wiki-link-syntax.js";
 import { createForceGraph } from "../../common/js/lib/graph-view.js";
 import { buildRelationshipsGraph } from "./lib/relationships-graph.js";
 import { extractStoryBoards, updateStoryBoardInPage, serializeStoryBoard } from "./lib/journal-story-board.js";
+import { buildTimeline, groupTimelineByDay } from "./lib/journal-timeline.js";
+import { describeDate } from "../../common/js/lib/widgets/calendar.js";
 import { mountStoryBoard } from "./lib/story-board-canvas.js";
 import { attachWikiLinkAutocomplete } from "./lib/wiki-link-autocomplete.js";
 import { attachCodeBlockAutocomplete } from "./lib/code-block-autocomplete.js";
-import { createToolbarButtonGroup, createCollapsibleSection, createEmptyStateCard, createIconButton } from "../../common/js/lib/ui-components.js";
+import {
+  createToolbarButtonGroup,
+  createCollapsibleSection,
+  createEmptyStateCard,
+  createIconButton,
+  createModeToggleGroup,
+  createCycleToggleButton,
+} from "../../common/js/lib/ui-components.js";
 import { initToolSettings } from "../../common/js/lib/tool-settings.js";
 import { el, attachHoverDropdown } from "../../common/js/lib/dom.js";
 
@@ -52,13 +61,19 @@ const { status, undoStack, undo, redo } = initAppShell({
 const dataManager = new DataManager({ baseUrl: resolveApiBase(), storagePrefix: "undercroft.repository" });
 initAuthControls({ root: document, status, dataManager });
 
-// The card itself (not a wrapper — unlike the other generator tools'
-// data-*-empty-state divs, this attribute lives directly on the card, same
+// The built element itself (not a wrapper — unlike the other generator
+// tools' data-*-empty-state divs, this attribute lives directly on it, same
 // as its sibling data-repository-editor) carries the empty-state attribute
 // this file's own editorEmptyEl below expects to find, so it's built and
-// swapped in for the plain mount marker before that query runs.
+// swapped in for the plain mount marker before that query runs. "inline"
+// variant — condensed, left-aligned, no card — sits flush in the header row
+// beside the Mode/View toggle, same treatment as Forge/Crucible/Sanctum/
+// Vault's own "Nothing selected yet" messages.
 {
-  const emptyCard = createEmptyStateCard({ message: "Select a page from the list, or create a new one." });
+  const emptyCard = createEmptyStateCard({
+    message: "Select a page from the list, or create a new one.",
+    variant: "inline",
+  });
   emptyCard.setAttribute("data-repository-editor-empty", "");
   document.querySelector("[data-editor-empty-mount]")?.replaceWith(emptyCard);
 }
@@ -79,11 +94,13 @@ const backlinksListEl = document.querySelector("[data-repository-backlinks-list]
 const outlineListEl = document.querySelector("[data-repository-outline-list]");
 const settingsSlotEl = document.querySelector("[data-repository-settings-slot]");
 
-// Relationships — a separate top-level view from the page editor above
-// (see applyMainView), not a per-page panel; toggled as the third stage of
-// the page toolbar's own View/Edit button (see updateModeButtonDisplay) —
-// no button of its own. See repository/js/lib/relationships-graph.js for
-// the data it renders.
+// Page/Relationships/Timeline — three independent top-level views sharing
+// the main pane, switched by the Mode toggle group in the center pane's own
+// header row (see applyActiveTab/setActiveTab/renderModeToggle) rather than
+// the page toolbar's own View/Edit button, which now stays a plain
+// two-stage per-page toggle rendered in that same header row (see
+// renderPageViewToggle). See repository/js/lib/relationships-graph.js /
+// journal-timeline.js for the data each of the latter two modes renders.
 const relationshipsEl = document.querySelector("[data-repository-relationships]");
 const graphContainerEl = document.querySelector("[data-repository-graph-container]");
 const graphContentEl = document.querySelector("[data-repository-graph-content]");
@@ -93,6 +110,9 @@ const graphToolbarMountEl = document.querySelector("[data-repository-graph-toolb
 const graphEmptyEl = document.querySelector("[data-repository-graph-empty]");
 const graphFilterEl = document.querySelector("[data-repository-graph-filter]");
 const graphFilterMenuEl = document.querySelector("[data-repository-graph-filter-menu]");
+const timelineEl = document.querySelector("[data-repository-timeline]");
+const timelineListEl = document.querySelector("[data-repository-timeline-list]");
+const timelineEmptyEl = document.querySelector("[data-repository-timeline-empty]");
 
 // A generic, reusable settings modal (common/js/lib/tool-settings.js) — the
 // gear button it builds mounts into settingsSlotEl (the header, to the left
@@ -179,25 +199,25 @@ const backlinksSection = createCollapsibleSection({
 document.querySelector("[data-repository-backlinks-mount]")?.appendChild(backlinksSection.section);
 const setBacklinksCollapsed = backlinksSection.setCollapsed;
 
-// Built and inserted (in order) before the static toggle-mode button
-// (bespoke dual-icon-swap markup the shared factory doesn't model), so every
-// existing data-action selector below keeps working unchanged.
-{
-  const pageButtons = createToolbarButtonGroup([
-    { action: "undo", label: "Undo", attrs: { "data-action": "undo-page" } },
-    { action: "redo", label: "Redo", attrs: { "data-action": "redo-page" } },
+// View/Edit no longer lives in this toolbar (see data-repository-view-toggle-mount,
+// the center pane's own header row) — every page-action button appends
+// straight into the mount with no "insert before the mode button" step.
+document.querySelector("[data-page-toolbar-mount]")?.append(
+  ...createToolbarButtonGroup([
     { action: "new", label: "New Page", attrs: { "data-action": "new-page" } },
     { action: "duplicate", variant: "outline-secondary", label: "Duplicate Page", disabled: true, attrs: { "data-action": "duplicate-page" } },
     { action: "save", label: "Save Page", disabled: true, attrs: { "data-action": "save-page" } },
     { action: "delete", label: "Delete Page", disabled: true, attrs: { "data-action": "delete-page" } },
-  ]);
-  const toggleModeButton = document.querySelector('[data-page-toolbar-mount] [data-action="toggle-mode"]');
-  if (toggleModeButton) {
-    toggleModeButton.before(...pageButtons);
-  } else {
-    document.querySelector("[data-page-toolbar-mount]")?.append(...pageButtons);
-  }
-}
+  ])
+);
+// A small visual break, not a functional one — same convention every other
+// tool's toolbar now uses (see forge/js/app.js's own comment).
+document.querySelector("[data-page-undo-toolbar-mount]")?.append(
+  ...createToolbarButtonGroup([
+    { action: "undo", label: "Undo", attrs: { "data-action": "undo-page" } },
+    { action: "redo", label: "Redo", attrs: { "data-action": "redo-page" } },
+  ])
+);
 
 const undoButton = document.querySelector('[data-action="undo-page"]');
 const redoButton = document.querySelector('[data-action="redo-page"]');
@@ -205,21 +225,12 @@ const newButton = document.querySelector('[data-action="new-page"]');
 const duplicateButton = document.querySelector('[data-action="duplicate-page"]');
 const saveButton = document.querySelector('[data-action="save-page"]');
 const deleteButton = document.querySelector('[data-action="delete-page"]');
-const modeToggleButton = document.querySelector('[data-action="toggle-mode"]');
-// `data-repository-mode-icon` lives on a plain wrapper *around* each
-// `.iconify` span, not on the icon span itself — root cause of the actual
-// bug (confirmed, not guessed): Iconify replaces every `.iconify` element
-// it scans with a rendered `<svg>`, and that replacement doesn't carry
-// arbitrary custom data-* attributes over to the new node. Querying/toggling
-// `[data-repository-mode-icon]` directly on the icon span itself was
-// therefore finding (or, after Iconify ran, silently failing to find) the
-// wrong/stale element — nothing was actually broken about the toggle logic
-// itself. The wrapper is never touched by Iconify, so it's a stable,
-// permanent target for `d-none` regardless of what Iconify does inside it.
-const modeEyeIconEl = modeToggleButton?.querySelector('[data-repository-mode-icon="view"]');
-const modePencilIconEl = modeToggleButton?.querySelector('[data-repository-mode-icon="edit"]');
-const modeRelationshipsIconEl = modeToggleButton?.querySelector('[data-repository-mode-icon="relationships"]');
-const modeLabelEl = modeToggleButton?.querySelector("[data-repository-mode-label]");
+// The Mode/View header row (center pane) — createModeToggleGroup/
+// createCycleToggleButton both rebuild their own mount's contents fresh on
+// every call, so these are just the two container elements, not individual
+// button refs.
+const viewToggleMountEl = document.querySelector("[data-repository-view-toggle-mount]");
+const modeToggleMountEl = document.querySelector("[data-repository-mode-toggle-mount]");
 
 // The whole in-memory saved-page list — re-fetched after every save/delete
 // rather than patched in place, since backlinks/the group tree/wiki-link
@@ -626,6 +637,31 @@ function goToSearchMatch(direction) {
   searchInput?.focus();
 }
 
+// The suite-wide header search's own deep link into a body match (see
+// common/js/lib/suite-search.js's own `?q=` extraParam) — same highlight+
+// scroll experience goToSearchMatch gives when cycling via Enter, just
+// seeded from the URL instead of a live keystroke. Unlike goToSearchMatch,
+// the target page is already known (whichever `?page=<id>` this same
+// deep-link already resolved and selected) — no need to re-derive which
+// page to land on, just highlight/scroll within the one already open.
+// Still populates every searchMatch* state variable goToSearchMatch reads,
+// so an Enter/Shift+Enter right afterward continues the cycle naturally
+// instead of starting over confused about where it left off.
+function jumpToSearchQuery(query) {
+  if (!query || !searchInput || !selectedId) return;
+  searchInput.value = query;
+  resetSearchCycle();
+  renderPageTree();
+  lastSearchQuery = query.toLowerCase();
+  searchMatchPageIds = matchingPageIdsInTreeOrder();
+  searchMatchPageIndex = searchMatchPageIds.indexOf(selectedId);
+  searchMatchTrackedPageId = selectedId;
+  searchMatchMarks = highlightTextMatches(previewEl, query);
+  if (!searchMatchMarks.length) return;
+  searchMatchMarkIndex = 0;
+  setActiveSearchMark(searchMatchMarkIndex);
+}
+
 function updateTagDatalist() {
   const seen = new Map();
   entries.forEach((entry) => {
@@ -693,35 +729,34 @@ function updateToolbarState() {
   if (duplicateButton) duplicateButton.disabled = !hasSelection;
   if (saveButton) saveButton.disabled = !hasSelection || !isDirty();
   if (deleteButton) deleteButton.disabled = !currentAllowsDelete();
-  if (modeToggleButton) modeToggleButton.disabled = !hasSelection;
+  renderPageViewToggle();
 }
 
-// One button, three stages (View -> Edit -> Relationships -> View, cyclic —
-// see advanceRepositoryStage), not a row of separate toggles. Icon/label/
-// tooltip always describe what clicking will switch TO, the same
-// idiom Handout/Map/Combat Tracker's own visibility button (setRightAction)
-// already uses for a two-stage toggle, generalized to three. Derives the
-// CURRENT stage from (mainView, currentMode) rather than tracking a third
-// piece of state directly, since mainView/currentMode together already fully
-// describe it: "relationships" whenever mainView says so, else currentMode.
-function updateModeButtonDisplay() {
-  const stage = mainView === "relationships" ? "relationships" : currentMode;
-  modeEyeIconEl?.classList.add("d-none");
-  modePencilIconEl?.classList.add("d-none");
-  modeRelationshipsIconEl?.classList.add("d-none");
-  let nextIconEl = modePencilIconEl;
-  let nextLabel = "Edit";
-  if (stage === "edit") {
-    nextIconEl = modeRelationshipsIconEl;
-    nextLabel = "Relationships";
-  } else if (stage === "relationships") {
-    nextIconEl = modeEyeIconEl;
-    nextLabel = "View";
+// The suite-wide View control (common/js/lib/ui-components.js's own
+// createCycleToggleButton) — ONE button, icon/tooltip always describing
+// what clicking will switch TO, the same idiom Handout/Map/Combat Tracker's
+// own visibility button (setRightAction) already uses, now shared suite-
+// wide instead of hand-rolled per tool. Only rendered while activeTab ===
+// "page" — View/Edit is a per-page concern, not meaningful on
+// Relationships/Timeline (see applyActiveTab, which calls this on every
+// tab change too, so the mount empties itself the moment Mode changes).
+function renderPageViewToggle() {
+  if (!viewToggleMountEl) return;
+  if (activeTab !== "page") {
+    disposeTooltips(viewToggleMountEl);
+    viewToggleMountEl.innerHTML = "";
+    return;
   }
-  nextIconEl?.classList.remove("d-none");
-  if (modeLabelEl) modeLabelEl.textContent = nextLabel;
-  modeToggleButton?.setAttribute("data-bs-title", nextLabel);
-  refreshTooltips();
+  const button = createCycleToggleButton({
+    container: viewToggleMountEl,
+    states: [
+      { value: "view", icon: "tabler:eye", label: "View" },
+      { value: "edit", icon: "tabler:pencil", label: "Edit" },
+    ],
+    value: currentMode,
+    onSelect: () => toggleMode(),
+  });
+  button.disabled = !selectedId;
 }
 
 function applyMode(mode) {
@@ -731,7 +766,7 @@ function applyMode(mode) {
   formatToolbarEl?.classList.toggle("d-none", isView);
   previewEl?.classList.toggle("d-none", !isView);
   previewEl?.classList.toggle("d-flex", isView);
-  updateModeButtonDisplay();
+  renderPageViewToggle();
   if (isView) renderPreview();
 }
 
@@ -952,6 +987,15 @@ function mountStoryBoardsInPreview() {
     contentEl.innerHTML = "";
     const mountPoint = document.createElement("div");
     contentEl.appendChild(mountPoint);
+    // markdown.js's own applyCalloutStyling reserves this generic slot in
+    // EVERY callout's own title bar (not story-board-specific there) — this
+    // is the one place that actually knows a story-board callout wants its
+    // Corkboard/Swimlane toggle mounted into it, immediately left of the
+    // fold chevron. A plain querySelector (not :scope-restricted) is safe
+    // here — the slot only ever exists once, inside this callout's own
+    // title bar, never inside `.callout-content` (a sibling, not an
+    // ancestor of it).
+    const modeSlot = calloutEl.querySelector(".callout-mode-slot");
     // Every edit here just updates workingPayload/the dirty state, same as
     // typing in the title/tags/body textarea does elsewhere in this file —
     // Repository has no autosave anywhere, a Story Board edit doesn't get
@@ -962,6 +1006,7 @@ function mountStoryBoardsInPreview() {
     let instance;
     instance = mountStoryBoard(mountPoint, {
       model: board.model,
+      modeSlot,
       resolveRef: resolveStoryBoardRefIcon,
       status,
       onMutate: (mutateFn) => {
@@ -1517,32 +1562,100 @@ function jumpToHeading(heading, index) {
   bodyTextarea.scrollTop = finalScrollTop;
 }
 
-// "editor" (the existing per-page title/body/preview surface) or
-// "relationships" (a workspace-wide read-only graph — see
-// relationships-graph.js) — mutually exclusive, toggled by the left pane's
-// own "Relationships" button. applyMainView is the one place that decides
-// all three panels' (editorEmptyEl/editorEl/relationshipsEl) visibility
-// together, called from renderEditor (whenever the selection changes) and
-// from the toggle button itself (whenever the view changes).
-let mainView = "editor";
+// "page" (the existing per-page title/body/preview surface), "relationships"
+// (a workspace-wide read-only graph — relationships-graph.js), or "timeline"
+// (a workspace-wide day-sorted list — journal-timeline.js) — mutually
+// exclusive, switched by the Mode toggle group in the center pane's own
+// header row (see renderModeToggle). applyActiveTab is the one place that
+// decides all three panels' (editorEmptyEl/editorEl/relationshipsEl/
+// timelineEl) visibility together, called from renderEditor (whenever the
+// page selection changes) and from setActiveTab (whenever the mode changes).
+let activeTab = "page";
 
-function applyMainView() {
-  const showRelationships = mainView === "relationships";
-  relationshipsEl?.classList.toggle("d-none", !showRelationships);
-  if (showRelationships) {
+// The suite-wide Mode control (createModeToggleGroup) — a real button
+// group, all three options always visible, deliberately a different shape
+// from renderPageViewToggle's own single cycling button (see that
+// function's own header comment, and ui-components.js's own
+// createModeToggleGroup/createCycleToggleButton for why the two stay
+// visually distinct).
+function renderModeToggle() {
+  if (!modeToggleMountEl) return;
+  // Relationships stays enabled with nothing loaded — unlike Timeline, it
+  // was never really "about" the selected page's own content: with no page
+  // loaded it graphs everything, same as today; with one loaded it scopes
+  // down to just that page's own connections (see scopedRelationshipsData).
+  // Timeline genuinely has nothing useful to anchor to without a page, so
+  // it keeps the disabled-until-loaded gate.
+  const hasPage = Boolean(selectedId) && Boolean(workingPayload);
+  // Dispose/refresh (needed only when an option carries its own `tooltip`,
+  // which Timeline does for its disabled state) is handled internally by
+  // createModeToggleGroup itself.
+  createModeToggleGroup({
+    container: modeToggleMountEl,
+    ariaLabel: "Repository view",
+    options: [
+      { value: "page", icon: "tabler:notebook", label: "Page" },
+      { value: "relationships", icon: "tabler:affiliate", label: "Relationships" },
+      {
+        value: "timeline",
+        icon: "tabler:calendar-event",
+        label: "Timeline",
+        disabled: !hasPage,
+        tooltip: hasPage ? undefined : "Select a page first",
+      },
+    ],
+    value: activeTab,
+    onChange: (next) => void setActiveTab(next),
+  });
+}
+
+// Forces back to "page" only when Timeline becomes disabled out from under
+// itself (selection just got cleared while it was active) — Relationships
+// has no such gate anymore, so it's never force-switched away from.
+// Called at the top, before the tab-visibility toggling below, so that
+// toggling and renderModeToggle's own re-render both already see the
+// corrected activeTab rather than a stale disabled-but-still-active value.
+function applyActiveTab() {
+  const hasPage = Boolean(selectedId) && Boolean(workingPayload);
+  if (!hasPage && activeTab === "timeline") {
+    activeTab = "page";
+  }
+  relationshipsEl?.classList.toggle("d-none", activeTab !== "relationships");
+  timelineEl?.classList.toggle("d-none", activeTab !== "timeline");
+  if (activeTab === "page") {
+    editorEmptyEl?.classList.toggle("d-none", hasPage);
+    editorEl?.classList.toggle("d-none", !hasPage);
+  } else {
     editorEmptyEl?.classList.add("d-none");
     editorEl?.classList.add("d-none");
-  } else {
-    const hasSelection = Boolean(selectedId) && Boolean(workingPayload);
-    editorEmptyEl?.classList.toggle("d-none", hasSelection);
-    editorEl?.classList.toggle("d-none", !hasSelection);
   }
-  updateModeButtonDisplay();
+  // Keeps the Relationships graph scoped to whichever page is loaded (or
+  // back to everything, the moment one isn't) even when the user switches
+  // pages WITHOUT leaving the Relationships tab — setActiveTab's own
+  // loadAndRenderRelationships only runs on switching INTO this tab, not on
+  // every subsequent selection change, so this is the other half of that.
+  if (activeTab === "relationships" && relationshipsData) {
+    renderGraphFilterOptions(scopedRelationshipsData());
+    redrawRelationshipsGraph();
+  }
+  renderModeToggle();
+  renderPageViewToggle();
+}
+
+// Only meaningful for "relationships"/"timeline" — switching TO "page" never
+// needs a rebuild (renderEditor's own hasSelection branch already covers
+// it), and switching AWAY from a tab leaves its own cached data
+// (relationshipsData/timelineData) alone for a fast return trip.
+async function setActiveTab(tab) {
+  activeTab = tab;
+  applyActiveTab();
+  if (tab === "relationships") await loadAndRenderRelationships();
+  if (tab === "timeline") await loadAndRenderTimeline();
 }
 
 function renderEditor() {
   const hasSelection = Boolean(selectedId) && Boolean(workingPayload);
-  applyMainView();
+  applyActiveTab();
   if (!hasSelection) return;
   if (titleInput) titleInput.value = workingPayload.title || "";
   if (bodyTextarea) bodyTextarea.value = workingPayload.body || "";
@@ -1601,8 +1714,35 @@ function filterGraphData(data, hiddenKinds) {
   return { nodes, edges };
 }
 
+// Narrows to just pageNodeId's own direct connections — itself, its quest
+// sub-nodes (always a direct edge, see buildRelationshipsGraph's own
+// addEdge(`journal:${page.id}`, questNodeId, ...)), and anything it links
+// to/from via a wikilink or `kind:Name` reference. One hop only, not
+// transitive — "this page's own relationships," not everything reachable
+// from it.
+function filterGraphToPage(data, pageNodeId) {
+  const edges = (data?.edges || []).filter((edge) => edge.a === pageNodeId || edge.b === pageNodeId);
+  const nodeIds = new Set([pageNodeId]);
+  edges.forEach((edge) => {
+    nodeIds.add(edge.a);
+    nodeIds.add(edge.b);
+  });
+  const nodes = (data?.nodes || []).filter((node) => nodeIds.has(node.id));
+  return { nodes, edges };
+}
+
+// The one place that decides "everything" vs. "just the loaded page" —
+// every caller that needs the graph's current scope (redrawRelationshipsGraph,
+// the filter-menu rebuild in loadAndRenderRelationships/applyActiveTab) goes
+// through this instead of each re-deciding when to apply
+// filterGraphToPage, so the two can never disagree about the active scope.
+function scopedRelationshipsData() {
+  if (!selectedId || !workingPayload) return relationshipsData;
+  return filterGraphToPage(relationshipsData, `journal:${selectedId}`);
+}
+
 function redrawRelationshipsGraph() {
-  relationshipsGraph?.setGraph(filterGraphData(relationshipsData, graphHiddenKinds));
+  relationshipsGraph?.setGraph(filterGraphData(scopedRelationshipsData(), graphHiddenKinds));
 }
 
 // Rebuilds the filter menu's own checkboxes from whichever kinds are
@@ -1659,11 +1799,12 @@ function initRelationshipsGraph() {
     emptyIcon: "tabler:affiliate",
     emptyMessage: "Nothing connected yet — add a [[wikilink]], a [!quest], or a `kind:Name` reference to a page.",
     // Lower than graph-view.js's own 0.75 default — a workspace with many
-    // pages/entities needs to zoom out further than Location Graph's own
-    // (much smaller) map ever does to see the whole shape at once.
+    // pages/entities needs to zoom out further than a single record's own
+    // (much smaller) Relationships graph ever does to see the whole shape
+    // at once.
     minZoom: 0.2,
   });
-  // Same reason Sanctum's own Location Graph stops this event from
+  // Same reason every tool's own Relationships graph stops this event from
   // bubbling to `container` — otherwise PanZoomController's own
   // setPointerCapture (fired on every pointerdown regardless of target)
   // hijacks the click these zoom buttons (and the filter dropdown below)
@@ -1688,8 +1829,81 @@ async function loadAndRenderRelationships() {
       status?.show("Unable to build the Relationships graph.", { type: "error" });
     }
   }
-  renderGraphFilterOptions(relationshipsData);
+  renderGraphFilterOptions(scopedRelationshipsData());
   redrawRelationshipsGraph();
+}
+
+// Cached for the session, same "computed on demand, invalidated on
+// save/delete" convention relationshipsData above already establishes
+// (handleSave/handleDelete null both out together).
+let timelineData = null;
+
+async function loadAndRenderTimeline() {
+  if (!timelineData) {
+    try {
+      timelineData = await buildTimeline(dataManager);
+    } catch (error) {
+      timelineData = [];
+      status?.show("Unable to build the Timeline.", { type: "error" });
+    }
+  }
+  renderTimeline();
+}
+
+// A day-index-formatted heading via the active calendar's own describeDate
+// (journal-date.js's own chip uses the identical function) — falls back to
+// a plain "Day <N>" reading when describeDate itself has to (no calendar
+// months defined), same grace period every other calendar-aware render in
+// this file already accepts.
+function formatTimelineDayHeading(dayIndex) {
+  return describeDate(activeCalendar || {}, dayIndex);
+}
+
+// Grouped by day (groupTimelineByDay — `isCurrent` entries resolved against
+// the live ambient day), each group a heading + its own entries, with a
+// "Today" divider inserted wherever activeCampaignDayIndex actually falls
+// in the sorted list — not just appended at the end, so past and upcoming
+// read as genuinely separated. Click-to-navigate mirrors Relationships'
+// own handleRelationshipsNodeSelect (handleTimelineEntrySelect above).
+function renderTimeline() {
+  if (!timelineListEl) return;
+  timelineListEl.innerHTML = "";
+  const groups = groupTimelineByDay(timelineData || [], activeCampaignDayIndex);
+  const hasToday = Number.isFinite(activeCampaignDayIndex);
+  timelineEmptyEl?.classList.toggle("d-none", Boolean(groups.length));
+  if (!groups.length) {
+    if (timelineEmptyEl) {
+      timelineEmptyEl.innerHTML = "";
+      timelineEmptyEl.appendChild(
+        createEmptyStateCard({
+          icon: "tabler:calendar-event",
+          message: "Nothing dated yet — add a `date:<day>` reference to a page.",
+        })
+      );
+    }
+    return;
+  }
+  let todayInserted = !hasToday;
+  groups.forEach((group) => {
+    if (!todayInserted && group.dayIndex >= activeCampaignDayIndex) {
+      timelineListEl.appendChild(el("div", "repository-timeline-today-divider small text-primary fw-semibold", "Today"));
+      todayInserted = true;
+    }
+    const heading = el("div", "small fw-semibold text-body-secondary mt-2", formatTimelineDayHeading(group.dayIndex));
+    timelineListEl.appendChild(heading);
+    group.items.forEach((item) => {
+      const row = document.createElement("button");
+      row.type = "button";
+      row.className = "btn btn-outline-secondary btn-sm text-start w-100 d-flex flex-column align-items-start mt-1";
+      const titleLine = el("span", "fw-semibold", item.label ? `${item.label} — ${item.pageTitle}` : item.pageTitle);
+      row.appendChild(titleLine);
+      row.addEventListener("click", () => handleTimelineEntrySelect(item.pageId));
+      timelineListEl.appendChild(row);
+    });
+  });
+  if (!todayInserted) {
+    timelineListEl.appendChild(el("div", "repository-timeline-today-divider small text-primary fw-semibold", "Today"));
+  }
 }
 
 // A node's own {pageId, questTitle, refKind, refId} (attached directly by
@@ -1703,39 +1917,26 @@ function handleRelationshipsNodeSelect(nodeId) {
   const node = (relationshipsData?.nodes || []).find((entry) => entry.id === nodeId);
   if (!node) return;
   if (node.kind === "journal") {
-    mainView = "editor";
-    applyMainView();
+    void setActiveTab("page");
     selectPage(node.pageId, { remember: false });
     return;
   }
   if (node.kind === "quest") {
-    mainView = "editor";
-    applyMainView();
+    void setActiveTab("page");
     selectPage(node.pageId, { heading: node.questTitle || "", remember: false });
     return;
   }
   void handleOpenReference(node.refKind, node.refId);
 }
 
-// The page toolbar's single mode button now cycles View -> Edit ->
-// Relationships -> View (see updateModeButtonDisplay for how it derives
-// which stage is "current" from mainView+currentMode together). Folding
-// Relationships in here instead of giving it a fourth toolbar button keeps
-// this pane's total button count at 7 (6 page-action buttons + this one).
-async function advanceRepositoryStage() {
-  if (mainView === "relationships") {
-    mainView = "editor";
-    applyMode("view");
-    applyMainView();
-    return;
-  }
-  if (currentMode === "view") {
-    toggleMode();
-    return;
-  }
-  mainView = "relationships";
-  applyMainView();
-  await loadAndRenderRelationships();
+// Timeline's own click-to-navigate — same "switch back to the Page tab,
+// then select" shape as handleRelationshipsNodeSelect above. No heading
+// anchor (unlike a Relationships quest node) — a date reference's own free-
+// text label isn't reliably a real heading/quest title to jump to, just
+// the page itself.
+function handleTimelineEntrySelect(pageId) {
+  void setActiveTab("page");
+  selectPage(pageId, { remember: false });
 }
 
 // previewEl's own scrollTop for whichever page is currently selected, keyed
@@ -1903,9 +2104,10 @@ async function handleSave() {
   draftEntry = null;
   cleanSnapshot = JSON.stringify(workingPayload);
   // Stale after any real content change — recomputed the next time the
-  // Relationships view opens, not eagerly here (see
+  // Relationships/Timeline tab opens, not eagerly here (see
   // loadAndRenderRelationships's own "computed on demand" comment).
   relationshipsData = null;
+  timelineData = null;
   await refreshEntries();
   updateToolbarState();
   status?.show("Saved.", { type: "success", timeout: 1500 });
@@ -1923,6 +2125,7 @@ async function handleDelete() {
   }
   clearSelection();
   relationshipsData = null;
+  timelineData = null;
   await refreshEntries();
   status?.show("Deleted.", { type: "success", timeout: 1500 });
 }
@@ -1969,7 +2172,13 @@ newButton?.addEventListener("click", () => createDraftEntry());
 duplicateButton?.addEventListener("click", () => handleDuplicate());
 saveButton?.addEventListener("click", () => void handleSave());
 deleteButton?.addEventListener("click", () => void handleDelete());
-modeToggleButton?.addEventListener("click", () => void advanceRepositoryStage());
+// The Mode/View header row's own click handling lives inside
+// renderModeToggle/renderPageViewToggle themselves (createModeToggleGroup's
+// own onChange, createCycleToggleButton's own onSelect) — both rebuild
+// fresh on every call, so there's no persistent top-level listener to wire
+// here the way the fixed toolbar buttons above need.
+renderModeToggle();
+renderPageViewToggle();
 
 // Live (every keystroke) for dirty-gating feedback — Save should enable the
 // instant you type, not just once you blur. The undo entry itself is
@@ -2760,6 +2969,7 @@ void ensureLibraryKinds().then(() => {
 });
 void refreshActiveCalendar().then(() => {
   if (currentMode === "view") renderPreview();
+  if (activeTab === "timeline") renderTimeline();
 });
 // The header's own Campaign dropdown — a different campaign can mean a
 // different Setting, so its calendar vocabulary needs re-resolving too
@@ -2767,18 +2977,21 @@ void refreshActiveCalendar().then(() => {
 window.addEventListener("workbench:active-group-changed", () => {
   void refreshActiveCalendar().then(() => {
     if (currentMode === "view") renderPreview();
+    if (activeTab === "timeline") renderTimeline();
   });
 });
 // Advancing the campaign date from a Calendar widget (this tab, another tab,
 // another dashboard entirely) broadcasts this — updates the cached day index
 // directly (no re-fetch needed, the event payload already carries it — see
 // data-manager.js's own setCampaignDate) and re-renders so any
-// `` `date:current` `` chip on the currently-viewed page reflects it
-// immediately, the same live-propagation the Calendar widget itself gives.
+// `` `date:current` `` chip on the currently-viewed page (or the Timeline
+// tab's own Today divider/grouping) reflects it immediately, the same
+// live-propagation the Calendar widget itself gives.
 window.addEventListener("undercroft:campaign-date-changed", (event) => {
   const dayIndex = event.detail?.dayIndex;
   activeCampaignDayIndex = Number.isFinite(dayIndex) ? dayIndex : null;
   if (currentMode === "view") renderPreview();
+  if (activeTab === "timeline") renderTimeline();
 });
 void refreshEntries().then(() => {
   // A bookmarked/reloaded `?page=<id>` deep-links straight to that page —
@@ -2794,6 +3007,14 @@ void refreshEntries().then(() => {
   // and Orrery's marker "Open in Repository" link-out) — selectPage's own
   // `heading` option already resolves either kind of anchor uniformly.
   const requestedHeading = deepLinkParams.get("heading") || "";
+  // `?q=<term>` — the suite-wide header search's own deep link into a body
+  // match (common/js/lib/suite-search.js) — highlights and scrolls to the
+  // actual match inside the page, same as jumpToSearchQuery's own comment
+  // explains. selectPage's own scroll decision (heading/remembered
+  // position/top) runs first and is deliberately superseded by this right
+  // after — both are synchronous, so there's no visible flash between them.
+  const requestedQuery = deepLinkParams.get("q") || "";
   if (resolvedId) selectPage(resolvedId, { heading: requestedHeading, remember: true, pushHistory: false });
+  if (resolvedId && requestedQuery) jumpToSearchQuery(requestedQuery);
   replacePageHistory(resolvedId);
 });

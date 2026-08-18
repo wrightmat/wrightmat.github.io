@@ -399,6 +399,22 @@
   user-select: none;
 }
 
+/* The "Select a map..." empty-state message — mirrors .orrery-floating-panel's
+   own top offset but sits in the opposite (top-left) corner, which the
+   zoom/ping/measure/draw controls panel never occupies. Uses
+   createEmptyStateCard's "inline" variant (same condensed flush-left
+   treatment every other tool's own Mode/View header uses), but unlike
+   those tools' own plain page background, this floats over a map surface
+   that can be any image/color — so, same as .orrery-floating-panel right
+   next to it, it gets a real background/border here rather than staying
+   fully transparent, or it'd go illegible over a busy map. */
+.orrery-empty-state {
+  position: absolute;
+  top: 1.5rem;
+  left: 1.5rem;
+  z-index: 1035;
+}
+
 .orrery-view-handle {
   cursor: grab;
 }

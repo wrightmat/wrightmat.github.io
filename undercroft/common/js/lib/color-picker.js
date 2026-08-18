@@ -99,6 +99,65 @@ export function hsvToHex(hsv) {
   return rgbToHex(hsvToRgb(hsv));
 }
 
+function expandShortHex(value) {
+  const match = /^#([0-9a-fA-F]{3})$/.exec(value.trim());
+  if (!match) return null;
+  const [r, g, b] = match[1].split("");
+  return normalizeHex(`#${r}${r}${g}${g}${b}${b}`);
+}
+
+function parseRgbFunction(value) {
+  const match = /^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i.exec(value.trim());
+  if (!match) return null;
+  return rgbToHex({ r: Number(match[1]), g: Number(match[2]), b: Number(match[3]) });
+}
+
+// Resolves a CSS custom property's CURRENT computed value (e.g. Bootstrap's
+// own --bs-body-bg, "#fff" in light mode) to a hex string this module's
+// existing hex/HSV pipeline can use for the picker's own live preview — NOT
+// used for user-typed hex input, which stays strictly 6-digit via
+// normalizeHex above. Bootstrap uses 3-digit shorthand for some tokens
+// (confirmed by reading the vendored CSS directly: --bs-body-bg:#fff),
+// which normalizeHex's own strict regex rejects — this tries that first,
+// then a 3-digit expansion, then a rgb()/rgba() function-syntax fallback in
+// case a custom (non-Bootstrap) token happens to be defined that way.
+export function resolveThemeTokenHex(tokenName) {
+  if (typeof document === "undefined" || !tokenName) return null;
+  const raw = getComputedStyle(document.documentElement).getPropertyValue(tokenName).trim();
+  if (!raw) return null;
+  return normalizeHex(raw) || expandShortHex(raw) || parseRgbFunction(raw);
+}
+
+// Curated, deliberately small — Bootstrap's own semantic/surface tokens,
+// already redefined automatically per active Bootswatch pack
+// (common/data/theme-packs.json) and per light/dark mode
+// ([data-bs-theme]), so a color stored as one of these stays correct
+// forever with zero template-side changes when either changes. Accent
+// Background/Accent Text are a deliberate PAIR — Bootstrap 5.3's own
+// "subtle background + emphasis text" convention, engineered to stay
+// readable together in both modes — the direct answer to needing a
+// foreground that's always readable against its own background regardless
+// of active theme (5e proficiency pips, e.g.), which no fixed hex can
+// promise once the palette itself is user-selectable. Not a JSON manifest
+// like theme-packs.json — this list is tied to Bootstrap's own fixed
+// vocabulary, not per-System/user content — just add an entry here to
+// extend it later (Danger/Warning/Success, etc.).
+export const THEME_COLOR_SWATCHES = [
+  { label: "Primary", token: "--bs-primary" },
+  { label: "Body Background", token: "--bs-body-bg" },
+  { label: "Body Text", token: "--bs-body-color" },
+  { label: "Muted Text", token: "--bs-secondary-color" },
+  { label: "Border", token: "--bs-border-color" },
+  { label: "Accent Background", token: "--bs-primary-bg-subtle" },
+  { label: "Accent Text", token: "--bs-primary-text-emphasis" },
+];
+
+// Matches exactly what this field writes back out for a theme-token
+// selection (see commitThemeToken below) — the one shape this module
+// recognizes as "this value is a theme token," on load and on every
+// render.
+const THEME_TOKEN_PATTERN = /^var\((--[\w-]+)\)$/;
+
 let idCounter = 0;
 function nextId(prefix) {
   idCounter += 1;
@@ -176,72 +235,95 @@ export function createColorPickerField(labelText, {
   hueHandle.className = "color-picker-hue-handle";
   hueSlider.appendChild(hueHandle);
 
-  // Hex input + Accept share one row — Accept applies to whatever this
-  // popover currently has staged (a dragged/typed color, or a typed
-  // binding/formula below), so it reads naturally as "confirm the value
-  // shown here," not as a color-only control tucked off on its own.
-  const hexRow = document.createElement("div");
-  hexRow.className = "d-flex align-items-center gap-2";
-  const hexLabel = document.createElement("span");
-  hexLabel.className = "text-body-secondary extra-small";
-  hexLabel.textContent = "Hex";
-  const hexInput = document.createElement("input");
-  hexInput.type = "text";
-  hexInput.className = "form-control form-control-sm flex-grow-1";
-  hexInput.autocomplete = "off";
-  hexInput.spellcheck = false;
+  // Theme-color swatches — clicking one is a shortcut that fills
+  // valueInput below with that token's bare name (e.g. "--bs-primary"),
+  // not a separate mechanism from it. Each swatch's own background is set
+  // inline to var(<token>) directly, so every dot always shows its real,
+  // live, currently-active-theme color with no computed-value lookup
+  // needed just to render the row itself.
+  const themeSwatchRow = document.createElement("div");
+  themeSwatchRow.className = "color-picker-theme-swatches";
+  const themeSwatchButtons = THEME_COLOR_SWATCHES.map((entry) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "color-picker-theme-swatch";
+    button.style.backgroundColor = `var(${entry.token})`;
+    button.title = `Theme color: ${entry.label}`;
+    button.setAttribute("aria-label", `Theme color: ${entry.label}`);
+    button.dataset.token = entry.token;
+    themeSwatchRow.appendChild(button);
+    return button;
+  });
+
+  // One input for every color source this field understands — a leading
+  // character decides which (see classifyInput below): "#" a literal hex,
+  // "--" a CSS theme variable (what the swatches above are shortcuts for),
+  // "@" a binding or "=" a formula (unchanged from before this
+  // consolidation — both were always handed to onBindingChange raw either
+  // way, never actually two different code paths here). Accept/Clear apply
+  // to whatever this currently holds, same "confirm what's shown" contract
+  // the old per-mode Accept button already had, just one shared instance
+  // of it instead of one per mode.
+  const valueRow = document.createElement("div");
+  valueRow.className = "d-flex align-items-center gap-2 color-picker-value-row";
+  const valueInput = document.createElement("input");
+  valueInput.type = "text";
+  valueInput.className = "form-control form-control-sm flex-grow-1";
+  valueInput.autocomplete = "off";
+  valueInput.spellcheck = false;
+  valueInput.placeholder = "#hex · --theme · @bind · =formula";
+  // The caller's own richer example (e.g. "@abilities.str.mod or
+  // =if(...)") moves to a hover tooltip rather than the placeholder text —
+  // there's only one input now, and the placeholder above already has to
+  // cover all four shapes at once.
+  valueInput.title = placeholder;
   const acceptButton = document.createElement("button");
   acceptButton.type = "button";
   acceptButton.className = "btn btn-primary btn-sm color-picker-accept flex-shrink-0";
   acceptButton.innerHTML = '<span class="iconify" data-icon="tabler:check" aria-hidden="true"></span>';
   acceptButton.setAttribute("aria-label", `Accept ${labelText.toLowerCase()} color`);
-  hexRow.append(hexLabel, hexInput, acceptButton);
-
-  const bindingWrap = document.createElement("div");
-  bindingWrap.className = "d-flex flex-column gap-1 color-picker-binding";
-  const bindingLabel = document.createElement("label");
-  bindingLabel.className = "form-label extra-small text-body-secondary mb-0";
-  bindingLabel.textContent = "Binding / formula";
-  const bindingInput = document.createElement("input");
-  bindingInput.type = "text";
-  bindingInput.className = "form-control form-control-sm";
-  bindingInput.placeholder = placeholder;
-  bindingInput.autocomplete = "off";
-  bindingInput.spellcheck = false;
-  bindingWrap.append(bindingLabel, bindingInput);
-
-  // The only clear affordance now — there used to ALSO be an icon-only
-  // button next to the swatch itself, outside the popover entirely, which
-  // turned out not to be obvious as a "clear" action at a glance. One
-  // button, inside the popover, with both a visible label and a tooltip.
-  const clearRow = document.createElement("div");
-  clearRow.className = "d-flex justify-content-end pt-1";
   const clearButton = document.createElement("button");
   clearButton.type = "button";
-  clearButton.className = "btn btn-outline-secondary btn-sm";
-  clearButton.innerHTML = `<span class="iconify" data-icon="tabler:circle-off" aria-hidden="true"></span> Clear`;
+  clearButton.className = "btn btn-outline-secondary btn-sm flex-shrink-0";
+  clearButton.innerHTML = '<span class="iconify" data-icon="tabler:circle-off" aria-hidden="true"></span>';
   clearButton.title = `Clear ${labelText.toLowerCase()}`;
   clearButton.setAttribute("aria-label", `Clear ${labelText.toLowerCase()}`);
-  clearRow.appendChild(clearButton);
+  valueRow.append(valueInput, acceptButton, clearButton);
 
-  popover.append(svSquare, hueSlider, hexRow, bindingWrap, clearRow);
+  popover.append(svSquare, hueSlider, themeSwatchRow, valueRow);
   swatchWrap.appendChild(popover);
 
   // ---- State ----
 
   let hsv = hexToHsv(value) || hexToHsv(defaultValue) || { h: 0, s: 0, v: 0 };
-  // The last value this field actually committed (Accept, Enter, or
-  // closing the popover — see commitCurrent) — distinct from the `value`/
-  // `bindingValue` this field was created with, since a host that doesn't
-  // rebuild this widget on every committed change (Press's manual color
-  // handler doesn't; see that tool's own comment) would otherwise leave
-  // those stale after the very first commit. Everything that needs "what's
-  // actually committed right now" (the unset-X overlay, discarding a
-  // cancelled Escape) reads these instead of the closure parameters.
-  let committedHex = normalizeHex(value) || null;
-  let committedBinding = bindingValue || "";
-  let hasManualValue = Boolean(committedHex);
-  // Set by any actual edit (drag, hex typing, binding typing); cleared on
+
+  function themeTokenFromValue(raw) {
+    return THEME_TOKEN_PATTERN.exec(raw || "")?.[1] || "";
+  }
+
+  // "#" hex, "--" a CSS custom property, "@"/"=" binding/formula — the
+  // one place this module decides which of the three (or "empty"/
+  // "unrecognized") a raw string is, used identically for live preview
+  // (render/previewInput) and for commitCurrent, so they can never
+  // disagree about what the input currently means.
+  function classifyInput(raw) {
+    const trimmed = typeof raw === "string" ? raw.trim() : "";
+    if (!trimmed) return { kind: "empty", text: "" };
+    if (trimmed.startsWith("#")) return { kind: "hex", text: trimmed };
+    if (trimmed.startsWith("--")) return { kind: "theme", text: trimmed };
+    if (trimmed.startsWith("@") || trimmed.startsWith("=")) return { kind: "binding", text: trimmed };
+    return { kind: "unrecognized", text: trimmed };
+  }
+
+  // What the input shows for "the last actually committed state" — binding
+  // wins if both `bindingValue` and `value` happen to be set, same
+  // precedence this field already gave binding over manual color before
+  // this consolidation. Everything this field ever commits is exactly one
+  // of these three shapes (see commitCurrent), so recognizing which one
+  // `value` already is uses the same classification, just run once here.
+  let committedRawText = bindingValue || themeTokenFromValue(value) || value || "";
+  valueInput.value = committedRawText;
+  // Set by any actual edit (drag, typing, a theme swatch click); cleared on
   // open and after every commit. Lets commitCurrent() no-op on a plain
   // open-then-click-away with nothing touched, instead of writing an
   // unchanged value and pushing a no-op undo entry every time someone
@@ -249,49 +331,60 @@ export function createColorPickerField(labelText, {
   let dirty = false;
   let isOpen = false;
 
-  function hasBindingContent() {
-    return bindingInput.value.trim().length > 0;
-  }
-
-  // Renders the swatch/hex/indicator from whatever is currently the
-  // "effective" color — the literal hsv-derived hex while unbound, or
-  // evaluate()'s live result while a binding/formula is active. Never
-  // invents a color of its own: an unresolved binding/formula shows the
-  // same unset/indeterminate treatment the rest of this inspector already
-  // uses for "nothing is actually set," not a guessed hex. Called on every
-  // drag/hex-input/binding-input frame purely for this LOCAL preview —
-  // nothing here writes to the actual data (see commitCurrent for the only
-  // path that does).
+  // Renders the swatch/indicator from whatever the input currently
+  // classifies as. Never invents a color of its own: an unresolved
+  // binding/formula/theme-token shows the same unset/indeterminate
+  // treatment the rest of this inspector already uses for "nothing is
+  // actually set," not a guessed hex. Called on every drag/typing frame
+  // purely for this LOCAL preview — nothing here writes to the actual data
+  // (see commitCurrent for the only path that does).
   function render() {
-    const bound = hasBindingContent();
-    svSquare.classList.toggle("disabled", bound);
-    hueSlider.classList.toggle("disabled", bound);
-    hexInput.disabled = bound;
+    const classification = classifyInput(valueInput.value);
     let effectiveHex = hsvToHex(hsv);
-    let isSet = true;
+    // Only set for the theme case — a live var() reference, kept correct
+    // forever by the browser itself (theme pack/light-dark changes need no
+    // re-render here). effectiveHex stays a resolved snapshot, used for
+    // the wheel's own indicator position regardless of which kind is active.
+    let effectiveSwatchColor = null;
+    let isSet = false;
     let indeterminate = false;
-    if (bound) {
-      const result = typeof evaluate === "function" ? evaluate(bindingInput.value.trim()) : undefined;
-      if (result === undefined) {
-        indeterminate = true;
-        isSet = false;
+    if (classification.kind === "binding") {
+      const result = typeof evaluate === "function" ? evaluate(classification.text) : undefined;
+      const normalized = result !== undefined ? normalizeHex(result) : null;
+      if (normalized) {
+        effectiveHex = normalized;
+        isSet = true;
       } else {
-        const normalized = normalizeHex(result);
-        if (normalized) {
-          effectiveHex = normalized;
-        } else {
-          indeterminate = true;
-          isSet = false;
-        }
+        indeterminate = true;
       }
-    } else {
-      isSet = hasManualValue;
+    } else if (classification.kind === "theme") {
+      effectiveSwatchColor = `var(${classification.text})`;
+      const resolved = resolveThemeTokenHex(classification.text);
+      if (resolved) {
+        effectiveHex = resolved;
+        isSet = true;
+      } else {
+        indeterminate = true;
+      }
+    } else if (classification.kind === "hex") {
+      const normalized = normalizeHex(classification.text);
+      if (normalized) {
+        effectiveHex = normalized;
+        isSet = true;
+      } else {
+        indeterminate = true;
+      }
+    } else if (classification.kind === "unrecognized") {
+      // Something's there, just not a shape this field understands —
+      // "can't preview this," not "nothing entered."
+      indeterminate = true;
     }
-    swatch.style.backgroundColor = effectiveHex;
+    swatch.style.backgroundColor = effectiveSwatchColor || effectiveHex;
     wrapper.classList.toggle("template-color-control--unset", !isSet && !indeterminate);
     wrapper.classList.toggle("color-picker-indeterminate", indeterminate);
-    hexInput.value = bound ? effectiveHex : (isSet ? effectiveHex : "");
-    hexInput.placeholder = bound ? "" : defaultValue;
+    themeSwatchButtons.forEach((button) => {
+      button.classList.toggle("active", classification.kind === "theme" && button.dataset.token === classification.text);
+    });
     const { h, s, v } = hsv;
     svSquare.style.setProperty("--color-picker-hue", String(h));
     svIndicator.style.left = `${s}%`;
@@ -299,44 +392,76 @@ export function createColorPickerField(labelText, {
     hueHandle.style.left = `${(h / 360) * 100}%`;
   }
 
-  // Local-only: updates hsv and re-renders the popover's own preview
-  // (swatch included) without writing anything to the actual data — see
-  // commitCurrent for the only thing that actually does that.
-  function previewManual() {
-    hasManualValue = true;
+  // Local-only: re-renders the popover's own preview (swatch included)
+  // without writing anything to the actual data — see commitCurrent for
+  // the only thing that actually does that.
+  function previewInput() {
+    const classification = classifyInput(valueInput.value);
+    if (classification.kind === "hex") {
+      const normalized = normalizeHex(classification.text);
+      if (normalized) hsv = hexToHsv(normalized) || hsv;
+    }
     dirty = true;
     render();
   }
 
-  // The only two things that actually write to the host's data —
-  // commitCurrent below decides which applies and is the only caller of
-  // either. Never invoked directly from a drag/typing frame.
-  function commitManualColor() {
-    const hex = hsvToHex(hsv);
-    committedHex = hex;
-    if (typeof onManualChange === "function") onManualChange(hex);
-  }
-  function commitBindingText() {
-    const raw = bindingInput.value.trim();
-    committedBinding = raw;
-    if (typeof onBindingChange === "function") onBindingChange(raw);
+  // Dragging always writes its resulting hex straight into valueInput —
+  // there's only one input now, so this IS how a drag stays visible,
+  // exactly as if the user had typed the same hex by hand. Whatever kind
+  // of value was there before (a binding, a theme token) is simply
+  // overwritten, same as typing over it would be.
+  function applyHsvToInput() {
+    valueInput.value = hsvToHex(hsv);
+    dirty = true;
+    render();
   }
 
-  // The one place anything gets committed — Accept, Enter (in either the
-  // hex or binding box), and closing the popover by any means other than
-  // Escape all funnel through this. A binding box with real text (or one
-  // that HAD committed text and has now been typed down to empty, which is
-  // a real "clear the binding" edit) always wins over the manual color,
-  // matching hasBindingContent()'s own manual-controls-disabled rule in
-  // render(). A no-op open-then-close (nothing actually touched) commits
-  // nothing at all — see `dirty`'s own comment.
+  // The only three things that actually write to the host's data —
+  // commitCurrent below decides which applies and is the only caller of
+  // any of them. Never invoked directly from a drag/typing frame.
+  function commitManualColor(hex) {
+    committedRawText = hex;
+    if (typeof onManualChange === "function") onManualChange(hex);
+  }
+  function commitBindingText(raw) {
+    committedRawText = raw;
+    if (typeof onBindingChange === "function") onBindingChange(raw);
+  }
+  // Writes "var(--the-token)" into the SAME field a hex value normally
+  // occupies (via onManualChange, not a new callback) — every renderer
+  // already just assigns whatever string it's given to element.style.color/
+  // backgroundColor, so a var() reference works there with zero rendering-
+  // side changes, and stays live/correct automatically if the active theme
+  // pack or light/dark mode changes later.
+  function commitThemeToken(tokenName) {
+    committedRawText = tokenName;
+    if (typeof onManualChange === "function") onManualChange(`var(${tokenName})`);
+  }
+  function commitClear() {
+    committedRawText = "";
+    if (typeof onBindingChange === "function") onBindingChange("");
+    if (typeof onClear === "function") onClear();
+  }
+
+  // The one place anything gets committed — Accept, Enter, and closing the
+  // popover by any means other than Escape all funnel through this. A
+  // no-op open-then-close (nothing actually touched) commits nothing at
+  // all — see `dirty`'s own comment. Typing the input down to nothing and
+  // committing that is a real "clear" edit, same as clicking Clear
+  // outright; typing something that matches none of the four recognized
+  // shapes commits nothing, same defensive "silently ignore, don't guess"
+  // behavior this field's own hex input always had for invalid text.
   function commitCurrent() {
     if (!dirty) return;
-    const currentBinding = bindingInput.value.trim();
-    if (currentBinding || committedBinding) {
-      commitBindingText();
-    } else {
-      commitManualColor();
+    const classification = classifyInput(valueInput.value);
+    if (classification.kind === "binding") {
+      commitBindingText(classification.text);
+    } else if (classification.kind === "theme") {
+      commitThemeToken(classification.text);
+    } else if (classification.kind === "hex") {
+      commitManualColor(normalizeHex(classification.text) || hsvToHex(hsv));
+    } else if (classification.kind === "empty") {
+      commitClear();
     }
     dirty = false;
     render();
@@ -351,7 +476,7 @@ export function createColorPickerField(labelText, {
     const x = clamp01((clientX - rect.left) / rect.width);
     const y = clamp01((clientY - rect.top) / rect.height);
     hsv = { ...hsv, s: x * 100, v: (1 - y) * 100 };
-    previewManual();
+    applyHsvToInput();
   }
 
   function onSvPointerMove(event) {
@@ -365,14 +490,12 @@ export function createColorPickerField(labelText, {
     document.removeEventListener("touchend", onSvPointerUp);
   }
   svSquare.addEventListener("mousedown", (event) => {
-    if (hasBindingContent()) return;
     event.preventDefault();
     updateSvFromEvent(event);
     document.addEventListener("mousemove", onSvPointerMove);
     document.addEventListener("mouseup", onSvPointerUp);
   });
   svSquare.addEventListener("touchstart", (event) => {
-    if (hasBindingContent()) return;
     updateSvFromEvent(event);
     document.addEventListener("touchmove", onSvPointerMove, { passive: false });
     document.addEventListener("touchend", onSvPointerUp);
@@ -385,7 +508,7 @@ export function createColorPickerField(labelText, {
     const clientX = event.touches ? event.touches[0].clientX : event.clientX;
     const x = clamp01((clientX - rect.left) / rect.width);
     hsv = { ...hsv, h: x * 360 };
-    previewManual();
+    applyHsvToInput();
   }
   function onHuePointerMove(event) {
     event.preventDefault();
@@ -398,51 +521,35 @@ export function createColorPickerField(labelText, {
     document.removeEventListener("touchend", onHuePointerUp);
   }
   hueSlider.addEventListener("mousedown", (event) => {
-    if (hasBindingContent()) return;
     event.preventDefault();
     updateHueFromEvent(event);
     document.addEventListener("mousemove", onHuePointerMove);
     document.addEventListener("mouseup", onHuePointerUp);
   });
   hueSlider.addEventListener("touchstart", (event) => {
-    if (hasBindingContent()) return;
     updateHueFromEvent(event);
     document.addEventListener("touchmove", onHuePointerMove, { passive: false });
     document.addEventListener("touchend", onHuePointerUp);
   });
 
-  // ---- Hex text input ----
+  // ---- Theme-color swatches ----
 
-  hexInput.addEventListener("input", () => {
-    const normalized = normalizeHex(hexInput.value);
-    if (!normalized) return;
-    hsv = hexToHsv(normalized) || hsv;
-    previewManual();
+  themeSwatchButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      valueInput.value = button.dataset.token;
+      dirty = true;
+      render();
+    });
+  });
+
+  // ---- The one value input ----
+
+  valueInput.addEventListener("input", () => {
+    previewInput();
   });
   // Enter is a shortcut for "commit and close" (same as Accept) — a
   // deliberate one-shot confirm, not a second code path.
-  hexInput.addEventListener("keydown", (event) => {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      commitAndClose();
-    }
-  });
-
-  // ---- Binding/formula input ----
-
-  bindingInput.value = bindingValue || "";
-  // Typing here only ever updates the LOCAL preview (render() evaluates
-  // whatever's currently typed, live) — it used to call onBindingChange on
-  // every keystroke, which committed a change on every keystroke, which is
-  // exactly the same "a commit is the host's cue to re-render, and
-  // re-rendering while you're still typing tears this popover down and
-  // rebuilds it mid-edit" problem the manual color drag had. Only
-  // commitCurrent (Accept, Enter, or closing) actually writes it out.
-  bindingInput.addEventListener("input", () => {
-    dirty = true;
-    render();
-  });
-  bindingInput.addEventListener("keydown", (event) => {
+  valueInput.addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
       event.preventDefault();
       commitAndClose();
@@ -458,12 +565,8 @@ export function createColorPickerField(labelText, {
   // ---- Clear ----
 
   clearButton.addEventListener("click", () => {
-    bindingInput.value = "";
-    if (typeof onBindingChange === "function") onBindingChange("");
-    if (typeof onClear === "function") onClear();
-    committedHex = null;
-    committedBinding = "";
-    hasManualValue = false;
+    valueInput.value = "";
+    commitClear();
     dirty = false;
     hsv = hexToHsv(defaultValue) || hsv;
     render();
@@ -495,9 +598,11 @@ export function createColorPickerField(labelText, {
   function closeAndDiscard() {
     if (!isOpen) return;
     teardownOpenState();
-    hsv = hexToHsv(committedHex) || hexToHsv(defaultValue) || hsv;
-    hasManualValue = Boolean(committedHex);
-    bindingInput.value = committedBinding;
+    valueInput.value = committedRawText;
+    const committed = classifyInput(committedRawText);
+    if (committed.kind === "hex") {
+      hsv = hexToHsv(committed.text) || hexToHsv(defaultValue) || hsv;
+    }
     dirty = false;
     render();
   }

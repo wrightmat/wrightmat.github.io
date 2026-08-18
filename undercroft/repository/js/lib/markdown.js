@@ -410,12 +410,31 @@ function applyCalloutStyling(container) {
       if (calloutEl.dataset.callout === "quest") {
         refreshQuestBadge(calloutEl);
       }
+      // A generic, always-reserved slot for a compact View toggle
+      // (common/js/lib/ui-components.js's own createCycleToggleButton) any
+      // callout-specific mounting code wants in its own title bar —
+      // Story Board's Corkboard/Swimlane toggle (repository/js/app.js's own
+      // mountStoryBoardsInPreview) is the first consumer, but this function
+      // itself has NO knowledge of story boards or any other specific
+      // callout type; it's callout-type-agnostic by design, the same way
+      // `.callout-icon-slot` below is. An empty span costs nothing when no
+      // caller ever fills it. Inserted before the fold chevron (if any).
+      // Carries `marginLeft: auto` itself (not the chevron, see below) —
+      // in a flex row, whichever element has the auto margin is what gets
+      // pushed all the way to the far right, dragging anything AFTER it
+      // along in normal flow with no gap of its own; putting the auto
+      // margin here (not on the chevron) is what pins [mode-slot, chevron]
+      // together as one unit at the title bar's own right edge, rather than
+      // leaving the mode slot sitting right after the title text with the
+      // chevron alone pushed away from it.
+      const modeSlot = el("span", "callout-mode-slot d-inline-flex align-items-center gap-1");
+      modeSlot.style.marginLeft = "auto";
+      titleEl.appendChild(modeSlot);
       if (calloutEl.tagName === "DETAILS") {
         titleEl.style.cursor = "pointer";
         const chevron = el("span", "iconify");
         chevron.dataset.icon = "tabler:chevron-right";
         chevron.setAttribute("aria-hidden", "true");
-        chevron.style.marginLeft = "auto";
         chevron.style.transition = "transform 0.15s ease";
         chevron.style.transform = calloutEl.open ? "rotate(90deg)" : "rotate(0deg)";
         titleEl.appendChild(chevron);

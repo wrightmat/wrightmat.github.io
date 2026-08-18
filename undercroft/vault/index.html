@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Undercroft Vault</title>
     <script src="../common/js/theme-init.js"></script>
-    <link rel="stylesheet" href="../common/vendor/bootstrap/bootstrap.min.css" />
     <link rel="stylesheet" href="../common/css/shell.css" />
     <link rel="stylesheet" href="css/styles.css" />
   </head>
@@ -17,9 +16,11 @@
         <div data-pane-content="left">
           <div class="btn-toolbar justify-content-center" role="toolbar" aria-label="Effect actions">
             <div class="btn-group" role="group" data-effect-toolbar-mount></div>
+            <div class="btn-group ms-2" role="group" data-effect-undo-toolbar-mount></div>
           </div>
 
-          <section class="d-flex flex-column gap-2" id="vault-generate">
+          <div data-selections-mount></div>
+          <div class="d-flex flex-column gap-2" data-selections-panel>
             <div data-field-mount="system-select"></div>
             <div data-field-mount="effect-select"></div>
 
@@ -30,13 +31,28 @@
               <div data-field-mount="signature-feature-override"></div>
               <div data-field-mount="locked-features"></div>
             </div>
-          </section>
+          </div>
 
           <div class="mt-auto" id="vault-json" data-json-mount></div>
         </div>
 
         <main class="workbench-main flex-grow-1 p-3 overflow-auto">
-          <div class="d-flex flex-column gap-3" data-effect-empty-state></div>
+          <!-- The suite-wide Mode header — the "Nothing selected yet"
+               empty-state message (condensed, left-aligned, no card — see
+               js/app.js's own createEmptyStateCard "inline" variant call)
+               flush on the left, ms-auto pushing Mode (Effect/Relationships,
+               a real labeled button group) to the right regardless of
+               whether the empty-state message is present. Same
+               createModeToggleGroup pattern Repository/Forge/Crucible/
+               Sanctum's own header uses — see js/app.js's own
+               renderModeToggle. Relationships mode always shows graph+list
+               together now — no separate View toggle. -->
+          <div class="d-flex align-items-center gap-2 mb-3" data-vault-header>
+            <div data-effect-empty-state></div>
+            <div class="d-flex align-items-center gap-2 ms-auto">
+              <div data-vault-mode-toggle-mount></div>
+            </div>
+          </div>
 
           <div class="d-flex flex-column gap-3 d-none" data-effect-display>
             <div class="card shadow-theme">
@@ -113,6 +129,27 @@
                   </div>
                 </section>
               </div>
+            </div>
+          </div>
+
+          <!-- Relationships — a second, mutually-exclusive Mode (not a card
+               inside Effect mode) — see js/app.js's own setMode. Same shared
+               relationship-editor.js/relationship-graph.js pair every other
+               kind uses (Forge/Crucible/Sanctum). -->
+          <div class="d-none card shadow-theme" data-effect-relationships>
+            <div class="card-body d-flex flex-column gap-2">
+              <div data-relationships-graph-wrap>
+                <div class="relationship-graph-stage" data-relationships-graph-container>
+                  <div class="relationship-graph-content" data-relationships-graph-content>
+                    <svg data-relationships-graph-svg viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid meet"></svg>
+                  </div>
+                  <div class="relationship-graph-controls d-flex align-items-center gap-2" data-relationships-graph-controls>
+                    <div class="btn-group btn-group-sm" role="group" aria-label="Relationships zoom controls" data-relationships-graph-toolbar-mount></div>
+                  </div>
+                </div>
+                <div class="d-none" data-relationships-graph-empty></div>
+              </div>
+              <div data-relationships-list-mount></div>
             </div>
           </div>
         </main>

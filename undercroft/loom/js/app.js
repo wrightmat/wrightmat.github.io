@@ -59,10 +59,6 @@ import {
 // one of them keeps working unchanged since each JS-created button carries
 // the exact same data-* attribute/selector its static markup used to.
 createToolbarButtonGroup([
-  { action: "undo", label: "Undo", attrs: { "data-action": "undo-mapping" } },
-  { action: "redo", label: "Redo", attrs: { "data-action": "redo-mapping" } },
-]).forEach((button) => document.querySelector("[data-loom-toolbar-mount]")?.appendChild(button));
-createToolbarButtonGroup([
   { action: "new", label: "New Mapping", attrs: { "data-action": "new-mapping", "data-loom-view-panel": "import" } },
   { action: "save", label: "Save Mapping", disabled: true, attrs: { "data-action": "save-mapping", "data-loom-view-panel": "import" } },
   {
@@ -80,6 +76,12 @@ createToolbarButtonGroup([
     label: "Save Entity",
     disabled: true,
     attrs: { "data-library-save": true, "data-loom-view-panel": "library", hidden: true },
+  },
+  {
+    action: "duplicate",
+    label: "Duplicate Entity",
+    disabled: true,
+    attrs: { "data-library-duplicate": true, "data-loom-view-panel": "library", hidden: true },
   },
   {
     action: "delete",
@@ -118,6 +120,12 @@ createToolbarButtonGroup([
     attrs: { "data-macro-save": true, "data-loom-view-panel": "macros", hidden: true },
   },
   {
+    action: "duplicate",
+    label: "Duplicate Macro",
+    disabled: true,
+    attrs: { "data-macro-duplicate": true, "data-loom-view-panel": "macros", hidden: true },
+  },
+  {
     action: "delete",
     label: "Delete Macro",
     disabled: true,
@@ -128,12 +136,21 @@ createToolbarButtonGroup([
 // Features tab's own header comment for why (a Feature created from
 // scratch here would be missing name/description/mechanics, which this
 // tab deliberately doesn't author; that still happens on the Library tab).
+// Duplicate is still offered despite no New — cloning an existing Feature
+// under a new id is a sensible action even without blank authoring (see
+// featureDuplicateButton's own handler comment).
 createToolbarButtonGroup([
   {
     action: "save",
     label: "Save Feature",
     disabled: true,
     attrs: { "data-feature-save": true, "data-loom-view-panel": "features", hidden: true },
+  },
+  {
+    action: "duplicate",
+    label: "Duplicate Feature",
+    disabled: true,
+    attrs: { "data-feature-duplicate": true, "data-loom-view-panel": "features", hidden: true },
   },
   {
     action: "delete",
@@ -156,6 +173,12 @@ createToolbarButtonGroup([
     attrs: { "data-loom-user-save": true, "data-loom-view-panel": "users", hidden: true },
   },
   {
+    action: "duplicate",
+    label: "Duplicate User",
+    disabled: true,
+    attrs: { "data-loom-user-duplicate": true, "data-loom-view-panel": "users", hidden: true },
+  },
+  {
     action: "delete",
     label: "Delete User",
     disabled: true,
@@ -176,12 +199,26 @@ createToolbarButtonGroup([
     attrs: { "data-loom-group-save": true, "data-loom-view-panel": "groups", hidden: true },
   },
   {
+    action: "duplicate",
+    label: "Duplicate Group",
+    disabled: true,
+    attrs: { "data-loom-group-duplicate": true, "data-loom-view-panel": "groups", hidden: true },
+  },
+  {
     action: "delete",
     label: "Delete Group",
     disabled: true,
     attrs: { "data-loom-group-delete": true, "data-loom-view-panel": "groups", hidden: true },
   },
 ]).forEach((button) => document.querySelector("[data-loom-toolbar-mount]")?.appendChild(button));
+// A small visual break, not a functional one — Undo/Redo are shared across
+// every tab (no data-loom-view-panel attr, always visible regardless of the
+// active tab) and get their own little two-button group, same convention
+// every other tool's toolbar now uses (see forge/js/app.js's own comment).
+createToolbarButtonGroup([
+  { action: "undo", label: "Undo", attrs: { "data-action": "undo-mapping" } },
+  { action: "redo", label: "Redo", attrs: { "data-action": "redo-mapping" } },
+]).forEach((button) => document.querySelector("[data-loom-undo-toolbar-mount]")?.appendChild(button));
 
 // "Add Property"/"Add Action" — small inline compact-kind buttons (top
 // tooltip, plain icon), not part of the left-pane toolbar cluster above.
@@ -330,11 +367,33 @@ const mappingSelect = document.querySelector("[data-mapping-select]");
 // below. Selection/Mapping Tree/Entities/Data all start expanded
 // (collapsed: false), matching their original aria-expanded="true" markup.
 const mappingsSection = createCollapsibleSection({
-  label: "Selection",
+  label: "Selections",
   collapsed: false,
   content: document.querySelector("[data-mappings-panel]"),
 });
 document.querySelector("[data-mappings-mount]")?.appendChild(mappingsSection.section);
+
+// Same "Selections" collapsible convention as every other tab's own
+// left-pane picker(s) — see the Systems/Macros/Features/Library/Users/
+// Groups selects wrapped just below. Each keeps its own tab-specific
+// helpTopic (previously a plain <h2>+help-icon heading removed from the
+// static markup) so the same explanatory content stays reachable.
+[
+  ["systems", "loom.systems"],
+  ["macros", "loom.macros"],
+  ["features", "loom.features"],
+  ["library", "loom.libraryTable"],
+  ["users", "accounts.roles"],
+  ["groups", "campaign.groups"],
+].forEach(([tab, helpTopic]) => {
+  const section = createCollapsibleSection({
+    label: "Selections",
+    helpTopic,
+    collapsed: false,
+    content: document.querySelector(`[data-${tab}-selections-panel]`),
+  });
+  document.querySelector(`[data-${tab}-selections-mount]`)?.appendChild(section.section);
+});
 const nodePalette = document.querySelector("[data-node-palette]");
 const stepPaletteSection = document.querySelector("[data-step-palette-section]");
 const stepPalette = document.querySelector("[data-step-palette]");
@@ -478,6 +537,7 @@ const libraryJsonTextarea = document.querySelector("[data-library-json]");
 const libraryJsonError = document.querySelector("[data-library-json-error]");
 const libraryNewButton = document.querySelector("[data-library-new]");
 const librarySaveButton = document.querySelector("[data-library-save]");
+const libraryDuplicateButton = document.querySelector("[data-library-duplicate]");
 const libraryDeleteButton = document.querySelector("[data-library-delete]");
 // Same "Select a ..." gating as Systems/Macros above.
 const libraryEmpty = document.querySelector("[data-library-empty]");
@@ -517,6 +577,17 @@ const systemJsonPanelInstance = createJsonDataPanel({
   label: "JSON Data",
   helpTopic: "loom.systemJsonPreview",
   getData: () => buildSystemPayload(),
+  onExport: () => {
+    const payload = buildSystemPayload();
+    const id = (systemIdInput?.value || "").trim() || "system";
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${id}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+  },
 });
 document.querySelector("[data-system-json-mount]")?.appendChild(systemJsonPanelInstance.section);
 // Property Inspector (right pane) — a second, more spacious way to edit
@@ -566,6 +637,7 @@ const macroActionsList = document.querySelector("[data-macro-actions]");
 const macroAddActionButton = document.querySelector("[data-macro-add-action]");
 const macroNewButton = document.querySelector("[data-macro-new]");
 const macroSaveButton = document.querySelector("[data-macro-save]");
+const macroDuplicateButton = document.querySelector("[data-macro-duplicate]");
 const macroDeleteButton = document.querySelector("[data-macro-delete]");
 // Same "Select a ..." gating as Systems above.
 const macrosEmpty = document.querySelector("[data-macros-empty]");
@@ -671,6 +743,13 @@ function canDeleteLibrary() {
   return libraryEntryAllowsDelete(loomLibraryTableState.activeKind, id);
 }
 
+// Same "there's a real id typed" gate as canDuplicateSystem, without also
+// requiring isDirty("library") — duplicating an unmodified, already-saved
+// entity is exactly as valid as duplicating a mid-edit one.
+function canDuplicateLibrary() {
+  return Boolean(loomLibraryTableState.activeKind && (libraryIdInput?.value || "").trim() && currentLibraryEntity());
+}
+
 function canSaveSystem() {
   return Boolean((systemIdInput?.value || "").trim()) && isDirty("system");
 }
@@ -693,6 +772,11 @@ function canSaveMacro() {
 function canDeleteMacro() {
   const id = (macroIdInput?.value || "").trim() || macroRecordSelect?.value;
   return libraryEntryAllowsDelete("macro", id);
+}
+
+// Same "real id typed" gate as canDuplicateSystem/canDuplicateLibrary.
+function canDuplicateMacro() {
+  return Boolean((macroIdInput?.value || "").trim());
 }
 
 // Surfaces *why* Save is disabled for the common case of broken JSON —
@@ -725,15 +809,17 @@ function updateToolbarState() {
   if (renameButton) renameButton.disabled = !canRenameMapping();
   updateLibraryJsonFeedback();
   if (librarySaveButton) librarySaveButton.disabled = !canSaveLibrary();
+  if (libraryDuplicateButton) libraryDuplicateButton.disabled = !canDuplicateLibrary();
   if (libraryDeleteButton) libraryDeleteButton.disabled = !canDeleteLibrary();
   if (systemSaveButton) systemSaveButton.disabled = !canSaveSystem();
   if (systemDuplicateButton) systemDuplicateButton.disabled = !canDuplicateSystem();
   if (systemDeleteButton) systemDeleteButton.disabled = !canDeleteSystem();
   if (macroSaveButton) macroSaveButton.disabled = !canSaveMacro();
+  if (macroDuplicateButton) macroDuplicateButton.disabled = !canDuplicateMacro();
   if (macroDeleteButton) macroDeleteButton.disabled = !canDeleteMacro();
-  updateFeatureMechanicsFeedback();
   updateFeatureEligibilityNote();
   if (featureSaveButton) featureSaveButton.disabled = !canSaveFeature();
+  if (featureDuplicateButton) featureDuplicateButton.disabled = !canDuplicateFeature();
   if (featureDeleteButton) featureDeleteButton.disabled = !canDeleteFeature();
   renderSystemJsonPreview();
 }
@@ -2131,6 +2217,7 @@ const loomGroupShareDisableButton = document.querySelector("[data-loom-group-sha
 const loomGroupShareStatus = document.querySelector("[data-loom-group-share-status]");
 const loomGroupNewButton = document.querySelector("[data-loom-group-new]");
 const loomGroupSaveButton = document.querySelector("[data-loom-group-save]");
+const loomGroupDuplicateButton = document.querySelector("[data-loom-group-duplicate]");
 const loomGroupDeleteButton = document.querySelector("[data-loom-group-delete]");
 
 // Property Inspector (right pane) — same mechanism as Systems' own, see
@@ -2177,6 +2264,7 @@ const loomUserStatusInput = document.querySelector("[data-loom-user-status]");
 const loomUserCreatedInput = document.querySelector("[data-loom-user-created]");
 const loomUserLastActivityInput = document.querySelector("[data-loom-user-last-activity]");
 const loomUserSaveButton = document.querySelector("[data-loom-user-save]");
+const loomUserDuplicateButton = document.querySelector("[data-loom-user-duplicate]");
 const loomUserDeleteButton = document.querySelector("[data-loom-user-delete]");
 const loomUserNewButton = document.querySelector("[data-loom-user-new]");
 const loomUserPasswordField = document.querySelector("[data-loom-user-password-field]");
@@ -2334,6 +2422,7 @@ function loomUpdateUserToolbarState() {
   const isSelf = dataManager?.session?.user?.username === loomUsersState.selectedUsername;
   const lockSelfFields = loomUsersState.mode !== "new" && isSelf;
   if (loomUserSaveButton) loomUserSaveButton.disabled = !loomCanSaveUser();
+  if (loomUserDuplicateButton) loomUserDuplicateButton.disabled = loomUsersState.mode === "new" || !loomUsersState.selectedUsername;
   if (loomUserDeleteButton) loomUserDeleteButton.disabled = loomUsersState.mode === "new" || !loomUsersState.selectedUsername;
   if (loomUserTierSelect) loomUserTierSelect.disabled = lockSelfFields;
   if (loomUserStatusInput) loomUserStatusInput.disabled = lockSelfFields;
@@ -2451,6 +2540,43 @@ if (loomUserNewButton) {
     if (loomUserCreatedInput) loomUserCreatedInput.textContent = "—";
     if (loomUserLastActivityInput) loomUserLastActivityInput.textContent = "—";
     loomUpdateUserToolbarState();
+    loomUserUsernameInput?.focus();
+  });
+}
+
+// A real user account can't be cloned the way content records can —
+// username/email must be genuinely unique and a password can't be copied —
+// so Duplicate here means "start a New user prefilled with this one's Tier"
+// rather than a true clone: a real shortcut for an admin adding another
+// account at the same access level, without pretending to copy identity or
+// credentials it has no business copying.
+if (loomUserDuplicateButton) {
+  loomUserDuplicateButton.addEventListener("click", () => {
+    const sourceUser = loomFindUser(loomUsersState.selectedUsername);
+    if (!sourceUser) return;
+    loomUsersState.selectedUsername = "";
+    if (loomUsersSelect) loomUsersSelect.value = "";
+    loomUsersState.mode = "new";
+    loomUsersState.clean = null;
+    if (loomUsersEmpty) loomUsersEmpty.hidden = true;
+    if (loomUsersForm) loomUsersForm.classList.remove("d-none");
+    if (loomUserUsernameInput) {
+      loomUserUsernameInput.disabled = false;
+      loomUserUsernameInput.value = "";
+    }
+    if (loomUserEmailInput) loomUserEmailInput.value = "";
+    if (loomUserPasswordField) loomUserPasswordField.hidden = false;
+    if (loomUserPasswordInput) loomUserPasswordInput.value = "";
+    loomPopulateUserTierOptions();
+    if (loomUserTierSelect) loomUserTierSelect.value = sourceUser.tier;
+    if (loomUserStatusInput) loomUserStatusInput.value = "1";
+    if (loomUserCreatedInput) loomUserCreatedInput.textContent = "—";
+    if (loomUserLastActivityInput) loomUserLastActivityInput.textContent = "—";
+    loomUpdateUserToolbarState();
+    status?.show(`New user prefilled with ${loomFormatTier(sourceUser.tier)} tier — enter a username, email, and password.`, {
+      type: "info",
+      timeout: 3500,
+    });
     loomUserUsernameInput?.focus();
   });
 }
@@ -2756,6 +2882,7 @@ function loomCanSaveGroup() {
 
 function loomUpdateGroupsToolbarState() {
   if (loomGroupSaveButton) loomGroupSaveButton.disabled = !loomCanSaveGroup();
+  if (loomGroupDuplicateButton) loomGroupDuplicateButton.disabled = !loomGroupsState.selectedId;
   if (loomGroupDeleteButton) loomGroupDeleteButton.disabled = !loomGroupsState.selectedId;
 }
 
@@ -3122,6 +3249,48 @@ if (loomGroupNewButton) {
       if (status) status.show(error.message || "Unable to create group", { type: "danger" });
     } finally {
       loomGroupNewButton.disabled = false;
+    }
+  });
+}
+
+// Clones the currently loaded group's System/Setting/Template/Properties
+// (read live off the form, same fields loomGroupSaveButton's own handler
+// reads) into a brand-new group — same two-step createGroup-then-updateGroup
+// shape loomGroupNewButton uses, since a group has no client-side "unsaved
+// draft" state to stage into. Members are deliberately NOT copied — another
+// group's claimed member roster is campaign-specific and would be actively
+// wrong to carry over, not a helpful default.
+if (loomGroupDuplicateButton) {
+  loomGroupDuplicateButton.addEventListener("click", async () => {
+    const group = loomFindGroup(loomGroupsState.selectedId);
+    if (!group || !dataManager.isAuthenticated()) return;
+    const baseName = `${(loomGroupNameInput?.value || group.name || "Campaign group").trim()} Copy`;
+    const existing = new Set(loomGroupsState.items.map((entry) => (entry.name || "").trim().toLowerCase()));
+    let candidate = baseName;
+    let index = 2;
+    while (existing.has(candidate.trim().toLowerCase())) {
+      candidate = `${baseName} ${index}`;
+      index += 1;
+    }
+    loomGroupDuplicateButton.disabled = true;
+    try {
+      const result = await dataManager.createGroup({ name: candidate });
+      await dataManager.updateGroup({
+        id: result.id,
+        name: candidate,
+        systemId: loomGroupSystemSelect?.value || "",
+        settingId: loomGroupSettingSelect?.value || "",
+        templateId: loomGroupTemplateSelect?.value || "",
+        properties: collectGroupProperties(),
+      });
+      if (status) status.show("Group duplicated.", { type: "success", timeout: 1600 });
+      loomGroupsState.selectedId = result?.id || "";
+      await loomLoadGroups({ refresh: true });
+    } catch (error) {
+      console.error("Unable to duplicate group", error);
+      if (status) status.show(error.message || "Unable to duplicate group", { type: "danger" });
+    } finally {
+      loomGroupDuplicateButton.disabled = false;
     }
   });
 }
@@ -4134,11 +4303,39 @@ mountField(
     dataAttr: "data-feature-description", rows: 3,
   })
 );
+// Friendly controls, not raw JSON — a Feature's `mechanics` object only
+// ever holds { type, text, scope } across every record in the Library
+// (verified directly against every feat.*.json file: type is always one of
+// exactly 8 known strings, text is free-form prose, scope is handled by the
+// separate "Scope" select below), so there's nothing a JSON textarea offers
+// here that a select + a plain textarea don't already cover, and those are
+// what an end user actually understands. Type's 8 options are exactly the
+// mechanics.type values dispatched on elsewhere (feature-params-editor.js's
+// own isWeaponAttack/isSaveEffect/isActive checks; every other value falls
+// through to no extra per-type UI there) — ordered roughly by how often
+// each appears in the Library, not alphabetically.
 mountField(
-  "feature-mechanics",
+  "feature-mechanics-type",
   createCompactField({
-    type: "textarea", id: "loomFeatureMechanics", label: "Mechanics (JSON)", labelClass: "form-label fw-semibold mb-0", controlClass: "form-control form-control-sm font-monospace",
-    dataAttr: "data-feature-mechanics", rows: 5, spellcheck: "false",
+    type: "select", id: "loomFeatureMechanicsType", label: "Mechanics Type", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select",
+    dataAttr: "data-feature-mechanics-type", helpTopic: "loom.featureMechanics",
+    options: [
+      { value: "passive", label: "Passive" },
+      { value: "active", label: "Active" },
+      { value: "passive-or-triggered", label: "Passive or Triggered" },
+      { value: "weapon-attack", label: "Weapon Attack" },
+      { value: "save-effect", label: "Save Effect" },
+      { value: "multiattack", label: "Multiattack" },
+      { value: "drawback", label: "Drawback" },
+      { value: "legendary-action-reference", label: "Legendary Action Reference" },
+    ],
+  })
+);
+mountField(
+  "feature-mechanics-text",
+  createCompactField({
+    type: "textarea", id: "loomFeatureMechanicsText", label: "Mechanics Notes", labelClass: "form-label fw-semibold mb-0", controlClass: "form-control form-control-sm",
+    dataAttr: "data-feature-mechanics-text", rows: 3,
   })
 );
 mountField(
@@ -4180,8 +4377,8 @@ const featureRecordSelect = document.querySelector("[data-feature-select]");
 const featureIdInput = document.querySelector("[data-feature-id]");
 const featureNameInput = document.querySelector("[data-feature-name]");
 const featureDescriptionInput = document.querySelector("[data-feature-description]");
-const featureMechanicsTextarea = document.querySelector("[data-feature-mechanics]");
-const featureMechanicsError = document.querySelector("[data-feature-mechanics-error]");
+const featureMechanicsTypeSelect = document.querySelector("[data-feature-mechanics-type]");
+const featureMechanicsTextInput = document.querySelector("[data-feature-mechanics-text]");
 const featureBudgetCostInput = document.querySelector("[data-feature-budget-cost]");
 const featureScopeSelect = document.querySelector("[data-feature-scope]");
 const featureEligibilityNote = document.querySelector("[data-feature-eligibility-note]");
@@ -4193,6 +4390,7 @@ const featureSuggestStatus = document.querySelector("[data-feature-suggest-statu
 const featuresEmpty = document.querySelector("[data-features-empty]");
 const featuresPanel = document.querySelector("[data-features-panel]");
 const featureSaveButton = document.querySelector("[data-feature-save]");
+const featureDuplicateButton = document.querySelector("[data-feature-duplicate]");
 const featureDeleteButton = document.querySelector("[data-feature-delete]");
 function setFeatureFormVisible(visible) {
   if (featuresEmpty) featuresEmpty.hidden = visible;
@@ -4471,34 +4669,12 @@ function readFeatureReferenceLists() {
   };
 }
 
-// Mirrors currentLibraryEntity()/updateLibraryJsonFeedback's own JSON-
-// validity contract (Library tab) for this tab's own Mechanics field —
-// returns null (never a guessed/partial object) on invalid JSON, which
-// canSaveFeature below uses to gate Save the same way canSaveLibrary does.
+// Type + Notes read straight off their own controls — no JSON parsing, so
+// there's no invalid-JSON failure mode to guard against the way
+// currentLibraryEntity() (Library tab) still needs to for its raw-JSON
+// entity body.
 function currentFeatureMechanics() {
-  try {
-    return JSON.parse(featureMechanicsTextarea?.value || "{}");
-  } catch (error) {
-    return null;
-  }
-}
-
-function updateFeatureMechanicsFeedback() {
-  if (!featureMechanicsTextarea) return;
-  const raw = featureMechanicsTextarea.value || "";
-  let message = "";
-  if (raw.trim()) {
-    try {
-      JSON.parse(raw);
-    } catch (error) {
-      message = `Invalid JSON: ${error.message}`;
-    }
-  }
-  featureMechanicsTextarea.classList.toggle("is-invalid", Boolean(message));
-  if (featureMechanicsError) {
-    featureMechanicsError.textContent = message;
-    featureMechanicsError.classList.toggle("d-none", !message);
-  }
+  return { type: featureMechanicsTypeSelect?.value || "", text: featureMechanicsTextInput?.value || "" };
 }
 
 // Flags a real question the Scope field alone doesn't answer: even a
@@ -4573,26 +4749,32 @@ function renderFeatureTierRow(tier, index) {
   const idCol = document.createElement("div");
   idCol.className = "col-12 col-md-3";
   idCol.appendChild(
-    macroFieldRow("Id", macroTextInput(tier.id, "minor", (value) => updateFeatureTier(index, { id: value.trim() })))
+    macroInlineFieldRow(
+      "Id",
+      macroTextInput(tier.id, "minor", (value) => updateFeatureTier(index, { id: value.trim() }))
+    )
   );
   const nameCol = document.createElement("div");
   nameCol.className = "col-12 col-md-4";
   nameCol.appendChild(
-    macroFieldRow("Name", macroTextInput(tier.name, "Minor", (value) => updateFeatureTier(index, { name: value })))
+    macroInlineFieldRow(
+      "Name",
+      macroTextInput(tier.name, "Minor", (value) => updateFeatureTier(index, { name: value }))
+    )
   );
   const shortNameCol = document.createElement("div");
   shortNameCol.className = "col-12 col-md-3";
   shortNameCol.appendChild(
-    macroFieldRow(
-      "Short Name",
+    macroInlineFieldRow(
+      "Short",
       macroTextInput(tier.shortName, "Minor", (value) => updateFeatureTier(index, { shortName: value }))
     )
   );
   const budgetCol = document.createElement("div");
   budgetCol.className = "col-12 col-md-2";
   budgetCol.appendChild(
-    macroFieldRow(
-      "Cost Budget",
+    macroInlineFieldRow(
+      "Cost",
       macroNumberInput(tier.budgetCost, (value) => updateFeatureTier(index, { budgetCost: value ?? 0 }))
     )
   );
@@ -4615,13 +4797,15 @@ function renderFeatureTierRow(tier, index) {
   // feat.damage, feat.action-restricted) keeps `mechanics.type` identical
   // to the parent Feature's own mechanics.type across all its tiers, so
   // that value is copied from the parent (currentFeatureMechanics()) on
-  // Save rather than duplicated as its own field per row here.
+  // Save rather than duplicated as its own field per row here. No label —
+  // the placeholder text ("What this tier means…") already says what it
+  // is, and a 2-row textarea doesn't have room to spare for one.
   row.appendChild(
-    macroFieldRow(
-      "Tier Description",
-      macroTextarea(tier.mechanics?.text, "What this tier means…", (value) =>
-        updateFeatureTier(index, { mechanics: { ...(featureEditorTiers[index]?.mechanics || {}), text: value } })
-      )
+    macroTextarea(
+      tier.mechanics?.text,
+      "What this tier means…",
+      (value) => updateFeatureTier(index, { mechanics: { ...(featureEditorTiers[index]?.mechanics || {}), text: value } }),
+      2
     )
   );
 
@@ -4670,7 +4854,8 @@ function createFeatureSnapshot() {
     id: featureRecordSelect?.value || "",
     name: featureNameInput?.value || "",
     description: featureDescriptionInput?.value || "",
-    mechanics: featureMechanicsTextarea?.value || "",
+    mechanicsType: featureMechanicsTypeSelect?.value || "",
+    mechanicsText: featureMechanicsTextInput?.value || "",
     budgetCost: featureBudgetCostInput?.value || "",
     scope: featureScopeSelect?.value || "",
     tiers: JSON.parse(JSON.stringify(featureEditorTiers)),
@@ -4684,8 +4869,8 @@ function applyFeatureSnapshot(snapshot) {
   if (featureRecordSelect) featureRecordSelect.value = snapshot.id || "";
   if (featureNameInput) featureNameInput.value = snapshot.name || "";
   if (featureDescriptionInput) featureDescriptionInput.value = snapshot.description || "";
-  if (featureMechanicsTextarea) featureMechanicsTextarea.value = snapshot.mechanics || "";
-  updateFeatureMechanicsFeedback();
+  if (featureMechanicsTypeSelect) featureMechanicsTypeSelect.value = snapshot.mechanicsType || "";
+  if (featureMechanicsTextInput) featureMechanicsTextInput.value = snapshot.mechanicsText || "";
   if (featureBudgetCostInput) featureBudgetCostInput.value = snapshot.budgetCost || "";
   if (featureScopeSelect) featureScopeSelect.value = snapshot.scope || "";
   featureEditorTiers = Array.isArray(snapshot.tiers) ? snapshot.tiers : [];
@@ -4814,8 +4999,8 @@ async function loadFeatureIntoEditor(id) {
     if (featureIdInput) featureIdInput.value = id;
     if (featureNameInput) featureNameInput.value = currentFeatureEntity.name || id;
     if (featureDescriptionInput) featureDescriptionInput.value = currentFeatureEntity.description || "";
-    if (featureMechanicsTextarea) featureMechanicsTextarea.value = JSON.stringify(currentFeatureEntity.mechanics || {}, null, 2);
-    updateFeatureMechanicsFeedback();
+    if (featureMechanicsTypeSelect) featureMechanicsTypeSelect.value = currentFeatureEntity.mechanics?.type || "passive";
+    if (featureMechanicsTextInput) featureMechanicsTextInput.value = currentFeatureEntity.mechanics?.text || "";
     if (featureBudgetCostInput) featureBudgetCostInput.value = String(currentFeatureEntity.budgetCost || 0);
     if (featureScopeSelect) featureScopeSelect.value = currentFeatureEntity.mechanics?.scope === "unique" ? "unique" : "";
     featureEditorTiers = Array.isArray(currentFeatureEntity.tiers)
@@ -4846,8 +5031,8 @@ if (featureRecordSelect) {
 
 wireUndoTracking(featureNameInput, "feature");
 wireUndoTracking(featureDescriptionInput, "feature");
-wireUndoTracking(featureMechanicsTextarea, "feature");
-featureMechanicsTextarea?.addEventListener("input", updateFeatureMechanicsFeedback);
+wireUndoTracking(featureMechanicsTypeSelect, "feature");
+wireUndoTracking(featureMechanicsTextInput, "feature");
 wireUndoTracking(featureBudgetCostInput, "feature");
 wireUndoTracking(featureScopeSelect, "feature");
 // A checklist's checkboxes are dynamically rebuilt rows, not one fixed
@@ -4869,11 +5054,18 @@ wireUndoTracking(featureScopeSelect, "feature");
 });
 
 function canSaveFeature() {
-  return Boolean(currentFeatureEntity && featureRecordSelect?.value && currentFeatureMechanics()) && isDirty("feature");
+  return Boolean(currentFeatureEntity && featureRecordSelect?.value && featureMechanicsTypeSelect?.value) && isDirty("feature");
 }
 
 function canDeleteFeature() {
   return Boolean(currentFeatureEntity && featureRecordSelect?.value) && libraryEntryAllowsDelete("feature", featureRecordSelect.value);
+}
+
+// No isDirty("feature")/mechanics requirement, unlike canSaveFeature —
+// duplicating an unmodified, already-saved Feature is exactly as valid as
+// duplicating a mid-edit one (same reasoning canDuplicateSystem documents).
+function canDuplicateFeature() {
+  return Boolean(currentFeatureEntity && featureRecordSelect?.value);
 }
 
 if (featureSaveButton) {
@@ -4881,8 +5073,8 @@ if (featureSaveButton) {
     if (!dataManager || !currentFeatureEntity) return;
     const id = featureRecordSelect.value;
     const mechanics = currentFeatureMechanics();
-    if (!mechanics) {
-      status?.show("Fix the Mechanics JSON before saving.", { type: "error", timeout: 3000 });
+    if (!mechanics.type) {
+      status?.show("Choose a Mechanics Type before saving.", { type: "error", timeout: 3000 });
       return;
     }
     // Every tier needs its own non-blank, unique id — it's the storage key
@@ -4929,6 +5121,46 @@ if (featureSaveButton) {
       featureRecordSelect.value = id;
     } catch (error) {
       status?.show(`Unable to save feature: ${error.message}`, { type: "error", timeout: 4000 });
+    }
+  });
+}
+
+// Same "-copy"/"-copyN" suffix convention generateDuplicateSystemId uses.
+function generateDuplicateFeatureId(baseId) {
+  const raw = (baseId || "").trim();
+  const root = raw.replace(/(-copy\d*)$/i, "") || raw || "feature";
+  const existingIds = new Set(
+    Array.from(featureRecordSelect?.options || []).map((option) => option.value).filter(Boolean)
+  );
+  let candidate = `${root}-copy`;
+  let counter = 2;
+  while (existingIds.has(candidate)) {
+    candidate = `${root}-copy${counter}`;
+    counter += 1;
+  }
+  return candidate;
+}
+
+// Unlike Library/System/Macro's own duplicate handlers, a Feature has no
+// typeable-id "staged, not yet saved" state — featureRecordSelect only ever
+// holds ids that already exist on the server (see this tab's own "no New
+// Feature" comment above). Duplicate here saves the clone immediately under
+// a fresh id, then loads it into the editor, rather than pretending to
+// stage an unsaved draft the picker can't actually represent.
+if (featureDuplicateButton) {
+  featureDuplicateButton.addEventListener("click", async () => {
+    if (!dataManager || !currentFeatureEntity || !featureRecordSelect?.value) return;
+    const sourceId = featureRecordSelect.value;
+    const newId = generateDuplicateFeatureId(sourceId);
+    const duplicate = { ...currentFeatureEntity, id: newId, name: `${currentFeatureEntity.name || sourceId} Copy` };
+    try {
+      await dataManager.save("feature", newId, duplicate);
+      status?.show(`Duplicated as "${newId}".`, { type: "success", timeout: 2500 });
+      await populateFeatureSelect();
+      featureRecordSelect.value = newId;
+      await loadFeatureIntoEditor(newId);
+    } catch (error) {
+      status?.show(`Unable to duplicate feature: ${error.message}`, { type: "error", timeout: 4000 });
     }
   });
 }
@@ -5068,6 +5300,22 @@ function macroFieldRow(labelText, inputEl) {
   return wrap;
 }
 
+// Label beside the input on one line, not stacked above it — for a row of
+// several short fields (the Tier editor's own Id/Name/Short Name/Cost
+// Budget) where a full-height stacked label per field wastes vertical space
+// the row doesn't need.
+function macroInlineFieldRow(labelText, inputEl) {
+  const wrap = document.createElement("div");
+  wrap.className = "d-flex align-items-center gap-1";
+  const label = document.createElement("label");
+  label.className = "form-label small mb-0 text-body-secondary text-nowrap";
+  label.textContent = labelText;
+  inputEl.classList.add("flex-grow-1");
+  inputEl.style.minWidth = "0";
+  wrap.append(label, inputEl);
+  return wrap;
+}
+
 function macroTextInput(value, placeholder, onChange) {
   const input = document.createElement("input");
   input.type = "text";
@@ -5078,10 +5326,10 @@ function macroTextInput(value, placeholder, onChange) {
   return input;
 }
 
-function macroTextarea(value, placeholder, onChange) {
+function macroTextarea(value, placeholder, onChange, rows = 3) {
   const textarea = document.createElement("textarea");
   textarea.className = "form-control form-control-sm font-monospace";
-  textarea.rows = 3;
+  textarea.rows = rows;
   if (placeholder) textarea.placeholder = placeholder;
   textarea.value = value ?? "";
   textarea.addEventListener("change", () => onChange(textarea.value));
@@ -5596,6 +5844,42 @@ if (macroNewButton) {
   });
 }
 
+// Same "-copy"/"-copyN" suffix convention generateDuplicateSystemId uses.
+function generateDuplicateMacroId(baseId) {
+  const raw = (baseId || "").trim();
+  const root = raw.replace(/(-copy\d*)$/i, "") || raw || "macro";
+  const existingIds = new Set(
+    Array.from(macroRecordSelect?.options || []).map((option) => option.value).filter(Boolean)
+  );
+  let candidate = `${root}-copy`;
+  let counter = 2;
+  while (existingIds.has(candidate)) {
+    candidate = `${root}-copy${counter}`;
+    counter += 1;
+  }
+  return candidate;
+}
+
+if (macroDuplicateButton) {
+  macroDuplicateButton.addEventListener("click", () => {
+    const sourceId = (macroIdInput?.value || "").trim();
+    if (!sourceId) return;
+    recordUndoableChange("macro", () => {
+      const suggestedId = generateDuplicateMacroId(sourceId);
+      if (macroIdInput) {
+        macroIdInput.value = suggestedId;
+        macroIdInput.disabled = false;
+      }
+      if (macroNameInput) {
+        const baseName = (macroNameInput.value || "").trim() || sourceId;
+        macroNameInput.value = `${baseName} Copy`;
+      }
+    });
+    if (macroRecordSelect) macroRecordSelect.value = "";
+    status?.show(`Duplicated "${sourceId}" — review the new Id/Name, then Save.`, { type: "info", timeout: 3000 });
+  });
+}
+
 if (macroAddActionButton) {
   macroAddActionButton.addEventListener("click", () => {
     recordUndoableChange("macro", () => {
@@ -5799,6 +6083,50 @@ if (libraryNewButton) {
       loomLibraryTableState.activeKind = kind;
       newLibraryEntry();
     });
+  });
+}
+
+// Same "-copy"/"-copyN" suffix convention generateDuplicateSystemId uses,
+// scoped to entities of this same kind (a Library id only needs to be
+// unique within its own bucket, not suite-wide).
+function generateDuplicateLibraryId(kind, baseId) {
+  const raw = (baseId || "").trim();
+  const root = raw.replace(/(-copy\d*)$/i, "") || raw || kind || "entity";
+  const existingIds = new Set(
+    loomLibraryTableState.items.filter((item) => item.bucket === kind).map((item) => item.id).filter(Boolean)
+  );
+  let candidate = `${root}-copy`;
+  let counter = 2;
+  while (existingIds.has(candidate)) {
+    candidate = `${root}-copy${counter}`;
+    counter += 1;
+  }
+  return candidate;
+}
+
+// Clones the currently loaded entity's JSON in place — id and `name` (when
+// present) get a fresh id/" Copy" suffix, every other field stays exactly
+// as shown. Same "in-DOM, review then Save" flow as systemDuplicateButton's
+// own handler, not a round trip through a parse/rebuild helper.
+if (libraryDuplicateButton) {
+  libraryDuplicateButton.addEventListener("click", () => {
+    const kind = loomLibraryTableState.activeKind;
+    const sourceId = (libraryIdInput?.value || "").trim();
+    const entity = currentLibraryEntity();
+    if (!kind || !sourceId || !entity) return;
+    const suggestedId = generateDuplicateLibraryId(kind, sourceId);
+    recordUndoableChange("library", () => {
+      if (libraryIdInput) {
+        libraryIdInput.value = suggestedId;
+        libraryIdInput.disabled = false;
+      }
+      const duplicate = { ...entity, id: suggestedId };
+      if (typeof duplicate.name === "string") duplicate.name = `${duplicate.name || sourceId} Copy`;
+      libraryJsonTextarea.value = JSON.stringify(duplicate, null, 2);
+    });
+    loomLibraryTableState.selectedKey = "";
+    if (loomLibraryTableSelect) loomLibraryTableSelect.value = "";
+    status?.show(`Duplicated "${sourceId}" — review the new Id/Name, then Save.`, { type: "info", timeout: 3000 });
   });
 }
 

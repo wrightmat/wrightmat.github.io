@@ -1081,6 +1081,227 @@ def list_bucket(state: ServerState, kind: str, user: Optional[User]) -> Dict[str
     return {"owned": owned, "shared": shared, "public": public}
 
 
+# Kinds excluded from the suite-wide search — `kind` is the meta-registry of
+# kind DEFINITIONS (not end-user content), `relationship` is a graph edge
+# record with no meaningful title/label a search result could show. Every
+# other kind (including `journal`, Repository's own pages) is just another
+# Library kind by this point, searched identically.
+SEARCH_EXCLUDED_KINDS = ("kind", "relationship")
+
+
+# Every record this user can access across every searchable kind, with NO
+# text filter — the title/body/reference passes in search_content() below
+# all need to look inside the same accessible set, not just whichever rows
+# happen to title-match. Same owned/shared/admin-bypass rule list_bucket
+# enforces per-kind, just spanning every kind at once.
+def _accessible_library_rows(state: ServerState, user: User) -> List[Dict[str, Any]]:
+    excluded_placeholders = ",".join("?" for _ in SEARCH_EXCLUDED_KINDS)
+    if str(user.tier).lower() == "admin":
+        rows = [
+            dict(row)
+            for row in state.read_db.execute(
+                f"""
+                SELECT li.*, u.username AS owner_username, u.tier AS owner_tier
+                FROM library_items li
+                LEFT JOIN users u ON u.id = li.owner_id
+                WHERE li.kind NOT IN ({excluded_placeholders})
+                """,
+                SEARCH_EXCLUDED_KINDS,
+            )
+        ]
+        return _flatten_metadata_rows(rows)
+
+    owned_rows = [
+        dict(row)
+        for row in state.read_db.execute(
+            f"""
+            SELECT li.*, u.username AS owner_username, u.tier AS owner_tier
+            FROM library_items li
+            LEFT JOIN users u ON u.id = li.owner_id
+            WHERE li.kind NOT IN ({excluded_placeholders}) AND li.owner_id = ?
+            """,
+            (*SEARCH_EXCLUDED_KINDS, user.id),
+        )
+    ]
+
+    from .groups import accessible_group_ids
+
+    group_ids = accessible_group_ids(state, user)
+    group_placeholders = ",".join("?" for _ in group_ids) if group_ids else "NULL"
+    shared_rows = [
+        dict(row)
+        for row in state.read_db.execute(
+            f"""
+            SELECT li.*, s.permissions, u.username AS owner_username, u.tier AS owner_tier
+            FROM library_items li
+            JOIN shares s ON s.content_id = li.id AND s.content_type = li.kind
+            LEFT JOIN users u ON u.id = li.owner_id
+            WHERE li.kind NOT IN ({excluded_placeholders})
+              AND (s.shared_with_user_id = ? OR s.shared_with_group_id IN ({group_placeholders}))
+            """,
+            (*SEARCH_EXCLUDED_KINDS, user.id, *group_ids),
+        )
+    ]
+
+    deduped: Dict[str, Dict[str, Any]] = {}
+    for row in owned_rows + shared_rows:
+        key = f"{row['kind']}:{row['id']}"
+        if key not in deduped:
+            deduped[key] = row
+    return _flatten_metadata_rows(list(deduped.values()))
+
+
+# Below this length a string is almost always an id/enum/short label
+# ("tier-1", "Minor", a UUID) rather than genuine prose — searching those
+# would surface a lot of noise ("fire" matching a "Fire" Rarity value, say)
+# without ever being useful as a Wikipedia-style context snippet, so they're
+# skipped entirely rather than filtered after the fact.
+SEARCH_MIN_BODY_STRING_LENGTH = 12
+
+# Deliberately NOT a full walk of every array field — `systemIds`/
+# `settingIds`/`tags.categories` and the like are categorization, not real
+# content composition, and matching them would surface unrelated records
+# just because they happen to share a System. These four are genuine
+# "this record is built FROM that other record" relationships: a Monster/
+# Effect/Location's own `featureIds`, or one Feature referencing another via
+# synergizesWith/conflictsWith/dependsOn.
+SEARCH_REFERENCE_KEYS = ("featureIds", "synergizesWith", "conflictsWith", "dependsOn")
+
+
+def _collect_searchable_strings(value: Any, acc: List[str]) -> None:
+    if isinstance(value, str):
+        if len(value) >= SEARCH_MIN_BODY_STRING_LENGTH:
+            acc.append(value)
+    elif isinstance(value, dict):
+        for child in value.values():
+            _collect_searchable_strings(child, acc)
+    elif isinstance(value, list):
+        for child in value:
+            _collect_searchable_strings(child, acc)
+
+
+def _collect_reference_ids(payload: Any) -> set:
+    ids: set = set()
+    if isinstance(payload, dict):
+        for key in SEARCH_REFERENCE_KEYS:
+            value = payload.get(key)
+            if isinstance(value, list):
+                ids.update(entry for entry in value if isinstance(entry, str))
+    return ids
+
+
+# Wikipedia-style "...text before MATCH text after..." context window —
+# ellipses only where text was actually cut off, not unconditionally.
+def _build_snippet(text: str, query: str, context: int = 50) -> Optional[str]:
+    lower_text = text.lower()
+    idx = lower_text.find(query.lower())
+    if idx == -1:
+        return None
+    start = max(0, idx - context)
+    end = min(len(text), idx + len(query) + context)
+    prefix = "…" if start > 0 else ""
+    suffix = "…" if end < len(text) else ""
+    return f"{prefix}{text[start:end].strip()}{suffix}"
+
+
+# Suite-wide header search (see common/js/lib/suite-search.js) — deep, not
+# just title matching: every accessible record's own body text (Repository
+# journal pages, NPC/Monster/Effect/Location notes, Feature descriptions,
+# tier descriptions, ...) gets searched too, with a Wikipedia-style context
+# snippet around the match, and a record that REFERENCES a title-matched
+# entity (e.g. a Monster whose featureIds includes a Feature named "Void
+# Body") surfaces as its own result even though its own title never matched
+# anything. Same owned/shared access rule list_bucket enforces per-kind, but
+# across every kind at once. Deliberately does NOT include `public` (unlike
+# list_bucket) — the user asked this to search "anything... owned by (or
+# shared with) the currently logged in user", not the wider public library.
+# Anonymous users get no server results at all (nothing here is theirs to
+# own/be shared) — the client-side half of this feature (suite-search.js)
+# covers their own local-only saved content instead.
+#
+# Reads every accessible record's own JSON file off disk once per query —
+# no search index, deliberately: at this tool's real scale (one GM's own
+# campaign content, not a multi-tenant service), a few hundred small file
+# reads after a 250ms debounce is genuinely fine, and building/maintaining a
+# real full-text index would be a lot of new infrastructure for a search box
+# used by a handful of people at a time.
+def search_content(state: ServerState, user: Optional[User], query: str, limit: int = 20) -> List[Dict[str, Any]]:
+    query = (query or "").strip()
+    if not user or not query:
+        return []
+    needle = query.lower()
+
+    rows = _accessible_library_rows(state, user)
+
+    title_results: List[Dict[str, Any]] = []
+    body_results: List[Dict[str, Any]] = []
+    reference_candidates: List[tuple] = []
+    matched_entities: Dict[str, Dict[str, str]] = {}
+
+    for row in rows:
+        kind = row["kind"]
+        id_ = row["id"]
+        title = row.get("title") or id_
+        is_title_match = needle in title.lower()
+        if is_title_match:
+            entry = dict(row)
+            entry["match_type"] = "title"
+            title_results.append(entry)
+            matched_entities[id_] = {"kind": kind, "title": title}
+
+        try:
+            payload = load_json(_record_path(state, kind, id_))
+        except (FileNotFoundError, OSError, json.JSONDecodeError, ValueError):
+            payload = None
+        if payload is None:
+            continue
+
+        if not is_title_match:
+            strings: List[str] = []
+            _collect_searchable_strings(payload, strings)
+            for text in strings:
+                if needle in text.lower():
+                    snippet = _build_snippet(text, query)
+                    if snippet:
+                        entry = dict(row)
+                        entry["match_type"] = "body"
+                        entry["snippet"] = snippet
+                        body_results.append(entry)
+                    break
+
+        reference_ids = _collect_reference_ids(payload)
+        if reference_ids:
+            reference_candidates.append((row, title, reference_ids))
+
+    reference_results: List[Dict[str, Any]] = []
+    for row, _title, reference_ids in reference_candidates:
+        for ref_id in reference_ids:
+            matched = matched_entities.get(ref_id)
+            if not matched:
+                continue
+            entry = dict(row)
+            entry["match_type"] = "reference"
+            entry["snippet"] = f"References {matched['kind'].replace('-', ' ').title()}: {matched['title']}"
+            reference_results.append(entry)
+            break  # one reference snippet per record is enough
+
+    deduped: Dict[str, Dict[str, Any]] = {}
+    for entry in title_results + body_results + reference_results:
+        key = f"{entry['kind']}:{entry['id']}"
+        if key not in deduped:
+            deduped[key] = entry
+    results = list(deduped.values())
+    # Two stable sorts, not one compound key — modified_at wants descending
+    # (newest first) while match_type wants ascending (title, then body,
+    # then reference), and Python's sort being stable means sorting by the
+    # secondary key first, then the primary key, produces exactly that
+    # combined order.
+    match_type_rank = {"title": 0, "body": 1, "reference": 2}
+    results.sort(key=lambda entry: entry.get("modified_at") or "", reverse=True)
+    results.sort(key=lambda entry: match_type_rank.get(entry.get("match_type"), 3))
+    return results[:limit]
+
+
 def is_owner(state: ServerState, kind: str, id_: str, user: Optional[User]) -> bool:
     # Pure read — called from both unlocked routes (get_item/list_bucket) and
     # still-locked write paths (save_item/delete_item, via do_POST). read_db

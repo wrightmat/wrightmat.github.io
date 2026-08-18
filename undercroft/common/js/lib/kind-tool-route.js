@@ -18,6 +18,7 @@ export const KIND_TOOL_ROUTE = {
   setting: { tool: "sanctum", toolLabel: "Sanctum", param: "setting" },
   system: { tool: "loom", toolLabel: "Loom", param: "system" },
   feature: { tool: "loom", toolLabel: "Loom", param: "feature" },
+  macro: { tool: "loom", toolLabel: "Loom", param: "macro" },
   map: { tool: "orrery", toolLabel: "Orrery", param: "map" },
   // No `value()` override needed — Repository's own `?page=<id>` deep link
   // already exists (bookmarking/reloading a page); `extraParams` below is

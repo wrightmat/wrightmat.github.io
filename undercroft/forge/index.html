@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Undercroft Forge</title>
     <script src="../common/js/theme-init.js"></script>
-    <link rel="stylesheet" href="../common/vendor/bootstrap/bootstrap.min.css" />
     <link rel="stylesheet" href="../common/css/shell.css" />
     <link rel="stylesheet" href="css/styles.css" />
   </head>
@@ -17,9 +16,11 @@
         <div data-pane-content="left">
           <div class="btn-toolbar justify-content-center" role="toolbar" aria-label="NPC actions">
             <div class="btn-group" role="group" data-npc-toolbar-mount></div>
+            <div class="btn-group ms-2" role="group" data-npc-undo-toolbar-mount></div>
           </div>
 
-          <section class="d-flex flex-column gap-2" id="forge-generate">
+          <div data-selections-mount></div>
+          <div class="d-flex flex-column gap-2" data-selections-panel>
             <div data-field-mount="system-select"></div>
             <div data-field-mount="setting-select"></div>
             <div data-field-mount="location-select"></div>
@@ -31,13 +32,27 @@
               <div data-field-mount="alignment-override"></div>
               <div data-field-mount="gender-override"></div>
             </div>
-          </section>
+          </div>
 
           <div class="mt-auto" id="forge-json" data-json-mount></div>
         </div>
 
         <main class="workbench-main flex-grow-1 p-3 overflow-auto">
-          <div class="d-flex flex-column gap-3" data-npc-empty-state></div>
+          <!-- The suite-wide Mode header — the "Nothing selected yet"
+               empty-state message (condensed, left-aligned, no card — see
+               js/app.js's own createEmptyStateCard "inline" variant call)
+               flush on the left, ms-auto pushing Mode (NPC/Relationships, a
+               real labeled button group) to the right regardless of whether
+               the empty-state message is present. Same createModeToggleGroup
+               pattern Repository's own header uses — see js/app.js's own
+               renderModeToggle. Relationships mode always shows graph+list
+               together now — no separate View toggle. -->
+          <div class="d-flex align-items-center gap-2 mb-3" data-forge-header>
+            <div data-npc-empty-state></div>
+            <div class="d-flex align-items-center gap-2 ms-auto">
+              <div data-forge-mode-toggle-mount></div>
+            </div>
+          </div>
 
           <div class="d-flex flex-column gap-3 d-none" data-npc-display>
             <div class="card shadow-theme">
@@ -104,6 +119,29 @@
                   </div>
                 </section>
               </div>
+            </div>
+
+          </div>
+
+          <!-- Relationships — a second, mutually-exclusive Mode (not a card
+               inside NPC mode anymore) — see js/app.js's own setMode. Graph
+               and the relationship list/Add-relationship editor are now
+               always shown together (no more List/Graph view toggle) —
+               graph on top, editor underneath. -->
+          <div class="d-none card shadow-theme" data-npc-relationships>
+            <div class="card-body d-flex flex-column gap-2">
+              <div data-relationships-graph-wrap>
+                <div class="relationship-graph-stage" data-relationships-graph-container>
+                  <div class="relationship-graph-content" data-relationships-graph-content>
+                    <svg data-relationships-graph-svg viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid meet"></svg>
+                  </div>
+                  <div class="relationship-graph-controls d-flex align-items-center gap-2" data-relationships-graph-controls>
+                    <div class="btn-group btn-group-sm" role="group" aria-label="Relationships zoom controls" data-relationships-graph-toolbar-mount></div>
+                  </div>
+                </div>
+                <div class="d-none" data-relationships-graph-empty></div>
+              </div>
+              <div data-relationships-list-mount></div>
             </div>
           </div>
         </main>

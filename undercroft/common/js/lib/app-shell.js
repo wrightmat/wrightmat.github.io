@@ -1,9 +1,10 @@
-import { initThemeControls } from "./theme.js";
-import { initPaneToggles } from "./panes.js";
+import { initThemeControls, loadThemePacks, wireThemePackOptions } from "./theme.js";
+import { initPaneToggles, collapsePane, expandPane } from "./panes.js";
 import { StatusManager } from "./status.js";
 import { UndoRedoStack } from "./undo-stack.js";
 import { KeyboardShortcuts } from "./keyboard.js";
 import { attachHoverDropdown } from "./dom.js";
+import { initSuiteSearch } from "./suite-search.js";
 
 // `icon` is an Iconify `tabler:*` id — same convention used everywhere else
 // across every tool page (`<span class="iconify" data-icon="tabler:...">`).
@@ -263,6 +264,11 @@ function initToolNavigation(root = document) {
   triggerIcon.dataset.icon = activeDefinition ? activeDefinition.icon : SUITE_ICON;
   triggerIcon.setAttribute("aria-hidden", "true");
   const triggerLabel = document.createElement("span");
+  // Icon-only until shell.css's container query reveals it (see
+  // .workbench-header-middle) — the toggle's own aria-label already
+  // carries this same text for assistive tech, so display:none (not
+  // visually-hidden) is correct here, unlike icon buttons with no other
+  // label source.
   triggerLabel.className = "undercroft-tool-trigger-label";
   // "Undercroft" prefix only on the trigger (it's replacing the page's own
   // "Undercroft {Tool}" title) — dropdown cards just say the tool name,
@@ -302,7 +308,7 @@ function initToolNavigation(root = document) {
   // of a link.
   if (currentSection !== "home") {
     const homeLink = document.createElement("a");
-    homeLink.className = "btn btn-outline-secondary d-flex align-items-center justify-content-center";
+    homeLink.className = "btn btn-outline-secondary d-flex align-items-center justify-content-center undercroft-header-icon-btn";
     homeLink.href = resolveToolHref("home", currentSection);
     homeLink.title = "Home";
     homeLink.setAttribute("aria-label", "Home");
@@ -327,7 +333,7 @@ function initToolNavigation(root = document) {
 function buildPaneToggleButton(key, label) {
   const button = document.createElement("button");
   button.type = "button";
-  button.className = "btn btn-outline-secondary d-flex align-items-center justify-content-center";
+  button.className = "btn btn-outline-secondary d-flex align-items-center justify-content-center undercroft-header-icon-btn";
   button.dataset.paneToggle = key;
   button.setAttribute("aria-label", label);
   const icon = document.createElement("span");
@@ -350,10 +356,6 @@ function buildThemeToggleButton(option, ariaLabel, hiddenLabelText, icon) {
   button.type = "button";
   button.className = "btn btn-outline-primary";
   button.dataset.themeOption = option;
-  if (!icon) {
-    button.textContent = hiddenLabelText;
-    return button;
-  }
   button.setAttribute("aria-label", ariaLabel);
   const iconEl = document.createElement("span");
   iconEl.className = "iconify fs-5";
@@ -364,6 +366,91 @@ function buildThemeToggleButton(option, ariaLabel, hiddenLabelText, icon) {
   hiddenLabel.textContent = hiddenLabelText;
   button.append(iconEl, hiddenLabel);
   return button;
+}
+
+// One row per common/data/theme-packs.json entry — a swatch dot (the
+// pack's own accent color, so the list previews the palette without
+// loading each theme's CSS) plus its label. Styled as a real Bootstrap
+// dropdown-item so its own .active state (toggled by theme.js's
+// wireThemePackOptions) gets Bootstrap's native highlighted-item look for
+// free, same as the tool-switcher's own dropdown items elsewhere in this
+// file.
+function buildThemePackOption(pack) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "dropdown-item d-flex align-items-center gap-2";
+  button.dataset.themePackOption = pack.id;
+  const swatch = document.createElement("span");
+  swatch.className = "undercroft-theme-swatch";
+  swatch.style.backgroundColor = pack.swatch || "var(--bs-secondary)";
+  swatch.setAttribute("aria-hidden", "true");
+  const label = document.createElement("span");
+  label.textContent = pack.label || pack.id;
+  button.append(swatch, label);
+  return button;
+}
+
+// Replaces the old flat 3-button light/system/dark group with one icon
+// trigger — folds BOTH axes (mode and palette, see common/js/lib/theme.js)
+// into a single dropdown, so this control needs no separate mobile
+// compaction the way the header's other controls do: it's already one
+// small button at every viewport width. Mode row is built eagerly (only
+// ever 3 known, hardcoded options); the palette list below the divider is
+// populated once loadThemePacks() resolves — async, since it's a fetch of
+// common/data/theme-packs.json — via theme.js's own wireThemePackOptions
+// (click handling + active-state bookkeeping lives there, not here, same
+// split as initThemeControls/[data-theme-option] for the mode row).
+function buildThemeSwitcherDropdown() {
+  const dropdown = document.createElement("div");
+  dropdown.className = "dropdown undercroft-theme-switcher";
+
+  const toggle = document.createElement("button");
+  toggle.type = "button";
+  toggle.className = "btn btn-outline-secondary d-flex align-items-center justify-content-center undercroft-header-icon-btn";
+  toggle.dataset.bsToggle = "dropdown";
+  toggle.setAttribute("aria-expanded", "false");
+  toggle.setAttribute("aria-label", "Appearance");
+  const toggleIcon = document.createElement("span");
+  toggleIcon.className = "iconify fs-5";
+  toggleIcon.dataset.icon = "tabler:palette";
+  toggleIcon.setAttribute("aria-hidden", "true");
+  toggle.appendChild(toggleIcon);
+
+  const menu = document.createElement("div");
+  menu.className = "dropdown-menu dropdown-menu-end undercroft-theme-dropdown p-2";
+
+  const modeRow = document.createElement("div");
+  modeRow.className = "btn-group w-100 mb-2";
+  modeRow.setAttribute("role", "group");
+  modeRow.setAttribute("aria-label", "Theme mode");
+  modeRow.append(
+    buildThemeToggleButton("light", "Use light theme", "Light theme", "tabler:sun"),
+    buildThemeToggleButton("system", "Use system theme", "System", "tabler:device-desktop"),
+    buildThemeToggleButton("dark", "Use dark theme", "Dark theme", "tabler:moon")
+  );
+  menu.appendChild(modeRow);
+  const divider = document.createElement("hr");
+  divider.className = "dropdown-divider";
+  menu.appendChild(divider);
+
+  const packList = document.createElement("div");
+  packList.className = "d-flex flex-column gap-1";
+  packList.setAttribute("data-theme-pack-list", "");
+  menu.appendChild(packList);
+
+  dropdown.append(toggle, menu);
+
+  loadThemePacks().then((packs) => {
+    if (!packs.length) {
+      return;
+    }
+    const buttons = packs.map((pack) => buildThemePackOption(pack));
+    packList.append(...buttons);
+    wireThemePackOptions(buttons);
+  });
+
+  attachHoverDropdown(dropdown, toggle);
+  return dropdown;
 }
 
 // Builds the entire <header> — pane toggles, tool-switcher mount, auth
@@ -402,7 +489,7 @@ function buildAppShellHeader(root, { leftPaneLabel, rightPaneLabel, settingsSlot
   }
 
   const middle = document.createElement("div");
-  middle.className = "d-flex align-items-center gap-3 w-100";
+  middle.className = "workbench-header-middle d-flex align-items-center gap-3 w-100";
 
   const leftGroup = document.createElement("div");
   leftGroup.className = "d-flex align-items-center gap-3";
@@ -415,6 +502,18 @@ function buildAppShellHeader(root, { leftPaneLabel, rightPaneLabel, settingsSlot
   h1.appendChild(nav);
   leftGroup.appendChild(h1);
 
+  // The suite-wide header search — sits in the space between the tool
+  // switcher/Home link (leftGroup) and the auth/theme controls (rightGroup),
+  // which is otherwise just empty flex-grow room. flex-grow-1 + max-width
+  // keeps it a sensible search-box width rather than stretching edge to
+  // edge on a wide viewport; rightGroup's own ms-auto still applies (it
+  // still wins the remaining space once this box hits its max-width).
+  const searchMount = document.createElement("div");
+  searchMount.className = "flex-grow-1 mx-2";
+  searchMount.style.maxWidth = "28rem";
+  searchMount.style.minWidth = "0";
+  searchMount.setAttribute("data-suite-search-mount", "");
+
   const rightGroup = document.createElement("div");
   rightGroup.className = "ms-auto d-flex align-items-center gap-3 flex-wrap";
 
@@ -423,16 +522,7 @@ function buildAppShellHeader(root, { leftPaneLabel, rightPaneLabel, settingsSlot
   authControl.className = "d-flex";
   rightGroup.appendChild(authControl);
 
-  const themeGroup = document.createElement("div");
-  themeGroup.className = "btn-group";
-  themeGroup.setAttribute("role", "group");
-  themeGroup.setAttribute("aria-label", "Theme toggle");
-  themeGroup.append(
-    buildThemeToggleButton("light", "Use light theme", "Light theme", "tabler:sun"),
-    buildThemeToggleButton("system", "System", "System", null),
-    buildThemeToggleButton("dark", "Use dark theme", "Dark theme", "tabler:moon")
-  );
-  rightGroup.appendChild(themeGroup);
+  rightGroup.appendChild(buildThemeSwitcherDropdown());
 
   // docs.html is the one page with no right pane at all — pass
   // rightPaneLabel: null there to omit this button entirely, same as its
@@ -441,11 +531,13 @@ function buildAppShellHeader(root, { leftPaneLabel, rightPaneLabel, settingsSlot
     rightGroup.appendChild(buildPaneToggleButton("right", rightPaneLabel));
   }
 
-  middle.append(leftGroup, rightGroup);
+  middle.append(leftGroup, searchMount, rightGroup);
   grid.append(middle, document.createElement("div"));
   header.appendChild(grid);
 
   mount.replaceWith(header);
+  initSuiteSearch({ container: searchMount });
+  return header;
 }
 
 // Builds one left/right `<aside>` pane shell — the border/background/shadow/
@@ -469,12 +561,20 @@ function buildPaneShell(mountEl, { side, size = "default", initial = "expanded" 
   if (!mountEl) {
     return null;
   }
+  // Below md, both panes start collapsed regardless of what each tool
+  // requested — a phone viewport doesn't have room for an 18-20rem pane
+  // plus content. This only overrides the INITIAL load state; the existing
+  // header pane-toggle buttons (initPaneToggles, unchanged) still open/close
+  // them exactly as before. Desktop viewports never hit this branch, so
+  // their behavior is unchanged.
+  const isNarrowViewport = window.matchMedia("(max-width: 767.98px)").matches;
+  const effectiveInitial = isNarrowViewport ? "collapsed" : initial;
   const aside = document.createElement("aside");
   aside.dataset.pane = side;
   aside.setAttribute("data-pane-collapsed-class", "d-none");
   aside.setAttribute("data-pane-expanded-class", "d-flex");
-  aside.setAttribute("data-pane-initial", initial);
-  const isCollapsed = initial === "collapsed";
+  aside.setAttribute("data-pane-initial", effectiveInitial);
+  const isCollapsed = effectiveInitial === "collapsed";
   aside.className = [
     side === "left" ? "border-end" : "border-start",
     "border-body-tertiary",
@@ -497,7 +597,27 @@ function buildPaneShell(mountEl, { side, size = "default", initial = "expanded" 
   }
   aside.appendChild(content);
   mountEl.replaceWith(aside);
-  return aside;
+  return { aside, size, effectiveInitial };
+}
+
+// Keeps the header's own left/right spacer-grid columns (which visually
+// align with the pane widths below them) in sync with whether that pane is
+// ACTUALLY expanded or collapsed — not just a static viewport breakpoint.
+// A collapsed pane is 0-width, so its header spacer should be too (`auto`,
+// not a literal 0 — a settings-slot button, when present, still needs to
+// size to its own content rather than being clipped). Called once at build
+// time for each pane's initial state, then again from initPaneToggles's
+// onChange every time a user toggles a pane afterward, at ANY viewport
+// width — this is what fixes the header overlapping/squeezing that showed
+// up on a narrowed desktop window even with both panes collapsed, since
+// previously the header reserved a full 18-20rem for a collapsed pane
+// regardless of viewport.
+function syncHeaderPaneSpacerWidth(headerEl, side, expanded, size) {
+  if (!headerEl) {
+    return;
+  }
+  const configuredWidth = size === "lg" ? "20rem" : "18rem";
+  headerEl.style.setProperty(`--undercroft-pane-${side}-width`, expanded ? configuredWidth : "auto");
 }
 
 function showFeedback(status, feedback, fallbackMessage) {
@@ -559,12 +679,18 @@ export function initAppShell({
   // all (docs.html is the one page in the suite like this).
   rightPane = { size: "default", initial: "expanded" },
 } = {}) {
-  buildAppShellHeader(root, { leftPaneLabel, rightPaneLabel, settingsSlotAttr });
+  const headerEl = buildAppShellHeader(root, { leftPaneLabel, rightPaneLabel, settingsSlotAttr });
   if (leftPane) {
-    buildPaneShell(root.querySelector('[data-pane-content="left"]'), { side: "left", ...leftPane });
+    const built = buildPaneShell(root.querySelector('[data-pane-content="left"]'), { side: "left", ...leftPane });
+    if (built) {
+      syncHeaderPaneSpacerWidth(headerEl, "left", built.effectiveInitial !== "collapsed", built.size);
+    }
   }
   if (rightPane) {
-    buildPaneShell(root.querySelector('[data-pane-content="right"]'), { side: "right", ...rightPane });
+    const built = buildPaneShell(root.querySelector('[data-pane-content="right"]'), { side: "right", ...rightPane });
+    if (built) {
+      syncHeaderPaneSpacerWidth(headerEl, "right", built.effectiveInitial !== "collapsed", built.size);
+    }
   }
   const statusRoot = root.querySelector("[data-status-root]") || document.createElement("div");
   const status = new StatusManager(statusRoot);
@@ -573,8 +699,111 @@ export function initAppShell({
   }
 
   initThemeControls(root);
-  initPaneToggles(root);
+
+  // Below DUAL_PANE_MIN_WIDTH_REM, .workbench-header-middle doesn't have
+  // room for both panes' spacer columns AND its own content at once — a
+  // FIXED viewport width (what buildPaneShell's own load-time check below
+  // md still uses, unchanged, as a coarser phone-territory floor) can't
+  // coordinate with that: at a typical desktop width with both panes
+  // expanded, middle was already having to wrap (see shell.css's flex-wrap
+  // comment) long before the viewport ever narrowed down to 767.98px.
+  // Can't fix that with CSS alone either — panes live outside middle's own
+  // DOM subtree entirely (siblings at the page level, not descendants),
+  // and a @container query can only style a container's OWN descendants.
+  //
+  // Rule, below the threshold: at most ONE pane may be expanded at a time
+  // — not a bidirectional auto-collapse/auto-expand system keyed to width
+  // (an earlier version of this was exactly that, with a 4-threshold
+  // hysteresis dance to avoid oscillating; the real problem it ran into
+  // was that its own width-based logic would immediately re-collapse a
+  // pane the instant after a user manually clicked to expand it, since
+  // expanding it shrank middle right back below that pane's own collapse
+  // threshold — the user could never actually force one open when they
+  // needed it below that width). Instead: a manual click ALWAYS wins,
+  // immediately closing the sibling pane to make room rather than being
+  // fought by width logic afterward (below, in initPaneToggles's own
+  // onChange). The ResizeObserver further down only ever has to step in
+  // for the case a click can't cover — both panes already expanded and the
+  // window narrows past the threshold with no click involved.
+  // Measured: 475px ÷ 16 — the point where fully-compact header content
+  // (every stage in shell.css's @container rules already collapsed)
+  // exactly fills middle with no room left, was 448px/28rem.
+  const DUAL_PANE_MIN_WIDTH_REM = 29.6875;
+
+  function remToPx(remValue) {
+    const rootFontSizePx = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+    return remValue * rootFontSizePx;
+  }
+
+  function middleWidth() {
+    return root.querySelector(".workbench-header-middle")?.getBoundingClientRect().width ?? Infinity;
+  }
+
+  function setPane(side, expand) {
+    const paneEl = root.querySelector(`[data-pane="${side}"]`);
+    if (!paneEl) return;
+    const toggleEl = root.querySelector(`[data-pane-toggle="${side}"]`);
+    if (expand) {
+      expandPane(paneEl, toggleEl);
+    } else {
+      collapsePane(paneEl, toggleEl);
+    }
+    const pane = side === "left" ? leftPane : rightPane;
+    syncHeaderPaneSpacerWidth(headerEl, side, expand, pane?.size);
+  }
+
+  initPaneToggles(root, {
+    onChange: ({ key, state }) => {
+      const size = key === "left" ? leftPane?.size : rightPane?.size;
+      syncHeaderPaneSpacerWidth(headerEl, key, state === "expanded", size);
+      // The click that just happened already applied its own pane's new
+      // width to middle's grid track (syncHeaderPaneSpacerWidth above runs
+      // synchronously) — reading middleWidth() here sees that.
+      if (state !== "expanded" || middleWidth() >= remToPx(DUAL_PANE_MIN_WIDTH_REM)) {
+        return;
+      }
+      const otherSide = key === "left" ? "right" : "left";
+      const otherPaneEl = root.querySelector(`[data-pane="${otherSide}"]`);
+      if (otherPaneEl && otherPaneEl.dataset.state !== "collapsed") {
+        setPane(otherSide, false);
+      }
+    },
+  });
   initToolNavigation(root);
+
+  // Fallback for when both panes are already expanded and the window
+  // narrows past the threshold with no click involved — the onChange path
+  // above only fires on a click, so this is the only way that specific
+  // case gets caught. No hysteresis/re-expand-on-widen here on purpose:
+  // per explicit direction, a pane closed by this system only ever reopens
+  // from an actual user click on its own toggle button (which panes.js's
+  // own togglePane already handles unconditionally — clicking always
+  // works, regardless of width) — never automatically from a resize.
+  if (typeof ResizeObserver !== "undefined") {
+    const middle = root.querySelector(".workbench-header-middle");
+    if (middle) {
+      new ResizeObserver(() => {
+        if (middleWidth() >= remToPx(DUAL_PANE_MIN_WIDTH_REM)) {
+          return;
+        }
+        const rightPaneEl = root.querySelector('[data-pane="right"]');
+        const leftPaneEl = root.querySelector('[data-pane="left"]');
+        if (rightPaneEl?.dataset.state !== "collapsed" && leftPaneEl?.dataset.state !== "collapsed") {
+          // Both open: collapse right first. This resize's own effect
+          // (right's spacer column shrinking) re-triggers this same
+          // observer, so the branch below picks up from there — no manual
+          // re-check needed here.
+          setPane("right", false);
+        } else if (rightPaneEl?.dataset.state === "collapsed" && leftPaneEl?.dataset.state !== "collapsed") {
+          // Right alone wasn't enough — middle is still under the
+          // threshold even with right already collapsed, so left has to
+          // give up its own space too (same threshold, same as collapsing
+          // right did — not a separate/second number).
+          setPane("left", false);
+        }
+      }).observe(middle);
+    }
+  }
 
   const undoStack = new UndoRedoStack({
     storageKey: `${storagePrefix}.${namespace}`,

@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Undercroft Workbench</title>
     <script src="../common/js/theme-init.js"></script>
-    <link rel="stylesheet" href="../common/vendor/bootstrap/bootstrap.min.css" />
     <link rel="stylesheet" href="../common/css/shell.css" />
     <link rel="stylesheet" href="../common/vendor/toastui-editor/toastui-editor.min.css" />
     <!-- Press's own card/chip rendering styles (.card-tile, .card-tile-content,
@@ -27,85 +26,129 @@
         <div data-pane-content="left">
             <div class="btn-toolbar justify-content-center overflow-x-auto" role="toolbar" aria-label="Workbench actions">
               <div class="btn-group" role="group" data-workbench-toolbar-mount></div>
+              <div class="btn-group ms-2" role="group" data-workbench-undo-toolbar-mount></div>
             </div>
 
-            <section class="d-flex flex-column gap-3 d-none" data-workbench-view-panel="template">
-              <div class="d-flex justify-content-between align-items-center">
-                <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0 d-flex align-items-center gap-2">
-                  <span>Palette</span>
-                  <span class="align-middle" data-help-topic="template.library" data-help-insert="replace" data-help-placement="right"></span>
-                </h2>
-                <span class="fs-6 text-body-secondary">Drag into canvas</span>
+            <!-- Selections — the Template/Character select, whichever the
+                 active Mode needs (data-workbench-mode-panel gates each row
+                 the same way it already gates whole sections below),
+                 collapsible and expanded by default like every other tool's
+                 own left-pane Selections section — see js/pages/
+                 workbench.js's own init() (the selectionsSection call). -->
+            <div data-selections-mount></div>
+            <div class="d-flex flex-column gap-3" data-selections-panel>
+              <!-- The mode-gating attribute has to live on a WRAPPER, not on
+                   [data-field-mount] itself — mountField's own
+                   mount.replaceWith(element) swaps the mount div out for the
+                   built field entirely, silently dropping any attribute that
+                   sat on that same element (confirmed real bug: this row
+                   stayed visible in Character mode until fixed). -->
+              <div data-workbench-mode-panel="template">
+                <div data-field-mount="template-select"></div>
               </div>
-              <div class="d-grid gap-2" data-palette>
-                <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="container" data-sortable-handle="true">
-                  <span class="iconify fs-4 text-primary" data-icon="tabler:layout-grid-add" aria-hidden="true"></span>
-                  <div class="d-flex flex-column">
-                    <div class="fw-semibold">Container</div>
-                    <div class="text-body-secondary extra-small text-truncate">Grids and tabs</div>
-                  </div>
-                </div>
-                <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="icon" data-sortable-handle="true">
-                  <span class="iconify fs-4 text-primary" data-icon="tabler:icons" aria-hidden="true"></span>
-                  <div class="d-flex flex-column">
-                    <div class="fw-semibold">Icon</div>
-                    <div class="text-body-secondary extra-small text-truncate">A single icon glyph</div>
-                  </div>
-                </div>
-                <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="image" data-sortable-handle="true">
-                  <span class="iconify fs-4 text-primary" data-icon="tabler:photo" aria-hidden="true"></span>
-                  <div class="d-flex flex-column">
-                    <div class="fw-semibold">Image</div>
-                    <div class="text-body-secondary extra-small text-truncate">Portraits, logos, or patterns</div>
-                  </div>
-                </div>
-                <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="input" data-sortable-handle="true">
-                  <span class="iconify fs-4 text-primary" data-icon="tabler:forms" aria-hidden="true"></span>
-                  <div class="d-flex flex-column">
-                    <div class="fw-semibold">Input</div>
-                    <div class="text-body-secondary extra-small text-truncate">Text, number, select, radio, checkbox</div>
-                  </div>
-                </div>
-                <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="repeater" data-sortable-handle="true">
-                  <span class="iconify fs-4 text-primary" data-icon="tabler:list-details" aria-hidden="true"></span>
-                  <div class="d-flex flex-column">
-                    <div class="fw-semibold">Repeater</div>
-                    <div class="text-body-secondary extra-small text-truncate">Inventory and item lists</div>
-                  </div>
-                </div>
-                <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="select-group" data-sortable-handle="true">
-                  <span class="iconify fs-4 text-primary" data-icon="tabler:toggle-right" aria-hidden="true"></span>
-                  <div class="d-flex flex-column">
-                    <div class="fw-semibold">Select Group</div>
-                    <div class="text-body-secondary extra-small text-truncate">Pills, tags, or segmented toggles</div>
-                  </div>
-                </div>
-                <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="text" data-sortable-handle="true">
-                  <span class="iconify fs-4 text-primary" data-icon="tabler:typography" aria-hidden="true"></span>
-                  <div class="d-flex flex-column">
-                    <div class="fw-semibold">Text</div>
-                    <div class="text-body-secondary extra-small text-truncate">Static text or headings</div>
-                  </div>
-                </div>
-                <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="toggle" data-sortable-handle="true">
-                  <span class="iconify fs-4 text-primary" data-icon="tabler:adjustments" aria-hidden="true"></span>
-                  <div class="d-flex flex-column">
-                    <div class="fw-semibold">Toggle</div>
-                    <div class="text-body-secondary extra-small text-truncate">Multi-state proficiencies</div>
-                  </div>
-                </div>
-                <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="track" data-sortable-handle="true">
-                  <span class="iconify fs-4 text-primary" data-icon="tabler:timeline" aria-hidden="true"></span>
-                  <div class="d-flex flex-column">
-                    <div class="fw-semibold">Track</div>
-                    <div class="text-body-secondary extra-small text-truncate">Progress bars or clocks</div>
-                  </div>
-                </div>
+              <div class="d-flex flex-column gap-2" data-workbench-mode-panel="character">
+                <div data-field-mount="character-select"></div>
+                <!-- Full-text, not icon-only — deliberately NOT part of the
+                     left-pane icon toolbar (see undercroft/README.md's UI &
+                     Style Conventions section, "Button count" note). Hidden
+                     by default; workbench-character-view.js's own
+                     syncCharacterActions shows it only for a character that
+                     actually has both url+mapping and the viewer has
+                     permission. -->
+                <button
+                  class="btn btn-outline-secondary d-none"
+                  type="button"
+                  data-action="reimport-character"
+                  data-reimport-character
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="bottom"
+                  data-bs-title="Re-fetch this character from its original source."
+                >
+                  <span class="iconify" data-icon="tabler:cloud-download" aria-hidden="true"></span>
+                  Re-import
+                </button>
               </div>
-              <div class="mt-auto" data-template-json-mount></div>
+            </div>
+
+            <!-- Palette — collapsible, collapsed by default, auto-expanded
+                 once a template is selected (js/pages/workbench-template-
+                 view.js's own setPaletteCollapsed). Clear canvas lives in
+                 this section's own header (one of createCollapsibleSection's
+                 `actions`) where the old static "Drag into canvas" hint used
+                 to sit. -->
+            <section class="d-none" data-workbench-mode-panel="template">
+              <div data-palette-mount></div>
+              <div class="d-flex flex-column gap-3" data-palette-panel>
+                <div class="d-grid gap-2" data-palette>
+                  <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="container" data-sortable-handle="true">
+                    <span class="iconify fs-4 text-primary" data-icon="tabler:layout-grid-add" aria-hidden="true"></span>
+                    <div class="d-flex flex-column">
+                      <div class="fw-semibold">Container</div>
+                      <div class="text-body-secondary extra-small text-truncate">Grids and tabs</div>
+                    </div>
+                  </div>
+                  <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="icon" data-sortable-handle="true">
+                    <span class="iconify fs-4 text-primary" data-icon="tabler:icons" aria-hidden="true"></span>
+                    <div class="d-flex flex-column">
+                      <div class="fw-semibold">Icon</div>
+                      <div class="text-body-secondary extra-small text-truncate">A single icon glyph</div>
+                    </div>
+                  </div>
+                  <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="image" data-sortable-handle="true">
+                    <span class="iconify fs-4 text-primary" data-icon="tabler:photo" aria-hidden="true"></span>
+                    <div class="d-flex flex-column">
+                      <div class="fw-semibold">Image</div>
+                      <div class="text-body-secondary extra-small text-truncate">Portraits, logos, or patterns</div>
+                    </div>
+                  </div>
+                  <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="input" data-sortable-handle="true">
+                    <span class="iconify fs-4 text-primary" data-icon="tabler:forms" aria-hidden="true"></span>
+                    <div class="d-flex flex-column">
+                      <div class="fw-semibold">Input</div>
+                      <div class="text-body-secondary extra-small text-truncate">Text, number, select, radio, checkbox</div>
+                    </div>
+                  </div>
+                  <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="repeater" data-sortable-handle="true">
+                    <span class="iconify fs-4 text-primary" data-icon="tabler:list-details" aria-hidden="true"></span>
+                    <div class="d-flex flex-column">
+                      <div class="fw-semibold">Repeater</div>
+                      <div class="text-body-secondary extra-small text-truncate">Inventory and item lists</div>
+                    </div>
+                  </div>
+                  <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="select-group" data-sortable-handle="true">
+                    <span class="iconify fs-4 text-primary" data-icon="tabler:toggle-right" aria-hidden="true"></span>
+                    <div class="d-flex flex-column">
+                      <div class="fw-semibold">Select Group</div>
+                      <div class="text-body-secondary extra-small text-truncate">Pills, tags, or segmented toggles</div>
+                    </div>
+                  </div>
+                  <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="text" data-sortable-handle="true">
+                    <span class="iconify fs-4 text-primary" data-icon="tabler:typography" aria-hidden="true"></span>
+                    <div class="d-flex flex-column">
+                      <div class="fw-semibold">Text</div>
+                      <div class="text-body-secondary extra-small text-truncate">Static text or headings</div>
+                    </div>
+                  </div>
+                  <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="toggle" data-sortable-handle="true">
+                    <span class="iconify fs-4 text-primary" data-icon="tabler:adjustments" aria-hidden="true"></span>
+                    <div class="d-flex flex-column">
+                      <div class="fw-semibold">Toggle</div>
+                      <div class="text-body-secondary extra-small text-truncate">Multi-state proficiencies</div>
+                    </div>
+                  </div>
+                  <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="track" data-sortable-handle="true">
+                    <span class="iconify fs-4 text-primary" data-icon="tabler:timeline" aria-hidden="true"></span>
+                    <div class="d-flex flex-column">
+                      <div class="fw-semibold">Track</div>
+                      <div class="text-body-secondary extra-small text-truncate">Progress bars or clocks</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="mt-auto" data-template-json-mount></div>
+              </div>
             </section>
 
-            <section class="d-flex flex-column gap-3" data-workbench-view-panel="play edit" data-notes-section>
+            <section class="d-flex flex-column gap-3" data-workbench-mode-panel="character" data-notes-section>
               <div data-notes-mount></div>
               <div class="d-flex flex-column gap-3" data-notes-panel hidden>
                 <textarea
@@ -116,52 +159,64 @@
                 ></textarea>
               </div>
             </section>
-            <section class="d-flex flex-column gap-3" data-workbench-view-panel="play edit" hidden data-group-share-section>
-              <div data-group-share-mount></div>
-              <div class="d-flex flex-column gap-3" data-group-share-panel></div>
-              <div class="text-body-secondary small" data-group-share-status hidden></div>
-            </section>
-            <div class="mt-auto" data-workbench-view-panel="play edit" id="workbench-character-json" data-character-json-mount></div>
-        </div>
-        <main class="workbench-main flex-grow-1 p-3 overflow-auto d-flex flex-column gap-4">
-            <ul class="nav nav-tabs mb-0" role="tablist" data-workbench-view-tabs>
-              <li class="nav-item" role="presentation">
-                <button
-                  class="nav-link"
-                  type="button"
-                  data-workbench-view-tab="template"
-                  data-requires-tier="gm"
-                  data-access-behavior="disable"
-                  role="tab"
-                >
-                  Template
-                </button>
-              </li>
-              <li class="nav-item" role="presentation">
-                <button class="nav-link" type="button" data-workbench-view-tab="edit" role="tab">Edit</button>
-              </li>
-              <li class="nav-item" role="presentation">
-                <button class="nav-link active" type="button" data-workbench-view-tab="play" role="tab">Play</button>
-              </li>
-            </ul>
-            <section class="d-flex flex-column gap-4 d-none" data-workbench-view-panel="template">
-              <div class="card shadow-theme">
-                <div class="card-header bg-body d-flex justify-content-between align-items-center">
-                  <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Selections</h2>
-                  <div class="d-flex align-items-center gap-2" data-selections-toggle-mount></div>
-                </div>
-                <div data-selections-panel>
-                  <div class="card-body">
-                    <div class="row g-3 align-items-end">
-                      <div class="col-12 col-md-4 col-lg-3" data-field-mount="template-select"></div>
-                      <div class="col-12 col-md text-md-end">
-                        <div class="small text-body-secondary" data-template-meta>No template selected</div>
-                      </div>
+            <!-- Same shared relationship-editor.js/relationship-graph.js
+                 pair Forge/Sanctum/Crucible's own records use (see
+                 workbench-character-view.js's own header comment) — per
+                 the active character, not the active Template, so it lives
+                 in the same "play edit"-only group as Notes above rather
+                 than the Template panel. -->
+            <section class="d-flex flex-column gap-3" data-workbench-mode-panel="character" data-relationships-section>
+              <div data-relationships-mount></div>
+              <div class="d-flex flex-column gap-3" data-relationships-panel hidden>
+                <div data-relationships-graph-wrap>
+                  <div class="relationship-graph-stage" data-relationships-graph-container>
+                    <div class="relationship-graph-content" data-relationships-graph-content>
+                      <svg data-relationships-graph-svg viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid meet"></svg>
+                    </div>
+                    <div class="relationship-graph-controls d-flex align-items-center gap-2" data-relationships-graph-controls>
+                      <div class="btn-group btn-group-sm" role="group" aria-label="Relationships zoom controls" data-relationships-graph-toolbar-mount></div>
                     </div>
                   </div>
+                  <div class="d-none" data-relationships-graph-empty></div>
                 </div>
+                <div data-relationships-list-mount></div>
               </div>
-              <div class="card shadow-theme flex-grow-1 min-h-24rem">
+            </section>
+            <section data-workbench-mode-panel="character" data-group-share-section>
+              <div class="d-flex flex-column gap-3" data-group-share-relevant>
+                <div data-group-share-mount></div>
+                <div class="d-flex flex-column gap-3" data-group-share-panel></div>
+                <div class="text-body-secondary small" data-group-share-status hidden></div>
+              </div>
+            </section>
+            <div class="mt-auto" data-workbench-mode-panel="character" id="workbench-character-json" data-character-json-mount></div>
+        </div>
+        <main class="workbench-main flex-grow-1 p-3 overflow-auto d-flex flex-column gap-4">
+            <!-- The suite-wide Mode/View header — the "Select a template/
+                 character..." empty-state message (condensed, left-aligned,
+                 no card — createEmptyStateCard "inline" variant, see
+                 js/pages/workbench.js's own renderEmptyState) flush on the
+                 left, ms-auto pushing Mode (Template/Character, a real
+                 labeled button group) plus, to its left, a View cycle button
+                 (View<->Edit, only rendered while Mode=Character) to the
+                 right regardless of whether the empty-state message is
+                 present. Same createModeToggleGroup/createCycleToggleButton
+                 pair Repository/Forge/Crucible/Sanctum/Vault's own header
+                 uses — see js/pages/workbench.js's own renderModeToggle/
+                 renderViewToggle. -->
+            <div class="d-flex align-items-center gap-2" data-workbench-header>
+              <div data-workbench-empty-state-mount></div>
+              <div class="d-flex align-items-center gap-2 ms-auto">
+                <div data-workbench-view-toggle-mount></div>
+                <div data-workbench-mode-toggle-mount></div>
+              </div>
+            </div>
+            <section class="d-flex flex-column gap-4 d-none" data-workbench-mode-panel="template">
+              <!-- d-none by default — js/pages/workbench.js's own
+                   renderEmptyState shows this only once a template is
+                   actually active, alongside the empty-state message above
+                   taking its place otherwise. -->
+              <div class="card shadow-theme flex-grow-1 min-h-24rem d-none" data-workbench-canvas-card>
                 <div class="card-body d-flex flex-column gap-3">
                   <div class="d-flex justify-content-between align-items-center">
                     <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Canvas</h2>
@@ -171,39 +226,10 @@
               </div>
             </section>
 
-            <section class="d-flex flex-column gap-4" data-workbench-view-panel="play edit">
-              <div class="card shadow-theme" data-character-toolbar>
-                <div class="card-body">
-                  <div class="row g-3 align-items-end">
-                    <div class="col-12 col-lg-4 col-xl-3" data-field-mount="character-select"></div>
-                    <!-- Full-text, not icon-only — deliberately NOT part of
-                         the left-pane icon toolbar (see undercroft/README.md's
-                         UI & Style Conventions section, "Button count" note:
-                         that toolbar was already at its
-                         six-button ceiling, and this belongs with the
-                         character picker it acts on anyway). Hidden by
-                         default; workbench-character-view.js's own
-                         syncCharacterActions shows it only for a character
-                         that actually has both url+mapping and the viewer
-                         has permission. -->
-                    <div class="col-12 col-lg-auto">
-                      <button
-                        class="btn btn-outline-secondary d-none"
-                        type="button"
-                        data-action="reimport-character"
-                        data-reimport-character
-                        data-bs-toggle="tooltip"
-                        data-bs-placement="bottom"
-                        data-bs-title="Re-fetch this character from its original source."
-                      >
-                        <span class="iconify" data-icon="tabler:cloud-download" aria-hidden="true"></span>
-                        Re-import
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="card shadow-theme flex-grow-1 min-h-24rem">
+            <section class="d-flex flex-column gap-4" data-workbench-mode-panel="character">
+              <!-- d-none by default — see the Canvas card's own comment
+                   above, same treatment for a loaded character. -->
+              <div class="card shadow-theme flex-grow-1 min-h-24rem d-none" data-workbench-sheet-card>
                 <div class="card-body d-flex flex-column gap-3">
                   <div class="d-flex justify-content-between align-items-center">
                     <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Sheet</h2>
@@ -214,16 +240,13 @@
             </section>
         </main>
         <div data-pane-content="right">
-            <section class="d-flex flex-column gap-3 d-none" data-workbench-view-panel="template">
+            <section class="d-flex flex-column gap-3 d-none" data-workbench-mode-panel="template">
               <div class="d-flex justify-content-between align-items-center">
                 <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0 d-flex align-items-center gap-2">
                   <span>Template Properties</span>
                   <span class="align-middle" data-help-topic="template.bindings" data-help-insert="replace"></span>
                 </h2>
                 <span data-template-properties-toggle-mount></span>
-              </div>
-              <div class="btn-toolbar justify-content-center" role="toolbar" aria-label="Template management">
-                <div class="btn-group" role="group" data-template-toolbar-mount></div>
               </div>
               <div data-template-properties-panel>
                 <div class="d-flex flex-column gap-3 fs-6" data-template-properties>
@@ -245,11 +268,11 @@
               </div>
             </section>
 
-            <section class="d-flex flex-column gap-3" data-workbench-view-panel="play edit" data-dice-section>
+            <section class="d-flex flex-column gap-3" data-workbench-mode-panel="character" data-dice-section>
               <div data-dice-mount></div>
               <div class="d-flex flex-column gap-3" data-dice-panel></div>
             </section>
-            <section class="d-flex flex-column gap-3" data-workbench-view-panel="play edit" data-game-log-section>
+            <section class="d-flex flex-column gap-3" data-workbench-mode-panel="character" data-game-log-section>
               <div class="d-flex align-items-center justify-content-between">
                 <div class="d-flex flex-column">
                   <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0 d-flex align-items-center gap-2">

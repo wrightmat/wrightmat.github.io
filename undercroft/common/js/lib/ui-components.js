@@ -17,6 +17,7 @@ import { bindCollapsibleToggle, setCollapsibleState } from "./collapsible.js";
 import { attachIconAutocomplete, buildIconPreviewElement } from "./icon-picker.js";
 import { bindCopyButton } from "./clipboard.js";
 import { createJsonPreviewRenderer } from "./json-preview.js";
+import { disposeTooltips, refreshTooltips } from "./tooltips.js";
 
 // One tooltipped icon button — the single most-repeated primitive in the
 // suite (162 hand-written instances measured across all 9 tools' index.html
@@ -215,6 +216,16 @@ export function createCollapsibleSection({
 // the same createJsonPreviewRenderer every tool already used individually.
 // `getData` is the same "() => value to serialize" contract
 // createJsonPreviewRenderer's own `serialize` option already expects.
+// `onImport`/`onExport` — optional. When given, prepend Import/Export icon
+// buttons before Copy (header reads Import -> Export -> Copy -> collapse
+// toggle, per the suite's own canonical toolbar-action order applied to this
+// header's own action cluster) so a tool's own file-download/file-picker
+// round-trip lives right next to the read-only preview it corresponds to,
+// instead of as a separate button elsewhere in the toolbar. `exportIcon`/
+// `importIcon` override the default `tabler:file-export`/`tabler:file-import`
+// for a tool that already has an established icon choice (Orrery's own
+// Import/Export use tabler:upload/tabler:download) — preserving that
+// per-tool choice rather than silently reskinning it.
 export function createJsonDataPanel({
   label = "JSON Data",
   rows = 10,
@@ -223,11 +234,20 @@ export function createJsonDataPanel({
   id,
   className,
   helpTopic,
+  onImport,
+  onExport,
+  importIcon = "tabler:file-import",
+  exportIcon = "tabler:file-export",
 } = {}) {
   const textarea = document.createElement("textarea");
   textarea.className = "form-control form-control-sm font-monospace json-preview-text";
   textarea.rows = rows;
   textarea.readOnly = true;
+
+  const actions = [];
+  if (onImport) actions.push({ icon: importIcon, label: "Import JSON", onClick: onImport });
+  if (onExport) actions.push({ icon: exportIcon, label: "Export JSON", onClick: onExport });
+  actions.push({ icon: "tabler:copy", label: "Copy to clipboard" });
 
   const { section, header, panel, toggle, actionButtons, setCollapsed } = createCollapsibleSection({
     label,
@@ -235,10 +255,15 @@ export function createJsonDataPanel({
     collapsed,
     className,
     helpTopic,
-    actions: [{ icon: "tabler:copy", label: "Copy to clipboard" }],
+    actions,
     content: textarea,
   });
-  const [copyButton] = actionButtons;
+  // Copy is always the LAST built action button regardless of whether
+  // Import/Export precede it, so indexing from the end stays correct
+  // whichever optional buttons are present.
+  const copyButton = actionButtons[actionButtons.length - 1];
+  const importButton = onImport ? actionButtons[0] : null;
+  const exportButton = onExport ? actionButtons[onImport ? 1 : 0] : null;
 
   bindCopyButton(copyButton, textarea);
 
@@ -248,7 +273,7 @@ export function createJsonDataPanel({
     serialize: typeof getData === "function" ? getData : () => getData,
   });
 
-  return { section, header, panel, toggle, textarea, copyButton, render, setCollapsed };
+  return { section, header, panel, toggle, textarea, copyButton, importButton, exportButton, render, setCollapsed };
 }
 
 // A left-pane action toolbar cluster (~20 instances suite-wide — New/Save/
@@ -407,9 +432,27 @@ export function createButtonCheckGroup({
     } else if (dataAttr) {
       input.setAttribute(dataAttr, "");
     }
+    if (opt.disabled) {
+      // disabled on the input is what actually stops it (a <label> for a
+      // disabled input is inert to click/keyboard activation per the HTML
+      // spec — no separate pointer-events/click-guard needed); .disabled
+      // on the label is purely visual, this input shape's own .btn-check
+      // + <label class="btn"> pattern has no native way to dim the label
+      // itself since it isn't the form control.
+      input.disabled = true;
+    }
 
     const label = document.createElement("label");
     label.className = size === "sm" ? "btn btn-outline-secondary btn-sm" : "btn btn-outline-secondary";
+    if (opt.disabled) {
+      // Bootstrap's own documented pattern for a disabled .btn-check pair:
+      // .disabled on the label is what dims it and blocks pointer events
+      // (.btn.disabled { opacity: .65; pointer-events: none; } is part of
+      // Bootstrap's own base .btn styling); the input's own `disabled`
+      // attribute above is what stops it from being checked/focused at all.
+      label.classList.add("disabled");
+      label.setAttribute("aria-disabled", "true");
+    }
     if (opt.id) label.htmlFor = opt.id;
     if (opt.tooltip) {
       label.setAttribute("data-bs-toggle", "tooltip");
@@ -438,6 +481,124 @@ export function createButtonCheckGroup({
   });
 
   return group;
+}
+
+// The suite-wide "Mode" control — which top-level thing a center pane is
+// showing (Repository's Page/Relationships/Timeline, a generator tool's own
+// kind vs. Relationships, Workbench's Template vs. Character). A real
+// button GROUP built on createButtonCheckGroup above — every option always
+// visible, one marked active, ALWAYS labeled (icon + visible text, never
+// icon-only) — deliberately a different shape from createCycleToggleButton
+// below (the "View" control), per explicit design feedback: the two axes
+// need to look different at a glance, not be the same control reused at two
+// scales. Rebuilds `container` fresh on every call (this suite's own
+// "no diffing" convention for toggle re-renders); the caller re-invokes
+// this after any value change, same as every hand-rolled renderXToggle()
+// this pattern replaces.
+export function createModeToggleGroup({ container, options = [], value, onChange, ariaLabel } = {}) {
+  if (!container) return;
+  // Disposed before the wipe, not just left to be garbage-collected — a
+  // Bootstrap tooltip's own popup is a sibling appended to <body> (via
+  // Popper), not inside the trigger element, so clearing the trigger via
+  // innerHTML = "" without disposing it first leaves that popup orphaned
+  // on <body> forever (confirmed real bug: this is exactly what made the
+  // View/Edit tooltip "stick" after a click before this fix). Every
+  // rebuild-on-every-call widget in this suite already follows this same
+  // dispose-then-wipe-then-refresh order; centralizing it here means every
+  // Mode/View toggle gets it for free instead of each caller having to
+  // remember it individually.
+  disposeTooltips(container);
+  container.innerHTML = "";
+  const groupName = `mode-toggle-${Math.random().toString(16).slice(2)}`;
+  const group = createButtonCheckGroup({
+    ariaLabel,
+    name: groupName,
+    // Deliberately NOT the default groupClassName ("template-radio-group")
+    // — that class's own CSS stacks icon-above-text in a tiny caption
+    // (right for Template Properties' compact pickers), which reads as a
+    // visibly different size/shape than createCycleToggleButton's own
+    // single icon button sitting right beside it. mode-toggle-group (this
+    // module's own CSS, shell.css) is icon-LEFT-text-RIGHT at btn-sm sizing
+    // instead, so the two controls' heights actually match.
+    groupClassName: "btn-group mode-toggle-group",
+    size: "sm",
+    options: options.map((option) => ({
+      id: `${groupName}-${option.value}`,
+      value: option.value,
+      text: option.label,
+      icon: option.icon,
+      tooltip: option.tooltip,
+      disabled: option.disabled,
+    })),
+  });
+  group.querySelectorAll("input").forEach((input) => {
+    input.checked = input.value === value;
+    input.addEventListener("change", () => {
+      if (input.checked) onChange?.(input.value);
+    });
+  });
+  container.appendChild(group);
+  refreshTooltips(container);
+}
+
+// The suite-wide "View" control — a secondary axis only meaningful (and
+// only ever rendered) under whichever Mode currently has more than one way
+// to look at it (View/Edit, List/Graph, Corkboard/Swimlane). ONE button
+// that cycles through `states` — icon-only, no visible label, sized
+// (via the shared `cycle-toggle-btn` class, shell.css) to match
+// createModeToggleGroup's own button height so the two controls read as
+// one cohesive header row. The tooltip names BOTH the current state and
+// what clicking switches to ("View — click to change to Edit"), not just
+// the destination alone — a bare "Edit" tooltip on a button already
+// showing the pencil icon told you what you'd get, not what you're
+// currently looking at. Deliberately NOT a button group — see
+// createModeToggleGroup's own comment for why the two stay visually
+// distinct. `states` is usually 2 entries but isn't required to be;
+// `value` not found in `states` defaults to treating the first entry as
+// current (so an unset/unknown value still renders something sane rather
+// than throwing).
+//
+// `container` is optional — when given, this owns the full "dispose old
+// tooltip, clear, mount, refresh" lifecycle itself (same shape
+// createModeToggleGroup already has), so a caller rebuilding this button
+// fresh on every state change (the norm — see every renderXViewToggle()
+// this replaces) can't forget the dispose step and leak a stuck tooltip
+// the way Repository's own first draft of this did. Omit `container` (as
+// Story Board's own layout toggle does) when the caller needs to place the
+// returned button itself rather than have it appended directly.
+// Each state is `{value, icon, label, tooltip?}` — `label` is a SHORT name
+// ("View", "Swimlane"), used both to build the default compound tooltip
+// below AND as the fallback if `tooltip` is omitted. `tooltip`, when given,
+// completely overrides the auto-generated phrase for the state clicking
+// switches TO — for a caller that wants richer destination detail than a
+// bare name (Story Board's own Corkboard/Swimlane toggle keeps its
+// existing full descriptions this way, rather than cramming them into
+// `label` and breaking the compound phrase's own short-name assumption).
+export function createCycleToggleButton({ container, states = [], value, onSelect } = {}) {
+  const currentIndex = Math.max(
+    0,
+    states.findIndex((state) => state.value === value)
+  );
+  const currentState = states[currentIndex] || states[0];
+  const nextState = states[(currentIndex + 1) % states.length] || states[0];
+  const tooltip =
+    nextState?.tooltip ||
+    (currentState && nextState && currentState !== nextState
+      ? `${currentState.label} — click to change to ${nextState.label}`
+      : nextState?.label);
+  const button = createIconButton({
+    icon: nextState?.icon,
+    label: tooltip,
+    className: "cycle-toggle-btn",
+    onClick: () => onSelect?.(nextState?.value),
+  });
+  if (container) {
+    disposeTooltips(container);
+    container.innerHTML = "";
+    container.appendChild(button);
+    refreshTooltips(container);
+  }
+  return button;
 }
 
 // A single form-check checkbox (optionally styled as a switch) — 7
@@ -479,14 +640,20 @@ export function createCheckField({
   return wrapper;
 }
 
-// Order: Undo, Redo -> New/Add/Generate -> Import -> Save -> Export -> Print
-// -> Rename -> Duplicate -> Delete, using only the slots a toolbar actually
-// needs. Keep a single cluster to 6 buttons or fewer — confirmed real
-// problem past that point (Workbench's own left-pane toolbar started
-// wrapping/scrolling once a 7th button was added, twice). Hitting the limit
-// means designing an alternative WITH the user (a secondary toolbar, moving
-// the action to a more relevant location, a dropdown of less-common
-// actions) — never just letting the cluster keep growing.
+// Fixed order: New -> Save -> Duplicate -> Delete -> Undo -> Redo, using
+// only the slots a toolbar actually needs. New is always outline-primary,
+// never filled — including a generator tool's own "Generate X" button,
+// which fills the New slot conceptually. Import/Export are NOT toolbar-
+// cluster slots — they live in the JSON Data section instead (see
+// createJsonDataPanel's own Import -> Export -> Copy action order); Print
+// and Rename are tool-specific placements outside this cluster too (Press's
+// own standalone center-pane Print button, Loom's per-tab Rename Mapping),
+// not part of the fixed six. Keep a single cluster to 6 buttons or fewer —
+// confirmed real problem past that point (Workbench's own left-pane toolbar
+// started wrapping/scrolling once a 7th button was added, twice). Hitting
+// the limit means designing an alternative WITH the user (a secondary
+// toolbar, moving the action to a more relevant location, a dropdown of
+// less-common actions) — never just letting the cluster keep growing.
 export function createToolbarButtonGroup(items = []) {
   return items.map(
     ({ action, label, icon, variant: variantOverride, onClick, visible = true, disabled = false, primary = false, attrs = {} }) => {
@@ -948,7 +1115,88 @@ export function createIconPickerField({
   return wrapper;
 }
 
-export function createEmptyStateCard({ icon, message }) {
+// One row in a reference/entity list — a title, an optional description, an
+// optional click-to-select (onSelect), optional extra icon-button actions
+// before Remove (e.g. an "Open in <Tool>" link-out), and Remove itself.
+// Promoted from Sanctum's own local createListRow (js/app.js — Assets/Needs/
+// Features rows), which stays as-is rather than being migrated onto this in
+// the same pass; this is here for NEW callers (relationship-editor.js is the
+// first) so a second near-identical implementation doesn't get hand-rolled a
+// third time. `actions` — `{icon, label, onClick}[]` — rendered via
+// createIconButton (this module's own), so each gets the same tooltip/sizing
+// as every other icon button in the suite.
+export function createListRow({ title, description, onRemove, removeLabel = "Remove", onSelect, actions = [] }) {
+  const row = document.createElement("div");
+  row.className = "border rounded-3 p-2 d-flex align-items-start justify-content-between gap-2";
+
+  const info = document.createElement("div");
+  info.className = "flex-grow-1";
+  const titleEl = document.createElement("div");
+  titleEl.className = "fw-semibold";
+  titleEl.textContent = title;
+  info.appendChild(titleEl);
+  if (description) {
+    const descriptionEl = document.createElement("div");
+    descriptionEl.className = "small text-body-secondary";
+    descriptionEl.textContent = description;
+    info.appendChild(descriptionEl);
+  }
+
+  const buttonGroup = document.createElement("div");
+  buttonGroup.className = "d-flex gap-1 flex-shrink-0";
+  actions.forEach(({ icon, label, onClick }) => {
+    const button = createIconButton({
+      icon,
+      label,
+      onClick: (event) => {
+        event.stopPropagation();
+        onClick();
+      },
+    });
+    buttonGroup.appendChild(button);
+  });
+
+  if (onRemove) {
+    const removeButton = document.createElement("button");
+    removeButton.type = "button";
+    removeButton.className = "btn btn-outline-danger btn-sm flex-shrink-0";
+    removeButton.setAttribute("aria-label", removeLabel);
+    removeButton.innerHTML = '<span class="iconify" data-icon="tabler:trash" aria-hidden="true"></span>';
+    removeButton.addEventListener("click", (event) => {
+      event.stopPropagation();
+      onRemove();
+    });
+    buttonGroup.appendChild(removeButton);
+  }
+
+  row.append(info, buttonGroup);
+  if (onSelect) {
+    row.style.cursor = "pointer";
+    row.addEventListener("click", () => onSelect(row));
+  }
+  return row;
+}
+
+// `variant: "inline"` — a condensed, left-aligned, card-free rendering used
+// by the four generator tools' (Forge/Crucible/Sanctum/Vault) own Mode/View
+// header row, where the "Nothing selected yet" message sits flush in-line
+// with the Mode/View controls instead of as a separate full-width centered
+// card below them. Default (no variant) stays exactly the original full
+// card — Repository/Orrery/graph-view.js's own empty states still want that.
+export function createEmptyStateCard({ icon, message, variant } = {}) {
+  if (variant === "inline") {
+    const wrap = document.createElement("div");
+    wrap.className = "d-inline-flex align-items-center gap-2 text-body-secondary small";
+    if (icon) {
+      const iconEl = document.createElement("span");
+      iconEl.className = "iconify";
+      iconEl.dataset.icon = icon;
+      iconEl.setAttribute("aria-hidden", "true");
+      wrap.appendChild(iconEl);
+    }
+    wrap.appendChild(document.createTextNode(message));
+    return wrap;
+  }
   const card = document.createElement("div");
   card.className = "card shadow-theme";
   const body = document.createElement("div");

@@ -169,10 +169,10 @@
 /* Relationships — a read-only graph over already-written content (see
    repository/js/lib/relationships-graph.js), rendered through the shared
    common/js/lib/graph-view.js engine. Stage/content/controls positioning
-   mirrors Sanctum's own Location Graph exactly (sanctum/css/styles.css) —
-   both are the same shared engine, just under this tool's own class
-   prefix (graph-view.js's own classPrefix option) so the two tools' CSS
-   never collides. */
+   mirrors the shared `.relationship-graph-*` rules in common/css/shell.css
+   that Forge/Crucible/Sanctum/Vault's own Relationships graphs all use —
+   same engine, just under this tool's own class prefix (graph-view.js's own
+   classPrefix option) so the two stylesheets never collide. */
 .repository-graph-stage {
   position: relative;
   height: 100%;
@@ -298,8 +298,8 @@
 /* Story Board — the editable planning canvas (repository/js/lib/
    story-board-canvas.js), mounted directly into a rendered [!story-board]
    callout's own content. Freeform mode's stage/content positioning
-   mirrors the same pan-zoom convention Relationships/Location Graph
-   already use (common/js/lib/pan-zoom.js's own header comment) — but with
+   mirrors the same pan-zoom convention every tool's own Relationships graph
+   already uses (common/js/lib/pan-zoom.js's own header comment) — but with
    ONE deliberate difference from that precedent, below. */
 .story-board-stage {
   position: relative;
@@ -318,8 +318,8 @@
 }
 
 /* FIXED at story-board-canvas.js's own CANVAS_W/CANVAS_H (1000x700), unlike
-   Relationships/Location Graph's own `.content` (which stays 100% of its
-   stage). Those two only ever draw INSIDE one SVG, whose own viewBox
+   every Relationships graph's own `.content` (which stays 100% of its
+   stage). Those only ever draw INSIDE one SVG, whose own viewBox
    handles mapping "1000x700 design units" to however many pixels the SVG
    actually renders at — a single, self-consistent coordinate system. This
    canvas instead layers a plain HTML card layer (raw CSS px, no scaling of
@@ -495,4 +495,23 @@
   border-radius: var(--bs-border-radius);
   padding: 0.75rem;
   background: var(--bs-body-bg);
+}
+
+/* The Timeline tab's own "Today" divider (js/app.js's own renderTimeline)
+   — a labeled horizontal rule splitting past entries from upcoming ones,
+   not just another day heading. */
+.repository-timeline-today-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.75rem 0;
+}
+
+.repository-timeline-today-divider::before,
+.repository-timeline-today-divider::after {
+  content: "";
+  flex: 1 1 auto;
+  height: 1px;
+  background: var(--bs-primary);
+  opacity: 0.4;
 }

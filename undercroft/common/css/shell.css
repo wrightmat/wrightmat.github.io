@@ -7,6 +7,24 @@
   color-scheme: light dark;
 }
 
+/* Can't stop the OS window itself from being dragged narrower — that's
+   outside any page's control — but the page's own CONTENT can refuse to
+   shrink past a floor instead: below this width, the browser shows a
+   horizontal scrollbar for the whole page rather than continuing to
+   compress content. Not exactly .workbench-header-middle's own 29.6875rem
+   (475px) floor (see app-shell.js's DUAL_PANE_MIN_WIDTH_REM, the point
+   past which both panes are already collapsed and middle's content can't
+   compact any further) — body needs more than middle alone, to also cover
+   the header's own flanking spacer-column/grid-gap/padding overhead around
+   it (more on Vault/Crucible/Repository's settings-slot pages, whose left
+   spacer column always holds a gear button even with the pane collapsed).
+   31.25rem was the first pass at that overhead and still let the header
+   wrap before this kicked in — bumped up meaningfully; still an estimate,
+   not a measured value the way the header's own thresholds are. */
+body {
+  min-width: 37.5rem;
+}
+
 /* Iconify replaces `<span class="iconify">` placeholders with an `<svg
    class="iconify ...">` asynchronously after they're inserted — the class
    carries over, so this sizing applies to both the placeholder (reserving
@@ -313,6 +331,16 @@ body[data-theme="dark"] .hover-lift:hover {
   z-index: 1200;
   --undercroft-pane-left-width: 18rem;
   --undercroft-pane-right-width: 20rem;
+  /* One shared height for every trigger control in the header row (pane
+     toggles, tool-switcher, home link, theme dropdown, search — trigger
+     AND input alike) so they read as one consistent row instead of each
+     defaulting to whatever its own icon size/padding/line-height happens
+     to compute — the exact inconsistency .undercroft-tool-trigger's and
+     .undercroft-auth-trigger's own explicit heights were already fixing
+     one control at a time. Sized to comfortably fit the tallest icon in
+     the row (the tool-switcher's own 1.4rem, the largest of the bunch)
+     plus reasonable padding, not tied to any one control's own math. */
+  --undercroft-header-control-height: 2.3rem;
 }
 
 .workbench-header-grid {
@@ -320,6 +348,133 @@ body[data-theme="dark"] .hover-lift:hover {
   grid-template-columns: var(--undercroft-pane-left-width) minmax(0, 1fr) var(--undercroft-pane-right-width);
   align-items: center;
   gap: 0.5rem;
+}
+
+/* The header's flanking spacer columns (--undercroft-pane-left/right-width)
+   are kept in sync with each pane's actual collapsed/expanded state by JS
+   (app-shell.js's syncHeaderPaneSpacerWidth, called from buildPaneShell at
+   load and from initPaneToggles's onChange on every toggle afterward) —
+   collapsed resolves the variable to "auto" so a collapsed pane's spacer
+   shrinks to content size instead of reserving a full 18-20rem of dead
+   header space. That fix applies at any viewport width, not just mobile. */
+
+/* flex-wrap is a true last-resort net, not the normal answer to tight
+   space — the @container stepwise-reveal rules below are what actually
+   keep this to one line in practice; per explicit direction the header
+   must never wrap if there's any other way to avoid it. This only still
+   matters for whatever's left once both panes are already collapsed (see
+   the live matchMedia listener in initAppShell, below md) and the fully
+   compact controls still don't fit — better to wrap in that edge case than
+   to have content actually clipped or spilling into neighboring header
+   cells (CSS grid/flex don't clip overflow by default), which is what an
+   unset flex-wrap would do here. */
+.workbench-header-middle {
+  flex-wrap: wrap;
+  row-gap: 0.5rem;
+  /* Query container for the stepwise reveal rules below — on THIS element
+     deliberately, not the viewport: middle sits in the header grid's own
+     minmax(0, 1fr) track, so its rendered inline-size already reflects how
+     much of the viewport the left/right pane spacer columns are currently
+     eating (see the --undercroft-pane-*-width comment above). A viewport
+     media query can't see that — an expanded pane leaves less room for
+     middle at the exact same viewport width as a collapsed one. */
+  container-type: inline-size;
+  container-name: undercroft-header;
+}
+
+/* Stepwise reveal, mobile-first: every control below starts in its most
+   compact form (icon-only/hidden) and gets progressively richer as
+   middle's own available width grows. Three independently-thresholded
+   stages, in the order each should give up its full form as space
+   tightens: search first (the single widest control, so losing it first
+   buys back the most room), then the auth/user panel, then the
+   tool-switcher's own label last. rem, not px — matches every other
+   relative-sizing rule in this file (--undercroft-pane-*-width, the
+   sidebar widths, etc.), so these scale with the user's own font-size/zoom
+   preference instead of a fixed pixel count. DevTools reports computed
+   widths in px regardless of what unit the CSS is authored in — that's
+   just how the browser reports rendered sizes, not a reason to author the
+   rule itself in px. Each threshold below is the DevTools px measurement
+   ÷16 (the standard root font-size the rest of this file's rem values are
+   also implicitly calibrated against). Current numbers are real measured
+   values (search, auth) or a flagged interim guess (tool-switcher label,
+   not yet measured) — nudge these, don't change the mechanism, when a
+   control still isn't switching at the right point. */
+.suite-search-input-wrap,
+.undercroft-auth-text,
+.undercroft-auth-login-label,
+.undercroft-tool-trigger-label {
+  display: none;
+}
+
+/* JS-controlled escape hatch for the search trigger's own click-to-open
+   behavior (suite-search.js's openCompact/closeCompact) — only ever
+   reachable while .suite-search-trigger is itself visible (below the
+   container query's own reveal threshold), so this never fights the
+   container query for the same state. */
+.suite-search-input-wrap.suite-search-input-wrap--open {
+  display: flex;
+}
+
+/* Measured: 983px ÷ 16 — that's the width the header was still wrapping
+   at with the auth panel full-size (was 880px/55rem, too low: search was
+   already compact well before the auth panel's own overflow was actually
+   the thing forcing the wrap). */
+@container undercroft-header (min-width: 61.4375rem) {
+  .suite-search-input-wrap {
+    display: flex;
+  }
+  .suite-search-trigger {
+    display: none;
+  }
+}
+
+/* Measured: 828px ÷ 16 — same story one stage down (was 810px/50.625rem,
+   still slightly too low). */
+@container undercroft-header (min-width: 51.75rem) {
+  .undercroft-auth-text {
+    display: flex;
+  }
+  .undercroft-auth-login-label {
+    display: inline;
+  }
+}
+
+/* Measured: 638px ÷ 16 (was 560px/35rem, too low — the auth panel above
+   was breaking to a second line at 638px because the nav label hadn't
+   gone compact yet to free up the room). */
+@container undercroft-header (min-width: 39.875rem) {
+  .undercroft-tool-trigger-label {
+    display: inline;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .workbench-sidebar,
+  .workbench-sidebar-lg {
+    width: min(20rem, 85vw);
+  }
+}
+
+/* Hard floor for genuine phone widths, on top of (not instead of) the
+   @container rules above — a plain, always-correct guarantee for phone
+   territory that doesn't depend on getting the container-query thresholds
+   exactly right. Below Bootstrap's own sm breakpoint, as opposed to
+   767.98px above, which is about whether a whole SIDE PANE fits, a coarser
+   question. !important is deliberate and scoped to just these rules — same
+   justification as Bootstrap's own display utilities (see
+   common/js/lib/collapsible.js's own comment on this exact pattern):
+   nothing should be able to win over "this is definitely a phone." */
+@media (max-width: 575.98px) {
+  .suite-search-input-wrap,
+  .undercroft-auth-text,
+  .undercroft-auth-login-label,
+  .undercroft-tool-trigger-label {
+    display: none !important;
+  }
+  .suite-search-trigger {
+    display: inline-block !important;
+  }
 }
 
 .undercroft-tool-switcher {
@@ -330,6 +485,150 @@ body[data-theme="dark"] .hover-lift:hover {
 
 .undercroft-tool-switcher .dropdown-menu {
   z-index: 1310;
+}
+
+/* Suite-wide header search (common/js/lib/suite-search.js) — sits between
+   the tool switcher/Home link and the auth/theme controls, in what's
+   otherwise just empty flex-grow space in the header's middle row. */
+.suite-search {
+  position: relative;
+  /* Lays the compact trigger button and the (conditionally shown)
+     input-wrap side by side rather than stacking — a no-op at md+, where
+     the trigger is d-md-none and the input-wrap is the only in-flow child
+     anyway, same single-item row as before this control could compact. */
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.suite-search-input-wrap {
+  position: relative;
+  align-items: center;
+  /* display is NOT set here — governed entirely by the stepwise-reveal
+     rules near .workbench-header-middle (display: none base, display: flex
+     once the container query reveals it or the JS --open class is
+     applied). A flex: none/display: flex declared unconditionally here
+     used to win the cascade over that base rule (same specificity, later
+     in source order), which is why the input used to stay visible even
+     once the trigger button had already appeared — the two must not both
+     set display on this selector.
+     .suite-search is now itself a flex row (trigger + this) — without an
+     explicit grow/shrink basis, a flex item defaults to fit-content
+     sizing instead of the 100%-of-parent width it got for free back when
+     .suite-search was a plain block div. min-width: 0 lets it actually
+     shrink below the input's own min-content width when space is tight. */
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.suite-search-icon {
+  position: absolute;
+  left: 0.6rem;
+  color: var(--bs-secondary-color);
+  pointer-events: none;
+}
+
+.suite-search-input {
+  padding-left: 2rem;
+  /* form-control-sm's own smaller padding otherwise renders shorter than
+     every other header control — matches the shared height explicitly
+     rather than leaving it to Bootstrap's small-size default. */
+  height: var(--undercroft-header-control-height);
+}
+
+/* Every plain icon-only trigger in the header (pane toggles, theme
+   dropdown, home link, compact search trigger) shares this one height —
+   see --undercroft-header-control-height's own comment on .workbench-header
+   for why a shared variable instead of each control computing its own. */
+.undercroft-header-icon-btn {
+  height: var(--undercroft-header-control-height);
+}
+
+/* Same layering convention as .undercroft-tool-switcher's own dropdown-menu
+   just above — above the sticky header (z-index 1200) but below a modal. */
+.suite-search-results {
+  position: absolute;
+  top: calc(100% + 0.25rem);
+  left: 0;
+  right: 0;
+  z-index: 1310;
+  max-height: 24rem;
+  overflow-y: auto;
+  background-color: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+  box-shadow: var(--bs-box-shadow);
+  padding: 0.25rem;
+}
+
+.suite-search-result {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.4rem 0.5rem;
+  border-radius: var(--bs-border-radius-sm);
+  text-decoration: none;
+  color: inherit;
+}
+
+.suite-search-result:hover,
+.suite-search-result:focus-visible,
+.suite-search-result.suite-search-result-active {
+  background-color: var(--bs-tertiary-bg);
+}
+
+.suite-search-result-icon {
+  flex-shrink: 0;
+  font-size: 1.25rem;
+  color: var(--bs-secondary-color);
+}
+
+.suite-search-result-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.suite-search-result-title {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.suite-search-result-subtitle {
+  font-size: 0.8125rem;
+  color: var(--bs-secondary-color);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The Wikipedia-style context line — a body/reference match's own snippet,
+   shown under the subtitle. Allowed to wrap onto a second line (unlike
+   title/subtitle above, which stay single-line) since a snippet is the
+   whole reason this result exists; truncating it too aggressively would
+   often cut off the matched term itself. */
+.suite-search-result-snippet {
+  font-size: 0.8125rem;
+  color: var(--bs-secondary-color);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.suite-search-result-mark {
+  background-color: var(--bs-warning-border-subtle, #ffe69c);
+  color: inherit;
+  border-radius: 2px;
+  padding: 0 0.1em;
+}
+
+.suite-search-empty {
+  padding: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--bs-secondary-color);
 }
 
 /* Now doubling as the page's own title (it sits where "Undercroft {Tool}"
@@ -346,6 +645,61 @@ body[data-theme="dark"] .hover-lift:hover {
   color: var(--undercroft-tool-accent, var(--bs-body-color));
   font-weight: 600;
   padding: 0.4rem 0.9rem;
+  /* Explicit, not left to content: the icon (1.4rem, fixed box via
+     .iconify's own width/height:1em) and the label (1.25rem text, whose
+     own line-height is a bit taller than the icon's fixed box) don't
+     naturally agree on a height — without this, the button visibly
+     shrank by a pixel or two the moment shell.css's @container rule hid
+     the label, since the flex row's cross-axis size was then governed by
+     the icon alone instead of the label's slightly taller line box. */
+  height: var(--undercroft-header-control-height);
+}
+
+/* Same fix, same cause, as .undercroft-tool-trigger above — the account
+   button (common/js/lib/auth-ui.js's renderUserMenu/renderLoginButton)
+   goes from icon-only (compact) to icon + a text block up to two lines
+   tall (username + an optional campaign sub-line, both wrapped in
+   .undercroft-auth-text) as .workbench-header-middle's own @container
+   stages reveal it — without an explicit height the button visibly grew/
+   shrank between those states. Now shares the same
+   --undercroft-header-control-height as every other header control
+   (originally sized taller, to its own two-line content, before that
+   variable existed to unify against) — condensed padding/line-height/font
+   size below is what makes the tallest case (username + campaign line)
+   actually fit inside that shared height instead of overflowing it. */
+.undercroft-auth-trigger {
+  height: var(--undercroft-header-control-height);
+  /* Vertical padding trimmed from 0.15rem to buy back the room the
+     larger .undercroft-auth-username font-size below now needs, without
+     growing past the shared header-control height. */
+  padding: 0.1rem 0.75rem;
+  /* Explicit, not left to the flex default — the icon + text should
+     always hug the button's left edge, never spread out to center
+     within whatever width the button ends up with. */
+  justify-content: flex-start;
+}
+
+/* Tight enough that "Logged in: {name}" + "Campaign: {name}" together
+   still fit .undercroft-auth-trigger's shared height — normal line-height
+   (1.25+ via Bootstrap's lh-sm, which this replaces) was the main thing
+   pushing the two-line case past it. */
+.undercroft-auth-text {
+  line-height: 1.15;
+  /* Bootstrap's own .btn sets text-align: center as part of its base
+     button styling — an INHERITED property, so it cascades straight
+     through this flex sub-container into the username/campaign spans'
+     own text regardless of align-items already positioning their BOX
+     correctly on the left. The box was never the problem; the text
+     inside it was still centering itself within that box. */
+  text-align: left;
+}
+
+.undercroft-auth-username {
+  font-size: 0.95rem;
+}
+
+.undercroft-auth-campaign {
+  font-size: 0.65rem;
 }
 
 /* Bootstrap's own .btn hover/focus/active states would otherwise swap this
@@ -383,12 +737,30 @@ body[data-theme="dark"] .hover-lift:hover {
 }
 
 .undercroft-tool-dropdown {
-  min-width: 36rem;
+  min-width: min(36rem, calc(100vw - 2rem));
   max-width: min(42rem, calc(100vw - 2rem));
   /* Bootstrap's default dropdown-spacer leaves a sliver of dead space
      between the trigger and the menu — enough for the cursor to leave
      both elements while crossing it and trigger an unwanted hide. */
   margin-top: 0;
+}
+
+/* Much narrower content than .undercroft-tool-dropdown above (a mode row
+   plus a short palette list, not a tool grid) — a small fixed width is
+   enough, capped the same viewport-safe way so it can't overflow a phone
+   screen either. */
+.undercroft-theme-dropdown {
+  width: 16rem;
+  max-width: calc(100vw - 2rem);
+  margin-top: 0;
+}
+
+.undercroft-theme-swatch {
+  width: 0.9rem;
+  height: 0.9rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 1px solid var(--bs-border-color);
 }
 
 /* Overrides Bootstrap's own `.dropdown-menu.show { display: block; }` (same
@@ -529,6 +901,22 @@ a.undercroft-tool-card:focus-visible {
   z-index: 1310;
 }
 
+/* One consistent size for every dropdown-item's own primary text (the
+   identity line, Account Settings, each campaign group's name, "No
+   campaign groups yet", Log out) — smaller than Bootstrap's own dropdown
+   default (1rem), but deliberately NOT touching the campaign context
+   sub-line (system/setting names under each group) or the Owner badge,
+   both of which already set their own smaller explicit font-size inline
+   and inherit right past this thanks to that. font-size cascades down to
+   any of these elements' own text content that doesn't already set its
+   own size, which is what makes every line read as one consistent
+   family instead of each defaulting to whatever Bootstrap's own base
+   size happens to be. */
+.undercroft-auth-dropdown .dropdown-item,
+.undercroft-auth-dropdown .dropdown-item-text {
+  font-size: 0.875rem;
+}
+
 .workbench-shell {
   flex: 1 1 auto;
   overflow: hidden;
@@ -585,6 +973,7 @@ a.undercroft-tool-card:focus-visible {
    cursor shouldn't promise a drag that isn't wired up yet. */
 [data-sortable-handle] {
   cursor: grab;
+  touch-action: none;
 }
 
 [data-sortable-handle]:active {
@@ -824,12 +1213,6 @@ a.undercroft-tool-card:focus-visible {
   background-color: hsl(var(--color-picker-hue, 0) 100% 50%);
 }
 
-.color-picker-sv.disabled {
-  cursor: default;
-  opacity: 0.5;
-  pointer-events: none;
-}
-
 .color-picker-sv-indicator {
   position: absolute;
   width: 0.75rem;
@@ -850,12 +1233,6 @@ a.undercroft-tool-card:focus-visible {
   background-image: linear-gradient(to right, red, yellow, lime, cyan, blue, magenta, red);
 }
 
-.color-picker-hue.disabled {
-  cursor: default;
-  opacity: 0.5;
-  pointer-events: none;
-}
-
 .color-picker-hue-handle {
   position: absolute;
   top: 50%;
@@ -868,9 +1245,36 @@ a.undercroft-tool-card:focus-visible {
   pointer-events: none;
 }
 
-.color-picker-binding {
+/* Divider between the "pick a color" affordances above (wheel, theme
+   swatches) and the single input + Accept/Clear row that actually commits
+   whichever one was last touched. */
+.color-picker-value-row {
   padding-top: 0.25rem;
   border-top: 1px solid var(--bs-border-color);
+}
+
+.color-picker-theme-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+/* Background is set inline per-swatch (var(--bs-*), color-picker.js) so
+   each dot always shows its OWN token's real, live, currently-active-theme
+   color — never a value this stylesheet would have to keep in sync by
+   hand. */
+.color-picker-theme-swatch {
+  width: 1.25rem;
+  height: 1.25rem;
+  padding: 0;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.color-picker-theme-swatch.active {
+  outline: 2px solid var(--bs-primary);
+  outline-offset: 1px;
 }
 
 /* A narrow input paired with a small inline label in one row
@@ -1594,4 +1998,180 @@ a.undercroft-tool-card:focus-visible {
    data-select-field — this is the affordance cursor for that state. */
 [data-select-field] {
   cursor: pointer;
+}
+
+/* Shared pan-zoom stage/content/controls wrapper for any graph-view.js
+   consumer (common/js/lib/graph-view.js's own createForceGraph) — the
+   sizing/positioning shell is 100% identical regardless of caller (Sanctum's
+   own original Location Graph and Repository's own Relationships each grew
+   their own near-identical copy before this existed; every consumer since —
+   Forge/Crucible/Sanctum/Vault/Workbench's own Relationships sections — uses
+   this instead of yet another copy). Node/edge/label VISUAL styling stays
+   per-caller, via graph-view.js's own `classPrefix` option — this only
+   covers the tool-agnostic wrapper mechanics. Sized for a compact
+   inspector-section graph, not a full-page one (Repository's own taller
+   stage stays as it is). */
+.relationship-graph-stage {
+  position: relative;
+  height: 18rem;
+  overflow: hidden;
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+  cursor: grab;
+  touch-action: none;
+}
+
+.relationship-graph-stage.is-panning {
+  cursor: grabbing;
+}
+
+.relationship-graph-content {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 100%;
+  height: 100%;
+  transform-origin: center;
+  user-select: none;
+}
+
+.relationship-graph-content.is-interacting {
+  will-change: transform;
+}
+
+.relationship-graph-content svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.relationship-graph-controls {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 2;
+  background: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius-lg);
+  padding: 0.25rem;
+  user-select: none;
+}
+
+/* Default node/edge visuals for createForceGraph's own `classPrefix:
+   "relationship-graph"` — used as-is (not overridden) by every generator
+   tool's own Relationships graph (Forge/Crucible/Sanctum/Vault) plus
+   Workbench, unlike Repository's own Relationships view, which keeps its
+   own already-shipped, tool-specific `repository-graph-*` rules untouched.
+   One shared look is the right default here since these tools' own
+   Relationships graphs are brand new with no existing visual identity to
+   preserve. */
+.relationship-graph-edge {
+  stroke: var(--bs-secondary-color);
+  stroke-width: 1.5;
+}
+
+.relationship-graph-edge-selected {
+  stroke: var(--bs-primary);
+  stroke-width: 2.5;
+}
+
+.relationship-graph-node {
+  cursor: pointer;
+}
+
+.relationship-graph-node:focus-visible {
+  outline: none;
+}
+
+.relationship-graph-node-circle {
+  fill: var(--bs-tertiary-bg);
+  stroke: var(--bs-secondary-color);
+  stroke-width: 1.5;
+  transition: fill 0.1s ease, stroke 0.1s ease;
+}
+
+.relationship-graph-node:hover .relationship-graph-node-circle,
+.relationship-graph-node:focus-visible .relationship-graph-node-circle {
+  fill: var(--bs-body-bg);
+  stroke: var(--bs-primary);
+}
+
+.relationship-graph-node-selected .relationship-graph-node-circle {
+  stroke: var(--bs-primary);
+  stroke-width: 3;
+}
+
+.relationship-graph-node-label {
+  fill: var(--bs-body-color);
+  font-size: 0.7rem;
+  pointer-events: none;
+}
+
+/* Edge-type text (createForceGraph's own `getEdgeLabel` option) — hidden
+   until `.relationship-graph-content` picks up the `-edge-labels-visible`
+   modifier class (graph-view.js's own updateEdgeLabelVisibility, driven by
+   the live pan-zoom level), so a graph with many edges doesn't read as a
+   wall of overlapping text at the default zoom. `paint-order: stroke` +
+   the body-bg stroke gives each label a soft halo so it stays legible
+   crossing a node/edge behind it, without a separate background rect. */
+.relationship-graph-edge-label {
+  fill: var(--bs-secondary-color);
+  font-size: 0.6rem;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  paint-order: stroke;
+  stroke: var(--bs-body-bg);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+
+.relationship-graph-content.relationship-graph-edge-labels-visible .relationship-graph-edge-label {
+  opacity: 1;
+}
+
+/* The suite-wide Mode toggle group (common/js/lib/ui-components.js's own
+   createModeToggleGroup) — icon LEFT, text RIGHT, sized to match its own
+   companion View control (createCycleToggleButton, a plain .btn-sm icon
+   button) so the two sit at the same height in a shared header row.
+   Deliberately its own class, not a reuse of .template-radio-group's own
+   icon-above-text stacked caption look (right for Template Properties'
+   compact pickers, wrong here — see createModeToggleGroup's own comment). */
+.mode-toggle-group .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.mode-toggle-group .btn .iconify {
+  font-size: 1rem;
+}
+
+.mode-toggle-group .btn .template-radio-label {
+  font-size: inherit;
+}
+
+/* createButtonCheckGroup always appends its own .template-radio-group--
+   single-row modifier unless `wrap: true` is passed (see that function's
+   own groupClassName logic) — its `flex: 1 1 0` stretch is right for a
+   FIXED-width toolbar context (Template Properties' own sidebar), wrong
+   here (a page header sized to content, not a fixed-width container).
+   Higher specificity than the single-class rule it's overriding, so this
+   wins without needing wrap:true (which would also re-enable multi-row
+   wrapping this group doesn't want either). */
+.mode-toggle-group.template-radio-group--single-row .btn {
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+/* The suite-wide View control's own button (createCycleToggleButton) —
+   a touch more padding and a larger icon than createIconButton's own bare
+   .btn-sm default, so it visually matches .mode-toggle-group .btn's own
+   height (icon+text at .btn-sm) despite carrying only an icon. */
+.cycle-toggle-btn {
+  padding: 0.3rem 0.55rem;
+}
+
+.cycle-toggle-btn .iconify {
+  font-size: 1rem;
 }
