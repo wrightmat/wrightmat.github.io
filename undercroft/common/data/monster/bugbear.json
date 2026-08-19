@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "bugbear",
   "name": "Bugbear",
   "type": "humanoid",
   "systemIds": [

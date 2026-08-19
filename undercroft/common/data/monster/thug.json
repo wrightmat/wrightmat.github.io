@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "thug",
   "name": "Thug",
   "notes": "Thugs are ruthless enforcers skilled at intimidation and violence. They work for money and have few scruples.",
   "type": "humanoid",

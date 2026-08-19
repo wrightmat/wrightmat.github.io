@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "deep-gnome-svirfneblin",
   "name": "Deep Gnome (Svirfneblin)",
   "type": "humanoid",
   "systemIds": [

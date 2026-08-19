@@ -1,12 +1,10 @@
 // Data loading for Crucible's reference kinds — monster-archetype,
 // monster-role, feature — all managed in Loom's generic Library tab, not
-// authored here. Mirrors Forge's tables.js: fetchKindEntriesWithIds
-// (promoted to common/js/lib/content-fetch.js this pass, since Forge and
-// Loom each had their own copy already) lists a kind's saved entries and
-// pairs each with its id, since the generic listing route only returns
-// ids, not full bodies. Creature Type is NOT one of these — see
-// listCreatureTypesForSystem below.
-import { fetchKindEntriesWithIds } from "../../../common/js/lib/content-fetch.js";
+// authored here. Mirrors Forge's tables.js: fetchKindEntriesForSystem
+// (common/js/lib/content-fetch.js) lists a kind's saved entries, already
+// narrowed to the active System server-side, and pairs each with its id.
+// Creature Type is NOT one of these — see listCreatureTypesForSystem below.
+import { fetchKindEntriesForSystem } from "../../../common/js/lib/content-fetch.js";
 // loadCombatScalingLevels moved to common/js/lib/combat-scaling.js once the
 // Dashboard's Encounter Difficulty & XP calculator needed the exact same
 // System-reading logic — re-exported below so every existing importer of
@@ -21,8 +19,13 @@ import { loadAbilityFieldDefs } from "../../../common/js/lib/generator-kit.js";
 
 export { loadCombatScalingLevels, loadAbilityFieldDefs };
 
+// fetchKindEntriesForSystem asks the server to filter by systemId before
+// reading any file (get_items_bulk, server/storage.py) rather than fetching
+// a kind's whole cross-tool library and filtering client-side — the
+// `.filter()` below stays regardless, as the correctness guarantee for the
+// case fetchKindEntriesForSystem itself falls back to an unfiltered fetch.
 async function listKindForSystem(dataManager, kind, systemId) {
-  const entries = await fetchKindEntriesWithIds(dataManager, kind);
+  const entries = await fetchKindEntriesForSystem(dataManager, kind, systemId);
   return entries
     .map((entry) => ({ id: entry.id, ...entry.entity }))
     .filter((entry) => {

@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "medusa",
   "name": "Medusa",
   "type": "monstrosity",
   "systemIds": [

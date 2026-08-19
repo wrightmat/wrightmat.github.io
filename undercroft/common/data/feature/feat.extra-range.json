@@ -1,7 +1,8 @@
 {
-  "id": "feat.extra-range",
   "name": "Extended Reach",
-  "systemIds": ["sys.dnd5e"],
+  "systemIds": [
+    "sys.dnd5e"
+  ],
   "description": "The effect's range is noticeably extended, letting the wielder strike from further away.",
   "mechanics": {
     "type": "passive",
@@ -9,10 +10,20 @@
   },
   "budgetCost": 2,
   "tags": {
-    "categories": ["spell", "item"],
-    "propertyHints": ["modifier"]
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "modifier"
+    ]
   },
-  "synergizesWith": ["feat.searing-bolt", "feat.frost-lance"],
+  "synergizesWith": [
+    "feat.searing-bolt",
+    "feat.frost-lance"
+  ],
   "dependsOn": [],
-  "conflictsWith": ["feat.short-range"]
+  "conflictsWith": [
+    "feat.short-range"
+  ]
 }

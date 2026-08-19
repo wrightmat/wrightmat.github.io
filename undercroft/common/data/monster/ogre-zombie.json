@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "ogre-zombie",
   "name": "Ogre Zombie",
   "type": "undead",
   "systemIds": [

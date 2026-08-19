@@ -201,8 +201,8 @@ export function createGridCell({ key, coord, gridType = "square" } = {}) {
 // error/hidden state for an inapplicable field" precedent a wall's own
 // doorState follows on a plain (non-door) wall.
 export function createMarkerElement({
-  refKind = "", refId = "", refAnchor = null, label = "", image = "", outlineColor = "", position, sizeCells = 1, opacity = 1,
-  visionRangeBinding = "", visionRangeFormula = "", visionRangeText = "0",
+  refKind = "", refId = "", refAnchor = null, label = "", image = "", outlineColor = "", position, sizeCells = 1, heightCells = 0, opacity = 1,
+  visionRangeBinding = "", visionRangeFormula = "", visionRangeText = "0", linkedCombatantId = "",
 } = {}) {
   return {
     id: randomId(),
@@ -223,6 +223,15 @@ export function createMarkerElement({
     outlineColor,
     position: position || { x: 0, y: 0 },
     sizeCells: Number.isFinite(sizeCells) && sizeCells > 0 ? sizeCells : 1,
+    // Off-the-ground offset, same grid-cell unit convention as sizeCells (so
+    // it respects the map's own Measurement scale/unit) — positive is flying
+    // above the surface, negative is burrowing/submerged below it.
+    // map-viewer.js's own createMarkerDot gives the two directions distinct
+    // visual treatments (a shadow for flying, a dashed outline for
+    // burrowing) rather than one style with a sign flip, since a token
+    // floating above the map and one obscured beneath it don't read the
+    // same way. 0 (on the ground) is the real, concrete default.
+    heightCells: Number.isFinite(heightCells) ? heightCells : 0,
     // Per-marker, not per-layer — a token fading in/out (an unconscious or
     // hidden creature, say) is a property of that ONE placed marker, not
     // every marker on the layer, same "override, not a layer-wide setting"
@@ -237,11 +246,25 @@ export function createMarkerElement({
     // its own createMarkerOverlayIcon entry (icon token + a badge color).
     // Purely visual, map-viewer.js's own createMarkerDot renders them; no
     // mechanical effect on vision/movement the way a wall/door's own state
-    // has.
+    // has. Manually authored only — a linked Character/Monster/NPC's own
+    // LIVE conditions are resolved separately, at render time, from its own
+    // record (Character) or its active-Encounter combatant (Monster/NPC),
+    // never written in here; see map-viewer.js's condition-icon resolver.
     overlayIcons: [],
     visionRangeBinding,
     visionRangeFormula,
     visionRangeText,
+    // Only meaningful for refKind "monster"/"npc" — disambiguates WHICH
+    // combatant instance in the campaign's active Encounter this marker
+    // represents, needed only when more than one combatant currently shares
+    // this marker's own refId (e.g. three Goblins in one fight sharing one
+    // Monster record — Monster/NPC records are deliberately reusable
+    // templates, never mutated per-instance, so there's no "this one's"
+    // conditions to read off the record itself). Blank, or a combatant id
+    // that no longer exists in whichever Encounter is CURRENTLY active
+    // (last fight's id — self-heals automatically, no manual cleanup
+    // needed), falls back to "exactly one refId match, if there is one."
+    linkedCombatantId,
   };
 }
 
@@ -420,14 +443,27 @@ export function createGroup({ name } = {}) {
   };
 }
 
-export function createView({ name, description, layerIds = [], groupIds = [], tiers = [] } = {}) {
+// A View's own visibility fields are both DENY-lists (empty = nothing hidden), not
+// allow-lists — deliberately, so a brand new layer/marker/path/shape/wall/light is
+// visible everywhere by default with zero per-View bookkeeping, and so a freshly
+// auto-created View (see app.js's toggleElementHiddenFromPlayers) can never
+// accidentally hide something nobody actually unchecked. `groupIds` (the old
+// "Visible Groups" concept) is gone entirely — it was written by the View editor's
+// own UI but never read by the actual visibility computation (computeHiddenIds,
+// map-viewer.js), a confirmed dead field, not a design this replaces.
+export function createView({ name, description, hiddenLayerIds = [], hiddenElementIds = [], tiers = [], autoManaged = false } = {}) {
   return {
     id: randomId(),
     name: name || "New View",
     description: description || "",
-    layerIds: Array.isArray(layerIds) ? layerIds.filter(Boolean) : [],
-    groupIds: Array.isArray(groupIds) ? groupIds.filter(Boolean) : [],
+    hiddenLayerIds: Array.isArray(hiddenLayerIds) ? hiddenLayerIds.filter(Boolean) : [],
+    hiddenElementIds: Array.isArray(hiddenElementIds) ? hiddenElementIds.filter(Boolean) : [],
     tiers: Array.isArray(tiers) ? tiers.filter(Boolean) : [],
+    // True only for the one View toggleElementHiddenFromPlayers manages for itself
+    // (app.js) — lets that convenience toggle always find/reuse its own View by a
+    // stable marker rather than guessing off name/tiers, which a GM might also
+    // legitimately choose for a hand-authored View.
+    autoManaged: Boolean(autoManaged),
     settings: {},
   };
 }

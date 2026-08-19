@@ -1,7 +1,8 @@
 {
-  "id": "feat.mending-pulse",
   "name": "Mending Pulse",
-  "systemIds": ["sys.dnd5e"],
+  "systemIds": [
+    "sys.dnd5e"
+  ],
   "description": "Restores lost hit points to one creature touched or within short range.",
   "mechanics": {
     "type": "active",
@@ -9,16 +10,41 @@
   },
   "budgetCost": 3,
   "tags": {
-    "categories": ["spell", "item"],
-    "propertyHints": ["healing"]
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "healing"
+    ]
   },
   "synergizesWith": [],
   "dependsOn": [],
   "conflictsWith": [],
   "tiers": [
-    { "id": "tier-1", "name": "Lesser", "shortName": "2d4+2 hp", "budgetCost": 3 },
-    { "id": "tier-2", "name": "Greater", "shortName": "4d4+4 hp", "budgetCost": 6 },
-    { "id": "tier-3", "name": "Superior", "shortName": "8d4+8 hp", "budgetCost": 10 },
-    { "id": "tier-4", "name": "Supreme", "shortName": "10d4+20 hp", "budgetCost": 15 }
+    {
+      "id": "tier-1",
+      "name": "Lesser",
+      "shortName": "2d4+2 hp",
+      "budgetCost": 3
+    },
+    {
+      "id": "tier-2",
+      "name": "Greater",
+      "shortName": "4d4+4 hp",
+      "budgetCost": 6
+    },
+    {
+      "id": "tier-3",
+      "name": "Superior",
+      "shortName": "8d4+8 hp",
+      "budgetCost": 10
+    },
+    {
+      "id": "tier-4",
+      "name": "Supreme",
+      "shortName": "10d4+20 hp",
+      "budgetCost": 15
+    }
   ]
 }

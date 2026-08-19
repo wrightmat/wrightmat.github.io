@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "giant-poisonous-snake",
   "name": "Giant Poisonous Snake",
   "type": "beast",
   "systemIds": [

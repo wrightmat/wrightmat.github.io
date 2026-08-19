@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "guardian-naga",
   "name": "Guardian Naga",
   "type": "monstrosity",
   "systemIds": [

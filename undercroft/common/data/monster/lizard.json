@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "lizard",
   "name": "Lizard",
   "type": "beast",
   "systemIds": [

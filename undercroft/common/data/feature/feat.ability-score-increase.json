@@ -1,5 +1,4 @@
 {
-  "id": "feat.ability-score-increase",
   "name": "Ability Score Increase",
   "systemIds": [
     "sys.dnd5e"

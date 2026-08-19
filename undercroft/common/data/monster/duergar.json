@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "duergar",
   "name": "Duergar",
   "type": "humanoid",
   "systemIds": [

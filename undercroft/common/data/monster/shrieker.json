@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "shrieker",
   "name": "Shrieker",
   "type": "plant",
   "systemIds": [

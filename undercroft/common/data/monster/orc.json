@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "orc",
   "name": "Orc",
   "type": "humanoid",
   "systemIds": [

@@ -1,7 +1,8 @@
 {
-  "id": "feat.short-range",
   "name": "Short Range",
-  "systemIds": ["sys.dnd5e"],
+  "systemIds": [
+    "sys.dnd5e"
+  ],
   "description": "The effect only reaches a short distance, forcing the wielder to close in.",
   "mechanics": {
     "type": "drawback",
@@ -9,10 +10,17 @@
   },
   "budgetCost": -2,
   "tags": {
-    "categories": ["spell", "item"],
-    "propertyHints": ["drawback"]
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "drawback"
+    ]
   },
   "synergizesWith": [],
   "dependsOn": [],
-  "conflictsWith": ["feat.extra-range"]
+  "conflictsWith": [
+    "feat.extra-range"
+  ]
 }

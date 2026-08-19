@@ -4,5 +4,6 @@
   "plural": "Features",
   "icon": "tabler:puzzle",
   "readTier": "free",
-  "writeTier": "creator"
+  "writeTier": "creator",
+  "metadataFields": ["systemIds", "tags"]
 }

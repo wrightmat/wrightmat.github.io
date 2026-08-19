@@ -1,5 +1,4 @@
 {
-  "id": "feat.restrict-movement",
   "name": "Restrict Movement",
   "systemIds": [
     "sys.dnd5e"

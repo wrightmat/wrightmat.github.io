@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "djinni",
   "name": "Djinni",
   "type": "elemental",
   "systemIds": [

@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "chuul",
   "name": "Chuul",
   "type": "aberration",
   "systemIds": [

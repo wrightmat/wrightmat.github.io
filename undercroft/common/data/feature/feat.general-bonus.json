@@ -1,5 +1,4 @@
 {
-  "id": "feat.general-bonus",
   "name": "General Bonus",
   "systemIds": [
     "sys.dnd5e"
@@ -22,8 +21,23 @@
   "dependsOn": [],
   "conflictsWith": [],
   "tiers": [
-    { "id": "plus-1", "name": "+1", "shortName": "+1", "budgetCost": 6 },
-    { "id": "plus-2", "name": "+2", "shortName": "+2", "budgetCost": 12 },
-    { "id": "plus-3", "name": "+3", "shortName": "+3", "budgetCost": 18 }
+    {
+      "id": "plus-1",
+      "name": "+1",
+      "shortName": "+1",
+      "budgetCost": 6
+    },
+    {
+      "id": "plus-2",
+      "name": "+2",
+      "shortName": "+2",
+      "budgetCost": 12
+    },
+    {
+      "id": "plus-3",
+      "name": "+3",
+      "shortName": "+3",
+      "budgetCost": 18
+    }
   ]
 }

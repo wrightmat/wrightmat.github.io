@@ -200,7 +200,8 @@ export async function startEncounter({ dataManager, status, title, creatures, gr
       }
     }
     const payload = await buildEncounterPayload({ title, creatures, dataManager, id });
-    await dataManager.save("encounter", payload.id, payload);
+    const { id: _id, ...body } = payload;
+    await dataManager.save("encounter", payload.id, body);
     await dataManager.spotlightToGroup({ groupId, contentType: "encounter", contentId: payload.id });
     if (resolveToolContextPath() === "home") {
       window.location.search = `?encounter=${encodeURIComponent(payload.id)}`;

@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "shield-guardian",
   "name": "Shield Guardian",
   "type": "construct",
   "systemIds": [

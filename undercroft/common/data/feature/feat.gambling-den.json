@@ -1,19 +1,33 @@
 {
-  "id": "feat.gambling-den",
   "name": "Notorious Gambling Den",
-  "systemIds": ["sys.dnd5e"],
+  "systemIds": [
+    "sys.dnd5e"
+  ],
   "description": "A den of high-stakes games runs here, openly or otherwise — fortunes are won and lost on the turn of a card or the fall of dice.",
   "mechanics": {
     "type": "passive",
     "text": "Large sums of coin (and debts) change hands here regularly."
   },
   "tags": {
-    "categories": ["location"],
-    "locationTypes": ["settlement", "structure", "complex"],
-    "locationPurposes": ["recreation", "commerce"],
-    "environments": ["urban"]
+    "categories": [
+      "location"
+    ],
+    "locationTypes": [
+      "settlement",
+      "structure",
+      "complex"
+    ],
+    "locationPurposes": [
+      "recreation",
+      "commerce"
+    ],
+    "environments": [
+      "urban"
+    ]
   },
-  "synergizesWith": ["feat.black-market"],
+  "synergizesWith": [
+    "feat.black-market"
+  ],
   "dependsOn": [],
   "conflictsWith": []
 }

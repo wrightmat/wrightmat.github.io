@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "young-green-dragon",
   "name": "Young Green Dragon",
   "type": "dragon",
   "systemIds": [

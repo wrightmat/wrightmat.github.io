@@ -16,7 +16,6 @@
   "featureIds": [
     "feat.summoned-companion"
   ],
-  "id": "feather-token-bird",
   "budget": {
     "target": 12,
     "spent": 1,

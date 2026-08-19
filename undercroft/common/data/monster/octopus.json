@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "octopus",
   "name": "Octopus",
   "type": "beast",
   "systemIds": [

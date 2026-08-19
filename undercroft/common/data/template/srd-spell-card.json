@@ -1,5 +1,4 @@
 {
-  "id": "srd-spell-card",
   "title": "5e API Spell Card",
   "category": "print",
   "description": "Single spell card populated directly from a 5e API spell lookup (raw response fields).",

@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "cloaker",
   "name": "Cloaker",
   "type": "aberration",
   "systemIds": [

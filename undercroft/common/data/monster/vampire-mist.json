@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "vampire-mist",
   "name": "Vampire, Mist Form",
   "type": "undead",
   "systemIds": [

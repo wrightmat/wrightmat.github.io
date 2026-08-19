@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "plesiosaurus",
   "name": "Plesiosaurus",
   "type": "beast",
   "systemIds": [

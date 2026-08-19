@@ -16,9 +16,10 @@ import {
   // (label/content/actions/helpTopic), needed here only for the new
   // Selections section.
   createCollapsibleSection as createFullCollapsibleSection,
+  createSearchableCheckList,
 } from "../../common/js/lib/ui-components.js";
 import { createFieldRow, createHalfWidthNumberField, createCollapsibleSection } from "../../common/js/lib/inspector-fields.js";
-import { exportRecordAsJson } from "../../common/js/lib/generator-kit.js";
+import { exportRecordAsJson, populateStringChecklist, readLockedFeatureIds } from "../../common/js/lib/generator-kit.js";
 import {
   watchMapForChanges,
   persistMarkerMove as persistMarkerMoveShared,
@@ -29,7 +30,7 @@ import {
 import { initAuthControls } from "../../common/js/lib/auth-ui.js";
 import { refreshTooltips, disposeTooltips } from "../../common/js/lib/tooltips.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
-import { fetchKindEntriesWithIds, loadLibraryKinds } from "../../common/js/lib/content-fetch.js";
+import { fetchKindEntriesWithIds } from "../../common/js/lib/content-fetch.js";
 import { extractOutline } from "../../repository/js/lib/journal-outline.js";
 import { extractQuests } from "../../repository/js/lib/journal-quests.js";
 import { createTokenImageField } from "../../common/js/lib/token-picker.js";
@@ -37,6 +38,11 @@ import { getIconTokens } from "../../common/js/lib/icon-picker.js";
 import { refreshOwnershipCatalog, createCharacterOwnershipPrimer, confirmDelete, matchesOwner } from "../../common/js/lib/ownership.js";
 import { collectSystemFields } from "../../common/js/lib/system-schema.js";
 import { createBindingFormulaInput } from "../../common/js/lib/binding-field.js";
+import { findBindingByRole } from "../../common/js/lib/bindings.js";
+import { deriveCombatBindings } from "../../common/js/lib/widgets/combat-bindings.js";
+import { deriveConditionsVocabulary } from "../../common/js/lib/widgets/tag-editor.js";
+import { resolveActiveSpotlightId } from "../../common/js/lib/spotlight.js";
+import { connectLiveStream } from "../../common/js/lib/live.js";
 import {
   createGroup,
   createGridCell,
@@ -68,7 +74,7 @@ import { BaseMapManager } from "./lib/base-maps.js";
 // whole-layer drag needs with baseMapManager/state.map injected (the
 // `sharedGet*` aliases, wrapped just below).
 import {
-  computeVisibleLayerIds,
+  computeHiddenIds,
   renderMapLayers,
   getGridType,
   getGridCellKey,
@@ -92,6 +98,7 @@ import {
   getMarkerLayerOffset,
   renderShapeElement,
   resolveMarkerVisionRangeCells,
+  resolveMarkerConditionIcons,
   resolveVisibleCells,
   renderLightElement,
   resolveLightOrigin,
@@ -739,25 +746,31 @@ function normalizeTier(tier) {
   return typeof tier === "string" ? tier.trim().toLowerCase() : "";
 }
 
-function normalizeView(view, { layerIds = [], groupIds = [] } = {}) {
+// No second "default to every current layer/group id" argument anymore — that used
+// to exist ONLY because layerIds was an allow-list (an unset one had to be filled
+// with every id that existed at normalize time, or the view would show nothing).
+// hiddenLayerIds/hiddenElementIds are deny-lists, so an unset one already means
+// "nothing hidden" on its own; no pre-population needed, and nothing here depends
+// on state.map.layers/groups existing yet.
+function normalizeView(view) {
   const safeView = view && typeof view === "object" ? view : {};
   const name = typeof safeView.name === "string" && safeView.name.trim() ? safeView.name.trim() : "New View";
   const description = typeof safeView.description === "string" ? safeView.description.trim() : "";
   const tiers = Array.isArray(safeView.tiers)
     ? safeView.tiers.map(normalizeTier).filter((tier) => VIEW_TIER_VALUES.has(tier))
     : [];
-  const normalizedLayerIds = Array.isArray(safeView.layerIds) ? safeView.layerIds.filter(Boolean) : null;
-  const normalizedGroupIds = Array.isArray(safeView.groupIds) ? safeView.groupIds.filter(Boolean) : null;
-  const nextLayerIds = normalizedLayerIds ?? layerIds.filter(Boolean);
-  const nextGroupIds = normalizedGroupIds ?? groupIds.filter(Boolean);
+  const hiddenLayerIds = Array.isArray(safeView.hiddenLayerIds) ? safeView.hiddenLayerIds.filter(Boolean) : [];
+  const hiddenElementIds = Array.isArray(safeView.hiddenElementIds) ? safeView.hiddenElementIds.filter(Boolean) : [];
+  const autoManaged = Boolean(safeView.autoManaged);
   const settings = safeView.settings && typeof safeView.settings === "object" ? safeView.settings : {};
   return {
     ...safeView,
     name,
     description,
     tiers,
-    layerIds: nextLayerIds,
-    groupIds: nextGroupIds,
+    hiddenLayerIds,
+    hiddenElementIds,
+    autoManaged,
     settings,
   };
 }
@@ -849,12 +862,7 @@ function applyMapSnapshot(snapshot) {
   if (!state.map.measurement) {
     state.map.measurement = { scale: null, unit: "" };
   }
-  state.map.views = state.map.views.map((view) =>
-    normalizeView(view, {
-      layerIds: state.map.layers?.map((layer) => layer.id) || [],
-      groupIds: state.map.groups?.map((group) => group.id) || [],
-    }),
-  );
+  state.map.views = state.map.views.map((view) => normalizeView(view));
   // Backward-compatible with maps saved before Initial Zoom/Position
   // existed — gives the new Map Properties fields something concrete to
   // read/edit (resolveInitialView below tolerates a missing initialView
@@ -962,10 +970,9 @@ function getEffectiveViewerTier() {
 
 // The actual filtering logic lives in lib/map-viewer.js now — shared with
 // the Dashboard's Map widget so there's exactly one implementation. See its
-// own doc comment for the "empty tiers = universal, empty Set = legitimate
-// all-hidden result" contract this preserves unchanged.
-function getVisibleLayerIds() {
-  return computeVisibleLayerIds(state.map, getEffectiveViewerTier(), currentUserHasFullMapAccess());
+// own doc comment for the deny-list ("hidden", not "visible") contract.
+function getHiddenLayerIds() {
+  return computeHiddenIds(state.map, getEffectiveViewerTier(), currentUserHasFullMapAccess())?.layers ?? null;
 }
 
 // Snaps a marker's dropped/placed position to the nearest cell center —
@@ -1152,9 +1159,26 @@ function applyRemoteMapLayers(nextMap) {
 // whatever the GM is doing right now — a remote change just waits for the
 // next poll once they're idle again instead.
 let mapWatcher = null;
+// A just-added/removed condition only actually lives on an "encounter" or
+// "character" record — separate from mapWatcher above (which only watches
+// the MAP record itself) — so waiting on THAT poll alone means a condition
+// only appears once CHARACTER_PAYLOAD_STALE_MS/ACTIVE_ENCOUNTER_STALE_MS's
+// own staleness window happens to lapse. Combat Tracker already subscribes
+// to exactly these two live-stream kinds for the same reason (per the
+// "check for existing transport before inventing a new mechanism"
+// principle) — reusing it here rather than adding a second mechanism. Shares
+// the SAME pooled EventSource mapWatcher's own watchMapForChanges opens for
+// this group (connectLiveStream's own pool is keyed by (dataManager,
+// groupId, shareToken), so this is a ref-counted subscribe, not a second
+// connection) — this costs nothing extra on the wire, it just adds two more
+// listeners that collapse the relevant cache entry and re-render
+// immediately instead of waiting out the staleness window.
+let conditionLiveStream = null;
 function watchCurrentMap(id, shareToken = "") {
   mapWatcher?.stop();
   mapWatcher = null;
+  conditionLiveStream?.close();
+  conditionLiveStream = null;
   if (!id || !dataManager) {
     return;
   }
@@ -1187,6 +1211,22 @@ function watchCurrentMap(id, shareToken = "") {
     },
     onPing: renderIncomingPing,
   });
+  const groupId = getActiveCampaignGroupId();
+  if (groupId) {
+    conditionLiveStream = connectLiveStream({ dataManager, groupId, kinds: ["encounter", "character"], shareToken });
+    conditionLiveStream.subscribe("encounter", () => {
+      activeEncounterCache.delete(groupId);
+      activeEncounterFetchedAt.delete(groupId);
+      renderLayerOverlays();
+    });
+    conditionLiveStream.subscribe("character", (payload) => {
+      if (payload?.id) {
+        characterPayloadCache.delete(payload.id);
+        characterPayloadFetchedAt.delete(payload.id);
+      }
+      renderLayerOverlays();
+    });
+  }
 }
 
 function updateMapToolbarState() {
@@ -1417,7 +1457,34 @@ function autoSaveHistoryEntry(entry) {
 // empty-click placement for a layer the user never actually chose to edit.
 let armedMarkerLayerId = null;
 
+// Clears a stale, still-focused field (Label input, Position X/Y, Name,
+// ...) whenever the user picks a NEW selection on the map or in a list —
+// every marker/shape/empty-space pointerdown handler in this file calls
+// event.preventDefault() (needed so the click doesn't ALSO trigger the
+// browser's own drag-select/text-select behavior), which as a side effect
+// suppresses the browser's normal "clicking elsewhere blurs whatever was
+// focused" behavior too. Confirmed real bug this fixes: a field left
+// focused from editing the PREVIOUS selection (or the map's own Name
+// field) silently survived clicking a brand new marker, so the global
+// Delete/Backspace shortcut's own isEditableTarget guard (correctly
+// designed to never delete while the user is mid-edit in a field) kept
+// treating every fresh selection as "still typing" until an unrelated
+// later click happened to blur it — reported as "the first delete on a
+// token never works, but reselecting it does." Blurring here also commits
+// whatever was in that stale field, via its own existing change/blur
+// listener, exactly as if the user had clicked away from it normally.
+function blurStaleActiveField() {
+  const active = document.activeElement;
+  if (
+    active instanceof HTMLElement &&
+    (active.tagName === "INPUT" || active.tagName === "TEXTAREA" || active.tagName === "SELECT" || active.isContentEditable)
+  ) {
+    active.blur();
+  }
+}
+
 function setSelection(kind, id = null, extra = {}) {
+  blurStaleActiveField();
   if (kind === "layer") {
     armedMarkerLayerId = id;
   } else if (!(kind === "marker-element" && extra.layerId === armedMarkerLayerId)) {
@@ -1475,6 +1542,181 @@ function toggleSelection(kind, id, extra = {}) {
     setSelection(null);
   } else {
     setSelection(kind, id, extra);
+  }
+}
+
+// Single source of truth for "delete whatever's currently selected" — used
+// by the global Delete/Backspace keyboard shortcut AND every selection
+// editor's own Delete button (each just calls this instead of duplicating
+// the same recordHistory/filter/setSelection logic a second time). Acts
+// directly on state.selection, never on any rendered DOM button — so it
+// works correctly regardless of whether the selection editor panel has
+// actually finished building yet. Confirmed real bug this fixes: the
+// keyboard shortcut used to find-and-click a
+// `[data-action="delete-selected"]` button in the DOM, but
+// renderMarkerElementSelectionEditor is async (a freshly placed or
+// freshly (re)selected marker takes a render pass before its own Delete
+// button exists at all — see that function's own markerSelectionEditorRenderId
+// comment on why it can't just build synchronously) — any keypress landing
+// in that window silently did nothing: "hit or miss," matching the reported
+// behavior exactly, not just right after creating a marker (ANY later
+// re-render of the panel — e.g. a remote map update landing while this
+// marker is selected — reopens the same window).
+// Returns true if something was actually deleted, so the keydown handler
+// knows whether to consume the key.
+function deleteCurrentSelection() {
+  const { selection, map } = state;
+  if (selection.kind === "layer") {
+    const index = map.layers.findIndex((entry) => entry.id === selection.id);
+    if (index === -1) return false;
+    recordHistory("delete layer", () => {
+      map.layers.splice(index, 1);
+      updateMapTimestamp(map);
+    });
+    setSelection(null);
+    renderLayers();
+    renderLayerOverlays();
+    renderJson();
+    return true;
+  }
+  if (selection.kind === "group") {
+    const index = map.groups.findIndex((entry) => entry.id === selection.id);
+    if (index === -1) return false;
+    recordHistory("delete group", () => {
+      map.groups.splice(index, 1);
+      updateMapTimestamp(map);
+    });
+    setSelection(null);
+    renderGroups();
+    renderLayerOverlays();
+    renderJson();
+    return true;
+  }
+  if (selection.kind === "view") {
+    const index = map.views.findIndex((entry) => entry.id === selection.id);
+    if (index === -1) return false;
+    recordHistory("delete view", () => {
+      map.views.splice(index, 1);
+      updateMapTimestamp(map);
+    });
+    setSelection(null);
+    renderViewsList();
+    renderJson();
+    return true;
+  }
+  if (selection.kind === "marker-element") {
+    const layer = map.layers.find((entry) => entry.id === selection.layerId);
+    const markerElement = layer?.elements?.find((entry) => entry.id === selection.id);
+    if (!layer || !markerElement) return false;
+    recordHistory("delete marker", () => {
+      layer.elements = (layer.elements || []).filter((entry) => entry.id !== markerElement.id);
+      updateMapTimestamp(map);
+    });
+    setSelection("layer", layer.id);
+    return true;
+  }
+  if (selection.kind === "vector-path") {
+    const layer = map.layers.find((entry) => entry.id === selection.layerId);
+    const element = layer?.elements?.find((entry) => entry.id === selection.id);
+    if (!layer || !element) return false;
+    const label =
+      element.kind === "wall" ? "delete wall" : element.kind === "light" ? "delete light" : element.kind === "shape" ? "delete shape" : "delete path";
+    recordHistory(label, () => {
+      layer.elements = (layer.elements || []).filter((entry) => entry.id !== element.id);
+      updateMapTimestamp(map);
+    });
+    setSelection("layer", layer.id);
+    return true;
+  }
+  return false;
+}
+
+// The one View toggleElementHiddenFromPlayers manages for itself
+// (View.autoManaged, createView's own comment) — auto-created the first
+// time a GM uses the marker's own "Hidden from players" convenience switch,
+// same "auto-create the first time you need it" precedent the fog-of-war
+// reveal-group (`revealGroupId`) already sets. Only ever returns/creates
+// THIS one View; a hand-authored View a GM separately scopes to "player"
+// tier via the View editor's own Visible Components checklist is a
+// deliberately SEPARATE, independent thing this never touches.
+function ensureAutoManagedPlayerView() {
+  let view = state.map.views.find((entry) => entry.autoManaged);
+  if (!view) {
+    view = createView({ name: "Player View (auto)", tiers: ["player"], autoManaged: true });
+    state.map.views.push(view);
+  }
+  return view;
+}
+
+// Read-only — whether `elementId` is currently hidden by the auto-managed
+// Player View specifically (not the union of every View that might also
+// hide it — see this function's own toggle below for why that's the right
+// scope for a single convenience switch). False, not an error, when the
+// auto-managed View doesn't exist yet at all.
+function isElementHiddenFromPlayers(elementId) {
+  const view = state.map.views.find((entry) => entry.autoManaged);
+  return Boolean(view?.hiddenElementIds?.includes(elementId));
+}
+
+function toggleElementHiddenFromPlayers(elementId) {
+  recordHistory("toggle hidden from players", () => {
+    const view = ensureAutoManagedPlayerView();
+    const hidden = new Set(view.hiddenElementIds || []);
+    if (hidden.has(elementId)) {
+      hidden.delete(elementId);
+    } else {
+      hidden.add(elementId);
+    }
+    view.hiddenElementIds = Array.from(hidden);
+    updateMapTimestamp(state.map);
+  });
+  renderSelection();
+  renderLayerOverlays();
+  renderViewsList();
+  renderJson();
+  // Saves itself instantly, like a marker's own position/image/outline
+  // color (MARKER_AUTO_SAVE_FIELD_BY_LABEL) — confirmed real bug without
+  // this: the toggle only ever updated state.map in memory, so the
+  // Dashboard's Map widget (reading the server, via its own poll) never
+  // picked it up until the GM happened to hit the map's own batched Save
+  // button. void — best-effort, same as the marker-field auto-saves.
+  void autoSaveHiddenFromPlayersView(elementId);
+}
+
+// Narrow read-modify-write against the server's OWN current copy of this
+// map (not state.map — same reasoning as persistElementUpdate,
+// map-live-sync.js: state.map may carry OTHER pending, not-yet-saved edits
+// the GM hasn't hit Save for yet, and this auto-save must never eagerly
+// persist those as a side effect of a quick visibility toggle). Applies
+// whatever isElementHiddenFromPlayers already resolved LOCALLY (post-
+// toggle) onto the fresh server copy's own auto-managed View, rather than
+// re-deriving/re-toggling independently — a rapid double-toggle before this
+// resolves must always converge on the same final state the GM's own
+// screen already shows, not whatever order two competing toggles happen to
+// land on the server in.
+async function autoSaveHiddenFromPlayersView(elementId) {
+  if (!mapExistsOnServer || !dataManager) return;
+  const shouldBeHidden = isElementHiddenFromPlayers(elementId);
+  try {
+    const result = await dataManager.get("map", state.map.id, { shareToken: currentShareToken, preferLocal: false });
+    const freshMap = result.payload;
+    freshMap.views = Array.isArray(freshMap.views) ? freshMap.views : [];
+    let view = freshMap.views.find((entry) => entry.autoManaged);
+    if (!view) {
+      view = createView({ name: "Player View (auto)", tiers: ["player"], autoManaged: true });
+      freshMap.views.push(view);
+    }
+    const hidden = new Set(view.hiddenElementIds || []);
+    if (shouldBeHidden) {
+      hidden.add(elementId);
+    } else {
+      hidden.delete(elementId);
+    }
+    view.hiddenElementIds = Array.from(hidden);
+    await dataManager.save("map", state.map.id, freshMap);
+    mapWatcher?.noteLocalWrite();
+  } catch (error) {
+    status?.show(error?.message || "Unable to save that change.", { type: "danger" });
   }
 }
 
@@ -1536,12 +1778,12 @@ const LAYER_TYPE_ICONS = {
 function renderLayers() {
   disposeTooltips(elements.layerList);
   elements.layerList.innerHTML = "";
-  const visibleLayerIds = getVisibleLayerIds();
+  const hiddenLayerIds = getHiddenLayerIds();
   state.map.layers
     .slice()
     .reverse()
     .forEach((layer) => {
-      if (visibleLayerIds && !visibleLayerIds.has(layer.id)) {
+      if (hiddenLayerIds?.has(layer.id)) {
         return;
       }
       const item = document.createElement("button");
@@ -1932,13 +2174,7 @@ function renderVectorPathSelectionEditor(layer, pathElement) {
   deleteButton.className = "btn btn-outline-danger btn-sm";
   deleteButton.textContent = "Delete Path";
   deleteButton.dataset.action = "delete-selected";
-  deleteButton.addEventListener("click", () => {
-    recordHistory("delete path", () => {
-      layer.elements = (layer.elements || []).filter((entry) => entry.id !== pathElement.id);
-      updateMapTimestamp(state.map);
-    });
-    setSelection("layer", layer.id);
-  });
+  deleteButton.addEventListener("click", () => deleteCurrentSelection());
   container.appendChild(deleteButton);
 }
 
@@ -2089,13 +2325,7 @@ function renderWallSelectionEditor(layer, wallElement) {
       action: "delete",
       label: wallElement.wallType === "door" ? "Delete Door" : "Delete Wall",
       attrs: { "data-action": "delete-selected" },
-      onClick: () => {
-        recordHistory("delete wall", () => {
-          layer.elements = (layer.elements || []).filter((entry) => entry.id !== wallElement.id);
-          updateMapTimestamp(state.map);
-        });
-        setSelection("layer", layer.id);
-      },
+      onClick: () => deleteCurrentSelection(),
     });
     createToolbarButtonGroup(buttons).forEach((button) => elements.selectionToolbar.appendChild(button));
     refreshTooltips(elements.selectionToolbar);
@@ -2232,13 +2462,7 @@ function renderLightSelectionEditor(layer, lightElement) {
         action: "delete",
         label: "Delete light",
         attrs: { "data-action": "delete-selected" },
-        onClick: () => {
-          recordHistory("delete light", () => {
-            layer.elements = (layer.elements || []).filter((entry) => entry.id !== lightElement.id);
-            updateMapTimestamp(state.map);
-          });
-          setSelection("layer", layer.id);
-        },
+        onClick: () => deleteCurrentSelection(),
       },
     ]).forEach((button) => elements.selectionToolbar.appendChild(button));
     refreshTooltips(elements.selectionToolbar);
@@ -2459,13 +2683,7 @@ function renderVectorShapeSelectionEditor(layer, shapeElement) {
         action: "delete",
         label: "Delete shape",
         attrs: { "data-action": "delete-selected" },
-        onClick: () => {
-          recordHistory("delete shape", () => {
-            layer.elements = (layer.elements || []).filter((entry) => entry.id !== shapeElement.id);
-            updateMapTimestamp(state.map);
-          });
-          setSelection("layer", layer.id);
-        },
+        onClick: () => deleteCurrentSelection(),
       },
     ]).forEach((button) => elements.selectionToolbar.appendChild(button));
     refreshTooltips(elements.selectionToolbar);
@@ -2679,6 +2897,7 @@ function selectMarkerElementForDrag(layer, markerElement, dotEl) {
   if (armedMarkerLayerId !== layer.id) {
     armedMarkerLayerId = null;
   }
+  blurStaleActiveField();
   state.selection = { kind: "marker-element", id: markerElement.id, layerId: layer.id, cells: [], anchor: null };
   renderSelection();
   setPanelFocus(true);
@@ -2702,6 +2921,7 @@ function selectMarkerElementForDrag(layer, markerElement, dotEl) {
 // onVectorPathClick below) rebuilt the overlay on every click, which is
 // exactly why shapes could be selected but never actually dragged.
 function selectShapeElementForDrag(layer, elementId) {
+  blurStaleActiveField();
   state.selection = { kind: "vector-path", id: elementId, layerId: layer.id, cells: [], anchor: null };
   renderSelection();
   setPanelFocus(true);
@@ -2827,23 +3047,51 @@ function resolvePaintTargetLayer(group) {
   return remembered || gridLayers[0] || null;
 }
 
-// Fires the character-payload fetch for every character-linked marker whose
-// Vision Range is actually Bound/Formula, not just whichever one's own
-// inspector panel happens to be open right now — without this, a GM who
-// never happens to click a given marker's own inspector would silently
-// never see that marker's Auto-Reveal contribution resolve past its
-// literal-Text fallback. Fire-and-forget, cheap after the first pass
-// (ensureCharacterPayloadCached is itself a no-op once cached/in-flight).
+// Fires the character-payload (and System-fields/conditions) fetch for
+// EVERY character-linked marker, not just whichever one's own inspector
+// panel happens to be open right now — without this, a GM who never
+// happens to click a given marker's own inspector would silently never see
+// that marker's Auto-Reveal Vision Range OR its condition-icon badges
+// (resolveMarkerConditionIconsForMarker) resolve past their empty/literal
+// fallback. No longer gated on Vision Range being configured — condition
+// icons need the same two fetches for every character-linked marker
+// regardless. Fire-and-forget, cheap after the first pass
+// (ensureCharacterPayloadCached/ensureCharacterSystemFieldsCached are both
+// no-ops once cached/in-flight/already-resolved).
 function primeCharacterPayloadCache() {
   (state.map.layers || []).forEach((layer) => {
     if (layer.type !== "marker") return;
     (layer.elements || []).forEach((marker) => {
       if (marker.kind !== "marker" || marker.refKind !== "character" || !marker.refId) return;
-      if ((marker.visionRangeBinding || "").trim() || (marker.visionRangeFormula || "").trim()) {
-        ensureCharacterPayloadCached(marker.refId, () => renderLayerOverlays());
-      }
+      ensureCharacterPayloadCached(marker.refId, () => renderLayerOverlays());
+      ensureCharacterSystemFieldsCached(marker.refId, getCachedCharacterPayload(marker.refId), () => renderLayerOverlays());
     });
   });
+}
+
+// Same "prime for every marker, not just the selected one" reasoning as
+// primeCharacterPayloadCache above, for Monster/NPC-linked markers'
+// condition icons (resolveMarkerConditionIconsForMarker) — fires the active
+// Encounter fetch (once per campaign group, not per marker) and, once that
+// resolves, its own System's conditions fetch. A no-op with nothing to do
+// when there's no active campaign group, or no Monster/NPC-linked marker on
+// the map at all.
+function primeMonsterConditionCache() {
+  const groupId = getActiveCampaignGroupId();
+  if (!groupId) return;
+  const hasMonsterMarker = (state.map.layers || []).some(
+    (layer) =>
+      layer.type === "marker" &&
+      (layer.elements || []).some(
+        (marker) => marker.kind === "marker" && (marker.refKind === "monster" || marker.refKind === "npc") && marker.refId
+      )
+  );
+  if (!hasMonsterMarker) return;
+  ensureActiveEncounterCached(groupId, () => renderLayerOverlays());
+  const encounter = getCachedActiveEncounter(groupId);
+  if (encounter?.systemId) {
+    ensureSystemConditionsCached(encounter.systemId, () => renderLayerOverlays());
+  }
 }
 
 // Which characters the current viewer has owner/admin/edit-shared access to
@@ -2983,6 +3231,7 @@ function renderLayerOverlays() {
     return;
   }
   primeCharacterPayloadCache();
+  primeMonsterConditionCache();
   primeCharacterOwnershipCatalog();
   syncOverlayInteractivity();
   const activeGroup =
@@ -3011,6 +3260,7 @@ function renderLayerOverlays() {
     // both for its own live fog-preview tint and so the marker inspector's
     // Binding field can display a resolved value once the record loads.
     getCharacterPayload: getCachedCharacterPayload,
+    resolveConditionIcons: resolveMarkerConditionIconsForMarker,
     onGridCellPointerDown: (layer, coord, event) => {
       const entry = createGridCellSelectionEntry(layer, coord);
       const isCtrl = event.metaKey || event.ctrlKey;
@@ -3323,6 +3573,7 @@ function openRestrictedMarkerLinkPopover(markerElement, dotEl) {
 
 function renderRestrictedLayerOverlays(overlay) {
   primeCharacterPayloadCache();
+  primeMonsterConditionCache();
   primeCharacterOwnershipCatalog();
   renderMapLayers(overlay, baseMapManager, state.map, {
     viewerTier: getEffectiveViewerTier(),
@@ -3332,7 +3583,8 @@ function renderRestrictedLayerOverlays(overlay) {
       map: state.map,
       characterOwnershipCatalog: characterOwnershipPrimer.getCatalog(),
       getCharacterPayload: getCachedCharacterPayload,
-      status,
+      resolveConditionIcons: resolveMarkerConditionIconsForMarker,
+        status,
       onMarkerMoved: (layer, markerElement, snappedPosition) =>
         void persistRestrictedMarkerMove(layer, markerElement, snappedPosition),
       onDoorToggled: (layer, elementId) => void toggleDoorRestricted(layer.id, elementId),
@@ -4069,10 +4321,12 @@ function renderLayerSelectionEditor(layer) {
   // mounted in the shared data-selection-toolbar-mount slot above the
   // editor fields (renderSelection() clears it before every render; only
   // this function, the one selection kind these four actions apply to,
-  // repopulates it). `delete`'s data-action="delete-selected" is
-  // load-bearing — it's what the global Delete/Backspace keyboard shortcut
-  // looks for via elements.selectionEditor's own querySelector, so it has
-  // to carry over from the old hand-built button exactly.
+  // repopulates it). `delete`'s onClick calls the shared
+  // deleteCurrentSelection() (see its own comment near setSelection above)
+  // rather than duplicating this logic inline — the global Delete/Backspace
+  // keyboard shortcut calls the exact same function directly, not via any
+  // DOM lookup, so data-action="delete-selected" here is just a marker for
+  // humans reading the markup now, nothing functional depends on it.
   if (elements.selectionToolbar) {
     const layerIndex = state.map.layers.indexOf(layer);
     createToolbarButtonGroup([
@@ -4109,20 +4363,7 @@ function renderLayerSelectionEditor(layer) {
         action: "delete",
         label: "Delete layer",
         attrs: { "data-action": "delete-selected" },
-        onClick: () => {
-          const index = state.map.layers.findIndex((entry) => entry.id === layer.id);
-          if (index === -1) {
-            return;
-          }
-          recordHistory("delete layer", () => {
-            state.map.layers.splice(index, 1);
-            updateMapTimestamp(state.map);
-          });
-          setSelection(null);
-          renderLayers();
-          renderLayerOverlays();
-          renderJson();
-        },
+        onClick: () => deleteCurrentSelection(),
       },
     ]).forEach((button) => elements.selectionToolbar.appendChild(button));
     refreshTooltips(elements.selectionToolbar);
@@ -4277,17 +4518,22 @@ function createGridCellPropertyRow(layer, selectionCoords, key, value) {
   return row;
 }
 
-// The live, extensible kind registry (undercroft/common/data/kind/*.json) —
-// fetched once and cached, same reasoning as content-fetch.js's own
-// characterMappingPromise cache: it doesn't change mid-session, and every
-// marker selection would otherwise re-fetch it.
-let libraryKindsPromise = null;
-function getLibraryKinds() {
-  if (!libraryKindsPromise) {
-    libraryKindsPromise = loadLibraryKinds();
-  }
-  return libraryKindsPromise;
-}
+// A marker's own target-kind whitelist for the References picker below —
+// same restricted, alphabetized-by-label shape as the suite's own
+// RELATIONSHIP_TARGET_KINDS (Forge/Crucible/Vault/Sanctum/Workbench's
+// app.js each define one for the shared relationship-editor.js), not the
+// full live Library kind registry: a marker only ever sensibly points at
+// something with a physical presence on the map (or a Macro to trigger from
+// it), not every authoring kind Loom manages (Template, System, Journal
+// page, ...).
+const MARKER_REFERENCE_KINDS = [
+  { id: "character", label: "Character" },
+  { id: "effect", label: "Effect" },
+  { id: "location", label: "Location" },
+  { id: "macro", label: "Macro" },
+  { id: "monster", label: "Monster" },
+  { id: "npc", label: "NPC" },
+];
 
 // A marker's own Vision Range can be Bound to a field on its linked
 // Character record (see createMarkerElement's own header comment) —
@@ -4300,21 +4546,41 @@ function getLibraryKinds() {
 // itself, matching that module's own "everything caller-specific is a
 // callback" architecture. `ensureCharacterPayloadCached` is fire-and-forget:
 // call it during a render pass, it populates the cache and re-renders once
-// the fetch resolves — same "populate cache, re-render once it resolves"
-// shape as this file's own getLibraryKinds/libraryKindsPromise just above,
-// just per-character instead of once for the whole session.
+// the fetch resolves.
+//
+// This same cache also backs a Character marker's condition icons
+// (resolveMarkerConditionIconsForMarker below) — unlike Vision Range's own
+// original "fetch once, reselecting the marker or reloading the page is
+// what picks up a change" tradeoff, a condition is expected to update
+// automatically the moment it's added via Combat Tracker (the whole point
+// of that feature) while the GM is still looking at the very same page.
+// Confirmed real bug this fixes: a permanently-cached-forever payload never
+// re-fetched at all once set, so a condition added after the marker's first
+// render never appeared — even re-placing the marker didn't help, since
+// this cache is keyed by the CHARACTER's own refId, not any particular
+// marker instance. Re-fetches in the background once the cached copy is
+// older than CHARACTER_PAYLOAD_STALE_MS, still returning the last-known
+// value synchronously in the meantime (no flicker while the fresh copy is
+// in flight) — cadence loosely matches watchMapForChanges' own ~10s map
+// poll, so a GM sees a just-added condition within about one poll tick
+// without needing to touch anything.
+const CHARACTER_PAYLOAD_STALE_MS = 8000;
 const characterPayloadCache = new Map();
+const characterPayloadFetchedAt = new Map();
 const pendingCharacterFetches = new Set();
 function getCachedCharacterPayload(refId) {
   return characterPayloadCache.get(refId);
 }
 function ensureCharacterPayloadCached(refId, onLoaded) {
-  if (!refId || !dataManager || characterPayloadCache.has(refId) || pendingCharacterFetches.has(refId)) return;
+  if (!refId || !dataManager || pendingCharacterFetches.has(refId)) return;
+  const fetchedAt = characterPayloadFetchedAt.get(refId) || 0;
+  if (characterPayloadCache.has(refId) && Date.now() - fetchedAt < CHARACTER_PAYLOAD_STALE_MS) return;
   pendingCharacterFetches.add(refId);
   dataManager
-    .get("character", refId)
+    .get("character", refId, { preferLocal: false })
     .then((result) => {
       characterPayloadCache.set(refId, result?.payload || {});
+      characterPayloadFetchedAt.set(refId, Date.now());
       pendingCharacterFetches.delete(refId);
       onLoaded?.();
     })
@@ -4338,6 +4604,75 @@ const pendingCharacterSystemFieldsFetches = new Set();
 function getCachedCharacterSystemFields(refId) {
   return characterSystemFieldsCache.get(refId) || [];
 }
+
+// Which System a Character resolves to (refId -> systemId), cached
+// alongside characterSystemFieldsCache below by the same fetch — kept
+// separate (rather than folded into that cache's own value shape) so
+// getCachedCharacterSystemFields' existing callers (the Vision Range
+// @-autocomplete) don't need to change what they get back.
+const characterSystemIdCache = new Map();
+function getCachedCharacterSystemId(refId) {
+  return characterSystemIdCache.get(refId) || "";
+}
+
+// A System's own Conditions vocabulary, resolved to id -> {icon, color} and
+// cached by systemId (not refId) — genuinely System-level, so this is
+// fetched at most once regardless of how many characters/markers reference
+// that System. icon/color live in each Condition value's own "Extra
+// Properties" JSON (Loom's property-schema-editor.js), the same generic
+// per-value catch-all resolveMonsterSizeCells already reads `sizeValue`
+// through — no dedicated UI column for these. Also carries the resolved
+// `tags`-role binding path (e.g. "@conditions") a Character's own live
+// conditions array is read from — see map-viewer.js's own shared
+// resolveMarkerConditionIcons, called via resolveMarkerConditionIconsForMarker
+// below.
+const systemConditionsCache = new Map();
+function getCachedSystemConditions(systemId) {
+  return systemConditionsCache.get(systemId) || null;
+}
+function buildSystemConditions(fields) {
+  const bindings = deriveCombatBindings(fields);
+  const tagsEntry = findBindingByRole(bindings, "tags");
+  const vocabulary = deriveConditionsVocabulary(fields, bindings);
+  const iconMap = new Map();
+  if (vocabulary && tagsEntry) {
+    const vocabularyKey = tagsEntry.sourceField || "conditions";
+    const field = fields.find((entry) => entry.type === "array" && entry.key === vocabularyKey);
+    (field?.values || []).forEach((raw, index) => {
+      const entry = vocabulary[index];
+      if (entry && raw && (raw.icon || raw.color)) {
+        iconMap.set(entry.id, { icon: raw.icon || "", color: raw.color || "" });
+      }
+    });
+  }
+  return { iconMap, tagsBinding: tagsEntry?.binding || "" };
+}
+
+// Fetches a System's own `fields` directly (by systemId) and populates
+// systemConditionsCache from it — ensureCharacterSystemFieldsCached below
+// already has a System's fields in hand from its own Character->Template
+// hop and populates this cache straight from that instead of calling this a
+// second time; this is for a caller that only knows the systemId already,
+// with no Character/Template hop of its own to reuse (Monster/NPC condition
+// resolution, via the active Encounter's own systemId).
+const pendingSystemConditionsFetches = new Set();
+function ensureSystemConditionsCached(systemId, onLoaded) {
+  if (!systemId || !dataManager) return;
+  if (systemConditionsCache.has(systemId) || pendingSystemConditionsFetches.has(systemId)) return;
+  pendingSystemConditionsFetches.add(systemId);
+  (async () => {
+    try {
+      const systemResult = await dataManager.get("systems", systemId, { preferLocal: false });
+      systemConditionsCache.set(systemId, buildSystemConditions(systemResult?.payload?.fields || []));
+    } catch (error) {
+      systemConditionsCache.set(systemId, { iconMap: new Map(), tagsBinding: "" });
+    } finally {
+      pendingSystemConditionsFetches.delete(systemId);
+      onLoaded?.();
+    }
+  })();
+}
+
 function ensureCharacterSystemFieldsCached(refId, characterPayload, onLoaded) {
   if (!refId || !dataManager || !characterPayload) return;
   if (characterSystemFieldsCache.has(refId) || pendingCharacterSystemFieldsFetches.has(refId)) return;
@@ -4349,14 +4684,24 @@ function ensureCharacterSystemFieldsCached(refId, characterPayload, onLoaded) {
   pendingCharacterSystemFieldsFetches.add(refId);
   (async () => {
     try {
-      const templateResult = await dataManager.get("templates", templateId);
+      // preferLocal: false on both fetches — a Template's own schema and a
+      // System's own field tree are exactly the kind of content edited
+      // directly in Workbench/Loom out from under whatever this browser
+      // last cached; a stale local copy here would silently starve the
+      // @-autocomplete of fields with no visible sign anything was wrong.
+      const templateResult = await dataManager.get("templates", templateId, { preferLocal: false });
       const systemId = templateResult?.payload?.schema || "";
       if (!systemId) {
         characterSystemFieldsCache.set(refId, []);
         return;
       }
-      const systemResult = await dataManager.get("systems", systemId);
+      characterSystemIdCache.set(refId, systemId);
+      const systemResult = await dataManager.get("systems", systemId, { preferLocal: false });
+      const fields = systemResult?.payload?.fields || [];
       characterSystemFieldsCache.set(refId, collectSystemFields(systemResult?.payload || {}));
+      if (!systemConditionsCache.has(systemId)) {
+        systemConditionsCache.set(systemId, buildSystemConditions(fields));
+      }
     } catch (error) {
       characterSystemFieldsCache.set(refId, []);
     } finally {
@@ -4366,14 +4711,141 @@ function ensureCharacterSystemFieldsCached(refId, characterPayload, onLoaded) {
   })();
 }
 
+// The campaign's currently active/spotlighted Encounter, cached by groupId
+// (a GM could switch active campaigns mid-session, so this isn't a single
+// global slot) — map-viewer.js's own shared resolveMarkerConditionIcons
+// reads a Monster/NPC combatant's own LIVE conditions from here, the only
+// place they actually exist: Monster/NPC records are deliberately reusable
+// templates, never
+// mutated per-combat-instance (writeThroughToCharacter's own comment,
+// combat-tracker.js — the same reason a marker can't just read a Monster's
+// own record the way it reads a Character's). Fetched once per groupId,
+// same "cache once, no live-poll" tradeoff getCachedCharacterPayload
+// already accepts for Vision Range — a GM re-selecting the marker, or
+// reloading the map, is what picks up a combat state change since. No
+// active encounter, or a fetch failure, caches an empty combatants list
+// rather than erroring — "not currently in combat" is a normal state, not
+// a problem to surface.
+// See CHARACTER_PAYLOAD_STALE_MS's own comment just above — a combatant's
+// `conditions` here is exactly as live as a Character record's own, and was
+// suffering the identical "cached forever, never actually re-fetched" bug
+// before this staleness check existed.
+const ACTIVE_ENCOUNTER_STALE_MS = 8000;
+const activeEncounterCache = new Map();
+const activeEncounterFetchedAt = new Map();
+const pendingActiveEncounterFetches = new Set();
+function getCachedActiveEncounter(groupId) {
+  return activeEncounterCache.get(groupId) || null;
+}
+function ensureActiveEncounterCached(groupId, onLoaded) {
+  if (!groupId || !dataManager || pendingActiveEncounterFetches.has(groupId)) return;
+  const fetchedAt = activeEncounterFetchedAt.get(groupId) || 0;
+  if (activeEncounterCache.has(groupId) && Date.now() - fetchedAt < ACTIVE_ENCOUNTER_STALE_MS) return;
+  pendingActiveEncounterFetches.add(groupId);
+  (async () => {
+    try {
+      const encounterId = await resolveActiveSpotlightId(dataManager, { groupId, kind: "encounter" });
+      if (!encounterId) {
+        activeEncounterCache.set(groupId, { systemId: "", combatants: [] });
+        return;
+      }
+      const result = await dataManager.get("encounter", encounterId, { preferLocal: false });
+      const payload = result?.payload || {};
+      activeEncounterCache.set(groupId, {
+        systemId: payload.systemId || "",
+        combatants: Array.isArray(payload.combatants) ? payload.combatants : [],
+      });
+    } catch (error) {
+      activeEncounterCache.set(groupId, { systemId: "", combatants: [] });
+    } finally {
+      activeEncounterFetchedAt.set(groupId, Date.now());
+      pendingActiveEncounterFetches.delete(groupId);
+      onLoaded?.();
+    }
+  })();
+}
+
+// Every combatant in the active encounter that shares this marker's own
+// refKind/refId — the candidate set markerElement.linkedCombatantId (see
+// map-model.js's own createMarkerElement) disambiguates between when there
+// is more than one (three Goblins sharing one Monster record). Used by the
+// "Linked Combatant" picker (renderMarkerElementSelectionEditor) to decide
+// whether it has anything to show, and to populate its own options — a
+// plain array filter, not the risky part of condition-icon resolution, so
+// this stays a small local helper rather than living in map-viewer.js's own
+// shared resolveMarkerConditionIcons alongside the icon-mapping logic that
+// actually needed to be kept in sync between callers.
+function findMatchingCombatants(markerElement, groupId) {
+  const encounter = getCachedActiveEncounter(groupId);
+  if (!encounter) return [];
+  return encounter.combatants.filter(
+    (combatant) => combatant.refKind === markerElement.refKind && combatant.refId === markerElement.refId
+  );
+}
+
+// Thin wrapper around map-viewer.js's own shared resolveMarkerConditionIcons
+// — Orrery only supplies its own cache-backed getters here (see this
+// file's own caches just above); the actual resolution ALGORITHM (which
+// path a Character vs. Monster/NPC marker takes, how a condition id maps to
+// an icon) lives in that one shared place instead, so this file and the
+// Dashboard's map.js widget — which keeps its own independent copies of
+// these same caches, same "two cache instances, one shared algorithm"
+// precedent resolveMarkerVisionRangeCells already establishes — can't
+// quietly drift apart on what a marker's condition badges actually show.
+function resolveMarkerConditionIconsForMarker(markerElement) {
+  return resolveMarkerConditionIcons(markerElement, {
+    getCharacterPayload: getCachedCharacterPayload,
+    getCharacterSystemId: getCachedCharacterSystemId,
+    getSystemConditions: getCachedSystemConditions,
+    getActiveEncounter: () => {
+      const groupId = getActiveCampaignGroupId();
+      return groupId ? getCachedActiveEncounter(groupId) : null;
+    },
+  });
+}
+
+// A Monster's own token footprint, read straight off its System's own
+// "sizes" vocabulary (common/data/system/*.json's `sizes` array field) — no
+// hardcoded size table here (see undercroft/README.md's own "avoid
+// hardcoding" stance): a monster's `stats.size` ("Large") is matched against
+// that System's `sizes[].name`, and whatever numeric `sizeValue` that size
+// value carries (an ordinary "Extra properties" entry, same generic
+// per-value catch-all Loom's Properties editor already exposes for any
+// array field's values — see property-schema-editor.js's own
+// collectValueRow) becomes the marker's sizeCells. A System with no
+// `sizeValue` authored on its sizes yet (or a monster whose size doesn't
+// match any of them) resolves to null — the caller leaves sizeCells
+// untouched rather than guessing.
+async function resolveMonsterSizeCells(monsterPayload) {
+  const sizeName = monsterPayload?.stats?.size;
+  const systemId = Array.isArray(monsterPayload?.systemIds) ? monsterPayload.systemIds[0] : "";
+  if (!sizeName || !systemId || !dataManager) return null;
+  try {
+    // preferLocal: false — a System's own field vocabulary (sizes, in
+    // particular) is exactly the kind of content that gets edited directly
+    // in Loom out from under whatever this browser last cached; a stale
+    // local copy here would silently resolve every size to null forever,
+    // with no visible sign anything was wrong. Same reasoning as this
+    // file's own ensureCharacterSystemFieldsCached just above.
+    const systemResult = await dataManager.get("systems", systemId, { preferLocal: false });
+    const fields = Array.isArray(systemResult?.payload?.fields) ? systemResult.payload.fields : [];
+    const sizesField = fields.find((entry) => entry.type === "array" && entry.key === "sizes");
+    const match = (sizesField?.values || []).find((entry) => entry.name === sizeName);
+    const sizeValue = Number(match?.sizeValue);
+    return Number.isFinite(sizeValue) && sizeValue > 0 ? sizeValue : null;
+  } catch (error) {
+    return null;
+  }
+}
+
 // A marker element optionally references a real Library entity of any kind
 // — the {refKind, refId, label} shape the architecture plan settled on so
 // Orrery maps can point at Sanctum Locations, Forge/Crucible NPCs and
 // Monsters, Vault Effects, etc. without either tool needing to know about
 // the other. Mirrors Sanctum's Assets/Needs "kind + entity" picker.
 //
-// This function is async (it awaits getLibraryKinds/populateEntitySelect/
-// refreshPreview before its final DOM appends), and a character-linked
+// This function is async (it awaits populateEntitySelect/refreshPreview
+// before its final DOM appends), and a character-linked
 // marker's own ensureCharacterPayloadCached/ensureCharacterSystemFieldsCached
 // calls (below) each re-invoke renderSelection() — and therefore this whole
 // function again — once their own fetch resolves. Without a staleness guard,
@@ -4454,6 +4926,24 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
     { min: 1, step: 1 }
   );
 
+  // Off-the-ground offset (map-model.js's own createMarkerElement) — positive
+  // is flying above the surface, negative is burrowing/submerged below it.
+  // No `min` (unlike Size, which can't go below 1) — negative is a real,
+  // meaningful value here, not an error. See createMarkerDot's own comment
+  // for the two directions' distinct visual treatment (shadow vs. dashed
+  // outline).
+  const heightField = createCommitOnBlurNumberField(
+    "Height (cells)",
+    Number.isFinite(markerElement.heightCells) ? markerElement.heightCells : 0,
+    (value) => {
+      if (value === null) return;
+      applyMarkerElementChange("marker height", () => {
+        markerElement.heightCells = Math.round(value);
+      });
+    },
+    { step: 1 }
+  );
+
   // Vision Range — Binding/Formula/Text, the same shared control (and the
   // same "no invisible defaults, starts as an immediately-usable literal"
   // convention) every other bindable field in this suite uses. Meaningful
@@ -4507,7 +4997,7 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
       renderJson();
     },
   });
-  container.appendChild(createFieldRow([sizeField, visionRangeField], { columns: 2 }));
+  container.appendChild(createFieldRow([sizeField, heightField, visionRangeField], { columns: 3 }));
 
   // Per-marker override of the layer's own outline color (createMarkerDot
   // reads markerElement.outlineColor first, falling back to the layer
@@ -4805,11 +5295,10 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
     return anchor?.value || "";
   }
 
-  const kinds = await getLibraryKinds();
-  kinds.forEach((kind) => {
+  MARKER_REFERENCE_KINDS.forEach((kind) => {
     const option = document.createElement("option");
     option.value = kind.id;
-    option.textContent = kind.label || kind.id;
+    option.textContent = kind.label;
     kindSelect.appendChild(option);
   });
   kindSelect.value = markerElement.refKind || "";
@@ -4870,21 +5359,48 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
     const refId = entitySelect.value;
     const option = entitySelect.selectedOptions[0];
     const kind = kindSelect.value;
-    // Image inheritance needs the full record payload (unlike label, which
-    // reads straight off the <option> text) — fetch it once here, before
-    // applyMarkerElementChange's renderSelection() tears this whole editor
-    // down and rebuilds it, rather than re-fetching inside refreshPreview on
-    // every render (which would re-trigger the auto-fill and a spurious undo
-    // entry each time the panel simply redraws).
+    // Image inheritance and a Monster's own auto-sized footprint both need
+    // the full record payload (unlike label, which reads straight off the
+    // <option> text) — fetch it once here, before applyMarkerElementChange's
+    // renderSelection() tears this whole editor down and rebuilds it, rather
+    // than re-fetching inside refreshPreview on every render (which would
+    // re-trigger the auto-fill and a spurious undo entry each time the panel
+    // simply redraws).
     (async () => {
       let inheritedImage = "";
-      if (!markerElement.image && refId && kind && dataManager) {
+      // A Monster's own size (auto-fill below) needs the full payload too —
+      // fetched here regardless of whether an image is already set, unlike
+      // the image-only condition this used to be, so a monster pick always
+      // resolves its footprint even on a marker that already has a custom
+      // image.
+      let payload = null;
+      if (refId && kind && dataManager && (!markerElement.image || kind === "monster")) {
         try {
-          const result = await dataManager.get(kind, refId);
-          inheritedImage = result?.payload?.image || "";
+          // preferLocal: false — a Monster's own size (or image) is exactly
+          // the kind of content edited directly in Loom/Crucible out from
+          // under whatever this browser last cached; same reasoning as
+          // resolveMonsterSizeCells' own systems fetch just below.
+          const result = await dataManager.get(kind, refId, { preferLocal: false });
+          payload = result?.payload || null;
         } catch (error) {
-          inheritedImage = "";
+          payload = null;
         }
+      }
+      if (!markerElement.image) {
+        inheritedImage = payload?.image || "";
+      }
+      // Re-resolved on every Monster pick (not gated behind a "still looks
+      // untouched" check the way image/label/outlineColor are just below) —
+      // sizeCells always defaults to a real number (createMarkerElement's
+      // own `sizeCells = 1`), so there's no empty-string-style sentinel to
+      // tell "never touched" apart from "a GM deliberately set this Large
+      // creature's own token to 1". Picking a monster is itself the
+      // deliberate action that should set its footprint; a GM who then wants
+      // a non-standard size still edits the Size field afterward exactly as
+      // before, same as always.
+      let inheritedSizeCells = null;
+      if (kind === "monster" && payload) {
+        inheritedSizeCells = await resolveMonsterSizeCells(payload);
       }
       // Doesn't verify THIS specific record belongs to the signed-in user
       // (that needs a dedicated ownership lookup — dataManager.get's own
@@ -4915,6 +5431,9 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
         }
         if (!markerElement.outlineColor && inheritedOutlineColor) {
           markerElement.outlineColor = inheritedOutlineColor;
+        }
+        if (inheritedSizeCells !== null) {
+          markerElement.sizeCells = Math.max(1, Math.round(inheritedSizeCells));
         }
       });
     })();
@@ -4987,23 +5506,84 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
     )
   );
 
+  // "Linked Combatant" — only relevant, and only shown, when there's a real
+  // ambiguity to resolve: more than one combatant in the campaign's active
+  // Encounter shares this marker's own refKind/refId (e.g. three Goblins
+  // sharing one Monster record — see map-model.js's own linkedCombatantId
+  // comment for why Monster/NPC records can't just answer "which one's
+  // conditions" the way a Character's own record can). Absent entirely
+  // outside combat, or when there's zero or exactly one match — the common
+  // case resolves automatically with no picker at all.
+  if (markerElement.refKind === "monster" || markerElement.refKind === "npc") {
+    const groupId = getActiveCampaignGroupId();
+    if (groupId) {
+      ensureActiveEncounterCached(groupId, () => renderSelection());
+      const activeEncounter = getCachedActiveEncounter(groupId);
+      if (activeEncounter?.systemId) {
+        ensureSystemConditionsCached(activeEncounter.systemId, () => renderSelection());
+      }
+      const matchingCombatants = findMatchingCombatants(markerElement, groupId);
+      if (matchingCombatants.length > 1) {
+        const combatantField = createFormFloatingField({ type: "select", label: "Linked Combatant" });
+        const combatantSelect = combatantField.querySelector("select");
+        const autoOption = document.createElement("option");
+        autoOption.value = "";
+        autoOption.textContent = "(ambiguous — pick one)";
+        combatantSelect.appendChild(autoOption);
+        matchingCombatants.forEach((combatant) => {
+          const option = document.createElement("option");
+          option.value = combatant.id;
+          option.textContent = combatant.name || combatant.id;
+          combatantSelect.appendChild(option);
+        });
+        combatantSelect.value = matchingCombatants.some((entry) => entry.id === markerElement.linkedCombatantId)
+          ? markerElement.linkedCombatantId
+          : "";
+        combatantSelect.addEventListener("change", () => {
+          applyMarkerElementChange("marker linked combatant", () => {
+            markerElement.linkedCombatantId = combatantSelect.value;
+          });
+        });
+        container.appendChild(combatantField);
+      }
+    }
+  }
+
   // Same shared icon-toolbar mount every other selection kind (wall, shape,
   // light) already uses, not a standalone inline button — renderSelection()
   // clears data-selection-toolbar-mount before every render, so only
   // whichever selection kind is current populates it.
   if (elements.selectionToolbar) {
+    // A shortcut, not a second visibility mechanism of its own — flips this
+    // one marker's id in/out of the auto-managed "Player View" (see
+    // toggleElementHiddenFromPlayers's own comment). The View editor's own
+    // Visible Components checklist (renderViewSelectionEditor) is the same
+    // underlying state, just viewed/edited a whole-View-at-a-time instead of
+    // one marker at a time — the two always agree. Same eye/eye-off toggle
+    // button convention Combat Tracker's own per-combatant "visible to
+    // players" switch uses (constant outline-secondary styling, only the
+    // icon/tooltip change — see that file's own visibleButton/
+    // toggleSelectedHidden) rather than the checkbox this replaced, so a
+    // hidden marker reads identically regardless of which tool a GM
+    // happens to be toggling it from. This whole toolbar rebuilds fresh on
+    // every renderSelection() call (see this function's own header
+    // comment), so — unlike Combat Tracker's persistent edit panel — there's
+    // no stale-cached-icon-reference risk here to guard against; the
+    // current state is just read fresh into the descriptor below.
+    const hiddenFromPlayers = isElementHiddenFromPlayers(markerElement.id);
     createToolbarButtonGroup([
+      {
+        action: "toggle-hidden-from-players",
+        label: hiddenFromPlayers ? "Hidden from players — click to show" : "Visible to players — click to hide",
+        icon: hiddenFromPlayers ? "tabler:eye-off" : "tabler:eye",
+        attrs: { "data-action": "toggle-hidden-from-players" },
+        onClick: () => toggleElementHiddenFromPlayers(markerElement.id),
+      },
       {
         action: "delete",
         label: "Delete marker",
         attrs: { "data-action": "delete-selected" },
-        onClick: () => {
-          recordHistory("delete marker", () => {
-            layer.elements = (layer.elements || []).filter((entry) => entry.id !== markerElement.id);
-            updateMapTimestamp(state.map);
-          });
-          setSelection("layer", layer.id);
-        },
+        onClick: () => deleteCurrentSelection(),
       },
     ]).forEach((button) => elements.selectionToolbar.appendChild(button));
     refreshTooltips(elements.selectionToolbar);
@@ -5369,21 +5949,6 @@ function renderGroupSelectionEditor(group) {
     });
   }
 
-  function deleteThisGroup() {
-    const index = state.map.groups.findIndex((entry) => entry.id === group.id);
-    if (index === -1) {
-      return;
-    }
-    recordHistory("delete group", () => {
-      state.map.groups.splice(index, 1);
-      updateMapTimestamp(state.map);
-    });
-    setSelection(null);
-    renderGroups();
-    renderLayerOverlays();
-    renderJson();
-  }
-
   // Same shared icon-toolbar factory/mount point Layer and AoE Shape
   // selection already use (data-selection-toolbar-mount) — renderSelection()
   // clears it before every render, so only whichever selection kind is
@@ -5401,7 +5966,7 @@ function renderGroupSelectionEditor(group) {
         action: "delete",
         label: "Delete group",
         attrs: { "data-action": "delete-selected" },
-        onClick: deleteThisGroup,
+        onClick: () => deleteCurrentSelection(),
       },
     ]).forEach((button) => elements.selectionToolbar.appendChild(button));
     refreshTooltips(elements.selectionToolbar);
@@ -5594,6 +6159,24 @@ function renderGroupSelectionEditor(group) {
   refreshTooltips();
 }
 
+// A short, human-readable label for any placed element — shared by the View
+// editor's own "Visible Components" checklist below (the only current
+// caller). Mirrors the exact labels renderSelection already uses for each
+// kind's own inspector title (marker: "tabler:map-pin", shape: "AoE Shape",
+// wall/door, light, plain path: "Drawn Path" — see that function's own
+// per-kind branches), so a GM sees the same names here as everywhere else
+// in this tool.
+function describeMapElementKind(element) {
+  if (element.kind === "marker") return element.label || "Marker";
+  if (element.kind === "shape") {
+    const type = typeof element.shapeType === "string" && element.shapeType ? element.shapeType : "";
+    return type ? `${type[0].toUpperCase()}${type.slice(1)} Shape` : "AoE Shape";
+  }
+  if (element.kind === "wall") return element.wallType === "door" ? "Door" : "Wall";
+  if (element.kind === "light") return "Light";
+  return "Drawn Path";
+}
+
 function renderViewSelectionEditor(view) {
   if (!elements.selectionEditor) {
     return;
@@ -5632,85 +6215,66 @@ function renderViewSelectionEditor(view) {
   });
   container.appendChild(descriptionField);
 
-  container.appendChild(createSelectionSectionTitle("Visible Layers"));
-  const layerVisibility = document.createElement("div");
-  layerVisibility.className = "d-flex flex-column gap-2";
-  if (!state.map.layers.length) {
-    const empty = document.createElement("div");
-    empty.className = "small text-body-secondary";
-    empty.textContent = "No layers yet.";
-    layerVisibility.appendChild(empty);
-  } else {
-    const selectedLayers = new Set(view.layerIds || []);
-    state.map.layers.forEach((layer) => {
-      const wrapper = document.createElement("div");
-      wrapper.className = "form-check";
-      const checkbox = document.createElement("input");
-      checkbox.type = "checkbox";
-      checkbox.className = "form-check-input";
-      checkbox.id = `view-${view.id}-layer-${layer.id}`;
-      checkbox.checked = selectedLayers.has(layer.id);
-      const label = document.createElement("label");
-      label.className = "form-check-label small";
-      label.setAttribute("for", checkbox.id);
-      label.textContent = layer.name;
-      checkbox.addEventListener("change", () => {
-        applyViewChange("view layer visibility", () => {
-          const next = new Set(view.layerIds || []);
-          if (checkbox.checked) {
-            next.add(layer.id);
-          } else {
-            next.delete(layer.id);
-          }
-          view.layerIds = Array.from(next);
-        });
-      });
-      wrapper.appendChild(checkbox);
-      wrapper.appendChild(label);
-      layerVisibility.appendChild(wrapper);
+  // Both lists below are the same shared "search box + scrollable checkbox
+  // list" the generator tools' own Locked Features picker uses
+  // (createSearchableCheckList, ui-components.js; populateStringChecklist/
+  // readLockedFeatureIds, generator-kit.js) rather than the hand-rolled
+  // `<div class="form-check">` rows this used to build per row — that old
+  // shape didn't scale past a handful of items and had no search, fine for
+  // a few layers but not for "every marker/path/shape/wall/light on the
+  // map" below. Checked = visible in the UI either way; under the hood
+  // view.hiddenLayerIds/hiddenElementIds are DENY-lists (see createView's
+  // own comment for why), so what's actually written back is the
+  // COMPLEMENT of whatever's checked, not the checked set itself.
+  const layerChecklist = createSearchableCheckList({
+    id: `view-${view.id}-layers`,
+    label: "Visible Layers",
+    labelClass: "fw-semibold small mb-0",
+    dataAttr: "data-view-layers-checklist",
+    searchPlaceholder: "Search layers…",
+  });
+  container.appendChild(layerChecklist);
+  const allLayerIds = state.map.layers.map((layer) => layer.id);
+  populateStringChecklist(
+    layerChecklist,
+    state.map.layers.map((layer) => ({ value: layer.id, label: layer.name })),
+    allLayerIds.filter((id) => !(view.hiddenLayerIds || []).includes(id))
+  );
+  layerChecklist.addEventListener("change", (event) => {
+    if (!event.target.matches('input[type="checkbox"]')) return;
+    applyViewChange("view layer visibility", () => {
+      const visible = new Set(readLockedFeatureIds(layerChecklist));
+      view.hiddenLayerIds = allLayerIds.filter((id) => !visible.has(id));
     });
-  }
-  container.appendChild(layerVisibility);
+  });
 
-  container.appendChild(createSelectionSectionTitle("Visible Groups"));
-  const groupVisibility = document.createElement("div");
-  groupVisibility.className = "d-flex flex-column gap-2";
-  if (!state.map.groups.length) {
-    const empty = document.createElement("div");
-    empty.className = "small text-body-secondary";
-    empty.textContent = "No groups yet.";
-    groupVisibility.appendChild(empty);
-  } else {
-    const selectedGroups = new Set(view.groupIds || []);
-    state.map.groups.forEach((group) => {
-      const wrapper = document.createElement("div");
-      wrapper.className = "form-check";
-      const checkbox = document.createElement("input");
-      checkbox.type = "checkbox";
-      checkbox.className = "form-check-input";
-      checkbox.id = `view-${view.id}-group-${group.id}`;
-      checkbox.checked = selectedGroups.has(group.id);
-      const label = document.createElement("label");
-      label.className = "form-check-label small";
-      label.setAttribute("for", checkbox.id);
-      label.textContent = group.name;
-      checkbox.addEventListener("change", () => {
-        applyViewChange("view group visibility", () => {
-          const next = new Set(view.groupIds || []);
-          if (checkbox.checked) {
-            next.add(group.id);
-          } else {
-            next.delete(group.id);
-          }
-          view.groupIds = Array.from(next);
-        });
-      });
-      wrapper.appendChild(checkbox);
-      wrapper.appendChild(label);
-      groupVisibility.appendChild(wrapper);
+  const allElements = [];
+  state.map.layers.forEach((layer) => {
+    (layer.elements || []).forEach((element) => {
+      allElements.push({ id: element.id, label: `${describeMapElementKind(element)} (${layer.name})` });
     });
-  }
-  container.appendChild(groupVisibility);
+  });
+  const componentChecklist = createSearchableCheckList({
+    id: `view-${view.id}-components`,
+    label: "Visible Components",
+    labelClass: "fw-semibold small mb-0",
+    dataAttr: "data-view-components-checklist",
+    searchPlaceholder: "Search components…",
+  });
+  container.appendChild(componentChecklist);
+  const allElementIds = allElements.map((entry) => entry.id);
+  populateStringChecklist(
+    componentChecklist,
+    allElements.map((entry) => ({ value: entry.id, label: entry.label })),
+    allElementIds.filter((id) => !(view.hiddenElementIds || []).includes(id))
+  );
+  componentChecklist.addEventListener("change", (event) => {
+    if (!event.target.matches('input[type="checkbox"]')) return;
+    applyViewChange("view component visibility", () => {
+      const visible = new Set(readLockedFeatureIds(componentChecklist));
+      view.hiddenElementIds = allElementIds.filter((id) => !visible.has(id));
+    });
+  });
 
   container.appendChild(createSelectionSectionTitle("Access Tiers"));
   const tierWrapper = document.createElement("div");
@@ -5755,19 +6319,7 @@ function renderViewSelectionEditor(view) {
         action: "delete",
         label: "Delete view",
         attrs: { "data-action": "delete-selected" },
-        onClick: () => {
-          const index = state.map.views.findIndex((entry) => entry.id === view.id);
-          if (index === -1) {
-            return;
-          }
-          recordHistory("delete view", () => {
-            state.map.views.splice(index, 1);
-            updateMapTimestamp(state.map);
-          });
-          setSelection(null);
-          renderViewsList();
-          renderJson();
-        },
+        onClick: () => deleteCurrentSelection(),
       },
     ]).forEach((button) => elements.selectionToolbar.appendChild(button));
     refreshTooltips(elements.selectionToolbar);
@@ -7276,16 +7828,15 @@ function setupMapEvents() {
   });
 
   // Delete/Backspace deletes whatever's currently selected (layer, group,
-  // view, marker, drawn path, shape) — every selection editor's own
-  // "Delete X" button carries data-action="delete-selected" for exactly
-  // this, so this just finds and clicks whichever one is currently
-  // rendered rather than re-implementing each editor's own delete logic
-  // (recordHistory, setSelection afterward, ...) a second time here.
-  // Checks BOTH selectionEditor and selectionToolbar — Layer/Shape/Group's
-  // own Delete now lives in the shared icon-toolbar mount
-  // (data-selection-toolbar-mount), not inside selectionEditor itself, and
-  // this shortcut needs to find it there too, not just the older kinds
-  // (marker, path, view) that still build a standalone inline button.
+  // view, marker, drawn path, shape) — delegates to deleteCurrentSelection()
+  // (defined near setSelection above), which acts on state.selection
+  // directly rather than finding-and-clicking a
+  // `[data-action="delete-selected"]` DOM button. Confirmed real bug this
+  // fixes: that DOM-query approach depended on whichever selection editor's
+  // Delete button having actually finished rendering — fine for every kind
+  // except marker (renderMarkerElementSelectionEditor is async), where a
+  // keypress landing before/during a re-render just silently did nothing.
+  // See deleteCurrentSelection's own comment for the full explanation.
   window.addEventListener("keydown", (event) => {
     const target = event.target;
     const isEditableTarget =
@@ -7301,12 +7852,9 @@ function setupMapEvents() {
     }
     if (event.key !== "Delete" && event.key !== "Backspace") return;
     if (isEditableTarget) return;
-    const deleteButton =
-      elements.selectionToolbar?.querySelector('[data-action="delete-selected"]') ||
-      elements.selectionEditor?.querySelector('[data-action="delete-selected"]');
-    if (!deleteButton || deleteButton.disabled) return;
-    event.preventDefault();
-    deleteButton.click();
+    if (deleteCurrentSelection()) {
+      event.preventDefault();
+    }
   });
 
   if (elements.saveMapButton) {
@@ -7316,7 +7864,13 @@ function setupMapEvents() {
       state.map.name = name;
       updateMapTimestamp(state.map);
       try {
-        await dataManager.save("map", state.map.id, state.map);
+        // A map's own id is filename/library_items metadata, never body
+        // content (every Library kind now follows this convention) —
+        // stripped from a shallow CLONE only, so state.map.id itself stays
+        // populated for every other in-memory read in this file (same
+        // pattern workbench-character-view.js's persistDraft already uses).
+        const { id: _mapId, ...bodyWithoutId } = state.map;
+        await dataManager.save("map", state.map.id, bodyWithoutId);
         status.show(`Saved "${name}".`, { type: "success", timeout: 2000 });
         // Now a real record — currentUserHasFullMapAccess stops giving this
         // map an unconditional pass and starts checking its real ownership
@@ -7422,6 +7976,13 @@ async function loadMapById(id, shareToken = "") {
     const result = await dataManager.get("map", id, { shareToken });
     mapExistsOnServer = true;
     applyMapSnapshot(JSON.stringify(result?.payload || createMapModel()));
+    // A map's own id is filename/library_items metadata, never body content
+    // (every Library kind now follows this convention) — the loaded payload
+    // may not carry one at all, so state.map.id is re-stamped from the
+    // KNOWN id (the argument this function was actually called with), not
+    // trusted from the body. Confirmed real bug this fixes: watchCurrentMap
+    // just below reads state.map.id immediately after this.
+    state.map.id = id;
     if (elements.mapSelect) elements.mapSelect.value = id;
     // Just-loaded state matches the stored record exactly — nothing to save
     // until an edit actually happens. NOT called from onUndo/onRedo (which

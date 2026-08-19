@@ -176,7 +176,11 @@ function flushFieldCommitOnUndoRedo(event) {
 // their data-*-monster attribute, so every existing selector/disabled-state
 // call site elsewhere in this file keeps working unchanged.
 createToolbarButtonGroup([
-  { action: "generate", label: "Generate Monster", attrs: { "data-generate-monster": true } },
+  // Starts disabled — nothing to generate FROM until reloadReferenceData
+  // (init()'s own cascade, below) resolves; clicking it before then threw
+  // straight out of generateMonster (creatureTypes/archetypes/etc. still
+  // their initial empty arrays). Re-enabled by init() once that resolves.
+  { action: "generate", label: "Generate Monster", disabled: true, attrs: { "data-generate-monster": true } },
   { action: "save", label: "Save", disabled: true, attrs: { "data-save-monster": true } },
   { action: "duplicate", label: "Duplicate", disabled: true, attrs: { "data-duplicate-monster": true } },
   { action: "delete", label: "Delete", disabled: true, attrs: { "data-delete-monster": true } },
@@ -2574,6 +2578,14 @@ async function init() {
   });
   dataManager = auth.dataManager;
 
+  // Generate starts disabled (see its own toolbar definition above) —
+  // called once reloadReferenceData has actually resolved, from every path
+  // that can reach "loading is done" below (the plain init cascade, or
+  // applyDeepLinkParams' own background Phase 2).
+  function enableGenerateButton() {
+    if (elements.generateButton) elements.generateButton.disabled = false;
+  }
+
   // Same dirty check updateActionButtons already uses for the Save button —
   // Crucible had no guard at all against navigating/closing away from
   // unsaved edits (unlike Workbench, which already had this).
@@ -2876,10 +2888,13 @@ async function init() {
           }
           await reloadReferenceData();
           if (elements.monsterSelect) elements.monsterSelect.value = monsterId;
+          enableGenerateButton();
         } catch (error) {
           // Phase 1 already succeeded — a background failure here just
           // leaves the picker under-populated, not worth an error toast on
-          // top of a page that's already showing real content.
+          // top of a page that's already showing real content. Generate
+          // stays disabled in this case — reference data may never have
+          // loaded, and clicking it would just throw straight back out.
         }
       })();
       return true;
@@ -2908,6 +2923,12 @@ async function init() {
       await reloadReferenceData();
     }
     renderMonster(null);
+    // Both branches above resolve reference data for whatever System ended
+    // up selected — safe to enable here regardless of which one ran. The
+    // deepLinked === true case enables from inside its own Phase 2
+    // background IIFE instead (applyDeepLinkParams above), once ITS
+    // reference-data load actually finishes.
+    enableGenerateButton();
   }
 
   initHelpSystem();

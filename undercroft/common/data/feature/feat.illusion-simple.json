@@ -1,7 +1,8 @@
 {
-  "id": "feat.illusion-simple",
   "name": "Simple Illusion or Disguise",
-  "systemIds": ["sys.dnd5e"],
+  "systemIds": [
+    "sys.dnd5e"
+  ],
   "description": "Creates a basic sensory illusion or alters the appearance of a creature or object.",
   "mechanics": {
     "type": "passive",
@@ -9,8 +10,13 @@
   },
   "budgetCost": 1,
   "tags": {
-    "categories": ["spell"],
-    "propertyHints": ["utility", "illusion"]
+    "categories": [
+      "spell"
+    ],
+    "propertyHints": [
+      "utility",
+      "illusion"
+    ]
   },
   "synergizesWith": [],
   "dependsOn": [],

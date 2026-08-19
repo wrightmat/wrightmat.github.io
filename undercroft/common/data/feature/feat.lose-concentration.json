@@ -1,7 +1,8 @@
 {
-  "id": "feat.lose-concentration",
   "name": "Lose Concentration",
-  "systemIds": ["sys.dnd5e"],
+  "systemIds": [
+    "sys.dnd5e"
+  ],
   "description": "A failed save forces the target to lose concentration on whatever it's concentrating on.",
   "mechanics": {
     "type": "active",
@@ -9,8 +10,13 @@
   },
   "budgetCost": 2,
   "tags": {
-    "categories": ["spell"],
-    "propertyHints": ["disruption", "control"]
+    "categories": [
+      "spell"
+    ],
+    "propertyHints": [
+      "disruption",
+      "control"
+    ]
   },
   "synergizesWith": [],
   "dependsOn": [],

@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "giant-boar",
   "name": "Giant Boar",
   "type": "beast",
   "systemIds": [

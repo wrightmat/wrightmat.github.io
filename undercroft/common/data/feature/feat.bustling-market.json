@@ -1,19 +1,32 @@
 {
-  "id": "feat.bustling-market",
   "name": "Bustling Market",
-  "systemIds": ["sys.dnd5e"],
+  "systemIds": [
+    "sys.dnd5e"
+  ],
   "description": "Crowded stalls, hawking merchants, and a steady flow of buyers and sellers fill this place at all hours.",
   "mechanics": {
     "type": "passive",
     "text": "A wide variety of common goods and services are readily available here, along with plenty of crowd noise and gossip."
   },
   "tags": {
-    "categories": ["location"],
-    "locationTypes": ["settlement"],
-    "locationPurposes": ["commerce"],
-    "environments": ["urban"]
+    "categories": [
+      "location"
+    ],
+    "locationTypes": [
+      "settlement"
+    ],
+    "locationPurposes": [
+      "commerce"
+    ],
+    "environments": [
+      "urban"
+    ]
   },
   "synergizesWith": [],
   "dependsOn": [],
-  "conflictsWith": ["feat.under-siege", "feat.isolated", "feat.haunted"]
+  "conflictsWith": [
+    "feat.under-siege",
+    "feat.isolated",
+    "feat.haunted"
+  ]
 }

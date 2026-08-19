@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "giant-badger",
   "name": "Giant Badger",
   "type": "beast",
   "systemIds": [

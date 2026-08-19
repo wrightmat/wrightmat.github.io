@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "roper",
   "name": "Roper",
   "type": "monstrosity",
   "systemIds": [

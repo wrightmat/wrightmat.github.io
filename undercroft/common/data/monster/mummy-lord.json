@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "mummy-lord",
   "name": "Mummy Lord",
   "type": "undead",
   "systemIds": [

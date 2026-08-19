@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "flesh-golem",
   "name": "Flesh Golem",
   "type": "construct",
   "systemIds": [

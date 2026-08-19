@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "doppelganger",
   "name": "Doppelganger",
   "type": "monstrosity",
   "systemIds": [

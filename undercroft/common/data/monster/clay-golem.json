@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "clay-golem",
   "name": "Clay Golem",
   "type": "construct",
   "systemIds": [

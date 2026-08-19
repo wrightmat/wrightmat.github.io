@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "gorgon",
   "name": "Gorgon",
   "type": "monstrosity",
   "systemIds": [

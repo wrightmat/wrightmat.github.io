@@ -576,6 +576,7 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
         { syncOption: true }
       );
       applyTemplateData(payload, {
+        id: selectedId,
         origin: metadata.source || "remote",
         emitStatus: true,
         statusMessage: `Loaded ${label}`,
@@ -1300,6 +1301,12 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
       }
       const payload = serializeTemplateState();
       const templateId = (payload.id || "").trim();
+      // A template's own id is filename/library_items metadata, never body
+      // content (same convention every other Library kind now follows —
+      // see workbench-character-view.js's persistDraft for the identical
+      // fix). templateId is already captured above as its own variable, so
+      // this can't affect anything read further down.
+      delete payload.id;
       if (!templateId) {
         status.show("Set a template ID before saving.", { type: "warning", timeout: 2400 });
         return;
@@ -2634,6 +2641,7 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
         { syncOption: true },
       );
       applyTemplateData(payload, {
+        id: targetId,
         origin: "remote",
         emitStatus: true,
         statusMessage: `Loaded ${label}`,
@@ -4449,12 +4457,22 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
       statusMessage = "",
       markClean = origin !== "draft",
       shareToken = "",
+      // The KNOWN id (whatever the caller actually fetched/is loading), not
+      // assumed to be embedded in `data` itself — Template bodies never
+      // persist their own id (same convention every other Library kind now
+      // follows; id is filename/library_items metadata, not editable
+      // content). Confirmed real bug this fixes: this function's own
+      // `data.id || ""` had no such fallback, unlike the sibling
+      // registerTemplateRecord call right next to its own call site
+      // (`id: payload.id || selectedId`) — state.template.id silently went
+      // blank the moment a template's own JSON stopped embedding id.
+      id = "",
     } = {}
   ) {
     templateIdAuto = false;
     const effectiveShareToken = typeof shareToken === "string" && shareToken ? shareToken : data.shareToken || "";
     const template = createBlankTemplate({
-      id: data.id || "",
+      id: data.id || id,
       title: data.title || "",
       version: data.version || data.metadata?.version || "0.1",
       schema: data.schema || data.system || "",

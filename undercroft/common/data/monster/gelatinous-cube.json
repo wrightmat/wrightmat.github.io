@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "gelatinous-cube",
   "name": "Gelatinous Cube",
   "type": "ooze",
   "systemIds": [

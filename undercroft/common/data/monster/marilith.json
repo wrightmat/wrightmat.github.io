@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "marilith",
   "name": "Marilith",
   "type": "fiend",
   "systemIds": [

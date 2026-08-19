@@ -1,6 +1,5 @@
 {
-  "id": "tpl.daggerheart.character",
-  "title": "Daggerheart \u2014 Character",
+  "title": "Daggerheart — Character",
   "version": "0.1",
   "schema": "sys.daggerheart",
   "description": "Standard character sheet for Daggerheart.",

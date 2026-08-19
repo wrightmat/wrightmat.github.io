@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "stone-giant",
   "name": "Stone Giant",
   "type": "giant",
   "systemIds": [

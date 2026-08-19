@@ -1,7 +1,8 @@
 {
-  "id": "feat.knock-prone",
   "name": "Knocks Prone",
-  "systemIds": ["sys.dnd5e"],
+  "systemIds": [
+    "sys.dnd5e"
+  ],
   "description": "A failed save knocks the target prone.",
   "mechanics": {
     "type": "active",
@@ -9,8 +10,14 @@
   },
   "budgetCost": 2,
   "tags": {
-    "categories": ["spell"],
-    "propertyHints": ["status", "control", "prone"]
+    "categories": [
+      "spell"
+    ],
+    "propertyHints": [
+      "status",
+      "control",
+      "prone"
+    ]
   },
   "synergizesWith": [],
   "dependsOn": [],

@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "satyr",
   "name": "Satyr",
   "type": "fey",
   "systemIds": [

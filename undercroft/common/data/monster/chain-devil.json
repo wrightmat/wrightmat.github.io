@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "chain-devil",
   "name": "Chain Devil",
   "type": "fiend",
   "systemIds": [

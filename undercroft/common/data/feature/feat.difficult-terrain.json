@@ -1,7 +1,8 @@
 {
-  "id": "feat.difficult-terrain",
   "name": "Difficult Terrain",
-  "systemIds": ["sys.dnd5e"],
+  "systemIds": [
+    "sys.dnd5e"
+  ],
   "description": "The area becomes difficult terrain, slowing anyone moving through it.",
   "mechanics": {
     "type": "passive",
@@ -9,8 +10,14 @@
   },
   "budgetCost": 1,
   "tags": {
-    "categories": ["spell"],
-    "propertyHints": ["control", "terrain", "movement"]
+    "categories": [
+      "spell"
+    ],
+    "propertyHints": [
+      "control",
+      "terrain",
+      "movement"
+    ]
   },
   "synergizesWith": [],
   "dependsOn": [],

@@ -16,7 +16,6 @@
   "featureIds": [
     "feat.summoned-object"
   ],
-  "id": "feather-token-fan",
   "budget": {
     "target": 12,
     "spent": 1,

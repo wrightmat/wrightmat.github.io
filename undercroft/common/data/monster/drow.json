@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "drow",
   "name": "Drow",
   "type": "humanoid",
   "systemIds": [

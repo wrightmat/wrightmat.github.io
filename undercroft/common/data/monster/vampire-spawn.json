@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "vampire-spawn",
   "name": "Vampire Spawn",
   "type": "undead",
   "systemIds": [

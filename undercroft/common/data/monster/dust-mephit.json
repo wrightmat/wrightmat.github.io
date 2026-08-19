@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "dust-mephit",
   "name": "Dust Mephit",
   "type": "elemental",
   "systemIds": [

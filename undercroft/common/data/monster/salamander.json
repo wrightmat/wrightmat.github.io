@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "salamander",
   "name": "Salamander",
   "type": "elemental",
   "systemIds": [

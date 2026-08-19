@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "werewolf-hybrid",
   "name": "Werewolf, Hybrid Form",
   "type": "humanoid",
   "systemIds": [

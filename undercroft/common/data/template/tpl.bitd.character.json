@@ -1,6 +1,5 @@
 {
-  "id": "tpl.bitd.character",
-  "title": "Blades in the Dark \u2014 Character",
+  "title": "Blades in the Dark — Character",
   "version": "0.1",
   "schema": "sys.bitd",
   "description": "Standard scoundrel character sheet for Blades in the Dark.",

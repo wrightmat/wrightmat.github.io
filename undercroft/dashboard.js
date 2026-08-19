@@ -361,6 +361,13 @@ const WIDGET_CATALOG = [
         setRightAction: ctx.setRightAction,
         canToggleVisibility,
         editing: ctx.editing,
+        // The sibling half of Combat Tracker's own resolveActiveMapId —
+        // see that widget's own init option comment. A marker click always
+        // FORCE-selects (never toggles/deselects on a second click of the
+        // same marker) — that's Combat Tracker's own selectCombatantByRef
+        // decision, not this callback's.
+        onMarkerSelected: (refKind, refId, linkedCombatantId) =>
+          findActiveWidgetInstance("combat")?.selectCombatantByRef(refKind, refId, linkedCombatantId),
       });
     },
     renderInspector(container, { api }) {
@@ -432,6 +439,19 @@ const WIDGET_CATALOG = [
         shareToken: ctx.groupContext?.shareToken || ctx.shareParam || "",
         encounterId: ctx.encounterParam || "",
         setRightAction: ctx.setRightAction,
+        // Lets a GM prep "hidden from players" state on a map BEFORE
+        // spotlighting it (a real, common workflow — see combat-tracker.js's
+        // own isCombatantHiddenFromPlayers comment) by resolving straight
+        // off a live Map widget elsewhere on THIS SAME dashboard, the same
+        // findActiveWidgetInstance mechanism Clock/Calendar/WLED/Soundboard
+        // macro actions already use to find a sibling widget — combat-
+        // tracker.js falls back to the spotlighted map (resolveActiveSpotlightId)
+        // when this returns nothing, e.g. no Map card is open right now, or
+        // in player mode (never passed there — a player can't legitimately
+        // see anything that isn't spotlighted anyway, so spotlight alone is
+        // already correct for them).
+        resolveActiveMapId:
+          ctx.groupContext?.access === "owner" ? () => findActiveWidgetInstance("map")?.mapId || "" : undefined,
       }),
   },
   {

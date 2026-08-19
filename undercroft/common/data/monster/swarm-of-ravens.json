@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "swarm-of-ravens",
   "name": "Swarm of Ravens",
   "type": "swarm of Tiny beasts",
   "systemIds": [

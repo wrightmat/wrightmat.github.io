@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "draft-horse",
   "name": "Draft Horse",
   "type": "beast",
   "systemIds": [

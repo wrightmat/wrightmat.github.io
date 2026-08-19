@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "rhinoceros",
   "name": "Rhinoceros",
   "type": "beast",
   "systemIds": [

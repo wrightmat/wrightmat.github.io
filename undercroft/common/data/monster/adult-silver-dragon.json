@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "adult-silver-dragon",
   "name": "Adult Silver Dragon",
   "type": "dragon",
   "systemIds": [

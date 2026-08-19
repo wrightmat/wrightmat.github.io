@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "air-elemental",
   "name": "Air Elemental",
   "type": "elemental",
   "systemIds": [

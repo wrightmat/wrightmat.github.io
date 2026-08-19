@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "horned-devil",
   "name": "Horned Devil",
   "type": "fiend",
   "systemIds": [

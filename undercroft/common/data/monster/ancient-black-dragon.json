@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "ancient-black-dragon",
   "name": "Ancient Black Dragon",
   "type": "dragon",
   "systemIds": [

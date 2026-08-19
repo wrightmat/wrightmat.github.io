@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "magma-mephit",
   "name": "Magma Mephit",
   "type": "elemental",
   "systemIds": [

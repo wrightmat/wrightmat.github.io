@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "purple-worm",
   "name": "Purple Worm",
   "type": "monstrosity",
   "systemIds": [

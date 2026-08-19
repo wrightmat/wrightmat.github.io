@@ -61,7 +61,9 @@ import { renderMarkdown } from "../../repository/js/lib/markdown.js";
 // below, so every existing selector/disabled-state call site elsewhere in
 // this file keeps working unchanged.
 createToolbarButtonGroup([
-  { action: "generate", icon: "tabler:users", label: "Generate NPC", attrs: { "data-generate-npc": true } },
+  // Starts disabled — Generate needs `tables` (loadForgeTables, init()
+  // below) loaded first; re-enabled there once that actually resolves.
+  { action: "generate", icon: "tabler:users", label: "Generate NPC", disabled: true, attrs: { "data-generate-npc": true } },
   { action: "save", label: "Save", disabled: true, attrs: { "data-save-npc": true } },
   { action: "duplicate", label: "Duplicate", disabled: true, attrs: { "data-duplicate-npc": true } },
   { action: "delete", label: "Delete", disabled: true, attrs: { "data-delete-npc": true } },
@@ -1839,7 +1841,14 @@ saveButton.addEventListener("click", async () => {
     // matters here: Forge has no whole-tool login gate, so an anonymous GM
     // keeps saving locally to their own browser exactly as before, while a
     // signed-in user's NPC becomes a real, owned, shareable record.
-    await dataManager.save("npc", currentRecord.id, record);
+    // An NPC's own id is filename/library_items metadata, never body content
+    // (every Library kind now follows this convention) — stripped here
+    // specifically, not from toPressExportShape itself, since that same
+    // shape also backs the JSON preview panel/dirty-check snapshot/manual
+    // "Export" download just below, where keeping id is fine (or even
+    // useful, for the download case).
+    const { id: _npcId, ...libraryRecord } = record;
+    await dataManager.save("npc", currentRecord.id, libraryRecord);
     dirtyGate.markClean(record);
     currentNpcId = currentRecord.id;
     await populateNpcSelect();
@@ -2158,6 +2167,11 @@ async function init() {
 
   tables = await loadForgeTables();
   populateFixedOverrides();
+  // Only real dependency Generate's own click handler has (see its own
+  // `if (!tables) return;` guard) — already resolved for every path below,
+  // including a deep link's own Phase 1 (applyDeepLinkParams runs after
+  // this line), so one unconditional enable here covers every case.
+  generateButton.disabled = false;
 
   // No blanket auto-selected defaults (previously always sys.dnd5e /
   // forgotten-realms / sword-coast, regardless of who was signed in) — the

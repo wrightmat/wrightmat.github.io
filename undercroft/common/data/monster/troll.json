@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "troll",
   "name": "Troll",
   "type": "giant",
   "systemIds": [

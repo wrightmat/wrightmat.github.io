@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "azer",
   "name": "Azer",
   "type": "elemental",
   "systemIds": [

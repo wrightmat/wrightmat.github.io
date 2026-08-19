@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "riding-horse",
   "name": "Riding Horse",
   "type": "beast",
   "systemIds": [

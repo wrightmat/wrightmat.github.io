@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "stone-golem",
   "name": "Stone Golem",
   "type": "construct",
   "systemIds": [

@@ -1,5 +1,4 @@
 {
-  "id": "tpl.genesys.test",
   "title": "Genesys — Test Sheet (Dice QA)",
   "version": "0.1",
   "schema": "sys.genesys",

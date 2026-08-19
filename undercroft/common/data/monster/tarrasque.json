@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "tarrasque",
   "name": "Tarrasque",
   "type": "monstrosity",
   "systemIds": [

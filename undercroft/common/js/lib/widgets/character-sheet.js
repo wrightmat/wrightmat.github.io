@@ -110,6 +110,16 @@ export function initCharacterVitals(container, { dataManager, status, characterI
   // HP/AC edits look like they weren't sticking.
   let pendingSave = Promise.resolve();
 
+  // Ephemeral UI-only state (not persisted, not part of `character`) for the
+  // Add Tag row's own visibility toggle — whether the NEXT condition added
+  // should be suppressed from map marker badges. Lives here rather than
+  // inside buildTagInputRow's own closure since this widget fully rebuilds
+  // on every render() call; a caller-owned flag plus buildTagInputRow's
+  // controlled hidden/onToggleHidden props keeps this widget consistent
+  // with combat-tracker.js's own equivalent, even though THIS widget's
+  // simpler full-rebuild-every-render approach wouldn't strictly need it.
+  let pendingConditionHidden = false;
+
   let liveStream = null;
   let pollTimer = 0;
 
@@ -160,6 +170,36 @@ export function initCharacterVitals(container, { dataManager, status, characterI
     }
   }
 
+  // Same read-modify-write shape as doPersistBinding above, but sets TWO
+  // things in the one round trip: the tags-binding's own list, and
+  // hiddenTags — a fixed-key, suite-level field (not a System binding; see
+  // combat-tracker.js's own writeThroughToCharacter for the identical
+  // reasoning) tracking which of this character's own tags are hidden from
+  // map marker badges (buildTagInputRow's own visibility toggle,
+  // tag-editor.js; filtered in map-viewer.js's resolveMarkerConditionIcons).
+  // Combined into one save rather than two persistBinding calls so a
+  // hide-on-add can't race a separate hiddenTags write and land only
+  // half-applied.
+  function persistTagsAndHiddenTags(binding, list, hiddenList) {
+    pendingSave = pendingSave.then(() => doPersistTagsAndHiddenTags(binding, list, hiddenList));
+    return pendingSave;
+  }
+
+  async function doPersistTagsAndHiddenTags(binding, list, hiddenList) {
+    try {
+      const result = await dataManager.get("character", characterId, { preferLocal: false });
+      const fresh = result.payload || {};
+      setAtBinding(binding, fresh, list);
+      fresh.hiddenTags = hiddenList;
+      await dataManager.save("character", characterId, fresh);
+      character = fresh;
+    } catch (error) {
+      status?.show(error.message || "Unable to save that change.", { type: "error" });
+    } finally {
+      if (!destroyed) render();
+    }
+  }
+
   function addCondition(value) {
     const tagsEntry = findBindingByRole(combatBindings, "tags");
     if (!tagsEntry?.binding) return;
@@ -167,7 +207,10 @@ export function initCharacterVitals(container, { dataManager, status, characterI
     const list = Array.isArray(current) ? current.slice() : [];
     if (list.includes(value)) return;
     list.push(value);
-    void persistBinding(tagsEntry.binding, list);
+    const hiddenList = Array.isArray(character.hiddenTags) ? character.hiddenTags.slice() : [];
+    if (pendingConditionHidden) hiddenList.push(value);
+    pendingConditionHidden = false;
+    void persistTagsAndHiddenTags(tagsEntry.binding, list, hiddenList);
   }
 
   function removeCondition(value) {
@@ -175,7 +218,8 @@ export function initCharacterVitals(container, { dataManager, status, characterI
     if (!tagsEntry?.binding) return;
     const current = resolveBinding(tagsEntry.binding, character);
     const list = (Array.isArray(current) ? current : []).filter((entry) => entry !== value);
-    void persistBinding(tagsEntry.binding, list);
+    const hiddenList = (Array.isArray(character.hiddenTags) ? character.hiddenTags : []).filter((entry) => entry !== value);
+    void persistTagsAndHiddenTags(tagsEntry.binding, list, hiddenList);
   }
 
   // One-way roll-and-push, not a synced field — mirrors Workbench's own
@@ -205,7 +249,8 @@ export function initCharacterVitals(container, { dataManager, status, characterI
         return;
       }
       combatant.initiative = value;
-      await dataManager.save("encounter", encounterId, encounter);
+      const { id: _id, ...body } = encounter;
+      await dataManager.save("encounter", encounterId, body);
       status?.show(`Initiative ${value} sent to the encounter.`, { type: "success", timeout: 2000 });
     } catch (error) {
       console.warn("Character sheet: unable to push initiative to the active encounter", error);
@@ -322,9 +367,23 @@ export function initCharacterVitals(container, { dataManager, status, characterI
       labelRow.appendChild(el("span", "small text-body-secondary", tags.name || "Conditions"));
       section.appendChild(labelRow);
       section.appendChild(
-        renderTagBadges(list, conditionsVocabulary, { removable: true, onRemove: removeCondition })
+        renderTagBadges(list, conditionsVocabulary, {
+          removable: true,
+          onRemove: removeCondition,
+          isHidden: (value) => (character.hiddenTags || []).includes(value),
+        })
       );
-      section.appendChild(buildTagInputRow(TAG_DATALIST_ID, { placeholder: "Add a condition…", onAdd: addCondition }));
+      section.appendChild(
+        buildTagInputRow(TAG_DATALIST_ID, {
+          placeholder: "Add a condition…",
+          onAdd: addCondition,
+          hidden: pendingConditionHidden,
+          onToggleHidden: () => {
+            pendingConditionHidden = !pendingConditionHidden;
+            render();
+          },
+        }).row
+      );
       wrap.appendChild(section);
       renderTagDatalist(TAG_DATALIST_ID, conditionsVocabulary);
     }

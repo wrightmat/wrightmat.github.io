@@ -1620,7 +1620,8 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
         return;
       }
       combatant.initiative = value;
-      await dataManager.save("encounter", encounterId, encounter);
+      const { id: _id, ...body } = encounter;
+      await dataManager.save("encounter", encounterId, body);
       status.show(`Initiative ${value} sent to the encounter.`, { type: "success", timeout: 2000 });
     } catch (error) {
       console.warn("Character editor: unable to push initiative to the active encounter", error);
@@ -3046,7 +3047,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       if (!payload) {
         throw new Error("Template payload missing");
       }
-      applyTemplateData(payload, { origin: metadata.source || "remote" });
+      applyTemplateData(payload, { origin: metadata.source || "remote", id });
       if (announce) {
         status.show(`Loaded template ${payload.title || id}`, { type: "success", timeout: 1800 });
       }
@@ -3188,9 +3189,13 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     return null;
   }
 
-  function applyTemplateData(payload, { origin = "remote" } = {}) {
+  function applyTemplateData(payload, { origin = "remote", id = "" } = {}) {
     const template = {
-      id: payload.id || payload.template || "",
+      // Library-sourced templates never embed their own id in the JSON body
+      // (same convention as every other Library kind) — fall back to the id
+      // this was actually fetched by, same "defensive re-stamp from known
+      // context" pattern as loadCharacter's own state.draft.id/state.character.id.
+      id: payload.id || id || "",
       title: payload.title || payload.name || payload.id || "",
       schema: payload.schema || payload.system || "",
       origin,
@@ -7224,6 +7229,16 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     }
     const payload = cloneCharacter(state.draft);
     const id = state.draft.id;
+    // A record's own id is filename/library_items metadata, not editable
+    // content — never persisted in the body (same convention Location/
+    // Setting/Journal already had; Feature/Effect's embedded id and
+    // Monster's "index" were both cleaned up as pure historical drift, and
+    // this is the one spot in this file where a `state.draft.id` set by
+    // duplicateCharacter()/mergeImportedCharacterData's own in-memory
+    // convenience stamping would otherwise leak into a saved file). Deleted
+    // from this CLONE only — state.draft.id itself stays populated for
+    // every other in-memory read in this module.
+    delete payload.id;
     const label = payload?.data?.name || payload?.title || id;
     const metadata = characterCatalog.get(id) || {};
     const session = sessionUser();

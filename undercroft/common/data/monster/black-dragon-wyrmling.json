@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "black-dragon-wyrmling",
   "name": "Black Dragon Wyrmling",
   "type": "dragon",
   "systemIds": [

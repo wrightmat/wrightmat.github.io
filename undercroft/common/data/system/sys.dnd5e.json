@@ -1,5 +1,4 @@
 {
-  "id": "sys.dnd5e",
   "title": "D&D 5E",
   "version": "0.2",
   "fields": [
@@ -765,63 +764,93 @@
       "values": [
         {
           "name": "Blinded",
-          "sourceId": 1
+          "sourceId": 1,
+          "icon": "ddb-blinded",
+          "color": "#ffffff"
         },
         {
           "name": "Charmed",
-          "sourceId": 2
+          "sourceId": 2,
+          "icon": "ddb-charmed",
+          "color": "#ffffff"
         },
         {
           "name": "Deafened",
-          "sourceId": 3
+          "sourceId": 3,
+          "icon": "ddb-deafened",
+          "color": "#ffffff"
         },
         {
           "name": "Exhaustion",
-          "sourceId": 4
+          "sourceId": 4,
+          "icon": "ddb-exhaustion",
+          "color": "#ffffff"
         },
         {
           "name": "Frightened",
-          "sourceId": 5
+          "sourceId": 5,
+          "icon": "ddb-frightened",
+          "color": "#ffffff"
         },
         {
           "name": "Grappled",
-          "sourceId": 6
+          "sourceId": 6,
+          "icon": "ddb-grappled",
+          "color": "#ffffff"
         },
         {
           "name": "Incapacitated",
-          "sourceId": 7
+          "sourceId": 7,
+          "icon": "ddb-incapacitated",
+          "color": "#ffffff"
         },
         {
           "name": "Invisible",
-          "sourceId": 8
+          "sourceId": 8,
+          "icon": "ddb-invisible",
+          "color": "#ffffff"
         },
         {
           "name": "Paralyzed",
-          "sourceId": 9
+          "sourceId": 9,
+          "icon": "ddb-paralyzed",
+          "color": "#ffffff"
         },
         {
           "name": "Petrified",
-          "sourceId": 10
+          "sourceId": 10,
+          "icon": "ddb-petrified",
+          "color": "#ffffff"
         },
         {
           "name": "Poisoned",
-          "sourceId": 11
+          "sourceId": 11,
+          "icon": "ddb-poisoned",
+          "color": "#ffffff"
         },
         {
           "name": "Prone",
-          "sourceId": 12
+          "sourceId": 12,
+          "icon": "ddb-prone",
+          "color": "#ffffff"
         },
         {
           "name": "Restrained",
-          "sourceId": 13
+          "sourceId": 13,
+          "icon": "ddb-restrained",
+          "color": "#ffffff"
         },
         {
           "name": "Stunned",
-          "sourceId": 14
+          "sourceId": 14,
+          "icon": "ddb-stunned",
+          "color": "#ffffff"
         },
         {
           "name": "Unconscious",
-          "sourceId": 15
+          "sourceId": 15,
+          "icon": "ddb-unconscious",
+          "color": "#ffffff"
         }
       ]
     },
@@ -2006,32 +2035,38 @@
         {
           "name": "Tiny",
           "shortName": "tiny",
-          "sourceId": 2
+          "sourceId": 2,
+          "sizeValue": 0.5
         },
         {
           "name": "Small",
           "shortName": "sm",
-          "sourceId": 3
+          "sourceId": 3,
+          "sizeValue": 1
         },
         {
           "name": "Medium",
           "shortName": "med",
-          "sourceId": 4
+          "sourceId": 4,
+          "sizeValue": 1
         },
         {
           "name": "Large",
           "shortName": "lg",
-          "sourceId": 5
+          "sourceId": 5,
+          "sizeValue": 2
         },
         {
           "name": "Huge",
           "shortName": "huge",
-          "sourceId": 6
+          "sourceId": 6,
+          "sizeValue": 3
         },
         {
           "name": "Gargantuan",
           "shortName": "grg",
-          "sourceId": 7
+          "sourceId": 7,
+          "sizeValue": 4
         }
       ]
     },

@@ -1081,6 +1081,87 @@ def list_bucket(state: ServerState, kind: str, user: Optional[User]) -> Dict[str
     return {"owned": owned, "shared": shared, "public": public}
 
 
+# Fixes the N+1 that used to sit behind every generator tool and Repository
+# opening (common/js/lib/content-fetch.js's own fetchKindEntriesWithIds,
+# which used to fetch a kind's metadata list, then issue one full HTTP
+# request PER RECORD to get bodies) — Vault alone was firing ~118 request
+# batches to open with today's ~1,400 Features. Modeled directly on
+# search_content's own "read N files off disk in one request" precedent
+# just above, not a new pattern: reuses list_bucket's exact owned/shared/
+# public access rows (so this can never grant broader access than the
+# normal list endpoint already does — no separate authorization logic to
+# drift out of sync), then narrows by `ids` and/or `system_ids` BEFORE
+# touching disk, then reads only the surviving files. `system_ids` only
+# narrows anything for a kind that actually declares systemIds in its own
+# metadataFields (common/data/kind/{kind}.json) — see _extract_metadata's
+# own comment; a kind that doesn't declare it simply won't have the field
+# on its rows here, and a filter request against it correctly excludes
+# everything rather than silently ignoring the filter. Returns
+# `[{"id": ..., "body": ...}, ...]` — NOT a bare list of bodies — since a
+# record's own JSON doesn't always embed its own id (see the loop's own
+# comment below); pairing each body with its library_items row's
+# authoritative id is what get_item's single-record path effectively gets
+# for free (the caller already knows the id it asked for), which this
+# bulk path has to do explicitly instead.
+def get_items_bulk(
+    state: ServerState,
+    kind: str,
+    user: Optional[User],
+    ids: Optional[List[str]] = None,
+    system_ids: Optional[List[str]] = None,
+) -> List[Dict[str, Any]]:
+    buckets = list_bucket(state, kind, user)
+    if "files" in buckets:
+        # A static asset mount (sheets/codex/loom-mappings, see list_bucket's
+        # own comment), not a Library kind — nothing here has a body to bulk-
+        # fetch through this path.
+        return []
+
+    rows: Dict[str, Dict[str, Any]] = {}
+    for group in ("owned", "shared", "public"):
+        for row in buckets.get(group, []):
+            rows.setdefault(row["id"], row)
+
+    wanted_ids = set(ids) if ids else None
+    wanted_systems = set(system_ids) if system_ids else None
+    bodies: List[Dict[str, Any]] = []
+    for id_, row in rows.items():
+        if wanted_ids is not None and id_ not in wanted_ids:
+            continue
+        if wanted_systems is not None:
+            row_systems = set(row.get("systemIds") or [])
+            # An entry with NO systemIds is treated as universal (applies to
+            # every System), not excluded — the exact semantics Vault/
+            # Crucible/Sanctum's own tables.js already had client-side
+            # (`!ids.length || ids.includes(systemId)`) before this filter
+            # moved server-side; a row-less-strict-than-requested entry
+            # silently disappearing from results would be a real regression,
+            # not just a stricter filter.
+            if row_systems and not (row_systems & wanted_systems):
+                continue
+        try:
+            body = load_json(_record_path(state, kind, id_))
+        except (FileNotFoundError, OSError, json.JSONDecodeError, ValueError):
+            # A row exists in library_items but its file is missing/corrupt —
+            # same defensive skip search_content already uses just above,
+            # rather than failing the whole bulk response over one bad record.
+            continue
+        # Paired with the row's own AUTHORITATIVE id, not assumed to be
+        # embedded in the body — same reason get_item's single-record path
+        # never stamps id onto what it returns either: plenty of kinds don't
+        # duplicate their own id inside the JSON at all (the id is the
+        # filename/library_items row, see e.g. Forge's own Location loader
+        # comment on this exact convention). Confirmed real bug from an
+        # earlier version of this function that returned bare bodies: any
+        # record without a self-embedded id came back with id=undefined on
+        # the client, breaking every consumer that reads `entry.id`/
+        # `feature.id` off the result (Crucible's Locked Features checklist
+        # crashed on `feature.name.toLowerCase()` — both name AND id ended
+        # up undefined for such a record).
+        bodies.append({"id": id_, "body": body})
+    return bodies
+
+
 # Kinds excluded from the suite-wide search — `kind` is the meta-registry of
 # kind DEFINITIONS (not end-user content), `relationship` is a graph edge
 # record with no meaningful title/label a search result could show. Every

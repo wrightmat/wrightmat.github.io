@@ -1,19 +1,32 @@
 {
-  "id": "feat.festival-grounds",
   "name": "Festival Grounds",
-  "systemIds": ["sys.dnd5e"],
+  "systemIds": [
+    "sys.dnd5e"
+  ],
   "description": "This place regularly hosts big public gatherings — festivals, fairs, tournaments, or holy days that draw a crowd.",
   "mechanics": {
     "type": "passive",
     "text": "Population and activity here spike sharply during recurring events."
   },
   "tags": {
-    "categories": ["location"],
-    "locationTypes": ["settlement", "structure"],
-    "locationPurposes": ["recreation", "worship"],
-    "environments": ["urban"]
+    "categories": [
+      "location"
+    ],
+    "locationTypes": [
+      "settlement",
+      "structure"
+    ],
+    "locationPurposes": [
+      "recreation",
+      "worship"
+    ],
+    "environments": [
+      "urban"
+    ]
   },
-  "synergizesWith": ["feat.bustling-market"],
+  "synergizesWith": [
+    "feat.bustling-market"
+  ],
   "dependsOn": [],
   "conflictsWith": []
 }

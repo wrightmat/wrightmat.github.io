@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "behir",
   "name": "Behir",
   "type": "monstrosity",
   "systemIds": [

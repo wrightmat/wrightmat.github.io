@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "roc",
   "name": "Roc",
   "type": "monstrosity",
   "systemIds": [

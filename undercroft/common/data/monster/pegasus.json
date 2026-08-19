@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "pegasus",
   "name": "Pegasus",
   "type": "celestial",
   "systemIds": [

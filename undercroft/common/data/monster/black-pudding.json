@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "black-pudding",
   "name": "Black Pudding",
   "type": "ooze",
   "systemIds": [

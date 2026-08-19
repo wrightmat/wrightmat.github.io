@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "shambling-mound",
   "name": "Shambling Mound",
   "type": "plant",
   "systemIds": [

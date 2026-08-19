@@ -1,7 +1,8 @@
 {
-  "id": "feat.set-fire",
   "name": "Sets or Extinguishes Fire",
-  "systemIds": ["sys.dnd5e"],
+  "systemIds": [
+    "sys.dnd5e"
+  ],
   "description": "The effect can ignite flammable objects or snuff out existing flames in its area.",
   "mechanics": {
     "type": "passive",
@@ -9,8 +10,14 @@
   },
   "budgetCost": 1,
   "tags": {
-    "categories": ["spell"],
-    "propertyHints": ["utility", "elemental", "fire"]
+    "categories": [
+      "spell"
+    ],
+    "propertyHints": [
+      "utility",
+      "elemental",
+      "fire"
+    ]
   },
   "synergizesWith": [],
   "dependsOn": [],

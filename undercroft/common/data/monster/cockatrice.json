@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "cockatrice",
   "name": "Cockatrice",
   "type": "monstrosity",
   "systemIds": [

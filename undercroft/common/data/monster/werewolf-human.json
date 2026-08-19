@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "werewolf-human",
   "name": "Werewolf, Human Form",
   "type": "humanoid",
   "systemIds": [

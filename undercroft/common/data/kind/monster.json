@@ -4,5 +4,6 @@
   "plural": "Monsters",
   "icon": "tabler:skull",
   "readTier": "free",
-  "writeTier": "free"
+  "writeTier": "free",
+  "metadataFields": ["systemIds"]
 }

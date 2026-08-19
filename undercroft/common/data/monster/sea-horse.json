@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "sea-horse",
   "name": "Sea Horse",
   "type": "beast",
   "systemIds": [

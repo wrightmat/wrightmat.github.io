@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "earth-elemental",
   "name": "Earth Elemental",
   "type": "elemental",
   "systemIds": [

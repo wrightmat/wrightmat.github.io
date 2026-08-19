@@ -1,19 +1,27 @@
 {
-  "id": "feat.shop",
   "name": "Shop",
-  "systemIds": ["sys.dnd5e"],
+  "systemIds": [
+    "sys.dnd5e"
+  ],
   "description": "A specific point of sale — a single storefront, stall, or trading post where goods change hands, distinct from a settlement's general commerce.",
   "mechanics": {
     "type": "passive",
     "text": "This place's Assets are its wares — what it has for sale, at whatever price and availability the GM sets."
   },
   "tags": {
-    "categories": ["location"],
+    "categories": [
+      "location"
+    ],
     "locationTypes": [],
-    "locationPurposes": ["commerce"],
+    "locationPurposes": [
+      "commerce"
+    ],
     "environments": []
   },
-  "synergizesWith": ["feat.bustling-market", "feat.black-market"],
+  "synergizesWith": [
+    "feat.bustling-market",
+    "feat.black-market"
+  ],
   "dependsOn": [],
   "conflictsWith": []
 }

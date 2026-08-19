@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "grimlock",
   "name": "Grimlock",
   "type": "humanoid",
   "systemIds": [

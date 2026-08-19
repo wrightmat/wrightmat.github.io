@@ -1,19 +1,34 @@
 {
-  "id": "feat.polluted-waters",
   "name": "Polluted Waters",
-  "systemIds": ["sys.dnd5e"],
+  "systemIds": [
+    "sys.dnd5e"
+  ],
   "description": "Runoff, waste, or something worse has fouled the local water — dangerous to drink and worse to bathe in.",
   "mechanics": {
     "type": "passive",
     "text": "Water sources near this location are unsafe without treatment or magical purification."
   },
   "tags": {
-    "categories": ["location"],
-    "locationTypes": ["region", "environment"],
-    "locationPurposes": ["resource", "industry"],
-    "environments": ["coast", "swamp", "underwater"]
+    "categories": [
+      "location"
+    ],
+    "locationTypes": [
+      "region",
+      "environment"
+    ],
+    "locationPurposes": [
+      "resource",
+      "industry"
+    ],
+    "environments": [
+      "coast",
+      "swamp",
+      "underwater"
+    ]
   },
-  "synergizesWith": ["feat.corrupted"],
+  "synergizesWith": [
+    "feat.corrupted"
+  ],
   "dependsOn": [],
   "conflictsWith": []
 }

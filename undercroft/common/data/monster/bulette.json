@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "bulette",
   "name": "Bulette",
   "type": "monstrosity",
   "systemIds": [

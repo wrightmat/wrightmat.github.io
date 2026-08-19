@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "adult-green-dragon",
   "name": "Adult Green Dragon",
   "type": "dragon",
   "systemIds": [

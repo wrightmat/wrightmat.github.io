@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "oni",
   "name": "Oni",
   "type": "giant",
   "systemIds": [

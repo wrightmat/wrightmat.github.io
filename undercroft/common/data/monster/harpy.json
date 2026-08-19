@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "harpy",
   "name": "Harpy",
   "type": "monstrosity",
   "systemIds": [

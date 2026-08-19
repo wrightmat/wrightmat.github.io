@@ -1,7 +1,8 @@
 {
-  "id": "feat.limited-uses",
   "name": "Limited Uses (3/day)",
-  "systemIds": ["sys.dnd5e"],
+  "systemIds": [
+    "sys.dnd5e"
+  ],
   "description": "The item can only channel its effect a limited number of times before needing to recharge.",
   "mechanics": {
     "type": "drawback",
@@ -9,8 +10,12 @@
   },
   "budgetCost": -3,
   "tags": {
-    "categories": ["item"],
-    "propertyHints": ["drawback"]
+    "categories": [
+      "item"
+    ],
+    "propertyHints": [
+      "drawback"
+    ]
   },
   "synergizesWith": [],
   "dependsOn": [],

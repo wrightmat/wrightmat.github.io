@@ -1,7 +1,8 @@
 {
-  "id": "feat.buff-1d4",
   "name": "+1d4 to Attacks and Saves",
-  "systemIds": ["sys.dnd5e"],
+  "systemIds": [
+    "sys.dnd5e"
+  ],
   "description": "An affected creature adds 1d4 to its attack rolls and saving throws.",
   "mechanics": {
     "type": "passive",
@@ -9,8 +10,13 @@
   },
   "budgetCost": 2,
   "tags": {
-    "categories": ["spell"],
-    "propertyHints": ["buff", "combat"]
+    "categories": [
+      "spell"
+    ],
+    "propertyHints": [
+      "buff",
+      "combat"
+    ]
   },
   "synergizesWith": [],
   "dependsOn": [],

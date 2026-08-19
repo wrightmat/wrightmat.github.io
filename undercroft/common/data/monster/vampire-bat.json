@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "vampire-bat",
   "name": "Vampire, Bat Form",
   "type": "undead",
   "systemIds": [

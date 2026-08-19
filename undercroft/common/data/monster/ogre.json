@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "ogre",
   "name": "Ogre",
   "type": "giant",
   "systemIds": [

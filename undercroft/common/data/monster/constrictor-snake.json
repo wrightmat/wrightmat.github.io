@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "constrictor-snake",
   "name": "Constrictor Snake",
   "type": "beast",
   "systemIds": [

@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "nightmare",
   "name": "Nightmare",
   "type": "fiend",
   "systemIds": [

@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "mummy",
   "name": "Mummy",
   "type": "undead",
   "systemIds": [

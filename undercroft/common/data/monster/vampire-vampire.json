@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "vampire-vampire",
   "name": "Vampire, Vampire Form",
   "type": "undead",
   "systemIds": [

@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "weretiger-human",
   "name": "Weretiger, Human Form",
   "type": "humanoid",
   "systemIds": [

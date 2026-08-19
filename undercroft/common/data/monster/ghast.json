@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "ghast",
   "name": "Ghast",
   "type": "undead",
   "systemIds": [

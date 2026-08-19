@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "deva",
   "name": "Deva",
   "type": "celestial",
   "systemIds": [

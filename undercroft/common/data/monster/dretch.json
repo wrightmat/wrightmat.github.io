@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "dretch",
   "name": "Dretch",
   "type": "fiend",
   "systemIds": [

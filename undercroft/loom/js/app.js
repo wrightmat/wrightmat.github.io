@@ -21,6 +21,7 @@ import {
   loadSourceDataRaw,
   loadLibraryKinds,
   fetchKindEntriesWithIds,
+  fetchKindEntrySummaries,
   mergeImportedCharacterData,
   listAvailableMappings,
   SOURCES,
@@ -5386,7 +5387,7 @@ function macroClipOptions() {
 
 // Shared by every "pick one saved record of a kind" field below (Handout/
 // Map's contentRef id, Character's target, Encounter's target) — one inline
-// <select> populated via fetchKindEntriesWithIds, never a modal picker. This
+// <select> populated via fetchKindEntrySummaries, never a modal picker. This
 // used to be two different patterns (an inline select for Character/
 // Encounter, a "Choose…" button opening openContentPicker for Handout/Map);
 // unified onto the inline-select shape since it's what every other
@@ -5400,11 +5401,15 @@ function macroKindEntitySelect(kind, currentValue, onChange, { leadingOption } =
   const select = macroSelect([blank], currentValue || blank.value, onChange);
   select.disabled = !kind;
   if (dataManager && kind) {
-    void fetchKindEntriesWithIds(dataManager, kind)
+    // Just an id -> label lookup for the dropdown's own options — never
+    // reads any other field off the picked record — so the metadata-only
+    // /list fetch is enough here (see fetchKindEntrySummaries's own
+    // "motivating case" comment).
+    void fetchKindEntrySummaries(dataManager, kind)
       .then((entries) => {
         const current = select.value || currentValue || blank.value;
         select.innerHTML = "";
-        [blank, ...entries.map(({ id, entity }) => ({ value: id, label: entity?.name || entity?.title || id }))].forEach(
+        [blank, ...entries.map(({ id, name }) => ({ value: id, label: name || id }))].forEach(
           ({ value, label }) => {
             const option = document.createElement("option");
             option.value = value;
@@ -5802,7 +5807,11 @@ async function populateMacroSelect() {
   const current = macroRecordSelect.value;
   let entries = [];
   try {
-    entries = await fetchKindEntriesWithIds(dataManager, "macro");
+    // The select's own options only need id + display name — the actual
+    // macro body (actions/icon/etc.) loads separately once one is picked
+    // (see loadMacro above) — so this list doesn't need every macro's full
+    // body just to populate a dropdown.
+    entries = await fetchKindEntrySummaries(dataManager, "macro");
   } catch (error) {
     status?.show(`Unable to list macros: ${error.message}`, { type: "error", timeout: 4000 });
   }
@@ -5813,11 +5822,11 @@ async function populateMacroSelect() {
   macroRecordSelect.appendChild(blank);
   entries
     .slice()
-    .sort((a, b) => (a.entity?.name || a.id).localeCompare(b.entity?.name || b.id))
-    .forEach(({ id, entity }) => {
+    .sort((a, b) => (a.name || a.id).localeCompare(b.name || b.id))
+    .forEach(({ id, name }) => {
       const option = document.createElement("option");
       option.value = id;
-      option.textContent = entity?.name || id;
+      option.textContent = name || id;
       macroRecordSelect.appendChild(option);
     });
   if (Array.from(macroRecordSelect.options).some((option) => option.value === current)) {
@@ -5902,12 +5911,15 @@ if (macroSaveButton) {
       return;
     }
     const payload = {
-      id,
       name: (macroNameInput?.value || "").trim() || id,
       icon: (macroIconInput?.value || "").trim() || "tabler:bolt",
       actions: macroEditorActions,
     };
     try {
+      // A macro's own id is filename/library_items metadata, never body
+      // content (every Library kind now follows this convention) —
+      // loadMacroIntoEditor already falls back to the known id when a
+      // loaded payload doesn't carry one, so it's never included here.
       await dataManager.save("macro", id, payload);
       status?.show(`Saved macro ${id}.`, { type: "success", timeout: 2000 });
       if (macroIdInput) macroIdInput.disabled = true;
@@ -6709,7 +6721,14 @@ if (systemSaveButton) {
       return;
     }
     try {
-      await dataManager.save("systems", payload.id, payload);
+      // A System's own id is filename/library_items metadata, never body
+      // content (every Library kind now follows this convention) —
+      // systemIdInput's own value (payload.id) is only ever used for the
+      // SAVE target id below, never persisted as a field inside the body
+      // itself; loadSystemIntoEditor already falls back to the known id
+      // when a loaded payload doesn't carry one.
+      const { id: _systemId, ...bodyWithoutId } = payload;
+      await dataManager.save("systems", payload.id, bodyWithoutId);
       status?.show(`Saved system ${payload.id}.`, { type: "success", timeout: 2000 });
       await populateSystemSelect();
       systemSelect.value = payload.id;

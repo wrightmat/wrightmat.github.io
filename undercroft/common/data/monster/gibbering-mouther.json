@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "gibbering-mouther",
   "name": "Gibbering Mouther",
   "type": "aberration",
   "systemIds": [

@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "giant-goat",
   "name": "Giant Goat",
   "type": "beast",
   "systemIds": [
