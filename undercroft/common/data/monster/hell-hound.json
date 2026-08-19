@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "hell-hound",
   "name": "Hell Hound",
   "type": "fiend",
   "systemIds": [

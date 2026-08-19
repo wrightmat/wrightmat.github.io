@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "fire-elemental",
   "name": "Fire Elemental",
   "type": "elemental",
   "systemIds": [

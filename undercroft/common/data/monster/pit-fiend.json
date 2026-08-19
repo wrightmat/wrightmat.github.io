@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "pit-fiend",
   "name": "Pit Fiend",
   "type": "fiend",
   "systemIds": [

@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "succubus-incubus",
   "name": "Succubus/Incubus",
   "type": "fiend",
   "systemIds": [

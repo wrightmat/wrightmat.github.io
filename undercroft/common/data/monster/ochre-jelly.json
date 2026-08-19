@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "ochre-jelly",
   "name": "Ochre Jelly",
   "type": "ooze",
   "systemIds": [

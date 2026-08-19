@@ -1,19 +1,34 @@
 {
-  "id": "feat.haunted",
   "name": "Haunted",
-  "systemIds": ["sys.dnd5e"],
+  "systemIds": [
+    "sys.dnd5e"
+  ],
   "description": "Restless spirits or lingering echoes of past tragedy make this place unsettling, sometimes dangerously so.",
   "mechanics": {
     "type": "passive",
     "text": "Unnatural sounds, sights, or encounters with the restless dead are common here."
   },
   "tags": {
-    "categories": ["location"],
-    "locationTypes": ["structure", "complex", "region"],
-    "locationPurposes": ["confinement", "exploration"],
+    "categories": [
+      "location"
+    ],
+    "locationTypes": [
+      "structure",
+      "complex",
+      "region"
+    ],
+    "locationPurposes": [
+      "confinement",
+      "exploration"
+    ],
     "environments": []
   },
-  "synergizesWith": ["feat.ancient-ruins-beneath", "feat.corrupted"],
+  "synergizesWith": [
+    "feat.ancient-ruins-beneath",
+    "feat.corrupted"
+  ],
   "dependsOn": [],
-  "conflictsWith": ["feat.bustling-market"]
+  "conflictsWith": [
+    "feat.bustling-market"
+  ]
 }

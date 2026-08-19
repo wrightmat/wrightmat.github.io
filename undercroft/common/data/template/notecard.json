@@ -1,6 +1,5 @@
 {
-  "id": "notecard",
-  "title": "Notecard (5 \u00d7 7)",
+  "title": "Notecard (5 × 7)",
   "category": "print",
   "description": "Single oversized notecard aligned to the center of the letter page.",
   "type": "card",
@@ -138,7 +137,7 @@
       }
     }
   },
-  "name": "Notecard (5 \u00d7 7)",
+  "name": "Notecard (5 × 7)",
   "sides": [
     "front",
     "back"

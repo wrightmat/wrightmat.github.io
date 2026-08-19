@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "hippogriff",
   "name": "Hippogriff",
   "type": "monstrosity",
   "systemIds": [

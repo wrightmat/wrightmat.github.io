@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "fire-giant",
   "name": "Fire Giant",
   "type": "giant",
   "systemIds": [

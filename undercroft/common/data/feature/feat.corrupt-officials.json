@@ -1,19 +1,34 @@
 {
-  "id": "feat.corrupt-officials",
   "name": "Corrupt Officials",
-  "systemIds": ["sys.dnd5e"],
+  "systemIds": [
+    "sys.dnd5e"
+  ],
   "description": "The people who run this place can be bought — bribes, favors, and a blind eye are all part of doing business here.",
   "mechanics": {
     "type": "passive",
     "text": "Official processes can be bypassed or expedited with the right bribe."
   },
   "tags": {
-    "categories": ["location"],
-    "locationTypes": ["settlement", "structure", "complex"],
-    "locationPurposes": ["governance", "commerce"],
+    "categories": [
+      "location"
+    ],
+    "locationTypes": [
+      "settlement",
+      "structure",
+      "complex"
+    ],
+    "locationPurposes": [
+      "governance",
+      "commerce"
+    ],
     "environments": []
   },
-  "synergizesWith": ["feat.black-market", "feat.smugglers-tunnels"],
+  "synergizesWith": [
+    "feat.black-market",
+    "feat.smugglers-tunnels"
+  ],
   "dependsOn": [],
-  "conflictsWith": ["feat.seat-of-power"]
+  "conflictsWith": [
+    "feat.seat-of-power"
+  ]
 }

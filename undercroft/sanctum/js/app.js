@@ -165,19 +165,22 @@ createToolbarButtonGroup([
   { action: "delete", label: "Delete Setting", disabled: true, attrs: { "data-delete-setting": true } },
 ]).forEach((button) => document.querySelector("[data-setting-toolbar-mount]")?.appendChild(button));
 createToolbarButtonGroup([
-  { action: "generate", icon: "tabler:map-2", label: "Generate Single Location", attrs: { "data-generate-location": true } },
-  // Generates and SAVES a whole connected set of sub-locations in one action
-  // (see handleGenerateMultiRoom) — unlike Generate Single Location, which
-  // only ever produces one unsaved record for the GM to review/rename/Save
-  // themselves, this bulk action can't pause for a name per sub-location, so
-  // it auto-names and saves everything immediately. Deliberately not
-  // "dungeon"-specific — a multi-room result could be a Complex's rooms, a
-  // Settlement's districts, or a market's stalls, depending on what Type/
-  // Purpose resolve to. Sanctum has two "New"-slot Generate actions where
-  // every other tool in this pass has one — both stay outline-primary
-  // (the shared `generate` preset's own default) and lead the toolbar, ahead
-  // of the standard Save/Duplicate/Delete/Undo/Redo cluster.
-  { action: "generate", icon: "tabler:stack-2", label: "Generate Multi-Room Location", attrs: { "data-generate-multi-room": true } },
+  // One Generate button, not two — a room-count prompt (default 1) picks
+  // which of the two underlying flows runs (see handleGenerateAction): 1
+  // room behaves exactly like the old single-location button always did
+  // (one unsaved record generated straight into the editor for the GM to
+  // review/rename/Save themselves), more than 1 runs the bulk multi-room
+  // flow (auto-named parent + connected child rooms, all saved immediately
+  // — see handleGenerateMultiRoom). Two separate "New"-slot buttons here,
+  // where every other tool in this pass has one, made the toolbar wider
+  // than its neighbors for a difference that's really just a room count.
+  // Starts disabled — nothing to generate FROM until the reference-data
+  // load (init's own populateSystemSelect/reloadReferenceData cascade)
+  // finishes; clicking it before then threw straight out of
+  // generateLocation (locationTypes/features/etc. still their initial
+  // empty arrays). Re-enabled by init() once that cascade actually
+  // resolves — see this file's own enableGenerateOnceReady.
+  { action: "generate", icon: "tabler:map-2", label: "Generate", disabled: true, attrs: { "data-generate-location": true } },
   { action: "save", label: "Save", disabled: true, attrs: { "data-save-location": true } },
   { action: "duplicate", label: "Duplicate", disabled: true, attrs: { "data-duplicate-location": true } },
   { action: "delete", label: "Delete", disabled: true, attrs: { "data-delete-location": true } },
@@ -190,7 +193,7 @@ createToolbarButtonGroup([
 ]).forEach((button) => document.querySelector("[data-location-undo-toolbar-mount]")?.appendChild(button));
 document.querySelector("[data-location-empty-state]")?.appendChild(
   createEmptyStateCard({
-    message: "Nothing selected yet. Pick an existing Location above, or fill in the fields and click Generate Location.",
+    message: "Nothing selected yet. Pick an existing Location above, or fill in the fields and click Generate.",
     variant: "inline",
   })
 );
@@ -257,7 +260,6 @@ const elements = {
   purposeOverride: document.querySelector("[data-purpose-override]"),
   environmentOverride: document.querySelector("[data-environment-override]"),
   lockedFeatures: document.querySelector("[data-locked-features]"),
-  generateMultiRoomButton: document.querySelector("[data-generate-multi-room]"),
   locationRelationships: document.querySelector("[data-location-relationships]"),
   modeToggleMount: document.querySelector("[data-sanctum-mode-toggle-mount]"),
   relationshipsListMount: document.querySelector("[data-relationships-list-mount]"),
@@ -1503,6 +1505,34 @@ function readLockedFeatureIds() {
 }
 
 // --- Generate / Save / Export / Note ----------------------------------------
+
+// The Generate button's own entry point — prompts for a room count (default
+// "1", matching the old single-location button's own behavior when nothing
+// else is entered) and routes to whichever of the two underlying flows that
+// count actually calls for, rather than the GM ever picking between two
+// separate buttons for what's really one decision. 1 room runs handleGenerate
+// itself unchanged (a single unsaved record, generated straight into the
+// editor for review/rename/Save) — NOT handleGenerateMultiRoom with
+// roomCount=1, which would still produce a separate auto-saved parent shell
+// plus one auto-saved, auto-named child room and a "Parent of" relationship
+// between them: a real behavior change from what a GM generating one simple
+// Location has always gotten, not just the same result reached a different
+// way.
+function handleGenerateAction() {
+  const roomCountInput = window.prompt("How many rooms should this generate?", "1");
+  if (roomCountInput === null) return;
+  const roomCount = Math.floor(Number(roomCountInput));
+  if (!Number.isFinite(roomCount) || roomCount < 1) {
+    status?.show("Enter a whole number of 1 or more.", { type: "warning", timeout: 2500 });
+    return;
+  }
+  if (roomCount === 1) {
+    handleGenerate();
+  } else {
+    void handleGenerateMultiRoom(roomCount);
+  }
+}
+
 function handleGenerate() {
   const settingId = currentSettingId || elements.settingSelect?.value;
   if (!settingId) {
@@ -1536,30 +1566,25 @@ function handleGenerate() {
 // immediately — every piece here is an existing Sanctum primitive
 // (generateLocation/createLocationRecord run once per room, parentId/
 // connectedTo are already real Location relationship fields), just
-// orchestrated in a loop rather than the single-record flow Generate Single
-// Location's own button uses. Purpose is left free to vary per room (a
+// orchestrated in a loop rather than the single, unsaved-into-the-editor
+// record handleGenerate produces. Purpose is left free to vary per room (a
 // dungeon's rooms, or a city's districts, plausibly serve different
 // Purposes) — Environment is NOT: every room is pinned to the parent's own
 // resolved Environment below, since one physical place doesn't span
 // multiple climates/terrains. An explicit Type/Purpose/Environment
 // override, if the GM set one, applies to every room the same way it would
-// to a single Generate Single Location click, which is an intentional
-// consequence of it being a deliberate pin, not a bug.
-async function handleGenerateMultiRoom() {
+// to a plain handleGenerate() call, which is an intentional consequence of
+// it being a deliberate pin, not a bug. `roomCount` is always >= 2 here —
+// handleGenerateAction routes a count of 1 to handleGenerate() instead, so
+// this never needs to special-case a single-room call itself.
+async function handleGenerateMultiRoom(roomCount) {
   const settingId = currentSettingId || elements.settingSelect?.value;
   if (!settingId) {
     status?.show("Select or save a Setting first.", { type: "warning", timeout: 2500 });
     return;
   }
   if (!dataManager) return;
-  const roomCountInput = window.prompt("How many rooms should this generate?", "5");
-  if (roomCountInput === null) return;
-  const roomCount = Math.floor(Number(roomCountInput));
-  if (!Number.isFinite(roomCount) || roomCount < 1) {
-    status?.show("Enter a whole number of 1 or more.", { type: "warning", timeout: 2500 });
-    return;
-  }
-  if (elements.generateMultiRoomButton) elements.generateMultiRoomButton.disabled = true;
+  if (elements.generateButton) elements.generateButton.disabled = true;
   try {
     const genOptions = {
       systemId: currentSystemId() || null,
@@ -1666,7 +1691,7 @@ async function handleGenerateMultiRoom() {
       rooms.push(room);
     }
 
-    status?.show(`Generated "${parentRecord.name}" with ${roomCount} room${roomCount === 1 ? "" : "s"}.`, {
+    status?.show(`Generated "${parentRecord.name}" with ${roomCount} rooms.`, {
       type: "success",
       timeout: 2500,
     });
@@ -1678,12 +1703,12 @@ async function handleGenerateMultiRoom() {
   } catch (error) {
     status?.show(`Unable to generate: ${error.message}`, { type: "error", timeout: 4000 });
   } finally {
-    if (elements.generateMultiRoomButton) elements.generateMultiRoomButton.disabled = false;
+    if (elements.generateButton) elements.generateButton.disabled = false;
   }
 }
 
 // If `parentId`'s Location has direct children still following the
-// "[Parent Name] - Room [n]" convention Generate Multi-Room Location gives
+// "[Parent Name] - Room [n]" convention the multi-room Generate flow gives
 // them (see handleGenerateMultiRoom), offers to re-prefix them to match a
 // just-renamed parent. Only children whose name still starts with the OLD
 // parent name are touched — a room the GM already renamed to something else
@@ -1959,8 +1984,15 @@ async function init() {
 
   initCollapsibles();
 
-  elements.generateButton?.addEventListener("click", handleGenerate);
-  elements.generateMultiRoomButton?.addEventListener("click", () => void handleGenerateMultiRoom());
+  // Generate starts disabled (see its own toolbar definition above) —
+  // called once the reference-data load has actually resolved, from every
+  // path that can reach "loading is done" below (the plain init cascade, or
+  // applyDeepLinkParams' own background Phase 2).
+  function enableGenerateButton() {
+    if (elements.generateButton) elements.generateButton.disabled = false;
+  }
+
+  elements.generateButton?.addEventListener("click", handleGenerateAction);
   elements.saveButton?.addEventListener("click", handleSave);
   elements.duplicateButton?.addEventListener("click", handleDuplicate);
   elements.undoButton?.addEventListener("click", () => performUndo());
@@ -2133,8 +2165,14 @@ async function init() {
     markRequiredControl(elements.systemSelect, Boolean(elements.systemSelect.value));
     currentSettingId = null;
     currentLocationId = null;
-    await reloadReferenceData();
-    const settings = await populateSettingSelect(currentSystemId());
+    // Independent fetches, run concurrently — reloadReferenceData's 8-kind
+    // Promise.all (including the two largest kinds in the whole suite,
+    // feature and monster) used to run to completion BEFORE the Setting
+    // picker's own fetch even started, needlessly gating "which Setting can
+    // I pick" behind data Settings never reads. Confirmed real, reported
+    // slowness: the Setting dropdown sat empty for the full reference-data
+    // fetch's duration even though its own fetch is comparatively tiny.
+    const [, settings] = await Promise.all([reloadReferenceData(), populateSettingSelect(currentSystemId())]);
     populateSettingForm(null);
     await reloadLocationsForSetting(null);
     renderLocation(null);
@@ -2365,10 +2403,13 @@ async function init() {
           // Setting by hand would do) — this restores the deep-linked
           // Location, now with every name/list Phase 1 didn't have yet.
           if (locationId) await selectLocation(locationId);
+          enableGenerateButton();
         } catch (error) {
           // Phase 1 already succeeded — a background failure here just
           // leaves the pickers under-populated, not worth surfacing as an
           // error toast on top of a page that's already showing real content.
+          // Generate stays disabled in this case — reference data may never
+          // have loaded, and clicking it would just throw straight back out.
         }
       })();
       return true;
@@ -2401,12 +2442,20 @@ async function init() {
         await handleSettingSelectChange();
       }
     } else {
-      await reloadReferenceData();
-      await populateSettingSelect(currentSystemId());
+      // Same concurrency fix as handleSystemSelectChange's own copy of
+      // this — independent fetches, no reason for one to gate the other.
+      await Promise.all([reloadReferenceData(), populateSettingSelect(currentSystemId())]);
       populateSettingForm(null);
       await reloadLocationsForSetting(null);
       renderLocation(null);
     }
+    // Both branches above resolve reference data for whatever System ended
+    // up selected (defaultSystemId's own handleSystemSelectChange, or the
+    // parallel fetch just above) — safe to enable here regardless of which
+    // one ran. The deepLinked === true case enables from inside its own
+    // Phase 2 background IIFE instead (applyDeepLinkParams above), once
+    // ITS reference-data load actually finishes.
+    enableGenerateButton();
   }
 
   initHelpSystem();

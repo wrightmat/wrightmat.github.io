@@ -9,7 +9,6 @@
   "featureIds": [
     "feat.requires-attunement"
   ],
-  "id": "barrier-tattoo",
   "budget": {
     "target": 8,
     "spent": -1,

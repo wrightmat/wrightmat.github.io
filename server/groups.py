@@ -984,7 +984,6 @@ def create_group(state: ServerState, owner: Optional[User], name: str, type_: Op
     group_id = _generate_group_id(state)
     normalized_type = _normalize_group_type(type_)
     payload = {
-        "id": group_id,
         "title": label,
         "type": normalized_type,
         "systemId": None,
@@ -1099,7 +1098,6 @@ def update_group(
         # its Properties never clobbers value data a player may be
         # concurrently writing via the separate property-value endpoint.
         payload = {
-            "id": group_id,
             "title": row["name"],
             "type": row["type"],
             "systemId": row["system_id"],

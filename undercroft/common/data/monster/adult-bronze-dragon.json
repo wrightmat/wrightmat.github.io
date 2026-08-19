@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "adult-bronze-dragon",
   "name": "Adult Bronze Dragon",
   "type": "dragon",
   "systemIds": [

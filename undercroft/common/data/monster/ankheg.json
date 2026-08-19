@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "ankheg",
   "name": "Ankheg",
   "type": "monstrosity",
   "systemIds": [

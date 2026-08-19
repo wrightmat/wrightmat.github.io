@@ -848,6 +848,22 @@ export class DataManager {
     return { source: "remote", payload };
   }
 
+  // One request, N `{id, body}` pairs back (not bare bodies — a record's own
+  // JSON doesn't always embed its own id, see get_items_bulk's own comment,
+  // server/storage.py) — server/app.py's POST /content/{bucket}/bulk,
+  // replacing the old "one GET per record" pattern content-fetch.js's
+  // fetchKindEntriesWithIds used to do. No local-cache fast path the way
+  // get() has (preferLocal) — this is always used for a bulk library load
+  // where content-fetch.js's own caching layer sits above this call, not
+  // below it.
+  async getBulk(bucket, { ids, systemIds } = {}) {
+    const body = {};
+    if (Array.isArray(ids) && ids.length) body.ids = ids;
+    if (Array.isArray(systemIds) && systemIds.length) body.systemIds = systemIds;
+    const payload = await this._request(`/content/${bucket}/bulk`, { method: "POST", body, auth: true });
+    return { source: "remote", items: Array.isArray(payload?.items) ? payload.items : [] };
+  }
+
   async save(bucket, id, payload, { mode = "auto" } = {}) {
     if (!id) {
       throw new Error("Record id is required");

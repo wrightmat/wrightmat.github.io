@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "balor",
   "name": "Balor",
   "type": "fiend",
   "systemIds": [

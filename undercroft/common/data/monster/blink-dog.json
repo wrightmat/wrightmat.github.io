@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "blink-dog",
   "name": "Blink Dog",
   "notes": "A blink dog takes its name from its ability to blink in and out of existence, a talent it uses to aid its attacks and to avoid harm.",
   "type": "fey",

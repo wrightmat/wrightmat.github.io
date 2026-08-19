@@ -659,12 +659,19 @@ export async function loadTemplates(dataManager) {
         // get_item() only ever returns the raw file body — ownership lives on
         // the list row, not the file — so it's carried over here rather than
         // lost. Delete-button gating (app.js) needs it to tell "yours" from
-        // "someone else's public template" apart.
+        // "someone else's public template" apart. `id` is carried over the
+        // same way, and LAST (so it always wins over any stray payload.id) —
+        // a template's own id is filename/library_items metadata, never
+        // body content (every Library kind now follows this convention),
+        // so the body itself may not carry one at all; trusting `entry.id`
+        // (the list row's own, already-known id) is what Forge's own NPC
+        // loader already does for this identical reason.
         return {
           ...payload,
           ownerId: entry.owner_id ?? entry.ownerId ?? null,
           ownerUsername: entry.owner_username || entry.ownerUsername || "",
           permissions: typeof entry.permissions === "string" ? entry.permissions.toLowerCase() : "",
+          id: entry.id,
         };
       } catch (error) {
         console.warn(`Unable to load template ${entry.id}`, error);

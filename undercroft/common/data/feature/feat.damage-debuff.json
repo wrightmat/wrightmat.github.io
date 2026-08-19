@@ -1,5 +1,4 @@
 {
-  "id": "feat.damage-debuff",
   "name": "Damage Debuff",
   "systemIds": [
     "sys.dnd5e"

@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "rakshasa",
   "name": "Rakshasa",
   "type": "fiend",
   "systemIds": [

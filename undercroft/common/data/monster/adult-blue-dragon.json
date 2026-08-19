@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "adult-blue-dragon",
   "name": "Adult Blue Dragon",
   "type": "dragon",
   "systemIds": [

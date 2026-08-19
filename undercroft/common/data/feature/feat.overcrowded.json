@@ -1,19 +1,31 @@
 {
-  "id": "feat.overcrowded",
   "name": "Overcrowded",
-  "systemIds": ["sys.dnd5e"],
+  "systemIds": [
+    "sys.dnd5e"
+  ],
   "description": "Far more people live here than this place was ever built for — shared rooms, packed streets, and strained resources are the norm.",
   "mechanics": {
     "type": "passive",
     "text": "Housing and basic goods here are scarce and contested."
   },
   "tags": {
-    "categories": ["location"],
-    "locationTypes": ["settlement", "structure"],
-    "locationPurposes": ["habitation"],
-    "environments": ["urban"]
+    "categories": [
+      "location"
+    ],
+    "locationTypes": [
+      "settlement",
+      "structure"
+    ],
+    "locationPurposes": [
+      "habitation"
+    ],
+    "environments": [
+      "urban"
+    ]
   },
   "synergizesWith": [],
   "dependsOn": [],
-  "conflictsWith": ["feat.isolated"]
+  "conflictsWith": [
+    "feat.isolated"
+  ]
 }

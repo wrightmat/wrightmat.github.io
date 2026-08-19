@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "basilisk",
   "name": "Basilisk",
   "type": "monstrosity",
   "systemIds": [

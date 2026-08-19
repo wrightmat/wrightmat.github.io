@@ -1,8 +1,7 @@
 {
-  "id": "card-grid",
-  "title": "Poker Card Grid (3 \u00d7 3)",
+  "title": "Poker Card Grid (3 × 3)",
   "category": "print",
-  "description": "Print-ready 3 \u00d7 3 grid of poker-sized cards with paired fronts and backs.",
+  "description": "Print-ready 3 × 3 grid of poker-sized cards with paired fronts and backs.",
   "type": "card",
   "formats": [
     {
@@ -150,7 +149,7 @@
       }
     }
   },
-  "name": "Poker Card Grid (3 \u00d7 3)",
+  "name": "Poker Card Grid (3 × 3)",
   "sides": [
     "front",
     "back"

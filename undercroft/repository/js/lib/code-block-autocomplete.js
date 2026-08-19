@@ -8,7 +8,7 @@
 // `[[`. Reuses measureCaretPosition from that module rather than a second
 // copy of the same non-trivial measurement technique.
 import { measureCaretPosition } from "./wiki-link-autocomplete.js";
-import { fetchKindEntriesWithIds, loadLibraryKinds } from "../../../common/js/lib/content-fetch.js";
+import { fetchKindEntrySummaries, loadLibraryKinds } from "../../../common/js/lib/content-fetch.js";
 import { QUICK_DICE } from "../../../common/js/lib/widgets/dice-roll.js";
 import { EXCLUDED_KINDS, iconFor } from "./journal-kind-reference.js";
 
@@ -67,12 +67,16 @@ function parseInProgressCodeBlock(textBeforeCursor) {
 
 async function macroCandidates(dataManager, query) {
   if (!dataManager) return [];
-  const entries = await fetchKindEntriesWithIds(dataManager, "macro").catch(() => []);
+  // Only ever needs a name/id lookup for the dropdown label — never
+  // executes or reads a macro's own actions here (runMacroReference does
+  // that separately once one is picked) — so the metadata-only /list fetch
+  // is enough, unlike journal-macro.js's own findMacro.
+  const entries = await fetchKindEntrySummaries(dataManager, "macro").catch(() => []);
   const q = query.trim().toLowerCase();
   const seen = new Set();
   const results = [];
-  entries.forEach(({ id, entity }) => {
-    const name = String(entity?.name || id || "").trim();
+  entries.forEach(({ id, name: entryName }) => {
+    const name = String(entryName || id || "").trim();
     if (!name || seen.has(name.toLowerCase())) return;
     if (q && !name.toLowerCase().includes(q)) return;
     seen.add(name.toLowerCase());
@@ -88,8 +92,8 @@ async function macroCandidates(dataManager, query) {
 async function encounterCandidates(dataManager, query) {
   if (!dataManager) return [];
   const [monsters, npcs] = await Promise.all([
-    fetchKindEntriesWithIds(dataManager, "monster").catch(() => []),
-    fetchKindEntriesWithIds(dataManager, "npc").catch(() => []),
+    fetchKindEntrySummaries(dataManager, "monster").catch(() => []),
+    fetchKindEntrySummaries(dataManager, "npc").catch(() => []),
   ]);
   const q = query.trim().toLowerCase();
   const seen = new Set();
@@ -98,7 +102,7 @@ async function encounterCandidates(dataManager, query) {
     ...monsters.map((entry) => ({ kind: "monster", entry })),
     ...npcs.map((entry) => ({ kind: "npc", entry })),
   ].forEach(({ kind, entry }) => {
-    const name = String(entry.entity?.name || entry.id || "").trim();
+    const name = String(entry.name || entry.id || "").trim();
     if (!name || seen.has(name.toLowerCase())) return;
     if (q && !name.toLowerCase().includes(q)) return;
     seen.add(name.toLowerCase());
@@ -129,12 +133,12 @@ function dateCandidates(query) {
 // above, just parameterized on which kind's own saved entries to offer.
 async function genericCandidates(dataManager, kindId, query) {
   if (!dataManager) return [];
-  const entries = await fetchKindEntriesWithIds(dataManager, kindId).catch(() => []);
+  const entries = await fetchKindEntrySummaries(dataManager, kindId).catch(() => []);
   const q = query.trim().toLowerCase();
   const seen = new Set();
   const results = [];
-  entries.forEach(({ id, entity }) => {
-    const name = String(entity?.name || entity?.title || id || "").trim();
+  entries.forEach(({ id, name: entryName }) => {
+    const name = String(entryName || id || "").trim();
     if (!name || seen.has(name.toLowerCase())) return;
     if (q && !name.toLowerCase().includes(q)) return;
     seen.add(name.toLowerCase());

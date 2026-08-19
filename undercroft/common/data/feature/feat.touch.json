@@ -1,5 +1,4 @@
 {
-  "id": "feat.touch",
   "name": "Touch",
   "systemIds": [
     "sys.dnd5e"

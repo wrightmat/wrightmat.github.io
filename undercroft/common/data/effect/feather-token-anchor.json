@@ -16,7 +16,6 @@
   "featureIds": [
     "feat.restrict-movement"
   ],
-  "id": "feather-token-anchor",
   "budget": {
     "target": 12,
     "spent": 1,

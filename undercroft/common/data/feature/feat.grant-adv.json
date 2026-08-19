@@ -1,7 +1,8 @@
 {
-  "id": "feat.grant-adv",
   "name": "Grants Advantage on Next Attack",
-  "systemIds": ["sys.dnd5e"],
+  "systemIds": [
+    "sys.dnd5e"
+  ],
   "description": "A target affected by this effect grants advantage to the next attack roll made against it.",
   "mechanics": {
     "type": "passive",
@@ -9,8 +10,14 @@
   },
   "budgetCost": 2,
   "tags": {
-    "categories": ["spell"],
-    "propertyHints": ["buff", "debuff", "combat"]
+    "categories": [
+      "spell"
+    ],
+    "propertyHints": [
+      "buff",
+      "debuff",
+      "combat"
+    ]
   },
   "synergizesWith": [],
   "dependsOn": [],

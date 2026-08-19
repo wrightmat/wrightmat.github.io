@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "will-o-wisp",
   "name": "Will-o'-Wisp",
   "type": "undead",
   "systemIds": [

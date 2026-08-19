@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "giant-bat",
   "name": "Giant Bat",
   "type": "beast",
   "systemIds": [

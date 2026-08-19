@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "dire-wolf",
   "name": "Dire Wolf",
   "type": "beast",
   "systemIds": [

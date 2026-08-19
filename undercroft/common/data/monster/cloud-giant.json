@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "cloud-giant",
   "name": "Cloud Giant",
   "type": "giant",
   "systemIds": [

@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "water-elemental",
   "name": "Water Elemental",
   "type": "elemental",
   "systemIds": [

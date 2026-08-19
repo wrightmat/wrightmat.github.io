@@ -1,7 +1,8 @@
 {
-  "id": "feat.arcane-sight",
   "name": "Arcane Sight",
-  "systemIds": ["sys.dnd5e"],
+  "systemIds": [
+    "sys.dnd5e"
+  ],
   "description": "Reveals a target's resistances, immunities, and any hidden or illusory nature.",
   "mechanics": {
     "type": "active",
@@ -9,10 +10,19 @@
   },
   "budgetCost": 2,
   "tags": {
-    "categories": ["spell", "item"],
-    "propertyHints": ["utility", "detection"]
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "utility",
+      "detection"
+    ]
   },
-  "synergizesWith": ["feat.called-shot", "feat.binding-grasp"],
+  "synergizesWith": [
+    "feat.called-shot",
+    "feat.binding-grasp"
+  ],
   "dependsOn": [],
   "conflictsWith": []
 }

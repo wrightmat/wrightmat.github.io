@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "kraken",
   "name": "Kraken",
   "type": "monstrosity",
   "systemIds": [

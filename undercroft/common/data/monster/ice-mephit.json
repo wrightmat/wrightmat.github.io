@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "ice-mephit",
   "name": "Ice Mephit",
   "type": "elemental",
   "systemIds": [

@@ -23,7 +23,7 @@ import { evaluateFormula } from "../../../common/js/lib/formula-engine.js";
 import { allowsDelete } from "../../../common/js/lib/ownership.js";
 import { buildKindToolUrl, kindToolLabel } from "../../../common/js/lib/kind-tool-route.js";
 import { resolveImageDimension } from "./base-maps.js";
-import { getDefaultView as getTypeDefaultView } from "./map-model.js";
+import { getDefaultView as getTypeDefaultView, createMarkerOverlayIcon } from "./map-model.js";
 
 // A referenced marker's own "open the real thing" link — shared by both
 // restricted-viewer consumers (the Dashboard's Map widget, Orrery's own
@@ -43,20 +43,26 @@ export function resolveMarkerLinkTarget(markerElement) {
   return { url, toolLabel: kindToolLabel(markerElement.refKind) };
 }
 
-// Returns null when nothing should be filtered (hasFullAccess, or the map
-// has no authored Views at all — "no Views configured yet" defaults to
-// unfiltered). Otherwise the Set of layer ids visible to `viewerTier` — the
-// union of every View whose `tiers` is empty (applies to everyone) or
-// includes viewerTier. An empty Set is a legitimate result: Views exist, but
-// none match this viewer, so nothing is visible.
-export function computeVisibleLayerIds(map, viewerTier, hasFullAccess) {
+// Returns null when nothing should be filtered (hasFullAccess) — the map's own
+// owner/admin always sees everything. Otherwise `{ layers: Set, elements: Set }`,
+// the union of hiddenLayerIds/hiddenElementIds across every View whose `tiers` is
+// empty (applies to everyone) or includes viewerTier. View.hiddenLayerIds/
+// hiddenElementIds are DENY-lists, not allow-lists — a map with no authored Views
+// at all, or Views that don't happen to hide anything, naturally yields two empty
+// Sets ("nothing hidden") with no special-casing needed; that's also why a
+// freshly auto-created View (app.js's toggleElementHiddenFromPlayers) can never
+// accidentally hide something nobody actually unchecked, unlike the old allow-list
+// shape this replaced (an empty layerIds there meant "show nothing at all").
+export function computeHiddenIds(map, viewerTier, hasFullAccess) {
   if (hasFullAccess) return null;
-  const views = map.views || [];
-  if (!views.length) return null;
-  const applicableViews = views.filter((view) => !view.tiers?.length || view.tiers.includes(viewerTier));
-  const visible = new Set();
-  applicableViews.forEach((view) => (view.layerIds || []).forEach((id) => visible.add(id)));
-  return visible;
+  const applicableViews = (map.views || []).filter((view) => !view.tiers?.length || view.tiers.includes(viewerTier));
+  const layers = new Set();
+  const elements = new Set();
+  applicableViews.forEach((view) => {
+    (view.hiddenLayerIds || []).forEach((id) => layers.add(id));
+    (view.hiddenElementIds || []).forEach((id) => elements.add(id));
+  });
+  return { layers, elements };
 }
 
 export function isTileBaseMap(map) {
@@ -351,17 +357,63 @@ export function createMarkerDot(baseMapManager, map, layer, markerElement, optio
   // marker saved before this field existed; every marker placed since
   // always stamps a real number here.
   dot.style.opacity = String(Number.isFinite(markerElement.opacity) ? markerElement.opacity : 1);
+  // Off-the-ground visual cue (createMarkerElement's own heightCells) —
+  // positive (flying) gets an offset blurred shadow only, negative
+  // (burrowing/submerged) gets a dashed outline only; a token floating
+  // above the map and one obscured beneath it don't read the same way, so
+  // this deliberately isn't one style with a sign flip.
+  //
+  // The shadow needs to sit BEHIND the token's own fill (portrait image or
+  // flat color) — but that fill can't just be `dot`'s own background the
+  // way it used to be: a box's own background is ALWAYS the bottom-most
+  // paint layer within it, beneath every one of its children, including a
+  // negative-z-index one (confirmed real bug from the first attempt at
+  // this: a z-index trick on the shadow child never actually sank it below
+  // dot's own background, since nothing painted BY a child can ever go
+  // below the background of the box it's a child of — that's true
+  // regardless of z-index). So the fill itself now lives on `face`, a
+  // separate child appended AFTER the shadow — two plain same-stacking-
+  // level children paint in tree order, so face's fill correctly lands on
+  // top of the shadow, and the shadow's own portion that pokes out past
+  // face's edge reads as sitting behind the token, exactly as intended.
+  // `dot` itself keeps only its border/opacity/position — a thin outline
+  // ring is a negligible one-pixel-scale case of the same "child paints
+  // over the ring" effect, not the visibly "darkened token" bug this fixes.
+  const heightCells = Number.isFinite(markerElement.heightCells) ? markerElement.heightCells : 0;
+  if (heightCells > 0) {
+    const shadowSize = size * 1.05;
+    const shadowOffset = Math.min(heightCells * size * 0.05, size * 0.35);
+    const shadow = document.createElement("div");
+    shadow.className = "orrery-marker-height-shadow";
+    shadow.style.position = "absolute";
+    shadow.style.width = `${shadowSize}px`;
+    shadow.style.height = `${shadowSize}px`;
+    shadow.style.left = `${(size - shadowSize) / 2 + shadowOffset}px`;
+    shadow.style.top = `${(size - shadowSize) / 2 + shadowOffset}px`;
+    shadow.style.borderRadius = "50%";
+    shadow.style.background = "rgba(0, 0, 0, 0.35)";
+    shadow.style.filter = `blur(${Math.max(3, size * 0.08)}px)`;
+    shadow.style.pointerEvents = "none";
+    dot.appendChild(shadow);
+  } else if (heightCells < 0) {
+    dot.style.borderStyle = "dashed";
+  }
+  const face = document.createElement("div");
+  face.className = "orrery-marker-face";
+  face.style.position = "absolute";
+  face.style.inset = "0";
+  face.style.borderRadius = "999px";
   if (markerElement.image) {
     // Per-marker image supersedes the layer's flat color/icon dot entirely —
     // a portrait token, ringed with the layer's own color so it still reads
     // as belonging to this layer at a glance. See map-model.js's
     // createMarkerElement for how `image` gets set (manual pick, or
     // auto-inherited once from a referenced Library record).
-    dot.style.backgroundImage = `url("${markerElement.image}")`;
-    dot.style.backgroundSize = "cover";
-    dot.style.backgroundPosition = "center";
+    face.style.backgroundImage = `url("${markerElement.image}")`;
+    face.style.backgroundSize = "cover";
+    face.style.backgroundPosition = "center";
   } else {
-    dot.style.backgroundColor = ringColor;
+    face.style.backgroundColor = ringColor;
     // Falls back to the plain solid-color dot when no icon is set (or the
     // stored value doesn't resolve to a known ddb-*/bi-* class) — same
     // vocabulary as Press's Icon component field, see createIconPickerField.
@@ -373,10 +425,11 @@ export function createMarkerDot(baseMapManager, map, layer, markerElement, optio
       icon.style.fontSize = `${Math.max(8, size * 0.6)}px`;
       icon.style.color = "#fff";
       icon.style.lineHeight = "1";
-      dot.appendChild(icon);
-      dot.classList.add("d-flex", "align-items-center", "justify-content-center");
+      face.appendChild(icon);
+      face.classList.add("d-flex", "align-items-center", "justify-content-center");
     }
   }
+  dot.appendChild(face);
   const draggable = options.draggable !== false;
   dot.style.pointerEvents = draggable ? "auto" : "none";
   dot.style.cursor = draggable ? "pointer" : "default";
@@ -403,12 +456,20 @@ export function createMarkerDot(baseMapManager, map, layer, markerElement, optio
   // A row along the marker's own bottom edge (see .orrery-marker-overlay-icons'
   // own CSS), sized off the SAME `size` this marker's own dot already
   // computed above, so badges scale with the token/grid cell size instead
-  // of staying a fixed on-screen size regardless of zoom.
-  if (Array.isArray(markerElement.overlayIcons) && markerElement.overlayIcons.length) {
+  // of staying a fixed on-screen size regardless of zoom. Manually-authored
+  // overlayIcons and auto-resolved condition icons (options.conditionIcons —
+  // see resolveMarkerConditionIcons's own header comment) render through
+  // this SAME row, concatenated, not merged into markerElement's own stored
+  // array — a GM removing a condition badge here would just reappear on the
+  // next render if it were "deleted" from a stored copy; only removing the
+  // actual condition (Combat Tracker, the character-vitals widget, ...)
+  // should make it go away.
+  const badgeEntries = [...(markerElement.overlayIcons || []), ...(options.conditionIcons || [])];
+  if (badgeEntries.length) {
     const badgeRow = document.createElement("div");
     badgeRow.className = "orrery-marker-overlay-icons";
     const badgeSize = Math.max(10, size * 0.32);
-    markerElement.overlayIcons.forEach((entry) => {
+    badgeEntries.forEach((entry) => {
       const badge = document.createElement("span");
       badge.className = "orrery-marker-overlay-icon";
       badge.style.width = `${badgeSize}px`;
@@ -419,13 +480,170 @@ export function createMarkerDot(baseMapManager, map, layer, markerElement, optio
       if (iconTokens.length) {
         const icon = document.createElement("span");
         const bootstrapToken = iconTokens.find((token) => token.startsWith("bi-"));
-        icon.className = bootstrapToken ? `bi ${bootstrapToken}` : iconTokens.join(" ");
+        const ddbToken = iconTokens.find((token) => token.startsWith("ddb-"));
         icon.style.fontSize = `${badgeSize * 0.65}px`;
+        if (entry.isCondition && ddbToken) {
+          // Condition icons (resolveMarkerConditionIcons, tagged
+          // isCondition) are genuinely two-tone source art — e.g. Charmed's
+          // "C" is a WHITE path layered over a dark one, both fully opaque
+          // in the source SVG. The shared ddb-icons.css rule renders every
+          // ddb-* icon as a single-color CSS mask (`background-color:
+          // currentColor` clipped by the SVG's own alpha channel) so any
+          // ONE icon can be recolored via `color` — but a mask only sees
+          // alpha, not RGB, so it can't tell the white detail path apart
+          // from the dark one; both are 100% opaque, so they collapse into
+          // one undifferentiated silhouette (confirmed real bug: the "C"
+          // vanished entirely, leaving what looked like a plain icon with
+          // no interior detail). Overriding mask off and painting the
+          // icon's own --ddb-icon SVG as a real, multi-color
+          // background-image instead preserves that detail exactly as
+          // authored — done ONLY here (auto-resolved condition badges),
+          // not for ddb-* icons generally, since a GM's own manually-picked
+          // overlay badge (most of which ARE single-tone, meant to be
+          // recolored via `color`) should keep working exactly as before.
+          icon.className = ddbToken;
+          icon.style.mask = "none";
+          icon.style.webkitMask = "none";
+          icon.style.backgroundColor = "transparent";
+          icon.style.backgroundImage = "var(--ddb-icon)";
+          icon.style.backgroundSize = "contain";
+          icon.style.backgroundRepeat = "no-repeat";
+          // Explicit pixel width/height (not the shared ddb-icons.css rule's
+          // own font-size-driven `width:1em;height:1em`) — this is a real
+          // box `background-size:contain` sizes INTO, not an indirect
+          // em-relative one, so it's not fighting rounding from
+          // icon.style.fontSize above. 0.86 rather than that block's own
+          // 0.65 — these source SVGs already have some breathing room
+          // baked into their own viewBox, so 0.65 read as visibly not
+          // filling the circle; the inscribed-square-in-a-circle ceiling is
+          // ~0.71 of the diameter, and this art doesn't reach its own
+          // viewBox corners, so 0.86 still clears the circular border.
+          icon.style.width = `${badgeSize * 0.86}px`;
+          icon.style.height = `${badgeSize * 0.86}px`;
+          icon.style.backgroundPosition = "center";
+          // These source SVGs use a SQUARE viewBox (e.g. Blinded's is
+          // `0 0 20 20`) matching this now-square icon box exactly, so
+          // `contain` sizes the image to fill the box in BOTH dimensions
+          // with zero letterboxed slack — `background-position` has
+          // nothing left to redistribute and is a complete no-op here
+          // (confirmed: nudging it earlier did nothing, and the leftward
+          // lean only looked WORSE once the box grew, since a fixed-size
+          // element offset would look roughly the same either way — this
+          // scales with icon size, which only happens if it's the SVG's
+          // own artwork sitting off-center within its own viewBox, not a
+          // layout/flex-centering issue). A small rightward `transform`
+          // instead shifts the rendered image directly, independent of
+          // background-size math, and scales with badgeSize so it stays
+          // proportionally right as the marker/grid cell size changes.
+          icon.style.transform = `translateX(${badgeSize * 0.06}px)`;
+        } else {
+          icon.className = bootstrapToken ? `bi ${bootstrapToken}` : iconTokens.join(" ");
+        }
         badge.appendChild(icon);
+      } else if (entry.isCondition && entry.label) {
+        // A free-text tag with no matching System Condition icon
+        // (resolveMarkerConditionIcons' own toIcons — tags are deliberately
+        // open-ended, not limited to the authored Condition list) — falls
+        // back to the tag's own text instead of leaving the badge blank, so
+        // an arbitrary GM-typed tag still shows SOMETHING on the map. This
+        // badge grows to fit that text (up to a cap, ellipsized past it —
+        // the full tag is still always available via the badge's own hover
+        // title, set above from this same entry.label) rather than staying
+        // the fixed circle the icon badges use — there's no way to fit
+        // "Frightened" legibly into a badgeSize-wide circle. Black text on
+        // white (entry.color is set to white specifically for this case in
+        // resolveMarkerConditionIcons) to read as the same visual family as
+        // the authored condition icons' own white badges.
+        const textMaxWidth = Math.max(60, badgeSize * 5);
+        badge.style.width = "auto";
+        badge.style.maxWidth = `${textMaxWidth}px`;
+        badge.style.padding = "0 6px";
+        const text = document.createElement("span");
+        text.textContent = entry.label;
+        text.style.display = "inline-block";
+        text.style.maxWidth = "100%";
+        text.style.overflow = "hidden";
+        text.style.textOverflow = "ellipsis";
+        text.style.whiteSpace = "nowrap";
+        text.style.fontSize = `${badgeSize * 0.5}px`;
+        text.style.fontWeight = "600";
+        text.style.color = "#000";
+        text.style.lineHeight = "1";
+        badge.appendChild(text);
       }
       badgeRow.appendChild(badge);
     });
     dot.appendChild(badgeRow);
+  }
+  // GM-only informational cue (never set for a restricted viewer — that
+  // marker isn't in the DOM at all when it's actually hidden from them, see
+  // createMarkerLayerElement's own guard) — a dimmed dot plus a small
+  // "eye-off" corner badge, so a GM can tell at a glance which tokens are
+  // currently hidden from players without opening each one's own inspector.
+  // Reuses the same corner-badge shape the overlay-icon row above already
+  // establishes rather than inventing a second visual language; placed at
+  // the opposite (top) edge so the two never collide when a marker has both.
+  if (options.hiddenFromPlayers) {
+    dot.style.opacity = String((Number.isFinite(markerElement.opacity) ? markerElement.opacity : 1) * 0.5);
+    const hiddenBadge = document.createElement("span");
+    hiddenBadge.className = "orrery-marker-hidden-badge";
+    hiddenBadge.title = "Hidden from players";
+    hiddenBadge.style.position = "absolute";
+    hiddenBadge.style.top = "-4px";
+    hiddenBadge.style.right = "-4px";
+    hiddenBadge.style.width = `${Math.max(10, size * 0.32)}px`;
+    hiddenBadge.style.height = `${Math.max(10, size * 0.32)}px`;
+    hiddenBadge.style.borderRadius = "50%";
+    hiddenBadge.style.background = "#1e293b";
+    hiddenBadge.style.display = "flex";
+    hiddenBadge.style.alignItems = "center";
+    hiddenBadge.style.justifyContent = "center";
+    hiddenBadge.style.pointerEvents = "none";
+    const hiddenIcon = document.createElement("span");
+    hiddenIcon.className = "iconify";
+    hiddenIcon.dataset.icon = "tabler:eye-off";
+    hiddenIcon.setAttribute("aria-hidden", "true");
+    hiddenIcon.style.fontSize = `${Math.max(8, size * 0.22)}px`;
+    hiddenIcon.style.color = "#fff";
+    hiddenBadge.appendChild(hiddenIcon);
+    dot.appendChild(hiddenBadge);
+  }
+  // World-state cue, unlike "hidden from players" just above — shown to
+  // EVERY viewer, not just full-access, since a flying/burrowing creature
+  // should visibly read that way to players too, not only the GM. Same
+  // corner-badge construction, opposite corner (top-left) so the two never
+  // collide on a marker that's both flown/buried and hidden.
+  if (heightCells !== 0) {
+    const heightBadge = document.createElement("span");
+    heightBadge.className = "orrery-marker-height-badge";
+    heightBadge.title = heightCells > 0 ? `${heightCells} cell${heightCells === 1 ? "" : "s"} up` : `${Math.abs(heightCells)} cell${heightCells === -1 ? "" : "s"} down`;
+    heightBadge.style.position = "absolute";
+    heightBadge.style.top = "-4px";
+    heightBadge.style.left = "-4px";
+    heightBadge.style.minWidth = `${Math.max(10, size * 0.28)}px`;
+    heightBadge.style.height = `${Math.max(10, size * 0.28)}px`;
+    heightBadge.style.borderRadius = "999px";
+    heightBadge.style.padding = "0 3px";
+    heightBadge.style.background = "#1e293b";
+    heightBadge.style.display = "flex";
+    heightBadge.style.alignItems = "center";
+    heightBadge.style.justifyContent = "center";
+    heightBadge.style.gap = "1px";
+    heightBadge.style.pointerEvents = "none";
+    const heightIcon = document.createElement("span");
+    heightIcon.className = "iconify";
+    heightIcon.dataset.icon = heightCells > 0 ? "tabler:arrow-up" : "tabler:arrow-down";
+    heightIcon.setAttribute("aria-hidden", "true");
+    heightIcon.style.fontSize = `${Math.max(7, size * 0.19)}px`;
+    heightIcon.style.color = "#fff";
+    heightBadge.appendChild(heightIcon);
+    const heightText = document.createElement("span");
+    heightText.textContent = String(Math.abs(heightCells));
+    heightText.style.fontSize = `${Math.max(7, size * 0.15)}px`;
+    heightText.style.color = "#fff";
+    heightText.style.lineHeight = "1";
+    heightBadge.appendChild(heightText);
+    dot.appendChild(heightBadge);
   }
   if (draggable) {
     dot.addEventListener("pointerdown", (event) => {
@@ -503,6 +721,16 @@ export function createMarkerLayerElement(baseMapManager, map, layer, options = {
     });
   }
   (layer.elements || []).forEach((markerElement) => {
+    // Skipped entirely for a viewer this marker is hidden from (View-based,
+    // options.hiddenElementIds — see renderMapLayers' own markerHiddenElementIds/
+    // isPrivilegedMarkerViewer for who's exempt: a full-access GM in Orrery,
+    // or a map owner/admin viewing the restricted widget for their own map).
+    // Combat Tracker's own "visible to players" toggle writes THROUGH to
+    // this exact same View data now (combat-tracker.js's own
+    // toggleCombatantHiddenFromPlayers) rather than keeping a second,
+    // independent combatant.hidden flag that needed its own parallel
+    // resolution here — one mechanism, one place it's read.
+    if (options.hiddenElementIds?.has(markerElement.id)) return;
     if (!hasValidMarkerPosition(map, markerElement.position)) return;
     const draggable = options.isMarkerDraggable ? options.isMarkerDraggable(markerElement) : Boolean(options.isInteractive);
     container.appendChild(
@@ -515,6 +743,13 @@ export function createMarkerLayerElement(baseMapManager, map, layer, options = {
           ? (fromPixel, toPixel) => options.resolveMarkerMoveBlocked(layer, markerElement, fromPixel, toPixel)
           : undefined,
         onClick: options.onMarkerClicked ? (dotEl) => options.onMarkerClicked(layer, markerElement, dotEl) : undefined,
+        // Privileged-viewer-only informational cue (a full-access GM in
+        // Orrery, or a map owner/admin in the restricted widget — see
+        // isPrivilegedMarkerViewer) — never set for anyone else, since that
+        // marker simply isn't in the DOM at all for them, per the guards
+        // just above.
+        hiddenFromPlayers: Boolean(options.hiddenFromPlayerElementIds?.has(markerElement.id)),
+        conditionIcons: options.resolveConditionIcons ? options.resolveConditionIcons(markerElement) : [],
       })
     );
   });
@@ -982,6 +1217,11 @@ export function buildRestrictedMapOptions({
   map,
   characterOwnershipCatalog,
   getCharacterPayload,
+  // (marker) => overlayIcon[] — see resolveMarkerConditionIcons's own
+  // header comment. Just passed through to renderMapLayers/createMarkerDot
+  // like getCharacterPayload just above; this function never calls it
+  // itself.
+  resolveConditionIcons,
   status,
   onMarkerMoved,
   onDoorToggled,
@@ -1008,11 +1248,38 @@ export function buildRestrictedMapOptions({
   // makes app.js's own poll guard skip incoming updates — a restricted
   // viewer has no selection concept at all, so it needed its own signal.
   onDragStateChange,
+  // () => boolean — true if the current viewer is this MAP's own owner/admin
+  // (map.js's own isMapOwnerOrAdmin, which already backs canManageDrawing
+  // for player-authored shapes — see that function's own comment for why
+  // this is deliberately ownership-only, not allowsDelete()'s broader
+  // "or an edit-permission share" rule, given every campaign member already
+  // holds an edit share on a spotlighted map). Extends full drag/click-to-
+  // edit parity to every OTHER reference kind (monster, npc, ...) for that
+  // one viewer — a plain player has no ownership concept over GM-authored
+  // content like a Monster/NPC record at all, so character ownership stays
+  // the only path for everyone else. Optional; omitted (the only caller
+  // besides map.js — Orrery's own app.js, for its non-owner-viewer branch —
+  // doesn't pass this) keeps the original character-only restricted
+  // behavior unchanged.
+  hasMapOwnerAccess,
 }) {
   const blockingSegments = resolveBlockingSegments(baseMapManager, map);
+  // Resolved once per render pass (hasMapOwnerAccess is a caller-supplied
+  // check, not a static flag) — reused below both for drag permission
+  // (isMarkerDraggable, its original purpose) and for marker hidden-from-
+  // players parity (renderMapLayers' own isPrivilegedViewer — see that
+  // function's own comment): this map's own owner/admin viewing it through
+  // this restricted widget should see the exact same dim+badge treatment
+  // for a hidden marker a GM gets in Orrery itself, not the real-removal a
+  // genuine player gets, and not (the confirmed bug this fixes) no
+  // indication at all.
+  const isOwner = typeof hasMapOwnerAccess === "function" ? Boolean(hasMapOwnerAccess()) : false;
   function isMarkerDraggable(layer, markerElement) {
-    if (markerElement.refKind !== "character" || !markerElement.refId) return false;
-    return allowsDelete(characterOwnershipCatalog, markerElement.refId, { dataManager });
+    if (!markerElement.refId) return false;
+    if (markerElement.refKind === "character") {
+      return allowsDelete(characterOwnershipCatalog, markerElement.refId, { dataManager });
+    }
+    return isOwner;
   }
   // Doors only — never gated on anything selection-related, since a
   // restricted viewer has no selection concept at all (renderMapLayers
@@ -1068,6 +1335,8 @@ export function buildRestrictedMapOptions({
     resolveMarkerMoveBlocked: (layer, markerElement, fromPixel, toPixel) =>
       blockingSegments.some((segment) => segmentsIntersect(fromPixel, toPixel, segment.a, segment.b)),
     getCharacterPayload,
+    resolveConditionIcons,
+    hasMapOwnerAccess: isOwner,
   };
 }
 
@@ -1103,6 +1372,109 @@ export function resolveMarkerVisionRangeCells(marker, getCharacterPayload) {
   }
   const literal = Number(marker.visionRangeText);
   return Number.isFinite(literal) ? Math.max(0, literal) : 0;
+}
+
+// A marker's own CURRENT condition icons — same "everything caller-specific
+// is a callback, this module never fetches anything itself" shape
+// resolveMarkerVisionRangeCells just above uses, and for the same reason:
+// Orrery's own app.js and the Dashboard's map.js widget each keep their own
+// independent fetch-and-cache instances (character payload/System fields,
+// the active Encounter), but the actual RESOLUTION ALGORITHM lives here
+// once, shared, so the two can't quietly drift apart the way
+// buildRestrictedMapOptions' own marker-drag policy once did before it was
+// extracted here for the same reason.
+//
+// A Character-linked marker resolves its conditions straight off its own
+// cached payload, through the System's `tags`-role binding — the value
+// carried there IS the character's current conditions, no combat-instance
+// ambiguity possible (a Character is never more than one combatant at
+// once). A Monster/NPC-linked marker has no such record of its own to read
+// (see map-model.js's own linkedCombatantId comment for why) — it resolves
+// from `getActiveEncounter()`'s own combatants instead, matched by
+// refKind+refId, disambiguated by `marker.linkedCombatantId` when more than
+// one combatant shares that refId. Either path finishes the same way:
+// each resolved condition id maps to an icon/color via `getSystemConditions
+// (systemId).iconMap` (see orrery/app.js's buildSystemConditions for how
+// that's derived — a Condition value's own "Extra Properties," same
+// generic per-value catch-all resolveMonsterSizeCells already reads
+// `sizeValue` through). Returns createMarkerOverlayIcon-shaped entries so
+// createMarkerDot's existing badge-row rendering can treat these
+// identically to a marker's own manually-authored overlayIcons.
+export function resolveMarkerConditionIcons(
+  marker,
+  { getCharacterPayload, getCharacterSystemId, getSystemConditions, getActiveEncounter } = {}
+) {
+  const toIcons = (conditionIds, systemConditions) =>
+    conditionIds.map((conditionId) => {
+      const entry = systemConditions.iconMap.get(conditionId);
+      // isCondition marks this entry for createMarkerDot's own badge
+      // renderer — see that function's own comment on why a two-tone
+      // ddb-* condition icon (e.g. Charmed's "C") needs different
+      // treatment than an ordinary single-color manually-picked
+      // overlayIcon, without changing createMarkerOverlayIcon's own
+      // shared shape/contract.
+      if (entry) {
+        return { ...createMarkerOverlayIcon({ icon: entry.icon, color: entry.color, label: conditionId }), isCondition: true };
+      }
+      // Tags are deliberately free-text, not limited to the System's own
+      // Condition vocabulary (a GM can type anything into Combat Tracker's
+      // Add Tag input) — a tag with no matching icon/color previously just
+      // vanished here entirely (createMarkerOverlayIcon never even got
+      // called). Every tag now gets SOME badge; createMarkerDot's own badge
+      // renderer falls back to the tag's own text (truncated with an
+      // ellipsis past a length limit) whenever `icon` is blank, rather than
+      // silently dropping anything outside the authored Condition list.
+      // White background here (not createMarkerOverlayIcon's own "#1e293b"
+      // default) to match the authored condition icons' own white badge —
+      // same look, just text instead of art.
+      return { ...createMarkerOverlayIcon({ icon: "", color: "#ffffff", label: conditionId }), isCondition: true };
+    });
+  // A tag whose own value appears in the same combatant/character's
+  // hiddenTags list (see buildTagInputRow's own visibility toggle, tag-
+  // editor.js) is intentionally GM-only reference — filtered out here,
+  // before toIcons ever runs, so it never reaches a marker's badge row at
+  // all, the same way a fully-unknown condition id would just never have
+  // been in the list to begin with.
+  const visibleTags = (tags, hiddenTags) =>
+    Array.isArray(hiddenTags) && hiddenTags.length ? tags.filter((tag) => !hiddenTags.includes(tag)) : tags;
+  if (marker.refKind === "character" && marker.refId) {
+    const payload = getCharacterPayload?.(marker.refId);
+    const systemId = getCharacterSystemId?.(marker.refId);
+    if (!payload || !systemId) return [];
+    const systemConditions = getSystemConditions?.(systemId);
+    if (!systemConditions?.tagsBinding) return [];
+    const conditions = resolveBinding(systemConditions.tagsBinding, payload);
+    return Array.isArray(conditions) ? toIcons(visibleTags(conditions, payload.hiddenTags), systemConditions) : [];
+  }
+  if ((marker.refKind === "monster" || marker.refKind === "npc") && marker.refId) {
+    const encounter = getActiveEncounter?.();
+    if (!encounter?.systemId) return [];
+    const combatant = resolveMarkerLinkedCombatant(marker, encounter);
+    if (!combatant?.conditions?.length) return [];
+    const systemConditions = getSystemConditions?.(encounter.systemId);
+    return systemConditions ? toIcons(visibleTags(combatant.conditions, combatant.hiddenTags), systemConditions) : [];
+  }
+  return [];
+}
+
+// The active Encounter's own combatant entry this marker currently
+// represents — refKind+refId matched, disambiguated by
+// marker.linkedCombatantId when more than one combatant shares that
+// refId/refKind pair (see map-model.js's own linkedCombatantId comment).
+// Used by resolveMarkerConditionIcons' own Monster/NPC path above (its only
+// remaining caller — "hidden from players" no longer needs a resolver like
+// this at all, now that Combat Tracker writes through to the Map's own View
+// data directly instead of keeping an independent combatant.hidden flag).
+function resolveMarkerLinkedCombatant(marker, encounter) {
+  if (!encounter || !marker.refId) return null;
+  const matches = (encounter.combatants || []).filter(
+    (combatant) => combatant.refKind === marker.refKind && combatant.refId === marker.refId
+  );
+  if (matches.length === 1) return matches[0];
+  if (matches.length > 1 && marker.linkedCombatantId) {
+    return matches.find((entry) => entry.id === marker.linkedCombatantId) || null;
+  }
+  return null;
 }
 
 // A light's EFFECTIVE position — its own stored `origin` for a freestanding
@@ -2298,6 +2670,10 @@ export function createVectorLayerElement(baseMapManager, map, layer, options = {
   svg.style.pointerEvents = "none";
   const offset = getMarkerLayerOffset(map, layer);
   (layer.elements || []).forEach((element) => {
+    // Same "not in the DOM at all for a restricted viewer" treatment
+    // createMarkerLayerElement's own guard gives markers — covers path/
+    // shape/wall/light uniformly since they all flow through this one loop.
+    if (options.hiddenElementIds?.has(element.id)) return;
     if (element.kind === "shape") {
       renderShapeElement(svg, baseMapManager, map, layer, element, offset, options);
       return;
@@ -2452,7 +2828,7 @@ function createLayerWrapper(map, layer, isSelected) {
 // Dashboard Map widget call.
 //
 // `options`:
-// - `viewerTier`, `hasFullAccess` — tiered-visibility filter (computeVisibleLayerIds).
+// - `viewerTier`, `hasFullAccess` — tiered-visibility filter (computeHiddenIds).
 // - `selection` — Orrery-only: `{kind: "layer"|"grid-cells"|"marker-element"|"group", id, layerId, cells}`.
 //   Omitted (or null) means nothing renders as selected and no layer gets
 //   the whole-layer drag handle — exactly the widget's case.
@@ -2477,11 +2853,37 @@ function createLayerWrapper(map, layer, isSelected) {
 export function renderMapLayers(overlay, baseMapManager, map, options = {}) {
   if (!overlay) return;
   overlay.innerHTML = "";
-  const visibleLayerIds = computeVisibleLayerIds(map, options.viewerTier ?? "free", options.hasFullAccess ?? false);
+  const hasFullAccess = options.hasFullAccess ?? false;
+  const hidden = computeHiddenIds(map, options.viewerTier ?? "free", hasFullAccess);
+  // Marker-specific parity flag — Orrery's own full-access GM view
+  // (hasFullAccess) AND a restricted widget viewer who's still this map's
+  // own owner/admin (options.hasMapOwnerAccess, buildRestrictedMapOptions'
+  // own isOwner) both get the SAME "dim + badge, not real removal"
+  // treatment for a hidden MARKER (View-based OR Combat Tracker's
+  // combatant.hidden, see createMarkerLayerElement below) — confirmed real
+  // bug this fixes: a map owner using the Dashboard's Map widget for their
+  // OWN map previously either saw a hidden marker vanish entirely (the
+  // combatant-hidden case) or saw no indication it was hidden at all (the
+  // View-based case, since hiddenFromPlayerElementIds below was gated on
+  // hasFullAccess alone, which the widget never sets). Deliberately scoped
+  // to MARKERS only — hidden layers/vector shapes/secret doors keep their
+  // existing hasFullAccess-only behavior, unaffected.
+  const isPrivilegedMarkerViewer = hasFullAccess || Boolean(options.hasMapOwnerAccess);
+  // GM-only informational cue (createMarkerDot's own dim/badge treatment below) —
+  // "what's hidden from the player tier specifically," independent of whichever
+  // tier is actually viewing right now. Only computed for a privileged viewer;
+  // anyone else already has matching elements filtered out entirely by
+  // `hidden`/markerHiddenElementIds below, so there's nothing left to badge.
+  const hiddenFromPlayerElementIds = isPrivilegedMarkerViewer ? computeHiddenIds(map, "player", false).elements : null;
+  // A privileged viewer never has a View-hidden MARKER actually removed
+  // from the DOM (badge instead, via hiddenFromPlayerElementIds above) —
+  // `hidden.elements` still governs everything else (vector paths, doors)
+  // exactly as before.
+  const markerHiddenElementIds = isPrivilegedMarkerViewer ? undefined : hidden?.elements;
   const selection = options.selection || null;
   (map.layers || []).forEach((layer) => {
     if (!layer.visible) return;
-    if (visibleLayerIds && !visibleLayerIds.has(layer.id)) return;
+    if (hidden?.layers.has(layer.id)) return;
     const isLayerSelected = selection?.kind === "layer" && selection.id === layer.id;
     const isGridCellsSelected = selection?.kind === "grid-cells" && selection.layerId === layer.id;
     const isMarkerElementSelected = selection?.kind === "marker-element" && selection.layerId === layer.id;
@@ -2554,10 +2956,14 @@ export function renderMapLayers(overlay, baseMapManager, map, options = {}) {
         // Never passed from Orrery's own app.js — see beginMarkerDrag's own
         // header comment for why free GM authoring must stay unrestricted.
         resolveMarkerMoveBlocked: options.resolveMarkerMoveBlocked,
+        hiddenElementIds: markerHiddenElementIds,
+        hiddenFromPlayerElementIds,
+        resolveConditionIcons: options.resolveConditionIcons,
       });
     } else {
       element = createVectorLayerElement(baseMapManager, map, layer, {
         selectedElementId: isVectorPathSelected ? selection.id : null,
+        hiddenElementIds: hidden?.elements,
         // isSelected, not isLayerSelected alone — once a path IS selected,
         // selection.kind becomes "vector-path", not "layer" anymore, so
         // isLayerSelected alone would go false the instant you select a

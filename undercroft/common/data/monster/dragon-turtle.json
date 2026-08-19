@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "dragon-turtle",
   "name": "Dragon Turtle",
   "type": "dragon",
   "systemIds": [

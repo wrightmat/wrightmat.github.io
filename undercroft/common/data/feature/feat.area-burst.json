@@ -1,7 +1,8 @@
 {
-  "id": "feat.area-burst",
   "name": "Area Burst",
-  "systemIds": ["sys.dnd5e"],
+  "systemIds": [
+    "sys.dnd5e"
+  ],
   "description": "The effect erupts outward from its point of impact, catching everything nearby.",
   "mechanics": {
     "type": "passive",
@@ -9,10 +10,19 @@
   },
   "budgetCost": 4,
   "tags": {
-    "categories": ["spell", "item"],
-    "propertyHints": ["modifier", "area"]
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "modifier",
+      "area"
+    ]
   },
-  "synergizesWith": ["feat.searing-bolt", "feat.frost-lance"],
+  "synergizesWith": [
+    "feat.searing-bolt",
+    "feat.frost-lance"
+  ],
   "dependsOn": [],
   "conflictsWith": []
 }

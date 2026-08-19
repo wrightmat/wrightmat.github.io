@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "sahuagin",
   "name": "Sahuagin",
   "type": "humanoid",
   "systemIds": [

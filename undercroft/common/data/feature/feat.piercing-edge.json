@@ -1,7 +1,8 @@
 {
-  "id": "feat.piercing-edge",
   "name": "Piercing Edge",
-  "systemIds": ["sys.dnd5e"],
+  "systemIds": [
+    "sys.dnd5e"
+  ],
   "description": "The paired damaging effect ignores resistance to its damage type.",
   "mechanics": {
     "type": "passive",
@@ -9,10 +10,19 @@
   },
   "budgetCost": 2,
   "tags": {
-    "categories": ["spell", "item"],
-    "propertyHints": ["modifier", "damage"]
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "modifier",
+      "damage"
+    ]
   },
-  "synergizesWith": ["feat.searing-bolt", "feat.frost-lance"],
+  "synergizesWith": [
+    "feat.searing-bolt",
+    "feat.frost-lance"
+  ],
   "dependsOn": [],
   "conflictsWith": []
 }

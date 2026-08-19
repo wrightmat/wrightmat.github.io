@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "ice-devil",
   "name": "Ice Devil",
   "type": "fiend",
   "systemIds": [

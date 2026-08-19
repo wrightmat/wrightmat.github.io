@@ -704,18 +704,17 @@ export async function reimportViaMapping(mappingId, value, dataManager) {
 export function mergeImportedCharacterData(freshData, priorPayload) {
   const prior = priorPayload || {};
   return {
-    // Confirmed real bug this fixes: a Workbench-created (or otherwise
-    // already-embedding-its-own-id) character's top-level `id` field was
-    // never in this preserve list at all, and no mapping has ever produced
-    // one either (a mapping only ever sees the raw external source, which
-    // has no idea what filename/key this record is even saved under) — so
-    // any re-import silently DROPPED it outright, not just left it stale.
-    // Most Library-sourced characters never embed one in the first place
-    // (id is the filename/key they're fetched by — see
-    // workbench-character-view.js's own loadCharacter comment), in which
-    // case `prior.id` is simply undefined here and this is a no-op, exactly
-    // as before.
-    id: prior.id,
+    // No `id` in this preserve list — a record's own id is filename/
+    // library_items metadata, never body content (see
+    // workbench-character-view.js's own persistDraft, the one place that
+    // now enforces this: it strips `.id` off the save payload unconditionally
+    // right before writing, regardless of how it got onto state.draft). This
+    // preserve list used to carry `id: prior.id` — a targeted fix for a real
+    // prior bug (a re-import silently dropping an already-embedded id) — but
+    // that only ever papered over the actual problem: some characters
+    // embedded id and some didn't. Every character file has since been
+    // cleaned up to match Location/Setting/Journal's own convention (id
+    // never in the body at all), so there's nothing left here to preserve.
     template: prior.template,
     systemIds: prior.systemIds,
     data: prior.data,
@@ -922,8 +921,96 @@ export async function listLibraryKind(kind) {
 // silently discarded, so a REAL recurring gap becomes visible in the
 // console immediately instead of manifesting as a mystery duplicate.
 const FETCH_KIND_ENTRIES_BATCH_SIZE = 12;
+
+// `{ id, entity }[]` — the exact shape every existing caller already expects
+// (`entries.map((entry) => ({ id: entry.id, ...entry.entity }))`, Vault/
+// Crucible/Sanctum's own tables.js), regardless of which path fetched the
+// body. Kept as its own helper so both the bulk path and the fallback path
+// below produce identical output.
+function toKindEntry(kind, id, body) {
+  if (!body) return null;
+  return { id, entity: body };
+}
+
+// Cross-visit cache for the bulk fetch below — a tool re-opened, or a
+// System re-selected, in the SAME tab within one session no longer repeats
+// the request at all. Keyed by kind + systemId (unscoped fetches use ""),
+// caching the in-flight PROMISE (not just the resolved value) so two
+// callers racing for the same kind within one tick (a real shape — Vault's
+// own Feature and Effect pickers both load on the same page) share one
+// request instead of firing two. Invalidated on the two events DataManager
+// already emits on any real write (save() at data-manager.js's own
+// "workbench:content-saved", delete()'s "workbench:content-deleted") —
+// whole-kind, not just the touched id, since a save can change which
+// entries match a systemId filter, not only one entry's own content.
+const bulkFetchCache = new Map();
+
+function bulkCacheKey(kind, systemId) {
+  return `${kind}::${systemId || ""}`;
+}
+
+function invalidateBulkCacheForKind(kind) {
+  if (!kind) return;
+  const prefix = `${kind}::`;
+  Array.from(bulkFetchCache.keys())
+    .filter((key) => key.startsWith(prefix))
+    .forEach((key) => bulkFetchCache.delete(key));
+}
+
+if (typeof window !== "undefined") {
+  window.addEventListener("workbench:content-saved", (event) => invalidateBulkCacheForKind(event.detail?.bucket));
+  window.addEventListener("workbench:content-deleted", (event) => invalidateBulkCacheForKind(event.detail?.bucket));
+}
+
+// Shared by fetchKindEntriesWithIds/fetchKindEntriesForSystem below — runs
+// `fetchFn` at most once per kind+systemId combination until the cache is
+// invalidated. A rejected fetch is NOT cached (deleted immediately so the
+// next call retries against the server rather than replaying a failure for
+// the rest of the session).
+function cachedBulkFetch(kind, systemId, fetchFn) {
+  const key = bulkCacheKey(kind, systemId);
+  const cached = bulkFetchCache.get(key);
+  if (cached) return cached;
+  const promise = fetchFn().catch((error) => {
+    bulkFetchCache.delete(key);
+    throw error;
+  });
+  bulkFetchCache.set(key, promise);
+  return promise;
+}
+
+// One request instead of N (server/app.py's POST /content/{bucket}/bulk,
+// DataManager's own getBulk) — this used to fetch a kind's id list, then
+// fire one full HTTP GET per entry (batched 12 at a time; see the fallback
+// path below, kept only for when the bulk endpoint itself errors). At
+// Vault's real scale (Feature crossed 1,500 entries) that was ~120
+// sequential request batches just to open the tool; this is one. The
+// systemIds filter is Orrery/Vault-tools-facing only through the dedicated
+// fetchKindEntriesForSystem below — this function's own contract (fetch
+// EVERY accessible entry) is unchanged, so every existing caller keeps
+// working with zero call-site changes.
 export async function fetchKindEntriesWithIds(dataManager, kind) {
   if (!dataManager) return [];
+  return cachedBulkFetch(kind, "", () => fetchKindEntriesWithIdsUncached(dataManager, kind));
+}
+
+async function fetchKindEntriesWithIdsUncached(dataManager, kind) {
+  try {
+    const { items } = await dataManager.getBulk(kind);
+    // Each item is `{id, body}` — the id is the LIST ROW's authoritative
+    // one (server/storage.py's get_items_bulk), not assumed to be embedded
+    // in the body itself. Plenty of kinds never duplicate their own id
+    // inside the JSON (it's the filename/library_items row instead — same
+    // convention Forge's own Location loader comment describes). Confirmed
+    // real regression from an earlier version of this that read `body?.id`
+    // directly: any record without a self-embedded id came back as
+    // `{id: undefined, ...}`, breaking every consumer that reads `.id`
+    // (Crucible's Locked Features checklist crashed outright; Forge's own
+    // Setting auto-select silently stopped matching anything).
+    return items.map((item) => toKindEntry(kind, item?.id, item?.body)).filter(Boolean);
+  } catch (error) {
+    console.warn(`fetchKindEntriesWithIds: bulk fetch failed for ${kind}, falling back to per-item fetch`, error);
+  }
   const { remote } = await dataManager.list(kind, { refresh: true, includeLocal: false });
   const ids = dataManager
     .collectListEntries(remote, ["owned", "shared", "public", "items"])
@@ -944,7 +1031,7 @@ export async function fetchKindEntriesWithIds(dataManager, kind) {
           // for filtering" helper — Forge's NPCs/Locations, Crucible's
           // Monsters, Vault's Effects, Sanctum's Features/Resources/...),
           // making it disappear from the Setting it now actually belongs to.
-          return { id, entity: (await dataManager.get(kind, id, { preferLocal: false }))?.payload };
+          return toKindEntry(kind, id, (await dataManager.get(kind, id, { preferLocal: false }))?.payload);
         } catch (error) {
           console.warn(`fetchKindEntriesWithIds: failed to fetch ${kind}/${id}`, error);
           return null;
@@ -954,6 +1041,33 @@ export async function fetchKindEntriesWithIds(dataManager, kind) {
     entries.push(...results);
   }
   return entries.filter(Boolean);
+}
+
+// Same output shape as fetchKindEntriesWithIds, but asks the server to
+// filter by systemIds BEFORE reading any file (get_items_bulk, server/
+// storage.py) instead of fetching a kind's entire cross-tool library and
+// filtering client-side afterward — the piece that keeps Vault/Crucible/
+// Sanctum's own tables.js fast as more Systems get built, since the
+// fetched set shrinks instead of growing with total library size. Falls
+// back to the unfiltered fetch (then client-side filtering, same as
+// before this existed) if the bulk endpoint errors, same resilience
+// fetchKindEntriesWithIds itself has.
+export async function fetchKindEntriesForSystem(dataManager, kind, systemId) {
+  if (!dataManager) return [];
+  if (!systemId) return fetchKindEntriesWithIds(dataManager, kind);
+  return cachedBulkFetch(kind, systemId, () => fetchKindEntriesForSystemUncached(dataManager, kind, systemId));
+}
+
+async function fetchKindEntriesForSystemUncached(dataManager, kind, systemId) {
+  try {
+    const { items } = await dataManager.getBulk(kind, { systemIds: [systemId] });
+    // {id, body} per item — see fetchKindEntriesWithIdsUncached's own
+    // comment on why the id has to come from the item wrapper, not body?.id.
+    return items.map((item) => toKindEntry(kind, item?.id, item?.body)).filter(Boolean);
+  } catch (error) {
+    console.warn(`fetchKindEntriesForSystem: bulk fetch failed for ${kind}, falling back to unfiltered fetch`, error);
+    return fetchKindEntriesWithIds(dataManager, kind);
+  }
 }
 
 // {id, name}, straight off the /list response — ZERO per-record fetches,

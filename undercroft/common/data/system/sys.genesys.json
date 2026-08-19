@@ -1,5 +1,4 @@
 {
-  "id": "sys.genesys",
   "title": "Genesys",
   "version": "0.1",
   "fields": [
@@ -19,12 +18,34 @@
           "themeOverride": "genesys",
           "diceBoxType": "boost",
           "sides": [
-            { "symbols": [] },
-            { "symbols": [] },
-            { "symbols": ["success"] },
-            { "symbols": ["success", "advantage"] },
-            { "symbols": ["advantage", "advantage"] },
-            { "symbols": ["advantage"] }
+            {
+              "symbols": []
+            },
+            {
+              "symbols": []
+            },
+            {
+              "symbols": [
+                "success"
+              ]
+            },
+            {
+              "symbols": [
+                "success",
+                "advantage"
+              ]
+            },
+            {
+              "symbols": [
+                "advantage",
+                "advantage"
+              ]
+            },
+            {
+              "symbols": [
+                "advantage"
+              ]
+            }
           ]
         },
         {
@@ -32,12 +53,32 @@
           "themeOverride": "genesys",
           "diceBoxType": "setback",
           "sides": [
-            { "symbols": [] },
-            { "symbols": [] },
-            { "symbols": ["failure"] },
-            { "symbols": ["failure"] },
-            { "symbols": ["threat"] },
-            { "symbols": ["threat"] }
+            {
+              "symbols": []
+            },
+            {
+              "symbols": []
+            },
+            {
+              "symbols": [
+                "failure"
+              ]
+            },
+            {
+              "symbols": [
+                "failure"
+              ]
+            },
+            {
+              "symbols": [
+                "threat"
+              ]
+            },
+            {
+              "symbols": [
+                "threat"
+              ]
+            }
           ]
         },
         {
@@ -45,14 +86,47 @@
           "themeOverride": "genesys",
           "diceBoxType": "ability",
           "sides": [
-            { "symbols": [] },
-            { "symbols": ["success"] },
-            { "symbols": ["success"] },
-            { "symbols": ["success", "success"] },
-            { "symbols": ["advantage"] },
-            { "symbols": ["advantage"] },
-            { "symbols": ["success", "advantage"] },
-            { "symbols": ["advantage", "advantage"] }
+            {
+              "symbols": []
+            },
+            {
+              "symbols": [
+                "success"
+              ]
+            },
+            {
+              "symbols": [
+                "success"
+              ]
+            },
+            {
+              "symbols": [
+                "success",
+                "success"
+              ]
+            },
+            {
+              "symbols": [
+                "advantage"
+              ]
+            },
+            {
+              "symbols": [
+                "advantage"
+              ]
+            },
+            {
+              "symbols": [
+                "success",
+                "advantage"
+              ]
+            },
+            {
+              "symbols": [
+                "advantage",
+                "advantage"
+              ]
+            }
           ]
         },
         {
@@ -60,14 +134,47 @@
           "themeOverride": "genesys",
           "diceBoxType": "difficulty",
           "sides": [
-            { "symbols": [] },
-            { "symbols": ["failure"] },
-            { "symbols": ["failure", "failure"] },
-            { "symbols": ["threat"] },
-            { "symbols": ["threat"] },
-            { "symbols": ["threat"] },
-            { "symbols": ["failure", "threat"] },
-            { "symbols": ["threat", "threat"] }
+            {
+              "symbols": []
+            },
+            {
+              "symbols": [
+                "failure"
+              ]
+            },
+            {
+              "symbols": [
+                "failure",
+                "failure"
+              ]
+            },
+            {
+              "symbols": [
+                "threat"
+              ]
+            },
+            {
+              "symbols": [
+                "threat"
+              ]
+            },
+            {
+              "symbols": [
+                "threat"
+              ]
+            },
+            {
+              "symbols": [
+                "failure",
+                "threat"
+              ]
+            },
+            {
+              "symbols": [
+                "threat",
+                "threat"
+              ]
+            }
           ]
         },
         {
@@ -75,18 +182,72 @@
           "themeOverride": "genesys",
           "diceBoxType": "proficiency",
           "sides": [
-            { "symbols": [] },
-            { "symbols": ["success"] },
-            { "symbols": ["success"] },
-            { "symbols": ["success", "success"] },
-            { "symbols": ["success", "success"] },
-            { "symbols": ["advantage"] },
-            { "symbols": ["success", "advantage"] },
-            { "symbols": ["success", "advantage"] },
-            { "symbols": ["success", "advantage"] },
-            { "symbols": ["advantage", "advantage"] },
-            { "symbols": ["advantage", "advantage"] },
-            { "symbols": ["success", "triumph"] }
+            {
+              "symbols": []
+            },
+            {
+              "symbols": [
+                "success"
+              ]
+            },
+            {
+              "symbols": [
+                "success"
+              ]
+            },
+            {
+              "symbols": [
+                "success",
+                "success"
+              ]
+            },
+            {
+              "symbols": [
+                "success",
+                "success"
+              ]
+            },
+            {
+              "symbols": [
+                "advantage"
+              ]
+            },
+            {
+              "symbols": [
+                "success",
+                "advantage"
+              ]
+            },
+            {
+              "symbols": [
+                "success",
+                "advantage"
+              ]
+            },
+            {
+              "symbols": [
+                "success",
+                "advantage"
+              ]
+            },
+            {
+              "symbols": [
+                "advantage",
+                "advantage"
+              ]
+            },
+            {
+              "symbols": [
+                "advantage",
+                "advantage"
+              ]
+            },
+            {
+              "symbols": [
+                "success",
+                "triumph"
+              ]
+            }
           ]
         },
         {
@@ -94,18 +255,72 @@
           "themeOverride": "genesys",
           "diceBoxType": "challenge",
           "sides": [
-            { "symbols": [] },
-            { "symbols": ["failure"] },
-            { "symbols": ["failure"] },
-            { "symbols": ["failure", "failure"] },
-            { "symbols": ["failure", "failure"] },
-            { "symbols": ["threat"] },
-            { "symbols": ["failure", "threat"] },
-            { "symbols": ["failure", "threat"] },
-            { "symbols": ["threat", "threat"] },
-            { "symbols": ["threat", "threat"] },
-            { "symbols": ["threat", "threat"] },
-            { "symbols": ["failure", "despair"] }
+            {
+              "symbols": []
+            },
+            {
+              "symbols": [
+                "failure"
+              ]
+            },
+            {
+              "symbols": [
+                "failure"
+              ]
+            },
+            {
+              "symbols": [
+                "failure",
+                "failure"
+              ]
+            },
+            {
+              "symbols": [
+                "failure",
+                "failure"
+              ]
+            },
+            {
+              "symbols": [
+                "threat"
+              ]
+            },
+            {
+              "symbols": [
+                "failure",
+                "threat"
+              ]
+            },
+            {
+              "symbols": [
+                "failure",
+                "threat"
+              ]
+            },
+            {
+              "symbols": [
+                "threat",
+                "threat"
+              ]
+            },
+            {
+              "symbols": [
+                "threat",
+                "threat"
+              ]
+            },
+            {
+              "symbols": [
+                "threat",
+                "threat"
+              ]
+            },
+            {
+              "symbols": [
+                "failure",
+                "despair"
+              ]
+            }
           ]
         }
       ]

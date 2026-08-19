@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "warhorse",
   "name": "Warhorse",
   "type": "beast",
   "systemIds": [

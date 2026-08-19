@@ -1,8 +1,7 @@
 {
-  "id": "tarot-grid",
-  "title": "Tarot Card Grid (2 \u00d7 2)",
+  "title": "Tarot Card Grid (2 × 2)",
   "category": "print",
-  "description": "Centered 2 \u00d7 2 layout for tarot-sized cards with duplex-ready backs.",
+  "description": "Centered 2 × 2 layout for tarot-sized cards with duplex-ready backs.",
   "type": "card",
   "formats": [
     {
@@ -148,7 +147,7 @@
       }
     }
   },
-  "name": "Tarot Card Grid (2 \u00d7 2)",
+  "name": "Tarot Card Grid (2 × 2)",
   "sides": [
     "front",
     "back"

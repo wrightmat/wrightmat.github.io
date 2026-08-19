@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "wererat-rat",
   "name": "Wererat, Rat Form",
   "type": "humanoid",
   "systemIds": [

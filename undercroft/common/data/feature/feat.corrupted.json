@@ -1,19 +1,37 @@
 {
-  "id": "feat.corrupted",
   "name": "Corrupted",
-  "systemIds": ["sys.dnd5e"],
+  "systemIds": [
+    "sys.dnd5e"
+  ],
   "description": "Something has tainted this place at a fundamental level — blighted growth, warped wildlife, or a lingering malevolent influence.",
   "mechanics": {
     "type": "passive",
     "text": "Plants, creatures, or terrain in and around this location show signs of unnatural corruption."
   },
   "tags": {
-    "categories": ["location"],
-    "locationTypes": ["region", "environment", "complex"],
-    "locationPurposes": ["confinement", "exploration"],
-    "environments": ["swamp", "underdark"]
+    "categories": [
+      "location"
+    ],
+    "locationTypes": [
+      "region",
+      "environment",
+      "complex"
+    ],
+    "locationPurposes": [
+      "confinement",
+      "exploration"
+    ],
+    "environments": [
+      "swamp",
+      "underdark"
+    ]
   },
-  "synergizesWith": ["feat.haunted", "feat.polluted-waters"],
+  "synergizesWith": [
+    "feat.haunted",
+    "feat.polluted-waters"
+  ],
   "dependsOn": [],
-  "conflictsWith": ["feat.sacred-ground"]
+  "conflictsWith": [
+    "feat.sacred-ground"
+  ]
 }

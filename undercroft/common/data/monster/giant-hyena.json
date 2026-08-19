@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "giant-hyena",
   "name": "Giant Hyena",
   "type": "beast",
   "systemIds": [

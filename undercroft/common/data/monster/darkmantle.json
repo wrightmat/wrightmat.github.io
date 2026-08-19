@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "darkmantle",
   "name": "Darkmantle",
   "type": "monstrosity",
   "systemIds": [

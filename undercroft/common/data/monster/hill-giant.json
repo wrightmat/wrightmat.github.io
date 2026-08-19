@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "hill-giant",
   "name": "Hill Giant",
   "type": "giant",
   "systemIds": [

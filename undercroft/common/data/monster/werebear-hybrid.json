@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "werebear-hybrid",
   "name": "Werebear, Hybrid Form",
   "type": "humanoid",
   "systemIds": [

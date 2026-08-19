@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "green-hag",
   "name": "Green Hag",
   "type": "fey",
   "systemIds": [

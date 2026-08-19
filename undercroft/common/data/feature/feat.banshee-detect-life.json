@@ -1,5 +1,4 @@
 {
-  "id": "feat.banshee-detect-life",
   "name": "Detect Life",
   "systemIds": [
     "sys.dnd5e"

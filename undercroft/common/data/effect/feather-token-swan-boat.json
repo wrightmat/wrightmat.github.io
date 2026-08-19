@@ -17,7 +17,6 @@
     "feat.summoned-object",
     "feat.vehicle"
   ],
-  "id": "feather-token-swan-boat",
   "budget": {
     "target": 12,
     "spent": 1,

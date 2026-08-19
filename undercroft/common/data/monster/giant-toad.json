@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "giant-toad",
   "name": "Giant Toad",
   "type": "beast",
   "systemIds": [

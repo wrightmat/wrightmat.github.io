@@ -1,5 +1,4 @@
 {
-  "id": "srd-monster-card",
   "title": "5e API Monster Card",
   "category": "print",
   "description": "Single stat-block card populated directly from a 5e API monster lookup (raw response fields).",

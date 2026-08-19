@@ -1,7 +1,8 @@
 {
-  "id": "feat.rolling-effect",
   "name": "Effect Rolls Each Turn",
-  "systemIds": ["sys.dnd5e"],
+  "systemIds": [
+    "sys.dnd5e"
+  ],
   "description": "The effect re-triggers its damage or condition at the start of each affected creature's turn, rather than only on cast.",
   "mechanics": {
     "type": "passive",
@@ -9,8 +10,14 @@
   },
   "budgetCost": 1,
   "tags": {
-    "categories": ["spell"],
-    "propertyHints": ["utility", "environment", "movement"]
+    "categories": [
+      "spell"
+    ],
+    "propertyHints": [
+      "utility",
+      "environment",
+      "movement"
+    ]
   },
   "synergizesWith": [],
   "dependsOn": [],

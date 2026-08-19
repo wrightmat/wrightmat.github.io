@@ -1,7 +1,8 @@
 {
-  "id": "feat.move-bonus",
   "name": "Movable with Bonus Action",
-  "systemIds": ["sys.dnd5e"],
+  "systemIds": [
+    "sys.dnd5e"
+  ],
   "description": "Once created, the effect can be relocated by spending a bonus action to redirect it — faster than the action-cost version.",
   "mechanics": {
     "type": "active",
@@ -9,10 +10,17 @@
   },
   "budgetCost": 3,
   "tags": {
-    "categories": ["spell"],
-    "propertyHints": ["utility", "movement"]
+    "categories": [
+      "spell"
+    ],
+    "propertyHints": [
+      "utility",
+      "movement"
+    ]
   },
   "synergizesWith": [],
   "dependsOn": [],
-  "conflictsWith": ["feat.move-action"]
+  "conflictsWith": [
+    "feat.move-action"
+  ]
 }

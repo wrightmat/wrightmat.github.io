@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "swarm-of-poisonous-snakes",
   "name": "Swarm of Poisonous Snakes",
   "type": "swarm of Tiny beasts",
   "systemIds": [

@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "adult-gold-dragon",
   "name": "Adult Gold Dragon",
   "type": "dragon",
   "systemIds": [

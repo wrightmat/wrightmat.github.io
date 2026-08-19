@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "black-bear",
   "name": "Black Bear",
   "type": "beast",
   "systemIds": [

@@ -193,7 +193,11 @@ function flushFieldCommitOnUndoRedo(event) {
 // their data-*-effect attribute, so every existing selector/disabled-state
 // call site elsewhere in this file keeps working unchanged.
 createToolbarButtonGroup([
-  { action: "generate", icon: "tabler:sparkles", label: "Generate Effect", attrs: { "data-generate-effect": true } },
+  // Starts disabled — nothing to generate FROM until reloadReferenceData
+  // (init()'s own cascade, below) resolves; clicking it before then threw
+  // straight out of generateEffect (features/propertyTypes still their
+  // initial empty state). Re-enabled by init() once that resolves.
+  { action: "generate", icon: "tabler:sparkles", label: "Generate Effect", disabled: true, attrs: { "data-generate-effect": true } },
   { action: "save", label: "Save", disabled: true, attrs: { "data-save-effect": true } },
   { action: "duplicate", label: "Duplicate", disabled: true, attrs: { "data-duplicate-effect": true } },
   { action: "delete", label: "Delete", disabled: true, attrs: { "data-delete-effect": true } },
@@ -1752,6 +1756,14 @@ async function init() {
   });
   dataManager = auth.dataManager;
 
+  // Generate starts disabled (see its own toolbar definition above) —
+  // called once reloadReferenceData has actually resolved, from every path
+  // that can reach "loading is done" below (the plain init cascade, or
+  // applyDeepLinkParams' own background Phase 2).
+  function enableGenerateButton() {
+    if (elements.generateButton) elements.generateButton.disabled = false;
+  }
+
   // Same dirty check updateActionButtons already uses for the Save button —
   // Vault had no guard at all against navigating/closing away from
   // unsaved edits (unlike Workbench, which already had this).
@@ -1980,10 +1992,13 @@ async function init() {
           }
           await reloadReferenceData();
           if (elements.effectSelect) elements.effectSelect.value = effectId;
+          enableGenerateButton();
         } catch (error) {
           // Phase 1 already succeeded — a background failure here just
           // leaves the picker under-populated, not worth an error toast on
-          // top of a page that's already showing real content.
+          // top of a page that's already showing real content. Generate
+          // stays disabled in this case — reference data may never have
+          // loaded, and clicking it would just throw straight back out.
         }
       })();
       return true;
@@ -2012,6 +2027,12 @@ async function init() {
       await reloadReferenceData();
     }
     renderEffect(null);
+    // Both branches above resolve reference data for whatever System ended
+    // up selected — safe to enable here regardless of which one ran. The
+    // deepLinked === true case enables from inside its own Phase 2
+    // background IIFE instead (applyDeepLinkParams above), once ITS
+    // reference-data load actually finishes.
+    enableGenerateButton();
   }
 
   initHelpSystem();

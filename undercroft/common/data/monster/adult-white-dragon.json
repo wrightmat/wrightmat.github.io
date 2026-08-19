@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "adult-white-dragon",
   "name": "Adult White Dragon",
   "type": "dragon",
   "systemIds": [

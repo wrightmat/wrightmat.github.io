@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "specter",
   "name": "Specter",
   "type": "undead",
   "systemIds": [

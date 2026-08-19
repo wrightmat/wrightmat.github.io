@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "aboleth",
   "name": "Aboleth",
   "type": "aberration",
   "systemIds": [

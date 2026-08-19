@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "wraith",
   "name": "Wraith",
   "type": "undead",
   "systemIds": [

@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "sprite",
   "name": "Sprite",
   "type": "fey",
   "systemIds": [

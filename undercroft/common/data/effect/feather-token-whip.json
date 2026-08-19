@@ -16,7 +16,6 @@
   "featureIds": [
     "feat.summoned-weapon"
   ],
-  "id": "feather-token-whip",
   "budget": {
     "target": 12,
     "spent": 3,

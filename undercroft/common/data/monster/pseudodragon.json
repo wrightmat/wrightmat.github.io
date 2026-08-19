@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "pseudodragon",
   "name": "Pseudodragon",
   "type": "dragon",
   "systemIds": [

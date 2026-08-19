@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "ettin",
   "name": "Ettin",
   "type": "giant",
   "systemIds": [

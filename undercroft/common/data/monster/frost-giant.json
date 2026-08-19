@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "frost-giant",
   "name": "Frost Giant",
   "type": "giant",
   "systemIds": [

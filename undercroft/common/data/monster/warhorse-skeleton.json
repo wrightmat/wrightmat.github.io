@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "warhorse-skeleton",
   "name": "Warhorse Skeleton",
   "type": "undead",
   "systemIds": [

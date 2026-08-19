@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "homunculus",
   "name": "Homunculus",
   "type": "construct",
   "systemIds": [

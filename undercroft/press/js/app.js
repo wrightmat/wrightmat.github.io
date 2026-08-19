@@ -2282,7 +2282,13 @@ async function saveTemplateToServer(payload) {
   if (!dataManager) {
     throw new Error("Not connected");
   }
-  return dataManager.save("templates", id, { ...payload, category: payload.category || "print" });
+  // A template's own id is filename/library_items metadata, never body
+  // content (same convention every other Library kind now follows, and the
+  // identical fix Workbench's own template save already has) — `id` above
+  // is already captured for the actual save call, so omitting it from the
+  // spread here can't affect anything else.
+  const { id: _omitId, ...bodyWithoutId } = payload;
+  return dataManager.save("templates", id, { ...bodyWithoutId, category: payload.category || "print" });
 }
 
 async function handleSaveTemplate() {

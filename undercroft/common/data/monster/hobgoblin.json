@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "hobgoblin",
   "name": "Hobgoblin",
   "type": "humanoid",
   "systemIds": [

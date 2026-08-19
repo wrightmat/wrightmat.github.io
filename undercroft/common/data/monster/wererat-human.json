@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "wererat-human",
   "name": "Wererat, Human Form",
   "type": "humanoid",
   "systemIds": [

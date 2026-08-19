@@ -1,10 +1,19 @@
 // Data loading for Vault's reference data: the shared `feature` kind
 // (retrofitted with `tags.categories`, same Library kind Crucible reads) and
 // the active System's `propertyTypes` field. Mirrors Crucible's tables.js.
-import { fetchKindEntriesWithIds } from "../../../common/js/lib/content-fetch.js";
+// fetchKindEntriesForSystem asks the server to filter by systemId BEFORE
+// reading any file (get_items_bulk, server/storage.py) — faster than
+// fetching the whole cross-tool Feature/Effect library and filtering
+// client-side, and the gap only grows as more Systems get built. The
+// `.filter()` below stays regardless: it's the correctness guarantee (same
+// "no systemIds = universal" semantics the server now also applies) for
+// the case fetchKindEntriesForSystem itself falls back to an unfiltered
+// fetch (its own bulk request errored) — never assume the server-side
+// narrowing already happened.
+import { fetchKindEntriesForSystem } from "../../../common/js/lib/content-fetch.js";
 
 export async function listFeaturesForSystem(dataManager, systemId) {
-  const entries = await fetchKindEntriesWithIds(dataManager, "feature");
+  const entries = await fetchKindEntriesForSystem(dataManager, "feature", systemId);
   return entries
     .map((entry) => ({ id: entry.id, ...entry.entity }))
     .filter((entry) => {
@@ -18,7 +27,7 @@ export async function listFeaturesForSystem(dataManager, systemId) {
 // Sanctum's Location picker lists saved Locations. Mirrors Crucible's own
 // listMonstersForSystem.
 export async function listEffectsForSystem(dataManager, systemId) {
-  const entries = await fetchKindEntriesWithIds(dataManager, "effect");
+  const entries = await fetchKindEntriesForSystem(dataManager, "effect", systemId);
   return entries
     .map((entry) => ({ id: entry.id, ...entry.entity }))
     .filter((entry) => {

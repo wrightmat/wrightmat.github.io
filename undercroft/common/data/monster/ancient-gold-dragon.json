@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "ancient-gold-dragon",
   "name": "Ancient Gold Dragon",
   "type": "dragon",
   "systemIds": [

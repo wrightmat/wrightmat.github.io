@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "zombie",
   "name": "Zombie",
   "type": "undead",
   "systemIds": [

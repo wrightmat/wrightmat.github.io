@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "wyvern",
   "name": "Wyvern",
   "type": "dragon",
   "systemIds": [

@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "sea-hag",
   "name": "Sea Hag",
   "type": "fey",
   "systemIds": [

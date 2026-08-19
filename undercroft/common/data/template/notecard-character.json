@@ -1,6 +1,5 @@
 {
-  "id": "notecard-character",
-  "title": "Character Notecard (5 \u00d7 7)",
+  "title": "Character Notecard (5 × 7)",
   "category": "print",
   "description": "Compact character overview aligned to the classic notecard layout.",
   "type": "card",
@@ -2479,7 +2478,7 @@
       }
     }
   },
-  "name": "Character Notecard (5 \u00d7 7)",
+  "name": "Character Notecard (5 × 7)",
   "sides": [
     "front",
     "back"

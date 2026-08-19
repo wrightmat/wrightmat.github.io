@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "giant-centipede",
   "name": "Giant Centipede",
   "type": "beast",
   "systemIds": [

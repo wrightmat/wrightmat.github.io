@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "acolyte",
   "name": "Acolyte",
   "notes": "Acolytes are junior members of a clergy, usually answerable to a priest. They perform a variety of functions in a temple and are granted minor spellcasting power by their deities.",
   "type": "humanoid",

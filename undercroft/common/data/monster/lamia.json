@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "lamia",
   "name": "Lamia",
   "type": "monstrosity",
   "systemIds": [

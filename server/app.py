@@ -73,6 +73,7 @@ from .storage import (
     delete_item,
     flush_pending_touches,
     get_item,
+    get_items_bulk,
     init_storage_db,
     is_owner,
     list_bucket,
@@ -501,6 +502,37 @@ def register_routes():
     # resolve_share_token, user_can_access_group, get_active_spotlights,
     # _sync_library_kind_directory) has been audited the same way.
     router.add("GET", r"^/content/(?P<bucket>[^/]+)/(?P<id>[^/]+)$", handle_get_content, unlocked=True)
+
+    # POST /content/{bucket}/bulk — {ids?: string[], systemIds?: string[]}
+    # in, {"items": [{"id", "body"}, ...]} out (get_items_bulk's own comment
+    # on why id/body are paired explicitly, not a bare list of bodies).
+    # Replaces the old "one GET per record" pattern (common/js/lib/
+    # content-fetch.js's own fetchKindEntriesWithIds) with a single request;
+    # POST (not GET) purely because a large `ids` list doesn't belong in a
+    # query string, not because this writes anything. Neither filter is
+    # required — omitting both returns every body this user can access for
+    # the kind, same access rules as GET /content/{bucket}/{id} and GET
+    # /list/{bucket}, just batched.
+    def handle_get_content_bulk(request: Request) -> Response:
+        params = getattr(request, "params")
+        bucket = normalize_kind(params["bucket"])
+        user = request.handler.current_user()
+        payload = require_json(request)
+        ids = payload.get("ids")
+        system_ids = payload.get("systemIds")
+        bodies = get_items_bulk(
+            request.state,
+            bucket,
+            user,
+            ids=ids if isinstance(ids, list) else None,
+            system_ids=system_ids if isinstance(system_ids, list) else None,
+        )
+        return json_response({"items": bodies})
+
+    # unlocked=True — see handle_get_content's own comment just above;
+    # get_items_bulk calls list_bucket (already audited) and load_json
+    # (plain file read, no locking concerns for a read path).
+    router.add("POST", r"^/content/(?P<bucket>[^/]+)/bulk$", handle_get_content_bulk, unlocked=True)
 
     # GET /content/builtins
     def handle_content_builtins(request: Request) -> Response:

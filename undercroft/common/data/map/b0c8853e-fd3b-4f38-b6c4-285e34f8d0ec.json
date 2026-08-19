@@ -1,5 +1,4 @@
 {
-  "id": "b0c8853e-fd3b-4f38-b6c4-285e34f8d0ec",
   "name": "Test Map",
   "baseMap": {
     "type": "image",
@@ -27,7 +26,7 @@
   },
   "view": {
     "mode": "cartesian",
-    "zoom": 1.7276104548213267,
+    "zoom": 1.2869260676936298,
     "center": {
       "lat": 0,
       "lng": 0
@@ -54,7 +53,10 @@
         "cellSize": 38.5,
         "lineColor": "#0f172a",
         "fogOfWar": false,
-        "revealGroupId": ""
+        "revealGroupId": "",
+        "fogOpacity": 0.92,
+        "fogPreviewOpacity": 0.6,
+        "autoRevealFromVision": false
       },
       "properties": {}
     },
@@ -89,23 +91,70 @@
           "visionRangeText": "0"
         },
         {
-          "id": "13a1549e-09a1-4187-9862-0446c131ad3b",
+          "id": "de9b755b-3ca7-496a-a489-4655ffdc01ce",
+          "kind": "marker",
+          "refKind": "monster",
+          "refId": "dao",
+          "refAnchor": null,
+          "label": "Dao",
+          "image": "https://www.dndbeyond.com/avatars/thumbnails/30783/894/1000/1000/638062023078340731.png",
+          "outlineColor": "#3f59d9",
+          "position": {
+            "x": -490,
+            "y": -259
+          },
+          "sizeCells": 2,
+          "heightCells": 0,
+          "opacity": 1,
+          "overlayIcons": [],
+          "visionRangeBinding": "",
+          "visionRangeFormula": "",
+          "visionRangeText": "0",
+          "linkedCombatantId": ""
+        },
+        {
+          "id": "3c6f0e54-3042-4b60-86cf-91bb0ad19587",
           "kind": "marker",
           "refKind": "character",
           "refId": "maris-wavedeep",
+          "refAnchor": null,
           "label": "Maris Wavedeep",
           "image": "https://www.dndbeyond.com/avatars/54575/480/1581111423-159871601.jpeg?width=150&height=150&fit=crop&quality=95&auto=webp",
           "outlineColor": "#3f59d9",
           "position": {
             "x": -644,
-            "y": -221
+            "y": -259
           },
           "sizeCells": 1,
+          "heightCells": 0,
           "opacity": 1,
           "overlayIcons": [],
           "visionRangeBinding": "",
           "visionRangeFormula": "",
-          "visionRangeText": "0"
+          "visionRangeText": "0",
+          "linkedCombatantId": ""
+        },
+        {
+          "id": "e17a6606-0f72-4757-ad27-893226231bc1",
+          "kind": "marker",
+          "refKind": "npc",
+          "refId": "npc_9c3597b6-cd8a-4e62-973b-b00ae9a1b30e",
+          "refAnchor": null,
+          "label": "Belimmar",
+          "image": "",
+          "outlineColor": "#3f59d9",
+          "position": {
+            "x": -529,
+            "y": -182
+          },
+          "sizeCells": 1,
+          "heightCells": 0,
+          "opacity": 1,
+          "overlayIcons": [],
+          "visionRangeBinding": "",
+          "visionRangeFormula": "",
+          "visionRangeText": "0",
+          "linkedCombatantId": ""
         }
       ],
       "settings": {
@@ -140,14 +189,27 @@
     }
   ],
   "groups": [],
-  "views": [],
+  "views": [
+    {
+      "id": "f659bc75-6443-4403-9d7f-0582e4592b7f",
+      "name": "Player View (auto)",
+      "description": "",
+      "hiddenLayerIds": [],
+      "hiddenElementIds": [],
+      "tiers": [
+        "player"
+      ],
+      "autoManaged": true,
+      "settings": {}
+    }
+  ],
   "properties": {},
   "measurement": {
     "scale": 5,
     "unit": "ft"
   },
   "createdAt": "2026-08-07T09:47:00.878Z",
-  "updatedAt": "2026-08-09T07:37:28.111Z",
+  "updatedAt": "2026-08-19T20:02:57.826Z",
   "initialView": {
     "zoom": 1,
     "pan": {

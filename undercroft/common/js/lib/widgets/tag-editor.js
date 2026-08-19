@@ -37,8 +37,13 @@ export function conditionLabel(vocabulary, id) {
 // tags a caller doesn't want removable right now — e.g. Repository's own
 // group: tag inherited from a page's parent, locked for as long as the
 // parent still carries it. Omitted by every other caller, so `removable`
-// alone still governs every badge exactly as before.
-export function renderTagBadges(list, vocabulary, { removable = false, onRemove, isLocked } = {}) {
+// alone still governs every badge exactly as before. `isHidden(value)`
+// (optional) marks a tag with a small eye-off icon — this is purely an
+// informational cue about a tag's own hiddenTags membership (see
+// buildTagInputRow's own visibility toggle and map-viewer.js's
+// resolveMarkerConditionIcons), so a GM can tell at a glance which of their
+// tags don't show up on the map, without a separate place to check.
+export function renderTagBadges(list, vocabulary, { removable = false, onRemove, isLocked, isHidden } = {}) {
   const wrap = el("div", "d-flex flex-wrap gap-1");
   const values = list || [];
   if (!values.length) {
@@ -47,7 +52,16 @@ export function renderTagBadges(list, vocabulary, { removable = false, onRemove,
   }
   values.forEach((value) => {
     const label = conditionLabel(vocabulary, value);
-    const badge = el("span", "badge text-bg-secondary d-inline-flex align-items-center gap-1", label);
+    const badge = el("span", "badge text-bg-secondary d-inline-flex align-items-center gap-1");
+    if (typeof isHidden === "function" && isHidden(value)) {
+      const hiddenIcon = el("span", "iconify");
+      hiddenIcon.dataset.icon = "tabler:eye-off";
+      hiddenIcon.style.fontSize = "0.7rem";
+      hiddenIcon.setAttribute("aria-hidden", "true");
+      badge.appendChild(hiddenIcon);
+      badge.title = `${label} — hidden from the map`;
+    }
+    badge.appendChild(document.createTextNode(label));
     if (removable && !(typeof isLocked === "function" && isLocked(value))) {
       const removeBtn = el("button", "btn-close btn-close-white");
       removeBtn.type = "button";
@@ -81,15 +95,47 @@ export function renderTagDatalist(datalistId, vocabulary) {
   });
 }
 
-// The "add a tag" row itself (text input + datalist + Add button, Enter-to-
-// commit) — calls `onAdd(trimmedValue)` and clears the input, leaving what
-// "adding" means (mutate + markDirty + write-through, vs. setAtBinding) up to
-// the caller.
-export function buildTagInputRow(datalistId, { placeholder = "Add a tag…", onAdd } = {}) {
-  const row = el("div", "d-flex gap-1");
+// The "add a tag" row itself (text input + datalist + a visibility toggle +
+// Add button, Enter-to-commit) — calls `onAdd(trimmedValue)` and clears the
+// input, leaving what "adding" means (mutate + markDirty + write-through,
+// vs. setAtBinding) up to the caller.
+//
+// The visibility toggle (eye/eye-off — whether the tag about to be added
+// should be suppressed from map marker badges, see map-viewer.js's own
+// resolveMarkerConditionIcons filtering against hiddenTags) is a fully
+// CONTROLLED sub-component: `hidden` is the current state (owned by the
+// caller, not tracked in here), and clicking it only ever calls
+// `onToggleHidden()` — it never mutates its own DOM. This is a deliberate
+// change from an earlier, self-managing version of this toggle: a caller
+// whose own DOM persists across renders (combat-tracker.js's whole
+// edit-panel architecture — see its own buildEditPanel/syncEditPanelValues,
+// which sync stable inputs like nameInput/visibleButton in place rather
+// than rebuilding them) needs to be able to keep THIS button around too and
+// just re-sync its icon/label every render, exactly like visibleButton
+// already does for combatant.hidden — that reliably works today; a
+// self-contained closure here that only updated its OWN DOM on click did
+// not survive combat-tracker's periodic external re-renders reliably.
+// Returns `{ row, input, visibilityButton }` (not just the row) so a caller
+// keeping this DOM stable has a direct ref to sync into (via
+// applyTagVisibilityState below, which re-queries the icon itself — see its
+// own comment for why THAT isn't cached anywhere), the same shape
+// nameInput/hpInput/etc. already are; a caller that just rebuilds this
+// whole row fresh every render (character-sheet.js) can ignore everything
+// but `.row`.
+export function buildTagInputRow(datalistId, { placeholder = "Add a tag…", onAdd, hidden = false, onToggleHidden } = {}) {
+  const row = el("div", "d-flex gap-1 align-items-center");
   const input = el("input", "form-control form-control-sm");
   input.placeholder = placeholder;
   input.setAttribute("list", datalistId);
+
+  const visibilityButton = el("button", "btn btn-outline-secondary btn-sm");
+  visibilityButton.type = "button";
+  const visibilityIcon = el("span", "iconify");
+  visibilityIcon.setAttribute("aria-hidden", "true");
+  visibilityButton.appendChild(visibilityIcon);
+  applyTagVisibilityState(visibilityButton, hidden);
+  visibilityButton.addEventListener("click", () => onToggleHidden?.());
+
   const commit = () => {
     const value = input.value.trim();
     if (!value) return;
@@ -105,6 +151,36 @@ export function buildTagInputRow(datalistId, { placeholder = "Add a tag…", onA
   const addButton = el("button", "btn btn-outline-secondary btn-sm", "Add");
   addButton.type = "button";
   addButton.addEventListener("click", commit);
-  row.append(input, addButton);
-  return row;
+  row.append(input, visibilityButton, addButton);
+  return { row, input, visibilityButton };
+}
+
+// Syncs an existing visibility toggle's icon/label from `hidden` — the same
+// operation buildTagInputRow's own initial call runs at construction time,
+// exposed separately so a caller keeping that button's DOM stable across
+// renders (combat-tracker.js) can re-run just this, exactly the way
+// syncEditPanelValues already updates visibleButton's own icon in place on
+// every render without rebuilding visibleButton itself.
+//
+// Re-queries `.iconify` fresh every call, exactly like that visibleButton
+// code does (`refs.visibleButton.querySelector(".iconify")`) — confirmed
+// (via DevTools, on this exact button) real bug from an earlier version
+// that instead cached the icon <span> once at construction time: Iconify's
+// runtime REPLACES that placeholder span with a rendered <svg> the first
+// time it draws it (the span, and its data-icon attribute, are gone
+// afterward — only an <svg> remains under the button). A cached reference
+// to the original span is therefore stale/detached from that point on;
+// every later `.dataset.icon =` write on it visibly did nothing, since it
+// no longer has anything to do with what's on screen. Re-querying finds
+// whatever's CURRENTLY there (the <svg>, or a fresh placeholder span the
+// next time this runs before Iconify gets to it) instead of trusting a
+// reference captured before Iconify ever touched the DOM.
+export function applyTagVisibilityState(visibilityButton, hidden) {
+  const visibilityIcon = visibilityButton.querySelector(".iconify");
+  if (visibilityIcon) visibilityIcon.dataset.icon = hidden ? "tabler:eye-off" : "tabler:eye";
+  const label = hidden ? "Hidden from the map — click to show this tag" : "Shown on the map — click to hide this tag";
+  visibilityButton.title = label;
+  visibilityButton.setAttribute("aria-label", label);
+  // No highlighted/active styling — that visual language stays reserved for
+  // "Show to table" (combat-tracker.js's own updateVisibilityAction).
 }

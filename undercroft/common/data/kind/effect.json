@@ -4,5 +4,6 @@
   "plural": "Effects",
   "icon": "tabler:sparkles",
   "readTier": "free",
-  "writeTier": "free"
+  "writeTier": "free",
+  "metadataFields": ["systemIds"]
 }

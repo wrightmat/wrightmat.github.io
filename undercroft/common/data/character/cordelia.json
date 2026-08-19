@@ -1,5 +1,4 @@
 {
-  "id": "cordelia",
   "template": "tpl.5e.flex-basic",
   "systemIds": [
     "sys.dnd5e"

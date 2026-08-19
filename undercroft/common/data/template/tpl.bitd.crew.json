@@ -1,6 +1,5 @@
 {
-  "id": "tpl.bitd.crew",
-  "title": "Blades in the Dark \u2014 Crew",
+  "title": "Blades in the Dark — Crew",
   "version": "0.1",
   "schema": "sys.bitd",
   "description": "Crew sheet for Blades in the Dark: tier, heat, claims, upgrades, and cohorts.",

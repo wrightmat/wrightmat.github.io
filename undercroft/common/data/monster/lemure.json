@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "lemure",
   "name": "Lemure",
   "type": "fiend",
   "systemIds": [

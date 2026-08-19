@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "manticore",
   "name": "Manticore",
   "type": "monstrosity",
   "systemIds": [

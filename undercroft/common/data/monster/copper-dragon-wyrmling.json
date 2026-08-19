@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "copper-dragon-wyrmling",
   "name": "Copper Dragon Wyrmling",
   "type": "dragon",
   "systemIds": [

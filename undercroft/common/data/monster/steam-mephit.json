@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "steam-mephit",
   "name": "Steam Mephit",
   "type": "elemental",
   "systemIds": [

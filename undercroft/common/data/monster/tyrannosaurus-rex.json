@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "tyrannosaurus-rex",
   "name": "Tyrannosaurus Rex",
   "type": "beast",
   "systemIds": [

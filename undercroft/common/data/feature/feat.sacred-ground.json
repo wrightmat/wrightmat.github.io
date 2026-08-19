@@ -1,19 +1,32 @@
 {
-  "id": "feat.sacred-ground",
   "name": "Sacred Ground",
-  "systemIds": ["sys.dnd5e"],
+  "systemIds": [
+    "sys.dnd5e"
+  ],
   "description": "This place is consecrated or otherwise held holy, respected (or feared) by those who know what it is.",
   "mechanics": {
     "type": "passive",
     "text": "Rites performed here carry extra weight, and desecrating it would carry real consequences among the faithful."
   },
   "tags": {
-    "categories": ["location"],
-    "locationTypes": ["structure", "region", "environment"],
-    "locationPurposes": ["worship"],
+    "categories": [
+      "location"
+    ],
+    "locationTypes": [
+      "structure",
+      "region",
+      "environment"
+    ],
+    "locationPurposes": [
+      "worship"
+    ],
     "environments": []
   },
-  "synergizesWith": ["feat.ley-line-confluence"],
+  "synergizesWith": [
+    "feat.ley-line-confluence"
+  ],
   "dependsOn": [],
-  "conflictsWith": ["feat.corrupted"]
+  "conflictsWith": [
+    "feat.corrupted"
+  ]
 }

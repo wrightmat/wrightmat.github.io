@@ -1,12 +1,13 @@
 // Data loading for Sanctum's reference kinds — location-type, location-purpose,
 // feature (category "location"), resource, species (for the optional NPC
 // Generation Config section) — plus Setting/Location themselves, all managed
-// generically via fetchKindEntriesWithIds (common/js/lib/content-fetch.js), the
-// authenticated-aware list-then-fetch-each helper every other tool already uses.
+// generically via fetchKindEntriesForSystem (common/js/lib/content-fetch.js), the
+// authenticated-aware, server-side-System-filtered bulk loader every other
+// generator tool already uses.
 // Sanctum is now the sole authoring surface for setting/location (Loom's old
 // Places panel is retired), so every read here must see the signed-in user's own
 // private/unpublished records, not just public ones — dataManager-backed throughout.
-import { fetchKindEntriesWithIds, listLocationsForSetting } from "../../../common/js/lib/content-fetch.js";
+import { fetchKindEntriesForSystem, listLocationsForSetting } from "../../../common/js/lib/content-fetch.js";
 
 // Re-exported so undercroft/sanctum/js/app.js's own import (from this file)
 // keeps working unchanged — the implementation moved to content-fetch.js
@@ -14,8 +15,13 @@ import { fetchKindEntriesWithIds, listLocationsForSetting } from "../../../commo
 // Setting, both need the same pre-migration scalar-settingId fallback).
 export { listLocationsForSetting };
 
+// fetchKindEntriesForSystem asks the server to filter by systemId before
+// reading any file (get_items_bulk, server/storage.py) rather than fetching
+// a kind's whole cross-tool library and filtering client-side — the
+// `.filter()` below stays regardless, as the correctness guarantee for the
+// case fetchKindEntriesForSystem itself falls back to an unfiltered fetch.
 async function listKindForSystem(dataManager, kind, systemId) {
-  const entries = await fetchKindEntriesWithIds(dataManager, kind);
+  const entries = await fetchKindEntriesForSystem(dataManager, kind, systemId);
   return entries
     .map((entry) => ({ id: entry.id, ...entry.entity }))
     .filter((entry) => {

@@ -2,13 +2,16 @@
 // modal — used by the Dashboard's Add-widget toolbar for widget types that
 // need a specific record chosen before they can be added (Map, Character
 // sheet), since neither has anything meaningful to show from a blind
-// "add one" click the way Combat/Game Log/Character-summary do. Reuses the
-// same list-then-fetch data call every other picker in the suite already
-// uses (fetchKindEntriesWithIds, content-fetch.js) plus DataManager's own
-// local-entries cache — the exact same combination Orrery's own
-// populateMapSelect already builds by hand — just factored into one shared
-// modal instead of duplicated a third time.
-import { fetchKindEntriesWithIds } from "../content-fetch.js";
+// "add one" click the way Combat/Game Log/Character-summary do. Uses
+// fetchKindEntrySummaries (content-fetch.js), not fetchKindEntriesWithIds —
+// this picker only ever needs a name to show and an id to return, never a
+// record's own fields to filter on, so there's no reason to pull every
+// candidate's full body (irrelevant for `kind` values like `feature`/
+// `effect`, which can run into the thousands) just to populate a <select>.
+// Works for any kind unconditionally, since a record's title (what the
+// summary's `name` comes from) is a real library_items column populated at
+// save time, not something a kind has to opt into via metadataFields.
+import { fetchKindEntrySummaries } from "../content-fetch.js";
 
 const MODAL_ID = "undercroft-content-picker-modal";
 
@@ -43,13 +46,14 @@ function ensureModal() {
   return element;
 }
 
-// Handles both list shapes fetchKindEntriesWithIds/listLocalEntries return
-// ({entity} for remote, {payload} for local) and both name conventions
-// records in this suite use (a flat `name`, or Workbench characters' nested
-// `data.name`), falling back to the id itself so nothing renders blank.
+// Handles every list shape this picker's two sources return: fetchKindEntrySummaries'
+// own flat `{id, name}` (remote), listLocalEntries' `{payload}` (local), and
+// both name conventions records in this suite use (a flat `name`, or
+// Workbench characters' nested `data.name`), falling back to the id itself
+// so nothing renders blank.
 function nameOf(entry) {
-  const record = entry?.entity ?? entry?.payload ?? {};
-  return record?.data?.name || record?.name || record?.title || entry?.id || "Untitled";
+  const record = entry?.payload ?? {};
+  return record?.data?.name || record?.name || record?.title || entry?.name || entry?.id || "Untitled";
 }
 
 // openContentPicker({dataManager, kind, title, emptyMessage, excludeIds}) =>
@@ -70,7 +74,7 @@ export async function openContentPicker({
 
   let remoteEntries = [];
   try {
-    remoteEntries = await fetchKindEntriesWithIds(dataManager, kind);
+    remoteEntries = await fetchKindEntrySummaries(dataManager, kind);
   } catch (error) {
     remoteEntries = [];
   }

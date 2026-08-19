@@ -1,7 +1,8 @@
 {
-  "id": "feat.material-cost",
   "name": "Costly Material",
-  "systemIds": ["sys.dnd5e"],
+  "systemIds": [
+    "sys.dnd5e"
+  ],
   "description": "The effect consumes a costly material component each time it's triggered.",
   "mechanics": {
     "type": "drawback",
@@ -9,8 +10,12 @@
   },
   "budgetCost": -1,
   "tags": {
-    "categories": ["spell"],
-    "propertyHints": ["drawback"]
+    "categories": [
+      "spell"
+    ],
+    "propertyHints": [
+      "drawback"
+    ]
   },
   "synergizesWith": [],
   "dependsOn": [],

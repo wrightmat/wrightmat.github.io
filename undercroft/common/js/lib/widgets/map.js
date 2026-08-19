@@ -12,12 +12,18 @@
 // concerns (grid-cell click-selection, "click empty space to place a new
 // marker," whole-layer drag, undo-stack recording) simply never run when
 // those options are absent. The interactive affordances this widget DOES
-// supply (drag a character marker you own, open/close a door) come from
+// supply (drag a character marker you own, open/close a door, and — for
+// this specific map's own owner/admin, via the hasMapOwnerAccess option —
+// drag/click-to-edit ANY marker, not just a character one) come from
 // map-viewer.js's own buildRestrictedMapOptions — the exact same policy
-// Orrery's own app.js uses for a non-owner viewer reaching Orrery directly.
-// This widget is ALWAYS that restricted view (a player's dashboard never
-// gets full authoring), which is why it always builds those options, never
-// the full-access ones. NOT gated on the dashboard's separate "pinned
+// Orrery's own app.js uses for a non-owner viewer reaching Orrery directly
+// (Orrery's own call site doesn't pass hasMapOwnerAccess, since a viewer in
+// THAT branch is by definition not the map's owner already). This widget is
+// ALWAYS that restricted view (a player's dashboard never gets full Orrery-
+// style authoring — grid/layer editing, undo, ...), which is why it always
+// builds those options, never the full-access ones; hasMapOwnerAccess is a
+// narrower carve-out within that restricted view, not full authoring. NOT
+// gated on the dashboard's separate "pinned
 // character" concept at all — that's a different feature (which character a
 // widget like Character Summary/Combat Tracker is currently showing), and
 // previously, incorrectly, gated dragging here too: a player who owned a
@@ -33,6 +39,7 @@ import {
   markerPositionToLocalPixel,
   renderShapeElement,
   resolveMarkerLinkTarget,
+  resolveMarkerConditionIcons,
 } from "../../../../orrery/js/lib/map-viewer.js";
 import {
   createVectorPathElement,
@@ -41,15 +48,19 @@ import {
   AOE_SHAPE_TYPES,
 } from "../../../../orrery/js/lib/map-model.js";
 import { resolveToolHref, resolveToolContextPath } from "../app-shell.js";
-import { resolveIsSpotlighted } from "../spotlight.js";
+import { resolveIsSpotlighted, resolveActiveSpotlightId } from "../spotlight.js";
 import { createCharacterOwnershipPrimer, matchesOwner, refreshOwnershipCatalog } from "../ownership.js";
 import { el } from "../dom.js";
 import { getIconTokens } from "../icon-picker.js";
+import { findBindingByRole } from "../bindings.js";
+import { deriveCombatBindings } from "./combat-bindings.js";
+import { deriveConditionsVocabulary } from "./tag-editor.js";
 // Same icon-picker/overlay-icon shape Orrery's own marker inspector uses for
 // a token's badge icons — reused as-is rather than a second, player-scoped
 // copy. No image field here on purpose — a player can recolor/re-icon their
 // own token, not replace its portrait.
 import { createIconPickerField } from "../ui-components.js";
+import { connectLiveStream } from "../live.js";
 import {
   watchMapForChanges,
   persistMarkerMove as persistMarkerMoveShared,
@@ -78,6 +89,17 @@ export function initMapWidget(
     setRightAction,
     canToggleVisibility = false,
     editing = false,
+    // (refKind, refId, linkedCombatantId) => void — dashboard.js's own
+    // caller wires this to findActiveWidgetInstance("combat")?.
+    // selectCombatantByRef(...), the same cross-widget "read a live sibling
+    // on this dashboard" mechanism this widget's own mapId/isVisible
+    // already back for combat-tracker.js's own resolveActiveMapId. Only
+    // ever called for the map's own owner/admin clicking a marker that
+    // actually references something (refKind+refId) — a player clicking
+    // their own token has no business driving a Combat Tracker widget's
+    // selection, and a decorative marker with no reference has nothing to
+    // select in the first place.
+    onMarkerSelected,
   } = {}
 ) {
   const mapId = contentRef?.id;
@@ -104,6 +126,7 @@ export function initMapWidget(
   let baseMapManager = null;
   let zoomPanel = null;
   let watcher = null;
+  let conditionLiveStream = null;
   let visible = false;
   // Set true for the duration of a marker drag (buildRestrictedMapOptions'
   // own onDragStateChange) — onMapChanged below skips an incoming poll/
@@ -322,6 +345,15 @@ export function initMapWidget(
   async function loadMapOwnership() {
     const catalog = await refreshOwnershipCatalog(dataManager, "map", [mapId]);
     mapOwnerMetadata = catalog.get(mapId) || null;
+    // Wasn't needed while this only gated canManageDrawing (evaluated fresh
+    // on each click, never baked into the initial render) — now that
+    // isMarkerDraggable (map-viewer.js) also reads isMapOwnerOrAdmin() at
+    // RENDER time (it sets a marker dot's pointer-events/cursor), the very
+    // first renderLayers() pass — which fires before this async fetch
+    // resolves — would otherwise draw every Monster/NPC marker as
+    // non-draggable for the map's own owner until some unrelated later
+    // render happened to run.
+    renderLayers();
   }
   void loadMapOwnership();
   function isMapOwnerOrAdmin() {
@@ -899,24 +931,205 @@ export function initMapWidget(
   // lifetime, but both ultimately resolve identically (map-viewer.js's own
   // resolveMarkerVisionRangeCells/resolveBinding), so a player's own fog
   // view matches the GM's.
+  // Also backs this widget's own condition-icon resolution (see
+  // resolveMarkerConditionIconsForMarker below) — same staleness fix as
+  // orrery/js/app.js's own CHARACTER_PAYLOAD_STALE_MS (see that file's
+  // comment for the confirmed "cached forever, a condition added mid-session
+  // never appeared" bug this closes): a plain fetch-once cache never picks
+  // up a condition added via Combat Tracker while a player already has this
+  // widget open.
+  const CHARACTER_PAYLOAD_STALE_MS = 8000;
   const characterPayloadCache = new Map();
+  const characterPayloadFetchedAt = new Map();
   const pendingCharacterFetches = new Set();
   function getCachedCharacterPayload(refId) {
     return characterPayloadCache.get(refId);
   }
   function ensureCharacterPayloadCached(refId) {
-    if (!refId || characterPayloadCache.has(refId) || pendingCharacterFetches.has(refId)) return;
+    if (!refId || pendingCharacterFetches.has(refId)) return;
+    const fetchedAt = characterPayloadFetchedAt.get(refId) || 0;
+    if (characterPayloadCache.has(refId) && Date.now() - fetchedAt < CHARACTER_PAYLOAD_STALE_MS) return;
     pendingCharacterFetches.add(refId);
     dataManager
-      .get("character", refId)
+      .get("character", refId, { preferLocal: false })
       .then((result) => {
         characterPayloadCache.set(refId, result?.payload || {});
+        characterPayloadFetchedAt.set(refId, Date.now());
         pendingCharacterFetches.delete(refId);
         renderLayers();
       })
       .catch(() => {
         pendingCharacterFetches.delete(refId);
       });
+  }
+
+  // Condition-icon resolution — same "two independent cache instances, one
+  // shared algorithm" split as resolveMarkerVisionRangeCells above:
+  // map-viewer.js's own resolveMarkerConditionIcons (imported above) is the
+  // ONE place the actual resolution logic lives; this widget just supplies
+  // its own cache-backed getters (orrery/js/app.js keeps a parallel, but
+  // independent, set of the same caches — see that file's own
+  // resolveMarkerConditionIconsForMarker for why the algorithm itself isn't
+  // duplicated here).
+  const characterSystemIdCache = new Map();
+  function getCachedCharacterSystemId(refId) {
+    return characterSystemIdCache.get(refId) || "";
+  }
+  const systemConditionsCache = new Map();
+  function getCachedSystemConditions(systemId) {
+    return systemConditionsCache.get(systemId) || null;
+  }
+  function buildSystemConditions(fields) {
+    const bindings = deriveCombatBindings(fields);
+    const tagsEntry = findBindingByRole(bindings, "tags");
+    const vocabulary = deriveConditionsVocabulary(fields, bindings);
+    const iconMap = new Map();
+    if (vocabulary && tagsEntry) {
+      const vocabularyKey = tagsEntry.sourceField || "conditions";
+      const field = fields.find((entry) => entry.type === "array" && entry.key === vocabularyKey);
+      (field?.values || []).forEach((raw, index) => {
+        const entry = vocabulary[index];
+        if (entry && raw && (raw.icon || raw.color)) {
+          iconMap.set(entry.id, { icon: raw.icon || "", color: raw.color || "" });
+        }
+      });
+    }
+    return { iconMap, tagsBinding: tagsEntry?.binding || "" };
+  }
+  const pendingSystemConditionsFetches = new Set();
+  function ensureSystemConditionsCached(systemId, onLoaded) {
+    if (!systemId || systemConditionsCache.has(systemId) || pendingSystemConditionsFetches.has(systemId)) return;
+    pendingSystemConditionsFetches.add(systemId);
+    dataManager
+      .get("systems", systemId, { preferLocal: false })
+      .then((result) => {
+        systemConditionsCache.set(systemId, buildSystemConditions(result?.payload?.fields || []));
+      })
+      .catch(() => {
+        systemConditionsCache.set(systemId, { iconMap: new Map(), tagsBinding: "" });
+      })
+      .finally(() => {
+        pendingSystemConditionsFetches.delete(systemId);
+        onLoaded?.();
+      });
+  }
+  // A character's own System, resolved via its Template (refId -> template
+  // -> schema), same two-hop lookup orrery/js/app.js's own
+  // ensureCharacterSystemFieldsCached makes — trimmed here to just the
+  // systemId (this widget has no @-autocomplete needing the full field
+  // list), populating both this cache and systemConditionsCache from the
+  // one fetch.
+  const pendingCharacterSystemIdFetches = new Set();
+  function ensureCharacterSystemIdCached(refId, characterPayload, onLoaded) {
+    if (!refId || !characterPayload) return;
+    if (characterSystemIdCache.has(refId) || pendingCharacterSystemIdFetches.has(refId)) return;
+    const templateId = characterPayload.template || "";
+    if (!templateId) return;
+    pendingCharacterSystemIdFetches.add(refId);
+    (async () => {
+      try {
+        const templateResult = await dataManager.get("templates", templateId, { preferLocal: false });
+        const systemId = templateResult?.payload?.schema || "";
+        if (!systemId) return;
+        characterSystemIdCache.set(refId, systemId);
+        if (!systemConditionsCache.has(systemId)) {
+          const systemResult = await dataManager.get("systems", systemId, { preferLocal: false });
+          systemConditionsCache.set(systemId, buildSystemConditions(systemResult?.payload?.fields || []));
+        }
+      } catch (error) {
+        // Leave uncached — a future renderLayers() pass retries.
+      } finally {
+        pendingCharacterSystemIdFetches.delete(refId);
+        onLoaded?.();
+      }
+    })();
+  }
+
+  // The campaign's currently active/spotlighted Encounter — same shape and
+  // reasoning as orrery/js/app.js's own activeEncounterCache (see that
+  // file's comment): a Monster/NPC combatant's live conditions only exist
+  // per-instance on the Encounter record, never on the shared Monster/NPC
+  // record itself. groupId is fixed for this widget's whole lifetime (an
+  // init option, not derived), unlike Orrery's own per-campaign-switch
+  // cache keyed by groupId — a single slot is enough here.
+  // Same "cached forever, never actually re-fetched" bug as
+  // characterPayloadCache above, and the same fix — see
+  // orrery/js/app.js's ACTIVE_ENCOUNTER_STALE_MS comment.
+  const ACTIVE_ENCOUNTER_STALE_MS = 8000;
+  let activeEncounterCacheValue = null;
+  let activeEncounterFetchedAt = 0;
+  let pendingActiveEncounterFetch = false;
+  function getCachedActiveEncounter() {
+    return activeEncounterCacheValue;
+  }
+  function ensureActiveEncounterCached(onLoaded) {
+    if (!groupId || pendingActiveEncounterFetch) return;
+    if (activeEncounterCacheValue && Date.now() - activeEncounterFetchedAt < ACTIVE_ENCOUNTER_STALE_MS) return;
+    pendingActiveEncounterFetch = true;
+    (async () => {
+      try {
+        const encounterId = await resolveActiveSpotlightId(dataManager, { groupId, kind: "encounter" });
+        if (!encounterId) {
+          activeEncounterCacheValue = { systemId: "", combatants: [] };
+          return;
+        }
+        const result = await dataManager.get("encounter", encounterId, { preferLocal: false });
+        const payload = result?.payload || {};
+        activeEncounterCacheValue = {
+          systemId: payload.systemId || "",
+          combatants: Array.isArray(payload.combatants) ? payload.combatants : [],
+        };
+      } catch (error) {
+        activeEncounterCacheValue = { systemId: "", combatants: [] };
+      } finally {
+        activeEncounterFetchedAt = Date.now();
+        pendingActiveEncounterFetch = false;
+        onLoaded?.();
+      }
+    })();
+  }
+
+  // Thin wrapper around map-viewer.js's own shared resolveMarkerConditionIcons
+  // — see this widget's own caches just above.
+  function resolveMarkerConditionIconsForMarker(markerElement) {
+    return resolveMarkerConditionIcons(markerElement, {
+      getCharacterPayload: getCachedCharacterPayload,
+      getCharacterSystemId: getCachedCharacterSystemId,
+      getSystemConditions: getCachedSystemConditions,
+      getActiveEncounter: getCachedActiveEncounter,
+    });
+  }
+
+  // Fires the fetches for every condition-icon-eligible marker on this map —
+  // a Character-linked one needs its own System resolved (Template hop);
+  // a Monster/NPC-linked one just needs the active Encounter (shared across
+  // all such markers, fetched once). Mirrors primeCharacterPayloadCache's
+  // own "cheap no-op once cached" shape.
+  function primeConditionIconCache() {
+    let hasMonsterOrNpcMarker = false;
+    (map.layers || []).forEach((layer) => {
+      if (layer.type !== "marker") return;
+      (layer.elements || []).forEach((marker) => {
+        if (marker.kind !== "marker" || !marker.refId) return;
+        if (marker.refKind === "character") {
+          // Condition icons need this marker's own character payload
+          // regardless of whether it also has a Vision Range binding —
+          // primeCharacterPayloadCache above only fetches it for the
+          // latter, so ensure it here too (idempotent/cached either way).
+          ensureCharacterPayloadCached(marker.refId);
+          ensureCharacterSystemIdCached(marker.refId, getCachedCharacterPayload(marker.refId), () => renderLayers());
+        } else if (marker.refKind === "monster" || marker.refKind === "npc") {
+          hasMonsterOrNpcMarker = true;
+        }
+      });
+    });
+    if (hasMonsterOrNpcMarker) {
+      ensureActiveEncounterCached(() => renderLayers());
+      const activeEncounter = getCachedActiveEncounter();
+      if (activeEncounter?.systemId) {
+        ensureSystemConditionsCached(activeEncounter.systemId, () => renderLayers());
+      }
+    }
   }
 
   // Ownership catalog for character markers actually placed on this map —
@@ -1204,6 +1417,7 @@ export function initMapWidget(
     // every trigger uniformly instead of chasing each one individually.
     if (isDraggingMarker) return;
     primeCharacterPayloadCache();
+    primeConditionIconCache();
     primeCharacterOwnershipCatalog();
     renderMapLayers(overlay, baseMapManager, map, {
       viewerTier,
@@ -1236,11 +1450,15 @@ export function initMapWidget(
         map,
         characterOwnershipCatalog: characterOwnershipPrimer.getCatalog(),
         getCharacterPayload: getCachedCharacterPayload,
+        resolveConditionIcons: resolveMarkerConditionIconsForMarker,
         status,
         onMarkerMoved: (layer, markerElement, snappedPosition) =>
           void persistMarkerMove(layer.id, markerElement.id, snappedPosition),
         onDoorToggled: (layer, elementId) => void toggleDoor(layer, elementId),
         onMarkerClicked: (layer, markerElement, dotEl, draggable) => {
+          if (isMapOwnerOrAdmin() && markerElement.refKind && markerElement.refId) {
+            onMarkerSelected?.(markerElement.refKind, markerElement.refId, markerElement.linkedCombatantId);
+          }
           if (draggable) {
             openMarkerEditor(layer, markerElement, dotEl);
           } else {
@@ -1250,6 +1468,11 @@ export function initMapWidget(
         onDragStateChange: (dragging) => {
           isDraggingMarker = dragging;
         },
+        // Same map-owner check canManageDrawing already uses for player-
+        // drawn shapes — gives the GM full drag/click-to-edit parity on
+        // Monster/NPC markers too, not just the character-ownership path
+        // every other viewer is limited to.
+        hasMapOwnerAccess: isMapOwnerOrAdmin,
       }),
     });
   }
@@ -1330,6 +1553,38 @@ export function initMapWidget(
     renderLayers();
   }
 
+  // Condition icons only actually change on an "encounter" or "character"
+  // record save — Combat Tracker (combat-tracker.js) already subscribes to
+  // exactly these same two live-stream kinds for the same reason (per the
+  // "check for existing transport before inventing a new mechanism"
+  // principle, reusing it rather than adding a second one). Without this,
+  // a just-added condition only ever appeared once CHARACTER_PAYLOAD_STALE_MS/
+  // ACTIVE_ENCOUNTER_STALE_MS's own staleness window happened to lapse —
+  // confirmed real gap: technically correct eventually, but a GM watching
+  // the table live saw a multi-second lag with no way to force it sooner.
+  // This reuses the SAME pooled EventSource connectLiveStream/
+  // watchMapForChanges below already opens for this group (poolKey is
+  // (dataManager, groupId, shareToken) — a second connectLiveStream call
+  // for the same triple is a ref-counted subscribe, not a new connection),
+  // so this costs nothing extra on the wire; it just adds two more
+  // listeners on it, each collapsing the relevant cache entry and
+  // re-rendering immediately instead of waiting out the staleness window.
+  if (groupId) {
+    conditionLiveStream = connectLiveStream({ dataManager, groupId, kinds: ["encounter", "character"], shareToken });
+    conditionLiveStream.subscribe("encounter", () => {
+      activeEncounterCacheValue = null;
+      activeEncounterFetchedAt = 0;
+      renderLayers();
+    });
+    conditionLiveStream.subscribe("character", (payload) => {
+      if (payload?.id) {
+        characterPayloadCache.delete(payload.id);
+        characterPayloadFetchedAt.delete(payload.id);
+      }
+      renderLayers();
+    });
+  }
+
   // watchMapForChanges owns the poll (createReliableInterval, not plain
   // window.setInterval — a Map popped out onto a physical second screen
   // sits unfocused for the whole session; plain setInterval was confirmed
@@ -1360,6 +1615,22 @@ export function initMapWidget(
       watcher.refresh();
       void refreshVisibility();
     },
+    // Lets a sibling widget on the SAME dashboard discover "which map is
+    // this card showing" without needing it spotlighted to players at all —
+    // dashboard.js's own findActiveWidgetInstance("map") reads this (via
+    // its own isVisible gate just below) to resolve combat-tracker.js's own
+    // "active map" for a GM who's prepping a map before revealing it. Fixed
+    // for this widget instance's whole lifetime (this file's own header
+    // comment — a new map means a new instance), so a plain property is
+    // enough; no need for a live getter.
+    mapId,
+    // Map has no per-card show/hide toggle of its own (unlike Clock/
+    // Calendar, which findActiveWidgetInstance's own isVisible gate was
+    // originally written for) — always true once mounted, so the FIRST
+    // Map card in layout order wins when a dashboard has more than one
+    // (multiple: true), same accepted "which of several" tradeoff Clock/
+    // Calendar's own callers already live with.
+    isVisible: () => true,
     // `removed` (dashboard.js's removeWidget passes true) — this instance's
     // own spotlight (if any) needs clearing, same bug/fix as handout.js's
     // own destroy(removed): without this, removing a currently-shown Map
@@ -1370,6 +1641,7 @@ export function initMapWidget(
     async destroy(removed) {
       destroyed = true;
       watcher.stop();
+      conditionLiveStream?.close();
       resizeObserver?.disconnect();
       viewerHost.removeEventListener("pointerdown", handleToolPointerDown);
       closeMarkerEditor();

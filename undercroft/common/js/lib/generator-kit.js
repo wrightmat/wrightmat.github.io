@@ -135,9 +135,15 @@ export function populateLockedFeaturesCheckList(container, features) {
     input.value = feature.id;
     input.checked = previouslyChecked.has(feature.id);
     const labelEl = document.createElement("label");
-    labelEl.className = "form-check-label small";
+    // d-block — a bare <label> is inline by default, which lets a long name
+    // just overflow the row instead of wrapping OR truncating; text-truncate
+    // (overflow:hidden/ellipsis/nowrap) only actually clips once the element
+    // has a real block-level width to clip against. title carries the full
+    // name for hover, since the visible text may now be cut off.
+    labelEl.className = "form-check-label small text-truncate d-block";
     labelEl.htmlFor = checkboxId;
     labelEl.textContent = name;
+    labelEl.title = name;
     row.append(input, labelEl);
     listBox.appendChild(row);
   });
@@ -190,9 +196,13 @@ export function populateStringChecklist(container, items, selected) {
     input.value = value;
     input.checked = selectedSet.has(value);
     const labelEl = document.createElement("label");
-    labelEl.className = "form-check-label small";
+    // Same d-block/text-truncate/title fix as populateLockedFeaturesCheckList
+    // above — see that function's own comment for why plain text-truncate
+    // alone doesn't clip a bare (inline) <label>.
+    labelEl.className = "form-check-label small text-truncate d-block";
     labelEl.htmlFor = checkboxId;
     labelEl.textContent = label;
+    labelEl.title = label;
     row.append(input, labelEl);
     listBox.appendChild(row);
   });

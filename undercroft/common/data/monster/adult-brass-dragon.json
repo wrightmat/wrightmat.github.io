@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "adult-brass-dragon",
   "name": "Adult Brass Dragon",
   "type": "dragon",
   "systemIds": [

@@ -1,6 +1,5 @@
 {
   "kind": "monster",
-  "index": "awakened-tree",
   "name": "Awakened Tree",
   "notes": "An awakened tree is an ordinary tree given sentience and mobility by the awaken spell or similar magic.",
   "type": "plant",
