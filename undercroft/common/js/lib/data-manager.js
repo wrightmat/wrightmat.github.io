@@ -835,9 +835,29 @@ export class DataManager {
     }
   }
 
-  async get(bucket, id, { preferLocal = true, shareToken = "" } = {}) {
+  // preferLocal's default is intentionally auth-dependent, not a flat
+  // `true` — getLocal's mirror means two different things depending on who's
+  // asking. For an anonymous user it's the ONLY copy (no server account),
+  // so local-first isn't an optimization, it's correct by necessity. For a
+  // signed-in user it's "purely a read-acceleration cache" (see save()'s
+  // own comment) sitting on top of an authoritative server, with NO
+  // invalidation signal from any other writer — another tool, another tab,
+  // another device, another player in the same campaign. A flat default of
+  // `true` silently carried the anonymous-only assumption into that
+  // multi-writer case, where it's wrong far more often than not: confirmed
+  // as the root cause behind three separate live-sync bugs traced to this
+  // file this session (Orrery's loadMapById/refreshPreview serving a stale
+  // local mirror even on a hard refresh; Combat Tracker changes never
+  // reaching an already-open Orrery), and 83 of this suite's 105 call sites
+  // already had to override it explicitly (almost all to `false`) rather
+  // than rely on the bare default — strong evidence the default itself,
+  // not each individual call site, was the actual bug. Passing `preferLocal`
+  // explicitly (true OR false) always wins outright; only the unspecified
+  // (`null`) case is resolved here, per-call, against live auth state.
+  async get(bucket, id, { preferLocal = null, shareToken = "" } = {}) {
     const token = shareToken ? String(shareToken) : "";
-    if (preferLocal && !token) {
+    const effectivePreferLocal = preferLocal === null ? !this.isAuthenticated() : preferLocal;
+    if (effectivePreferLocal && !token) {
       const local = this.getLocal(bucket, id);
       if (local !== undefined) {
         return { source: "local", payload: local };
@@ -1446,8 +1466,10 @@ export class DataManager {
     type = "message",
     message = "",
     payload = undefined,
+    recipientIds = undefined,
+    inCharacter = undefined,
   } = {}) {
-    const body = { type, message, payload };
+    const body = { type, message, payload, recipientIds, inCharacter };
     const token = shareToken ? String(shareToken) : "";
     if (token) {
       return this._request(`/groups/share/${encodeURIComponent(token)}/log`, {

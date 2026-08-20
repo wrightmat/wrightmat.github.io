@@ -101,7 +101,7 @@
           "outlineColor": "#3f59d9",
           "position": {
             "x": -490,
-            "y": -259
+            "y": -298
           },
           "sizeCells": 2,
           "heightCells": 0,
@@ -195,7 +195,9 @@
       "name": "Player View (auto)",
       "description": "",
       "hiddenLayerIds": [],
-      "hiddenElementIds": [],
+      "hiddenElementIds": [
+        "de9b755b-3ca7-496a-a489-4655ffdc01ce"
+      ],
       "tiers": [
         "player"
       ],

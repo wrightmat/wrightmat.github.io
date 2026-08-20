@@ -1042,7 +1042,32 @@ let mapCleanSnapshot = null;
 // the Save button/beforeunload warning only ever reflects genuinely-unsaved
 // wall/map-setting/layer-design work, never a marker field that's already
 // persisted. `null` passes through unchanged (preserves the existing
-// "no clean snapshot yet = dirty" behavior below).
+// "no clean snapshot yet = dirty" behavior below). updatedAt is ALSO
+// stripped at the top level — it's derived metadata, not authored content,
+// and every recordHistory-driven mutation bumps it via updateMapTimestamp
+// regardless of whether that specific mutation is one of the auto-saved
+// ones above (applyMarkerElementChange, autoSaveHiddenFromPlayersView) or a
+// genuinely-pending manual edit. Confirmed real bug this fixes: an
+// auto-saved change (a marker drag, a quick "hidden from players" toggle)
+// left state.map.updatedAt permanently ahead of mapCleanSnapshot's own
+// value with nothing to ever reconcile it — isMapDirty() then stayed true
+// for the rest of the session even once the auto-saved field itself was
+// back in sync, silently blocking every future onChange remote merge in
+// watchCurrentMap below (isMapDirty() is one of its guards). A genuinely
+// pending manual edit is still caught here regardless — it's the actual
+// field content (a layer name, a wall point, a map setting) that differs
+// from the snapshot, never updatedAt alone. view (pan/zoom/center/mode) is
+// stripped too, for the same class of reason applyRemoteMapLayers already
+// documents on its own end ("this session's own live camera position — a
+// purely local concern, not something a remote poll should ever
+// overwrite"): onViewChange (baseMapManager's pan/zoom callback, above)
+// writes state.map.view directly, completely outside recordHistory, with
+// nothing ever reconciling it back into mapCleanSnapshot. Confirmed real
+// bug this fixes: simply looking around a freshly-loaded map — unavoidable,
+// completely passive GM behavior — left isMapDirty() permanently true from
+// the very first pan/zoom onward, blocking every future onChange remote
+// merge in watchCurrentMap below regardless of selection, dwarfing the
+// other two exclusions above in how reliably it triggered.
 function normalizeForDirtyCheck(mapJson) {
   if (mapJson === null) return null;
   let map;
@@ -1051,6 +1076,8 @@ function normalizeForDirtyCheck(mapJson) {
   } catch (error) {
     return mapJson;
   }
+  delete map.updatedAt;
+  delete map.view;
   (map.layers || []).forEach((layer) => {
     if (layer.type !== "marker") return;
     (layer.elements || []).forEach((element) => {
@@ -1123,6 +1150,15 @@ function applyRemoteMapLayers(nextMap) {
   const baseMapChanged = JSON.stringify(nextMap.baseMap) !== JSON.stringify(state.map.baseMap);
   state.map.layers = nextMap.layers || [];
   state.map.groups = nextMap.groups || [];
+  // Confirmed real bug this fixes: this function never touched views at
+  // all, so a remote View change (Combat Tracker's own toggleCombatantHiddenFromPlayers
+  // write-through, or a GM editing the same map from another tab) never
+  // reached Orrery's own in-memory state.map no matter how long the poll
+  // ran — every hidden-from-players computation here reads state.map.views
+  // directly (computeHiddenIds), with no independent resolver of its own to
+  // fall back on now that one used to exist and was removed in favor of
+  // this exact mechanism.
+  state.map.views = nextMap.views || [];
   state.map.baseMap = nextMap.baseMap || state.map.baseMap;
   state.map.updatedAt = nextMap.updatedAt;
   if (baseMapChanged) {
@@ -1197,9 +1233,25 @@ function watchCurrentMap(id, shareToken = "") {
     // nobody's actively watching for changes twice as often as needed.
     pollIntervalMs: 20000,
     onChange: (nextMap) => {
+      // No nextMap.id/state.map.id comparison here — a map's own id is
+      // filename/library_items metadata, never body content (every Library
+      // kind follows this convention now), so nextMap.id was always
+      // undefined and this check was UNCONDITIONALLY true, on every single
+      // poll and every live-stream tick. Confirmed the actual root cause
+      // behind "Orrery never picks up a remote change no matter how long I
+      // wait, regardless of selection": applyRemoteMapLayers below never
+      // ran at all, full stop — not gated by isMapDirty()/selection like it
+      // looked, those guards never even got evaluated on a normal path
+      // (short-circuited by this one first). Matches the Dashboard Map
+      // widget's own onMapChanged (widgets/map.js) — which never had this
+      // check and works correctly — no need for it anyway: watchCurrentMap
+      // fully stops the old watcher (mapWatcher?.stop(), which sets its own
+      // `destroyed` flag so any in-flight fetch is dropped) before ever
+      // creating a new one for a different map, so there's no path for a
+      // stale watcher's callback to fire against the wrong map to guard
+      // against here.
       if (
         !nextMap ||
-        nextMap.id !== state.map.id ||
         isMapDirty() ||
         state.selection.kind !== null ||
         isEditingMapProperties() ||
@@ -1715,6 +1767,34 @@ async function autoSaveHiddenFromPlayersView(elementId) {
     view.hiddenElementIds = Array.from(hidden);
     await dataManager.save("map", state.map.id, freshMap);
     mapWatcher?.noteLocalWrite();
+    // Confirmed real bug this fixes: this auto-save never re-baselined
+    // mapCleanSnapshot, so isMapDirty() (which compares the FULL state.map,
+    // views included, against that snapshot) stayed permanently true from
+    // the very first use of this toggle onward — silently blocking every
+    // future onChange merge in watchCurrentMap above (isMapDirty() is one
+    // of its guards), no matter what was or wasn't selected. Can't just
+    // exclude views wholesale from normalizeForDirtyCheck the way marker
+    // position/image/outlineColor are excluded — hiddenElementIds on any
+    // view, including this auto-managed one, can ALSO be edited manually
+    // through the View editor's own checklist (applyViewChange), which does
+    // NOT auto-save and must still show as dirty. So re-baseline only the
+    // views slice, at the moment it's confirmed synced with the server —
+    // any later edit (either path) will correctly diverge from THIS
+    // snapshot and show dirty again. (updatedAt itself needs no special
+    // handling here — normalizeForDirtyCheck excludes it from the
+    // comparison entirely, see its own comment.)
+    if (mapCleanSnapshot !== null) {
+      try {
+        const clean = JSON.parse(mapCleanSnapshot);
+        clean.views = JSON.parse(JSON.stringify(state.map.views));
+        mapCleanSnapshot = JSON.stringify(clean);
+        updateMapToolbarState();
+      } catch (error) {
+        // mapCleanSnapshot is always our own prior JSON.stringify output —
+        // parse failure isn't expected, but isn't worth surfacing to the GM
+        // over what's still a successful save.
+      }
+    }
   } catch (error) {
     status?.show(error?.message || "Unable to save that change.", { type: "danger" });
   }
@@ -5182,7 +5262,11 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
       return;
     }
     try {
-      const result = await dataManager.get(markerElement.refKind, markerElement.refId);
+      // preferLocal: false — this function's own whole point is picking up
+      // a change to the referenced record made SINCE it was linked (its own
+      // comment just below); a locally cached copy would defeat that the
+      // same way loadMapById's own missing preferLocal:false once did.
+      const result = await dataManager.get(markerElement.refKind, markerElement.refId, { preferLocal: false });
       // A marker linked before its reference had an image (e.g. a Character
       // imported before the DDB mapping picked up `image`, or re-imported
       // later to add one) never gets a second chance at the entitySelect
@@ -7863,6 +7947,39 @@ function setupMapEvents() {
       const name = elements.mapNameInput?.value.trim() || state.map.name || "New Orrery Map";
       state.map.name = name;
       updateMapTimestamp(state.map);
+      // This is otherwise a BLIND full-body overwrite of state.map — unlike
+      // every other write path on this map (marker position/image/color
+      // auto-save, the "hidden from players" toggle, Combat Tracker's own
+      // write-through), none of which ever save a stale, un-refetched
+      // copy. views specifically can now be changed by tools OTHER than
+      // this one (Combat Tracker's own toggleCombatantHiddenFromPlayers)
+      // while this GM's own Orrery tab has no local edit of its own to
+      // views at all — its poll is slower than the rest of the suite
+      // (pollIntervalMs above) AND skips every incoming update entirely
+      // while anything's selected, so state.map.views can easily still be
+      // stale at the moment Save is clicked. Confirmed real bug this
+      // fixes: a GM un-hid a marker from Combat Tracker, then (unrelated)
+      // hit Save in Orrery moments later — silently restored the marker to
+      // hidden, since Orrery's own copy of views hadn't caught up yet.
+      // Only refetch-and-take-the-server's-copy when this GM hasn't
+      // ALSO hand-edited a View locally since the last known-clean sync
+      // (comparing against mapCleanSnapshot, not just "is anything
+      // selected") — a genuine pending local View edit (the View editor's
+      // own checklist, a rename) still wins and saves as typed; this only
+      // ever protects the common case of views being untouched locally.
+      try {
+        const cleanViews = mapCleanSnapshot ? JSON.parse(mapCleanSnapshot).views : undefined;
+        const hasLocalViewEdit = JSON.stringify(state.map.views) !== JSON.stringify(cleanViews);
+        if (!hasLocalViewEdit && mapExistsOnServer) {
+          const fresh = await dataManager.get("map", state.map.id, { shareToken: currentShareToken, preferLocal: false });
+          if (Array.isArray(fresh?.payload?.views)) {
+            state.map.views = fresh.payload.views;
+          }
+        }
+      } catch (error) {
+        // Best-effort — fall through and save with whatever's already in
+        // memory rather than blocking the whole Save on this refetch.
+      }
       try {
         // A map's own id is filename/library_items metadata, never body
         // content (every Library kind now follows this convention) —
@@ -7973,7 +8090,23 @@ async function loadMapById(id, shareToken = "") {
   }
   if (!dataManager) return;
   try {
-    const result = await dataManager.get("map", id, { shareToken });
+    // preferLocal: false (now redundant for a signed-in user — get()'s
+    // default is itself auth-aware — kept explicit for clarity/resilience
+    // regardless of sign-in state) — a map is exactly the kind of record
+    // OTHER tools (Combat Tracker's own write-through, the Dashboard's Map
+    // widget, a GM's own second Orrery tab) can change out from under this
+    // browser's own local mirror. Under the old flat `preferLocal: true`
+    // default, that mirror was checked BEFORE ever reaching the server
+    // whenever no shareToken was present — true for a signed-in GM's own
+    // normal Orrery use, not just anonymous saves, since a signed-in save
+    // also writes a "read-acceleration" local copy (data-manager.js's own
+    // save()). A hard refresh clears the HTTP cache but never localStorage,
+    // so this loaded whatever THIS browser last saved, forever, regardless
+    // of anything that changed on the server since — confirmed real bug
+    // this fixed: a marker's "hidden from players" state fixed directly in
+    // the server's own data file still showed stale after a full page
+    // reload, because this call never actually reached the server to see it.
+    const result = await dataManager.get("map", id, { shareToken, preferLocal: false });
     mapExistsOnServer = true;
     applyMapSnapshot(JSON.stringify(result?.payload || createMapModel()));
     // A map's own id is filename/library_items metadata, never body content

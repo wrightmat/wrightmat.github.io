@@ -39,6 +39,13 @@ export async function resolveGroupContext(dataManager, { shareToken = "" } = {})
           campaignMinutesOfDay: group.campaign_minutes_of_day ?? null,
           shareToken,
           access: dataManager.isAuthenticated() ? "share" : "viewer",
+          // Game Log's @mention roster (character label + owner_id per
+          // member) — _serialize_group (server/groups.py) already attaches
+          // this to a share payload same as an owned/member group's own
+          // listGroups entry does below; kept here rather than re-fetched
+          // separately.
+          members: Array.isArray(group.members) ? group.members : [],
+          ownerId: group.owner_id ?? null,
         };
       }
     } catch (error) {
@@ -82,6 +89,8 @@ export async function resolveGroupContext(dataManager, { shareToken = "" } = {})
           campaignMinutesOfDay: match.campaign_minutes_of_day ?? null,
           shareToken: "",
           access: ownerId === userId ? "owner" : "member",
+          members: Array.isArray(match.members) ? match.members : [],
+          ownerId,
         };
       }
     } catch (error) {
@@ -98,6 +107,11 @@ export async function resolveGroupContext(dataManager, { shareToken = "" } = {})
       campaignMinutesOfDay: null,
       shareToken: "",
       access: "owner",
+      // No roster available (the listGroups lookup above failed) — the
+      // "owner" assumption this fallback already makes is the best guess
+      // for ownerId too, same reasoning.
+      members: [],
+      ownerId: dataManager.session?.user?.id ?? null,
     };
   }
   return null;
