@@ -7270,7 +7270,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     const id = state.draft.id;
     // A record's own id is filename/library_items metadata, not editable
     // content — never persisted in the body (same convention Location/
-    // Setting/Journal already had; Feature/Effect's embedded id and
+    // Setting/Journal already had; Feature/Wonder's embedded id and
     // Monster's "index" were both cleaned up as pure historical drift, and
     // this is the one spot in this file where a `state.draft.id` set by
     // duplicateCharacter()/mergeImportedCharacterData's own in-memory

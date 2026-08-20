@@ -1,0 +1,38 @@
+{
+  "index": "blight",
+  "name": "Blight",
+  "notes": "Necromantic energy washes over a creature of your choice that you can see within range, draining moisture and vitality from it. The target must make a constitution saving throw. The target takes 8d8 necrotic damage on a failed save, or half as much damage on a successful one. The spell has no effect on undead or constructs.\n\nIf you target a plant creature or a magical plant, it makes the saving throw with disadvantage, and the spell deals maximum damage to it.\n\nIf you target a nonmagical plant that isn't a creature, such as a tree or shrub, it doesn't make a saving throw; it simply withers and dies.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/spells/blight",
+  "mapping": "5e-api-spell",
+  "properties": {
+    "form": "spell"
+  },
+  "featureIds": [
+    "feat.damage"
+  ],
+  "featureParams": {
+    "feat.damage": {
+      "resolutionKind": "save",
+      "saveAbility": "constitution",
+      "saveEffect": "half",
+      "damageType": "necrotic",
+      "scaling": {
+        "by": "slot",
+        "values": {
+          "4": "8d8",
+          "5": "9d8",
+          "6": "10d8",
+          "7": "11d8",
+          "8": "12d8",
+          "9": "13d8"
+        }
+      }
+    }
+  },
+  "featureTiers": {
+    "feat.damage": "tier-3"
+  }
+}

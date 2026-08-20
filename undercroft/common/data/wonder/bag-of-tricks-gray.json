@@ -1,0 +1,32 @@
+{
+  "index": "bag-of-tricks-gray",
+  "name": "Bag of Tricks",
+  "notes": "Wondrous item, uncommon\n\nThis ordinary bag, made from gray, rust, or tan cloth, appears empty. Reaching inside the bag, however, reveals the presence of a small, fuzzy object. The bag weighs 1/2 pound.\n\nYou can use an action to pull the fuzzy object from the bag and throw it up to 20 feet. When the object lands, it transforms into a creature you determine by rolling a d8 and consulting the table that corresponds to the bag's color. The creature vanishes at the next dawn or when it is reduced to 0 Hit Points.\n\nThe creature is friendly to you and your companions, and it acts on Your Turn. You can use a Bonus Action to Command how the creature moves and what action it takes on its next turn, or to give it general orders, such as to Attack your enemies. In the absence of such orders, the creature acts in a fashion appropriate to its Nature.\n\nOnce three fuzzy Objects have been pulled from the bag, the bag can't be used again until the next dawn.\n\nGray Bag:\n\n| d8 | Creature |\n\n|---|---|\n\n| 01 | Weasel |\n\n| 02 | Giant Rat |\n\n| 03 | Badger |\n\n| 04 | Boar |\n\n| 05 | Panther |\n\n| 06 | Giant Badger |\n\n| 07 | Dire Wolf |\n\n| 08 | Giant Elk |",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/magic-items/bag-of-tricks-gray",
+  "mapping": "5e-api-magic-item",
+  "properties": {
+    "rarity": "uncommon",
+    "form": "wondrous-item",
+    "activation": "action"
+  },
+  "featureIds": [
+    "feat.random-effect",
+    "feat.summoned-companion"
+  ],
+  "budget": {
+    "target": 8,
+    "spent": 1,
+    "remaining": 7
+  },
+  "featureParams": {
+    "feat.random-effect": {
+      "optionCount": 8
+    }
+  },
+  "featureTiers": {
+    "feat.summoned-companion": "minor"
+  }
+}

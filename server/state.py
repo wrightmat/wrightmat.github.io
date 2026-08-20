@@ -16,6 +16,18 @@ from .config import ConfigLoader, MountConfig, ServerConfig
 # matter, since pings are meant to fade within a couple of seconds on the
 # client anyway.
 MAX_PINGS_PER_GROUP = 20
+# Same reasoning as MAX_PINGS_PER_GROUP above, for the dice-roll broadcast
+# bucket (Cards/Decks plan, Part 2) — a Broadcast-mode roll is meant to
+# animate within seconds of being seen; nothing older than a handful of
+# rolls back is ever worth relaying to a client that just connected.
+MAX_DICE_ROLL_BROADCASTS_PER_GROUP = 20
+# Same reasoning, for the card-draw broadcast bucket (Cards/Decks plan,
+# Part 5 revised).
+MAX_CARD_BROADCASTS_PER_GROUP = 20
+# Same reasoning, for the Shapes/Effects re-trigger broadcast bucket
+# (Shapes & Effects plan, Part 5) — "replay this already-placed element
+# now," never persisted.
+MAX_EFFECT_BROADCASTS_PER_GROUP = 20
 
 
 def _tune_connection(db: sqlite3.Connection) -> None:
@@ -116,6 +128,38 @@ class ServerState:
     pending_pings: Dict[str, list] = field(default_factory=dict)
     pings_lock: threading.Lock = field(default_factory=threading.Lock)
     ping_seq: int = 0
+    # A Broadcast-mode dice roll's own "go animate this now" signal (Cards/
+    # Decks plan, Part 2) — same "transient, in-memory, never a DB write"
+    # reasoning as pending_pings above: this is purely "roll this notation
+    # on your own screen right now," not a record of what happened (the
+    # roll's own group_log entry, posted separately, already is that).
+    pending_dice_roll_broadcasts: Dict[str, list] = field(default_factory=dict)
+    dice_roll_broadcasts_lock: threading.Lock = field(default_factory=threading.Lock)
+    dice_roll_broadcast_seq: int = 0
+    # A Broadcast-mode card draw's own "go animate this now" signal (Cards/
+    # Decks plan, Part 5 revised) — same shape as pending_dice_roll_broadcasts
+    # just above for the identical reason: confirmed real bug reusing the
+    # persistent spotlight mechanism for this instead (server/groups.py's own
+    # _INLINE_SPOTLIGHT_KINDS) — a card reveal is a one-time animation event,
+    # not "currently shown to the table" state, so it kept wrongly (a)
+    # replaying on every later page load (a spotlight stays "active" until
+    # explicitly cleared) and (b) appearing in the "what's shown to the
+    # table" icon tray with nothing meaningful to toggle, unlike every other
+    # kind that actually lives there. This is purely "play this reveal right
+    # now" — the draw's own group_log entry (deck.js's own handleDraw, type
+    # "card") is the separate, persisted record of what happened.
+    pending_card_broadcasts: Dict[str, list] = field(default_factory=dict)
+    card_broadcasts_lock: threading.Lock = field(default_factory=threading.Lock)
+    card_broadcast_seq: int = 0
+    # Re-triggers a placed Shape/Effect element's own animation (Shapes &
+    # Effects plan, Part 5) — same "transient, never persisted" reasoning as
+    # the two buckets just above. Unlike those, the payload only ever needs
+    # to say WHICH element to replay (map_id + element_id), not carry the
+    # element's own data — every viewer with that map open already has the
+    # full element (preset, color, everything) from the map itself.
+    pending_effect_broadcasts: Dict[str, list] = field(default_factory=dict)
+    effect_broadcasts_lock: threading.Lock = field(default_factory=threading.Lock)
+    effect_broadcast_seq: int = 0
     # Backing fields for the read_db property below — not meant to be read or
     # set directly by anything outside this class. _read_local holds one
     # lazily-opened connection per thread (see _open_read_connection's own
@@ -208,6 +252,52 @@ class ServerState:
     def get_ping_bucket(self, group_id: str) -> list:
         with self.pings_lock:
             return list(self.pending_pings.get(group_id, []))
+
+    # `data` is the broadcast's own payload ({notation, label}) — opaque
+    # here, same as record_ping's own `data` above; just stamped with a
+    # monotonic seq so _handle_live_stream can tell which broadcasts a given
+    # connection has already relayed.
+    def record_dice_roll_broadcast(self, group_id: str, data: dict) -> int:
+        with self.dice_roll_broadcasts_lock:
+            self.dice_roll_broadcast_seq += 1
+            seq = self.dice_roll_broadcast_seq
+            bucket = self.pending_dice_roll_broadcasts.setdefault(group_id, [])
+            bucket.append({"seq": seq, **data})
+            if len(bucket) > MAX_DICE_ROLL_BROADCASTS_PER_GROUP:
+                del bucket[: len(bucket) - MAX_DICE_ROLL_BROADCASTS_PER_GROUP]
+            return seq
+
+    def get_dice_roll_broadcast_bucket(self, group_id: str) -> list:
+        with self.dice_roll_broadcasts_lock:
+            return list(self.pending_dice_roll_broadcasts.get(group_id, []))
+
+    def record_card_broadcast(self, group_id: str, data: dict) -> int:
+        with self.card_broadcasts_lock:
+            self.card_broadcast_seq += 1
+            seq = self.card_broadcast_seq
+            bucket = self.pending_card_broadcasts.setdefault(group_id, [])
+            bucket.append({"seq": seq, **data})
+            if len(bucket) > MAX_CARD_BROADCASTS_PER_GROUP:
+                del bucket[: len(bucket) - MAX_CARD_BROADCASTS_PER_GROUP]
+            return seq
+
+    def get_card_broadcast_bucket(self, group_id: str) -> list:
+        with self.card_broadcasts_lock:
+            return list(self.pending_card_broadcasts.get(group_id, []))
+
+    def record_effect_broadcast(self, group_id: str, data: dict) -> int:
+        with self.effect_broadcasts_lock:
+            self.effect_broadcast_seq += 1
+            seq = self.effect_broadcast_seq
+            bucket = self.pending_effect_broadcasts.setdefault(group_id, [])
+            bucket.append({"seq": seq, **data})
+            if len(bucket) > MAX_EFFECT_BROADCASTS_PER_GROUP:
+                del bucket[: len(bucket) - MAX_EFFECT_BROADCASTS_PER_GROUP]
+            return seq
+
+    def get_effect_broadcast_bucket(self, group_id: str) -> list:
+        with self.effect_broadcasts_lock:
+            return list(self.pending_effect_broadcasts.get(group_id, []))
 
 
 def configure_logging(level: str) -> None:

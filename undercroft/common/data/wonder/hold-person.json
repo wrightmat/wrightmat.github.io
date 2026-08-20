@@ -1,0 +1,26 @@
+{
+  "index": "hold-person",
+  "name": "Hold Person",
+  "notes": "Choose a humanoid that you can see within range. The target must succeed on a wisdom saving throw or be paralyzed for the duration. At the end of each of its turns, the target can make another wisdom saving throw. On a success, the spell ends on the target.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/spells/hold-person",
+  "mapping": "5e-api-spell",
+  "properties": {
+    "form": "spell"
+  },
+  "featureIds": [
+    "feat.impose-condition"
+  ],
+  "featureParams": {
+    "feat.impose-condition": {
+      "condition": "paralyzed",
+      "saveAbility": "wisdom",
+      "duration": "the duration"
+    }
+  },
+  "featureTiers": {
+    "feat.impose-condition": "extreme"
+  }
+}

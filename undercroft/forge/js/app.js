@@ -406,7 +406,7 @@ let locationInspectorRequestId = 0;
 let dataManager = null;
 // Every saved NPC at the currently selected Location (NPC picker options)
 // plus its ownership metadata — same role/shape as Crucible's
-// monstersInSystem/monsterCatalog, Vault's effectsInSystem/effectCatalog,
+// monstersInSystem/monsterCatalog, Vault's wondersInSystem/wonderCatalog,
 // Sanctum's locationsInSetting/locationCatalog. currentNpcId is tracked
 // separately from currentRecord for the same reason those tools track their
 // own current*Id separately.
@@ -1326,7 +1326,7 @@ async function populateLocationSelectOptions(settingId) {
 
 // Ownership metadata comes from the list response, not the full fetched
 // body — mirrors Sanctum's refreshLocationCatalog/Crucible's
-// refreshMonsterCatalog/Vault's refreshEffectCatalog exactly. Local-only
+// refreshMonsterCatalog/Vault's refreshWonderCatalog exactly. Local-only
 // (anonymous, browser-storage) entries are always deletable, since it's
 // just this browser's own storage.
 async function refreshNpcCatalog(ids) {
@@ -1338,7 +1338,7 @@ function npcAllowsDelete(id) {
 }
 
 // Every saved NPC at the currently selected Location — same picker pattern
-// as Sanctum's Location/Crucible's Monster/Vault's Effect: "New / unsaved"
+// as Sanctum's Location/Crucible's Monster/Vault's Wonder: "New / unsaved"
 // as the default so a fresh Generate NPC keeps working exactly as before.
 // With no Location selected (it's optional now), falls back to every NPC
 // belonging to the whole Setting (via its own settingIds — see

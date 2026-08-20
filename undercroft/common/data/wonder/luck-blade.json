@@ -1,0 +1,38 @@
+{
+  "index": "luck-blade",
+  "name": "Luck Blade",
+  "notes": "Weapon (any sword), legendary (requires attunement)\n\nYou gain a +1 bonus to attack and damage rolls made with this magic weapon. While the sword is on your person, you also gain a +1 bonus to saving throws.\n\n***Luck.*** If the sword is on your person, you can call on its luck (no action required) to reroll one attack roll, ability check, or saving throw you dislike. You must use the second roll. This property can't be used again until the next dawn.\n\n***Wish.*** The sword has 1d4 - 1 charges. While holding it, you can use an action to expend 1 charge and cast the wish spell from it. This property can't be used again until the next dawn. The sword loses this property if it has no charges.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/magic-items/luck-blade",
+  "mapping": "5e-api-magic-item",
+  "properties": {
+    "rarity": "legendary",
+    "form": "weapon",
+    "activation": "action"
+  },
+  "featureIds": [
+    "feat.weapon-enhancement",
+    "feat.cast-a-spell",
+    "feat.requires-attunement",
+    "feat.protection-bonus",
+    "feat.reroll"
+  ],
+  "featureTiers": {
+    "feat.weapon-enhancement": "plus-1",
+    "feat.protection-bonus": "plus-1"
+  },
+  "featureParams": {
+    "feat.cast-a-spell": {
+      "spellName": "wish"
+    },
+    "feat.protection-bonus": {
+      "ac": false,
+      "savingThrows": true
+    },
+    "feat.reroll": {
+      "rollType": "attack roll, ability check, or saving throw"
+    }
+  }
+}

@@ -1,5 +1,4 @@
 {
-  "kind": "monster",
   "name": "Alchemy Beetle",
   "notes": "### Description\r\n\r\nAlchemy Beetles are relatively easy to construct, as far as constructs are concerned. The problem is no one has figured out how to refill an alchemical beetle without it exploding. The iron frame and reservoir is worth 1,000 gp. When an Alchemy Beetle is created, part of the cost of making it is getting 2,000 gp worth the alchemical liquid chosen for its energy type; acid, Alchemist Fire (fire), Bottled Lightning (electriciity) or Liquid Ice (cold). One chosen, this cannot be changed and an Alchemy Beetle cannot mix alchemical liquids.",
   "type": "construct",

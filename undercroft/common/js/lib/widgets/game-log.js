@@ -112,7 +112,7 @@ export const SPOTLIGHT_KIND_LABELS = {
   npc: "an NPC",
   location: "a Location",
   monster: "a Monster",
-  effect: "an Effect",
+  wonder: "a Wonder",
   journal: "a Journal page",
   map: "a Map",
   encounter: "an Encounter",
@@ -132,11 +132,11 @@ export const SPOTLIGHT_KIND_LABELS = {
 // own read-only "Now Showing" panel — just needs "what icon represents this
 // kind," full stop.
 export const SPOTLIGHT_KIND_ICONS = {
-  npc: "tabler:cards",
-  location: "tabler:cards",
-  monster: "tabler:cards",
-  effect: "tabler:cards",
-  journal: "tabler:cards",
+  npc: "tabler:file-text",
+  location: "tabler:file-text",
+  monster: "tabler:file-text",
+  wonder: "tabler:file-text",
+  journal: "tabler:file-text",
   encounter: "tabler:swords",
   map: "tabler:map-2",
   clock: "tabler:clock",
@@ -172,6 +172,9 @@ function resolveEntryIcon(entry, resolveKindIcon) {
   if (entry?.type === "roll") {
     return { icon: "tabler:dice-5", clickable: false };
   }
+  if (entry?.type === "card") {
+    return { icon: "tabler:cards", clickable: false };
+  }
   if (entry?.type === "spotlight") {
     const kind = String(entry.payload?.kind || "").trim();
     const id = String(entry.payload?.id || "").trim();
@@ -192,7 +195,7 @@ function resolveEntryIcon(entry, resolveKindIcon) {
 // action exactly (map.js's own "Open in Orrery" is the only one that exists
 // anywhere in the suite today: same URL shape, same same-tab navigation, no
 // target/rel). A kind with no entry here just renders as plain, non-linked
-// text — most notably every Handout kind (npc/location/monster/effect/
+// text — most notably every Handout kind (npc/location/monster/wonder/
 // journal), none of which has an "Open in [owning tool]" affordance
 // anywhere yet to mirror.
 function resolveSpotlightLink(kind, id, shareToken) {
@@ -230,6 +233,19 @@ function describeEntry(entry, { getCachedTitle, ensureTitleCached, onTitleLoaded
       detail = entry.payload?.data?.name || "";
     } else if (kind === "browser") {
       detail = entry.payload?.data?.url || "";
+    } else if (kind === "card") {
+      // Legacy-compatible only — no NEW "card" spotlight entries are ever
+      // created any more (Cards/Decks plan, Part 5 revised: card reveals now
+      // use the same ephemeral broadcast transport as dice, never spotlight
+      // — see dashboard.js's own startDiceRevealWatcher). But the Game Log
+      // renders EVERY entry ever posted, not just currently-active ones the
+      // way the icon tray's own resolveActiveSpotlights does — so old rows
+      // from before that redesign still render here, and without this
+      // branch they fall into the generic Library-fetch case below and
+      // 404 forever trying to fetch a title for an id that was never a
+      // Library record (confirmed real bug this fixes, again).
+      const cards = Array.isArray(entry.payload?.data?.cards) ? entry.payload.data.cards : [];
+      detail = cards.map((card) => card?.label).filter(Boolean).join(", ");
     } else if (kind && id) {
       detail = getCachedTitle?.(kind, id) || "";
       if (!detail) ensureTitleCached?.(kind, id, onTitleLoaded);
@@ -264,6 +280,21 @@ function describeEntry(entry, { getCachedTitle, ensureTitleCached, onTitleLoaded
     // already reads fine without it.
     const verdict = typeof payload.verdict === "string" ? payload.verdict.trim() : "";
     if (verdict) text += ` — ${verdict}`;
+    return { before: text, detail: "", after: "", href: "" };
+  }
+  if (entry?.type === "card") {
+    // A card entry's own `message` is always empty — the real data lives in
+    // `payload.{deckLabel,cards}` (deck.js's own handleDraw/
+    // runDeckMacroAction), same shape as a roll entry's own payload-only
+    // data. `cards` is always an array (one entry for a single draw, several
+    // for a multi-card spread) — no separate singular-card shape.
+    const payload = entry.payload || {};
+    const deckLabel = typeof payload.deckLabel === "string" ? payload.deckLabel.trim() : "";
+    const cardLabels = (Array.isArray(payload.cards) ? payload.cards : [])
+      .map((card) => (typeof card?.label === "string" ? card.label.trim() : ""))
+      .filter(Boolean)
+      .join(", ");
+    const text = cardLabels && deckLabel ? `${cardLabels} — ${deckLabel}` : cardLabels || deckLabel || "Drew a card";
     return { before: text, detail: "", after: "", href: "" };
   }
   return { before: entry?.message || "", detail: "", after: "", href: "" };
@@ -306,6 +337,15 @@ export function summarizeLogEntry(entry) {
     const verdict = typeof payload.verdict === "string" ? payload.verdict.trim() : "";
     if (verdict) text += ` — ${verdict}`;
     return text;
+  }
+  if (entry?.type === "card") {
+    const payload = entry.payload || {};
+    const deckLabel = typeof payload.deckLabel === "string" ? payload.deckLabel.trim() : "";
+    const cardLabels = (Array.isArray(payload.cards) ? payload.cards : [])
+      .map((card) => (typeof card?.label === "string" ? card.label.trim() : ""))
+      .filter(Boolean)
+      .join(", ");
+    return cardLabels && deckLabel ? `${cardLabels} — ${deckLabel}` : cardLabels || deckLabel || "Drew a card";
   }
   return entry?.message || "";
 }
@@ -670,6 +710,16 @@ export function initGameLogWidget(
         // recipient) — see _entry_visible_to, server/groups.py — so the
         // badges below are purely informational, not a client-side gate.
         const isWhisper = entry.type === "message" && Array.isArray(entry.recipient_ids) && entry.recipient_ids.length > 0;
+        // A self-only Private roll/card (Cards/Decks plan, Part 1) —
+        // recipient_ids here is always just [the poster's own id] (a
+        // self-whisper, never a real whisper to someone else — see
+        // dice-roller.js's/deck.js's own resolveVisibility), so this gets a
+        // plain "Private" indicator below instead of the @mention pill,
+        // which only makes sense when there's an actual person being named.
+        const isPrivateRoll =
+          (entry.type === "roll" || entry.type === "card") &&
+          Array.isArray(entry.recipient_ids) &&
+          entry.recipient_ids.length > 0;
         const isInCharacter = entry.type === "message" && Boolean(entry.in_character);
         const characterName = isInCharacter ? String(entry.payload?.characterName || "").trim() : "";
         // Someone ELSE @mentioned me (a real recipient match, not my own
@@ -720,6 +770,11 @@ export function initGameLogWidget(
           pill.textContent = entry.recipient_ids.map((id) => `@${mentionDirectory.idToLabel(id) || "someone"}`).join(" ");
           const usernames = entry.recipient_ids.map((id) => mentionDirectory.idToUsername(id)).filter(Boolean);
           if (usernames.length) pill.title = usernames.join(", ");
+          textEl.appendChild(pill);
+          textEl.appendChild(document.createTextNode(" "));
+        }
+        if (isPrivateRoll) {
+          const pill = el("span", "badge text-bg-secondary gamelog-mention-pill", "Private");
           textEl.appendChild(pill);
           textEl.appendChild(document.createTextNode(" "));
         }

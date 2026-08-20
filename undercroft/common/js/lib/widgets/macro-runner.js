@@ -20,6 +20,7 @@ import { runSoundboardMacroAction } from "./soundboard.js";
 import { runCombatMacroAction } from "./combat-tracker.js";
 import { runCharacterMacroAction } from "./character-sheet.js";
 import { runDiceRollerMacroAction } from "./dice-roller.js";
+import { runDeckMacroAction } from "./deck.js";
 import { describeMacroAction } from "./macro-action-catalog.js";
 
 // A macro-owned spotlight id for kinds with no Library record of their own
@@ -95,6 +96,31 @@ function makeContentRefMacroAction(defaultKind) {
   };
 }
 
+// Shapes & Effects plan, Part 5 — replays a placed, non-looping particle
+// effect via whichever Map widget is currently shown (dashboard.js's own
+// ensureWidgetForMacroAction resolves `widgetInstance` to that, same
+// "no widget shown, no auto-create" restriction Clock/Calendar have — an
+// effect can't sensibly conjure a Map into existence any more than a
+// specific Clock could). Replays locally through the widget's own
+// triggerByLabel, then broadcasts so the rest of the table sees it too —
+// mirroring deck.js's own runDeckMacroAction, which also plays locally
+// before posting.
+async function runEffectsMacroAction(action, { dataManager, groupContext, widgetInstance }) {
+  if (action?.action !== "trigger") {
+    throw new Error(`Unknown Effects macro action "${action?.action}".`);
+  }
+  if (!widgetInstance || typeof widgetInstance.triggerByLabel !== "function") {
+    throw new Error("No map currently shown to the table.");
+  }
+  const target = String(action?.params?.target || "").trim();
+  if (!target) throw new Error("No effect label given.");
+  const elementId = widgetInstance.triggerByLabel(target);
+  const groupId = groupContext?.groupId;
+  if (groupId && widgetInstance.mapId) {
+    await dataManager.postEffectBroadcast({ groupId, mapId: widgetInstance.mapId, elementId });
+  }
+}
+
 // Clock/Calendar have no standalone runner of their own (unlike every other
 // handler here) — their real state lives only in whichever mounted widget
 // instance is currently shown to the table (see clocks.js/calendar.js's own
@@ -118,10 +144,12 @@ const ACTION_HANDLERS = {
   combat: runCombatMacroAction,
   character: runCharacterMacroAction,
   diceroller: runDiceRollerMacroAction,
+  deck: runDeckMacroAction,
   browser: runBrowserMacroAction,
   gamelog: runGamelogMacroAction,
   handout: makeContentRefMacroAction("handout"),
   map: makeContentRefMacroAction("map"),
+  effects: runEffectsMacroAction,
   clock: makeLiveWidgetMacroAction("clock"),
   calendar: makeLiveWidgetMacroAction("calendar"),
 };

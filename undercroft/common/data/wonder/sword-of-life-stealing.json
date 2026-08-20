@@ -1,0 +1,24 @@
+{
+  "index": "sword-of-life-stealing",
+  "name": "Sword of Life Stealing",
+  "notes": "Weapon (any sword), rare (requires attunement)\n\nWhen you attack a creature with this magic weapon and roll a 20 on the attack roll, that target takes an extra 3d6 necrotic damage, provided that the target isn't a construct or an undead. You gain temporary hit points equal to the extra damage dealt.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/magic-items/sword-of-life-stealing",
+  "mapping": "5e-api-magic-item",
+  "properties": {
+    "rarity": "rare",
+    "form": "weapon"
+  },
+  "featureIds": [
+    "feat.extra-damage",
+    "feat.requires-attunement"
+  ],
+  "featureParams": {
+    "feat.extra-damage": {
+      "damageDice": "3d6",
+      "damageType": "necrotic"
+    }
+  }
+}

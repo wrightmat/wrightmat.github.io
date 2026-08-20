@@ -7,7 +7,7 @@
 // this picker only ever needs a name to show and an id to return, never a
 // record's own fields to filter on, so there's no reason to pull every
 // candidate's full body (irrelevant for `kind` values like `feature`/
-// `effect`, which can run into the thousands) just to populate a <select>.
+// `wonder`, which can run into the thousands) just to populate a <select>.
 // Works for any kind unconditionally, since a record's title (what the
 // summary's `name` comes from) is a real library_items column populated at
 // save time, not something a kind has to opt into via metadataFields.

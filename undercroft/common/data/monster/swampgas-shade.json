@@ -1,5 +1,4 @@
 {
-  "kind": "monster",
   "name": "Swampgas Shade",
   "notes": "_An ethereal shadow of hatred and swampgas haunts the fens, and seeks to duplicate its own tragic demise._\n\nA swampgas shade is the aggrieved soul of a humanoid murdered in a swamp. Mired in muck, the body cannot decompose, and spawns an undead instead. The soul is trapped on the Material Plane, tied to the area within a mile of its corpse.\n\nThe soul grows furious at its condition as time passes, eventually combining with swampgas to form a ghostly undead that lashes out at others, whispering in the ears of the living.\n\n**Restless Slumber**. The swampgas shade can be put to rest by finding and properly interring its corpse outside the swamp. Otherwise, the shade returns to haunt the swamp anew shortly after being slain.\n\n**Vile Compact**. Dark powers often seek out swampgas shades, promising relief from their eternal torture if they can ensnare souls of those they kill. As it kills others, it traps their souls, which it barters in exchange for its freedom.",
   "type": "undead",

@@ -9,7 +9,7 @@
 // has NO domain knowledge at all — it takes a plain `{nodes: [{id, label,
 // radius?}], edges: [{a, b, type}]}` shape and a couple of small callbacks;
 // every caller owns turning its own real data (a Location's parentId/
-// connectedTo, an NPC/Monster/Effect's own relationship edges, or
+// connectedTo, an NPC/Monster/Wonder's own relationship edges, or
 // Repository's wikilinks/references) into that shape itself. A force layout
 // (not a tree/org-chart) is the right shape here since node position carries
 // no meaning beyond "roughly near its related neighbors" — none of this

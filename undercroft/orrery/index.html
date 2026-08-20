@@ -133,11 +133,11 @@
                   data-shape-toggle-wrap
                   data-bs-toggle="tooltip"
                   data-bs-placement="top"
-                  data-bs-title="Draw an AoE shape"
+                  data-bs-title="Draw a Shape/Effect"
                 >
                   <button class="btn btn-outline-secondary btn-sm" type="button" data-shape-toggle aria-pressed="false">
                     <span class="iconify" data-icon="tabler:target" aria-hidden="true"></span>
-                    <span class="visually-hidden">AoE shape</span>
+                    <span class="visually-hidden">Shape/Effect</span>
                   </button>
                 </span>
                 <span
@@ -188,16 +188,6 @@
                     aria-label="Drawing color"
                   />
                 </span>
-                <select class="form-select form-select-sm w-auto d-none" data-shape-type aria-label="AoE shape type">
-                  <option value="circle">Circle</option>
-                  <option value="cone">Cone</option>
-                  <option value="line">Line</option>
-                  <option value="square">Square</option>
-                </select>
-                <select class="form-select form-select-sm w-auto d-none" data-wall-submode aria-label="Wall or door">
-                  <option value="wall">Wall</option>
-                  <option value="door">Door</option>
-                </select>
                 <span
                   class="d-inline-block d-none"
                   tabindex="0"
@@ -214,8 +204,6 @@
               </div>
               <div class="d-flex align-items-center gap-2 flex-wrap">
                 <span class="small text-body-secondary d-none" data-measure-readout></span>
-                <span class="small text-body-secondary d-none" data-shape-readout></span>
-                <span class="small text-body-secondary d-none" data-light-readout></span>
               </div>
             </div>
             <div class="orrery-view-details mt-2 d-none" data-view-details>
@@ -313,6 +301,50 @@
     </div>
 
     <div class="status-root" data-status-root></div>
+
+    <!-- Ported from Press's own #press-pattern-modal (press/index.html) —
+         same structure (category tabs, thumbnail grid, live preview +
+         dynamically-built controls), reading from shape-effect-library.js's
+         own SHAPE_EFFECT_PRESETS registry instead of pattern-library.js's.
+         Opened from the selection inspector's own "Change Shape/Effect"
+         button (app.js's initShapeEffectModal) — never from the toolbar's
+         own pre-placement type select, which stays a plain dropdown. -->
+    <div class="modal fade" id="orrery-shape-effect-modal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 class="modal-title fs-5">Change Shape/Effect</h2>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body d-flex flex-column gap-3">
+            <div class="btn-group" role="group" aria-label="Category" data-shape-effect-category-group>
+              <input type="radio" class="btn-check" name="shape-effect-category" id="shape-effect-category-shapes" value="shapes" autocomplete="off" checked />
+              <label class="btn btn-outline-secondary btn-sm" for="shape-effect-category-shapes">Shapes</label>
+              <input type="radio" class="btn-check" name="shape-effect-category" id="shape-effect-category-effects" value="effects" autocomplete="off" />
+              <label class="btn btn-outline-secondary btn-sm" for="shape-effect-category-effects">Effects</label>
+              <input type="radio" class="btn-check" name="shape-effect-category" id="shape-effect-category-weather" value="weather" autocomplete="off" />
+              <label class="btn btn-outline-secondary btn-sm" for="shape-effect-category-weather">Weather</label>
+            </div>
+            <div class="row g-3">
+              <div class="col-12 col-md-7">
+                <div class="d-flex flex-wrap gap-2" data-shape-effect-thumbnails></div>
+              </div>
+              <div class="col-12 col-md-5 d-flex flex-column gap-3 border-start-md ps-md-3">
+                <div class="d-flex flex-column align-items-center gap-2 border rounded-3 bg-body-tertiary p-3">
+                  <div data-shape-effect-preview style="width: 100px; height: 100px"></div>
+                  <div class="fw-semibold small text-body-secondary" data-shape-effect-preview-label>Select a shape or effect</div>
+                </div>
+                <div class="d-flex flex-column gap-2" data-shape-effect-controls></div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-primary" data-shape-effect-apply disabled>Apply</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- NOT reordered before these scripts, unlike every other tool page —
          js/app.js calls baseMapManager.setBaseMap(...) synchronously at

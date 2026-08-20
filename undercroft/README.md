@@ -32,7 +32,7 @@ The server otherwise runs on the Python standard library alone. One optional dep
 | **Crucible** | Monster and adversary creator — Creature Type + Archetype + Role, built from a shared feature graph. |
 | **Forge** | NPC generator — identity, 4D personality axes, optional AI-written character notes. |
 | **Sanctum** | Location and dungeon generator, and the authoring surface for Setting/Location. |
-| **Vault** | Spell and magic item generator — a budget-based effect economy built from the same feature graph as Crucible. |
+| **Vault** | Spell and magic item generator — a budget-based feature economy built from the same feature graph as Crucible. |
 | **Loom** | Manage data or import external content — the generic Library/System editor, and where external content (e.g. D&D Beyond) gets imported via mappings. |
 
 There's no separate "Admin" tool — account tiers, content ownership, sharing, and Campaign Group management live inside Loom (tier-gated tabs) and the account page (`common/account.html`), both reachable from the signed-in menu in every tool's header. Every tool shares the same header chrome, the same three-pane shell, and the same save/share/print plumbing described next.
@@ -43,7 +43,7 @@ There's no separate "Admin" tool — account tiers, content ownership, sharing, 
 
 ### The Library
 
-Nearly everything any tool produces — a System, a Location, an NPC, a Monster, an Effect, a Template, a Map — is a **Library item**: one row in a single database table, addressed by a `kind` and an `id`. A new kind needs no new server code — dropping a `common/data/kind/<kind>.json` registry file in is enough for every generic save/list/get/delete/share route to support it immediately.
+Nearly everything any tool produces — a System, a Location, an NPC, a Monster, a Wonder, a Template, a Map — is a **Library item**: one row in a single database table, addressed by a `kind` and an `id`. A new kind needs no new server code — dropping a `common/data/kind/<kind>.json` registry file in is enough for every generic save/list/get/delete/share route to support it immediately.
 
 A System is just another Library item — an id, a title, and a `fields` array. Every "System-shaped" capability elsewhere in the suite (Vault's generator properties, Crucible's Creature Type/Combat Scaling, Sanctum's Environment, dice, Travel Means) reads its own reserved-key field off that array only if present, so a System never has to declare anything the game itself doesn't have.
 

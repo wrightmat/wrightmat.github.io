@@ -14,15 +14,15 @@
 
       <div class="d-flex flex-grow-1 workbench-shell">
         <div data-pane-content="left">
-          <div class="btn-toolbar justify-content-center" role="toolbar" aria-label="Effect actions">
-            <div class="btn-group" role="group" data-effect-toolbar-mount></div>
-            <div class="btn-group ms-2" role="group" data-effect-undo-toolbar-mount></div>
+          <div class="btn-toolbar justify-content-center" role="toolbar" aria-label="Wonder actions">
+            <div class="btn-group" role="group" data-wonder-toolbar-mount></div>
+            <div class="btn-group ms-2" role="group" data-wonder-undo-toolbar-mount></div>
           </div>
 
           <div data-selections-mount></div>
           <div class="d-flex flex-column gap-2" data-selections-panel>
             <div data-field-mount="system-select"></div>
-            <div data-field-mount="effect-select"></div>
+            <div data-field-mount="wonder-select"></div>
 
             <div class="d-flex flex-column gap-2" data-generation-fields>
               <div data-field-mount="casting-class-select"></div>
@@ -40,7 +40,7 @@
           <!-- The suite-wide Mode header — the "Nothing selected yet"
                empty-state message (condensed, left-aligned, no card — see
                js/app.js's own createEmptyStateCard "inline" variant call)
-               flush on the left, ms-auto pushing Mode (Effect/Relationships,
+               flush on the left, ms-auto pushing Mode (Wonder/Relationships,
                a real labeled button group) to the right regardless of
                whether the empty-state message is present. Same
                createModeToggleGroup pattern Repository/Forge/Crucible/
@@ -48,18 +48,18 @@
                renderModeToggle. Relationships mode always shows graph+list
                together now — no separate View toggle. -->
           <div class="d-flex align-items-center gap-2 mb-3" data-vault-header>
-            <div data-effect-empty-state></div>
+            <div data-wonder-empty-state></div>
             <div class="d-flex align-items-center gap-2 ms-auto">
               <div data-vault-mode-toggle-mount></div>
             </div>
           </div>
 
-          <div class="d-flex flex-column gap-3 d-none" data-effect-display>
+          <div class="d-flex flex-column gap-3 d-none" data-wonder-display>
             <div class="card shadow-theme">
               <div class="card-body">
                 <div data-identity-mount></div>
                 <div class="d-flex flex-column gap-2" data-identity-panel>
-                  <div data-field-mount="effect-name"></div>
+                  <div data-field-mount="wonder-name"></div>
                   <div class="row g-3" data-identity-fields></div>
                 </div>
               </div>
@@ -133,10 +133,10 @@
           </div>
 
           <!-- Relationships — a second, mutually-exclusive Mode (not a card
-               inside Effect mode) — see js/app.js's own setMode. Same shared
+               inside Wonder mode) — see js/app.js's own setMode. Same shared
                relationship-editor.js/relationship-graph.js pair every other
                kind uses (Forge/Crucible/Sanctum). -->
-          <div class="d-none card shadow-theme" data-effect-relationships>
+          <div class="d-none card shadow-theme" data-wonder-relationships>
             <div class="card-body d-flex flex-column gap-2">
               <div data-relationships-graph-wrap>
                 <div class="relationship-graph-stage" data-relationships-graph-container>

@@ -1,0 +1,28 @@
+{
+  "index": "boots-of-striding-and-springing",
+  "name": "Boots of Striding and Springing",
+  "notes": "Wondrous item, uncommon (requires attunement)\n\nWhile you wear these boots, your walking speed becomes 30 feet, unless your walking speed is higher, and your speed isn't reduced if you are encumbered or wearing heavy armor. In addition, you can jump three times the normal distance, though you can't jump farther than your remaining movement would allow.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/magic-items/boots-of-striding-and-springing",
+  "mapping": "5e-api-magic-item",
+  "properties": {
+    "rarity": "uncommon",
+    "form": "wondrous-item"
+  },
+  "featureIds": [
+    "feat.speed-increase",
+    "feat.jump-increase",
+    "feat.requires-attunement"
+  ],
+  "featureParams": {
+    "feat.speed-increase": {
+      "mode": "minimum",
+      "distance": 30
+    },
+    "feat.jump-increase": {
+      "multiplier": 3
+    }
+  }
+}

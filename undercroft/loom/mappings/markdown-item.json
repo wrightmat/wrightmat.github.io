@@ -1,6 +1,6 @@
 {
   "type": "with",
-  "$source": "markdown-effect",
+  "$source": "markdown-wonder",
   "$description": "Markdown (Obsidian) — Magic Item",
   "bindings": {
     "itemStats": {

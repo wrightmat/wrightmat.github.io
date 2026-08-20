@@ -1,5 +1,4 @@
 {
-  "kind": "location",
   "name": "Sharn",
   "systemIds": [
     "sys.dnd5e"
@@ -13,7 +12,9 @@
   "parentId": null,
   "connectedTo": [],
   "notes": "",
-  "settingIds": ["eberron"],
+  "settingIds": [
+    "eberron"
+  ],
   "mixingCoefficient": 0.65,
   "speciesWeights": [
     {

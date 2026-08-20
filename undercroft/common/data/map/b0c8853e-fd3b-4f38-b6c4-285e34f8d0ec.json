@@ -195,9 +195,7 @@
       "name": "Player View (auto)",
       "description": "",
       "hiddenLayerIds": [],
-      "hiddenElementIds": [
-        "de9b755b-3ca7-496a-a489-4655ffdc01ce"
-      ],
+      "hiddenElementIds": [],
       "tiers": [
         "player"
       ],

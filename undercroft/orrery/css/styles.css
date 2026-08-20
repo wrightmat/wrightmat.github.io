@@ -488,13 +488,9 @@ body.orrery-restricted-viewer [data-measure-toggle-wrap],
 body.orrery-restricted-viewer [data-measure-readout],
 body.orrery-restricted-viewer [data-draw-toggle-wrap],
 body.orrery-restricted-viewer [data-shape-toggle-wrap],
-body.orrery-restricted-viewer [data-shape-type],
-body.orrery-restricted-viewer [data-shape-readout],
 body.orrery-restricted-viewer [data-wall-toggle-wrap],
-body.orrery-restricted-viewer [data-wall-submode],
 body.orrery-restricted-viewer [data-wall-snap-toggle-wrap],
 body.orrery-restricted-viewer [data-light-toggle-wrap],
-body.orrery-restricted-viewer [data-light-readout],
 body.orrery-restricted-viewer [data-ping-toggle-wrap] {
   display: none !important;
 }

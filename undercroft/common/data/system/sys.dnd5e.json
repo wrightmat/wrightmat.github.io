@@ -2617,6 +2617,1253 @@
     },
     {
       "type": "array",
+      "key": "decks",
+      "label": "Decks",
+      "values": [
+        {
+          "name": "Standard Playing Cards",
+          "theme": "playing-cards",
+          "backImage": "https://deckofcardsapi.com/static/img/back.png",
+          "cards": [
+            {
+              "id": "AS",
+              "label": "Ace of Spades",
+              "image": "https://deckofcardsapi.com/static/img/AS.png",
+              "tags": {
+                "suit": "spades",
+                "rank": "A"
+              }
+            },
+            {
+              "id": "2S",
+              "label": "Two of Spades",
+              "image": "https://deckofcardsapi.com/static/img/2S.png",
+              "tags": {
+                "suit": "spades",
+                "rank": "2"
+              }
+            },
+            {
+              "id": "3S",
+              "label": "Three of Spades",
+              "image": "https://deckofcardsapi.com/static/img/3S.png",
+              "tags": {
+                "suit": "spades",
+                "rank": "3"
+              }
+            },
+            {
+              "id": "4S",
+              "label": "Four of Spades",
+              "image": "https://deckofcardsapi.com/static/img/4S.png",
+              "tags": {
+                "suit": "spades",
+                "rank": "4"
+              }
+            },
+            {
+              "id": "5S",
+              "label": "Five of Spades",
+              "image": "https://deckofcardsapi.com/static/img/5S.png",
+              "tags": {
+                "suit": "spades",
+                "rank": "5"
+              }
+            },
+            {
+              "id": "6S",
+              "label": "Six of Spades",
+              "image": "https://deckofcardsapi.com/static/img/6S.png",
+              "tags": {
+                "suit": "spades",
+                "rank": "6"
+              }
+            },
+            {
+              "id": "7S",
+              "label": "Seven of Spades",
+              "image": "https://deckofcardsapi.com/static/img/7S.png",
+              "tags": {
+                "suit": "spades",
+                "rank": "7"
+              }
+            },
+            {
+              "id": "8S",
+              "label": "Eight of Spades",
+              "image": "https://deckofcardsapi.com/static/img/8S.png",
+              "tags": {
+                "suit": "spades",
+                "rank": "8"
+              }
+            },
+            {
+              "id": "9S",
+              "label": "Nine of Spades",
+              "image": "https://deckofcardsapi.com/static/img/9S.png",
+              "tags": {
+                "suit": "spades",
+                "rank": "9"
+              }
+            },
+            {
+              "id": "10S",
+              "label": "Ten of Spades",
+              "image": "https://deckofcardsapi.com/static/img/0S.png",
+              "tags": {
+                "suit": "spades",
+                "rank": "10"
+              }
+            },
+            {
+              "id": "JS",
+              "label": "Jack of Spades",
+              "image": "https://deckofcardsapi.com/static/img/JS.png",
+              "tags": {
+                "suit": "spades",
+                "rank": "J"
+              }
+            },
+            {
+              "id": "QS",
+              "label": "Queen of Spades",
+              "image": "https://deckofcardsapi.com/static/img/QS.png",
+              "tags": {
+                "suit": "spades",
+                "rank": "Q"
+              }
+            },
+            {
+              "id": "KS",
+              "label": "King of Spades",
+              "image": "https://deckofcardsapi.com/static/img/KS.png",
+              "tags": {
+                "suit": "spades",
+                "rank": "K"
+              }
+            },
+            {
+              "id": "AH",
+              "label": "Ace of Hearts",
+              "image": "https://deckofcardsapi.com/static/img/AH.png",
+              "tags": {
+                "suit": "hearts",
+                "rank": "A"
+              }
+            },
+            {
+              "id": "2H",
+              "label": "Two of Hearts",
+              "image": "https://deckofcardsapi.com/static/img/2H.png",
+              "tags": {
+                "suit": "hearts",
+                "rank": "2"
+              }
+            },
+            {
+              "id": "3H",
+              "label": "Three of Hearts",
+              "image": "https://deckofcardsapi.com/static/img/3H.png",
+              "tags": {
+                "suit": "hearts",
+                "rank": "3"
+              }
+            },
+            {
+              "id": "4H",
+              "label": "Four of Hearts",
+              "image": "https://deckofcardsapi.com/static/img/4H.png",
+              "tags": {
+                "suit": "hearts",
+                "rank": "4"
+              }
+            },
+            {
+              "id": "5H",
+              "label": "Five of Hearts",
+              "image": "https://deckofcardsapi.com/static/img/5H.png",
+              "tags": {
+                "suit": "hearts",
+                "rank": "5"
+              }
+            },
+            {
+              "id": "6H",
+              "label": "Six of Hearts",
+              "image": "https://deckofcardsapi.com/static/img/6H.png",
+              "tags": {
+                "suit": "hearts",
+                "rank": "6"
+              }
+            },
+            {
+              "id": "7H",
+              "label": "Seven of Hearts",
+              "image": "https://deckofcardsapi.com/static/img/7H.png",
+              "tags": {
+                "suit": "hearts",
+                "rank": "7"
+              }
+            },
+            {
+              "id": "8H",
+              "label": "Eight of Hearts",
+              "image": "https://deckofcardsapi.com/static/img/8H.png",
+              "tags": {
+                "suit": "hearts",
+                "rank": "8"
+              }
+            },
+            {
+              "id": "9H",
+              "label": "Nine of Hearts",
+              "image": "https://deckofcardsapi.com/static/img/9H.png",
+              "tags": {
+                "suit": "hearts",
+                "rank": "9"
+              }
+            },
+            {
+              "id": "10H",
+              "label": "Ten of Hearts",
+              "image": "https://deckofcardsapi.com/static/img/0H.png",
+              "tags": {
+                "suit": "hearts",
+                "rank": "10"
+              }
+            },
+            {
+              "id": "JH",
+              "label": "Jack of Hearts",
+              "image": "https://deckofcardsapi.com/static/img/JH.png",
+              "tags": {
+                "suit": "hearts",
+                "rank": "J"
+              }
+            },
+            {
+              "id": "QH",
+              "label": "Queen of Hearts",
+              "image": "https://deckofcardsapi.com/static/img/QH.png",
+              "tags": {
+                "suit": "hearts",
+                "rank": "Q"
+              }
+            },
+            {
+              "id": "KH",
+              "label": "King of Hearts",
+              "image": "https://deckofcardsapi.com/static/img/KH.png",
+              "tags": {
+                "suit": "hearts",
+                "rank": "K"
+              }
+            },
+            {
+              "id": "AD",
+              "label": "Ace of Diamonds",
+              "image": "https://deckofcardsapi.com/static/img/AD.png",
+              "tags": {
+                "suit": "diamonds",
+                "rank": "A"
+              }
+            },
+            {
+              "id": "2D",
+              "label": "Two of Diamonds",
+              "image": "https://deckofcardsapi.com/static/img/2D.png",
+              "tags": {
+                "suit": "diamonds",
+                "rank": "2"
+              }
+            },
+            {
+              "id": "3D",
+              "label": "Three of Diamonds",
+              "image": "https://deckofcardsapi.com/static/img/3D.png",
+              "tags": {
+                "suit": "diamonds",
+                "rank": "3"
+              }
+            },
+            {
+              "id": "4D",
+              "label": "Four of Diamonds",
+              "image": "https://deckofcardsapi.com/static/img/4D.png",
+              "tags": {
+                "suit": "diamonds",
+                "rank": "4"
+              }
+            },
+            {
+              "id": "5D",
+              "label": "Five of Diamonds",
+              "image": "https://deckofcardsapi.com/static/img/5D.png",
+              "tags": {
+                "suit": "diamonds",
+                "rank": "5"
+              }
+            },
+            {
+              "id": "6D",
+              "label": "Six of Diamonds",
+              "image": "https://deckofcardsapi.com/static/img/6D.png",
+              "tags": {
+                "suit": "diamonds",
+                "rank": "6"
+              }
+            },
+            {
+              "id": "7D",
+              "label": "Seven of Diamonds",
+              "image": "https://deckofcardsapi.com/static/img/7D.png",
+              "tags": {
+                "suit": "diamonds",
+                "rank": "7"
+              }
+            },
+            {
+              "id": "8D",
+              "label": "Eight of Diamonds",
+              "image": "https://deckofcardsapi.com/static/img/8D.png",
+              "tags": {
+                "suit": "diamonds",
+                "rank": "8"
+              }
+            },
+            {
+              "id": "9D",
+              "label": "Nine of Diamonds",
+              "image": "https://deckofcardsapi.com/static/img/9D.png",
+              "tags": {
+                "suit": "diamonds",
+                "rank": "9"
+              }
+            },
+            {
+              "id": "10D",
+              "label": "Ten of Diamonds",
+              "image": "https://deckofcardsapi.com/static/img/0D.png",
+              "tags": {
+                "suit": "diamonds",
+                "rank": "10"
+              }
+            },
+            {
+              "id": "JD",
+              "label": "Jack of Diamonds",
+              "image": "https://deckofcardsapi.com/static/img/JD.png",
+              "tags": {
+                "suit": "diamonds",
+                "rank": "J"
+              }
+            },
+            {
+              "id": "QD",
+              "label": "Queen of Diamonds",
+              "image": "https://deckofcardsapi.com/static/img/QD.png",
+              "tags": {
+                "suit": "diamonds",
+                "rank": "Q"
+              }
+            },
+            {
+              "id": "KD",
+              "label": "King of Diamonds",
+              "image": "https://deckofcardsapi.com/static/img/KD.png",
+              "tags": {
+                "suit": "diamonds",
+                "rank": "K"
+              }
+            },
+            {
+              "id": "AC",
+              "label": "Ace of Clubs",
+              "image": "https://deckofcardsapi.com/static/img/AC.png",
+              "tags": {
+                "suit": "clubs",
+                "rank": "A"
+              }
+            },
+            {
+              "id": "2C",
+              "label": "Two of Clubs",
+              "image": "https://deckofcardsapi.com/static/img/2C.png",
+              "tags": {
+                "suit": "clubs",
+                "rank": "2"
+              }
+            },
+            {
+              "id": "3C",
+              "label": "Three of Clubs",
+              "image": "https://deckofcardsapi.com/static/img/3C.png",
+              "tags": {
+                "suit": "clubs",
+                "rank": "3"
+              }
+            },
+            {
+              "id": "4C",
+              "label": "Four of Clubs",
+              "image": "https://deckofcardsapi.com/static/img/4C.png",
+              "tags": {
+                "suit": "clubs",
+                "rank": "4"
+              }
+            },
+            {
+              "id": "5C",
+              "label": "Five of Clubs",
+              "image": "https://deckofcardsapi.com/static/img/5C.png",
+              "tags": {
+                "suit": "clubs",
+                "rank": "5"
+              }
+            },
+            {
+              "id": "6C",
+              "label": "Six of Clubs",
+              "image": "https://deckofcardsapi.com/static/img/6C.png",
+              "tags": {
+                "suit": "clubs",
+                "rank": "6"
+              }
+            },
+            {
+              "id": "7C",
+              "label": "Seven of Clubs",
+              "image": "https://deckofcardsapi.com/static/img/7C.png",
+              "tags": {
+                "suit": "clubs",
+                "rank": "7"
+              }
+            },
+            {
+              "id": "8C",
+              "label": "Eight of Clubs",
+              "image": "https://deckofcardsapi.com/static/img/8C.png",
+              "tags": {
+                "suit": "clubs",
+                "rank": "8"
+              }
+            },
+            {
+              "id": "9C",
+              "label": "Nine of Clubs",
+              "image": "https://deckofcardsapi.com/static/img/9C.png",
+              "tags": {
+                "suit": "clubs",
+                "rank": "9"
+              }
+            },
+            {
+              "id": "10C",
+              "label": "Ten of Clubs",
+              "image": "https://deckofcardsapi.com/static/img/0C.png",
+              "tags": {
+                "suit": "clubs",
+                "rank": "10"
+              }
+            },
+            {
+              "id": "JC",
+              "label": "Jack of Clubs",
+              "image": "https://deckofcardsapi.com/static/img/JC.png",
+              "tags": {
+                "suit": "clubs",
+                "rank": "J"
+              }
+            },
+            {
+              "id": "QC",
+              "label": "Queen of Clubs",
+              "image": "https://deckofcardsapi.com/static/img/QC.png",
+              "tags": {
+                "suit": "clubs",
+                "rank": "Q"
+              }
+            },
+            {
+              "id": "KC",
+              "label": "King of Clubs",
+              "image": "https://deckofcardsapi.com/static/img/KC.png",
+              "tags": {
+                "suit": "clubs",
+                "rank": "K"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Rider-Waite Tarot",
+          "theme": "tarot",
+          "backImage": "https://upload.wikimedia.org/wikipedia/commons/f/fc/Waite%E2%80%93Smith_Tarot_Roses_and_Lilies_cropped.jpg",
+          "cards": [
+            {
+              "id": "major-00",
+              "label": "The Fool",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/major/0m.jpg",
+              "tags": {
+                "arcana": "major",
+                "number": 0
+              }
+            },
+            {
+              "id": "major-01",
+              "label": "The Magician",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/major/1m.jpg",
+              "tags": {
+                "arcana": "major",
+                "number": 1
+              }
+            },
+            {
+              "id": "major-02",
+              "label": "The High Priestess",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/major/2m.jpg",
+              "tags": {
+                "arcana": "major",
+                "number": 2
+              }
+            },
+            {
+              "id": "major-03",
+              "label": "The Empress",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/major/3m.jpg",
+              "tags": {
+                "arcana": "major",
+                "number": 3
+              }
+            },
+            {
+              "id": "major-04",
+              "label": "The Emperor",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/major/4m.jpg",
+              "tags": {
+                "arcana": "major",
+                "number": 4
+              }
+            },
+            {
+              "id": "major-05",
+              "label": "The Hierophant",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/major/5m.jpg",
+              "tags": {
+                "arcana": "major",
+                "number": 5
+              }
+            },
+            {
+              "id": "major-06",
+              "label": "The Lovers",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/major/6m.jpg",
+              "tags": {
+                "arcana": "major",
+                "number": 6
+              }
+            },
+            {
+              "id": "major-07",
+              "label": "The Chariot",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/major/7m.jpg",
+              "tags": {
+                "arcana": "major",
+                "number": 7
+              }
+            },
+            {
+              "id": "major-08",
+              "label": "Strength",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/major/8m.jpg",
+              "tags": {
+                "arcana": "major",
+                "number": 8
+              }
+            },
+            {
+              "id": "major-09",
+              "label": "The Hermit",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/major/9m.jpg",
+              "tags": {
+                "arcana": "major",
+                "number": 9
+              }
+            },
+            {
+              "id": "major-10",
+              "label": "Wheel of Fortune",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/major/10m.jpg",
+              "tags": {
+                "arcana": "major",
+                "number": 10
+              }
+            },
+            {
+              "id": "major-11",
+              "label": "Justice",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/major/11m.jpg",
+              "tags": {
+                "arcana": "major",
+                "number": 11
+              }
+            },
+            {
+              "id": "major-12",
+              "label": "The Hanged Man",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/major/12m.jpg",
+              "tags": {
+                "arcana": "major",
+                "number": 12
+              }
+            },
+            {
+              "id": "major-13",
+              "label": "Death",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/major/13m.jpg",
+              "tags": {
+                "arcana": "major",
+                "number": 13
+              }
+            },
+            {
+              "id": "major-14",
+              "label": "Temperance",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/major/14m.jpg",
+              "tags": {
+                "arcana": "major",
+                "number": 14
+              }
+            },
+            {
+              "id": "major-15",
+              "label": "The Devil",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/major/15m.jpg",
+              "tags": {
+                "arcana": "major",
+                "number": 15
+              }
+            },
+            {
+              "id": "major-16",
+              "label": "The Tower",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/major/16m.jpg",
+              "tags": {
+                "arcana": "major",
+                "number": 16
+              }
+            },
+            {
+              "id": "major-17",
+              "label": "The Star",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/major/17m.jpg",
+              "tags": {
+                "arcana": "major",
+                "number": 17
+              }
+            },
+            {
+              "id": "major-18",
+              "label": "The Moon",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/major/18m.jpg",
+              "tags": {
+                "arcana": "major",
+                "number": 18
+              }
+            },
+            {
+              "id": "major-19",
+              "label": "The Sun",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/major/19m.jpg",
+              "tags": {
+                "arcana": "major",
+                "number": 19
+              }
+            },
+            {
+              "id": "major-20",
+              "label": "Judgement",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/major/20m.jpg",
+              "tags": {
+                "arcana": "major",
+                "number": 20
+              }
+            },
+            {
+              "id": "major-21",
+              "label": "The World",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/major/21m.jpg",
+              "tags": {
+                "arcana": "major",
+                "number": 21
+              }
+            },
+            {
+              "id": "wands-ace",
+              "label": "Ace of Wands",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/wands/1w.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "wands",
+                "rank": "ace"
+              }
+            },
+            {
+              "id": "wands-2",
+              "label": "Two of Wands",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/wands/2w.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "wands",
+                "rank": "2"
+              }
+            },
+            {
+              "id": "wands-3",
+              "label": "Three of Wands",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/wands/3w.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "wands",
+                "rank": "3"
+              }
+            },
+            {
+              "id": "wands-4",
+              "label": "Four of Wands",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/wands/4w.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "wands",
+                "rank": "4"
+              }
+            },
+            {
+              "id": "wands-5",
+              "label": "Five of Wands",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/wands/5w.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "wands",
+                "rank": "5"
+              }
+            },
+            {
+              "id": "wands-6",
+              "label": "Six of Wands",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/wands/6w.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "wands",
+                "rank": "6"
+              }
+            },
+            {
+              "id": "wands-7",
+              "label": "Seven of Wands",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/wands/7w.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "wands",
+                "rank": "7"
+              }
+            },
+            {
+              "id": "wands-8",
+              "label": "Eight of Wands",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/wands/8w.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "wands",
+                "rank": "8"
+              }
+            },
+            {
+              "id": "wands-9",
+              "label": "Nine of Wands",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/wands/9w.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "wands",
+                "rank": "9"
+              }
+            },
+            {
+              "id": "wands-10",
+              "label": "Ten of Wands",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/wands/10w.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "wands",
+                "rank": "10"
+              }
+            },
+            {
+              "id": "wands-page",
+              "label": "Page of Wands",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/wands/pw.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "wands",
+                "rank": "page"
+              }
+            },
+            {
+              "id": "wands-knight",
+              "label": "Knight of Wands",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/wands/nw.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "wands",
+                "rank": "knight"
+              }
+            },
+            {
+              "id": "wands-queen",
+              "label": "Queen of Wands",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/wands/qw.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "wands",
+                "rank": "queen"
+              }
+            },
+            {
+              "id": "wands-king",
+              "label": "King of Wands",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/wands/kw.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "wands",
+                "rank": "king"
+              }
+            },
+            {
+              "id": "cups-ace",
+              "label": "Ace of Cups",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/cups/1c.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "cups",
+                "rank": "ace"
+              }
+            },
+            {
+              "id": "cups-2",
+              "label": "Two of Cups",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/cups/2c.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "cups",
+                "rank": "2"
+              }
+            },
+            {
+              "id": "cups-3",
+              "label": "Three of Cups",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/cups/3c.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "cups",
+                "rank": "3"
+              }
+            },
+            {
+              "id": "cups-4",
+              "label": "Four of Cups",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/cups/4c.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "cups",
+                "rank": "4"
+              }
+            },
+            {
+              "id": "cups-5",
+              "label": "Five of Cups",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/cups/5c.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "cups",
+                "rank": "5"
+              }
+            },
+            {
+              "id": "cups-6",
+              "label": "Six of Cups",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/cups/6c.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "cups",
+                "rank": "6"
+              }
+            },
+            {
+              "id": "cups-7",
+              "label": "Seven of Cups",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/cups/7c.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "cups",
+                "rank": "7"
+              }
+            },
+            {
+              "id": "cups-8",
+              "label": "Eight of Cups",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/cups/8c.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "cups",
+                "rank": "8"
+              }
+            },
+            {
+              "id": "cups-9",
+              "label": "Nine of Cups",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/cups/9c.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "cups",
+                "rank": "9"
+              }
+            },
+            {
+              "id": "cups-10",
+              "label": "Ten of Cups",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/cups/10c.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "cups",
+                "rank": "10"
+              }
+            },
+            {
+              "id": "cups-page",
+              "label": "Page of Cups",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/cups/pc.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "cups",
+                "rank": "page"
+              }
+            },
+            {
+              "id": "cups-knight",
+              "label": "Knight of Cups",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/cups/nc.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "cups",
+                "rank": "knight"
+              }
+            },
+            {
+              "id": "cups-queen",
+              "label": "Queen of Cups",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/cups/qc.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "cups",
+                "rank": "queen"
+              }
+            },
+            {
+              "id": "cups-king",
+              "label": "King of Cups",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/cups/kc.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "cups",
+                "rank": "king"
+              }
+            },
+            {
+              "id": "swords-ace",
+              "label": "Ace of Swords",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/swords/1s.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "swords",
+                "rank": "ace"
+              }
+            },
+            {
+              "id": "swords-2",
+              "label": "Two of Swords",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/swords/2s.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "swords",
+                "rank": "2"
+              }
+            },
+            {
+              "id": "swords-3",
+              "label": "Three of Swords",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/swords/3s.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "swords",
+                "rank": "3"
+              }
+            },
+            {
+              "id": "swords-4",
+              "label": "Four of Swords",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/swords/4s.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "swords",
+                "rank": "4"
+              }
+            },
+            {
+              "id": "swords-5",
+              "label": "Five of Swords",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/swords/5s.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "swords",
+                "rank": "5"
+              }
+            },
+            {
+              "id": "swords-6",
+              "label": "Six of Swords",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/swords/6s.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "swords",
+                "rank": "6"
+              }
+            },
+            {
+              "id": "swords-7",
+              "label": "Seven of Swords",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/swords/7s.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "swords",
+                "rank": "7"
+              }
+            },
+            {
+              "id": "swords-8",
+              "label": "Eight of Swords",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/swords/8s.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "swords",
+                "rank": "8"
+              }
+            },
+            {
+              "id": "swords-9",
+              "label": "Nine of Swords",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/swords/9s.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "swords",
+                "rank": "9"
+              }
+            },
+            {
+              "id": "swords-10",
+              "label": "Ten of Swords",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/swords/10s.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "swords",
+                "rank": "10"
+              }
+            },
+            {
+              "id": "swords-page",
+              "label": "Page of Swords",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/swords/ps.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "swords",
+                "rank": "page"
+              }
+            },
+            {
+              "id": "swords-knight",
+              "label": "Knight of Swords",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/swords/ns.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "swords",
+                "rank": "knight"
+              }
+            },
+            {
+              "id": "swords-queen",
+              "label": "Queen of Swords",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/swords/qs.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "swords",
+                "rank": "queen"
+              }
+            },
+            {
+              "id": "swords-king",
+              "label": "King of Swords",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/swords/ks.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "swords",
+                "rank": "king"
+              }
+            },
+            {
+              "id": "pentacles-ace",
+              "label": "Ace of Pentacles",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/pentacles/1p.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "pentacles",
+                "rank": "ace"
+              }
+            },
+            {
+              "id": "pentacles-2",
+              "label": "Two of Pentacles",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/pentacles/2p.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "pentacles",
+                "rank": "2"
+              }
+            },
+            {
+              "id": "pentacles-3",
+              "label": "Three of Pentacles",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/pentacles/3p.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "pentacles",
+                "rank": "3"
+              }
+            },
+            {
+              "id": "pentacles-4",
+              "label": "Four of Pentacles",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/pentacles/4p.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "pentacles",
+                "rank": "4"
+              }
+            },
+            {
+              "id": "pentacles-5",
+              "label": "Five of Pentacles",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/pentacles/5p.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "pentacles",
+                "rank": "5"
+              }
+            },
+            {
+              "id": "pentacles-6",
+              "label": "Six of Pentacles",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/pentacles/6p.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "pentacles",
+                "rank": "6"
+              }
+            },
+            {
+              "id": "pentacles-7",
+              "label": "Seven of Pentacles",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/pentacles/7p.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "pentacles",
+                "rank": "7"
+              }
+            },
+            {
+              "id": "pentacles-8",
+              "label": "Eight of Pentacles",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/pentacles/8p.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "pentacles",
+                "rank": "8"
+              }
+            },
+            {
+              "id": "pentacles-9",
+              "label": "Nine of Pentacles",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/pentacles/9p.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "pentacles",
+                "rank": "9"
+              }
+            },
+            {
+              "id": "pentacles-10",
+              "label": "Ten of Pentacles",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/pentacles/10p.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "pentacles",
+                "rank": "10"
+              }
+            },
+            {
+              "id": "pentacles-page",
+              "label": "Page of Pentacles",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/pentacles/pp.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "pentacles",
+                "rank": "page"
+              }
+            },
+            {
+              "id": "pentacles-knight",
+              "label": "Knight of Pentacles",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/pentacles/np.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "pentacles",
+                "rank": "knight"
+              }
+            },
+            {
+              "id": "pentacles-queen",
+              "label": "Queen of Pentacles",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/pentacles/qp.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "pentacles",
+                "rank": "queen"
+              }
+            },
+            {
+              "id": "pentacles-king",
+              "label": "King of Pentacles",
+              "image": "https://cdn.jsdelivr.net/npm/tarot-card-img@0.1.0/pentacles/kp.jpg",
+              "tags": {
+                "arcana": "minor",
+                "suit": "pentacles",
+                "rank": "king"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "array",
       "key": "rolls",
       "label": "Rolls",
       "values": [

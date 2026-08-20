@@ -1,5 +1,4 @@
 {
-  "kind": "monster",
   "name": "Gnoll",
   "type": "humanoid",
   "systemIds": [

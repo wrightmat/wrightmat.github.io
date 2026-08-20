@@ -888,6 +888,24 @@ export class DataManager {
     if (!id) {
       throw new Error("Record id is required");
     }
+    // A record's own kind is which BUCKET it's stored under (this call's own
+    // `bucket` argument) — never a field inside the record body itself.
+    // Several Loom import mappings (5e-api-monster.json, ddb-character.json,
+    // markdown-item.json, ...) bind a `kind` field for their OWN internal
+    // routing/validity purposes (deriveEntities' filter, loom/js/app.js) but
+    // that value stays baked into the mapped object all the way through to
+    // here unless something strips it — confirmed real: 1,370 existing
+    // records across 9 kinds carried a dead `kind: "<old-name>"` string that
+    // drifted out of sync the instant that kind was ever renamed (the
+    // Effect→Wonder rename this session), since nothing ever re-derived it.
+    // Stripped here, at the one place every save in the entire suite already
+    // funnels through (Loom's own saveEntity AND Workbench's Re-import path,
+    // both otherwise independent), so no current or future mapping/importer
+    // can ever reintroduce it, and it never needs auditing again.
+    if (payload && typeof payload === "object" && !Array.isArray(payload) && "kind" in payload) {
+      const { kind: _kind, ...rest } = payload;
+      payload = rest;
+    }
     if (mode === "local" || (mode === "auto" && !this.isAuthenticated())) {
       // The ONLY copy for an anonymous/local-mode save — a failure here
       // (most commonly QuotaExceededError once a bucket's whole-array
@@ -907,7 +925,7 @@ export class DataManager {
     // The server write above is the AUTHORITATIVE copy for a signed-in
     // user — this local write is purely a read-acceleration cache. Left
     // unguarded, a QuotaExceededError here (confirmed live: a growing
-    // `feature`/`effect` bucket's whole-array JSON blob exceeding the
+    // `feature`/`wonder` bucket's whole-array JSON blob exceeding the
     // browser's per-origin localStorage cap during a large bulk import)
     // propagated as if the ENTIRE save had failed, even though the real,
     // authoritative server copy had already succeeded — every caller
@@ -1510,6 +1528,59 @@ export class DataManager {
     return this._request(`/groups/${encodeURIComponent(groupId)}/ping`, {
       method: "POST",
       body,
+      auth: true,
+    });
+  }
+
+  // Same transient, never-persisted shape as postMapPing above — "here are
+  // the REAL settled per-die values, go show them on everyone else's
+  // screen," relayed through the /live stream's own "diceRoll" kind
+  // (Cards/Decks plan, Part 2). `dieResults` ({sides, value}[]) is what
+  // dice-reveal.js's tiles actually display — confirmed dice-box can't be
+  // told to land on a chosen result, so a remote viewer's own animation is
+  // never a physics roll, just a display of these already-known values (see
+  // dice-reveal.js's own header). No share-token variant: Broadcast mode is
+  // GM-only (server-enforced in record_dice_roll_broadcast, groups.py), and
+  // a share-link viewer's own access never resolves to "owner"
+  // (resolveGroupContext, group-context.js) — the Dice Roller widget's own
+  // mode switcher never even offers this option outside a real, signed-in
+  // GM session, so there's nothing for a share-token caller to reach here.
+  async postDiceRollBroadcast({ groupId = "", label = "", total = "", dieResults = [] } = {}) {
+    if (!groupId) {
+      throw new Error("Group id is required to broadcast a roll");
+    }
+    return this._request(`/groups/${encodeURIComponent(groupId)}/dice-roll-broadcast`, {
+      method: "POST",
+      body: { label, total, dieResults },
+      auth: true,
+    });
+  }
+
+  // Same transient "go animate this now" shape as postDiceRollBroadcast
+  // above, for a Broadcast-mode card draw (Cards/Decks plan, Part 5
+  // revised — replaces the original spotlight-based design; see
+  // record_card_broadcast's own comment, server/groups.py, for why). No
+  // share-token variant, same reasoning as the dice broadcast: Broadcast
+  // mode is GM-only, server-enforced, and never reachable from a share-link
+  // session.
+  async postCardBroadcast({ groupId = "", deckLabel = "", backImage = "", cards = [] } = {}) {
+    if (!groupId) {
+      throw new Error("Group id is required to broadcast a draw");
+    }
+    return this._request(`/groups/${encodeURIComponent(groupId)}/card-broadcast`, {
+      method: "POST",
+      body: { deckLabel, backImage, cards },
+      auth: true,
+    });
+  }
+
+  async postEffectBroadcast({ groupId = "", mapId = "", elementId = "" } = {}) {
+    if (!groupId) {
+      throw new Error("Group id is required to broadcast an effect trigger");
+    }
+    return this._request(`/groups/${encodeURIComponent(groupId)}/effect-broadcast`, {
+      method: "POST",
+      body: { mapId, elementId },
       auth: true,
     });
   }

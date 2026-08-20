@@ -1,0 +1,21 @@
+{
+  "index": "misty-step",
+  "name": "Misty Step",
+  "notes": "Briefly surrounded by silvery mist, you teleport up to 30 feet to an unoccupied space that you can see.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/spells/misty-step",
+  "mapping": "5e-api-spell",
+  "properties": {
+    "form": "spell"
+  },
+  "featureIds": [
+    "feat.personal-teleportation"
+  ],
+  "featureParams": {
+    "feat.personal-teleportation": {
+      "range": 30
+    }
+  }
+}

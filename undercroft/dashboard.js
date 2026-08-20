@@ -17,6 +17,7 @@ import { initBrowserWidget } from "./common/js/lib/widgets/browser.js";
 import { initCalendarWidget } from "./common/js/lib/widgets/calendar.js";
 import { initSoundboardWidget } from "./common/js/lib/widgets/soundboard.js";
 import { initDiceRollerWidget } from "./common/js/lib/widgets/dice-roller.js";
+import { initDeckWidget } from "./common/js/lib/widgets/deck.js";
 import { initCalculatorWidget } from "./common/js/lib/widgets/calculator.js";
 import { initWledWidget, resolveWledDeviceByAlias, normalizeWledDeviceList, saveWledDevices } from "./common/js/lib/widgets/wled.js";
 import { initAudioRecorderWidget } from "./common/js/lib/widgets/audio-recorder.js";
@@ -24,6 +25,9 @@ import { initBoardWidget } from "./common/js/lib/widgets/board.js";
 import { openContentPicker } from "./common/js/lib/widgets/content-picker.js";
 import { resolveGroupContext } from "./common/js/lib/widgets/group-context.js";
 import { watchActiveSpotlights } from "./common/js/lib/spotlight-inbox.js";
+import { connectLiveStream } from "./common/js/lib/live.js";
+import { playDiceReveal } from "./common/js/lib/widgets/dice-reveal.js";
+import { playCardReveal } from "./common/js/lib/widgets/card-overlay.js";
 import { createSpotlightPanel } from "./common/js/lib/widgets/spotlight-panel.js";
 import { resolveActiveSpotlightId, resolveIsSpotlighted, createSpotlightTitleCache } from "./common/js/lib/spotlight.js";
 import { createReliableInterval } from "./common/js/lib/reliable-interval.js";
@@ -180,6 +184,12 @@ const WIDGET_CATALOG = [
     init: (container, ctx) => initDiceRollerWidget(container, { status: ctx.status, dataManager: ctx.dataManager, groupContext: ctx.groupContext }),
   },
   {
+    id: "deck",
+    label: "Deck",
+    icon: "tabler:cards",
+    init: (container, ctx) => initDeckWidget(container, { status: ctx.status, dataManager: ctx.dataManager, groupContext: ctx.groupContext }),
+  },
+  {
     id: "calculator",
     label: "Calculator",
     icon: "tabler:calculator",
@@ -294,7 +304,7 @@ const WIDGET_CATALOG = [
   {
     id: "handout",
     label: "Handout",
-    icon: "tabler:cards",
+    icon: "tabler:file-text",
     multiple: true,
     // Unlike the old Card widget (addableFromToolbar: false — it only ever
     // got added via acceptSpotlight, with a contentRef already in hand), a
@@ -884,7 +894,7 @@ function persistWledDevices(devices) {
 // Which widget type a spotlighted library kind turns into on Accept. Was
 // missing "journal" — handout.js's own HANDOUT_KINDS (its picker's real,
 // full list of spotlightable kinds) includes it alongside npc/location/
-// monster/effect, but it had no entry here at all. Confirmed real bug:
+// monster/wonder, but it had no entry here at all. Confirmed real bug:
 // spotlighting a Journal page as a Handout produced a real `spotlight` log
 // entry same as any other kind, but acceptSpotlight below bailed silently
 // the instant `KIND_WIDGET_MAP[kind]` came back undefined — no prompt, no
@@ -893,7 +903,7 @@ const KIND_WIDGET_MAP = {
   npc: "handout",
   location: "handout",
   monster: "handout",
-  effect: "handout",
+  wonder: "handout",
   journal: "handout",
   encounter: "combat",
   map: "map",
@@ -936,7 +946,7 @@ const ZOOM_EXCLUDED_WIDGET_TYPES = new Set(["map"]);
 // fetched copies. Also shared, literally (not just in shape), with
 // Workbench's own read-only "Now Showing" panel — see spotlight.js's own
 // createSpotlightTitleCache. Only meaningful for Library-backed kinds (npc/
-// location/monster/effect/journal/map/encounter — all real, individually
+// location/monster/wonder/journal/map/encounter — all real, individually
 // fetchable Library records); the four inline kinds (clock/browser/calendar/
 // soundboard) have no record to fetch at all, see game-log.js's own
 // SPOTLIGHT_INLINE_KINDS.
@@ -1148,6 +1158,7 @@ function forceClearSpotlight({ kind, id }) {
 // every already-active item on the new campaign's board as if it just
 // arrived.
 let spotlightPanelWatcher = null;
+let diceRevealLiveStream = null;
 function startSpotlightPanelWatcher() {
   spotlightPanelWatcher?.destroy();
   knownActiveSpotlightKeys = new Set();
@@ -1157,6 +1168,55 @@ function startSpotlightPanelWatcher() {
     groupId: groupContext?.groupId || "",
     shareToken: groupContext?.shareToken || shareParam,
     onChange: (active) => refreshSpotlightPanel(active),
+  });
+}
+
+// Broadcast-mode dice rolls/card draws (Cards/Decks plan, Parts 2/5) need to
+// reach every Dashboard tab watching this campaign, not just tabs that
+// happen to have the Game Log widget mounted (confirmed: a player without
+// Game Log open never opens the live-stream connection at all, so a
+// subscription living inside game-log.js's own init never runs for them).
+// Both reveal overlays are page-level singletons regardless of which
+// widget's code triggers them, so the subscription belongs at the same page
+// level — started once per groupContext, mirroring startSpotlightPanelWatcher
+// just above. Cards were originally delivered through the spotlight
+// mechanism instead (a "card" spotlight kind) — confirmed real bug with that
+// design: spotlight is persistent "currently shown to the table" state, so
+// a draw kept replaying on every later page load until explicitly cleared,
+// and cluttered the "what's shown to the table" icon tray with an entry
+// nobody could do anything with. Both now use this same ephemeral,
+// never-persisted broadcast shape instead — nothing to clear, nothing to
+// replay, nothing in the tray.
+function startDiceRevealWatcher() {
+  diceRevealLiveStream?.close();
+  const currentUserId = dataManager.session?.user?.id ?? null;
+  diceRevealLiveStream = connectLiveStream({
+    dataManager,
+    groupId: groupContext?.groupId || "",
+    shareToken: groupContext?.shareToken || shareParam,
+    kinds: ["diceRoll", "cardDraw", "effectTrigger"],
+  });
+  // The poster's own tab already played this locally when they clicked
+  // Roll/Move/Draw — no need to replay it a second time on their own screen.
+  diceRevealLiveStream.subscribe("diceRoll", (payload) => {
+    if (currentUserId != null && payload?.by === currentUserId) return;
+    playDiceReveal({ label: payload?.label, total: payload?.total, dieResults: payload?.dieResults });
+  });
+  diceRevealLiveStream.subscribe("cardDraw", (payload) => {
+    if (currentUserId != null && payload?.by === currentUserId) return;
+    playCardReveal({ cards: payload?.cards, backImage: payload?.backImage });
+  });
+  // Shapes & Effects plan, Part 5 — a GM's Orrery "Play" button or a macro's
+  // "Trigger an effect" action both post this. Only a Map widget instance
+  // that's actually showing the SAME map the effect lives on can do anything
+  // with it; any other mounted Map (or none at all) just sees nothing, same
+  // as pings.
+  diceRevealLiveStream.subscribe("effectTrigger", (payload) => {
+    if (currentUserId != null && payload?.by === currentUserId) return;
+    const mapApi = findActiveWidgetInstance("map");
+    if (mapApi && mapApi.mapId === payload?.mapId) {
+      mapApi.triggerElementById?.(payload?.elementId);
+    }
   });
 }
 
@@ -2404,6 +2464,14 @@ async function ensureWidgetForMacroAction(action) {
     }
     return findActiveWidgetInstance(action.type);
   }
+  // Effects (Shapes & Effects plan, Part 5) has no widget of its own — it
+  // targets whichever Map widget is currently shown, same "can't conjure one
+  // into existence, which of possibly several would it even mean" reasoning
+  // as Clock/Calendar just above, and no "create" action to exempt (a macro
+  // can't sensibly add a Map with no map picked).
+  if (action?.type === "effects") {
+    return findActiveWidgetInstance("map");
+  }
   const catalogId = MACRO_ACTION_WIDGET_TYPES[action?.type];
   if (!catalogId) return null;
   if (catalogId === "wled") {
@@ -3153,6 +3221,7 @@ async function boot() {
   renderWidgets();
   populateAddToolbar();
   startSpotlightPanelWatcher();
+  startDiceRevealWatcher();
   // Activates the static data-bs-toggle="tooltip" markup (color picker,
   // reset button) — populateAddToolbar already covers its own dynamically
   // built buttons on its own.
@@ -3174,6 +3243,7 @@ async function boot() {
       renderWidgets();
       populateAddToolbar();
       startSpotlightPanelWatcher();
+      startDiceRevealWatcher();
     });
   }
 }

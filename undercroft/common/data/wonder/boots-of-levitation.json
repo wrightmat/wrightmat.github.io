@@ -1,0 +1,24 @@
+{
+  "index": "boots-of-levitation",
+  "name": "Boots of Levitation",
+  "notes": "Wondrous item, rare (requires attunement)\n\nWhile you wear these boots, you can use an action to cast the levitate spell on yourself at will.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/magic-items/boots-of-levitation",
+  "mapping": "5e-api-magic-item",
+  "properties": {
+    "rarity": "rare",
+    "form": "wondrous-item",
+    "activation": "action"
+  },
+  "featureIds": [
+    "feat.cast-a-spell",
+    "feat.requires-attunement"
+  ],
+  "featureParams": {
+    "feat.cast-a-spell": {
+      "spellName": "levitate"
+    }
+  }
+}

@@ -401,12 +401,12 @@
       "href": "../loom/index.html#loom-selection"
     },
     {
-      "id": "loom.source.markdown-effect",
+      "id": "loom.source.markdown-wonder",
       "title": "Markdown Item/Spell File",
-      "summary": "Upload an Obsidian vault note for a magic item or spell — structural markers (a #tag line, an italic type/rarity line, bold field labels) map to Effect fields; the rest is scanned for known Features the same way an SRD-imported Effect is.",
+      "summary": "Upload an Obsidian vault note for a magic item or spell — structural markers (a #tag line, an italic type/rarity line, bold field labels) map to Wonder fields; the rest is scanned for known Features the same way an SRD-imported Wonder is.",
       "details": [
         "Works with the markdown-item and markdown-spell mappings — pick whichever matches the file(s) you're importing.",
-        "A file's own name (not any text inside it) becomes the Effect's name, since none of these notes state their own name inline.",
+        "A file's own name (not any text inside it) becomes the Wonder's name, since none of these notes state their own name inline.",
         "A file with no italic type/rarity line at all (a mundane/lore item with no real stat block) imports fine — it just carries no rarity/attunement/charges and whatever candidate Features its prose happens to match."
       ],
       "category": "Loom",
@@ -472,7 +472,7 @@
       "title": "Mechanics Type & Notes",
       "summary": "What kind of ability this Feature is, and how it actually works — read by Crucible/Vault, not shown to a GM directly.",
       "details": [
-        "Type doesn't show up anywhere in Forge/Crucible/Sanctum/Vault's own generated output — it tells Crucible's and Vault's shared Feature editor which specialized controls to offer once this Feature is attached to a generated Monster or Effect there. Weapon Attack and Save Effect each get a dedicated attack-bonus/save-DC editor; Active gets a generic parameters grid; Passive, Passive or Triggered, Multiattack, Drawback, and Legendary Action Reference get no extra editing surface beyond this Feature's own fields.",
+        "Type doesn't show up anywhere in Forge/Crucible/Sanctum/Vault's own generated output — it tells Crucible's and Vault's shared Feature editor which specialized controls to offer once this Feature is attached to a generated Monster or Wonder there. Weapon Attack and Save Effect each get a dedicated attack-bonus/save-DC editor; Active gets a generic parameters grid; Passive, Passive or Triggered, Multiattack, Drawback, and Legendary Action Reference get no extra editing surface beyond this Feature's own fields.",
         "Passive is the most common Type by far — a Feature that's always just true, with nothing to configure per-monster. Reach for Active only when a value genuinely varies per record (an ability score increase, a scaling number) and needs its own input.",
         "Notes is free-form prose describing the mechanic in enough implementation detail to write or verify a stat block from — distinct from the plain-language Description field above it, which is what a GM reads. Not every Feature needs Notes filled in; many Passives are self-explanatory from their Description alone.",
         "Picking the wrong Type won't corrupt anything, but it will make the wrong (or no) editing controls appear wherever this Feature gets used in Crucible or Vault — match it to what the Feature actually does, not to how important it feels."
@@ -1065,7 +1065,7 @@
     {
       "id": "campaign.sharing",
       "title": "Sharing Content with a Campaign",
-      "summary": "Any saved record — a Location, NPC, Monster, Effect, Map, System, Template — can be shared with a specific person or an entire campaign group at once.",
+      "summary": "Any saved record — a Location, NPC, Monster, Wonder, Map, System, Template — can be shared with a specific person or an entire campaign group at once.",
       "details": [
         "Sharing with a group grants every current member access transparently — one action instead of sharing with each player individually, and it stays current as membership changes.",
         "Share dialogs across the suite (Loom's Library inspector, the account page's Owned Content tab, and per-tool inspectors) offer a one-click \"Share with [active campaign]\" button alongside the full user/group picker once you have an active campaign selected.",
@@ -1079,7 +1079,7 @@
       "title": "Handouts / Now Showing",
       "summary": "Put one card up in front of the table live — add a Handout widget to your own Dashboard and click its visibility icon, no exporting or switching to Press yourself.",
       "details": [
-        "Add a Handout from the Dashboard's Edit-layout toolbar: pick the record (an NPC, Location, Monster, or Effect) and, optionally, a Press print template to render it with — with no template picked, the table sees a plain name/description card instead.",
+        "Add a Handout from the Dashboard's Edit-layout toolbar: pick the record (an NPC, Location, Monster, or Wonder) and, optionally, a Press print template to render it with — with no template picked, the table sees a plain name/description card instead.",
         "Click the eye icon on the Handout's header to show it to your active campaign, and again to stop — the icon reflects whatever's actually visible right now, even after a reload.",
         "The record must already be SAVED first — showing something that only exists as an unsaved draft fails immediately with a clear error, rather than silently showing nothing to the table.",
         "Maps work the same way from a Map widget instead, or from Orrery's own signed-in menu — a map is always a plain link back into Orrery, never a card.",
@@ -1293,9 +1293,9 @@
       "title": "Locked Features",
       "summary": "Pin one or more Features to guarantee they're included in generation, instead of leaving traversal to pick everything on its own.",
       "details": [
-        "Locked Features are added before traversal runs and spend from (or, if negative, refund into) the budget immediately, the same as the Signature Effect.",
+        "Locked Features are added before traversal runs and spend from (or, if negative, refund into) the budget immediately, the same as the Signature Feature.",
         "Traversal then repeatedly adds whichever remaining feature has the strongest synergy with what's locked/selected so far and still fits the remaining budget — a zero-synergy feature is never pulled in automatically.",
-        "Leave this empty to let Vault pick everything itself, guided only by the resolved Properties and Signature Effect."
+        "Leave this empty to let Vault pick everything itself, guided only by the resolved Properties and Signature Feature."
       ],
       "category": "Vault",
       "href": "../vault/index.html#vault-generate"
@@ -1316,11 +1316,11 @@
     {
       "id": "vault.identity",
       "title": "Identity",
-      "summary": "The resolved Properties (Rarity, Activation, Item Form, etc.) for this effect, plus its Name — edit the Name directly; the rest comes from generation.",
+      "summary": "The resolved Properties (Rarity, Activation, Item Form, etc.) for this wonder, plus its Name — edit the Name directly; the rest comes from generation.",
       "details": [
         "Each Property is either what you pinned in the overrides above, or a random eligible value if you left it blank.",
         "Whichever Property is picked as the Budget ceiling field (see that topic) sets the Feature budget's target ceiling; every other Property's chosen value spends from (or refunds into) that budget.",
-        "The Name field is the only thing here you edit directly; regenerate the effect to get a new resolved set of Properties instead."
+        "The Name field is the only thing here you edit directly; regenerate the wonder to get a new resolved set of Properties instead."
       ],
       "category": "Vault",
       "href": "../vault/index.html#vault-identity"
@@ -1328,7 +1328,7 @@
     {
       "id": "vault.features",
       "title": "Features",
-      "summary": "The Signature Effect plus every Feature traversal pulled in to build toward the budget — add or remove Features here to hand-build or tweak the result.",
+      "summary": "The Signature Feature plus every Feature traversal pulled in to build toward the budget — add or remove Features here to hand-build or tweak the result.",
       "details": [
         "Add a Feature from the select below the list at any time; going over budget is allowed and shown as a warning in the Remaining figure rather than blocked outright.",
         "Every Feature shown was chosen for synergy with what's already selected and for not conflicting with it during generation — hand-adding one doesn't run that same check, so a manual add can introduce a conflict traversal would have avoided.",
@@ -1342,7 +1342,7 @@
       "title": "Feature — Basic Info",
       "summary": "ID, Name, Description, and Budget Cost for the selected Feature.",
       "details": [
-        "Always read-only here — every Vault Feature is shared across many spells/items by design, so changing one from a single Effect's own inspector would silently change it everywhere else it's used too.",
+        "Always read-only here — every Vault Feature is shared across many spells/items by design, so changing one from a single Wonder's own inspector would silently change it everywhere else it's used too.",
         "Use Edit Feature to open it in Loom instead, if it genuinely needs changing."
       ],
       "category": "Vault",
@@ -1351,9 +1351,9 @@
     {
       "id": "vault.notes",
       "title": "Notes (optional)",
-      "summary": "Optional. Type your own note directly, or use Generate Note to have Claude write one from this effect's resolved Properties and Features.",
+      "summary": "Optional. Type your own note directly, or use Generate Note to have Claude write one from this wonder's resolved Properties and Features.",
       "details": [
-        "An effect is complete without a note — every generated value already stands on its own as the record.",
+        "A wonder is complete without a note — every generated value already stands on its own as the record.",
         "Generate Note sends the resolved Properties and selected Features to Claude and fills this box with its response; whatever's in the box when you Save is what gets saved."
       ],
       "category": "Vault",
@@ -1362,11 +1362,11 @@
     {
       "id": "vault.relationships",
       "title": "Relationships",
-      "summary": "Tie this Effect to any other record — an NPC, a Monster, a Location, a Character, or another Effect — with a label you type yourself: \"Requires,\" \"Counters,\" \"Variant of,\" anything.",
+      "summary": "Tie this Wonder to any other record — an NPC, a Monster, a Location, a Character, or another Wonder — with a label you type yourself: \"Requires,\" \"Counters,\" \"Variant of,\" anything.",
       "details": [
         "Pick a target kind, choose the specific record, then type a relationship (a small suggestion list appears — including \"Requires,\" \"Counters,\" \"Variant of,\" \"Crafted from,\" and \"Found in\" — but any text works).",
-        "Relationships show up on BOTH ends automatically — link an effect as a \"Variant of\" another, and the other's own list shows the same tie right back.",
-        "List shows every relationship as text; Graph (the View toggle above) shows the same data as a visual web, centered on this Effect.",
+        "Relationships show up on BOTH ends automatically — link a wonder as a \"Variant of\" another, and the other's own list shows the same tie right back.",
+        "List shows every relationship as text; Graph (the View toggle above) shows the same data as a visual web, centered on this Wonder.",
         "Open jumps straight to the other record's own tool (Forge/Sanctum/Crucible/Workbench, whichever owns that kind)."
       ],
       "category": "Vault",
@@ -1412,7 +1412,7 @@
       "title": "Assets & Needs",
       "summary": "What this Location has (Assets) and lacks (Needs) — usually Resources, but any kind of saved record (an NPC, a Monster) can be linked too.",
       "details": [
-        "The automatic generator only ever populates these with Resources (1-3 for Assets, then 1-3 more for Needs, excluding whatever Assets already took) — linking a specific NPC/Monster/Effect instead is a manual step, done with the kind + entity pickers below each list.",
+        "The automatic generator only ever populates these with Resources (1-3 for Assets, then 1-3 more for Needs, excluding whatever Assets already took) — linking a specific NPC/Monster/Wonder instead is a manual step, done with the kind + entity pickers below each list.",
         "Assets and Needs share one row shape (kind, linked entity, label, description) and one add-row pattern, the same as Features — they're meant to feel like the same kind of list, not three different UIs.",
         "This is deliberately not a full economy or ledger — Assets/Needs describe what a place has or lacks in broad strokes for a GM to use at the table, not a simulated inventory."
       ],

@@ -287,6 +287,7 @@ def init_storage_db(state: ServerState) -> None:
     )
     conn.execute("CREATE INDEX IF NOT EXISTS idx_shares_group ON shares(shared_with_group_id)")
     _migrate_legacy_buckets_to_library_items(conn)
+    _migrate_effect_kind_to_wonder(conn)
     _migrate_groups_to_library_items(state, conn)
     _migrate_seed_group_inventory_property(state, conn)
     _backfill_flat_library_kinds(state)
@@ -724,6 +725,32 @@ def _migrate_legacy_buckets_to_library_items(conn: sqlite3.Connection) -> None:
                 ),
             )
         conn.execute(f"ALTER TABLE {table} RENAME TO _legacy_{table}")
+
+
+def _migrate_effect_kind_to_wonder(conn: sqlite3.Connection) -> None:
+    # One-time (but idempotent — safe to run on every startup, same
+    # convention as every other migration in this file) rename of the
+    # Library kind id "effect" -> "wonder" (undercroft/common/data/kind/
+    # wonder.json, undercroft/common/data/wonder/) — "Effect" was Vault's own
+    # catch-all for a generated spell/magic-item record, freed up for
+    # Orrery's newer, unrelated Shapes & Effects particle system. Must run
+    # BEFORE _backfill_flat_library_kinds below: that function walks
+    # common/data/{kind}/ directories and treats any (kind, id) pair with no
+    # existing library_items row as brand-new content to backfill (admin-
+    # owned, public) — if these rows were still sitting at kind='effect'
+    # while the directory itself had already been renamed to wonder/, every
+    # one of them would look "new" and silently lose its real
+    # owner/sharing/privacy. `shares`/`share_links`/`group_members` all key
+    # off this same kind string too (as `content_type`), not just
+    # library_items, so all four need the same rename to keep any existing
+    # sharing/group-membership grants pointed at a record that still exists.
+    for table, column in (
+        ("library_items", "kind"),
+        ("shares", "content_type"),
+        ("share_links", "content_type"),
+        ("group_members", "content_type"),
+    ):
+        conn.execute(f"UPDATE {table} SET {column} = 'wonder' WHERE {column} = 'effect'")
 
 
 def _backfill_flat_library_kinds(state: ServerState) -> None:
@@ -1489,6 +1516,31 @@ def is_public(state: ServerState, kind: str, id_: str) -> bool:
     return bool(row["is_public"])
 
 
+def _character_visible_via_group_roster(state: ServerState, character_id: str, user: Optional[User]) -> bool:
+    # A character added to a campaign's own party roster (group_members,
+    # content_type='character' — Loom/Workbench's "add to party" action) is
+    # meant to be visible to that campaign's whole table, the same way an
+    # anonymous share-link viewer already gets a group-roster grant (see
+    # get_item's own share_token branch above) — but that grant never
+    # extended to real, logged-in fellow party members, who previously had
+    # NO read path to a teammate's character at all unless it also had its
+    # own explicit `shares` row. Confirmed real bug: none of a live
+    # campaign's own party characters had ever been individually shared,
+    # so every OTHER player's client (Map's live HP/condition badge,
+    # eventually Combat Tracker) silently 401'd trying to read a fellow
+    # party member's own character. Pure read — see is_owner's own comment
+    # on why read_db is safe from both unlocked and still-locked callers.
+    if not user:
+        return False
+    from .groups import user_can_access_group
+
+    rows = state.read_db.execute(
+        "SELECT group_id FROM group_members WHERE content_type = 'character' AND content_id = ?",
+        (character_id,),
+    ).fetchall()
+    return any(user_can_access_group(state, row["group_id"], user) for row in rows)
+
+
 def ensure_write_role(state: ServerState, kind: str, user: Optional[User]) -> None:
     if not user:
         raise AuthError("Authentication required")
@@ -1586,6 +1638,7 @@ def get_item(
         or is_owner(state, kind, id_, user)
         or is_shared(state, kind, id_, user)
         or is_public(state, kind, id_)
+        or (kind == "character" and _character_visible_via_group_roster(state, base_id, user))
     ):
         raise AuthError("Access denied")
     payload = load_json(_record_path(state, kind, id_))

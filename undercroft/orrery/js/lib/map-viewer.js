@@ -24,6 +24,7 @@ import { allowsDelete } from "../../../common/js/lib/ownership.js";
 import { buildKindToolUrl, kindToolLabel } from "../../../common/js/lib/kind-tool-route.js";
 import { resolveImageDimension } from "./base-maps.js";
 import { getDefaultView as getTypeDefaultView, createMarkerOverlayIcon } from "./map-model.js";
+import { getPresetById } from "../../../common/js/lib/shape-effect-library.js";
 
 // A referenced marker's own "open the real thing" link — shared by both
 // restricted-viewer consumers (the Dashboard's Map widget, Orrery's own
@@ -860,6 +861,66 @@ export function getGridCellSize(baseMapManager, map, layer) {
   return baseSize * getGridLayoutScale(baseMapManager, map);
 }
 
+// --- Grid/measurement helpers shared by Orrery's own toolbar (app.js) and
+// the Dashboard's Map widget (widgets/map.js) — previously two separate,
+// independently-maintained copies of the exact same math in each ("app.js
+// isn't a shared lib module" was the original reasoning; confirmed wrong
+// call once a real inconsistency between the two actually showed up).
+// Consolidated here since map-viewer.js is already the one module both
+// consumers import from for everything else.
+
+// The map's first grid layer supplies the cell size a measurement converts
+// through — same "first grid layer, if any" convention as
+// snapMarkerPositionToGrid. Deliberately NOT filtered on the layer's own
+// visibility — hiding the grid's lines isn't a statement that it stops
+// being the map's real scale.
+export function findPrimaryGridLayer(map) {
+  return (map?.layers || []).find((entry) => entry.type === "grid") || null;
+}
+
+// Whether the map's own real-world Scale per cell/Scale unit are BOTH set —
+// only meaningful for something that needs to CONVERT cells to a real-world
+// distance (the Measure tool's own readout); placing/sizing a shape or
+// light no longer depends on this at all, now that Size/Range are authored
+// directly in cells (see Orrery's own renderVectorShapeSelectionEditor).
+export function hasMapMeasurementConfigured(map) {
+  return Number.isFinite(map?.measurement?.scale) && map.measurement.scale > 0 && Boolean(map?.measurement?.unit);
+}
+
+// Screen-pixel distance -> grid cells, via the primary grid layer's own
+// on-screen cell size (already bakes in the current zoom). Returns null
+// when there's no grid layer to convert against.
+export function pixelsToCells(baseMapManager, map, pixelDistance) {
+  const gridLayer = findPrimaryGridLayer(map);
+  if (!gridLayer) return null;
+  const cellSizePx = getGridCellSize(baseMapManager, map, gridLayer);
+  if (!cellSizePx) return null;
+  return pixelDistance / cellSizePx;
+}
+
+// AoE shape/light sizes generally fall in whole real-world-unit increments
+// (5ft steps in most D&D-style systems) during the live drag-to-place
+// gesture — rounding the CELLS value so cells*scale lands on a whole unit
+// avoids fiddly decimals like "13.3 ft" while still landing on any concrete
+// size, not hardcoded to multiples of 5 specifically. No-op (returns cells
+// unchanged) if the map has no usable scale to round against — the
+// placement gesture still works fine on cells alone, no real-world scale
+// required.
+export function snapCellsToWholeUnit(map, cells) {
+  const scale = map?.measurement?.scale;
+  if (!Number.isFinite(scale) || scale <= 0) return cells;
+  return Math.round(cells * scale) / scale;
+}
+
+// Screen-pixel distance -> "13.3 ft (2.7 cells)" — the Measure tool's own
+// ruler readout, in both Orrery and the Dashboard widget.
+export function formatMeasuredDistance(baseMapManager, map, pixelDistance) {
+  const cells = pixelsToCells(baseMapManager, map, pixelDistance);
+  if (cells === null) return "No grid layer to measure against.";
+  const distance = cells * map.measurement.scale;
+  return `${distance.toFixed(1)} ${map.measurement.unit} (${cells.toFixed(1)} cells)`;
+}
+
 export function getGridCellKey(layer, coord) {
   const gridType = getGridType(layer);
   if (gridType === "hex") {
@@ -1501,6 +1562,38 @@ function resolveMarkerLinkedCombatant(marker, encounter) {
 // element and silently fall back to {0,0}, offsetting the live preview from
 // where the committed light will actually land on any layer with a
 // nonzero manual position.
+// Shared by any vector element with an attachedMarkerId — a shape/effect
+// gets the same "follow a token" capability Lights already have, via this
+// same-shaped function as resolveLightOrigin just below (identical
+// signature/contract: resolves all the way to a LOCAL PIXEL position,
+// offset already included). Originally this returned just the raw
+// map-space position and left offset-adding to each caller — confirmed
+// real bug: that meant an ATTACHED shape/effect's own containing layer's
+// offset got added instead of the attached MARKER's own layer's offset (the
+// two are only ever the same layer by coincidence), so a shape attached to
+// a token on a layer that had ever been manually repositioned rendered at
+// the wrong spot instead of on the token — potentially far enough off to
+// look like it had simply vanished. Matching resolveLightOrigin's own
+// already-correct per-branch offset selection fixes this the same way. A
+// dangling attachedMarkerId (the marker was deleted) falls back to the
+// element's own last-known origin rather than erroring, same graceful
+// degradation resolveLightOrigin already established.
+export function resolveElementOrigin(baseMapManager, map, containingLayer, element) {
+  if (element.attachedMarkerId) {
+    for (const layer of map.layers || []) {
+      if (layer.type !== "marker") continue;
+      const marker = (layer.elements || []).find((entry) => entry.id === element.attachedMarkerId);
+      if (!marker) continue;
+      const offset = getMarkerLayerOffset(map, layer);
+      const local = markerPositionToLocalPixel(baseMapManager, map, marker.position);
+      return { x: local.x + offset.x, y: local.y + offset.y };
+    }
+  }
+  const offset = getMarkerLayerOffset(map, containingLayer || {});
+  const local = markerPositionToLocalPixel(baseMapManager, map, element.origin);
+  return { x: local.x + offset.x, y: local.y + offset.y };
+}
+
 export function resolveLightOrigin(baseMapManager, map, containingLayer, light) {
   if (light.attachedMarkerId) {
     for (const layer of map.layers || []) {
@@ -1931,57 +2024,29 @@ function resolveShapePixelsPerCell(baseMapManager, map) {
 // angleDeg direction); no existing line-with-width/wedge geometry elsewhere
 // in the codebase to reuse instead (confirmed before writing this).
 export function renderShapeElement(svg, baseMapManager, map, layer, element, offset, options) {
-  const local = markerPositionToLocalPixel(baseMapManager, map, element.origin);
-  const cx = local.x + offset.x;
-  const cy = local.y + offset.y;
+  const preset = getPresetById(element.presetId) || getPresetById("circle");
+  // A `kind: "particles"` element (an Effect) has nothing static to draw
+  // via this SVG-geometry path at all — its own animated rendering (Part 4)
+  // is a separate, canvas-based system entirely, driven by
+  // requestAnimationFrame rather than a one-shot SVG element. This function
+  // stays scoped to geometry presets only; the particle-selection/drag
+  // affordance in Orrery's own authoring surface is that separate system's
+  // own concern, not this one's.
+  if (preset.kind !== "geometry") return;
+  const { x: cx, y: cy } = resolveElementOrigin(baseMapManager, map, layer, element);
+  // The drag gesture further below operates in PRE-offset local-pixel space
+  // (it round-trips through markerPositionToLocalPixel/localPixelToMarkerPosition,
+  // neither of which know about a layer's own offset) — recovered by
+  // subtracting `offset` back out of cx/cy. Always valid there: dragging is
+  // only ever enabled for a freestanding shape (canDrag requires no
+  // attachedMarkerId), so cx/cy came from resolveElementOrigin's own
+  // freestanding branch, local pixel + this exact `offset`.
+  const local = { x: cx - offset.x, y: cy - offset.y };
   const pixelsPerCell = resolveShapePixelsPerCell(baseMapManager, map);
   const sizePx = Math.max(0, (element.sizeCells || 0) * pixelsPerCell);
   const isSelected = options.selectedElementId === element.id;
 
-  let visible;
-  if (element.shapeType === "circle") {
-    visible = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-    visible.setAttribute("cx", String(cx));
-    visible.setAttribute("cy", String(cy));
-    visible.setAttribute("r", String(sizePx));
-  } else if (element.shapeType === "square") {
-    visible = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-    visible.setAttribute("x", String(cx - sizePx / 2));
-    visible.setAttribute("y", String(cy - sizePx / 2));
-    visible.setAttribute("width", String(sizePx));
-    visible.setAttribute("height", String(sizePx));
-  } else {
-    const angleRad = ((element.angleDeg || 0) * Math.PI) / 180;
-    let points;
-    if (element.shapeType === "cone") {
-      const spreadRad = ((element.spreadDeg ?? 53) * Math.PI) / 180;
-      const leftRad = angleRad - spreadRad / 2;
-      const rightRad = angleRad + spreadRad / 2;
-      points = [
-        { x: cx, y: cy },
-        { x: cx + sizePx * Math.cos(leftRad), y: cy + sizePx * Math.sin(leftRad) },
-        { x: cx + sizePx * Math.cos(rightRad), y: cy + sizePx * Math.sin(rightRad) },
-      ];
-    } else {
-      // "line" — a rectangle: origin ± half-width along the perpendicular,
-      // extended `sizePx` along the facing direction.
-      const dirX = Math.cos(angleRad);
-      const dirY = Math.sin(angleRad);
-      const perpX = -dirY;
-      const perpY = dirX;
-      const halfWidthPx = ((element.widthCells || 1) * pixelsPerCell) / 2;
-      const farX = cx + dirX * sizePx;
-      const farY = cy + dirY * sizePx;
-      points = [
-        { x: cx + perpX * halfWidthPx, y: cy + perpY * halfWidthPx },
-        { x: farX + perpX * halfWidthPx, y: farY + perpY * halfWidthPx },
-        { x: farX - perpX * halfWidthPx, y: farY - perpY * halfWidthPx },
-        { x: cx - perpX * halfWidthPx, y: cy - perpY * halfWidthPx },
-      ];
-    }
-    visible = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
-    visible.setAttribute("points", points.map((point) => `${point.x},${point.y}`).join(" "));
-  }
+  const visible = preset.draw(cx, cy, sizePx, element, pixelsPerCell);
   // Selection used to override stroke to a fixed orange instead of adding a
   // separate indicator — confirmed as the actual cause of "outline color
   // isn't honored, always shows orange": the ONLY way to reach this editor
@@ -2000,8 +2065,9 @@ export function renderShapeElement(svg, baseMapManager, map, layer, element, off
     selectionRing.style.pointerEvents = "none";
     svg.appendChild(selectionRing);
   }
-  visible.setAttribute("fill", element.fillColor && element.fillColor !== "none" ? element.fillColor : "none");
-  visible.setAttribute("stroke", element.strokeColor || "#0f172a");
+  const fillColor = element.values?.fill;
+  visible.setAttribute("fill", fillColor && fillColor !== "none" ? fillColor : "none");
+  visible.setAttribute("stroke", element.values?.stroke || "#0f172a");
   visible.setAttribute("stroke-width", String(element.strokeWidth || 2));
   // Falls back to 0.5 only for a shape saved before this field existed —
   // every shape placed since createVectorShapeElement always stamps a real
@@ -2009,7 +2075,13 @@ export function renderShapeElement(svg, baseMapManager, map, layer, element, off
   visible.setAttribute("opacity", String(Number.isFinite(element.opacity) ? element.opacity : 0.5));
   svg.appendChild(visible);
 
-  if (typeof options.onPathClick === "function" || typeof options.onShapeDragEnd === "function") {
+  // An attached shape/effect's position is derived from its host marker,
+  // not independently draggable — same gate/reasoning renderLightElement's
+  // own canDrag already establishes just below in this file. The only way
+  // to move it is to move the marker (or detach it via the inspector's own
+  // Attach to Token picker first).
+  const canDrag = !element.attachedMarkerId && typeof options.onShapeDragEnd === "function";
+  if (typeof options.onPathClick === "function" || canDrag) {
     // A clone reuses whichever shape's own geometry attributes were just
     // set (cx/cy/r, x/y/width/height, or points) without re-deriving them —
     // fill:"transparent" (not "none") is what actually makes the WHOLE
@@ -2019,7 +2091,7 @@ export function renderShapeElement(svg, baseMapManager, map, layer, element, off
     hit.setAttribute("fill", "transparent");
     hit.setAttribute("stroke", "transparent");
     hit.style.pointerEvents = "fill";
-    hit.style.cursor = options.onShapeDragEnd ? "move" : "pointer";
+    hit.style.cursor = canDrag ? "move" : "pointer";
     hit.addEventListener("pointerdown", (event) => {
       if (event.button !== 0) return;
       event.preventDefault();
@@ -2032,7 +2104,7 @@ export function renderShapeElement(svg, baseMapManager, map, layer, element, off
       // setPointerCapture on (shapes — see app.js's own
       // selectShapeElementForDrag).
       options.onPathClick?.(element.id, event, element.kind);
-      if (typeof options.onShapeDragEnd !== "function") {
+      if (!canDrag) {
         return;
       }
       // Same "select immediately on pointerdown, drag is optional, commit
@@ -2659,6 +2731,238 @@ export function renderLightElement(svg, baseMapManager, map, layer, element, off
   }
 }
 
+// Persists across renderMapLayers rebuilds (module-level, not scoped to any
+// one call) — tracks which loop:false particle elements have already
+// completed their one-shot cycle, so a routine poll/pan/zoom rebuild
+// doesn't replay them from scratch every time it redraws the map (it would
+// otherwise, since every rebuild calls this same render function fresh).
+// Cleared for a specific element by resetParticleEffectPlayState — called
+// on every explicit re-trigger (the inspector's own Play button, a macro,
+// or a remote broadcast delivery, Part 5) so THAT element plays again.
+const particleEffectPlayedOnce = new Set();
+
+export function resetParticleEffectPlayState(elementId) {
+  particleEffectPlayedOnce.delete(elementId);
+}
+
+// Renders a `kind: "particles"` element (an Effect) — a small canvas
+// appended directly to the shared overlay container (NOT the per-layer SVG
+// createVectorLayerElement otherwise builds via renderShapeElement;
+// particles need their own requestAnimationFrame-driven redraw every
+// frame, not a one-shot SVG primitive). Plays continuously if
+// element.loop, otherwise once per explicit trigger (see
+// particleEffectPlayedOnce above).
+//
+// Self-terminates once its own canvas is no longer in the DOM
+// (`canvas.isConnected`) — the SAME renderMapLayers rebuild that wipes the
+// overlay container on every poll/pan/zoom tick naturally stops any
+// still-running loop this way, with no separate cancellation registry
+// needed; a fresh canvas/loop simply starts on the next render pass
+// regardless (same accepted "a rebuild can restart an in-flight cycle"
+// tradeoff the ping tool's own transient overlay element already has).
+//
+// Click-to-select (options.onPathClick) AND drag-to-move (options.onShapeDragEnd)
+// — same capability/gating renderShapeElement's own hit-target already has,
+// confirmed as a real parity gap the two should never have had (a GM
+// repositioning a placed effect shouldn't need to fall back to the
+// inspector's own Position X/Y fields just because it happens to be
+// animated rather than static). Simpler than the SVG shape's own drag,
+// though: since this canvas already repositions itself every animation
+// frame via `frame()` below, a live drag preview is just `dragOffset`
+// nudging that SAME per-frame position — no separate temporary preview
+// node to build/redraw/tear down the way the SVG case needs (mutating an
+// SVG shape's geometry attributes in place was confirmed not to repaint
+// mid-drag; a canvas's own style.left/top has no such issue). An attached
+// effect is still never draggable (canDrag requires no attachedMarkerId,
+// identical gate to renderShapeElement's own) — the only way to move it is
+// to move its host marker, or detach it first.
+export function renderParticleEffectElement(overlayHost, baseMapManager, map, layer, element, offset, options = {}) {
+  if (!element.loop && particleEffectPlayedOnce.has(element.id)) return;
+  const preset = getPresetById(element.presetId);
+  if (!preset || preset.kind !== "particles") return;
+  const pixelsPerCell = resolveShapePixelsPerCell(baseMapManager, map);
+  const sizePx = Math.max(0, (element.sizeCells || 0) * pixelsPerCell);
+  // canvasSize is deliberately padded well past sizePx (radiating presets
+  // like Burst/Cone Blast throw particles out to ~1.1x sizePx, and need
+  // margin so they don't get clipped) — but that padding used to ALSO be
+  // the click/drag hit-target, since pointer-events applied to the canvas'
+  // own full bounding box. Confirmed real bug: a "10 ft" effect was
+  // selectable across a much larger area than its own stated size implied.
+  // `hit` below is a separate, purpose-sized element for interaction only,
+  // decoupled from canvasSize's own visual-safety-margin purpose.
+  const canvasSize = Math.max(120, sizePx * 3);
+  const canvas = document.createElement("canvas");
+  canvas.width = canvasSize;
+  canvas.height = canvasSize;
+  canvas.style.position = "absolute";
+  canvas.style.pointerEvents = "none";
+  // Same DOM-order concern as `hit` below (this canvas lands in `overlay`
+  // ahead of its own layer's wrapper) — but for PAINT, not just pointer
+  // events: without this, later-processed layers/markers could visually
+  // cover the particles themselves, not just steal clicks aimed at them.
+  // Dropped by mistake when `hit` was split out into its own element (that
+  // refactor moved this same reasoning/property onto `hit` but never put
+  // it back here too) — restored.
+  canvas.style.zIndex = "5";
+  overlayHost.appendChild(canvas);
+
+  // Weather presets (category: "weather") fill the WHOLE canvas edge to
+  // edge (shape-effect-library.js's own header) — their hit target matches
+  // canvasSize, same as their visual footprint. Every other particle preset
+  // radiates from a center point, so its hit target is a circle sized to
+  // sizePx (what "10 ft" actually means to a GM), not the padded canvas.
+  const hitDiameter = preset.category === "weather" ? canvasSize : Math.max(24, sizePx * 2);
+  const hit = document.createElement("div");
+  hit.style.position = "absolute";
+  hit.style.width = `${hitDiameter}px`;
+  hit.style.height = `${hitDiameter}px`;
+  hit.style.borderRadius = "50%";
+  // Appended straight to the shared overlay container (this function's own
+  // header comment), NOT into this layer's own per-layer <svg>/wrapper the
+  // normal per-layer DOM-order stacking relies on — this lands in `overlay`
+  // BEFORE its own layer's wrapper does (createVectorLayerElement calls
+  // this mid-loop, ahead of renderMapLayers' own wrapper.appendChild), so
+  // plain DOM order alone would let markers/shapes/walls anywhere later in
+  // the paint order sit on top of it and steal pointer events aimed at it.
+  // An explicit z-index sidesteps that: nothing else in this stack sets one
+  // (it's z-index:auto throughout), so this alone guarantees `hit` always
+  // wins hit-testing for its own footprint regardless of where it landed in
+  // the DOM.
+  hit.style.zIndex = "5";
+  const canDrag = !element.attachedMarkerId && typeof options.onShapeDragEnd === "function";
+  const canInteract = typeof options.onPathClick === "function" || canDrag;
+  hit.style.pointerEvents = canInteract ? "auto" : "none";
+  hit.style.cursor = canInteract ? (canDrag ? "move" : "pointer") : "";
+  // Drives the subtle boundary ring drawn in frame() below — a geometry
+  // shape's own particles/fill are always visible, so its selection ring
+  // (renderShapeElement's own isSelected treatment) is enough on its own to
+  // show where it is; a particle effect's actual painted particles can be
+  // sparse or (for a large Weather patch especially) spread thin enough
+  // that there's no obvious "here it is" to click on at all. Hover shows
+  // this transiently while finding it; selection keeps it up persistently,
+  // same as geometry shapes.
+  let hovered = false;
+  if (canInteract) {
+    hit.addEventListener("pointerenter", () => {
+      hovered = true;
+    });
+    hit.addEventListener("pointerleave", () => {
+      hovered = false;
+    });
+  }
+  // Nudges the per-frame resolved position below during a live drag —
+  // cleared once the gesture ends, whether committed or just a click.
+  let dragOffset = null;
+  if (canInteract) {
+    hit.addEventListener("pointerdown", (event) => {
+      if (event.button !== 0) return;
+      event.preventDefault();
+      event.stopPropagation();
+      options.onPathClick?.(element.id, event, element.kind);
+      if (!canDrag) return;
+      try {
+        hit.setPointerCapture(event.pointerId);
+      } catch (error) {
+        // Ignored — see renderShapeElement's own identical comment.
+      }
+      const startX = event.clientX;
+      const startY = event.clientY;
+      const zoom = isTileBaseMap(map) ? 1 : getNonTileZoom(baseMapManager);
+      let lastDelta = null;
+      baseMapManager.setInteractionEnabled(false);
+      const onMove = (moveEvent) => {
+        lastDelta = { x: (moveEvent.clientX - startX) / zoom, y: (moveEvent.clientY - startY) / zoom };
+        dragOffset = lastDelta;
+      };
+      const onUp = (upEvent) => {
+        try {
+          hit.releasePointerCapture(upEvent.pointerId);
+        } catch (error) {
+          // Ignored — capture above may never have actually been acquired.
+        }
+        window.removeEventListener("pointermove", onMove);
+        window.removeEventListener("pointerup", onUp);
+        baseMapManager.setInteractionEnabled(true);
+        dragOffset = null;
+        if (lastDelta) {
+          // Same pre-offset-local-pixel reconstruction renderShapeElement's
+          // own drag commit uses — see its comment for why subtracting
+          // `offset` back out of the resolved position is always valid here
+          // (drag only ever runs for a freestanding effect).
+          const { x: cx, y: cy } = resolveElementOrigin(baseMapManager, map, layer, element);
+          const local = { x: cx - offset.x, y: cy - offset.y };
+          const nextLocalPixel = { x: local.x + lastDelta.x, y: local.y + lastDelta.y };
+          const nextOrigin = localPixelToMarkerPosition(baseMapManager, map, nextLocalPixel);
+          options.onShapeDragEnd(element.id, nextOrigin);
+        }
+      };
+      window.addEventListener("pointermove", onMove);
+      window.addEventListener("pointerup", onUp);
+    });
+  }
+  overlayHost.appendChild(hit);
+  const ctx = canvas.getContext("2d");
+  // `let`, not `const` — re-seeded on every loop restart below. Confirmed
+  // real bug this fixes: `particles` (each one's own random phase/angle/
+  // reach/size) was only ever generated ONCE, before the very first frame,
+  // and never touched again — a loop:true effect's own `start = null`
+  // reset only rewound `elapsed` back near 0, replaying the EXACT SAME
+  // random pattern every single cycle. A precise repeat like that reads as
+  // an obviously mechanical loop to the eye (real fire/rain/etc. never
+  // exactly repeats), even though each preset's own header comment always
+  // assumed fresh randomization happened here.
+  let particles = preset.seed(sizePx);
+  let start = null;
+  function frame(now) {
+    if (!canvas.isConnected) return;
+    if (start === null) start = now;
+    const elapsed = now - start;
+    // Recomputed every frame (not just once) so an attached Effect tracks
+    // its host token live, same freshness resolveLightOrigin's own
+    // per-render lookup already guarantees for Lights.
+    const { x: baseCx, y: baseCy } = resolveElementOrigin(baseMapManager, map, layer, element);
+    const cx = baseCx + (dragOffset?.x || 0);
+    const cy = baseCy + (dragOffset?.y || 0);
+    canvas.style.left = `${cx - canvasSize / 2}px`;
+    canvas.style.top = `${cy - canvasSize / 2}px`;
+    hit.style.left = `${cx - hitDiameter / 2}px`;
+    hit.style.top = `${cy - hitDiameter / 2}px`;
+    ctx.clearRect(0, 0, canvasSize, canvasSize);
+    const stillGoing = preset.run(ctx, canvasSize / 2, canvasSize / 2, sizePx, elapsed, element.values, particles, element);
+    // Subtle boundary ring, matching the hit-target's own radius (hovered)
+    // — see hit's own "hovered" comment above for why this exists at all.
+    // Same accent color renderShapeElement's own selection ring uses, kept
+    // dashed/soft here (vs. that one's solid glow) since this is meant to
+    // read as "here's where to click," not compete with the effect's own
+    // painted particles for attention.
+    if (hovered || options.selectedElementId === element.id) {
+      ctx.save();
+      ctx.strokeStyle = "#0ea5e9";
+      ctx.globalAlpha = options.selectedElementId === element.id ? 0.7 : 0.4;
+      ctx.lineWidth = 2;
+      ctx.setLineDash([6, 4]);
+      ctx.beginPath();
+      ctx.arc(canvasSize / 2, canvasSize / 2, hitDiameter / 2, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+    if (stillGoing) {
+      requestAnimationFrame(frame);
+      return;
+    }
+    if (element.loop) {
+      start = null;
+      particles = preset.seed(sizePx);
+      requestAnimationFrame(frame);
+      return;
+    }
+    particleEffectPlayedOnce.add(element.id);
+    canvas.remove();
+    hit.remove();
+  }
+  requestAnimationFrame(frame);
+}
+
 export function createVectorLayerElement(baseMapManager, map, layer, options = {}) {
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.classList.add("orrery-layer-vector-overlay");
@@ -2675,6 +2979,18 @@ export function createVectorLayerElement(baseMapManager, map, layer, options = {
     // shape/wall/light uniformly since they all flow through this one loop.
     if (options.hiddenElementIds?.has(element.id)) return;
     if (element.kind === "shape") {
+      const preset = getPresetById(element.presetId);
+      if (preset?.kind === "particles") {
+        // A canvas, appended to the SHARED overlay container, not this
+        // per-layer SVG — see renderParticleEffectElement's own header
+        // comment for why (continuous requestAnimationFrame redraw, not a
+        // one-shot SVG primitive).
+        const overlayContainer = baseMapManager.getOverlayContainer?.();
+        if (overlayContainer) {
+          renderParticleEffectElement(overlayContainer, baseMapManager, map, layer, element, offset, options);
+        }
+        return;
+      }
       renderShapeElement(svg, baseMapManager, map, layer, element, offset, options);
       return;
     }
@@ -2884,6 +3200,21 @@ export function renderMapLayers(overlay, baseMapManager, map, options = {}) {
   (map.layers || []).forEach((layer) => {
     if (!layer.visible) return;
     if (hidden?.layers.has(layer.id)) return;
+    // A locked layer stays fully VISIBLE (nothing above filters it out) but
+    // every interactivity gate below (isInteractive/isMarkerDraggable/
+    // onPathClick/onShapeDragEnd/onWallDragEnd/onWallVertexDragEnd) is
+    // ANDed with `!locked` — clicks/drags simply never reach this layer's
+    // own elements, so pointer-events fall through to whatever's behind
+    // them instead. The one real motivating case: a Weather effect (an
+    // Effect preset with category "weather") covers the entire map with a
+    // single large hit target (renderParticleEffectElement's own `hit`
+    // div) — once applied, it sat on top of every marker/shape underneath
+    // it and swallowed every click aimed at them, with no way to reach
+    // those elements except first selecting a DIFFERENT layer from the
+    // left pane (which this same layer's own elements don't need to be
+    // interactive to still render/animate). Locking that one layer fixes
+    // it without touching the weather effect itself.
+    const locked = Boolean(layer.locked);
     const isLayerSelected = selection?.kind === "layer" && selection.id === layer.id;
     const isGridCellsSelected = selection?.kind === "grid-cells" && selection.layerId === layer.id;
     const isMarkerElementSelected = selection?.kind === "marker-element" && selection.layerId === layer.id;
@@ -2911,7 +3242,7 @@ export function renderMapLayers(overlay, baseMapManager, map, options = {}) {
       // is meant to do for markers/vectors. Grid cells stay reachable only
       // via explicit layer selection or the paint tool, same as before.
       element = createGridLayerElement(baseMapManager, map, layer, {
-        isInteractive: isSelected || isPaintTarget,
+        isInteractive: !locked && (isSelected || isPaintTarget),
         selectedCells: isGridCellsSelected ? selection.cells : [],
         groupCells,
         hasFullAccess: options.hasFullAccess ?? false,
@@ -2946,9 +3277,10 @@ export function renderMapLayers(overlay, baseMapManager, map, options = {}) {
         // would go false the instant the first marker gets placed/clicked,
         // since selection.kind becomes "marker-element" then) while still
         // excluding a fresh fallback click that never armed the layer.
-        isInteractive: isLayerSelected || options.armedMarkerLayerId === layer.id,
+        isInteractive: !locked && (isLayerSelected || options.armedMarkerLayerId === layer.id),
         selectedElementId: isMarkerElementSelected ? selection.id : null,
-        isMarkerDraggable: options.isMarkerDraggable ? (markerElement) => options.isMarkerDraggable(layer, markerElement) : undefined,
+        isMarkerDraggable:
+          !locked && options.isMarkerDraggable ? (markerElement) => options.isMarkerDraggable(layer, markerElement) : undefined,
         onEmptyClick: options.onMarkerLayerEmptyClick ? (position, event) => options.onMarkerLayerEmptyClick(layer, position, event) : undefined,
         onMarkerDragStart: options.onMarkerDragStart,
         onMarkerDragEnd: options.onMarkerDragEnd,
@@ -2997,7 +3329,7 @@ export function renderMapLayers(overlay, baseMapManager, map, options = {}) {
         // actually act on THIS element) is left entirely to the callback
         // itself — this only controls whether a hit target exists at all.
         onPathClick:
-          (isSelected || options.isVectorLayerInteractive?.(layer)) && options.onVectorPathClick
+          !locked && (isSelected || options.isVectorLayerInteractive?.(layer)) && options.onVectorPathClick
             ? (elementId, event, kind) => options.onVectorPathClick(layer, elementId, event, kind)
             : undefined,
         // AoE shapes only — drawn paths have no drag-to-move (they're
@@ -3005,7 +3337,7 @@ export function renderMapLayers(overlay, baseMapManager, map, options = {}) {
         // shapes are transient tactical indicators, meant to move as combat
         // does). Same gate as onPathClick just above.
         onShapeDragEnd:
-          (isSelected || options.isVectorLayerInteractive?.(layer)) && options.onShapeDragEnd
+          !locked && (isSelected || options.isVectorLayerInteractive?.(layer)) && options.onShapeDragEnd
             ? (elementId, nextOrigin) => options.onShapeDragEnd(layer, elementId, nextOrigin)
             : undefined,
         // Doors only, and NEVER gated on isSelected — the Dashboard widget
@@ -3022,9 +3354,10 @@ export function renderMapLayers(overlay, baseMapManager, map, options = {}) {
         // own layer is selected from the left pane); handles themselves are
         // additionally gated on THIS wall being the current selection
         // (renderWallElement's own isSelected check), not just the layer.
-        onWallDragEnd: isSelected && options.onWallDragEnd ? (elementId, nextPoints) => options.onWallDragEnd(layer, elementId, nextPoints) : undefined,
+        onWallDragEnd:
+          !locked && isSelected && options.onWallDragEnd ? (elementId, nextPoints) => options.onWallDragEnd(layer, elementId, nextPoints) : undefined,
         onWallVertexDragEnd:
-          isSelected && options.onWallVertexDragEnd
+          !locked && isSelected && options.onWallVertexDragEnd
             ? (elementId, vertexIndex, nextPoint) => options.onWallVertexDragEnd(layer, elementId, vertexIndex, nextPoint)
             : undefined,
       });

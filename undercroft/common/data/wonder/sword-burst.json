@@ -1,0 +1,28 @@
+{
+  "name": "Sword Burst",
+  "notes": "You create a momentary circle of spectral blades that sweep around you. All other creatures within 5 feet of you must succeed on a Dexterity saving throw or take 1d6 force damage.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "mapping": "markdown-spell",
+  "properties": {
+    "form": "spell"
+  },
+  "featureIds": [
+    "feat.damage"
+  ],
+  "featureParams": {
+    "feat.damage": {
+      "resolutionKind": "save",
+      "saveAbility": "dexterity",
+      "saveEffect": "none",
+      "damageType": "force",
+      "scaling": {
+        "by": "slot",
+        "values": {
+          "1": "1d6"
+        }
+      }
+    }
+  }
+}

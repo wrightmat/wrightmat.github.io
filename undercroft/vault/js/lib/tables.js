@@ -3,7 +3,7 @@
 // the active System's `propertyTypes` field. Mirrors Crucible's tables.js.
 // fetchKindEntriesForSystem asks the server to filter by systemId BEFORE
 // reading any file (get_items_bulk, server/storage.py) — faster than
-// fetching the whole cross-tool Feature/Effect library and filtering
+// fetching the whole cross-tool Feature/Wonder library and filtering
 // client-side, and the gap only grows as more Systems get built. The
 // `.filter()` below stays regardless: it's the correctness guarantee (same
 // "no systemIds = universal" semantics the server now also applies) for
@@ -22,12 +22,12 @@ export async function listFeaturesForSystem(dataManager, systemId) {
     });
 }
 
-// Vault's own generated-output kind — lets the Effect picker (app.js) offer
-// every previously-saved effect for the active System, the same way
+// Vault's own generated-output kind — lets the Wonder picker (app.js) offer
+// every previously-saved wonder for the active System, the same way
 // Sanctum's Location picker lists saved Locations. Mirrors Crucible's own
 // listMonstersForSystem.
-export async function listEffectsForSystem(dataManager, systemId) {
-  const entries = await fetchKindEntriesForSystem(dataManager, "effect", systemId);
+export async function listWondersForSystem(dataManager, systemId) {
+  const entries = await fetchKindEntriesForSystem(dataManager, "wonder", systemId);
   return entries
     .map((entry) => ({ id: entry.id, ...entry.entity }))
     .filter((entry) => {
@@ -62,7 +62,7 @@ export async function listEffectsForSystem(dataManager, systemId) {
 // is enough to accidentally satisfy isGeneratorPropertyField below even
 // though currency has nothing to do with spell/item budget — confirmed by a
 // real report where a random "Platinum" pick silently blew a generated
-// effect's budget by -1000.
+// wonder's budget by -1000.
 const NON_VAULT_PROPERTY_FIELD_KEYS = new Set(["challengeRating", "currency"]);
 
 function hasCostShape(value) {

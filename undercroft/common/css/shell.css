@@ -2010,6 +2010,204 @@ a.undercroft-tool-card:focus-visible {
   display: block;
 }
 
+/* dice-reveal.js's own physics-free "spin and reveal" overlay — a remote
+   viewer's replay of a Broadcast-mode roll (see that file's own header for
+   why this is a separate, non-dice-box mechanism from .dice-overlay above).
+   Centered, not full-viewport — this never needs to make room for tumbling
+   3D dice, just a small tray of tiles. */
+.dice-reveal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.dice-reveal-overlay.is-visible {
+  opacity: 1;
+}
+
+.dice-reveal-tray {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.dice-reveal-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  background: rgba(15, 23, 42, 0.85);
+  box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.35);
+  animation: dice-reveal-tile-pop 0.3s ease;
+}
+
+.dice-reveal-face {
+  min-width: 2.5rem;
+  text-align: center;
+  color: #fff;
+  font-size: 1.75rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* A brief settle pulse once a tile's own spin lands on its true value —
+   distinguishes "still cycling" from "this is the real result" without
+   needing a separate state label. */
+.dice-reveal-face.is-settled {
+  animation: dice-reveal-settle 0.25s ease;
+}
+
+.dice-reveal-die-label {
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.dice-reveal-caption {
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.85);
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+@keyframes dice-reveal-tile-pop {
+  from {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes dice-reveal-settle {
+  0% {
+    transform: scale(1.35);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.card-reveal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.card-reveal-overlay.is-visible {
+  opacity: 1;
+}
+
+.card-reveal-tray {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  /* Gives each card's own 3D flip somewhere to rotate "into" rather than
+     looking flat — the tray is the camera's vantage point, not any one
+     card's own transform-origin. */
+  perspective: 60rem;
+}
+
+.card-reveal-card {
+  width: 6.5rem;
+  height: 9.5rem;
+  animation: card-reveal-deal-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.card-reveal-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.45s cubic-bezier(0.4, 0.1, 0.2, 1);
+  border-radius: 0.5rem;
+  box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.35);
+}
+
+.card-reveal-inner.is-flipped {
+  transform: rotateY(180deg);
+}
+
+.card-reveal-face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  background-color: rgba(15, 23, 42, 0.85);
+  background-size: cover;
+  background-position: center;
+  /* Hides whichever face is currently turned away from the viewer instead
+     of showing it mirrored through the card — what actually makes this
+     read as a single two-sided object flipping, not two flat panels
+     swapping visibility. */
+  backface-visibility: hidden;
+}
+
+.card-reveal-face-front {
+  /* Pre-rotated 180deg from the back — the deck always starts back-first,
+     so the front only becomes visible once .is-flipped rotates the whole
+     .card-reveal-inner the other 180deg to meet it. */
+  transform: rotateY(180deg);
+}
+
+.card-reveal-face-placeholder {
+  padding: 0.5rem;
+  text-align: center;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.card-reveal-caption {
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.85);
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+@keyframes card-reveal-deal-in {
+  from {
+    transform: translateY(-2.5rem) scale(0.7);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
 /* Blend-in-until-interacted idiom for the value inside a "field box" (see
    ui-components.js's createFieldBox — Forge's Identity/4D/Stats fields,
    Crucible's Stats/Identity fields, Vault's Identity fields all use this

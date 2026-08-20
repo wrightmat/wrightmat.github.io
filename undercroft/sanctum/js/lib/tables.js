@@ -61,8 +61,8 @@ export async function listMonstersForSystem(dataManager, systemId) {
   return listKindForSystem(dataManager, "monster", systemId);
 }
 
-export async function listEffectsForSystem(dataManager, systemId) {
-  return listKindForSystem(dataManager, "effect", systemId);
+export async function listWondersForSystem(dataManager, systemId) {
+  return listKindForSystem(dataManager, "wonder", systemId);
 }
 
 // Setting now uses `systemIds` (a plural array) exactly like every other

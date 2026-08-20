@@ -35,18 +35,23 @@ import {
   createPingMarker,
   buildRestrictedMapOptions,
   resolveClickPosition,
-  getGridCellSize,
   markerPositionToLocalPixel,
   renderShapeElement,
   resolveMarkerLinkTarget,
   resolveMarkerConditionIcons,
+  resetParticleEffectPlayState,
+  findPrimaryGridLayer,
+  hasMapMeasurementConfigured,
+  pixelsToCells,
+  snapCellsToWholeUnit,
+  formatMeasuredDistance,
 } from "../../../../orrery/js/lib/map-viewer.js";
 import {
   createVectorPathElement,
   createVectorShapeElement,
   createMarkerOverlayIcon,
-  AOE_SHAPE_TYPES,
 } from "../../../../orrery/js/lib/map-model.js";
+import { getPresetById, getPresetsByCategory, getPresetDefaultValues } from "../shape-effect-library.js";
 import { resolveToolHref, resolveToolContextPath } from "../app-shell.js";
 import { resolveIsSpotlighted, resolveActiveSpotlightId } from "../spotlight.js";
 import { createCharacterOwnershipPrimer, matchesOwner, refreshOwnershipCatalog } from "../ownership.js";
@@ -156,34 +161,6 @@ export function initMapWidget(
   // "survives a zoomPanel rebuild" reasoning as activeTool above.
   let drawColor = "#0f172a";
 
-  // Same primary-grid-layer/scale-unit math as Orrery's own
-  // findPrimaryGridLayer/pixelsToCells/hasMapMeasurementConfigured
-  // (app.js) — small enough, and app.js isn't a shared lib module other
-  // files import from, that porting the algorithm here directly is more
-  // appropriate than reaching into Orrery's own page script.
-  function findPrimaryGridLayer() {
-    return (map?.layers || []).find((entry) => entry.type === "grid") || null;
-  }
-  function pixelsToCells(pixelDistance) {
-    const gridLayer = findPrimaryGridLayer();
-    if (!gridLayer) return null;
-    const cellSizePx = getGridCellSize(baseMapManager, map, gridLayer);
-    if (!cellSizePx) return null;
-    return pixelDistance / cellSizePx;
-  }
-  function hasMapMeasurementConfigured() {
-    return Number.isFinite(map?.measurement?.scale) && map.measurement.scale > 0 && Boolean(map?.measurement?.unit);
-  }
-
-  // AoE shape sizes generally fall in whole real-world-unit increments —
-  // identical to Orrery's own snapCellsToWholeUnit (app.js). No-op if the
-  // map has no usable scale to round against.
-  function snapCellsToWholeUnit(cells) {
-    const scale = map?.measurement?.scale;
-    if (!Number.isFinite(scale) || scale <= 0) return cells;
-    return Math.round(cells * scale) / scale;
-  }
-
   // Rebuilt fresh by buildZoomPanel every time the base map changes — these
   // `let`s (not consts captured once) are what let the persistent
   // viewerHost-level pointerdown handler below always read the CURRENT
@@ -241,30 +218,29 @@ export function initMapWidget(
 
   // Called on every buildZoomPanel AND every onMapChanged (not just when the
   // panel itself gets rebuilt) — a GM configuring Scale/Unit mid-session
-  // shouldn't leave Measure/Shape stuck disabled until some unrelated
-  // base-map edit happens to rebuild the panel.
+  // shouldn't leave Measure stuck disabled until some unrelated base-map
+  // edit happens to rebuild the panel. Shape only needs a grid layer now
+  // (Size is authored in cells, not converted through Scale/Unit — matches
+  // Orrery's own updateShapeAvailability, app.js); Measure genuinely still
+  // needs the full Scale per cell/Scale unit configuration, since its whole
+  // job is converting cells to a real-world distance.
   function refreshToolAvailability() {
-    const configured = hasMapMeasurementConfigured();
+    const measureConfigured = hasMapMeasurementConfigured(map);
+    const shapeAvailable = Boolean(findPrimaryGridLayer(map));
     if (measureButtonEl) {
-      measureButtonEl.disabled = !configured;
-      measureButtonEl.title = configured ? "Measure distance" : "Ask the GM to set a map scale to enable measuring";
+      measureButtonEl.disabled = !measureConfigured;
+      measureButtonEl.title = measureConfigured ? "Measure distance" : "Ask the GM to set a map scale to enable measuring";
     }
     if (shapeButtonEl) {
-      shapeButtonEl.disabled = !configured;
-      shapeButtonEl.title = configured ? "Draw an AoE shape" : "Ask the GM to set a map scale to enable AoE shapes";
+      shapeButtonEl.disabled = !shapeAvailable;
+      shapeButtonEl.title = shapeAvailable ? "Draw an AoE shape" : "Ask the GM to add a grid layer to enable AoE shapes";
     }
-    if (!configured && (activeTool === "measure" || activeTool === "shape")) {
+    if (!measureConfigured && activeTool === "measure") {
       setActiveTool(activeTool);
     }
-  }
-
-  // Screen-pixel distance -> "X ft (Y cells)" — identical math to Orrery's
-  // own formatDistance (app.js), just reading this widget's own `map`.
-  function formatMeasuredDistance(pixelDistance) {
-    const cells = pixelsToCells(pixelDistance);
-    if (cells === null) return "No grid layer to measure against.";
-    const distance = cells * map.measurement.scale;
-    return `${distance.toFixed(1)} ${map.measurement.unit} (${cells.toFixed(1)} cells)`;
+    if (!shapeAvailable && activeTool === "shape") {
+      setActiveTool(activeTool);
+    }
   }
 
   // A screen-space (position: fixed) ruler line, appended to <body> rather
@@ -508,7 +484,7 @@ export function initMapWidget(
         const dx = moveEvent.clientX - startX;
         const dy = moveEvent.clientY - startY;
         measureLine.update(moveEvent.clientX, moveEvent.clientY);
-        setMeasureReadout(formatMeasuredDistance(Math.hypot(dx, dy)));
+        setMeasureReadout(formatMeasuredDistance(baseMapManager, map, Math.hypot(dx, dy)));
       };
       const onUp = () => {
         baseMapManager.setInteractionEnabled(true);
@@ -575,7 +551,7 @@ export function initMapWidget(
         baseMapManager.setInteractionEnabled(true);
         return;
       }
-      const shapeType = AOE_SHAPE_TYPES.includes(shapeTypeSelectEl?.value) ? shapeTypeSelectEl.value : "circle";
+      const presetId = getPresetById(shapeTypeSelectEl?.value)?.category === "shapes" ? shapeTypeSelectEl.value : "circle";
       const startClientX = event.clientX;
       const startClientY = event.clientY;
       // No target layer yet (the target vector layer only gets resolved/
@@ -604,8 +580,7 @@ export function initMapWidget(
       // passed in, 4th argument), and a player-placed shape has no
       // "selected vector layer" to read defaults from in the first place
       // (unlike Orrery's own GM tool).
-      const strokeColor = drawColor;
-      const fillColor = drawColor;
+      const values = { fill: drawColor, stroke: drawColor };
       const strokeWidth = 2;
       function drawPreview() {
         preview.innerHTML = "";
@@ -617,14 +592,13 @@ export function initMapWidget(
           {
             id: "shape-preview",
             kind: "shape",
-            shapeType,
+            presetId,
             origin,
             sizeCells,
             angleDeg,
             spreadDeg: 53,
             widthCells: 1,
-            strokeColor,
-            fillColor,
+            values,
             strokeWidth,
           },
           offset,
@@ -635,17 +609,25 @@ export function initMapWidget(
       const onMove = (moveEvent) => {
         const dx = moveEvent.clientX - startClientX;
         const dy = moveEvent.clientY - startClientY;
-        const cells = pixelsToCells(Math.hypot(dx, dy));
+        const cells = pixelsToCells(baseMapManager, map, Math.hypot(dx, dy));
         if (cells === null) {
           setShapeReadout("No grid layer to measure against.");
           sizeCells = 0;
           drawPreview();
           return;
         }
-        sizeCells = snapCellsToWholeUnit(cells);
+        sizeCells = snapCellsToWholeUnit(map, cells);
         angleDeg = (Math.atan2(dy, dx) * 180) / Math.PI;
-        const distance = Math.round(sizeCells * map.measurement.scale);
-        setShapeReadout(`${distance} ${map.measurement.unit} (${sizeCells.toFixed(1)} cells)`);
+        // Real-world distance only shown when the map actually has one
+        // configured — the Shape tool itself no longer requires Scale per
+        // cell/Scale unit (refreshToolAvailability's own comment), so this
+        // readout has to degrade to cells-only instead of assuming a scale
+        // that might not exist.
+        setShapeReadout(
+          hasMapMeasurementConfigured(map)
+            ? `${Math.round(sizeCells * map.measurement.scale)} ${map.measurement.unit} (${sizeCells.toFixed(1)} cells)`
+            : `${sizeCells.toFixed(1)} cells`
+        );
         drawPreview();
       };
       const onUp = () => {
@@ -658,12 +640,11 @@ export function initMapWidget(
           void persistDrawing(
             tagAsOwnDrawing(
               createVectorShapeElement({
-                shapeType,
+                presetId,
                 origin,
                 sizeCells,
                 angleDeg,
-                strokeColor,
-                fillColor,
+                values,
                 strokeWidth,
               })
             )
@@ -842,20 +823,19 @@ export function initMapWidget(
     });
     toolOptionsRow.appendChild(drawColorInputEl);
 
-    // AoE shape type — same 4 options as Orrery's own data-shape-type
-    // select, shown only while the Shape tool is armed.
+    // AoE shape type — same "shapes" category options as Orrery's own
+    // data-shape-type select, shown only while the Shape tool is armed.
+    // Player-placed annotations stay scoped to plain geometric shapes only
+    // (not the "effects" category too) — unchanged from this tool's own
+    // existing behavior, this widget just now reads the same shared
+    // registry Orrery does instead of a separately hand-maintained list.
     shapeTypeSelectEl = document.createElement("select");
     shapeTypeSelectEl.className = "form-select form-select-sm flex-grow-1 d-none";
     shapeTypeSelectEl.setAttribute("aria-label", "AoE shape type");
-    [
-      ["circle", "Circle"],
-      ["cone", "Cone"],
-      ["line", "Line"],
-      ["square", "Square"],
-    ].forEach(([value, label]) => {
+    getPresetsByCategory("shapes").forEach((preset) => {
       const option = document.createElement("option");
-      option.value = value;
-      option.textContent = label;
+      option.value = preset.id;
+      option.textContent = preset.label;
       shapeTypeSelectEl.appendChild(option);
     });
     toolOptionsRow.appendChild(shapeTypeSelectEl);
@@ -959,6 +939,14 @@ export function initMapWidget(
         renderLayers();
       })
       .catch(() => {
+        // Still stamp the timestamp on failure (a 401/403 for a reference
+        // this viewer will never gain access to, or a character deleted
+        // elsewhere, is not a transient blip that's about to resolve on the
+        // next render) — confirmed real bug this fixes: leaving
+        // characterPayloadFetchedAt unset on failure meant the staleness
+        // window never applied, so a permanently-inaccessible marker refetched
+        // on literally every renderLayers() call with no backoff at all.
+        characterPayloadFetchedAt.set(refId, Date.now());
         pendingCharacterFetches.delete(refId);
       });
   }
@@ -1477,6 +1465,78 @@ export function initMapWidget(
     });
   }
 
+  // Shapes & Effects plan, Part 5 — finds a placed, non-looping particle
+  // effect by its own label, or (if it has none) by the label of the marker
+  // it's attachedMarkerId-attached to ("a named trap" and "whatever's on the
+  // Ancient Red Dragon" both resolve through the same lookup). Resolved
+  // fresh against the currently-loaded `map` every call, never cached —
+  // an attached effect's target can move/rename between macro runs.
+  function findEffectElementByLabel(target) {
+    if (!map || !target) return null;
+    const norm = String(target).trim().toLowerCase();
+    if (!norm) return null;
+    const markerLabels = new Map();
+    (map.layers || []).forEach((layer) => {
+      (layer.elements || []).forEach((entry) => {
+        if (entry.kind === "marker") markerLabels.set(entry.id, entry.label || "");
+      });
+    });
+    for (const layer of map.layers || []) {
+      for (const element of layer.elements || []) {
+        if (element.kind !== "shape") continue;
+        if (getPresetById(element.presetId)?.kind !== "particles") continue;
+        const ownLabel = (element.label || "").trim().toLowerCase();
+        if (ownLabel) {
+          if (ownLabel === norm) return { layer, element };
+          continue;
+        }
+        if (!element.attachedMarkerId) continue;
+        const markerLabel = (markerLabels.get(element.attachedMarkerId) || "").trim().toLowerCase();
+        if (markerLabel && markerLabel === norm) return { layer, element };
+      }
+    }
+    return null;
+  }
+
+  // Replays a placed effect's run() cycle locally by resetting its
+  // "already played" state (map-viewer.js's own particleEffectPlayedOnce)
+  // and forcing a re-render — renderMapLayers rebuilds every element fresh,
+  // so the particle canvas simply gets created again and plays through.
+  function triggerEffect(layer, element) {
+    resetParticleEffectPlayState(element.id);
+    renderLayers();
+  }
+
+  // Local, macro-driven trigger (macro-runner.js's runEffectsMacroAction) —
+  // replays locally and returns the resolved element's id so the caller can
+  // broadcast it to the rest of the table; throws a clear error on no match,
+  // same "fail loudly to the macro's own toast" precedent runDeckMacroAction
+  // already follows, rather than silently doing nothing.
+  function triggerByLabel(target) {
+    const found = findEffectElementByLabel(target);
+    if (!found) {
+      throw new Error(`No effect found matching "${target}".`);
+    }
+    triggerEffect(found.layer, found.element);
+    return found.element.id;
+  }
+
+  // Remote broadcast delivery (dashboard.js's effectTrigger subscription) —
+  // finds the exact element by id in the already-loaded map data and
+  // replays it. Silently does nothing on no match (map out of date, or this
+  // viewer's copy hasn't caught up yet) — same accepted tradeoff pings
+  // already have, not an error worth surfacing to a viewer who did nothing.
+  function triggerElementById(elementId) {
+    if (!map || !elementId) return;
+    for (const layer of map.layers || []) {
+      const element = (layer.elements || []).find((entry) => entry.id === elementId);
+      if (element) {
+        triggerEffect(layer, element);
+        return;
+      }
+    }
+  }
+
   // Read-modify-write against a *fresh* fetch (preferLocal: false), not the
   // in-memory `map` this widget last loaded — the GM could have changed the
   // map (new marker, layer visibility, ...) in the moments since, and a
@@ -1624,6 +1684,10 @@ export function initMapWidget(
     // comment — a new map means a new instance), so a plain property is
     // enough; no need for a live getter.
     mapId,
+    // Shapes & Effects plan, Part 5 — see triggerByLabel/triggerElementById's
+    // own comments just above.
+    triggerByLabel,
+    triggerElementById,
     // Map has no per-card show/hide toggle of its own (unlike Clock/
     // Calendar, which findActiveWidgetInstance's own isVisible gate was
     // originally written for) — always true once mounted, so the FIRST

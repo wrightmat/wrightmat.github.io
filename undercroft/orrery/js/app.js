@@ -29,6 +29,7 @@ import {
 } from "../../common/js/lib/map-live-sync.js";
 import { initAuthControls } from "../../common/js/lib/auth-ui.js";
 import { refreshTooltips, disposeTooltips } from "../../common/js/lib/tooltips.js";
+import { createColorPickerField } from "../../common/js/lib/color-picker.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
 import { fetchKindEntriesWithIds } from "../../common/js/lib/content-fetch.js";
 import { extractOutline } from "../../repository/js/lib/journal-outline.js";
@@ -43,6 +44,7 @@ import { deriveCombatBindings } from "../../common/js/lib/widgets/combat-binding
 import { deriveConditionsVocabulary } from "../../common/js/lib/widgets/tag-editor.js";
 import { resolveActiveSpotlightId } from "../../common/js/lib/spotlight.js";
 import { connectLiveStream } from "../../common/js/lib/live.js";
+import { getPresetById, getPresetsByCategory, getPresetDefaultValues, SHAPE_EFFECT_CATEGORIES } from "../../common/js/lib/shape-effect-library.js";
 import {
   createGroup,
   createGridCell,
@@ -53,7 +55,6 @@ import {
   createMarkerOverlayIcon,
   createVectorPathElement,
   createVectorShapeElement,
-  AOE_SHAPE_TYPES,
   createWallElement,
   createLightElement,
   WALL_TYPES,
@@ -97,6 +98,7 @@ import {
   createPingMarker,
   getMarkerLayerOffset,
   renderShapeElement,
+  resetParticleEffectPlayState,
   resolveMarkerVisionRangeCells,
   resolveMarkerConditionIcons,
   resolveVisibleCells,
@@ -105,6 +107,11 @@ import {
   snapMarkerPositionToGrid as snapMarkerPositionToGridShared,
   buildRestrictedMapOptions,
   resolveMarkerLinkTarget,
+  findPrimaryGridLayer,
+  hasMapMeasurementConfigured,
+  pixelsToCells,
+  snapCellsToWholeUnit,
+  formatMeasuredDistance,
 } from "./lib/map-viewer.js";
 
 const state = {
@@ -162,15 +169,43 @@ let drawModeActive = false;
 // anywhere, including on top of an existing shape/path.
 let shapeModeActive = false;
 
-// One shared "pencil color" for both Draw and Shape (a shape's fillColor
-// AND strokeColor both come from this single value — see setupShapeTool's
-// own comment), matching the Dashboard Map widget's identical single
-// drawColor concept (common/js/lib/widgets/map.js) rather than each tool
-// reading a per-layer default from layer.settings — a player placing a
-// drawing/shape via the widget has no "selected vector layer" to read
-// defaults from at all, so a shared toolbar swatch is the only model that
-// works the same in both places. Persists across gestures within the
-// session, same "sticky preference" shape as wallSnapEnabled above.
+// The Shape/Effect tool's own placement workflow: while armed, a DRAFT
+// element (draftShapeElement) exists on the SAME layer (draftShapeLayer)
+// it'll eventually be placed on, and the right-pane Inspector renders it
+// through the exact same renderVectorShapeSelectionEditor a real, already-
+// placed shape uses — not a separate simplified view. That's what lets a
+// GM open the panel the instant the tool arms, change type/color there
+// BEFORE ever touching the map, then drag on the map to set Size/Angle/
+// Position, watching the SAME Size/Angle inputs update live as they do —
+// confirmed as the actual ask after two earlier, more limited attempts
+// (a standalone toolbar readout, then a separate simplified "armed"
+// summary) both fell short of "the exact same fields, live." Never pushed
+// into layer.elements until the gesture actually commits (sizeCells > 0 on
+// release) — recordHistory/renderLayerOverlays calls that fire from
+// editing the draft harmlessly no-op/redundantly redraw the REAL,
+// unaffected map in the meantime, since nothing in state.map itself has
+// changed yet. lastShapePresetId/lastShapeValues remember the most
+// recently used type/colors across arm/disarm cycles (captured right
+// before the draft is cleared), so re-arming the tool picks up where the
+// last placement left off, the same continuity a toolbar dropdown's own
+// persisted value used to give for free.
+let draftShapeElement = null;
+let draftShapeLayer = null;
+let lastShapePresetId = "circle";
+let lastShapeValues = null;
+
+// One shared "pencil color" for the plain Draw tool (a drawn path's
+// fillColor AND strokeColor both come from this single value) — matching
+// the Dashboard Map widget's identical single drawColor concept
+// (common/js/lib/widgets/map.js) rather than reading a per-layer default
+// from layer.settings — a player placing a drawing via the widget has no
+// "selected vector layer" to read defaults from at all, so a shared
+// toolbar swatch is the only model that works the same in both places.
+// Shape no longer uses this — colors are now per-colorSlot fields on
+// draftShapeElement.values, picked from the right pane, not one shared
+// swatch.
+// Persists across gestures within the session, same "sticky preference"
+// shape as wallSnapEnabled above.
 let drawColor = "#0f172a";
 
 // Same reasoning as drawModeActive — walls/doors need to stay click-through
@@ -179,21 +214,35 @@ let drawColor = "#0f172a";
 // placement near an existing wall's own endpoint is a common, expected case
 // (connecting two wall segments).
 let wallModeActive = false;
-// "wall" | "door" — which kind the NEXT placed element becomes; switching
-// mid-gesture cancels whatever's in progress rather than trying to
-// reconcile an ambiguous partial shape (see setupWallTool's own submode
-// change handler).
-let wallSubMode = "wall";
+// Same draft-element workflow as draftShapeElement/draftShapeLayer —
+// renderWallSelectionEditor renders draftWallElement directly the whole
+// time the Wall tool is armed, so Type (wall/door — replaces the old
+// standalone toolbar dropdown), Stroke color/width, and Snap to Grid are
+// all live-editable from the moment the tool arms, not just after a wall
+// is actually placed. `points` starts empty and grows as vertices are
+// clicked (setupWallTool's own pointerdown), same array the committed
+// element keeps as-is. lastWallType remembers wall-vs-door across
+// arm/disarm cycles, same continuity lastShapePresetId gives Shape.
+let draftWallElement = null;
+let draftWallLayer = null;
+let lastWallType = "wall";
 // Whether the NEXT placed wall/door's own vertices snap to the grid as
 // they're clicked — defaults on (see createWallElement's own comment for
 // why: fog is only ever square-grid-cell granular anyway, and snapping
 // keeps walls straight/aligned to each other). Persists across gestures
-// within the session, same "sticky preference" shape as wallSubMode.
+// within the session, same "sticky preference" shape as lastWallType. A
+// toolbar-level toggle (not draftWallElement.snapToGrid, which is a
+// separate per-element field editable via the inspector's own Snap to Grid
+// switch) because it governs LIVE placement snapping as vertices are
+// clicked — a wall's freeform, multi-vertex geometry can genuinely want
+// off-grid precision mid-placement in a way Shape's single-drag-to-size
+// gesture never needed a toggle for.
 let wallSnapEnabled = true;
-// { layer, points, preview, polyline } while a click-to-place-vertex
-// gesture is in progress; null otherwise. Module-scope (not local to
-// setupWallTool) so the capture-phase keydown handler and the pointermove/
-// dblclick handlers can all read/mutate the same in-progress state.
+// { preview, polyline } while a click-to-place-vertex gesture is in
+// progress; null otherwise. Module-scope (not local to setupWallTool) so
+// the capture-phase keydown handler and the pointermove/dblclick handlers
+// can all read/mutate the same in-progress state. The vertices themselves
+// live on draftWallElement.points directly, not here.
 let wallGesture = null;
 
 // Same reasoning as shapeModeActive — a placed Light must stay immediately
@@ -201,6 +250,16 @@ let wallGesture = null;
 // how a placed shape already works), so this does NOT gate the
 // click-through wiring the way drawModeActive/wallModeActive do.
 let lightModeActive = false;
+
+// Same draft-element workflow as draftShapeElement/draftShapeLayer above,
+// for the Light tool — renderLightSelectionEditor renders it directly, so
+// Range/Color/Opacity/Attach-to-Token are all live-editable from the moment
+// the tool arms, not just after a light is actually placed. No "last used"
+// memory the way Shape has one (a Light has no type to remember, and its
+// own color/opacity defaults are already fixed, sensible values from
+// createLightElement).
+let draftLightElement = null;
+let draftLightLayer = null;
 
 // Selecting a Group makes its target grid layer directly clickable —
 // single click adds one cell, click-and-drag paints a sweep — with no
@@ -617,18 +676,20 @@ const elements = {
   drawToggleWrap: document.querySelector("[data-draw-toggle-wrap]"),
   shapeToggle: document.querySelector("[data-shape-toggle]"),
   shapeToggleWrap: document.querySelector("[data-shape-toggle-wrap]"),
-  shapeType: document.querySelector("[data-shape-type]"),
-  shapeReadout: document.querySelector("[data-shape-readout]"),
+  shapeEffectModal: document.getElementById("orrery-shape-effect-modal"),
+  shapeEffectThumbnails: document.querySelector("[data-shape-effect-thumbnails]"),
+  shapeEffectPreview: document.querySelector("[data-shape-effect-preview]"),
+  shapeEffectPreviewLabel: document.querySelector("[data-shape-effect-preview-label]"),
+  shapeEffectControls: document.querySelector("[data-shape-effect-controls]"),
+  shapeEffectApply: document.querySelector("[data-shape-effect-apply]"),
   drawColor: document.querySelector("[data-draw-color]"),
   drawColorWrap: document.querySelector("[data-draw-color-wrap]"),
   wallToggle: document.querySelector("[data-wall-toggle]"),
   wallToggleWrap: document.querySelector("[data-wall-toggle-wrap]"),
-  wallSubMode: document.querySelector("[data-wall-submode]"),
   wallSnapToggle: document.querySelector("[data-wall-snap-toggle]"),
   wallSnapToggleWrap: document.querySelector("[data-wall-snap-toggle-wrap]"),
   lightToggle: document.querySelector("[data-light-toggle]"),
   lightToggleWrap: document.querySelector("[data-light-toggle-wrap]"),
-  lightReadout: document.querySelector("[data-light-readout]"),
   pingToggle: document.querySelector("[data-ping-toggle]"),
   pingToggleWrap: document.querySelector("[data-ping-toggle-wrap]"),
   viewToggle: document.querySelector("[data-view-toggle]"),
@@ -676,9 +737,12 @@ function renderJson() {
 
 const LAYER_SETTINGS_SCHEMA = {
   vector: [
-    { key: "strokeColor", label: "Stroke color", type: "color" },
+    // Labeled "Outline" (not "Stroke") to match Marker's own outlineColor/
+    // outlineWidth vocabulary — same underlying key (strokeColor/
+    // strokeWidth, unchanged — a display rename only, no data migration).
+    { key: "strokeColor", label: "Outline color", type: "color" },
     { key: "fillColor", label: "Fill color", type: "color" },
-    { key: "strokeWidth", label: "Stroke width", type: "number", min: 1, step: 1 },
+    { key: "strokeWidth", label: "Outline width", type: "number", min: 1, step: 1 },
   ],
   grid: [
     {
@@ -1525,11 +1589,26 @@ let armedMarkerLayerId = null;
 // token never works, but reselecting it does." Blurring here also commits
 // whatever was in that stale field, via its own existing change/blur
 // listener, exactly as if the user had clicked away from it normally.
+// BUTTON included alongside the form fields — confirmed real bug this
+// fixes: deleting a selected shape (via the selection toolbar's own
+// focused "Delete shape" button) rebuilds that toolbar as part of the same
+// setSelection() call, removing the still-focused button from the DOM out
+// from under itself. Left unblurred first, the browser's own "focused
+// element just vanished" fallback could land focus on a NEARBY toolbar
+// button (Draw a Shape/Effect) instead of cleanly resetting to the body —
+// visually indistinguishable from that button's own `.active` toggled
+// state, reading as "still in draw mode" even though shapeModeActive is
+// correctly false. Blurring here, BEFORE that removal happens, sends focus
+// to the body in a predictable way instead.
 function blurStaleActiveField() {
   const active = document.activeElement;
   if (
     active instanceof HTMLElement &&
-    (active.tagName === "INPUT" || active.tagName === "TEXTAREA" || active.tagName === "SELECT" || active.isContentEditable)
+    (active.tagName === "INPUT" ||
+      active.tagName === "TEXTAREA" ||
+      active.tagName === "SELECT" ||
+      active.tagName === "BUTTON" ||
+      active.isContentEditable)
   ) {
     active.blur();
   }
@@ -1843,6 +1922,32 @@ const LAYER_TYPE_ICONS = {
   marker: "tabler:map-pin",
 };
 
+// Icon + short label for one of a layer's own placed elements, by kind —
+// shared by the left pane's own per-layer component list (renderLayers,
+// just below) and kept deliberately independent from renderSelection's own
+// (pre-existing, unchanged) per-kind icon/title logic, which additionally
+// needs full context (preset lookup for a shape's category, point counts,
+// ...) this compact list has no room to show. `cell` (a grid layer's own
+// sparse, lazily-created touched-cell elements — ensureGridCell) is
+// deliberately never passed in here at all — see renderLayers' own filter
+// just below for why.
+function describeLayerElement(element) {
+  if (element.kind === "marker") {
+    return { icon: "tabler:map-pin", label: element.label || "Marker" };
+  }
+  if (element.kind === "shape") {
+    const preset = getPresetById(element.presetId) || getPresetById("circle");
+    return { icon: preset.kind === "particles" ? "tabler:sparkles" : "tabler:target", label: element.label || preset.label };
+  }
+  if (element.kind === "wall") {
+    return { icon: element.wallType === "door" ? "tabler:door" : "tabler:wall", label: element.wallType === "door" ? "Door" : "Wall" };
+  }
+  if (element.kind === "light") {
+    return { icon: "tabler:bulb", label: element.label || "Light" };
+  }
+  return { icon: "tabler:pencil", label: "Drawn Path" };
+}
+
 // Displayed topmost-first (reverse of state.map.layers' own array order,
 // where a LATER array index renders on top — see renderMapLayers in
 // lib/map-viewer.js, which appends in plain array order and lets normal DOM
@@ -1850,11 +1955,28 @@ const LAYER_TYPE_ICONS = {
 // convention GMs already expect: the layer nearest the top of the list is
 // the one rendered nearest the front of the map.
 // Palette-style row (icon left, larger, matching Press/Workbench's own
-// component palette) — Visible and Move up/down both moved to the right
-// pane's Selection panel once a layer is actually selected (the "Visible"
-// switch in renderLayerSelectionEditor, the move-up/move-down toolbar
-// buttons), so this list is purely "pick a layer" now, not a second place
-// those same controls live and can drift out of sync.
+// component palette) — Visible/Locked and Move up/down all live in the
+// right pane's Selection panel once a layer is actually selected (the
+// "Visible"/"Locked" switches in renderLayerSelectionEditor, the
+// move-up/move-down toolbar buttons), so this list stays purely "pick a
+// layer" for those, not a second place those same controls live and can
+// drift out of sync — the Lock icon shown here is a read-only glance
+// indicator, not a control of its own (clicking it does the same thing
+// clicking anywhere else on the row does: select the layer).
+//
+// Whichever layer currently owns the selection (the layer itself, OR one
+// of its own elements — a marker/shape/wall/light/grid-cells selection all
+// carry layerId) gets an expanded sub-list of its own placed elements
+// underneath it, each a small button in the same icon+label shape as the
+// layer row above it (describeLayerElement) — a second, always-available
+// way to reach a specific component besides clicking it on the map, which
+// a Locked layer (or one simply buried under other layers' own hit
+// targets) can make awkward. Grid cells are deliberately excluded — a grid
+// layer's own `elements` only holds whichever cells have actually been
+// touched (ensureGridCell), a set that's typically sparse but can still run
+// into the dozens/hundreds on a well-used map, and cell selection is
+// already a dedicated multi-select flow (click/shift/ctrl on the grid
+// itself, or a Group) this per-element button list isn't meant to replace.
 function renderLayers() {
   disposeTooltips(elements.layerList);
   elements.layerList.innerHTML = "";
@@ -1866,6 +1988,8 @@ function renderLayers() {
       if (hiddenLayerIds?.has(layer.id)) {
         return;
       }
+      const isLayerActive =
+        (state.selection.kind === "layer" && state.selection.id === layer.id) || state.selection.layerId === layer.id;
       const item = document.createElement("button");
       item.type = "button";
       item.className = "list-group-item list-group-item-action d-flex align-items-center gap-2";
@@ -1880,8 +2004,54 @@ function renderLayers() {
       label.className = "text-truncate";
       label.textContent = layer.name;
       item.append(icon, label);
+      if (layer.locked) {
+        const lockIcon = document.createElement("span");
+        lockIcon.className = "iconify text-body-secondary flex-shrink-0 ms-auto";
+        lockIcon.dataset.icon = "tabler:lock";
+        lockIcon.setAttribute("aria-hidden", "true");
+        item.appendChild(lockIcon);
+      }
       item.addEventListener("click", () => toggleSelection("layer", layer.id));
       elements.layerList.appendChild(item);
+
+      if (!isLayerActive || layer.type === "grid" || layer.type === "raster") {
+        return;
+      }
+      const componentList = (layer.elements || []).filter((element) => element.kind !== "cell");
+      const sublist = document.createElement("div");
+      sublist.className = "d-flex flex-column gap-1 ps-4 py-1";
+      if (componentList.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "small text-body-secondary";
+        empty.textContent = "No components yet.";
+        sublist.appendChild(empty);
+      } else {
+        componentList.forEach((element) => {
+          const { icon: componentIcon, label: componentLabel } = describeLayerElement(element);
+          const isSelected =
+            (state.selection.kind === "vector-path" || state.selection.kind === "marker-element") &&
+            state.selection.id === element.id;
+          const componentButton = document.createElement("button");
+          componentButton.type = "button";
+          componentButton.className = "list-group-item list-group-item-action d-flex align-items-center gap-2 py-1 small";
+          if (isSelected) {
+            componentButton.classList.add("active");
+          }
+          const componentIconEl = document.createElement("span");
+          componentIconEl.className = "iconify flex-shrink-0";
+          componentIconEl.dataset.icon = componentIcon;
+          componentIconEl.setAttribute("aria-hidden", "true");
+          const componentLabelEl = document.createElement("span");
+          componentLabelEl.className = "text-truncate";
+          componentLabelEl.textContent = componentLabel;
+          componentButton.append(componentIconEl, componentLabelEl);
+          componentButton.addEventListener("click", () => {
+            toggleSelection(element.kind === "marker" ? "marker-element" : "vector-path", element.id, { layerId: layer.id });
+          });
+          sublist.appendChild(componentButton);
+        });
+      }
+      elements.layerList.appendChild(sublist);
     });
 }
 
@@ -1917,6 +2087,7 @@ function moveLayer(layer, delta) {
 function duplicateLayer(sourceLayer) {
   const layer = createLayer({ type: sourceLayer.type, name: `${sourceLayer.name} (copy)` });
   layer.visible = sourceLayer.visible;
+  layer.locked = Boolean(sourceLayer.locked);
   layer.opacity = sourceLayer.opacity;
   layer.position = { ...(sourceLayer.position || { x: 0, y: 0 }) };
   layer.settings = JSON.parse(JSON.stringify(sourceLayer.settings || {}));
@@ -1945,15 +2116,26 @@ function duplicateLayerElement(element) {
   }
   if (element.kind === "shape") {
     return createVectorShapeElement({
-      shapeType: element.shapeType,
+      presetId: element.presetId,
       origin: element.origin ? { ...element.origin } : undefined,
+      // Attachment deliberately NOT copied — two elements bound to the same
+      // token would render on top of each other with no way to tell them
+      // apart via drag; a duplicate always starts freestanding at the
+      // original's own (copied) origin, same as how a duplicated Light
+      // would need the identical treatment if it ever gained this same
+      // Duplicate action (it doesn't yet, so there's nothing to keep
+      // consistent with today — this is just the correct default on its
+      // own merits).
+      label: element.label,
+      loop: element.loop,
       sizeCells: element.sizeCells,
       angleDeg: element.angleDeg,
       spreadDeg: element.spreadDeg,
       widthCells: element.widthCells,
-      strokeColor: element.strokeColor,
-      fillColor: element.fillColor,
+      values: element.values ? { ...element.values } : undefined,
       strokeWidth: element.strokeWidth,
+      opacity: element.opacity,
+      snapToGrid: element.snapToGrid,
     });
   }
   if (element.kind === "wall") {
@@ -2099,7 +2281,9 @@ function renderSelection() {
       elements.selectionTitle.textContent = layer.name;
       setSelectionTypeIcon(LAYER_TYPE_ICONS[layer.type] || "tabler:layers-intersect");
       if (elements.selectionDetails) {
-        elements.selectionDetails.textContent = `Visible: ${layer.visible ? "Yes" : "No"}`;
+        elements.selectionDetails.textContent = layer.locked
+          ? `Visible: ${layer.visible ? "Yes" : "No"} · Locked`
+          : `Visible: ${layer.visible ? "Yes" : "No"}`;
       }
       renderLayerSelectionEditor(layer);
       return;
@@ -2166,10 +2350,16 @@ function renderSelection() {
     const layer = map.layers.find((entry) => entry.id === selection.layerId);
     const pathElement = layer?.elements?.find((entry) => entry.id === selection.id);
     if (layer && pathElement && pathElement.kind === "shape") {
-      elements.selectionTitle.textContent = "AoE Shape";
-      setSelectionTypeIcon("tabler:target");
+      const selectedPreset = getPresetById(pathElement.presetId) || getPresetById("circle");
+      // kind, not category — "effects" and "weather" are both animated
+      // (kind: "particles") and share the same "Effect" title/icon; only a
+      // static geometry preset (kind: "geometry", the "shapes" category) is
+      // a plain "Shape".
+      const isEffect = selectedPreset.kind === "particles";
+      elements.selectionTitle.textContent = isEffect ? "Effect" : "Shape";
+      setSelectionTypeIcon(isEffect ? "tabler:sparkles" : "tabler:target");
       if (elements.selectionDetails) {
-        elements.selectionDetails.textContent = `${layer.name} · ${pathElement.shapeType}`;
+        elements.selectionDetails.textContent = `${layer.name} · ${selectedPreset.label}`;
       }
       renderVectorShapeSelectionEditor(layer, pathElement);
       return;
@@ -2268,6 +2458,11 @@ function renderWallSelectionEditor(layer, wallElement) {
   if (!elements.selectionEditor) {
     return;
   }
+  // True while this panel is showing the Wall tool's own not-yet-placed
+  // draft (renderArmedWallInspector) rather than a real, already-placed
+  // wall — see renderVectorShapeSelectionEditor's own isDraftShape for the
+  // identical reasoning, applied here to Wall instead of Shape.
+  const isDraftWall = wallElement === draftWallElement;
   const container = elements.selectionEditor;
   disposeTooltips(container);
   container.innerHTML = "";
@@ -2277,7 +2472,11 @@ function renderWallSelectionEditor(layer, wallElement) {
       apply();
       updateMapTimestamp(state.map);
     });
-    renderSelection();
+    if (isDraftWall) {
+      renderArmedWallInspector();
+    } else {
+      renderSelection();
+    }
     renderLayerOverlays();
     renderJson();
   }
@@ -2387,7 +2586,11 @@ function renderWallSelectionEditor(layer, wallElement) {
     initHelpSystem({ root: container });
   }
 
-  if (elements.selectionToolbar) {
+  // Suppressed entirely for a draft — see renderVectorShapeSelectionEditor's
+  // own identical Delete-button guard for the full reasoning (nothing real
+  // to delete/open/close yet, and state.selection doesn't point at the
+  // draft either).
+  if (elements.selectionToolbar && !isDraftWall) {
     const buttons = [];
     if (wallElement.wallType === "door") {
       buttons.push({
@@ -2416,6 +2619,11 @@ function renderLightSelectionEditor(layer, lightElement) {
   if (!elements.selectionEditor) {
     return;
   }
+  // True while this panel is showing the Light tool's own not-yet-placed
+  // draft (renderArmedLightInspector) rather than a real, already-placed
+  // light — see renderVectorShapeSelectionEditor's own isDraftShape for the
+  // identical reasoning, applied here to Light instead of Shape.
+  const isDraftLight = lightElement === draftLightElement;
   const container = elements.selectionEditor;
   disposeTooltips(container);
   container.innerHTML = "";
@@ -2466,11 +2674,6 @@ function renderLightSelectionEditor(layer, lightElement) {
   });
   container.appendChild(attachField);
 
-  const useRealUnits = hasMapMeasurementConfigured();
-  const unitLabel = useRealUnits ? state.map.measurement.unit : "cells";
-  const toDisplay = (cells) => (useRealUnits ? cells * state.map.measurement.scale : cells);
-  const fromDisplay = (value) => (useRealUnits ? value / state.map.measurement.scale : value);
-
   // Position X/Y — shown only while freestanding; while attached, position
   // is derived from the host marker, not directly authored (mirrors how a
   // live-Bound Workbench field's value display becomes read-only/derived
@@ -2499,16 +2702,20 @@ function renderLightSelectionEditor(layer, lightElement) {
     container.appendChild(positionRow);
   }
 
+  // Map units (cells), not the map's own real-world Scale unit — same
+  // "(cells)" vocabulary and decimal-friendly, step-1 shape Shape's own
+  // Size/Width fields use now (renderVectorShapeSelectionEditor's own
+  // header comment has the full reasoning).
   const rangeField = createCommitOnBlurNumberField(
-    `Range (${unitLabel})`,
-    Math.round(toDisplay(lightElement.rangeCells || 0)),
+    "Range (cells)",
+    lightElement.rangeCells || 0,
     (value) => {
       if (value === null) return;
       applyLightChange("light range", () => {
-        lightElement.rangeCells = Math.max(0, fromDisplay(Math.round(value)));
+        lightElement.rangeCells = Math.max(0, value);
       });
     },
-    { min: 0, step: 1 }
+    { min: 0, step: 1, dataAttr: "data-light-range-input" }
   );
   container.appendChild(createFieldRow([rangeField], { columns: 2 }));
 
@@ -2536,7 +2743,10 @@ function renderLightSelectionEditor(layer, lightElement) {
   });
   container.appendChild(createFieldRow([colorField, opacityField], { columns: 2 }));
 
-  if (elements.selectionToolbar) {
+  if (elements.selectionToolbar && !isDraftLight) {
+    // Nothing real to delete yet while drafting — state.selection doesn't
+    // point at the draft (see renderVectorShapeSelectionEditor's own
+    // identical Delete-button guard for the full reasoning).
     createToolbarButtonGroup([
       {
         action: "delete",
@@ -2554,11 +2764,17 @@ function renderLightSelectionEditor(layer, lightElement) {
 // same factory every other inspector field in this file uses) to dial in
 // the shape's size/direction precisely after the drag-to-place gesture —
 // click-drag (setupShapeTool) gets it roughly right with live feedback,
-// these fields nudge it exactly. Size/Width are edited in the map's own
-// configured measurement unit when one's set (converting through
-// state.map.measurement.scale, same as sizeCells is converted to a real
-// distance everywhere else), falling back to raw cells otherwise so the
-// fields still work on a shape placed before scale/unit were configured.
+// these fields nudge it exactly. Size/Width are edited directly in map
+// units (cells, same "(cells)" vocabulary Marker's own Size/Height fields
+// already use) rather than converted through the map's own Scale per
+// cell/Scale unit — that conversion is what PRESENTS a cell count as "10
+// ft" elsewhere (the drag-to-place readout, Position's own real-world
+// context), not what this field is edited in. `step: 1` moves the native
+// up/down spinner by a whole cell at a time (what's most common to want),
+// but typed/committed values are never rounded — a shape placed via drag
+// can easily land on a fractional cell count, and forcing it to the
+// nearest whole cell here would silently change the shape out from under
+// a GM who only meant to blur the field.
 function renderVectorShapeSelectionEditor(layer, shapeElement) {
   if (!elements.selectionEditor) {
     return;
@@ -2567,17 +2783,38 @@ function renderVectorShapeSelectionEditor(layer, shapeElement) {
   disposeTooltips(container);
   container.innerHTML = "";
 
-  const useRealUnits = hasMapMeasurementConfigured();
-  const unitLabel = useRealUnits ? state.map.measurement.unit : "cells";
-  const toDisplay = (cells) => (useRealUnits ? cells * state.map.measurement.scale : cells);
-  const fromDisplay = (value) => (useRealUnits ? value / state.map.measurement.scale : value);
+  // True while this call is rendering the Shape tool's own in-progress
+  // DRAFT (draftShapeElement's own header comment) rather than an already-
+  // placed, real selection — suppresses the Delete button (there's nothing
+  // real to delete yet) and redirects the couple of field handlers below
+  // that would otherwise call the general renderSelection() to
+  // renderArmedShapeInspector() instead, so they keep showing the draft
+  // instead of whatever state.selection happens to point to underneath it
+  // (typically the layer, from ensureDrawableVectorLayer).
+  const isDraftShape = shapeElement === draftShapeElement;
+
+  const selectedPreset = getPresetById(shapeElement.presetId) || getPresetById("circle");
+  // Presets whose geometry uses a facing direction/spread beyond plain
+  // size — Angle: cone/line (existing geometry) plus beam/cone-blast (the
+  // new particle presets that are also directional); Spread: cone plus
+  // cone-blast. Width: line only, no particle preset uses widthCells.
+  // Hardcoded lists, not a new registry field — mirrors this panel's own
+  // pre-existing style (it already hardcoded shapeType checks the same way
+  // before presets existed at all).
+  const usesAngle = ["cone", "line", "beam", "cone-blast"].includes(selectedPreset.id);
+  const usesSpread = ["cone", "cone-blast"].includes(selectedPreset.id);
+  const usesWidth = selectedPreset.id === "line";
 
   // No renderSelection() — same reasoning as Layer's own
   // applyLayerPositionChange (see createCommitOnBlurNumberField's comment):
-  // shapeType (the only thing that decides which of these fields even show)
+  // presetId (the only thing that decides which of these fields even show)
   // never changes from editing Size/Angle/Spread/Width, so there's nothing
   // in this panel that needs rebuilding in response, and doing it anyway
-  // only risked destroying the very input being edited.
+  // only risked destroying the very input being edited. (Changing the
+  // preset ITSELF, via the new "Change Shape/Effect" button below, DOES
+  // need a full rebuild — that button explicitly calls renderSelection()
+  // itself after committing, rather than trying to patch this panel in
+  // place.)
   function applyShapeChange(label, apply) {
     recordHistory(label, () => {
       apply();
@@ -2587,67 +2824,152 @@ function renderVectorShapeSelectionEditor(layer, shapeElement) {
     renderJson();
   }
 
-  // Position X/Y edit the same content-space pixel coordinate Layer
-  // Position X/Y already exposes (markerPositionToLocalPixel/
-  // localPixelToMarkerPosition — the exact conversion drag-to-place and
-  // drag-to-move already round-trip through), not shapeElement.origin's
-  // raw stored shape directly — origin is {x,y} for image/canvas maps but
-  // {lat,lng} for tile ones, and this keeps the field meaning "pixels from
-  // the map's own center" either way, same as every other on-map position
-  // in this panel.
-  const originPixel = markerPositionToLocalPixel(baseMapManager, state.map, shapeElement.origin);
-  const positionRow = createFieldRow(
-    [
-      createCommitOnBlurNumberField("Position X", Math.round(originPixel.x), (value) => {
-        if (value === null) return;
-        applyShapeChange("shape position", () => {
-          const next = markerPositionToLocalPixel(baseMapManager, state.map, shapeElement.origin);
-          shapeElement.origin = localPixelToMarkerPosition(baseMapManager, state.map, { x: value, y: next.y });
-        });
-      }),
-      createCommitOnBlurNumberField("Position Y", Math.round(originPixel.y), (value) => {
-        if (value === null) return;
-        applyShapeChange("shape position", () => {
-          const next = markerPositionToLocalPixel(baseMapManager, state.map, shapeElement.origin);
-          shapeElement.origin = localPixelToMarkerPosition(baseMapManager, state.map, { x: next.x, y: value });
-        });
-      }),
-    ],
-    { columns: 2 }
-  );
-  container.appendChild(positionRow);
+  // Opens the picker modal (Part 3) on this exact element — the only way to
+  // change WHICH shape/effect a placed element is; the toolbar's own
+  // pre-placement type select only ever affects new placements. Same
+  // input+button shape as Press/Workbench's own Image component field
+  // (press/index.html's `data-inspector-image-field`) — a readonly text
+  // input showing the current pick, plus a button that opens the modal,
+  // rather than a standalone button with no indication of what's selected.
+  const presetGroup = document.createElement("div");
+  presetGroup.className = "input-group";
+  const presetField = createFormFloatingField({ label: "Shape/Effect", readonly: true });
+  const presetInput = presetField.querySelector("input");
+  presetInput.value = selectedPreset.label;
+  presetGroup.appendChild(presetField);
+  const changePresetButton = createIconButton({
+    icon: "tabler:replace",
+    variant: "outline-secondary",
+    label: "Choose a different shape or effect, and edit its colors",
+    onClick: () => openShapeEffectModal(layer, shapeElement),
+  });
+  presetGroup.appendChild(changePresetButton);
+  container.appendChild(presetGroup);
 
-  // Whole-unit granularity, not fractional — AoE templates generally land
-  // on whole real-world-unit increments (5ft steps in most D&D-style
-  // systems); a raw cells*scale conversion produced fiddly decimals like
-  // "13.33 ft" for no real benefit. Same Math.round(...*scale)/scale shape
-  // as setupShapeTool's own snapCellsToWholeUnit, applied here at commit
-  // time instead of drag time.
+  // Attach to Token — same exact capability/wiring Lights already have
+  // (renderLightSelectionEditor's own identical block just above in this
+  // file, map-viewer.js's resolveElementOrigin) — an attached shape/effect
+  // tracks that marker's live position every render instead of its own
+  // stored origin, moving with it as it's dragged. Lists every marker
+  // across every marker layer on the map, not just this one layer's own.
+  const attachField = createFormFloatingField({ type: "select", label: "Attach to Token" });
+  const attachSelect = attachField.querySelector("select");
+  const noneOption = document.createElement("option");
+  noneOption.value = "";
+  noneOption.textContent = "None (freestanding)";
+  attachSelect.appendChild(noneOption);
+  (state.map.layers || []).forEach((markerLayer) => {
+    if (markerLayer.type !== "marker") return;
+    (markerLayer.elements || []).forEach((marker) => {
+      if (marker.kind !== "marker") return;
+      const option = document.createElement("option");
+      option.value = marker.id;
+      option.textContent = marker.label || marker.refKind || "Marker";
+      attachSelect.appendChild(option);
+    });
+  });
+  attachSelect.value = shapeElement.attachedMarkerId || "";
+  attachSelect.addEventListener("change", () => {
+    applyShapeChange("shape attach to token", () => {
+      shapeElement.attachedMarkerId = attachSelect.value;
+    });
+    // Position (shown/hidden based on attachment) needs a full rebuild,
+    // same "changing what this panel even shows" reasoning the preset
+    // modal's own Apply handler already follows. isDraftShape's own comment
+    // has the full reasoning for why this isn't always renderSelection().
+    if (isDraftShape) {
+      renderArmedShapeInspector();
+    } else {
+      renderSelection();
+    }
+  });
+  container.appendChild(attachField);
+
+  // Label — every shape/effect can carry one now (previously particles
+  // only), letting a GM name ANY placed element ("North Trap Zone," not
+  // just "Boss Burst") for its own sake, not just for the particle-only
+  // re-trigger lookup (findEffectElementByLabel, map.js) that originally
+  // motivated it. Sits right below Attach to Token — identifying/organizing
+  // fields, ahead of the geometry/color fields below.
+  const labelField = createFormFloatingField({ label: "Label (optional)" });
+  const labelInput = labelField.querySelector("input");
+  labelInput.value = shapeElement.label || "";
+  labelInput.addEventListener("change", () => {
+    applyShapeChange("shape label", () => {
+      shapeElement.label = labelInput.value.trim();
+    });
+  });
+  container.appendChild(labelField);
+
+  // Position X/Y — shown only while freestanding; while attached, position
+  // is derived from the host marker, not directly authored, same as
+  // Light's own identical gate just above in this file. Edits the same
+  // content-space pixel coordinate Layer Position X/Y already exposes
+  // (markerPositionToLocalPixel/localPixelToMarkerPosition — the exact
+  // conversion drag-to-place and drag-to-move already round-trip through),
+  // not shapeElement.origin's raw stored shape directly — origin is {x,y}
+  // for image/canvas maps but {lat,lng} for tile ones, and this keeps the
+  // field meaning "pixels from the map's own center" either way, same as
+  // every other on-map position in this panel.
+  if (!shapeElement.attachedMarkerId) {
+    const originPixel = markerPositionToLocalPixel(baseMapManager, state.map, shapeElement.origin);
+    const positionRow = createFieldRow(
+      [
+        createCommitOnBlurNumberField("Position X", Math.round(originPixel.x), (value) => {
+          if (value === null) return;
+          applyShapeChange("shape position", () => {
+            const next = markerPositionToLocalPixel(baseMapManager, state.map, shapeElement.origin);
+            shapeElement.origin = localPixelToMarkerPosition(baseMapManager, state.map, { x: value, y: next.y });
+          });
+        }),
+        createCommitOnBlurNumberField("Position Y", Math.round(originPixel.y), (value) => {
+          if (value === null) return;
+          applyShapeChange("shape position", () => {
+            const next = markerPositionToLocalPixel(baseMapManager, state.map, shapeElement.origin);
+            shapeElement.origin = localPixelToMarkerPosition(baseMapManager, state.map, { x: next.x, y: value });
+          });
+        }),
+      ],
+      { columns: 2 }
+    );
+    container.appendChild(positionRow);
+  }
+
+  // dataAttr on Size/Angle only — the two fields the Shape tool's own
+  // drag gesture updates LIVE (setupShapeTool's own onMove), by writing
+  // straight into these inputs' own .value via this same attribute rather
+  // than rebuilding the whole panel on every pointermove tick. Harmless,
+  // unused attribute on an already-placed shape's own identical fields.
   const fields = [
     createCommitOnBlurNumberField(
-      shapeElement.shapeType === "square" ? `Side (${unitLabel})` : `Size (${unitLabel})`,
-      Math.round(toDisplay(shapeElement.sizeCells || 0)),
+      selectedPreset.id === "square" ? "Side (cells)" : "Size (cells)",
+      shapeElement.sizeCells || 0,
       (value) => {
         if (value === null) return;
         applyShapeChange("shape size", () => {
-          shapeElement.sizeCells = Math.max(0, fromDisplay(Math.round(value)));
+          shapeElement.sizeCells = Math.max(0, value);
         });
       },
-      { min: 0, step: 1 }
+      { min: 0, step: 1, dataAttr: "data-shape-size-input" }
     ),
   ];
 
-  if (shapeElement.shapeType === "cone" || shapeElement.shapeType === "line") {
+  if (usesAngle) {
     fields.push(
-      createCommitOnBlurNumberField("Angle (degrees)", Math.round(shapeElement.angleDeg || 0), (value) => {
-        if (value === null) return;
-        applyShapeChange("shape angle", () => {
-          shapeElement.angleDeg = value;
-        });
-      })
+      createCommitOnBlurNumberField(
+        "Angle (degrees)",
+        Math.round(shapeElement.angleDeg || 0),
+        (value) => {
+          if (value === null) return;
+          applyShapeChange("shape angle", () => {
+            shapeElement.angleDeg = value;
+          });
+        },
+        { dataAttr: "data-shape-angle-input" }
+      )
     );
   }
-  if (shapeElement.shapeType === "cone") {
+  if (usesSpread) {
     fields.push(
       createCommitOnBlurNumberField("Spread (degrees)", Math.round(shapeElement.spreadDeg ?? 53), (value) => {
         if (value === null) return;
@@ -2657,15 +2979,15 @@ function renderVectorShapeSelectionEditor(layer, shapeElement) {
       }, { min: 1, max: 360 })
     );
   }
-  if (shapeElement.shapeType === "line") {
+  if (usesWidth) {
     fields.push(
       createCommitOnBlurNumberField(
-        `Width (${unitLabel})`,
-        Math.round(toDisplay(shapeElement.widthCells || 0)),
+        "Width (cells)",
+        shapeElement.widthCells || 0,
         (value) => {
           if (value === null) return;
           applyShapeChange("shape width", () => {
-            shapeElement.widthCells = Math.max(0, fromDisplay(Math.round(value)));
+            shapeElement.widthCells = Math.max(0, value);
           });
         },
         { min: 0, step: 1 }
@@ -2673,64 +2995,42 @@ function renderVectorShapeSelectionEditor(layer, shapeElement) {
     );
   }
 
-  container.appendChild(createFieldRow(fields, { columns: 2 }));
+  // Outline width — a geometry-only concept (a particle preset draws its
+  // own internal styling, not a generic stroke around a shape) — joins the
+  // SAME `fields` pool as Size/Angle/Spread/Width rather than getting its
+  // own separate single-field row: a lone half-width field left by itself
+  // (an odd-length `fields` array — Circle/Square's own Size-alone case
+  // most visibly) broke to a new line with an awkward empty gap next to it.
+  // Every geometry preset's own field count (Size, +Angle/Spread/Width as
+  // usesAngle/usesSpread/usesWidth apply) is odd on its own but becomes
+  // EVEN once Outline width joins it — Circle/Square: 1+1=2, Cone: 3+1=4,
+  // Line: 3+1=4 — so chunking the whole pool by twos below always pairs
+  // cleanly for every existing geometry preset.
+  if (selectedPreset.kind === "geometry") {
+    fields.push(
+      createCommitOnBlurNumberField(
+        "Outline width",
+        shapeElement.strokeWidth || 2,
+        (value) => {
+          if (value === null) return;
+          applyShapeChange("shape outline width", () => {
+            shapeElement.strokeWidth = Math.max(0, value);
+          });
+        },
+        { min: 0, step: 1 }
+      )
+    );
+  }
+  while (fields.length) {
+    container.appendChild(createFieldRow(fields.splice(0, 2), { columns: 2 }));
+  }
 
-  // Fill color/opacity and outline color/width — every one of these always
-  // has a real, concrete value on shapeElement already (createVectorShapeElement's
-  // own "no invisible defaults" rule), so these fields just reflect what's
-  // actually there, never a mystery blank waiting on a render-time fallback.
-  const fillColorField = createCompactField({
-    type: "color",
-    label: "Fill color",
-    controlClass: "form-control form-control-color",
-  });
-  fillColorField.querySelector("input").value = shapeElement.fillColor;
-  fillColorField.querySelector("input").addEventListener("change", (event) => {
-    applyShapeChange("shape fill color", () => {
-      shapeElement.fillColor = event.target.value;
-    });
-  });
-
-  // Same range-slider shape every other Opacity in this suite uses
-  // (buildLayerOpacityField's own — 0-1, step 0.05, form-range), not a
-  // number field — this is the one established "opacity" control
-  // vocabulary, not a shape-specific deviation.
-  const opacityField = createCompactField({ type: "range", label: "Opacity", controlClass: "form-range", min: 0, max: 1, step: 0.05 });
-  const opacityInput = opacityField.querySelector("input");
-  opacityInput.value = Number.isFinite(shapeElement.opacity) ? shapeElement.opacity : 0.5;
-  opacityInput.addEventListener("change", () => {
-    const value = Number(opacityInput.value);
-    if (!Number.isFinite(value)) return;
-    applyShapeChange("shape opacity", () => {
-      shapeElement.opacity = value;
-    });
-  });
-  container.appendChild(createFieldRow([fillColorField, opacityField], { columns: 2 }));
-
-  const outlineColorField = createCompactField({
-    type: "color",
-    label: "Outline color",
-    controlClass: "form-control form-control-color",
-  });
-  outlineColorField.querySelector("input").value = shapeElement.strokeColor;
-  outlineColorField.querySelector("input").addEventListener("change", (event) => {
-    applyShapeChange("shape outline color", () => {
-      shapeElement.strokeColor = event.target.value;
-    });
-  });
-
-  const outlineWidthField = createCommitOnBlurNumberField(
-    "Outline width",
-    shapeElement.strokeWidth || 2,
-    (value) => {
-      if (value === null) return;
-      applyShapeChange("shape outline width", () => {
-        shapeElement.strokeWidth = Math.max(0, value);
-      });
-    },
-    { min: 0, step: 1 }
-  );
-  container.appendChild(createFieldRow([outlineColorField, outlineWidthField], { columns: 2 }));
+  // Fill/Outline/Opacity moved into the Shape/Effect picker modal (Part 3)
+  // alongside the rest of a preset's own colorSlots/params — editing them
+  // here too would just be the same three values duplicated in two places.
+  // The "Change Shape/Effect" input+button above is the one place a preset's
+  // colors/opacity are set now, whether or not the preset itself is also
+  // being changed.
 
   const snapField = createCheckField({
     id: `shape-snap-${shapeElement.id}`,
@@ -2753,11 +3053,56 @@ function renderVectorShapeSelectionEditor(layer, shapeElement) {
   });
   container.appendChild(snapField);
 
+  // Loop/Play — only meaningful for a particle preset (Effect); a plain
+  // geometry Shape has neither concept. Loop decides whether it just plays
+  // continuously (true, the "campfire" case, nothing to trigger) or holds
+  // at rest after each cycle until explicitly replayed (false, the "spell
+  // blast" case) — Label (now shared by every shape/effect, set right below
+  // Attach to Token above) is what a re-trigger looks a resting Effect up
+  // by, on top of just being generally useful for naming any placed thing.
+  if (selectedPreset.kind === "particles") {
+    const loopField = createCheckField({
+      id: `shape-loop-${shapeElement.id}`,
+      label: "Loop continuously",
+      switchStyle: true,
+    });
+    const loopInput = loopField.querySelector("input");
+    loopInput.checked = shapeElement.loop !== false;
+    loopInput.addEventListener("change", () => {
+      applyShapeChange("effect loop", () => {
+        shapeElement.loop = loopInput.checked;
+      });
+      // Loop on/off changes whether the Play button below even applies —
+      // same full-rebuild reasoning every other panel-shape-changing
+      // control here already follows.
+      if (isDraftShape) {
+        renderArmedShapeInspector();
+      } else {
+        renderSelection();
+      }
+    });
+    container.appendChild(loopField);
+
+    if (!shapeElement.loop) {
+      const playButton = document.createElement("button");
+      playButton.type = "button";
+      playButton.className = "btn btn-outline-primary btn-sm align-self-start";
+      playButton.textContent = "Play";
+      playButton.addEventListener("click", () => triggerShapeEffectElement(layer, shapeElement));
+      container.appendChild(playButton);
+    }
+  }
+
   // Same shared icon-toolbar factory/mount point Layer selection uses
   // (renderLayerSelectionEditor) instead of a standalone inline button —
   // renderSelection() already clears data-selection-toolbar-mount before
   // every render, so only whichever selection kind is current populates it.
-  if (elements.selectionToolbar) {
+  // Suppressed entirely for a draft (isDraftShape) — there's nothing real
+  // to delete yet, and state.selection doesn't even point at this element
+  // (deleteCurrentSelection would act on whatever it DOES point to instead,
+  // typically the layer — a real, confirmed-by-inspection footgun this
+  // avoids outright rather than hoping nobody clicks it).
+  if (elements.selectionToolbar && !isDraftShape) {
     createToolbarButtonGroup([
       {
         action: "delete",
@@ -2768,6 +3113,11 @@ function renderVectorShapeSelectionEditor(layer, shapeElement) {
     ]).forEach((button) => elements.selectionToolbar.appendChild(button));
     refreshTooltips(elements.selectionToolbar);
   }
+  // Activates the "Change Shape/Effect" button's own data-bs-title tooltip
+  // (createIconButton's `label` sets the attribute, but nothing initializes
+  // a live Bootstrap Tooltip off it until this runs) — was previously only
+  // called for the toolbar above, never for this panel's own content.
+  refreshTooltips(container);
 }
 
 function clearSelectionEditor() {
@@ -3275,6 +3625,27 @@ function isLayerFallbackInteractive(layer) {
 // already covers the selected-layer case as one of its own branches).
 function isMarkerDraggableForFullAccess(layer) {
   return isLayerFallbackInteractive(layer);
+}
+
+// Shapes & Effects plan, Part 5 — replays a placed, non-looping particle
+// effect's run() cycle from its own inspector "Play" button. Not a data
+// change (nothing about the element itself is different after this), so no
+// recordHistory/applyShapeChange — just resets its "already played" state
+// and forces a re-render, same mechanism triggerElementById (map.js) uses
+// for a remote-delivered trigger, then broadcasts so the rest of the table
+// sees it too. Plays locally first, same "don't make your own feedback
+// depend on the full SSE round-trip" reasoning the ping tool's own
+// pointerdown handler already follows just below.
+function triggerShapeEffectElement(layer, shapeElement) {
+  resetParticleEffectPlayState(shapeElement.id);
+  renderLayerOverlays();
+  const groupId = getActiveCampaignGroupId();
+  if (!groupId || !dataManager) return;
+  void dataManager
+    .postEffectBroadcast({ groupId, mapId: state.map.id, elementId: shapeElement.id })
+    .catch((error) => {
+      status.show(error.message || "Unable to broadcast this effect.", { type: "error", timeout: 3000 });
+    });
 }
 
 function renderLayerOverlays() {
@@ -4244,17 +4615,17 @@ function renderLayerSelectionEditor(layer) {
     );
   }
 
-  // Opacity stays its own row for vector/raster layers, but condenses into
-  // a shared row with Color (marker) / Line color (grid) below instead.
-  if (!isMarkerLayer && !isGridLayer) {
+  // Opacity stays its own row for raster layers only (nothing to pair it
+  // with there) — every other layer type condenses it into a shared row
+  // with Color (marker) / Line color (grid) / Fill color (vector) below
+  // instead.
+  if (layer.type === "raster") {
     container.appendChild(buildLayerOpacityField(layer));
   }
 
   const settingsSchema = LAYER_SETTINGS_SCHEMA[layer.type] || [];
   const schemaField = (key) => settingsSchema.find((field) => field.key === key);
   if (isMarkerLayer) {
-    const colorField = buildLayerSettingField(layer, schemaField("color"), { variant: "compact" });
-    container.appendChild(createFieldRow([colorField, buildLayerOpacityField(layer)], { columns: 2 }));
     const sizeField = buildLayerSettingField(layer, schemaField("size"), { variant: "half" });
     container.appendChild(
       createFieldRow(
@@ -4263,6 +4634,8 @@ function renderLayerSelectionEditor(layer) {
       )
     );
     container.appendChild(buildMarkerIconField(layer));
+    const colorField = buildLayerSettingField(layer, schemaField("color"), { variant: "compact" });
+    container.appendChild(createFieldRow([colorField, buildLayerOpacityField(layer)], { columns: 2 }));
     const outlineColorField = buildLayerSettingField(layer, schemaField("outlineColor"), { variant: "compact" });
     const outlineWidthField = buildLayerSettingField(layer, schemaField("outlineWidth"), { variant: "half" });
     container.appendChild(createFieldRow([outlineColorField, outlineWidthField], { columns: 2 }));
@@ -4274,10 +4647,11 @@ function renderLayerSelectionEditor(layer) {
     container.appendChild(createFieldRow([lineColorField, buildLayerOpacityField(layer)], { columns: 2 }));
     container.appendChild(buildFogOfWarFields(layer));
   } else if (layer.type === "vector") {
-    const strokeColorField = buildLayerSettingField(layer, schemaField("strokeColor"), { variant: "compact" });
     const fillColorField = buildLayerSettingField(layer, schemaField("fillColor"), { variant: "compact" });
-    container.appendChild(createFieldRow([strokeColorField, fillColorField], { columns: 2 }));
-    container.appendChild(buildLayerSettingField(layer, schemaField("strokeWidth"), { variant: "floating" }));
+    container.appendChild(createFieldRow([fillColorField, buildLayerOpacityField(layer)], { columns: 2 }));
+    const outlineColorField = buildLayerSettingField(layer, schemaField("strokeColor"), { variant: "compact" });
+    const outlineWidthField = buildLayerSettingField(layer, schemaField("strokeWidth"), { variant: "half" });
+    container.appendChild(createFieldRow([outlineColorField, outlineWidthField], { columns: 2 }));
   } else if (layer.type === "raster") {
     container.appendChild(buildLayerSettingField(layer, schemaField("src"), { variant: "floating" }));
     const widthField = createDimensionField("Width", layer.settings?.width, (value) => {
@@ -4395,6 +4769,24 @@ function renderLayerSelectionEditor(layer) {
     });
   });
   container.appendChild(bottomVisibilityField);
+
+  // Independent of Visible — a locked layer keeps rendering (and, for a
+  // looping Effect, keeps animating) exactly as before; it just stops
+  // eating clicks/drags aimed at it (map-viewer.js's own renderMapLayers,
+  // createLayer's own `locked` field comment has the motivating case: a
+  // full-map Weather effect's own hit target sitting on top of every
+  // marker/shape underneath it). Selecting THIS layer — including to flip
+  // this switch back off — is never itself blocked by its own lock; only
+  // clicking its contents on the map is.
+  const lockedField = createCheckField({ id: `layer-locked-${layer.id}`, label: "Locked", switchStyle: true });
+  const lockedInput = lockedField.querySelector("input");
+  lockedInput.checked = Boolean(layer.locked);
+  lockedInput.addEventListener("change", () => {
+    applyLayerChange("layer locked", () => {
+      layer.locked = lockedInput.checked;
+    });
+  });
+  container.appendChild(lockedField);
 
   // Same icon-toolbar factory Press's own Component Inspector uses for
   // this exact "move up/down, duplicate, delete the selected thing" set —
@@ -4608,11 +5000,11 @@ function createGridCellPropertyRow(layer, selectionCoords, key, value) {
 // page, ...).
 const MARKER_REFERENCE_KINDS = [
   { id: "character", label: "Character" },
-  { id: "effect", label: "Effect" },
   { id: "location", label: "Location" },
   { id: "macro", label: "Macro" },
   { id: "monster", label: "Monster" },
   { id: "npc", label: "NPC" },
+  { id: "wonder", label: "Wonder" },
 ];
 
 // A marker's own Vision Range can be Bound to a field on its linked
@@ -4665,6 +5057,11 @@ function ensureCharacterPayloadCached(refId, onLoaded) {
       onLoaded?.();
     })
     .catch(() => {
+      // See map.js's own ensureCharacterPayloadCached comment — stamping the
+      // timestamp on failure too is what makes the staleness window apply to
+      // a permanently-inaccessible/deleted reference, not just a successful
+      // fetch, preventing a retry-every-render loop.
+      characterPayloadFetchedAt.set(refId, Date.now());
       pendingCharacterFetches.delete(refId);
     });
 }
@@ -4990,17 +5387,19 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
 
   // Multiplier on the grid's own cell size (createMarkerElement/
   // createMarkerDot) — 1 is a normal one-square token; a Large creature
-  // (D&D 5e) is 2, Huge is 3, etc. Whole-number steps only, same "AoE
-  // templates land on whole increments" reasoning setupShapeTool's own
-  // snapCellsToWholeUnit follows — a fractional token size isn't a real
-  // VTT convention the way a fractional AoE range sometimes is.
+  // (D&D 5e) is 2, Huge is 3, etc. `step: 1` moves the native up/down
+  // spinner by a whole cell (what's most common — most tokens really are
+  // whole-cell sizes), but a typed/committed value is never rounded — a
+  // fractional token size is unusual but real (a Tiny creature sharing a
+  // square, say), and rounding it away here would silently change the
+  // marker just from blurring the field.
   const sizeField = createCommitOnBlurNumberField(
     "Size (cells)",
     Number.isFinite(markerElement.sizeCells) && markerElement.sizeCells > 0 ? markerElement.sizeCells : 1,
     (value) => {
       if (value === null) return;
       applyMarkerElementChange("marker size", () => {
-        markerElement.sizeCells = Math.max(1, Math.round(value));
+        markerElement.sizeCells = Math.max(1, value);
       });
     },
     { min: 1, step: 1 }
@@ -5011,14 +5410,14 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
   // No `min` (unlike Size, which can't go below 1) — negative is a real,
   // meaningful value here, not an error. See createMarkerDot's own comment
   // for the two directions' distinct visual treatment (shadow vs. dashed
-  // outline).
+  // outline). Same decimal-friendly, step-1 shape as Size just above.
   const heightField = createCommitOnBlurNumberField(
     "Height (cells)",
     Number.isFinite(markerElement.heightCells) ? markerElement.heightCells : 0,
     (value) => {
       if (value === null) return;
       applyMarkerElementChange("marker height", () => {
-        markerElement.heightCells = Math.round(value);
+        markerElement.heightCells = value;
       });
     },
     { step: 1 }
@@ -6246,15 +6645,21 @@ function renderGroupSelectionEditor(group) {
 // A short, human-readable label for any placed element — shared by the View
 // editor's own "Visible Components" checklist below (the only current
 // caller). Mirrors the exact labels renderSelection already uses for each
-// kind's own inspector title (marker: "tabler:map-pin", shape: "AoE Shape",
-// wall/door, light, plain path: "Drawn Path" — see that function's own
-// per-kind branches), so a GM sees the same names here as everywhere else
-// in this tool.
+// kind's own inspector title (marker: its own label, shape/effect: its own
+// label or preset name, wall/door, light, plain path: "Drawn Path" — see
+// that function's own per-kind branches), so a GM sees the same names here
+// as everywhere else in this tool.
 function describeMapElementKind(element) {
   if (element.kind === "marker") return element.label || "Marker";
   if (element.kind === "shape") {
-    const type = typeof element.shapeType === "string" && element.shapeType ? element.shapeType : "";
-    return type ? `${type[0].toUpperCase()}${type.slice(1)} Shape` : "AoE Shape";
+    const preset = getPresetById(element.presetId) || getPresetById("circle");
+    // A named Effect shows its own label (mirrors the marker branch just
+    // above) — a GM's own "Boss Burst" is far more useful in this checklist
+    // than the generic preset name every OTHER instance of the same preset
+    // would otherwise show identically. Falls back to the preset's own
+    // label for a plain Shape (which has no label concept) or an unlabeled
+    // Effect.
+    return element.label || preset.label;
   }
   if (element.kind === "wall") return element.wallType === "door" ? "Door" : "Wall";
   if (element.kind === "light") return "Light";
@@ -6635,6 +7040,7 @@ function setupViewEvents() {
   setupMeasureTool();
   setupDrawTool();
   setupShapeTool();
+  initShapeEffectModal();
   setupWallTool();
   setupLightTool();
   setupPingTool();
@@ -6705,11 +7111,12 @@ function setDrawModeActive(active) {
   renderLayerOverlays();
 }
 
-// The shared drawColor swatch only makes sense while Draw or Shape is
-// actually armed — same "only show a tool's own contextual control while
-// it's active" precedent as the Shape Type select (elements.shapeType).
+// The shared drawColor swatch only makes sense while Draw is actually
+// armed — Shape no longer uses it (drawColor's own declaration comment has
+// the full reasoning; its own colors live in the right-pane Inspector now,
+// not this toolbar swatch).
 function updateDrawColorVisibility() {
-  elements.drawColorWrap?.classList.toggle("d-none", !(drawModeActive || shapeModeActive));
+  elements.drawColorWrap?.classList.toggle("d-none", !drawModeActive);
 }
 
 // Freehand drawing on the currently-selected vector layer — replaces the
@@ -6845,11 +7252,80 @@ function updateWallAvailability() {
   refreshTooltips(tooltipTarget.parentElement || document);
 }
 
+// Same reasoning as setDrawModeActive/setShapeModeActive — plus, like Shape/
+// Light, Wall has a right-pane Inspector view of its own now
+// (renderArmedWallInspector) that has to take over/hand back the panel
+// exactly when arming/disarming does. Creates/discards draftWallElement
+// here — the ONE place its whole lifecycle is owned (see its own
+// declaration comment). No longer takes the standalone toolbar dropdown
+// (removed — Type is now edited straight from the armed inspector, the
+// exact same field an already-placed wall's own editor already had).
+function setWallModeActive(active) {
+  wallModeActive = active;
+  elements.wallToggle?.classList.toggle("active", wallModeActive);
+  elements.wallToggle?.setAttribute("aria-pressed", wallModeActive ? "true" : "false");
+  mapContainer?.classList.toggle("orrery-walling", wallModeActive);
+  elements.wallSnapToggleWrap?.classList.toggle("d-none", !wallModeActive);
+  if (!wallModeActive) teardownWallGesture();
+  // Re-render so onVectorPathClick's own wallModeActive gate (see
+  // renderLayerOverlays) picks up the change immediately — same reasoning
+  // setupDrawTool's own toggle handler already documents.
+  renderLayerOverlays();
+  if (wallModeActive) {
+    draftWallLayer = ensureDrawableVectorLayer();
+    draftWallElement = createWallElement({
+      wallType: lastWallType,
+      strokeColor: draftWallLayer.settings?.strokeColor,
+      strokeWidth: draftWallLayer.settings?.strokeWidth,
+      snapToGrid: wallSnapEnabled,
+    });
+    renderArmedWallInspector();
+  } else {
+    if (draftWallElement) {
+      lastWallType = draftWallElement.wallType;
+    }
+    draftWallElement = null;
+    draftWallLayer = null;
+    renderSelection();
+  }
+}
+
+// The right-pane Inspector view shown for the ENTIRE time the Wall tool is
+// armed — draftWallElement's own declaration comment has the full
+// reasoning for why this renders through the EXACT SAME
+// renderWallSelectionEditor an already-placed wall uses (Type, Stroke
+// color/width, Snap to Grid, and — once Type is switched to Door — Secret/
+// Locked), rather than a separate simplified view. Only this wrapper's own
+// title/details/icon (and clearing the toolbar first, which
+// renderSelection() normally does but this bypasses) are specific to the
+// "drawing" state; the editor body itself is 100% the shared function.
+function renderArmedWallInspector() {
+  if (!draftWallElement || !draftWallLayer) return;
+  if (elements.selectionToolbar) {
+    disposeTooltips(elements.selectionToolbar);
+    elements.selectionToolbar.innerHTML = "";
+  }
+  if (elements.selectionTitle) {
+    elements.selectionTitle.textContent = draftWallElement.wallType === "door" ? "Door" : "Wall";
+  }
+  setSelectionTypeIcon(draftWallElement.wallType === "door" ? "tabler:door" : "tabler:wall");
+  if (elements.selectionDetails) {
+    elements.selectionDetails.textContent = `${draftWallLayer.name} · Drawing…`;
+  }
+  renderWallSelectionEditor(draftWallLayer, draftWallElement);
+  setPanelFocus(true);
+}
+
 // Tears down whatever's currently in progress (removes the live preview,
 // re-enables map pan/zoom) and clears wallGesture — used both for an
-// explicit cancel (Escape, switching sub-mode, turning the tool off) and a
-// successful commit (see commitWallGesture, which calls this after pushing
-// the finished element).
+// explicit cancel (Escape, turning the tool off) and a successful commit
+// (see commitWallGesture, which calls this after pushing the finished
+// element). Deliberately does NOT touch draftWallElement.points itself —
+// see its own two cancel-path callers for why (Escape resets it explicitly;
+// Backspace-to-zero already emptied it before calling this); resetting it
+// unconditionally here would also wipe out a just-committed element, since
+// commitWallGesture's own placedElement is the SAME object as
+// draftWallElement at the moment this runs.
 function teardownWallGesture() {
   wallGesture?.preview?.remove();
   if (wallGesture) {
@@ -6869,8 +7345,8 @@ function buildWallGesturePreview() {
   preview.style.pointerEvents = "none";
   const polyline = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
   polyline.setAttribute("fill", "none");
-  polyline.setAttribute("stroke", wallGesture.layer.settings?.strokeColor || "#0f172a");
-  polyline.setAttribute("stroke-width", String(wallGesture.layer.settings?.strokeWidth || 3));
+  polyline.setAttribute("stroke", draftWallElement.strokeColor || draftWallLayer.settings?.strokeColor || "#0f172a");
+  polyline.setAttribute("stroke-width", String(draftWallElement.strokeWidth || draftWallLayer.settings?.strokeWidth || 3));
   polyline.setAttribute("stroke-linecap", "round");
   polyline.setAttribute("stroke-linejoin", "round");
   polyline.setAttribute("stroke-dasharray", "6 4");
@@ -6900,35 +7376,33 @@ function updateWallGesturePreview(pointerEvent) {
   const overlay = baseMapManager.getOverlayContainer();
   let cursorPosition = pointerEvent ? resolveClickPosition(baseMapManager, state.map, pointerEvent, overlay) : null;
   if (cursorPosition && wallSnapEnabled) {
-    cursorPosition = snapShapeOriginToGrid(cursorPosition, wallGesture.layer);
+    cursorPosition = snapShapeOriginToGrid(cursorPosition, draftWallLayer);
   }
-  const allPoints = cursorPosition ? [...wallGesture.points, cursorPosition] : wallGesture.points;
+  const allPoints = cursorPosition ? [...draftWallElement.points, cursorPosition] : draftWallElement.points;
   const pixelPoints = allPoints.map((point) => markerPositionToLocalPixel(baseMapManager, state.map, point));
   wallGesture.polyline.setAttribute("points", pixelPoints.map((point) => `${point.x},${point.y}`).join(" "));
 }
 
 function commitWallGesture() {
-  if (!wallGesture || wallGesture.points.length < 2) {
+  if (!wallGesture || draftWallElement.points.length < 2) {
     teardownWallGesture();
     return;
   }
-  const { layer, points } = wallGesture;
+  const placedElement = draftWallElement;
+  const layer = draftWallLayer;
   recordHistory("draw wall", () => {
     layer.elements = layer.elements || [];
-    layer.elements.push(
-      createWallElement({
-        points,
-        wallType: wallSubMode,
-        strokeColor: layer.settings?.strokeColor,
-        strokeWidth: layer.settings?.strokeWidth,
-        snapToGrid: wallSnapEnabled,
-      })
-    );
+    layer.elements.push(placedElement);
     updateMapTimestamp(state.map);
   });
   teardownWallGesture();
-  renderLayerOverlays();
   renderJson();
+  // Single-shot, and selects the just-placed wall immediately — matches
+  // Shape/Light's own identical behavior (setupShapeTool's own onUp).
+  // Clears draftWallElement, but placedElement still references the same
+  // (now-committed) object.
+  setWallModeActive(false);
+  setSelection("vector-path", placedElement.id, { layerId: layer.id });
 }
 
 // Click-to-place-vertex wall/door placement — deliberately NOT Draw's own
@@ -6937,7 +7411,7 @@ function commitWallGesture() {
 // for a decorative freehand annotation, actively bad for something that now
 // drives a real gameplay mechanic). Click adds a vertex, a dashed rubber-
 // band previews the next segment, double-click or Enter commits, Escape
-// cancels, Backspace undoes the last vertex. Door sub-mode auto-commits the
+// cancels, Backspace undoes the last vertex. Door type auto-commits the
 // instant a 2nd vertex is placed — a door is always exactly one straight
 // segment, there's no reason to make the GM double-click for that case.
 function setupWallTool() {
@@ -6945,7 +7419,6 @@ function setupWallTool() {
     return;
   }
   updateWallAvailability();
-  wallSubMode = elements.wallSubMode?.value === "door" ? "door" : "wall";
   // Syncs the button's visual .active state with wallSnapEnabled's own
   // default (true) — the HTML's own aria-pressed="true" default has no
   // matching .active class until this runs once.
@@ -6953,22 +7426,7 @@ function setupWallTool() {
 
   elements.wallToggle.addEventListener("click", () => {
     if (elements.wallToggle.disabled) return;
-    wallModeActive = !wallModeActive;
-    elements.wallToggle.classList.toggle("active", wallModeActive);
-    elements.wallToggle.setAttribute("aria-pressed", wallModeActive ? "true" : "false");
-    mapContainer.classList.toggle("orrery-walling", wallModeActive);
-    elements.wallSubMode?.classList.toggle("d-none", !wallModeActive);
-    elements.wallSnapToggleWrap?.classList.toggle("d-none", !wallModeActive);
-    if (!wallModeActive) teardownWallGesture();
-    // Re-render so onVectorPathClick's own wallModeActive gate (see
-    // renderLayerOverlays) picks up the change immediately — same reasoning
-    // setupDrawTool's own toggle handler already documents.
-    renderLayerOverlays();
-  });
-
-  elements.wallSubMode?.addEventListener("change", () => {
-    wallSubMode = elements.wallSubMode.value === "door" ? "door" : "wall";
-    teardownWallGesture();
+    setWallModeActive(!wallModeActive);
   });
 
   elements.wallSnapToggle?.addEventListener("click", () => {
@@ -6988,18 +7446,15 @@ function setupWallTool() {
   }
 
   mapContainer.addEventListener("pointerdown", (event) => {
-    if (!wallModeActive || event.button !== 0) return;
-    // Only actually resolved/created on the FIRST vertex of a gesture — see
-    // ensureDrawableVectorLayer's own comment. Every later vertex of this
-    // same gesture already has wallGesture.layer to use instead (below),
-    // so this call just harmlessly returns the same now-selected layer.
-    const layer = ensureDrawableVectorLayer();
+    if (!wallModeActive || event.button !== 0 || !draftWallElement || !draftWallLayer) return;
+    const layer = draftWallLayer;
     event.preventDefault();
     if (!wallGesture) {
       const position = resolveWallVertex(layer, event);
       if (!position) return;
       baseMapManager.setInteractionEnabled(false);
-      wallGesture = { layer, points: [position] };
+      draftWallElement.points = [position];
+      wallGesture = {};
       buildWallGesturePreview();
       updateWallGesturePreview(event);
       return;
@@ -7014,11 +7469,11 @@ function setupWallTool() {
       commitWallGesture();
       return;
     }
-    const position = resolveWallVertex(wallGesture.layer, event);
+    const position = resolveWallVertex(layer, event);
     if (!position) return;
-    wallGesture.points.push(position);
+    draftWallElement.points.push(position);
     updateWallGesturePreview(event);
-    if (wallSubMode === "door" && wallGesture.points.length >= 2) {
+    if (draftWallElement.wallType === "door" && draftWallElement.points.length >= 2) {
       commitWallGesture();
     }
   });
@@ -7049,6 +7504,7 @@ function setupWallTool() {
         event.stopImmediatePropagation();
         event.preventDefault();
         teardownWallGesture();
+        if (draftWallElement) draftWallElement.points = [];
         return;
       }
       if (event.key === "Enter") {
@@ -7060,8 +7516,8 @@ function setupWallTool() {
       if (event.key === "Backspace") {
         event.stopImmediatePropagation();
         event.preventDefault();
-        wallGesture.points.pop();
-        if (!wallGesture.points.length) {
+        draftWallElement.points.pop();
+        if (!draftWallElement.points.length) {
           teardownWallGesture();
         } else {
           updateWallGesturePreview(null);
@@ -7072,21 +7528,27 @@ function setupWallTool() {
   );
 }
 
-// Keeps the Shape toggle's enabled state and tooltip in sync with a
-// configured grid scale/unit (a shape's size is authored in cells and
-// converted to a real distance the same way Measure's own readout is) —
-// same single prerequisite the widget's own shapeButtonEl gates on
-// (refreshToolAvailability, common/js/lib/widgets/map.js). No longer
-// requires a selected vector layer — see ensureDrawableVectorLayer's own
-// comment, same as Draw.
+// Keeps the Shape toggle's enabled state and tooltip in sync with there
+// being a grid layer to size against — a shape's Size/Width fields are
+// authored directly in cells now (renderVectorShapeSelectionEditor's own
+// header comment), not converted through the map's own Scale per cell/
+// Scale unit, so those no longer need to be configured just to place a
+// shape at all; only the DRAG gesture's own pixelsToCells conversion
+// (which needs a grid layer's cell size, nothing about real-world scale)
+// still has a real prerequisite. Previously required full Scale/Unit
+// configuration too — confirmed stricter than necessary now that Size
+// isn't feet-based, so a GM could no longer place ANY shape at all before
+// setting up a real-world scale, even though nothing about placing/sizing
+// one actually depends on it anymore. No longer requires a selected vector
+// layer either — see ensureDrawableVectorLayer's own comment, same as Draw.
 function updateShapeAvailability() {
   if (!elements.shapeToggle) return;
-  const available = hasMapMeasurementConfigured();
+  const available = Boolean(findPrimaryGridLayer(state.map));
   elements.shapeToggle.disabled = !available;
   const tooltipTarget = elements.shapeToggleWrap || elements.shapeToggle;
   tooltipTarget.setAttribute(
     "data-bs-title",
-    available ? "Draw an AoE shape" : "Set Scale per cell and Scale unit (bottom of Map Properties) to enable AoE shapes"
+    available ? "Draw a Shape/Effect" : "Add a grid layer to enable Shapes/Effects"
   );
   refreshTooltips(tooltipTarget.parentElement || document);
   if (!available && shapeModeActive) {
@@ -7094,27 +7556,342 @@ function updateShapeAvailability() {
   }
 }
 
-// Same reasoning as setDrawModeActive just above.
+// --- Shape/Effect picker modal — ported from Press's own #press-pattern-
+// modal (initPatternModal/renderPatternThumbnails/renderPatternControls/
+// selectPatternPreset, press/js/app.js), reading from shape-effect-
+// library.js's own registry instead of pattern-library.js's. Opened only
+// from the selection inspector's "Change Shape/Effect" button
+// (renderVectorShapeSelectionEditor) for an ALREADY-placed element — the
+// toolbar's own pre-placement type select (populateShapeTypeSelect, above)
+// is unrelated and stays a plain dropdown, confirmed unchanged with the
+// user. Simpler than Press's own controls in one way: a plain color input
+// per colorSlot, no alpha-blended hex encoding. Opacity lives here too
+// (currentShapeEffectOpacity, alongside the color/param controls) rather
+// than as its own separate inspector field — it's a per-preset display
+// property just like Fill/Outline, and keeping all three together avoids
+// the same value being editable from two different places at once.
+let selectedShapeEffectPreset = null;
+let currentShapeEffectValues = {};
+let currentShapeEffectOpacity = 0.5;
+let shapeEffectModalTarget = null; // { layer, shapeElement } being edited
+
+// Shared by both the thumbnail grid (small) and the larger live preview
+// pane (same container, different size) — a `kind: "geometry"` preset gets
+// a small SVG built from its own `draw()`; a `kind: "particles"` preset
+// gets a single representative static frame (40% through its own
+// duration) drawn into a small canvas via `seed()`+`run()`, not a live
+// animation — avoids running N simultaneous animated thumbnails for no
+// real benefit in a picker grid.
+function renderShapeEffectPreview(container, preset, values) {
+  container.innerHTML = "";
+  if (!preset) return;
+  // A representative angle/spread for directional presets (cone, line,
+  // beam, cone-blast) — pointing up reads clearest in a small square
+  // preview. Not the real element being edited; previews never need it.
+  const fakeElement = { angleDeg: -90, spreadDeg: 53, widthCells: 1 };
+  if (preset.kind === "geometry") {
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", "0 0 100 100");
+    svg.setAttribute("width", "100%");
+    svg.setAttribute("height", "100%");
+    const shapeEl = preset.draw(50, 50, 35, fakeElement, 20);
+    const fill = values.fill;
+    shapeEl.setAttribute("fill", fill && fill !== "none" ? fill : "none");
+    shapeEl.setAttribute("stroke", values.stroke || "#0f172a");
+    shapeEl.setAttribute("stroke-width", "3");
+    svg.appendChild(shapeEl);
+    container.appendChild(svg);
+    return;
+  }
+  const canvas = document.createElement("canvas");
+  canvas.width = 100;
+  canvas.height = 100;
+  canvas.style.width = "100%";
+  canvas.style.height = "100%";
+  container.appendChild(canvas);
+  const ctx = canvas.getContext("2d");
+  const particles = preset.seed(35);
+  preset.run(ctx, 50, 50, 35, preset.duration * 0.4, values, particles, fakeElement);
+}
+
+function renderShapeEffectThumbnails(categoryId) {
+  if (!elements.shapeEffectThumbnails) return;
+  elements.shapeEffectThumbnails.innerHTML = "";
+  const fragment = document.createDocumentFragment();
+  getPresetsByCategory(categoryId).forEach((preset) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "btn btn-outline-secondary p-1 d-flex flex-column align-items-center gap-1";
+    button.dataset.shapeEffectId = preset.id;
+    button.classList.toggle("active", preset.id === selectedShapeEffectPreset?.id);
+    const previewHost = document.createElement("div");
+    previewHost.style.width = "48px";
+    previewHost.style.height = "48px";
+    renderShapeEffectPreview(previewHost, preset, getPresetDefaultValues(preset));
+    const label = document.createElement("span");
+    label.className = "extra-small";
+    label.textContent = preset.label;
+    button.append(previewHost, label);
+    button.addEventListener("click", () => selectShapeEffectPreset(preset));
+    fragment.appendChild(button);
+  });
+  elements.shapeEffectThumbnails.appendChild(fragment);
+}
+
+function updateShapeEffectPreview() {
+  if (!selectedShapeEffectPreset || !elements.shapeEffectPreview) return;
+  renderShapeEffectPreview(elements.shapeEffectPreview, selectedShapeEffectPreset, currentShapeEffectValues);
+  elements.shapeEffectPreview.style.opacity = String(currentShapeEffectOpacity);
+}
+
+function renderShapeEffectControls(preset) {
+  if (!elements.shapeEffectControls) return;
+  elements.shapeEffectControls.innerHTML = "";
+  const fragment = document.createDocumentFragment();
+  (preset.colorSlots ?? []).forEach((slot) => {
+    const raw = String(currentShapeEffectValues[slot.key] ?? slot.default ?? "");
+    // A "@"/"=" prefixed value is a binding/formula, not a literal hex —
+    // createColorPickerField expects the caller to already know which of
+    // its two params a stored string represents (same split its own
+    // committedRawText logic works from), rather than guessing itself.
+    const isBindingLike = raw.startsWith("@") || raw.startsWith("=");
+    const field = createColorPickerField(slot.label, {
+      value: isBindingLike ? "" : raw,
+      bindingValue: isBindingLike ? raw : "",
+      defaultValue: slot.default,
+      onManualChange: (hex) => {
+        currentShapeEffectValues = { ...currentShapeEffectValues, [slot.key]: hex };
+        updateShapeEffectPreview();
+      },
+      onBindingChange: (text) => {
+        currentShapeEffectValues = { ...currentShapeEffectValues, [slot.key]: text };
+        updateShapeEffectPreview();
+      },
+      onClear: () => {
+        currentShapeEffectValues = { ...currentShapeEffectValues, [slot.key]: slot.default };
+        updateShapeEffectPreview();
+      },
+      // No evaluate — a map shape/effect has no Character-bound context to
+      // resolve a "@..." reference against (unlike Press/Workbench's own
+      // template canvas), so a typed binding/formula stores and displays
+      // as entered but previews as indeterminate, same as Workbench's own
+      // Template editor canvas already does for "=formula" text (this
+      // module's own header comment).
+    });
+    fragment.appendChild(field);
+  });
+  // Opacity — same range-slider vocabulary every other Opacity in this
+  // suite uses (0-1, step 0.05, form-range), applies to every preset,
+  // geometry or particle alike, so it's rendered here unconditionally
+  // rather than as one more colorSlot-driven entry.
+  const opacityWrap = document.createElement("div");
+  opacityWrap.className = "d-flex align-items-center justify-content-between gap-2";
+  const opacityId = "shapeEffectOpacity";
+  const opacityLabel = document.createElement("label");
+  opacityLabel.className = "form-label small text-body-secondary mb-0";
+  opacityLabel.setAttribute("for", opacityId);
+  opacityLabel.textContent = "Opacity";
+  const opacityInput = document.createElement("input");
+  opacityInput.type = "range";
+  opacityInput.id = opacityId;
+  opacityInput.className = "form-range";
+  opacityInput.style.width = "auto";
+  opacityInput.min = "0";
+  opacityInput.max = "1";
+  opacityInput.step = "0.05";
+  opacityInput.value = String(currentShapeEffectOpacity);
+  opacityInput.addEventListener("input", () => {
+    currentShapeEffectOpacity = Number(opacityInput.value);
+    updateShapeEffectPreview();
+  });
+  opacityWrap.append(opacityLabel, opacityInput);
+  fragment.appendChild(opacityWrap);
+  (preset.params ?? []).forEach((param, index) => {
+    const wrap = document.createElement("div");
+    wrap.className = "d-flex align-items-center justify-content-between gap-2";
+    const id = `shapeEffectParam-${param.key}-${index}`;
+    const label = document.createElement("label");
+    label.className = "form-label small text-body-secondary mb-0 flex-grow-1";
+    label.setAttribute("for", id);
+    label.textContent = param.label;
+    let input;
+    if (param.type === "select") {
+      input = document.createElement("select");
+      input.className = "form-select form-select-sm";
+      input.style.width = "auto";
+      (param.options ?? []).forEach((option) => {
+        const optionEl = document.createElement("option");
+        optionEl.value = option.value;
+        optionEl.textContent = option.label;
+        input.appendChild(optionEl);
+      });
+    } else {
+      input = document.createElement("input");
+      input.type = "number";
+      input.className = "form-control form-control-sm";
+      input.style.width = "5.5rem";
+      if (Number.isFinite(param.min)) input.min = String(param.min);
+      if (Number.isFinite(param.max)) input.max = String(param.max);
+      if (Number.isFinite(param.step)) input.step = String(param.step);
+    }
+    input.id = id;
+    input.value = currentShapeEffectValues[param.key];
+    input.addEventListener("input", () => {
+      currentShapeEffectValues = { ...currentShapeEffectValues, [param.key]: input.value };
+      updateShapeEffectPreview();
+    });
+    wrap.append(label, input);
+    fragment.appendChild(wrap);
+  });
+  elements.shapeEffectControls.appendChild(fragment);
+}
+
+function selectShapeEffectPreset(preset, initialValues) {
+  selectedShapeEffectPreset = preset;
+  currentShapeEffectValues = initialValues ?? getPresetDefaultValues(preset);
+  if (elements.shapeEffectPreviewLabel) elements.shapeEffectPreviewLabel.textContent = preset.label;
+  if (elements.shapeEffectApply) elements.shapeEffectApply.disabled = false;
+  renderShapeEffectControls(preset);
+  updateShapeEffectPreview();
+  elements.shapeEffectThumbnails?.querySelectorAll("[data-shape-effect-id]").forEach((button) => {
+    button.classList.toggle("active", button.dataset.shapeEffectId === preset.id);
+  });
+}
+
+// Called by the selection inspector's own "Change Shape/Effect" button
+// (renderVectorShapeSelectionEditor) — opens on the CURRENTLY selected
+// element's own preset/category/values pre-populated, not a blank slate.
+function openShapeEffectModal(layer, shapeElement) {
+  if (!elements.shapeEffectModal || !window.bootstrap?.Modal) return;
+  shapeEffectModalTarget = { layer, shapeElement };
+  const preset = getPresetById(shapeElement.presetId) || getPresetById("circle");
+  const categoryInputs = Array.from(document.querySelectorAll('[name="shape-effect-category"]'));
+  const categoryInput = categoryInputs.find((input) => input.value === preset.category);
+  if (categoryInput) {
+    categoryInput.checked = true;
+    renderShapeEffectThumbnails(preset.category);
+  }
+  currentShapeEffectOpacity = Number.isFinite(shapeElement.opacity) ? shapeElement.opacity : 0.5;
+  selectShapeEffectPreset(preset, { ...shapeElement.values });
+  window.bootstrap.Modal.getOrCreateInstance(elements.shapeEffectModal).show();
+}
+
+function initShapeEffectModal() {
+  if (!elements.shapeEffectModal) return;
+  renderShapeEffectThumbnails("shapes");
+  document.querySelectorAll('[name="shape-effect-category"]').forEach((input) => {
+    input.addEventListener("change", () => {
+      if (!input.checked) return;
+      renderShapeEffectThumbnails(input.value);
+    });
+  });
+  elements.shapeEffectApply?.addEventListener("click", () => {
+    if (!selectedShapeEffectPreset || !shapeEffectModalTarget) return;
+    const { shapeElement } = shapeEffectModalTarget;
+    // Same recordHistory + updateMapTimestamp + renderLayerOverlays +
+    // renderJson shape renderVectorShapeSelectionEditor's own (closure-
+    // scoped, unreachable from here) applyShapeChange uses — inlined
+    // rather than shared, since this handler lives outside that function's
+    // scope. Followed by a full renderSelection() rebuild (unlike every
+    // OTHER field in that panel, which patches in place) — changing the
+    // preset itself changes which fields even apply.
+    recordHistory("change shape/effect", () => {
+      shapeElement.presetId = selectedShapeEffectPreset.id;
+      shapeElement.values = { ...currentShapeEffectValues };
+      shapeElement.opacity = currentShapeEffectOpacity;
+      updateMapTimestamp(state.map);
+    });
+    renderLayerOverlays();
+    renderJson();
+    // draftShapeElement's own declaration comment — the modal can be opened
+    // on the Shape tool's own in-progress draft now (not just an already-
+    // placed shape), so this has to hand back to the SAME draft view
+    // instead of the general renderSelection(), or Applying here would
+    // silently drop back to whatever state.selection points to underneath
+    // it (typically the layer) instead of the draft the GM was still
+    // configuring.
+    if (shapeElement === draftShapeElement) {
+      renderArmedShapeInspector();
+    } else {
+      renderSelection();
+    }
+    window.bootstrap?.Modal?.getInstance(elements.shapeEffectModal)?.hide();
+  });
+}
+
+// Same reasoning as setDrawModeActive just above — plus, unlike Draw, Shape
+// has a right-pane Inspector view of its own now (renderArmedShapeInspector)
+// that has to take over/hand back the panel exactly when arming/disarming
+// does. Creates/discards draftShapeElement here — the ONE place its whole
+// lifecycle is owned (see its own declaration comment).
 function setShapeModeActive(active) {
   shapeModeActive = active;
   elements.shapeToggle?.classList.toggle("active", shapeModeActive);
   elements.shapeToggle?.setAttribute("aria-pressed", shapeModeActive ? "true" : "false");
   mapContainer?.classList.toggle("orrery-shaping", shapeModeActive);
-  elements.shapeType?.classList.toggle("d-none", !shapeModeActive);
   updateDrawColorVisibility();
   renderLayerOverlays();
+  if (shapeModeActive) {
+    draftShapeLayer = ensureDrawableVectorLayer();
+    draftShapeElement = createVectorShapeElement({
+      presetId: lastShapePresetId,
+      origin: { x: 0, y: 0 },
+      values: lastShapeValues ? { ...lastShapeValues } : undefined,
+    });
+    renderArmedShapeInspector();
+  } else {
+    if (draftShapeElement) {
+      lastShapePresetId = draftShapeElement.presetId;
+      lastShapeValues = { ...draftShapeElement.values };
+    }
+    draftShapeElement = null;
+    draftShapeLayer = null;
+    // Hands the panel back to whatever setSelection/renderSelection would
+    // otherwise be showing.
+    renderSelection();
+  }
 }
 
-// AoE measurement shapes (Circle/Cone/Line/Square) onto the selected vector
-// layer — the SAME click-drag-commit gesture Draw's own freehand stroke
-// uses (a live preview appended straight to the overlay, torn down on
-// release, committed as one element via recordHistory), sized through the
-// exact same screen-pixel-distance-to-cells conversion Measure's own
-// readout uses (pixelsToCells) instead of any new coordinate math. The live
-// preview reuses map-viewer.js's own renderShapeElement — the same function
-// that renders a COMMITTED shape — against a throwaway element object, so
-// there's exactly one place in the whole codebase that knows how to turn a
-// shape's fields into an SVG primitive.
+// The right-pane Inspector view shown for the ENTIRE time the Shape/Effect
+// tool is armed — draftShapeElement's own declaration comment has the full
+// reasoning for why this renders through the EXACT SAME
+// renderVectorShapeSelectionEditor an already-placed shape uses (Type,
+// Attach to Token, Label, Position, Size/Angle/Spread/Width, Outline width,
+// Snap to Grid, Loop/Play — everything), rather than a separate simplified
+// view. Only this wrapper's own title/details/icon (and clearing the
+// toolbar first, which renderSelection() normally does but this bypasses)
+// are specific to the "drawing" state; the editor body itself is 100% the
+// shared function.
+function renderArmedShapeInspector() {
+  if (!draftShapeElement || !draftShapeLayer) return;
+  const preset = getPresetById(draftShapeElement.presetId) || getPresetById("circle");
+  if (elements.selectionToolbar) {
+    disposeTooltips(elements.selectionToolbar);
+    elements.selectionToolbar.innerHTML = "";
+  }
+  if (elements.selectionTitle) {
+    elements.selectionTitle.textContent = preset.kind === "particles" ? "Effect" : "Shape";
+  }
+  setSelectionTypeIcon(preset.kind === "particles" ? "tabler:sparkles" : "tabler:target");
+  if (elements.selectionDetails) {
+    elements.selectionDetails.textContent = `${draftShapeLayer.name} · Drawing…`;
+  }
+  renderVectorShapeSelectionEditor(draftShapeLayer, draftShapeElement);
+  setPanelFocus(true);
+}
+
+// Shapes (Circle/Cone/Line/Square) or Effects (Burst/Beam/Cone Blast/Pulse)
+// onto the selected vector layer — the SAME click-drag-commit gesture
+// Draw's own freehand stroke uses (a live preview appended straight to the
+// overlay, torn down on release, committed as one element via
+// recordHistory), sized through the exact same screen-pixel-distance-to-
+// cells conversion Measure's own readout uses (pixelsToCells) instead of
+// any new coordinate math. The live preview reuses map-viewer.js's own
+// renderShapeElement — the same function that renders a COMMITTED geometry
+// shape — against a throwaway element object, so there's exactly one place
+// in the whole codebase that knows how to turn a shape's fields into an SVG
+// primitive. Placement behavior is unchanged from before this preset
+// catalog existed — only the TYPE list got longer.
 function setupShapeTool() {
   if (!elements.shapeToggle || !mapContainer) {
     return;
@@ -7124,22 +7901,16 @@ function setupShapeTool() {
   elements.shapeToggle.addEventListener("click", () => {
     if (elements.shapeToggle.disabled) return;
     // Same reasoning as setupDrawTool's own click handler — a re-render
-    // picks up the orrery-shaping cursor class and the Shape Type picker's
-    // own visibility toggle immediately. Existing shapes stay selectable/
-    // draggable regardless of this toggle now (see onVectorPathClick/
-    // onShapeDragEnd's own comment) — only NEW placement gates on it.
+    // picks up the orrery-shaping cursor class immediately. Existing shapes
+    // stay selectable/draggable regardless of this toggle now (see
+    // onVectorPathClick/onShapeDragEnd's own comment) — only NEW placement
+    // gates on it.
     setShapeModeActive(!shapeModeActive);
   });
 
-  function setReadout(text) {
-    if (!elements.shapeReadout) return;
-    elements.shapeReadout.textContent = text || "";
-    elements.shapeReadout.classList.toggle("d-none", !text);
-  }
-
   mapContainer.addEventListener("pointerdown", (event) => {
-    if (!shapeModeActive || event.button !== 0) return;
-    const layer = ensureDrawableVectorLayer();
+    if (!shapeModeActive || event.button !== 0 || !draftShapeElement || !draftShapeLayer) return;
+    const layer = draftShapeLayer;
     event.preventDefault();
     baseMapManager.setInteractionEnabled(false);
     const overlay = baseMapManager.getOverlayContainer();
@@ -7148,7 +7919,6 @@ function setupShapeTool() {
       baseMapManager.setInteractionEnabled(true);
       return;
     }
-    const shapeType = AOE_SHAPE_TYPES.includes(elements.shapeType?.value) ? elements.shapeType.value : "circle";
     const startClientX = event.clientX;
     const startClientY = event.clientY;
     const offset = getMarkerLayerOffset(state.map, layer);
@@ -7162,32 +7932,34 @@ function setupShapeTool() {
     preview.style.pointerEvents = "none";
     overlay.appendChild(preview);
 
-    let sizeCells = 0;
-    let angleDeg = 0;
+    // Type/colors were already picked from the right-pane Inspector before
+    // this gesture even started (renderArmedShapeInspector) and live on
+    // draftShapeElement already — this gesture only ever decides
+    // Size/Angle/Position, so it mutates the SAME draft object rather than
+    // tracking its own local copies. A full rebuild here (not just the
+    // live dataAttr update onMove uses) is correct exactly once, so
+    // Position X/Y reflect the real click point.
+    draftShapeElement.origin = origin;
+    draftShapeElement.sizeCells = 0;
+    draftShapeElement.angleDeg = 0;
+    renderArmedShapeInspector();
 
     function drawPreview() {
       preview.innerHTML = "";
+      // A "particles" preset (an Effect) has no live drag preview here —
+      // renderShapeElement stays scoped to static geometry (see its own
+      // header comment); its own animated rendering is a separate,
+      // canvas-based system. A known, temporary-in-implementation-order gap
+      // only (no visual feedback while dragging to size an Effect), not a
+      // functional one — the placed/committed element is real either way.
+      const preset = getPresetById(draftShapeElement.presetId) || getPresetById("circle");
+      if (preset.kind !== "geometry") return;
       renderShapeElement(
         preview,
         baseMapManager,
         state.map,
         layer,
-        {
-          id: "shape-preview",
-          kind: "shape",
-          shapeType,
-          origin,
-          sizeCells,
-          angleDeg,
-          spreadDeg: 53,
-          widthCells: 1,
-          // One shared color for fill AND stroke (see drawColor's own
-          // declaration comment) — a shape no longer has a distinct
-          // "outline" concept, matching the widget's identical unification.
-          strokeColor: drawColor,
-          fillColor: drawColor,
-          strokeWidth: layer.settings?.strokeWidth,
-        },
+        { ...draftShapeElement, id: "shape-preview" },
         offset,
         {}
       );
@@ -7197,18 +7969,18 @@ function setupShapeTool() {
     function onMove(moveEvent) {
       const dx = moveEvent.clientX - startClientX;
       const dy = moveEvent.clientY - startClientY;
-      const cells = pixelsToCells(Math.hypot(dx, dy));
-      if (cells === null) {
-        setReadout("No grid layer to measure against.");
-        sizeCells = 0;
-        drawPreview();
-        return;
-      }
-      sizeCells = snapCellsToWholeUnit(cells);
-      angleDeg = (Math.atan2(dy, dx) * 180) / Math.PI;
-      const distance = Math.round(sizeCells * state.map.measurement.scale);
-      setReadout(`${distance} ${state.map.measurement.unit} (${sizeCells.toFixed(1)} cells)`);
+      const cells = pixelsToCells(baseMapManager, state.map, Math.hypot(dx, dy));
+      draftShapeElement.sizeCells = cells === null ? 0 : snapCellsToWholeUnit(state.map, cells);
+      draftShapeElement.angleDeg = cells === null ? 0 : (Math.atan2(dy, dx) * 180) / Math.PI;
       drawPreview();
+      // Live-updates ONLY the Size/Angle inputs already showing in the
+      // right pane (the same fields renderArmedShapeInspector rendered via
+      // the normal post-placement editor) — no full rebuild mid-drag, which
+      // would be wasteful and could disrupt an open color-picker popover.
+      const sizeInput = elements.selectionEditor?.querySelector("[data-shape-size-input]");
+      if (sizeInput) sizeInput.value = draftShapeElement.sizeCells.toFixed(1);
+      const angleInput = elements.selectionEditor?.querySelector("[data-shape-angle-input]");
+      if (angleInput) angleInput.value = Math.round(draftShapeElement.angleDeg);
     }
 
     function onUp() {
@@ -7216,49 +7988,59 @@ function setupShapeTool() {
       window.removeEventListener("pointerup", onUp);
       baseMapManager.setInteractionEnabled(true);
       preview.remove();
-      setReadout("");
-      if (sizeCells > 0) {
-        let createdElement = null;
+      if (draftShapeElement.sizeCells > 0) {
+        const placedElement = draftShapeElement;
+        // Snap to Grid defaults on (createVectorShapeElement's own
+        // snapToGrid default) — new shapes land pre-snapped so the toggle's
+        // initial checked state actually matches what just happened, not a
+        // stale claim about an unsnapped placement.
+        placedElement.origin = snapShapeOriginToGrid(placedElement.origin, layer);
         recordHistory("place shape", () => {
           layer.elements = layer.elements || [];
-          createdElement = createVectorShapeElement({
-            shapeType,
-            // Snap to Grid defaults on (createVectorShapeElement's own
-            // snapToGrid default) — new shapes land pre-snapped so the
-            // toggle's initial checked state actually matches what just
-            // happened, not a stale claim about an unsnapped placement.
-            origin: snapShapeOriginToGrid(origin, layer),
-            sizeCells,
-            angleDeg,
-            strokeColor: drawColor,
-            fillColor: drawColor,
-            strokeWidth: layer.settings?.strokeWidth,
-          });
-          layer.elements.push(createdElement);
+          layer.elements.push(placedElement);
           updateMapTimestamp(state.map);
         });
         renderJson();
         // Single-shot — see the Draw tool's own identical comment above.
+        // Clears draftShapeElement, but placedElement still references the
+        // same (now-committed) object, so nothing below is affected by it.
         setShapeModeActive(false);
+        // Selects the just-placed shape/effect immediately, rather than
+        // leaving whatever was selected before drawing (typically the
+        // layer) — a GM's very next move after placing one is almost always
+        // adjusting its color/size/attachment in the inspector, so landing
+        // there without an extra click matters more here than it does for a
+        // plain drawn path (no per-placement fields of its own to jump to).
+        // setSelection's own full render (renderLayerOverlays included)
+        // already covers what setShapeModeActive's call above did, so this
+        // isn't a wasted duplicate — it's the render that actually reflects
+        // the new selection.
+        setSelection("vector-path", placedElement.id, { layerId: layer.id });
         // VTT-like immediacy — see the Draw tool's own identical comment
         // above.
-        if (mapExistsOnServer && createdElement) {
-          const savedElement = createdElement;
+        if (mapExistsOnServer) {
           void persistNewElement({
             dataManager,
             mapId: state.map.id,
             shareToken: currentShareToken,
             layerId: layer.id,
-            element: savedElement,
+            element: placedElement,
           })
             .then(() => {
-              syncCleanSnapshotForElement(layer.id, savedElement.id, savedElement);
+              syncCleanSnapshotForElement(layer.id, placedElement.id, placedElement);
               mapWatcher?.noteLocalWrite();
             })
             .catch((error) => {
               status?.show(error?.message || "Unable to save that shape.", { type: "danger" });
             });
         }
+      } else {
+        // Too small to commit (a click with no real drag) — nothing got
+        // placed, and the tool is still armed (this doesn't disarm it), so
+        // back to the "ready to place" view, not renderSelection() — the
+        // Inspector should keep showing the armed Type/color editor, not
+        // whatever was selected before the tool was ever armed.
+        renderArmedShapeInspector();
       }
     }
     window.addEventListener("pointermove", onMove);
@@ -7267,31 +8049,71 @@ function setupShapeTool() {
 }
 
 // Same disabled-with-explanatory-tooltip pattern as updateShapeAvailability
-// — a light's range is authored in cells, same measurement-scale
-// prerequisite. lightModeActive does NOT gate existing lights' own click-
-// through the way drawModeActive/wallModeActive do (see that variable's own
-// declaration comment) — a placed light stays immediately selectable/
-// draggable even while the tool is still armed, matching how a placed shape
-// already works.
+// — a light's Range field is authored directly in cells too, same as
+// Shape's own Size/Width, so it needs only a grid layer to size against,
+// not a fully configured Scale per cell/Scale unit (see that function's own
+// comment for the full reasoning). lightModeActive does NOT gate existing
+// lights' own click-through the way drawModeActive/wallModeActive do (see
+// that variable's own declaration comment) — a placed light stays
+// immediately selectable/draggable even while the tool is still armed,
+// matching how a placed shape already works.
 // No longer requires a selected vector layer — see ensureDrawableVectorLayer's
-// own comment, same as Draw/Shape/Wall. Still requires a configured grid
-// scale/unit (a light's range is authored in cells), same single
-// prerequisite Shape gates on.
+// own comment, same as Draw/Shape/Wall.
+// Same reasoning as setShapeModeActive/setDrawModeActive — one place that
+// owns lightModeActive's own toggle-button/cursor-class/re-render side
+// effects, called from every place that changes it (the toolbar click, the
+// single-shot auto-off after placing, and this function's own disable
+// path) instead of each duplicating the same four lines.
+function setLightModeActive(active) {
+  lightModeActive = active;
+  elements.lightToggle?.classList.toggle("active", lightModeActive);
+  elements.lightToggle?.setAttribute("aria-pressed", lightModeActive ? "true" : "false");
+  mapContainer?.classList.toggle("orrery-lighting", lightModeActive);
+  renderLayerOverlays();
+  if (lightModeActive) {
+    draftLightLayer = ensureDrawableVectorLayer();
+    // Light has no "last used" memory concept to seed from (see this
+    // module's own declaration comment) — every armed Light starts at the
+    // same rest state (createLightElement's own defaults), unlike Shape's
+    // lastShapePresetId/lastShapeValues.
+    draftLightElement = createLightElement({ origin: { x: 0, y: 0 }, rangeCells: 0 });
+    renderArmedLightInspector();
+  } else {
+    draftLightElement = null;
+    draftLightLayer = null;
+    renderSelection();
+  }
+}
+
+function renderArmedLightInspector() {
+  if (!draftLightElement || !draftLightLayer) return;
+  if (elements.selectionToolbar) {
+    disposeTooltips(elements.selectionToolbar);
+    elements.selectionToolbar.innerHTML = "";
+  }
+  if (elements.selectionTitle) {
+    elements.selectionTitle.textContent = "Light";
+  }
+  setSelectionTypeIcon("tabler:bulb");
+  if (elements.selectionDetails) {
+    elements.selectionDetails.textContent = `${draftLightLayer.name} · Drawing…`;
+  }
+  renderLightSelectionEditor(draftLightLayer, draftLightElement);
+  setPanelFocus(true);
+}
+
 function updateLightAvailability() {
   if (!elements.lightToggle) return;
-  const available = hasMapMeasurementConfigured();
+  const available = Boolean(findPrimaryGridLayer(state.map));
   elements.lightToggle.disabled = !available;
   const tooltipTarget = elements.lightToggleWrap || elements.lightToggle;
   tooltipTarget.setAttribute(
     "data-bs-title",
-    available ? "Place a dynamic light" : "Set Scale per cell and Scale unit (bottom of Map Properties) to enable dynamic lights"
+    available ? "Place a dynamic light" : "Add a grid layer to enable dynamic lights"
   );
   refreshTooltips(tooltipTarget.parentElement || document);
   if (!available && lightModeActive) {
-    lightModeActive = false;
-    elements.lightToggle.classList.remove("active");
-    elements.lightToggle.setAttribute("aria-pressed", "false");
-    mapContainer?.classList.remove("orrery-lighting");
+    setLightModeActive(false);
   }
 }
 
@@ -7309,22 +8131,12 @@ function setupLightTool() {
 
   elements.lightToggle.addEventListener("click", () => {
     if (elements.lightToggle.disabled) return;
-    lightModeActive = !lightModeActive;
-    elements.lightToggle.classList.toggle("active", lightModeActive);
-    elements.lightToggle.setAttribute("aria-pressed", lightModeActive ? "true" : "false");
-    mapContainer.classList.toggle("orrery-lighting", lightModeActive);
-    renderLayerOverlays();
+    setLightModeActive(!lightModeActive);
   });
 
-  function setReadout(text) {
-    if (!elements.lightReadout) return;
-    elements.lightReadout.textContent = text || "";
-    elements.lightReadout.classList.toggle("d-none", !text);
-  }
-
   mapContainer.addEventListener("pointerdown", (event) => {
-    if (!lightModeActive || event.button !== 0) return;
-    const layer = ensureDrawableVectorLayer();
+    if (!lightModeActive || event.button !== 0 || !draftLightElement || !draftLightLayer) return;
+    const layer = draftLightLayer;
     event.preventDefault();
     baseMapManager.setInteractionEnabled(false);
     const overlay = baseMapManager.getOverlayContainer();
@@ -7346,51 +8158,35 @@ function setupLightTool() {
     preview.style.pointerEvents = "none";
     overlay.appendChild(preview);
 
-    let rangeCells = 0;
+    // Color/opacity were already picked from the right-pane Inspector
+    // before this gesture even started (renderArmedLightInspector) and live
+    // on draftLightElement already — see setupShapeTool's own identical
+    // reasoning for why this gesture mutates the SAME draft object rather
+    // than tracking local copies. A full rebuild here (not just the live
+    // dataAttr update onMove uses) is correct exactly once, so Position X/Y
+    // reflect the real click point.
+    draftLightElement.origin = origin;
+    draftLightElement.rangeCells = 0;
+    renderArmedLightInspector();
 
     function drawPreview() {
       preview.innerHTML = "";
-      renderLightElement(
-        preview,
-        baseMapManager,
-        state.map,
-        layer,
-        {
-          id: "light-preview",
-          kind: "light",
-          origin,
-          attachedMarkerId: "",
-          rangeCells,
-          // A literal, not layer.settings?.fillColor (that's the vector
-          // layer's own SHAPE-fill default, blue #93c5fd, always truthy —
-          // confirmed as the actual cause of every new light inheriting
-          // blue instead of a light's own warm default). This is a plain
-          // object passed directly to renderLightElement, bypassing
-          // createLightElement's own factory default, so it needs its own
-          // explicit value matching that same default.
-          color: "#fbbf24",
-          opacity: 0.5,
-        },
-        offset,
-        {}
-      );
+      renderLightElement(preview, baseMapManager, state.map, layer, { ...draftLightElement, id: "light-preview" }, offset, {});
     }
     drawPreview();
 
     function onMove(moveEvent) {
       const dx = moveEvent.clientX - startClientX;
       const dy = moveEvent.clientY - startClientY;
-      const cells = pixelsToCells(Math.hypot(dx, dy));
-      if (cells === null) {
-        setReadout("No grid layer to measure against.");
-        rangeCells = 0;
-        drawPreview();
-        return;
-      }
-      rangeCells = snapCellsToWholeUnit(cells);
-      const distance = Math.round(rangeCells * state.map.measurement.scale);
-      setReadout(`${distance} ${state.map.measurement.unit} (${rangeCells.toFixed(1)} cells)`);
+      const cells = pixelsToCells(baseMapManager, state.map, Math.hypot(dx, dy));
+      draftLightElement.rangeCells = cells === null ? 0 : snapCellsToWholeUnit(state.map, cells);
       drawPreview();
+      // Live-updates ONLY the Range input already showing in the right pane
+      // (the same field renderArmedLightInspector rendered via the normal
+      // post-placement editor) — see setupShapeTool's own identical
+      // reasoning for why this skips a full rebuild mid-drag.
+      const rangeInput = elements.selectionEditor?.querySelector("[data-light-range-input]");
+      if (rangeInput) rangeInput.value = draftLightElement.rangeCells.toFixed(1);
     }
 
     function onUp() {
@@ -7398,25 +8194,23 @@ function setupLightTool() {
       window.removeEventListener("pointerup", onUp);
       baseMapManager.setInteractionEnabled(true);
       preview.remove();
-      setReadout("");
-      if (rangeCells > 0) {
+      if (draftLightElement.rangeCells > 0) {
+        const placedElement = draftLightElement;
         recordHistory("place light", () => {
           layer.elements = layer.elements || [];
-          layer.elements.push(
-            createLightElement({
-              origin,
-              rangeCells,
-              // color omitted — createLightElement's own default (amber/
-              // yellow) applies. NOT layer.settings?.fillColor (see the
-              // preview's own matching comment above for why that was
-              // wrong).
-              opacity: 0.5,
-            })
-          );
+          layer.elements.push(placedElement);
           updateMapTimestamp(state.map);
         });
-        renderLayerOverlays();
         renderJson();
+        // Single-shot, and selects the just-placed light immediately —
+        // matches Shape's own identical behavior (setupShapeTool's own
+        // onUp). Clears draftLightElement, but placedElement still
+        // references the same (now-committed) object.
+        setLightModeActive(false);
+        setSelection("vector-path", placedElement.id, { layerId: layer.id });
+      } else {
+        // Too small to commit — see setupShapeTool's own identical branch.
+        renderArmedLightInspector();
       }
     }
     window.addEventListener("pointermove", onMove);
@@ -7560,65 +8354,13 @@ function setupPingTool() {
   });
 }
 
-// The map's first grid layer supplies the cell size in pixels a measurement
-// converts through — same "first grid layer, if any" convention as
-// snapMarkerPositionToGrid, for the same reason (most maps have exactly one
-// grid layer; a second one is an edge case this quietly doesn't
-// special-case rather than asking the user to pick). Deliberately NOT
-// filtered on the layer's own visibility — Visible toggles whether the grid
-// LINES render, not whether the grid is still "the" grid whose cell size
-// defines the map's scale; Measure/Shape sizing changing just because the
-// GM hid the grid lines was a real, confirmed bug. The real-world distance
-// one cell REPRESENTS comes from state.map.measurement instead (see
-// createMapModel's own comment) — a map-wide setting, not a per-layer one,
-// and never defaulted: updateMeasureAvailability keeps the tool disabled
-// until the GM has actually set both.
-function findPrimaryGridLayer() {
-  return state.map.layers.find((entry) => entry.type === "grid") || null;
-}
-
-function hasMapMeasurementConfigured() {
-  return Number.isFinite(state.map.measurement?.scale) && state.map.measurement.scale > 0 && Boolean(state.map.measurement?.unit);
-}
-
-// Shared by Measure's own formatDistance and the Shape tool's live readout —
-// both convert a raw on-screen pixel distance into grid cells the exact same
-// way (the primary grid layer's own on-screen cell size, which already bakes
-// in the current zoom). Returns null when there's no grid layer to convert
-// against, same "quietly can't measure" case formatDistance already handled.
-function pixelsToCells(pixelDistance) {
-  const gridLayer = findPrimaryGridLayer();
-  if (!gridLayer) {
-    return null;
-  }
-  const cellSizePx = getGridCellSize(baseMapManager, state.map, gridLayer);
-  if (!cellSizePx) {
-    return null;
-  }
-  return pixelDistance / cellSizePx;
-}
-
-// AoE shape sizes generally fall in whole real-world-unit increments (5ft
-// steps in most D&D-style systems) — rounding the CELLS value so
-// cells*scale lands on a whole unit avoids fiddly decimals like "13.3 ft"
-// while still landing on any concrete size, not hardcoded to multiples of
-// 5 specifically. No-op (returns cells unchanged) if the map has no usable
-// scale to round against.
-function snapCellsToWholeUnit(cells) {
-  const scale = state.map.measurement?.scale;
-  if (!Number.isFinite(scale) || scale <= 0) {
-    return cells;
-  }
-  return Math.round(cells * scale) / scale;
-}
-
 // Keeps the Measure toggle's enabled state and tooltip in sync with
 // state.map.measurement — called on map load/switch (applyMapSnapshot) and
 // whenever the Scale per cell/Scale unit fields change (setupMapEvents), not
 // just once at startup, since either can change mid-session.
 function updateMeasureAvailability() {
   if (!elements.measureToggle) return;
-  const configured = hasMapMeasurementConfigured();
+  const configured = hasMapMeasurementConfigured(state.map);
   elements.measureToggle.disabled = !configured;
   const tooltipTarget = elements.measureToggleWrap || elements.measureToggle;
   tooltipTarget.setAttribute(
@@ -7658,12 +8400,7 @@ function setupMeasureTool() {
   }
 
   function formatDistance(pixelDistance) {
-    const cells = pixelsToCells(pixelDistance);
-    if (cells === null) {
-      return "No grid layer to measure against.";
-    }
-    const distance = cells * state.map.measurement.scale;
-    return `${distance.toFixed(1)} ${state.map.measurement.unit} (${cells.toFixed(1)} cells)`;
+    return formatMeasuredDistance(baseMapManager, state.map, pixelDistance);
   }
 
   // Drawn in plain screen (clientX/clientY) space, same as the distance math

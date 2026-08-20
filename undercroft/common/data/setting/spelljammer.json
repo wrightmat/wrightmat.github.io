@@ -1,22 +1,65 @@
 {
-  "kind": "setting",
-  "systemIds": ["sys.dnd5e"],
+  "systemIds": [
+    "sys.dnd5e"
+  ],
   "name": "Spelljammer",
   "description": "Spelljammer is a Dungeons & Dragons campaign setting of interplanetary and interplanar seafaring — magically-powered spelljamming ships carry crews between the crystal spheres of Wildspace and beyond, through the Astral Plane's Phlogiston. It reframes the same core D&D rules around ship-to-ship combat, alien crews, and voyages between worlds rather than replacing them with a separate ruleset.",
   "speciesWeights": [
-    { "entityId": "human", "weight": 25 },
-    { "entityId": "genasi", "weight": 12 },
-    { "entityId": "elf", "weight": 10 },
-    { "entityId": "dwarf", "weight": 8 },
-    { "entityId": "gnome", "weight": 8 },
-    { "entityId": "aarakocra", "weight": 8 },
-    { "entityId": "tortle", "weight": 6 },
-    { "entityId": "tabaxi", "weight": 6 },
-    { "entityId": "dragonborn", "weight": 6 },
-    { "entityId": "halfling", "weight": 6 },
-    { "entityId": "warforged", "weight": 5 },
-    { "entityId": "goliath", "weight": 4 },
-    { "entityId": "half-elf", "weight": 4 },
-    { "entityId": "other", "weight": 2 }
+    {
+      "entityId": "human",
+      "weight": 25
+    },
+    {
+      "entityId": "genasi",
+      "weight": 12
+    },
+    {
+      "entityId": "elf",
+      "weight": 10
+    },
+    {
+      "entityId": "dwarf",
+      "weight": 8
+    },
+    {
+      "entityId": "gnome",
+      "weight": 8
+    },
+    {
+      "entityId": "aarakocra",
+      "weight": 8
+    },
+    {
+      "entityId": "tortle",
+      "weight": 6
+    },
+    {
+      "entityId": "tabaxi",
+      "weight": 6
+    },
+    {
+      "entityId": "dragonborn",
+      "weight": 6
+    },
+    {
+      "entityId": "halfling",
+      "weight": 6
+    },
+    {
+      "entityId": "warforged",
+      "weight": 5
+    },
+    {
+      "entityId": "goliath",
+      "weight": 4
+    },
+    {
+      "entityId": "half-elf",
+      "weight": 4
+    },
+    {
+      "entityId": "other",
+      "weight": 2
+    }
   ]
 }

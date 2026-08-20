@@ -1,0 +1,9 @@
+{
+  "id": "wonder",
+  "label": "Wonder",
+  "plural": "Wonders",
+  "icon": "tabler:wand",
+  "readTier": "free",
+  "writeTier": "free",
+  "metadataFields": ["systemIds"]
+}

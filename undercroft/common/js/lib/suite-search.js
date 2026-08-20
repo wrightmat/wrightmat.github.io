@@ -30,7 +30,7 @@ import { buildKindToolUrl, kindToolLabel } from "./kind-tool-route.js";
 const KIND_META = {
   npc: { label: "NPC", icon: "tabler:users" },
   monster: { label: "Monster", icon: "tabler:skull" },
-  effect: { label: "Effect", icon: "tabler:sparkles" },
+  wonder: { label: "Wonder", icon: "tabler:wand" },
   location: { label: "Location", icon: "tabler:map-pin" },
   setting: { label: "Setting", icon: "tabler:map" },
   system: { label: "System", icon: "tabler:settings" },

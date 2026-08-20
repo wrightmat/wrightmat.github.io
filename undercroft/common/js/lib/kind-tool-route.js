@@ -13,7 +13,7 @@ import { resolveToolHref, resolveToolContextPath } from "./app-shell.js";
 export const KIND_TOOL_ROUTE = {
   npc: { tool: "forge", toolLabel: "Forge", param: "npc" },
   monster: { tool: "crucible", toolLabel: "Crucible", param: "monster" },
-  effect: { tool: "vault", toolLabel: "Vault", param: "effect" },
+  wonder: { tool: "vault", toolLabel: "Vault", param: "wonder" },
   location: { tool: "sanctum", toolLabel: "Sanctum", param: "location" },
   setting: { tool: "sanctum", toolLabel: "Sanctum", param: "setting" },
   system: { tool: "loom", toolLabel: "Loom", param: "system" },

@@ -1558,7 +1558,7 @@ function renderFeatureList(record) {
     // Which of a shared tiered Feature's own tiers (monster-feature-
     // matching.js's resolveDayFrequencyTier, e.g. Legendary Resistance's
     // 1/3/4/5-per-day variants) THIS monster's own copy uses — same
-    // record.featureTiers convention Vault's own effects already use, just
+    // record.featureTiers convention Vault's own wonders already use, just
     // a per-frequency mechanics.text here instead of Vault's per-tier
     // budgetCost. Absent entirely for a non-tiered Feature (tier stays
     // undefined, every ?? below just falls through to the base Feature).
@@ -1745,7 +1745,7 @@ function recomputeMonsterBudget(record) {
 // add/removeFeature — deliberately NOT re-running recipe-slot matching
 // (recipeFulfillment keeps showing whatever generation originally
 // resolved), same as a manual Vault edit never retroactively changes which
-// Signature Effect was chosen.
+// Signature Feature was chosen.
 function removeFeature(featureId) {
   if (!currentRecord || !Array.isArray(currentRecord.featureIds)) return;
   const feature = findById(features, featureId);

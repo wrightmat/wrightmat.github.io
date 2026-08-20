@@ -1,9 +1,0 @@
-{
-  "id": "effect",
-  "label": "Effect",
-  "plural": "Effects",
-  "icon": "tabler:sparkles",
-  "readTier": "free",
-  "writeTier": "free",
-  "metadataFields": ["systemIds"]
-}

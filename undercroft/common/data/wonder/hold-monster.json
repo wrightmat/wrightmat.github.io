@@ -1,0 +1,25 @@
+{
+  "index": "hold-monster",
+  "name": "Hold Monster",
+  "notes": "Choose a creature you can see and reach. The target must make a saving throw of Wisdom or be paralyzed for the duration of the spell. This spell has no effect against the undead. At the end of each round, the target can make a new saving throw of Wisdom. If successful, the spell ends for the creature.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/spells/hold-monster",
+  "mapping": "5e-api-spell",
+  "properties": {
+    "form": "spell"
+  },
+  "featureIds": [
+    "feat.impose-condition"
+  ],
+  "featureParams": {
+    "feat.impose-condition": {
+      "condition": "paralyzed",
+      "saveAbility": "wisdom"
+    }
+  },
+  "featureTiers": {
+    "feat.impose-condition": "extreme"
+  }
+}

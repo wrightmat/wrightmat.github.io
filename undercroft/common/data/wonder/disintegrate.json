@@ -1,0 +1,35 @@
+{
+  "index": "disintegrate",
+  "name": "Disintegrate",
+  "notes": "A thin green ray springs from your pointing finger to a target that you can see within range. The target can be a creature, an object, or a creation of magical force, such as the wall created by wall of force.\n\nA creature targeted by this spell must make a dexterity saving throw. On a failed save, the target takes 10d6 + 40 force damage. If this damage reduces the target to 0 hit points, it is disintegrated.\n\nA disintegrated creature and everything it is wearing and carrying, except magic items, are reduced to a pile of fine gray dust. The creature can be restored to life only by means of a true resurrection or a wish spell.\n\nThis spell automatically disintegrates a Large or smaller nonmagical object or a creation of magical force. If the target is a Huge or larger object or creation of force, this spell disintegrates a 10-foot-cube portion of it. A magic item is unaffected by this spell.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/spells/disintegrate",
+  "mapping": "5e-api-spell",
+  "properties": {
+    "form": "spell"
+  },
+  "featureIds": [
+    "feat.damage"
+  ],
+  "featureParams": {
+    "feat.damage": {
+      "resolutionKind": "save",
+      "saveAbility": "dexterity",
+      "saveEffect": "none",
+      "damageType": "force",
+      "areaShape": "cube",
+      "areaSize": 10,
+      "scaling": {
+        "by": "slot",
+        "values": {
+          "6": "10d6 + 40"
+        }
+      }
+    }
+  },
+  "featureTiers": {
+    "feat.damage": "tier-4"
+  }
+}

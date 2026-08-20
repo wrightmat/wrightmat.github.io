@@ -1,5 +1,4 @@
 {
-  "kind": "monster",
   "name": "Commoner",
   "notes": "Commoners include peasants, serfs, slaves, servants, pilgrims, merchants, artisans, and hermits.",
   "type": "humanoid",

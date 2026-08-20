@@ -1,24 +1,62 @@
 {
-  "kind": "setting",
   "systemIds": [
     "sys.dnd5e"
   ],
   "name": "Eberron",
   "description": "Eberron is a Dungeons & Dragons campaign setting created by Keith Baker that blends traditional fantasy with pulp-noir, industrial magic, and political intrigue. Set on the war-torn continent of Khorvaire, it features magitek like elemental-powered airships and lightning trains, and explores a world recovering from a devastating century-long conflict.",
   "speciesWeights": [
-    { "entityId": "human", "weight": 44 },
-    { "entityId": "gnome", "weight": 14 },
-    { "entityId": "half-elf", "weight": 10 },
-    { "entityId": "elf", "weight": 8 },
-    { "entityId": "dwarf", "weight": 7 },
-    { "entityId": "halfling", "weight": 4 },
-    { "entityId": "changeling", "weight": 4 },
-    { "entityId": "goblinoid", "weight": 4 },
-    { "entityId": "shifter", "weight": 2 },
-    { "entityId": "warforged", "weight": 2 },
-    { "entityId": "kalashtar", "weight": 1 },
-    { "entityId": "half-orc", "weight": 1 },
-    { "entityId": "orc", "weight": 1 }
+    {
+      "entityId": "human",
+      "weight": 44
+    },
+    {
+      "entityId": "gnome",
+      "weight": 14
+    },
+    {
+      "entityId": "half-elf",
+      "weight": 10
+    },
+    {
+      "entityId": "elf",
+      "weight": 8
+    },
+    {
+      "entityId": "dwarf",
+      "weight": 7
+    },
+    {
+      "entityId": "halfling",
+      "weight": 4
+    },
+    {
+      "entityId": "changeling",
+      "weight": 4
+    },
+    {
+      "entityId": "goblinoid",
+      "weight": 4
+    },
+    {
+      "entityId": "shifter",
+      "weight": 2
+    },
+    {
+      "entityId": "warforged",
+      "weight": 2
+    },
+    {
+      "entityId": "kalashtar",
+      "weight": 1
+    },
+    {
+      "entityId": "half-orc",
+      "weight": 1
+    },
+    {
+      "entityId": "orc",
+      "weight": 1
+    }
   ],
   "calendar": {
     "daysPerWeek": 7,

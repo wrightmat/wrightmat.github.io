@@ -1,0 +1,25 @@
+{
+  "index": "manual-of-quickness-of-action",
+  "name": "Manual of Quickness of Action",
+  "notes": "Wondrous item, very rare\n\nThis book contains coordination and balance exercises, and its words are charged with magic. If you spend 48 hours over a period of 6 days or fewer studying the book's contents and practicing its guidelines, your Dexterity score increases by 2, as does your maximum for that score. The manual then loses its magic, but regains it in a century.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/magic-items/manual-of-quickness-of-action",
+  "mapping": "5e-api-magic-item",
+  "properties": {
+    "rarity": "very-rare",
+    "form": "wondrous-item"
+  },
+  "featureIds": [
+    "feat.ability-score-increase"
+  ],
+  "featureParams": {
+    "feat.ability-score-increase": {
+      "ability": "dexterity"
+    }
+  },
+  "featureTiers": {
+    "feat.ability-score-increase": "increase-2"
+  }
+}

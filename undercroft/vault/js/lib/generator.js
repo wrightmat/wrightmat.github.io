@@ -1,5 +1,5 @@
-// The budget-driven effect generator. Unlike Crucible (recipe slots filled
-// by traversal), Vault has no slots at all: a Signature Effect (a Feature)
+// The budget-driven wonder generator. Unlike Crucible (recipe slots filled
+// by traversal), Vault has no slots at all: a Signature Feature (the anchor)
 // seeds the result, and the generator repeatedly pulls in whichever
 // remaining eligible Feature has the strongest synergy with what's already
 // selected, as long as it (and any of its own unmet `dependsOn`
@@ -26,7 +26,7 @@ function matchesSystem(entity, systemId) {
 
 // A feature with no categories tag is treated as universally compatible
 // (the suite-wide "no tag means unconstrained" convention); otherwise it
-// must claim "spell" or "item" — Vault produces one effect concept usable
+// must claim "spell" or "item" — Vault produces one wonder concept usable
 // as either, per its design (Form controls presentation, not eligibility).
 export function matchesCategory(feature) {
   const categories = feature.tags?.categories;
@@ -215,7 +215,7 @@ function pickNextCandidate(eligibleFeatures, selected, properties, propertyTypes
 
 // Expands an already-selected list to include every transitively unmet
 // dependsOn prerequisite, unconditionally — used for features that arrived
-// via a locked pin or an explicit Signature Effect override, where the
+// via a locked pin or an explicit Signature Feature override, where the
 // dependency must come along regardless of budget (same "explicit choice
 // can exceed budget" allowance as everything else in this module). A
 // missing dependency reference is skipped rather than failing generation.
@@ -250,16 +250,16 @@ function traverse(eligibleFeatures, selected, properties, propertyTypes, random)
 }
 
 /**
- * generateEffect(allFeatures, propertyTypes, options)
+ * generateWonder(allFeatures, propertyTypes, options)
  *
  * `propertyTypes` is the active System's `propertyTypes` array (already
  * fetched by the caller, same as Crucible receives its already-fetched
- * reference lists). Signature Effect is an optional override (blank =
+ * reference lists). Signature Feature is an optional override (blank =
  * random, like everything else in this suite); locked features and property
  * overrides let a caller pin part of the result before traversal fills in
  * the rest.
  */
-export function generateEffect(allFeatures, propertyTypes, options = {}) {
+export function generateWonder(allFeatures, propertyTypes, options = {}) {
   const {
     systemId = null,
     signatureFeatureId = "",
@@ -294,7 +294,7 @@ export function generateEffect(allFeatures, propertyTypes, options = {}) {
     ? eligibleFeatures.find((entry) => entry.id === signatureFeatureId)
     : null;
   if (!signatureFeature) {
-    // A random Signature Effect must still respect the just-resolved
+    // A random Signature Feature must still respect the just-resolved
     // properties' budget — without this, an expensive random pick at a low
     // Rarity tier would start the whole generation over budget before
     // traversal even runs, breaking the "automatic path never exceeds
@@ -339,11 +339,11 @@ export function generateEffect(allFeatures, propertyTypes, options = {}) {
   }
 
   if (!selected.length) {
-    throw new Error("Not enough Feature reference data to generate an effect.");
+    throw new Error("Not enough Feature reference data to generate a wonder.");
   }
 
   // Hard dependencies always come along, whether their requiring feature
-  // arrived via a locked pin, an explicit Signature Effect override, or the
+  // arrived via a locked pin, an explicit Signature Feature override, or the
   // budget-aware random pick above (which already accounted for its own
   // bundle cost, so this is a no-op in that case).
   selected = expandWithDependencies(selected, eligibleFeatures);
@@ -357,7 +357,7 @@ export function generateEffect(allFeatures, propertyTypes, options = {}) {
     // Always present (even empty) so callers never need an `|| {}` guard —
     // automatic generation never picks a tier for a tiered feature it
     // selects (that's a deliberate manual choice, see resolveFeatureBudgetCost
-    // above), so a freshly generated Effect always starts every tiered
+    // above), so a freshly generated Wonder always starts every tiered
     // feature at its base/cheapest tier until a GM upgrades it by hand.
     featureTiers: {},
     properties,

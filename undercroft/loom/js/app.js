@@ -27,7 +27,7 @@ import {
   SOURCES,
   loadSrdData,
   loadFantasyStatblockDataBulk,
-  loadMarkdownEffectDataBulk,
+  loadMarkdownWonderDataBulk,
   normalizeSrdInput,
 } from "../../common/js/lib/content-fetch.js";
 import { convertStatBlockToFeatures, hasConvertibleStatBlock } from "../../common/js/lib/monster-feature-matching.js";
@@ -1569,7 +1569,7 @@ if (sourceBulkFolderButton) {
 // source rather than always assuming Fantasy Statblocks.
 const BULK_FILE_LOADERS = {
   "fantasy-statblocks": loadFantasyStatblockDataBulk,
-  "markdown-effect": loadMarkdownEffectDataBulk,
+  "markdown-wonder": loadMarkdownWonderDataBulk,
 };
 
 function setFetchStatus(text) {
@@ -1989,12 +1989,12 @@ async function saveEntity(entity, { autoId, url: urlOverride, quiet = false } = 
           );
         }
       }
-    } else if (entity.kind === "effect") {
+    } else if (entity.kind === "wonder") {
       // Vault's own spell/item counterpart to the monster branch above —
       // same automatic-on-save, no manual/backfill action anywhere. Never
       // both fire on the same record: hasConvertibleStatBlock keys off
-      // monster's own ABILITY_GROUP_KEYS stats shape, this one off an
-      // Effect's own stats.mechanic/stats.name shape (see
+      // monster's own ABILITY_GROUP_KEYS stats shape, this one off a
+      // Wonder's own stats.mechanic/stats.name shape (see
       // vault-feature-matching.js's own hasConvertibleSpellItemStats).
       if (
         (!Array.isArray(data.systemIds) || !data.systemIds.length) &&
@@ -2010,7 +2010,7 @@ async function saveEntity(entity, { autoId, url: urlOverride, quiet = false } = 
         const { matchedCount, createdCount, errors } = await convertSpellOrItemToFeatures(data, {
           dataManager,
           existingFeatures,
-          effectSlug: slugify(id),
+          wonderSlug: slugify(id),
         });
         if (!quiet && (matchedCount || createdCount)) {
           status?.show(
@@ -2020,7 +2020,7 @@ async function saveEntity(entity, { autoId, url: urlOverride, quiet = false } = 
         }
         if (errors?.length) {
           status?.show(
-            `${entity.name || id}: ${errors.length} feature${errors.length === 1 ? "" : "s"} couldn't be converted (see console) — the rest of the effect saved fine.`,
+            `${entity.name || id}: ${errors.length} feature${errors.length === 1 ? "" : "s"} couldn't be converted (see console) — the rest of the wonder saved fine.`,
             { type: "warning", timeout: 6000 }
           );
         }
@@ -5512,6 +5512,11 @@ function renderMacroParamField(fieldName, action, onUpdate) {
       return macroFieldRow("Expression", macroTextInput(params.expression, "e.g. 2d6 + 3", (v) => setParam({ expression: v })));
     case "url":
       return macroFieldRow("URL", macroTextInput(params.url, "https://…", (v) => setParam({ url: v })));
+    case "target":
+      return macroFieldRow(
+        "Effect label",
+        macroTextInput(params.target, "e.g. Boss Burst, or a marker's own name", (v) => setParam({ target: v }))
+      );
     case "condition":
       return macroFieldRow("Condition", macroTextInput(params.condition, "e.g. Poisoned", (v) => setParam({ condition: v })));
     case "field":

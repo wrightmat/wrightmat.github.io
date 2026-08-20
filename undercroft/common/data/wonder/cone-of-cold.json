@@ -1,0 +1,39 @@
+{
+  "index": "cone-of-cold",
+  "name": "Cone of Cold",
+  "notes": "A blast of cold air erupts from your hands. Each creature in a 60-foot cone must make a constitution saving throw. A creature takes 8d8 cold damage on a failed save, or half as much damage on a successful one.\n\nA creature killed by this spell becomes a frozen statue until it thaws.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/spells/cone-of-cold",
+  "mapping": "5e-api-spell",
+  "properties": {
+    "form": "spell"
+  },
+  "featureIds": [
+    "feat.damage"
+  ],
+  "featureParams": {
+    "feat.damage": {
+      "resolutionKind": "save",
+      "saveAbility": "constitution",
+      "saveEffect": "half",
+      "damageType": "cold",
+      "areaShape": "cone",
+      "areaSize": 60,
+      "scaling": {
+        "by": "slot",
+        "values": {
+          "5": "8d8",
+          "6": "9d8",
+          "7": "10d8",
+          "8": "11d8",
+          "9": "12d8"
+        }
+      }
+    }
+  },
+  "featureTiers": {
+    "feat.damage": "tier-4"
+  }
+}

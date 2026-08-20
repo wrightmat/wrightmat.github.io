@@ -1,22 +1,54 @@
 {
-  "kind": "location",
   "systemIds": [
     "sys.bitd"
   ],
-  "settingIds": ["duskvol"],
+  "settingIds": [
+    "duskvol"
+  ],
   "name": "Duskvol",
   "mixingCoefficient": 0.6,
   "speciesWeights": [
-    { "entityId": "human", "weight": 95 },
-    { "entityId": "other", "weight": 5 }
+    {
+      "entityId": "human",
+      "weight": 95
+    },
+    {
+      "entityId": "other",
+      "weight": 5
+    }
   ],
   "archetypeOverrides": {
-    "22": { "name": "Bluecoat Officer" },
-    "23": { "name": "Spirit Warden" }
+    "22": {
+      "name": "Bluecoat Officer"
+    },
+    "23": {
+      "name": "Spirit Warden"
+    }
   },
   "genericNameFallback": [
-    "Ambrose", "Branwen", "Cassian", "Dessa", "Emrys", "Fenna", "Gideon", "Halvard",
-    "Ilse", "Jorin", "Kessandra", "Lavrenti", "Mireille", "Nadir", "Orsolya", "Petra",
-    "Quill", "Ravenna", "Silas", "Tanwen", "Ulric", "Vesna", "Wrenna", "Yseult"
+    "Ambrose",
+    "Branwen",
+    "Cassian",
+    "Dessa",
+    "Emrys",
+    "Fenna",
+    "Gideon",
+    "Halvard",
+    "Ilse",
+    "Jorin",
+    "Kessandra",
+    "Lavrenti",
+    "Mireille",
+    "Nadir",
+    "Orsolya",
+    "Petra",
+    "Quill",
+    "Ravenna",
+    "Silas",
+    "Tanwen",
+    "Ulric",
+    "Vesna",
+    "Wrenna",
+    "Yseult"
   ]
 }

@@ -571,13 +571,14 @@ def _fetch_group_log_entries(
     # Whisper visibility is filtered in Python below, AFTER this SQL LIMIT —
     # cheap here since the log is already bounded to <=200 rows, but it means
     # a heavily-whispered window could under-fill `limit` for a viewer who
-    # can't see much of it. Only `message` rows ever carry recipient_ids
-    # (create_group_log_entry), so over-fetch (bounded at the same 200 cap
-    # _sanitize_log_limit already enforces) only when message rows are
-    # actually possible in this result set — a types-restricted spotlight
-    # read never includes them, so it skips the over-fetch entirely.
-    types_may_include_messages = not entry_types or "message" in entry_types
-    fetch_limit = min(limit * 3, 200) if types_may_include_messages else limit
+    # can't see much of it. Only message/roll/card rows ever carry
+    # recipient_ids (create_group_log_entry), so over-fetch (bounded at the
+    # same 200 cap _sanitize_log_limit already enforces) only when one of
+    # those is actually possible in this result set — a types-restricted
+    # spotlight read never includes them, so it skips the over-fetch
+    # entirely.
+    types_may_carry_recipients = not entry_types or any(t in entry_types for t in ("message", "roll", "card"))
+    fetch_limit = min(limit * 3, 200) if types_may_carry_recipients else limit
     columns = "id, entry_type, author_id, author_name, message, payload, created_at, recipient_ids, in_character"
     if entry_types:
         placeholders = ",".join("?" for _ in entry_types)
@@ -605,7 +606,7 @@ def _fetch_group_log_entries(
     ordered = list(rows)
     ordered.reverse()
     entries = _serialize_log_entries(ordered)
-    if types_may_include_messages:
+    if types_may_carry_recipients:
         entries = [entry for entry in entries if _entry_visible_to(entry, viewer_user_id)]
         if len(entries) > limit:
             entries = entries[-limit:]
@@ -718,7 +719,7 @@ def create_group_log_entry(
         raise AuthError("Sign in to post to the game log")
     row, _ = _resolve_group_access(state, group_id, user, share_token=share_token)
     normalized_type = (entry_type or "").strip().lower() or "message"
-    if normalized_type not in {"message", "roll", "spotlight", "spotlight-clear", "spotlight-update"}:
+    if normalized_type not in {"message", "roll", "card", "spotlight", "spotlight-clear", "spotlight-update"}:
         raise AuthError("Unsupported log entry type")
     text = (message or "").strip()
     if text:
@@ -731,6 +732,13 @@ def create_group_log_entry(
     if normalized_type == "roll":
         if not payload_value:
             raise AuthError("Roll payload is required")
+    if normalized_type == "card":
+        # A drawn card's own log entry — same "trust the client, no
+        # fairness/re-verification" precedent as a roll (see this
+        # function's own roll handling above); a card's identity is no more
+        # independently checkable server-side than a die's settled face is.
+        if not payload_value:
+            raise AuthError("Card payload is required")
     if normalized_type == "spotlight":
         # {kind, id, templateId, data} — templateId is optional (the "Now
         # showing" viewer can fall back to a generic display if the GM didn't
@@ -775,14 +783,18 @@ def create_group_log_entry(
             payload_data = json.dumps(payload_value)
         except (TypeError, ValueError) as exc:
             raise AuthError("Invalid payload") from exc
-    # Whisper recipients/in-character only ever apply to a plain chat
-    # message — a roll/spotlight/etc. entry has no such concept, and
-    # silently ignoring the fields there (rather than erroring) matches this
-    # function's existing "read-side filter, not user input worth rejecting
-    # a whole request over" convention elsewhere in this function.
+    # Whisper recipients now apply to message/roll/card — a roll/card
+    # "whispered to yourself" is exactly how Private rolls/draws work (see
+    # the Cards/Decks plan): same visibility filter (_entry_visible_to
+    # below), zero new logic, just widened which entry types can carry it.
+    # in_character stays message-only — a roll/card has no "voice" concept.
+    # Silently ignoring recipient_ids/in_character on any OTHER type
+    # (spotlight/etc.) rather than erroring matches this function's
+    # existing "read-side filter, not user input worth rejecting a whole
+    # request over" convention elsewhere in this function.
     recipient_ids_data = None
     in_character_value = 0
-    if normalized_type == "message":
+    if normalized_type in ("message", "roll", "card"):
         if recipient_ids:
             coerced_ids: Set[int] = set()
             for raw_id in recipient_ids:
@@ -794,6 +806,7 @@ def create_group_log_entry(
             filtered = sorted(coerced_ids & valid_ids)
             if filtered:
                 recipient_ids_data = json.dumps(filtered)
+    if normalized_type == "message":
         in_character_value = 1 if in_character else 0
     timestamp = datetime.utcnow().isoformat()
     cursor = state.db.execute(
@@ -860,6 +873,128 @@ def record_group_ping(
     row, _ = _resolve_group_access(state, group_id, user, share_token=share_token)
     by = (user.username if user else "") or "A visitor"
     state.record_ping(row["id"], {"position": position, "by": by})
+
+
+# Same transient-broadcast shape as record_group_ping above, but GM-only —
+# confirmed explicit design call (Cards/Decks plan, Part 1): only the GM can
+# roll dice that everyone sees animate on their own screen. Same owner-or-
+# admin check _resolve_group_access itself uses to decide "owner" access
+# elsewhere, applied here explicitly since ping's own membership-only check
+# is deliberately looser than what this needs.
+def record_dice_roll_broadcast(
+    state: ServerState,
+    group_id: Optional[str],
+    user: Optional[User],
+    *,
+    share_token: Optional[str] = None,
+    label: str = "",
+    total: Any = "",
+    die_results: Optional[List[Any]] = None,
+) -> None:
+    if not user:
+        raise AuthError("Sign in to broadcast a roll")
+    # die_results (the REAL settled per-die values, dice-roll.js's own
+    # tryOverlayRoll) is what dice-reveal.js's tiles actually need — trusted
+    # client-side data, same "the server verifies SOMETHING was sent, not
+    # that it's fair/real" precedent create_group_log_entry's own "roll"
+    # handling already establishes; there's no more an independent way to
+    # verify a client's own physically-rolled dice-box values server-side
+    # than there is for a plain roll's own total.
+    cleaned = [entry for entry in (die_results or []) if isinstance(entry, dict) and "sides" in entry and "value" in entry]
+    if not cleaned:
+        raise AuthError("Real die results are required to broadcast a roll")
+    row, _ = _resolve_group_access(state, group_id, user, share_token=share_token)
+    if user.tier != "admin" and row["owner_id"] != user.id:
+        raise AuthError("Only the GM can broadcast a roll to the table")
+    # `by` (the poster's own user id) lets a client skip replaying the
+    # animation on the SAME tab that just played it locally already — see
+    # game-log.js's own "diceRoll" subscribe handler.
+    state.record_dice_roll_broadcast(
+        row["id"],
+        {
+            "label": (label or "").strip()[:200],
+            "total": total if isinstance(total, (int, float, str)) else "",
+            "dieResults": cleaned[:100],
+            "by": user.id,
+        },
+    )
+
+
+def record_card_broadcast(
+    state: ServerState,
+    group_id: Optional[str],
+    user: Optional[User],
+    *,
+    share_token: Optional[str] = None,
+    deck_label: str = "",
+    back_image: str = "",
+    cards: Optional[List[Any]] = None,
+) -> None:
+    # Mirrors record_dice_roll_broadcast above exactly, same "transient
+    # 'animate this now' signal, not a saved record" reasoning (the draw's
+    # own group_log entry — deck.js's own handleDraw, type "card" — is the
+    # separate, persisted record of what happened).
+    if not user:
+        raise AuthError("Sign in to broadcast a draw")
+    cleaned = [
+        entry
+        for entry in (cards or [])
+        if isinstance(entry, dict) and isinstance(entry.get("label"), str) and entry.get("label").strip()
+    ]
+    if not cleaned:
+        raise AuthError("At least one card is required to broadcast a draw")
+    row, _ = _resolve_group_access(state, group_id, user, share_token=share_token)
+    if user.tier != "admin" and row["owner_id"] != user.id:
+        raise AuthError("Only the GM can broadcast a draw to the table")
+    state.record_card_broadcast(
+        row["id"],
+        {
+            "deckLabel": (deck_label or "").strip()[:200],
+            "backImage": (back_image or "").strip()[:2000],
+            "cards": [
+                {
+                    "label": entry["label"].strip()[:200],
+                    "image": entry.get("image", "").strip()[:2000] if isinstance(entry.get("image"), str) else "",
+                }
+                for entry in cleaned[:20]
+            ],
+            "by": user.id,
+        },
+    )
+
+
+def record_effect_broadcast(
+    state: ServerState,
+    group_id: Optional[str],
+    user: Optional[User],
+    *,
+    share_token: Optional[str] = None,
+    map_id: str = "",
+    element_id: str = "",
+) -> None:
+    # Mirrors record_dice_roll_broadcast/record_card_broadcast above exactly
+    # — same "transient 'do this now' signal, not a saved record" reasoning.
+    # Deliberately thin: unlike a roll's dieResults or a draw's cards, there
+    # is no payload to validate here beyond "which element" — every viewer
+    # with this map open already has the element's own full data (preset,
+    # color, everything) from the map itself, so this is purely a pointer.
+    if not user:
+        raise AuthError("Sign in to trigger an effect")
+    map_id = (map_id or "").strip()
+    element_id = (element_id or "").strip()
+    if not map_id or not element_id:
+        raise AuthError("A map and element are required to trigger an effect")
+    row, _ = _resolve_group_access(state, group_id, user, share_token=share_token)
+    if user.tier != "admin" and row["owner_id"] != user.id:
+        raise AuthError("Only the GM can trigger an effect for the table")
+    state.record_effect_broadcast(
+        row["id"],
+        {
+            "mapId": map_id[:200],
+            "elementId": element_id[:200],
+            "by": user.id,
+        },
+    )
 
 
 def list_character_groups(state: ServerState, user: Optional[User], character_id: str) -> Dict[str, Any]:

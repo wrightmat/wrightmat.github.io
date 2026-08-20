@@ -1,6 +1,6 @@
 {
   "type": "with",
-  "$source": "markdown-effect",
+  "$source": "markdown-wonder",
   "$description": "Markdown (Obsidian) — Spell",
   "bindings": {
     "spellStats": {
@@ -13,7 +13,7 @@
     "fields": {
       "kind": {
         "type": "field",
-        "bind": "='effect'"
+        "bind": "='wonder'"
       },
       "name": {
         "type": "field",
