@@ -1,0 +1,26 @@
+{
+  "index": "belt-of-giant-strength-storm",
+  "name": "Belt of Storm Giant Strength",
+  "notes": "Wondrous item, legendary (requires attunement)\n\nWhile wearing this belt, your Strength score changes to 29. If your Strength is already equal to or greater than the belt's score, the item has no Effect on you.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/magic-items/belt-of-giant-strength-storm",
+  "mapping": "5e-api-magic-item",
+  "properties": {
+    "rarity": "legendary",
+    "form": "wondrous-item"
+  },
+  "featureIds": [
+    "feat.ability-score-increase",
+    "feat.requires-attunement"
+  ],
+  "featureTiers": {
+    "feat.ability-score-increase": "set-29"
+  },
+  "featureParams": {
+    "feat.ability-score-increase": {
+      "ability": "strength"
+    }
+  }
+}

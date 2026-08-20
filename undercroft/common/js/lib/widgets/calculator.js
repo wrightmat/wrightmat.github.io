@@ -42,7 +42,7 @@ import { loadRarityPriceRanges, rollItemPrices, PRICE_CHECK_TIERS } from "../ite
 // the two autocompletes): a Dashboard widget reusing one tool's data-loading
 // module isn't a layering violation in this codebase, it's how "the same
 // list Vault itself uses" is guaranteed rather than re-fetched a second way.
-import { listEffectsForSystem } from "../../../../vault/js/lib/tables.js";
+import { listWondersForSystem } from "../../../../vault/js/lib/tables.js";
 // Same `` `macro:`/`encounter:`/`dice:`/`kindId:` `` and `[[Page Title]]`
 // filtered autocomplete dropdowns Board's own "Add a card" input attaches
 // (board.js) — reused as-is rather than duplicated, so the Daily macro
@@ -209,7 +209,7 @@ export function initCalculatorWidget(
 
   // --- Item Price state --------------------------------------------------
   let itemPriceRanges = []; // loadRarityPriceRanges(systemDefinition)
-  let itemPriceEffects = []; // this System's saved Vault Effects, for the optional auto-fill picker
+  let itemPriceWonders = []; // this System's saved Vault Wonders, for the optional auto-fill picker
 
   container.innerHTML = "";
   const wrap = el("div", "d-flex flex-column gap-2");
@@ -491,17 +491,17 @@ export function initCalculatorWidget(
   // --- Item Price ------------------------------------------------------
   const itemPriceSection = el("div", "d-flex flex-column gap-2");
 
-  // Optional — picking a saved Effect just auto-fills the Rarity select
-  // below to whatever that Effect's own "rarity" property resolved to
+  // Optional — picking a saved Wonder just auto-fills the Rarity select
+  // below to whatever that Wonder's own "rarity" property resolved to
   // (see loadItemPriceOptions); it's a shortcut, not a requirement, so a
   // GM pricing something that was never generated in Vault can still pick
   // a Rarity directly.
-  const itemEffectRow = el("div", "d-flex align-items-center gap-2 flex-wrap");
-  itemEffectRow.appendChild(el("span", "small text-body-secondary flex-grow-1", "Effect (optional)"));
-  const itemEffectSelect = document.createElement("select");
-  itemEffectSelect.className = "form-select form-select-sm";
-  itemEffectSelect.style.maxWidth = "14rem";
-  itemEffectRow.appendChild(itemEffectSelect);
+  const itemWonderRow = el("div", "d-flex align-items-center gap-2 flex-wrap");
+  itemWonderRow.appendChild(el("span", "small text-body-secondary flex-grow-1", "Wonder (optional)"));
+  const itemWonderSelect = document.createElement("select");
+  itemWonderSelect.className = "form-select form-select-sm";
+  itemWonderSelect.style.maxWidth = "14rem";
+  itemWonderRow.appendChild(itemWonderSelect);
 
   const itemRarityRow = el("div", "d-flex align-items-center gap-2");
   itemRarityRow.appendChild(el("span", "small text-body-secondary flex-grow-1", "Rarity"));
@@ -541,7 +541,7 @@ export function initCalculatorWidget(
   const itemPriceResultBox = el("div", "d-flex flex-column gap-1 small");
 
   itemPriceSection.append(
-    itemEffectRow,
+    itemWonderRow,
     itemRarityRow,
     itemCheckRow,
     itemPriceUnavailableNotice,
@@ -1160,7 +1160,7 @@ export function initCalculatorWidget(
   // --- Wiring: Item Price ------------------------------------------------
 
   // Which array field Item Price treats as Rarity — resolved, not stored,
-  // so the Effect auto-fill (below) looks up the same field's slug id the
+  // so the Wonder auto-fill (below) looks up the same field's slug id the
   // range list itself was keyed by.
   let itemPriceRarityFieldKey = "rarity";
 
@@ -1189,37 +1189,37 @@ export function initCalculatorWidget(
     itemPriceCalculateButton.disabled = !hasRanges;
     setElementVisible(itemPriceUnavailableNotice, !hasRanges);
 
-    // The Effect picker only matters once there's something to auto-fill
+    // The Wonder picker only matters once there's something to auto-fill
     // into — hidden entirely for a System with no price ranges configured,
-    // or one with no saved Effects yet.
-    const fetchedEffects = systemId && hasRanges ? await listEffectsForSystem(dataManager, systemId).catch(() => []) : [];
-    // Same name-sort Vault's own Effect select uses (vault/js/app.js's
-    // populateEffectSelect) — without it, grouped names like "Potion of
+    // or one with no saved Wonders yet.
+    const fetchedWonders = systemId && hasRanges ? await listWondersForSystem(dataManager, systemId).catch(() => []) : [];
+    // Same name-sort Vault's own Wonder select uses (vault/js/app.js's
+    // populateWonderSelect) — without it, grouped names like "Potion of
     // Giant Strength, Hill"/"...Storm" would list in fetch order instead of
     // clustering together the way the naming was chosen to achieve.
-    itemPriceEffects = [...fetchedEffects].sort((a, b) => (a.name || a.id).localeCompare(b.name || b.id));
-    itemEffectSelect.innerHTML = "";
+    itemPriceWonders = [...fetchedWonders].sort((a, b) => (a.name || a.id).localeCompare(b.name || b.id));
+    itemWonderSelect.innerHTML = "";
     const blankOption = document.createElement("option");
     blankOption.value = "";
-    blankOption.textContent = "Pick a saved Effect…";
-    itemEffectSelect.appendChild(blankOption);
-    itemPriceEffects.forEach((effect) => {
+    blankOption.textContent = "Pick a saved Wonder…";
+    itemWonderSelect.appendChild(blankOption);
+    itemPriceWonders.forEach((wonder) => {
       const option = document.createElement("option");
-      option.value = effect.id;
-      option.textContent = effect.name || effect.id;
-      itemEffectSelect.appendChild(option);
+      option.value = wonder.id;
+      option.textContent = wonder.name || wonder.id;
+      itemWonderSelect.appendChild(option);
     });
-    setElementVisible(itemEffectRow, itemPriceEffects.length > 0, "flex");
+    setElementVisible(itemWonderRow, itemPriceWonders.length > 0, "flex");
   }
 
-  // Auto-fills Rarity from whichever value the picked Effect's own
+  // Auto-fills Rarity from whichever value the picked Wonder's own
   // generation actually resolved (`properties[rarityField]`, the same slug
   // id toLegacyPropertyType/loadRarityPriceRanges both derive from the
   // value's name) — a shortcut, so re-selecting Rarity by hand still works
-  // for an Effect that predates this field or used a different one.
-  itemEffectSelect.addEventListener("change", () => {
-    const effect = itemPriceEffects.find((entry) => entry.id === itemEffectSelect.value);
-    const rarityId = effect?.properties?.[itemPriceRarityFieldKey];
+  // for a Wonder that predates this field or used a different one.
+  itemWonderSelect.addEventListener("change", () => {
+    const wonder = itemPriceWonders.find((entry) => entry.id === itemWonderSelect.value);
+    const rarityId = wonder?.properties?.[itemPriceRarityFieldKey];
     if (rarityId && itemPriceRanges.some((range) => range.id === rarityId)) {
       itemRaritySelect.value = rarityId;
     }

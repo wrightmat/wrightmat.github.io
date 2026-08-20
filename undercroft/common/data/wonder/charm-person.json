@@ -1,0 +1,25 @@
+{
+  "index": "charm-person",
+  "name": "Charm Person",
+  "notes": "You attempt to charm a humanoid you can see within range. It must make a wisdom saving throw, and does so with advantage if you or your companions are fighting it. If it fails the saving throw, it is charmed by you until the spell ends or until you or your companions do anything harmful to it. The charmed creature regards you as a friendly acquaintance. When the spell ends, the creature knows it was charmed by you.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/spells/charm-person",
+  "mapping": "5e-api-spell",
+  "properties": {
+    "form": "spell"
+  },
+  "featureIds": [
+    "feat.impose-condition"
+  ],
+  "featureParams": {
+    "feat.impose-condition": {
+      "condition": "charmed",
+      "saveAbility": "wisdom"
+    }
+  },
+  "featureTiers": {
+    "feat.impose-condition": "moderate"
+  }
+}

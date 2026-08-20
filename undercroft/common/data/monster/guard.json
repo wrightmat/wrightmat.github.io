@@ -1,5 +1,4 @@
 {
-  "kind": "monster",
   "name": "Guard",
   "notes": "Guards include members of a city watch, sentries in a citadel or fortified town, and the bodyguards of merchants and nobles.",
   "type": "humanoid",

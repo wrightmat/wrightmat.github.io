@@ -1,0 +1,28 @@
+{
+  "index": "defender",
+  "name": "Defender",
+  "notes": "Weapon (any sword), legendary (requires attunement)\n\nYou gain a +3 bonus to attack and damage rolls made with this magic weapon.\n\nThe first time you attack with the sword on each of your turns, you can transfer some or all of the sword's bonus to your Armor Class, instead of using the bonus on any attacks that turn. For example, you could reduce the bonus to your attack and damage rolls to +1 and gain a +2 bonus to AC. The adjusted bonuses remain in effect until the start of your next turn, although you must hold the sword to gain a bonus to AC from it.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/magic-items/defender",
+  "mapping": "5e-api-magic-item",
+  "properties": {
+    "rarity": "legendary",
+    "form": "weapon"
+  },
+  "featureIds": [
+    "feat.weapon-enhancement",
+    "feat.protection-bonus",
+    "feat.requires-attunement"
+  ],
+  "featureTiers": {
+    "feat.weapon-enhancement": "plus-3",
+    "feat.protection-bonus": "plus-2"
+  },
+  "featureParams": {
+    "feat.protection-bonus": {
+      "alsoSavingThrows": false
+    }
+  }
+}

@@ -1,3 +1,10 @@
+// getPresetById/getPresetDefaultValues only ever get CALLED from
+// createVectorShapeElement below, never at module load — safe to import
+// here despite this file otherwise being pure/DOM-free, since the
+// registry's own draw()/run() functions (the only DOM-touching part of
+// that module) are never invoked from this file.
+import { getPresetById, getPresetDefaultValues } from "../../../common/js/lib/shape-effect-library.js";
+
 // Exported — app.js's own Duplicate Map action needs a fresh id for the
 // clone, same scheme every other id in this model already uses.
 export const randomId = () => {
@@ -140,6 +147,14 @@ export function createLayer({ type = "vector", name } = {}) {
     type: safeType,
     name: name || `${safeType.charAt(0).toUpperCase()}${safeType.slice(1)} Layer`,
     visible: true,
+    // Independent of `visible` — a locked layer stays fully rendered, just
+    // click/drag-through (map-viewer.js's own renderMapLayers ANDs every
+    // interactivity gate with `!layer.locked`), so a large hit target (a
+    // full-map Weather effect being the motivating case) can no longer
+    // steal clicks aimed at whatever's underneath it without also having to
+    // hide it. Selecting the layer itself (to flip this back off) is never
+    // blocked by its own lock — only clicking its CONTENTS on the map is.
+    locked: false,
     opacity: safeType === "grid" ? 0.35 : 1,
     position: { x: 0, y: 0 },
     elements: [],
@@ -304,52 +319,72 @@ export function createVectorPathElement({ points = [], strokeColor, fillColor, s
   };
 }
 
-export const AOE_SHAPE_TYPES = ["circle", "cone", "line", "square"];
-
-// An AoE measurement template (Circle/Cone/Line/Square) — lives in the SAME
-// layer.elements array a drawn path does, on a vector layer, so it inherits
-// that layer's own stroke/fill color settings and the exact same select/
-// delete editor a path already has (see app.js's renderVectorPathSelection
-// Editor and map-viewer.js's createVectorLayerElement dispatch), rather than
-// a parallel data shape only some of that machinery understands.
+// A placed Shape or Effect (Circle/Square/Cone/Line, or an animated
+// particle preset like Burst/Beam/Cone Blast/Pulse — common/js/lib/
+// shape-effect-library.js's own SHAPE_EFFECT_PRESETS is the single source
+// of truth for which presets exist and what each one's colorSlots/params
+// are). Lives in the SAME layer.elements array a drawn path does, on a
+// vector layer, so it inherits that layer's own general select/delete
+// editor machinery, rather than a parallel data shape only some of that
+// machinery understands. There's only ONE placement path — a
+// `kind: "particles"` preset with `loop: false` isn't a different,
+// temporary kind of object; it's an ordinary saved element that plays its
+// animation once per placement/re-trigger instead of continuously. Nothing
+// here is ever created-and-discarded.
 //
 // `sizeCells`/`widthCells` are in GRID CELLS, not raw pixels — the same unit
 // the Measure tool already converts through (getGridCellSize +
-// state.map.measurement.scale/unit, see app.js's formatDistance) — so a
-// shape's rendered size stays correct across zoom and across image/canvas
+// state.map.measurement.scale/unit, see app.js's formatDistance) — so an
+// element's rendered size stays correct across zoom and across image/canvas
 // vs. tile base maps with no new coordinate math, and the number a GM types
 // means the same thing the ruler already shows them.
 // `opacity`/`snapToGrid` both always land on the element with a real,
 // concrete value at creation time (0.5 / true) — never left unset for a
 // "falls back to some default at render time" branch to paper over later,
-// same "no invisible defaults" rule strokeColor/fillColor/strokeWidth just
-// below already follow. That's what makes them safe to show as ordinary,
-// already-populated inspector fields the instant a shape is placed, not
-// fields that mysteriously start blank.
+// same "no invisible defaults" rule this whole file follows throughout.
+// `values` replaces the old fixed strokeColor/fillColor pair — one flat
+// object holding whatever the chosen preset's own colorSlots/params keys
+// resolve to (getPresetDefaultValues on creation, e.g. `{fill: "#93c5fd",
+// stroke: "#0f172a"}` for Circle or `{color: "#ff6600"}` for Burst — same
+// "one flat values object, colorSlot and param keys mixed together, no
+// artificial split between them" shape pattern-library.js's own
+// getPresetDefaultValues already establishes), or the caller's own
+// explicit values (e.g. when duplicating an existing element). Editable
+// afterward via the picker modal (Part 3).
+// `attachedMarkerId` — identical field/semantics to createLightElement's
+// own below (map-viewer.js's shared resolveElementOrigin resolves either
+// kind's live position the same way). `label`/`loop` are only meaningful
+// for `kind: "particles"` presets — an empty label/loop:true on a geometry
+// shape is simply never read by anything.
 export function createVectorShapeElement({
-  shapeType,
+  presetId,
   origin,
+  attachedMarkerId = "",
+  label = "",
+  loop = true,
   sizeCells = 1,
   angleDeg = 0,
   spreadDeg = 53,
   widthCells = 1,
-  strokeColor,
-  fillColor,
+  values,
   strokeWidth,
   opacity,
   snapToGrid,
 } = {}) {
+  const preset = getPresetById(presetId) || getPresetById("circle");
   return {
     id: randomId(),
     kind: "shape",
-    shapeType: AOE_SHAPE_TYPES.includes(shapeType) ? shapeType : "circle",
+    presetId: preset.id,
     origin: origin || { x: 0, y: 0 },
+    attachedMarkerId,
+    label,
+    loop: loop !== false,
     sizeCells,
     angleDeg,
     spreadDeg,
     widthCells,
-    strokeColor: strokeColor || "#0f172a",
-    fillColor: fillColor || "#93c5fd",
+    values: values || getPresetDefaultValues(preset),
     strokeWidth: strokeWidth || 2,
     opacity: Number.isFinite(opacity) ? opacity : 0.5,
     snapToGrid: snapToGrid !== false,

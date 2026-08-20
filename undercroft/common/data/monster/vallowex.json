@@ -1,5 +1,4 @@
 {
-  "kind": "monster",
   "name": "Vallowex",
   "notes": "_A creature with two legs and a flat tail emerges from the water. Its wide mouth opens, revealing a spiked tongue._\n\n**Luring with Thirst**. The vallowex haunts woodland rivers, luring in prey with its thirst-inducing aura. When a creature stops to drink, the vallowex attacks and drags the creature into the water to feast.\n\n**Reproduce through Hosts**. Vallowexes release eggs into potable water. After a creature drinks the eggs, a tadpole hatches in its stomach. The tadpole slowly consumes the host from the inside out, emerging as a vallowex when the host dies",
   "type": "aberration",

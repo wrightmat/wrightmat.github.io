@@ -53,7 +53,7 @@ export function createMappingCustomFunctions({
 const ABILITY_INDEX_TO_NAME = { str: "strength", dex: "dexterity", con: "constitution", int: "intelligence", wis: "wisdom", cha: "charisma" };
 
 // A "this X has N charges..."/"...regains M expended charges daily at
-// dawn..." clause is Effect-level activation data (mirrors Vault's own
+// dawn..." clause is Wonder-level activation data (mirrors Vault's own
 // Activation generator-property field, see vault/CLAUDE.md), never Feature
 // content — extracted here, structurally, so it never becomes a candidate
 // ability unit that vault-feature-matching.js's own clause-recognizers
@@ -228,7 +228,7 @@ function srdDetectActivationConcept(text) {
 // Builds the `stats.properties` object `vault-feature-matching.js` copies
 // straight onto `record.properties` — Vault's own native
 // `{[propertyType.id]: valueId}` shape (see generator.js's own
-// `generateEffect` output, and `resolveProperties`), so an imported Effect
+// `generateWonder` output, and `resolveProperties`), so an imported Wonder
 // looks structurally identical to a hand-generated one, the same
 // "structurally identical to native output" goal `featureIds` already
 // serves. Every value is resolved against the System's own LIVE field
@@ -1035,7 +1035,7 @@ function splitFantasyStatblockNotes(raw) {
   return { notes, references };
 }
 
-// Splits a markdown-effect item's own italic header line ("Weapon (claws),
+// Splits a markdown-wonder item's own italic header line ("Weapon (claws),
 // legendary (requires attunement by a monk)", "Wondrous Item, Very Rare,
 // Requires Attunement", "Potion, rare") into the same {category, rarity,
 // requiresAttunement} pieces srdItemStats reads straight off separate 5e
@@ -1501,14 +1501,14 @@ return {
   // variant-group row as "no entity produced" — an empty string would
   // still pass that check and save a blank-named record.
   srdItemKindFromStats(context) {
-    return context.itemStats ? "effect" : undefined;
+    return context.itemStats ? "wonder" : undefined;
   },
   srdItemNameFromStats(context) {
     return context.itemStats?.name;
   },
 
   // Builds the SAME `stats` shape srdItemStats builds above, from
-  // parseMarkdownEffectSource's own generic structural parse
+  // parseMarkdownWonderSource's own generic structural parse
   // (content-fetch.js) instead of a raw 5e API record — markdown-item.json's
   // own `with` binding names this `itemStats` too, so it's read by the exact
   // same srdItemKindFromStats/srdItemNameFromStats above with zero
@@ -1556,7 +1556,7 @@ return {
   },
 
   // Same "build the whole thing in one pass" reasoning as srdSpellStats
-  // above, from parseMarkdownEffectSource's own generic parse instead of a
+  // above, from parseMarkdownWonderSource's own generic parse instead of a
   // raw 5e API record. `mechanic` is recovered from prose via
   // parseMarkdownSpellMechanic (best-effort — see that function's own
   // comment) rather than read off a structured `damage`/`heal_at_slot_level`

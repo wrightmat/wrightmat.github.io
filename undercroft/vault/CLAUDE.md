@@ -4,8 +4,8 @@
 
 Undercroft Vault is the spell/magic item concept generator of the Undercroft suite.
 Where Crucible starts from behavior (an Archetype's recipe) and derives mechanics,
-Vault inverts that: it starts from mechanics — a **Signature Effect** — and builds
-outward through a shared graph of `feature` entries, using a point-based **effect
+Vault inverts that: it starts from mechanics — a **Signature Feature** — and builds
+outward through a shared graph of `feature` entries, using a point-based **feature
 economy** (not recipe slots) as both the compatibility engine and the stopping
 condition. The result is a structured mechanical concept — enough for a GM to
 understand what it does and enough scaffolding to present it as a balanced spell or
@@ -62,11 +62,11 @@ same way as every other kind in the suite:
   if every System needs it, so none are). Whatever fields a System does declare live in
   the same editing UI as every other field — there is no separate "Generator Properties"
   section anymore.
-- **`effect`** — Vault's own generated-output Library kind (mirrors `monster` exactly:
+- **`wonder`** — Vault's own generated-output Library kind (mirrors `monster` exactly:
   `readTier: free`, `writeTier: free`).
 
 Vault has **no whole-tool tier gate** — it stays open like Forge/Crucible, not gated
-like Loom, since it mainly reads reference data. Saving a generated effect follows
+like Loom, since it mainly reads reference data. Saving a generated wonder follows
 Crucible's monster pattern exactly: an anonymous GM saves locally to their own browser,
 a signed-in user gets a real owned/shareable record.
 
@@ -74,7 +74,7 @@ a signed-in user gets a real owned/shareable record.
 
 ## Conceptual Architecture
 
-A Vault effect has no independent identity axes (no Creature Type/Archetype/Role
+A Vault wonder has no independent identity axes (no Creature Type/Archetype/Role
 analogue) — it's built from exactly two ingredients:
 
 - **Properties** — one resolved value per System-defined property type (e.g. Rarity,
@@ -84,7 +84,7 @@ analogue) — it's built from exactly two ingredients:
   sets the target budget ceiling; every other chosen value spends from (or, if
   negative, refunds into) that budget.
 - **Features** — the same atomic building blocks Crucible uses, filtered here to
-  `tags.categories` including `"spell"` or `"item"`. One is the **Signature Effect**
+  `tags.categories` including `"spell"` or `"item"`. One is the **Signature Feature**
   (an optional override, otherwise random); the rest are pulled in by traversal.
 
 ### Generation flow
@@ -92,7 +92,7 @@ analogue) — it's built from exactly two ingredients:
 1. Resolve every property type's value (explicit override or random), computing the
    target budget (from whichever property type is flagged `setsBudgetCeiling`) and the
    amount already spent by every other property's chosen value.
-2. Resolve the Signature Effect: the user's explicit pick if given, else a random
+2. Resolve the Signature Feature: the user's explicit pick if given, else a random
    eligible feature. Add its `budgetCost` to the amount spent, along with any locked
    features the caller pinned before generation.
 3. **Traversal** (no recipe slots — this is the core difference from Crucible):
@@ -103,7 +103,7 @@ analogue) — it's built from exactly two ingredients:
    qualifies. A feature with zero synergy to the current selection is never pulled in
    automatically, unlike Crucible's fallback-to-any-compatible-candidate (Vault has no
    required slots forcing a fill, so it only ever reinforces the existing concept).
-4. The output is a structured record: resolved properties, the Signature Effect id,
+4. The output is a structured record: resolved properties, the Signature Feature id,
    every selected feature id, and a `budget: { target, spent, remaining }` snapshot.
 
 See `js/lib/generator.js` for the concrete implementation, including the shared

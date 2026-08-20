@@ -50,7 +50,7 @@ const KIND_ICON = {
   system: "tabler:settings",
   map: "tabler:map",
   template: "tabler:layout",
-  effect: "tabler:sparkles",
+  wonder: "tabler:wand",
   resource: "tabler:package",
   class: "tabler:sword",
   subclass: "tabler:sword",
@@ -147,7 +147,7 @@ const IDENTITY_FIELDS = {
     { label: "Purpose", path: "purposeId" },
     { label: "Environment", path: "environment" },
   ],
-  // effect's own Identity fields are a dynamic {propertyKey: value} bag
+  // wonder's own Identity fields are a dynamic {propertyKey: value} bag
   // (System-defined — Rarity/Activation/Item Form for sys.dnd5e, something
   // else entirely for another System) — handled directly in
   // buildIdentityLines below via `entity.properties`, not a fixed path list.
@@ -169,7 +169,7 @@ function buildIdentityLines(kindId, record) {
     const value = formatFieldValue(getPath(record, path));
     if (value) lines.push(`${label}: ${value}`);
   });
-  if (kindId === "effect" && record?.properties && typeof record.properties === "object") {
+  if (kindId === "wonder" && record?.properties && typeof record.properties === "object") {
     Object.entries(record.properties).forEach(([key, value]) => {
       const formatted = formatFieldValue(value);
       if (formatted) lines.push(`${key.charAt(0).toUpperCase()}${key.slice(1)}: ${formatted}`);
@@ -406,7 +406,7 @@ export async function findKindReferenceRecord(dataManager, kindId, name) {
   // response's own `title` field is enough to find WHICH record matches by
   // name; the full payload only needs fetching for the ONE match actually
   // found, not every entry of that kind. Confirmed real fix: a kind with
-  // hundreds/thousands of saved entries (effect, feature — both crossed
+  // hundreds/thousands of saved entries (wonder, feature — both crossed
   // hundreds after this session's SRD bulk imports) made every reference
   // chip's click/hover cost that many individual record fetches just to
   // resolve one name.

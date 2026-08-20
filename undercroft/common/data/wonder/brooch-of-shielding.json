@@ -1,0 +1,26 @@
+{
+  "index": "brooch-of-shielding",
+  "name": "Brooch of Shielding",
+  "notes": "Wondrous item, uncommon (requires attunement)\n\nWhile wearing this brooch, you have resistance to force damage, and you have immunity to damage from the magic missile spell.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/magic-items/brooch-of-shielding",
+  "mapping": "5e-api-magic-item",
+  "properties": {
+    "rarity": "uncommon",
+    "form": "wondrous-item"
+  },
+  "featureIds": [
+    "feat.damage-modification",
+    "feat.requires-attunement"
+  ],
+  "featureTiers": {
+    "feat.damage-modification": "resistance"
+  },
+  "featureParams": {
+    "feat.damage-modification": {
+      "damageType": "force"
+    }
+  }
+}

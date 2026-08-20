@@ -39,7 +39,7 @@ import { buildCalloutRaw } from "../../../../repository/js/lib/journal-story-boa
 
 // Kinds with an actual print-card rendering of their own — mirrors the exact
 // set the old Card widget's KIND_WIDGET_MAP entries covered (npc/location/
-// monster/effect) — plus "journal" (Repository's own kind), which renders as
+// monster/wonder) — plus "journal" (Repository's own kind), which renders as
 // formatted markdown instead of a Press card (see renderJournalEntry).
 // Maps/encounters (spotlight.js's own LINK_ONLY_KINDS) have no single-entity
 // card shape and stay out of this widget entirely; every other registered
@@ -49,7 +49,7 @@ import { buildCalloutRaw } from "../../../../repository/js/lib/journal-story-boa
 // action's contentRef.kind should only ever offer a kind this widget can
 // actually render, not every Library kind that exists (see loom/js/app.js's
 // own MACRO_ACTION_TYPES.handout).
-export const HANDOUT_KINDS = ["npc", "location", "monster", "effect", "journal"];
+export const HANDOUT_KINDS = ["npc", "location", "monster", "wonder", "journal"];
 
 // Same labels SPOTLIGHT_KIND_LABELS (game-log.js) uses for the log line —
 // kept as its own small table here rather than importing that one, since
@@ -59,7 +59,7 @@ export const KIND_LABELS = {
   npc: "NPC",
   location: "Location",
   monster: "Monster",
-  effect: "Effect",
+  wonder: "Wonder",
   journal: "Journal",
 };
 

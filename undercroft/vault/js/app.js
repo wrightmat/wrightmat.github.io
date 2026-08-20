@@ -17,9 +17,9 @@ import { bindCollapsibleToggle } from "../../common/js/lib/collapsible.js";
 import { renderRelationshipEditor } from "../../common/js/lib/relationship-editor.js";
 import { buildRelationshipGraph } from "../../common/js/lib/relationship-graph.js";
 import { createForceGraph } from "../../common/js/lib/graph-view.js";
-import { listFeaturesForSystem, listEffectsForSystem, getSystemPropertyTypes, getSystemClasses } from "./lib/tables.js";
-import { generateEffect, computeBudget, matchesCategory, rerollPropertyValue, resolveFeatureBudgetCost } from "./lib/generator.js";
-import { createEffectRecord, toPressExportShape } from "./lib/effect-schema.js";
+import { listFeaturesForSystem, listWondersForSystem, getSystemPropertyTypes, getSystemClasses } from "./lib/tables.js";
+import { generateWonder, computeBudget, matchesCategory, rerollPropertyValue, resolveFeatureBudgetCost } from "./lib/generator.js";
+import { createWonderRecord, toPressExportShape } from "./lib/wonder-schema.js";
 import { convertSpellOrItemToFeatures, hasConvertibleSpellItemStats } from "../../common/js/lib/vault-feature-matching.js";
 // Same shared weapon-attack/rider/save-effect/options editor Crucible's own
 // Inspector uses (feature-params-editor.js) — see that module's own comment
@@ -33,7 +33,7 @@ import { convertSpellOrItemToFeatures, hasConvertibleSpellItemStats } from "../.
 // be one — instantiated the same way regardless, so nothing crashes on that
 // edge case.
 import { createFeatureParamsEditor } from "../../common/js/lib/feature-params-editor.js";
-import { generateEffectNote } from "./lib/llm-note.js";
+import { generateWonderNote } from "./lib/llm-note.js";
 import { createDirtyGate } from "../../common/js/lib/dirty-gate.js";
 import {
   listAllSystems,
@@ -85,7 +85,7 @@ const featureParamsEditor = createFeatureParamsEditor({
   getRecord: () => currentRecord,
   // A tier change (renderFeatureTierEditor) is now reached through this
   // SAME hook as an ordinary params edit — recomputeBudget before
-  // refreshEffectView, same as addFeature/removeFeature already do,
+  // refreshWonderView, same as addFeature/removeFeature already do,
   // because renderBudget only recomputes when record.budget is unset
   // (`record.budget || recomputeBudget(record)`) and would otherwise show
   // a stale total after a tier change specifically (budget depends on
@@ -93,10 +93,10 @@ const featureParamsEditor = createFeatureParamsEditor({
   // edit too is harmless, just a no-op for the ones that don't affect it).
   onParamsChanged: () => {
     if (currentRecord) recomputeBudget(currentRecord);
-    refreshEffectView();
+    refreshWonderView();
   },
   saveFeature: (feature) => dataManager.save("feature", feature.id, feature),
-  onFeatureSaved: () => refreshEffectView(),
+  onFeatureSaved: () => refreshWonderView(),
   getAbilityFieldDefs: () => abilityFieldDefs,
   // Drives the "Delete Parameter" toolbar button's own enabled state —
   // independent of selectedFeatureId (Edit Feature's own gate), since a
@@ -116,14 +116,14 @@ const featureParamsEditor = createFeatureParamsEditor({
 // (headings, lists, callouts) reads better rendered than as raw source by
 // default.
 let notesMode = "view";
-// Every saved effect for the active System (Effect picker options) plus its
+// Every saved wonder for the active System (Wonder picker options) plus its
 // ownership metadata — same role/shape as Crucible's monstersInSystem/
 // monsterCatalog, itself mirroring Sanctum's locationsInSetting/
-// locationCatalog. currentEffectId is tracked separately from currentRecord
+// locationCatalog. currentWonderId is tracked separately from currentRecord
 // for the same reason Crucible tracks currentMonsterId separately.
-let effectsInSystem = [];
-let effectCatalog = new Map();
-let currentEffectId = null;
+let wondersInSystem = [];
+let wonderCatalog = new Map();
+let currentWonderId = null;
 // Tracks whether the record as last successfully saved differs from a live
 // snapshot — built from currentRecord (feature add/remove already patches it
 // directly) plus whatever's currently typed into Name/Notes, since those two
@@ -138,7 +138,7 @@ const dirtyGate = createDirtyGate({ buildSnapshot: () => toPressExportShape(buil
 // buildRecordForSave() (defined below, referenced here since function
 // declarations hoist) so a Name/Notes edit — not synced onto currentRecord
 // until Save/Export, see that function's own comment — is captured too.
-// Restoring goes through renderEffect, which already writes record.name/
+// Restoring goes through renderWonder, which already writes record.name/
 // record.notes back into their live input fields. Feature-params sub-edits
 // (routed through the shared featureParamsEditor) are intentionally NOT
 // wrapped here, same scoping decision as Crucible's — that mutation happens
@@ -160,7 +160,7 @@ function recordHistory(label, applyChange) {
 
 function applyRecordSnapshot(json) {
   if (!json) return;
-  renderEffect(JSON.parse(json));
+  renderWonder(JSON.parse(json));
 }
 
 const FIELD_COMMIT_DEBOUNCE_MS = 600;
@@ -190,24 +190,24 @@ function flushFieldCommitOnUndoRedo(event) {
 }
 
 // Built and mounted before `elements` below queries for these buttons by
-// their data-*-effect attribute, so every existing selector/disabled-state
+// their data-*-wonder attribute, so every existing selector/disabled-state
 // call site elsewhere in this file keeps working unchanged.
 createToolbarButtonGroup([
   // Starts disabled — nothing to generate FROM until reloadReferenceData
   // (init()'s own cascade, below) resolves; clicking it before then threw
-  // straight out of generateEffect (features/propertyTypes still their
+  // straight out of generateWonder (features/propertyTypes still their
   // initial empty state). Re-enabled by init() once that resolves.
-  { action: "generate", icon: "tabler:sparkles", label: "Generate Effect", disabled: true, attrs: { "data-generate-effect": true } },
-  { action: "save", label: "Save", disabled: true, attrs: { "data-save-effect": true } },
-  { action: "duplicate", label: "Duplicate", disabled: true, attrs: { "data-duplicate-effect": true } },
-  { action: "delete", label: "Delete", disabled: true, attrs: { "data-delete-effect": true } },
-]).forEach((button) => document.querySelector("[data-effect-toolbar-mount]")?.appendChild(button));
+  { action: "generate", icon: "tabler:sparkles", label: "Generate Wonder", disabled: true, attrs: { "data-generate-wonder": true } },
+  { action: "save", label: "Save", disabled: true, attrs: { "data-save-wonder": true } },
+  { action: "duplicate", label: "Duplicate", disabled: true, attrs: { "data-duplicate-wonder": true } },
+  { action: "delete", label: "Delete", disabled: true, attrs: { "data-delete-wonder": true } },
+]).forEach((button) => document.querySelector("[data-wonder-toolbar-mount]")?.appendChild(button));
 // A small visual break, not a functional one — same convention every other
 // tool's toolbar now uses (see forge/js/app.js's own comment).
 createToolbarButtonGroup([
-  { action: "undo", label: "Undo", attrs: { "data-undo-effect": true } },
-  { action: "redo", label: "Redo", attrs: { "data-redo-effect": true } },
-]).forEach((button) => document.querySelector("[data-effect-undo-toolbar-mount]")?.appendChild(button));
+  { action: "undo", label: "Undo", attrs: { "data-undo-wonder": true } },
+  { action: "redo", label: "Redo", attrs: { "data-redo-wonder": true } },
+]).forEach((button) => document.querySelector("[data-wonder-undo-toolbar-mount]")?.appendChild(button));
 createToolbarButtonGroup([
   {
     label: "Edit Feature",
@@ -233,9 +233,9 @@ createToolbarButtonGroup([
     onClick: () => featureParamsEditor.deleteSelectedParam(),
   },
 ]).forEach((button) => document.querySelector("[data-feature-inspector-toolbar-mount]")?.appendChild(button));
-document.querySelector("[data-effect-empty-state]")?.appendChild(
+document.querySelector("[data-wonder-empty-state]")?.appendChild(
   createEmptyStateCard({
-    message: "Nothing selected yet. Pick an existing Effect above, or fill in the fields and click Generate Effect.",
+    message: "Nothing selected yet. Pick an existing Wonder above, or fill in the fields and click Generate Wonder.",
     variant: "inline",
   })
 );
@@ -258,14 +258,14 @@ function mountField(key, element) {
   mount.replaceWith(element);
 }
 mountField("system-select", createCompactField({ type: "select", id: "vaultSystemSelect", label: "System", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-system-select" }));
-mountField("effect-select", createCompactField({ type: "select", id: "vaultEffectSelect", label: "Effect", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-effect-select" }));
+mountField("wonder-select", createCompactField({ type: "select", id: "vaultWonderSelect", label: "Wonder", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-wonder-select" }));
 // Hidden entirely for a System with no "classes" field (most Systems) —
 // see populateCastingClassSelect. Casting Class narrows which Features are
 // eligible (matchesClass, lib/generator.js) the same way a locked Signature
-// Effect narrows the pick, so it's positioned right before the Property
+// Feature narrows the pick, so it's positioned right before the Property
 // overrides that also constrain generation.
 mountField("casting-class-select", createCompactField({ type: "select", id: "vaultCastingClassSelect", label: "Casting Class", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-casting-class-select" }));
-mountField("signature-feature-override", createCompactField({ type: "select", id: "vaultSignatureOverride", label: "Signature Effect", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-signature-feature-override" }));
+mountField("signature-feature-override", createCompactField({ type: "select", id: "vaultSignatureOverride", label: "Signature Feature", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-signature-feature-override" }));
 mountField(
   "locked-features",
   createSearchableCheckList({
@@ -276,25 +276,25 @@ mountField(
 // Same field-box style as Identity below (and Forge/Crucible's own Name
 // box) — per explicit feedback that every tool's center-pane properties
 // should look and act the same.
-mountField("effect-name", createFieldBox({ key: "name", label: "Name", editable: true, colClass: null, dataAttr: "data-effect-name" }));
+mountField("wonder-name", createFieldBox({ key: "name", label: "Name", editable: true, colClass: null, dataAttr: "data-wonder-name" }));
 
 const elements = {
   systemSelect: document.querySelector("[data-system-select]"),
-  effectSelect: document.querySelector("[data-effect-select]"),
+  wonderSelect: document.querySelector("[data-wonder-select]"),
   generationFields: document.querySelector("[data-generation-fields]"),
   castingClassSelect: document.querySelector("[data-casting-class-select]"),
   propertyOverridesContainer: document.querySelector("[data-property-overrides]"),
   signatureOverride: document.querySelector("[data-signature-feature-override]"),
   lockedFeatures: document.querySelector("[data-locked-features]"),
-  generateButton: document.querySelector("[data-generate-effect]"),
-  saveButton: document.querySelector("[data-save-effect]"),
-  duplicateButton: document.querySelector("[data-duplicate-effect]"),
-  deleteButton: document.querySelector("[data-delete-effect]"),
-  undoButton: document.querySelector("[data-undo-effect]"),
-  redoButton: document.querySelector("[data-redo-effect]"),
-  emptyState: document.querySelector("[data-effect-empty-state]"),
-  display: document.querySelector("[data-effect-display]"),
-  nameInput: document.querySelector("[data-effect-name]"),
+  generateButton: document.querySelector("[data-generate-wonder]"),
+  saveButton: document.querySelector("[data-save-wonder]"),
+  duplicateButton: document.querySelector("[data-duplicate-wonder]"),
+  deleteButton: document.querySelector("[data-delete-wonder]"),
+  undoButton: document.querySelector("[data-undo-wonder]"),
+  redoButton: document.querySelector("[data-redo-wonder]"),
+  emptyState: document.querySelector("[data-wonder-empty-state]"),
+  display: document.querySelector("[data-wonder-display]"),
+  nameInput: document.querySelector("[data-wonder-name]"),
   identityFields: document.querySelector("[data-identity-fields]"),
   featureList: document.querySelector("[data-feature-list]"),
   addFeatureSelect: document.querySelector("[data-add-feature-select]"),
@@ -319,7 +319,7 @@ const elements = {
   featureBasicBudgetCost: document.querySelector("[data-feature-basic-budget-cost]"),
   editFeatureButton: document.querySelector("[data-edit-feature-button]"),
   deleteParamButton: document.querySelector("[data-delete-param-button]"),
-  effectRelationships: document.querySelector("[data-effect-relationships]"),
+  wonderRelationships: document.querySelector("[data-wonder-relationships]"),
   modeToggleMount: document.querySelector("[data-vault-mode-toggle-mount]"),
   relationshipsListMount: document.querySelector("[data-relationships-list-mount]"),
   relationshipsGraphWrap: document.querySelector("[data-relationships-graph-wrap]"),
@@ -469,37 +469,37 @@ async function populateSystemSelect() {
 // body — mirrors Sanctum's refreshLocationCatalog/Crucible's
 // refreshMonsterCatalog exactly. Local-only (anonymous, browser-storage)
 // entries are always deletable, since it's just this browser's own storage.
-async function refreshEffectCatalog(ids) {
-  effectCatalog = await refreshOwnershipCatalog(dataManager, "effect", ids);
+async function refreshWonderCatalog(ids) {
+  wonderCatalog = await refreshOwnershipCatalog(dataManager, "wonder", ids);
 }
 
-function effectAllowsDelete(id) {
-  return allowsDelete(effectCatalog, id, { dataManager });
+function wonderAllowsDelete(id) {
+  return allowsDelete(wonderCatalog, id, { dataManager });
 }
 
-// Every saved Effect for the active System — same picker pattern as
+// Every saved Wonder for the active System — same picker pattern as
 // Crucible's Monster/Sanctum's Location: "New / unsaved" as the default so
-// a fresh Generate Effect keeps working exactly as before.
-async function populateEffectSelect() {
-  if (!elements.effectSelect) return;
+// a fresh Generate Wonder keeps working exactly as before.
+async function populateWonderSelect() {
+  if (!elements.wonderSelect) return;
   const systemId = currentSystemId();
-  effectsInSystem = systemId ? await listEffectsForSystem(dataManager, systemId) : [];
-  const sorted = [...effectsInSystem].sort((a, b) => (a.name || a.id).localeCompare(b.name || b.id));
-  renderOptionalSelectOptions(elements.effectSelect, sorted, { previousValue: currentEffectId || "" });
-  await refreshEffectCatalog(effectsInSystem.map((effect) => effect.id));
+  wondersInSystem = systemId ? await listWondersForSystem(dataManager, systemId) : [];
+  const sorted = [...wondersInSystem].sort((a, b) => (a.name || a.id).localeCompare(b.name || b.id));
+  renderOptionalSelectOptions(elements.wonderSelect, sorted, { previousValue: currentWonderId || "" });
+  await refreshWonderCatalog(wondersInSystem.map((wonder) => wonder.id));
   updateGenerationFieldsVisibility();
 }
 
-// Casting Class/Property overrides/Signature Effect/Locked Features only
-// matter for generating something new — once an existing Effect is loaded
+// Casting Class/Property overrides/Signature Feature/Locked Features only
+// matter for generating something new — once an existing Wonder is loaded
 // they're just clutter (same convention Sanctum/Crucible/Forge's own
 // generation fields follow). Purely visual: hiding never clears an
 // override's underlying value.
 function updateGenerationFieldsVisibility() {
-  elements.generationFields?.classList.toggle("d-none", Boolean(elements.effectSelect?.value));
+  elements.generationFields?.classList.toggle("d-none", Boolean(elements.wonderSelect?.value));
 }
 
-// Signature Effect is an optional override — blank = "Random" — exactly like
+// Signature Feature is an optional override — blank = "Random" — exactly like
 // Crucible's Creature Type/Archetype/Role/signature Feature selects.
 function populateOverrideSelect(select, entries, blankLabel) {
   if (!select) return;
@@ -558,7 +558,7 @@ function populatePropertyOverrides() {
     if (propertyType.id === "form") formSelect = select;
     if (propertyType.id === "spellLevels") spellLevelsWrapper = wrapper;
   });
-  // Spell Levels only means anything for an effect whose Item Form IS
+  // Spell Levels only means anything for a wonder whose Item Form IS
   // "Spell" (no physical vessel) — every other Form has its own real-world
   // shape instead. "Random" (the default, no override pinned) still shows
   // it, since generation could still land on Spell. See renderIdentity's
@@ -620,9 +620,9 @@ async function reloadReferenceData() {
   ]);
   // The shared `feature` kind also holds Sanctum's location features and
   // Crucible's monster features (tagged accordingly) — filtered here, once,
-  // so every consumer of the module-level `features` array (generateEffect,
+  // so every consumer of the module-level `features` array (generateWonder,
   // and the Locked/Signature/Add-feature selects below) only ever sees
-  // Vault's own spell/item ones. generateEffect already applied this same
+  // Vault's own spell/item ones. generateWonder already applied this same
   // matchesCategory filter internally, so this was really only ever visible
   // in the three UI pickers — confirmed the identical bug reported (and
   // just fixed) in Crucible's own equivalent pickers.
@@ -632,11 +632,11 @@ async function reloadReferenceData() {
   populateOverrideSelect(elements.signatureOverride, features, "Random");
   populateLockedFeaturesSelect();
   populateAddFeatureSelect();
-  await populateEffectSelect();
+  await populateWonderSelect();
 }
 
 // Optional override, blank = "Any class" (unconstrained) — same convention
-// as Signature Effect/property overrides. Hidden entirely (not just empty)
+// as Signature Feature/property overrides. Hidden entirely (not just empty)
 // for a System with no "classes" field at all, matching how the Symbol Dice
 // stepper only shows up for a System that actually declares one.
 function populateCastingClassSelect() {
@@ -679,7 +679,7 @@ function propertyValueLabel(propertyTypeId, valueId) {
 // Editable — a select per property type, listing that type's own real
 // values (Rarity/Activation/Item Form/...), matching how Crucible/Forge/
 // Sanctum's own Identity fields are all directly editable post-generation
-// rather than plain read-only text. Signature Effect is deliberately not
+// rather than plain read-only text. Signature Feature is deliberately not
 // included here — it's already shown, clearly labeled "Signature", on its
 // own Feature's row at the top of the Features list, so repeating it here
 // was redundant.
@@ -701,11 +701,11 @@ function renderIdentity(record) {
         // A leading blank option — createFieldBox's own select only ever
         // sets `select.value` when a matching option is present (see its
         // own comment); with none of these `option.value`s ever "" before,
-        // an effect with no resolved value for this property type (a
+        // a wonder with no resolved value for this property type (a
         // markdown-imported mundane item has no rarity at all — confirmed
         // real: Alchemist's Fire, Elixir of Health) silently rendered
         // whatever the browser defaults an unselected <select> to — its
-        // FIRST option, "Common" — indistinguishable from an effect that
+        // FIRST option, "Common" — indistinguishable from a wonder that
         // genuinely resolved to that value. Same "(random)"-style honesty
         // propertyValueLabel above already gives note-generation text.
         options: [{ value: "", label: "—" }, ...(propertyType.values || []).map((value) => ({ value: value.id, label: value.label || value.id }))],
@@ -758,7 +758,7 @@ function selectFeatureRow(featureId) {
 // Mirrors Crucible's own renderFeatureBasicInfo/updateFeatureBasicInfo
 // exactly (crucible/js/app.js) — editable here only for a Feature marked
 // Unique (Loom's own Scope field), same gating reasoning. In practice every
-// one of Vault's own spell/item Features is shared across many Effects by
+// one of Vault's own spell/item Features is shared across many Wonders by
 // design (this whole atomic-Feature model exists specifically so they
 // are), so these three fields read as permanently disabled here — Edit
 // Feature (opens Loom) is the real editing path, exactly like Crucible's
@@ -777,7 +777,7 @@ function renderFeatureBasicInfo(feature) {
 }
 
 // Saves straight through dataManager.save("feature", ...) — a Feature-
-// record edit, not an Effect-record one, so the Effect's own dirty-
+// record edit, not a Wonder-record one, so the Wonder's own dirty-
 // gate/Save button don't apply, same immediate-save path Crucible's own
 // version uses. description/mechanics.text kept in sync when both are
 // plain strings, matching every prior migration this session's own
@@ -817,7 +817,7 @@ elements.featureBasicBudgetCost?.addEventListener("change", () => {
 // the LOWEST level entry is the headline number, every other level becomes
 // a trailing scaling note rather than picking just one (unlike a monster's
 // own Recharge/Day frequency tiers, a spell's own slot level is chosen
-// fresh at every cast, not a fixed property of this one Effect record).
+// fresh at every cast, not a fixed property of this one Wonder record).
 function scalingNoteText(scaling) {
   const entries = Object.entries(scaling?.values || {}).sort((a, b) => Number(a[0]) - Number(b[0]));
   if (entries.length < 2) return "";
@@ -825,7 +825,7 @@ function scalingNoteText(scaling) {
   return ` Scales by ${label}: ${entries.map(([level, dice]) => `${level} — ${dice}`).join(", ")}.`;
 }
 
-// feat.damage's own render — shared by every effect (spell or item) whose
+// feat.damage's own render — shared by every wonder (spell or item) whose
 // own primary damage resolved cleanly (see vault-feature-matching.js's own
 // `mechanic.kind === "damage"` fast path), not just spells, despite the
 // scaling-ladder shape being far more common for a spell's own damage.
@@ -1141,10 +1141,10 @@ function randomEffectDescriptionText(feature, record) {
   if (named.length) {
     const names = named.map((entry) => entry?.name).filter(Boolean);
     const residual = params?.optionCount ? `, plus ${params.optionCount} more (see its notes)` : "";
-    return `Consult this Effect's own table: ${names.join(", ")}${residual}.`;
+    return `Consult this Wonder's own table: ${names.join(", ")}${residual}.`;
   }
   if (!params?.optionCount) return feature.description || "";
-  return `Consult this Effect's own table (${params.optionCount} options) — see its notes.`;
+  return `Consult this Wonder's own table (${params.optionCount} options) — see its notes.`;
 }
 
 function adhesiveManipulationDescriptionText(feature, record) {
@@ -1331,7 +1331,7 @@ function renderFeatureList(record) {
   });
 }
 
-function refreshEffectView() {
+function refreshWonderView() {
   if (!currentRecord) return;
   renderFeatureList(currentRecord);
   renderBudget(currentRecord);
@@ -1360,13 +1360,13 @@ function removeFeature(featureId) {
     if (currentRecord.signatureFeatureId === featureId) currentRecord.signatureFeatureId = null;
   });
   recomputeBudget(currentRecord);
-  refreshEffectView();
+  refreshWonderView();
 }
 
 function addFeature(featureId) {
   if (!currentRecord || !featureId) return;
   // A freshly added tiered feature starts at its own first (cheapest) tier
-  // — same "always a real, well-defined tier" guarantee generateEffect's
+  // — same "always a real, well-defined tier" guarantee generateWonder's
   // own output gives — so the Inspector's own tier select (feature-params-
   // editor.js's renderFeatureTierEditor) always has something valid
   // selected rather than defaulting silently.
@@ -1379,7 +1379,7 @@ function addFeature(featureId) {
     }
   });
   recomputeBudget(currentRecord);
-  refreshEffectView();
+  refreshWonderView();
 }
 
 function readLockedFeatureIds() {
@@ -1413,11 +1413,11 @@ function updateActionButtons() {
   if (elements.saveButton) elements.saveButton.disabled = !hasRecord || !dirtyGate.isDirty();
   if (elements.duplicateButton) elements.duplicateButton.disabled = !hasRecord;
   if (elements.deleteButton) {
-    elements.deleteButton.disabled = !hasRecord || !dirtyGate.hasSaved() || !effectAllowsDelete(currentEffectId);
+    elements.deleteButton.disabled = !hasRecord || !dirtyGate.hasSaved() || !wonderAllowsDelete(currentWonderId);
   }
 }
 
-function renderEffect(record) {
+function renderWonder(record) {
   currentRecord = record;
   renderModeToggle();
   if (!record) {
@@ -1450,14 +1450,14 @@ function renderEffect(record) {
 // shared relationship-editor.js/relationship-graph.js modules — see that
 // pair's own header comments for the full suite-wide mechanism, and Forge's
 // own app.js for the first tool this pattern shipped on. Item/spell-
-// flavored suggestions, not social or ecological ones — an Effect's own
+// flavored suggestions, not social or ecological ones — a Wonder's own
 // natural relationships read differently than an NPC's or a Monster's.
 const RELATIONSHIP_TARGET_KINDS = [
   { id: "npc", label: "NPC" },
   { id: "location", label: "Location" },
   { id: "monster", label: "Monster" },
   { id: "character", label: "Character" },
-  { id: "effect", label: "Effect" },
+  { id: "wonder", label: "Wonder" },
 ];
 const RELATIONSHIP_TYPE_SUGGESTIONS = [
   "Requires",
@@ -1467,18 +1467,18 @@ const RELATIONSHIP_TYPE_SUGGESTIONS = [
   "Found in",
 ];
 
-// "effect" (the existing Identity/Features/Notes card stack) or
-// "relationships" (a full-pane List/Graph view over this Effect's own
+// "wonder" (the existing Identity/Features/Notes card stack) or
+// "relationships" (a full-pane List/Graph view over this Wonder's own
 // relationship edges) — mutually exclusive Modes, switched by the
 // suite-wide Mode toggle group (createModeToggleGroup) in the header row
 // above the main pane, exactly mirroring Forge/Crucible/Sanctum's own split.
-let mode = "effect";
+let mode = "wonder";
 let relationshipsForceGraph = null;
 let relationshipsIconByKind = {};
 
 function renderModeToggle() {
   if (!elements.modeToggleMount) return;
-  // Nothing to relate until an Effect exists — disabled (not hidden) until
+  // Nothing to relate until a Wonder exists — disabled (not hidden) until
   // then, via createButtonCheckGroup's own disabled/tooltip option support
   // (ui-components.js), the same mechanism every other tool's Relationships
   // option now uses too (previously each hand-rolled an identical
@@ -1488,13 +1488,13 @@ function renderModeToggle() {
     container: elements.modeToggleMount,
     ariaLabel: "Vault view",
     options: [
-      { value: "effect", icon: "tabler:sparkles", label: "Effect" },
+      { value: "wonder", icon: "tabler:wand", label: "Wonder" },
       {
         value: "relationships",
         icon: "tabler:affiliate",
         label: "Relationships",
         disabled: !currentRecord,
-        tooltip: currentRecord ? undefined : "Select or generate an Effect first",
+        tooltip: currentRecord ? undefined : "Select or generate a Wonder first",
       },
     ],
     value: mode,
@@ -1506,7 +1506,7 @@ function setMode(nextMode) {
   mode = nextMode;
   const isRelationships = mode === "relationships";
   elements.display?.classList.toggle("d-none", isRelationships || !currentRecord);
-  elements.effectRelationships?.classList.toggle("d-none", !isRelationships);
+  elements.wonderRelationships?.classList.toggle("d-none", !isRelationships);
   renderModeToggle();
   if (isRelationships) void refreshRelationshipsSection();
 }
@@ -1518,7 +1518,7 @@ function ensureRelationshipsForceGraph() {
     content: elements.relationshipsGraphContent,
     svg: elements.relationshipsGraphSvg,
     emptyMount: elements.relationshipsGraphEmpty,
-    getNodeRadius: (node) => (node.kind === "effect" && node.id === `effect:${currentRecord?.id}` ? 20 : 14),
+    getNodeRadius: (node) => (node.kind === "wonder" && node.id === `wonder:${currentRecord?.id}` ? 20 : 14),
     getNodeIcon: (node) => relationshipsIconByKind?.[node.kind] || null,
     getEdgeLabel: (edge) => edge.type || null,
     classPrefix: "relationship-graph",
@@ -1537,16 +1537,16 @@ function ensureRelationshipsForceGraph() {
 
 async function refreshRelationshipsList() {
   if (!elements.relationshipsListMount) return;
-  // No Effect loaded — clear rather than leave a stale prior Effect's own
+  // No Wonder loaded — clear rather than leave a stale prior Wonder's own
   // relationships on screen.
   if (!currentRecord?.id) {
     elements.relationshipsListMount.innerHTML =
-      '<p class="small text-body-secondary mb-0">Select or generate an Effect to see its relationships.</p>';
+      '<p class="small text-body-secondary mb-0">Select or generate a Wonder to see its relationships.</p>';
     return;
   }
   await renderRelationshipEditor({
     container: elements.relationshipsListMount,
-    sourceKind: "effect",
+    sourceKind: "wonder",
     sourceId: currentRecord.id,
     targetKinds: RELATIONSHIP_TARGET_KINDS,
     typeSuggestions: RELATIONSHIP_TYPE_SUGGESTIONS,
@@ -1564,7 +1564,7 @@ async function refreshRelationshipsGraph() {
   if (!forceGraph || !currentRecord?.id) return;
   try {
     const { nodes, edges, iconByKind } = await buildRelationshipGraph(dataManager, {
-      nodes: [{ kind: "effect", id: currentRecord.id, label: currentRecord.name || currentRecord.id }],
+      nodes: [{ kind: "wonder", id: currentRecord.id, label: currentRecord.name || currentRecord.id }],
     });
     relationshipsIconByKind = iconByKind;
     forceGraph.setGraph({ nodes, edges });
@@ -1583,23 +1583,23 @@ renderModeToggle();
 function handleGenerate() {
   try {
     const selectedClass = classes.find((entry) => entry.id === elements.castingClassSelect?.value);
-    const generated = generateEffect(features, propertyTypes, {
+    const generated = generateWonder(features, propertyTypes, {
       systemId: currentSystemId() || null,
       signatureFeatureId: elements.signatureOverride?.value || "",
       lockedFeatureIds: readLockedFeatureIds(),
       propertyOverrides: readPropertyOverrides(),
       allowedFeatureTags: selectedClass?.allowedFeatureTags || null,
     });
-    const record = createEffectRecord(generated);
+    const record = createWonderRecord(generated);
     dirtyGate.markDirty();
     // Freshly generated content is always unsaved, regardless of whichever
-    // saved Effect the picker previously pointed at — mirrors Crucible's
+    // saved Wonder the picker previously pointed at — mirrors Crucible's
     // handleGenerate/Sanctum's handleGenerate resetting the same way.
-    currentEffectId = null;
-    if (elements.effectSelect) elements.effectSelect.value = "";
+    currentWonderId = null;
+    if (elements.wonderSelect) elements.wonderSelect.value = "";
     updateGenerationFieldsVisibility();
-    recordHistory("generate effect", () => renderEffect(record));
-    status?.show("Effect generated.", { type: "success", timeout: 1500 });
+    recordHistory("generate wonder", () => renderWonder(record));
+    status?.show("Wonder generated.", { type: "success", timeout: 1500 });
   } catch (error) {
     status?.show(`Unable to generate: ${error.message}`, { type: "error", timeout: 4000 });
   }
@@ -1610,7 +1610,7 @@ async function handleSave() {
   currentRecord.name = elements.nameInput?.value || "";
   currentRecord.notes = elements.notesText?.value || "";
   try {
-    // Every Effect save gets its remaining raw stats.mechanic (an imported
+    // Every Wonder save gets its remaining raw stats.mechanic (an imported
     // spell/item's own recognized structured mechanic, or unrecognized
     // stats.description) converted into a real Feature reference,
     // unconditionally — mirrors Crucible's own handleSave exactly (see
@@ -1626,7 +1626,7 @@ async function handleSave() {
       const conversionResult = await convertSpellOrItemToFeatures(currentRecord, {
         dataManager,
         existingFeatures: features,
-        effectSlug: currentRecord.id,
+        wonderSlug: currentRecord.id,
       });
       conversionErrors = conversionResult?.errors || [];
     }
@@ -1634,10 +1634,10 @@ async function handleSave() {
     // an anonymous GM saves locally to their own browser, a signed-in user
     // gets a real owned/shareable record — Vault has no whole-tool login gate.
     const exported = toPressExportShape(currentRecord);
-    await dataManager.save("effect", currentRecord.id, exported);
+    await dataManager.save("wonder", currentRecord.id, exported);
     dirtyGate.markClean(exported);
-    currentEffectId = currentRecord.id;
-    await populateEffectSelect();
+    currentWonderId = currentRecord.id;
+    await populateWonderSelect();
     updateActionButtons();
     if (conversionErrors.length) {
       status?.show(
@@ -1653,16 +1653,16 @@ async function handleSave() {
 }
 
 async function handleDelete() {
-  if (!currentRecord || !dataManager || !dirtyGate.hasSaved() || !effectAllowsDelete(currentEffectId)) return;
+  if (!currentRecord || !dataManager || !dirtyGate.hasSaved() || !wonderAllowsDelete(currentWonderId)) return;
   const label = currentRecord.name || currentRecord.id;
   if (!confirmDelete({ label: `"${label}"` })) return;
   try {
-    await dataManager.delete("effect", currentRecord.id);
+    await dataManager.delete("wonder", currentRecord.id);
     status?.show("Deleted.", { type: "success", timeout: 1500 });
     dirtyGate.markDirty();
-    currentEffectId = null;
-    renderEffect(null);
-    await populateEffectSelect();
+    currentWonderId = null;
+    renderWonder(null);
+    await populateWonderSelect();
   } catch (error) {
     status?.show(`Unable to delete: ${error.message}`, { type: "error", timeout: 4000 });
   }
@@ -1675,22 +1675,22 @@ function handleExport() {
   exportRecordAsJson(currentRecord, toPressExportShape);
 }
 
-function generateEffectId() {
+function generateWonderId() {
   const suffix =
     typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
       ? crypto.randomUUID()
       : `${Date.now().toString(16)}-${Math.random().toString(16).slice(2)}`;
-  return `eff_${suffix}`;
+  return `won_${suffix}`;
 }
 
 function handleDuplicate() {
   if (!currentRecord) return;
   const source = buildRecordForSave();
-  const duplicate = { ...source, id: generateEffectId(), name: `${source.name || "Effect"} Copy` };
+  const duplicate = { ...source, id: generateWonderId(), name: `${source.name || "Wonder"} Copy` };
   dirtyGate.markDirty();
-  currentEffectId = null;
-  if (elements.effectSelect) elements.effectSelect.value = "";
-  renderEffect(duplicate);
+  currentWonderId = null;
+  if (elements.wonderSelect) elements.wonderSelect.value = "";
+  renderWonder(duplicate);
   status?.show("Duplicated — not yet saved.", { type: "info", timeout: 2000 });
 }
 
@@ -1700,9 +1700,9 @@ async function handleGenerateNote() {
     record: currentRecord,
     elements,
     status,
-    generateNote: generateEffectNote,
+    generateNote: generateWonderNote,
     // Leave name blank rather than falling back to record.id here — an id
-    // like "eff_abc123" would look like a real name to the server and stop
+    // like "won_abc123" would look like a real name to the server and stop
     // it from suggesting one.
     buildRequestBody: (record) => {
       const propertySummary = {};
@@ -1799,12 +1799,12 @@ async function init() {
     // only a Form change needs the whole Identity grid rebuilt to reflect
     // that; every other property just updates its own already-visible select.
     if (key === "form") renderIdentity(currentRecord);
-    refreshEffectView();
+    refreshWonderView();
   });
   // Per-property reroll button (createFieldBox's own `rerollable` option) —
   // same convention Forge's Identity/4D and Crucible's Identity fields use.
   // Unlike a manual select change, the picked value never touched the DOM,
-  // so the Identity grid needs a full re-render (not just refreshEffectView)
+  // so the Identity grid needs a full re-render (not just refreshWonderView)
   // to show it.
   elements.identityFields?.addEventListener("click", (event) => {
     const button = event.target.closest("[data-reroll-attribute]");
@@ -1818,35 +1818,35 @@ async function init() {
     });
     recomputeBudget(currentRecord);
     renderIdentity(currentRecord);
-    refreshEffectView();
+    refreshWonderView();
   });
   // Named (not an inline listener) so the init flow below can also call
   // this directly when auto-selecting the active campaign group's own
   // System.
   async function handleSystemSelectChange() {
     markRequiredControl(elements.systemSelect, Boolean(elements.systemSelect.value));
-    // A different System means any previously loaded Effect (and the
+    // A different System means any previously loaded Wonder (and the
     // reference data it was built from) is no longer relevant — same
     // reasoning as Crucible/Sanctum's own System change handlers.
-    currentEffectId = null;
-    renderEffect(null);
+    currentWonderId = null;
+    renderWonder(null);
     await reloadReferenceData();
   }
   elements.systemSelect?.addEventListener("change", handleSystemSelectChange);
 
-  elements.effectSelect?.addEventListener("change", async () => {
-    const id = elements.effectSelect.value;
-    currentEffectId = id || null;
+  elements.wonderSelect?.addEventListener("change", async () => {
+    const id = elements.wonderSelect.value;
+    currentWonderId = id || null;
     updateGenerationFieldsVisibility();
     if (!id) {
-      renderEffect(null);
+      renderWonder(null);
       return;
     }
     try {
-      // preferLocal: false — `id` always comes from elements.effectSelect,
-      // populated by listEffectsForSystem's own fetchKindEntriesWithIds
+      // preferLocal: false — `id` always comes from elements.wonderSelect,
+      // populated by listWondersForSystem's own fetchKindEntriesWithIds
       // (`includeLocal: false`), so it's already guaranteed to be a
-      // server-known effect; defaulting to a local-preferring get() here
+      // server-known wonder; defaulting to a local-preferring get() here
       // silently served a stale per-record snapshot whenever the server
       // copy changed after this browser's own local cache of it was first
       // populated (confirmed live: Arrow of Slaying's own corrected
@@ -1855,20 +1855,20 @@ async function init() {
       // exact same bug fetchKindEntriesWithIds' own comment already
       // documents and fixes for the list-then-fetch-each path, just missed
       // at this single-record load path.
-      const result = await dataManager.get("effect", id, { preferLocal: false });
+      const result = await dataManager.get("wonder", id, { preferLocal: false });
       if (!result?.payload) {
-        status?.show("Unable to load that effect.", { type: "error", timeout: 4000 });
+        status?.show("Unable to load that wonder.", { type: "error", timeout: 4000 });
         return;
       }
-      // Not createEffectRecord — that function always stamps a fresh id and
-      // createdAt (see effect-schema.js), which is right for a NEW
+      // Not createWonderRecord — that function always stamps a fresh id and
+      // createdAt (see wonder-schema.js), which is right for a NEW
       // generation but would silently rewrite an existing record's real
       // creation time on every load.
-      renderEffect({ ...result.payload, id });
+      renderWonder({ ...result.payload, id });
       dirtyGate.markClean(toPressExportShape(currentRecord));
       updateActionButtons();
     } catch (error) {
-      status?.show(`Unable to load effect: ${error.message}`, { type: "error", timeout: 4000 });
+      status?.show(`Unable to load wonder: ${error.message}`, { type: "error", timeout: 4000 });
     }
   });
 
@@ -1900,7 +1900,7 @@ async function init() {
           await reloadReferenceData();
           if (currentRecord) {
             recomputeBudget(currentRecord);
-            refreshEffectView();
+            refreshWonderView();
           }
         },
       },
@@ -1939,50 +1939,50 @@ async function init() {
 
   document.querySelector("[data-json-mount]")?.appendChild(jsonDataPanel.section);
 
-  // `?effect=<id>` — a cross-tool deep link (Repository's own kind-reference
+  // `?wonder=<id>` — a cross-tool deep link (Repository's own kind-reference
   // chips route here via KIND_TOOL_ROUTE, see repository/js/app.js), same
   // `?param=<id>`-read-at-bootstrap convention Orrery's own `?map=` and
   // Loom's own `?feature=` already establish. Vault has no Setting concept
   // (same as Crucible), so System alone is the scope. Dispatches a real
-  // "change" event to actually load the effect rather than duplicating
-  // effectSelect's own change-handler body a second time here.
+  // "change" event to actually load the wonder rather than duplicating
+  // wonderSelect's own change-handler body a second time here.
   // Two-phase, not one straight-line await chain — same "show the linked
   // record first, load everything else in the background" fix Sanctum's
   // own deep link needed once a campaign had enough saved content for the
   // full System reference-data reload to be genuinely slow. Phase 1
-  // (awaited, blocks return): render THIS effect directly (reusing
-  // renderEffect + the same dirty-baseline call effectSelect's own change
+  // (awaited, blocks return): render THIS wonder directly (reusing
+  // renderWonder + the same dirty-baseline call wonderSelect's own change
   // handler makes — not that handler itself, since it reads the id off
-  // effectSelect.value, which has no matching <option> yet this early).
+  // wonderSelect.value, which has no matching <option> yet this early).
   // Phase 2 (fired but not awaited): the System reference-data reload
-  // populates effectSelect's own option list; a real "change" event
+  // populates wonderSelect's own option list; a real "change" event
   // re-dispatched at the end puts the picker's own displayed selection in
   // sync.
   async function applyDeepLinkParams() {
     const params = new URLSearchParams(window.location.search);
-    const effectId = params.get("effect");
-    if (!effectId) return false;
+    const wonderId = params.get("wonder");
+    if (!wonderId) return false;
     try {
-      const result = await dataManager.get("effect", effectId, { preferLocal: false });
+      const result = await dataManager.get("wonder", wonderId, { preferLocal: false });
       const payload = result?.payload || {};
       const targetSystemId = payload.systemIds?.[0] || null;
-      // Phase 1 — the effect itself, on screen as fast as one fetch allows.
-      currentEffectId = effectId;
+      // Phase 1 — the wonder itself, on screen as fast as one fetch allows.
+      currentWonderId = wonderId;
       updateGenerationFieldsVisibility();
-      renderEffect({ ...payload, id: effectId });
+      renderWonder({ ...payload, id: wonderId });
       dirtyGate.markClean(toPressExportShape(currentRecord));
       updateActionButtons();
       // Phase 2 — deliberately not awaited here; runs after this function
       // has already returned `true`. NOT handleSystemSelectChange (which
-      // resets currentEffectId and calls renderEffect(null) before its own
-      // reloadReferenceData) — that wiped the effect Phase 1 had ALREADY
-      // rendered, leaving the screen blank for the ~700-record Effect
+      // resets currentWonderId and calls renderWonder(null) before its own
+      // reloadReferenceData) — that wiped the wonder Phase 1 had ALREADY
+      // rendered, leaving the screen blank for the ~700-record Wonder
       // catalog fetch's own full duration instead of just quietly finishing
       // in the background behind an already-correct view. Setting
       // systemSelect's own value directly and calling reloadReferenceData()
       // straight (same reference-data fetch, minus the reset) keeps Phase
-      // 1's render on screen the whole time. effectSelect's own value is set
-      // without dispatching "change" for the same reason — the effect is
+      // 1's render on screen the whole time. wonderSelect's own value is set
+      // without dispatching "change" for the same reason — the wonder is
       // already loaded and correctly shown; re-dispatching would only
       // re-fetch and re-render it a second time for no benefit.
       void (async () => {
@@ -1991,7 +1991,7 @@ async function init() {
             elements.systemSelect.value = targetSystemId;
           }
           await reloadReferenceData();
-          if (elements.effectSelect) elements.effectSelect.value = effectId;
+          if (elements.wonderSelect) elements.wonderSelect.value = wonderId;
           enableGenerateButton();
         } catch (error) {
           // Phase 1 already succeeded — a background failure here just
@@ -2014,7 +2014,7 @@ async function init() {
   // to make mid-campaign generation faster. Falls through to the original
   // "nothing chosen yet" placeholder whenever there's no active group, or
   // its System isn't one this tool's own list actually contains. An
-  // explicit `?effect=` deep link always wins over both.
+  // explicit `?wonder=` deep link always wins over both.
   const systems = await populateSystemSelect();
   const deepLinked = await applyDeepLinkParams();
   if (!deepLinked) {
@@ -2026,7 +2026,7 @@ async function init() {
     } else {
       await reloadReferenceData();
     }
-    renderEffect(null);
+    renderWonder(null);
     // Both branches above resolve reference data for whatever System ended
     // up selected — safe to enable here regardless of which one ran. The
     // deepLinked === true case enables from inside its own Phase 2

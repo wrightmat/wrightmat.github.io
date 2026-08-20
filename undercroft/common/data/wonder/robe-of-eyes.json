@@ -1,0 +1,34 @@
+{
+  "index": "robe-of-eyes",
+  "name": "Robe of Eyes",
+  "notes": "Wondrous item, rare (requires attunement)\n\nThis robe is adorned with eyelike patterns. While you wear the robe, you gain the following benefits:\n\nThe robe lets you see in all directions, and you have advantage on Wisdom (Perception) checks that rely on sight.\n\nYou have darkvision out to a range of 120 feet.\n\nYou can see invisible creatures and objects, as well as see into the Ethereal Plane, out to a range of 120 feet.\n\nThe eyes on the robe can't be closed or averted. Although you can close or avert your own eyes, you are never considered to be doing so while wearing this robe.\n\nA light spell cast on the robe or a daylight spell cast within 5 feet of the robe causes you to be blinded for 1 minute. At the end of each of your turns, you can make a Constitution saving throw (DC 11 for light or DC 15 for daylight), ending the blindness on a success.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/magic-items/robe-of-eyes",
+  "mapping": "5e-api-magic-item",
+  "properties": {
+    "rarity": "rare",
+    "form": "wondrous-item"
+  },
+  "featureIds": [
+    "feat.skill-bonus",
+    "feat.cast-a-spell",
+    "feat.darkvision",
+    "feat.requires-attunement"
+  ],
+  "featureTiers": {
+    "feat.skill-bonus": "advantage"
+  },
+  "featureParams": {
+    "feat.skill-bonus": {
+      "skill": "perception"
+    },
+    "feat.cast-a-spell": {
+      "spellName": "on the robe or a daylight"
+    },
+    "feat.darkvision": {
+      "range": 120
+    }
+  }
+}

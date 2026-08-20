@@ -1,0 +1,39 @@
+{
+  "index": "magic-missile",
+  "name": "Magic Missile",
+  "notes": "You create three glowing darts of magical force. Each dart hits a creature of your choice that you can see within range. A dart deals 1d4 + 1 force damage to its target. The darts all strike simultaneously, and you can direct them to hit one creature or several.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/spells/magic-missile",
+  "mapping": "5e-api-spell",
+  "properties": {
+    "form": "spell"
+  },
+  "featureIds": [
+    "feat.damage"
+  ],
+  "featureParams": {
+    "feat.damage": {
+      "resolutionKind": "attack",
+      "damageType": "force",
+      "scaling": {
+        "by": "slot",
+        "values": {
+          "1": "3d4 + 3",
+          "2": "4d4 + 4",
+          "3": "5d4 + 5",
+          "4": "6d4 + 6",
+          "5": "7d4 + 7",
+          "6": "8d4 + 8",
+          "7": "9d4 + 9",
+          "8": "10d4 + 10",
+          "9": "11d4 + 11"
+        }
+      }
+    }
+  },
+  "featureTiers": {
+    "feat.damage": "tier-2"
+  }
+}

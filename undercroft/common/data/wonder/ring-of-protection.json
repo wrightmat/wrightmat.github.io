@@ -1,0 +1,26 @@
+{
+  "index": "ring-of-protection",
+  "name": "Ring of Protection",
+  "notes": "Ring, rare (requires attunement)\n\nYou gain a +1 bonus to AC and saving throws while wearing this ring.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/magic-items/ring-of-protection",
+  "mapping": "5e-api-magic-item",
+  "properties": {
+    "rarity": "rare",
+    "form": "ring"
+  },
+  "featureIds": [
+    "feat.protection-bonus",
+    "feat.requires-attunement"
+  ],
+  "featureTiers": {
+    "feat.protection-bonus": "plus-1"
+  },
+  "featureParams": {
+    "feat.protection-bonus": {
+      "alsoSavingThrows": true
+    }
+  }
+}

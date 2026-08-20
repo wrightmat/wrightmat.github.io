@@ -1289,7 +1289,7 @@ function showReferencePreview(record) {
 // Obsidian requires every referenceable thing (a spell, a magic item) to be
 // its own page, so a vault migrated into Undercroft often still has
 // [[Wiki Links]] pointing at what are now real Library records (a saved
-// resource/effect/etc.) instead of the page they used to be. This scans the
+// resource/wonder/etc.) instead of the page they used to be. This scans the
 // CURRENT page for exactly that: a wikilink whose title does NOT match any
 // real page or quest (an intentional page/quest link is left alone) but
 // DOES match a real Library record by name, and rewrites it to that

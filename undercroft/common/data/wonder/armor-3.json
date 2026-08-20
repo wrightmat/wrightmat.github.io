@@ -1,0 +1,20 @@
+{
+  "index": "armor-3",
+  "name": "Armor, +3",
+  "notes": "Armor (light, medium, or heavy), legendary\n\nYou have a +3 bonus to AC while wearing this armor.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/magic-items/armor-3",
+  "mapping": "5e-api-magic-item",
+  "properties": {
+    "rarity": "legendary",
+    "form": "armor"
+  },
+  "featureIds": [
+    "feat.armor-class-bonus"
+  ],
+  "featureTiers": {
+    "feat.armor-class-bonus": "plus-3"
+  }
+}

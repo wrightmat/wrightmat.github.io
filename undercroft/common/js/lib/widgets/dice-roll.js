@@ -9,6 +9,9 @@
 // dashboard widget, so there's one roll-and-report path and one quick-dice-
 // button behavior, not two of each.
 import { rollDiceExpression } from "../../../../workbench/js/lib/dice.js";
+// Only for rollSymbolPoolExpression's own optional log-post below — this
+// module has no display-formatting knowledge of its own otherwise.
+import { formatSymbolPoolResult } from "../../../../workbench/js/lib/symbol-dice.js";
 // Rollable Journal tables (`[[Page#^blockId]]`) — recognized/resolved here,
 // not `rollDiceExpression` itself, which stays the pure, sync numeric-
 // notation engine Forge's own tables.js also depends on. `common/` already
@@ -130,11 +133,29 @@ async function tryOverlayRoll(expression, dataManager, dice = []) {
   }
   const queue = [];
   rolled.forEach(({ sides, values }) => values.forEach((value) => queue.push({ sides, value })));
+  // A SEPARATE shallow copy, taken BEFORE buildScriptedRandom gets anywhere
+  // near `queue` — confirmed real bug this fixes: buildScriptedRandom's own
+  // `queue.shift()` (this file, above) MUTATES the exact same array in
+  // place as rollDiceExpression below consumes its "random" values one by
+  // one, fully draining it to `[]` by the time that call returns. Reading
+  // `queue` itself for the broadcast AFTER that call (the first version of
+  // this fix) always found it empty, regardless of the actual roll —
+  // `dieResultsSnapshot`, captured before any shifting happens, is what
+  // actually still holds the real values afterward.
+  const dieResultsSnapshot = queue.slice();
   // `dice` must also reach this fallback parse — a named-die term (e.g.
   // "hopeDie") only resolves through the SAME dice map the overlay term
   // extraction above just used; omitting it here would throw "Unexpected
   // token 'hopeDie'" even after a successful physical roll.
-  return rollDiceExpression(expression, { random: buildScriptedRandom(queue), dice });
+  const result = rollDiceExpression(expression, { random: buildScriptedRandom(queue), dice });
+  // The REAL physically-rolled per-die values — attached here (only on the
+  // overlay path; the plain Math.random fallback below has no "real" dice
+  // to speak of) so a Broadcast-mode caller can hand them to a remote
+  // viewer's own reveal animation (dice-reveal.js) instead of having that
+  // viewer roll independently and hope for a matching result — see this
+  // file's own broadcast comment on why dice-box itself can't do that.
+  result.dieResults = dieResultsSnapshot;
+  return result;
 }
 
 // Async now (a table reference needs to fetch the referencing Journal page)
@@ -166,7 +187,24 @@ async function tryOverlayRoll(expression, dataManager, dice = []) {
 // `tryOverlayRoll` itself never needs `context`.
 export async function rollExpression(
   expression,
-  { status, label = "", dataManager, groupContext = null, broadcast = false, dice = [], context = {} } = {}
+  {
+    status,
+    label = "",
+    dataManager,
+    groupContext = null,
+    broadcast = false,
+    // Whisper-style visibility (see server/groups.py's create_group_log_entry) —
+    // a non-empty list logs the roll but restricts who can see it (Private
+    // mode passes [currentUserId], a self-whisper). Independent of
+    // `broadcast`: a roll can now log-and-be-restricted even when it
+    // wouldn't normally broadcast at all (see shouldLog below) — this is
+    // what lets the Dice Roller widget's own mode switcher force a Private
+    // roll to log even from a button (the plain expression Roll) whose own
+    // default behavior has never logged anything.
+    recipientIds = undefined,
+    dice = [],
+    context = {},
+  } = {}
 ) {
   const trimmed = String(expression || "").trim();
   const tableRef = parseTableReferenceExpression(trimmed);
@@ -201,12 +239,18 @@ export async function rollExpression(
     const result = (await tryOverlayRoll(trimmed, dataManager, dice)) || rollDiceExpression(trimmed, { dice, context });
     const prefix = label ? `${label}: ` : "";
     status?.show(`${prefix}${trimmed} → ${result.total}`, { type: "success", timeout: 2200 });
-    if (broadcast && dataManager && groupContext?.groupId) {
+    // Logs whenever EITHER broadcast is on OR explicit recipientIds were
+    // given — a Private roll has to log (self-only) even from a call site
+    // (a plain expression roll) whose own `broadcast` default has never
+    // logged anything at all.
+    const hasRecipients = Array.isArray(recipientIds) && recipientIds.length > 0;
+    if ((broadcast || hasRecipients) && dataManager && groupContext?.groupId) {
       void dataManager
         .createGroupLogEntry({
           groupId: groupContext.groupId,
           type: "roll",
           message: "",
+          recipientIds: hasRecipients ? recipientIds : undefined,
           payload: {
             expression: trimmed,
             notation: result.notation || trimmed,
@@ -390,9 +434,47 @@ async function tryOverlaySymbolPool(poolCounts, diceById, dataManager) {
 // "never let an internal bug block a roll" philosophy — an overlay-path
 // failure here just means this particular roll falls back silently, exactly
 // like every other overlay entry point already does.
-export async function rollSymbolPoolExpression(poolCounts, { diceById, dataManager } = {}) {
+// `groupContext`/`broadcast`/`recipientIds`/`label`/`notation`/`resultSummary`
+// are all optional and only ever used for the SAME log-posting behavior
+// rollExpression/rollSystemMove above already have — added so the Dice
+// Roller widget's own Default/Broadcast/Private mode switcher works
+// identically for a symbol-dice pool roll as it does for a plain numeric
+// one (confirmed real requirement: the 3D overlay already covers symbol
+// dice too, via rollSymbolDiceOverlay — there's no reason Broadcast
+// wouldn't). `resultSummary`/`notation` are pre-formatted by the caller
+// `notation` (a human-readable "2 abilityDie + 1 proficiencyDie"-style
+// string) is caller-supplied — building it needs each die's own display
+// label, which this function only has ids for (diceById is keyed for
+// lookup, but the caller already has the same map for its own UI). The
+// result SUMMARY, unlike notation, is computed here via
+// formatSymbolPoolResult once `rolled` actually exists — it can't be
+// pre-formatted by the caller before this function even runs the roll.
+export async function rollSymbolPoolExpression(
+  poolCounts,
+  { diceById, dataManager, groupContext = null, broadcast = false, recipientIds = undefined, label = "", notation = "" } = {}
+) {
   const overlayResult = await tryOverlaySymbolPool(poolCounts, diceById, dataManager).catch(() => null);
-  return overlayResult || rollSymbolDicePool(poolCounts, { diceById });
+  const rolled = overlayResult || rollSymbolDicePool(poolCounts, { diceById });
+  const hasRecipients = Array.isArray(recipientIds) && recipientIds.length > 0;
+  if (rolled && (broadcast || hasRecipients) && dataManager && groupContext?.groupId) {
+    void dataManager
+      .createGroupLogEntry({
+        groupId: groupContext.groupId,
+        type: "roll",
+        message: "",
+        recipientIds: hasRecipients ? recipientIds : undefined,
+        payload: {
+          label: label || undefined,
+          notation: notation || undefined,
+          total: formatSymbolPoolResult(rolled.net) || undefined,
+        },
+      })
+      .catch(() => {
+        // Best-effort — same as rollExpression's own identical broadcast
+        // failure handling.
+      });
+  }
+  return rolled;
 }
 
 // Section 5's quick-dice source: a resolved System's own dice (Section 1.1)
@@ -635,7 +717,16 @@ function evaluateMoveVerdict(move, result) {
 // nothing matched) — `null`/`isTable` results pass through unchanged,
 // since a Move is never a table reference and a failed roll has nothing to
 // evaluate.
-export async function rollSystemMove(move, { broadcast = false, groupContext = null, dataManager, ...rollOptions } = {}) {
+export async function rollSystemMove(
+  move,
+  { broadcast = false, recipientIds = undefined, groupContext = null, dataManager, ...rollOptions } = {}
+) {
+  // recipientIds destructured out here (same as broadcast/groupContext
+  // already were) so it never leaks into the inner rollExpression call via
+  // ...rollOptions below — that call has its own independent
+  // broadcast/recipientIds handling, and passing it through unintentionally
+  // would double-post: once from the inner call's own logging, once from
+  // this function's own Move-shaped one further down.
   const rolled = await rollExpression(move.expression, { ...rollOptions, dataManager, label: move.label });
   if (!rolled || rolled.isTable) {
     return rolled;
@@ -644,12 +735,14 @@ export async function rollSystemMove(move, { broadcast = false, groupContext = n
   if (verdict?.label) {
     rollOptions.status?.show(`${move.label}: ${verdict.label}`, { type: "info", timeout: 2600 });
   }
-  if (broadcast && dataManager && groupContext?.groupId) {
+  const hasRecipients = Array.isArray(recipientIds) && recipientIds.length > 0;
+  if ((broadcast || hasRecipients) && dataManager && groupContext?.groupId) {
     void dataManager
       .createGroupLogEntry({
         groupId: groupContext.groupId,
         type: "roll",
         message: "",
+        recipientIds: hasRecipients ? recipientIds : undefined,
         payload: {
           expression: move.expression,
           notation: rolled.result?.notation || move.expression,

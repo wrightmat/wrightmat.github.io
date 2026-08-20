@@ -14,7 +14,7 @@
     "fields": {
       "kind": {
         "type": "field",
-        "bind": "='effect'"
+        "bind": "='wonder'"
       },
       "index": {
         "type": "field",

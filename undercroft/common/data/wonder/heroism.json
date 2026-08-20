@@ -1,0 +1,24 @@
+{
+  "index": "heroism",
+  "name": "Heroism",
+  "notes": "A willing creature you touch is imbued with bravery. Until the spell ends, the creature is immune to being frightened and gains temporary hit points equal to your spellcasting ability modifier at the start of each of its turns. When the spell ends, the target loses any remaining temporary hit points from this spell.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/spells/heroism",
+  "mapping": "5e-api-spell",
+  "properties": {
+    "form": "spell"
+  },
+  "featureIds": [
+    "feat.condition-immunity"
+  ],
+  "featureParams": {
+    "feat.condition-immunity": {
+      "condition": "frightened and gains temporary hit points equal to your spellcasting ability modifier at the start of each of its turns"
+    }
+  },
+  "featureTiers": {
+    "feat.condition-immunity": "minor"
+  }
+}

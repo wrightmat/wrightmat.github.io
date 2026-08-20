@@ -72,16 +72,16 @@ export const SOURCES = [
     bulk: true,
   },
   {
-    id: "markdown-effect",
+    id: "markdown-wonder",
     label: "Markdown (Item/Spell)",
     valueLabel: "Markdown file",
     // Same "value is a File, not typed text" reasoning as fantasy-statblocks
     // above.
     placeholder: "",
-    helpTopic: "loom.source.markdown-effect",
+    helpTopic: "loom.source.markdown-wonder",
     file: true,
     // A whole Obsidian vault folder of item/spell notes, same bulk pattern
-    // as fantasy-statblocks — see loadMarkdownEffectDataBulk below.
+    // as fantasy-statblocks — see loadMarkdownWonderDataBulk below.
     bulk: true,
   },
 ];
@@ -290,7 +290,7 @@ function normalizeBoldLeadIn(paragraph) {
   return `***${label}.*** ${rest}`.trim();
 }
 
-// The general markdown structural scanner behind the "markdown-effect"
+// The general markdown structural scanner behind the "markdown-wonder"
 // source: reads an Obsidian vault note (a magic item or spell, one per
 // file — confirmed live against ~70 real files under dnd-eberron/other and
 // dnd-eberron/_srd/spells) for its own structural markers — a leading
@@ -311,7 +311,7 @@ function normalizeBoldLeadIn(paragraph) {
 // name inline — the filename is the only name available, so `fileName` is
 // threaded through explicitly (mirroring loadFantasyStatblockDataBulk's own
 // `_bulkFileName` stamp, but available even for a single-file import here).
-export function parseMarkdownEffectSource(text, fileName) {
+export function parseMarkdownWonderSource(text, fileName) {
   const rawLines = String(text || "").replace(/\r\n/g, "\n").split("\n");
   let i = 0;
   const nextNonBlank = (from) => {
@@ -455,16 +455,16 @@ export function parseMarkdownEffectSource(text, fileName) {
   return { name, tags, headerLine, fields, paragraphs, tables, higherLevel, notesLine, references };
 }
 
-// Bulk counterpart to parseMarkdownEffectSource above — same "one bad file
+// Bulk counterpart to parseMarkdownWonderSource above — same "one bad file
 // doesn't kill the batch" contract as loadFantasyStatblockDataBulk (this
 // parser essentially never throws, but a future stricter version might).
-export async function loadMarkdownEffectDataBulk(files, onProgress) {
+export async function loadMarkdownWonderDataBulk(files, onProgress) {
   const list = Array.from(files || []);
   const results = [];
   for (const file of list) {
     try {
       const text = await readTextFile(file);
-      results.push(parseMarkdownEffectSource(text, file.name));
+      results.push(parseMarkdownWonderSource(text, file.name));
     } catch (error) {
       results.push({ _bulkFileName: file.name, _bulkError: error.message });
     }
@@ -937,7 +937,7 @@ function toKindEntry(kind, id, body) {
 // the request at all. Keyed by kind + systemId (unscoped fetches use ""),
 // caching the in-flight PROMISE (not just the resolved value) so two
 // callers racing for the same kind within one tick (a real shape — Vault's
-// own Feature and Effect pickers both load on the same page) share one
+// own Feature and Wonder pickers both load on the same page) share one
 // request instead of firing two. Invalidated on the two events DataManager
 // already emits on any real write (save() at data-manager.js's own
 // "workbench:content-saved", delete()'s "workbench:content-deleted") —
@@ -1029,7 +1029,7 @@ async function fetchKindEntriesWithIdsUncached(dataManager, kind) {
           // fixes: an NPC's locationId, corrected server-side, kept resolving
           // to its old value here (this function backs every "list every X
           // for filtering" helper — Forge's NPCs/Locations, Crucible's
-          // Monsters, Vault's Effects, Sanctum's Features/Resources/...),
+          // Monsters, Vault's Wonders, Sanctum's Features/Resources/...),
           // making it disappear from the Setting it now actually belongs to.
           return toKindEntry(kind, id, (await dataManager.get(kind, id, { preferLocal: false }))?.payload);
         } catch (error) {
@@ -1081,7 +1081,7 @@ async function fetchKindEntriesForSystemUncached(dataManager, kind, systemId) {
 // FILTER (matchesSystem, matchesCategory, ...) still has to fall back to
 // fetchKindEntriesWithIds, since those fields only exist in each record's
 // own full payload, not on its /list row. Confirmed real fix, not a
-// micro-optimization: a kind with hundreds of saved entries (`effect`
+// micro-optimization: a kind with hundreds of saved entries (`wonder`
 // crossed 700, `feature` crossed 1,500 after this session's SRD bulk
 // imports) made every name lookup against it — a kind-reference chip's
 // hover preview, its click-to-navigate, a wiki-link-to-reference
@@ -1228,12 +1228,12 @@ export async function loadSourceData(source, value, dataManager) {
       const text = await readTextFile(value);
       return loadFantasyStatblockData(text);
     }
-    case "markdown-effect": {
+    case "markdown-wonder": {
       if (!value) {
         throw new Error("Select a markdown item/spell file to load.");
       }
       const text = await readTextFile(value);
-      return parseMarkdownEffectSource(text, value.name);
+      return parseMarkdownWonderSource(text, value.name);
     }
     case "manual": {
       const trimmed = (value || "").trim();

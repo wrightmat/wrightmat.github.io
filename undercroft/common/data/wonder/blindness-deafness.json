@@ -1,0 +1,26 @@
+{
+  "index": "blindness-deafness",
+  "name": "Blindness/Deafness",
+  "notes": "You can blind or deafen a foe. Choose one creature that you can see within range to make a constitution saving throw. If it fails, the target is either blinded or deafened (your choice) for the duration. At the end of each of its turns, the target can make a constitution saving throw. On a success, the spell ends.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/spells/blindness-deafness",
+  "mapping": "5e-api-spell",
+  "properties": {
+    "form": "spell"
+  },
+  "featureIds": [
+    "feat.impose-condition"
+  ],
+  "featureParams": {
+    "feat.impose-condition": {
+      "condition": "blinded or deafened",
+      "saveAbility": "constitution",
+      "duration": "the duration"
+    }
+  },
+  "featureTiers": {
+    "feat.impose-condition": "minor"
+  }
+}

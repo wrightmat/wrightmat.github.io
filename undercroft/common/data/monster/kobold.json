@@ -1,5 +1,4 @@
 {
-  "kind": "monster",
   "name": "Kobold",
   "type": "humanoid",
   "systemIds": [

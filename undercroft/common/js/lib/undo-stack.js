@@ -10,11 +10,43 @@ function readSession(key) {
   }
 }
 
+// A record whose own before/after snapshots are large (Orrery's own map
+// JSON, especially with embedded image data) can blow sessionStorage's
+// ~5-10MB per-origin quota well before the in-memory stack even reaches its
+// own `limit` — confirmed real bug (a QuotaExceededError logged on every
+// single edit once a map's history grew past that point, permanently, not
+// a one-time hiccup). Rather than just catching and logging that forever,
+// retry with progressively less history persisted (oldest half of whichever
+// stack still has entries first) until a write actually fits or there's
+// nothing left to drop — self-adapts to whatever this particular record's
+// own snapshot size allows instead of hardcoding a fixed entry count that's
+// still too big for some records and needlessly small for others. Only
+// ever trims what's WRITTEN here — the caller's own in-memory undo/redo
+// arrays are never touched, so undo/redo within the current session stays
+// fully intact regardless; a page reload just restores however much of the
+// tail end actually made it into storage.
 function writeSession(key, payload) {
-  try {
-    sessionStorage.setItem(key, JSON.stringify(payload));
-  } catch (error) {
-    console.warn("UndoStack: unable to persist session storage", error);
+  let { undo, redo } = payload;
+  for (;;) {
+    try {
+      sessionStorage.setItem(key, JSON.stringify({ undo, redo }));
+      return;
+    } catch (error) {
+      if (!undo.length && !redo.length) {
+        console.warn("UndoStack: unable to persist session storage", error);
+        try {
+          sessionStorage.removeItem(key);
+        } catch (removeError) {
+          // Ignored — nothing more to do.
+        }
+        return;
+      }
+      if (undo.length) {
+        undo = undo.slice(Math.ceil(undo.length / 2));
+      } else {
+        redo = redo.slice(Math.ceil(redo.length / 2));
+      }
+    }
   }
 }
 

@@ -534,3 +534,13 @@ export async function rollSymbolDiceOverlay(terms, dataManager) {
     shapeResult: (term, values) => ({ dieId: term.dieId, values }),
   });
 }
+
+// A Broadcast-mode roll's remote-viewer replay used to live here, rolling
+// this SAME dice-box overlay independently on each remote screen — replaced
+// by dice-reveal.js's own physics-free "spin and reveal" tiles (see that
+// file's own header for why): confirmed dice-box can't be told to land on a
+// predetermined result, so an independent physics roll here could only ever
+// show a DIFFERENT outcome than the poster's own screen, with a text
+// caption papering over the mismatch. A non-physics animation has no such
+// limitation — it can always display the real settled values, since
+// nothing about it is actually being simulated.

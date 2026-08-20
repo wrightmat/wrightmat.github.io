@@ -1,0 +1,23 @@
+{
+  "index": "feather-token-tree",
+  "name": "Feather Token, Tree",
+  "notes": "Wondrous item, rare\n\nThis tiny object looks like a feather.\n\nYou must be outdoors to use this token. You can use an action to touch it to an unoccupied space on the ground. The token disappears, and in its place a nonmagical oak tree springs into existence. The tree is 60 feet tall and has a 5-foot-diameter trunk, and its branches at the top spread out in a 20-foot radius.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/magic-items/feather-token-tree",
+  "mapping": "5e-api-magic-item",
+  "properties": {
+    "rarity": "rare",
+    "form": "wondrous-item",
+    "activation": "action"
+  },
+  "featureIds": [
+    "feat.summoned-object"
+  ],
+  "budget": {
+    "target": 12,
+    "spent": 1,
+    "remaining": 11
+  }
+}

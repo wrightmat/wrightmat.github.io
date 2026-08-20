@@ -1,0 +1,22 @@
+{
+  "index": "longstrider",
+  "name": "Longstrider",
+  "notes": "You touch a creature. The target's speed increases by 10 feet until the spell ends.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/spells/longstrider",
+  "mapping": "5e-api-spell",
+  "properties": {
+    "form": "spell"
+  },
+  "featureIds": [
+    "feat.speed-increase"
+  ],
+  "featureParams": {
+    "feat.speed-increase": {
+      "mode": "increase",
+      "distance": 10
+    }
+  }
+}

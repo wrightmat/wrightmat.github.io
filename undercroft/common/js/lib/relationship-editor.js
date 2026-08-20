@@ -25,7 +25,7 @@ function edgeOtherEnd(edge, sourceKind, sourceId) {
 // renderRelationshipEditor({container, sourceKind, sourceId, targetKinds,
 // typeSuggestions, dataManager, status, onChange}) — targetKinds is
 // {id, label}[], the kinds this tool's own Add row offers (Forge: npc/
-// location/monster/character, not effect/template); typeSuggestions is a
+// location/monster/character, not wonder/template); typeSuggestions is a
 // plain string[] for the type input's <datalist>, never a hard enum.
 // `onChange` fires after every add/remove so the caller can refresh whatever
 // else depends on this record's own relationships (e.g. its Graph toggle).

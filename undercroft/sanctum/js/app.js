@@ -22,7 +22,7 @@ import {
   listSpeciesForSystem,
   listNpcsForSystem,
   listMonstersForSystem,
-  listEffectsForSystem,
+  listWondersForSystem,
   listSettingsForSystem,
   listLocationsForSetting,
 } from "./lib/tables.js";
@@ -52,7 +52,7 @@ import { resolveGroupContext, pickGroupDefaultId } from "../../common/js/lib/wid
 // Vault's own identical Notes preview.
 import { renderMarkdown } from "../../repository/js/lib/markdown.js";
 
-const ASSET_NEED_KINDS = ["resource", "npc", "monster", "effect"];
+const ASSET_NEED_KINDS = ["resource", "npc", "monster", "wonder"];
 
 let status = null;
 let undoStack = null;
@@ -65,7 +65,7 @@ let features = [];
 let resources = [];
 let npcs = [];
 let monsters = [];
-let effects = [];
+let wonders = [];
 let speciesOptions = [];
 let environmentPropertyType = null;
 let locationsInSetting = [];
@@ -594,18 +594,18 @@ function populateLocationSelect() {
 }
 
 
-// --- Reference data (location-type/location-purpose/feature/resource/species/npc/monster/effect) ----
+// --- Reference data (location-type/location-purpose/feature/resource/species/npc/monster/wonder) ----
 async function reloadReferenceData() {
   const systemId = currentSystemId();
   let fetchedFeatures;
-  [locationTypes, locationPurposes, fetchedFeatures, resources, npcs, monsters, effects, speciesOptions] = await Promise.all([
+  [locationTypes, locationPurposes, fetchedFeatures, resources, npcs, monsters, wonders, speciesOptions] = await Promise.all([
     listLocationTypesForSystem(dataManager, systemId),
     listLocationPurposesForSystem(dataManager, systemId),
     listFeaturesForSystem(dataManager, systemId),
     listResourcesForSystem(dataManager, systemId),
     listNpcsForSystem(dataManager, systemId),
     listMonstersForSystem(dataManager, systemId),
-    listEffectsForSystem(dataManager, systemId),
+    listWondersForSystem(dataManager, systemId),
     listSpeciesForSystem(dataManager, systemId),
   ]);
   // The shared `feature` kind also holds Crucible's monster features and
@@ -715,7 +715,7 @@ function populateAddFeatureSelect() {
 // label/description lookups for already-added entries never need a
 // separate on-demand fetch.
 function entityListForKind(kind) {
-  return { resource: resources, npc: npcs, monster: monsters, effect: effects }[kind] || [];
+  return { resource: resources, npc: npcs, monster: monsters, wonder: wonders }[kind] || [];
 }
 
 function populateAssetNeedKindSelects() {
@@ -1170,7 +1170,7 @@ function renderReferenceList(container, entries, onRemove) {
     // so a Shop-Feature Location's Asset list shows cost at a glance instead
     // of requiring the GM to open the Resource record itself. Folded into
     // the shared description text rather than a new createListRow column —
-    // Features/NPCs/Monsters/Effects share this same row primitive and have
+    // Features/NPCs/Monsters/Wonders share this same row primitive and have
     // no price concept, so it's not a slot worth adding there.
     const price = entry.kind === "resource" ? entity?.price : null;
     const row = createListRow({

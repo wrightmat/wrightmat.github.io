@@ -1,7 +1,7 @@
 // Turns an imported spell/magic item's own mapped `stats` (see
 // mapping-custom-functions.js's srdSpellStats/srdItemStats for the exact
 // shape a mapping produces) into real `feature` Library references, so an
-// imported Effect ends up structurally identical to a Vault-generated one:
+// imported Wonder ends up structurally identical to a Vault-generated one:
 // `featureIds` being a real array is what every existing Vault code path
 // (Add Feature select, Features list, budget display) already expects,
 // mirroring exactly what monster-feature-matching.js does for Crucible's
@@ -27,7 +27,7 @@
 // processes every `stats.candidateUnits` entry (the mapping's own
 // paragraph/bullet-segmented remaining prose) independently against a
 // library of generic clause recognizers, exactly the way monster import
-// processes every trait/action independently — one Effect can produce
+// processes every trait/action independently — one Wonder can produce
 // several Features, same as one monster already does.
 import {
   cappedSlug,
@@ -56,7 +56,7 @@ const GENERIC_ACTIVE_TYPE = "active";
 // the same acceptable, already-tolerated edge case monster import accepts
 // for Bite/Claw/etc.
 async function matchOrCreateParameterizedFeature(name, mechanicsType, { candidatePool, existingFeatures, systemId, dataManager, result }) {
-  const templateId = resolveTemplateId(`feat.${cappedSlug(name)}`, existingFeatures, VAULT_CATEGORIES, "effect");
+  const templateId = resolveTemplateId(`feat.${cappedSlug(name)}`, existingFeatures, VAULT_CATEGORIES, "wonder");
   let template = candidatePool.find((feature) => feature.id === templateId);
   if (template) {
     result.matchedCount += 1;
@@ -85,7 +85,7 @@ async function matchOrCreateParameterizedFeature(name, mechanicsType, { candidat
 // `variants` array naming each concrete child; each child carries
 // `variant: true` and no `variants` of its own (confirmed live against the
 // real 5e API — /api/2014/magic-items/weapon and its own /weapon-1,
-// /weapon-2, /weapon-3 children). The mapping never produces an Effect
+// /weapon-2, /weapon-3 children). The mapping never produces a Wonder
 // record for the PARENT row at all (it isn't a concrete item a GM would
 // actually hand a player — see 5e-api-magic-item.json's own comment), so
 // this module only ever sees CHILD rows, each already carrying its own
@@ -94,7 +94,7 @@ async function matchOrCreateParameterizedFeature(name, mechanicsType, { candidat
 // e.g. {id: "plus-1", name: "+1"}) when it belongs to such a family. This
 // is a genuinely different case from a spell's own slot-level scaling: a
 // specific owned magic item really IS exactly one rarity/bonus tier, a
-// fixed choice per Effect record — precisely what Tiers exist to model —
+// fixed choice per Wonder record — precisely what Tiers exist to model —
 // never a value chosen fresh at every use the way a spell's own slot level
 // is (see CLAUSE_RECOGNIZERS' own castASpell entry for that contrast).
 //
@@ -108,7 +108,7 @@ async function matchOrCreateParameterizedFeature(name, mechanicsType, { candidat
 // `feat.spell-attack-bonus` (pre-existing Vault content, untouched by this
 // session's own Phase 1). Routed through this lookup instead of a name
 // transform, so the family maps onto the Feature that actually describes
-// what the bonus DOES; the item's own Form belongs on the Effect record
+// what the bonus DOES; the item's own Form belongs on the Wonder record
 // itself (see `record.properties.form`, set by the caller from
 // `stats.properties`), never baked into a Feature's own identity.
 const VARIANT_GROUP_MECHANIC_NAME = {
@@ -810,7 +810,7 @@ const CLAUSE_RECOGNIZERS = [
     // "you can cast the X spell" / "cast X (save DC 15) once" / "casts X from
     // the wand" — MUST be case-insensitive: confirmed live that real SRD
     // prose almost always lowercases a referenced spell's own name in
-    // running text ("cast the levitate spell"), unlike a Feature/Effect's
+    // running text ("cast the levitate spell"), unlike a Feature/Wonder's
     // own `.name` field. Missing the `/i` flag here silently failed to
     // match the overwhelming majority of real "cast a spell" clauses
     // (confirmed live against a real 355-item bulk import: ~50 residual
@@ -1896,7 +1896,7 @@ function recognizeClause(text) {
 // Feather Token's own "***Anchor.*** You can use an action...") is a
 // STRUCTURAL signal the source itself already gives for what one candidate
 // unit is conceptually called — far better than this module's own
-// generated "Effect N" fallback, and (for the one label checked below)
+// generated "Wonder N" fallback, and (for the one label checked below)
 // reliable enough to route straight to a dedicated shared Feature without
 // running it through the generic clause recognizers at all. Stripped from
 // the returned `text` either way, so it never leaks literal asterisks into
@@ -1923,7 +1923,7 @@ function extractBoldLabel(text) {
 // CLAUSE_RECOGNIZERS above, or one of the structural dispatches below
 // (Curse, Spell Menu) — and otherwise reports NOTHING for this unit rather
 // than minting a fresh one-off Feature from raw, unclassified text. That's
-// not data loss: the Effect's own `notes` already preserves the complete
+// not data loss: the Wonder's own `notes` already preserves the complete
 // original description regardless (mapping-custom-functions.js binds
 // `notes` to the whole `itemStats.description`, untouched by this
 // function). Growing the known list — a new CLAUSE_RECOGNIZERS entry, or a
@@ -1980,7 +1980,7 @@ function resolveSpellDamageTier(level) {
   return "tier-6";
 }
 
-// `record` — an already-mapped Effect record (5e-api-spell.json/
+// `record` — an already-mapped Wonder record (5e-api-spell.json/
 // 5e-api-magic-item.json's own output, or a hand-authored one carrying the
 // same `stats` shape). Three paths, tried in priority order per record:
 // (1) a recognized structured mechanic (spell damage/heal, or an item's own
@@ -1991,9 +1991,9 @@ function resolveSpellDamageTier(level) {
 // options-bearing Feature, not several independent ones; (3) otherwise,
 // every `stats.candidateUnits` entry is converted independently via
 // `convertCandidateUnit` above — the core structural fix this redesign
-// exists for: one Effect can now produce several small, reusable Features,
+// exists for: one Wonder can now produce several small, reusable Features,
 // exactly like one monster already produces several Features from its own
-// traits/actions, instead of one giant blob named after the Effect itself.
+// traits/actions, instead of one giant blob named after the Wonder itself.
 export async function convertSpellOrItemToFeatures(record, { dataManager, existingFeatures }) {
   const stats = record?.stats;
   const result = { featureIds: [], matchedCount: 0, createdCount: 0, errors: [] };
@@ -2036,7 +2036,7 @@ export async function convertSpellOrItemToFeatures(record, { dataManager, existi
       // the Feature itself already covers both, no need to bake "spell"
       // into its own name/id. The spell's own name doesn't need to be
       // repeated in featureParams here — it's already `record.name` on the
-      // very Effect this Feature is attached to.
+      // very Wonder this Feature is attached to.
       const template = await matchOrCreateParameterizedFeature("Damage", GENERIC_ACTIVE_TYPE, { candidatePool, existingFeatures, systemId, dataManager, result });
       featureIds.push(template.id);
       featureParams[template.id] = {
@@ -2147,7 +2147,7 @@ export async function convertSpellOrItemToFeatures(record, { dataManager, existi
   }
 
   // stats.charges (mapping-custom-functions.js's own srdExtractCharges) is
-  // Effect-level activation data, never Feature content — surfaced directly
+  // Wonder-level activation data, never Feature content — surfaced directly
   // on the record rather than folded into any Feature's own featureParams.
   // ALSO given its own Feature (`feat.charges`, budgetCost 0 — it's not a
   // power source itself, whatever ability the charges power already has
@@ -2173,7 +2173,7 @@ export async function convertSpellOrItemToFeatures(record, { dataManager, existi
   }
   // stats.properties (mapping-custom-functions.js's own srdItemProperties/
   // srdSpellStats — {rarity, form, activation}, only keys it could
-  // confidently resolve) is Effect-level generator-property data, in
+  // confidently resolve) is Wonder-level generator-property data, in
   // exactly the shape Vault's own record.properties already expects
   // ({[field.key]: slugified value id} — see tables.js#getSystemPropertyTypes
   // and vault/CLAUDE.md). The mapping layer owns this translation (5e SRD
@@ -2195,11 +2195,11 @@ export async function convertSpellOrItemToFeatures(record, { dataManager, existi
 }
 
 // Loom's own saveEntity checks this before running the conversion above —
-// an Effect whose importer already produced no `stats` at all (a hand-
+// a Wonder whose importer already produced no `stats` at all (a hand-
 // authored/generated one, or one already converted on an earlier save) has
 // nothing to convert. Distinct from monster's own `hasConvertibleStatBlock`
 // (which keys off `stats.traits`/`stats.actions`/etc arrays) specifically
-// so the two never both fire on the same record — an Effect's own `stats`
+// so the two never both fire on the same record — a Wonder's own `stats`
 // shape (`stats.mechanic`/`stats.name`/`stats.candidateUnits`) never
 // carries any of monster's own ABILITY_GROUP_KEYS.
 export function hasConvertibleSpellItemStats(record) {

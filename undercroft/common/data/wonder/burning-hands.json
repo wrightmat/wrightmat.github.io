@@ -1,0 +1,43 @@
+{
+  "index": "burning-hands",
+  "name": "Burning Hands",
+  "notes": "As you hold your hands with thumbs touching and fingers spread, a thin sheet of flames shoots forth from your outstretched fingertips. Each creature in a 15-foot cone must make a dexterity saving throw. A creature takes 3d6 fire damage on a failed save, or half as much damage on a successful one.\n\nThe fire ignites any flammable objects in the area that aren't being worn or carried.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/spells/burning-hands",
+  "mapping": "5e-api-spell",
+  "properties": {
+    "form": "spell"
+  },
+  "featureIds": [
+    "feat.damage"
+  ],
+  "featureParams": {
+    "feat.damage": {
+      "resolutionKind": "save",
+      "saveAbility": "dexterity",
+      "saveEffect": "half",
+      "damageType": "fire",
+      "areaShape": "cone",
+      "areaSize": 15,
+      "scaling": {
+        "by": "slot",
+        "values": {
+          "1": "3d6",
+          "2": "4d6",
+          "3": "5d6",
+          "4": "6d6",
+          "5": "7d6",
+          "6": "8d6",
+          "7": "9d6",
+          "8": "10d6",
+          "9": "11d6"
+        }
+      }
+    }
+  },
+  "featureTiers": {
+    "feat.damage": "tier-2"
+  }
+}

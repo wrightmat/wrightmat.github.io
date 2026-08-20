@@ -1,0 +1,36 @@
+{
+  "index": "cloak-of-arachnida",
+  "name": "Cloak of Arachnida",
+  "notes": "Wondrous item, very rare (requires attunement)\n\nThis fine garment is made of black silk interwoven with faint silvery threads. While wearing it, you gain the following benefits:\n\n* You have resistance to poison damage.\n\n* You have a climbing speed equal to your walking speed.\n\n* You can move up, down, and across vertical surfaces and upside down along ceilings, while leaving your hands free.\n\n* You can't be caught in webs of any sort and can move through webs as if they were difficult terrain.\n\n* You can use an action to cast the web spell (save DC 13). The web created by the spell fills twice its normal area. Once used, this property of the cloak can't be used again until the next dawn.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/magic-items/cloak-of-arachnida",
+  "mapping": "5e-api-magic-item",
+  "properties": {
+    "rarity": "very-rare",
+    "form": "wondrous-item",
+    "activation": "action"
+  },
+  "featureIds": [
+    "feat.damage-modification",
+    "feat.cast-a-spell",
+    "feat.requires-attunement",
+    "feat.speed-modification"
+  ],
+  "featureTiers": {
+    "feat.damage-modification": "resistance"
+  },
+  "featureParams": {
+    "feat.damage-modification": {
+      "damageType": "poison"
+    },
+    "feat.cast-a-spell": {
+      "spellName": "web"
+    },
+    "feat.speed-modification": {
+      "speedType": "climbing",
+      "distance": "walking speed"
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "index": "enhance-ability",
+  "name": "Enhance Ability",
+  "notes": "You touch a creature and bestow upon it a magical enhancement. Choose one of the following effects; the target gains that effect until the spell ends.\n\n***Bear's Endurance.*** The target has advantage on constitution checks. It also gains 2d6 temporary hit points, which are lost when the spell ends.\n\n***Bull's Strength.*** The target has advantage on strength checks, and his or her carrying capacity doubles.\n\n***Cat's Grace.*** The target has advantage on dexterity checks. It also doesn't take damage from falling 20 feet or less if it isn't incapacitated.\n\n***Eagle's Splendor.*** The target has advantage on Charisma checks.\n\n***Fox's Cunning.*** The target has advantage on intelligence checks.\n\n***Owl's Wisdom.*** The target has advantage on wisdom checks.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/spells/enhance-ability",
+  "mapping": "5e-api-spell",
+  "properties": {
+    "form": "spell"
+  },
+  "featureIds": [
+    "feat.skill-bonus",
+    "feat.temporary-hit-points"
+  ],
+  "featureTiers": {
+    "feat.skill-bonus": "advantage"
+  },
+  "featureParams": {
+    "feat.skill-bonus": {
+      "skill": "wisdom"
+    },
+    "feat.temporary-hit-points": {
+      "dice": "2d6"
+    }
+  }
+}

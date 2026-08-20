@@ -1,5 +1,4 @@
 {
-  "kind": "monster",
   "name": "Iron Cobra",
   "notes": "An iron cobra is exactly what its name implies: a metal snake with a poisonous bite. In addition to standard poisons, gnomes load this clockwork with alchemical concoctions that can paralyze creatures and cloud their minds with paranoia.\r\n\r\n**Individual Designs**. A gnome artisan values an individualized clockwork more highly than a perfectly functioning one that copies too much from another creation. For that reason, even clockworks that fit established designs, such as those described here, are seldom identical. A clockwork can be customized by adding one of the following enhancements and one potential malfunction to its stat block. You can select randomly or choose a pair of modifications that fit the temperament of the clockwork’s builder.",
   "type": "construct",

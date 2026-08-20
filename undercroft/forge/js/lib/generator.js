@@ -35,7 +35,7 @@ function resolveStats(tables, archetypeName) {
 // selects — any attribute set there is used as-is instead of rolled.
 // `systemId`/`settingId` stamp systemIds/settingIds the same plural-array
 // way every other generated-output kind in this suite already does
-// (Crucible's monster, Vault's effect, Sanctum's location) — previously
+// (Crucible's monster, Vault's wonder, Sanctum's location) — previously
 // never stamped here at all, meaning an NPC generated with no Location
 // selected (Location is optional) had no way to be found again once the
 // active Setting changed. Location is still the more specific reference

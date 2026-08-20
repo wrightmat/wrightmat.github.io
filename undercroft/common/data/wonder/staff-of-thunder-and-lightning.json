@@ -1,0 +1,36 @@
+{
+  "index": "staff-of-thunder-and-lightning",
+  "name": "Staff of Thunder and Lightning",
+  "notes": "Staff, very rare (requires attunement)\n\nThis staff can be wielded as a magic quarterstaff that grants a +2 bonus to attack and damage rolls made with it. It also has the following additional properties. When one of these properties is used, it can't be used again until the next dawn.\n\n***Lightning.*** When you hit with a melee attack using the staff, you can cause the target to take an extra 2d6 lightning damage.\n\n***Thunder.*** When you hit with a melee attack using the staff, you can cause the staff to emit a crack of thunder, audible out to 300 feet. The target you hit must succeed on a DC 17 Constitution saving throw or become stunned until the end of your next turn.\n\n***Lightning Strike.*** You can use an action to cause a bolt of lightning to leap from the staff's tip in a line that is 5 feet wide and 120 feet long. Each creature in that line must make a DC 17 Dexterity saving throw, taking 9d6 lightning damage on a failed save, or half as much damage on a successful one.\n\n***Thunderclap.*** You can use an action to cause the staff to issue a deafening thunderclap, audible out to 600 feet. Each creature within 60 feet of you (not including you) must make a DC 17 Constitution saving throw. On a failed save, a creature takes 2d6 thunder damage and becomes deafened for 1 minute. On a successful save, a creature takes half damage and isn't deafened.\n\n***Thunder and Lightning.*** You can use an action to use the Lightning Strike and Thunderclap properties at the same time. Doing so doesn't expend the daily use of those properties, only the use of this one.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/magic-items/staff-of-thunder-and-lightning",
+  "mapping": "5e-api-magic-item",
+  "properties": {
+    "rarity": "very-rare",
+    "form": "staff",
+    "activation": "action"
+  },
+  "featureIds": [
+    "feat.weapon-enhancement",
+    "feat.extra-damage",
+    "feat.impose-condition",
+    "feat.requires-attunement"
+  ],
+  "featureTiers": {
+    "feat.weapon-enhancement": "plus-2",
+    "feat.impose-condition": "severe"
+  },
+  "featureParams": {
+    "feat.extra-damage": {
+      "damageDice": "2d6",
+      "damageType": "lightning"
+    },
+    "feat.impose-condition": {
+      "condition": "stunned until the end of your next turn",
+      "saveAbility": "constitution",
+      "saveDC": 17
+    }
+  }
+}

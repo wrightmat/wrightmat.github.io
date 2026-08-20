@@ -1,5 +1,4 @@
 {
-  "kind": "monster",
   "name": "Murder Comet",
   "image": "https://www.dndbeyond.com/avatars/thumbnails/28079/894/1000/1000/637961800881115372.jpeg",
   "notes": "### Description\r\n\r\nEvil spellcasters create murder comets by combining the essence of [earth elementals](https://www.dndbeyond.com/monsters/16853-earth-elemental) with that of [fire elementals](https://www.dndbeyond.com/monsters/16861-fire-elemental). A murder comet looks like a screaming stone head wreathed in flame. It trails fire behind it as it flies through Wildspace, either singly or in a posse with other murder comets, looking for ships, crews, and other unsuspecting targets to destroy.\r\n\r\nA murder comet’s creator can bind their spirit to the comet. In this form, the comet’s creator becomes ageless and immortal, free to race across Wildspace without need for air, sleep, or sustenance. The murder comet’s face takes on the appearance of its creator’s, and its statistics change as follows:\r\n-   Replace the comet’s Intelligence, Wisdom, and Charisma scores with those of its creator.\r\n-   Replace the comet’s alignment and languages with those of its creator.",

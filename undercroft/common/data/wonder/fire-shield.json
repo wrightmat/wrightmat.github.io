@@ -1,0 +1,33 @@
+{
+  "index": "fire-shield",
+  "name": "Fire Shield",
+  "notes": "Thin and vaporous flame surround your body for the duration of the spell, radiating a bright light bright light in a 10-foot radius and dim light for an additional 10 feet. You can end the spell using an action to make it disappear.\n\nThe flames are around you a heat shield or cold, your choice. The heat shield gives you cold damage resistance and the cold resistance to fire damage.\n\nIn addition, whenever a creature within 5 feet of you hits you with a melee attack, flames spring from the shield. The attacker then suffers 2d8 points of fire damage or cold, depending on the model.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/spells/fire-shield",
+  "mapping": "5e-api-spell",
+  "properties": {
+    "form": "spell"
+  },
+  "featureIds": [
+    "feat.damage"
+  ],
+  "featureParams": {
+    "feat.damage": {
+      "resolutionKind": "attack",
+      "damageType": "fire",
+      "areaShape": "sphere",
+      "areaSize": 5,
+      "scaling": {
+        "by": "slot",
+        "values": {
+          "4": "2d8"
+        }
+      }
+    }
+  },
+  "featureTiers": {
+    "feat.damage": "tier-3"
+  }
+}

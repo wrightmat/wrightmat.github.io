@@ -61,7 +61,7 @@ export function renderRequiredSelectOptions(select, entries, { placeholder = "Se
 
 // Renders a "pick an existing saved record, or leave this to start fresh"
 // select (Sanctum's Location picker; Crucible's Monster picker, Vault's
-// Effect picker, Forge's NPC picker) — unlike renderRequiredSelectOptions
+// Wonder picker, Forge's NPC picker) — unlike renderRequiredSelectOptions
 // above, the leading option here is a real, always-selectable choice ("New /
 // unsaved"), not a disabled placeholder: starting a brand new record is a
 // perfectly valid thing to want, not a state to force the user out of.
@@ -209,7 +209,7 @@ export function populateStringChecklist(container, items, selected) {
 }
 
 // `toPressExportShape` is each tool's own record-shaping function (monster/
-// effect/location schema) — the only genuinely tool-specific piece; the
+// wonder/location schema) — the only genuinely tool-specific piece; the
 // Blob/anchor/download mechanics around it are what were actually duplicated.
 export function exportRecordAsJson(record, toPressExportShape) {
   const shaped = toPressExportShape(record);

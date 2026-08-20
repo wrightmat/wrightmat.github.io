@@ -1,0 +1,16 @@
+{
+  "index": "jump",
+  "name": "Jump",
+  "notes": "You touch a creature. The creature's jump distance is tripled until the spell ends.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/spells/jump",
+  "mapping": "5e-api-spell",
+  "properties": {
+    "form": "spell"
+  },
+  "featureIds": [
+    "feat.jump-increase"
+  ]
+}

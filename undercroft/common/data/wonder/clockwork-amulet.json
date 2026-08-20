@@ -1,0 +1,26 @@
+{
+  "name": "Clockwork Amulet",
+  "notes": "This copper amulet contains tiny interlocking gears and is powered by magic from Daanvi, a plane of perfect order. A creature that puts an ear to the amulet can hear faint ticking and whirring noises coming from within.\n\nWhen you make an attack roll while wearing the amulet, you can forgo rolling the d20 to get a 10 on the die. Once used, this property can't be used again until the next dawn.",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "mapping": "markdown-item",
+  "featureIds": [
+    "feat.modifies-roll"
+  ],
+  "featureParams": {
+    "feat.modifies-roll": {
+      "rollType": "attack",
+      "value": 10
+    }
+  },
+  "properties": {
+    "rarity": "common",
+    "form": "wondrous-item"
+  },
+  "budget": {
+    "target": 4,
+    "spent": 4,
+    "remaining": 0
+  }
+}

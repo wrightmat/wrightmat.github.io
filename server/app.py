@@ -315,6 +315,71 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
                         if newest:
                             last_seen[kind] = newest
                         continue
+                    if kind == "diceRoll":
+                        # Ephemeral — see ServerState.pending_dice_roll_broadcasts'
+                        # own comment. Identical shape to "ping" above, just a
+                        # separate bucket/seq counter so a burst of pings and a
+                        # burst of dice broadcasts never share (and reset) each
+                        # other's watermark.
+                        watermark = last_seen.get(kind, 0)
+                        newest = watermark
+                        for entry in self.server.state.get_dice_roll_broadcast_bucket(group_id):
+                            if not first_tick and entry["seq"] > watermark:
+                                changed.append(
+                                    {
+                                        "kind": "diceRoll",
+                                        "label": entry.get("label"),
+                                        "total": entry.get("total"),
+                                        "dieResults": entry.get("dieResults"),
+                                        "by": entry.get("by"),
+                                    }
+                                )
+                            if entry["seq"] > newest:
+                                newest = entry["seq"]
+                        if newest:
+                            last_seen[kind] = newest
+                        continue
+                    if kind == "cardDraw":
+                        # Ephemeral — see ServerState.pending_card_broadcasts'
+                        # own comment. Identical shape to "diceRoll" above.
+                        watermark = last_seen.get(kind, 0)
+                        newest = watermark
+                        for entry in self.server.state.get_card_broadcast_bucket(group_id):
+                            if not first_tick and entry["seq"] > watermark:
+                                changed.append(
+                                    {
+                                        "kind": "cardDraw",
+                                        "deckLabel": entry.get("deckLabel"),
+                                        "backImage": entry.get("backImage"),
+                                        "cards": entry.get("cards"),
+                                        "by": entry.get("by"),
+                                    }
+                                )
+                            if entry["seq"] > newest:
+                                newest = entry["seq"]
+                        if newest:
+                            last_seen[kind] = newest
+                        continue
+                    if kind == "effectTrigger":
+                        # Ephemeral — see ServerState.pending_effect_broadcasts'
+                        # own comment. Identical shape to "cardDraw" above.
+                        watermark = last_seen.get(kind, 0)
+                        newest = watermark
+                        for entry in self.server.state.get_effect_broadcast_bucket(group_id):
+                            if not first_tick and entry["seq"] > watermark:
+                                changed.append(
+                                    {
+                                        "kind": "effectTrigger",
+                                        "mapId": entry.get("mapId"),
+                                        "elementId": entry.get("elementId"),
+                                        "by": entry.get("by"),
+                                    }
+                                )
+                            if entry["seq"] > newest:
+                                newest = entry["seq"]
+                        if newest:
+                            last_seen[kind] = newest
+                        continue
                     rows = self.server.state.db.execute(
                         "SELECT id, modified_at FROM library_items WHERE kind = ? ORDER BY modified_at DESC LIMIT 25",
                         (kind,),
@@ -1023,37 +1088,37 @@ def register_routes():
     # POST /vault/generate-note
     #
     # Same optional LLM synthesis step as Crucible's monster note, applied to
-    # a generated spell/item effect instead — Vault's own structured output
+    # a generated spell/item wonder instead — Vault's own structured output
     # (properties + selected features) stands on its own with no LLM
     # involvement; this just turns it into a short flavor note for a GM who
     # wants one. Reuses resolve_anthropic_api_key above.
     VAULT_NOTE_SYSTEM_PROMPT = (
         "You suggest a name (when one isn't already given) and write a single, "
-        "tightly-formatted magic effect note for a tabletop RPG GM.\n"
+        "tightly-formatted magic wonder note for a tabletop RPG GM.\n"
         "Respond with EXACTLY two lines and nothing else — no preamble, no markdown, "
         "no extra commentary:\n\n"
-        "Line 1: just the effect's name, nothing else. If a Name is already given "
+        "Line 1: just the wonder's name, nothing else. If a Name is already given "
         "below, repeat it verbatim. If Name is blank, invent one that fits the given "
-        "Properties and Signature Effect.\n"
+        "Properties and Signature Feature.\n"
         "Line 2: Name (comma-separated Properties). [2-3 sentences describing what "
-        "this effect does and how it feels to use, weaving in its Signature Effect "
+        "this wonder does and how it feels to use, weaving in its Signature Feature "
         "and its other features into a vivid but concise flavor note.]\n\n"
-        "Use the exact Properties and Signature Effect values given verbatim, and "
+        "Use the exact Properties and Signature Feature values given verbatim, and "
         "use the same name on both lines. Do not invent new features or mechanics, do "
         "not restate these instructions, and do not add anything before, between, or "
         "after these two lines."
     )
 
     def _build_vault_note_content(payload: Dict[str, Any]) -> tuple[str, str]:
-        effect = payload.get("effect") or {}
+        wonder = payload.get("wonder") or {}
         # Name is optional now — Vault's Name field is blank by default, and
         # this endpoint is the one place that can fill it in, so an empty name
         # is a normal request, not an error: the prompt asks Claude to invent
-        # one fitting the Properties/Signature Effect when it's blank.
-        name = str(effect.get("name") or "").strip()
-        properties = effect.get("properties") or {}
+        # one fitting the Properties/Signature Feature when it's blank.
+        name = str(wonder.get("name") or "").strip()
+        properties = wonder.get("properties") or {}
         property_lines = ", ".join(f"{label}: {value}" for label, value in properties.items() if value)
-        features = effect.get("features") or []
+        features = wonder.get("features") or []
         feature_lines = "\n".join(
             f"- {feature.get('name', '')}: {feature.get('description', '')}"
             for feature in features
@@ -1062,7 +1127,7 @@ def register_routes():
         user_content = (
             f"Name: {name}\n"
             f"Properties: {property_lines}\n"
-            f"Signature Effect: {effect.get('signatureFeature', '')}\n"
+            f"Signature Feature: {wonder.get('signatureFeature', '')}\n"
             f"Features:\n{feature_lines}\n"
         )
         return user_content, name
@@ -2202,6 +2267,77 @@ def register_routes():
         return json_response({"ok": True}, status=HTTPStatus.CREATED)
 
     router.add("POST", r"^/groups/(?P<group_id>[^/]+)/ping$", handle_group_ping_post)
+
+    # Same transient-broadcast shape as the ping route above, but GM-only —
+    # "roll this dice notation on your own screen right now" (Cards/Decks
+    # plan, Part 2). Delivered via the same /live/{groupId} SSE stream's own
+    # "diceRoll" kind, never touching group_logs (the roll's own log entry
+    # is posted separately, through the normal /log route, and already
+    # carries the authoritative result).
+    def handle_group_dice_roll_broadcast_post(request: Request) -> Response:
+        user = require_user(request)
+        params = getattr(request, "params")
+        group_id = params["group_id"]
+        data = require_json(request)
+        group_store.record_dice_roll_broadcast(
+            request.state,
+            group_id,
+            user,
+            label=data.get("label") or "",
+            total=data.get("total"),
+            die_results=data.get("dieResults"),
+        )
+        return json_response({"ok": True}, status=HTTPStatus.CREATED)
+
+    router.add("POST", r"^/groups/(?P<group_id>[^/]+)/dice-roll-broadcast$", handle_group_dice_roll_broadcast_post)
+
+    # Same transient-broadcast shape as dice-roll-broadcast just above, for a
+    # Broadcast-mode card draw (Cards/Decks plan, Part 5 revised — replaces
+    # the original spotlight-based design, which wrongly kept a card
+    # "active" until explicitly cleared, both replaying on every later page
+    # load and cluttering the "what's shown to the table" icon tray with
+    # nothing to actually toggle). Delivered via the SSE stream's own
+    # "cardDraw" kind, never touching group_logs (the draw's own log entry
+    # is posted separately, through the normal /log route).
+    def handle_group_card_broadcast_post(request: Request) -> Response:
+        user = require_user(request)
+        params = getattr(request, "params")
+        group_id = params["group_id"]
+        data = require_json(request)
+        group_store.record_card_broadcast(
+            request.state,
+            group_id,
+            user,
+            deck_label=data.get("deckLabel") or "",
+            back_image=data.get("backImage") or "",
+            cards=data.get("cards"),
+        )
+        return json_response({"ok": True}, status=HTTPStatus.CREATED)
+
+    router.add("POST", r"^/groups/(?P<group_id>[^/]+)/card-broadcast$", handle_group_card_broadcast_post)
+
+    # Same transient-broadcast shape as card-broadcast just above, for
+    # replaying a placed, non-looping Shape/Effect element (Shapes & Effects
+    # plan, Part 5). Simpler payload than dice/cards — every viewer with the
+    # map open already has the full element (preset, color, everything) from
+    # the map itself, so this only needs to say *which* element to replay.
+    # Delivered via the SSE stream's own "effectTrigger" kind, never
+    # touching group_logs.
+    def handle_group_effect_broadcast_post(request: Request) -> Response:
+        user = require_user(request)
+        params = getattr(request, "params")
+        group_id = params["group_id"]
+        data = require_json(request)
+        group_store.record_effect_broadcast(
+            request.state,
+            group_id,
+            user,
+            map_id=data.get("mapId") or "",
+            element_id=data.get("elementId") or "",
+        )
+        return json_response({"ok": True}, status=HTTPStatus.CREATED)
+
+    router.add("POST", r"^/groups/(?P<group_id>[^/]+)/effect-broadcast$", handle_group_effect_broadcast_post)
 
     def handle_group_share_link(request: Request) -> Response:
         user = require_user(request)

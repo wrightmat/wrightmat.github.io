@@ -32,13 +32,88 @@ import { formatSymbolPoolResult } from "../../../../workbench/js/lib/symbol-dice
 // rollExpression already knows how to tell the two apart.
 import { listRollableTables, describeTableRow } from "../../../../repository/js/lib/journal-tables.js";
 import { preloadDiceOverlay } from "./dice-overlay.js";
-import { createIconButton } from "../ui-components.js";
+import { createIconButton, createModeToggleGroup } from "../ui-components.js";
 import { refreshTooltips, disposeTooltips } from "../tooltips.js";
 import { el, setElementVisible } from "../dom.js";
 
 export function initDiceRollerWidget(container, { status, dataManager, groupContext = null } = {}) {
   if (!container) {
     return { destroy() {} };
+  }
+
+  // Default/Broadcast/Private — confirmed explicit design call: this is
+  // purely ADDITIVE. "Default" leaves every button's own existing behavior
+  // completely untouched (a Move still auto-broadcasts, a plain expression
+  // roll still stays local-only) — the switcher only has any effect at all
+  // once moved off it. "Broadcast" is GM-only (today's `access === "owner"`
+  // convention, same check Map's own visibility toggle uses) — everyone
+  // else never sees it as a selectable option. "Private" is a self-whisper
+  // (recipientIds: [currentUserId]) — the exact same server-side mechanism
+  // built for Game Log whispers, just reused here rather than reinvented.
+  let mode = "default";
+  const currentUserId = dataManager?.session?.user?.id ?? null;
+  const isGm = groupContext?.access === "owner";
+
+  // Resolves what a given roll action's own broadcast/recipientIds should
+  // be, given the widget's current mode — `defaultBroadcast` is whatever
+  // that SPECIFIC action already does today (true for Move buttons, false
+  // for the plain expression Roll and the symbol-pool Roll), preserved
+  // byte-for-byte when mode is "default".
+  function resolveVisibility(defaultBroadcast) {
+    if (mode === "private") {
+      return { broadcast: false, recipientIds: currentUserId != null ? [currentUserId] : undefined };
+    }
+    if (mode === "broadcast" && isGm) {
+      return { broadcast: true, recipientIds: undefined };
+    }
+    return { broadcast: defaultBroadcast, recipientIds: undefined };
+  }
+
+  // Fires the "show this on everyone's screen" broadcast (Part 2) after a
+  // successful roll — separate from resolveVisibility above, which only
+  // controls the group-log entry's own visibility, since the result isn't
+  // known until the roll itself has resolved. `dieResults` are the REAL
+  // physically-rolled per-die values (dice-roll.js's own tryOverlayRoll) —
+  // required, not optional: confirmed dice-box can't force a remote roll to
+  // land on a chosen result, so without these there's nothing for
+  // dice-reveal.js's tiles to actually display (a roll that fell through to
+  // the plain Math.random path — e.g. a keep/drop/reroll expression too
+  // complex for the 3D overlay — has none, and simply can't broadcast a
+  // visual reveal; the log entry itself still posts normally either way).
+  // Best-effort: a failed broadcast still leaves the roll and its
+  // (already-posted) log entry intact, same "don't let this side-channel
+  // block the real action" reasoning every other broadcast in this suite
+  // follows.
+  function maybeBroadcastRoll(label, total, dieResults) {
+    if (mode !== "broadcast" || !isGm || !dataManager || !groupContext?.groupId) return;
+    if (!Array.isArray(dieResults) || !dieResults.length) return;
+    void dataManager
+      .postDiceRollBroadcast({ groupId: groupContext.groupId, label, total, dieResults })
+      .catch((error) => console.warn("[dice-roller] Broadcast failed", error));
+  }
+
+  const modeToggleContainer = el("div");
+  function renderModeToggle() {
+    createModeToggleGroup({
+      container: modeToggleContainer,
+      ariaLabel: "Roll visibility",
+      value: mode,
+      options: [
+        { value: "default", label: "Default", icon: "tabler:dice-5" },
+        {
+          value: "broadcast",
+          label: "Broadcast",
+          icon: "tabler:broadcast",
+          disabled: !isGm,
+          tooltip: isGm ? "Show this roll animating on everyone's screen" : "GM only",
+        },
+        { value: "private", label: "Private", icon: "tabler:eye-off", tooltip: "Only you see this roll" },
+      ],
+      onChange: (next) => {
+        mode = next;
+        renderModeToggle();
+      },
+    });
   }
 
   // This widget being mounted at all means dice rolling is imminent-ish —
@@ -105,12 +180,20 @@ export function initDiceRollerWidget(container, { status, dataManager, groupCont
   async function commitRoll() {
     const expression = input.value.trim();
     if (!expression) return;
-    const rolled = await rollExpression(expression, { status, dataManager, dice: activeDice });
+    const rolled = await rollExpression(expression, {
+      status,
+      dataManager,
+      dice: activeDice,
+      groupContext,
+      ...resolveVisibility(false),
+    });
     if (!rolled) return;
     // Table rolls skip the "pageTitle (dN) →" prefix — the expression
     // that was rolled is already sitting right there in the input above,
     // so just the number/result is what's actually new information.
     resultLine.textContent = rolled.isTable ? describeTableRow(rolled.row) : `${rolled.expression} → ${rolled.total}`;
+    // Table rolls have no physical dice at all to broadcast a reveal for.
+    if (!rolled.isTable) maybeBroadcastRoll("", rolled.total, rolled.result?.dieResults);
   }
 
   // Clear (red eraser icon, no text) — always the FIRST control in the row,
@@ -194,12 +277,13 @@ export function initDiceRollerWidget(container, { status, dataManager, groupCont
       status,
       dataManager,
       dice: activeDice,
-      broadcast: true,
       groupContext,
+      ...resolveVisibility(true),
     });
     if (!rolled || rolled.isTable) return;
     const verdictText = rolled.verdict?.label ? ` — ${rolled.verdict.label}` : "";
     resultLine.textContent = `${move.label}: ${rolled.total}${verdictText}`;
+    maybeBroadcastRoll(move.label, rolled.total, rolled.result?.dieResults);
   }
 
   // Everything above (quick-dice grid, expression input/Roll, Moves) is the
@@ -271,8 +355,22 @@ export function initDiceRollerWidget(container, { status, dataManager, groupCont
       status?.show("Add at least one die to the pool first.", { type: "info", timeout: 2000 });
       return;
     }
-    const rolled = await rollSymbolPoolExpression(poolCounts, { diceById, dataManager });
+    const notation = poolCounts
+      .map(({ dieId, count }) => `${count} ${diceById.get(dieId.toLowerCase())?.label || dieId}`)
+      .join(" + ");
+    const rolled = await rollSymbolPoolExpression(poolCounts, {
+      diceById,
+      dataManager,
+      groupContext,
+      label: "Dice Pool",
+      notation,
+      ...resolveVisibility(false),
+    });
     resultLine.textContent = formatSymbolPoolResult(rolled.net);
+    // No visual reveal here — symbol-dice faces (icons/symbols, not
+    // numbers) don't fit dice-reveal.js's plain numeric tile shape; the
+    // log entry above still posts normally regardless (resolveVisibility
+    // already handled that), just without the animated table-wide reveal.
   }
   symbolRollButton.addEventListener("click", executeSymbolPoolRoll);
 
@@ -318,7 +416,11 @@ export function initDiceRollerWidget(container, { status, dataManager, groupCont
   });
   rollButton.addEventListener("click", () => void commitRoll());
 
-  wrap.append(standardSection, symbolSection, resultLine, tableDatalist);
+  // Above both standardSection/symbolSection — applies identically to
+  // whichever one is currently showing (toggleSymbolMode swaps between
+  // them, this control doesn't).
+  renderModeToggle();
+  wrap.append(modeToggleContainer, standardSection, symbolSection, resultLine, tableDatalist);
   container.appendChild(wrap);
   refreshTooltips(container);
 

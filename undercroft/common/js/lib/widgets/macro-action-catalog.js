@@ -13,6 +13,7 @@ import { SOUNDBOARD_MACRO_ACTIONS } from "./soundboard.js";
 import { COMBAT_MACRO_ACTIONS } from "./combat-tracker.js";
 import { CHARACTER_MACRO_ACTIONS } from "./character-sheet.js";
 import { DICEROLLER_MACRO_ACTIONS } from "./dice-roller.js";
+import { DECK_MACRO_ACTIONS } from "./deck.js";
 import { CLOCK_MACRO_ACTIONS } from "./clocks.js";
 import { CALENDAR_MACRO_ACTIONS } from "./calendar.js";
 
@@ -45,7 +46,14 @@ export const MACRO_ACTION_CATALOG = {
     label: "Game Log",
     actions: { post: { label: "Post a message", params: ["message"] } },
   },
+  effects: {
+    label: "Effects",
+    actions: {
+      trigger: { label: "Trigger an effect", params: ["target"] },
+    },
+  },
   diceroller: { label: "Dice Roller", actions: DICEROLLER_MACRO_ACTIONS },
+  deck: { label: "Deck", actions: DECK_MACRO_ACTIONS },
   combat: { label: "Combat Tracker", actions: COMBAT_MACRO_ACTIONS },
   character: { label: "Character", actions: CHARACTER_MACRO_ACTIONS },
   clock: { label: "Clock", actions: CLOCK_MACRO_ACTIONS },

@@ -133,7 +133,7 @@ See `js/lib/generator.js` for the concrete implementation.
 
 Both use the same generic reference shape: `{ kind, refId, label, description }`.
 `kind` is usually `"resource"` (the automatic generator only ever populates these),
-but can be any other Library kind (`npc`, `monster`, `effect`) for linking a specific
+but can be any other Library kind (`npc`, `monster`, `wonder`) for linking a specific
 real entity — a manual authoring action in Sanctum's UI (pick a kind, then an entity
 of that kind), never invented by the generator itself. Assets, Needs, and Features
 deliberately share one row-rendering shape (`createListRow` in `js/app.js`) and one
