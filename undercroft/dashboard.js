@@ -148,6 +148,8 @@ const WIDGET_CATALOG = [
         status: ctx.status,
         groupId: ctx.groupContext?.groupId || "",
         shareToken: ctx.groupContext?.shareToken || "",
+        roster: ctx.groupContext?.members || [],
+        ownerId: ctx.groupContext?.ownerId ?? null,
         resolveKindIcon: ctx.resolveSpotlightKindIcon,
         isSpotlightOnDashboard: ctx.isSpotlightOnDashboard,
         onToggleSpotlight: ctx.onToggleSpotlight,

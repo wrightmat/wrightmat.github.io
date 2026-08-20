@@ -2173,6 +2173,8 @@ def register_routes():
         entry_type = data.get("type") or data.get("entry_type") or "message"
         message = data.get("message") or ""
         payload = data.get("payload")
+        recipient_ids = data.get("recipientIds") or data.get("recipient_ids")
+        in_character = bool(data.get("inCharacter") or data.get("in_character"))
         entry = group_store.create_group_log_entry(
             request.state,
             group_id,
@@ -2180,6 +2182,8 @@ def register_routes():
             entry_type=entry_type,
             message=message,
             payload=payload,
+            recipient_ids=recipient_ids,
+            in_character=in_character,
         )
         return json_response(entry, status=HTTPStatus.CREATED)
 
@@ -2259,6 +2263,8 @@ def register_routes():
         entry_type = data.get("type") or data.get("entry_type") or "message"
         message = data.get("message") or ""
         payload = data.get("payload")
+        recipient_ids = data.get("recipientIds") or data.get("recipient_ids")
+        in_character = bool(data.get("inCharacter") or data.get("in_character"))
         entry = group_store.create_group_log_entry(
             request.state,
             None,
@@ -2267,6 +2273,8 @@ def register_routes():
             entry_type=entry_type,
             message=message,
             payload=payload,
+            recipient_ids=recipient_ids,
+            in_character=in_character,
         )
         return json_response(entry, status=HTTPStatus.CREATED)
 

@@ -158,7 +158,15 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   // own setGameLogContext/clearGameLogContext for the (re)mount logic). This
   // is just "which campaign, if any, is currently in view" — the one thing
   // both need, resolved in exactly one place.
-  const gameLogContext = { groupId: "", groupName: "", shareToken: "", systemId: "", access: "none" };
+  const gameLogContext = {
+    groupId: "",
+    groupName: "",
+    shareToken: "",
+    systemId: "",
+    access: "none",
+    members: [],
+    ownerId: null,
+  };
   // initGameLogWidget's own {refresh,destroy} instance — neither widget has
   // an "update groupId" method, so a campaign change destroys and recreates
   // it rather than mutating it in place.
@@ -2367,6 +2375,8 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       status,
       groupId: gameLogContext.groupId,
       shareToken: gameLogContext.shareToken,
+      roster: gameLogContext.members,
+      ownerId: gameLogContext.ownerId,
     });
   }
 
@@ -2431,6 +2441,8 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     gameLogContext.shareToken = "";
     gameLogContext.systemId = "";
     gameLogContext.access = "none";
+    gameLogContext.members = [];
+    gameLogContext.ownerId = null;
     gameLogPanelState.collapsed = false;
     if (elements.gameLogTitle) {
       elements.gameLogTitle.textContent = "";
@@ -2443,7 +2455,15 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     }
   }
 
-  function setGameLogContext({ groupId = "", shareToken = "", groupName = "", systemId = "", access = "none" } = {}) {
+  function setGameLogContext({
+    groupId = "",
+    shareToken = "",
+    groupName = "",
+    systemId = "",
+    access = "none",
+    members = [],
+    ownerId = null,
+  } = {}) {
     const normalizedId = typeof groupId === "string" ? groupId.trim() : "";
     const normalizedToken = typeof shareToken === "string" ? shareToken.trim() : "";
     const normalizedAccess = typeof access === "string" ? access : "none";
@@ -2457,6 +2477,8 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     gameLogContext.groupName = typeof groupName === "string" ? groupName.trim() : "";
     gameLogContext.systemId = typeof systemId === "string" ? systemId.trim() : "";
     gameLogContext.access = normalizedAccess;
+    gameLogContext.members = Array.isArray(members) ? members : [];
+    gameLogContext.ownerId = ownerId ?? null;
     if (elements.gameLogTitle) {
       elements.gameLogTitle.textContent = gameLogContext.groupName;
       elements.gameLogTitle.hidden = !gameLogContext.groupName;
@@ -2627,7 +2649,15 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     if (shareToken && shareGroupId) {
       const groupName = groupShareState.group?.name || gameLogContext.groupName;
       const access = dataManager.isAuthenticated() ? "share" : "viewer";
-      setGameLogContext({ groupId: shareGroupId, shareToken, groupName, systemId: groupShareState.group?.system_id || "", access });
+      setGameLogContext({
+        groupId: shareGroupId,
+        shareToken,
+        groupName,
+        systemId: groupShareState.group?.system_id || "",
+        access,
+        members: Array.isArray(groupShareState.group?.members) ? groupShareState.group.members : [],
+        ownerId: groupShareState.group?.owner_id ?? null,
+      });
       return;
     }
     if (!dataManager.isAuthenticated()) {
@@ -2655,6 +2685,8 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
             groupName: match.name || active.name || "",
             systemId: match.system_id || "",
             access: ownerId === userId ? "owner" : "member",
+            members: Array.isArray(match.members) ? match.members : [],
+            ownerId,
           });
           return;
         }
@@ -2662,7 +2694,14 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
         // Falls through to the unconditional-owner shape below as a last
         // resort, matching group-context.js's own identical fallback.
       }
-      setGameLogContext({ groupId: active.groupId, groupName: active.name || "", systemId: "", access: "owner" });
+      setGameLogContext({
+        groupId: active.groupId,
+        groupName: active.name || "",
+        systemId: "",
+        access: "owner",
+        members: [],
+        ownerId: dataManager.session?.user?.id ?? null,
+      });
       return;
     }
     clearGameLogContext();

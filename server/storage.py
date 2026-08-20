@@ -232,6 +232,14 @@ def init_storage_db(state: ServerState) -> None:
     _migrate_shares_drop_groups_fk(conn)
     _migrate_group_members_drop_groups_fk(conn)
     _migrate_group_logs_drop_groups_fk(conn)
+    # Must run AFTER _migrate_group_logs_drop_groups_fk, never before: that
+    # migration rebuilds group_logs from a hardcoded old column list (rename
+    # to _legacy_group_logs, recreate, copy just those columns, drop) on any
+    # database that still carries the old FK — running this addition first
+    # would have its new columns silently discarded by that rebuild the very
+    # next line. Running after means it always operates on group_logs' final,
+    # stable shape.
+    _migrate_group_logs_table_add_whisper_columns(conn)
     conn.execute("CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(session_token)")
     conn.execute("CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id)")
     conn.execute("CREATE INDEX IF NOT EXISTS idx_shares_content ON shares(content_type, content_id)")
@@ -326,6 +334,24 @@ def _migrate_groups_table_add_setting_id(conn: sqlite3.Connection) -> None:
     if "setting_id" in columns:
         return
     conn.execute("ALTER TABLE groups ADD COLUMN setting_id TEXT")
+
+
+def _migrate_group_logs_table_add_whisper_columns(conn: sqlite3.Connection) -> None:
+    # Idempotent add-column migration for the Game Log's whisper/@mention and
+    # in-character support — same nullable-column-needs-no-rebuild reasoning
+    # as _migrate_groups_table_add_system_id above. Unlike that one, no
+    # _groups_table_exists guard is needed: group_logs has its own unconditional
+    # CREATE TABLE IF NOT EXISTS (this module, above) and is never renamed
+    # away the way the old bespoke `groups` table was, so it's always present
+    # by the time this runs. recipient_ids is a JSON array string of user ids
+    # (NULL/empty = public entry, today's behavior for every pre-existing
+    # row); in_character is a plain 0/1 flag. Both default to "absent = the
+    # old public/OOC behavior" so no backfill is needed for existing rows.
+    columns = {row["name"] for row in conn.execute("PRAGMA table_info(group_logs)")}
+    if "recipient_ids" not in columns:
+        conn.execute("ALTER TABLE group_logs ADD COLUMN recipient_ids TEXT")
+    if "in_character" not in columns:
+        conn.execute("ALTER TABLE group_logs ADD COLUMN in_character INTEGER DEFAULT 0")
 
 
 def _migrate_shares_table_for_group_targets(conn: sqlite3.Connection) -> None:

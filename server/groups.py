@@ -4,7 +4,7 @@ import copy
 import json
 import secrets
 from datetime import datetime
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Set, Tuple
 
 from .auth import AuthError, User
 from .shares import (
@@ -325,6 +325,19 @@ def _serialize_log_entries(rows: Iterable) -> List[Dict[str, Any]]:
                 payload = json.loads(payload_raw)
             except json.JSONDecodeError:
                 payload = None
+        # Absent on a pre-migration row (or a SELECT that doesn't fetch
+        # them) — reads as "public, not in-character," the same as every
+        # row written before this feature existed.
+        recipient_ids: List[int] = []
+        recipient_ids_raw = row["recipient_ids"] if "recipient_ids" in row.keys() else None
+        if recipient_ids_raw:
+            try:
+                parsed = json.loads(recipient_ids_raw)
+                if isinstance(parsed, list):
+                    recipient_ids = [int(entry) for entry in parsed if isinstance(entry, (int, float))]
+            except (json.JSONDecodeError, TypeError, ValueError):
+                recipient_ids = []
+        in_character = bool(row["in_character"]) if "in_character" in row.keys() and row["in_character"] else False
         entries.append(
             {
                 "id": row["id"],
@@ -336,6 +349,8 @@ def _serialize_log_entries(rows: Iterable) -> List[Dict[str, Any]]:
                     "name": row["author_name"] or "",
                 },
                 "created_at": row["created_at"],
+                "recipient_ids": recipient_ids,
+                "in_character": in_character,
             }
         )
     return entries
@@ -453,6 +468,36 @@ def user_can_access_group(state: ServerState, group_id: str, user: Optional[User
     return bool(membership)
 
 
+def _group_member_user_ids(state: ServerState, group_id: str, owner_id: Optional[int]) -> Set[int]:
+    """Every user id with real access to this group — the GM (owner_id) plus
+    every distinct account that owns a character currently a member of it.
+    Used by create_group_log_entry to validate a whisper's requested
+    recipient ids against actual membership (same query shape
+    _resolve_group_access/user_can_access_group already run for a single
+    user at a time, just widened to return the whole set at once) — an id
+    that isn't in this set gets silently dropped from the recipient list
+    rather than failing the whole post, since a stale roster on the client
+    (a player who's since left the campaign) shouldn't block sending the
+    rest of a message.
+    """
+    ids: Set[int] = set()
+    if owner_id is not None:
+        ids.add(owner_id)
+    for row in state.db.execute(
+        """
+        SELECT DISTINCT li.owner_id
+        FROM group_members AS gm
+        JOIN library_items AS li
+          ON gm.content_type = 'character' AND gm.content_id = li.id AND li.kind = 'character'
+        WHERE gm.group_id = ?
+        """,
+        (group_id,),
+    ):
+        if row["owner_id"] is not None:
+            ids.add(row["owner_id"])
+    return ids
+
+
 def accessible_group_ids(state: ServerState, user: Optional[User]) -> List[str]:
     """Every group id `user` can access — owns it, or owns a character that's
     a member of it. Used by storage.py's list_bucket to resolve the "shared"
@@ -485,8 +530,28 @@ def accessible_group_ids(state: ServerState, user: Optional[User]) -> List[str]:
     return list({*owned, *member_of})
 
 
+def _entry_visible_to(entry: Dict[str, Any], viewer_user_id: Optional[int]) -> bool:
+    # A whisper (non-empty recipient_ids) is visible only to its author or an
+    # explicit recipient — the GM gets no automatic override (confirmed
+    # design: the GM is just another mentionable target, not an all-seeing
+    # overseer). viewer_user_id is None for the one truly-anonymous read
+    # path (the share-token GET route, which never passes a User at all) —
+    # None never matches anything below, so an anonymous share-link viewer
+    # never sees any whisper, regardless of who authored/received it.
+    recipient_ids = entry.get("recipient_ids") or []
+    if not recipient_ids:
+        return True
+    if viewer_user_id is None:
+        return False
+    return viewer_user_id == entry.get("author", {}).get("id") or viewer_user_id in recipient_ids
+
+
 def _fetch_group_log_entries(
-    state: ServerState, group_id: str, limit: int, entry_types: Optional[List[str]] = None
+    state: ServerState,
+    group_id: str,
+    limit: int,
+    entry_types: Optional[List[str]] = None,
+    viewer_user_id: Optional[int] = None,
 ) -> List[Dict[str, Any]]:
     # entry_types (optional) restricts the LIMIT-bounded window to specific
     # types instead of the group's raw, most-recent-N-of-everything log —
@@ -503,32 +568,48 @@ def _fetch_group_log_entries(
     # "what's currently spotlighted" pass the three spotlight-related types;
     # the Game Log widget's own read (wanting everything, unfiltered) omits
     # this entirely.
+    # Whisper visibility is filtered in Python below, AFTER this SQL LIMIT —
+    # cheap here since the log is already bounded to <=200 rows, but it means
+    # a heavily-whispered window could under-fill `limit` for a viewer who
+    # can't see much of it. Only `message` rows ever carry recipient_ids
+    # (create_group_log_entry), so over-fetch (bounded at the same 200 cap
+    # _sanitize_log_limit already enforces) only when message rows are
+    # actually possible in this result set — a types-restricted spotlight
+    # read never includes them, so it skips the over-fetch entirely.
+    types_may_include_messages = not entry_types or "message" in entry_types
+    fetch_limit = min(limit * 3, 200) if types_may_include_messages else limit
+    columns = "id, entry_type, author_id, author_name, message, payload, created_at, recipient_ids, in_character"
     if entry_types:
         placeholders = ",".join("?" for _ in entry_types)
         rows = state.db.execute(
             f"""
-            SELECT id, entry_type, author_id, author_name, message, payload, created_at
+            SELECT {columns}
             FROM group_logs
             WHERE group_id = ? AND entry_type IN ({placeholders})
             ORDER BY id DESC
             LIMIT ?
             """,
-            (group_id, *entry_types, limit),
+            (group_id, *entry_types, fetch_limit),
         ).fetchall()
     else:
         rows = state.db.execute(
-            """
-            SELECT id, entry_type, author_id, author_name, message, payload, created_at
+            f"""
+            SELECT {columns}
             FROM group_logs
             WHERE group_id = ?
             ORDER BY id DESC
             LIMIT ?
             """,
-            (group_id, limit),
+            (group_id, fetch_limit),
         ).fetchall()
     ordered = list(rows)
     ordered.reverse()
-    return _serialize_log_entries(ordered)
+    entries = _serialize_log_entries(ordered)
+    if types_may_include_messages:
+        entries = [entry for entry in entries if _entry_visible_to(entry, viewer_user_id)]
+        if len(entries) > limit:
+            entries = entries[-limit:]
+    return entries
 
 
 def get_active_spotlights(state: ServerState, group_id: str, limit: int = 200) -> List[Dict[str, Any]]:
@@ -610,7 +691,8 @@ def list_group_log(
     # this is a read-side filter, not user input worth rejecting a whole
     # request over.
     types_value = [t for t in entry_types if t in _VALID_LOG_ENTRY_TYPES] if entry_types else None
-    entries = _fetch_group_log_entries(state, row["id"], limit_value, types_value)
+    viewer_user_id = user.id if user else None
+    entries = _fetch_group_log_entries(state, row["id"], limit_value, types_value, viewer_user_id)
     payload: Dict[str, Any] = {
         "group": {"id": row["id"], "name": row["name"], "type": row["type"]},
         "entries": entries,
@@ -629,6 +711,8 @@ def create_group_log_entry(
     entry_type: str = "message",
     message: str = "",
     payload: Optional[Dict[str, Any]] = None,
+    recipient_ids: Optional[List[Any]] = None,
+    in_character: bool = False,
 ) -> Dict[str, Any]:
     if not user:
         raise AuthError("Sign in to post to the game log")
@@ -691,13 +775,45 @@ def create_group_log_entry(
             payload_data = json.dumps(payload_value)
         except (TypeError, ValueError) as exc:
             raise AuthError("Invalid payload") from exc
+    # Whisper recipients/in-character only ever apply to a plain chat
+    # message — a roll/spotlight/etc. entry has no such concept, and
+    # silently ignoring the fields there (rather than erroring) matches this
+    # function's existing "read-side filter, not user input worth rejecting
+    # a whole request over" convention elsewhere in this function.
+    recipient_ids_data = None
+    in_character_value = 0
+    if normalized_type == "message":
+        if recipient_ids:
+            coerced_ids: Set[int] = set()
+            for raw_id in recipient_ids:
+                try:
+                    coerced_ids.add(int(raw_id))
+                except (TypeError, ValueError):
+                    continue
+            valid_ids = _group_member_user_ids(state, row["id"], row.get("owner_id"))
+            filtered = sorted(coerced_ids & valid_ids)
+            if filtered:
+                recipient_ids_data = json.dumps(filtered)
+        in_character_value = 1 if in_character else 0
     timestamp = datetime.utcnow().isoformat()
     cursor = state.db.execute(
         """
-        INSERT INTO group_logs (group_id, entry_type, author_id, author_name, message, payload, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO group_logs
+            (group_id, entry_type, author_id, author_name, message, payload, created_at,
+             recipient_ids, in_character)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
-        (row["id"], normalized_type, user.id, user.username or "", text or None, payload_data, timestamp),
+        (
+            row["id"],
+            normalized_type,
+            user.id,
+            user.username or "",
+            text or None,
+            payload_data,
+            timestamp,
+            recipient_ids_data,
+            in_character_value,
+        ),
     )
     # Same "bump the group's own modified_at on log activity" behavior the
     # old `groups` table always had (used for list_groups' own recency
@@ -710,7 +826,8 @@ def create_group_log_entry(
     state.db.commit()
     entry_row = state.db.execute(
         """
-        SELECT id, entry_type, author_id, author_name, message, payload, created_at
+        SELECT id, entry_type, author_id, author_name, message, payload, created_at,
+               recipient_ids, in_character
         FROM group_logs
         WHERE id = ?
         """,

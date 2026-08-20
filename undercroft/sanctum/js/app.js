@@ -459,10 +459,12 @@ async function loadSettingIntoForm(id) {
     return;
   }
   try {
-    // preferLocal: false — a Setting's own Species Weights (and everything
-    // else edited here) must be visible immediately, not hidden behind a
-    // stale local cache. Confirmed real bug this fixes: dataManager.get's
-    // own default (preferLocal: true) served a browser-cached copy of
+    // preferLocal: false (now redundant for a signed-in user — get()'s
+    // default is itself auth-aware — kept explicit for clarity/resilience
+    // regardless of sign-in state) — a Setting's own Species Weights (and
+    // everything else edited here) must be visible immediately, not hidden
+    // behind a stale local cache. Confirmed real bug this fixed under the
+    // old flat `preferLocal: true` default: served a browser-cached copy of
     // Eberron from before its Species Weights were seeded, while other
     // Settings that had never been locally cached correctly showed fresh
     // data — same class of staleness Vault's/Crucible's own System reads

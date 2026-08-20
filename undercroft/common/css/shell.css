@@ -280,6 +280,56 @@ body[data-theme="dark"] .hover-lift:hover {
   white-space: nowrap;
 }
 
+/* Confirmed real bug this fixes: a long unbroken URL (posted as a message,
+   or a spotlighted record's own long title/link) forced the Game Log panel
+   wider than its normal layout and produced a horizontal scrollbar instead
+   of wrapping. Two rules are both required — neither alone fixes it:
+   .gamelog-entry-body/.gamelog-entry-text reset Bootstrap's flex-item
+   default `min-width: auto` (flex-grow-1 alone does NOT reset this) so the
+   row can actually shrink to its container's width; overflow-wrap then lets
+   a long token (a URL has nowhere else to break) wrap mid-word once it's
+   been allowed to shrink that far. Applies to the message text and any link
+   inside it (a spotlight's own linked title, or a plain URL typed into a
+   chat message). */
+.gamelog-entry-body,
+.gamelog-entry-text {
+  min-width: 0;
+}
+
+/* A whisper that @mentions this viewer, arrived since they last had the log
+   open (game-log.js's own mentionSeenWatermark) — the notification the user
+   asked for, surfaced directly in the log itself rather than a separate
+   mechanism. Left border + tint only, no layout shift (row keeps its own
+   existing padding/border-bottom untouched). */
+.gamelog-entry--unread-mention {
+  background: rgba(var(--bs-warning-rgb), 0.12);
+  border-left: 3px solid var(--bs-warning);
+  padding-left: 0.5rem;
+  margin-left: -0.5rem;
+}
+
+.gamelog-entry-text,
+.gamelog-entry-text a {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* @mention autocomplete's own suggestion list (game-log.js) — anchored to
+   the compose form's own `position-relative`, not the text cursor itself
+   (a plain <input> has no per-character caret position to hook into without
+   a much heavier contenteditable/measurement approach), so it always drops
+   directly below the whole input row. */
+.gamelog-mention-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  max-height: 10rem;
+  overflow-y: auto;
+  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.15);
+}
+
 .status-root > * {
   pointer-events: auto;
 }
