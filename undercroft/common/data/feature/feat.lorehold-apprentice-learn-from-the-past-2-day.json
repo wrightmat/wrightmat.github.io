@@ -1,7 +1,8 @@
 {
   "name": "Learn from the Past (2/Day)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "When another creature within 60 feet of the creature misses a target with an attack roll, the creature magically enables the attacker to reroll the attack roll. It must use the new roll.",
   "mechanics": {

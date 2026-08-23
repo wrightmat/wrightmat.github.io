@@ -1,7 +1,8 @@
 {
   "name": "Water Walking",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Lets the wearer stand on and cross any liquid surface as if it were solid ground.",
   "mechanics": {

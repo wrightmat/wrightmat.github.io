@@ -1,7 +1,8 @@
 {
   "name": "Bites",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Melee Weapon Attack: +5 to hit, reach 0 ft., one creature in the swarm's space. Hit: 10 (4d4) piercing damage, or 5 (2d4) piercing damage if the swarm has half of its hit points or fewer. The target also takes 10 (4d4) poison damage and becomes euphoric for 1d4 rounds, or takes half as much poison damage and is not euphoric if it makes a successful DC 11 Constitution saving throw. A euphoric creature has disadvantage on saving throws.",
   "mechanics": {

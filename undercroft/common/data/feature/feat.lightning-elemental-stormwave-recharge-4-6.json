@@ -1,7 +1,8 @@
 {
   "name": "Stormwave (Recharge 4-6)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Each creature in the creature's space must make a DC 13 Constitution saving throw. On a failed save, a creature takes 15 (3d8 + 2) lightning damage and is paralyzed until the end of its next turn or until it takes damage. On a successful save, the creature takes half as much damage and isn't paralyzed.",
   "mechanics": {

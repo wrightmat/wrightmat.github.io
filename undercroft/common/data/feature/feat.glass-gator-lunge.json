@@ -1,7 +1,8 @@
 {
   "name": "Lunge",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "When the creature leaps at least 10 feet toward a creature and hits that creature with a claws attack on the same turn, it can immediately constrict the target as a bonus action.",
   "mechanics": {

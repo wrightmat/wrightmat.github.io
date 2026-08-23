@@ -1,0 +1,26 @@
+{
+  "id": "feat.paladin-elder-champion",
+  "name": "Elder Champion",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "As a Bonus Action, you can imbue your Aura of Protection with primal power, granting the benefits below for 1 minute or until you end them (no action required). Once you use this feature, you can’t use it again until you finish a Long Rest. You can also restore your use of it by expending a level 5 spell slot (no action required).\n\nDiminish Defiance. Enemies in the aura have Disadvantage on saving throws against your spells and Channel Divinity options.\n\nRegeneration. At the start of each of your turns, you regain 10 Hit Points.\n\nSwift Spells. Whenever you cast a spell that has a casting time of an action, you can cast it using a Bonus Action instead.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "As a Bonus Action, you can imbue your Aura of Protection with primal power, granting the benefits below for 1 minute or until you end them (no action required). Once you use this feature, you can’t use it again until you finish a Long Rest. You can also restore your use of it by expending a level 5 spell slot (no action required).\n\nDiminish Defiance. Enemies in the aura have Disadvantage on saving throws against your spells and Channel Divinity options.\n\nRegeneration. At the start of each of your turns, you regain 10 Hit Points.\n\nSwift Spells. Whenever you cast a spell that has a casting time of an action, you can cast it using a Bonus Action instead."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

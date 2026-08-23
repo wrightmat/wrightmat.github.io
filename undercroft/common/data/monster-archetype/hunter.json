@@ -2,7 +2,8 @@
   "id": "hunter",
   "name": "Hunter",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Tracks, pursues, and wears down a target over time.",
   "recipe": {

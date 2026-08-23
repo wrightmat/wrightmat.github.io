@@ -1,7 +1,8 @@
 {
   "name": "Ethereal Sight",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature can see a distance into the Ethereal Plane when it is on the Material Plane, and vice versa.",
   "mechanics": {

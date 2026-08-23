@@ -1,7 +1,8 @@
 {
   "name": "Horn",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Melee Weapon Attack against one target.",
   "mechanics": {

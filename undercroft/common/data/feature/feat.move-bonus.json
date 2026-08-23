@@ -1,7 +1,8 @@
 {
   "name": "Movable with Bonus Action",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Once created, the effect can be relocated by spending a bonus action to redirect it — faster than the action-cost version.",
   "mechanics": {

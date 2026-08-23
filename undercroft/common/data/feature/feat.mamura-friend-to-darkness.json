@@ -1,7 +1,8 @@
 {
   "name": "Friend to Darkness",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "In darkness or dim light, the creature has advantage on Stealth checks. It can attempt to hide as a bonus action at the end of its turn if it’s in dim light or darkness.",
   "mechanics": {

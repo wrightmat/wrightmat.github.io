@@ -1,7 +1,8 @@
 {
   "name": "Conjured Companion",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "A spectral ally is called forth to fight alongside the wielder for a time.",
   "mechanics": {

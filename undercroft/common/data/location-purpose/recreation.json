@@ -1,6 +1,9 @@
 {
   "id": "recreation",
   "name": "Recreation",
-  "systemIds": ["sys.dnd5e"],
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
   "description": "Exists for leisure and entertainment — taverns, arenas, festival grounds, and places people go to unwind."
 }

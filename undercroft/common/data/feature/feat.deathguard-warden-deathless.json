@@ -1,7 +1,8 @@
 {
   "name": "Deathless",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature is destroyed when reduced to 0 hit points, but it returns to life where it fell on the next dawn with full hit points. It can be killed only by exposing it to the direct negative energy of the plane of Mabar.",
   "mechanics": {

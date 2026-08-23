@@ -1,7 +1,8 @@
 {
   "name": "Elemental Demise",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "If the creature dies, its body disintegrates into crystalline powder, leaving behind only equipment the creature was wearing or carrying.",
   "mechanics": {

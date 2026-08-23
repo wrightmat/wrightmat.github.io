@@ -1,7 +1,8 @@
 {
   "name": "Ability Score Increase",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Boosts one of the creature's ability scores, from a small edge up through a score no mortal frame reaches naturally.",
   "mechanics": {

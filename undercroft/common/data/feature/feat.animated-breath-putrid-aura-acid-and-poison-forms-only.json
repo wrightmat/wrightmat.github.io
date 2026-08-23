@@ -1,7 +1,8 @@
 {
   "name": "Putrid Aura (Acid and Poison Forms Only)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "A creature that starts its turn within 5 feet of the creature must succeed on a DC 15 Constitution saving throw or be poisoned until the start of its next turn. A creature that touches the creature or hits it with a melee attack takes 3 (1d6) acid damage.",
   "mechanics": {

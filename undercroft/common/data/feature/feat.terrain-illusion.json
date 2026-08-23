@@ -1,7 +1,8 @@
 {
   "name": "Terrain Illusion",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Makes a whole area of terrain look, sound, and smell like a different kind of terrain.",
   "mechanics": {

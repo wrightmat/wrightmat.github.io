@@ -1,7 +1,8 @@
 {
   "name": "Damage Debuff",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Reduces the damage the target itself deals — the inverse of a damage bonus.",
   "mechanics": {

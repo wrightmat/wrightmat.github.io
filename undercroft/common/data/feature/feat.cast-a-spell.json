@@ -1,7 +1,8 @@
 {
   "name": "Cast a Spell",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Lets the item's user cast a specific spell, without expending a spell slot of their own.",
   "mechanics": {

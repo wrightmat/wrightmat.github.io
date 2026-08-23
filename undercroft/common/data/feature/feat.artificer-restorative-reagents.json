@@ -1,0 +1,26 @@
+{
+  "id": "feat.artificer-restorative-reagents",
+  "name": "Restorative Reagents",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You can cast Lesser Restoration without expending a spell slot and without preparing the spell, provided you use Alchemist’s Supplies as the Spellcasting Focus. You can do so a number of times equal to your Intelligence modifier (minimum of once), and you regain all expended uses when you finish a Long Rest.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "You can cast Lesser Restoration without expending a spell slot and without preparing the spell, provided you use Alchemist’s Supplies as the Spellcasting Focus. You can do so a number of times equal to your Intelligence modifier (minimum of once), and you regain all expended uses when you finish a Long Rest."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

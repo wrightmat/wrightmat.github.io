@@ -1,7 +1,8 @@
 {
   "name": "Acid Spray",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Ranged Weapon Attack: +6 to hit, range 15 ft., one target. Hit: 14 (2d10 + 3) acid damage. The target must make a successful DC 13 Dexterity saving throw or fall prone in the slick oil, which covers an area 5 feet square. A creature that enters the oily area or ends its turn there must also make the Dexterity saving throw to avoid falling prone. A creature needs to make only one saving throw per 5-foot-square per turn, even if it enters and ends its turn in the area. The slippery effect lasts for 3 rounds.",
   "mechanics": {

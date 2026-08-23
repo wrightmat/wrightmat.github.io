@@ -18,7 +18,8 @@
     }
   ],
   "feat": {
-    "index": "lucky",
+    "refKind": "feature",
+    "refId": "lucky",
     "name": "Lucky"
   },
   "proficiencies": [
@@ -125,6 +126,7 @@
   },
   "updated_at": "2026-07-19T14:55:21.570Z",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ]
 }

@@ -19,6 +19,7 @@ import { initSoundboardWidget } from "./common/js/lib/widgets/soundboard.js";
 import { initDiceRollerWidget } from "./common/js/lib/widgets/dice-roller.js";
 import { initDeckWidget } from "./common/js/lib/widgets/deck.js";
 import { initCalculatorWidget } from "./common/js/lib/widgets/calculator.js";
+import { initShopWidget } from "./common/js/lib/widgets/shop.js";
 import { initWledWidget, resolveWledDeviceByAlias, normalizeWledDeviceList, saveWledDevices } from "./common/js/lib/widgets/wled.js";
 import { initAudioRecorderWidget } from "./common/js/lib/widgets/audio-recorder.js";
 import { initBoardWidget } from "./common/js/lib/widgets/board.js";
@@ -205,6 +206,36 @@ const WIDGET_CATALOG = [
         setContentRef: ctx.setContentRef,
         setHeaderContent: ctx.setHeaderContent,
       }),
+  },
+  {
+    id: "shop",
+    label: "Shop",
+    icon: "tabler:building-store",
+    multiple: true,
+    // contentRef holds only which shop Location this instance shows (id) —
+    // the shop's own live state (open/closed, stock, treasury) lives on the
+    // campaign Group instead (a Group Property, see shop-transactions.js's
+    // own header), not here, so every player's copy of this widget for the
+    // same Location always shows the same thing. Same show-to-table eye
+    // icon as Map/Handout (canToggleVisibility/setRightAction) — a GM picks
+    // the shop Location and toggles it visible; a player who doesn't
+    // already have this widget gets it via the spotlight panel's own Accept
+    // (acceptSpotlight, INLINE_FOLLOW_KINDS branch — "shop" has no Library
+    // record of its own to fetch, see that Set's own comment), landing on
+    // the exact same Location automatically.
+    init: (container, ctx) => {
+      const canToggleVisibility = ctx.groupContext?.access === "owner" && !ctx.forcePlayerView;
+      return initShopWidget(container, {
+        status: ctx.status,
+        dataManager: ctx.dataManager,
+        groupContext: ctx.groupContext,
+        contentRef: ctx.contentRef,
+        setContentRef: ctx.setContentRef,
+        setHeaderContent: ctx.setHeaderContent,
+        setRightAction: ctx.setRightAction,
+        canToggleVisibility,
+      });
+    },
   },
   {
     id: "wled",
@@ -911,6 +942,7 @@ const KIND_WIDGET_MAP = {
   browser: "browser",
   calendar: "calendar",
   soundboard: "soundboard",
+  shop: "shop",
 };
 
 // Kinds with no Library record at all (server/groups.py's own
@@ -918,7 +950,13 @@ const KIND_WIDGET_MAP = {
 // widget a `{kind, id, templateId}` contentRef to fetch, since there's
 // nothing to fetch; instead it becomes a read-only follower that polls the
 // spotlight entry's own inline `data` (spotlight.js's resolveSpotlightData).
-const INLINE_FOLLOW_KINDS = new Set(["clock", "browser", "calendar", "soundboard"]);
+// `shop` piggybacks on this same list for a different reason — see
+// game-log.js's own SPOTLIGHT_INLINE_KINDS comment (the shared superset this
+// mirrors): its `id` is a real Location id, not an ephemeral instance to
+// follow, but there's still no "shop" Library record to fetch a title for,
+// so acceptSpotlight below hands it the exact same `{followId: id}` shape
+// (shop.js just reads it straight, it never actually polls a leader).
+const INLINE_FOLLOW_KINDS = new Set(["clock", "browser", "calendar", "soundboard", "shop"]);
 
 // Widget types that auto-discover whatever's currently spotlighted on their
 // own poll/live-stream cycle (combat-tracker.js's resolveActiveEncounterId)
@@ -932,7 +970,7 @@ const AUTO_DISCOVER_WIDGET_TYPES = new Set(["combat"]);
 // second-screen mirror (renderScreenView), since a widget type with no
 // visibility concept at all (character/gamelog/diceroller) has no notion
 // of "shown to table."
-const TABLE_WIDGET_TYPES = new Set(["handout", "map", "clock", "combat", "browser", "calendar", "soundboard"]);
+const TABLE_WIDGET_TYPES = new Set(["handout", "map", "clock", "combat", "browser", "calendar", "soundboard", "shop"]);
 
 // Widget types that never get the per-widget zoom stepper at all (no zoom
 // control shown, always mounted unzoomed) — CSS zoom conflicts with
@@ -1866,6 +1904,19 @@ async function isInstanceSpotlighted(instance) {
       return resolveIsSpotlighted(dataManager, { groupId, shareToken, kind: "calendar", id: instance.instanceId });
     case "soundboard":
       return resolveIsSpotlighted(dataManager, { groupId, shareToken, kind: "soundboard", id: instance.instanceId });
+    case "shop": {
+      // Unlike clock/browser/calendar/soundboard above, "shop"'s own id is
+      // a real Location id (contentRef.followId), not this instance's own
+      // instanceId — see INLINE_FOLLOW_KINDS' own comment for why it still
+      // shares their shape regardless. Confirmed real gap this fixes: this
+      // switch had no "shop" case at all, so the second-screen mirror's own
+      // poll (refreshScreen below) silently treated a spotlighted Shop as
+      // never shown, via the same `default: return false` every OTHER
+      // missing case would also hit.
+      const id = instance.contentRef?.followId;
+      if (!id) return false;
+      return resolveIsSpotlighted(dataManager, { groupId, shareToken, kind: "shop", id });
+    }
     case "combat":
       // AUTO_DISCOVER — same as combat-tracker.js's own resolution: any
       // active encounter at all means "show it," not a specific id match

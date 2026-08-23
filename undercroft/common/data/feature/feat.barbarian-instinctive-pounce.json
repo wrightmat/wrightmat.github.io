@@ -1,0 +1,25 @@
+{
+  "id": "feat.barbarian-instinctive-pounce",
+  "name": "Instinctive Pounce",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "As part of the Bonus Action you take to enter your Rage, you can move up to half your Speed.",
+  "mechanics": {
+    "type": "passive",
+    "text": "As part of the Bonus Action you take to enter your Rage, you can move up to half your Speed."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

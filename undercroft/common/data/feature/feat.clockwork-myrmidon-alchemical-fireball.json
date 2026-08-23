@@ -1,7 +1,8 @@
 {
   "name": "Alchemical Fireball",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature’s alchemical flame reservoir explodes when the construct is destroyed, spraying nearby creatures with burning fuel. A creature within 5 feet of the creature takes 19 (3d12) fire damage, or half damage with a successful DC 15 Dexterity saving throw. This explosion doesn’t occur if the creature has already fired its alchemical flame jet four times.",
   "mechanics": {

@@ -1,7 +1,8 @@
 {
   "name": "Water Mastery",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature has advantage on attack rolls, ability checks, and saving throws when even partly immersed in sea water. It is immune to the pressure effects of the creature ocean.",
   "mechanics": {

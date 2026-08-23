@@ -2,7 +2,8 @@
   "name": "Pegasus",
   "type": "celestial",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "image": "https://www.dnd5eapi.co/api/images/monsters/pegasus.png",
   "stats": {

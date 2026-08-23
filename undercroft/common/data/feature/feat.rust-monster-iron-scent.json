@@ -1,7 +1,8 @@
 {
   "name": "Iron Scent",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature can pinpoint, by scent, the location of ferrous metal within 30 feet of it.",
   "mechanics": {

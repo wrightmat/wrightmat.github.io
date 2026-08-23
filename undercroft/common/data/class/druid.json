@@ -1,0 +1,387 @@
+{
+  "index": "druid",
+  "name": "Druid",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "primary_ability": {
+    "desc": "Wisdom",
+    "ability_scores": [
+      {
+        "index": "wis",
+        "name": "WIS"
+      }
+    ]
+  },
+  "hit_die": 8,
+  "proficiency_choices": [
+    {
+      "desc": "Choose 2: Animal Handling, Arcana, Insight, Medicine, Nature, Perception, Religion, or Survival",
+      "choose": 2,
+      "type": "proficiencies",
+      "from": {
+        "option_set_type": "options_array",
+        "options": [
+          {
+            "option_type": "reference",
+            "item": {
+              "index": "skill-animal-handling",
+              "name": "Skill: Animal Handling"
+            }
+          },
+          {
+            "option_type": "reference",
+            "item": {
+              "index": "skill-arcana",
+              "name": "Skill: Arcana"
+            }
+          },
+          {
+            "option_type": "reference",
+            "item": {
+              "index": "skill-insight",
+              "name": "Skill: Insight"
+            }
+          },
+          {
+            "option_type": "reference",
+            "item": {
+              "index": "skill-medicine",
+              "name": "Skill: Medicine"
+            }
+          },
+          {
+            "option_type": "reference",
+            "item": {
+              "index": "skill-nature",
+              "name": "Skill: Nature"
+            }
+          },
+          {
+            "option_type": "reference",
+            "item": {
+              "index": "skill-perception",
+              "name": "Skill: Perception"
+            }
+          },
+          {
+            "option_type": "reference",
+            "item": {
+              "index": "skill-religion",
+              "name": "Skill: Religion"
+            }
+          },
+          {
+            "option_type": "reference",
+            "item": {
+              "index": "skill-survival",
+              "name": "Skill: Survival"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "proficiencies": [
+    {
+      "index": "light-armor",
+      "name": "Light Armor"
+    },
+    {
+      "index": "shields",
+      "name": "Shields"
+    },
+    {
+      "index": "simple-weapons",
+      "name": "Simple Weapons"
+    },
+    {
+      "index": "saving-throw-int",
+      "name": "Saving Throw: INT"
+    },
+    {
+      "index": "saving-throw-wis",
+      "name": "Saving Throw: WIS"
+    }
+  ],
+  "saving_throws": [
+    {
+      "index": "int",
+      "name": "INT"
+    },
+    {
+      "index": "wis",
+      "name": "WIS"
+    }
+  ],
+  "starting_equipment_options": [
+    {
+      "desc": "(A) Leather Armor, Shield, Sickle, Druidic Focus (Quarterstaff), Explorer’s Pack, Herbalism Kit, and 9 GP or (B) 50 GP",
+      "choose": 1,
+      "type": "equipment",
+      "from": {
+        "option_set_type": "options_array",
+        "options": [
+          {
+            "option_type": "multiple",
+            "items": [
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "leather-armor",
+                  "name": "Leather Armor"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "shield",
+                  "name": "Shield"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "sickle",
+                  "name": "Sickle"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "druidic-focus",
+                  "name": "Druidic Focus",
+                  "note": "Quarterstaff"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "explorer-s-pack",
+                  "name": "Explorer’s Pack"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "herbalism-kit",
+                  "name": "Herbalism Kit"
+                }
+              },
+              {
+                "option_type": "money",
+                "count": 9,
+                "unit": "gp"
+              }
+            ]
+          },
+          {
+            "option_type": "money",
+            "count": 50,
+            "unit": "gp"
+          }
+        ]
+      }
+    }
+  ],
+  "subclasses": [
+    {
+      "index": "circle-of-the-land",
+      "name": "Circle of the Land",
+      "url": "https://www.dndbeyond.com/classes/2190878-druid"
+    },
+    {
+      "index": "circle-of-the-moon",
+      "name": "Circle of the Moon",
+      "url": "https://www.dndbeyond.com/classes/2190878-druid"
+    },
+    {
+      "index": "circle-of-the-sea",
+      "name": "Circle of the Sea",
+      "url": "https://www.dndbeyond.com/classes/2190878-druid"
+    },
+    {
+      "index": "circle-of-the-stars",
+      "name": "Circle of the Stars",
+      "url": "https://www.dndbeyond.com/classes/2190878-druid"
+    },
+    {
+      "index": "circle-of-the-forged",
+      "name": "Circle of the Forged",
+      "url": "https://www.dndbeyond.com/classes/2190878-druid"
+    }
+  ],
+  "url": "https://www.dndbeyond.com/classes/2190878-druid",
+  "description": "Druids belong to ancient orders that call on the forces of nature. Harnessing the magic of animals, plants, and the four elements, Druids heal, transform into animals, and wield elemental destruction.\n\nRevering nature above all, individual Druids gain their magic from nature, a nature deity, or both, and they typically unite with other Druids to perform rites that mark the passage of the seasons and other natural cycles.\n\nDruids are concerned with the delicate ecological balance that sustains plant and animal life and with the need for people to live in harmony with nature. Druids often guard sacred sites or watch over regions of unspoiled nature, but when a significant danger arises, Druids take a more active role as adventurers who combat the threat.",
+  "coreTraits": {
+    "primaryAbility": "Wisdom",
+    "hitPointDie": "D8 per Druid level",
+    "savingThrowProficiencies": "Intelligence and Wisdom",
+    "skillProficiencies": "Choose 2: Animal Handling, Arcana, Insight, Medicine, Nature, Perception, Religion, or Survival",
+    "weaponProficiencies": "Simple weapons",
+    "toolProficiencies": "Herbalism Kit",
+    "armorTraining": "Light armor and Shields",
+    "startingEquipment": "Choose A or B: (A) Leather Armor, Shield, Sickle, Druidic Focus (Quarterstaff), Explorer’s Pack, Herbalism Kit, and 9 GP; or (B) 50 GP"
+  },
+  "features": [
+    {
+      "name": "Spellcasting",
+      "level": 1,
+      "description": "You have learned to cast spells through studying the mystical forces of nature. See chapter 7 for the rules on spellcasting. The information below details how you use those rules with Druid spells, which appear on the Druid spell list later in the class’s description.\n\nCantrips. You know two cantrips of your choice from the Druid spell list.\n\nWhenever you gain a Druid level, you can replace one of your cantrips with another cantrip of your choice from the Druid spell list.\n\nWhen you reach Druid levels 4 and 10, you learn another cantrip of your choice from the Druid spell list, as shown in the Cantrips column of the Druid Features table.\n\nSpell Slots. The Druid Features table shows how many spell slots you have to cast your level 1+ spells. You regain all expended slots when you finish a Long Rest.\n\nPrepared Spells of Level 1+. You prepare the list of level 1+ spells that are available for you to cast with this feature. To start, choose four level 1 spells from the Druid spell list.\n\nThe number of spells on your list increases as you gain Druid levels, as shown in the Prepared Spells column of the Druid Features table. Whenever that number increases, choose additional spells from the Druid spell list until the number of spells on your list matches the number on the table. The chosen spells must be of a level for which you have spell slots. For example, if you’re a level 3 Druid, your list of prepared spells can include six spells of levels 1 and 2 in any combination.\n\nIf another Druid feature gives you spells that you always have prepared, those spells don’t count against the number of spells you can prepare with this feature, but those spells otherwise count as Druid spells for you.\n\nChanging Your Prepared Spells. Whenever you finish a Long Rest, you can change your list of prepared spells, replacing any of the spells with other Druid spells for which you have spell slots.\n\nSpellcasting Ability. Wisdom is your spellcasting ability for your Druid spells.\n\nSpellcasting Focus. You can use a Druidic Focus as a Spellcasting Focus for your Druid spells."
+    },
+    {
+      "name": "Druidic",
+      "level": 1,
+      "description": "You know Druidic, the secret language of Druids. While learning this ancient tongue, you also unlocked the magic of communicating with animals; you always have the Speak with Animals spell prepared.\n\nYou can use Druidic to leave hidden messages. You and others who know Druidic automatically spot such a message. Others spot the message’s presence with a successful DC 15 Intelligence (Investigation) check but can’t decipher it without magic."
+    },
+    {
+      "name": "Primal Order",
+      "level": 1,
+      "description": "You have dedicated yourself to one of the following sacred roles of your choice.\n\nMagician\n\nYou know one extra cantrip from the Druid spell list. In addition, your mystical connection to nature gives you a bonus to your Intelligence (Arcana or Nature) checks. The bonus equals your Wisdom modifier (minimum bonus of +1).\n\nWarden\n\nTrained for battle, you gain proficiency with Martial weapons and training with Medium armor."
+    },
+    {
+      "name": "Wild Shape",
+      "level": 2,
+      "description": "The power of nature allows you to assume the form of an animal. As a Bonus Action, you shape-shift into a Beast form that you have learned for this feature (see “Known Forms” below). You stay in that form for a number of hours equal to half your Druid level or until you use Wild Shape again, have the Incapacitated condition, or die. You can also leave the form early as a Bonus Action.\n\nNumber of Uses. You can use Wild Shape twice. You regain one expended use when you finish a Short Rest, and you regain all expended uses when you finish a Long Rest.\n\nYou gain additional uses when you reach certain Druid levels, as shown in the Wild Shape column of the Druid Features table.\n\nKnown Forms. You know four Beast forms for this feature, chosen from among Beast stat blocks that have a maximum Challenge Rating of 1/4 and that lack a Fly Speed. Whenever you finish a Long Rest, you can replace one of your known forms with another eligible form.\n\nWhen you reach certain Druid levels, your number of known forms and the maximum Challenge Rating for those forms increases, as shown in the Beast Shapes table. In addition, starting at level 8, you can adopt a form that has a Fly Speed.\n\nWhen choosing known forms, you may look in the Monster Manual or elsewhere for eligible Beasts if the Dungeon Master permits you to do so.\n\nRules While Shape-Shifted. While in a form, you retain your personality, memories, and ability to speak, and the following rules apply:\n\nTemporary Hit Points. When you assume a Wild Shape form, you gain a number of Temporary Hit Points equal to your Druid level.\n\nGame Statistics. Your game statistics are replaced by the Beast’s stat block, but you retain your creature type; Hit Points; Hit Point Dice; Intelligence, Wisdom, and Charisma scores; class features; languages; and feats. You also retain your skill and saving throw proficiencies and use your Proficiency Bonus for them, in addition to gaining the proficiencies of the creature. If a skill or saving throw modifier in the Beast’s stat block is higher than yours, use the one in the stat block.\n\nNo Spellcasting. You can’t cast spells, but shape-shifting doesn’t break your Concentration or otherwise interfere with a spell you’ve already cast.\n\nObjects. Your ability to handle objects is determined by the form’s limbs rather than your own. In addition, you choose whether your equipment falls in your space, merges into your new form, or is worn by it. Worn equipment functions as normal, but the DM decides whether it’s practical for the new form to wear a piece of equipment based on the creature’s size and shape. Your equipment doesn’t change size or shape to match the new form, and any equipment that the new form can’t wear must either fall to the ground or merge with the form. Equipment that merges with the form has no effect while you’re in that form."
+    },
+    {
+      "name": "Wild Companion",
+      "level": 2,
+      "description": "You can summon a nature spirit that assumes an animal form to aid you. As a Magic action, you can expend a spell slot or a use of Wild Shape to cast the Find Familiar spell without Material components.\n\nWhen you cast the spell in this way, the familiar is Fey and disappears when you finish a Long Rest."
+    },
+    {
+      "name": "Druid Subclass",
+      "level": 3,
+      "description": "You gain a Druid subclass of your choice. A subclass is a specialization that grants you features at certain Druid levels. For the rest of your career, you gain each of your subclass’s features that are of your Druid level or lower."
+    },
+    {
+      "name": "Ability Score Improvement",
+      "level": 4,
+      "description": "You gain the Ability Score Improvement feat or another feat of your choice for which you qualify. You gain this feature again at Druid levels 8, 12, and 16."
+    },
+    {
+      "name": "Wild Resurgence",
+      "level": 5,
+      "description": "Once on each of your turns, if you have no uses of Wild Shape left, you can give yourself one use by expending a spell slot (no action required).\n\nIn addition, you can expend one use of Wild Shape (no action required) to give yourself a level 1 spell slot, but you can’t do so again until you finish a Long Rest."
+    },
+    {
+      "name": "Elemental Fury",
+      "level": 7,
+      "description": "The might of the elements flows through you. You gain one of the following options of your choice.\n\nPotent Spellcasting\n\nAdd your Wisdom modifier to the damage you deal with any Druid cantrip.\n\nPrimal Strike\n\nOnce on each of your turns when you hit a creature with an attack roll using a weapon or a Beast form’s attack in Wild Shape, you can cause the target to take an extra 1d8 Cold, Fire, Lightning, or Thunder damage (choose when you hit)."
+    },
+    {
+      "name": "Improved Elemental Fury",
+      "level": 15,
+      "description": "The option you chose for Elemental Fury grows more powerful, as detailed below.\n\nPotent Spellcasting. When you cast a Druid cantrip with a range of 10 feet or greater, the spell’s range increases by 300 feet.\n\nPrimal Strike. The extra damage of your Primal Strike increases to 2d8."
+    },
+    {
+      "name": "Beast Spells",
+      "level": 18,
+      "description": "While using Wild Shape, you can cast spells in Beast form, except for any spell that has a Material component with a cost specified or that consumes its Material component."
+    },
+    {
+      "name": "Epic Boon",
+      "level": 19,
+      "description": "You gain an Epic Boon feat or another feat of your choice for which you qualify."
+    },
+    {
+      "name": "Archdruid",
+      "level": 20,
+      "description": "The vitality of nature constantly blooms within you, granting you the following benefits.\n\nEvergreen Wild Shape. Whenever you roll Initiative and have no uses of Wild Shape left, you regain one expended use of it.\n\nNature Magician. You can convert uses of Wild Shape into a spell slot (no action required). Choose a number of your unexpended uses of Wild Shape and convert them into a single spell slot, with each use contributing 2 spell levels. For example, if you convert two uses of Wild Shape, you produce a level 4 spell slot. Once you use this benefit, you can’t do so again until you finish a Long Rest.\n\nLongevity. The primal magic that you wield causes you to age more slowly. For every ten years that pass, your body ages only one year."
+    }
+  ],
+  "mapping": "ddb-class",
+  "featureIds": [
+    "feat.druid-spellcasting",
+    "feat.druid-druidic",
+    "feat.druid-primal-order",
+    "feat.druid-wild-shape",
+    "feat.druid-wild-companion",
+    "feat.druid-druid-subclass",
+    "feat.ability-score-improvement",
+    "feat.druid-wild-resurgence",
+    "feat.druid-elemental-fury",
+    "feat.druid-improved-elemental-fury",
+    "feat.druid-beast-spells",
+    "feat.epic-boon",
+    "feat.druid-archdruid",
+    "feat.ability-score-improvement"
+  ],
+  "featureParams": {
+    "feat.druid-spellcasting": {
+      "grantedAtLevel": [
+        1
+      ]
+    },
+    "feat.druid-druidic": {
+      "grantedAtLevel": [
+        1
+      ]
+    },
+    "feat.druid-primal-order": {
+      "grantedAtLevel": [
+        1
+      ]
+    },
+    "feat.druid-wild-shape": {
+      "grantedAtLevel": [
+        2
+      ]
+    },
+    "feat.druid-wild-companion": {
+      "grantedAtLevel": [
+        2
+      ]
+    },
+    "feat.druid-druid-subclass": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.druid-wild-resurgence": {
+      "grantedAtLevel": [
+        5
+      ]
+    },
+    "feat.druid-elemental-fury": {
+      "grantedAtLevel": [
+        7
+      ]
+    },
+    "feat.druid-improved-elemental-fury": {
+      "grantedAtLevel": [
+        15
+      ]
+    },
+    "feat.druid-beast-spells": {
+      "grantedAtLevel": [
+        18
+      ]
+    },
+    "feat.druid-archdruid": {
+      "grantedAtLevel": [
+        20
+      ]
+    },
+    "feat.epic-boon": {
+      "grantedAtLevel": [
+        19
+      ]
+    },
+    "feat.ability-score-improvement": {
+      "grantedAtLevel": [
+        4,
+        8,
+        12,
+        16
+      ]
+    }
+  }
+}

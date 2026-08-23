@@ -1,0 +1,25 @@
+{
+  "id": "feat.cleric-improved-blessed-strikes",
+  "name": "Improved Blessed Strikes",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "The option you chose for Blessed Strikes grows more powerful.\n\nDivine Strike\n\nThe extra damage of your Divine Strike increases to 2d8.\n\nPotent Spellcasting\n\nWhen you cast a Cleric cantrip and deal damage to a creature with it, you can give vitality to yourself or another creature within 60 feet of yourself, granting a number of Temporary Hit Points equal to twice your Wisdom modifier.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The option you chose for Blessed Strikes grows more powerful.\n\nDivine Strike\n\nThe extra damage of your Divine Strike increases to 2d8.\n\nPotent Spellcasting\n\nWhen you cast a Cleric cantrip and deal damage to a creature with it, you can give vitality to yourself or another creature within 60 feet of yourself, granting a number of Temporary Hit Points equal to twice your Wisdom modifier."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

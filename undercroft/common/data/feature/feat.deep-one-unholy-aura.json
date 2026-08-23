@@ -1,7 +1,8 @@
 {
   "name": "Unholy Aura",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "An unholy aura surrounds The creature out to a radius of 40 feet. A creature who enters or begins their turn in the area must make a DC 21 Wisdom saving throw. On a failed saving throw, the target is frightened for 1 minute. While frightened, they are paralyzed. A frightened target can repeat the saving throw at the end of each of its turns, ending the effect on a success.",
   "mechanics": {

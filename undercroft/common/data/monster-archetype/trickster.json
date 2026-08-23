@@ -2,7 +2,8 @@
   "id": "trickster",
   "name": "Trickster",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Wins through deception, confusion, and unpredictability.",
   "recipe": {

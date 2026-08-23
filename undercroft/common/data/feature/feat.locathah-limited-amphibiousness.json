@@ -1,0 +1,25 @@
+{
+  "id": "feat.locathah-limited-amphibiousness",
+  "name": "Limited Amphibiousness",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You can breathe air and water, but you need to be submerged at least once every 4 hours to avoid suffocating.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You can breathe air and water, but you need to be submerged at least once every 4 hours to avoid suffocating."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

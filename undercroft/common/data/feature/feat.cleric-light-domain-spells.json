@@ -1,0 +1,26 @@
+{
+  "id": "feat.cleric-light-domain-spells",
+  "name": "Light Domain Spells",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "Your connection to this divine domain ensures you always have certain spells ready. When you reach a Cleric level specified in the Light Domain Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Burning Hands, Faerie Fire, Scorching Ray, See Invisibility\n\nLevel 5: Daylight, Fireball\n\nLevel 7: Arcane Eye, Wall of Fire\n\nLevel 9: Flame Strike, Scrying",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "Your connection to this divine domain ensures you always have certain spells ready. When you reach a Cleric level specified in the Light Domain Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Burning Hands, Faerie Fire, Scorching Ray, See Invisibility\n\nLevel 5: Daylight, Fireball\n\nLevel 7: Arcane Eye, Wall of Fire\n\nLevel 9: Flame Strike, Scrying"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

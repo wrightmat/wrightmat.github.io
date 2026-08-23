@@ -1,7 +1,8 @@
 {
   "name": "Claw",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Melee Weapon Attack: +4 to hit, reach 5 ft., one target. Hit: 6 (1d8 + 2) slashing damage plus 5 (1d10) acid damage, and the target is grappled (escape DC 12). The skitterhaunt has two claws, each of which can grapple one target.",
   "mechanics": {

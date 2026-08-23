@@ -1,7 +1,8 @@
 {
   "name": "Hover",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Lets the wearer float just above the ground, ignoring difficult terrain and unstable/nonsolid surfaces.",
   "mechanics": {

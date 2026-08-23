@@ -1,7 +1,8 @@
 {
   "name": "Move",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "If at least halfway submerged in water, The creature can move up to half its swim speed without provoking opportunity attacks.",
   "mechanics": {

@@ -1,0 +1,25 @@
+{
+  "id": "feat.warlock-eldritch-master",
+  "name": "Eldritch Master",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "When you use your Magical Cunning feature, you regain all your expended Pact Magic spell slots.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you use your Magical Cunning feature, you regain all your expended Pact Magic spell slots."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

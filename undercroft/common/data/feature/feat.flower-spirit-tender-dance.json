@@ -1,7 +1,8 @@
 {
   "name": "Tender Dance",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature performs a captivating dance. Each creature within 10 feet of it must succeed on a DC 13 Charisma saving throw or take 7 (2d6) psychic damage and become paralyzed for 1 minute. The target can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success.",
   "mechanics": {

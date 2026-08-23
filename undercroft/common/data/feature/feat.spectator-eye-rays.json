@@ -1,7 +1,8 @@
 {
   "name": "Eye Rays",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature randomly shoots one of the following magical rays at a target it can see within 90 feet of itself (roll 1d4; reroll if the creature has already used that ray during this turn): Confusion Ray. Wisdom Saving Throw: DC 12. Failure: 5 (2d4) Psychic damage, and the target can’t take Reactions until the end of its next turn. On its next turn, the target can’t move, and it uses its action to make a melee or ranged attack against a randomly determined creature within range. If the target can’t attack, it does nothing on that turn. Paralyzing Ray. Constitution Saving Throw: DC 12. Failure: The target has the Paralyzed condition and repeats the save at the end of each of its turns, ending the effect on itself on a success. After 1 minute, it succeeds automatically. Fear Ray. Wisdom Saving Throw: DC 12. Failure: 5 (2d4) Psychic damage, and the target has the Frightened condition until the end of its next turn. Wounding Ray. Constitution Saving Throw: DC 12. Failure: 16 (3d10) Necrotic damage. Success: Half damage.",
   "mechanics": {

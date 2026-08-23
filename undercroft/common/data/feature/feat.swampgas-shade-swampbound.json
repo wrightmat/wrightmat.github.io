@@ -1,7 +1,8 @@
 {
   "name": "Swampbound",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature is bound to a region of swamp within 1 mile of its body. If the creature leaves this region, it loses its Soul Drain action until it returns to the region. If it remains outside the region, it automatically teleports back to its corpse after 24 hours, regardless of distance.",
   "mechanics": {

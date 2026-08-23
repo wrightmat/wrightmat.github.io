@@ -1,7 +1,8 @@
 {
   "name": "Mad Multiattack",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Roll 2 (1d4) at the beginning of each of the creature's turns to determine how many attacks it can make each round. Using this pool of actions the creature can attack with its Bite or Spell Scythe in any combination.",
   "mechanics": {

@@ -1,0 +1,30 @@
+{
+  "id": "feat.shop-armor",
+  "name": "Shop: Armor",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "An armorer's shop — this place's own trade is protective gear, not general goods. Tagged alongside Shop (not instead of it) to narrow what kind of point of sale this is.",
+  "mechanics": {
+    "type": "passive",
+    "text": "This shop's own Assets should mostly be armor-kind Wonders — the GM's own stock, priced and quantified like any other Shop's."
+  },
+  "tags": {
+    "categories": [
+      "location"
+    ],
+    "locationTypes": [],
+    "locationPurposes": [
+      "commerce"
+    ],
+    "environments": []
+  },
+  "synergizesWith": [
+    "feat.shop"
+  ],
+  "dependsOn": [
+    "feat.shop"
+  ],
+  "conflictsWith": []
+}

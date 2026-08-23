@@ -1,0 +1,24 @@
+{
+  "id": "feat.noble-ability-score-improvements",
+  "name": "Noble Ability Score Improvements",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "<p>The Noble Background allows you to choose between Strength, Intelligence, and Charisma. Increase one of these scores by 2 and another one by 1, or increase all three by 1. None of these increases can raise a score above 20.</p>",
+  "mechanics": {
+    "type": "passive",
+    "text": "<p>The Noble Background allows you to choose between Strength, Intelligence, and Charisma. Increase one of these scores by 2 and another one by 1, or increase all three by 1. None of these increases can raise a score above 20.</p>"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

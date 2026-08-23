@@ -1,7 +1,8 @@
 {
   "name": "Close-Knit Community",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Everyone here knows everyone else's business — residents look out for one another, and a stranger is noticed immediately.",
   "mechanics": {

@@ -18,7 +18,8 @@
     }
   ],
   "feat": {
-    "index": "savage-attacker",
+    "refKind": "feature",
+    "refId": "savage-attacker",
     "name": "Savage Attacker"
   },
   "proficiencies": [
@@ -133,6 +134,7 @@
   },
   "updated_at": "2026-07-19T14:55:04.923Z",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ]
 }

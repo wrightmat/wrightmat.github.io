@@ -1,7 +1,8 @@
 {
   "name": "Deathroll",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature latches onto a Medium or smaller creature it can see within 5 feet of it and rolls itself and the target. The target must make a DC 13 Constitution saving throw. On a failure, the creature takes 7 (2d6) slashing damage and is stunned until the end of its next turn. On a success, the creature takes half the damage and isn’t stunned. The creature can use this action only if both itself and the target are immersed in water.",
   "mechanics": {

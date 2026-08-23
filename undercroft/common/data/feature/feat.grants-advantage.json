@@ -1,7 +1,8 @@
 {
   "name": "Grants Advantage",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Gives the target advantage on a specific roll type — attack rolls, saving throws, or a described combination — rather than a flat bonus.",
   "mechanics": {

@@ -1,7 +1,8 @@
 {
   "name": "Skirmish Movement",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "When a creature ends its turn within 5 feet of the creature, the creature can move up to half its speed. This movement doesn’t provoke opportunity attacks.",
   "mechanics": {

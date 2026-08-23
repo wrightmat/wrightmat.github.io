@@ -1,0 +1,26 @@
+{
+  "id": "feat.rogue-thieves-cant",
+  "name": "Thieves’ Cant",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You picked up various languages in the communities where you plied your roguish talents. You know Thieves’ Cant and one other language of your choice.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "You picked up various languages in the communities where you plied your roguish talents. You know Thieves’ Cant and one other language of your choice."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

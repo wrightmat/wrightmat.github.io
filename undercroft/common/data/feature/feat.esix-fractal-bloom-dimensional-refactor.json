@@ -1,7 +1,8 @@
 {
   "name": "Dimensional Refactor",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Esix warps the space around it in a burst of recursive energy. Each creature within 20 feet must make a DC 15 Dexterity saving throw. On a failed save, a creature takes 21 (6d6) force damage and is pulled 10 feet toward Esix. On a success, a creature takes half damage and is not moved.",
   "mechanics": {

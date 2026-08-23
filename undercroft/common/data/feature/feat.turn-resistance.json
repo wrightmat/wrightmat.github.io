@@ -1,7 +1,8 @@
 {
   "name": "Turn Resistance",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature has advantage on saving throws against any effect that turns undead.",
   "mechanics": {

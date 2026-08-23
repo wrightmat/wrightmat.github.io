@@ -1,7 +1,8 @@
 {
   "name": "Earth Glide",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature can burrow through nonmagical, unworked earth and stone. While doing so, the creature doesn’t disturb the material it moves through.",
   "mechanics": {

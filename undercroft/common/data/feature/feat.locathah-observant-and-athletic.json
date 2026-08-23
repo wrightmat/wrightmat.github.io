@@ -1,0 +1,25 @@
+{
+  "id": "feat.locathah-observant-and-athletic",
+  "name": "Observant and Athletic",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You have proficiency in the Athletics and Perception skills.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You have proficiency in the Athletics and Perception skills."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -510,5 +510,13 @@
       crossorigin="anonymous"
     ></script>
     <script defer src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
+    <!-- Repository's own renderMarkdown (js/lib/markdown.js) is reused
+         as-is by a Text component's own opt-in Rich Text rendering (a
+         promoted Feature/Spell's description, mainly) — same cross-tool
+         reuse Crucible already does for its Notes preview; it checks for
+         window.marked/window.DOMPurify at call time, not module load, so
+         loading these `defer`red like every other CDN script here is safe. -->
+    <script defer src="https://cdn.jsdelivr.net/npm/marked@18.0.7/lib/marked.umd.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/dompurify@3.4.12/dist/purify.min.js"></script>
   </body>
 </html>

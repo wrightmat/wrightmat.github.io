@@ -1,0 +1,26 @@
+{
+  "id": "feat.barbarian-power-of-the-wilds",
+  "name": "Power of the Wilds",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "Whenever you activate your Rage, you gain one of the following options of your choice.\n\nFalcon. While your Rage is active, you have a Fly Speed equal to your Speed if you aren’t wearing any armor.\n\nLion. While your Rage is active, any of your enemies within 5 feet of you have Disadvantage on attack rolls against targets other than you or another Barbarian who has this option active.\n\nRam. While your Rage is active, you can cause a Large or smaller creature to have the Prone condition when you hit it with a melee attack.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "Whenever you activate your Rage, you gain one of the following options of your choice.\n\nFalcon. While your Rage is active, you have a Fly Speed equal to your Speed if you aren’t wearing any armor.\n\nLion. While your Rage is active, any of your enemies within 5 feet of you have Disadvantage on attack rolls against targets other than you or another Barbarian who has this option active.\n\nRam. While your Rage is active, you can cause a Large or smaller creature to have the Prone condition when you hit it with a melee attack."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

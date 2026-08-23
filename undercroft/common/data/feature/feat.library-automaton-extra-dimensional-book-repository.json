@@ -1,7 +1,8 @@
 {
   "name": "Extra-Dimensional Book Repository",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "A small door on the chest of the creature opens into an extra‑dimensional bookcase. This bookcase functions exactly as a bag of holding except that it can store only written materials such as books, scrolls, tomes, parchment, folders, notebooks, spellbooks, and the like.",
   "mechanics": {

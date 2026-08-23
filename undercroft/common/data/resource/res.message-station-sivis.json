@@ -1,15 +1,22 @@
 {
   "id": "res.message-station-sivis",
   "name": "Message Station (House Sivis)",
-  "systemIds": ["sys.dnd5e"],
-  "settingIds": ["eberron"],
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "settingIds": [
+    "eberron"
+  ],
   "description": "House Sivis's network of speaking-stone message stations relays a short message to another station, priced per word.",
   "category": "service",
   "house": "sivis",
   "price": "2 sp per word",
   "tags": {
     "locationTypes": [],
-    "locationPurposes": ["commerce"],
+    "locationPurposes": [
+      "commerce"
+    ],
     "environments": []
   }
 }

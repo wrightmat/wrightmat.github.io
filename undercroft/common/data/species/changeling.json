@@ -26,7 +26,8 @@
   "variants": [],
   "updated_at": "2026-07-19T16:30:55.970Z",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "names": {
     "nameMode": "synonym",

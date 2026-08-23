@@ -1,7 +1,8 @@
 {
   "name": "Inventory Expansion",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Holds far more than its own outside dimensions should allow.",
   "mechanics": {

@@ -1,7 +1,8 @@
 {
   "name": "Consume and Destroy",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "When the creature takes damage from a spell, it takes only half the triggering damage (rounded down). If the creature that cast the spell is within 60 feet of the creature, that creature must succeed on a DC 14 Dexterity saving throw or take the other half of the damage.",
   "mechanics": {

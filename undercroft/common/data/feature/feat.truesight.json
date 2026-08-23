@@ -1,7 +1,8 @@
 {
   "name": "Truesight",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Grants truesight — seeing through illusions and into the Ethereal Plane — out to a range.",
   "mechanics": {

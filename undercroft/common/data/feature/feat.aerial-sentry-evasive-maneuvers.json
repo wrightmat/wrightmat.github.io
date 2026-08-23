@@ -1,7 +1,8 @@
 {
   "name": "Evasive Maneuvers",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "As a reaction to being hit by an attack, the creature can use its reaction to Disengage.",
   "mechanics": {

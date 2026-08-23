@@ -1,7 +1,8 @@
 {
   "name": "Teleport",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "As part of its move, the creature can magically teleport a short distance to an unoccupied space it can see, rather than moving normally.",
   "mechanics": {

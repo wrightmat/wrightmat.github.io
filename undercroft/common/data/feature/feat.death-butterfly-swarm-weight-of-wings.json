@@ -1,7 +1,8 @@
 {
   "name": "Weight of Wings",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "A creature in a space occupied by the creature has its speed reduced by half, and must succeed on a DC 13 Dexterity saving throw or become blinded. Both effects end when the creature doesn’t share a space with the creature at the end of the creature’s turn. If a creature succeeds on the saving throw, it is immune to the creature’s blindness (but not the speed reduction) for 24 hours.",
   "mechanics": {

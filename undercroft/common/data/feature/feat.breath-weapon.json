@@ -1,7 +1,8 @@
 {
   "name": "Breath Weapon",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Once per short rest, the creature can exhale energy in an area, dealing heavy damage to everyone caught in it.",
   "mechanics": {

@@ -1,7 +1,8 @@
 {
   "name": "Intercede",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Forces anyone targeting the warded creature with an attack or harmful spell to save first or redirect elsewhere.",
   "mechanics": {

@@ -1,7 +1,8 @@
 {
   "name": "Dazzling Slam",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Melee Weapon Attack: +4 to hit, reach 5 ft., one target. Hit: 5 (1d6 + 2) bludgeoning damage plus 7 (2d6) psychic damage, and the target is blinded until the start of the creature's next turn.",
   "mechanics": {

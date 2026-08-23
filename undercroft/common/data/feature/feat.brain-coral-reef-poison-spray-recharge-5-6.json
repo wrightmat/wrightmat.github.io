@@ -1,7 +1,8 @@
 {
   "name": "Reef Poison Spray (Recharge 5–6)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature expels a cloud of poison. Each creature within 15 feet of the creature’s central spire must make a DC 15 Intelligence saving throw. On a failure, a creature takes 21 (6d6) poison damage and is incapacitated until the end of its next turn. On a success, a creature takes half the damage and isn’t incapacitated.",
   "mechanics": {

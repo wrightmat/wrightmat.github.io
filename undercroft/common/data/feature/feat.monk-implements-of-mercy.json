@@ -1,0 +1,26 @@
+{
+  "id": "feat.monk-implements-of-mercy",
+  "name": "Implements of Mercy",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You gain proficiency in the Insight and Medicine skills and proficiency with the Herbalism Kit.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "You gain proficiency in the Insight and Medicine skills and proficiency with the Herbalism Kit."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

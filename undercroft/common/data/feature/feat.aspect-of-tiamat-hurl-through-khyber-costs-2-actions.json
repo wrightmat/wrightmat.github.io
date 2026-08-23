@@ -1,7 +1,8 @@
 {
   "name": "Hurl Through Khyber (Costs 2 Actions)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The aspect targets a creature she is grappling. The creature must succeed on a DC 25 Charisma saving throw or take 44 (8d10) psychic damage and be banished to Khyber (the underworld of Eberron). At the start of the aspect's next turn, the creature reappears in an unoccupied space within 10 feet of the aspect.",
   "mechanics": {

@@ -1,7 +1,8 @@
 {
   "name": "Mucous Cloud",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "While underwater, the aberration is surrounded by transformative mucus. A creature that touches the aberration or that hits it with a melee attack while within 5 ft. of it must make a DC 14 Constitution saving throw. On a failure, the creature is diseased for 1d4 hours. The diseased creature can breathe only underwater.",
   "mechanics": {

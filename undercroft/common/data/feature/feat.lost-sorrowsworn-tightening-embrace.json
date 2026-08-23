@@ -1,7 +1,8 @@
 {
   "name": "Tightening Embrace",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "If the creature takes damage, the creature grappled by Embrace takes 18 (4d8) psychic damage.",
   "mechanics": {

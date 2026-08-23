@@ -1,7 +1,8 @@
 {
   "name": "Ambusher",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "In the first round of combat, the monstrosity has advantage on attack rolls against any creature it has surprised.",
   "mechanics": {

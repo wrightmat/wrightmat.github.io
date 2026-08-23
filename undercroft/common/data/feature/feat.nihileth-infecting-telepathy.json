@@ -1,7 +1,8 @@
 {
   "name": "Infecting Telepathy",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "If a creature communicates telepathically with the creature, or uses a psychic attack against it, the creature can spread its disease to the creature. The creature must succeed on a DC 14 Wisdom save or become infected with the same disease caused by the creature’s tentacle attack. This ability replaces an aboleth’s Probing Telepathy ability.",
   "mechanics": {

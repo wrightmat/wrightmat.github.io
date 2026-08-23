@@ -1,0 +1,26 @@
+{
+  "id": "feat.fire-genasi-fire-resistance",
+  "name": "Fire Resistance",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You have resistance to fire damage.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "You have resistance to fire damage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

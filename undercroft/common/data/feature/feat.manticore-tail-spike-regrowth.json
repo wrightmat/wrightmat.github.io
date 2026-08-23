@@ -1,7 +1,8 @@
 {
   "name": "Tail Spike Regrowth",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature has twenty-four tail spikes. Used spikes regrow when the creature finishes a long rest.",
   "mechanics": {

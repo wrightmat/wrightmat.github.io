@@ -1,7 +1,8 @@
 {
   "name": "Moan",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Each creature within 60 feet of the aberration that can hear its moan and that isn't an aberration must succeed on a DC 13 Wisdom saving throw or become frightened until the end of the aberration's next turn. If a creature's saving throw is successful, the creature is immune to the aberration's moan for the next 24 hours.",
   "mechanics": {

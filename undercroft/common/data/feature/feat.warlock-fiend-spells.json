@@ -1,0 +1,26 @@
+{
+  "id": "feat.warlock-fiend-spells",
+  "name": "Fiend Spells",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "The magic of your patron ensures you always have certain spells ready; when you reach a Warlock level specified in the Fiend Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Burning Hands, Command, Scorching Ray, Suggestion\n\nLevel 5: Fireball, Stinking Cloud\n\nLevel 7: Fire Shield, Wall of Fire\n\nLevel 9: Geas, Insect Plague",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The magic of your patron ensures you always have certain spells ready; when you reach a Warlock level specified in the Fiend Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Burning Hands, Command, Scorching Ray, Suggestion\n\nLevel 5: Fireball, Stinking Cloud\n\nLevel 7: Fire Shield, Wall of Fire\n\nLevel 9: Geas, Insect Plague"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

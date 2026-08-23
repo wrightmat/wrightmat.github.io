@@ -1,7 +1,8 @@
 {
   "name": "Web Sense",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "While in contact with a web, the monstrosity knows the exact location of any other creature in contact with the same web.",
   "mechanics": {

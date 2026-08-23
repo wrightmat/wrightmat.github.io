@@ -1,0 +1,97 @@
+{
+  "index": "artificer-armorer",
+  "url": "https://www.dndbeyond.com/classes/2656866-artificer",
+  "name": "Armorer",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "parentKind": "class",
+  "parentId": "artificer",
+  "summary": "An Armorer modifies armor to function almost like a second skin. The armor is enhanced to hone the Armorer’s magic, unleash potent attacks, and generate a formidable defense.",
+  "description": "",
+  "features": [
+    {
+      "name": "Tools of the Trade",
+      "level": 3,
+      "description": "You gain the following benefits.\n\nArmor Training. You gain training with Heavy armor.\n\nTool Proficiency. You gain proficiency with Smith’s Tools. If you already have this tool proficiency, you gain proficiency with one other type of Artisan’s Tools of your choice.\n\nArmor Crafting. When you craft nonmagical or magic armor, the amount of time required to craft it is halved."
+    },
+    {
+      "name": "Armorer Spells",
+      "level": 3,
+      "description": "When you reach an Artificer level specified in the Armorer Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Magic Missile, Thunderwave\n\nLevel 5: Mirror Image, Shatter\n\nLevel 9: Hypnotic Pattern, Lightning Bolt\n\nLevel 13: Fire Shield, Greater Invisibility\n\nLevel 17: Passwall, Wall of Force"
+    },
+    {
+      "name": "Arcane Armor",
+      "level": 3,
+      "description": "As a Magic action while you have Smith’s Tools in hand, you can turn a suit of armor you are wearing into Arcane Armor. The armor continues to be Arcane Armor until you don another suit of armor or you die.\n\nYou gain the following benefits while wearing your Arcane Armor.\n\nNo Strength Requirement. If the armor normally has a Strength requirement, the Arcane Armor lacks this requirement for you.\n\nQuick Don and Doff. You can don or doff the armor as a Utilize action. The armor can’t be removed against your will.\n\nSpellcasting Focus. You can use the Arcane Armor as a Spellcasting Focus for your Artificer spells."
+    },
+    {
+      "name": "Armor Model",
+      "level": 3,
+      "description": "You can customize your Arcane Armor. When you do so, choose one of the following armor models: Dreadnaught, Guardian, or Infiltrator. The model you choose gives you special benefits while you wear it.\n\nEach model includes a special weapon. When you attack with that weapon, you can add your Intelligence modifier, instead of your Strength or Dexterity modifier, to the attack and damage rolls.\n\nYou can change the armor’s model whenever you finish a Short or Long Rest if you have Smith’s Tools in hand.\n\nDreadnaught. You design your armor to become a towering juggernaut in battle. It has the following features:\n\nForce Demolisher. An arcane wrecking ball or sledgehammer projects from your armor. The demolisher counts as a Simple Melee weapon with the Reach property, and it deals 1d10 Force damage on a hit. If you hit a creature that is at least one size smaller than you with the demolisher, you can push the creature up to 10 feet straight away from yourself or pull the creature up to 10 feet toward yourself.\n\nGiant Stature. As a Bonus Action, you transform and enlarge your armor for 1 minute. For the duration, your reach increases by 5 feet, and if you are smaller than Large, you become Large, along with anything you are wearing. If there isn’t enough room for you to increase your size, your size doesn’t change. You can use this Bonus Action a number of times equal to your Intelligence modifier (minimum of once). You regain all expended uses when you finish a Long Rest.\n\nGuardian. You design your armor to be in the front line of conflict. It has the following features:\n\nThunder Pulse. You can discharge concussive blasts with strikes from your armor. The pulse counts as a Simple Melee weapon and deals 1d8 Thunder damage on a hit. A creature hit by the pulse has Disadvantage on attack rolls against targets other than you until the start of your next turn.\n\nDefensive Field. While Bloodied, you can take a Bonus Action to gain Temporary Hit Points equal to your Artificer level. You lose these Temporary Hit Points if you doff the armor.\n\nInfiltrator. You customize your armor for subtler undertakings. It has the following features:\n\nLightning Launcher. A gemlike node appears on your armor, from which you can shoot bolts of lightning. The launcher counts as a Simple Ranged weapon with a normal range of 90 feet and a long range of 300 feet, and it deals 1d6 Lightning damage on a hit. Once on each of your turns when you hit a creature with the launcher, you can deal an extra 1d6 Lightning damage to that target.\n\nPowered Steps. Your Speed increases by 5 feet.\n\nDampening Field. You have Advantage on Dexterity (Stealth) checks. If the armor imposes Disadvantage on such checks, the Advantage and Disadvantage cancel each other, as normal."
+    },
+    {
+      "name": "Extra Attack",
+      "level": 5,
+      "description": "You can attack twice instead of once whenever you take the Attack action on your turn."
+    },
+    {
+      "name": "Improved Armorer",
+      "level": 9,
+      "description": "You gain the following benefits.\n\nArmor Replication. You learn an additional plan for your Replicate Magic Item feature, and it must be in the Armor category. If you replace that plan, you must replace it with another Armor plan.\n\nIn addition, you can create an additional item with that feature, and the item must also be in the Armor category.\n\nImproved Arsenal. You gain a +1 bonus to attack and damage rolls made with the special weapon of your Arcane Armor model."
+    },
+    {
+      "name": "Perfected Armor",
+      "level": 15,
+      "description": "Your Arcane Armor gains additional benefits based on its model, as detailed below.\n\nDreadnaught. The damage die of your Force Demolisher increases to 2d6 Force damage.\n\nIn addition, when you use your Giant Stature, your reach increases by 10 feet, your size can increase to Large or Huge (your choice), and you have Advantage on Strength checks and Strength saving throws for the duration.\n\nGuardian. The damage die of your Thunder Pulse increases to 1d10 Thunder damage.\n\nIn addition, when a Huge or smaller creature you can see ends its turn within 30 feet of you, you can take a Reaction to magically force that creature to make a Strength saving throw against your spell save DC. On a failed save, you pull the creature up to 25 feet directly toward you to an unoccupied space. If you pull the target to a space within 5 feet of yourself, you can make a melee weapon attack against it as part of this Reaction.\n\nYou can take this Reaction a number of times equal to your Intelligence modifier (minimum of once), and you regain all expended uses when you finish a Long Rest.\n\nInfiltrator. The damage die of your Lightning Launcher increases to 2d6 Lightning damage. Any creature that takes Lightning damage from your Lightning Launcher glimmers with magical light until the start of your next turn. The glimmering creature sheds Dim Light in a 5-foot radius, and it has Disadvantage on attack rolls against you, as the light jolts it if it attacks you.\n\nAdditionally, as a Bonus Action, you can gain a Fly Speed equal to twice your Speed until the end of the current turn. You can take this Bonus Action a number of times equal to your Intelligence modifier (minimum of once), and you regain all expended uses when you finish a Long Rest."
+    }
+  ],
+  "mapping": "ddb-subclass",
+  "featureIds": [
+    "feat.artificer-armorer-spells",
+    "feat.artificer-arcane-armor",
+    "feat.artificer-armor-model",
+    "feat.extra-attack",
+    "feat.artificer-improved-armorer",
+    "feat.artificer-perfected-armor",
+    "feat.artificer-armorer-tools-of-the-trade"
+  ],
+  "featureParams": {
+    "feat.artificer-armorer-spells": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.artificer-arcane-armor": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.artificer-armor-model": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.extra-attack": {
+      "grantedAtLevel": [
+        5
+      ]
+    },
+    "feat.artificer-improved-armorer": {
+      "grantedAtLevel": [
+        9
+      ]
+    },
+    "feat.artificer-perfected-armor": {
+      "grantedAtLevel": [
+        15
+      ]
+    },
+    "feat.artificer-armorer-tools-of-the-trade": {
+      "grantedAtLevel": [
+        3
+      ]
+    }
+  }
+}

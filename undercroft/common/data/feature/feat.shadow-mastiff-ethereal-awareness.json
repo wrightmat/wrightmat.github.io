@@ -1,7 +1,8 @@
 {
   "name": "Ethereal Awareness",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature can see ethereal creatures and objects.",
   "mechanics": {

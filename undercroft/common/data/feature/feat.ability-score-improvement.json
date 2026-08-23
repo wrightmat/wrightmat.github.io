@@ -1,0 +1,24 @@
+{
+  "id": "feat.ability-score-improvement",
+  "name": "Ability Score Improvement",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "You gain the Ability Score Improvement feat or another feat of your choice for which you qualify.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You gain the Ability Score Improvement feat or another feat of your choice for which you qualify."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

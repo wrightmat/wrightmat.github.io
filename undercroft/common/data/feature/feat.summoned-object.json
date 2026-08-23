@@ -1,7 +1,8 @@
 {
   "name": "Summoned Object",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Conjures a nonliving object.",
   "mechanics": {

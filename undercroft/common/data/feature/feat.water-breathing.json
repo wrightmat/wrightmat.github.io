@@ -1,7 +1,8 @@
 {
   "name": "Water Breathing",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Lets a creature breathe underwater as easily as air.",
   "mechanics": {

@@ -1,7 +1,8 @@
 {
   "name": "Vitality Drain",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "One creature grappled by a tentacle of the creature must make a DC 11 Constitution saving throw. On a failed save, the target takes 9 (2d8) necrotic damage, and the creature regains a number of hit points equal to half the necrotic damage taken.",
   "mechanics": {

@@ -1,7 +1,8 @@
 {
   "name": "Chromatic Flare (Costs 3 Actions)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The aspect flares with elemental energy. Each creature of the aspect's choice in a 60-foot-radius sphere centered on her must make a DC 27 Dexterity saving throw. On a failed save, the creature takes 39 (6d12) damage of a type chosen by the aspect: acid, cold, fire, lightning, or poison. On a successful save, the creature takes half as much damage.",
   "mechanics": {

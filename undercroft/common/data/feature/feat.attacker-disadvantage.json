@@ -1,7 +1,8 @@
 {
   "name": "Attacker Disadvantage",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Anyone attacking the wearer has disadvantage on the attack roll.",
   "mechanics": {

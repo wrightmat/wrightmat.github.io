@@ -1,7 +1,8 @@
 {
   "name": "Hop",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "a creature can move its enormous bulk with remarkably quick hop of up to 20 feet, leaping over obstacles and foes. It may also use the hop as part of a withdraw action.",
   "mechanics": {

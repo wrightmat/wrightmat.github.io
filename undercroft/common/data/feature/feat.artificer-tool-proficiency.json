@@ -1,0 +1,26 @@
+{
+  "id": "feat.artificer-tool-proficiency",
+  "name": "Tool Proficiency",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You gain proficiency with Smith’s Tools. If you already have this proficiency, you gain proficiency with one other type of Artisan’s Tools of your choice. In addition, when you craft an ordinary or magic weapon, the amount of time required to craft it is halved.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "You gain proficiency with Smith’s Tools. If you already have this proficiency, you gain proficiency with one other type of Artisan’s Tools of your choice. In addition, when you craft an ordinary or magic weapon, the amount of time required to craft it is halved."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

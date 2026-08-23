@@ -1,7 +1,8 @@
 {
   "name": "Black Ice Spray (Recharge 5-6)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature sprays slivers of ice in a line 30 feet long and 5 feet wide. All creatures in the line take 26 (4d12) necrotic damage and are blinded; a successful DC 15 Constitution saving throw prevents the blindness. A blinded creature repeats the saving throw at the end of its turn, ending the effect on itself with a successful save.",
   "mechanics": {

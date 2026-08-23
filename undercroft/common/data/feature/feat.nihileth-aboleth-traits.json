@@ -1,7 +1,8 @@
 {
   "name": "Aboleth Traits",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Unless noted otherwise or where contradicted below, a creature has the same traits as a living aboleth. This includes legendary actions and lair actions.",
   "mechanics": {

@@ -1,7 +1,8 @@
 {
   "name": "Void Body",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature can reduce the damage it takes from a single source to 0. Divine damage can only be reduced by half.",
   "mechanics": {

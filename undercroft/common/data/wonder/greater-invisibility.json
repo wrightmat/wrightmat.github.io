@@ -3,7 +3,8 @@
   "name": "Greater Invisibility",
   "notes": "You or a creature you touch becomes invisible until the spell ends. Anything the target is wearing or carrying is invisible as long as it is on the target's person.",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "url": "https://www.dnd5eapi.co/api/2014/spells/greater-invisibility",
   "mapping": "5e-api-spell",

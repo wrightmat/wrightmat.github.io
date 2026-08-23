@@ -1,0 +1,26 @@
+{
+  "id": "feat.artificer-forge-adept-spells",
+  "name": "Forge Adept Spells",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "When you reach an Artificer level specified in the Forge Adept Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Armor of Agathys, Shield of Faith\n\nLevel 5: Spiritual Weapon, Warding Bond\n\nLevel 9: Beacon of Hope, Remove Curse\n\nLevel 13: Death Ward, Fire Shield\n\nLevel 17: Banishing Smite, Wall of Force",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "When you reach an Artificer level specified in the Forge Adept Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Armor of Agathys, Shield of Faith\n\nLevel 5: Spiritual Weapon, Warding Bond\n\nLevel 9: Beacon of Hope, Remove Curse\n\nLevel 13: Death Ward, Fire Shield\n\nLevel 17: Banishing Smite, Wall of Force"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

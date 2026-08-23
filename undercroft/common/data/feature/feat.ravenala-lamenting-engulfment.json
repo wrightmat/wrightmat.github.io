@@ -1,7 +1,8 @@
 {
   "name": "Lamenting Engulfment",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature targets a creature within 5 feet of it. The target must succeed on a DC 13 Dexterity saving throw or be grappled and restrained by the creature. While restrained, the creature is engulfed inside the creature’s trunk. The creature can grapple one creature at a time; grappling doesn’t prevent it from using other attacks against different targets. The restrained creature must make a DC 14 Wisdom saving throw at the start of each of its turns. On a failure, the creature is compelled to sing a lament of all its various mistakes and misdeeds for as long as it remains restrained. Singing prevents uttering command words, casting spells with a verbal component, or any verbal communication. The restrained creature can still make melee attacks. When the creature moves, the restrained creature moves with it. A restrained creature can escape by using an action to make a DC 15 Strength check. On a success, the creature escapes and enters a space of its choice within 5 feet of the creature.",
   "mechanics": {

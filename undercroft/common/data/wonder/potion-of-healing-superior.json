@@ -3,7 +3,8 @@
   "name": "Potion of Superior Healing",
   "notes": "Potion, rare\n\nYou regain 8d4 + 8 hit points when you drink this potion. The potion's red liquid glimmers when agitated.",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "url": "https://www.dnd5eapi.co/api/2014/magic-items/potion-of-healing-superior",
   "mapping": "5e-api-magic-item",

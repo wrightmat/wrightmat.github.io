@@ -1,7 +1,8 @@
 {
   "name": "Storm Glide",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "During storms, the creature can travel through the air as if under the effects of a fly spell, except using its swim speed.",
   "mechanics": {

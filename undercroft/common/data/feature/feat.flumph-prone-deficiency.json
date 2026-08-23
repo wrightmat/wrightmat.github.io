@@ -1,7 +1,8 @@
 {
   "name": "Prone Deficiency",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "If the creature is knocked prone, roll a die. On an odd result, the creature lands upside-down and is incapacitated. At the end of each of its turns, the creature can make a DC 10 Dexterity saving throw, righting itself and ending the incapacitated condition if it succeeds.",
   "mechanics": {

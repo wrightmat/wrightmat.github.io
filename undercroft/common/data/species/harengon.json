@@ -1,0 +1,74 @@
+{
+  "name": "Harengon",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dndbeyond.com/species/814914-harengon",
+  "description": [
+    "Harengons originated in the Feywild, where they spoke Sylvan and embodied the spirit of freedom and travel. In time, these rabbitfolk hopped into other worlds, bringing the fey realm’s exuberance with them and learning new languages as they went.",
+    "Harengons are bipedal, with the characteristic long feet of the rabbits they resemble and fur in a variety of colors. They share the keen senses and powerful legs of leporine creatures and are full of energy, like a wound-up spring. Harengons are blessed with a little fey luck, and they often find themselves a few fortunate feet away from dangers during adventures.",
+    "At 1st level, you choose whether your character is a member of the human race or of a fantastical race. If you select a fantastical race such as the fairy or the harengon in this section, follow these additional rules during character creation."
+  ],
+  "type": "Humanoid",
+  "size": "Medium",
+  "speed": 30,
+  "traits": [
+    {
+      "name": "Ability Score Increases",
+      "description": "When determining your character’s ability scores, increase one score by 2 and increase a different score by 1, or increase three different scores by 1. Follow this rule regardless of the method you use to determine the scores, such as rolling or point buy. The “Quick Build” section for your character’s class offers suggestions on which scores to increase. You can follow those suggestions or ignore them, but you can’t raise any of your scores above 20."
+    },
+    {
+      "name": "Languages",
+      "description": "Your character can speak, read, and write Common and one other language that you and your DM agree is appropriate for the character. The Player’s Handbook offers a list of languages to choose from. The DM is free to modify that list for a campaign."
+    },
+    {
+      "name": "Creature Type",
+      "description": "Every creature in D&D, including each player character, has a special tag in the rules that identifies the type of creature they are. Most player characters are of the Humanoid type. A race in this chapter tells you what your character’s creature type is.\n\nHere’s a list of the game’s creature types in alphabetical order: Aberration, Beast, Celestial, Construct, Dragon, Elemental, Fey, Fiend, Giant, Humanoid, Monstrosity, Ooze, Plant, Undead. These types don’t have rules themselves, but some rules in the game affect creatures of certain types in different ways. For example, the cure wounds spell doesn’t work on a Construct or an Undead."
+    },
+    {
+      "name": "Life Span",
+      "description": "The typical life span of a player character in the D&D multiverse is about a century, assuming the character doesn’t meet a violent end on an adventure. Members of some races, such as dwarves and elves, can live for centuries. Fairies and harengons, however, have a life span of about a century."
+    },
+    {
+      "name": "Height and Weight",
+      "description": "Player characters, regardless of race, typically fall into the same ranges of height and weight that humans have in our world. If you’d like to determine your character’s height or weight randomly, consult the Random Height and Weight table in the Player’s Handbook, and choose the row in the table that best represents the build you imagine for your character."
+    },
+    {
+      "name": "Creature Type",
+      "description": "You are a Humanoid."
+    },
+    {
+      "name": "Size",
+      "description": "You are Medium or Small. You choose the size when you select this race."
+    },
+    {
+      "name": "Speed",
+      "description": "Your walking speed is 30 feet."
+    },
+    {
+      "name": "Hare-Trigger",
+      "description": "You can add your proficiency bonus to your initiative rolls."
+    },
+    {
+      "name": "Leporine Senses",
+      "description": "You have proficiency in the Perception skill."
+    },
+    {
+      "name": "Lucky Footwork",
+      "description": "When you fail a Dexterity saving throw, you can use your reaction to roll a d4 and add it to the save, potentially turning the failure into a success. You can’t use this reaction if you’re prone or your speed is 0."
+    },
+    {
+      "name": "Rabbit Hop",
+      "description": "As a bonus action, you can jump a number of feet equal to five times your proficiency bonus, without provoking opportunity attacks. You can use this trait only if your speed is greater than 0. You can use it a number of times equal to your proficiency bonus, and you regain all expended uses when you finish a long rest."
+    }
+  ],
+  "variants": [],
+  "mapping": "ddb-species",
+  "featureIds": [
+    "feat.harengon-hare-trigger",
+    "feat.harengon-leporine-senses",
+    "feat.harengon-lucky-footwork",
+    "feat.harengon-rabbit-hop"
+  ]
+}

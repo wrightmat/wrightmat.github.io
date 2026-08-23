@@ -1,0 +1,75 @@
+{
+  "index": "druid-circle-of-the-forged",
+  "url": "https://www.dndbeyond.com/classes/2190878-druid",
+  "name": "Circle of the Forged",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "parentKind": "class",
+  "parentId": "druid",
+  "summary": "What is truly natural? The warforged are living creatures, despite being constructed from wood and steel. Druids who embrace the Circle of the Forged explore the potential of the warforged form, blending animal shapes with warforged durability. Only a handful of Druids follow this Circle. Did you learn these techniques from a mentor? Are you driven by instinct, still learning what you’re capable of? Or, if you’re a Warforged, were you designed with the potential to assume multiple forms . . . and if so, who created you, and why?",
+  "description": "",
+  "features": [
+    {
+      "name": "Skin of Steel",
+      "level": 3,
+      "description": "You can channel the power of the forge when you assume a Wild Shape form, granting you the benefits below.\n\nChallenge Rating. The maximum Challenge Rating for the form equals your Druid level divided by 3 (round down).\n\nArmor Class. Until you leave the form, your AC equals 15 plus your Wisdom modifier if that total is higher than the Beast’s AC.\n\nConstruct Resilience. You have Resistance to Poison damage. You also have Advantage on saving throws to avoid or end the Poisoned condition.\n\nTireless. You don’t gain Exhaustion levels from dehydration, malnutrition, or suffocation. In addition, you don’t need to sleep, and magic can’t put you to sleep.\n\nObvious. While in a Wild Shape form, your body is made from the same materials as a warforged; your muscles are rootlike tendrils, and they’re protected by armored plates. It’s obvious to an observer that you are not a normal animal."
+    },
+    {
+      "name": "Circle of the Forged Spells",
+      "level": 3,
+      "description": "When you reach a Druid level specified in the Circle of the Forge Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Blade Ward, Identify, Mirror Image\n\nLevel 5: Haste\n\nLevel 7: Fire Shield\n\nLevel 9: Animate Objects"
+    },
+    {
+      "name": "Elementally Imbued",
+      "level": 6,
+      "description": "While in a Wild Shape form, you gain the following benefits.\n\nElemental Strikes. Each of your attacks in a Wild Shape form can deal its normal damage type, Acid damage, Cold damage, Fire damage, or Lightning damage. You make this choice each time you hit with those attacks.\n\nElemental Cascade. Choose one of the following damage types: Acid, Cold, Fire, or Lightning. Once per turn when you hit with a Wild Shape form’s attack, you can expend a spell slot (no action required) to deal extra damage of the chosen type equal to 1d6 per level of the spell slot, to a maximum of 5d6. The target must make a Constitution saving throw against your spell save DC. On a failed save, the target suffers an effect based on the chosen damage type for 1 minute. The target repeats the save at the end of each of its turns, ending the effect on itself on a success.\n\nAcid. The target suffers a penalty to AC equal to half your Wisdom modifier (minimum 1).\n\nCold. The target’s Speed is 0 and they have Disadvantage on Strength and Dexterity checks.\n\nFire. At the start of each of its turns, the target takes Fire damage equal to your Wisdom modifier.\n\nLightning. The target can’t make Opportunity Attacks, and the first attack it makes on each of its turns has Disadvantage."
+    },
+    {
+      "name": "Adamantine Hide",
+      "level": 10,
+      "description": "While in a Wild Shape form, you gain Resistance to Bludgeoning, Piercing, and Slashing damage.\n\nIn addition, when you are hit by an attack roll or forced to make a saving throw, you can take a Reaction and expend a use of Wild Shape to shape-shift into one of your Wild Shape forms."
+    },
+    {
+      "name": "Construction Perfection",
+      "level": 14,
+      "description": "While in a Wild Shape form, you gain the following additional benefits.\n\nArmor Class. Until you leave the form, your AC equals 16 plus your Wisdom modifier if that total is higher than the Beast’s AC.\n\nIron Mind. You have Immunity to the Charmed, Frightened, Paralyzed, Petrified, and Poisoned conditions, and Poison damage."
+    }
+  ],
+  "mapping": "ddb-subclass",
+  "featureIds": [
+    "feat.druid-skin-of-steel",
+    "feat.druid-circle-of-the-forged-spells",
+    "feat.druid-elementally-imbued",
+    "feat.druid-adamantine-hide",
+    "feat.druid-construction-perfection"
+  ],
+  "featureParams": {
+    "feat.druid-skin-of-steel": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.druid-circle-of-the-forged-spells": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.druid-elementally-imbued": {
+      "grantedAtLevel": [
+        6
+      ]
+    },
+    "feat.druid-adamantine-hide": {
+      "grantedAtLevel": [
+        10
+      ]
+    },
+    "feat.druid-construction-perfection": {
+      "grantedAtLevel": [
+        14
+      ]
+    }
+  }
+}

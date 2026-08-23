@@ -3,7 +3,8 @@
   "name": "Circle of Death",
   "notes": "A sphere of negative energy ripples out in a 60-foot radius sphere from a point within range. Each creature in that area must make a constitution saving throw. A target takes 8d6 necrotic damage on a failed save, or half as much damage on a successful one.",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "url": "https://www.dnd5eapi.co/api/2014/spells/circle-of-death",
   "mapping": "5e-api-spell",

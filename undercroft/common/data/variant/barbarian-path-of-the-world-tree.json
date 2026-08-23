@@ -1,0 +1,64 @@
+{
+  "index": "barbarian-path-of-the-world-tree",
+  "url": "https://www.dndbeyond.com/classes/2190875-barbarian",
+  "name": "Path of the World Tree",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "parentKind": "class",
+  "parentId": "barbarian",
+  "summary": "Trace the Roots and Branches of the Multiverse",
+  "description": "Barbarians who follow the Path of the World Tree connect with the cosmic tree Yggdrasil through their Rage. This tree grows among the Outer Planes, connecting them to each other and the Material Plane. These Barbarians draw on the tree’s magic for vitality and as a means of dimensional travel.",
+  "features": [
+    {
+      "name": "Vitality of the Tree",
+      "level": 3,
+      "description": "Your Rage taps into the life force of the World Tree. You gain the following benefits.\n\nVitality Surge. When you activate your Rage, you gain a number of Temporary Hit Points equal to your Barbarian level.\n\nLife-Giving Force. At the start of each of your turns while your Rage is active, you can choose another creature within 10 feet of yourself to gain Temporary Hit Points. To determine the number of Temporary Hit Points, roll a number of d6s equal to your Rage Damage bonus, and add them together. If any of these Temporary Hit Points remain when your Rage ends, they vanish."
+    },
+    {
+      "name": "Branches of the Tree",
+      "level": 6,
+      "description": "Whenever a creature you can see starts its turn within 30 feet of you while your Rage is active, you can take a Reaction to summon spectral branches of the World Tree around it. The target must succeed on a Strength saving throw (DC 8 plus your Strength modifier and Proficiency Bonus) or be teleported to an unoccupied space you can see within 5 feet of yourself or in the nearest unoccupied space you can see. After the target teleports, you can reduce its Speed to 0 until the end of the current turn."
+    },
+    {
+      "name": "Battering Roots",
+      "level": 10,
+      "description": "During your turn, your reach is 10 feet greater with any Melee weapon that has the Heavy or Versatile property, as tendrils of the World Tree extend from you. When you hit with such a weapon on your turn, you can activate the Push or Topple mastery property in addition to a different mastery property you’re using with that weapon."
+    },
+    {
+      "name": "Travel along the Tree",
+      "level": 14,
+      "description": "When you activate your Rage and as a Bonus Action while your Rage is active, you can teleport up to 60 feet to an unoccupied space you can see. In addition, once per Rage, you can increase the range of that teleport to 150 feet. When you do so, you can also bring up to six willing creatures who are within 10 feet of you. Each creature teleports to an unoccupied space of your choice within 10 feet of your destination space."
+    }
+  ],
+  "mapping": "ddb-subclass",
+  "featureIds": [
+    "feat.barbarian-vitality-of-the-tree",
+    "feat.barbarian-branches-of-the-tree",
+    "feat.barbarian-battering-roots",
+    "feat.barbarian-travel-along-the-tree"
+  ],
+  "featureParams": {
+    "feat.barbarian-vitality-of-the-tree": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.barbarian-branches-of-the-tree": {
+      "grantedAtLevel": [
+        6
+      ]
+    },
+    "feat.barbarian-battering-roots": {
+      "grantedAtLevel": [
+        10
+      ]
+    },
+    "feat.barbarian-travel-along-the-tree": {
+      "grantedAtLevel": [
+        14
+      ]
+    }
+  }
+}

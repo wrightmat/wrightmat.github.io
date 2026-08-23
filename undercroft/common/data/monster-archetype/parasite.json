@@ -2,7 +2,8 @@
   "id": "parasite",
   "name": "Parasite",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Sustains itself by weakening or consuming others.",
   "recipe": {

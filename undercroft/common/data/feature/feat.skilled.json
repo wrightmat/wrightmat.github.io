@@ -1,0 +1,24 @@
+{
+  "id": "feat.skilled",
+  "name": "Skilled",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "<p><em>Origin Feat</em></p>\r\n<p>You gain proficiency in any combination of three skills or tools of your choice.</p>\r\n<p><em><strong>Repeatable.</strong></em> You can take this feat more than once.</p>",
+  "mechanics": {
+    "type": "passive",
+    "text": "<p><em>Origin Feat</em></p>\r\n<p>You gain proficiency in any combination of three skills or tools of your choice.</p>\r\n<p><em><strong>Repeatable.</strong></em> You can take this feat more than once.</p>"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

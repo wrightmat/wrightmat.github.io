@@ -1,7 +1,8 @@
 {
   "name": "Unnerving Mask",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "When a creature the fiend can see starts its turn within 30 feet of the fiend, the fiend can create the illusion that it looks like one of the creature's departed loved ones or bitter enemies. If the creature can see the fiend, it must succeed on a DC 14 Wisdom saving throw or be frightened until the end of its turn.",
   "mechanics": {

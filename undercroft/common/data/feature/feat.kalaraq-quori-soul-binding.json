@@ -1,7 +1,8 @@
 {
   "name": "Soul Binding",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Melee Spell Attack: +13 to hit, reach 5 ft., one target. Hit: 29 (4d10 + 7) necrotic damage. A creature reduced to 0 hit points from this attack dies and has its soul imprisoned in one of the creature’s eyes. The target can’t be revived by any means short of a wish spell until the creature is destroyed.",
   "mechanics": {

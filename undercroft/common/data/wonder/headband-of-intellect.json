@@ -3,7 +3,8 @@
   "name": "Headband of Intellect",
   "notes": "Wondrous item, uncommon (requires attunement)\n\nYour Intelligence score is 19 while you wear this headband. It has no effect on you if your Intelligence is already 19 or higher.",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "url": "https://www.dnd5eapi.co/api/2014/magic-items/headband-of-intellect",
   "mapping": "5e-api-magic-item",

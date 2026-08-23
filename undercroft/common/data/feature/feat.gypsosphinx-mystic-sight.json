@@ -1,7 +1,8 @@
 {
   "name": "Mystic Sight",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "a creature sees death coming and can foretell the manner of a person's death. This ability does not come with any urge to share that information. Gypsosphinxes are notorious for hinting, teasing, and even lying about a creature's death ('If we fight, I will kill you and eat your heart. I have seen it', is a favorite bluff).",
   "mechanics": {

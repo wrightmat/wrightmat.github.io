@@ -2,7 +2,8 @@
   "id": "guardian",
   "name": "Guardian",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Protects a place, creature, or objective by controlling access to it.",
   "recipe": {

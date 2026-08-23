@@ -1,7 +1,8 @@
 {
   "name": "Viscid Suffocation",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "One creature in the creature’s space must make a DC 15 Dexterity saving throw or take 18 (4d8) acid damage, and the creature attaches to it, coating the creature and its equipment. While the creature is attached to it, the creature’s speed is halved, it can’t breathe, and it takes 9 (2d8) acid damage at the start of each of its turns. In addition, if the creature is in the water, it has disadvantage on ability checks to swim or stay afloat. The creature can devour flesh quickly, but its acid doesn’t harm metal, wood, or other similar objects or creatures without flesh. The creature can detach itself by spending 5 feet of its movement. A creature, including the target, can take its action to detach the creature by succeeding on a DC 15 Strength check.",
   "mechanics": {

@@ -1,0 +1,75 @@
+{
+  "index": "cleric-knowledge-domain",
+  "url": "https://www.dndbeyond.com/classes/2190877-cleric",
+  "name": "Knowledge Domain",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "parentKind": "class",
+  "parentId": "cleric",
+  "summary": "Unearth Secrets and Master the Mind",
+  "description": "The Knowledge Domain values learning and understanding above all. Clerics who tap into this domain study esoteric lore, collect old tomes, delve into secret places, and examine the processes of the mind. To them, knowledge is more valuable than material wealth, and learning is an act of worship. Libraries, universities, and other educational institutions also draw on the power of the Knowledge Domain.\n\nGods of knowledge vary from masters of arcane magic to patrons of craft and invention. In Faerûn, Clerics of the Knowledge Domain worship deities of learning and ingenuity such as Oghma and Gond, among many others.",
+  "features": [
+    {
+      "name": "Blessings of Knowledge",
+      "level": 3,
+      "description": "You gain proficiency with one type of Artisan’s Tools of your choice and in two of the following skills of your choice: Arcana, History, Nature, or Religion. You have Expertise in those two skills."
+    },
+    {
+      "name": "Knowledge Domain Spells",
+      "level": 3,
+      "description": "When you reach a Cleric level specified in the Knowledge Domain Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Command, Comprehend Languages*, Detect Magic*, Detect Thoughts*, Identify*, Mind Spike*\n\nLevel 5: Dispel Magic, Nondetection, Tongues*\n\nLevel 7: Arcane Eye*, Banishment, Confusion\n\nLevel 9: Legend Lore*, Scrying*, Synaptic Static\n\n*Spell of the Divination school"
+    },
+    {
+      "name": "Mind Magic",
+      "level": 3,
+      "description": "As a Magic action, you can expend one use of your Channel Divinity to manifest your magical knowledge. Choose one spell from the Divination school on the Knowledge Domain Spells table that you have prepared. As part of that action, you cast that spell without expending a spell slot or needing Material components."
+    },
+    {
+      "name": "Unfettered Mind",
+      "level": 6,
+      "description": "You gain telepathy out to 60 feet. When you use this telepathy, you can simultaneously contact a number of creatures equal to your Wisdom modifier (minimum of one).\n\nAdditionally, you gain proficiency in Intelligence saving throws. If you already have this proficiency, you instead gain saving throw proficiency with one ability in which you lack it."
+    },
+    {
+      "name": "Divine Foreknowledge",
+      "level": 17,
+      "description": "As a Bonus Action, you magically expand your mind to the future. For 1 hour, you have Advantage on D20 Tests. Once you use this feature, you can’t use it again until you finish a Long Rest. You can also restore your use of this feature by expending a level 6+ spell slot (no action required)."
+    }
+  ],
+  "mapping": "ddb-subclass",
+  "featureIds": [
+    "feat.cleric-blessings-of-knowledge",
+    "feat.cleric-knowledge-domain-spells",
+    "feat.cleric-mind-magic",
+    "feat.cleric-unfettered-mind",
+    "feat.cleric-divine-foreknowledge"
+  ],
+  "featureParams": {
+    "feat.cleric-blessings-of-knowledge": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.cleric-knowledge-domain-spells": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.cleric-mind-magic": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.cleric-unfettered-mind": {
+      "grantedAtLevel": [
+        6
+      ]
+    },
+    "feat.cleric-divine-foreknowledge": {
+      "grantedAtLevel": [
+        17
+      ]
+    }
+  }
+}

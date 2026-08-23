@@ -1,0 +1,26 @@
+{
+  "id": "feat.wizard-training-in-war-and-song",
+  "name": "Training In War and Song",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You gain proficiency with all Melee Martial weapons that don’t have the Two-Handed or Heavy property.\n\nYou can use a Melee weapon with which you have proficiency as a Spellcasting Focus for your Wizard spells.\n\nYou also gain proficiency in one of the following skills of your choice: Acrobatics, Athletics, Performance, or Persuasion.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "You gain proficiency with all Melee Martial weapons that don’t have the Two-Handed or Heavy property.\n\nYou can use a Melee weapon with which you have proficiency as a Spellcasting Focus for your Wizard spells.\n\nYou also gain proficiency in one of the following skills of your choice: Acrobatics, Athletics, Performance, or Persuasion."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

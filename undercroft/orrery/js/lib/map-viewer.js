@@ -343,6 +343,14 @@ export function createMarkerDot(baseMapManager, map, layer, markerElement, optio
   // the transform still applies on top, so the dot's center (not its
   // top-left corner) lands on that pixel.
   const ringColor = layer.settings?.color || "#0ea5e9";
+  // "square" (createMarkerElement's own comment) fills the cell edge-to-
+  // edge with sharp corners instead of the circular clip every marker used
+  // to be stuck with — applied to `dot` itself (its border + the CSS
+  // class's own border-radius: 999px) and to `face` below (the actual
+  // image/color fill), so an object token's art isn't cropped into a
+  // circle it was never drawn for.
+  const isSquare = markerElement.shape === "square";
+  dot.style.borderRadius = isSquare ? "0" : "999px";
   // Outline — was a fixed, uneditable CSS default (2px, theme body-bg,
   // image markers only) before; now applies to every marker (plain dot
   // included) and reads from the layer's own configured settings, always
@@ -351,8 +359,27 @@ export function createMarkerDot(baseMapManager, map, layer, markerElement, optio
   // markerElement.outlineColor, when set, overrides the layer default for
   // THIS marker only (createMarkerElement's own comment — e.g. auto-copied
   // from a linked user's Favorite Color).
-  dot.style.borderColor = markerElement.outlineColor || layer.settings?.outlineColor || "#0f172a";
-  dot.style.borderWidth = `${Number.isFinite(layer.settings?.outlineWidth) ? layer.settings.outlineWidth : 2}px`;
+  // showOutline (createMarkerElement's own comment) defaults to true, so
+  // this only ever changes anything once a GM explicitly turns a
+  // container's outline off — most commonly an object token (a chest, say)
+  // that needs a clean, borderless edge-to-edge fill. Turning it off also
+  // has to zero the CSS class's own always-on 1px box-shadow ring
+  // (.orrery-layer-marker-overlay), not just the border — border alone
+  // being 0 still left that ring visible, since nothing else ever
+  // overrides it.
+  if (markerElement.showOutline === false) {
+    dot.style.borderWidth = "0px";
+    // The .is-selected CSS rule's own 3px selection ring is also a
+    // box-shadow — an inline style always wins over a class selector
+    // regardless of specificity, so clearing this unconditionally would
+    // silently swallow the selection highlight too, leaving a GM unable to
+    // tell a borderless token is selected. Reproduce that rule's own value
+    // inline when selected; otherwise there's truly nothing left to show.
+    dot.style.boxShadow = options.selected ? "0 0 0 3px rgba(14, 165, 233, 0.9)" : "none";
+  } else {
+    dot.style.borderColor = markerElement.outlineColor || layer.settings?.outlineColor || "#0f172a";
+    dot.style.borderWidth = `${Number.isFinite(layer.settings?.outlineWidth) ? layer.settings.outlineWidth : 2}px`;
+  }
   // Per-marker only (no layer-wide equivalent, unlike outline color/width) —
   // see createMarkerElement's own comment. Falls back to 1 only for a
   // marker saved before this field existed; every marker placed since
@@ -391,7 +418,7 @@ export function createMarkerDot(baseMapManager, map, layer, markerElement, optio
     shadow.style.height = `${shadowSize}px`;
     shadow.style.left = `${(size - shadowSize) / 2 + shadowOffset}px`;
     shadow.style.top = `${(size - shadowSize) / 2 + shadowOffset}px`;
-    shadow.style.borderRadius = "50%";
+    shadow.style.borderRadius = isSquare ? "0" : "50%";
     shadow.style.background = "rgba(0, 0, 0, 0.35)";
     shadow.style.filter = `blur(${Math.max(3, size * 0.08)}px)`;
     shadow.style.pointerEvents = "none";
@@ -399,21 +426,63 @@ export function createMarkerDot(baseMapManager, map, layer, markerElement, optio
   } else if (heightCells < 0) {
     dot.style.borderStyle = "dashed";
   }
-  const face = document.createElement("div");
-  face.className = "orrery-marker-face";
-  face.style.position = "absolute";
-  face.style.inset = "0";
-  face.style.borderRadius = "999px";
+  // Per-marker image supersedes the layer's flat color/icon dot entirely —
+  // see map-model.js's createMarkerElement for how `image` gets set (manual
+  // pick, or auto-inherited once from a referenced Library record). A real
+  // <img>, not a background-image div, specifically so Square shape can
+  // size off the browser's own intrinsic width/height (max-width/
+  // max-height + width/height:auto, no JS preloading needed) instead of a
+  // fixed square box — a non-square image (a wide chest icon, say) used to
+  // get its longer axis silently cropped off by background-size:cover
+  // forcing it to fill a square regardless of its own real proportions.
+  let face;
   if (markerElement.image) {
-    // Per-marker image supersedes the layer's flat color/icon dot entirely —
-    // a portrait token, ringed with the layer's own color so it still reads
-    // as belonging to this layer at a glance. See map-model.js's
-    // createMarkerElement for how `image` gets set (manual pick, or
-    // auto-inherited once from a referenced Library record).
-    face.style.backgroundImage = `url("${markerElement.image}")`;
-    face.style.backgroundSize = "cover";
-    face.style.backgroundPosition = "center";
+    face = document.createElement("img");
+    face.className = "orrery-marker-face";
+    face.src = markerElement.image;
+    face.alt = "";
+    // Browsers make <img> natively draggable by default — confirmed real
+    // bug this fixes: a non-draggable marker's own click listener (below)
+    // only calls preventDefault() on the "click" event itself, too late to
+    // stop the browser from treating an ordinary mouse click's few pixels
+    // of jitter as the START of a native HTML5 image-drag gesture instead;
+    // once that native drag takes over, the browser never fires "click" at
+    // all, so the listener silently never ran. The draggable marker path
+    // never hit this (its own pointerdown already calls preventDefault
+    // before any native drag could start), which is exactly why only
+    // non-draggable, image-having markers (a treasure pile, say) went
+    // completely silent on click.
+    face.draggable = false;
+    face.style.position = "absolute";
+    face.style.borderRadius = isSquare ? "0" : "999px";
+    if (isSquare) {
+      // Centered within `dot`'s own size×size footprint regardless of the
+      // image's own final rendered box — its LARGER dimension is capped at
+      // `size` (this cell's own pixel size), the smaller one scales down
+      // with it, so the whole image stays visible with nothing cropped.
+      face.style.top = "50%";
+      face.style.left = "50%";
+      face.style.transform = "translate(-50%, -50%)";
+      face.style.maxWidth = `${size}px`;
+      face.style.maxHeight = `${size}px`;
+      face.style.width = "auto";
+      face.style.height = "auto";
+    } else {
+      // Circle keeps the original fill-and-crop look — a portrait ringed
+      // with the layer's own color, cropped to fill rather than
+      // letterboxed, same as this always rendered before Square existed.
+      face.style.inset = "0";
+      face.style.width = "100%";
+      face.style.height = "100%";
+      face.style.objectFit = "cover";
+      face.style.objectPosition = "center";
+    }
   } else {
+    face = document.createElement("div");
+    face.className = "orrery-marker-face";
+    face.style.position = "absolute";
+    face.style.inset = "0";
+    face.style.borderRadius = isSquare ? "0" : "999px";
     face.style.backgroundColor = ringColor;
     // Falls back to the plain solid-color dot when no icon is set (or the
     // stored value doesn't resolve to a known ddb-*/bi-* class) — same
@@ -432,8 +501,15 @@ export function createMarkerDot(baseMapManager, map, layer, markerElement, optio
   }
   dot.appendChild(face);
   const draggable = options.draggable !== false;
-  dot.style.pointerEvents = draggable ? "auto" : "none";
-  dot.style.cursor = draggable ? "pointer" : "default";
+  // Clickable (pointer-events on at all) whenever it's either draggable OR
+  // has a plain-click handler to fire — NOT draggable alone. Confirmed real
+  // bug this fixes: pointer-events was "none" for every non-draggable
+  // marker, which silently ate clicks (and the events never even reached
+  // the listener wired further down) on anything a viewer couldn't drag —
+  // most GM-placed containers/NPCs/monsters, for any restricted viewer.
+  const clickable = draggable || Boolean(options.onClick);
+  dot.style.pointerEvents = clickable ? "auto" : "none";
+  dot.style.cursor = clickable ? "pointer" : "default";
   const pixelPosition = getMarkerElementPixelPosition(baseMapManager, map, layer, markerElement);
   dot.style.left = `${pixelPosition.x}px`;
   dot.style.top = `${pixelPosition.y}px`;
@@ -465,7 +541,20 @@ export function createMarkerDot(baseMapManager, map, layer, markerElement, optio
   // next render if it were "deleted" from a stored copy; only removing the
   // actual condition (Combat Tracker, the character-vitals widget, ...)
   // should make it go away.
-  const badgeEntries = [...(markerElement.overlayIcons || []), ...(options.conditionIcons || [])];
+  // A synthetic badge (never stored — same "resolved fresh at render time"
+  // treatment condition icons already get, just below) so a container still
+  // holding unclaimed loot reads at a glance, through the exact same row
+  // every other badge already renders through, rather than a second
+  // parallel visual mechanism. Gone the instant contents.length hits 0 —
+  // see map-model.js's own createMarkerElement header comment for why
+  // that's the only "empty" signal this needs. GM-only (options.isGMViewer —
+  // see renderMapLayers' own isPrivilegedMarkerViewer) — this is a GM
+  // bookkeeping cue ("did anyone loot this yet"), not something that should
+  // tip players off to a hidden container's contents before they click it.
+  const contentsBadge = options.isGMViewer && markerElement.contents?.length
+    ? [{ icon: "tabler:package", color: "#92400e", label: "Contains unclaimed loot" }]
+    : [];
+  const badgeEntries = [...contentsBadge, ...(markerElement.overlayIcons || []), ...(options.conditionIcons || [])];
   if (badgeEntries.length) {
     const badgeRow = document.createElement("div");
     badgeRow.className = "orrery-marker-overlay-icons";
@@ -660,6 +749,51 @@ export function createMarkerDot(baseMapManager, map, layer, markerElement, optio
         onClick: options.onClick,
       });
     });
+  } else if (options.onClick) {
+    // Not draggable, but still worth a plain click — a link-out button or a
+    // Contents claim popover, say. Confirmed real bug this fixes (twice
+    // over): a non-draggable marker got NO listener at all here originally
+    // (pointer-events was "none" below, before that first fix), and a
+    // plain native "click" listener — the first attempt at this branch —
+    // turned out unreliable too: it requires pointerdown AND pointerup to
+    // land on the SAME element, and with no pointer capture, a completely
+    // ordinary human click's own few pixels of hand jitter is enough to
+    // land pointerup on a neighboring element instead (confirmed via
+    // debug logging — pointerdown reached this dot, pointerup never did),
+    // silently killing the click with zero error. beginMarkerDrag's own
+    // draggable path never had this problem because it captures the
+    // pointer on pointerdown, which redirects every subsequent move/up
+    // event back to this element regardless of where the cursor visually
+    // drifts. This does the same capture, just without any actual
+    // movement/redrag logic on top, since this marker never repositions.
+    dot.addEventListener("pointerdown", (event) => {
+      if (event.button !== 0) {
+        return;
+      }
+      event.preventDefault();
+      event.stopPropagation();
+      try {
+        dot.setPointerCapture(event.pointerId);
+      } catch (error) {
+        // Ignored — see beginMarkerDrag's own matching try/catch for why.
+      }
+      const onUp = (upEvent) => {
+        try {
+          dot.releasePointerCapture(upEvent.pointerId);
+        } catch (error) {
+          // Ignored — capture above may never have actually been acquired.
+        }
+        dot.removeEventListener("pointerup", onUp);
+        dot.removeEventListener("pointercancel", onCancel);
+        options.onClick(dot);
+      };
+      const onCancel = () => {
+        dot.removeEventListener("pointerup", onUp);
+        dot.removeEventListener("pointercancel", onCancel);
+      };
+      dot.addEventListener("pointerup", onUp);
+      dot.addEventListener("pointercancel", onCancel);
+    });
   }
   return dot;
 }
@@ -721,19 +855,49 @@ export function createMarkerLayerElement(baseMapManager, map, layer, options = {
       options.onEmptyClick?.(localPixelToMarkerPosition(baseMapManager, map, localPixel), event);
     });
   }
-  (layer.elements || []).forEach((markerElement) => {
-    // Skipped entirely for a viewer this marker is hidden from (View-based,
-    // options.hiddenElementIds — see renderMapLayers' own markerHiddenElementIds/
-    // isPrivilegedMarkerViewer for who's exempt: a full-access GM in Orrery,
-    // or a map owner/admin viewing the restricted widget for their own map).
-    // Combat Tracker's own "visible to players" toggle writes THROUGH to
-    // this exact same View data now (combat-tracker.js's own
-    // toggleCombatantHiddenFromPlayers) rather than keeping a second,
-    // independent combatant.hidden flag that needed its own parallel
-    // resolution here — one mechanism, one place it's read.
-    if (options.hiddenElementIds?.has(markerElement.id)) return;
-    if (!hasValidMarkerPosition(map, markerElement.position)) return;
-    const draggable = options.isMarkerDraggable ? options.isMarkerDraggable(markerElement) : Boolean(options.isInteractive);
+  // Each .orrery-layer-item wrapper (createLayerWrapper) sets its own
+  // `transform`, which — regardless of z-index — makes it a stacking
+  // context root on its own (any transformed element is), so paint order
+  // BETWEEN markers on this one layer is decided purely by DOM append
+  // order; there's no z-index that could reach across layers anyway.
+  // Draggable markers are appended LAST (on top) here, after every
+  // non-draggable one, regardless of their own order in layer.elements —
+  // confirmed real bug this fixes: once a non-draggable marker (a treasure
+  // container, say — createMarkerDot's own `clickable` fix) became a real
+  // pointer-events:auto hit target instead of pass-through, whichever
+  // marker happened to sit later in `layer.elements` silently WON every
+  // click/drag at any pixel the two overlapped — which, in practice, is
+  // exactly where a player parks their own character token to claim a
+  // treasure pile. Depending on array order that read as either "clicking
+  // the treasure does nothing" (the character's own re-icon popover ate
+  // the click instead) or "I can't drag my character near it" (the
+  // treasure ate the drag's own pointerdown instead). Sorting the
+  // draggable one to the top guarantees a viewer's own token always wins
+  // pointer priority over a merely-clickable marker it's standing on.
+  // Array.prototype.sort is spec-guaranteed stable, so elements within
+  // each group (draggable / not) keep their original relative order.
+  const visibleElements = (layer.elements || [])
+    .filter((markerElement) => {
+      // Skipped entirely for a viewer this marker is hidden from
+      // (View-based, options.hiddenElementIds — see renderMapLayers' own
+      // markerHiddenElementIds/isPrivilegedMarkerViewer for who's exempt: a
+      // full-access GM in Orrery, or a map owner/admin viewing the
+      // restricted widget for their own map). Combat Tracker's own
+      // "visible to players" toggle writes THROUGH to this exact same View
+      // data now (combat-tracker.js's own toggleCombatantHiddenFromPlayers)
+      // rather than keeping a second, independent combatant.hidden flag
+      // that needed its own parallel resolution here — one mechanism, one
+      // place it's read.
+      if (options.hiddenElementIds?.has(markerElement.id)) return false;
+      if (!hasValidMarkerPosition(map, markerElement.position)) return false;
+      return true;
+    })
+    .map((markerElement) => ({
+      markerElement,
+      draggable: options.isMarkerDraggable ? options.isMarkerDraggable(markerElement) : Boolean(options.isInteractive),
+    }));
+  visibleElements.sort((a, b) => Number(a.draggable) - Number(b.draggable));
+  visibleElements.forEach(({ markerElement, draggable }) => {
     container.appendChild(
       createMarkerDot(baseMapManager, map, layer, markerElement, {
         selected: options.selectedElementId === markerElement.id,
@@ -750,6 +914,12 @@ export function createMarkerLayerElement(baseMapManager, map, layer, options = {
         // marker simply isn't in the DOM at all for them, per the guards
         // just above.
         hiddenFromPlayers: Boolean(options.hiddenFromPlayerElementIds?.has(markerElement.id)),
+        // Same privileged-viewer test, forwarded so createMarkerDot's own
+        // Contents badge only ever renders for a GM (or a map owner/admin
+        // in the restricted widget) — a player shouldn't get a free
+        // "there's still loot here" tell for a container they haven't
+        // opened yet.
+        isGMViewer: Boolean(options.isPrivilegedMarkerViewer),
         conditionIcons: options.resolveConditionIcons ? options.resolveConditionIcons(markerElement) : [],
       })
     );
@@ -3290,6 +3460,7 @@ export function renderMapLayers(overlay, baseMapManager, map, options = {}) {
         resolveMarkerMoveBlocked: options.resolveMarkerMoveBlocked,
         hiddenElementIds: markerHiddenElementIds,
         hiddenFromPlayerElementIds,
+        isPrivilegedMarkerViewer,
         resolveConditionIcons: options.resolveConditionIcons,
       });
     } else {

@@ -1,0 +1,26 @@
+{
+  "id": "feat.monk-elemental-epitome",
+  "name": "Elemental Epitome",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "While your Elemental Attunement is active, you also gain the following benefits.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "While your Elemental Attunement is active, you also gain the following benefits."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

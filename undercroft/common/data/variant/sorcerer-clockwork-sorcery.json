@@ -1,0 +1,75 @@
+{
+  "index": "sorcerer-clockwork-sorcery",
+  "url": "https://www.dndbeyond.com/classes/2190884-sorcerer",
+  "name": "Clockwork Sorcery",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "parentKind": "class",
+  "parentId": "sorcerer",
+  "summary": "Channel Cosmic Forces of Order",
+  "description": "The cosmic force of order has suffused you with magic. That power arises from Mechanus or a realm like it—a plane of existence shaped entirely by clockwork efficiency. You or someone from your lineage might have become entangled in the machinations of modrons, the orderly beings who inhabit Mechanus. Perhaps your ancestor even took part in the Great Modron March. Whatever its origin within you, the power of order can seem strange to others, but for you, it’s part of a vast and glorious system.",
+  "features": [
+    {
+      "name": "Clockwork Spells",
+      "level": 3,
+      "description": "When you reach a Sorcerer level specified in the Clockwork Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Aid, Alarm, Lesser Restoration, Protection from Evil and Good\n\nLevel 5: Dispel Magic, Protection from Energy\n\nLevel 7: Freedom of Movement, Summon Construct\n\nLevel 9: Greater Restoration, Wall of Force\n\nIn addition, consult the Manifestations of Order table and choose or randomly determine a way your connection to order manifests while you are casting any of your Sorcerer spells.\n\nLevel 1: Spectral cogwheels hover behind you.\n\nLevel 2: The hands of a clock spin in your eyes.\n\nLevel 3: Your skin glows with a brassy sheen.\n\nLevel 4: Floating equations and geometric objects overlay your body.\n\nLevel 5: Your Spellcasting Focus temporarily takes the form of a Tiny clockwork mechanism.\n\nLevel 6: The ticking of gears or ringing of a clock can be heard by you and those affected by your magic."
+    },
+    {
+      "name": "Restore Balance",
+      "level": 3,
+      "description": "Your connection to the plane of absolute order allows you to equalize chaotic moments. When a creature you can see within 60 feet of yourself is about to roll a d20 with Advantage or Disadvantage, you can take a Reaction to prevent the roll from being affected by Advantage and Disadvantage.\n\nYou can use this feature a number of times equal to your Charisma modifier (minimum of once), and you regain all expended uses when you finish a Long Rest."
+    },
+    {
+      "name": "Bastion of Law",
+      "level": 6,
+      "description": "You can tap into the grand equation of existence to imbue a creature with a shimmering shield of order. As a Magic action, you can expend 1 to 5 Sorcery Points to create a magical ward around yourself or another creature you can see within 30 feet of yourself. The ward is represented by a number of d8s equal to the number of Sorcery Points spent to create it. When the warded creature takes damage, it can expend a number of those dice, roll them, and reduce the damage taken by the total rolled on those dice.\n\nThe ward lasts until you finish a Long Rest or until you use this feature again."
+    },
+    {
+      "name": "Trance of Order",
+      "level": 14,
+      "description": "You gain the ability to align your consciousness with the endless calculations of Mechanus. As a Bonus Action, you can enter this state for 1 minute. For the duration, attack rolls against you can’t benefit from Advantage, and whenever you make a D20 Test, you can treat a roll of 9 or lower on the d20 as a 10.\n\nOnce you use this feature, you can’t use it again until you finish a Long Rest unless you spend 5 Sorcery Points (no action required) to restore your use of it."
+    },
+    {
+      "name": "Clockwork Cavalcade",
+      "level": 18,
+      "description": "You momentarily summon spirits of order to expunge disorder around you. As a Magic action, you summon the spirits in a 30-foot Cube originating from you. The spirits look like modrons or other Constructs of your choice. The spirits are intangible and invulnerable, and they create the effects below within the Cube before vanishing. Once you use this action, you can’t use it again until you finish a Long Rest unless you spend 7 Sorcery Points (no action required) to restore your use of it.\n\nHeal. The spirits restore up to 100 Hit Points, divided as you choose among any number of creatures of your choice in the Cube.\n\nRepair. Any damaged objects entirely in the Cube are repaired instantly.\n\nDispel. Every spell of level 6 and lower ends on creatures and objects of your choice in the Cube."
+    }
+  ],
+  "mapping": "ddb-subclass",
+  "featureIds": [
+    "feat.sorcerer-clockwork-spells",
+    "feat.sorcerer-restore-balance",
+    "feat.sorcerer-bastion-of-law",
+    "feat.sorcerer-trance-of-order",
+    "feat.sorcerer-clockwork-cavalcade"
+  ],
+  "featureParams": {
+    "feat.sorcerer-clockwork-spells": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.sorcerer-restore-balance": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.sorcerer-bastion-of-law": {
+      "grantedAtLevel": [
+        6
+      ]
+    },
+    "feat.sorcerer-trance-of-order": {
+      "grantedAtLevel": [
+        14
+      ]
+    },
+    "feat.sorcerer-clockwork-cavalcade": {
+      "grantedAtLevel": [
+        18
+      ]
+    }
+  }
+}

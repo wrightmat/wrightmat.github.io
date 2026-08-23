@@ -1,7 +1,8 @@
 {
   "name": "Sense Magic",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature senses magic within 120 feet of it at will. This trait otherwise works like the detect magic spell but isn't itself magical.",
   "mechanics": {

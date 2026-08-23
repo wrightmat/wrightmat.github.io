@@ -1,7 +1,8 @@
 {
   "name": "Speak with Beasts and Plants",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature can communicate with beasts and plants as if they and the creature shared a language.",
   "mechanics": {

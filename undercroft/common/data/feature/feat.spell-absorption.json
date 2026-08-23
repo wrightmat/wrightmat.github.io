@@ -1,7 +1,8 @@
 {
   "name": "Spell Absorption",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Cancels an incoming spell and stores its energy for later use.",
   "mechanics": {

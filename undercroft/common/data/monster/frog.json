@@ -3,7 +3,8 @@
   "notes": "A frog has no effective attacks. It feeds on small insects and typically dwells near water, in trees, or underground. The frog’s statistics can also be used to represent a toad.",
   "type": "beast",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "image": "https://www.dnd5eapi.co/api/images/monsters/frog.png",
   "stats": {

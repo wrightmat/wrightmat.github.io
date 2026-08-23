@@ -1,7 +1,8 @@
 {
   "name": "Planar Portal",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Opens a two-way portal to another world or plane of existence.",
   "mechanics": {

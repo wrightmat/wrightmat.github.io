@@ -1,7 +1,8 @@
 {
   "name": "Recompile Echo",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Esix instantly regains one lost fractal echo from its Recursive Form trait.",
   "mechanics": {

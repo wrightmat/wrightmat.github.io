@@ -1,0 +1,26 @@
+{
+  "id": "feat.monk-manipulate-elements",
+  "name": "Manipulate Elements",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You know the Elementalism spell. Wisdom is your spellcasting ability for it.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "You know the Elementalism spell. Wisdom is your spellcasting ability for it."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

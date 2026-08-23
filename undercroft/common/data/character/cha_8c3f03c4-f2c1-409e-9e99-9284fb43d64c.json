@@ -15,7 +15,11 @@
     "userId": 100499308,
     "username": "wrighmat",
     "name": "Ouss",
-    "race": "Aarakocra",
+    "race": {
+      "refKind": "species",
+      "refId": "aarakocra",
+      "name": "Aarakocra"
+    },
     "class": "Monk",
     "level": 9,
     "levels": {
@@ -27,7 +31,13 @@
       {
         "name": "Monk",
         "level": 9,
-        "subclass": "Way of the Four Elements"
+        "subclass": {
+          "refKind": "variant",
+          "refId": "monk-way-of-the-four-elements",
+          "name": "Way of the Four Elements"
+        },
+        "refKind": "class",
+        "refId": "monk"
       }
     ]
   },

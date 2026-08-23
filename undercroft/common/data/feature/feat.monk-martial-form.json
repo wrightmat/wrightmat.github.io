@@ -1,0 +1,26 @@
+{
+  "id": "feat.monk-martial-form",
+  "name": "Martial Form",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "At the start of your turn, you can expend 1 Focus Point to manifest your martial form. The form lasts for 10 minutes, until you use this feature again, or until you have the Incapacitated condition. Choose one of the following options when you adopt the form.\n\nForged Heart. Whenever you hit an object with an Unarmed Strike, the hit is a Critical Hit. In addition, whenever you hit a creature with an Unarmed Strike granted by Flurry of Blows, the target must succeed on a Strength saving throw or be pushed up to 15 feet directly away from you.\n\nNightmare Shroud. When you use Deflect Attacks, the attacking creature must make a Wisdom saving throw. On a failed save, the creature has the Frightened condition until the end of its next turn.\n\nTraveler’s Blade. Your reach increases by 10 feet.\n\nWeretouched. When you reduce an enemy within 5 feet of you to 0 Hit Points, you gain Temporary Hit Points equal to one roll of your Martial Arts die plus your Monk Level.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "At the start of your turn, you can expend 1 Focus Point to manifest your martial form. The form lasts for 10 minutes, until you use this feature again, or until you have the Incapacitated condition. Choose one of the following options when you adopt the form.\n\nForged Heart. Whenever you hit an object with an Unarmed Strike, the hit is a Critical Hit. In addition, whenever you hit a creature with an Unarmed Strike granted by Flurry of Blows, the target must succeed on a Strength saving throw or be pushed up to 15 feet directly away from you.\n\nNightmare Shroud. When you use Deflect Attacks, the attacking creature must make a Wisdom saving throw. On a failed save, the creature has the Frightened condition until the end of its next turn.\n\nTraveler’s Blade. Your reach increases by 10 feet.\n\nWeretouched. When you reduce an enemy within 5 feet of you to 0 Hit Points, you gain Temporary Hit Points equal to one roll of your Martial Arts die plus your Monk Level."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

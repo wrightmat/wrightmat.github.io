@@ -1,7 +1,8 @@
 {
   "name": "Corrupt Officials",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The people who run this place can be bought — bribes, favors, and a blind eye are all part of doing business here.",
   "mechanics": {

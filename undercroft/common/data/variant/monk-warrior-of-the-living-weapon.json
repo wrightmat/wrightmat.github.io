@@ -1,0 +1,75 @@
+{
+  "index": "monk-warrior-of-the-living-weapon",
+  "url": "https://www.dndbeyond.com/classes/2190880-monk",
+  "name": "Warrior of the Living Weapon",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "parentKind": "class",
+  "parentId": "monk",
+  "summary": "Warriors of the Living Weapon pursues physical perfection, honing their body as a smith sharpens a sword. Their traditions are drawn from cultures of shape-shifters and creatures who fight with tooth and claw.",
+  "description": "",
+  "features": [
+    {
+      "name": "Martial Form",
+      "level": 3,
+      "description": "At the start of your turn, you can expend 1 Focus Point to manifest your martial form. The form lasts for 10 minutes, until you use this feature again, or until you have the Incapacitated condition. Choose one of the following options when you adopt the form.\n\nForged Heart. Whenever you hit an object with an Unarmed Strike, the hit is a Critical Hit. In addition, whenever you hit a creature with an Unarmed Strike granted by Flurry of Blows, the target must succeed on a Strength saving throw or be pushed up to 15 feet directly away from you.\n\nNightmare Shroud. When you use Deflect Attacks, the attacking creature must make a Wisdom saving throw. On a failed save, the creature has the Frightened condition until the end of its next turn.\n\nTraveler’s Blade. Your reach increases by 10 feet.\n\nWeretouched. When you reduce an enemy within 5 feet of you to 0 Hit Points, you gain Temporary Hit Points equal to one roll of your Martial Arts die plus your Monk Level."
+    },
+    {
+      "name": "Mutable Strike",
+      "level": 3,
+      "description": "You have the power to alter your natural weapons, growing claws or reinforcing your fists. Whenever you deal damage with your Unarmed Strike, it can deal your choice of Bludgeoning, Piercing, or Slashing damage."
+    },
+    {
+      "name": "Manifest Blow",
+      "level": 6,
+      "description": "You gain one of the following options of your choice:\n\n- Forged Heart. Once per turn when you hit a creature with an Unarmed Strike, you can deal extra damage of the same type equal to one roll of your Martial Arts die.\n\n- Nightmare Shroud.As a Magic action, you can expend 2 Focus Points to cause psychic energy to erupt from you. When you do so, each creature of your choice in a 30-foot Emanation originating from you must succeed on a Wisdom saving throw. On a failed save, a creature takes Psychic damage equal to three rolls of your Martial Arts die, and has the Frightened condition until the end of your next turn. On a successful save, a creature takes half as much damage.\n\n- Traveler's Blade. Once per turn when you hit a creature with an Unarmed Strike, you can use both the Damage and the Grapple option. You are always considered to have a free hand when determining whether you can Grapple another creature.\n\n- Weretouched. When you hit the same creature twice on your turn with Unarmed Strike you can expend up to 3 Focus Points to deal extra damage on your second hit. The damage equals a number of rolls of your Martial Arts die equal to the Focus Points expended, and is the same type as your triggering Unarmed Strike."
+    },
+    {
+      "name": "Reflexive Adaptation",
+      "level": 11,
+      "description": "When you use Self-Restoration, the following conditions are added to the list of conditions you can remove: Blinded, Deafened, and Grappled.\n\nIn addition, when you finish a Short Rest you can remove 1 level of Exhaustion from yourself and when you finish a Long Rest you can remove all levels of Exhaustion from yourself."
+    },
+    {
+      "name": "Perfect Form",
+      "level": 17,
+      "description": "Whenever you assume your Martial Form, you can expend an additional 3 Focus Points to gain the following benefits for as long as you remain in the form.\n\nMercurial Strikes. Whenever you attack with an Unarmed Strike granted by Flurry of Blows, you have Advantage.\n\nRegeneration. At the start of your turn, roll one Martial Arts die. You regain that many Hit Points.\n\nUnbreakable Body. You gain a +2 bonus to your Armor Class."
+    }
+  ],
+  "mapping": "ddb-subclass",
+  "featureIds": [
+    "feat.monk-martial-form",
+    "feat.monk-mutable-strike",
+    "feat.monk-reflexive-adaptation",
+    "feat.monk-perfect-form",
+    "feat.monk-manifest-blow"
+  ],
+  "featureParams": {
+    "feat.monk-martial-form": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.monk-mutable-strike": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.monk-manifest-blow": {
+      "grantedAtLevel": [
+        6
+      ]
+    },
+    "feat.monk-reflexive-adaptation": {
+      "grantedAtLevel": [
+        11
+      ]
+    },
+    "feat.monk-perfect-form": {
+      "grantedAtLevel": [
+        17
+      ]
+    }
+  }
+}

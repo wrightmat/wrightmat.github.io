@@ -1,7 +1,8 @@
 {
   "name": "Corpses",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "When first encountered, a creature contains the corpses of 1d6 + 3 Humanoids. a creature can hold the remains of up to nine Humanoids. These remains have total cover against attacks and other effects outside the creature. If the creature dies, the corpses within it can be pulled free.",
   "mechanics": {

@@ -1,0 +1,26 @@
+{
+  "id": "feat.artificer-fine-tuning",
+  "name": "Fine Tuning",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "Whenever you cast an Artificer spell while you have Tinker’s Tools in your possession, you can add your Intelligence modifier to one damage roll of the spell.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "Whenever you cast an Artificer spell while you have Tinker’s Tools in your possession, you can add your Intelligence modifier to one damage roll of the spell."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

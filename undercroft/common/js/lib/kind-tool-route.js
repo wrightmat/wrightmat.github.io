@@ -32,7 +32,6 @@ export const KIND_TOOL_ROUTE = {
   "location-purpose": { tool: "loom", toolLabel: "Loom", param: "library", value: (record) => `location-purpose:${record.id}` },
   resource: { tool: "loom", toolLabel: "Loom", param: "library", value: (record) => `resource:${record.id}` },
   class: { tool: "loom", toolLabel: "Loom", param: "library", value: (record) => `class:${record.id}` },
-  subclass: { tool: "loom", toolLabel: "Loom", param: "library", value: (record) => `subclass:${record.id}` },
   background: { tool: "loom", toolLabel: "Loom", param: "library", value: (record) => `background:${record.id}` },
   species: { tool: "loom", toolLabel: "Loom", param: "library", value: (record) => `species:${record.id}` },
   variant: { tool: "loom", toolLabel: "Loom", param: "library", value: (record) => `variant:${record.id}` },

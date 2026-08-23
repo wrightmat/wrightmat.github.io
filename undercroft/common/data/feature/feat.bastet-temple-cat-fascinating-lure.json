@@ -1,7 +1,8 @@
 {
   "name": "Fascinating Lure",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature purrs loudly, targeting a humanoid it can see within 30 feet that can hear the creature. The target must succeed on a DC 14 Wisdom saving throw or be charmed. While charmed by the creature, the target must move toward the cat at normal speed and try to pet it or pick it up. A charmed target repeats the saving throw at the end of each of its turns, ending the effect on itself on a success. If a creature’s saving throw is successful, the creature is immune to the creature’s Fascinating Lure for the next 24 hours. The creature has advantage on attack rolls against any creature petting or holding it.",
   "mechanics": {

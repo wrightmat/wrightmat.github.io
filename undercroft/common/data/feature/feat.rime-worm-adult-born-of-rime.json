@@ -1,7 +1,8 @@
 {
   "name": "Born of Rime",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "a creature can breathe air or water with equal ease.",
   "mechanics": {

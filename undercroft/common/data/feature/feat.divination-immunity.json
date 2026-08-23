@@ -1,7 +1,8 @@
 {
   "name": "Divination Immunity",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Hides the wearer from divination magic and magical scrying.",
   "mechanics": {

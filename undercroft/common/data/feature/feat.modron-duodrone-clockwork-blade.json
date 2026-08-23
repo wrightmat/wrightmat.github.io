@@ -1,7 +1,8 @@
 {
   "name": "Clockwork Blade",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Melee or Ranged Attack Roll: +3 to hit, reach 5 ft. or range 30 ft. _Hit:_ 4 (1d6 + 1) Force damage. _Hit or Miss:_ The blade magically returns to the creature’s hand immediately after a ranged attack.",
   "mechanics": {

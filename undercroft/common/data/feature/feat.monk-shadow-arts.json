@@ -1,0 +1,26 @@
+{
+  "id": "feat.monk-shadow-arts",
+  "name": "Shadow Arts",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You have learned to draw on the power of the Shadowfell, gaining the following benefits.\n\nDarkness. You can expend 1 Focus Point to cast the Darkness spell without spell components. You can see within the spell’s area when you cast it with this feature. While the spell persists, you can move its area of Darkness to a space within 60 feet of yourself at the start of each of your turns.\n\nDarkvision. You gain Darkvision with a range of 60 feet. If you already have Darkvision, its range increases by 60 feet.\n\nShadowy Figments. You know the Minor Illusion spell. Wisdom is your spellcasting ability for it.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "You have learned to draw on the power of the Shadowfell, gaining the following benefits.\n\nDarkness. You can expend 1 Focus Point to cast the Darkness spell without spell components. You can see within the spell’s area when you cast it with this feature. While the spell persists, you can move its area of Darkness to a space within 60 feet of yourself at the start of each of your turns.\n\nDarkvision. You gain Darkvision with a range of 60 feet. If you already have Darkvision, its range increases by 60 feet.\n\nShadowy Figments. You know the Minor Illusion spell. Wisdom is your spellcasting ability for it."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

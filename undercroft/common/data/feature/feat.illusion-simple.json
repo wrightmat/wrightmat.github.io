@@ -1,7 +1,8 @@
 {
   "name": "Simple Illusion or Disguise",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Creates a basic sensory illusion or alters the appearance of a creature or object.",
   "mechanics": {

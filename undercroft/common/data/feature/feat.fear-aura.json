@@ -1,7 +1,8 @@
 {
   "name": "Fear Aura",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Each creature of the creature’s choice that starts its turn within 20 feet of the creature must make a DC 15 Wisdom saving throw unless the creature is incapacitated. On a failed save, the creature is frightened until the start of its next turn. On a successful save, the creature is immune to this golem’s Fear Aura for the next 24 hours.",
   "mechanics": {

@@ -1,7 +1,8 @@
 {
   "name": "Smuggler's Tunnels",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "A hidden network of passages lets goods and people move in and out unseen by any official gate or checkpoint.",
   "mechanics": {

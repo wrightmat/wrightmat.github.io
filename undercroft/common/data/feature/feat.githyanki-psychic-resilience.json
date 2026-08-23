@@ -1,0 +1,26 @@
+{
+  "id": "feat.githyanki-psychic-resilience",
+  "name": "Psychic Resilience",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You have resistance to psychic damage.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "You have resistance to psychic damage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

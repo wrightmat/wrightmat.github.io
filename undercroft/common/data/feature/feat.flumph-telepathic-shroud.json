@@ -1,7 +1,8 @@
 {
   "name": "Telepathic Shroud",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature is immune to any effect that would sense its emotions or read its thoughts, as well as all divination spells.",
   "mechanics": {

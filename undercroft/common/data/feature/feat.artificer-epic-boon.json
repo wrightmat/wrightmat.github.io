@@ -1,0 +1,26 @@
+{
+  "id": "feat.artificer-epic-boon",
+  "name": "Epic Boon (Artificer)",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You gain an Epic Boon feat or another feat of your choice for which you qualify. Boon of Energy Resistance is recommended.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You gain an Epic Boon feat or another feat of your choice for which you qualify. Boon of Energy Resistance is recommended.",
+    "scope": "unique"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

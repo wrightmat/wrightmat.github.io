@@ -1,7 +1,8 @@
 {
   "name": "Dual State",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "a creature exists upon the Material Plane in one of two forms and can switch between them at will. In its material form, it has resistance to damage from nonmagical weapons. In its ethereal form, it is immune to damage from nonmagical weapons. The creature’s ethereal form appears as a dark purple outline of its material form, with a blackish-purple haze within. a creature in ethereal form can move through air as though it were water, with a fly speed of 40 feet.",
   "mechanics": {

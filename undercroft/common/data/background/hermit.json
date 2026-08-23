@@ -18,7 +18,8 @@
     }
   ],
   "feat": {
-    "index": "healer",
+    "refKind": "feature",
+    "refId": "healer",
     "name": "Healer"
   },
   "proficiencies": [
@@ -133,6 +134,7 @@
   },
   "updated_at": "2026-07-19T14:53:00.832Z",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ]
 }

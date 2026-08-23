@@ -1,7 +1,8 @@
 {
   "name": "Engulf",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature engulfs creatures grappled by it. An engulfed creature can’t breathe, is restrained, is no longer grappled, has total cover against attacks and other effects outside the creature, takes 21 (6d6) acid damage at the start of each of the creature’s turns, and is subject to the creature’s Waters of Unfathomable Compulsion trait. The creature takes no damage if the creature chooses not to inflict any. When the creature moves, the engulfed creature moves with it. An engulfed creature can escape by using an action and making a successful DC 16 Strength check. On a success, the creature enters a space of its choice within 5 feet of the creature.",
   "mechanics": {

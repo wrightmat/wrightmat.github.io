@@ -1,7 +1,8 @@
 {
   "name": "Distraction",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Because of the creature’s alien and forbidding aura, any spellcaster within 20 feet of the creature must make a successful DC 14 spellcasting check before casting a spell; if the check fails, they lose their action but not the spell slot. They must also make a successful DC 14 spellcasting check to maintain concentration if they spend any part of their turn inside the aura.",
   "mechanics": {

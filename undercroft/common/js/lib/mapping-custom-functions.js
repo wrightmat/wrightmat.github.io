@@ -274,6 +274,30 @@ function parseLeadingNumber(text) {
   return match ? Number(match[1]) : null;
 }
 
+// `context.coreTraits` (from ddb-content-parser.js's extractInlineCoreTraits
+// — a species page's own inline "<heading>Traits</heading><p><strong>
+// Label.</strong> value...</p>" summary paragraph) is Species' primary
+// source for Speed/Size/Creature Type, but confirmed real: newer species
+// pages (Owlin, Yuan-ti, Water Genasi, all 2024-era) don't render that
+// inline summary at all — every one of Speed/Size/Creature Type is its own
+// <h4>-headed named trait instead, same shape as an actual feature
+// (Darkvision, Flight, ...), which is why they used to silently fall
+// through to `null` instead of populating these dedicated fields. Pulls the
+// FULL combined text of every named-trait entry sharing that exact name
+// (not just the first — DDB's own "Creature Type" heading is duplicated on
+// the page: once as generic rules-glossary boilerplate, once as the
+// species' own "You are a Humanoid." statement, and only searching every
+// occurrence together reliably finds whichever one actually states the
+// fact). A standalone function, not an object-literal method calling a
+// sibling — see buildSkillValues's own comment for why.
+function speciesNamedTraitText(namedTraits, name) {
+  const target = String(name || "").trim().toLowerCase();
+  return (Array.isArray(namedTraits) ? namedTraits : [])
+    .filter((trait) => String(trait?.name || "").trim().toLowerCase() === target)
+    .flatMap((trait) => (Array.isArray(trait.descLines) ? trait.descLines : []))
+    .join(" ");
+}
+
 function parseAbilityRefs(text) {
   if (!text) return [];
   const parts = String(text)
@@ -378,12 +402,23 @@ function parseToolProficiencyRefs(text) {
     .map((label) => ({ index: `tool-${slugify(label)}`, name: `Tool: ${label}` }));
 }
 
-// "Magic Initiate (Cleric)" -> {index:"magic-initiate", name:"Magic Initiate", note:"Cleric"}
+// "Magic Initiate (Cleric)" -> {refKind:"feature", refId:"magic-initiate",
+// name:"Magic Initiate", note:"Cleric"} — same {refKind,refId,name}
+// convention every other Library reference in this suite uses (Character's
+// own subclass/spells[]), `refId` a bare slug matching the id
+// content-feature-matching.js's own promotion step produces once this same
+// Feat is actually promoted off a Character's own feats[] — both sides
+// independently derive the same slug, same "no import-order dependency"
+// pattern the subclass/Variant refId pairing already relies on. `note`
+// isn't part of that convention (Subclass/Spells have no equivalent) but is
+// real, distinct information — which class's own spell list this
+// Background's Origin Feat is flavored for — not decorative, so it stays as
+// its own sibling field.
 function parseFeatWithNote(text) {
   if (!text) return null;
   const match = /^(.+?)\s*\(([^)]+)\)\s*$/.exec(text.trim());
   const name = match ? match[1].trim() : text.trim();
-  const feat = { index: slugify(name), name };
+  const feat = { refKind: "feature", refId: slugify(name), name };
   if (match) feat.note = match[2].trim();
   return feat;
 }
@@ -842,6 +877,124 @@ function stripHtmlToText(html) {
   return (el.textContent || "").replace(/\s+/g, " ").trim();
 }
 
+// A Character-domain feat/feature/racial-trait's own description text
+// (ddb-character.json's own featsTable/featuresTable, sourced straight from
+// feat.definition?.description/feature.definition?.description) is raw
+// HTML too, same as a monster's own specialTraitsDescription above —
+// confirmed real, never actually cleaned before this fix: 41 already-saved
+// Feature records across the whole library still carried literal `<p>`/
+// `<ul>`/`<li>`/`<hr>`/`<h5>` tags in their own stored text. Unlike a
+// monster's own shape (always simple `<p>` paragraphs, which is exactly
+// what parseDdbHtmlTraitBlocks above is built for), a feat/feature's own
+// text can also include `<ul>/<li>` option lists (Eldritch Invocations),
+// `<hr>`/`<h5>` section breaks (same), and plain paragraphs with no bolded
+// name prefix at all (most feats have none). Rather than a second regex-
+// based paragraph splitter for a differently-shaped problem, this walks the
+// parsed DOM's own top-level child nodes directly — the same "trust the
+// DOM, not hand-rolled regex" principle stripHtmlToText already
+// established, just extended to keep block-level structure (paragraph
+// breaks, list bullets) instead of collapsing everything to one line.
+// A close sibling of stripHtmlToText (same DOM-parse, same guard), not a
+// modification of it — stripHtmlToText's other caller (parseDdbHtmlTraitBlocks,
+// Monster's own trait-block splitter) has no Rich Text rendering anywhere
+// downstream of it, so injecting literal "**"/"*" markers into ITS output
+// would show up as stray asterisks on a monster's stat block instead of
+// real emphasis. Bold/italic preserved as CommonMark, same reasoning as
+// ddb-content-parser.js's own markEmphasis (see its comment for the nested-
+// emphasis caveat, identical here).
+function stripHtmlToMarkdown(html) {
+  if (typeof html !== "string" || !/<[a-z][\s\S]*>/i.test(html)) {
+    return html;
+  }
+  const el = document.createElement("div");
+  el.innerHTML = html;
+  el.querySelectorAll("strong, b").forEach((node) => {
+    node.replaceWith(document.createTextNode(`**${node.textContent}**`));
+  });
+  el.querySelectorAll("em, i").forEach((node) => {
+    node.replaceWith(document.createTextNode(`*${node.textContent}*`));
+  });
+  return (el.textContent || "").replace(/\s+/g, " ").trim();
+}
+
+function htmlBlocksToText(html) {
+  if (!html) return "";
+  const container = document.createElement("div");
+  container.innerHTML = String(html);
+  const lines = [];
+  const walk = (node) => {
+    Array.from(node.childNodes).forEach((child) => {
+      if (child.nodeType === 3) {
+        const text = (child.textContent || "").replace(/\s+/g, " ").trim();
+        if (text) lines.push(text);
+        return;
+      }
+      if (child.nodeType !== 1) return;
+      const tag = child.tagName;
+      if (tag === "HR") return;
+      if (tag === "UL" || tag === "OL") {
+        const ordered = tag === "OL";
+        Array.from(child.children)
+          .filter((li) => li.tagName === "LI")
+          .forEach((li, index) => {
+            const text = stripHtmlToMarkdown(li.innerHTML);
+            if (text) lines.push(ordered ? `${index + 1}. ${text}` : `- ${text}`);
+          });
+        return;
+      }
+      // A "Core <Class> Traits"-style key/value table (Primary Ability,
+      // Hit Point Die, ...) uses one <th>Label</th><td>Value</td> row per
+      // fact, not the level-gated <td>-only rows ddb-content-parser.js's
+      // own tableToLines handles — a different shape, same "don't silently
+      // drop the table" fix.
+      if (tag === "TABLE") {
+        const rows = Array.from(child.querySelectorAll("tbody tr"))
+          .map((row) => Array.from(row.querySelectorAll("th, td")).map((cell) => stripHtmlToMarkdown(cell.innerHTML)).filter(Boolean))
+          .filter((cells) => cells.length);
+        if (!rows.length) return;
+        // 2-column case UNCHANGED — see ddb-content-parser.js's own
+        // tableToLines for why this exact convention must keep matching it
+        // byte-for-byte (Character/Class-domain cross-scope de-dup depends
+        // on it).
+        if (rows.every((cells) => cells.length === 2)) {
+          rows.forEach((cells) => {
+            lines.push(/^\d+(st|nd|rd|th)?$/i.test(cells[0]) ? `Level ${cells[0]}: ${cells[1]}` : `${cells[0]}: ${cells[1]}`);
+          });
+          return;
+        }
+        // 3+ columns — a real markdown table, pushed as ONE combined line
+        // (its own rows joined with a single "\n", not one push per row) —
+        // this function's own final `lines.join("\n\n")` would otherwise
+        // insert a blank line between every table row, breaking CommonMark
+        // table syntax entirely. Same shape as ddb-content-parser.js's own
+        // tableToLines upgrade — see its comment for why.
+        const headerCells = Array.from(child.querySelectorAll("thead th")).map((th) => stripHtmlToMarkdown(th.innerHTML));
+        const columnCount = Math.max(...rows.map((cells) => cells.length));
+        const header =
+          headerCells.length === columnCount ? headerCells : Array.from({ length: columnCount }, (_, i) => `Column ${i + 1}`);
+        const tableLines = [`| ${header.join(" | ")} |`, `| ${header.map(() => "---").join(" | ")} |`];
+        rows.forEach((cells) => {
+          const padded = Array.from({ length: columnCount }, (_, i) => cells[i] || "");
+          tableLines.push(`| ${padded.join(" | ")} |`);
+        });
+        lines.push(tableLines.join("\n"));
+        return;
+      }
+      // A wrapper DIV is transparent — recurse into its own children rather
+      // than treating it as opaque, same reasoning as ddb-content-parser.js's
+      // own collectWrapperDescriptionLines fix for the identical DDB habit.
+      if (tag === "DIV") {
+        walk(child);
+        return;
+      }
+      const text = stripHtmlToMarkdown(child.innerHTML || child.textContent || "");
+      if (text) lines.push(text);
+    });
+  };
+  walk(container);
+  return lines.join("\n\n");
+}
+
 // A `<p>` with no leading bolded name is a CONTINUATION of the previous
 // trait's own description, not a new entry — confirmed against real data
 // (Gray Ooze's own "Corrode Metal" trait splits across two `<p>` tags,
@@ -1068,9 +1221,23 @@ const MARKDOWN_ITEM_FORM_ALIASES = { "adventuring gear": "Equipment" };
 // the 5e API's own equipment_category.name never carries this kind of
 // suffix at all, so resolveLivePropertyValue's plain exact-match already
 // works for it unmodified.
+//
+// Also feeds ddb-item.json's own equipment import (ddbParseEquipmentPage,
+// ddb-content-parser.js) — same function, a second source vocabulary. D&D
+// Beyond's own equipment "Type" string prefixes the real Item Form word
+// with its own weapon-proficiency/armor-weight qualifier instead ("Martial
+// Melee Weapon", "Light Armor" — confirmed live against a real Greataxe
+// fetch) rather than this vault's own "Weapon (subtype)" convention above.
+// Once the alias table above finds no exact whole-string match, reducing to
+// a trailing Weapon/Armor word lets resolveLivePropertyValue's own exact
+// match find the System's value without hardcoding every DDB qualifier
+// ("Simple"/"Martial"/"Light"/"Heavy"/...) as its own alias entry.
 function resolveMarkdownItemFormHint(category) {
   const bare = String(category || "").replace(/\s*\([^)]*\)\s*$/, "").trim();
-  return MARKDOWN_ITEM_FORM_ALIASES[bare.toLowerCase()] || bare;
+  const aliased = MARKDOWN_ITEM_FORM_ALIASES[bare.toLowerCase()];
+  if (aliased) return aliased;
+  const trailingFormWord = bare.match(/\b(Weapon|Armor)$/i);
+  return trailingFormWord ? trailingFormWord[1] : bare;
 }
 
 function parseMarkdownItemHeaderLine(headerLine) {
@@ -1251,6 +1418,46 @@ return {
     return slugify(resolvePath(context, args?.path || "name"));
   },
 
+  // A "<parent>-<own>" compound slug — e.g. Variant records (subclasses,
+  // species subspecies, background variants, ...) whose own bare name
+  // ("Path of the Berserker") isn't guaranteed unique across every other
+  // parent record in the Library the same way it plausibly is within just
+  // one class; a Barbarian's and some homebrew class's own "Path of X"
+  // could otherwise collide. `args.parentPath` defaults to "root.name"
+  // (the enclosing pipeline's own root context — a subclass mapping's
+  // parent class page), `args.path` defaults to "name" (this item's own),
+  // matching slug()'s own defaults so the two stay easy to reason about
+  // side by side. Genuinely generic, not subclass-specific — any mapping
+  // producing a parent-scoped child record can reuse this.
+  compoundSlug(context, args) {
+    const parent = slugify(resolvePath(context, args?.parentPath || "root.name"));
+    let ownRaw = String(resolvePath(context, args?.path || "name") || "");
+    // `args.stripSourcebookSuffix` — opt-in only, never the default (every
+    // OTHER caller of this same function — ddb-subclass.json/5e-api-
+    // subclass.json's own id generation, ddb-species.json's nested variant
+    // ids, ...  — must keep computing exactly the id it always has).
+    // Confirmed real, repeated pain point: a Character's own
+    // subclassDefinition.name (ddb-character.json's own subclass refId,
+    // the one caller that turns this on) carries a trailing "(SOURCEBOOK)"
+    // tag DDB's character-service API adds ("The Fathomless (TCOE)") that
+    // the Library's own subclass record — scraped straight from the
+    // content page, whose own heading never includes it — never carries.
+    // Left in, the computed refId never matches the real Library variant
+    // at all, silently breaking the character->subclass link on every
+    // single re-import until manually retagged.
+    if (args?.stripSourcebookSuffix) {
+      ownRaw = ownRaw.replace(/\s*\([^)]*\)\s*$/, "");
+    }
+    const own = slugify(ownRaw);
+    // Both halves required, not filter(Boolean).join("-") — a character
+    // with no subclass chosen yet has an empty subclassDefinition.name,
+    // and "barbarian" (parent alone, own half silently dropped) would be a
+    // real but WRONG id, implying a variant that doesn't exist. No own
+    // name means no real compound id at all.
+    if (!parent || !own) return "";
+    return `${parent}-${own}`;
+  },
+
   // `args.path` names which raw HTML field to parse (e.g.
   // "specialTraitsDescription"/"actionsDescription") — see
   // parseDdbHtmlTraitBlocks above for the actual parsing. Returns
@@ -1266,9 +1473,12 @@ return {
   // `systemIds`, invisible to anything that filters by System. Fixed,
   // hardcoded "sys.dnd5e" — the DDB-import pipeline is inherently D&D-5e-
   // specific already (see content-fetch.js's own DND5E_SYSTEM_ID constant,
-  // same reasoning).
+  // same reasoning). Dual-tagged with both 5.5e (sys.dnd5e) and 2014 5e
+  // (sys.dnd5e2014) — non-Character content is materially the same across
+  // both editions by default (see project_dnd_5e_5.5e_split), so imports
+  // land visible to either System filter without a separate import pass.
   ddbMonsterSystemIds() {
-    return ["sys.dnd5e"];
+    return ["sys.dnd5e", "sys.dnd5e2014"];
   },
 
   // Same reasoning and same hardcoded value as ddbMonsterSystemIds above —
@@ -1278,7 +1488,52 @@ return {
   // Kept as its own function (not a shared name) so each mapping's own
   // intent stays legible at the call site.
   srdMonsterSystemIds() {
-    return ["sys.dnd5e"];
+    return ["sys.dnd5e", "sys.dnd5e2014"];
+  },
+
+  // Same reasoning/hardcoded value as ddbMonsterSystemIds/srdMonsterSystemIds
+  // above, one pair per class/species/background mapping (DDB scraper +
+  // 5e-API SRD) — none of these six mappings had a systemIds field at all
+  // before this, so every class/species/background import (and, via
+  // content-feature-matching.js's own promoteEmbeddedFeatures, every
+  // Feature promoted from one) landed with no System at all, invisible to
+  // anything that filters by one. Kept as their own functions rather than
+  // one shared name, matching this file's own established "each mapping's
+  // own intent stays legible at the call site" convention.
+  ddbClassSystemIds() {
+    return ["sys.dnd5e", "sys.dnd5e2014"];
+  },
+
+  srdClassSystemIds() {
+    return ["sys.dnd5e", "sys.dnd5e2014"];
+  },
+
+  ddbSpeciesSystemIds() {
+    return ["sys.dnd5e", "sys.dnd5e2014"];
+  },
+
+  srdSpeciesSystemIds() {
+    return ["sys.dnd5e", "sys.dnd5e2014"];
+  },
+
+  ddbBackgroundSystemIds() {
+    return ["sys.dnd5e", "sys.dnd5e2014"];
+  },
+
+  srdBackgroundSystemIds() {
+    return ["sys.dnd5e", "sys.dnd5e2014"];
+  },
+
+  // ddb-subclass.json/5e-api-subclass.json are each their OWN dedicated
+  // mapping (not nested under ddb-class.json/5e-api-class.json — see
+  // loom/js/app.js's own ENTITY_ARRAY_FIELDS comment), so they get their
+  // own pair too, same convention as above.
+  ddbSubclassSystemIds() {
+    return ["sys.dnd5e", "sys.dnd5e2014"];
+  },
+
+  srdSubclassSystemIds() {
+    return ["sys.dnd5e", "sys.dnd5e2014"];
   },
 
   // Case-insensitive/trimmed creature-type resolution, for the two sources
@@ -1333,7 +1588,7 @@ return {
   // legible at the call site" convention — used by 5e-api-spell.json/
   // 5e-api-magic-item.json instead of srdMonsterSystemIds.
   srdVaultSystemIds() {
-    return ["sys.dnd5e"];
+    return ["sys.dnd5e", "sys.dnd5e2014"];
   },
 
   // Builds Vault's own `stats` shape (see vault-feature-matching.js's own
@@ -1531,7 +1786,45 @@ return {
     // rather than silently dropped. Not added to candidateUnits — a bare
     // "Label: value" line never matches a clause recognizer, so there's no
     // risk of a phantom Feature, only lost information if omitted.
-    const fieldLines = Object.entries(s.fields || {}).map(([key, value]) => `${key}: ${value}`);
+    const sourceFields = { ...(s.fields || {}) };
+    // A "Cost" field (this vault's own "**Cost:** 5 gp"-style markdown
+    // field, when a note has one) — or ddb-item.json's own `price`
+    // (ddbParseEquipmentPage's own Cost extraction, already promoted
+    // before this ever runs, so `s.price` wins when both are somehow
+    // present) — is the exact freeform price string item-pricing.js's own
+    // rollResourcePrice already knows how to parse (parsePriceExpression's
+    // own "ends in a coin abbreviation" contract). Surfaced as its own
+    // `price` return field (the same top-level Wonder field
+    // eff.handaxe.json's own "price": "5 gp" already uses) instead of left
+    // buried only in description prose, which is what left every freshly-
+    // imported mundane item completely unpriceable in the Shop widget —
+    // confirmed real, reported bug: a freshly-imported Greataxe had no
+    // sell price at all. Removed from the folded-into-description field
+    // lines below once promoted — nothing else needs a plain-text
+    // restatement of it, matching how eff.handaxe.json's own hand-curated
+    // "price": "5 gp" never repeats itself in its own "notes" prose either.
+    const price = s.price || sourceFields.Cost || sourceFields.cost || "";
+    delete sourceFields.Cost;
+    delete sourceFields.cost;
+    // Same promotion, for "Weight" — equipment's own most commonly-present
+    // stat, and (per the user's own explicit steer) the field most worth
+    // getting right here since equipment imports are the main use of this
+    // pipeline going forward. Parsed down to a bare number (the leading
+    // "7" of ddb-item.json's own raw "7 lbs", or this vault's own
+    // "**Weight:** 7 lbs" field) — the SAME shape Character.inventory[]
+    // .weight already uses (extractInventoryWeight,
+    // common/js/lib/calculator-modes/inventory-weight.js), not a unit-
+    // suffixed string nothing downstream could read back out as a number.
+    // Left `undefined` (never a fabricated 0) when nothing parses — the
+    // mapping engine's own JSON.stringify at save time omits an
+    // `undefined` key entirely, so an unweighted item (most magic items)
+    // gets no `weight` key at all rather than a wrong zero.
+    const weightRaw = s.weight || sourceFields.Weight || sourceFields.weight || "";
+    delete sourceFields.Weight;
+    delete sourceFields.weight;
+    const weightMatch = String(weightRaw).match(/-?\d+(?:\.\d+)?/);
+    const weight = weightMatch ? Number(weightMatch[0]) : undefined;
+    const fieldLines = Object.entries(sourceFields).map(([key, value]) => `${key}: ${value}`);
     const description = [...paragraphs, ...fieldLines].join("\n\n");
     const { charges, remaining } = srdExtractCharges(paragraphs);
     const candidateUnits = remaining.flatMap((p) => srdSplitBullets(p));
@@ -1546,6 +1839,15 @@ return {
       rarity,
       requiresAttunement,
       description,
+      price,
+      weight,
+      // A source's own real tag list (ddb-item.json's own `tags`,
+      // ddbParseEquipmentPage/ddbParseMagicItemPage — see that file's own
+      // header comment) — a plain array, same shape ddb-monster.json's own
+      // `tags` field already reads, never flattened into description
+      // prose. Empty for a markdown vault source, which has no tags
+      // concept of its own.
+      tags: Array.isArray(s.tags) ? s.tags : [],
       charges,
       properties,
       variantGroup: null,
@@ -1983,7 +2285,21 @@ return {
   },
 
   ddbSpeciesSpeed(context) {
-    return parseLeadingNumber(context.coreTraits?.speed);
+    const fromCoreTraits = parseLeadingNumber(context.coreTraits?.speed);
+    if (fromCoreTraits) return fromCoreTraits;
+    return parseLeadingNumber(speciesNamedTraitText(context.namedTraits, "Speed"));
+  },
+  ddbSpeciesSize(context) {
+    if (context.coreTraits?.size) return context.coreTraits.size;
+    const text = speciesNamedTraitText(context.namedTraits, "Size");
+    const match = text.match(/\b(Tiny|Small|Medium|Large|Huge|Gargantuan)\b/i);
+    return match ? match[1] : null;
+  },
+  ddbSpeciesCreatureType(context) {
+    if (context.coreTraits?.creatureType) return context.coreTraits.creatureType;
+    const text = speciesNamedTraitText(context.namedTraits, "Creature Type");
+    const match = text.match(/\byou are an? ([A-Za-z]+)/i);
+    return match ? match[1] : null;
   },
 
   ddbSavingThrows(context) {
@@ -2115,7 +2431,7 @@ return {
     const feats = Array.isArray(context.root?.feats) ? context.root.feats : [];
     return feats.map((feat) => ({
       name: feat.definition?.name || "Unknown Feat",
-      description: feat.definition?.description || "",
+      description: htmlBlocksToText(feat.definition?.description || ""),
       level: feat.requiredLevel || null,
       limitedUse: feat.definition?.limitedUse || null,
     }));
@@ -2124,23 +2440,54 @@ return {
   // Ported from ddb-parser.js's buildFeatures — class features (including
   // subclass features), racial traits, and feat descriptions, combined and
   // deduped by name (a feat and its granted feature can otherwise appear
-  // twice).
+  // twice). `level` is captured per source (real ddb_parser.js confirms
+  // DDB's own raw shape puts a class feature's own requiredLevel INSIDE its
+  // `.definition` — unlike a Feat's own requiredLevel, which sits on the
+  // OUTER wrapper next to `.definition`, same place featsTable's own
+  // sibling function already reads it from; a racial trait carries no
+  // level at all, 5e grants every one at character creation) — previously
+  // dropped entirely even though featsTable's own output always kept it,
+  // silently losing which level a class/racial feature was actually
+  // granted at. `content-feature-matching.js`'s own promotion step reads
+  // this to record `featureParams[id].grantedAtLevel`.
   featuresTable(context) {
     const rawCharacter = context.root;
     const classes = Array.isArray(rawCharacter?.classes) ? rawCharacter.classes : [];
+    // DDB's own character-service API returns a class's/subclass's FULL
+    // feature catalog here — every level, not just what this character has
+    // actually reached — confirmed real, user-flagged: Maris Wavedeep
+    // (Warlock 5) had 10th- and 14th-level Fathomless features (Grasping
+    // Tentacles, Fathomless Plunge) on her own sheet despite being nowhere
+    // near those levels. `cls.level` is THIS class's own current level
+    // (not total character level — real for a multiclass character, and
+    // exactly why the filter has to happen per-class, before the
+    // cross-class flatMap merges everything together) — feats
+    // (`rawCharacter.feats` below) need no equivalent filter, since that
+    // list is only ever what the player has actually chosen, never a
+    // catalog of not-yet-available options the way class/subclass features
+    // apparently are.
     const classFeatures = classes
-      .flatMap((cls) => [...(cls.classFeatures || []), ...(cls.subclassDefinition?.classFeatures || [])])
-      .map((feature) => feature.definition)
+      .flatMap((cls) => {
+        const classLevel = cls.level || 0;
+        return [...(cls.classFeatures || []), ...(cls.subclassDefinition?.classFeatures || [])].filter(
+          (feature) => (feature.definition?.requiredLevel ?? 0) <= classLevel
+        );
+      })
+      .map((feature) => (feature.definition ? { ...feature.definition, level: feature.definition.requiredLevel ?? null } : null))
       .filter(Boolean);
-    const racialTraits = (rawCharacter?.race?.racialTraits || []).map((trait) => trait.definition).filter(Boolean);
-    const featFeatures = (rawCharacter?.feats || []).map((feat) => feat.definition).filter(Boolean);
+    const racialTraits = (rawCharacter?.race?.racialTraits || [])
+      .map((trait) => (trait.definition ? { ...trait.definition, level: null } : null))
+      .filter(Boolean);
+    const featFeatures = (rawCharacter?.feats || [])
+      .map((feat) => (feat.definition ? { ...feat.definition, level: feat.requiredLevel ?? null } : null))
+      .filter(Boolean);
     const combined = [...classFeatures, ...racialTraits, ...featFeatures];
     const seen = new Set();
     return combined.reduce((list, feature) => {
       const name = feature.name || feature.friendlySubtypeName;
       if (!name || seen.has(name.toLowerCase())) return list;
       seen.add(name.toLowerCase());
-      list.push({ name, description: feature.description || feature.snippet || "" });
+      list.push({ name, description: htmlBlocksToText(feature.description || feature.snippet || ""), level: feature.level ?? null });
       return list;
     }, []);
   },

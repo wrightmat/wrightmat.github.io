@@ -1,7 +1,8 @@
 {
   "name": "Sweeping Axe (Recharge 5-6)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature makes a sweep with its axehand, and each creature within 10 feet of it must make a DC: 17 Dexterity saving throw. A creature takes 19 (3d8 + 6) slashing damage on a failed save, or half as much damage on a successful one.",
   "mechanics": {

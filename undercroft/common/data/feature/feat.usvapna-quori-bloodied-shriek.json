@@ -1,7 +1,8 @@
 {
   "name": "Bloodied Shriek",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "As a reaction to being reduced to below half its hit points (115), the creature immediately recharges and uses its Throughscour Shriek.",
   "mechanics": {

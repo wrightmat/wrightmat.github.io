@@ -1,0 +1,26 @@
+{
+  "id": "feat.cleric-war-domain-spells",
+  "name": "War Domain Spells",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "Your connection to this divine domain ensures you always have certain spells ready. When you reach a Cleric level specified in the War Domain Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Guiding Bolt, Magic Weapon, Shield of Faith, Spiritual Weapon\n\nLevel 5: Crusader’s Mantle, Spirit Guardians\n\nLevel 7: Fire Shield, Freedom of Movement\n\nLevel 9: Hold Monster, Steel Wind Strike",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "Your connection to this divine domain ensures you always have certain spells ready. When you reach a Cleric level specified in the War Domain Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Guiding Bolt, Magic Weapon, Shield of Faith, Spiritual Weapon\n\nLevel 5: Crusader’s Mantle, Spirit Guardians\n\nLevel 7: Fire Shield, Freedom of Movement\n\nLevel 9: Hold Monster, Steel Wind Strike"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

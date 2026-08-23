@@ -1,0 +1,26 @@
+{
+  "id": "feat.artificer-final-breakthrough",
+  "name": "Final Breakthrough",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "Whenever you finish a Short Rest, you can swap a spell contained in your Prototype for another spell of the same level, chosen from the Artificer, Cleric, or Wizard spell list. In addition, you ignore all class, species, spell, and level requirements on attuning to or using a magic item.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "Whenever you finish a Short Rest, you can swap a spell contained in your Prototype for another spell of the same level, chosen from the Artificer, Cleric, or Wizard spell list. In addition, you ignore all class, species, spell, and level requirements on attuning to or using a magic item."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

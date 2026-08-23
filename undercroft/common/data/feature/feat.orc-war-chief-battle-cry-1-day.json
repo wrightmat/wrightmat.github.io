@@ -1,7 +1,8 @@
 {
   "name": "Battle Cry (1/Day)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Each creature of the war chief’s choice that is within 30 feet of it, can hear it, and not already affected by Battle Cry gain advantage on attack rolls until the start of the war chief’s next turn. The war chief can then make one attack as a bonus action.",
   "mechanics": {

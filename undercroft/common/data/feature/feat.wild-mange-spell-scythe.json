@@ -1,7 +1,8 @@
 {
   "name": "Spell Scythe",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Melee Weapon Attack: +4 to hit, reach 5 ft., one target. Hit: 8 (1d6 + 2) slashing damage. On a hit, the creature drains one spell slot of the targets lowest level available and regains 8 (2d4+4) hit points.",
   "mechanics": {

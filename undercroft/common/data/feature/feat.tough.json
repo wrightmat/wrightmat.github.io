@@ -1,0 +1,24 @@
+{
+  "id": "feat.tough",
+  "name": "Tough",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "<p><em>Origin Feat</em></p>\r\n<p>Your Hit Point maximum increases by an amount equal to twice your character level when you gain this feat. Whenever you gain a character level thereafter, your Hit Point maximum increases by an additional 2 Hit Points.</p>",
+  "mechanics": {
+    "type": "passive",
+    "text": "<p><em>Origin Feat</em></p>\r\n<p>Your Hit Point maximum increases by an amount equal to twice your character level when you gain this feat. Whenever you gain a character level thereafter, your Hit Point maximum increases by an additional 2 Hit Points.</p>"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

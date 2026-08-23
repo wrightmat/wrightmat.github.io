@@ -1,7 +1,8 @@
 {
   "name": "Trident",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Melee or Ranged Weapon Attack: +2 to hit, reach 5 ft., or +5 to hit, range 20/60 ft., one target. Hit: 4 (1d8) piercing damage if used with both hands to make a melee attack, or 6 (1d6 + 3) if thrown.",
   "mechanics": {

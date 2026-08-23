@@ -1,7 +1,8 @@
 {
   "name": "Exposed Casting",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "While activating this effect, the wielder grants advantage to attacks made against them until the start of their next turn.",
   "mechanics": {

@@ -1,7 +1,8 @@
 {
   "name": "Sunlight Sensitivity",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "While in sunlight, the creature has disadvantage on attack rolls, as well as on Wisdom (Perception) checks that rely on sight.",
   "mechanics": {

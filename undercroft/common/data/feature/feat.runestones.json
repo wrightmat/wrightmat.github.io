@@ -1,0 +1,24 @@
+{
+  "id": "feat.runestones",
+  "name": "Runestones",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "<p>At the beginning of the <em>Northlands Sagas</em> adventure path, each player should draw one Runestone randomly.</p>",
+  "mechanics": {
+    "type": "passive",
+    "text": "<p>At the beginning of the <em>Northlands Sagas</em> adventure path, each player should draw one Runestone randomly.</p>"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

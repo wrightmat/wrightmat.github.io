@@ -3,7 +3,8 @@
   "name": "Ring of Fire Resistance",
   "notes": "Ring, rare (requires attunement)\n\nYou have resistance to fire damage while wearing this garnet ring.",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "url": "https://www.dnd5eapi.co/api/2014/magic-items/ring-of-resistance-fire",
   "mapping": "5e-api-magic-item",

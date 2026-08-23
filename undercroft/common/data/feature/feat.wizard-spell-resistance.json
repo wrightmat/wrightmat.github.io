@@ -1,0 +1,26 @@
+{
+  "id": "feat.wizard-spell-resistance",
+  "name": "Spell Resistance",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You have Advantage on saving throws against spells, and you have Resistance to the damage of spells.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "You have Advantage on saving throws against spells, and you have Resistance to the damage of spells."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,7 +1,8 @@
 {
   "name": "Spell Reflection",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Trigger: The creature succeeds on a saving throw against a spell, or a spell’s attack roll misses it. Response—Dexterity Saving Throw: DC 12, one creature the creature can see within 120 feet. Failure: 10 (3d6) Force damage.",
   "mechanics": {

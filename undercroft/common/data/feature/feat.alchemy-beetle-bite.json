@@ -1,7 +1,8 @@
 {
   "name": "Bite",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Melee Weapon Attack: +2 to hit, reach 5 ft., one target. Hit: 4 (1d6 + 1) piercing damage, plus 3 (1d6) acid, (1d6) fire, (1d6) lightning, or (1d6) cold damage.",
   "mechanics": {

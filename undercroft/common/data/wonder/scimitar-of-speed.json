@@ -3,7 +3,8 @@
   "name": "Scimitar of Speed",
   "notes": "Weapon (scimitar), very rare (requires attunement)\n\nYou gain a +2 bonus to attack and damage rolls made with this magic weapon. In addition, you can make one attack with it as a bonus action on each of your turns.",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "url": "https://www.dnd5eapi.co/api/2014/magic-items/scimitar-of-speed",
   "mapping": "5e-api-magic-item",

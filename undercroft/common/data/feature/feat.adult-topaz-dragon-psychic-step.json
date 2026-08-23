@@ -1,7 +1,8 @@
 {
   "name": "Psychic Step",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature magically teleports to an unoccupied space it can see within 60 feet of it.",
   "mechanics": {

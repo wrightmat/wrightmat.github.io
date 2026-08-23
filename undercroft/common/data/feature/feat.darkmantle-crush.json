@@ -1,7 +1,8 @@
 {
   "name": "Crush",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Melee Weapon Attack: +5 to hit, reach 5 ft., one creature. Hit: 6 (1d6 + 3) bludgeoning damage, and the monstrosity attaches to the target. If the target is Medium or smaller and the monstrosity has advantage on the attack roll, it attaches by engulfing the target's head, and the target is also blinded and unable to breathe while the monstrosity is attached in this way.\nWhile attached to the target, the monstrosity can attack no other creature except the target but has advantage on its attack rolls. The monstrosity's speed also becomes 0, it can't benefit from any bonus to its speed, and it moves with the target.\nA creature can detach the monstrosity by making a successful DC 13 Strength check as an action. On its turn, the monstrosity can detach itself from the target by using 5 feet of movement.",
   "mechanics": {

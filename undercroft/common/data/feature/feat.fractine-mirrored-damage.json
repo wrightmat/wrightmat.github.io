@@ -1,7 +1,8 @@
 {
   "name": "Mirrored Damage",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "In response to being damaged by a creature it can see within 120 feet of itself, the creature forces that creature to make a DC 16 Constitution saving throw. On a failed save, the creature takes 24 (8d6) force damage. On a successful save, the creature takes half as much damage.",
   "mechanics": {

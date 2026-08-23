@@ -1,7 +1,8 @@
 {
   "name": "Harvest the Dead",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature swallows one unsecured Humanoid corpse within 10 feet of it, along with any equipment the creature is wearing or carrying.",
   "mechanics": {

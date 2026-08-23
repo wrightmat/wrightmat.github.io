@@ -1,7 +1,8 @@
 {
   "name": "Held Action",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Primes an effect now that only takes place later, once a stated trigger condition is met.",
   "mechanics": {

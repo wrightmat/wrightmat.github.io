@@ -1,0 +1,26 @@
+{
+  "id": "feat.ranger-precise-hunter",
+  "name": "Precise Hunter",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You have Advantage on attack rolls against the creature currently marked by your Hunter’s Mark.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "You have Advantage on attack rolls against the creature currently marked by your Hunter’s Mark."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

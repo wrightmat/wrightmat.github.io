@@ -1,7 +1,8 @@
 {
   "name": "Dazzling Light (Recharge 5–6)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Magical, colored light springs from the creature in a 15-foot cone. Each creature in the cone must succeed on a DC 10 Constitution saving throw or be blinded for 1 minute. A creature can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success.",
   "mechanics": {

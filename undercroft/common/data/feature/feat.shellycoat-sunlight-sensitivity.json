@@ -1,7 +1,8 @@
 {
   "name": "Sunlight Sensitivity",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature becomes petrified after 5 (2d4) uninterrupted rounds of exposure to direct, natural sunlight.",
   "mechanics": {

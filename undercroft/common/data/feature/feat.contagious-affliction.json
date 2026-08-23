@@ -1,7 +1,8 @@
 {
   "name": "Contagious Affliction",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature attack can inflict a condition on the target that spreads to another creature that touches or damages it.",
   "mechanics": {

@@ -1,7 +1,8 @@
 {
   "name": "Modifies Roll",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Lets the wearer forgo rolling a d20 for a specific kind of roll and take a fixed result instead.",
   "mechanics": {

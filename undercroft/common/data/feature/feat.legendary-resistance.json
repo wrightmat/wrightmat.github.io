@@ -1,7 +1,8 @@
 {
   "name": "Legendary Resistance",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "A limited number of times per day, the creature can choose to succeed on a failed saving throw instead.",
   "mechanics": {

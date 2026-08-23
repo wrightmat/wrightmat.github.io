@@ -1,6 +1,9 @@
 {
   "id": "resource",
   "name": "Resource",
-  "systemIds": ["sys.dnd5e"],
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
   "description": "Exists because of what can be extracted or gathered here — ore, timber, water, or other raw material."
 }

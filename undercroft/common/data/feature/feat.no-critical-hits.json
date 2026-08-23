@@ -1,7 +1,8 @@
 {
   "name": "No Critical Hits",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Any critical hit against you becomes a normal hit.",
   "mechanics": {

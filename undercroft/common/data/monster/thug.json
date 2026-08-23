@@ -3,7 +3,8 @@
   "notes": "Thugs are ruthless enforcers skilled at intimidation and violence. They work for money and have few scruples.",
   "type": "humanoid",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "image": "https://www.dnd5eapi.co/api/images/monsters/thug.png",
   "stats": {

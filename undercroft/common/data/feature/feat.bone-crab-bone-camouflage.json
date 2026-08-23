@@ -1,7 +1,8 @@
 {
   "name": "Bone Camouflage",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "a creature has advantage on Dexterity (Stealth) checks while it’s among bones.",
   "mechanics": {

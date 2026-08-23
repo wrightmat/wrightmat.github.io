@@ -1,7 +1,8 @@
 {
   "name": "Temporary Hit Points",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Grants a buffer of temporary hit points.",
   "mechanics": {

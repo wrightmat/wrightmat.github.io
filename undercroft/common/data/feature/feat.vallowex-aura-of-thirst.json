@@ -1,7 +1,8 @@
 {
   "name": "Aura of Thirst",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "At the start of each of the creature’s turns, each creature within 30 feet of it must succeed on a DC 15 Constitution saving throw or have disadvantage on its next attack roll or ability check as a gnawing thirst distracts it. For each minute a creature stays in the creature’s aura, it gains one level of exhaustion from dehydration. A level of exhaustion is removed if the creature uses an action to drink 1 pint of water. a creature is immune to its own Aura of Thirst as well as the auras of other vallowexes.",
   "mechanics": {

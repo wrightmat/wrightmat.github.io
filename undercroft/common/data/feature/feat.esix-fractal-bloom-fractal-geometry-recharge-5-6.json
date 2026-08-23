@@ -1,7 +1,8 @@
 {
   "name": "Fractal Geometry (Recharge 5–6)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Esix unleashes recursive psychic energy. Each creature of Esix’s choice within 30 feet must make a DC 15 Intelligence saving throw. On a failed save, the creature takes 27 (6d8) psychic damage and is Dazed until the end of its next turn. On a successful save, the creature takes half damage and is not Dazed.",
   "mechanics": {

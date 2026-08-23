@@ -1,0 +1,25 @@
+{
+  "id": "feat.bugbear-powerful-build",
+  "name": "Powerful Build",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You count as one size larger when determining your carrying capacity and the weight you can push, drag, or lift.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You count as one size larger when determining your carrying capacity and the weight you can push, drag, or lift."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

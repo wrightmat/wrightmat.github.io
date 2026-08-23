@@ -1,7 +1,8 @@
 {
   "name": "Telepathic Bond",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "While the creature is on the same plane of existence as its master, it can magically convey what it senses to its master, and the two can communicate telepathically.",
   "mechanics": {

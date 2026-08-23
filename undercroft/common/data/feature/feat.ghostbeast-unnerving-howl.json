@@ -1,7 +1,8 @@
 {
   "name": "Unnerving Howl",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Upon first hearing the howls of a creature, a creature must succeed on a DC 14 Wisdom saving throw or become frightened for 1 minute. A creature can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success. If a creature's saving throw is successful, or the effect ends, the creature is immune to the creature's howl for 24 hours.",
   "mechanics": {

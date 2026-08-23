@@ -2,7 +2,8 @@
   "name": "Barbed Devil",
   "type": "fiend",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "image": "https://www.dnd5eapi.co/api/images/monsters/barbed-devil.png",
   "stats": {

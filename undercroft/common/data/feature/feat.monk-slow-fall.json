@@ -1,0 +1,26 @@
+{
+  "id": "feat.monk-slow-fall",
+  "name": "Slow Fall",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You can take a Reaction when you fall to reduce any damage you take from the fall by an amount equal to five times your Monk level.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "You can take a Reaction when you fall to reduce any damage you take from the fall by an amount equal to five times your Monk level."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

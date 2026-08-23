@@ -68,7 +68,8 @@
   },
   "mapping": "fantasy-statblocks-monster",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "featureIds": [
     "feat.gorthok-the-thunder-boar-relentless-recharges-after-a-short-or-long-rest",

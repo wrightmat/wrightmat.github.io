@@ -1,7 +1,8 @@
 {
   "name": "Necrotic Bolt (Recharge 4-6)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature fires a bolt of necrotic energy at one target it can see within 30 feet of it. The target must succeed on a DC 16 Dexterity saving throw or take 9 (1d6 + 6) necrotic damage. In addition, nonmagical armor worn by the target is partly dissolved and takes a permanent and cumulative -1 penalty to the AC it offers. The armor is destroyed if the penalty reduces its AC to 10.",
   "mechanics": {

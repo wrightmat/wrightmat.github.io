@@ -1,7 +1,8 @@
 {
   "name": "Shortbow",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Ranged Weapon Attack: +5 to hit, range 80/320 ft., one target. Hit: 6 (1d6 + 3) piercing damage plus 10 (3d6) poison damage and the target must make a successful DC 12 Constitution saving throw or be poisoned for 1 minute. A poisoned creature repeats the saving throw at the end of each of its turns, ending the effect on a success.",
   "mechanics": {

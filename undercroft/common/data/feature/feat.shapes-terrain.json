@@ -1,7 +1,8 @@
 {
   "name": "Shapes Terrain",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Physically reshapes stone, earth, or similar material into a new, lasting form.",
   "mechanics": {

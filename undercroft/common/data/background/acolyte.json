@@ -18,7 +18,8 @@
     }
   ],
   "feat": {
-    "index": "magic-initiate",
+    "refKind": "feature",
+    "refId": "magic-initiate",
     "name": "Magic Initiate",
     "note": "Cleric"
   },
@@ -118,6 +119,7 @@
   },
   "updated_at": "2026-07-17T23:06:04.767Z",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ]
 }

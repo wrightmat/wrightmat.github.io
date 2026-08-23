@@ -1,7 +1,8 @@
 {
   "name": "Pull of the Void (Recharge 5–6)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature sends Void tendrils at up to three creatures it can see within 60 feet of it that are not behind total cover. Each target must succeed on a DC 16 strength Saving throw or be pulled up to 30 feet toward the creature. Then each creature within 5 feet of the creature takes 36 (8d8) force damage.",
   "mechanics": {

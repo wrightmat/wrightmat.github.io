@@ -1,7 +1,8 @@
 {
   "name": "Reactive",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature can take one reaction on every turn in combat.",
   "mechanics": {

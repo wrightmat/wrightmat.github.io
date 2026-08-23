@@ -1,7 +1,8 @@
 {
   "name": "Foster Peace",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "If a creature charmed by the creature hits with an attack roll while within 60 feet of the creature, the creature magically causes the attack to miss, provided the creature can see the attacker.",
   "mechanics": {

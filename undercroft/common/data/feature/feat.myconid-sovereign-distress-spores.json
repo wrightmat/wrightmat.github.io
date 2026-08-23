@@ -1,7 +1,8 @@
 {
   "name": "Distress Spores",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "When the creature takes damage, all other myconids within 240 feet of it can sense its pain.",
   "mechanics": {

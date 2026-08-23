@@ -1,0 +1,26 @@
+{
+  "id": "feat.artificer-advanced-artifice",
+  "name": "Advanced Artifice",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You gain the following benefits.\n\nMagic Item Savant. You can now attune to up to five magic items at once.\n\nRefreshed Genius. When you finish a Short Rest, you regain one expended use of your Flash of Genius feature.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "You gain the following benefits.\n\nMagic Item Savant. You can now attune to up to five magic items at once.\n\nRefreshed Genius. When you finish a Short Rest, you regain one expended use of your Flash of Genius feature."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

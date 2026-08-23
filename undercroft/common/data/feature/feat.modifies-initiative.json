@@ -1,7 +1,8 @@
 {
   "name": "Modifies Initiative",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Improves the user's own initiative rolls.",
   "mechanics": {

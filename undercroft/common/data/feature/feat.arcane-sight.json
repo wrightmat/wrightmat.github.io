@@ -1,7 +1,8 @@
 {
   "name": "Arcane Sight",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Reveals a target's resistances, immunities, and any hidden or illusory nature.",
   "mechanics": {

@@ -1,7 +1,8 @@
 {
   "name": "Terror Dive",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "If the creature is flying and dives at least 30 feet forward toward a target, and then hits that target with a melee weapon attack, the target is frightened until the end of its next turn.",
   "mechanics": {

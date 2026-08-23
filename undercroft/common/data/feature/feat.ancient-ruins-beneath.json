@@ -1,7 +1,8 @@
 {
   "name": "Ancient Ruins Beneath",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Older ruins lie buried beneath this place — forgotten foundations, sealed vaults, or the remains of a civilization no one here remembers.",
   "mechanics": {

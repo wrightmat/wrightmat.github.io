@@ -18,7 +18,8 @@
     }
   ],
   "feat": {
-    "index": "skilled",
+    "refKind": "feature",
+    "refId": "skilled",
     "name": "Skilled"
   },
   "proficiencies": [
@@ -116,6 +117,7 @@
   },
   "updated_at": "2026-07-19T14:54:52.236Z",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ]
 }

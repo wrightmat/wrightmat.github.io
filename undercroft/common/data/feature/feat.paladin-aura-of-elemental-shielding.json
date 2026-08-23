@@ -1,0 +1,26 @@
+{
+  "id": "feat.paladin-aura-of-elemental-shielding",
+  "name": "Aura of Elemental Shielding",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "Choose one of the following damage types: Acid, Cold, Fire, Lightning, or Thunder. You and your allies have Resistance to that damage type while in your Aura of Protection.\n\nAt the start of each of your turns, you can change the damage type affected by this feature to one of the other listed options (no action required).",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "Choose one of the following damage types: Acid, Cold, Fire, Lightning, or Thunder. You and your allies have Resistance to that damage type while in your Aura of Protection.\n\nAt the start of each of your turns, you can change the damage type affected by this feature to one of the other listed options (no action required)."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

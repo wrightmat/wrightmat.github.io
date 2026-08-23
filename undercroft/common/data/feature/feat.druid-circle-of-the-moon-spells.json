@@ -1,0 +1,26 @@
+{
+  "id": "feat.druid-circle-of-the-moon-spells",
+  "name": "Circle of the Moon Spells",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "When you reach a Druid level specified in the Circle of the Moon Spells table, you thereafter always have the listed spells prepared.\n\nIn addition, you can cast the spells from this feature while you’re in a Wild Shape form.\n\nLevel 3: Cure Wounds, Moonbeam, Starry Wisp\n\nLevel 5: Conjure Animals\n\nLevel 7: Fount of Moonlight\n\nLevel 9: Mass Cure Wounds",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "When you reach a Druid level specified in the Circle of the Moon Spells table, you thereafter always have the listed spells prepared.\n\nIn addition, you can cast the spells from this feature while you’re in a Wild Shape form.\n\nLevel 3: Cure Wounds, Moonbeam, Starry Wisp\n\nLevel 5: Conjure Animals\n\nLevel 7: Fount of Moonlight\n\nLevel 9: Mass Cure Wounds"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,7 +1,8 @@
 {
   "name": "Reanimate",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature animates one corpse in its body, turning it into a zombie (see the Monster Manual). The zombie appears in an unoccupied space within 5 feet of the creature and acts immediately after it in the initiative order. The zombie acts as an ally of the creature but isn’t under its control, and the creature’s stench clings to it (see Stench of Death).",
   "mechanics": {

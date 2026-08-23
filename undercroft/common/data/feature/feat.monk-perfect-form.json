@@ -1,0 +1,26 @@
+{
+  "id": "feat.monk-perfect-form",
+  "name": "Perfect Form",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "Whenever you assume your Martial Form, you can expend an additional 3 Focus Points to gain the following benefits for as long as you remain in the form.\n\nMercurial Strikes. Whenever you attack with an Unarmed Strike granted by Flurry of Blows, you have Advantage.\n\nRegeneration. At the start of your turn, roll one Martial Arts die. You regain that many Hit Points.\n\nUnbreakable Body. You gain a +2 bonus to your Armor Class.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "Whenever you assume your Martial Form, you can expend an additional 3 Focus Points to gain the following benefits for as long as you remain in the form.\n\nMercurial Strikes. Whenever you attack with an Unarmed Strike granted by Flurry of Blows, you have Advantage.\n\nRegeneration. At the start of your turn, roll one Martial Arts die. You regain that many Hit Points.\n\nUnbreakable Body. You gain a +2 bonus to your Armor Class."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,7 +1,8 @@
 {
   "name": "Delightful Light (Recharge 5–6)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature magically emanates light in a 10-foot radius for a moment. The creature and each creature of its choice in that light gain 11 (2d10) temporary hit points.",
   "mechanics": {

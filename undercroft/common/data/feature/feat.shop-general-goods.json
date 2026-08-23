@@ -1,0 +1,31 @@
+{
+  "id": "feat.shop-general-goods",
+  "name": "Shop: General Goods",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "A general store — everyday adventuring gear, provisions, and sundries rather than a specialized trade. Tagged alongside Shop (not instead of it) to narrow what kind of point of sale this is.",
+  "mechanics": {
+    "type": "passive",
+    "text": "This shop's own Assets should mostly be ordinary-equipment-kind Wonders — the GM's own stock, priced and quantified like any other Shop's."
+  },
+  "tags": {
+    "categories": [
+      "location"
+    ],
+    "locationTypes": [],
+    "locationPurposes": [
+      "commerce"
+    ],
+    "environments": []
+  },
+  "synergizesWith": [
+    "feat.shop",
+    "feat.bustling-market"
+  ],
+  "dependsOn": [
+    "feat.shop"
+  ],
+  "conflictsWith": []
+}

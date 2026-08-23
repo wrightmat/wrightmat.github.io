@@ -1,7 +1,8 @@
 {
   "name": "Swarm Regrowth",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "At the start of its turn, the creature regains a small number of hit points if at least one ally of the same kind is within 30 feet.",
   "mechanics": {

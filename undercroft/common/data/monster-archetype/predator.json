@@ -2,7 +2,8 @@
   "id": "predator",
   "name": "Predator",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Identifies vulnerable prey and creates opportunities to exploit it.",
   "recipe": {

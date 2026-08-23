@@ -1,7 +1,8 @@
 {
   "name": "Breath Weapon (Recharge 5–6)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Coral drakes nurture their offspring in specialized throat sacs. They can pressurize these sacs to spew forth a 15-foot cone of spawn. Each target in this area takes 21 (6d6) piercing damage from thousands of tiny bites and is blinded for 1d4 rounds; a successful DC 15 Dexterity saving throw reduces the damage by half and negates the blindness.",
   "mechanics": {

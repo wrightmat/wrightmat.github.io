@@ -15,6 +15,8 @@
 // rarity at all (most non-D&D Systems) simply has no such field, and this
 // resolves to an empty list rather than an error, same as
 // loadCombatScalingLevels for a System with no Combat Scaling data.
+import { rollDiceExpression } from "../../../workbench/js/lib/dice.js";
+
 export function slugify(name) {
   return String(name || "")
     .trim()
@@ -97,10 +99,91 @@ function percentileToPrice(percentile, priceMin, priceMax) {
 // multiplier, not a shifted re-roll. A single base roll drives both figures,
 // so picking a tier once covers whichever of the two actually applies to
 // this transaction without the GM having to say which in advance.
+function resolveCheckTier(checkTierId) {
+  return PRICE_CHECK_TIERS.find((entry) => entry.id === checkTierId) || PRICE_CHECK_TIERS.find((entry) => entry.id === "none");
+}
+
+// Nearest-5 reads as a "real price" for anything sizable (a rarity-rolled
+// magic item, typically tens to thousands of gp — a 5-unit granularity is
+// well under 1% of a typical roll there) — but that same granularity is
+// FAR too coarse below roughly 20: it doesn't just erase a small price
+// (an ordinary 2gp Backpack rounds to 0) but actively distorts one close
+// to a multiple of 5 (a 5gp Handaxe at the "none" tier's own 50% sell
+// discount is 2.5gp — nearest-5 rounds that UP to 5, wiping out the
+// discount entirely by coincidence of where 2.5 happens to fall, not a
+// missing-price edge case at all). Confirmed real, reported bug both
+// times.
+//
+// Below the threshold, a further "round to the nearest whole unit" turned
+// out to be its OWN version of the exact same mistake — 2.5gp isn't an
+// imprecise result to snap to 2 or 3, it's a perfectly real price (2gp,
+// 5sp — the user's own "someone could drop 100 pennies on the counter"
+// framing applies here too). So below the threshold this only rounds off
+// float noise (to the nearest hundredth), keeping any real fractional
+// value intact for currency.js's own base-unit conversion to break back
+// down into actual coins for display/payment — never collapsing it to a
+// whole number in whatever single denomination the price happens to be
+// quoted in.
+const SMALL_PRICE_ROUNDING_THRESHOLD = 20;
+export function roundPrice(raw) {
+  if (raw <= 0) return 0;
+  if (raw < SMALL_PRICE_ROUNDING_THRESHOLD) return Math.round(raw * 100) / 100;
+  return Math.round(raw / 5) * 5;
+}
+
+// Shared by rollItemPrices and rollResourcePrice below — same "one rolled
+// base price drives both buy and sell" split from PRICE_CHECK_TIERS' own
+// multipliers, regardless of how that base price was actually derived (a
+// rarity range's own percentile roll vs. a Resource's own dice-expression
+// roll) — one place for this math, not two copies that could drift apart.
+function applyCheckTier(basePrice, checkTierId) {
+  const tier = resolveCheckTier(checkTierId);
+  return { buyPrice: roundPrice(basePrice * tier.buyMultiplier), sellPrice: roundPrice(basePrice * tier.sellMultiplier) };
+}
+
 export function rollItemPrices(priceMin, priceMax, { checkTierId = "none", random = Math.random } = {}) {
-  const tier = PRICE_CHECK_TIERS.find((entry) => entry.id === checkTierId) || PRICE_CHECK_TIERS.find((entry) => entry.id === "none");
   const basePrice = percentileToPrice(rollBasePercentile(random), priceMin, priceMax);
-  const buyPrice = Math.max(0, Math.round((basePrice * tier.buyMultiplier) / 5) * 5);
-  const sellPrice = Math.max(0, Math.round((basePrice * tier.sellMultiplier) / 5) * 5);
-  return { buyPrice, sellPrice };
+  return applyCheckTier(basePrice, checkTierId);
+}
+
+// A Resource's own "3d4x125 gp"-style freeform price string (the same
+// documented freeform-JSON convention Vault/Sanctum already read `price`
+// as — see undercroft/README.md's Code Conventions section), NOT any
+// standard dice-expression grammar on its own: "x" is this suite's own
+// tabletop-shorthand multiply (converted to "*" for rollDiceExpression's
+// own grammar below), and a trailing coin denomination is required. Returns
+// null for anything that doesn't end in one of the five standard coin
+// abbreviations — a price that isn't even freeform-rollable (blank, prose
+// like "priceless") has nothing here to price a shop item from.
+const PRICE_EXPRESSION_PATTERN = /^(.*?)\s*(cp|sp|ep|gp|pp)$/i;
+export function parsePriceExpression(text) {
+  const match = PRICE_EXPRESSION_PATTERN.exec(String(text || "").trim());
+  if (!match) return null;
+  const expression = match[1].replace(/(\d)\s*[xX]\s*(\d)/g, "$1*$2").trim();
+  if (!expression) return null;
+  return { expression, denomination: match[2].toLowerCase() };
+}
+
+// The Rarity-range tier's own sibling for anything with no rarity to roll
+// against at all — a Resource's own freeform price string above, rolled
+// ONCE for a "base price" the exact same way rollItemPrices rolls one from
+// [priceMin, priceMax], then run through the identical PRICE_CHECK_TIERS
+// multiplier (applyCheckTier) so both pricing paths behave identically from
+// a GM's/Shop's own point of view (same buy-higher/sell-lower split, same
+// "PC's check" lever) — only how the base price is actually derived
+// differs. Returns null (not thrown) for anything parsePriceExpression or
+// rollDiceExpression itself can't handle — an unpriceable Resource is
+// simply not stocked, same as an unpriced Wonder today (shop-
+// transactions.js's own priceAsset).
+export function rollResourcePrice(priceExpression, { checkTierId = "none", random = Math.random } = {}) {
+  const parsed = parsePriceExpression(priceExpression);
+  if (!parsed) return null;
+  let basePrice;
+  try {
+    basePrice = rollDiceExpression(parsed.expression, { random }).total;
+  } catch (error) {
+    return null;
+  }
+  if (!Number.isFinite(basePrice) || basePrice < 0) return null;
+  return { ...applyCheckTier(basePrice, checkTierId), denomination: parsed.denomination };
 }

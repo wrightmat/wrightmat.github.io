@@ -1,7 +1,8 @@
 {
   "name": "Spectral Jaws",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Melee or Ranged Attack Roll: +4, reach 5 ft. or range 120 ft. Hit: 11 (2d8 + 2) Force damage.",
   "mechanics": {

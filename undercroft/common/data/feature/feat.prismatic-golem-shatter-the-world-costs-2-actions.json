@@ -1,7 +1,8 @@
 {
   "name": "Shatter the World (Costs 2 Actions)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature causes crystal spikes to erupt from the ground in a 30-foot radius centered on it. The area becomes difficult terrain until the start of its next turn. Any creature, other than the creature, takes 9 (2d8) piercing damage for every 5 feet it moves on those spikes.",
   "mechanics": {

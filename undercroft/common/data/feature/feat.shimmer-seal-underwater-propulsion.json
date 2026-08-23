@@ -1,7 +1,8 @@
 {
   "name": "Underwater Propulsion",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "When the creature is underwater, it can take the Dash action as a bonus action on each of its turns.",
   "mechanics": {

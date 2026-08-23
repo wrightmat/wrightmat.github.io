@@ -1,7 +1,8 @@
 {
   "name": "Bite",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Melee Weapon Attack: +4 to hit, reach 5 ft., one creature. Hit: 5 (1d6 + 2) piercing damage, and the creature attaches to the target. While attached, the creature doesn’t attack. Instead, at the start of each of the creature’s turns, the target loses 5 (1d6 + 2) hp due to blood loss, and the target must succeed on a DC 13 Constitution saving throw or be poisoned until the start of the creature’s next turn. The creature can detach itself by spending 5 feet of its movement. It does so after it drains 10 hp of blood from its target or the target dies. A creature, including the target, can use its action to detach the creature by succeeding on a DC 10 Strength check.",
   "mechanics": {

@@ -1,7 +1,8 @@
 {
   "name": "Fire Absorption",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Whenever the creature is subjected to fire damage, it takes no damage and instead regains a number of hit points equal to the fire damage dealt.",
   "mechanics": {

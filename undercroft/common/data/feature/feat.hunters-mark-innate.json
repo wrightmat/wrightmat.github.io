@@ -1,7 +1,8 @@
 {
   "name": "Marked for the Hunt",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "As a bonus action, the creature marks a target it can see; its attacks against the marked target deal extra damage.",
   "mechanics": {

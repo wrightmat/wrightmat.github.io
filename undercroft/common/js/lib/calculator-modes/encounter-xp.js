@@ -135,8 +135,18 @@ export function resolveCharacterLevel(characterPayload) {
 // roster entry doesn't need. A member with no resolvable level is excluded
 // (never defaulted to level 1 — an honest omission beats a wrong invented
 // number), and the caller gets a skip count to report.
-export async function autoFillRosterFromGroup(dataManager, groupId) {
-  if (!dataManager || !groupId) return { roster: [], skipped: 0 };
+//
+// isOwner (the caller's own already-resolved groupContext.access ===
+// "owner", never re-derived here) gates the fetch itself, not just its
+// result — the generic full-document route only ever grants a non-owner
+// reader via a share token or Character-linked share, which a non-owner
+// building an encounter from their own Dashboard has neither of, so it
+// always 401'd for them regardless. Skipped entirely for a non-owner now,
+// rather than attempted-then-caught, so this doesn't log a doomed request
+// to the console on every click (same reasoning as
+// group-live-sync.js's own watchGroupForChanges).
+export async function autoFillRosterFromGroup(dataManager, groupId, isOwner = false) {
+  if (!dataManager || !groupId || !isOwner) return { roster: [], skipped: 0 };
   const group = await dataManager.get("group", groupId, { preferLocal: false }).catch(() => null);
   const memberIds = Array.isArray(group?.payload?.members)
     ? group.payload.members.filter((member) => member.content_type === "character").map((member) => member.content_id)

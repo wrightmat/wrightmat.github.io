@@ -63,11 +63,11 @@
                           "node": {
                             "type": "field",
                             "component": "text",
-                            "text": "@identity.race",
+                            "text": "@identity.race.name",
                             "textSize": "xs",
                             "className": "card-body-text",
                             "textSizeCustom": false,
-                            "label": "@identity.race"
+                            "label": "@identity.race.name"
                           }
                         },
                         {
@@ -895,7 +895,7 @@
                     {
                       "type": "field",
                       "component": "text",
-                      "text": "@proficiencies.languages",
+                      "text": "@stats.proficiencies.languages",
                       "textSize": "xs"
                     },
                     {
@@ -946,7 +946,7 @@
                     {
                       "type": "field",
                       "component": "list",
-                      "itemsBind": "@proficiencies.defenses",
+                      "itemsBind": "@stats.proficiencies.defenses",
                       "listTag": "div",
                       "itemTag": "div",
                       "gap": 0,

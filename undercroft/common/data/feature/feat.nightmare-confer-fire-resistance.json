@@ -1,7 +1,8 @@
 {
   "name": "Confer Fire Resistance",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature can grant resistance to fire damage to anyone riding it.",
   "mechanics": {

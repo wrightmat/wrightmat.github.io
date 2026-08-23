@@ -1,12 +1,24 @@
 {
   "id": "res.trade-routes",
   "name": "Fresh Trade Routes",
-  "systemIds": ["sys.dnd5e"],
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
   "description": "A newly opened or newly safe path for moving goods — whoever controls it controls the flow of trade.",
   "tags": {
     "locationTypes": [],
-    "locationPurposes": ["transportation", "commerce"],
-    "environments": ["coast", "urban"]
+    "locationPurposes": [
+      "transportation",
+      "commerce"
+    ],
+    "environments": [
+      "coast",
+      "urban"
+    ]
   },
-  "conflictsWith": ["feat.under-siege", "feat.isolated"]
+  "conflictsWith": [
+    "feat.under-siege",
+    "feat.isolated"
+  ]
 }

@@ -1,0 +1,26 @@
+{
+  "id": "feat.druid-nature-s-ward",
+  "name": "Nature’s Ward",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You are immune to the Poisoned condition, and you have Resistance to a damage type associated with your current land choice in the Circle Spells feature, as shown in the Nature’s Ward table.\n\nArid: Fire\n\nPolar: Cold\n\nTemperate: Lightning\n\nTropical: Poison",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "You are immune to the Poisoned condition, and you have Resistance to a damage type associated with your current land choice in the Circle Spells feature, as shown in the Nature’s Ward table.\n\nArid: Fire\n\nPolar: Cold\n\nTemperate: Lightning\n\nTropical: Poison"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

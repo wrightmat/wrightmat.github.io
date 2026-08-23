@@ -1,7 +1,8 @@
 {
   "name": "Comprehend Language",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Lets the user understand and/or communicate in a way they otherwise couldn't — a spoken/written language, or a normally-mute creature type.",
   "mechanics": {

@@ -1,7 +1,8 @@
 {
   "name": "Agonizing Gaze",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "When a creature that can see the creature’s eyes starts its turn within 30 feet of the creature, it must make a DC 13 Charisma saving throw if the creature isn’t incapacitated and can see the creature. On a failed saving throw, the creature has its pain threshold lowered, so that it becomes vulnerable to all damage types until the end of its next turn. Unless it’s surprised, a creature can avoid the saving throw by averting its eyes at the start of its turn. A creature that averts its eyes can’t see the creature for one full round, when it chooses anew whether to avert its eyes again. If the creature looks at the creature in the meantime, it must immediately make the save.",
   "mechanics": {

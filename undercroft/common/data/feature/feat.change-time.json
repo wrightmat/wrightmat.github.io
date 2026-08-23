@@ -1,7 +1,8 @@
 {
   "name": "Change Time",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Stops or alters the flow of time around the user, letting them act while everyone/everything else is frozen.",
   "mechanics": {

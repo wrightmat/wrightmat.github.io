@@ -1,0 +1,26 @@
+{
+  "id": "feat.bard-battle-magic",
+  "name": "Battle Magic",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "After you cast a spell that has a casting time of an action, you can make one attack with a weapon as a Bonus Action.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "After you cast a spell that has a casting time of an action, you can make one attack with a weapon as a Bonus Action."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

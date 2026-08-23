@@ -1,7 +1,8 @@
 {
   "name": "Maelstrom",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The currents and eddies of the underwater realm The creature occupies swirl in a maelstrom out to a radius of 100 feet. All creatures in that area, other than Dagon, must make a DC 21 Strength saving throw. On a failed save, the target is moved in a random direction 30 feet.",
   "mechanics": {

@@ -1,7 +1,8 @@
 {
   "name": "Channel Negative Energy (Costs 2 Actions)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The undead magically unleashes negative energy. Creatures within 60 feet of the undead, including ones behind barriers and around corners, can't regain hit points until the end of the undead's next turn.",
   "mechanics": {

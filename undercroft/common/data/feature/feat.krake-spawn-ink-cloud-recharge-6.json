@@ -1,7 +1,8 @@
 {
   "name": "Ink Cloud (Recharge 6)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature emits black, venomous ink in a 30-foot cloud as a bonus action while underwater. The cloud affects vision as the darkness spell, and any creature that starts its turn inside the cloud takes 10 (3d6) poison damage, or half damage with a successful DC 18 Constitution saving throw. The creature’s darkvision is not impaired by this cloud. The cloud persists for 1 minute, then disperses.",
   "mechanics": {

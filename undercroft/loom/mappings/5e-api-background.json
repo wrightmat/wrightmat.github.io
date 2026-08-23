@@ -12,6 +12,10 @@
       "type": "field",
       "bind": "@name"
     },
+    "systemIds": {
+      "type": "custom",
+      "fn": "srdBackgroundSystemIds"
+    },
     "description": {
       "type": "field",
       "bind": "@feature.desc"

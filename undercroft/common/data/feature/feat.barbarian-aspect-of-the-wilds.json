@@ -1,0 +1,26 @@
+{
+  "id": "feat.barbarian-aspect-of-the-wilds",
+  "name": "Aspect of the Wilds",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You gain one of the following options of your choice. Whenever you finish a Long Rest, you can change your choice.\n\nOwl. You have Darkvision with a range of 60 feet. If you already have Darkvision, its range increases by 60 feet.\n\nPanther. You have a Climb Speed equal to your Speed.\n\nSalmon. You have a Swim Speed equal to your Speed.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "You gain one of the following options of your choice. Whenever you finish a Long Rest, you can change your choice.\n\nOwl. You have Darkvision with a range of 60 feet. If you already have Darkvision, its range increases by 60 feet.\n\nPanther. You have a Climb Speed equal to your Speed.\n\nSalmon. You have a Swim Speed equal to your Speed."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

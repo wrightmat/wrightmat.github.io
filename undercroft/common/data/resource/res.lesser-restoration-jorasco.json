@@ -1,15 +1,22 @@
 {
   "id": "res.lesser-restoration-jorasco",
   "name": "Lesser Restoration (House Jorasco)",
-  "systemIds": ["sys.dnd5e"],
-  "settingIds": ["eberron"],
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "settingIds": [
+    "eberron"
+  ],
   "description": "A House Jorasco healer casts lesser restoration for hire, ending a disease or one weakening condition.",
   "category": "service",
   "house": "jorasco",
   "price": "50 gp",
   "tags": {
     "locationTypes": [],
-    "locationPurposes": ["commerce"],
+    "locationPurposes": [
+      "commerce"
+    ],
     "environments": []
   }
 }

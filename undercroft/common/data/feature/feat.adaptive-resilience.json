@@ -1,7 +1,8 @@
 {
   "name": "Adaptive Resilience",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "At the start of each of its turns, the creature gains resistance to the last damage type that hit it since its last turn.",
   "mechanics": {

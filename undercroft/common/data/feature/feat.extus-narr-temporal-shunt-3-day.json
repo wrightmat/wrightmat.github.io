@@ -1,7 +1,8 @@
 {
   "name": "Temporal Shunt (3/Day)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Extus casts Temporal Shunt in response to the spell's trigger, using the same spellcasting ability as Spellcasting.",
   "mechanics": {

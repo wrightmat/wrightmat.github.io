@@ -1,7 +1,8 @@
 {
   "name": "Voice of the Deeps",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "a creature may sway an audience of listeners with its rolling, droning speech, fascinating them for 5 minutes and making them dismiss or forget what they’ve seen recently unless they make a successful DC 13 Wisdom saving throw at the end of that period. If the saving throw succeeds, they remember whatever events the creature sought to erase.",
   "mechanics": {

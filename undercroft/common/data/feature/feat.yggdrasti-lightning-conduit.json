@@ -1,7 +1,8 @@
 {
   "name": "Lightning Conduit",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "If the creature is subjected to lightning damage, it is unhurt, and the lightning damage is instead divided evenly among all creatures it is grappling. In addition, the creature regains one use of Lightning Discharge.",
   "mechanics": {

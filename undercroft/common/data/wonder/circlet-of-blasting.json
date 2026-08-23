@@ -3,7 +3,8 @@
   "name": "Circlet of Blasting",
   "notes": "Wondrous item, uncommon\n\nWhile wearing this circlet, you can use an action to cast the scorching ray spell with it. When you make the spell's attacks, you do so with an attack bonus of +5. The circlet can't be used this way again until the next dawn.",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "url": "https://www.dnd5eapi.co/api/2014/magic-items/circlet-of-blasting",
   "mapping": "5e-api-magic-item",

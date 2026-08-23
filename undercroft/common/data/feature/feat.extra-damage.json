@@ -1,7 +1,8 @@
 {
   "name": "Extra Damage",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Deals additional damage on a hit, on top of whatever it's attached to already deals.",
   "mechanics": {

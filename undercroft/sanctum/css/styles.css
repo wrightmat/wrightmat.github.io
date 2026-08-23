@@ -12,12 +12,11 @@
 
 /* Feature/Asset/Need rows are all selectable (click one to inspect its full
    detail in the right pane) — the same select-then-inspect convention
-   Crucible/Forge/Vault use, applied consistently across all three lists. */
-.sanctum-clickable-row {
-  cursor: pointer;
-}
-
-.sanctum-clickable-row.sanctum-row-selected {
+   Crucible/Forge/Vault use, applied consistently across all three lists.
+   Cursor: pointer is set inline by ui-components.js's own createListRow
+   (its own onSelect handling) — this only needs to style the "currently
+   inspected" state selectInspectorEntry toggles. */
+.sanctum-row-selected {
   border-color: var(--bs-primary) !important;
   background-color: var(--bs-tertiary-bg);
 }

@@ -1,3 +1,29 @@
 {
-  "tokens": []
+  "tokens": [
+    {
+      "id": "4cd24ae3-d9ad-40c3-b316-da92dced956c",
+      "name": "Treasure Chest",
+      "url": "https://rpgmapshare.com/wp-content/uploads/FantasyObjects/fantasymisc/TreasureChest01_SR.png"
+    },
+    {
+      "id": "d540957e-48a8-43df-ac02-9c4a32a83cb0",
+      "name": "Treasure Hoard",
+      "url": "https://rpgmapshare.com/wp-content/uploads/FantasyObjects/fantasymisc/TreasureHoard01_SR.png"
+    },
+    {
+      "id": "6c2f272f-752c-42c0-a3c1-2cbc478e73b0",
+      "name": "Wooden Chest",
+      "url": "https://rpgmapshare.com/wp-content/uploads/FantasyObjects/fantasymisc/chest.png"
+    },
+    {
+      "id": "6c5e1483-d087-4367-bfb7-a043acce59ee",
+      "name": "Wooden Crate",
+      "url": "https://rpgmapshare.com/wp-content/uploads/FantasyObjects/fantasymisc/WoodenCrate03_SR.png"
+    },
+    {
+      "id": "0504ab00-dca8-4d86-986c-be00f78854bb",
+      "name": "Glass Orb",
+      "url": "https://rpgmapshare.com/wp-content/uploads/FantasyObjects/fantasymisc/GlassOrb04_SR.png"
+    }
+  ]
 }

@@ -1,0 +1,26 @@
+{
+  "id": "feat.fighter-fighting-style",
+  "name": "Fighting Style (Fighter)",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You have honed your martial prowess and gain a Fighting Style feat of your choice.\n\nWhenever you gain a Fighter level, you can replace the feat you chose with a different Fighting Style feat.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You have honed your martial prowess and gain a Fighting Style feat of your choice.\n\nWhenever you gain a Fighter level, you can replace the feat you chose with a different Fighting Style feat.",
+    "scope": "unique"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

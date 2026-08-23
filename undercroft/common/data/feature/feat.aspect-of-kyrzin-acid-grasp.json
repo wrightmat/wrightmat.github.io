@@ -1,7 +1,8 @@
 {
   "name": "Acid Grasp",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Melee Weapon Attack: +6 to hit, reach 5 ft., one target. Hit: 17 (2d6 + 11) acid damage. A hit creature of medium size or smaller must succeed on a DC 16 Dexterity saving throw or be restrained for 1 minute. A creature restrained in this way may make a DC 17 Strength saving throw at the end of each of its turns to end its effect for them for the duration.",
   "mechanics": {

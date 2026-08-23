@@ -1,7 +1,8 @@
 {
   "name": "Identify",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Reveals a magic item's own properties, or what spells are currently affecting a touched creature or object.",
   "mechanics": {

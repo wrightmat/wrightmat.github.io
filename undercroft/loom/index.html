@@ -85,6 +85,18 @@
               <div data-field-mount="library-table-select"></div>
               <div class="text-body-secondary small" data-loom-library-table-message hidden></div>
             </div>
+            <!-- Relationships for whichever item is selected above via the
+                 Type/Item pickers — mirrors Workbench's own left-pane
+                 Relationships section (data-relationships-mount/-panel),
+                 list-only (no force graph). Raw `relationship` records are
+                 no longer directly browsable/editable as JSON in the
+                 Library tab itself (see loomLoadLibraryTable's own bucket
+                 filter) — this section is now the only place to manage
+                 them. -->
+            <div data-loom-relationships-mount></div>
+            <div class="d-flex flex-column gap-2" data-loom-relationships-panel hidden>
+              <div data-loom-relationships-list-mount></div>
+            </div>
           </div>
 
           <div class="d-flex flex-column gap-3" data-loom-view-panel="users" hidden>
@@ -151,6 +163,9 @@
             </li>
             <li class="nav-item" role="presentation">
               <button class="nav-link" type="button" role="tab" data-loom-view-tab="groups" aria-selected="false">Groups</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" type="button" role="tab" data-loom-view-tab="auth" aria-selected="false">Auth</button>
             </li>
           </ul>
           <div class="d-flex flex-column gap-4" data-loom-view-panel="import">
@@ -257,7 +272,13 @@
                 <section class="d-flex flex-column gap-3" data-entities-section>
                   <div data-entities-mount></div>
                   <div class="d-flex flex-column gap-3" data-entities-panel>
-                    <p class="small text-body-secondary mb-0" data-entities-summary>No mapped output yet.</p>
+                    <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+                      <p class="small text-body-secondary mb-0" data-entities-summary>No mapped output yet.</p>
+                      <div class="d-flex align-items-center gap-2">
+                        <span class="small text-body-secondary" data-entities-save-all-progress></span>
+                        <button class="btn btn-outline-primary btn-sm d-none" type="button" data-entities-save-all>Save All</button>
+                      </div>
+                    </div>
                     <div class="d-flex flex-column gap-2" data-entities-list></div>
                   </div>
                 </section>
@@ -525,6 +546,66 @@
               </div>
             </div>
           </div>
+
+          <!-- Deployment-wide credentials — no left-pane picker needed
+               (nothing to filter/select, always the same two credentials)
+               — see server/integrations.py's own deployment_secrets store
+               and server/ddb_auth_status.py for the full storage/check
+               story. -->
+          <div class="d-flex flex-column gap-4" data-loom-view-panel="auth" hidden>
+            <div class="card shadow-theme">
+              <div class="card-body">
+                <section class="d-flex flex-column gap-3" data-loom-auth-ddb-section>
+                  <div class="d-flex align-items-center gap-2">
+                    <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0">D&amp;D Beyond Session</h2>
+                    <span class="align-middle" data-help-topic="loom.authDdbSession" data-help-insert="replace"></span>
+                  </div>
+                  <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <span class="text-body-secondary" data-loom-auth-ddb-status>Checking…</span>
+                    <button class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1" type="button" data-loom-auth-ddb-check>
+                      <span class="iconify" data-icon="tabler:refresh" aria-hidden="true"></span>
+                      Check Now
+                    </button>
+                  </div>
+                  <div class="small text-body-secondary" data-loom-auth-ddb-detail hidden></div>
+                  <div class="d-flex align-items-end gap-2 flex-wrap">
+                    <div class="flex-grow-1" style="max-width: 32rem" data-field-mount="auth-ddb-cookie"></div>
+                    <button class="btn btn-outline-primary btn-sm" type="button" data-loom-auth-ddb-save>Save</button>
+                  </div>
+                  <div data-loom-auth-ddb-instructions-mount></div>
+                  <div class="d-flex flex-column gap-2 small" data-loom-auth-ddb-instructions-panel>
+                    <ol class="d-flex flex-column gap-1 mb-0 ps-3">
+                      <li>Go to <a href="https://www.dndbeyond.com" target="_blank" rel="noopener noreferrer">dndbeyond.com</a> and make sure you're signed in.</li>
+                      <li>Open your browser's DevTools (<kbd>F12</kbd>, or <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>I</kbd> / <kbd>Cmd</kbd>+<kbd>Option</kbd>+<kbd>I</kbd> on Mac).</li>
+                      <li>Open the <strong>Application</strong> tab (Chrome/Edge) or <strong>Storage</strong> tab (Firefox).</li>
+                      <li>In the left sidebar, expand <strong>Cookies</strong> and select <code>https://www.dndbeyond.com</code>.</li>
+                      <li>Find the row named <code>CobaltSession</code>. Double-click directly into its <strong>Value</strong> cell to select just that text (clicking the row and copying grabs every column at once — name, value, domain, etc. — as one tab-separated mess, which silently fails).</li>
+                      <li>Paste just that value into the field above and click Save (the <code>CobaltSession=</code> prefix is added automatically, so the bare value is fine).</li>
+                    </ol>
+                    <p class="text-body-secondary mb-0">Treat this value like a password — anyone with it can act as this D&amp;D Beyond account. It expires periodically; re-check here if an import comes back looking truncated or empty.</p>
+                  </div>
+                </section>
+              </div>
+            </div>
+
+            <div class="card shadow-theme">
+              <div class="card-body">
+                <section class="d-flex flex-column gap-3" data-loom-auth-anthropic-section>
+                  <div class="d-flex align-items-center gap-2">
+                    <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0">Anthropic API Key</h2>
+                    <span class="align-middle" data-help-topic="loom.authAnthropicKey" data-help-insert="replace"></span>
+                  </div>
+                  <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <span class="text-body-secondary" data-loom-auth-anthropic-status>Checking…</span>
+                  </div>
+                  <div class="d-flex align-items-end gap-2 flex-wrap">
+                    <div class="flex-grow-1" style="max-width: 32rem" data-field-mount="auth-anthropic-key"></div>
+                    <button class="btn btn-outline-primary btn-sm" type="button" data-loom-auth-anthropic-save>Save</button>
+                  </div>
+                </section>
+              </div>
+            </div>
+          </div>
         </main>
 
         <div data-pane-content="right">
@@ -562,6 +643,18 @@
                 Select an item from the Library Contents list to see its details.
               </p>
               <div class="d-flex flex-column gap-2 d-none" data-loom-library-table-inspector-details>
+                <div>
+                  <span class="text-body-secondary small d-block">ID / filename</span>
+                  <span class="font-monospace" data-loom-library-table-id></span>
+                </div>
+                <button
+                  class="btn btn-outline-secondary btn-sm align-self-start d-none"
+                  type="button"
+                  data-loom-library-table-rename
+                  title="Admin only — renames this record's own id and repairs every reference to it elsewhere"
+                >
+                  Rename
+                </button>
                 <div>
                   <span class="text-body-secondary small d-block">Created</span>
                   <span data-loom-library-table-created></span>

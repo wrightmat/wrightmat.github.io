@@ -1,7 +1,8 @@
 {
   "name": "Chromatic Flames",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature exhales multicolored flames in an area, forcing a saving throw or dealing damage.",
   "mechanics": {

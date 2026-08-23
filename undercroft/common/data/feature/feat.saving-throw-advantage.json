@@ -1,7 +1,8 @@
 {
   "name": "Saving Throw Advantage",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Grants advantage on saving throws against a category of effects or sources.",
   "mechanics": {

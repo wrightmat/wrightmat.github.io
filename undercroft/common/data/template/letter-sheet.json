@@ -140,7 +140,7 @@
                             "type": "field",
                             "component": "stat",
                             "label": "Race",
-                            "text": "@identity.race",
+                            "text": "@identity.race.name",
                             "className": "press-block",
                             "gap": 2,
                             "style": {

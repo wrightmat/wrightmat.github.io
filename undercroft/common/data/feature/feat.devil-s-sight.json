@@ -1,7 +1,8 @@
 {
   "name": "Devil's Sight",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Magical darkness doesn't impede the creature's darkvision.",
   "mechanics": {

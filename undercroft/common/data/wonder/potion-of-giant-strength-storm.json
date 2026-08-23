@@ -3,7 +3,8 @@
   "name": "Potion of Storm Giant Strength",
   "notes": "Potion, legendary\n\nWhen you drink this potion, your Strength score changes to 29 for 1 hour. The potion has no effect on you if your Strength is equal to or greater than that score.\n\nThis potion's transparent liquid has floating in it a sliver of fingernail from a storm giant.",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "url": "https://www.dnd5eapi.co/api/2014/magic-items/potion-of-giant-strength-storm",
   "mapping": "5e-api-magic-item",

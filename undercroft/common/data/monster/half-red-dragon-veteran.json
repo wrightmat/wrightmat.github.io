@@ -2,7 +2,8 @@
   "name": "Half-Red Dragon Veteran",
   "type": "humanoid",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "image": "https://www.dnd5eapi.co/api/images/monsters/half-red-dragon-veteran.png",
   "stats": {

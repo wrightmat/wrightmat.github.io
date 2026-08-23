@@ -1,7 +1,8 @@
 {
   "name": "Sustaining Feed",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature regains a small number of hit points whenever it deals damage with an attack.",
   "mechanics": {

@@ -1,7 +1,8 @@
 {
   "name": "Cavities",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature has 1d4 + 2 cavities in its trunk. Each cavity is big enough to hold one Medium creature, two Small creatures, or eight Tiny creatures. A creature inside a cavity has three-quarters cover against attacks and other effects that originate outside the cavity. The creature’s cavities aren’t connected to one another.",
   "mechanics": {

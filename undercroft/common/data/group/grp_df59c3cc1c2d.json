@@ -60,6 +60,49 @@
           }
         ]
       }
+    },
+    {
+      "type": "object",
+      "key": "currencies",
+      "label": "Party Wallet",
+      "public": true,
+      "children": [
+        {
+          "type": "number",
+          "key": "currencies.cp",
+          "label": "Copper (cp)",
+          "minimum": 0
+        },
+        {
+          "type": "number",
+          "key": "currencies.sp",
+          "label": "Silver (sp)",
+          "minimum": 0
+        },
+        {
+          "type": "number",
+          "key": "currencies.ep",
+          "label": "Electrum (ep)",
+          "minimum": 0
+        },
+        {
+          "type": "number",
+          "key": "currencies.gp",
+          "label": "Gold (gp)",
+          "minimum": 0
+        },
+        {
+          "type": "number",
+          "key": "currencies.pp",
+          "label": "Platinum (pp)",
+          "minimum": 0
+        }
+      ]
+    },
+    {
+      "key": "shop:test-shop",
+      "label": "Shop: Test Shop",
+      "public": true
     }
   ],
   "propertyValues": {
@@ -69,20 +112,18 @@
         "qty": 1
       }
     ],
+    "currencies": {
+      "cp": 0,
+      "sp": 0,
+      "ep": 0,
+      "gp": 0,
+      "pp": 0
+    },
     "activeDecks": [
       {
         "id": "63fb5895-b3d5-4c5b-ac5f-09752e5d0f84",
         "deckName": "Standard Playing Cards",
         "remainingCardIds": [
-          "2S",
-          "5S",
-          "7S",
-          "7C",
-          "KC",
-          "4S",
-          "8C",
-          "AH",
-          "4H",
           "6S",
           "QH",
           "3H",
@@ -127,21 +168,22 @@
           "6H",
           "9D",
           "QD",
-          "QS"
+          "QS",
+          "2S",
+          "5S",
+          "7S",
+          "7C",
+          "KC",
+          "4S",
+          "8C",
+          "AH",
+          "4H"
         ]
       },
       {
         "id": "e6a6ea7d-871c-40b0-bc12-e393d5c579c4",
         "deckName": "Rider-Waite Tarot",
         "remainingCardIds": [
-          "major-17",
-          "major-08",
-          "swords-7",
-          "wands-queen",
-          "major-11",
-          "cups-4",
-          "pentacles-page",
-          "swords-knight",
           "swords-6",
           "swords-queen",
           "wands-page",
@@ -213,9 +255,68 @@
           "pentacles-queen",
           "wands-king",
           "pentacles-king",
-          "major-05"
+          "major-05",
+          "major-17",
+          "major-08",
+          "swords-7",
+          "wands-queen",
+          "major-11",
+          "cups-4",
+          "pentacles-page",
+          "swords-knight"
         ]
       }
-    ]
+    ],
+    "shop%3Atest-shop": {
+      "currency": "personal",
+      "treasury": null,
+      "items": []
+    },
+    "shop:test-shop": {
+      "currency": "personal",
+      "treasury": null,
+      "items": [
+        {
+          "refKind": "resource",
+          "refId": "res.dragonshard-khyber-medium",
+          "label": "Khyber Dragonshard, Medium",
+          "price": {
+            "amount": 1250,
+            "denomination": "gp"
+          },
+          "stock": 4
+        },
+        {
+          "refKind": "wonder",
+          "refId": "potion-of-giant-strength-fire",
+          "label": "Potion of Fire Giant Strength",
+          "price": {
+            "amount": 5000,
+            "denomination": "gp"
+          },
+          "stock": 1
+        },
+        {
+          "refKind": "wonder",
+          "refId": "eff.rations-1-day",
+          "label": "Rations (1 day)",
+          "price": {
+            "amount": 5,
+            "denomination": "sp"
+          },
+          "stock": 1
+        },
+        {
+          "refKind": "wonder",
+          "refId": "eff.torch",
+          "label": "Torch",
+          "price": {
+            "amount": 1,
+            "denomination": "cp"
+          },
+          "stock": 1
+        }
+      ]
+    }
   }
 }

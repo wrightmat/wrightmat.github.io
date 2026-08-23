@@ -1,7 +1,8 @@
 {
   "name": "Mutiattack",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature attacks twice with its Pseudopod and once with its Bite.",
   "mechanics": {

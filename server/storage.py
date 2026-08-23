@@ -202,6 +202,24 @@ def init_storage_db(state: ServerState) -> None:
         )
         """
     )
+    # A deployment-wide credential's own last-known-good state — currently
+    # just the D&D Beyond session cookie (server/ddb_auth_status.py), but
+    # `service` is a free-text key, not a DDB-specific column, so any future
+    # similar "does this still work" check has somewhere to land without a
+    # new table. Deliberately separate from deployment_secrets itself: that
+    # table is the credential's VALUE (encrypted), this is a cheap, plain
+    # (non-secret) record of whether the last live check against it
+    # succeeded — no reason to encrypt a boolean and a timestamp.
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS service_status (
+            service TEXT PRIMARY KEY,
+            checked_at DATETIME,
+            valid INTEGER,
+            detail TEXT
+        )
+        """
+    )
     # Must run before any index creation below: on a pre-existing database,
     # every CREATE TABLE IF NOT EXISTS above is a no-op against whatever
     # shape that table already has on disk (shares missing
@@ -1541,6 +1559,40 @@ def _character_visible_via_group_roster(state: ServerState, character_id: str, u
     return any(user_can_access_group(state, row["group_id"], user) for row in rows)
 
 
+def _template_visible_via_group(state: ServerState, template_id: str, user: Optional[User]) -> bool:
+    """A campaign's own Party Template (Group.templateId) is meant to be
+    readable by every member of that campaign, the same reasoning as
+    _character_visible_via_group_roster just above (a teammate's own
+    character) — confirmed real bug this fixes: Workbench's "Party Data"
+    view (workbench-character-view.js's loadGroupPartyView/
+    loadTemplateById) 401'd loading a campaign's own Party Template for
+    any real member who wasn't its owner, even though that whole feature
+    exists ONLY to show players the Group-bound fields authored on that
+    exact template. Scans every group's own cheap metadata column (not a
+    full JSON-file read per group) rather than an indexed lookup — this
+    suite runs at small-campaign-count scale, same assumption
+    _character_visible_via_group_roster's own group_members scan already
+    makes.
+    """
+    if not user or not template_id:
+        return False
+    from .groups import user_can_access_group
+
+    rows = state.read_db.execute("SELECT id, metadata FROM library_items WHERE kind = 'group'").fetchall()
+    for row in rows:
+        if not row["metadata"]:
+            continue
+        try:
+            metadata = json.loads(row["metadata"])
+        except json.JSONDecodeError:
+            continue
+        if metadata.get("templateId") != template_id:
+            continue
+        if user_can_access_group(state, row["id"], user):
+            return True
+    return False
+
+
 def ensure_write_role(state: ServerState, kind: str, user: Optional[User]) -> None:
     if not user:
         raise AuthError("Authentication required")
@@ -1639,6 +1691,7 @@ def get_item(
         or is_shared(state, kind, id_, user)
         or is_public(state, kind, id_)
         or (kind == "character" and _character_visible_via_group_roster(state, base_id, user))
+        or (kind == "template" and _template_visible_via_group(state, base_id, user))
     ):
         raise AuthError("Access denied")
     payload = load_json(_record_path(state, kind, id_))
@@ -1828,6 +1881,152 @@ def delete_item(state: ServerState, kind: str, id_: str, user: Optional[User]) -
     state.db.execute("DELETE FROM shares WHERE content_type = ? AND content_id = ?", (kind, base_id))
     state.db.execute("DELETE FROM share_links WHERE content_type = ? AND content_id = ?", (kind, base_id))
     state.db.commit()
+
+
+_RENAME_SAME_KIND_ARRAY_KEYS = {"synergizesWith", "dependsOn", "conflictsWith", "connectedTo"}
+
+
+# Recursively repairs, IN PLACE, every reference to (kind, old_id) found
+# inside `value` — the body of one OTHER record (rename_item below calls
+# this once per record in the whole database). Four shapes are recognized,
+# covering every reference convention this suite is confirmed to actually
+# use (see rename_item's own docstring for the full reasoning on each):
+#   1. A sibling {refKind|kind, refId} pair (Character.subclass/spells/
+#      inventory, Sanctum Assets/Needs, map marker contents, shop stock, ...)
+#      — refKind/kind must equal the kind being renamed.
+#   2. An object literally KEYED by the old id (Wonder/Monster/etc's own
+#      featureTiers/featureParams, e.g. featureParams["feat.old-id"]) — only
+#      when kind == "feature", the only kind this convention is used for.
+#   3. `featureIds` — a plain string array, cross-kind (appears on
+#      Character/Monster/NPC/Location/Wonder/...) — only when kind ==
+#      "feature".
+#   4. A same-kind self-reference array (synergizesWith/dependsOn/
+#      conflictsWith/connectedTo) or the `parentId` scalar (Location) — only
+#      matched on a record whose OWN kind equals the kind being renamed,
+#      since these arrays hold plain id strings with no independent kind
+#      marker of their own (record_kind scoping is what keeps this from
+#      colliding with an unrelated same-string id in a different kind).
+def _repair_references_in_value(value, key, record_kind, kind, old_id, new_id, stats):
+    if isinstance(value, dict):
+        ref_kind = value.get("refKind") or value.get("kind")
+        if ref_kind == kind and value.get("refId") == old_id:
+            value["refId"] = new_id
+            stats["count"] += 1
+        if kind == "feature" and old_id in value:
+            value[new_id] = value.pop(old_id)
+            stats["count"] += 1
+        if kind == "location" and value.get("parentId") == old_id:
+            value["parentId"] = new_id
+            stats["count"] += 1
+        for child_key, child_value in list(value.items()):
+            _repair_references_in_value(child_value, child_key, record_kind, kind, old_id, new_id, stats)
+    elif isinstance(value, list):
+        if (record_kind == kind and key in _RENAME_SAME_KIND_ARRAY_KEYS) or (key == "featureIds" and kind == "feature"):
+            for i, item in enumerate(value):
+                if item == old_id:
+                    value[i] = new_id
+                    stats["count"] += 1
+        for item in value:
+            _repair_references_in_value(item, key, record_kind, kind, old_id, new_id, stats)
+
+
+# Admin-only (gated by the caller — Loom's own Rename action). Renames a
+# Library record's own id — the filename, the library_items row, and (when
+# present — Feature is the confirmed kind that embeds one; most kinds don't,
+# per this suite's own "id is never body content" convention) the body's own
+# "id" field — then sweeps every OTHER record in the whole database
+# and repairs any reference to the old id via _repair_references_in_value
+# above. `dry_run=True` performs the exact same sweep and returns the exact
+# same impact summary WITHOUT writing anything back — Loom's own confirmation
+# prompt calls this first to show what would change, then calls again with
+# dry_run=False once the GM confirms. NOT covered: a Group Property whose own
+# KEY embeds an id (shop-transactions.js's `shop:<locationId>` — renaming a
+# Location with an open shop leaves that property under its old key; the
+# ITEMS inside it still get repaired normally via the sweep below, since
+# they're ordinary {refKind,refId} pairs nested in the group's own body).
+def rename_item(
+    state: ServerState, kind: str, old_id: str, new_id: str, user: Optional[User], dry_run: bool = False
+) -> Dict[str, Any]:
+    if not user or user.tier != "admin":
+        raise AuthError("Admin only")
+    old_id = old_id.replace(".json", "").strip()
+    new_id = new_id.replace(".json", "").strip()
+    if not old_id or not new_id:
+        raise AuthError("Missing id")
+    if old_id == new_id:
+        raise AuthError("The new id is the same as the current one")
+    if not re.match(r"^[A-Za-z0-9_.-]+$", new_id):
+        raise AuthError("The new id can only contain letters, numbers, '.', '_', and '-'")
+    existing = state.db.execute("SELECT 1 FROM library_items WHERE kind = ? AND id = ?", (kind, old_id)).fetchone()
+    if not existing:
+        raise AuthError("Record not found")
+    conflict = state.db.execute("SELECT 1 FROM library_items WHERE kind = ? AND id = ?", (kind, new_id)).fetchone()
+    if conflict:
+        raise AuthError(f'A {kind} with id "{new_id}" already exists')
+
+    stats = {"count": 0}
+    touched: List[Dict[str, Any]] = []
+    rows = state.db.execute("SELECT kind, id FROM library_items").fetchall()
+    for row in rows:
+        record_kind, record_id = row["kind"], row["id"]
+        if record_kind == kind and record_id == old_id:
+            continue  # the record being renamed — handled separately below
+        path = _record_path(state, record_kind, record_id)
+        try:
+            body = load_json(path)
+        except (FileNotFoundError, OSError, json.JSONDecodeError, ValueError):
+            continue
+        if not isinstance(body, dict):
+            continue
+        before = stats["count"]
+        _repair_references_in_value(body, None, record_kind, kind, old_id, new_id, stats)
+        if stats["count"] > before:
+            touched.append({"kind": record_kind, "id": record_id, "count": stats["count"] - before})
+            if not dry_run:
+                write_json(path, body)
+
+    if not dry_run:
+        old_path = _record_path(state, kind, old_id)
+        new_path = _record_path(state, kind, new_id)
+        body = load_json(old_path)
+        # `id` (when a kind embeds one — Feature is the confirmed case) is
+        # THIS record's own identity, so it moves with the rename. `index`
+        # (Wonder's own 5e-API-import provenance, e.g. "potion-of-giant-
+        # strength-fire") is deliberately left untouched even when it
+        # happens to equal old_id — it records the ORIGINAL external
+        # source id this record was imported from, not a second copy of its
+        # own local id; renaming it here would erase that provenance for no
+        # functional benefit (nothing in this app ever reads it for lookups).
+        if isinstance(body, dict) and body.get("id") == old_id:
+            body["id"] = new_id
+        write_json(new_path, body)
+        old_path.unlink()
+        now_ts = datetime.utcnow().isoformat()
+        state.db.execute(
+            "UPDATE library_items SET id = ?, filename = ?, modified_at = ? WHERE kind = ? AND id = ?",
+            (new_id, _record_filename(new_id), now_ts, kind, old_id),
+        )
+        # Same two tables delete_item's own cleanup touches — a rekey here
+        # instead of a delete, so an existing share/share-link survives the
+        # rename pointing at the record's new id.
+        state.db.execute("UPDATE shares SET content_id = ? WHERE content_type = ? AND content_id = ?", (new_id, kind, old_id))
+        state.db.execute(
+            "UPDATE share_links SET content_id = ? WHERE content_type = ? AND content_id = ?", (new_id, kind, old_id)
+        )
+        state.db.commit()
+        if normalize_kind(kind) == "kind":
+            invalidate_kind_policy(state, old_id)
+            invalidate_kind_policy(state, new_id)
+
+    return {
+        "ok": True,
+        "kind": kind,
+        "oldId": old_id,
+        "newId": new_id,
+        "dryRun": dry_run,
+        "referenceCount": stats["count"],
+        "touched": touched,
+    }
 
 
 def update_owner(

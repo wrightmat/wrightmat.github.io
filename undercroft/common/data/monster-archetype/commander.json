@@ -2,7 +2,8 @@
   "id": "commander",
   "name": "Commander",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Coordinates its allies' actions and improves their effectiveness.",
   "recipe": {

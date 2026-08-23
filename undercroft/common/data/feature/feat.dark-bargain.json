@@ -1,0 +1,24 @@
+{
+  "id": "feat.dark-bargain",
+  "name": "Dark Bargain",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "<p>At your GM's discretion, you can take a Dark Bargain.</p>",
+  "mechanics": {
+    "type": "passive",
+    "text": "<p>At your GM's discretion, you can take a Dark Bargain.</p>"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

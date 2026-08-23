@@ -1,7 +1,8 @@
 {
   "name": "Frost Lance",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "A shard of ice pierces a target, dealing cold damage and slowing its movement briefly.",
   "mechanics": {

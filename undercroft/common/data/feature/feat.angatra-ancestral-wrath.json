@@ -1,7 +1,8 @@
 {
   "name": "Ancestral Wrath",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature immediately recognizes any individual that is descended from its tribe. It has advantage on attack rolls against such creatures, and those creatures have disadvantage on saving throws against the creature’s traits and attacks.",
   "mechanics": {

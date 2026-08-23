@@ -1,7 +1,8 @@
 {
   "name": "Curse of the Wild Mange",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "When a spellcaster is under the effects of Wild Mange lycanthropy, each spell they cast while cursed triggers a creature Magic Surge. See the Sorcerer's Wild Magic table in the PHB.",
   "mechanics": {

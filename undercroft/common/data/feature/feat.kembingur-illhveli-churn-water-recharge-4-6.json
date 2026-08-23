@@ -1,7 +1,8 @@
 {
   "name": "Churn Water (Recharge 4–6)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature thrashes violently. Each creature within 20 feet of the creature must make a DC 17 Dexterity saving throw, taking 36 (8d8) bludgeoning damage on a failed save, or half as much damage on a successful one. The water within 60 feet of the creature becomes difficult terrain for 1 minute. Each creature that starts its turn on the deck of a ship in this area must succeed on a DC 17 Dexterity saving throw or fall overboard.",
   "mechanics": {

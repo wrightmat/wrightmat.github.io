@@ -1,0 +1,26 @@
+{
+  "id": "feat.warlock-great-old-one-spells",
+  "name": "Great Old One Spells",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "The magic of your patron ensures you always have certain spells ready; when you reach a Warlock level specified in the Great Old One Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Detect Thoughts, Dissonant Whispers, Phantasmal Force, Tasha’s Hideous Laughter\n\nLevel 5: Clairvoyance, Hunger of Hadar\n\nLevel 7: Confusion, Summon Aberration\n\nLevel 9: Modify Memory, Telekinesis",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The magic of your patron ensures you always have certain spells ready; when you reach a Warlock level specified in the Great Old One Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Detect Thoughts, Dissonant Whispers, Phantasmal Force, Tasha’s Hideous Laughter\n\nLevel 5: Clairvoyance, Hunger of Hadar\n\nLevel 7: Confusion, Summon Aberration\n\nLevel 9: Modify Memory, Telekinesis"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

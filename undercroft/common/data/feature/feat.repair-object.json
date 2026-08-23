@@ -1,7 +1,8 @@
 {
   "name": "Repair Object",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Physically repairs damage to a nonliving object.",
   "mechanics": {

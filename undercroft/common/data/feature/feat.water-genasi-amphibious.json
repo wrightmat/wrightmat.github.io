@@ -1,0 +1,24 @@
+{
+  "id": "feat.water-genasi-amphibious",
+  "name": "Amphibious",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "You can breathe air and water.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You can breathe air and water."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

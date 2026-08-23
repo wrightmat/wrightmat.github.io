@@ -1,0 +1,26 @@
+{
+  "id": "feat.rogue-dread-incarnate",
+  "name": "Dread Incarnate",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You gain the following benefits.\n\nCutthroat. You regain one expended use of Bloodthirst when you finish a Short Rest.\n\nMurderous Intent. When you roll for your Sneak Attack damage, you can treat a roll of a 1 or 2 on the die as a 3.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "You gain the following benefits.\n\nCutthroat. You regain one expended use of Bloodthirst when you finish a Short Rest.\n\nMurderous Intent. When you roll for your Sneak Attack damage, you can treat a roll of a 1 or 2 on the die as a 3."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

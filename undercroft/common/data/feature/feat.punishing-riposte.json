@@ -1,7 +1,8 @@
 {
   "name": "Punishing Riposte",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "When a creature misses the monster with a melee attack, the monster can make one melee attack against it as a reaction.",
   "mechanics": {

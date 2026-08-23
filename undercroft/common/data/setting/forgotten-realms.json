@@ -1,6 +1,7 @@
 {
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "name": "Forgotten Realms",
   "description": "The classic D&D 5E setting — culturally insular border regions like the Sword Coast, where most communities are predominantly Human.",

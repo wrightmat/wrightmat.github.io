@@ -1,7 +1,8 @@
 {
   "name": "Ruinous Seed",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "At the start of its turn, Avassh grows a Medium seed pod in an unoccupied space it can see within 30 feet of it. A seed pod has AC 12 and 50 hit points. Creatures within 5 feet of the seed pod when it grows take 7 (2d6) necrotic damage.",
   "mechanics": {

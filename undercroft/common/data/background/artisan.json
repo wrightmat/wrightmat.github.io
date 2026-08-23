@@ -18,7 +18,8 @@
     }
   ],
   "feat": {
-    "index": "crafter",
+    "refKind": "feature",
+    "refId": "crafter",
     "name": "Crafter"
   },
   "proficiencies": [
@@ -101,6 +102,7 @@
   },
   "updated_at": "2026-07-18T21:24:50.778Z",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ]
 }

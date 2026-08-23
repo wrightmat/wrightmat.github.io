@@ -1,7 +1,8 @@
 {
   "name": "Poison Breath (Recharge 5–6)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature exhales a 40-foot radius poison fog, which heavily obscures a spherical area around the creature. Any breathing creature that ends its turn in the fog must make a DC 14 Constitution saving throw or become poisoned for 1d4 + 1 rounds.",
   "mechanics": {

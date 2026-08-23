@@ -1,0 +1,25 @@
+{
+  "id": "feat.extra-attack",
+  "name": "Extra Attack",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You can attack twice instead of once whenever you take the Attack action on your turn.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You can attack twice instead of once whenever you take the Attack action on your turn."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

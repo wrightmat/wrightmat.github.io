@@ -2,7 +2,8 @@
   "id": "swarm",
   "name": "Swarm",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Overwhelms through numbers or collective behavior.",
   "recipe": {

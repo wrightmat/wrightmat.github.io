@@ -2,7 +2,8 @@
   "name": "Stone Golem",
   "type": "construct",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "image": "https://www.dnd5eapi.co/api/images/monsters/stone-golem.png",
   "stats": {

@@ -1,7 +1,8 @@
 {
   "name": "Rage Blast",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Ranged Spell Attack against one target.",
   "mechanics": {

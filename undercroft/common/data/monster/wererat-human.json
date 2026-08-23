@@ -2,7 +2,8 @@
   "name": "Wererat, Human Form",
   "type": "humanoid",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "image": "https://www.dnd5eapi.co/api/images/monsters/wererat-human.png",
   "stats": {

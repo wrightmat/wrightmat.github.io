@@ -1,0 +1,24 @@
+{
+  "id": "feat.guardian-of-the-depths",
+  "name": "Guardian of the Depths",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "<p>Adapted to the frigid ocean depths, you have resistance to cold damage.</p>",
+  "mechanics": {
+    "type": "passive",
+    "text": "<p>Adapted to the frigid ocean depths, you have resistance to cold damage.</p>"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

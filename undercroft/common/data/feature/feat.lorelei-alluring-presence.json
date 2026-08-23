@@ -1,7 +1,8 @@
 {
   "name": "Alluring Presence",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "All humanoids within 30 feet of a creature who look directly at her must succeed on a DC 17 Charisma saving throw or be drawn to her in the most direct path, regardless of the danger. This compulsion fades once the person gets within 5 feet of the creature. A creature can avoid this effect for one full round by choosing to avert its eyes at the start of its turn, but it then has disadvantage on any attacks or other rolls directed against the creature until the start of its next turn. a creature can suppress or resume this ability as a bonus action. Anyone who successfully saves against this effect cannot be affected by it from the same lorelei for 24 hours.",
   "mechanics": {

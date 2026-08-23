@@ -1,0 +1,24 @@
+{
+  "id": "feat.expanded-spell-list",
+  "name": "Expanded Spell List",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "3rd-level Fathomless feature\n\nThe Fathomless lets you choose from an expanded list of spells when you learn a warlock spell. The following spells are added to the warlock spell list for you.\n\nFathomless Expanded Spells\n\nLevel 1st: create or destroy water, thunderwave\n\nLevel 2nd: gust of wind, silence\n\nLevel 3rd: lightning bolt, sleet storm\n\nLevel 4th: control water, summon elemental (water only; a spell in chapter 3)\n\nLevel 5th: Bigby’s hand (appears as a tentacle), cone of cold",
+  "mechanics": {
+    "type": "passive",
+    "text": "3rd-level Fathomless feature\n\nThe Fathomless lets you choose from an expanded list of spells when you learn a warlock spell. The following spells are added to the warlock spell list for you.\n\nFathomless Expanded Spells\n\nLevel 1st: create or destroy water, thunderwave\n\nLevel 2nd: gust of wind, silence\n\nLevel 3rd: lightning bolt, sleet storm\n\nLevel 4th: control water, summon elemental (water only; a spell in chapter 3)\n\nLevel 5th: Bigby’s hand (appears as a tentacle), cone of cold"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

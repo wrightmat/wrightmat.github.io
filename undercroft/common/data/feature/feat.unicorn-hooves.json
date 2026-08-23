@@ -1,7 +1,8 @@
 {
   "name": "Hooves",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature makes one attack with its hooves.",
   "mechanics": {

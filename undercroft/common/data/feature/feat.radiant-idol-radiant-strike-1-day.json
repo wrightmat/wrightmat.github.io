@@ -1,7 +1,8 @@
 {
   "name": "Radiant Strike (1/Day)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature chooses a point on the ground it can see within 60 feet of it. A 30-foot-radius, 40-foot-high cylinder of bright light appears there until the start of the creature’s next turn. Each creature in the cylinder when it appears or that ends its turn there must make a DC 17 Constitution saving throw, taking 36 (8d8) radiant damage on a failed save, or half as much damage on a successful one.",
   "mechanics": {

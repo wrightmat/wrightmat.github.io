@@ -1,7 +1,8 @@
 {
   "name": "Water Mastery",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "a creature has advantage on attack rolls if both it and its opponent are in water. If the opponent and the creature are both on dry ground, the creature has disadvantage on attack rolls.",
   "mechanics": {

@@ -1,7 +1,8 @@
 {
   "name": "Wing Attack (Costs 2 Actions)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature beats its wings. Each creature within 10 ft. of the creature must succeed on a DC 19 Dexterity saving throw or take 13 (2d6 + 6) bludgeoning damage and be knocked prone. The creature can then fly up to half its flying speed.",
   "mechanics": {

@@ -1,7 +1,8 @@
 {
   "name": "Running Leap",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "With a 10-foot running start, the creature can long jump up to 25 ft..",
   "mechanics": {

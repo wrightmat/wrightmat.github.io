@@ -1,7 +1,8 @@
 {
   "name": "Death Burst",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "When the elemental dies, it explodes in a cloud of steam. Each creature within 5 ft. of the elemental must succeed on a DC 10 Dexterity saving throw or take 4 (1d8) fire damage.",
   "mechanics": {

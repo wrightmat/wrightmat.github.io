@@ -3,7 +3,8 @@
   "name": "Ring of Swimming",
   "notes": "Ring, uncommon\n\nYou have a swimming speed of 40 feet while wearing this ring.",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "url": "https://www.dnd5eapi.co/api/2014/magic-items/ring-of-swimming",
   "mapping": "5e-api-magic-item",

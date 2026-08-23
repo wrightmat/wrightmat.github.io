@@ -2,7 +2,8 @@
   "id": "artillery",
   "name": "Artillery",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Ranged combatants that deal high damage from a safe distance, often requiring the party to close the gap.",
   "mechanicalTendencies": {

@@ -1,7 +1,8 @@
 {
   "name": "Radiant Smite",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature attack can expend a use to deal extra radiant damage.",
   "mechanics": {

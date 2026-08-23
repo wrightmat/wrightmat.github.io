@@ -1,7 +1,8 @@
 {
   "name": "Void Tendril",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Melee Weapon Attack: +10 to hit, reach 15 ft., one target. Hit: 21 (3d8 + 6) force damage. If the target is concentrating on a spell, they make a DC 19 Constitution saving throw or lose concentration.",
   "mechanics": {

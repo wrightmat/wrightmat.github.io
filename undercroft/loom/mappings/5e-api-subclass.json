@@ -6,11 +6,15 @@
   "fields": {
     "kind": {
       "type": "field",
-      "bind": "='subclass'"
+      "bind": "='variant'"
     },
     "index": {
-      "type": "field",
-      "bind": "@index"
+      "type": "custom",
+      "fn": "compoundSlug",
+      "args": {
+        "parentPath": "class.index",
+        "path": "index"
+      }
     },
     "url": {
       "type": "field",
@@ -20,9 +24,17 @@
       "type": "field",
       "bind": "@name"
     },
-    "class": {
+    "systemIds": {
+      "type": "custom",
+      "fn": "srdSubclassSystemIds"
+    },
+    "parentKind": {
       "type": "field",
-      "bind": "@class"
+      "bind": "='class'"
+    },
+    "parentId": {
+      "type": "field",
+      "bind": "@class.index"
     },
     "summary": {
       "type": "field",

@@ -1,0 +1,71 @@
+{
+  "name": "Owlin",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dndbeyond.com/species/883673-owlin",
+  "description": [
+    "Distant kin of giant owls from the Feywild, owlin come in many shapes and sizes, from petite and fluffy to wide-winged and majestic. Owlin have arms and legs like other Humanoids, as well as wings that extend from their back and shoulders.",
+    "Like owls, owlin are graced with feathers that make no sound when they move or fly, making it easy for them to sneak up on you in the library.",
+    "Your owlin character might be nocturnal. Or perhaps your character is simply prone to rise later, embodying the common nickname of night owl.",
+    "If you create an owlin character, follow these additional rules during character creation."
+  ],
+  "type": "Humanoid",
+  "size": "Medium",
+  "speed": 30,
+  "traits": [
+    {
+      "name": "Ability Score Increases",
+      "description": "When determining your character’s ability scores, increase one of those scores by 2 and increase a different score by 1, or increase three different scores by 1. Follow this rule regardless of the method you use to determine the scores, such as rolling or point buy.\n\nThe “Quick Build” section for your character’s class offers suggestions on which scores to increase. You’re free to follow those suggestions or to ignore them. Whichever scores you decide to increase, none of the scores can be raised above 20."
+    },
+    {
+      "name": "Languages",
+      "description": "Your character can speak, read, and write Common and one other language that you and your DM agree is appropriate for the character. The Player’s Handbook offers a list of widespread languages to choose from. The DM is free to add or remove languages from that list for a particular campaign."
+    },
+    {
+      "name": "Creature Type",
+      "description": "Every creature in D&D, including every player character, has a special tag in the rules that identifies the type of creature they are. Most player characters, including owlin, are of the Humanoid type. Creature types don’t have rules themselves, but some rules in the game affect creatures of certain types in different ways. For example, the text of the cure wounds spell specifies that the spell doesn’t work on a creature that has the Construct type."
+    },
+    {
+      "name": "Life Span",
+      "description": "The typical life span of a player character in D&D is about a century, assuming the character doesn’t meet a violent end on an adventure."
+    },
+    {
+      "name": "Height and Weight",
+      "description": "Player characters, including owlin, typically fall into the same ranges of height and weight that humans have in our world. If you’d like to determine your character’s height or weight randomly, consult the Random Height and Weight table in the Player’s Handbook, and choose the row in the table that best represents the build you imagine for your character."
+    },
+    {
+      "name": "Creature Type",
+      "description": "You are a Humanoid."
+    },
+    {
+      "name": "Size",
+      "description": "You are Medium or Small. You choose the size when you select this race."
+    },
+    {
+      "name": "Speed",
+      "description": "Your walking speed is 30 feet."
+    },
+    {
+      "name": "Darkvision",
+      "description": "You can see in dim light within 120 feet of yourself as if it were bright light and in darkness as if it were dim light. You discern colors in that darkness only as shades of gray."
+    },
+    {
+      "name": "Flight",
+      "description": "Thanks to your wings, you have a flying speed equal to your walking speed. You can’t use this flying speed if you’re wearing medium or heavy armor."
+    },
+    {
+      "name": "Silent Feathers",
+      "description": "You have proficiency in the Stealth skill."
+    }
+  ],
+  "variants": [],
+  "mapping": "ddb-species",
+  "featureIds": [
+    "feat.darkvision.120",
+    "feat.owlin-flight",
+    "feat.owlin-silent-feathers"
+  ],
+  "featureParams": {}
+}

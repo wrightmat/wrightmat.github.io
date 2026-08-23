@@ -1,7 +1,8 @@
 {
   "name": "Heavily Obscures Area",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Thick fog, smoke, or darkness fills the area, granting it the heavily obscured condition.",
   "mechanics": {

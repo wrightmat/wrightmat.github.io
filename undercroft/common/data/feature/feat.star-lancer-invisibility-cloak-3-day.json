@@ -1,7 +1,8 @@
 {
   "name": "Invisibility Cloak (3/Day)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature and one creature riding it (chosen by the creature) magically turn invisible. This effect lasts until the creature or a creature riding it attacks or casts a spell, or until the creature’s concentration ends (as if concentrating on a spell). Any equipment worn or carried by the invisible creatures is also invisible for the duration of the Invisibility Cloak.",
   "mechanics": {

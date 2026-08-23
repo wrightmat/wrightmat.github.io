@@ -1,0 +1,26 @@
+{
+  "id": "feat.warlock-celestial-spells",
+  "name": "Celestial Spells",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "The magic of your patron ensures you always have certain spells ready; when you reach a Warlock level specified in the Celestial Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Aid, Cure Wounds, Guiding Bolt, Lesser Restoration, Light, Sacred Flame\n\nLevel 5: Daylight, Revivify\n\nLevel 7: Guardian of Faith, Wall of Fire\n\nLevel 9: Greater Restoration, Summon Celestial",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The magic of your patron ensures you always have certain spells ready; when you reach a Warlock level specified in the Celestial Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Aid, Cure Wounds, Guiding Bolt, Lesser Restoration, Light, Sacred Flame\n\nLevel 5: Daylight, Revivify\n\nLevel 7: Guardian of Faith, Wall of Fire\n\nLevel 9: Greater Restoration, Summon Celestial"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

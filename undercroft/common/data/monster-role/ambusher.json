@@ -2,7 +2,8 @@
   "id": "ambusher",
   "name": "Ambusher",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Stealthy, hit-and-run attackers that gain advantage, rely on surprise, or use invisibility to catch players off guard.",
   "mechanicalTendencies": {

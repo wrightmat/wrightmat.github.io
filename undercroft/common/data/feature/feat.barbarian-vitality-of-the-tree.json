@@ -1,0 +1,26 @@
+{
+  "id": "feat.barbarian-vitality-of-the-tree",
+  "name": "Vitality of the Tree",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "Your Rage taps into the life force of the World Tree. You gain the following benefits.\n\nVitality Surge. When you activate your Rage, you gain a number of Temporary Hit Points equal to your Barbarian level.\n\nLife-Giving Force. At the start of each of your turns while your Rage is active, you can choose another creature within 10 feet of yourself to gain Temporary Hit Points. To determine the number of Temporary Hit Points, roll a number of d6s equal to your Rage Damage bonus, and add them together. If any of these Temporary Hit Points remain when your Rage ends, they vanish.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "Your Rage taps into the life force of the World Tree. You gain the following benefits.\n\nVitality Surge. When you activate your Rage, you gain a number of Temporary Hit Points equal to your Barbarian level.\n\nLife-Giving Force. At the start of each of your turns while your Rage is active, you can choose another creature within 10 feet of yourself to gain Temporary Hit Points. To determine the number of Temporary Hit Points, roll a number of d6s equal to your Rage Damage bonus, and add them together. If any of these Temporary Hit Points remain when your Rage ends, they vanish."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,26 @@
+{
+  "id": "feat.druid-skin-of-steel",
+  "name": "Skin of Steel",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You can channel the power of the forge when you assume a Wild Shape form, granting you the benefits below.\n\nChallenge Rating. The maximum Challenge Rating for the form equals your Druid level divided by 3 (round down).\n\nArmor Class. Until you leave the form, your AC equals 15 plus your Wisdom modifier if that total is higher than the Beast’s AC.\n\nConstruct Resilience. You have Resistance to Poison damage. You also have Advantage on saving throws to avoid or end the Poisoned condition.\n\nTireless. You don’t gain Exhaustion levels from dehydration, malnutrition, or suffocation. In addition, you don’t need to sleep, and magic can’t put you to sleep.\n\nObvious. While in a Wild Shape form, your body is made from the same materials as a warforged; your muscles are rootlike tendrils, and they’re protected by armored plates. It’s obvious to an observer that you are not a normal animal.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "You can channel the power of the forge when you assume a Wild Shape form, granting you the benefits below.\n\nChallenge Rating. The maximum Challenge Rating for the form equals your Druid level divided by 3 (round down).\n\nArmor Class. Until you leave the form, your AC equals 15 plus your Wisdom modifier if that total is higher than the Beast’s AC.\n\nConstruct Resilience. You have Resistance to Poison damage. You also have Advantage on saving throws to avoid or end the Poisoned condition.\n\nTireless. You don’t gain Exhaustion levels from dehydration, malnutrition, or suffocation. In addition, you don’t need to sleep, and magic can’t put you to sleep.\n\nObvious. While in a Wild Shape form, your body is made from the same materials as a warforged; your muscles are rootlike tendrils, and they’re protected by armored plates. It’s obvious to an observer that you are not a normal animal."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

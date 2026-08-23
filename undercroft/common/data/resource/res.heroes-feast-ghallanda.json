@@ -1,15 +1,22 @@
 {
   "id": "res.heroes-feast-ghallanda",
   "name": "Heroes' Feast (House Ghallanda)",
-  "systemIds": ["sys.dnd5e"],
-  "settingIds": ["eberron"],
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "settingIds": [
+    "eberron"
+  ],
   "description": "House Ghallanda caters a heroes' feast for hire, priced per person served.",
   "category": "service",
   "house": "ghallanda",
   "price": "60 gp per person",
   "tags": {
     "locationTypes": [],
-    "locationPurposes": ["commerce"],
+    "locationPurposes": [
+      "commerce"
+    ],
     "environments": []
   }
 }

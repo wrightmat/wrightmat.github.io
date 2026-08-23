@@ -1,7 +1,8 @@
 {
   "name": "Healing",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Restores lost hit points, either a flat amount or a value that scales by spell slot/character level.",
   "mechanics": {

@@ -1,0 +1,26 @@
+{
+  "id": "feat.ranger-fey-wanderer-spells",
+  "name": "Fey Wanderer Spells",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "When you reach a Ranger level specified in the Fey Wanderer Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Charm Person\n\nLevel 5: Misty Step\n\nLevel 9: Summon Fey\n\nLevel 13: Dimension Door\n\nLevel 17: Mislead\n\nYou also possess a fey blessing. Choose it from the Feywild Gifts table or determine it randomly.\n\nLevel 1: Illusory butterflies flutter around you while you take a Short or Long Rest.\n\nLevel 2: Flowers bloom from your hair each dawn.\n\nLevel 3: You faintly smell of cinnamon, lavender, nutmeg, or another comforting herb or spice.\n\nLevel 4: Your shadow dances while no one is looking directly at it.\n\nLevel 5: Horns or antlers sprout from your head.\n\nLevel 6: Your skin and hair change color each dawn.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "When you reach a Ranger level specified in the Fey Wanderer Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Charm Person\n\nLevel 5: Misty Step\n\nLevel 9: Summon Fey\n\nLevel 13: Dimension Door\n\nLevel 17: Mislead\n\nYou also possess a fey blessing. Choose it from the Feywild Gifts table or determine it randomly.\n\nLevel 1: Illusory butterflies flutter around you while you take a Short or Long Rest.\n\nLevel 2: Flowers bloom from your hair each dawn.\n\nLevel 3: You faintly smell of cinnamon, lavender, nutmeg, or another comforting herb or spice.\n\nLevel 4: Your shadow dances while no one is looking directly at it.\n\nLevel 5: Horns or antlers sprout from your head.\n\nLevel 6: Your skin and hair change color each dawn."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

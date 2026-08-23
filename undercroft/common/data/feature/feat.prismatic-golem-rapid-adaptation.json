@@ -1,7 +1,8 @@
 {
   "name": "Rapid Adaptation",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "When the creature is targeted by an attack or spell that deals damage it is resistant to, it uses its Elemental Shift feature to become immune to that damage.",
   "mechanics": {

@@ -1,7 +1,8 @@
 {
   "name": "Slick Spittle",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "By spending 2 rounds dribbling spittle on an area, a creature can cover a 5-foot square with its slippery saliva. This area is treated as if under the effects of a grease spell, but it lasts for 1 hour.",
   "mechanics": {

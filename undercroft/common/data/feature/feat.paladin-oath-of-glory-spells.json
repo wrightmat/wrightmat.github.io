@@ -1,0 +1,26 @@
+{
+  "id": "feat.paladin-oath-of-glory-spells",
+  "name": "Oath of Glory Spells",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "The magic of your oath ensures you always have certain spells ready; when you reach a Paladin level specified in the Oath of Glory Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Guiding Bolt, Heroism\n\nLevel 5: Enhance Ability, Magic Weapon\n\nLevel 9: Haste, Protection from Energy\n\nLevel 13: Compulsion, Freedom of Movement\n\nLevel 17: Legend Lore, Yolande’s Regal Presence",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The magic of your oath ensures you always have certain spells ready; when you reach a Paladin level specified in the Oath of Glory Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Guiding Bolt, Heroism\n\nLevel 5: Enhance Ability, Magic Weapon\n\nLevel 9: Haste, Protection from Energy\n\nLevel 13: Compulsion, Freedom of Movement\n\nLevel 17: Legend Lore, Yolande’s Regal Presence"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

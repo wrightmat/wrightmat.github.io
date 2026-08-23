@@ -2,7 +2,8 @@
   "id": "destroyer",
   "name": "Destroyer",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Creates chaos through overwhelming force or environmental impact.",
   "recipe": {

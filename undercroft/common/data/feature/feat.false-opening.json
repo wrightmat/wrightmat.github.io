@@ -1,7 +1,8 @@
 {
   "name": "False Opening",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "As a bonus action, the creature can feint, gaining advantage on its next attack roll this turn.",
   "mechanics": {

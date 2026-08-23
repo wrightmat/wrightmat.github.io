@@ -1,7 +1,8 @@
 {
   "name": "Swampland Stealth",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature takes the Hide action. It must be in swampy terrain to use this bonus action.",
   "mechanics": {

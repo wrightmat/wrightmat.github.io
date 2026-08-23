@@ -1,7 +1,8 @@
 {
   "name": "Fabricate (1/Day)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature can cast fabricate, requiring no spell components and using Intelligence as the spellcasting ability.",
   "mechanics": {

@@ -1,7 +1,8 @@
 {
   "name": "Arcane Barrage",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature sends arcane energy toward a creature it can see within 120 feet of it. The target begins to glow with arcane energy, and at the end of the target’s next turn, it must make a DC 19 Constitution saving throw, taking 35 (10d6) radiant damage on a failed save, or half as much damage on a successful one. The damage is divided evenly between the target and all creatures within 10 feet of it, except the creature",
   "mechanics": {

@@ -1,7 +1,8 @@
 {
   "name": "Void Shape",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature magically transforms into a dark purple, Void ghost form or back into its Undead form. Its statistics, other than its speed and resistances, are the same in each form. Any equipment it is wearing or carrying changes with it. It reverts to its Undead form of it dies.",
   "mechanics": {

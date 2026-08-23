@@ -1,7 +1,8 @@
 {
   "name": "Weapon Enhancement",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Grants a bonus to attack and damage rolls made with this weapon or ammunition.",
   "mechanics": {

@@ -1,7 +1,8 @@
 {
   "name": "Hail of Needles (1/Day)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "When reduced below 10 hp (even below 0 hp), the creature releases a hail of needles as a reaction. All creatures within 15 feet take 21 (6d6) piercing damage, or half damage with a successful DC 14 Dexterity saving throw.",
   "mechanics": {

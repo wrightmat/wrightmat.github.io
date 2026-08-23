@@ -1,0 +1,26 @@
+{
+  "id": "feat.artificer-explosive-cannon",
+  "name": "Explosive Cannon",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "Every Eldritch Cannon you create is now more destructive. You gain the following benefits.\n\nDetonate. When your cannon takes damage, you can take a Reaction to command the cannon to detonate if you are within 60 feet of it. Doing so destroys the cannon and forces each creature within 20 feet of it to make a Dexterity saving throw against your spell save DC, taking (3d10) Force damage on a failed save or half as much damage on a successful one.\n\nFirepower. The cannon’s damage rolls and the number of Temporary Hit Points granted by Protector increase by 1d8.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "Every Eldritch Cannon you create is now more destructive. You gain the following benefits.\n\nDetonate. When your cannon takes damage, you can take a Reaction to command the cannon to detonate if you are within 60 feet of it. Doing so destroys the cannon and forces each creature within 20 feet of it to make a Dexterity saving throw against your spell save DC, taking (3d10) Force damage on a failed save or half as much damage on a successful one.\n\nFirepower. The cannon’s damage rolls and the number of Temporary Hit Points granted by Protector increase by 1d8."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

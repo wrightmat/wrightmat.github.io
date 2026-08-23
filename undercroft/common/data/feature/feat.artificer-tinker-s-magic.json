@@ -1,0 +1,26 @@
+{
+  "id": "feat.artificer-tinker-s-magic",
+  "name": "Tinker’s Magic",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You know the Mending cantrip.\n\nAs a Magic action while holding Tinker’s Tools, you can create one item in an unoccupied space within 5 feet of yourself, choosing the item from the following list:\n\nSee the rules for the item in the Player’s Handbook. The item lasts until you finish a Long Rest, at which point it vanishes.\n\nYou can use this feature a number of times equal to your Intelligence modifier (minimum of once), and you regain all expended uses when you finish a Long Rest.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "You know the Mending cantrip.\n\nAs a Magic action while holding Tinker’s Tools, you can create one item in an unoccupied space within 5 feet of yourself, choosing the item from the following list:\n\nSee the rules for the item in the Player’s Handbook. The item lasts until you finish a Long Rest, at which point it vanishes.\n\nYou can use this feature a number of times equal to your Intelligence modifier (minimum of once), and you regain all expended uses when you finish a Long Rest."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

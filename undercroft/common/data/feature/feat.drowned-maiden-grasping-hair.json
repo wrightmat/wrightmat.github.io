@@ -1,7 +1,8 @@
 {
   "name": "Grasping Hair",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature’s hair attacks as though it were three separate limbs, each of which can be attacked (AC 19; 15 hit points; immunity to necrotic, poison, and psychic damage; resistance to bludgeoning, piercing, and slashing damage from nonmagical weapons that aren’t silvered). A lock of hair can be broken if a creature takes an action and succeeds on a DC 15 Strength check against it.",
   "mechanics": {

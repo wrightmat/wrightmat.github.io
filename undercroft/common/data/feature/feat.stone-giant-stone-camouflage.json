@@ -1,7 +1,8 @@
 {
   "name": "Stone Camouflage",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The giant has advantage on Dexterity (Stealth) checks made to hide in rocky terrain.",
   "mechanics": {

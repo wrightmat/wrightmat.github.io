@@ -1,7 +1,8 @@
 {
   "name": "Breath Weapon (Recharge 5–6)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature uses one of the following breath weapons.",
   "mechanics": {

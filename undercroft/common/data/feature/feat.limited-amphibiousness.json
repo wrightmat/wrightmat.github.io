@@ -1,7 +1,8 @@
 {
   "name": "Limited Amphibiousness",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature can breathe air and water, but it needs to be submerged at least once every 4 hours to avoid suffocating outside water.",
   "mechanics": {

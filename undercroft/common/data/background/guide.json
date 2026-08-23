@@ -18,7 +18,8 @@
     }
   ],
   "feat": {
-    "index": "magic-initiate",
+    "refKind": "feature",
+    "refId": "magic-initiate",
     "name": "Magic Initiate",
     "note": "Druid"
   },
@@ -133,6 +134,7 @@
   },
   "updated_at": "2026-07-19T14:52:41.946Z",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ]
 }

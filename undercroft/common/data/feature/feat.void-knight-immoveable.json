@@ -1,7 +1,8 @@
 {
   "name": "Immoveable",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature can’t be moved against its will, except by magical means. In addition, the creature has disadvantage on Dexterity (Acrobatics) and Dexterity (Stealth) checks.",
   "mechanics": {

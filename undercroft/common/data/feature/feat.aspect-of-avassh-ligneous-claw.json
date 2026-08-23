@@ -1,7 +1,8 @@
 {
   "name": "Ligneous Claw",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Melee Weapon Attack: +7 to hit, reach 5 ft., one target. Hit: 14 (3d6 + 4) slashing damage, and the target is infected with a blight spore.",
   "mechanics": {

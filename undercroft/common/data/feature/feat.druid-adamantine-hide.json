@@ -1,0 +1,26 @@
+{
+  "id": "feat.druid-adamantine-hide",
+  "name": "Adamantine Hide",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "While in a Wild Shape form, you gain Resistance to Bludgeoning, Piercing, and Slashing damage.\n\nIn addition, when you are hit by an attack roll or forced to make a saving throw, you can take a Reaction and expend a use of Wild Shape to shape-shift into one of your Wild Shape forms.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "While in a Wild Shape form, you gain Resistance to Bludgeoning, Piercing, and Slashing damage.\n\nIn addition, when you are hit by an attack roll or forced to make a saving throw, you can take a Reaction and expend a use of Wild Shape to shape-shift into one of your Wild Shape forms."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

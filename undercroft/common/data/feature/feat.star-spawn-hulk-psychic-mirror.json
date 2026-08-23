@@ -1,7 +1,8 @@
 {
   "name": "Psychic Mirror",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "If the creature takes psychic damage, each creature within 10 feet of the creature takes that damage instead; the creature takes none of the damage. In addition, the creature’s thoughts and location can’t be discerned by magic.",
   "mechanics": {

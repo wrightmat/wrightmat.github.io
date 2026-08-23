@@ -1,0 +1,26 @@
+{
+  "id": "feat.monk-reflexive-adaptation",
+  "name": "Reflexive Adaptation",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "When you use Self-Restoration, the following conditions are added to the list of conditions you can remove: Blinded, Deafened, and Grappled.\n\nIn addition, when you finish a Short Rest you can remove 1 level of Exhaustion from yourself and when you finish a Long Rest you can remove all levels of Exhaustion from yourself.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "When you use Self-Restoration, the following conditions are added to the list of conditions you can remove: Blinded, Deafened, and Grappled.\n\nIn addition, when you finish a Short Rest you can remove 1 level of Exhaustion from yourself and when you finish a Long Rest you can remove all levels of Exhaustion from yourself."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

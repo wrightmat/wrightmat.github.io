@@ -1116,6 +1116,30 @@ export class DataManager {
     return this._request("/home-assistant/connection/clear", { method: "POST", auth: true });
   }
 
+  // Deployment-wide auth credentials (D&D Beyond session cookie, Anthropic
+  // API key) — Loom's own Auth tab is the intended caller. No client-side
+  // tier check here (unlike getHaConnection's isAuthenticated guard above,
+  // which is about "is there even a session," not a tier) — the server
+  // independently enforces gm-reads/admin-writes (require_gm/require_admin,
+  // server/app.py), same convention listUsers() above already follows.
+  // Never returns either secret value, only {configured, ...} — see
+  // server/integrations.py's own header comment on why.
+  async getAuthCredentialsStatus() {
+    return this._request("/auth/credentials", { method: "GET", auth: true });
+  }
+
+  async saveDdbSessionCookie(cookie) {
+    return this._request("/auth/credentials/ddb-session", { method: "POST", body: { cookie }, auth: true });
+  }
+
+  async saveAnthropicApiKey(apiKey) {
+    return this._request("/auth/credentials/anthropic", { method: "POST", body: { apiKey }, auth: true });
+  }
+
+  async checkDdbAuthStatus() {
+    return this._request("/auth/credentials/ddb-session/check", { method: "POST", auth: true });
+  }
+
   // Trimmed {entityId, domain, friendlyName}[] — see app.py's own
   // handle_ha_entities for why the full HA state payload never leaves the
   // server.
@@ -1232,6 +1256,37 @@ export class DataManager {
     });
     this._listCache.delete(`${bucket}`);
     this._ownedCache.clear();
+    return result;
+  }
+
+  // Admin-only (server/storage.py's own rename_item enforces this — no
+  // client-side tier check duplicated here, same "server is the one real
+  // gate" convention every other admin-only route already follows). Two
+  // calls, same route: `dryRun: true` scans and reports what WOULD change
+  // (Loom's own confirm prompt calls this first) with nothing written;
+  // `dryRun: false` performs the rename and the same reference repair for
+  // real. Both return `{ok, kind, oldId, newId, dryRun, referenceCount,
+  // touched: [{kind, id, count}]}`.
+  async renameContent(bucket, id, newId, { dryRun = false } = {}) {
+    if (!newId) {
+      throw new Error("New id is required");
+    }
+    const result = await this._request(`/content/${bucket}/${encodeURIComponent(id)}/rename`, {
+      method: "POST",
+      body: { newId, dryRun },
+      auth: true,
+    });
+    if (!dryRun) {
+      // A real rename invalidates far more than this one bucket's own list
+      // (every OTHER kind whose records may have just been rewritten too) —
+      // clearing every cached list/bulk entry is the only way to guarantee
+      // nothing stale survives, same reasoning invalidateBulkCacheForKind's
+      // own "content-saved" listener already applies per-kind, just widened
+      // here since a rename's own blast radius isn't confined to one kind.
+      this._listCache.clear();
+      this._ownedCache.clear();
+      this.removeLocal(bucket, id);
+    }
     return result;
   }
 
@@ -1408,6 +1463,20 @@ export class DataManager {
       body: { value },
       auth: true,
     });
+  }
+
+  // Read-side counterpart to updateGroupPropertyValue above, for the same
+  // reason: this.get("group", id, ...) requires owner/share access a plain
+  // member doesn't have, so it 401s for every real player, every time (see
+  // group-live-sync.js's own doLoad, the confirmed real bug this fixes).
+  // Returns { properties, propertyValues } — the owner/admin gets
+  // everything, a mere member gets only whatever properties the GM marked
+  // `public` (server/groups.py's get_group_properties).
+  async getGroupProperties(id) {
+    if (!id) {
+      throw new Error("Group id is required");
+    }
+    return this._request(`/groups/${encodeURIComponent(id)}/properties`, { method: "GET", auth: true });
   }
 
   async listCharacterGroups(id) {

@@ -1,7 +1,8 @@
 {
   "name": "Skill Debuff",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Imposes disadvantage on a specific skill or check — the inverse of Skill Bonus.",
   "mechanics": {

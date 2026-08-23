@@ -1,7 +1,8 @@
 {
   "name": "Shriek",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "When bright light or a creature is within 30 feet of the plant, it emits a shriek audible within 300 feet of it. The plant continues to shriek until the disturbance moves out of range and for 1d4 of the plant's turns afterward",
   "mechanics": {

@@ -1,7 +1,8 @@
 {
   "name": "Choke Hold",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The target must make a DC 15 Dexterity saving throw. On a failed save, a creature takes 10 (2d6 + 4) necrotic damage and is grappled (escape DC 15). On a successful save, a creature takes half damage and is not grappled. While grappled, the target takes an additional 10 necrotic damage at the start of each of their turns.",
   "mechanics": {

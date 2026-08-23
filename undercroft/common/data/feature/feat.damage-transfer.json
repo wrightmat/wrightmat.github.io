@@ -1,7 +1,8 @@
 {
   "name": "Damage Transfer",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "While attached to a creature, the aberration takes only half the damage dealt to it (rounded down). and that creature takes the other half.",
   "mechanics": {

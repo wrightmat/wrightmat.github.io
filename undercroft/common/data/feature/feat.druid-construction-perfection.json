@@ -1,0 +1,26 @@
+{
+  "id": "feat.druid-construction-perfection",
+  "name": "Construction Perfection",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "While in a Wild Shape form, you gain the following additional benefits.\n\nArmor Class. Until you leave the form, your AC equals 16 plus your Wisdom modifier if that total is higher than the Beast’s AC.\n\nIron Mind. You have Immunity to the Charmed, Frightened, Paralyzed, Petrified, and Poisoned conditions, and Poison damage.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "While in a Wild Shape form, you gain the following additional benefits.\n\nArmor Class. Until you leave the form, your AC equals 16 plus your Wisdom modifier if that total is higher than the Beast’s AC.\n\nIron Mind. You have Immunity to the Charmed, Frightened, Paralyzed, Petrified, and Poisoned conditions, and Poison damage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

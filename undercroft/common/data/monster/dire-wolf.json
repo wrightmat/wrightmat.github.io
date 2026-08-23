@@ -2,7 +2,8 @@
   "name": "Dire Wolf",
   "type": "beast",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "image": "https://www.dnd5eapi.co/api/images/monsters/dire-wolf.png",
   "stats": {

@@ -1,7 +1,8 @@
 {
   "name": "Villain Action",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Once per round on a fixed initiative count, the creature can take a powerful action available to it alone.",
   "mechanics": {

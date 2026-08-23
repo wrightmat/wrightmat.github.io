@@ -1,7 +1,8 @@
 {
   "name": "Weapon Proficiency",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Grants proficiency with a weapon or weapon category the wearer might not otherwise have.",
   "mechanics": {

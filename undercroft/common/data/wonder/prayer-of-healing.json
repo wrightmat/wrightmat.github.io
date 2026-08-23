@@ -3,7 +3,8 @@
   "name": "Prayer of Healing",
   "notes": "Up to six creatures of your choice that you can see within range each regain hit points equal to 2d8 + your spellcasting ability modifier. This spell has no effect on undead or constructs.",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "url": "https://www.dnd5eapi.co/api/2014/spells/prayer-of-healing",
   "mapping": "5e-api-spell",

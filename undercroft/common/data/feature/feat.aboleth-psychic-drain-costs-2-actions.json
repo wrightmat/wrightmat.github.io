@@ -1,7 +1,8 @@
 {
   "name": "Psychic Drain (Costs 2 Actions)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "One creature charmed by the aberration takes 10 (3d6) psychic damage, and the aberration regains hit points equal to the damage the creature takes.",
   "mechanics": {

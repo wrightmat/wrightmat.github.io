@@ -1,0 +1,69 @@
+{
+  "name": "Locathah",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dndbeyond.com/species/229754-locathah",
+  "description": [
+    "THIS IS NONCORE D&D MATERIAL These game mechanics are usable in your campaign if your DM allows them but not refined by final game design and editing.",
+    "Featured in Ghosts of Saltmarsh, these resilient and proud fish-folk have endured war, slavery, and mistreatment at the hands of other aquatic creatures.",
+    "They dwell in submerged tribal communities along seacoasts, and hunt both above and below the water."
+  ],
+  "type": null,
+  "size": "Medium",
+  "speed": 30,
+  "traits": [
+    {
+      "name": "Ability Score Increase",
+      "description": "Your Strength score increases by 2 and your Dexterity score increases by 1."
+    },
+    {
+      "name": "Age",
+      "description": "Locathah mature to adulthood by the age of 10 but have been known to live up to 80 years."
+    },
+    {
+      "name": "Alignment",
+      "description": "Most locathah are true neutral or have some aspect of neutrality in their alignment. They tend toward good, coming from a culture where compassion for the downtrodden is a commonality."
+    },
+    {
+      "name": "Natural Armor",
+      "description": "You have tough, scaly skin. When you aren’t wearing armor, your AC is 12 + your Dexterity modifier. You can use your natural armor to determine your AC if the armor you wear would leave you with a lower AC. A shield’s benefits apply as normal while you use your natural armor."
+    },
+    {
+      "name": "Observant and Athletic",
+      "description": "You have proficiency in the Athletics and Perception skills."
+    },
+    {
+      "name": "Leviathan Will",
+      "description": "You have advantage on saving throws against being charmed, frightened, paralyzed, poisoned, stunned, or put to sleep."
+    },
+    {
+      "name": "Limited Amphibiousness",
+      "description": "You can breathe air and water, but you need to be submerged at least once every 4 hours to avoid suffocating."
+    },
+    {
+      "name": "Size",
+      "description": "Locathah stand between 5 and 6 feet tall and average about 150 pounds. Your size is Medium."
+    },
+    {
+      "name": "Speed",
+      "description": "Your base walking speed is 30 feet, and you have a swim speed of 30 feet."
+    },
+    {
+      "name": "Languages",
+      "description": "You can speak, read, and write Aquan and Common."
+    }
+  ],
+  "variants": [],
+  "mapping": "ddb-species",
+  "featureIds": [
+    "feat.locathah-ability-score-increase",
+    "feat.locathah-age",
+    "feat.locathah-alignment",
+    "feat.locathah-natural-armor",
+    "feat.locathah-observant-and-athletic",
+    "feat.locathah-leviathan-will",
+    "feat.locathah-limited-amphibiousness"
+  ]
+}

@@ -1,7 +1,8 @@
 {
   "name": "Ink Cloud (1/Day)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Trigger: The creature takes damage while underwater. Response: The creature releases ink that fills a 15-foot Cube centered on itself, and the creature moves up to its Swim Speed. The Cube is Heavily Obscured for 1 minute or until a strong current or similar effect disperses the ink.",
   "mechanics": {

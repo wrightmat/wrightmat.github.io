@@ -1,0 +1,26 @@
+{
+  "id": "feat.warlock-gift-of-the-sea",
+  "name": "Gift of the Sea",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "1st-level Fathomless feature\n\nYou gain a swimming speed of 40 feet, and you can breathe underwater.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "1st-level Fathomless feature\n\nYou gain a swimming speed of 40 feet, and you can breathe underwater."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

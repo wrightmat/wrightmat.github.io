@@ -1,7 +1,8 @@
 {
   "name": "Tentacle",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Melee Weapon Attack: +11 to hit, reach 15 ft., one target. Hit: 10 (1d6 + 7) necrotic damage. If two tentacle attacks hit the same target in one turn, the target is also grappled (escape DC 17).",
   "mechanics": {

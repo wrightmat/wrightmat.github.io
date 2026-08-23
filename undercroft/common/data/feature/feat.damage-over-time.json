@@ -1,7 +1,8 @@
 {
   "name": "Damage Over Time",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Inflicts a recurring wound that keeps dealing damage each turn until it's ended.",
   "mechanics": {

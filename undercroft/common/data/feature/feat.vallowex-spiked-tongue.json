@@ -1,7 +1,8 @@
 {
   "name": "Spiked Tongue",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Melee Weapon Attack: +8 to hit, reach 15 ft., one target. Hit: 14 (2d8 + 5) piercing damage, and the target is grappled (escape DC 15). Until this grapple ends, the target is restrained, and the creature can’t use its spiked tongue against another target.",
   "mechanics": {

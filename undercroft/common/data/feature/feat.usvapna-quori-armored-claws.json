@@ -1,7 +1,8 @@
 {
   "name": "Armored Claws",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Melee Weapon Attack: +8 to hit, reach 10 ft., one target. Hit: 17 (3d8 + 4) piercing damage and the target is grappled (escape DC 16). On a critical hit, the target must succeed on a DC 16 Strength saving throw or have one object it is carrying wrested from its grasp and flung up to 30 ft. away.",
   "mechanics": {

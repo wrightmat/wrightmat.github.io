@@ -1,0 +1,25 @@
+{
+  "id": "feat.cleric-divine-order",
+  "name": "Divine Order",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You have dedicated yourself to one of the following sacred roles of your choice.\n\nProtector\n\nTrained for battle, you gain proficiency with Martial weapons and training with Heavy armor.\n\nThaumaturge\n\nYou know one extra cantrip from the Cleric spell list. In addition, your mystical connection to the divine gives you a bonus to your Intelligence (Arcana or Religion) checks. The bonus equals your Wisdom modifier (minimum of +1).",
+  "mechanics": {
+    "type": "passive",
+    "text": "You have dedicated yourself to one of the following sacred roles of your choice.\n\nProtector\n\nTrained for battle, you gain proficiency with Martial weapons and training with Heavy armor.\n\nThaumaturge\n\nYou know one extra cantrip from the Cleric spell list. In addition, your mystical connection to the divine gives you a bonus to your Intelligence (Arcana or Religion) checks. The bonus equals your Wisdom modifier (minimum of +1)."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

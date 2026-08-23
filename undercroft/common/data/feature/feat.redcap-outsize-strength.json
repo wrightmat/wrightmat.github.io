@@ -1,7 +1,8 @@
 {
   "name": "Outsize Strength",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "While grappling, the creature is considered to be Medium. Also, wielding a heavy weapon doesn’t impose disadvantage on its attack rolls.",
   "mechanics": {

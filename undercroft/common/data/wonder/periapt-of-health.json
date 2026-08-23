@@ -3,7 +3,8 @@
   "name": "Periapt of Health",
   "notes": "Wondrous item, uncommon\n\nYou are immune to contracting any disease while you wear this pendant. If you are already infected with a disease, the effects of the disease are suppressed you while you wear the pendant.",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "url": "https://www.dnd5eapi.co/api/2014/magic-items/periapt-of-health",
   "mapping": "5e-api-magic-item",

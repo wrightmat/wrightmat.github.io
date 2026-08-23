@@ -28,6 +28,7 @@ import { generateMonster, matchesCategory, rerollAttribute } from "./lib/generat
 import { deriveStats } from "./lib/stats.js";
 import { createMonsterRecord, toPressExportShape } from "./lib/monster-schema.js";
 import { hasConvertibleStatBlock, convertStatBlockToFeatures } from "../../common/js/lib/monster-feature-matching.js";
+import { createReferenceChip } from "../../common/js/lib/library-reference.js";
 // The weapon-attack/rider/save-effect/`options`-menu editor — extracted
 // from this file into a shared module (feature-params-editor.js) so
 // Vault's own Basic Authoring mode can offer the exact same editing
@@ -1576,10 +1577,13 @@ function renderFeatureList(record) {
 
     const header = document.createElement("div");
     header.className = "d-flex align-items-center gap-2 flex-wrap";
-    const name = document.createElement("span");
-    name.className = "fw-semibold";
-    name.textContent = tier?.name || feature?.name || featureId;
-    header.appendChild(name);
+    // Hover-preview chip (library-reference.js), same suite-wide "displayed
+    // inline wherever needed" primitive Character's own Features tab uses —
+    // resolves against the same Feature record regardless of which tier's
+    // own name is shown here.
+    header.appendChild(
+      createReferenceChip({ kind: "feature", id: featureId, name: tier?.name || feature?.name || featureId, dataManager })
+    );
     if (isSignature) {
       const badge = document.createElement("span");
       badge.className = "badge text-bg-primary";

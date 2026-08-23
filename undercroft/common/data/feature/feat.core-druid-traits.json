@@ -1,0 +1,24 @@
+{
+  "id": "feat.core-druid-traits",
+  "name": "Core Druid Traits",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "As a Level 1 Character:\n\n- Gain all the traits in the Core Druid Traits table.\n\n- Gain the Druid’s level 1 features, which are listed in the Druid Features table.\n\nPrimary Ability: Wisdom\n\nHit Point Die: D8 per Druid level\n\nSaving Throw Proficiencies: Intelligence and Wisdom\n\nSkill Proficiencies: *Choose 2:* Animal Handling, Arcana, Insight, Medicine, Nature, Perception, Religion, or Survival\n\nWeapon Proficiencies: Simple weapons\n\nTool Proficiencies: Herbalism Kit\n\nArmor Training: Light armor and Shields\n\nStarting Equipment: *Choose A or B:* (A) Leather Armor, Shield, Sickle, Druidic Focus (Quarterstaff), Explorer’s Pack, Herbalism Kit, and 9 GP; or (B) 50 GP",
+  "mechanics": {
+    "type": "passive",
+    "text": "As a Level 1 Character:\n\n- Gain all the traits in the Core Druid Traits table.\n\n- Gain the Druid’s level 1 features, which are listed in the Druid Features table.\n\nPrimary Ability: Wisdom\n\nHit Point Die: D8 per Druid level\n\nSaving Throw Proficiencies: Intelligence and Wisdom\n\nSkill Proficiencies: *Choose 2:* Animal Handling, Arcana, Insight, Medicine, Nature, Perception, Religion, or Survival\n\nWeapon Proficiencies: Simple weapons\n\nTool Proficiencies: Herbalism Kit\n\nArmor Training: Light armor and Shields\n\nStarting Equipment: *Choose A or B:* (A) Leather Armor, Shield, Sickle, Druidic Focus (Quarterstaff), Explorer’s Pack, Herbalism Kit, and 9 GP; or (B) 50 GP"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

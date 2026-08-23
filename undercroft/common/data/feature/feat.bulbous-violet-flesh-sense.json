@@ -1,7 +1,8 @@
 {
   "name": "Flesh Sense",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature can pinpoint, by scent, the location of fleshbased creatures within 60 feet of it.",
   "mechanics": {

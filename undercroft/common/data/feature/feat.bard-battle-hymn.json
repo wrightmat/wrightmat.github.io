@@ -1,0 +1,26 @@
+{
+  "id": "feat.bard-battle-hymn",
+  "name": "Battle Hymn",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You unflaggingly maintain the spirits and discipline of your unit. As a Bonus Action, you can start a Battle Hymn which can be heard by all creatures within 60 feet. The hymn lasts until the start of your next turn. While the hymn is active, whenever an ally within 30 feet who can hear you makes an ability check or a saving throw, they can add 1d4 to the ability check or save.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "You unflaggingly maintain the spirits and discipline of your unit. As a Bonus Action, you can start a Battle Hymn which can be heard by all creatures within 60 feet. The hymn lasts until the start of your next turn. While the hymn is active, whenever an ally within 30 feet who can hear you makes an ability check or a saving throw, they can add 1d4 to the ability check or save."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

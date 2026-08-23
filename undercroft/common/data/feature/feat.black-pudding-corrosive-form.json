@@ -1,7 +1,8 @@
 {
   "name": "Corrosive Form",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "A creature that touches the ooze or hits it with a melee attack while within 5 feet of it takes 4 (1d8) acid damage. Any nonmagical weapon made of metal or wood that hits the ooze corrodes. After dealing damage, the weapon takes a permanent and cumulative -1 penalty to damage rolls. If its penalty drops to -5, the weapon is destroyed. Nonmagical ammunition made of metal or wood that hits the ooze is destroyed after dealing damage. The ooze can eat through 2-inch-thick, nonmagical wood or metal in 1 round.",
   "mechanics": {

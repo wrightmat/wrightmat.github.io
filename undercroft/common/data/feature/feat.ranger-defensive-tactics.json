@@ -1,0 +1,26 @@
+{
+  "id": "feat.ranger-defensive-tactics",
+  "name": "Defensive Tactics",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You gain one of the following feature options of your choice. Whenever you finish a Short or Long Rest, you can replace the chosen option with the other one.\n\nEscape the Horde\n\nOpportunity Attacks have Disadvantage against you.\n\nMultiattack Defense\n\nWhen a creature hits you with an attack roll, that creature has Disadvantage on all other attack rolls against you this turn.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "You gain one of the following feature options of your choice. Whenever you finish a Short or Long Rest, you can replace the chosen option with the other one.\n\nEscape the Horde\n\nOpportunity Attacks have Disadvantage against you.\n\nMultiattack Defense\n\nWhen a creature hits you with an attack roll, that creature has Disadvantage on all other attack rolls against you this turn."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

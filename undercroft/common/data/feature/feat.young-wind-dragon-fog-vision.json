@@ -1,7 +1,8 @@
 {
   "name": "Fog Vision",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature sees normally through light or heavy obscurement caused by fog, mist, clouds, or high wind.",
   "mechanics": {

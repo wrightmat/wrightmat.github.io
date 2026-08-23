@@ -1,7 +1,8 @@
 {
   "name": "Light Sensitivity",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "While in Bright Light, the creature has Disadvantage on ability checks and attack rolls.",
   "mechanics": {

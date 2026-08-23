@@ -1,7 +1,8 @@
 {
   "name": "Quarterstaff",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": " Melee Weapon Attack: +2 to hit (+4 to hit with shillelagh), reach 5 ft., one target. Hit: 3 (1d6) bludgeoning damage, 4 (1d8) bludgeoning damage if wielded with two hands, or 6 (1d8 + 2) bludgeoning damage with shillelagh.",
   "mechanics": {
@@ -19,6 +20,7 @@
       "monster"
     ]
   },
+  "price": "2 sp",
   "synergizesWith": [],
   "conflictsWith": [],
   "combat": {

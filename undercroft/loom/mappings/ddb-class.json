@@ -15,6 +15,10 @@
       "type": "field",
       "bind": "@name"
     },
+    "systemIds": {
+      "type": "custom",
+      "fn": "ddbClassSystemIds"
+    },
     "primary_ability": {
       "type": "custom",
       "fn": "ddbPrimaryAbility"
@@ -69,9 +73,39 @@
       "type": "field",
       "bind": "@url"
     },
+    "description": {
+      "type": "custom",
+      "fn": "joinLines"
+    },
     "coreTraits": {
       "type": "field",
       "bind": "@coreTraits"
+    },
+    "features": {
+      "type": "pipeline",
+      "source": "@features",
+      "steps": [
+        {
+          "step": "map",
+          "item": {
+            "type": "object",
+            "fields": {
+              "name": {
+                "type": "field",
+                "bind": "@name"
+              },
+              "level": {
+                "type": "field",
+                "bind": "@level"
+              },
+              "description": {
+                "type": "custom",
+                "fn": "joinLines"
+              }
+            }
+          }
+        }
+      ]
     }
   }
 }

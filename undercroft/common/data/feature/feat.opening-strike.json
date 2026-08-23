@@ -1,7 +1,8 @@
 {
   "name": "Opening Strike",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "On its first turn in combat, the creature can move up to its speed and make one attack as a bonus action.",
   "mechanics": {

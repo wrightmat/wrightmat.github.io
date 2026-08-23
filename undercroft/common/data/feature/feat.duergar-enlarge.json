@@ -1,7 +1,8 @@
 {
   "name": "Enlarge",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "For 1 minute, the creature magically increases in size, along with anything it is wearing or carrying. While enlarged, the creature is Large, doubles its damage dice on Strength-based weapon attacks (included in the attacks), and makes Strength checks and Strength saving throws with advantage. If the creature lacks the room to become Large, it attains the maximum size possible in the space available.",
   "mechanics": {

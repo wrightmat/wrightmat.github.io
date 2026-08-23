@@ -1,0 +1,26 @@
+{
+  "id": "feat.fighter-additional-fighting-style",
+  "name": "Additional Fighting Style",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You gain another Fighting Style feat of your choice.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "You gain another Fighting Style feat of your choice."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

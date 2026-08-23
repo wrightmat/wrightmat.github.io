@@ -1,7 +1,8 @@
 {
   "name": "Communication",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Lets the user exchange messages with a specific creature or entity across a distance they otherwise couldn't reach.",
   "mechanics": {

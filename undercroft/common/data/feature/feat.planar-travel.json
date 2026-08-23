@@ -1,7 +1,8 @@
 {
   "name": "Planar Travel",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Lets the user step into another plane of existence and back.",
   "mechanics": {

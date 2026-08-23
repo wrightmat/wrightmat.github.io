@@ -17,7 +17,11 @@ import {
   // Selections section.
   createCollapsibleSection as createFullCollapsibleSection,
   createSearchableCheckList,
+  createListRow,
 } from "../../common/js/lib/ui-components.js";
+import { openContentPicker } from "../../common/js/lib/widgets/content-picker.js";
+import { claimMarkerContentEntry, describeMarkerContentEntry, resolveGiveToOptions } from "../../common/js/lib/marker-contents.js";
+import { resolveGroupContext } from "../../common/js/lib/widgets/group-context.js";
 import { createFieldRow, createHalfWidthNumberField, createCollapsibleSection } from "../../common/js/lib/inspector-fields.js";
 import { exportRecordAsJson, populateStringChecklist, readLockedFeatureIds } from "../../common/js/lib/generator-kit.js";
 import {
@@ -53,6 +57,7 @@ import {
   createMapModel,
   createMarkerElement,
   createMarkerOverlayIcon,
+  createMarkerContentEntry,
   createVectorPathElement,
   createVectorShapeElement,
   createWallElement,
@@ -3989,9 +3994,13 @@ function onOutsideRestrictedMarkerLinkPointerDown(event) {
     closeRestrictedMarkerLinkPopover();
   }
 }
-function openRestrictedMarkerLinkPopover(markerElement, dotEl) {
+function openRestrictedMarkerLinkPopover(layer, markerElement, dotEl) {
   const target = resolveMarkerLinkTarget(markerElement);
-  if (!target) return;
+  const contents = markerElement.contents || [];
+  // Opens for a real reference (the pre-existing "Open in <Tool>" case)
+  // OR a marker carrying unclaimed Contents — a plain token with nothing
+  // linked but loot sitting on it is exactly the new case this adds.
+  if (!target && !contents.length) return;
   closeRestrictedMarkerLinkPopover();
   const popover = document.createElement("div");
   popover.className = "orrery-floating-panel d-flex flex-column gap-1 p-2";
@@ -4011,11 +4020,56 @@ function openRestrictedMarkerLinkPopover(markerElement, dotEl) {
     title.textContent = markerElement.label;
     popover.appendChild(title);
   }
-  const link = document.createElement("a");
-  link.className = "btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1";
-  link.href = target.url;
-  link.innerHTML = `<span class="iconify" data-icon="tabler:external-link" aria-hidden="true"></span> Open in ${target.toolLabel}`;
-  popover.appendChild(link);
+  if (target) {
+    const link = document.createElement("a");
+    link.className = "btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1";
+    link.href = target.url;
+    link.innerHTML = `<span class="iconify" data-icon="tabler:external-link" aria-hidden="true"></span> Open in ${target.toolLabel}`;
+    popover.appendChild(link);
+  }
+
+  // Contents claim rows — one Claim button per remaining item, calling the
+  // SAME shared claimMarkerContentEntry (marker-contents.js) the Dashboard's
+  // own Map widget calls too, so the two never grow independently-diverging
+  // claim logic even though each still builds its own popover DOM.
+  contents.forEach((entry) => {
+    const row = document.createElement("div");
+    row.className = "d-flex align-items-center justify-content-between gap-2";
+    const label = document.createElement("span");
+    label.className = "small text-truncate";
+    label.textContent = describeMarkerContentEntry(entry);
+    const claimButton = document.createElement("button");
+    claimButton.type = "button";
+    claimButton.className = "btn btn-outline-primary btn-sm flex-shrink-0";
+    claimButton.textContent = "Claim";
+    claimButton.addEventListener("click", async () => {
+      claimButton.disabled = true;
+      try {
+        const groupId = getActiveCampaignGroupId();
+        const result = await claimMarkerContentEntry({
+          dataManager,
+          groupId,
+          shareToken: currentShareToken,
+          mapId: state.map.id,
+          layerId: layer.id,
+          elementId: markerElement.id,
+          contentId: entry.id,
+        });
+        closeRestrictedMarkerLinkPopover();
+        if (!result) {
+          status?.show("That's already been claimed.", { type: "info", timeout: 2500 });
+          return;
+        }
+        applyRemoteMapLayers(result.map);
+        status?.show(`Claimed ${result.label} for ${result.destinationLabel}.`, { type: "success", timeout: 2500 });
+      } catch (error) {
+        claimButton.disabled = false;
+        status?.show(error?.message || "Unable to claim that item.", { type: "error", timeout: 4000 });
+      }
+    });
+    row.append(label, claimButton);
+    popover.appendChild(row);
+  });
 
   mapContainer.appendChild(popover);
   restrictedMarkerLinkPopover = popover;
@@ -4040,7 +4094,7 @@ function renderRestrictedLayerOverlays(overlay) {
         void persistRestrictedMarkerMove(layer, markerElement, snappedPosition),
       onDoorToggled: (layer, elementId) => void toggleDoorRestricted(layer.id, elementId),
       onMarkerClicked: (layer, markerElement, dotEl, draggable) => {
-        if (!draggable) openRestrictedMarkerLinkPopover(markerElement, dotEl);
+        if (!draggable) openRestrictedMarkerLinkPopover(layer, markerElement, dotEl);
       },
       onDragStateChange: (dragging) => {
         isDraggingRestrictedMarker = dragging;
@@ -5478,6 +5532,48 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
   });
   container.appendChild(createFieldRow([sizeField, heightField, visionRangeField], { columns: 3 }));
 
+  // Which clip createMarkerDot cuts the marker into — "circle" (the real,
+  // concrete default, matches every marker placed before this field
+  // existed) or "square", which fills the cell edge-to-edge with sharp
+  // corners instead. Independent of Show outline just below: a square
+  // token can still carry a border ring, a circular one can still go
+  // borderless.
+  const shapeField = createCompactField({
+    type: "select",
+    label: "Shape",
+    controlClass: "form-select form-select-sm",
+    options: [
+      { value: "circle", label: "Circle" },
+      { value: "square", label: "Square" },
+    ],
+  });
+  const shapeSelect = shapeField.querySelector("select");
+  shapeSelect.value = markerElement.shape === "square" ? "square" : "circle";
+  shapeSelect.addEventListener("change", () => {
+    applyMarkerElementChange("marker shape", () => {
+      markerElement.shape = shapeSelect.value === "square" ? "square" : "circle";
+    });
+  });
+
+  // Whether the marker's own outline ring renders at all (createMarkerDot's
+  // border + its always-on box-shadow ring) — on by default so every
+  // existing marker keeps its current look; the one case for turning it off
+  // is an object token (a chest, say) that needs a clean, borderless
+  // edge-to-edge fill rather than a circular ring around it.
+  const showOutlineField = createCheckField({
+    id: `marker-show-outline-${markerElement.id}`,
+    label: "Show outline",
+    switchStyle: true,
+  });
+  const showOutlineInput = showOutlineField.querySelector("input");
+  showOutlineInput.checked = markerElement.showOutline !== false;
+  showOutlineInput.addEventListener("change", () => {
+    applyMarkerElementChange("marker show outline", () => {
+      markerElement.showOutline = showOutlineInput.checked;
+    });
+  });
+  container.appendChild(createFieldRow([shapeField, showOutlineField], { columns: 2 }));
+
   // Per-marker override of the layer's own outline color (createMarkerDot
   // reads markerElement.outlineColor first, falling back to the layer
   // default) — shows whichever's currently EFFECTIVE (this marker's own if
@@ -6031,6 +6127,279 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
       }
     }
   }
+
+  // Contents — createMarkerContentEntry (map-model.js) items a player can
+  // later claim into their own Character inventory or the campaign's
+  // shared Party Inventory (see marker-contents.js's own header for the
+  // full claim mechanism). Any marker can carry this — a plain token, an
+  // NPC, a Monster, a Wonder-referencing marker — same layered-capability
+  // relationship Light/Shape already have with attachedMarkerId, not a
+  // separate "Container" marker type.
+  const contentsList = document.createElement("div");
+  contentsList.className = "d-flex flex-column gap-2";
+  function renderContentsList() {
+    contentsList.innerHTML = "";
+    const contents = markerElement.contents || [];
+    if (!contents.length) {
+      const emptyState = document.createElement("div");
+      emptyState.className = "small text-body-secondary";
+      emptyState.textContent = "No contents yet.";
+      contentsList.appendChild(emptyState);
+      return;
+    }
+    contents.forEach((entry) => {
+      const description = [
+        entry.kind === "wonder" ? "Wonder" : entry.kind === "currency" ? "Currency" : "",
+        entry.notes || "",
+      ]
+        .filter(Boolean)
+        .join(" · ");
+      const row = createListRow({
+        title: describeMarkerContentEntry(entry) || "Unnamed item",
+        description,
+        removeLabel: "Remove from contents",
+        onRemove: () => {
+          applyMarkerElementChange("marker remove content", () => {
+            markerElement.contents = (markerElement.contents || []).filter((item) => item.id !== entry.id);
+          });
+        },
+      });
+      contentsList.appendChild(row);
+
+      // "Give to" — the GM delivering an entry directly to a specific
+      // player's Character (or the Party), without that player needing to
+      // be present to claim it themselves. Not every player has a
+      // dashboard open, and the GM should always be able to complete this
+      // regardless — same claimMarkerContentEntry the player-facing Claim
+      // button (openRestrictedMarkerLinkPopover above) calls, just with an
+      // explicit recipient instead of "whoever's clicking." A REAL
+      // transaction (server round-trip, actual currency/inventory
+      // delivery, Group Log entry) — deliberately NOT routed through
+      // applyMarkerElementChange/recordHistory's own local-edit-with-undo
+      // path, matching that the player-facing Claim button has no undo
+      // either.
+      const giveToSelect = document.createElement("select");
+      giveToSelect.className = "form-select form-select-sm mt-1";
+      giveToSelect.setAttribute("aria-label", `Give ${describeMarkerContentEntry(entry) || "item"} to`);
+      const placeholderOption = document.createElement("option");
+      placeholderOption.value = "";
+      placeholderOption.textContent = "Give to…";
+      giveToSelect.appendChild(placeholderOption);
+      const partyOption = document.createElement("option");
+      partyOption.value = "party";
+      partyOption.textContent = "The Party";
+      giveToSelect.appendChild(partyOption);
+      loadGiveToRoster().then((roster) => {
+        roster.forEach((option) => {
+          const opt = document.createElement("option");
+          opt.value = option.characterId;
+          opt.textContent = option.label;
+          giveToSelect.appendChild(opt);
+        });
+      });
+      giveToSelect.addEventListener("change", async () => {
+        const value = giveToSelect.value;
+        if (!value) return;
+        giveToSelect.disabled = true;
+        try {
+          const groupId = getActiveCampaignGroupId();
+          const roster = await loadGiveToRoster();
+          const recipient =
+            value === "party"
+              ? { type: "party" }
+              : { type: "character", characterId: value, label: roster.find((option) => option.characterId === value)?.label || value };
+          const result = await claimMarkerContentEntry({
+            dataManager,
+            groupId,
+            shareToken: currentShareToken,
+            mapId: state.map.id,
+            layerId: layer.id,
+            elementId: markerElement.id,
+            contentId: entry.id,
+            recipient,
+          });
+          if (!result) {
+            status?.show("That's already been claimed.", { type: "info", timeout: 2500 });
+            return;
+          }
+          markerElement.contents = (markerElement.contents || []).filter((item) => item.id !== entry.id);
+          renderContentsList();
+          status?.show(`Gave ${result.label} to ${result.destinationLabel}.`, { type: "success", timeout: 2500 });
+        } catch (error) {
+          status?.show(error?.message || "Unable to give that item.", { type: "error", timeout: 4000 });
+          giveToSelect.disabled = false;
+          giveToSelect.value = "";
+        }
+      });
+      row.appendChild(giveToSelect);
+    });
+  }
+  // One shared roster fetch for the whole Contents panel (not one per
+  // entry) — cached for the lifetime of this render, same reasoning
+  // resolveGiveToOptions' own header comment gives for keeping roster
+  // lookups infrequent.
+  let giveToRosterPromise = null;
+  function loadGiveToRoster() {
+    if (!giveToRosterPromise) {
+      const groupId = getActiveCampaignGroupId();
+      giveToRosterPromise = groupId ? resolveGiveToOptions(dataManager, groupId, currentShareToken).catch(() => []) : Promise.resolve([]);
+    }
+    return giveToRosterPromise;
+  }
+  renderContentsList();
+
+  const addItemNameInput = document.createElement("input");
+  addItemNameInput.type = "text";
+  addItemNameInput.className = "form-control form-control-sm";
+  addItemNameInput.placeholder = "Item name";
+  const addItemQuantityInput = document.createElement("input");
+  addItemQuantityInput.type = "number";
+  addItemQuantityInput.className = "form-control form-control-sm";
+  addItemQuantityInput.min = "1";
+  addItemQuantityInput.value = "1";
+  addItemQuantityInput.style.width = "4.5rem";
+  addItemQuantityInput.setAttribute("aria-label", "Quantity");
+  const addItemButton = createIconButton({
+    icon: "tabler:plus",
+    label: "Add item to contents",
+    onClick: () => {
+      const name = addItemNameInput.value.trim();
+      if (!name) return;
+      const quantity = Number(addItemQuantityInput.value) || 1;
+      applyMarkerElementChange("marker add content", () => {
+        markerElement.contents = [...(markerElement.contents || []), createMarkerContentEntry({ kind: "item", name, quantity })];
+      });
+    },
+  });
+  const addItemRow = document.createElement("div");
+  addItemRow.className = "d-flex gap-2 align-items-center";
+  addItemRow.append(addItemNameInput, addItemQuantityInput, addItemButton);
+
+  // Picks an existing Vault Wonder record instead of typing a freeform
+  // name — openContentPicker (content-picker.js) is the suite's real
+  // shared "pick one record of a kind" component (already used by
+  // relationship-editor.js/dashboard.js/repository/js/app.js), lazily
+  // fetching summaries rather than eagerly preloading every Wonder up
+  // front, which matters once that kind is in the thousands.
+  const addWonderButton = createIconButton({
+    icon: "tabler:wand",
+    label: "Add a Wonder to contents",
+    onClick: async () => {
+      if (!dataManager) return;
+      const id = await openContentPicker({ dataManager, kind: "wonder", title: "Choose a Wonder" });
+      if (!id) return;
+      let name = id;
+      try {
+        const result = await dataManager.get("wonder", id, { preferLocal: true });
+        name = result?.payload?.name || id;
+      } catch (error) {
+        // Falls back to the raw id as the display name — still a valid,
+        // if less friendly, entry; editable afterward like any other.
+      }
+      applyMarkerElementChange("marker add content", () => {
+        markerElement.contents = [...(markerElement.contents || []), createMarkerContentEntry({ kind: "wonder", name, refId: id })];
+      });
+    },
+  });
+
+  // System-defined currency, resolved fresh against whichever campaign is
+  // currently active — never a hardcoded denomination vocabulary (5e's own
+  // cp/sp/ep/gp/pp is just one System's choice among many; a different
+  // System defines its own currency field entirely, or none at all — same
+  // reasoning inventory-weight.js's own extractCurrencyWeight already
+  // follows for reading it). No "Add Currency" row at all for a System
+  // with no currency field of its own — same "no error/hidden state for an
+  // inapplicable field" precedent a wall's own doorState already follows,
+  // rather than showing a picker with nothing real to pick from.
+  let currencyDenominations = [];
+  try {
+    const groupContext = await resolveGroupContext(dataManager).catch(() => null);
+    if (groupContext?.systemId) {
+      const systemResult = await dataManager.get("system", groupContext.systemId, { preferLocal: true }).catch(() => null);
+      const fields = Array.isArray(systemResult?.payload?.fields) ? systemResult.payload.fields : [];
+      const currencyField = fields.find((field) => field?.type === "array" && field.key === "currency");
+      currencyDenominations = Array.isArray(currencyField?.values) ? currencyField.values : [];
+    }
+  } catch (error) {
+    currencyDenominations = [];
+  }
+  let addCurrencyRow = null;
+  if (currencyDenominations.length) {
+    const currencyDenominationSelect = document.createElement("select");
+    currencyDenominationSelect.className = "form-select form-select-sm";
+    currencyDenominations.forEach((denomination) => {
+      const option = document.createElement("option");
+      option.value = denomination.shortName;
+      option.textContent = denomination.name || denomination.shortName;
+      currencyDenominationSelect.appendChild(option);
+    });
+    const currencyAmountInput = document.createElement("input");
+    currencyAmountInput.type = "number";
+    currencyAmountInput.className = "form-control form-control-sm";
+    currencyAmountInput.min = "1";
+    currencyAmountInput.value = "1";
+    currencyAmountInput.style.width = "5rem";
+    currencyAmountInput.setAttribute("aria-label", "Amount");
+    const addCurrencyButton = createIconButton({
+      icon: "tabler:coin",
+      label: "Add currency to contents",
+      onClick: () => {
+        const amount = Number(currencyAmountInput.value) || 0;
+        if (amount <= 0) return;
+        const denomination = currencyDenominations.find((entry) => entry.shortName === currencyDenominationSelect.value);
+        if (!denomination) return;
+        applyMarkerElementChange("marker add content", () => {
+          markerElement.contents = [
+            ...(markerElement.contents || []),
+            createMarkerContentEntry({
+              kind: "currency",
+              name: denomination.name || denomination.shortName,
+              quantity: amount,
+              denomination: denomination.shortName,
+            }),
+          ];
+        });
+      },
+    });
+    addCurrencyRow = document.createElement("div");
+    addCurrencyRow.className = "d-flex gap-2 align-items-center";
+    addCurrencyRow.append(currencyDenominationSelect, currencyAmountInput, addCurrencyButton);
+  }
+
+  const claimTargetField = createFormFloatingField({ type: "select", label: "Claim Target" });
+  const claimTargetSelect = claimTargetField.querySelector("select");
+  [
+    { value: "character", label: "Character (clicking player's own)" },
+    { value: "party", label: "Party Inventory (shared)" },
+  ].forEach(({ value, label }) => {
+    const option = document.createElement("option");
+    option.value = value;
+    option.textContent = label;
+    claimTargetSelect.appendChild(option);
+  });
+  claimTargetSelect.value = markerElement.claimTarget === "party" ? "party" : "character";
+  claimTargetSelect.addEventListener("change", () => {
+    applyMarkerElementChange("marker claim target", () => {
+      markerElement.claimTarget = claimTargetSelect.value === "party" ? "party" : "character";
+    });
+  });
+
+  // The object-arg createCollapsibleSection (imported as
+  // createFullCollapsibleSection — see this file's own import comment),
+  // not the positional one "Active Icons" above uses — this is the variant
+  // whose own header row places the help icon directly beside the "Contents"
+  // label itself, rather than as a separate line inside the body.
+  const contentsBody = document.createElement("div");
+  contentsBody.className = "d-flex flex-column gap-2";
+  contentsBody.append(contentsList, addItemRow, addWonderButton, ...(addCurrencyRow ? [addCurrencyRow] : []), claimTargetField);
+  const contentsSection = createFullCollapsibleSection({
+    label: "Contents",
+    helpTopic: "orrery.markerContents",
+    collapsed: !(markerElement.contents || []).length,
+    content: contentsBody,
+  }).section;
+  container.appendChild(contentsSection);
+  initHelpSystem({ root: contentsSection });
 
   // Same shared icon-toolbar mount every other selection kind (wall, shape,
   // light) already uses, not a standalone inline button — renderSelection()

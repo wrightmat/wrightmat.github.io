@@ -1,7 +1,8 @@
 {
   "name": "Eye Thief",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Belashyrra can see through the eyes of all creatures within 120 feet of it. It can use its Eye Ray through any creature within 120 feet of it, as though it were in that creature's space.",
   "mechanics": {

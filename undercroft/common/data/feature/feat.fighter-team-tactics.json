@@ -1,0 +1,26 @@
+{
+  "id": "feat.fighter-team-tactics",
+  "name": "Team Tactics",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "When you use Group Recovery, each chosen ally has Advantage on D20 Tests until the start of your next turn.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "When you use Group Recovery, each chosen ally has Advantage on D20 Tests until the start of your next turn."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

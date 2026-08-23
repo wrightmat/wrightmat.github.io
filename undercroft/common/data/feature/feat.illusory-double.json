@@ -1,7 +1,8 @@
 {
   "name": "Illusory Double",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Once per short rest, the creature can create an illusory duplicate of itself that lasts one minute.",
   "mechanics": {

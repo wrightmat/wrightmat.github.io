@@ -2,7 +2,8 @@
   "id": "bully",
   "name": "Bully",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Overwhelms weaker targets through intimidation and relentless pressure.",
   "recipe": {

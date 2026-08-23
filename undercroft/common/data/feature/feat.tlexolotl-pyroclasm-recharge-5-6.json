@@ -1,7 +1,8 @@
 {
   "name": "Pyroclasm (Recharge 5–6)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Gouts of molten lava erupt from the creature’s body. Each creature in a 30-foot-radius sphere centered on the creature must make a DC 15 Dexterity saving throw. On a failed saving throw, a creature takes 21 (6d6) fire damage and 21 (6d6) bludgeoning damage. On a successful saving throw, a creature takes half as much damage.",
   "mechanics": {

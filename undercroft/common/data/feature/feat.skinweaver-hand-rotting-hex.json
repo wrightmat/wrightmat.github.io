@@ -1,7 +1,8 @@
 {
   "name": "Rotting Hex",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The target must make a DC 15 Dexterity saving throw. On a failed save, a creature takes 10 (2d6 + 4) necrotic damage. On a successful save, a creature takes no damage. If the target moves closer to the creature on the target’s next turn, the target takes an additional 7 (1d6 + 4) necrotic damage.",
   "mechanics": {

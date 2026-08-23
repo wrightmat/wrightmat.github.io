@@ -1,7 +1,8 @@
 {
   "name": "Limited Invisibility",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "When the creature is on an icy surface or underwater, it is invisible. In all other terrain, the creature has advantage on Dexterity (Stealth) checks. Seals, other pinnipeds, and creatures chosen by the creature can see it.",
   "mechanics": {

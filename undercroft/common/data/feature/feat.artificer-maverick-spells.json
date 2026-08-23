@@ -1,0 +1,26 @@
+{
+  "id": "feat.artificer-maverick-spells",
+  "name": "Maverick Spells",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You learn one cantrip of your choice from the Artificer, Cleric, or Wizard spell list. The chosen cantrip counts as an Artificer spell for you, and Intelligence is your spellcasting ability for it.In addition, any time you prepare Artificer spells, you can prepare an additional number of spells equal to your Proficiency Bonus. These additional spells can be chosen from the Artificer, Cleric, and Wizard spells lists, and the chosen spells count as Artificer spells for you.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "You learn one cantrip of your choice from the Artificer, Cleric, or Wizard spell list. The chosen cantrip counts as an Artificer spell for you, and Intelligence is your spellcasting ability for it.In addition, any time you prepare Artificer spells, you can prepare an additional number of spells equal to your Proficiency Bonus. These additional spells can be chosen from the Artificer, Cleric, and Wizard spells lists, and the chosen spells count as Artificer spells for you."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

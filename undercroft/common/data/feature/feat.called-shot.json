@@ -1,7 +1,8 @@
 {
   "name": "Called Shot",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Against a target whose weaknesses have been revealed, deals additional damage or applies an extra condition.",
   "mechanics": {

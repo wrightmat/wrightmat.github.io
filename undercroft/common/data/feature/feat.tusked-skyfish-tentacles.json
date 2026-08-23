@@ -1,7 +1,8 @@
 {
   "name": "Tentacles",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Melee Weapon Attack: +5 to hit, reach 10 ft., one creature. Hit: 13 (3d6 + 3) bludgeoning damage plus 10 (3d6) lightning damage. The target is also grappled (escape DC 13). Until this grapple ends, the target is restrained. While grappling the target, the tusked skyfish can’t use this attack against other targets. When the tusked skyfish moves, a Medium or smaller target it is grappling moves with it.",
   "mechanics": {

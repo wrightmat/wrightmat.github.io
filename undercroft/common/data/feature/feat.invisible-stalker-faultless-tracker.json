@@ -1,7 +1,8 @@
 {
   "name": "Faultless Tracker",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature is given a quarry by its summoner. The creature knows the direction and distance to its quarry as long as the two of them are on the same plane of existence. The creature also knows the location of its summoner.",
   "mechanics": {

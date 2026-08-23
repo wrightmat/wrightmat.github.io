@@ -1,7 +1,8 @@
 {
   "name": "Illusory Strike",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Ranged Spell Attack: +3 to hit, range 30 ft., one target. Hit: 10 (3d6) psychic damage. The target must make a DC 13 Wisdom saving throw or be frightened until the end of its next turn.",
   "mechanics": {

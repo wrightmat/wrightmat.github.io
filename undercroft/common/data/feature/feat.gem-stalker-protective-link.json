@@ -1,7 +1,8 @@
 {
   "name": "Protective Link",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "When another creature the monstrosity can see within 30 feet of it is about to take damage, the monstrosity reduces that damage by 10 (3d6). The monstrosity then takes damage equal to that amount.",
   "mechanics": {

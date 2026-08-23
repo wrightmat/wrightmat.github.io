@@ -1,7 +1,8 @@
 {
   "name": "Hold Breath",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature can hold its breath for 1 hour.",
   "mechanics": {

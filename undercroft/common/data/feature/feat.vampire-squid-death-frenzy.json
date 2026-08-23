@@ -1,7 +1,8 @@
 {
   "name": "Death Frenzy",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "When a creature drops to 0 HP nearby, all vampire squid within 100 ft gain advantage on their next attack.",
   "mechanics": {

@@ -1,7 +1,8 @@
 {
   "name": "Frightening Display",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "When the creature uses its Fin Flare, it looks one size category larger than it actually is to any creature that can see it until the start of its next turn.",
   "mechanics": {

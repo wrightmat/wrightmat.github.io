@@ -1,7 +1,8 @@
 {
   "name": "Disrupt Concentration",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Their sharp, shrill tongues and sharper claws make ink devils more distracting than their own combat prowess might indicate. As a bonus action, a creature can force a single foe within 30 feet of the creature to make a DC 13 Wisdom saving throw or lose concentration until the beginning of the target’s next turn.",
   "mechanics": {

@@ -1,7 +1,8 @@
 {
   "name": "Tactical Positioning",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "As a bonus action, the creature can swap places with a willing ally within 5 feet of it.",
   "mechanics": {

@@ -1,7 +1,8 @@
 {
   "name": "Spell Attack Bonus",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "While wielded as a spellcasting focus, grants a bonus to spell attack rolls.",
   "mechanics": {

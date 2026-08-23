@@ -1,7 +1,8 @@
 {
   "name": "Ranged Damage Bonus",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Boosts damage dealt with ranged weapons, but not the attack roll itself.",
   "mechanics": {

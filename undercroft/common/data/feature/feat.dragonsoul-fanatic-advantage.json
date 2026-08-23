@@ -1,7 +1,8 @@
 {
   "name": "Fanatic Advantage",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Once per turn, if the creature makes a weapon attack with advantage on the attack roll and hits, the target takes an extra 10 (3d6) damage.",
   "mechanics": {

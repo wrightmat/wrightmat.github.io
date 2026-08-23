@@ -1,7 +1,8 @@
 {
   "name": "General Bonus",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "A flat bonus to ability checks and saving throws in general — not tied to one specific skill or ability.",
   "mechanics": {

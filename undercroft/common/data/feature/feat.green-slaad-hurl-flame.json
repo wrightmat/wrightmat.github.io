@@ -1,7 +1,8 @@
 {
   "name": "Hurl Flame",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Ranged Spell Attack: +4 to hit, range 60 ft., one target. Hit: 10 (3d6) fire damage. The fire ignites flammable objects that aren’t being worn or carried.",
   "mechanics": {

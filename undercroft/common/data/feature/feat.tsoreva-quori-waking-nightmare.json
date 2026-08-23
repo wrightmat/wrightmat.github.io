@@ -1,7 +1,8 @@
 {
   "name": "Waking Nightmare",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature attempts to take control of an unconscious creature whose dreams it is invading. The creature takes 11 (2d10) psychic damage, then must succeed on a DC 14 Charisma saving throw or gain temporary hit points equal to half its maximum hit points and rise under the creature's control. While the creature has these temporary hit points, it automatically fails Charisma saving throws.",
   "mechanics": {

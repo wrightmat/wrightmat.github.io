@@ -1,7 +1,8 @@
 {
   "name": "Scintillating Eye",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Magical, kaleidoscopic light emanates from one of the creature’s eyes as the creature targets one creature it can see within 30 feet of itself. The target must make a DC 12 Wisdom saving throw, taking 6 (1d12) psychic damage on a failed save, or half as much damage on a successful one.",
   "mechanics": {

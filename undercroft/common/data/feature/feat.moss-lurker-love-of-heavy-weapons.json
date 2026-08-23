@@ -1,7 +1,8 @@
 {
   "name": "Love of Heavy Weapons",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "While moss lurkers can use heavy weapons, they have disadvantage while wielding them.",
   "mechanics": {

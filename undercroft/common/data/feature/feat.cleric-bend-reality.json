@@ -1,0 +1,26 @@
+{
+  "id": "feat.cleric-bend-reality",
+  "name": "Bend Reality",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "When an ally you can see within 30 feet of yourself fails a saving throw, you can replace the roll with a 20, potentially changing the outcome. Once you use this feature, you can’t use it again until you finish a Short or Long Rest.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "When an ally you can see within 30 feet of yourself fails a saving throw, you can replace the roll with a 20, potentially changing the outcome. Once you use this feature, you can’t use it again until you finish a Short or Long Rest."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

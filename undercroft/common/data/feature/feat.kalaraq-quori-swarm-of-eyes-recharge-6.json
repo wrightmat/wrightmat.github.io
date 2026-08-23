@@ -1,7 +1,8 @@
 {
   "name": "Swarm of Eyes (Recharge 6)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature creates a swarm of spectral eyes that fills a 30-foot-radius sphere centered on a point it can see within 60 feet of it. Each creature in that area must make a DC 21 Wisdom saving throw. On a failure, a creature takes 45 (10d8) psychic damage, and it is blinded for 1 minute. On a success, a creature takes half as much damage and isn’t blinded. A blinded creature can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success.",
   "mechanics": {

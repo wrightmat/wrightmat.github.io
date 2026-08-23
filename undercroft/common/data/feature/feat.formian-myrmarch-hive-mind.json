@@ -1,7 +1,8 @@
 {
   "name": "Hive Mind",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature is immune to the charmed and frightened conditions and cannot be surprised while within 30 feet of at least one other formian.",
   "mechanics": {

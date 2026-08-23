@@ -1,7 +1,8 @@
 {
   "name": "Stunning Croak (1/long rest)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The red slaadi emits a loud croak. All targets within 20 feet must succeed a DC 14 Constitution saving throw or suffer the stunned condition for 1d3 rounds.",
   "mechanics": {

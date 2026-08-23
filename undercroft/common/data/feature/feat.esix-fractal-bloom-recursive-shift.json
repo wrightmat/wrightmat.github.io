@@ -1,7 +1,8 @@
 {
   "name": "Recursive Shift",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Esix teleports up to 15 feet to an unoccupied space it can see.",
   "mechanics": {

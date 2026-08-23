@@ -1,7 +1,8 @@
 {
   "name": "Shadow Stealing Ray (Recharge 5-6)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature emits a beam from its single eye. One target within 60 feet of the creature is hit automatically by the ray. The target is knocked 20 feet back and must succeed on a DC 15 Dexterity saving throw or be knocked prone. The target’s shadow stays in the space the target was originally in, and acts as an undead shadow under the command of the creature. If the creature hit with the shadow stealing ray flees the encounter, it is without a natural shadow for 1d12 days before the undead shadow fades and the creature’s natural shadow returns. The undead shadow steals the body of its creature of origin if that creature is killed during the encounter; in that case, the creature’s alignment shifts to evil and it falls under the command of the creature. The original creature regains its natural shadow immediately if the undead shadow is slain. A creature can only have its shadow stolen by the shadow stealing ray once per day, even if hit by the rays of two different psoglav demons, but it can be knocked back by it every time it is hit.",
   "mechanics": {

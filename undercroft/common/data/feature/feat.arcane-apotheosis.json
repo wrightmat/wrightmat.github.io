@@ -1,0 +1,24 @@
+{
+  "id": "feat.arcane-apotheosis",
+  "name": "Arcane Apotheosis",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "<p>While your Innate Sorcery feature is active, you can use one Metamagic option on each of your turns without spending Sorcery Points on it.</p>",
+  "mechanics": {
+    "type": "passive",
+    "text": "<p>While your Innate Sorcery feature is active, you can use one Metamagic option on each of your turns without spending Sorcery Points on it.</p>"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

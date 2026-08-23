@@ -427,6 +427,18 @@
       "href": "../loom/index.html?help=loom.libraryTable"
     },
     {
+      "id": "loom.relationships",
+      "title": "Relationships",
+      "summary": "Tie the Library item selected above to any other record — with a label you type yourself: \"Variant of,\" \"Requires,\" \"Part of,\" anything.",
+      "details": [
+        "Pick a target kind, choose the specific record, then type a relationship (a small suggestion list appears, but any text works).",
+        "Relationships show up on BOTH ends automatically — link a Subclass as \"Variant of\" its parent Class, and the Class's own list shows it back.",
+        "This is the only place to manage relationship records — they're no longer directly editable as raw JSON from the Type/Item pickers above."
+      ],
+      "category": "Loom",
+      "href": "../loom/index.html?help=loom.relationships"
+    },
+    {
       "id": "loom.library",
       "title": "Library",
       "summary": "Browse, edit, and assign every saved entity — Species, Classes, and any kind a creator defines, including Kind itself.",
@@ -568,6 +580,29 @@
       ],
       "category": "Loom",
       "href": "../loom/index.html#loom-groups"
+    },
+    {
+      "id": "loom.authDdbSession",
+      "title": "D&D Beyond Session",
+      "summary": "The session cookie used to fetch gated D&D Beyond pages (class/subclass/species/background scraping) — expires periodically and needs a fresh value pasted in when it does.",
+      "details": [
+        "Grab a fresh value by signing into dndbeyond.com in a browser, opening DevTools' Application/Storage tab, and copying the CobaltSession cookie's value — paste just that value here (the CobaltSession= prefix is added automatically if left off).",
+        "Check Now runs a live probe against a real D&D Beyond page and reports whether the current cookie still looks signed in. The same check also runs automatically once a day, and opportunistically on every real fetch made through this cookie.",
+        "A stale cookie doesn't error loudly — D&D Beyond just silently serves its logged-out preview instead, which can look like a successful but truncated import. If an import seems to be missing content partway through, check here first."
+      ],
+      "category": "Loom",
+      "href": "../loom/index.html#loom-auth"
+    },
+    {
+      "id": "loom.authAnthropicKey",
+      "title": "Anthropic API Key",
+      "summary": "The API key used by every tool's Generate Note feature — shared across the whole deployment, not per-user.",
+      "details": [
+        "Paste a key from an Anthropic Console account (console.anthropic.com) — it's stored encrypted, the same way as any other deployment credential.",
+        "Unlike the D&D Beyond session above, an API key doesn't silently expire, so there's no periodic validity check here — Configured just means a key is on file."
+      ],
+      "category": "Loom",
+      "href": "../loom/index.html#loom-auth"
     },
     {
       "id": "loom.systemArrayOptions",
@@ -726,7 +761,7 @@
       "title": "Setting",
       "summary": "Choose which Setting this Location belongs to — its Name and Description are edited under Setting Properties in the right pane.",
       "details": [
-        "A Setting belongs to one System (e.g. Forgotten Realms under D&D 5E); every Location belongs to one Setting (e.g. Sword Coast under Forgotten Realms).",
+        "A Setting belongs to one System (e.g. Forgotten Realms under D&D 5.5E); every Location belongs to one Setting (e.g. Sword Coast under Forgotten Realms).",
         "Leave this blank to start a new Setting (New in Setting Properties), or pick an existing one here to edit it or add Locations to it."
       ],
       "category": "Sanctum",
@@ -976,6 +1011,19 @@
       ],
       "category": "Forge",
       "href": "../forge/index.html#forge-stats"
+    },
+    {
+      "id": "forge.features",
+      "title": "Features",
+      "summary": "Attach discrete, Library-linked abilities to this NPC — the same shared Feature records Monsters use, hand-picked rather than auto-matched.",
+      "details": [
+        "Pick a Feature from the dropdown and Add — it appears in the list below with its own description.",
+        "A Feature with real mechanics (a weapon attack, a save effect, a generic active ability) gets its own numbers editor when you click its row.",
+        "Remove takes a Feature back off this NPC without deleting the shared Library record itself.",
+        "Unlike Monster/Character, nothing is auto-matched here — Forge NPCs are procedurally generated, not imported from prose, so there's nothing to convert automatically."
+      ],
+      "category": "Forge",
+      "href": "../forge/index.html#forge-features"
     },
     {
       "id": "forge.note",
@@ -1532,6 +1580,19 @@
         "Range, Color, and Opacity are all editable after placement in the inspector.",
         "A light's glow never shines through a wall — it's clipped to the same wall-aware visibility it uses to reveal fog, independent of whether Fog of War is even turned on for the grid layer.",
         "Attach a light to a token (its own inspector field) to have it move with that marker — a torch a character is carrying — instead of staying at a fixed point on the map."
+      ],
+      "category": "Orrery",
+      "href": "../orrery/index.html#orrery-selection"
+    },
+    {
+      "id": "orrery.markerContents",
+      "title": "Marker Contents",
+      "summary": "Any marker can hold items a player claims by clicking it on the map — a chest, a supply crate, loot on a monster's body.",
+      "details": [
+        "Add a freeform item (Name/Quantity), or Add Wonder to reference an existing Vault spell/magic item record directly.",
+        "Claim Target decides where a claimed item goes: the clicking player's own Character inventory, or the campaign's shared Party Inventory.",
+        "A marker with unclaimed Contents shows a small badge on the map. Clicking it (as a player) opens Claim buttons for whatever's still inside — claiming removes just that one item, so several players can split a container's contents between them.",
+        "Combine with a marker's own Hidden from Players toggle to keep a container secret until the GM reveals it."
       ],
       "category": "Orrery",
       "href": "../orrery/index.html#orrery-selection"

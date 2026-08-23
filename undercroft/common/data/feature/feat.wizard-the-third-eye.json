@@ -1,0 +1,26 @@
+{
+  "id": "feat.wizard-the-third-eye",
+  "name": "The Third Eye",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You can increase your powers of perception. As a Bonus Action, choose one of the following benefits, which lasts until you start a Short or Long Rest. You can’t use this feature again until you finish a Short or Long Rest.\n\nDarkvision\n\nYou gain Darkvision with a range of 120 feet.\n\nGreater Comprehension\n\nYou can read any language.\n\nSee Invisibility\n\nYou can cast See Invisibility without expending a spell slot.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "You can increase your powers of perception. As a Bonus Action, choose one of the following benefits, which lasts until you start a Short or Long Rest. You can’t use this feature again until you finish a Short or Long Rest.\n\nDarkvision\n\nYou gain Darkvision with a range of 120 feet.\n\nGreater Comprehension\n\nYou can read any language.\n\nSee Invisibility\n\nYou can cast See Invisibility without expending a spell slot."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

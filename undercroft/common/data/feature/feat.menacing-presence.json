@@ -1,7 +1,8 @@
 {
   "name": "Menacing Presence",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Creatures that start their turn within 10 feet of the monster must succeed on a save or have disadvantage on attacks against anyone but it.",
   "mechanics": {

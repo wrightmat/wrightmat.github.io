@@ -1,7 +1,8 @@
 {
   "name": "Ray of Fear (Recharge 4-6)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature’s eye emits an invisible, magical ray that targets one creature the creature can see within 60 feet of itself. The target must succeed on a DC 16 Wisdom saving throw or be frightened of the creature until the start of the creature’s next turn.",
   "mechanics": {

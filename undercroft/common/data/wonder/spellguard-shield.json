@@ -3,7 +3,8 @@
   "name": "Spellguard Shield",
   "notes": "Armor (shield), very rare (requires attunement)\n\nWhile holding this shield, you have advantage on saving throws against spells and other magical effects, and spell attacks have disadvantage against you.",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "url": "https://www.dnd5eapi.co/api/2014/magic-items/spellguard-shield",
   "mapping": "5e-api-magic-item",

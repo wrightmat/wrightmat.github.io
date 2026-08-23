@@ -1,7 +1,8 @@
 {
   "name": "Reduce to Memory (Recharge 6)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Thundering golden energy erupts around a creature the creature can see within 90 feet of it. The creature must make a DC 12 Constitution saving throw, taking 33 (6d10) thunder damage on a failed save, or half as much damage on a successful one. A Construct has disadvantage on the saving throw.",
   "mechanics": {

@@ -1,7 +1,8 @@
 {
   "name": "Shocking Touch",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "a creature’s body generates a potent charge of lightning. A creature that touches or makes a successful melee attack against a creature takes 5 (1d10) lightning damage.",
   "mechanics": {

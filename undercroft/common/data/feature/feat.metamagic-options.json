@@ -1,0 +1,24 @@
+{
+  "id": "feat.metamagic-options",
+  "name": "Metamagic Options",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "<p>The following options are available to your Metamagic feature. The options are presented in alphabetical order.</p>",
+  "mechanics": {
+    "type": "passive",
+    "text": "<p>The following options are available to your Metamagic feature. The options are presented in alphabetical order.</p>"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

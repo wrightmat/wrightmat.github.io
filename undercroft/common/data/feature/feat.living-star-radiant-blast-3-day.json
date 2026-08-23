@@ -1,7 +1,8 @@
 {
   "name": "Radiant Blast (3/day)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature unleashes a burst of radiant energy in a 120-foot radius. Creatures within the radius must make a DC 16 Dexterity saving throw, taking 38 (7d8) radiant damage on a failed save, or half as much damage on a successful one.",
   "mechanics": {

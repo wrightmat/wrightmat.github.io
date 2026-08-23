@@ -2,14 +2,24 @@
   "id": "res.dragonshard-khyber-large",
   "name": "Khyber Dragonshard, Large",
   "family": "dragonshard",
-  "systemIds": ["sys.dnd5e"],
-  "settingIds": ["eberron"],
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "settingIds": [
+    "eberron"
+  ],
   "description": "A deep blue or dark violet crystal laced with gleaming veins, grown deep underground near magma. Khyber shards have an affinity for binding magics — elemental binding for airships, the lightning rail, and elemental galleons all require one — and are used in phylacteries, planar binding, and necromantic rituals.",
   "category": "wondrous-item",
   "price": "3d8x250 gp",
   "tags": {
     "locationTypes": [],
-    "locationPurposes": ["commerce", "resource"],
-    "environments": ["underdark"]
+    "locationPurposes": [
+      "commerce",
+      "resource"
+    ],
+    "environments": [
+      "underdark"
+    ]
   }
 }
