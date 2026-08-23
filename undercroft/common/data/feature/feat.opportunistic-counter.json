@@ -1,7 +1,8 @@
 {
   "name": "Opportunistic Counter",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "When a creature misses the monster with an attack, the monster can immediately make one weapon attack against it.",
   "mechanics": {

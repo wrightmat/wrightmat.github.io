@@ -1,7 +1,8 @@
 {
   "name": "Sonic Pulse",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Ranged Spell Attack: +7 to hit, range 60 ft., one target. Hit: 21 (4d8 + 3) thunder damage. The creature can use this action only while underwater.",
   "mechanics": {

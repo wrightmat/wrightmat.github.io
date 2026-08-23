@@ -3,7 +3,8 @@
   "name": "Ring of Lightning Resistance",
   "notes": "Ring, rare (requires attunement)\n\nYou have resistance to lightning damage while wearing this citrine ring.",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "url": "https://www.dnd5eapi.co/api/2014/magic-items/ring-of-resistance-lightning",
   "mapping": "5e-api-magic-item",

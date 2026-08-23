@@ -3,7 +3,8 @@
   "name": "Potion of Gaseous Form",
   "notes": "Potion, rare\n\nWhen you drink this potion, you gain the effect of the gaseous form spell for 1 hour (no concentration required) or until you end the effect as a bonus action. This potion's container seems to hold fog that moves and pours like water.",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "url": "https://www.dnd5eapi.co/api/2014/magic-items/potion-of-gaseous-form",
   "mapping": "5e-api-magic-item",

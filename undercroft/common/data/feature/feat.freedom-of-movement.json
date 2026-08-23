@@ -1,7 +1,8 @@
 {
   "name": "Freedom of Movement",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Ignores difficult terrain and can't be magically slowed, paralyzed, or restrained.",
   "mechanics": {

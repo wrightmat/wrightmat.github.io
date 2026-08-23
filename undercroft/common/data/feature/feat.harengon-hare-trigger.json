@@ -1,0 +1,26 @@
+{
+  "id": "feat.harengon-hare-trigger",
+  "name": "Hare-Trigger",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You can add your proficiency bonus to your initiative rolls.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "You can add your proficiency bonus to your initiative rolls."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

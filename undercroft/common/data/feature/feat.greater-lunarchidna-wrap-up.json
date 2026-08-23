@@ -1,7 +1,8 @@
 {
   "name": "Wrap Up",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature wraps up a Medium or smaller creature restrained by webbing. The wrapped target is blinded, restrained, and unable to breathe, and it must succeed on a DC 13 Constitution saving throw at the start of each of the creature’s turns or take 5 (1d4 + 3) bludgeoning damage. The webbing can be attacked and destroyed (AC 10; hp 15; vulnerability to fire damage; immunity to bludgeoning, poison, and psychic damage). The creature can have only one creature wrapped at a time.",
   "mechanics": {

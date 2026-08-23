@@ -1,7 +1,8 @@
 {
   "name": "Heal Self (Costs 3 Actions)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature magically regains 11 (2d8 + 2) hit points.",
   "mechanics": {

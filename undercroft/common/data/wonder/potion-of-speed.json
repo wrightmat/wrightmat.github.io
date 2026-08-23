@@ -3,7 +3,8 @@
   "name": "Potion of Speed",
   "notes": "Potion, very rare\n\nWhen you drink this potion, you gain the effect of the haste spell for 1 minute (no concentration required). The potion's yellow fluid is streaked with black and swirls on its own.",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "url": "https://www.dnd5eapi.co/api/2014/magic-items/potion-of-speed",
   "mapping": "5e-api-magic-item",

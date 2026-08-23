@@ -1,7 +1,8 @@
 {
   "name": "Shrapnel Burst",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature launches a ball of bone shards from its tail at a point it can see within 120 feet of it. Each creature within 10 feet of that point must make a DC 17 Dexterity saving throw. On a failure, a creature takes 28 (8d6) piercing damage and is blinded for 1 minute. On a success, a creature takes half the damage and isn’t blinded. A blinded creature can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success.",
   "mechanics": {

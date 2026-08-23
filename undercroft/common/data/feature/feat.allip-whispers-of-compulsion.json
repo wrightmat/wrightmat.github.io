@@ -1,7 +1,8 @@
 {
   "name": "Whispers of Compulsion",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature chooses up to three creatures it can see within 60 feet of it. Each target must succeed on a DC 14 Wisdom saving throw, or it takes 12 (2d8 + 3) psychic damage and must use its reaction to make a melee weapon attack against one creature of the creature’s choice that the creature can see. Constructs and Undead are immune to this effect.",
   "mechanics": {

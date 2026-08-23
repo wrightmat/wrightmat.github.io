@@ -14,6 +14,16 @@ export function watchGroupForChanges({
   dataManager,
   groupId,
   shareToken = "",
+  // Whether THIS viewer owns (or admins) the group — the caller already
+  // knows this before ever mounting a watcher (workbench-character-view.js's
+  // own gameLogContext.access, resolved via listGroups, which never 401s).
+  // Deciding the route from this up front, rather than optimistically
+  // trying the owner/share-only full-document route and catching its
+  // failure, means a genuine member's browser console never logs a
+  // request that was ALWAYS going to fail — a caught exception still
+  // shows up as a red network-error line, which is exactly the kind of
+  // noise a real bug should stand out against, not get lost in.
+  isOwner = false,
   pollIntervalMs = 20000,
   onChange,
   onError,
@@ -29,6 +39,14 @@ export function watchGroupForChanges({
   // was just saved, and would otherwise silently revert it on screen until
   // the next tick happens to land after the write instead of racing it.
   let localWriteSeq = 0;
+  // The generic /content/group/{id} route only grants a non-owner reader
+  // via a share token or Character-linked share — a genuine campaign
+  // MEMBER with neither (the common case: a player just browsing their
+  // own character, no share link involved) always 401s there. Picked once
+  // up front, not re-derived every poll tick — access doesn't change
+  // mid-session, and isOwner/shareToken are both closure-captured from
+  // this call's own arguments anyway.
+  const useFullRoute = isOwner || Boolean(shareToken);
 
   function load() {
     if (!loadPromise) {
@@ -45,10 +63,21 @@ export function watchGroupForChanges({
       // preferLocal: false — the whole point is picking up a change someone
       // ELSE made (the GM, or another party member); a locally cached copy
       // would defeat that.
-      const result = await dataManager.get("group", groupId, { shareToken, preferLocal: false });
+      let payload;
+      if (useFullRoute) {
+        const result = await dataManager.get("group", groupId, { shareToken, preferLocal: false });
+        payload = result?.payload;
+      } else {
+        // Dedicated, member-aware read (public-only for a non-owner —
+        // server/groups.py's get_group_properties) — never attempts the
+        // route above at all for this viewer, so there's nothing here to
+        // catch or fall back from.
+        const result = await dataManager.getGroupProperties(groupId);
+        payload = { properties: result.properties, propertyValues: result.propertyValues };
+      }
       if (destroyed) return;
       if (seqAtStart !== localWriteSeq) return; // stale — see localWriteSeq's own comment
-      onChange?.(result?.payload);
+      onChange?.(payload);
     } catch (error) {
       if (!destroyed) onError?.(error);
     }

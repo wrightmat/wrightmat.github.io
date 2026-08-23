@@ -1,7 +1,8 @@
 {
   "name": "Rejuvenation",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "If it has a destroyed body part, or is destroyed outright, the creature reforms after a time unless specific conditions permanently end it.",
   "mechanics": {

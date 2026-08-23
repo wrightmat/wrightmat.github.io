@@ -1,0 +1,26 @@
+{
+  "id": "feat.druid-circle-of-the-land-spells",
+  "name": "Circle of the Land Spells",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "Whenever you finish a Long Rest, choose one type of land: arid, polar, temperate, or tropical. Consult the table below that corresponds to the chosen type; you have the spells listed for your Druid level and lower prepared.\n\nArid Land\n\nLevel 3: Blur, Burning Hands, Fire Bolt\n\nLevel 5: Fireball\n\nLevel 7: Blight\n\nLevel 9: Wall of Stone\n\nPolar Land\n\nLevel 3: Fog Cloud, Hold Person, Ray of Frost\n\nLevel 5: Sleet Storm\n\nLevel 7: Ice Storm\n\nLevel 9: Cone of Cold\n\nTemperate Land\n\nLevel 3: Misty Step, Shocking Grasp, Sleep\n\nLevel 5: Lightning Bolt\n\nLevel 7: Freedom of Movement\n\nLevel 9: Tree Stride\n\nTropical Land\n\nLevel 3: Acid Splash, Ray of Sickness, Web\n\nLevel 5: Stinking Cloud\n\nLevel 7: Polymorph\n\nLevel 9: Insect Plague",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "Whenever you finish a Long Rest, choose one type of land: arid, polar, temperate, or tropical. Consult the table below that corresponds to the chosen type; you have the spells listed for your Druid level and lower prepared.\n\nArid Land\n\nLevel 3: Blur, Burning Hands, Fire Bolt\n\nLevel 5: Fireball\n\nLevel 7: Blight\n\nLevel 9: Wall of Stone\n\nPolar Land\n\nLevel 3: Fog Cloud, Hold Person, Ray of Frost\n\nLevel 5: Sleet Storm\n\nLevel 7: Ice Storm\n\nLevel 9: Cone of Cold\n\nTemperate Land\n\nLevel 3: Misty Step, Shocking Grasp, Sleep\n\nLevel 5: Lightning Bolt\n\nLevel 7: Freedom of Movement\n\nLevel 9: Tree Stride\n\nTropical Land\n\nLevel 3: Acid Splash, Ray of Sickness, Web\n\nLevel 5: Stinking Cloud\n\nLevel 7: Polymorph\n\nLevel 9: Insect Plague"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

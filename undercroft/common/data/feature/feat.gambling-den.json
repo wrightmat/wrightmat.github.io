@@ -1,7 +1,8 @@
 {
   "name": "Notorious Gambling Den",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "A den of high-stakes games runs here, openly or otherwise — fortunes are won and lost on the turn of a card or the fall of dice.",
   "mechanics": {

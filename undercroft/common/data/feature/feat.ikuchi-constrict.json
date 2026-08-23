@@ -1,7 +1,8 @@
 {
   "name": "Constrict",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Melee Weapon Attack: +8 to hit, reach 20 ft., one Huge or smaller creature. Hit: 14 (2d8 + 5) bludgeoning damage. The target is grappled (escape DC 16) if the ikuchi isn’t already constricting two other creatures. Until this grapple ends, the target is restrained.",
   "mechanics": {

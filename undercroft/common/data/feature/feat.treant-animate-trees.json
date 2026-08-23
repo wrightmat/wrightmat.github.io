@@ -1,7 +1,8 @@
 {
   "name": "Animate Trees",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature magically animates one or two trees it can see within 60 feet of it. These trees have the same statistics as a creature, except they have Intelligence and Charisma scores of 1, they can't speak, and they have only the Slam action option. An animated tree acts as an ally of the creature. The tree remains animate for 1 day or until it dies; until the creature dies or is more than 120 feet from the tree; or until the creature takes a bonus action to turn it back into an inanimate tree. The tree then takes root if possible.",
   "mechanics": {

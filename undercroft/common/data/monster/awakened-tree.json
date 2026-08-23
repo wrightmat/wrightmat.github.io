@@ -3,7 +3,8 @@
   "notes": "An awakened tree is an ordinary tree given sentience and mobility by the awaken spell or similar magic.",
   "type": "plant",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "image": "https://www.dnd5eapi.co/api/images/monsters/awakened-tree.png",
   "stats": {

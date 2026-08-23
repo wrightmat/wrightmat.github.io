@@ -1,7 +1,8 @@
 {
   "name": "claws",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Melee Weapon Attack: +5 to hit, reach 15 ft., one target. Hit: 12 (2d8 + 3) slashing damage and the target is grappled (escape DC 13), restrained, and poisoned (DC 13 Strength saving throw negates, lasts while grappled and 1 round after). The creature can shift the position of a grappled creature by up to 15 feet as a bonus action. While it has a creature grappled, the creature can use its claws attack only against the grappled creature.",
   "mechanics": {

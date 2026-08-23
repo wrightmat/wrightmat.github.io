@@ -1,7 +1,8 @@
 {
   "name": "Dissolving Gaze",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "When a creature that can see the creature’s eyes starts its turn within 30 feet of the creature, the creature can force it to make a DC 13 Constitution saving throw if the creature isn’t incapacitated and can see the creature. On a failed saving throw, the creature takes 3 (1d6) acid damage, its hit point maximum is reduced by an amount equal to the acid damage it takes (which ends after a long rest), and it’s paralyzed until the start of its next turn. Unless surprised, a creature can avert its eyes at the start of its turn to avoid the saving throw. If the creature does so, it can’t see the creature until the start of its next turn, when it chooses again whether to avert its eyes. If the creature looks at the creature before then, it must immediately make the saving throw.",
   "mechanics": {

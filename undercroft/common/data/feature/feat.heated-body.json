@@ -1,7 +1,8 @@
 {
   "name": "Heated Body",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "A creature that touches the elemental or hits it with a melee attack while within 5 ft. of it takes 5 (1d10) fire damage.",
   "mechanics": {

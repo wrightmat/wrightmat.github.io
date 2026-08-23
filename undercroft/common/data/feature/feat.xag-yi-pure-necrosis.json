@@ -1,7 +1,8 @@
 {
   "name": "Pure Necrosis",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "A creature that touches the xeg-yi takes 9 (1d6 + 6) necrotic damage. Any nonmagical weapon made of metal or wood that hits the xeg-yi corrodes. After dealing damage, the weapon takes a permanent and cumulative -1 penalty to damage rolls. If its penalty drops to -5, the weapon is destroyed. Nonmagical ammunition made of metal or wood that hits the xeg-yi is destroyed after dealing damage.",
   "mechanics": {

@@ -1,7 +1,8 @@
 {
   "name": "Harrying Strikes",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature attack reduces the target's speed by 10 feet until the start of the monster's next turn.",
   "mechanics": {

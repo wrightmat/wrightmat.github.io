@@ -1,0 +1,26 @@
+{
+  "id": "feat.bard-keeper-of-history",
+  "name": "Keeper of History",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You gain proficiency in the History and Performance skills. If you already have these proficiencies, you instead gain Expertise.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "You gain proficiency in the History and Performance skills. If you already have these proficiencies, you instead gain Expertise."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

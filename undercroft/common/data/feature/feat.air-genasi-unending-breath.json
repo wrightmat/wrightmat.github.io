@@ -1,0 +1,26 @@
+{
+  "id": "feat.air-genasi-unending-breath",
+  "name": "Unending Breath",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You can hold your breath indefinitely while you’re not incapacitated.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "You can hold your breath indefinitely while you’re not incapacitated."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

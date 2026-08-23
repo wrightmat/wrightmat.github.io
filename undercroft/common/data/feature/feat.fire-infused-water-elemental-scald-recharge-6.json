@@ -1,7 +1,8 @@
 {
   "name": "Scald (Recharge 6)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "a creature sprays a 30-foot cone of superheated water. Each creature in the area must make a DC 12 Dexterity saving throw. On a failure, a creature takes 21 (6d6) f ire damage and is knocked prone. On a success, a creature takes half as much damage and isn’t knocked prone.",
   "mechanics": {

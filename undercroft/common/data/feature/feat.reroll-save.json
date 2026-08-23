@@ -1,7 +1,8 @@
 {
   "name": "Reroll Save",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Turns a failed saving throw into a success.",
   "mechanics": {

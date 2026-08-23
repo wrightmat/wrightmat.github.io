@@ -1,7 +1,8 @@
 {
   "name": "Shapeshifter",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature can use its action to polymorph into a Medium creature or back into its true form. Its statistics are the same in each form. Any equipment the creature is carrying or wearing isn’t transformed. The creature reverts to its true form when it dies.",
   "mechanics": {

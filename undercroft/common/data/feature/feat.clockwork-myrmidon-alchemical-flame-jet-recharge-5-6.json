@@ -1,7 +1,8 @@
 {
   "name": "Alchemical Flame Jet (Recharge 5–6)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature can spew a jet of alchemical fire in a line 20 feet long and 5 feet wide. Any creature in the path of the jet takes 26 (4d12) fire damage, or half damage with a successful DC 15 Dexterity saving throw. The creature can use this attack four times before its internal reservoir is emptied.",
   "mechanics": {

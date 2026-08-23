@@ -1,7 +1,8 @@
 {
   "name": "Ritual",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The spell can be cast as a ritual, adding 10 minutes to the casting time in exchange for not expending a spell slot.",
   "mechanics": {

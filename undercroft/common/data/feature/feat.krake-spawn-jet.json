@@ -1,7 +1,8 @@
 {
   "name": "Jet",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "While underwater, the creature can take the withdraw action to jet backward at a speed of 140 feet. It must move in a straight line while using this ability.",
   "mechanics": {

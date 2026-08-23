@@ -1,7 +1,8 @@
 {
   "name": "Radiant Eruption",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Melee or Ranged Spell Attack: +6 to hit, reach 5 ft. or range 120 ft., one target. Hit: 20 (5d6 + 3) radiant damage, and if the target is a creature, it must succeed on a DC 14 Wisdom saving throw or be blinded for 1 minute. The target can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success.",
   "mechanics": {

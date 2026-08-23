@@ -18,7 +18,8 @@
     }
   ],
   "feat": {
-    "index": "tavern-brawler",
+    "refKind": "feature",
+    "refId": "tavern-brawler",
     "name": "Tavern Brawler"
   },
   "proficiencies": [
@@ -108,6 +109,7 @@
   },
   "updated_at": "2026-07-19T14:54:36.965Z",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ]
 }

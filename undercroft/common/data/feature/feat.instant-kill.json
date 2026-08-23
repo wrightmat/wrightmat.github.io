@@ -1,7 +1,8 @@
 {
   "name": "Instant Kill",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Outright kills the target with no attack roll or saving throw, subject to a stated limit.",
   "mechanics": {

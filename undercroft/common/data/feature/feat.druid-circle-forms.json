@@ -1,0 +1,26 @@
+{
+  "id": "feat.druid-circle-forms",
+  "name": "Circle Forms",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You can channel lunar magic when you assume a Wild Shape form, granting you the benefits below.\n\nChallenge Rating. The maximum Challenge Rating for the form equals your Druid level divided by 3 (round down).\n\nArmor Class. Until you leave the form, your AC equals 13 plus your Wisdom modifier if that total is higher than the Beast’s AC.\n\nTemporary Hit Points. You gain a number of Temporary Hit Points equal to three times your Druid level.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "You can channel lunar magic when you assume a Wild Shape form, granting you the benefits below.\n\nChallenge Rating. The maximum Challenge Rating for the form equals your Druid level divided by 3 (round down).\n\nArmor Class. Until you leave the form, your AC equals 13 plus your Wisdom modifier if that total is higher than the Beast’s AC.\n\nTemporary Hit Points. You gain a number of Temporary Hit Points equal to three times your Druid level."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

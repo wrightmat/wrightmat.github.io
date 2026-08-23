@@ -1,0 +1,25 @@
+{
+  "id": "feat.bugbear-fey-ancestry",
+  "name": "Fey Ancestry",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You have advantage on saving throws you make to avoid or end the charmed condition on yourself.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You have advantage on saving throws you make to avoid or end the charmed condition on yourself."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

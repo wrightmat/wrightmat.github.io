@@ -1,7 +1,8 @@
 {
   "name": "Savage Move",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "If the creature surprises a creature, it gets a bonus action it can use on its first turn of combat for a claw attack, a bite attack, or a Bog Spew attack.",
   "mechanics": {

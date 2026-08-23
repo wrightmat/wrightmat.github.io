@@ -1,7 +1,8 @@
 {
   "name": "Swallow",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The water leaper makes a bite attack against a medium or smaller creature it is grappling. If the attack hits, the target is swallowed and the grapple ends. The swallowed target is blinded and restrained, and has total cover against attacks and other effects outside the water leaper. A swallowed target takes 10 (3d6) acid damage at the start of the water leaper’s turn. The water leaper can have one creature swallowed at a time. If the water leaper dies, the swallowed creature is no longer restrained and can use 5 feet of movement to crawl, prone, out of the corpse.",
   "mechanics": {

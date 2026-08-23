@@ -1,0 +1,26 @@
+{
+  "id": "feat.artificer-ghaal-shaarat",
+  "name": "Ghaal'Shaarat",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You can imbue a weapon with a fraction of your spirit, creating what the Dhakaani daashors call a ghaal’shaarat, Goblin for &“mighty blade.” As a Magic action while you have Smith’s Tools in hand, you can turn a Simple or Martial Melee weapon into a Ghaal’Shaarat. The weapon continues to be a Ghaal’Shaarat until you imbue a different weapon or you die. The weapon gains the following benefits while you wield it.\n\nMighty Blade. A nonmagical weapon becomes a magic weapon. You gain a +1 bonus to attack and damage rolls made with the weapon, unless it already had this bonus or a better one.\n\nReturning Weapon. The weapon has the Thrown property with a normal range of 30 feet and a long range of 120 feet. It returns to your hand immediately after it is used to make a ranged attack roll.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "You can imbue a weapon with a fraction of your spirit, creating what the Dhakaani daashors call a ghaal’shaarat, Goblin for &“mighty blade.” As a Magic action while you have Smith’s Tools in hand, you can turn a Simple or Martial Melee weapon into a Ghaal’Shaarat. The weapon continues to be a Ghaal’Shaarat until you imbue a different weapon or you die. The weapon gains the following benefits while you wield it.\n\nMighty Blade. A nonmagical weapon becomes a magic weapon. You gain a +1 bonus to attack and damage rolls made with the weapon, unless it already had this bonus or a better one.\n\nReturning Weapon. The weapon has the Thrown property with a normal range of 30 feet and a long range of 120 feet. It returns to your hand immediately after it is used to make a ranged attack roll."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

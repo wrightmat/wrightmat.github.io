@@ -1,7 +1,8 @@
 {
   "name": "Stunning Screech",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The fiend emits a horrific screech. Each creature within 20 feet of it that can hear it and that isn't a demon must succeed on a DC 14 Constitution saving throw or be stunned until the end of the fiend's next turn .",
   "mechanics": {

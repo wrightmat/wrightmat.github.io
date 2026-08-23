@@ -1,7 +1,8 @@
 {
   "name": "Overcrowded",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Far more people live here than this place was ever built for — shared rooms, packed streets, and strained resources are the norm.",
   "mechanics": {

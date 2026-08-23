@@ -1,7 +1,8 @@
 {
   "name": "Curse",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Attuning to (or otherwise bonding with) this item inflicts an ongoing curse, which lingers even after the item is removed.",
   "mechanics": {

@@ -1,7 +1,8 @@
 {
   "name": "Heated Weapons",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "When the creature hits with a metal melee weapon, it deals an extra 3 (1d6) fire damage (included in the attack).",
   "mechanics": {

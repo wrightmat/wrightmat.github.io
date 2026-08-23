@@ -1,7 +1,8 @@
 {
   "name": "Grounding",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Lightning damage the creature deals to earth elementals or to creatures that are buried or burrowing in earth is halved.",
   "mechanics": {

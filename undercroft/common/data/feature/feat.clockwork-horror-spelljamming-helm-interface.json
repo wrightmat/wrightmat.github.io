@@ -1,7 +1,8 @@
 {
   "name": "Spelljamming Helm Interface",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature attaches to a spelljamming helm it can see within 5 feet of itself and attunes to the helm instantly. If another creature is already attuned to the helm, that creature’s attunement to the helm ends when the creature’s attunement begins. The creature can operate the helm even though it isn’t a spellcaster. The creature can detach from the helm as a bonus action, which ends its attunement to the helm.",
   "mechanics": {

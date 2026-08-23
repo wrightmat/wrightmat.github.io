@@ -1,0 +1,26 @@
+{
+  "id": "feat.ranger-winter-walker-spells",
+  "name": "Winter Walker Spells",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "When you reach a Ranger level specified in the Winter Walker Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Ice Knife\n\nLevel 5: Hold Person\n\nLevel 9: Remove Curse\n\nLevel 13: Ice Storm\n\nLevel 17: Cone of Cold",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "When you reach a Ranger level specified in the Winter Walker Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Ice Knife\n\nLevel 5: Hold Person\n\nLevel 9: Remove Curse\n\nLevel 13: Ice Storm\n\nLevel 17: Cone of Cold"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

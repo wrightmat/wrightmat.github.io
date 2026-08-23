@@ -1,7 +1,8 @@
 {
   "name": "Gnome Cunning",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature has advantage on Intelligence, Wisdom, and Charisma saving throws against magic.",
   "mechanics": {

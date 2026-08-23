@@ -1,7 +1,8 @@
 {
   "name": "Shadow Blend",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "While in dim light or darkness, the creature becomes invisible, along with anything it is wearing or carrying. The invisibility lasts until the creature uses a bonus action to end it or until the creature attacks, is in bright light, or is incapacitated.",
   "mechanics": {

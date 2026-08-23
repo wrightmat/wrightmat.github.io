@@ -1,7 +1,8 @@
 {
   "name": "Ink Cloud",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "A 20-foot-radius cloud of ink extends all around the creature if it is underwater. The area is heavily obscured for 1 minute, although a significant current can disperse the ink. After releasing the ink, the creature can use the Dash action as a bonus action.",
   "mechanics": {

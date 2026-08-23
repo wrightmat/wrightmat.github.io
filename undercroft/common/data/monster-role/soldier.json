@@ -2,7 +2,8 @@
   "id": "soldier",
   "name": "Soldier",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Heavily armored, defender-style monsters that excel at holding the frontline, locking down player movement, and soaking up damage.",
   "mechanicalTendencies": {

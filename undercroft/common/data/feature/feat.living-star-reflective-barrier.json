@@ -1,7 +1,8 @@
 {
   "name": "Reflective Barrier",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "When the creature is attack by a spell or other magical effect, it can use its reaction to reflect the spell back at the caster, requiring the caster to make a DC 16 Dexterity saving throw. On a failed save, the caster takes 7 (2d6) radiant damage.",
   "mechanics": {

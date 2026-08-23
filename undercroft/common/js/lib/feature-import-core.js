@@ -199,7 +199,43 @@ export function sameShapeDifferentNumbers(a, b) {
 // comparing only against it would make a re-imported record whose exact
 // ability is already captured as a tier fail to match and spawn a
 // duplicate.
-export function findMatch(trait, candidates) {
+// `nameMatchThreshold` — overrides NAME_MATCH_SIMILARITY_THRESHOLD for an
+// EXACT name match only (partial-name-overlap and short-text thresholds
+// below are unaffected). Default (omitted) preserves this function's
+// original lenient behavior, which Monster's own callers rely on — SRD
+// monster traits genuinely reuse identical text verbatim by convention, so
+// an exact name match there really does mean "the same ability, at most
+// reworded/reparametrized." content-feature-matching.js's own Character/
+// Class/Species/Variant promotion passes a much stricter override instead:
+// D&D class features deliberately reuse names ("Spellcasting," "Fighting
+// Style," "Channel Divinity," ...) across classes/subclasses for
+// CONCEPTUALLY DIFFERENT mechanics, so the same assumption doesn't hold —
+// confirmed real risk, not hypothetical: a Wizard's own Spellcasting and a
+// Cleric's own Spellcasting share enough D&D-mechanic vocabulary ("spell
+// slots," "spellcasting ability," "prepare," "known spells") to likely
+// clear 0.25 despite being genuinely different abilities.
+// `requireExactName` — when true, disables the `nameOverlaps` fallback
+// entirely (only an exact normalized-name match is ever considered for
+// merging at all, regardless of description similarity). Monster's own
+// callers leave this off — a partial name overlap ("Legendary Resistance"
+// vs "Legendary Resistance (3/Day)") legitimately signals the same ability
+// there. content-feature-matching.js's own domain has the opposite pattern:
+// D&D subclasses routinely name a LATER upgrade of an earlier feature with
+// an overlapping-but-different name ("Improved Critical" -> "Superior
+// Critical", "War Magic" -> "Improved War Magic"), and that upgrade's own
+// text is often short and otherwise near-identical to the base feature's
+// (same sentence shape, one changed number) — exactly the shape that
+// crosses SHORT_TEXT_SIMILARITY_THRESHOLD despite being a deliberately
+// DIFFERENT, stronger ability. Confirmed real data loss: Fighter Champion's
+// own "Superior Critical" (crit on 18-20) was silently swallowed into
+// "Improved Critical" (crit on 19-20) this way, and Eldritch Knight's own
+// "Improved War Magic" into "War Magic" the same way — both within the
+// SAME subclass's own single import pass, so class/subclass id-scoping
+// couldn't have caught either. An exhaustive check of every currently-
+// imported subclass found zero cases where the looser nameOverlaps path
+// was actually needed for a correct match — every legitimate multi-tier
+// class feature already stayed separate on description length alone.
+export function findMatch(trait, candidates, { nameMatchThreshold = NAME_MATCH_SIMILARITY_THRESHOLD, requireExactName = false } = {}) {
   const traitName = normalizeName(trait.name);
   const traitDescription = trait.description || "";
   const traitTokens = significantTokens(traitDescription);
@@ -210,7 +246,7 @@ export function findMatch(trait, candidates) {
   candidates.forEach((feature) => {
     const featureName = normalizeName(feature.name);
     const nameMatches = Boolean(traitName) && traitName === featureName;
-    const nameOverlaps = !nameMatches && jaccardSimilarity(traitName, featureName) > 0;
+    const nameOverlaps = !requireExactName && !nameMatches && jaccardSimilarity(traitName, featureName) > 0;
     if (!nameMatches && !nameOverlaps) return; // names aren't even close — never merge, regardless of description
     const representations = [{ tierId: null, text: feature.description || feature.mechanics?.text || "" }];
     if (Array.isArray(feature.tiers)) {
@@ -227,12 +263,15 @@ export function findMatch(trait, candidates) {
       if (tierId === null && sameShapeDifferentNumbers(traitDescription, text)) return;
       const featureTokens = significantTokens(text);
       const similarity = jaccardFromTokens(traitTokens, featureTokens);
-      // An EXACT name match always uses the lenient threshold, even for
-      // short/templated text — once the name has already confirmed a
-      // match, sameShapeDifferentNumbers above is what actually protects
-      // against a false merge, not a similarity threshold on top of it.
+      // An EXACT name match always uses the (caller-selectable) name-match
+      // threshold, even for short/templated text — once the name has
+      // already confirmed a match, sameShapeDifferentNumbers above is what
+      // actually protects against a false merge on TOP of that threshold,
+      // not a replacement for it (see this function's own `nameMatchThreshold`
+      // param comment for why that threshold isn't always the lenient
+      // default).
       const requiredThreshold = nameMatches
-        ? NAME_MATCH_SIMILARITY_THRESHOLD
+        ? nameMatchThreshold
         : traitLooksTemplated || TEMPLATED_MECHANICAL_TEXT_PATTERN.test(text) || Math.min(traitTokens.size, featureTokens.size) < MIN_SIGNIFICANT_TOKENS_FOR_LOOSE_MATCH
           ? SHORT_TEXT_SIMILARITY_THRESHOLD
           : PARTIAL_NAME_MATCH_SIMILARITY_THRESHOLD;

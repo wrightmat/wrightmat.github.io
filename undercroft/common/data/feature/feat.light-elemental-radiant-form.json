@@ -1,7 +1,8 @@
 {
   "name": "Radiant Form",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature can move through a space as narrow as 1 inch wide without squeezing. A creature that touches the creature or hits it with a melee attack while within 5 feet of it takes 5 (1d10) radiant damage.",
   "mechanics": {

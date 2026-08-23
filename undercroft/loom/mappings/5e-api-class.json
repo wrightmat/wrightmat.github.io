@@ -16,6 +16,10 @@
       "type": "field",
       "bind": "@name"
     },
+    "systemIds": {
+      "type": "custom",
+      "fn": "srdClassSystemIds"
+    },
     "primary_ability": {
       "type": "field",
       "bind": "@primary_ability"

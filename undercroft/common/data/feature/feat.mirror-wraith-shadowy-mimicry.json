@@ -1,7 +1,8 @@
 {
   "name": "Shadowy Mimicry",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature can hide in the shadows, gaining advantage on Stealth checks in dim light or darkness.",
   "mechanics": {

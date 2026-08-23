@@ -1,0 +1,25 @@
+{
+  "id": "feat.barbarian-feral-instinct",
+  "name": "Feral Instinct",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "Your instincts are so honed that you have Advantage on Initiative rolls.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Your instincts are so honed that you have Advantage on Initiative rolls."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,7 +1,8 @@
 {
   "name": "Mineralize",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "As a bonus action when it has encased a creature, the creature hardens the minerals in its body, turning the surface of its body into a stone-like material. While mineralized, the creature has a walking speed of 5 feet, and it has resistance to bludgeoning, piercing, and slashing damage. The creature remains mineralized until the creature it has encased dies, or until the creature takes a bonus action to end it.",
   "mechanics": {

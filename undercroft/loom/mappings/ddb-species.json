@@ -11,6 +11,10 @@
       "type": "field",
       "bind": "@name"
     },
+    "systemIds": {
+      "type": "custom",
+      "fn": "ddbSpeciesSystemIds"
+    },
     "url": {
       "type": "field",
       "bind": "@url"
@@ -20,12 +24,12 @@
       "bind": "@descLines"
     },
     "type": {
-      "type": "field",
-      "bind": "@coreTraits.creatureType"
+      "type": "custom",
+      "fn": "ddbSpeciesCreatureType"
     },
     "size": {
-      "type": "field",
-      "bind": "@coreTraits.size"
+      "type": "custom",
+      "fn": "ddbSpeciesSize"
     },
     "speed": {
       "type": "custom",
@@ -66,6 +70,14 @@
                 "type": "field",
                 "bind": "@name"
               },
+              "systemIds": {
+                "type": "custom",
+                "fn": "ddbSpeciesSystemIds"
+              },
+              "parentKind": {
+                "type": "field",
+                "bind": "='species'"
+              },
               "url": {
                 "type": "field",
                 "bind": "@root.url"
@@ -96,8 +108,8 @@
                           "bind": "@level"
                         },
                         "description": {
-                          "type": "field",
-                          "bind": "@descLines"
+                          "type": "custom",
+                          "fn": "joinLines"
                         }
                       }
                     }

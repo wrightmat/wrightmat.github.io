@@ -2,7 +2,8 @@
   "id": "solo",
   "name": "Solo",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Boss-level monsters designed to fight an entire party by themselves, featuring unique mechanics like Villain Actions.",
   "mechanicalTendencies": {

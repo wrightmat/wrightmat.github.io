@@ -1,7 +1,8 @@
 {
   "name": "Embrace of the Uncaring Sea",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Melee or Ranged Weapon Attack: +18 to hit, reach 10 ft. or range 20/60 ft., one creature. Hit: 24 (4d6 + 10) piercing damage, or 28 (4d8 + 10) piercing damage if used with two hands to make a melee attack, plus 17 (5d6) poison damage. If The creature rolls a natural 19 or 20, the target must make a DC 21 Constitution saving throw or be afflicted by the crushing pressure of the sea. A creature afflicted by this cannot breathe, use verbal components, or take actions or reactions. At the end of each of the target’s turns, it can repeat the saving throw, ending the effect on a success. Magic such as heal can end this affliction early.",
   "mechanics": {

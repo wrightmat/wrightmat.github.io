@@ -1,14 +1,21 @@
 {
   "id": "res.speaking-stone",
   "name": "Speaking Stone",
-  "systemIds": ["sys.dnd5e"],
-  "settingIds": ["eberron"],
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "settingIds": [
+    "eberron"
+  ],
   "description": "Carved from a Siberys dragonshard, this stone enables instantaneous communication — the means by which House Sivis operates its network of messaging stations across Khorvaire.",
   "category": "wondrous-item",
   "price": "10000 gp",
   "tags": {
     "locationTypes": [],
-    "locationPurposes": ["commerce"],
+    "locationPurposes": [
+      "commerce"
+    ],
     "environments": []
   }
 }

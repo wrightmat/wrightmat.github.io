@@ -1,7 +1,8 @@
 {
   "name": "Parry",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature adds to its AC against one melee attack that would otherwise hit it, provided it can see the attacker and is wielding a melee weapon.",
   "mechanics": {

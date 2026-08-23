@@ -1,7 +1,8 @@
 {
   "name": "Vapors of Tranquility or Turmoil (Recharges after a Short or Long Rest)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature sublimates its waters into a vapor that fills a disk centered on the creature, 60 feet in radius, and 10 feet thick. All creatures in the area are affected by either the calm emotions spell or the confusion spell (save DC 16). The creature chooses which effect to use, and it must be the same for all creatures.",
   "mechanics": {

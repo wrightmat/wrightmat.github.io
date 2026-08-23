@@ -1,0 +1,26 @@
+{
+  "id": "feat.paladin-aura-expansion",
+  "name": "Aura Expansion",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "Your Aura of Protection is now a 30-foot Emanation.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "Your Aura of Protection is now a 30-foot Emanation."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

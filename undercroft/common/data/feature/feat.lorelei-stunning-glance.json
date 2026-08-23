@@ -1,7 +1,8 @@
 {
   "name": "Stunning Glance",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature mentally disrupts a creature within 30 feet with a look. The target must succeed on a DC 17 Wisdom saving throw or be stunned for 2 rounds. Anyone who successfully saves against this effect cannot be affected by it from the same lorelei for 24 hours.",
   "mechanics": {

@@ -1,7 +1,8 @@
 {
   "name": "Muddled Escape (1/Day)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "If an attack would reduce the creature’s hit points to 0, it collapses into a pool of filth-laden swamp water and its hit points are reduced to 1 instead. The creature can move at its normal speed in this form, including moving through spaces occupied by other creatures. As a bonus action at the beginning of the creature’s next turn, it can reform, still with 1 hit point.",
   "mechanics": {

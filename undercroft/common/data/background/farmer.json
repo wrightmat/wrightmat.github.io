@@ -18,7 +18,8 @@
     }
   ],
   "feat": {
-    "index": "tough",
+    "refKind": "feature",
+    "refId": "tough",
     "name": "Tough"
   },
   "proficiencies": [
@@ -124,6 +125,7 @@
   },
   "updated_at": "2026-07-19T14:51:42.468Z",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ]
 }

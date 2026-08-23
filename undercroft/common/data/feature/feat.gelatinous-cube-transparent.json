@@ -1,7 +1,8 @@
 {
   "name": "Transparent",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Even when the ooze is in plain sight, it takes a successful DC 15 Wisdom (Perception) check to spot an ooze that has neither moved nor attacked. A creature that tries to enter the ooze's space while unaware of the ooze is surprised by the ooze.",
   "mechanics": {

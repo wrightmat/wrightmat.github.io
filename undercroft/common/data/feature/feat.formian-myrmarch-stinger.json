@@ -1,7 +1,8 @@
 {
   "name": "Stinger",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Melee Weapon Attack; +5 to hit, reach 5 ft., one target. Hit: 6 (1d6 + 3) piercing damage plus 22 (4d10) poison damage, and the target must succeed on a DC 16 Constitution saving throw or become poisoned for 1 minute. A target can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success.",
   "mechanics": {

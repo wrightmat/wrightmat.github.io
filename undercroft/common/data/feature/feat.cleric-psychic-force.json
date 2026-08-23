@@ -1,0 +1,26 @@
+{
+  "id": "feat.cleric-psychic-force",
+  "name": "Psychic Force",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You learn to buffet your foes with mental power. When you cast a Cleric spell that deals Radiant damage, you can choose to have it inflict Psychic damage instead. When you cast a spell that deals Psychic damage, you can add your Charisma modifier to that spell’s damage against one of the spell’s targets.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "You learn to buffet your foes with mental power. When you cast a Cleric spell that deals Radiant damage, you can choose to have it inflict Psychic damage instead. When you cast a spell that deals Psychic damage, you can add your Charisma modifier to that spell’s damage against one of the spell’s targets."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

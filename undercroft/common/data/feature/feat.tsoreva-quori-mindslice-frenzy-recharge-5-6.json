@@ -1,7 +1,8 @@
 {
   "name": "Mindslice Frenzy (Recharge 5-6)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature makes four melee attacks. A creature hit by two or more of these attacks on a turn must succeed on a DC 14 Wisdom saving throw or be Frightened for 1 minute. This effect ends if the creature ends its turn 20 ft. or more away from the creature.",
   "mechanics": {

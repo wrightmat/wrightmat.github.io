@@ -1,7 +1,8 @@
 {
   "name": "Bites",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Melee Weapon Attack: +5 to hit, reach 0 ft., one creature in the swarm of Tiny beasts's space. Hit: 14 (4d6) piercing damage, or 7 (2d6) piercing damage if the swarm of Tiny beasts has half of its hit points or fewer.",
   "mechanics": {

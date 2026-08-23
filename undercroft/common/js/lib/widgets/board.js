@@ -41,7 +41,7 @@ import { resolveToolHref, resolveToolContextPath } from "../app-shell.js";
 import { renderMarkdown } from "../../../../repository/js/lib/markdown.js";
 import { buildTitleIndex } from "../../../../repository/js/lib/journal-links.js";
 import { startEncounter, deterministicEncounterId } from "../../../../repository/js/lib/journal-encounter.js";
-import { findKindReferenceRecord, EXCLUDED_KINDS } from "../../../../repository/js/lib/journal-kind-reference.js";
+import { findKindReferenceRecord, EXCLUDED_KINDS } from "../library-reference.js";
 import { findMacro, runMacroReference } from "../../../../repository/js/lib/journal-macro.js";
 // Same `` `macro:`/`encounter:`/`dice:`/`kindId:` `` filtered autocomplete
 // dropdown Repository's own Journal body editor uses — attached to both the

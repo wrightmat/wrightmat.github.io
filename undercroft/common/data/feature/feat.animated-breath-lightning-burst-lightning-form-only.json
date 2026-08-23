@@ -1,7 +1,8 @@
 {
   "name": "Lightning Burst (Lightning Form Only)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature magically teleports to an unoccupied space it can see within 30 feet of it. Each creature with 5 feet of the creature after it teleports takes 3 (1d6) lightning damage.",
   "mechanics": {

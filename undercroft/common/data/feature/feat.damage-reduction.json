@@ -1,7 +1,8 @@
 {
   "name": "Damage Reduction",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Reduces incoming damage by a flat amount on a reaction.",
   "mechanics": {

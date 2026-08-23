@@ -1,0 +1,26 @@
+{
+  "id": "feat.druid-improved-elemental-fury",
+  "name": "Improved Elemental Fury",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "The option you chose for Elemental Fury grows more powerful, as detailed below.\n\nPotent Spellcasting. When you cast a Druid cantrip with a range of 10 feet or greater, the spell’s range increases by 300 feet.\n\nPrimal Strike. The extra damage of your Primal Strike increases to 2d8.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The option you chose for Elemental Fury grows more powerful, as detailed below.\n\nPotent Spellcasting. When you cast a Druid cantrip with a range of 10 feet or greater, the spell’s range increases by 300 feet.\n\nPrimal Strike. The extra damage of your Primal Strike increases to 2d8."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

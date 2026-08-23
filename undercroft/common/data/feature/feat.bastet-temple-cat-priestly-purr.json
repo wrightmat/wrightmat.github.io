@@ -1,7 +1,8 @@
 {
   "name": "Priestly Purr",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "When a cleric or paladin who worships Bastet spends an hour preparing spells while a creature is within 5 feet, that spellcaster can choose two 1st-level spells and one 2nd-level spell that they are able to cast and imbue them into the creature. The creature can cast these spells 1/day each without a verbal component. These spells are cast as if they were included in the creature’s Innate Spellcasting trait.",
   "mechanics": {

@@ -1,7 +1,8 @@
 {
   "name": "Univocal Speech",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "When the creature speaks, any creature that knows at least one language and can hear the creature understands what it says.",
   "mechanics": {

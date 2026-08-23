@@ -1,7 +1,8 @@
 {
   "name": "Overrun",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature has advantage on attacks against a target that has two or more of the creature's allies adjacent to it.",
   "mechanics": {

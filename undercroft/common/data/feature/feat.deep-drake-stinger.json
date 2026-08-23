@@ -1,7 +1,8 @@
 {
   "name": "Stinger",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Melee Weapon Attack +9 to hit, reach 10 ft., one target. 16 (2d10 + 5) piercing damage plus 7 (2d6) poison damage, and the target must succeed on a 16 Constitution saving throw or become poisoned for 1 minute. A poisoned creature must repeat the saving throw at the end of each of its turns. On a failure, the creature takes 7 (2d6) poison damage. On a success, the condition ends. When animate dead is cast on one or more creatures killed by this poison, the spellcaster requires no material components and can cast the spell as an action.",
   "mechanics": {

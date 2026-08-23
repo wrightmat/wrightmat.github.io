@@ -1691,6 +1691,25 @@ a.undercroft-tool-card:focus-visible {
   min-height: 6rem;
 }
 
+/* A Text component's own bound value keeps whatever line breaks it was
+   authored/imported with (a multi-paragraph Feature description, a
+   multi-line Note, ...) instead of the browser's own default of collapsing
+   every run of whitespace — including literal "\n\n" paragraph breaks —
+   down to a single space. Confirmed real: stored Feature descriptions
+   already contain "\n\n" between paragraphs (ddb-content-parser.js/
+   mapping-custom-functions.js's own htmlBlocksToText both emit it), but
+   nothing ever rendered as a line break because this class had no
+   white-space rule at all. `pre-line` (not `pre-wrap`) — every producer
+   already collapses in-line runs of whitespace to a single space of its
+   own accord, so there's nothing for `pre-wrap`'s "preserve every space
+   too" behavior to usefully add, and `pre-line` still wraps normally at
+   the container's own width. The more specific dropzone-scoped `nowrap`
+   rule directly below still wins inside the Template editor's own canvas
+   preview, unaffected by this. */
+.workbench-text-content {
+  white-space: pre-line;
+}
+
 /* Text inside a Container zone truncates to one line with an ellipsis
    instead of overflowing (or growing tall from wrapping) a narrow column —
    the Template editor's Inspector (and the real bound value in Play/Edit's

@@ -1,0 +1,75 @@
+{
+  "index": "cleric-mind-domain",
+  "url": "https://www.dndbeyond.com/classes/2190877-cleric",
+  "name": "Mind Domain",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "parentKind": "class",
+  "parentId": "cleric",
+  "summary": "Channel Divine Devotion into Psychic Power",
+  "description": "The Mind Domain celebrates the power of the mortal mind, channeling psychic energy to protect the faithful and smite your enemies.\n\nWhile this is most often associated with the Path of Light or the Riedran Path of Inspiration, followers of the daelkyr can also master this power. Visions of Xoriat can drive a priest to madness, but they can also reveal deadly secrets of the mind.",
+  "features": [
+    {
+      "name": "Mind Domain Spells",
+      "level": 3,
+      "description": "Your connection to this divine domain ensures you always have certain spells ready. When you reach a Cleric level specified in the Mind Domain Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Command, Detect Thoughts, Dissonant Whispers, Mind Spike\n\nLevel 5: Clairvoyance, Fear\n\nLevel 7: Confusion, Phantasmal Killer\n\nLevel 9: Synaptic Static, Telekinesis"
+    },
+    {
+      "name": "Psychic Feedback",
+      "level": 3,
+      "description": "When a creature you can see within 30 feet of yourself succeeds on a Wisdom saving throw, you can take a Reaction and expend a use of your Channel Divinity to impose Disadvantage on the saving throw, prying into their mind before they succeed or fail."
+    },
+    {
+      "name": "Psychic Force",
+      "level": 3,
+      "description": "You learn to buffet your foes with mental power. When you cast a Cleric spell that deals Radiant damage, you can choose to have it inflict Psychic damage instead. When you cast a spell that deals Psychic damage, you can add your Charisma modifier to that spell’s damage against one of the spell’s targets."
+    },
+    {
+      "name": "Gestalt Anchor",
+      "level": 6,
+      "description": "Your mental power increases, allowing you to project a sense of calm in a 10-foot Emanation that originates from you. The projection is inactive if you have the Incapacitated condition.\n\nYou and your allies in the projection gain a +2 bonus to Intelligence, Wisdom, and Charisma saving throws.\n\nIf another Mind Domain Cleric is present, a creature can only benefit from one Gestalt Anchor at a time."
+    },
+    {
+      "name": "Bend Reality",
+      "level": 17,
+      "description": "When an ally you can see within 30 feet of yourself fails a saving throw, you can replace the roll with a 20, potentially changing the outcome. Once you use this feature, you can’t use it again until you finish a Short or Long Rest."
+    }
+  ],
+  "mapping": "ddb-subclass",
+  "featureIds": [
+    "feat.cleric-mind-domain-spells",
+    "feat.cleric-psychic-feedback",
+    "feat.cleric-psychic-force",
+    "feat.cleric-gestalt-anchor",
+    "feat.cleric-bend-reality"
+  ],
+  "featureParams": {
+    "feat.cleric-mind-domain-spells": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.cleric-psychic-feedback": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.cleric-psychic-force": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.cleric-gestalt-anchor": {
+      "grantedAtLevel": [
+        6
+      ]
+    },
+    "feat.cleric-bend-reality": {
+      "grantedAtLevel": [
+        17
+      ]
+    }
+  }
+}

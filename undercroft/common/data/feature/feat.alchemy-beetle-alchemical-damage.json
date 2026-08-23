@@ -1,7 +1,8 @@
 {
   "name": "Alchemical Damage",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Alchemy beetles are constructed with a reservoir of 100 doses of either acid, Alchemist Fire (fire), Bottled Lightning (electriciity) or Liquid Ice (cold). The creature's bite attack does 3 (1d6) of non-magical energy damage per successful attack by expending one of these doses. When the reservoir is empty, the creature looses the additional energy damage. An alchemical beetle's reservoir cannot be refilled.",
   "mechanics": {

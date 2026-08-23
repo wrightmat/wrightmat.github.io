@@ -1,0 +1,26 @@
+{
+  "id": "feat.lizardfolk-hold-breath",
+  "name": "Hold Breath",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You can hold your breath for up to 15 minutes at a time.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "You can hold your breath for up to 15 minutes at a time."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,7 +1,8 @@
 {
   "name": "Shelve",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "a creature can fold itself into a small, almost flat form, perfect for hiding on bookshelves. The creature can still be recognized as something other than a book by someone who handles it (doesn’t just glance at it on the shelf) and makes a successful DC 11 Intelligence (Nature or Investigation) check. The creature can hop or fly (clumsily, by flapping its pages) 5 feet per turn in this form.",
   "mechanics": {

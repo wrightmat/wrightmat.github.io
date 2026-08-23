@@ -1,7 +1,8 @@
 {
   "name": "Prismatic Beam",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Ranged Spell Attack: +11 to hit, range 150/300 ft., up to two targets within 30 feet of each other. Hit: 32 (5d10 + 5) damage of your choosing from: acid, fire, cold, force, lightning, or radiant.",
   "mechanics": {

@@ -1,7 +1,8 @@
 {
   "name": "Refold (Recharge 5–6)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "a creature can fold its body into different sizes and shapes. The creature can adjust its size by one step in either direction, but can’t be smaller than Tiny or larger than Medium size. Changes in size or shape don’t affect the creature’s stats.",
   "mechanics": {

@@ -1,7 +1,8 @@
 {
   "name": "Overpowering Grapple",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature has advantage on checks made to grapple or shove, and a creature it is grappling takes damage at the start of its turn.",
   "mechanics": {

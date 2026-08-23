@@ -13,7 +13,11 @@
     "userId": 109793170,
     "username": "cardinal460",
     "name": "Maris Wavedeep",
-    "race": "Triton",
+    "race": {
+      "refKind": "species",
+      "refId": "triton",
+      "name": "Triton"
+    },
     "class": "Warlock",
     "level": 6,
     "levels": {
@@ -25,11 +29,23 @@
       {
         "name": "Warlock",
         "level": 5,
-        "subclass": "The Fathomless (TCoE)"
+        "refKind": "class",
+        "refId": "warlock",
+        "subclass": {
+          "refKind": "variant",
+          "refId": "warlock-the-fathomless",
+          "name": "The Fathomless (TCoE)"
+        }
       },
       {
         "name": "Sorcerer",
-        "level": 1
+        "level": 1,
+        "refKind": "class",
+        "refId": "sorcerer",
+        "subclass": {
+          "refKind": "variant",
+          "refId": ""
+        }
       }
     ]
   },
@@ -642,49 +658,49 @@
   "feats": [
     {
       "name": "Ability Score Improvement",
-      "description": "<p><em>General Feat (Prerequisite: Level 4+)</em></p>\r\n<p>Increase one ability score of your choice by 2, or increase two ability scores of your choice by 1. This feat can’t increase an ability score above 20.</p>\r\n<p><em><strong>Repeatable.</strong></em> You can take this feat more than once.</p>",
+      "description": "*General Feat (Prerequisite: Level 4+)*\n\nIncrease one ability score of your choice by 2, or increase two ability scores of your choice by 1. This feat can’t increase an ability score above 20.\n\n***Repeatable.*** You can take this feat more than once.",
       "level": null,
       "limitedUse": null
     },
     {
       "name": "Noble Ability Score Improvements",
-      "description": "<p>The Noble Background allows you to choose between Strength, Intelligence, and Charisma. Increase one of these scores by 2 and another one by 1, or increase all three by 1. None of these increases can raise a score above 20.</p>",
+      "description": "The Noble Background allows you to choose between Strength, Intelligence, and Charisma. Increase one of these scores by 2 and another one by 1, or increase all three by 1. None of these increases can raise a score above 20.",
       "level": null,
       "limitedUse": null
     },
     {
       "name": "Skilled",
-      "description": "<p><em>Origin Feat</em></p>\r\n<p>You gain proficiency in any combination of three skills or tools of your choice.</p>\r\n<p><em><strong>Repeatable.</strong></em> You can take this feat more than once.</p>",
+      "description": "*Origin Feat*\n\nYou gain proficiency in any combination of three skills or tools of your choice.\n\n***Repeatable.*** You can take this feat more than once.",
       "level": null,
       "limitedUse": null
     },
     {
       "name": "Skilled",
-      "description": "<p><em>Origin Feat</em></p>\r\n<p>You gain proficiency in any combination of three skills or tools of your choice.</p>\r\n<p><em><strong>Repeatable.</strong></em> You can take this feat more than once.</p>",
+      "description": "*Origin Feat*\n\nYou gain proficiency in any combination of three skills or tools of your choice.\n\n***Repeatable.*** You can take this feat more than once.",
       "level": null,
       "limitedUse": null
     },
     {
       "name": "Tough",
-      "description": "<p><em>Origin Feat</em></p>\r\n<p>Your Hit Point maximum increases by an amount equal to twice your character level when you gain this feat. Whenever you gain a character level thereafter, your Hit Point maximum increases by an additional 2 Hit Points.</p>",
+      "description": "*Origin Feat*\n\nYour Hit Point maximum increases by an amount equal to twice your character level when you gain this feat. Whenever you gain a character level thereafter, your Hit Point maximum increases by an additional 2 Hit Points.",
       "level": null,
       "limitedUse": null
     },
     {
       "name": "Dark Bargain",
-      "description": "<p>At your GM's discretion, you can take a Dark Bargain.</p>",
+      "description": "At your GM's discretion, you can take a Dark Bargain.",
       "level": null,
       "limitedUse": null
     },
     {
       "name": "Character Threads",
-      "description": "<p>Threads are aspects added to characters at any time during their career that have a specific short or long-term goal.</p>",
+      "description": "Threads are aspects added to characters at any time during their career that have a specific short or long-term goal.",
       "level": null,
       "limitedUse": null
     },
     {
       "name": "Runestones",
-      "description": "<p>At the beginning of the <em>Northlands Sagas</em> adventure path, each player should draw one Runestone randomly.</p>",
+      "description": "At the beginning of the *Northlands Sagas* adventure path, each player should draw one Runestone randomly.",
       "level": null,
       "limitedUse": null
     }
@@ -692,207 +708,148 @@
   "features": [
     {
       "name": "Expanded Spell List",
-      "description": "<p><em>3rd-level Fathomless feature </em></p>\r\n<p>The Fathomless lets you choose from an expanded list of spells when you learn a warlock spell. The following spells are added to the warlock spell list for you.</p>\r\n<h5 id=\"LurkerExpandedSpells\" class=\"Table-Styles_Table-Title\">Fathomless Expanded Spells</h5>\r\n<table class=\"compendium-left-aligned-table\">\r\n<thead>\r\n<tr>\r\n<th>Spell Level</th>\r\n<th>Spells</th>\r\n</tr>\r\n</thead>\r\n<tbody>\r\n<tr>\r\n<td>1st</td>\r\n<td>&nbsp;create or destroy water,&nbsp;thunderwave</td>\r\n</tr>\r\n<tr>\r\n<td>2nd</td>\r\n<td>&nbsp;&nbsp;gust of wind, silence</td>\r\n</tr>\r\n<tr>\r\n<td>3rd</td>\r\n<td>&nbsp;&nbsp;lightning bolt, sleet storm</td>\r\n</tr>\r\n<tr>\r\n<td>4th</td>\r\n<td>&nbsp;&nbsp;control water, summon elemental&nbsp;(water only; a spell in <a title=\"chapter 3\" href=\"https://www.dndbeyond.com/sources/tcoe/magical-miscellany#SummonElemental\">chapter 3</a>)</td>\r\n</tr>\r\n<tr>\r\n<td>5th</td>\r\n<td>&nbsp;&nbsp;Bigby’s hand (appears as a tentacle), cone of cold</td>\r\n</tr>\r\n</tbody>\r\n</table>"
+      "description": "*3rd-level Fathomless feature *\n\nThe Fathomless lets you choose from an expanded list of spells when you learn a warlock spell. The following spells are added to the warlock spell list for you.\n\nFathomless Expanded Spells\n\nLevel 1st: &nbsp;create or destroy water,&nbsp;thunderwave\n\nLevel 2nd: &nbsp;&nbsp;gust of wind, silence\n\nLevel 3rd: &nbsp;&nbsp;lightning bolt, sleet storm\n\nLevel 4th: control water, summon elemental (water only; a spell in chapter 3)\n\nLevel 5th: &nbsp;&nbsp;Bigby’s hand (appears as a tentacle), cone of cold",
+      "level": 3
     },
     {
       "name": "Tentacle of the Deeps",
-      "description": "<p><em>3rd-level Fathomless feature </em></p>\r\n<p>You can magically summon a spectral tentacle that strikes at your foes. As a bonus action, you create a 10-foot-long tentacle at a point you can see within 60 feet of you. The tentacle lasts for 1 minute or until you use this feature to create another tentacle.</p>\r\n<p>When you create the tentacle, you can make a melee spell attack against one creature within 10 feet of it. On a hit, the target takes 1d8 cold damage, and its speed is reduced by 10 feet until the start of your next turn. When you reach 10th level in this class, the damage increases to 2d8.</p>\r\n<p>As a bonus action on your turn, you can move the tentacle up to 30 feet and repeat the attack. You can summon the tentacle a number of times equal to your proficiency bonus, and you regain all expended uses when you finish a long rest.</p>"
+      "description": "*3rd-level Fathomless feature *\n\nYou can magically summon a spectral tentacle that strikes at your foes. As a bonus action, you create a 10-foot-long tentacle at a point you can see within 60 feet of you. The tentacle lasts for 1 minute or until you use this feature to create another tentacle.\n\nWhen you create the tentacle, you can make a melee spell attack against one creature within 10 feet of it. On a hit, the target takes 1d8 cold damage, and its speed is reduced by 10 feet until the start of your next turn. When you reach 10th level in this class, the damage increases to 2d8.\n\nAs a bonus action on your turn, you can move the tentacle up to 30 feet and repeat the attack. You can summon the tentacle a number of times equal to your proficiency bonus, and you regain all expended uses when you finish a long rest.",
+      "level": 3
     },
     {
       "name": "Gift of the Sea",
-      "description": "<p><em>3rd-level Fathomless feature </em></p>\r\n<p>You gain a swimming speed of 40 feet, and you can breathe underwater.</p>"
-    },
-    {
-      "name": "Oceanic Soul",
-      "description": "<p><em>6th-level Fathomless feature </em></p>\r\n<p>You are now even more at home in the depths. You gain resistance to cold damage. In addition, when you are fully submerged, any creature that is also fully submerged can understand your speech, and you can understand theirs.</p>"
-    },
-    {
-      "name": "Guardian Coil",
-      "description": "<p><em>6th-level Fathomless feature </em></p>\r\n<p>Your Tentacle of the Deeps can defend you and others, interposing itself between them and harm. When you or a creature you can see takes damage while within 10 feet of the tentacle, you can use your reaction to choose one of those creatures and reduce the damage to that creature by 1d8. When you reach 10th level in this class, the damage reduced by the tentacle increases to 2d8.</p>"
-    },
-    {
-      "name": "Grasping Tentacles",
-      "description": "<p><em>10th-level Fathomless feature </em></p>\r\n<p>You learn the spell Evard’s black tentacles. It counts as a warlock spell for you, but it doesn’t count against the number of spells you know. You can also cast it once without a spell slot, and you regain the ability to do so when you finish a long rest.</p>\r\n<p>Whenever you cast this spell, your patron’s magic bolsters you, granting you a number of temporary hit points equal to your warlock level. Moreover, damage can’t break your concentration on this spell.</p>"
-    },
-    {
-      "name": "Fathomless Plunge",
-      "description": "<p><em>14th-level Fathomless feature </em></p>\r\n<p>You can magically open temporary conduits to watery destinations. As an action, you can teleport yourself and up to five other willing creatures that you can see within 30 feet of you. Amid a whirl of tentacles, you all vanish and then reappear up to 1 mile away in a body of water you’ve seen (pond size or larger) or within 30 feet of it, each of you appearing in an unoccupied space within 30 feet of the others.</p>\r\n<p>Once you use this feature, you can’t use it again until you finish a short or long rest.</p>"
+      "description": "*3rd-level Fathomless feature *\n\nYou gain a swimming speed of 40 feet, and you can breathe underwater.",
+      "level": 3
     },
     {
       "name": "Core Warlock Traits",
-      "description": "<p>As a Level 1 Character:</p>\r\n<ul>\r\n<li>Gain all the traits in the Core Warlock Traits table.</li>\r\n<li>Gain the Warlock’s level 1 features.</li>\r\n</ul>\r\n<table class=\"table-compendium table--left-all\" style=\"--sb-table-row-bg-hover: #b3d3df; --sb-table-row-bg-dark: #d7e8ee; --sb-table-row-bg-light: #f1f7f9; --dark-sb-table-row-bg-light: #5e7982; --dark-sb-table-row-bg-dark: #5c7f8c; --dark-sb-table-row-bg-hover: #78a2b0;\"><caption>Core Warlock Traits</caption>\r\n<thead></thead>\r\n<tbody>\r\n<tr>\r\n<th>Primary Ability</th>\r\n<td>Charisma</td>\r\n</tr>\r\n<tr>\r\n<th>Hit Point Die</th>\r\n<td>D8 per Warlock level</td>\r\n</tr>\r\n<tr>\r\n<th>Saving Throw Proficiencies</th>\r\n<td>Wisdom and Charisma</td>\r\n</tr>\r\n<tr>\r\n<th>Skill Proficiencies</th>\r\n<td><em>Choose 2:</em> Arcana, Deception, History, Intimidation, Investigation, Nature, or Religion</td>\r\n</tr>\r\n<tr>\r\n<th>Weapon Proficiencies</th>\r\n<td>Simple weapons</td>\r\n</tr>\r\n<tr>\r\n<th>Armor Training</th>\r\n<td>Light armor</td>\r\n</tr>\r\n<tr>\r\n<th>Starting Equipment</th>\r\n<td><em>Choose A or B:</em> (A) Leather Armor, Sickle, 2 Daggers, Arcane Focus (orb), Book (occult lore), Scholar’s Pack, and 15 GP; or (B) 100 GP</td>\r\n</tr>\r\n</tbody>\r\n</table>"
+      "description": "As a Level 1 Character:\n\n- Gain all the traits in the Core Warlock Traits table.\n\n- Gain the Warlock’s level 1 features.\n\nPrimary Ability: Charisma\n\nHit Point Die: D8 per Warlock level\n\nSaving Throw Proficiencies: Wisdom and Charisma\n\nSkill Proficiencies: *Choose 2:* Arcana, Deception, History, Intimidation, Investigation, Nature, or Religion\n\nWeapon Proficiencies: Simple weapons\n\nArmor Training: Light armor\n\nStarting Equipment: *Choose A or B:* (A) Leather Armor, Sickle, 2 Daggers, Arcane Focus (orb), Book (occult lore), Scholar’s Pack, and 15 GP; or (B) 100 GP",
+      "level": 1
     },
     {
       "name": "Eldritch Invocations",
-      "description": "<p>You have unearthed Eldritch Invocations, pieces of forbidden knowledge that imbue you with an abiding magical ability or other lessons. You gain one invocation of your choice, such as Pact of the Tome. Invocations are described in the &ldquo;Eldritch Invocation Options&rdquo; section.</p>\r\n<p><strong><em>Prerequisites.</em></strong> If an invocation has a prerequisite, you must meet it to learn that invocation. For example, if an invocation requires you to be a level 5+ Warlock, you can select the invocation once you reach Warlock level 5.</p>\r\n<p><strong><em>Replacing and Gaining Invocations.</em></strong> Whenever you gain a Warlock level, you can replace one of your invocations with another one for which you qualify. You can’t replace an invocation if it’s a prerequisite for another invocation that you have.</p>\r\n<p>When you gain certain Warlock levels, you gain more invocations of your choice, as shown in the Invocations column of the Warlock Features table.</p>\r\n<p>You can’t pick the same invocation more than once unless its description says otherwise.</p>"
+      "description": "You have unearthed Eldritch Invocations, pieces of forbidden knowledge that imbue you with an abiding magical ability or other lessons. You gain one invocation of your choice, such as Pact of the Tome. Invocations are described in the “Eldritch Invocation Options” section.\n\n**Prerequisites.** If an invocation has a prerequisite, you must meet it to learn that invocation. For example, if an invocation requires you to be a level 5+ Warlock, you can select the invocation once you reach Warlock level 5.\n\n**Replacing and Gaining Invocations.** Whenever you gain a Warlock level, you can replace one of your invocations with another one for which you qualify. You can’t replace an invocation if it’s a prerequisite for another invocation that you have.\n\nWhen you gain certain Warlock levels, you gain more invocations of your choice, as shown in the Invocations column of the Warlock Features table.\n\nYou can’t pick the same invocation more than once unless its description says otherwise.",
+      "level": 1
     },
     {
       "name": "Pact Magic",
-      "description": "<p>Through occult ceremony, you have formed a pact with a mysterious entity to gain magical powers. The entity is a voice in the shadows&mdash;its identity unclear&mdash;but its boon to you is concrete: the ability to cast spells.</p>\r\n<p><strong><em>Cantrips.</em></strong> You know two Warlock cantrips of your choice. Whenever you gain a Warlock level, you can replace one of your cantrips from this feature with another Warlock cantrip of your choice.</p>\r\n<p>When you reach Warlock levels 4 and 10, you learn another Warlock cantrip of your choice, as shown in the Cantrips column of the Warlock Features table.</p>\r\n<p><strong><em>Spell Slots.</em></strong> The Warlock Features table shows how many spell slots you have to cast your Warlock spells of levels 1&ndash;5. The table also shows the level of those slots, all of which are the same level. You regain all expended Pact Magic spell slots when you finish a Short or Long Rest.</p>\r\n<p>For example, when you’re a level 5 Warlock, you have two level 3 spell slots. To cast the level 1 spell Witch Bolt, you must spend one of those slots, and you cast it as a level 3 spell.</p>\r\n<p><strong><em>Prepared Spells of Level 1+.</em></strong> You prepare the list of level 1+ spells that are available for you to cast with this feature. To start, choose two level 1 Warlock spells.</p>\r\n<p>The number of spells on your list increases as you gain Warlock levels, as shown in the Prepared Spells column of the Warlock Features table. Whenever that number increases, choose additional Warlock spells until the number of spells on your list matches the number in the table. The chosen spells must be of a level no higher than what’s shown in the table’s Slot Level column for your level. When you reach level 6, for example, you learn a new Warlock spell, which can be of levels 1&ndash;3.</p>\r\n<p>If another Warlock feature gives you spells that you always have prepared, those spells don’t count against the number of spells you can prepare with this feature, but those spells otherwise count as Warlock spells for you.</p>\r\n<p><strong><em>Changing Your Prepared Spells.</em></strong> Whenever you gain a Warlock level, you can replace one spell on your list with another Warlock spell of an eligible level.</p>\r\n<p><strong><em>Spellcasting Ability.</em></strong> Charisma is the spellcasting ability for your Warlock spells.</p>\r\n<p><strong><em>Spellcasting Focus.</em></strong> You can use an Arcane Focus as a Spellcasting Focus for your Warlock spells.</p>"
+      "description": "Through occult ceremony, you have formed a pact with a mysterious entity to gain magical powers. The entity is a voice in the shadows—its identity unclear—but its boon to you is concrete: the ability to cast spells.\n\n**Cantrips.** You know two Warlock cantrips of your choice. Whenever you gain a Warlock level, you can replace one of your cantrips from this feature with another Warlock cantrip of your choice.\n\nWhen you reach Warlock levels 4 and 10, you learn another Warlock cantrip of your choice, as shown in the Cantrips column of the Warlock Features table.\n\n**Spell Slots.** The Warlock Features table shows how many spell slots you have to cast your Warlock spells of levels 1–5. The table also shows the level of those slots, all of which are the same level. You regain all expended Pact Magic spell slots when you finish a Short or Long Rest.\n\nFor example, when you’re a level 5 Warlock, you have two level 3 spell slots. To cast the level 1 spell Witch Bolt, you must spend one of those slots, and you cast it as a level 3 spell.\n\n**Prepared Spells of Level 1+.** You prepare the list of level 1+ spells that are available for you to cast with this feature. To start, choose two level 1 Warlock spells.\n\nThe number of spells on your list increases as you gain Warlock levels, as shown in the Prepared Spells column of the Warlock Features table. Whenever that number increases, choose additional Warlock spells until the number of spells on your list matches the number in the table. The chosen spells must be of a level no higher than what’s shown in the table’s Slot Level column for your level. When you reach level 6, for example, you learn a new Warlock spell, which can be of levels 1–3.\n\nIf another Warlock feature gives you spells that you always have prepared, those spells don’t count against the number of spells you can prepare with this feature, but those spells otherwise count as Warlock spells for you.\n\n**Changing Your Prepared Spells.** Whenever you gain a Warlock level, you can replace one spell on your list with another Warlock spell of an eligible level.\n\n**Spellcasting Ability.** Charisma is the spellcasting ability for your Warlock spells.\n\n**Spellcasting Focus.** You can use an Arcane Focus as a Spellcasting Focus for your Warlock spells.",
+      "level": 1
     },
     {
       "name": "Magical Cunning",
-      "description": "<p>You can perform an esoteric rite for 1 minute. At the end of it, you regain expended Pact Magic spell slots but no more than a number equal to half your maximum (round up). Once you use this feature, you can’t do so again until you finish a Long Rest.</p>"
+      "description": "You can perform an esoteric rite for 1 minute. At the end of it, you regain expended Pact Magic spell slots but no more than a number equal to half your maximum (round up). Once you use this feature, you can’t do so again until you finish a Long Rest.",
+      "level": 2
     },
     {
       "name": "Warlock Subclass",
-      "description": "<p>You gain a Warlock subclass of your choice. A subclass is a specialization that grants you features at certain Warlock levels. For the rest of your career, you gain each of your subclass’s features that are of your Warlock level or lower.</p>"
+      "description": "You gain a Warlock subclass of your choice. A subclass is a specialization that grants you features at certain Warlock levels. For the rest of your career, you gain each of your subclass’s features that are of your Warlock level or lower.",
+      "level": 3
     },
     {
       "name": "Ability Score Improvement",
-      "description": "<p>You gain the Ability Score Improvement feat or another feat of your choice for which you qualify. You gain this feature again at Warlock levels 8, 12, and 16.</p>"
-    },
-    {
-      "name": "8: Ability Score Improvement",
-      "description": "<p>You gain the Ability Score Improvement feat or another feat of your choice for which you qualify. You gain this feature again at Warlock levels 12 and 16.</p>"
-    },
-    {
-      "name": "Contact Patron",
-      "description": "<p>In the past, you usually contacted your patron through intermediaries. Now you can communicate directly; you always have the Contact Other Plane spell prepared. With this feature, you can cast the spell without expending a spell slot to contact your patron, and you automatically succeed on the spell’s saving throw.</p>\r\n<p>Once you cast the spell with this feature, you can’t do so in this way again until you finish a Long Rest.</p>"
-    },
-    {
-      "name": "Mystic Arcanum",
-      "description": "<p>Your patron grants you a magical secret called an arcanum. Choose one level 6 Warlock spell as this arcanum.</p>\r\n<p>You can cast your arcanum spell once without expending a spell slot, and you must finish a Long Rest before you can cast it in this way again.</p>\r\n<p>As shown in the Warlock Features table, you gain another Warlock spell of your choice that can be cast in this way when you reach Warlock levels 13 (level 7 spell), 15 (level 8 spell), and 17 (level 9 spell). You regain all uses of your Mystic Arcanum when you finish a Long Rest.</p>\r\n<p>Whenever you gain a Warlock level, you can replace one of your arcanum spells with another Warlock spell of the same level.</p>"
-    },
-    {
-      "name": "12: Ability Score Improvement",
-      "description": "<p>You gain the Ability Score Improvement feat or another feat of your choice for which you qualify. You gain this feature again at Warlock level 16.</p>"
-    },
-    {
-      "name": "16: Ability Score Improvement",
-      "description": "<p>You gain the Ability Score Improvement feat or another feat of your choice for which you qualify.</p>"
-    },
-    {
-      "name": "Epic Boon",
-      "description": "<p>You gain an Epic Boon feat or another feat of your choice for which you qualify.</p>"
-    },
-    {
-      "name": "Eldritch Master",
-      "description": "<p>When you use your Magical Cunning feature, you regain all your expended Pact Magic spell slots.</p>"
+      "description": "You gain the Ability Score Improvement feat or another feat of your choice for which you qualify. You gain this feature again at Warlock levels 8, 12, and 16.",
+      "level": 4
     },
     {
       "name": "Eldritch Invocation Options",
-      "description": "<p>Eldritch Invocation options appear in alphabetical order.</p>\r\n<hr />\r\n<h5 id=\"AgonizingBlast\" class=\"compendium-hr\">Agonizing Blast</h5>\r\n<p><em>Prerequisite: Level 2+ Warlock, a Warlock Cantrip That Deals Damage</em></p>\r\n<p>Choose one of your known Warlock cantrips that deals damage. You can add your Charisma modifier to that spell’s damage rolls.</p>\r\n<p><strong><em>Repeatable.</em></strong> You can gain this invocation more than once. Each time you do so, choose a different eligible cantrip.</p>\r\n<hr />\r\n<h5 id=\"ArmorofShadows\" class=\"compendium-hr\">Armor of Shadows</h5>\r\n<p>You can cast Mage Armor on yourself without expending a spell slot.</p>\r\n<hr />\r\n<h5 id=\"AscendantStep\" class=\"compendium-hr\">Ascendant Step</h5>\r\n<p><em>Prerequisite: Level 5+ Warlock</em></p>\r\n<p>You can cast Levitate on yourself without expending a spell slot.</p>\r\n<hr />\r\n<h5 id=\"DevilsSight\" class=\"compendium-hr\">Devil’s Sight</h5>\r\n<p><em>Prerequisite: Level 2+ Warlock</em></p>\r\n<p>You can see normally in Dim Light and Darkness&mdash;both magical and nonmagical&mdash;within 120 feet of yourself.</p>\r\n<hr />\r\n<h5 id=\"DevouringBlade\" class=\"compendium-hr\">Devouring Blade</h5>\r\n<p><em>Prerequisite: Level 12+ Warlock, Thirsting Blade Invocation</em></p>\r\n<p>The Extra Attack of your Thirsting Blade invocation confers two extra attacks rather than one.</p>\r\n<hr />\r\n<h5 id=\"EldritchMind\" class=\"compendium-hr\">Eldritch Mind</h5>\r\n<p>You have Advantage on Constitution saving throws that you make to maintain Concentration.</p>\r\n<hr />\r\n<h5 id=\"EldritchSmite\" class=\"compendium-hr\">Eldritch Smite</h5>\r\n<p><em>Prerequisite: Level 5+ Warlock, Pact of the Blade Invocation</em></p>\r\n<p>Once per turn when you hit a creature with your pact weapon, you can expend a Pact Magic spell slot to deal an extra 1d8 Force damage to the target, plus another 1d8 per level of the spell slot, and you can give the target the Prone condition if it is Huge or smaller.</p>\r\n<hr />\r\n<h5 id=\"EldritchSpear\" class=\"compendium-hr\">Eldritch Spear</h5>\r\n<p><em>Prerequisite: Level 2+ Warlock, a Warlock Cantrip That Deals Damage</em></p>\r\n<p>Choose one of your known Warlock cantrips that deals damage and has a range of 10+ feet. When you cast that spell, its range increases by a number of feet equal to 30 times your Warlock level.</p>\r\n<p><strong><em>Repeatable.</em></strong> You can gain this invocation more than once. Each time you do so, choose a different eligible cantrip.</p>\r\n<hr />\r\n<h5 id=\"FiendishVigor\" class=\"compendium-hr\">Fiendish Vigor</h5>\r\n<p><em>Prerequisite: Level 2+ Warlock</em></p>\r\n<p>You can cast False Life on yourself without expending a spell slot. When you cast the spell with this feature, you don’t roll the die for the Temporary Hit Points; you automatically get the highest number on the die.</p>\r\n<hr />\r\n<h5 id=\"GazeofTwoMinds\" class=\"compendium-hr\">Gaze of Two Minds</h5>\r\n<p><em>Prerequisite: Level 5+ Warlock</em></p>\r\n<p>You can use a Bonus Action to touch a willing creature and perceive through its senses until the end of your next turn. As long as the creature is on the same plane of existence as you, you can take a Bonus Action on subsequent turns to maintain this connection, extending the duration until the end of your next turn. The connection ends if you don’t maintain it in this way.</p>\r\n<p>While perceiving through the other creature’s senses, you benefit from any special senses possessed by that creature, and you can cast spells as if you were in your space or the other creature’s space if the two of you are within 60 feet of each other.</p>\r\n<hr />\r\n<h5 id=\"GiftoftheDepths\" class=\"compendium-hr\">Gift of the Depths</h5>\r\n<p><em>Prerequisite: Level 5+ Warlock</em></p>\r\n<p>You can breathe underwater, and you gain a Swim Speed equal to your Speed.</p>\r\n<p>You can also cast Water Breathing once without expending a spell slot. You regain the ability to cast it in this way again when you finish a Long Rest.</p>\r\n<hr />\r\n<h5 id=\"GiftoftheProtectors\" class=\"compendium-hr\">Gift of the Protectors</h5>\r\n<p><em>Prerequisite: Level 9+ Warlock, Pact of the Tome Invocation</em></p>\r\n<p>A new page appears in your <em>Book of Shadows</em> when you conjure it. With your permission, a creature can take an action to write its name on that page, which can contain a number of names equal to your Charisma modifier (minimum of one name).</p>\r\n<p>When any creature whose name is on the page is reduced to 0 Hit Points but not killed outright, the creature magically drops to 1 Hit Point instead. Once this magic is triggered, no creature can benefit from it until you finish a Long Rest.</p>\r\n<p>As a Magic action, you can erase a name on the page by touching it.</p>\r\n<hr />\r\n<h5 id=\"InvestmentoftheChainMaster\" class=\"compendium-hr\">Investment of the Chain Master</h5>\r\n<p><em>Prerequisite: Level 5+ Warlock, Pact of the Chain Invocation</em></p>\r\n<p>When you cast Find Familiar, you infuse the summoned familiar with a measure of your eldritch power, granting the creature the following benefits.</p>\r\n<p><strong><em>Aerial or Aquatic.</em></strong> The familiar gains either a Fly Speed or a Swim Speed (your choice) of 40 feet.</p>\r\n<p><strong><em>Quick Attack.</em></strong> As a Bonus Action, you can command the familiar to take the Attack action.</p>\r\n<p><strong><em>Necrotic or Radiant Damage.</em></strong> Whenever the familiar deals Bludgeoning, Piercing, or Slashing damage, you can make it deal Necrotic or Radiant damage instead.</p>\r\n<p><strong><em>Your Save DC.</em></strong> If the familiar forces a creature to make a saving throw, it uses your spell save DC.</p>\r\n<p><strong><em>Resistance.</em></strong> When the familiar takes damage, you can take a Reaction to grant it Resistance against that damage.</p>\r\n<hr />\r\n<h5 id=\"LessonsoftheFirstOnes\" class=\"compendium-hr\">Lessons of the First Ones</h5>\r\n<p><em>Prerequisite: Level 2+ Warlock</em></p>\r\n<p>You have received knowledge from an elder entity of the multiverse, allowing you to gain one Origin feat of your choice.</p>\r\n<p><strong><em>Repeatable.</em></strong> You can gain this invocation more than once. Each time you do so, choose a different Origin feat.</p>\r\n<hr />\r\n<h5 id=\"Lifedrinker\" class=\"compendium-hr\">Lifedrinker</h5>\r\n<p><em>Prerequisite: Level 9+ Warlock, Pact of the Blade Invocation</em></p>\r\n<p>Once per turn when you hit a creature with your pact weapon, you can deal an extra 1d6 Necrotic, Psychic, or Radiant damage (your choice) to the creature, and you can expend one of your Hit Point Dice to roll it and regain a number of Hit Points equal to the roll plus your Constitution modifier (minimum of 1 Hit Point).</p>\r\n<hr />\r\n<h5 id=\"MaskofManyFaces\" class=\"compendium-hr\">Mask of Many Faces</h5>\r\n<p><em>Prerequisite: Level 2+ Warlock</em></p>\r\n<p>You can cast Disguise Self without expending a spell slot.</p>\r\n<hr />\r\n<h5 id=\"MasterofMyriadForms\" class=\"compendium-hr\">Master of Myriad Forms</h5>\r\n<p><em>Prerequisite: Level 5+ Warlock</em></p>\r\n<p>You can cast Alter Self without expending a spell slot.</p>\r\n<hr />\r\n<h5 id=\"MistyVisions\" class=\"compendium-hr\">Misty Visions</h5>\r\n<p><em>Prerequisite: Level 2+ Warlock</em></p>\r\n<p>You can cast Silent Image without expending a spell slot.</p>\r\n<hr />\r\n<h5 id=\"OnewithShadows\" class=\"compendium-hr\">One with Shadows</h5>\r\n<p><em>Prerequisite: Level 5+ Warlock</em></p>\r\n<p>While you’re in an area of Dim Light or Darkness, you can cast Invisibility on yourself without expending a spell slot.</p>\r\n<hr />\r\n<h5 id=\"OtherworldlyLeap\" class=\"compendium-hr\">Otherworldly Leap</h5>\r\n<p><em>Prerequisite: Level 2+ Warlock</em></p>\r\n<p>You can cast Jump on yourself without expending a spell slot.</p>\r\n<hr />\r\n<h5 id=\"PactoftheBlade\" class=\"compendium-hr\">Pact of the Blade</h5>\r\n<p>As a Bonus Action, you can conjure a pact weapon in your hand&mdash;a Simple or Martial Melee weapon of your choice with which you bond&mdash;or create a bond with a magic weapon you touch; you can’t bond with a magic weapon if someone else is attuned to it or another Warlock is bonded with it. Until the bond ends, you have proficiency with the weapon, and you can use it as a Spellcasting Focus.</p>\r\n<p>Whenever you attack with the bonded weapon, you can use your Charisma modifier for the attack and damage rolls instead of using Strength or Dexterity; and you can cause the weapon to deal Necrotic, Psychic, or Radiant damage or its normal damage type.</p>\r\n<p>Your bond with the weapon ends if you use this feature’s Bonus Action again, if the weapon is more than 5 feet away from you for 1 minute or more, or if you die. A conjured weapon disappears when the bond ends.</p>\r\n<hr />\r\n<h5 id=\"PactoftheChain\" class=\"compendium-hr\">Pact of the Chain</h5>\r\n<p>You learn the Find Familiar spell and can cast it as a Magic action without expending a spell slot.</p>\r\n<p>When you cast the spell, you choose one of the normal forms for your familiar or one of the following special forms: Imp, Pseudodragon, Quasit, Skeleton, Slaad Tadpole, Sphinx of Wonder, Sprite, or Venomous Snake.</p>\r\n<p>Additionally, when you take the Attack action, you can forgo one of your own attacks to allow your familiar to make one attack of its own with its Reaction.</p>\r\n<hr />\r\n<h5 id=\"PactoftheTome\" class=\"compendium-hr\">Pact of the Tome</h5>\r\n<p>Stitching together strands of shadow, you conjure forth a book in your hand at the end of a Short or Long Rest. This <em>Book of Shadows</em> (you determine its appearance) contains eldritch magic that only you can access, granting you the benefits below. The book disappears if you conjure another book with this feature or if you die.</p>\r\n<p><strong><em>Cantrips and Rituals.</em></strong> When the book appears, choose three cantrips, and choose two level 1 spells that have the Ritual tag. The spells can be from any class’s spell list, and they must be spells you don’t already have prepared. While the book is on your person, you have the chosen spells prepared, and they function as Warlock spells for you.</p>\r\n<p><strong><em>Spellcasting Focus.</em></strong> You can use the book as a Spellcasting Focus.</p>\r\n<hr />\r\n<h5 id=\"RepellingBlast\" class=\"compendium-hr\">Repelling Blast</h5>\r\n<p><em>Prerequisite: Level 2+ Warlock, a Warlock Cantrip That Deals Damage via an Attack Roll</em></p>\r\n<p>Choose one of your known Warlock cantrips that requires an attack roll. When you hit a Large or smaller creature with that cantrip, you can push the creature up to 10 feet straight away from you.</p>\r\n<p><strong><em>Repeatable.</em></strong> You can gain this invocation more than once. Each time you do so, choose a different eligible cantrip.</p>\r\n<hr />\r\n<h5 id=\"ThirstingBlade\" class=\"compendium-hr\">Thirsting Blade</h5>\r\n<p><em>Prerequisite: Level 5+ Warlock, Pact of the Blade Invocation</em></p>\r\n<p>You gain the Extra Attack feature for your pact weapon only. With that feature, you can attack twice with the weapon instead of once when you take the Attack action on your turn.</p>\r\n<hr />\r\n<h5 id=\"VisionsofDistantRealms\" class=\"compendium-hr\">Visions of Distant Realms</h5>\r\n<p><em>Prerequisite: Level 9+ Warlock</em></p>\r\n<p>You can cast Arcane Eye without expending a spell slot.</p>\r\n<hr />\r\n<h5 id=\"WhispersoftheGrave\" class=\"compendium-hr\">Whispers of the Grave</h5>\r\n<p><em>Prerequisite: Level 7+ Warlock</em></p>\r\n<p>You can cast Speak with Dead without expending a spell slot.</p>\r\n<hr />\r\n<h5 id=\"WitchSight\" class=\"compendium-hr\">Witch Sight</h5>\r\n<p><em>Prerequisite: Level 15+ Warlock</em></p>\r\n<p>You have Truesight with a range of 30 feet.</p>"
-    },
-    {
-      "name": "Mystic Arcanum (Level 6 Spell)",
-      "description": "<p>Your patron grants you a magical secret called an arcanum. Choose one level 6 Warlock spell as this arcanum.</p>\r\n<p>You can cast your arcanum spell once without expending a spell slot, and you must finish a Long Rest before you can cast it in this way again. You regain all uses of your Mystic Arcanum when you finish a Long Rest.</p>"
-    },
-    {
-      "name": "Mystic Arcanum (Level 7 Spell)",
-      "description": "<p>Your patron grants you a magical secret called an arcanum. Choose one level 7 Warlock spell as this arcanum.</p>\r\n<p>You can cast your arcanum spell once without expending a spell slot, and you must finish a Long Rest before you can cast it in this way again. You regain all uses of your Mystic Arcanum when you finish a Long Rest.</p>"
-    },
-    {
-      "name": "Mystic Arcanum (Level 8 Spell)",
-      "description": "<p>Your patron grants you a magical secret called an arcanum. Choose one level 8 Warlock spell as this arcanum.</p>\r\n<p>You can cast your arcanum spell once without expending a spell slot, and you must finish a Long Rest before you can cast it in this way again. You regain all uses of your Mystic Arcanum when you finish a Long Rest.</p>"
-    },
-    {
-      "name": "Mystic Arcanum (Level 9 Spell)",
-      "description": "<p>Your patron grants you a magical secret called an arcanum. Choose one level 9 Warlock spell as this arcanum.</p>\r\n<p>You can cast your arcanum spell once without expending a spell slot, and you must finish a Long Rest before you can cast it in this way again. You regain all uses of your Mystic Arcanum when you finish a Long Rest.</p>"
+      "description": "Eldritch Invocation options appear in alphabetical order.\n\nAgonizing Blast\n\n*Prerequisite: Level 2+ Warlock, a Warlock Cantrip That Deals Damage*\n\nChoose one of your known Warlock cantrips that deals damage. You can add your Charisma modifier to that spell’s damage rolls.\n\n**Repeatable.** You can gain this invocation more than once. Each time you do so, choose a different eligible cantrip.\n\nArmor of Shadows\n\nYou can cast Mage Armor on yourself without expending a spell slot.\n\nAscendant Step\n\n*Prerequisite: Level 5+ Warlock*\n\nYou can cast Levitate on yourself without expending a spell slot.\n\nDevil’s Sight\n\n*Prerequisite: Level 2+ Warlock*\n\nYou can see normally in Dim Light and Darkness—both magical and nonmagical—within 120 feet of yourself.\n\nDevouring Blade\n\n*Prerequisite: Level 12+ Warlock, Thirsting Blade Invocation*\n\nThe Extra Attack of your Thirsting Blade invocation confers two extra attacks rather than one.\n\nEldritch Mind\n\nYou have Advantage on Constitution saving throws that you make to maintain Concentration.\n\nEldritch Smite\n\n*Prerequisite: Level 5+ Warlock, Pact of the Blade Invocation*\n\nOnce per turn when you hit a creature with your pact weapon, you can expend a Pact Magic spell slot to deal an extra 1d8 Force damage to the target, plus another 1d8 per level of the spell slot, and you can give the target the Prone condition if it is Huge or smaller.\n\nEldritch Spear\n\n*Prerequisite: Level 2+ Warlock, a Warlock Cantrip That Deals Damage*\n\nChoose one of your known Warlock cantrips that deals damage and has a range of 10+ feet. When you cast that spell, its range increases by a number of feet equal to 30 times your Warlock level.\n\n**Repeatable.** You can gain this invocation more than once. Each time you do so, choose a different eligible cantrip.\n\nFiendish Vigor\n\n*Prerequisite: Level 2+ Warlock*\n\nYou can cast False Life on yourself without expending a spell slot. When you cast the spell with this feature, you don’t roll the die for the Temporary Hit Points; you automatically get the highest number on the die.\n\nGaze of Two Minds\n\n*Prerequisite: Level 5+ Warlock*\n\nYou can use a Bonus Action to touch a willing creature and perceive through its senses until the end of your next turn. As long as the creature is on the same plane of existence as you, you can take a Bonus Action on subsequent turns to maintain this connection, extending the duration until the end of your next turn. The connection ends if you don’t maintain it in this way.\n\nWhile perceiving through the other creature’s senses, you benefit from any special senses possessed by that creature, and you can cast spells as if you were in your space or the other creature’s space if the two of you are within 60 feet of each other.\n\nGift of the Depths\n\n*Prerequisite: Level 5+ Warlock*\n\nYou can breathe underwater, and you gain a Swim Speed equal to your Speed.\n\nYou can also cast Water Breathing once without expending a spell slot. You regain the ability to cast it in this way again when you finish a Long Rest.\n\nGift of the Protectors\n\n*Prerequisite: Level 9+ Warlock, Pact of the Tome Invocation*\n\nA new page appears in your *Book of Shadows* when you conjure it. With your permission, a creature can take an action to write its name on that page, which can contain a number of names equal to your Charisma modifier (minimum of one name).\n\nWhen any creature whose name is on the page is reduced to 0 Hit Points but not killed outright, the creature magically drops to 1 Hit Point instead. Once this magic is triggered, no creature can benefit from it until you finish a Long Rest.\n\nAs a Magic action, you can erase a name on the page by touching it.\n\nInvestment of the Chain Master\n\n*Prerequisite: Level 5+ Warlock, Pact of the Chain Invocation*\n\nWhen you cast Find Familiar, you infuse the summoned familiar with a measure of your eldritch power, granting the creature the following benefits.\n\n**Aerial or Aquatic.** The familiar gains either a Fly Speed or a Swim Speed (your choice) of 40 feet.\n\n**Quick Attack.** As a Bonus Action, you can command the familiar to take the Attack action.\n\n**Necrotic or Radiant Damage.** Whenever the familiar deals Bludgeoning, Piercing, or Slashing damage, you can make it deal Necrotic or Radiant damage instead.\n\n**Your Save DC.** If the familiar forces a creature to make a saving throw, it uses your spell save DC.\n\n**Resistance.** When the familiar takes damage, you can take a Reaction to grant it Resistance against that damage.\n\nLessons of the First Ones\n\n*Prerequisite: Level 2+ Warlock*\n\nYou have received knowledge from an elder entity of the multiverse, allowing you to gain one Origin feat of your choice.\n\n**Repeatable.** You can gain this invocation more than once. Each time you do so, choose a different Origin feat.\n\nLifedrinker\n\n*Prerequisite: Level 9+ Warlock, Pact of the Blade Invocation*\n\nOnce per turn when you hit a creature with your pact weapon, you can deal an extra 1d6 Necrotic, Psychic, or Radiant damage (your choice) to the creature, and you can expend one of your Hit Point Dice to roll it and regain a number of Hit Points equal to the roll plus your Constitution modifier (minimum of 1 Hit Point).\n\nMask of Many Faces\n\n*Prerequisite: Level 2+ Warlock*\n\nYou can cast Disguise Self without expending a spell slot.\n\nMaster of Myriad Forms\n\n*Prerequisite: Level 5+ Warlock*\n\nYou can cast Alter Self without expending a spell slot.\n\nMisty Visions\n\n*Prerequisite: Level 2+ Warlock*\n\nYou can cast Silent Image without expending a spell slot.\n\nOne with Shadows\n\n*Prerequisite: Level 5+ Warlock*\n\nWhile you’re in an area of Dim Light or Darkness, you can cast Invisibility on yourself without expending a spell slot.\n\nOtherworldly Leap\n\n*Prerequisite: Level 2+ Warlock*\n\nYou can cast Jump on yourself without expending a spell slot.\n\nPact of the Blade\n\nAs a Bonus Action, you can conjure a pact weapon in your hand—a Simple or Martial Melee weapon of your choice with which you bond—or create a bond with a magic weapon you touch; you can’t bond with a magic weapon if someone else is attuned to it or another Warlock is bonded with it. Until the bond ends, you have proficiency with the weapon, and you can use it as a Spellcasting Focus.\n\nWhenever you attack with the bonded weapon, you can use your Charisma modifier for the attack and damage rolls instead of using Strength or Dexterity; and you can cause the weapon to deal Necrotic, Psychic, or Radiant damage or its normal damage type.\n\nYour bond with the weapon ends if you use this feature’s Bonus Action again, if the weapon is more than 5 feet away from you for 1 minute or more, or if you die. A conjured weapon disappears when the bond ends.\n\nPact of the Chain\n\nYou learn the Find Familiar spell and can cast it as a Magic action without expending a spell slot.\n\nWhen you cast the spell, you choose one of the normal forms for your familiar or one of the following special forms: Imp, Pseudodragon, Quasit, Skeleton, Slaad Tadpole, Sphinx of Wonder, Sprite, or Venomous Snake.\n\nAdditionally, when you take the Attack action, you can forgo one of your own attacks to allow your familiar to make one attack of its own with its Reaction.\n\nPact of the Tome\n\nStitching together strands of shadow, you conjure forth a book in your hand at the end of a Short or Long Rest. This *Book of Shadows* (you determine its appearance) contains eldritch magic that only you can access, granting you the benefits below. The book disappears if you conjure another book with this feature or if you die.\n\n**Cantrips and Rituals.** When the book appears, choose three cantrips, and choose two level 1 spells that have the Ritual tag. The spells can be from any class’s spell list, and they must be spells you don’t already have prepared. While the book is on your person, you have the chosen spells prepared, and they function as Warlock spells for you.\n\n**Spellcasting Focus.** You can use the book as a Spellcasting Focus.\n\nRepelling Blast\n\n*Prerequisite: Level 2+ Warlock, a Warlock Cantrip That Deals Damage via an Attack Roll*\n\nChoose one of your known Warlock cantrips that requires an attack roll. When you hit a Large or smaller creature with that cantrip, you can push the creature up to 10 feet straight away from you.\n\n**Repeatable.** You can gain this invocation more than once. Each time you do so, choose a different eligible cantrip.\n\nThirsting Blade\n\n*Prerequisite: Level 5+ Warlock, Pact of the Blade Invocation*\n\nYou gain the Extra Attack feature for your pact weapon only. With that feature, you can attack twice with the weapon instead of once when you take the Attack action on your turn.\n\nVisions of Distant Realms\n\n*Prerequisite: Level 9+ Warlock*\n\nYou can cast Arcane Eye without expending a spell slot.\n\nWhispers of the Grave\n\n*Prerequisite: Level 7+ Warlock*\n\nYou can cast Speak with Dead without expending a spell slot.\n\nWitch Sight\n\n*Prerequisite: Level 15+ Warlock*\n\nYou have Truesight with a range of 30 feet.",
+      "level": 1
     },
     {
       "name": "Core Sorcerer Traits",
-      "description": "<p>As a Level 1 Character:</p>\r\n<ul>\r\n<li>Gain all the traits in the Core Sorcerer Traits table.</li>\r\n<li>Gain the Sorcerer’s level 1 features.</li>\r\n</ul>\r\n<table class=\"table-compendium table--left-all\" style=\"--sb-table-row-bg-hover: #b3d3df; --sb-table-row-bg-dark: #d7e8ee; --sb-table-row-bg-light: #f1f7f9; --dark-sb-table-row-bg-light: #5e7982; --dark-sb-table-row-bg-dark: #5c7f8c; --dark-sb-table-row-bg-hover: #78a2b0;\"><caption>Core Sorcerer Traits</caption>\r\n<thead></thead>\r\n<tbody>\r\n<tr>\r\n<th>Primary Ability</th>\r\n<td>Charisma</td>\r\n</tr>\r\n<tr>\r\n<th>Hit Point Die</th>\r\n<td>D6 per Sorcerer level</td>\r\n</tr>\r\n<tr>\r\n<th>Saving Throw Proficiencies</th>\r\n<td>Constitution and Charisma</td>\r\n</tr>\r\n<tr>\r\n<th>Skill Proficiencies</th>\r\n<td><em>Choose 2:</em> Arcana, Deception, Insight, Intimidation, Persuasion, or Religion</td>\r\n</tr>\r\n<tr>\r\n<th>Weapon Proficiencies</th>\r\n<td>Simple weapons</td>\r\n</tr>\r\n<tr>\r\n<th>Armor Training</th>\r\n<td>None</td>\r\n</tr>\r\n<tr>\r\n<th>Starting Equipment</th>\r\n<td><em>Choose A or B:</em> (A) Spear, 2 Daggers, Arcane Focus (crystal), Dungeoneer’s Pack, and 28 GP; or (B) 50 GP</td>\r\n</tr>\r\n</tbody>\r\n</table>"
+      "description": "As a Level 1 Character:\n\n- Gain all the traits in the Core Sorcerer Traits table.\n\n- Gain the Sorcerer’s level 1 features.\n\nPrimary Ability: Charisma\n\nHit Point Die: D6 per Sorcerer level\n\nSaving Throw Proficiencies: Constitution and Charisma\n\nSkill Proficiencies: *Choose 2:* Arcana, Deception, Insight, Intimidation, Persuasion, or Religion\n\nWeapon Proficiencies: Simple weapons\n\nArmor Training: None\n\nStarting Equipment: *Choose A or B:* (A) Spear, 2 Daggers, Arcane Focus (crystal), Dungeoneer’s Pack, and 28 GP; or (B) 50 GP",
+      "level": 1
     },
     {
       "name": "Spellcasting",
-      "description": "<p>Drawing from your innate magic, you can cast spells.</p>\r\n<p><strong><em>Cantrips.</em></strong> You know four Sorcerer cantrips of your choice. Whenever you gain a Sorcerer level, you can replace one of your cantrips from this feature with another Sorcerer cantrip of your choice.</p>\r\n<p>When you reach Sorcerer levels 4 and 10, you learn another Sorcerer cantrip of your choice, as shown in the Cantrips column of the Sorcerer Features table.</p>\r\n<p><strong><em>Spell Slots.</em></strong> The Sorcerer Features table shows how many spell slots you have to cast your level 1+ spells. You regain all expended slots when you finish a Long Rest.</p>\r\n<p><strong><em>Prepared Spells of Level 1+.</em></strong> You prepare the list of level 1+ spells that are available for you to cast with this feature. To start, choose two level 1 Sorcerer spells.</p>\r\n<p>The number of spells on your list increases as you gain Sorcerer levels, as shown in the Prepared Spells column of the Sorcerer Features table. Whenever that number increases, choose additional Sorcerer spells until the number of spells on your list matches the number in the Sorcerer Features table. The chosen spells must be of a level for which you have spell slots. For example, if you’re a level 3 Sorcerer, your list of prepared spells can include six Sorcerer spells of level 1 or 2 in any combination.</p>\r\n<p>If another Sorcerer feature gives you spells that you always have prepared, those spells don’t count against the number of spells you can prepare with this feature, but those spells otherwise count as Sorcerer spells for you.</p>\r\n<p><strong><em>Changing Your Prepared Spells.</em></strong> Whenever you gain a Sorcerer level, you can replace one spell on your list with another Sorcerer spell for which you have spell slots.</p>\r\n<p><strong><em>Spellcasting Ability.</em></strong> Charisma is your spellcasting ability for your Sorcerer spells.</p>\r\n<p><strong><em>Spellcasting Focus.</em></strong> You can use an Arcane Focus as a Spellcasting Focus for your Sorcerer spells.</p>"
+      "description": "Drawing from your innate magic, you can cast spells.\n\n**Cantrips.** You know four Sorcerer cantrips of your choice. Whenever you gain a Sorcerer level, you can replace one of your cantrips from this feature with another Sorcerer cantrip of your choice.\n\nWhen you reach Sorcerer levels 4 and 10, you learn another Sorcerer cantrip of your choice, as shown in the Cantrips column of the Sorcerer Features table.\n\n**Spell Slots.** The Sorcerer Features table shows how many spell slots you have to cast your level 1+ spells. You regain all expended slots when you finish a Long Rest.\n\n**Prepared Spells of Level 1+.** You prepare the list of level 1+ spells that are available for you to cast with this feature. To start, choose two level 1 Sorcerer spells.\n\nThe number of spells on your list increases as you gain Sorcerer levels, as shown in the Prepared Spells column of the Sorcerer Features table. Whenever that number increases, choose additional Sorcerer spells until the number of spells on your list matches the number in the Sorcerer Features table. The chosen spells must be of a level for which you have spell slots. For example, if you’re a level 3 Sorcerer, your list of prepared spells can include six Sorcerer spells of level 1 or 2 in any combination.\n\nIf another Sorcerer feature gives you spells that you always have prepared, those spells don’t count against the number of spells you can prepare with this feature, but those spells otherwise count as Sorcerer spells for you.\n\n**Changing Your Prepared Spells.** Whenever you gain a Sorcerer level, you can replace one spell on your list with another Sorcerer spell for which you have spell slots.\n\n**Spellcasting Ability.** Charisma is your spellcasting ability for your Sorcerer spells.\n\n**Spellcasting Focus.** You can use an Arcane Focus as a Spellcasting Focus for your Sorcerer spells.",
+      "level": 1
     },
     {
       "name": "Innate Sorcery",
-      "description": "<p>An event in your past left an indelible mark on you, infusing you with simmering magic. As a Bonus Action, you can unleash that magic for 1 minute, during which you gain the following benefits:</p>\r\n<div class=\"effect-info\">\r\n<ul>\r\n<li>The spell save DC of your Sorcerer spells increases by 1.</li>\r\n<li>You have Advantage on the attack rolls of Sorcerer spells you cast.</li>\r\n</ul>\r\n<p>You can use this feature twice, and you regain all expended uses of it when you finish a Long Rest.</p>\r\n</div>"
-    },
-    {
-      "name": "Font of Magic",
-      "description": "<p>You can tap into the wellspring of magic within yourself. This wellspring is represented by Sorcery Points, which allow you to create a variety of magical effects.</p>\r\n<p>You have 2 Sorcery Points, and you gain more as you reach higher levels, as shown in the Sorcery Points column of the Sorcerer Features table. You can’t have more Sorcery Points than the number shown in the table for your level. You regain all expended Sorcery Points when you finish a Long Rest.</p>\r\n<p>You can use your Sorcery Points to fuel the options below, along with other features, such as Metamagic, that use those points.</p>\r\n<p><strong><em>Converting Spell Slots to Sorcery Points.</em></strong> You can expend a spell slot to gain a number of Sorcery Points equal to the slot’s level (no action required).</p>\r\n<p><strong><em>Creating Spell Slots.</em></strong> As a Bonus Action, you can transform unexpended Sorcery Points into one spell slot. The Creating Spell Slots table shows the cost of creating a spell slot of a given level, and it lists the minimum Sorcerer level you must be to create a slot. You can create a spell slot no higher than level 5.</p>\r\n<p>Any spell slot you create with this feature vanishes when you finish a Long Rest.</p>\r\n<table class=\"table-compendium\" style=\"--sb-table-row-bg-hover: #b3d3df; --sb-table-row-bg-dark: #d7e8ee; --sb-table-row-bg-light: #f1f7f9; --dark-sb-table-row-bg-light: #5e7982; --dark-sb-table-row-bg-dark: #5c7f8c; --dark-sb-table-row-bg-hover: #78a2b0;\"><caption>Creating Spell Slots</caption>\r\n<thead>\r\n<tr>\r\n<th>Spell Slot Level</th>\r\n<th>Sorcery Point Cost</th>\r\n<th>Min. Sorcerer Level</th>\r\n</tr>\r\n</thead>\r\n<tbody>\r\n<tr>\r\n<td>1</td>\r\n<td>2</td>\r\n<td>2</td>\r\n</tr>\r\n<tr>\r\n<td>2</td>\r\n<td>3</td>\r\n<td>3</td>\r\n</tr>\r\n<tr>\r\n<td>3</td>\r\n<td>5</td>\r\n<td>5</td>\r\n</tr>\r\n<tr>\r\n<td>4</td>\r\n<td>6</td>\r\n<td>7</td>\r\n</tr>\r\n<tr>\r\n<td>5</td>\r\n<td>7</td>\r\n<td>9</td>\r\n</tr>\r\n</tbody>\r\n</table>"
-    },
-    {
-      "name": "Metamagic",
-      "description": "<p>Because your magic flows from within, you can alter your spells to suit your needs; you gain two Metamagic options of your choice from &ldquo;Metamagic Options&rdquo; later in this class’s description. You use the chosen options to temporarily modify spells you cast. To use an option, you must spend the number of Sorcery Points that it costs.</p>\r\n<p>You can use only one Metamagic option on a spell when you cast it unless otherwise noted in one of those options.</p>\r\n<p>Whenever you gain a Sorcerer level, you can replace one of your Metamagic options with one you don’t know. You gain two more options at Sorcerer level 10 and two more at Sorcerer level 17.</p>"
-    },
-    {
-      "name": "Sorcerer Subclass",
-      "description": "<p>You gain a Sorcerer subclass of your choice. A subclass is a specialization that grants you features at certain Sorcerer levels. For the rest of your career, you gain each of your subclass’s features that are of your Sorcerer level or lower.</p>"
-    },
-    {
-      "name": "Sorcerous Restoration",
-      "description": "<p>When you finish a Short Rest, you can regain expended Sorcery Points, but no more than a number equal to half your Sorcerer level (round down). Once you use this feature, you can’t do so again until you finish a Long Rest.</p>"
-    },
-    {
-      "name": "Sorcery Incarnate",
-      "description": "<p>If you have no uses of Innate Sorcery left, you can use it if you spend 2 Sorcery Points when you take the Bonus Action to activate it.</p>\r\n<p>In addition, while your Innate Sorcery feature is active, you can use up to two of your Metamagic options on each spell you cast.</p>"
-    },
-    {
-      "name": "Arcane Apotheosis",
-      "description": "<p>While your Innate Sorcery feature is active, you can use one Metamagic option on each of your turns without spending Sorcery Points on it.</p>"
-    },
-    {
-      "name": "Metamagic Options",
-      "description": "<p>The following options are available to your Metamagic feature. The options are presented in alphabetical order.</p>"
+      "description": "An event in your past left an indelible mark on you, infusing you with simmering magic. As a Bonus Action, you can unleash that magic for 1 minute, during which you gain the following benefits:\n\n- The spell save DC of your Sorcerer spells increases by 1.\n\n- You have Advantage on the attack rolls of Sorcerer spells you cast.\n\nYou can use this feature twice, and you regain all expended uses of it when you finish a Long Rest.",
+      "level": 1
     },
     {
       "name": "Ability Score Increases",
-      "description": "<p>When determining your character’s ability scores, increase one score by 2 and increase a different score by 1, or increase three different scores by 1. Follow this rule regardless of the method you use to determine the scores, such as rolling or point buy. The &ldquo;Quick Build&rdquo; section for your character’s class offers suggestions on which scores to increase. You can follow those suggestions or ignore them, but you can’t raise any of your scores above 20.</p>"
+      "description": "When determining your character’s ability scores, increase one score by 2 and increase a different score by 1, or increase three different scores by 1. Follow this rule regardless of the method you use to determine the scores, such as rolling or point buy. The “Quick Build” section for your character’s class offers suggestions on which scores to increase. You can follow those suggestions or ignore them, but you can’t raise any of your scores above 20.",
+      "level": null
     },
     {
       "name": "Languages",
-      "description": "<p>Your character can speak, read, and write Common and one other language that you and your DM agree is appropriate for the character. The <em><a title=\"Player’s Handbook\" href=\"https://www.dndbeyond.com/sources/phb\">Player’s Handbook</a></em> offers a list of languages to choose from. The DM is free to modify that list for a campaign.</p>"
+      "description": "Your character can speak, read, and write Common and one other language that you and your DM agree is appropriate for the character. The *Player’s Handbook* offers a list of languages to choose from. The DM is free to modify that list for a campaign.",
+      "level": null
     },
     {
       "name": "Creature Type",
-      "description": "<p>You are a Humanoid.</p>"
+      "description": "You are a Humanoid.",
+      "level": null
     },
     {
       "name": "Size",
-      "description": "<p>You are Medium.</p>"
+      "description": "You are Medium.",
+      "level": null
     },
     {
       "name": "Speed",
-      "description": "<p>Your walking speed is 30 feet, and you have a swimming speed equal to your walking speed.</p>"
+      "description": "Your walking speed is 30 feet, and you have a swimming speed equal to your walking speed.",
+      "level": null
     },
     {
       "name": "Amphibious",
-      "description": "<p>You can breathe air and water.</p>"
+      "description": "You can breathe air and water.",
+      "level": null
     },
     {
       "name": "Control Air and Water",
-      "description": "<p>You can cast fog cloud with this trait. Starting at 3rd level, you can cast the gust of wind spell with this trait. Starting at 5th level, you can also cast the water walk spell with it. Once you cast any of these spells with this trait, you can’t cast that spell with it again until you finish a long rest. You can also cast these spells using any spell slots you have of the appropriate level.</p>\r\n<p>Intelligence, Wisdom, or Charisma is your spellcasting ability for these spells when you cast them with this trait (choose when you select this race).</p>"
+      "description": "You can cast fog cloud with this trait. Starting at 3rd level, you can cast the gust of wind spell with this trait. Starting at 5th level, you can also cast the water walk spell with it. Once you cast any of these spells with this trait, you can’t cast that spell with it again until you finish a long rest. You can also cast these spells using any spell slots you have of the appropriate level.\n\nIntelligence, Wisdom, or Charisma is your spellcasting ability for these spells when you cast them with this trait (choose when you select this race).",
+      "level": null
     },
     {
       "name": "Darkvision",
-      "description": "<p>You can see in dim light within 60 feet of you as if it were bright light and in darkness as if it were dim light. You discern colors in that darkness only as shades of gray.</p>"
+      "description": "You can see in dim light within 60 feet of you as if it were bright light and in darkness as if it were dim light. You discern colors in that darkness only as shades of gray.",
+      "level": null
     },
     {
       "name": "Emissary of the Sea",
-      "description": "<p>You can communicate simple ideas to any Beast, Elemental, or Monstrosity that has a swimming speed. It can understand your words, though you have no special ability to understand it in return.</p>"
+      "description": "You can communicate simple ideas to any Beast, Elemental, or Monstrosity that has a swimming speed. It can understand your words, though you have no special ability to understand it in return.",
+      "level": null
     },
     {
       "name": "Guardian of the Depths",
-      "description": "<p>Adapted to the frigid ocean depths, you have resistance to cold damage.</p>"
+      "description": "Adapted to the frigid ocean depths, you have resistance to cold damage.",
+      "level": null
     },
     {
       "name": "Noble Ability Score Improvements",
-      "description": "<p>The Noble Background allows you to choose between Strength, Intelligence, and Charisma. Increase one of these scores by 2 and another one by 1, or increase all three by 1. None of these increases can raise a score above 20.</p>"
+      "description": "The Noble Background allows you to choose between Strength, Intelligence, and Charisma. Increase one of these scores by 2 and another one by 1, or increase all three by 1. None of these increases can raise a score above 20.",
+      "level": null
     },
     {
       "name": "Skilled",
-      "description": "<p><em>Origin Feat</em></p>\r\n<p>You gain proficiency in any combination of three skills or tools of your choice.</p>\r\n<p><em><strong>Repeatable.</strong></em> You can take this feat more than once.</p>"
+      "description": "*Origin Feat*\n\nYou gain proficiency in any combination of three skills or tools of your choice.\n\n***Repeatable.*** You can take this feat more than once.",
+      "level": null
     },
     {
       "name": "Tough",
-      "description": "<p><em>Origin Feat</em></p>\r\n<p>Your Hit Point maximum increases by an amount equal to twice your character level when you gain this feat. Whenever you gain a character level thereafter, your Hit Point maximum increases by an additional 2 Hit Points.</p>"
+      "description": "*Origin Feat*\n\nYour Hit Point maximum increases by an amount equal to twice your character level when you gain this feat. Whenever you gain a character level thereafter, your Hit Point maximum increases by an additional 2 Hit Points.",
+      "level": null
     },
     {
       "name": "Dark Bargain",
-      "description": "<p>At your GM's discretion, you can take a Dark Bargain.</p>"
+      "description": "At your GM's discretion, you can take a Dark Bargain.",
+      "level": null
     },
     {
       "name": "Character Threads",
-      "description": "<p>Threads are aspects added to characters at any time during their career that have a specific short or long-term goal.</p>"
+      "description": "Threads are aspects added to characters at any time during their career that have a specific short or long-term goal.",
+      "level": null
     },
     {
       "name": "Runestones",
-      "description": "<p>At the beginning of the <em>Northlands Sagas</em> adventure path, each player should draw one Runestone randomly.</p>"
+      "description": "At the beginning of the *Northlands Sagas* adventure path, each player should draw one Runestone randomly.",
+      "level": null
     }
   ],
   "proficiencies": {
@@ -1058,7 +1015,9 @@
           "toHit": 7,
           "dc": null,
           "effect": "Damage",
-          "duration": " (Instantaneous)"
+          "duration": " (Instantaneous)",
+          "refKind": "wonder",
+          "refId": "eldritch-blast"
         },
         {
           "name": "Thunderclap",
@@ -1081,7 +1040,9 @@
           "toHit": null,
           "dc": 15,
           "effect": "Damage",
-          "duration": " (Instantaneous)"
+          "duration": " (Instantaneous)",
+          "refKind": "wonder",
+          "refId": "thunderclap"
         },
         {
           "name": "Mage Hand",
@@ -1105,7 +1066,9 @@
           "toHit": null,
           "dc": null,
           "effect": "Utility",
-          "duration": "1 Minute (Time)"
+          "duration": "1 Minute (Time)",
+          "refKind": "wonder",
+          "refId": "mage-hand"
         },
         {
           "name": "Light",
@@ -1129,7 +1092,9 @@
           "toHit": null,
           "dc": null,
           "effect": "Creation",
-          "duration": "1 Hour (Time)"
+          "duration": "1 Hour (Time)",
+          "refKind": "wonder",
+          "refId": "light"
         },
         {
           "name": "Lightning Lure",
@@ -1152,7 +1117,9 @@
           "toHit": null,
           "dc": 15,
           "effect": "Damage",
-          "duration": " (Instantaneous)"
+          "duration": " (Instantaneous)",
+          "refKind": "wonder",
+          "refId": "lightning-lure"
         },
         {
           "name": "Prestidigitation",
@@ -1176,7 +1143,9 @@
           "toHit": null,
           "dc": null,
           "effect": "Utility",
-          "duration": "1 Hour (Time)"
+          "duration": "1 Hour (Time)",
+          "refKind": "wonder",
+          "refId": "prestidigitation"
         },
         {
           "name": "Sorcerous Burst",
@@ -1200,7 +1169,9 @@
           "toHit": 7,
           "dc": null,
           "effect": null,
-          "duration": " (Instantaneous)"
+          "duration": " (Instantaneous)",
+          "refKind": "wonder",
+          "refId": "sorcerous-burst"
         }
       ]
     },
@@ -1230,7 +1201,9 @@
           "toHit": null,
           "dc": null,
           "effect": "Buff",
-          "duration": " (Instantaneous)"
+          "duration": " (Instantaneous)",
+          "refKind": "wonder",
+          "refId": "false-life"
         },
         {
           "name": "Fog Cloud",
@@ -1254,7 +1227,9 @@
           "toHit": null,
           "dc": null,
           "effect": "Control",
-          "duration": "1 Hour (Concentration)"
+          "duration": "1 Hour (Concentration)",
+          "refKind": "wonder",
+          "refId": "fog-cloud"
         },
         {
           "name": "Witch Bolt",
@@ -1279,7 +1254,9 @@
           "toHit": 7,
           "dc": null,
           "effect": "Damage",
-          "duration": "1 Minute (Concentration)"
+          "duration": "1 Minute (Concentration)",
+          "refKind": "wonder",
+          "refId": "witch-bolt"
         },
         {
           "name": "Arms of Hadar",
@@ -1303,7 +1280,9 @@
           "toHit": null,
           "dc": 15,
           "effect": "Damage",
-          "duration": " (Instantaneous)"
+          "duration": " (Instantaneous)",
+          "refKind": "wonder",
+          "refId": "arms-of-hadar"
         },
         {
           "name": "Armor of Agathys",
@@ -1328,7 +1307,9 @@
           "toHit": null,
           "dc": null,
           "effect": "Damage",
-          "duration": "1 Hour (Time)"
+          "duration": "1 Hour (Time)",
+          "refKind": "wonder",
+          "refId": "armor-of-agathys"
         },
         {
           "name": "Hellish Rebuke",
@@ -1352,7 +1333,9 @@
           "toHit": null,
           "dc": 15,
           "effect": "Damage",
-          "duration": " (Instantaneous)"
+          "duration": " (Instantaneous)",
+          "refKind": "wonder",
+          "refId": "hellish-rebuke"
         },
         {
           "name": "Mage Armor",
@@ -1377,7 +1360,9 @@
           "toHit": null,
           "dc": null,
           "effect": "Buff",
-          "duration": "8 Hour (Time)"
+          "duration": "8 Hour (Time)",
+          "refKind": "wonder",
+          "refId": "mage-armor"
         },
         {
           "name": "Chromatic Orb",
@@ -1402,7 +1387,9 @@
           "toHit": 7,
           "dc": null,
           "effect": "Damage",
-          "duration": " (Instantaneous)"
+          "duration": " (Instantaneous)",
+          "refKind": "wonder",
+          "refId": "chromatic-orb"
         }
       ]
     },
@@ -1432,7 +1419,9 @@
           "toHit": null,
           "dc": 15,
           "effect": "Control",
-          "duration": "1 Minute (Concentration)"
+          "duration": "1 Minute (Concentration)",
+          "refKind": "wonder",
+          "refId": "gust-of-wind"
         },
         {
           "name": "Misty Step",
@@ -1455,7 +1444,9 @@
           "toHit": null,
           "dc": null,
           "effect": "Teleportation",
-          "duration": " (Instantaneous)"
+          "duration": " (Instantaneous)",
+          "refKind": "wonder",
+          "refId": "misty-step"
         }
       ]
     },
@@ -1485,7 +1476,9 @@
           "toHit": null,
           "dc": null,
           "effect": "Movement",
-          "duration": "1 Hour (Time)"
+          "duration": "1 Hour (Time)",
+          "refKind": "wonder",
+          "refId": "water-walk"
         },
         {
           "name": "Hunger of Hadar",
@@ -1510,9 +1503,107 @@
           "toHit": null,
           "dc": 15,
           "effect": "Damage",
-          "duration": "1 Minute (Concentration)"
+          "duration": "1 Minute (Concentration)",
+          "refKind": "wonder",
+          "refId": "hunger-of-hadar"
         }
       ]
     }
-  ]
+  ],
+  "featureIds": [
+    "feat.ability-score-improvement",
+    "feat.noble-ability-score-improvements",
+    "feat.skilled",
+    "feat.tough",
+    "feat.dark-bargain",
+    "feat.character-threads",
+    "feat.runestones",
+    "feat.expanded-spell-list",
+    "feat.tentacle-of-the-deeps",
+    "feat.gift-of-the-sea",
+    "feat.core-warlock-traits",
+    "feat.warlock-eldritch-invocations",
+    "feat.warlock-pact-magic",
+    "feat.warlock-magical-cunning",
+    "feat.warlock-warlock-subclass",
+    "feat.warlock-eldritch-invocation-options",
+    "feat.core-sorcerer-traits",
+    "feat.sorcerer-spellcasting",
+    "feat.sorcerer-innate-sorcery",
+    "feat.water-genasi-amphibious",
+    "feat.control-air-and-water",
+    "feat.darkvision.60",
+    "feat.emissary-of-the-sea",
+    "feat.guardian-of-the-depths"
+  ],
+  "featureParams": {
+    "feat.expanded-spell-list": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.tentacle-of-the-deeps": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.gift-of-the-sea": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.core-warlock-traits": {
+      "grantedAtLevel": [
+        1
+      ]
+    },
+    "feat.warlock-eldritch-invocations": {
+      "grantedAtLevel": [
+        1
+      ]
+    },
+    "feat.warlock-pact-magic": {
+      "grantedAtLevel": [
+        1
+      ]
+    },
+    "feat.warlock-magical-cunning": {
+      "grantedAtLevel": [
+        2
+      ]
+    },
+    "feat.warlock-warlock-subclass": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.ability-score-improvement": {
+      "grantedAtLevel": [
+        4,
+        8,
+        12,
+        16
+      ]
+    },
+    "feat.warlock-eldritch-invocation-options": {
+      "grantedAtLevel": [
+        1
+      ]
+    },
+    "feat.core-sorcerer-traits": {
+      "grantedAtLevel": [
+        1
+      ]
+    },
+    "feat.sorcerer-spellcasting": {
+      "grantedAtLevel": [
+        1
+      ]
+    },
+    "feat.sorcerer-innate-sorcery": {
+      "grantedAtLevel": [
+        1
+      ]
+    }
+  }
 }

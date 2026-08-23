@@ -1,7 +1,8 @@
 {
   "name": "Void Aura",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "a creature doesn’t secrete the mucous cloud of an aboleth. Instead, the undead nihileth is surrounded by a chilling cloud. A living creature that starts its turn within 5 feet of a creature must make a successful DC 14 Constitution saving throw or be slowed until the start of its next turn. In addition, any creature that has been diseased by a creature or a nihilethic zombie takes 7 (2d6) cold damage every time it starts its turn within the aura.",
   "mechanics": {

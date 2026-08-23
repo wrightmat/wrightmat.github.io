@@ -1,7 +1,8 @@
 {
   "name": "Summoned Companion",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Conjures a living creature that fights or works alongside its user.",
   "mechanics": {

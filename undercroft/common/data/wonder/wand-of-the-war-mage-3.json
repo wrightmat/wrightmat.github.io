@@ -3,7 +3,8 @@
   "name": "Wand of the War Mage, +3",
   "notes": "Wand, very rare (requires attunement by a spellcaster)\n\nWhile holding this wand, you gain a +3 bonus to spell attack rolls. In addition, you ignore half cover when making a spell attack.",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "url": "https://www.dnd5eapi.co/api/2014/magic-items/wand-of-the-war-mage-3",
   "mapping": "5e-api-magic-item",

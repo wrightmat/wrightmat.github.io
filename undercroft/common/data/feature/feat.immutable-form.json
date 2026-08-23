@@ -1,7 +1,8 @@
 {
   "name": "Immutable Form",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature is immune to any spell or effect that would alter its form.",
   "mechanics": {

@@ -1,7 +1,8 @@
 {
   "name": "Damage",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Deals damage via an attack roll or a saving throw — its own primary damage output, not a bonus layered onto something else.",
   "mechanics": {

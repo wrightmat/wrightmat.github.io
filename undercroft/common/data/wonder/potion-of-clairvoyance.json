@@ -3,7 +3,8 @@
   "name": "Potion of Clairvoyance",
   "notes": "Potion, rare\n\nWhen you drink this potion, you gain the effect of the clairvoyance spell. An eyeball bobs in this yellowish liquid but vanishes when the potion is opened.",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "url": "https://www.dnd5eapi.co/api/2014/magic-items/potion-of-clairvoyance",
   "mapping": "5e-api-magic-item",

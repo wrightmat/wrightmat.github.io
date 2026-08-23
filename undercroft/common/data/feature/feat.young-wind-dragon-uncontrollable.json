@@ -1,7 +1,8 @@
 {
   "name": "Uncontrollable",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature’s movement is never impeded by difficult terrain, and its speed can’t be reduced by spells or magical effects. It can’t be restrained (per the condition), and it escapes automatically from any nonmagical restraints (such as chains, entanglement, or grappling) by spending 5 feet of movement. Being underwater imposes no penalty on its movement or attacks.",
   "mechanics": {

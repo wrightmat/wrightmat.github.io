@@ -1,7 +1,8 @@
 {
   "name": "Sorrowful Presence",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Any non-eladrin creature that starts its turn within 60 feet of the creature must make a DC 13 Wisdom saving throw. On a failed save, the creature becomes charmed by the creature for 1 minute. While charmed in this way, the creature has disadvantage on ability checks and saving throws. The charmed creature can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success. If a creature’s saving throw is successful or the effect ends for it, the creature is immune to any eladrin’s Sorrowful Presence for the next 24 hours. Whenever the creature deals damage to the charmed creature, the charmed creature can repeat the saving throw, ending the effect on itself on a success.",
   "mechanics": {

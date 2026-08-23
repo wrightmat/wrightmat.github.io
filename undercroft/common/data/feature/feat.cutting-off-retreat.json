@@ -1,7 +1,8 @@
 {
   "name": "Cutting Off Retreat",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "As a reaction, the creature can move up to half its speed toward a creature that moves away from it, without provoking opportunity attacks.",
   "mechanics": {

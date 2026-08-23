@@ -1,7 +1,8 @@
 {
   "name": "Petrifying Gaze",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "If a creature starts its turn within 30 ft. of the monstrosity and the two of them can see each other, the monstrosity can force the creature to make a DC 12 Constitution saving throw if the monstrosity isn't incapacitated. On a failed save, the creature magically begins to turn to stone and is restrained. It must repeat the saving throw at the end of its next turn. On a success, the effect ends. On a failure, the creature is petrified until freed by the greater restoration spell or other magic.",
   "mechanics": {

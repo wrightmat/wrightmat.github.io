@@ -12,9 +12,29 @@
       "type": "field",
       "bind": "@name"
     },
+    "systemIds": {
+      "type": "custom",
+      "fn": "srdSpeciesSystemIds"
+    },
+    "url": {
+      "type": "field",
+      "bind": "@url"
+    },
     "description": {
       "type": "field",
       "bind": "@size_description"
+    },
+    "size": {
+      "type": "field",
+      "bind": "@size"
+    },
+    "speed": {
+      "type": "field",
+      "bind": "@speed"
+    },
+    "updated_at": {
+      "type": "field",
+      "bind": "@updated_at"
     },
     "traits": {
       "type": "field",
@@ -32,6 +52,14 @@
               "name": {
                 "type": "field",
                 "bind": "@name"
+              },
+              "systemIds": {
+                "type": "custom",
+                "fn": "srdSpeciesSystemIds"
+              },
+              "parentKind": {
+                "type": "field",
+                "bind": "='species'"
               },
               "source": {
                 "type": "field",

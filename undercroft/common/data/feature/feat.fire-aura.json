@@ -1,7 +1,8 @@
 {
   "name": "Fire Aura",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "At the start of each of the creature's turns, each creature within 5 feet of it takes 3 (1d6) fire damage, and flammable objects in the aura that aren't being worn or carried ignite. A creature that touches the creature or hits it with a melee attack takes 3 (1d6) fire damage.",
   "mechanics": {

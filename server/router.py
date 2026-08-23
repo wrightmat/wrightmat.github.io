@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, Optional, Pattern, Tuple
+from urllib.parse import unquote
 
 Handler = Callable[["Request"], "Response"]
 
@@ -35,7 +36,23 @@ class Router:
         for route in routes:
             match = route.pattern.match(path)
             if match:
-                return route, match.groupdict()
+                # `path` here is the raw, still-percent-encoded request
+                # target (BaseHTTPRequestHandler's own .path, query string
+                # already stripped by the caller) — every existing captured
+                # {id}/{key} segment happened to be a plain slug (letters,
+                # digits, hyphens) with nothing to decode, so this went
+                # unnoticed until shop-transactions.js introduced a Group
+                # Property key containing a literal ":" (`shop:<locationId>`).
+                # That colon arrives here as `%3A` and, undecoded, becomes
+                # part of the actual STORED key server-side — a real,
+                # confirmed bug: the write "succeeds" against
+                # propertyValues["shop%3Atest-shop"], but every read
+                # (data-manager.js's own getGroupProperties) looks up the
+                # plain, un-encoded "shop:test-shop" and finds nothing.
+                # Query-string values are unaffected (parse_qs, used
+                # wherever this server reads one, already decodes on its
+                # own) — this only ever touches path segments.
+                return route, {key: unquote(value) if value is not None else value for key, value in match.groupdict().items()}
         return None
 
 

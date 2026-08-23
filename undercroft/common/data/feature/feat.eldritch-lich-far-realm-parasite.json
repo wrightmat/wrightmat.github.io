@@ -1,7 +1,8 @@
 {
   "name": "Far Realm Parasite",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Inside the creature’s torso dwells a wormlike parasite that contains the creature’s soul. When the creature dies, it implodes into the parasite, which then vanishes into the Far Realm. In 2d4 days, the parasite causes the creature to reappear within 1d4 miles of where it died. If the creature died inside a magic circle cast to contain Undead, the creature instead reappears as an otyugh with all the creature’s memories.",
   "mechanics": {

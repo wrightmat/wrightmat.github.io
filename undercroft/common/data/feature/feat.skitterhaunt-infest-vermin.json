@@ -1,7 +1,8 @@
 {
   "name": "Infest Vermin",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "If the creature damages a Medium or smaller beast, it can try to infest it as a bonus action. The damaged creature must succeed on a DC 14 Constitution saving throw against disease or become poisoned until the disease is cured. Every 24 hours that elapse, the target must repeat the saving throw, reducing its hit point maximum by 5 (1d10) on a failure. If the disease reduces its hit point maximum to 0, the creature has devoured the creature’s insides and the affected becomes a creature, retaining its outward shell but replacing its flesh with skitterhaunt ooze.",
   "mechanics": {

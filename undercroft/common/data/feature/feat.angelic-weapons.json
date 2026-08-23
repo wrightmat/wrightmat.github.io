@@ -1,7 +1,8 @@
 {
   "name": "Angelic Weapons",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature's weapon attacks are magical. When the creature hits with any weapon, the weapon deals an extra 4d8 radiant damage (included in the attack).",
   "mechanics": {

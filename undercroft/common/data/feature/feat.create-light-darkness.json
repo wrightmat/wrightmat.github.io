@@ -1,7 +1,8 @@
 {
   "name": "Create Light/Darkness",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Sheds bright and/or dim light out to a set radius, or fills an area with magical darkness that even darkvision can't see through — the same source-radius shape in opposite directions.",
   "mechanics": {

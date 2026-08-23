@@ -1,7 +1,8 @@
 {
   "name": "Leadership (Recharges after a Short or Long Rest)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "For 1 minute, the creature can utter a special command or warning whenever a nonhostile creature that it can see within 30 feet of it makes an attack roll or a saving throw. The creature can add a d4 to its roll provided it can hear and understand the creature. A creature can benefit from only one Leadership die at a time. This effect ends if the creature is incapacitated.",
   "mechanics": {

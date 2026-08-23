@@ -1,0 +1,24 @@
+{
+  "id": "feat.emissary-of-the-sea",
+  "name": "Emissary of the Sea",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "<p>You can communicate simple ideas to any Beast, Elemental, or Monstrosity that has a swimming speed. It can understand your words, though you have no special ability to understand it in return.</p>",
+  "mechanics": {
+    "type": "passive",
+    "text": "<p>You can communicate simple ideas to any Beast, Elemental, or Monstrosity that has a swimming speed. It can understand your words, though you have no special ability to understand it in return.</p>"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

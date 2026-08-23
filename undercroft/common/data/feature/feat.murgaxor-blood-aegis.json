@@ -1,7 +1,8 @@
 {
   "name": "Blood Aegis",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The AC of Murgaxor includes his Constitution modifier while he isn’t wearing armor or wielding a shield.",
   "mechanics": {

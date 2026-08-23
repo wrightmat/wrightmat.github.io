@@ -210,5 +210,11 @@
       integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
       crossorigin="anonymous"
     ></script>
+    <!-- Repository's own renderMarkdown-shaped rendering (library-reference.js's
+         own renderNotesPreview, for reference-chip hover previews) checks for
+         window.marked/window.DOMPurify at call time, not module load, so
+         loading these `defer`red like every other CDN script here is safe. -->
+    <script defer src="https://cdn.jsdelivr.net/npm/marked@18.0.7/lib/marked.umd.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/dompurify@3.4.12/dist/purify.min.js"></script>
   </body>
 </html>

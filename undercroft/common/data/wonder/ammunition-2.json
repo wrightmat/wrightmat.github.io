@@ -3,7 +3,8 @@
   "name": "Ammunition, +2",
   "notes": "Weapon (any ammunition), rare\n\nYou have a +2 bonus to attack and damage rolls made with this piece of magic ammunition. Once it hits a target, the ammunition is no longer magical.",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "url": "https://www.dnd5eapi.co/api/2014/magic-items/ammunition-2",
   "mapping": "5e-api-magic-item",

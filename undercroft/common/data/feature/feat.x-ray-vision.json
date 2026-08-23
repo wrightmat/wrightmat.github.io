@@ -1,7 +1,8 @@
 {
   "name": "X-Ray Vision",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Lets the user see through solid matter for a short time.",
   "mechanics": {

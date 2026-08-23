@@ -2,6 +2,9 @@
   "id": "environment",
   "name": "Environment",
   "scale": 2,
-  "systemIds": ["sys.dnd5e"],
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
   "description": "A naturally-occurring place with no distinct built structure — a stretch of wilderness, a stand of trees, a patch of open water — described primarily by its Environment property rather than any construction."
 }

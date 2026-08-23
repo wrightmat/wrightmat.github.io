@@ -1,7 +1,8 @@
 {
   "name": "Water-Bound",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature can breathe only underwater and suffocates on dry land — the restriction Amphibious frees a creature from.",
   "mechanics": {

@@ -14,7 +14,12 @@
         "userId": { "type": "field", "bind": "@userId" },
         "username": { "type": "field", "bind": "@username" },
         "name": { "type": "field", "bind": "@name" },
-        "race": { "type": "field", "bind": "@race.fullName" },
+        "race": {
+          "type": "object",
+          "fields": {
+            "name": { "type": "field", "bind": "@race.fullName" }
+          }
+        },
         "class": { "type": "custom", "fn": "primaryClassName" },
         "level": { "type": "custom", "fn": "totalLevel" },
         "levels": { "type": "custom", "fn": "classLevelBreakdown" },
@@ -30,7 +35,12 @@
                 "fields": {
                   "name": { "type": "field", "bind": "@definition.name" },
                   "level": { "type": "field", "bind": "@level" },
-                  "subclass": { "type": "field", "bind": "@subclassDefinition.name" }
+                  "subclass": {
+                    "type": "object",
+                    "fields": {
+                      "name": { "type": "field", "bind": "@subclassDefinition.name" }
+                    }
+                  }
                 }
               }
             }

@@ -1,7 +1,8 @@
 {
   "name": "Dive Attack",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "If the creature dives at least 30 feet straight toward a target and then hits it with a talon attack, the attack deals an extra 7 (2d6) slashing damage.",
   "mechanics": {

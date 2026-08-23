@@ -1,7 +1,8 @@
 {
   "name": "Splitting Form",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Once per combat, when reduced to half its hit points or fewer, the creature splits into two weaker copies of itself.",
   "mechanics": {

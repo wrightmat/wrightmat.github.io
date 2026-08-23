@@ -1,7 +1,8 @@
 {
   "name": "Summon Swarm",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Valaara summons a swarm of centipedes that cover a 10-foot-radius sphere at a point of its choosing within 120 feet, afflicting all creatures in the area (except Valaara, who is immune). Each creature must make a DC 22 Constitution saving throw. On a failed save, a creature takes 22 (4d10) poison damage and is poisoned for 1 minute. On a successful save, a creature takes half as much damage, and is not poisoned.",
   "mechanics": {

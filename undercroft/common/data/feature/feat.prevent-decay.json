@@ -1,7 +1,8 @@
 {
   "name": "Prevent Decay",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Halts decay and prevents a corpse or object from further deteriorating.",
   "mechanics": {

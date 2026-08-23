@@ -1,0 +1,26 @@
+{
+  "id": "feat.ranger-foe-slayer",
+  "name": "Foe Slayer",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "The damage die of your Hunter’s Mark is a d10 rather than a d6.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The damage die of your Hunter’s Mark is a d10 rather than a d6."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

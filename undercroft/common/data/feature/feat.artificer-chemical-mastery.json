@@ -1,0 +1,26 @@
+{
+  "id": "feat.artificer-chemical-mastery",
+  "name": "Chemical Mastery",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You gain the following benefits.\n\nAlchemical Eruption. When you cast an Artificer spell that deals Acid, Fire, or Poison damage to a target, you can also deal 2d8 Force damage to that target. You can use this benefit only once on each of your turns.\n\nChemical Resistance. You gain Resistance to Acid damage and Poison damage. You also gain Immunity to the Poisoned condition.\n\nConjured Cauldron. You can cast Tasha’s Bubbling Cauldron without expending a spell slot, without preparing the spell, and without Material components, provided you use Alchemist’s Supplies as the Spellcasting Focus. Once you use this feature, you can’t use it again until you finish a Long Rest.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "You gain the following benefits.\n\nAlchemical Eruption. When you cast an Artificer spell that deals Acid, Fire, or Poison damage to a target, you can also deal 2d8 Force damage to that target. You can use this benefit only once on each of your turns.\n\nChemical Resistance. You gain Resistance to Acid damage and Poison damage. You also gain Immunity to the Poisoned condition.\n\nConjured Cauldron. You can cast Tasha’s Bubbling Cauldron without expending a spell slot, without preparing the spell, and without Material components, provided you use Alchemist’s Supplies as the Spellcasting Focus. Once you use this feature, you can’t use it again until you finish a Long Rest."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

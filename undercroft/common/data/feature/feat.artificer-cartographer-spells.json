@@ -1,0 +1,26 @@
+{
+  "id": "feat.artificer-cartographer-spells",
+  "name": "Cartographer Spells",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "When you reach an Artificer level specified in the Cartographer Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Faerie Fire, Guiding Bolt, Healing Word\n\nLevel 5: Locate Object, Mind Spike\n\nLevel 9: Call Lightning, Clairvoyance\n\nLevel 13: Banishment, Locate Creature\n\nLevel 17: Scrying, Teleportation Circle",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "When you reach an Artificer level specified in the Cartographer Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Faerie Fire, Guiding Bolt, Healing Word\n\nLevel 5: Locate Object, Mind Spike\n\nLevel 9: Call Lightning, Clairvoyance\n\nLevel 13: Banishment, Locate Creature\n\nLevel 17: Scrying, Teleportation Circle"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

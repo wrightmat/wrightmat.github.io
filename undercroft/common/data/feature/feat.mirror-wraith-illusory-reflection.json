@@ -1,7 +1,8 @@
 {
   "name": "Illusory Reflection",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "When the creature is targeted by an attack, it can impose disadvantage on the attack roll, taking the form of the attacker's greatest fear in the process. If the attack misses, the creature can make one Shadowy Touch attack against the attacker.",
   "mechanics": {

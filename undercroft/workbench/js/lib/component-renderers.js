@@ -1,6 +1,17 @@
 import { applyTextFormatting, applyImageStyles } from "./component-styles.js";
 import { resolveIconClassList } from "../../../common/js/lib/icon-picker.js";
 import { createLabeledField } from "./component-layout.js";
+import { createReferenceChip } from "../../../common/js/lib/library-reference.js";
+// Repository's own renderMarkdown, reused as-is — same cross-tool precedent
+// Crucible's own Notes preview already established (see crucible/index.html's
+// own comment on why loading marked/DOMPurify `defer`red is safe: renderMarkdown
+// only touches window.marked/window.DOMPurify at call time, never at module
+// load). Called here with no options at all (no resolveWikiLink, no
+// interactive dice/encounter/macro/checkbox handlers) — a Feature/Spell
+// description has no legitimate use for any of those Journal-specific
+// extensions, so they simply stay inert if the text ever happens to contain
+// that syntax, rather than wiring up handlers nothing here needs.
+import { renderMarkdown } from "../../../repository/js/lib/markdown.js";
 
 // Once a component has ever had a real `label` property (every component
 // created since this field existed does, set to "" by default — see
@@ -292,12 +303,90 @@ export function renderContainerContent(component, ctx) {
 // (an empty DocumentFragment) for a Text component with no binding/formula/
 // text/label set; character-view.js already showed a "Text" placeholder.
 // Unified on the more informative behavior.
+// A bound value carrying literal markup (e.g. an inventory item's own Notes,
+// imported from a source that stored rich text as HTML) used to show up as
+// visible "<p>...</p>" tag characters — .textContent below has no notion of
+// markup, it always prints exactly what it's given. Text is a fully generic
+// "show me this scalar" component used for every kind of bound field across
+// every template, not a rich-text editor of its own, so the safe universal
+// fix is to strip tags down to plain text rather than switching to innerHTML
+// (which would start interpreting a stray "<" in perfectly ordinary bound
+// text — a monster's own "<3 HP remaining>" note, say — as markup instead of
+// literal characters, a much worse regression than the tags it would fix).
+function stripHtmlTags(value) {
+  if (typeof value !== "string" || !/<[a-z][\s\S]*>/i.test(value)) {
+    return value;
+  }
+  const scratch = document.createElement("div");
+  scratch.innerHTML = value;
+  return (scratch.textContent || "").replace(/\s+/g, " ").trim();
+}
+
+// A bound value shaped {refKind, refId, name} (Character.subclass, a
+// promoted Feature/Spell repeater row, or any future reference field —
+// the same shape established for Character's own subclass this session)
+// — refId empty means nothing to link to yet (an unpromoted/unimported
+// reference), same "falls back to plain text" grace every other unlinked
+// reference in this suite already gets.
+export function isReferenceValue(value) {
+  return Boolean(value && typeof value === "object" && value.refKind && value.refId && value.name);
+}
+
+// Recognizes a reference-shaped bound value and renders it as a hover-
+// preview chip automatically — a value-shape check at render time, not a
+// template-authoring flag, the same way Repository's own markdown pipeline
+// recognizes a `` `kind:name` `` code span with no per-instance
+// configuration (see feedback_reference_display_no_new_mechanism). Works
+// for a top-level Text component (Character.subclass) and, for free, any
+// Text component inside a Repeater's own item template whose item resolves
+// to a reference-shaped value (a Features/Spells row) — both go through
+// this same function. `ctx.dataManager` is optional: absent (the Template
+// editor's own canvas preview, which has no live record to look anything up
+// against) falls back to the bare name as plain text, same grace every
+// other optional ctx hook in this file already gets.
 export function renderTextContent(component, ctx) {
   const fallback = component.text || component.label || component.name || "Text";
   const resolved = ctx.resolveValue(component, fallback);
   const text = document.createElement("div");
   text.className = "workbench-text-content";
-  text.textContent = resolved != null ? String(resolved) : "";
+  // Two ways a Text component ends up reference-shaped: bound directly to
+  // the reference object itself (resolved is already {refKind,refId,name}
+  // — Character.subclass), or — far more common in practice, since most
+  // Text cells bind to one specific sub-field like "@name" rather than the
+  // whole item — a plain string whose SIBLING refKind/refId live on the
+  // same parent object (a Features/Spells repeater row's own name cell).
+  // ctx.resolveReference (optional, same as every other ctx hook here)
+  // covers the second case; see workbench-character-view.js's own
+  // implementation for exactly how it resolves that sibling lookup.
+  const reference = isReferenceValue(resolved)
+    ? resolved
+    : typeof ctx.resolveReference === "function"
+      ? ctx.resolveReference(component)
+      : null;
+  if (reference) {
+    applyTextFormatting(text, component);
+    if (ctx.dataManager) {
+      text.appendChild(
+        createReferenceChip({ kind: reference.refKind, id: reference.refId, name: reference.name, dataManager: ctx.dataManager })
+      );
+    } else {
+      text.textContent = reference.name;
+    }
+    return text;
+  }
+  // Opt-in per component (component.richText, off by default — see
+  // createRichTextControl's own comment, workbench-template-view.js).
+  // stripHtmlTags is skipped entirely here on purpose: markdown syntax
+  // ("**bold**", a `| A | B |` table row) isn't HTML, so that regex-based
+  // guard would never fire on it anyway, and running it first would risk
+  // mangling a literal "<" a description's own prose happens to contain
+  // (a damage-comparison "<5 feet", say) before marked ever sees it.
+  if (component.richText) {
+    applyTextFormatting(text, component);
+    text.appendChild(renderMarkdown(resolved != null ? String(resolved) : ""));
+    return text;
+  }
+  text.textContent = resolved != null ? stripHtmlTags(String(resolved)) : "";
   applyTextFormatting(text, component);
   return text;
 }
@@ -479,6 +568,41 @@ export function renderInputContent(component, ctx) {
     if (typeof ctx.decorate === "function") ctx.decorate(el, component, meta);
   };
 
+  // A reference-shaped SIBLING value — a plain-text Input bound to
+  // `something.name` right alongside a `something.refKind`/`something.
+  // refId` (Character.subclass, e.g.) — shows as the same hover-preview
+  // chip Text gets, whenever this field isn't actively editable. Deliberately
+  // NOT resolvedValue itself (unlike Text): resolvedValue here stays the
+  // plain bound string always, so editing (when editable) keeps targeting
+  // that string directly through the ordinary text-input branch below,
+  // completely unaffected — this is purely a read-mode display swap, opt-in
+  // per-ctx (ctx.resolveReference), not a change to what's actually bound
+  // or how it's written back. `variant === "text"` or `"select"` only — a
+  // Select still renders as plain read-only text when not editable (same
+  // as Text), so the same swap applies there too (Character's own Class
+  // field is deliberately authored as a Select — System-scoped choices in
+  // Edit mode — and still wants its hover chip in View mode). A reference-
+  // shaped sibling has no meaning for Number/Checkbox/etc., which render
+  // as themselves either way.
+  if (!editable && (variant === "text" || variant === "select") && typeof ctx.resolveReference === "function") {
+    const reference = ctx.resolveReference(component);
+    if (reference && ctx.dataManager) {
+      const wrapper = document.createElement("div");
+      wrapper.appendChild(
+        createReferenceChip({ kind: reference.refKind, id: reference.refId, name: reference.name, dataManager: ctx.dataManager })
+      );
+      decorate(wrapper);
+      return createLabeledField({
+        component,
+        control: wrapper,
+        labelText,
+        labelTag: "label",
+        labelClasses: INPUT_LABEL_CLASSES,
+        applyFormatting: applyTextFormatting,
+      });
+    }
+  }
+
   // Guard against binding this Input to array/object-shaped data (e.g. a
   // System's own "inventory" field with no Repeater built for it yet).
   // Confirmed real data-loss bug, not hypothetical: every variant below
@@ -583,7 +707,9 @@ export function renderInputContent(component, ctx) {
     const rows = Number.isFinite(Number(component.rows)) ? Number(component.rows) : 3;
     textarea.rows = Math.min(Math.max(Math.round(rows), 2), 12);
     textarea.placeholder = component.placeholder || "";
-    textarea.value = resolvedValue != null ? String(resolvedValue) : "";
+    // Same tag-stripping as Text/Input's own "text" variant just below —
+    // see that one's own comment for why.
+    textarea.value = resolvedValue != null ? stripHtmlTags(String(resolvedValue)) : "";
     textarea.disabled = !editable;
     decorate(textarea);
     if (editable) {
@@ -683,7 +809,12 @@ export function renderInputContent(component, ctx) {
   } else {
     input.type = component.inputType || "text";
     input.placeholder = component.placeholder || "";
-    input.value = resolvedValue ?? "";
+    // Same tag-stripping as Text (renderTextContent's own stripHtmlTags,
+    // reused here) — an <input>'s own value attribute never interprets
+    // markup either way, so this is purely about not showing the literal
+    // "<p>...</p>" characters (an Inventory item's own Notes, imported from
+    // a source that stored rich text as HTML, was the confirmed real case).
+    input.value = resolvedValue != null ? stripHtmlTags(String(resolvedValue)) : "";
   }
   input.disabled = !editable;
   decorate(input);

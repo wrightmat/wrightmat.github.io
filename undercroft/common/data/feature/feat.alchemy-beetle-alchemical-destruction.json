@@ -1,7 +1,8 @@
 {
   "name": "Alchemical Destruction",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "If a creature is destroyed with at least one dose in its reservoir, it explodes, dealing 9 (3d6) points of damage of the appropriate energy type to all creatures within a 10 foot radius. A successful DC 11 Dexterity saving throw halves this damage. If there are no doses left, then a destroyed alchemical beetle does not explode when destroyed.",
   "mechanics": {

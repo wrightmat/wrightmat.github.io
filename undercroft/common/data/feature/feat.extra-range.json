@@ -1,7 +1,8 @@
 {
   "name": "Extended Reach",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The effect's range is noticeably extended, letting the wielder strike from further away.",
   "mechanics": {

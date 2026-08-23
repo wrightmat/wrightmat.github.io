@@ -56,7 +56,18 @@ _GROUP_ID_PREFIX = "grp_"
 # and references a real "setting" record for its vocabulary (a normal
 # share_with_group call, validated the ordinary way, nothing to do with this
 # set) alongside its own inline spotlight entry.
-_INLINE_SPOTLIGHT_KINDS = {"browser", "clock", "calendar", "soundboard"}
+#
+# "shop" is a different kind of exception again: its own `id` IS a real,
+# permanent Location id (not an ephemeral widget-instance id the way
+# browser/clock/calendar/soundboard's own ids are), and its live state
+# genuinely is a persisted, shared record — just a Group Property
+# (server-side, this same group's own `properties`/`propertyValues`), not a
+# Library-kind record. There's still no "shop" Library kind/bucket for
+# content_exists() to check here, so it belongs in this set for that reason
+# alone — undercroft/common/js/lib/widgets/shop.js's own header explains why
+# a Shop widget reads this spotlight's `id` straight as a Location id rather
+# than treating it as an instance to follow.
+_INLINE_SPOTLIGHT_KINDS = {"browser", "clock", "calendar", "soundboard", "shop"}
 
 # Kinds allowed to post a `spotlight-update` entry — a strict superset of
 # _INLINE_SPOTLIGHT_KINDS above, NOT the same set. "encounter" is a real,
@@ -1495,6 +1506,61 @@ def update_group_property_value(state: ServerState, user: Optional[User], group_
     )
     state.db.commit()
     return {"ok": True, "key": key, "value": value, "propertyValues": property_values}
+
+
+def get_group_properties(state: ServerState, user: Optional[User], group_id: str) -> Dict[str, Any]:
+    """Read-side counterpart to update_group_property_value above, for a
+    caller with no share token — the generic GET /content/group/{id} route
+    (storage.get_item) only ever grants a non-owner reader via a share
+    token or Character-linked share, which a genuine campaign MEMBER
+    browsing their own character in Workbench simply doesn't have.
+    Confirmed real gap this fixes: mountGroupPropertyContext
+    (workbench-character-view.js) silently 401'd for every real player,
+    every time, since it had no other way to read the Party
+    Wallet/Inventory schema+values a GM might have put on the group; a
+    second caller (loadGroupPartyView, same file) hit the identical 401
+    just to read templateId, surfaced there as a visible "Unable to load
+    this campaign" toast for a real member of a campaign they'd just
+    picked from their own Character Selection dropdown.
+
+    Same owner-or-member gate update_group_property_value already
+    establishes for WRITES, mirrored for reads: the owner/admin gets the
+    full properties/propertyValues untouched; a mere member gets ONLY the
+    entries whose schema marks `public: true` — the exact same flag that
+    already gates whether they could ever WRITE that property, so nothing
+    a member can read here is data they couldn't already have asked the
+    GM to hand them via a property write round-trip. A GM-private property
+    (a secret tracker stored as a property, say) never reaches a member's
+    client at all, unlike a "return everything, restrict editing only"
+    shape would.
+
+    templateId/systemId/settingId ride along unconditionally, for EVERY
+    caller regardless of owner/member — these are the same non-sensitive
+    "what kind of campaign is this" facts list_groups already hands any
+    member with zero filtering (_access_row_to_group_fields), not Property
+    data, so the public-only gate above never applied to them anyway.
+    """
+    if not user:
+        raise AuthError("Authentication required")
+    row = _load_group_row(state, group_id)
+    if not row:
+        raise AuthError("Group not found")
+    is_owner_or_admin = user.tier == "admin" or row["owner_id"] == user.id
+    schema = row["properties"] if isinstance(row["properties"], list) else []
+    values = row["property_values"] if isinstance(row["property_values"], dict) else {}
+    metadata = {
+        "templateId": row["template_id"],
+        "systemId": row["system_id"],
+        "settingId": row["setting_id"],
+    }
+    if is_owner_or_admin:
+        return {"properties": schema, "propertyValues": values, **metadata}
+    if not user_can_access_group(state, group_id, user):
+        raise AuthError("Access denied")
+    public_schema = [p for p in schema if isinstance(p, dict) and p.get("public")]
+    public_keys = {p.get("key") for p in public_schema}
+    public_values = {key: value for key, value in values.items() if key in public_keys}
+    return {"properties": public_schema, "propertyValues": public_values, **metadata}
 
 
 def get_group_share_details(state: ServerState, token: str) -> Dict[str, Any]:

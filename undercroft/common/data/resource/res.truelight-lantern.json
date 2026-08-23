@@ -1,14 +1,21 @@
 {
   "id": "res.truelight-lantern",
   "name": "Truelight Lantern",
-  "systemIds": ["sys.dnd5e"],
-  "settingIds": ["eberron"],
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "settingIds": [
+    "eberron"
+  ],
   "description": "Crafted from polished flametouched iron, this lantern's translucent white flame gives off no heat. Once per day it can reveal a 60-foot cone of true seeing for 10 minutes.",
   "category": "wondrous-item",
   "price": "36000 gp",
   "tags": {
     "locationTypes": [],
-    "locationPurposes": ["commerce"],
+    "locationPurposes": [
+      "commerce"
+    ],
     "environments": []
   }
 }

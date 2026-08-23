@@ -1,7 +1,8 @@
 {
   "name": "Hive Mind",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "a creature can communicate perfectly with all other bone crabs within 100 feet of it. If one is aware of danger, they all are.",
   "mechanics": {

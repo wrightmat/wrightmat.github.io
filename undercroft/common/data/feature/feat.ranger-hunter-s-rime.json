@@ -1,0 +1,26 @@
+{
+  "id": "feat.ranger-hunter-s-rime",
+  "name": "Hunter’s Rime",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "Ice rimes you and your prey, protecting you and hindering them. When you cast Hunter’s Mark, you gain Temporary Hit Points equal to 1d10 plus your Ranger level.\n\nAdditionally, while a creature is marked by your Hunter’s Mark, it can’t take the Disengage action.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "Ice rimes you and your prey, protecting you and hindering them. When you cast Hunter’s Mark, you gain Temporary Hit Points equal to 1d10 plus your Ranger level.\n\nAdditionally, while a creature is marked by your Hunter’s Mark, it can’t take the Disengage action."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,7 +1,8 @@
 {
   "name": "Disrupt Life (Costs 3 Actions)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Each living creature within 20 feet of the undead must make a DC 18 Constitution saving throw against this magic, taking 21 (6d6) necrotic damage on a failed save, or half as much damage on a successful one.",
   "mechanics": {

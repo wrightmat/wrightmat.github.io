@@ -1,7 +1,8 @@
 {
   "name": "Misty Step (3/Day)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Extus casts Misty Step, using the same spellcasting ability as Spellcasting.",
   "mechanics": {

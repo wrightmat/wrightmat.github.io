@@ -1,7 +1,8 @@
 {
   "name": "Keen Sight and Smell",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature has advantage on Wisdom (Perception) checks that rely on sight or smell.",
   "mechanics": {

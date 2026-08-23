@@ -1,7 +1,8 @@
 {
   "name": "Requires Attunement",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Only works while attuned to it, and attunement is a scarce resource shared across everything a creature carries.",
   "mechanics": {

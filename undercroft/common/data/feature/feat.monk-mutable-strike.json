@@ -1,0 +1,26 @@
+{
+  "id": "feat.monk-mutable-strike",
+  "name": "Mutable Strike",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You have the power to alter your natural weapons, growing claws or reinforcing your fists. Whenever you deal damage with your Unarmed Strike, it can deal your choice of Bludgeoning, Piercing, or Slashing damage.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "You have the power to alter your natural weapons, growing claws or reinforcing your fists. Whenever you deal damage with your Unarmed Strike, it can deal your choice of Bludgeoning, Piercing, or Slashing damage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

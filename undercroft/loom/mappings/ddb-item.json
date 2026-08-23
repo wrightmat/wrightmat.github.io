@@ -1,0 +1,51 @@
+{
+  "type": "with",
+  "$source": "ddb",
+  "$description": "D&D Beyond — Equipment/Magic Item",
+  "bindings": {
+    "itemStats": {
+      "type": "custom",
+      "fn": "markdownItemStats"
+    }
+  },
+  "body": {
+    "type": "object",
+    "fields": {
+      "kind": {
+        "type": "custom",
+        "fn": "srdItemKindFromStats"
+      },
+      "name": {
+        "type": "custom",
+        "fn": "srdItemNameFromStats"
+      },
+      "notes": {
+        "type": "field",
+        "bind": "@itemStats.description"
+      },
+      "price": {
+        "type": "field",
+        "bind": "@itemStats.price"
+      },
+      "weight": {
+        "type": "field",
+        "bind": "@itemStats.weight"
+      },
+      "systemIds": {
+        "type": "custom",
+        "fn": "srdVaultSystemIds"
+      },
+      "url": {
+        "type": "custom",
+        "fn": "srdAbsoluteUrl",
+        "args": {
+          "path": "url"
+        }
+      },
+      "stats": {
+        "type": "field",
+        "bind": "@itemStats"
+      }
+    }
+  }
+}

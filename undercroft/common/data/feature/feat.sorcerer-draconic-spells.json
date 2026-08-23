@@ -1,0 +1,26 @@
+{
+  "id": "feat.sorcerer-draconic-spells",
+  "name": "Draconic Spells",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "When you reach a Sorcerer level specified in the Draconic Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Alter Self, Chromatic Orb, Command, Dragon’s Breath\n\nLevel 5: Fear, Fly\n\nLevel 7: Arcane Eye, Charm Monster\n\nLevel 9: Legend Lore, Summon Dragon",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "When you reach a Sorcerer level specified in the Draconic Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Alter Self, Chromatic Orb, Command, Dragon’s Breath\n\nLevel 5: Fear, Fly\n\nLevel 7: Arcane Eye, Charm Monster\n\nLevel 9: Legend Lore, Summon Dragon"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

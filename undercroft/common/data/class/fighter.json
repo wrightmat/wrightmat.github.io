@@ -1,0 +1,338 @@
+{
+  "index": "fighter",
+  "name": "Fighter",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "primary_ability": {
+    "desc": "Strength or Dexterity",
+    "ability_scores": []
+  },
+  "hit_die": 10,
+  "proficiency_choices": [
+    {
+      "desc": "Choose 2: Acrobatics, Animal Handling, Athletics, History, Insight, Intimidation, Persuasion, Perception, or Survival",
+      "choose": 2,
+      "type": "proficiencies",
+      "from": {
+        "option_set_type": "options_array",
+        "options": [
+          {
+            "option_type": "reference",
+            "item": {
+              "index": "skill-acrobatics",
+              "name": "Skill: Acrobatics"
+            }
+          },
+          {
+            "option_type": "reference",
+            "item": {
+              "index": "skill-animal-handling",
+              "name": "Skill: Animal Handling"
+            }
+          },
+          {
+            "option_type": "reference",
+            "item": {
+              "index": "skill-athletics",
+              "name": "Skill: Athletics"
+            }
+          },
+          {
+            "option_type": "reference",
+            "item": {
+              "index": "skill-history",
+              "name": "Skill: History"
+            }
+          },
+          {
+            "option_type": "reference",
+            "item": {
+              "index": "skill-insight",
+              "name": "Skill: Insight"
+            }
+          },
+          {
+            "option_type": "reference",
+            "item": {
+              "index": "skill-intimidation",
+              "name": "Skill: Intimidation"
+            }
+          },
+          {
+            "option_type": "reference",
+            "item": {
+              "index": "skill-persuasion",
+              "name": "Skill: Persuasion"
+            }
+          },
+          {
+            "option_type": "reference",
+            "item": {
+              "index": "skill-perception",
+              "name": "Skill: Perception"
+            }
+          },
+          {
+            "option_type": "reference",
+            "item": {
+              "index": "skill-survival",
+              "name": "Skill: Survival"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "proficiencies": [
+    {
+      "index": "light-armor",
+      "name": "Light Armor"
+    },
+    {
+      "index": "medium-armor",
+      "name": "Medium Armor"
+    },
+    {
+      "index": "heavy-armor",
+      "name": "Heavy Armor"
+    },
+    {
+      "index": "shields",
+      "name": "Shields"
+    },
+    {
+      "index": "simple-weapons",
+      "name": "Simple Weapons"
+    },
+    {
+      "index": "martial-weapons",
+      "name": "Martial Weapons"
+    },
+    {
+      "index": "saving-throw-str",
+      "name": "Saving Throw: STR"
+    },
+    {
+      "index": "saving-throw-con",
+      "name": "Saving Throw: CON"
+    }
+  ],
+  "saving_throws": [
+    {
+      "index": "str",
+      "name": "STR"
+    },
+    {
+      "index": "con",
+      "name": "CON"
+    }
+  ],
+  "starting_equipment_options": [],
+  "subclasses": [
+    {
+      "index": "banneret",
+      "name": "Banneret",
+      "url": "https://www.dndbeyond.com/classes/2190879-fighter"
+    },
+    {
+      "index": "battle-master",
+      "name": "Battle Master",
+      "url": "https://www.dndbeyond.com/classes/2190879-fighter"
+    },
+    {
+      "index": "champion",
+      "name": "Champion",
+      "url": "https://www.dndbeyond.com/classes/2190879-fighter"
+    },
+    {
+      "index": "eldritch-knight",
+      "name": "Eldritch Knight",
+      "url": "https://www.dndbeyond.com/classes/2190879-fighter"
+    },
+    {
+      "index": "psi-warrior",
+      "name": "Psi Warrior",
+      "url": "https://www.dndbeyond.com/classes/2190879-fighter"
+    }
+  ],
+  "url": "https://www.dndbeyond.com/classes/2190879-fighter",
+  "description": "Fighters rule many battlefields. Questing knights, royal champions, elite soldiers, and hardened mercenaries—as Fighters, they all share an unparalleled prowess with weapons and armor. And they are well acquainted with death, both meting it out and defying it.\n\nFighters master various weapon techniques, and a well-equipped Fighter always has the right tool at hand for any combat situation. Likewise, a Fighter is adept with every form of armor. Beyond that basic degree of familiarity, each Fighter specializes in certain styles of combat. Some concentrate on archery, some on fighting with two weapons at once, and some on augmenting their martial skills with magic. This combination of broad ability and extensive specialization makes Fighters superior combatants.",
+  "coreTraits": {
+    "primaryAbility": "Strength or Dexterity",
+    "hitPointDie": "D10 per Fighter level",
+    "savingThrowProficiencies": "Strength and Constitution",
+    "skillProficiencies": "Choose 2: Acrobatics, Animal Handling, Athletics, History, Insight, Intimidation, Persuasion, Perception, or Survival",
+    "weaponProficiencies": "Simple and Martial weapons",
+    "armorTraining": "Light, Medium, and Heavy armor and Shields",
+    "startingEquipment": "Choose A, B, or C: (A) Chain Mail, Greatsword, Flail, 8 Javelins, Dungeoneer’s Pack, and 4 GP; (B) Studded Leather Armor, Scimitar, Shortsword, Longbow, 20 Arrows, Quiver, Dungeoneer’s Pack, and 11 GP; or (C) 155 GP"
+  },
+  "features": [
+    {
+      "name": "Fighting Style",
+      "level": 1,
+      "description": "You have honed your martial prowess and gain a Fighting Style feat of your choice.\n\nWhenever you gain a Fighter level, you can replace the feat you chose with a different Fighting Style feat."
+    },
+    {
+      "name": "Second Wind",
+      "level": 1,
+      "description": "You have a limited well of physical and mental stamina that you can draw on. As a Bonus Action, you can use it to regain Hit Points equal to 1d10 plus your Fighter level.\n\nYou can use this feature twice. You regain one expended use when you finish a Short Rest, and you regain all expended uses when you finish a Long Rest.\n\nWhen you reach certain Fighter levels, you gain more uses of this feature, as shown in the Second Wind column of the Fighter Features table."
+    },
+    {
+      "name": "Weapon Mastery",
+      "level": 1,
+      "description": "Your training with weapons allows you to use the mastery properties of three kinds of Simple or Martial weapons of your choice. Whenever you finish a Long Rest, you can practice weapon drills and change one of those weapon choices.\n\nWhen you reach certain Fighter levels, you gain the ability to use the mastery properties of more kinds of weapons, as shown in the Weapon Mastery column of the Fighter Features table."
+    },
+    {
+      "name": "Action Surge",
+      "level": 2,
+      "description": "You can push yourself beyond your normal limits for a moment. On your turn, you can take one additional action, except the Magic action.\n\nOnce you use this feature, you can’t do so again until you finish a Short or Long Rest. Starting at level 17, you can use it twice before a rest but only once on a turn."
+    },
+    {
+      "name": "Tactical Mind",
+      "level": 2,
+      "description": "You have a mind for tactics on and off the battlefield. When you fail an ability check, you can expend a use of your Second Wind to push yourself toward success. Rather than regaining Hit Points, you roll 1d10 and add the number rolled to the ability check, potentially turning it into a success. If the check still fails, this use of Second Wind isn’t expended."
+    },
+    {
+      "name": "Fighter Subclass",
+      "level": 3,
+      "description": "You gain a Fighter subclass of your choice. A subclass is a specialization that grants you features at certain Fighter levels. For the rest of your career, you gain each of your subclass’s features that are of your Fighter level or lower."
+    },
+    {
+      "name": "Ability Score Improvement",
+      "level": 4,
+      "description": "You gain the Ability Score Improvement feat or another feat of your choice for which you qualify. You gain this feature again at Fighter levels 6, 8, 12, 14, and 16."
+    },
+    {
+      "name": "Extra Attack",
+      "level": 5,
+      "description": "You can attack twice instead of once whenever you take the Attack action on your turn."
+    },
+    {
+      "name": "Tactical Shift",
+      "level": 5,
+      "description": "Whenever you activate your Second Wind with a Bonus Action, you can move up to half your Speed without provoking Opportunity Attacks."
+    },
+    {
+      "name": "Tactical Master",
+      "level": 9,
+      "description": "When you attack with a weapon whose mastery property you can use, you can replace that property with the Push, Sap, or Slow property for that attack."
+    },
+    {
+      "name": "Indomitable",
+      "level": 9,
+      "description": "If you fail a saving throw, you can reroll it with a bonus equal to your Fighter level. You must use the new roll, and you can’t use this feature again until you finish a Long Rest.\n\nYou can use this feature twice before a Long Rest starting at level 13 and three times before a Long Rest starting at level 17."
+    },
+    {
+      "name": "Two Extra Attacks",
+      "level": 11,
+      "description": "You can attack three times instead of once whenever you take the Attack action on your turn."
+    },
+    {
+      "name": "Studied Attacks",
+      "level": 13,
+      "description": "You study your opponents and learn from each attack you make. If you make an attack roll against a creature and miss, you have Advantage on your next attack roll against that creature before the end of your next turn."
+    },
+    {
+      "name": "Epic Boon",
+      "level": 19,
+      "description": "You gain an Epic Boon feat or another feat of your choice for which you qualify."
+    },
+    {
+      "name": "Three Extra Attacks",
+      "level": 20,
+      "description": "You can attack four times instead of once whenever you take the Attack action on your turn."
+    }
+  ],
+  "mapping": "ddb-class",
+  "featureIds": [
+    "feat.fighter-fighting-style",
+    "feat.fighter-second-wind",
+    "feat.fighter-weapon-mastery",
+    "feat.fighter-action-surge",
+    "feat.fighter-tactical-mind",
+    "feat.fighter-fighter-subclass",
+    "feat.ability-score-improvement",
+    "feat.extra-attack",
+    "feat.fighter-tactical-shift",
+    "feat.fighter-tactical-master",
+    "feat.fighter-indomitable",
+    "feat.fighter-studied-attacks",
+    "feat.epic-boon"
+  ],
+  "featureParams": {
+    "feat.fighter-fighting-style": {
+      "grantedAtLevel": [
+        1
+      ]
+    },
+    "feat.fighter-second-wind": {
+      "grantedAtLevel": [
+        1
+      ]
+    },
+    "feat.fighter-weapon-mastery": {
+      "grantedAtLevel": [
+        1
+      ]
+    },
+    "feat.fighter-action-surge": {
+      "grantedAtLevel": [
+        2
+      ]
+    },
+    "feat.fighter-tactical-mind": {
+      "grantedAtLevel": [
+        2
+      ]
+    },
+    "feat.fighter-fighter-subclass": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.fighter-tactical-shift": {
+      "grantedAtLevel": [
+        5
+      ]
+    },
+    "feat.fighter-tactical-master": {
+      "grantedAtLevel": [
+        9
+      ]
+    },
+    "feat.fighter-indomitable": {
+      "grantedAtLevel": [
+        9
+      ]
+    },
+    "feat.fighter-studied-attacks": {
+      "grantedAtLevel": [
+        13
+      ]
+    },
+    "feat.epic-boon": {
+      "grantedAtLevel": [
+        19
+      ]
+    },
+    "feat.extra-attack": {
+      "grantedAtLevel": [
+        5,
+        11,
+        20
+      ]
+    },
+    "feat.ability-score-improvement": {
+      "grantedAtLevel": [
+        4,
+        6,
+        8,
+        12,
+        14,
+        16
+      ]
+    }
+  }
+}

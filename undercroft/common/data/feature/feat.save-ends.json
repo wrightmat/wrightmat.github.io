@@ -1,7 +1,8 @@
 {
   "name": "Effect Ends on Successful Save",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "An affected creature can repeat its saving throw at the end of each of its turns, ending the effect on itself on a success.",
   "mechanics": {

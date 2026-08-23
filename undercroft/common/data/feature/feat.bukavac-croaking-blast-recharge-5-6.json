@@ -1,7 +1,8 @@
 {
   "name": "Croaking Blast (Recharge 5-6)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "a creature can emit a howling thunderclap that deafens and damages those nearby. Creatures within 15 feet who fail a DC 17 Constitution saving throw take 36 (8d8) thunder damage and are permanently deafened. Those succeeding on the saving throw take half damage and are not deafened. The deafness can be cured with lesser restoration.",
   "mechanics": {

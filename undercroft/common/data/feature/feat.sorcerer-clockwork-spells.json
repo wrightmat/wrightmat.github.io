@@ -1,0 +1,26 @@
+{
+  "id": "feat.sorcerer-clockwork-spells",
+  "name": "Clockwork Spells",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "When you reach a Sorcerer level specified in the Clockwork Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Aid, Alarm, Lesser Restoration, Protection from Evil and Good\n\nLevel 5: Dispel Magic, Protection from Energy\n\nLevel 7: Freedom of Movement, Summon Construct\n\nLevel 9: Greater Restoration, Wall of Force\n\nIn addition, consult the Manifestations of Order table and choose or randomly determine a way your connection to order manifests while you are casting any of your Sorcerer spells.\n\nLevel 1: Spectral cogwheels hover behind you.\n\nLevel 2: The hands of a clock spin in your eyes.\n\nLevel 3: Your skin glows with a brassy sheen.\n\nLevel 4: Floating equations and geometric objects overlay your body.\n\nLevel 5: Your Spellcasting Focus temporarily takes the form of a Tiny clockwork mechanism.\n\nLevel 6: The ticking of gears or ringing of a clock can be heard by you and those affected by your magic.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "When you reach a Sorcerer level specified in the Clockwork Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Aid, Alarm, Lesser Restoration, Protection from Evil and Good\n\nLevel 5: Dispel Magic, Protection from Energy\n\nLevel 7: Freedom of Movement, Summon Construct\n\nLevel 9: Greater Restoration, Wall of Force\n\nIn addition, consult the Manifestations of Order table and choose or randomly determine a way your connection to order manifests while you are casting any of your Sorcerer spells.\n\nLevel 1: Spectral cogwheels hover behind you.\n\nLevel 2: The hands of a clock spin in your eyes.\n\nLevel 3: Your skin glows with a brassy sheen.\n\nLevel 4: Floating equations and geometric objects overlay your body.\n\nLevel 5: Your Spellcasting Focus temporarily takes the form of a Tiny clockwork mechanism.\n\nLevel 6: The ticking of gears or ringing of a clock can be heard by you and those affected by your magic."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,26 @@
+{
+  "id": "feat.barbarian-indomitable-might",
+  "name": "Indomitable Might",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "If your total for a Strength check or Strength saving throw is less than your Strength score, you can use that score in place of the total.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "If your total for a Strength check or Strength saving throw is less than your Strength score, you can use that score in place of the total."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

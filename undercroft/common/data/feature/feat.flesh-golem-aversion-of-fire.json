@@ -1,7 +1,8 @@
 {
   "name": "Aversion of Fire",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "If the creature takes fire damage, it has disadvantage on attack rolls and ability checks until the end of its next turn.",
   "mechanics": {

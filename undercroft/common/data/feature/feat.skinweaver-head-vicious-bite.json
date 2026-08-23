@@ -1,7 +1,8 @@
 {
   "name": "Vicious Bite",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Melee Weapon Attack: +5 to hit, reach 5 ft., 1 target. Hit: 6 (2d6) necrotic damage.",
   "mechanics": {

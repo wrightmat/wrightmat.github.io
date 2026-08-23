@@ -2,7 +2,8 @@
   "id": "duelist",
   "name": "Duelist",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Focuses on defeating a single worthy opponent, one on one.",
   "recipe": {

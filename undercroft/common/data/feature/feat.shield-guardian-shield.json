@@ -1,7 +1,8 @@
 {
   "name": "Shield",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "When a creature makes an attack against the wearer of the construct's amulet, the construct grants a +2 bonus to the wearer's AC if the construct is within 5 feet of the wearer.",
   "mechanics": {

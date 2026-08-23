@@ -1,7 +1,8 @@
 {
   "name": "Binding Grasp",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Ethereal tendrils lash out and restrain a target, holding it in place.",
   "mechanics": {

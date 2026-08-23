@@ -1,7 +1,8 @@
 {
   "name": "Change Shape",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature transforms into a hybrid form (humanoid-piscine) or back into its true form, which is humanlike. Its statistics, other than its speed, are the same in each form. Any equipment it is wearing or carrying isn’t transformed. The creature reverts to its true form if it dies.",
   "mechanics": {

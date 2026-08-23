@@ -1,0 +1,26 @@
+{
+  "id": "feat.paladin-undying-sentinel",
+  "name": "Undying Sentinel",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "When you are reduced to 0 Hit Points and not killed outright, you can drop to 1 Hit Point instead, and you regain a number of Hit Points equal to three times your Paladin level. Once you use this feature, you can’t do so again until you finish a Long Rest.\n\nAdditionally, you can’t be aged magically, and you cease visibly aging.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "When you are reduced to 0 Hit Points and not killed outright, you can drop to 1 Hit Point instead, and you regain a number of Hit Points equal to three times your Paladin level. Once you use this feature, you can’t do so again until you finish a Long Rest.\n\nAdditionally, you can’t be aged magically, and you cease visibly aging."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

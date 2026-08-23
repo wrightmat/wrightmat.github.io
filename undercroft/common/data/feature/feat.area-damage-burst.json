@@ -1,7 +1,8 @@
 {
   "name": "Area Damage Burst",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Unleashes a burst of damaging energy in an area, resisted by a saving throw.",
   "mechanics": {

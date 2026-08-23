@@ -1,0 +1,26 @@
+{
+  "id": "feat.cleric-mind-domain-spells",
+  "name": "Mind Domain Spells",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "Your connection to this divine domain ensures you always have certain spells ready. When you reach a Cleric level specified in the Mind Domain Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Command, Detect Thoughts, Dissonant Whispers, Mind Spike\n\nLevel 5: Clairvoyance, Fear\n\nLevel 7: Confusion, Phantasmal Killer\n\nLevel 9: Synaptic Static, Telekinesis",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "Your connection to this divine domain ensures you always have certain spells ready. When you reach a Cleric level specified in the Mind Domain Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Command, Detect Thoughts, Dissonant Whispers, Mind Spike\n\nLevel 5: Clairvoyance, Fear\n\nLevel 7: Confusion, Phantasmal Killer\n\nLevel 9: Synaptic Static, Telekinesis"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

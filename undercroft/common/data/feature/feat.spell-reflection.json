@@ -1,7 +1,8 @@
 {
   "name": "Spell Reflection",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Turns a spell back on its own caster.",
   "mechanics": {

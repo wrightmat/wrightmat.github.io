@@ -1,7 +1,8 @@
 {
   "name": "Marble Claws",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Damage Orlassk deals is considered to be dealt by magic weapons that are both silvered and adamantine. Furthermore, petrified creatures do not have resistance against damage dealt by Orlassk.",
   "mechanics": {

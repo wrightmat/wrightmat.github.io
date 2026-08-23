@@ -1,7 +1,8 @@
 {
   "name": "Caustic Mist",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature sprays a fine mist of acid in an area, forcing a saving throw or dealing damage.",
   "mechanics": {

@@ -1,7 +1,8 @@
 {
   "name": "Grease Spray (Recharge 5–6)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "As a bonus action, the creature’s chest can fire a spray of alchemical grease with a range of 30 feet, covering a 10-by-10 foot square area and turning it into difficult terrain. Each creature standing in the affected area must succeed on a DC 15 Dexterity saving throw or fall prone. A creature that enters the area or ends its turn there must also succeed on a DC 15 Dexterity saving throw or fall prone. The creature can use this attack four times before its internal reservoir is emptied.",
   "mechanics": {

@@ -1,7 +1,8 @@
 {
   "name": "Advanced Telepathy",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature can perceive the content of any telepathic communication used within 60 feet of it, and it can’t be surprised by creatures with any form of telepathy.",
   "mechanics": {

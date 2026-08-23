@@ -1,0 +1,26 @@
+{
+  "id": "feat.ranger-gloom-stalker-spells",
+  "name": "Gloom Stalker Spells",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "When you reach a Ranger level specified in the Gloom Stalker Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Disguise Self\n\nLevel 5: Rope Trick\n\nLevel 9: Fear\n\nLevel 13: Greater Invisibility\n\nLevel 17: Seeming",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "When you reach a Ranger level specified in the Gloom Stalker Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Disguise Self\n\nLevel 5: Rope Trick\n\nLevel 9: Fear\n\nLevel 13: Greater Invisibility\n\nLevel 17: Seeming"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

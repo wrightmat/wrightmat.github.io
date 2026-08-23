@@ -1,15 +1,22 @@
 {
   "id": "res.remove-curse-jorasco",
   "name": "Remove Curse (House Jorasco)",
-  "systemIds": ["sys.dnd5e"],
-  "settingIds": ["eberron"],
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "settingIds": [
+    "eberron"
+  ],
   "description": "A House Jorasco healer casts remove curse for hire.",
   "category": "service",
   "house": "jorasco",
   "price": "75 gp",
   "tags": {
     "locationTypes": [],
-    "locationPurposes": ["commerce"],
+    "locationPurposes": [
+      "commerce"
+    ],
     "environments": []
   }
 }

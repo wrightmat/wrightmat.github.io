@@ -40,14 +40,19 @@ from .auth import (
 )
 from .builtins import builtin_catalog
 from .config import ConfigLoader
+from .ddb_auth_status import build_ddb_request_headers, check_ddb_auth_status, get_ddb_auth_status, record_ddb_auth_check
 from .integrations import (
     EncryptionUnavailable,
     clear_deployment_secret,
     clear_ha_connection,
     get_ha_connection,
+    is_deployment_secret_configured,
     list_deployment_secrets,
+    resolve_anthropic_api_key,
+    resolve_ddb_session_cookie,
     resolve_deployment_secret,
     resolve_ha_credentials,
+    save_bare_deployment_secret,
     save_deployment_secret,
     save_ha_connection,
     update_ha_connection_url,
@@ -78,11 +83,18 @@ from .storage import (
     is_owner,
     list_bucket,
     list_owned_content,
+    rename_item,
     save_item,
     search_content,
     update_owner,
 )
 TOUCH_FLUSH_INTERVAL_SECONDS = 30
+# A credential that changes on the order of weeks (a D&D Beyond session
+# cookie) doesn't need anything tighter than a daily check — this exists so
+# staleness is caught (and visible in Loom's Auth tab, plus the proactive
+# toast) even on a long-running deployment nobody happens to trigger a real
+# DDB fetch or an explicit Check Now on for a while.
+DDB_AUTH_CHECK_INTERVAL_SECONDS = 24 * 60 * 60
 
 # One connection per subscriber (ThreadingHTTPServer spawns a thread per
 # connection, daemon_threads=True — see SheetsHTTPServer below), held open
@@ -108,6 +120,7 @@ class SheetsHTTPServer(http.server.ThreadingHTTPServer):
         if config.options.config_watch:
             loader.watch(lambda cfg: self.state.reload(cfg), stop_event=self._shutdown_event)
         self._start_touch_flush_thread()
+        self._start_ddb_auth_check_thread()
         super().serve_forever(poll_interval=poll_interval)
 
     # Unlike the config watcher above (opt-in, behind config_watch), this
@@ -126,6 +139,26 @@ class SheetsHTTPServer(http.server.ThreadingHTTPServer):
                     logging.exception("Failed to flush pending last_accessed_at touches")
 
         threading.Thread(target=_loop, name="touch-flush", daemon=True).start()
+
+    # Same shape as _start_touch_flush_thread above — Event.wait (not
+    # sleep) so shutdown is responsive instead of blocking for the full
+    # interval, re-checked after the wait returns, broad except so one bad
+    # check (a network blip, DDB briefly down) never kills the daemon
+    # thread. Deliberately unconditional, same reasoning as the touch-flush
+    # thread — a fresh deployment with no DDB cookie configured yet just
+    # gets a harmless "not configured" result every day until one is set.
+    def _start_ddb_auth_check_thread(self) -> None:
+        def _loop():
+            while not self._shutdown_event.is_set():
+                self._shutdown_event.wait(DDB_AUTH_CHECK_INTERVAL_SECONDS)
+                if self._shutdown_event.is_set():
+                    return
+                try:
+                    check_ddb_auth_status(self.state)
+                except Exception:  # pragma: no cover - best-effort background check
+                    logging.exception("Failed to run periodic D&D Beyond auth check")
+
+        threading.Thread(target=_loop, name="ddb-auth-check", daemon=True).start()
 
     def shutdown(self) -> None:
         self._shutdown_event.set()
@@ -883,8 +916,11 @@ def register_routes():
     # rolled values stand on their own as the character record"). Proxies
     # Anthropic's Messages API the same no-extra-dependency way as
     # handle_google_fonts_metadata/handle_ddb_proxy above (urllib
-    # only), reading the API key from a local, gitignored file mirroring
-    # server/ddb-session.local.json's own convention.
+    # only), reading the API key via integrations.py's own
+    # resolve_anthropic_api_key (the encrypted deployment_secrets store,
+    # managed through Loom's Auth tab — falls back to a one-time migration
+    # from the legacy server/anthropic.local.json file if that's all a
+    # given deployment has).
     FORGE_NOTE_SYSTEM_PROMPT = (
         "You write a single, tightly-formatted NPC character note for a tabletop RPG GM.\n"
         "Respond with EXACTLY this format and nothing else — no preamble, no markdown, no extra commentary:\n\n"
@@ -894,16 +930,6 @@ def register_routes():
         "new attributes, do not restate these instructions, and do not add anything before or after the "
         "single formatted line."
     )
-
-    def resolve_anthropic_api_key(state: ServerState) -> str:
-        path = state.root_dir / "server" / "anthropic.local.json"
-        if not path.exists():
-            return ""
-        try:
-            data = json.loads(path.read_text(encoding="utf-8"))
-        except (json.JSONDecodeError, OSError):
-            return ""
-        return str(data.get("api_key") or "").strip()
 
     def _format_note_only(raw_text: str, name: str) -> Dict[str, Any]:
         return {"note": raw_text}
@@ -922,8 +948,9 @@ def register_routes():
     # optional... rolled/generated values stand on their own") proxies
     # Anthropic's Messages API the same no-extra-dependency way as
     # handle_google_fonts_metadata/handle_ddb_proxy above (urllib only),
-    # reading the API key from a local, gitignored file mirroring
-    # server/ddb-session.local.json's own convention. The four routes differ
+    # reading the API key via integrations.py's own
+    # resolve_anthropic_api_key (see the comment on the route above for the
+    # full storage story). The four routes differ
     # only in system prompt and how the request payload becomes user_content —
     # `build_user_content` returns (user_content, fallback_name) and may raise
     # ValueError for a 400 (Forge's required identity.name); `format_result`
@@ -944,8 +971,8 @@ def register_routes():
             return json_response(
                 {
                     "error": (
-                        "Missing Anthropic API key — copy server/anthropic.local.json.example to "
-                        "server/anthropic.local.json and fill in api_key."
+                        "Missing Anthropic API key — set one in Loom's Auth tab (admin only), or copy "
+                        "server/anthropic.local.json.example to server/anthropic.local.json and fill in api_key."
                     )
                 },
                 status=HTTPStatus.BAD_REQUEST,
@@ -1523,6 +1550,82 @@ def register_routes():
 
     router.add("POST", r"^/admin/transcription-servers/(?P<id>[^/]+)/clear$", handle_clear_transcription_server)
 
+    # --- Deployment-wide auth credentials (D&D Beyond session, Anthropic
+    # API key) --------------------------------------------------------------
+    #
+    # Same gm-reads/admin-writes split as the transcription-server list
+    # above, for the same reason — these affect every account's imports/
+    # note-generation, not just whoever edits them. Loom's own Auth tab
+    # (admin-only) is the intended caller.
+    # GET /auth/credentials — never returns either secret value, only
+    # whether each is configured (same masking as get_ha_connection/
+    # list_deployment_secrets' own hasKey above), plus the DDB session's
+    # own last-known validity (server/ddb_auth_status.py).
+    def handle_get_auth_credentials(request: Request) -> Response:
+        require_gm(request)
+        ddb_status = get_ddb_auth_status(request.state)
+        return json_response(
+            {
+                "ddb": {
+                    "configured": is_deployment_secret_configured(request.state, "ddb-session"),
+                    **ddb_status,
+                },
+                "anthropic": {
+                    "configured": is_deployment_secret_configured(request.state, "anthropic"),
+                },
+            }
+        )
+
+    router.add("GET", r"^/auth/credentials$", handle_get_auth_credentials)
+
+    def handle_save_ddb_session_cookie(request: Request) -> Response:
+        require_admin(request)
+        payload = require_json(request)
+        cookie = str(payload.get("cookie") or "").strip()
+        if not cookie:
+            return json_response({"error": "A cookie value is required"}, status=HTTPStatus.BAD_REQUEST)
+        # Catches the single most common copy mistake here: clicking a row
+        # in DevTools' Application/Storage cookie table and hitting Ctrl+C
+        # copies the WHOLE row (name, value, domain, path, expiry — tab-
+        # separated), not just the Value cell. .strip() above only trims
+        # the ends, so that garbage would otherwise get saved verbatim and
+        # silently fail auth with no obvious cause — a real cookie value
+        # never legitimately contains whitespace.
+        if any(ch.isspace() for ch in cookie):
+            return json_response(
+                {
+                    "error": (
+                        "That value contains a space, tab, or line break — it looks like more than just the "
+                        "CobaltSession cookie's Value cell (a whole copied row, most likely). Double-click "
+                        "directly into the Value cell (or right-click the row and choose Copy value, if your "
+                        "browser offers it) so only the value itself is copied, then try again."
+                    )
+                },
+                status=HTTPStatus.BAD_REQUEST,
+            )
+        save_bare_deployment_secret(request.state, "ddb-session", "D&D Beyond Session", cookie)
+        return json_response({"configured": True})
+
+    router.add("POST", r"^/auth/credentials/ddb-session$", handle_save_ddb_session_cookie)
+
+    def handle_save_anthropic_api_key(request: Request) -> Response:
+        require_admin(request)
+        payload = require_json(request)
+        api_key = str(payload.get("apiKey") or "").strip()
+        if not api_key:
+            return json_response({"error": "An API key is required"}, status=HTTPStatus.BAD_REQUEST)
+        save_bare_deployment_secret(request.state, "anthropic", "Anthropic API Key", api_key)
+        return json_response({"configured": True})
+
+    router.add("POST", r"^/auth/credentials/anthropic$", handle_save_anthropic_api_key)
+
+    def handle_check_ddb_auth_status(request: Request) -> Response:
+        require_gm(request)
+        result = check_ddb_auth_status(request.state)
+        return json_response({"ddb": {"configured": is_deployment_secret_configured(request.state, "ddb-session"), **result}})
+
+    router.add("POST", r"^/auth/credentials/ddb-session/check$", handle_check_ddb_auth_status)
+
     # POST /audio/transcribe-chunk — body is the raw audio bytes for ONE
     # recording chunk (a few minutes, never the whole session — see
     # audio-recorder.js's own header comment on why recording is chunked at
@@ -1790,8 +1893,8 @@ def register_routes():
             return json_response(
                 {
                     "error": (
-                        "Missing Anthropic API key — copy server/anthropic.local.json.example to "
-                        "server/anthropic.local.json and fill in api_key."
+                        "Missing Anthropic API key — set one in Loom's Auth tab (admin only), or copy "
+                        "server/anthropic.local.json.example to server/anthropic.local.json and fill in api_key."
                     )
                 },
                 status=HTTPStatus.BAD_REQUEST,
@@ -1887,8 +1990,9 @@ def register_routes():
     # GET /ddb-proxy?url=...
     #
     # Fetches a dndbeyond.com (or monster-service.dndbeyond.com) resource
-    # server-side and attaches a session cookie read from a LOCAL, gitignored
-    # file (server/ddb-session.local.json) — never from the request, never
+    # server-side and attaches a session cookie resolved via integrations.py's
+    # own resolve_ddb_session_cookie (the encrypted deployment_secrets store,
+    # managed through Loom's Auth tab) — never from the request, never
     # from a third party. This exists because some D&D Beyond content (e.g.
     # non-free subclasses, or non-SRD monsters via monster-service) is only
     # served in full to a logged-in session; routing that session cookie
@@ -1899,22 +2003,6 @@ def register_routes():
     # scraped HTML pages and monster-service's JSON. Allowed hosts come from
     # server.config.json (server.ddb_proxy_allowed_hosts), not a hardcoded
     # constant — see config.py's ServerOptions.
-
-    def load_ddb_session_cookie(state: ServerState) -> str:
-        path = state.root_dir / "server" / "ddb-session.local.json"
-        if not path.exists():
-            return ""
-        try:
-            data = json.loads(path.read_text(encoding="utf-8"))
-        except (json.JSONDecodeError, OSError):
-            return ""
-        cookie = str(data.get("cookie") or "").strip()
-        if cookie and "=" not in cookie:
-            # Tolerate pasting just the cookie's value (as shown in DevTools'
-            # "Value" column) instead of a full name=value pair — a bare value
-            # is otherwise silently ignored by the Cookie header entirely.
-            cookie = f"CobaltSession={cookie}"
-        return cookie
 
     def handle_ddb_proxy(request: Request) -> Response:
         import urllib.error
@@ -1930,18 +2018,8 @@ def register_routes():
         if parsed_target.hostname not in allowed_hosts:
             return json_response({"error": "Only dndbeyond.com URLs are allowed"}, status=HTTPStatus.BAD_REQUEST)
 
-        headers = {
-            "User-Agent": (
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-                "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
-            ),
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        }
-        cookie = load_ddb_session_cookie(request.state)
-        if cookie:
-            headers["Cookie"] = cookie
-
-        proxy_request = urllib.request.Request(target, headers=headers, method="GET")
+        cookie = resolve_ddb_session_cookie(request.state)
+        proxy_request = urllib.request.Request(target, headers=build_ddb_request_headers(cookie), method="GET")
         try:
             with urllib.request.urlopen(proxy_request, timeout=15) as upstream:
                 body = upstream.read()
@@ -1950,6 +2028,22 @@ def register_routes():
             return json_response({"error": f"D&D Beyond fetch failed ({exc.code})"}, status=HTTPStatus.BAD_GATEWAY)
         except urllib.error.URLError as exc:
             return json_response({"error": f"D&D Beyond fetch failed ({exc.reason})"}, status=HTTPStatus.BAD_GATEWAY)
+
+        # Opportunistic staleness check — every real page fetch already has
+        # the HTML in hand, so recording whether it shows a signed-in
+        # account (server/ddb_auth_status.py) costs nothing extra here, and
+        # is the one check that would have caught a stale session the
+        # moment the first real import silently truncated, instead of only
+        # ever surfacing via the periodic background check or an explicit
+        # Check Now click. Only when a cookie was actually sent (nothing
+        # useful to record about "staleness" when there was never a session
+        # to go stale) and only for actual HTML responses (this route also
+        # proxies monster-service's own JSON, which never has the marker).
+        if cookie and content_type == "text/html":
+            try:
+                record_ddb_auth_check(request.state, body.decode("utf-8", errors="replace"))
+            except Exception:
+                logging.exception("Failed to record opportunistic D&D Beyond auth check")
 
         return Response(status=200, body=body, headers={"Content-Type": f"{content_type}; charset=utf-8"})
 
@@ -2205,6 +2299,20 @@ def register_routes():
         return json_response(result)
 
     router.add("POST", r"^/groups/(?P<group_id>[^/]+)/properties/(?P<key>[^/]+)$", handle_update_group_property)
+
+    # A Group's Property schema+values, read-side counterpart to the write
+    # above — same reason it isn't the generic /content/group/{id} route: a
+    # mere member has no owner/share access to that document at all (see
+    # group_store.get_group_properties's own comment). Filters to public-
+    # only properties for a non-owner; the owner/admin gets everything.
+    def handle_get_group_properties(request: Request) -> Response:
+        user = require_user(request)
+        params = getattr(request, "params")
+        group_id = params["group_id"]
+        result = group_store.get_group_properties(request.state, user, group_id)
+        return json_response(result)
+
+    router.add("GET", r"^/groups/(?P<group_id>[^/]+)/properties$", handle_get_group_properties)
 
     def handle_character_groups(request: Request) -> Response:
         user = require_user(request)
@@ -2699,6 +2807,26 @@ def register_routes():
         return json_response(result)
 
     router.add("POST", r"^/content/(?P<bucket>[^/]+)/(?P<id>[^/]+)/owner$", handle_owner_update)
+
+    # POST /content/{bucket}/{id}/rename — admin-only (rename_item's own
+    # gate), so nothing extra to enforce here beyond authentication; Loom's
+    # own Rename action calls this twice — once with dryRun:true to build a
+    # confirmation prompt showing every OTHER record that will be touched,
+    # once with dryRun:false (after the GM confirms) to actually perform it.
+    def handle_rename_content(request: Request) -> Response:
+        params = getattr(request, "params")
+        bucket = normalize_kind(params["bucket"])
+        id_ = params["id"]
+        user = request.handler.current_user()
+        if not user:
+            raise AuthError("Authentication required")
+        body = require_json(request)
+        new_id = (body.get("newId") or "").strip()
+        dry_run = bool(body.get("dryRun"))
+        result = rename_item(request.state, bucket, id_, new_id, user, dry_run=dry_run)
+        return json_response(result)
+
+    router.add("POST", r"^/content/(?P<bucket>[^/]+)/(?P<id>[^/]+)/rename$", handle_rename_content)
 
     # POST /shares
     def handle_share(request: Request) -> Response:

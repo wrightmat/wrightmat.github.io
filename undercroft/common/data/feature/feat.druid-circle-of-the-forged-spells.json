@@ -1,0 +1,26 @@
+{
+  "id": "feat.druid-circle-of-the-forged-spells",
+  "name": "Circle of the Forged Spells",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "When you reach a Druid level specified in the Circle of the Forge Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Blade Ward, Identify, Mirror Image\n\nLevel 5: Haste\n\nLevel 7: Fire Shield\n\nLevel 9: Animate Objects",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "When you reach a Druid level specified in the Circle of the Forge Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Blade Ward, Identify, Mirror Image\n\nLevel 5: Haste\n\nLevel 7: Fire Shield\n\nLevel 9: Animate Objects"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

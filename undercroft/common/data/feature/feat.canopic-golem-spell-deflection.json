@@ -1,7 +1,8 @@
 {
   "name": "Spell Deflection",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "In response to a spell attack missing the creature, it causes that spell to hit another creature within 120 feet of it that it can see.",
   "mechanics": {

@@ -1,0 +1,75 @@
+{
+  "index": "cleric-trickery-domain",
+  "url": "https://www.dndbeyond.com/classes/2190877-cleric",
+  "name": "Trickery Domain",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "parentKind": "class",
+  "parentId": "cleric",
+  "summary": "Make Mischief and Challenge Authority",
+  "description": "The Trickery Domain offers magic of deception, illusion, and stealth. Clerics who wield this magic are a disruptive force in the world, puncturing pride, mocking tyrants, freeing captives, and flouting hollow traditions. They prefer subterfuge and pranks to direct confrontation.\n\nGods of trickery are mischief-makers and instigators who stand as a constant challenge to the accepted order among both gods and mortals. They embody the forces of change and social upheaval, and they’re patrons of thieves, scoundrels, gamblers, rebels, and liberators. Religious orders that operate in secret, especially those that seek to undermine oppressive governments or hierarchies, also draw on the power of the Trickery Domain.",
+  "features": [
+    {
+      "name": "Blessing of the Trickster",
+      "level": 3,
+      "description": "As a Magic action, you can choose yourself or a willing creature within 30 feet of yourself to have Advantage on Dexterity (Stealth) checks. This blessing lasts until you finish a Long Rest or you use this feature again."
+    },
+    {
+      "name": "Invoke Duplicity",
+      "level": 3,
+      "description": "As a Bonus Action, you can expend one use of your Channel Divinity to create a perfect visual illusion of yourself in an unoccupied space you can see within 30 feet of yourself. The illusion is intangible and doesn’t occupy its space. It lasts for 1 minute, but it ends early if you dismiss it (no action required) or have the Incapacitated condition. The illusion is animated and mimics your expressions and gestures. While it persists, you gain the following benefits.\n\nCast Spells. You can cast spells as though you were in the illusion’s space, but you must use your own senses.\n\nDistract. When both you and your illusion are within 5 feet of a creature that can see the illusion, you have Advantage on attack rolls against that creature, given how distracting the illusion is to the target.\n\nMove. As a Bonus Action, you can move the illusion up to 30 feet to an unoccupied space you can see that is within 120 feet of yourself."
+    },
+    {
+      "name": "Trickery Domain Spells",
+      "level": 3,
+      "description": "Your connection to this divine domain ensures you always have certain spells ready. When you reach a Cleric level specified in the Trickery Domain Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Charm Person, Disguise Self, Invisibility, Pass without Trace\n\nLevel 5: Hypnotic Pattern, Nondetection\n\nLevel 7: Confusion, Dimension Door\n\nLevel 9: Dominate Person, Modify Memory"
+    },
+    {
+      "name": "Trickster’s Transposition",
+      "level": 6,
+      "description": "Whenever you take the Bonus Action to create or move the illusion of your Invoke Duplicity, you can teleport, swapping places with the illusion."
+    },
+    {
+      "name": "Improved Duplicity",
+      "level": 17,
+      "description": "The illusion of your Invoke Duplicity has grown more powerful in the following ways.\n\nShared Distraction. When you and your allies make attack rolls against a creature within 5 feet of the illusion, the attack rolls have Advantage.\n\nHealing Illusion. When the illusion ends, you or a creature of your choice within 5 feet of it regains a number of Hit Points equal to your Cleric level."
+    }
+  ],
+  "mapping": "ddb-subclass",
+  "featureIds": [
+    "feat.cleric-blessing-of-the-trickster",
+    "feat.cleric-invoke-duplicity",
+    "feat.cleric-trickery-domain-spells",
+    "feat.cleric-trickster-s-transposition",
+    "feat.cleric-improved-duplicity"
+  ],
+  "featureParams": {
+    "feat.cleric-blessing-of-the-trickster": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.cleric-invoke-duplicity": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.cleric-trickery-domain-spells": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.cleric-trickster-s-transposition": {
+      "grantedAtLevel": [
+        6
+      ]
+    },
+    "feat.cleric-improved-duplicity": {
+      "grantedAtLevel": [
+        17
+      ]
+    }
+  }
+}

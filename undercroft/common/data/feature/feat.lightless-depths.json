@@ -1,7 +1,8 @@
 {
   "name": "Lightless Depths",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature is immune to the crushing pressure of the deep ocean.",
   "mechanics": {

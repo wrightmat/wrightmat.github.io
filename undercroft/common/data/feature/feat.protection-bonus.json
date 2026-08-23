@@ -1,7 +1,8 @@
 {
   "name": "Protection Bonus",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "A general ward that makes the wearer harder to hit and harder to affect.",
   "mechanics": {

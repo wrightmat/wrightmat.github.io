@@ -1,7 +1,8 @@
 {
   "name": "Random Effect",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Its outcome is chosen from a table — by die roll, by deliberate choice among named options, or both — rather than being one fixed effect.",
   "mechanics": {

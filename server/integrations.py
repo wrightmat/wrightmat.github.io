@@ -227,3 +227,101 @@ def resolve_deployment_secret(state: ServerState, provider: str, entry_id: str) 
         return None
     token = decrypt_token(state, row["encrypted_token"]) if row["encrypted_token"] else ""
     return {"baseUrl": row["base_url"], "model": row["model"] or "", "token": token}
+
+
+# --- Bare-token deployment secrets (D&D Beyond session cookie, Anthropic
+# API key) --------------------------------------------------------------
+#
+# Same deployment_secrets table as the transcription-server list above —
+# provider-scoped, no per-user row, Fernet-encrypted at rest — but these two
+# have no base_url/model concept at all (resolve_deployment_secret's own
+# `not row["base_url"]` emptiness check would always treat them as "not
+# configured" for that reason, since base_url is deliberately left blank
+# here), so they get their own small resolver keyed on encrypted_token
+# instead, rather than writing a meaningless placeholder base_url just to
+# satisfy a check that doesn't actually apply to this shape.
+
+# One-time: an existing hand-edited server/<filename> (this server's
+# original credential mechanism, before deployment_secrets existed) carries
+# its value into the DB automatically the first time this provider's status
+# is checked OR its value is resolved — both routes call
+# _ensure_bare_secret_migrated below, not just the resolvers, since a
+# GET /auth/credentials status check (Loom's Auth tab, on every load) can
+# easily run before anything ever calls resolve_anthropic_api_key/
+# resolve_ddb_session_cookie for real (e.g. before Generate Note is ever
+# used) — checking status alone must not keep reporting "Not configured"
+# for a value that's really just not-yet-migrated. The file itself is left
+# in place afterward — once the DB row exists, this is a no-op for that
+# provider from then on, so the file becomes a harmless, inert leftover
+# rather than something that needs deleting.
+_LOCAL_FILE_SECRETS = {
+    "ddb-session": ("ddb-session.local.json", "D&D Beyond Session", "cookie"),
+    "anthropic": ("anthropic.local.json", "Anthropic API Key", "api_key"),
+}
+
+
+def _ensure_bare_secret_migrated(state: ServerState, provider: str) -> None:
+    if provider not in _LOCAL_FILE_SECRETS:
+        return
+    row = state.read_db.execute(
+        "SELECT 1 FROM deployment_secrets WHERE provider = ? AND id = 'default' AND encrypted_token IS NOT NULL",
+        (provider,),
+    ).fetchone()
+    if row:
+        return
+    filename, label, value_key = _LOCAL_FILE_SECRETS[provider]
+    path = state.root_dir / "server" / filename
+    if not path.exists():
+        return
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return
+    value = str(data.get(value_key) or "").strip()
+    if not value:
+        return
+    save_deployment_secret(state, provider, "default", label, "", "", value)
+
+
+def is_deployment_secret_configured(state: ServerState, provider: str, entry_id: str = "default") -> bool:
+    _ensure_bare_secret_migrated(state, provider)
+    row = state.read_db.execute(
+        "SELECT encrypted_token FROM deployment_secrets WHERE provider = ? AND id = ?",
+        (provider, entry_id),
+    ).fetchone()
+    return bool(row and row["encrypted_token"])
+
+
+def resolve_bare_deployment_secret(state: ServerState, provider: str, entry_id: str = "default") -> Optional[str]:
+    _ensure_bare_secret_migrated(state, provider)
+    row = state.read_db.execute(
+        "SELECT encrypted_token FROM deployment_secrets WHERE provider = ? AND id = ?",
+        (provider, entry_id),
+    ).fetchone()
+    if not row or not row["encrypted_token"]:
+        return None
+    return decrypt_token(state, row["encrypted_token"])
+
+
+def save_bare_deployment_secret(state: ServerState, provider: str, label: str, value: str, entry_id: str = "default") -> None:
+    save_deployment_secret(state, provider, entry_id, label, "", "", value)
+
+
+# Replaces server/app.py's own former load_ddb_session_cookie — same
+# tolerance for a bare cookie *value* (as shown in DevTools' own "Value"
+# column) instead of a full name=value pair, since a bare value is
+# otherwise silently ignored by the Cookie header entirely. Checked by
+# name prefix, NOT by "contains an =" — a real CobaltSession value commonly
+# has its own base64 `=` padding, so that check used to skip prefixing a
+# perfectly good pasted value, sending it as a nameless Cookie header that
+# D&D Beyond can't parse at all (read as instantly logged-out).
+def resolve_ddb_session_cookie(state: ServerState) -> str:
+    cookie = (resolve_bare_deployment_secret(state, "ddb-session") or "").strip()
+    if cookie and not cookie.lower().startswith("cobaltsession="):
+        cookie = f"CobaltSession={cookie}"
+    return cookie
+
+
+# Replaces server/app.py's own former resolve_anthropic_api_key.
+def resolve_anthropic_api_key(state: ServerState) -> str:
+    return (resolve_bare_deployment_secret(state, "anthropic") or "").strip()

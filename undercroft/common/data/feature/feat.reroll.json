@@ -1,7 +1,8 @@
 {
   "name": "Reroll",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Rerolls an attack roll, ability check, or saving throw the user dislikes, taking the new result even if it's worse.",
   "mechanics": {

@@ -1,7 +1,8 @@
 {
   "name": "Howling Void",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature opens a momentary extraplanar rift within 60 feet of it. The rift is a scream-filled, 20-foot cube. Each creature in that area must make a DC 15 Wisdom saving throw. On a failed save, a creature takes 9 (2d8) psychic damage and is frightened of the creature until the start of the creature’s next turn. On a successful save, a creature takes half as much damage and isn’t frightened.",
   "mechanics": {

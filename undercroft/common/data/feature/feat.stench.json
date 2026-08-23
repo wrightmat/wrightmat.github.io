@@ -1,7 +1,8 @@
 {
   "name": "Stench",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Any creature that starts its turn within 5 ft. of the undead must succeed on a DC 10 Constitution saving throw or be poisoned until the start of its next turn. On a successful saving throw, the creature is immune to the undead's Stench for 24 hours.",
   "mechanics": {

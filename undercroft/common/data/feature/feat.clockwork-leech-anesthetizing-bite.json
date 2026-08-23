@@ -1,7 +1,8 @@
 {
   "name": "Anesthetizing Bite",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "When the creature successfully bites a creature, the creature must succeed on a DC 13 Wisdom (Perception) check to notice the bite. If the creature remains attached to the target, the target can repeat this check at the start of each of its turns.",
   "mechanics": {

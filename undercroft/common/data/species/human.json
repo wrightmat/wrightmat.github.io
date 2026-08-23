@@ -28,7 +28,8 @@
   "variants": [],
   "updated_at": "2026-07-17T22:51:20.794Z",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "names": {
     "nameMode": "blend",

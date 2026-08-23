@@ -1,7 +1,8 @@
 {
   "name": "Starlight Leap",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature teleports up to 30 feet to an unoccupied space it can see. Immediately before teleporting, the creature can choose one creature within 5 feet of it. That creature can teleport with the creature, appearing in an unoccupied space within 5 feet of the creature's destination space.",
   "mechanics": {

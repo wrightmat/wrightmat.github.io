@@ -1,0 +1,26 @@
+{
+  "id": "feat.cleric-avatar-of-battle",
+  "name": "Avatar of Battle",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You gain Resistance to Bludgeoning, Piercing, and Slashing damage.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "You gain Resistance to Bludgeoning, Piercing, and Slashing damage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

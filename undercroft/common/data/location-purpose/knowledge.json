@@ -1,6 +1,9 @@
 {
   "id": "knowledge",
   "name": "Knowledge",
-  "systemIds": ["sys.dnd5e"],
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
   "description": "Exists to preserve or pursue understanding — libraries, archives, academies, and places of research."
 }

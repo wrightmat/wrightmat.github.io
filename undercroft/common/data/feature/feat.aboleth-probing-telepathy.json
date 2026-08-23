@@ -1,7 +1,8 @@
 {
   "name": "Probing Telepathy",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "If a creature communicates telepathically with the aberration, the aberration learns the creature's greatest desires if the aberration can see the creature.",
   "mechanics": {

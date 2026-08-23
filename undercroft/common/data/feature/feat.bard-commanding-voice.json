@@ -1,0 +1,26 @@
+{
+  "id": "feat.bard-commanding-voice",
+  "name": "Commanding Voice",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You excel at inspiring and directing soldiers in battle. When you take the Attack action or the Magic action on your turn, two creatures of your choice who possess one of your Bardic Inspiration die can expend it to use their Reaction to immediately make one attack with a weapon or an Unarmed Strike, adding the Bardic Inspiration die to the attack’s damage roll on a hit.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "You excel at inspiring and directing soldiers in battle. When you take the Attack action or the Magic action on your turn, two creatures of your choice who possess one of your Bardic Inspiration die can expend it to use their Reaction to immediately make one attack with a weapon or an Unarmed Strike, adding the Bardic Inspiration die to the attack’s damage roll on a hit."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

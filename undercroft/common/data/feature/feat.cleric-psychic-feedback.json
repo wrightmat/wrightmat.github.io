@@ -1,0 +1,26 @@
+{
+  "id": "feat.cleric-psychic-feedback",
+  "name": "Psychic Feedback",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "When a creature you can see within 30 feet of yourself succeeds on a Wisdom saving throw, you can take a Reaction and expend a use of your Channel Divinity to impose Disadvantage on the saving throw, prying into their mind before they succeed or fail.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "When a creature you can see within 30 feet of yourself succeeds on a Wisdom saving throw, you can take a Reaction and expend a use of your Channel Divinity to impose Disadvantage on the saving throw, prying into their mind before they succeed or fail."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

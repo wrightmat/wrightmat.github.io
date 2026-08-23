@@ -1,0 +1,26 @@
+{
+  "id": "feat.ranger-relentless-hunter",
+  "name": "Relentless Hunter",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "Taking damage can’t break your Concentration on Hunter’s Mark.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "Taking damage can’t break your Concentration on Hunter’s Mark."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

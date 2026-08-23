@@ -1,7 +1,8 @@
 {
   "name": "Constrict",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Melee Weapon Attack: +4 to hit, reach 5 ft., one creature. Hit: 5 (1d6 + 2) bludgeoning damage plus 9 (2d8) cold damage, and the target is grappled (escape DC 14). Until this grapple ends, the creature is restrained, and the ooze can't constrict another target.",
   "mechanics": {

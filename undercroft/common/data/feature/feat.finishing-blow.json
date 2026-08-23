@@ -1,7 +1,8 @@
 {
   "name": "Finishing Blow",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Against a target at or below half its hit point maximum, the creature's attacks score a critical hit on a roll of 19 or 20.",
   "mechanics": {

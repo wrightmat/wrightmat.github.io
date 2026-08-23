@@ -1,7 +1,8 @@
 {
   "name": "Brilliant Illumination",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature sheds bright light in a 60-foot radius and dim light for an additional 60 feet. This light is sunlight.",
   "mechanics": {

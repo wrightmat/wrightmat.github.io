@@ -1,0 +1,25 @@
+{
+  "id": "feat.barbarian-fast-movement",
+  "name": "Fast Movement",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "Your speed increases by 10 feet while you aren’t wearing Heavy armor.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Your speed increases by 10 feet while you aren’t wearing Heavy armor."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

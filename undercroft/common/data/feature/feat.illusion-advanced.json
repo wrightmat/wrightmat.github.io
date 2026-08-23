@@ -1,7 +1,8 @@
 {
   "name": "Adjustable Illusion",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The illusion can be actively controlled and altered for its duration, rather than being fixed at the moment of casting.",
   "mechanics": {

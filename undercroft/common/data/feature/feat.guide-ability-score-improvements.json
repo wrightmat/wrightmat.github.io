@@ -1,0 +1,24 @@
+{
+  "id": "feat.guide-ability-score-improvements",
+  "name": "Guide Ability Score Improvements",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The Guide Background allows you to choose between Dexterity, Constitution, and Wisdom. Increase one of these scores by 2 and another one by 1, or increase all three by 1. None of these increases can raise a score above 20.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The Guide Background allows you to choose between Dexterity, Constitution, and Wisdom. Increase one of these scores by 2 and another one by 1, or increase all three by 1. None of these increases can raise a score above 20."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

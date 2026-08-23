@@ -1,7 +1,8 @@
 {
   "name": "Assassinate",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "During its first turn, the humanoid has advantage on attack rolls against any creature that hasn't taken a turn. Any hit the humanoid scores against a surprised creature is a critical hit.",
   "mechanics": {

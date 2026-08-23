@@ -1,7 +1,8 @@
 {
   "name": "Bite",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Melee Weapon Attack: +14 to hit, reach 15 ft., one target. Hit: 42 (5d12+ 10) piercing damage and the target is grappled (escape DC 20). If the target was already grappled from a previous bite, it’s also swallowed whole (see below).",
   "mechanics": {

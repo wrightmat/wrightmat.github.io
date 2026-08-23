@@ -1,7 +1,8 @@
 {
   "name": "Self-Wielding",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The item functions on its own, hovering nearby, without needing to be physically held.",
   "mechanics": {

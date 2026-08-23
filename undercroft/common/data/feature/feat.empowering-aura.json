@@ -1,7 +1,8 @@
 {
   "name": "Empowering Aura",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Allies within 10 feet of the creature add a bonus to their damage rolls.",
   "mechanics": {

@@ -2,7 +2,8 @@
   "id": "support",
   "name": "Support",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Specialized creatures designed to buff or protect specific members of their group, similar to Leaders but often more specialized or narrative-focused.",
   "mechanicalTendencies": {

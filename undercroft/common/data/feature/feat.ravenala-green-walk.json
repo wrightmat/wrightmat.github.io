@@ -1,7 +1,8 @@
 {
   "name": "Green Walk",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature can move across undergrowth, natural or magical, without needing to make an ability check and without expending additional movement.",
   "mechanics": {

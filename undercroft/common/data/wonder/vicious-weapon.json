@@ -3,7 +3,8 @@
   "name": "Vicious Weapon",
   "notes": "Weapon (any), rare\n\nWhen you roll a 20 on your attack roll with this magic weapon, your critical hit deals an extra 2d6 damage of the weapon's type.",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "url": "https://www.dnd5eapi.co/api/2014/magic-items/vicious-weapon",
   "mapping": "5e-api-magic-item",

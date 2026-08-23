@@ -1,7 +1,8 @@
 {
   "name": "Adaptive Defense",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature has resistance to the first damage type that hits it in each combat.",
   "mechanics": {

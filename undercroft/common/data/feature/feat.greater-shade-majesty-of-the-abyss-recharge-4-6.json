@@ -1,7 +1,8 @@
 {
   "name": "Majesty of the Abyss (Recharge 4-6)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature emits a sinister burst of infernal power. All creatures within 30 feet and in direct line of sight of the creature take 19 (3d12) necrotic damage and must make a DC 17 Constitution saving throw. Those who fail the saving throw are blinded for 2 rounds; those who succeed are frightened for 2 rounds.",
   "mechanics": {

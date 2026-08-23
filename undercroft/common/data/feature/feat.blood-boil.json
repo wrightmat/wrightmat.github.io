@@ -1,7 +1,8 @@
 {
   "name": "Blood Boil (Recharge 4–6)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Murgaxor chooses a point within 150 feet of himself, and a 20-foot radius sphere centered on that point fills with a burst of searing, blood-red mist. Each creature of Murgaxor’s choice that he can see in that area must make a DC 16 Constitution saving throw. On a failed save, a creature takes 16 (3d10) necrotic damage and is incapacitated until the end of its next turn. On a success, a creature takes half as much damage and isn’t incapacitated. A creature dies if reduced to 0 hit points by this necrotic damage.",
   "mechanics": {

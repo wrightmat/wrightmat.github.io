@@ -1,7 +1,8 @@
 {
   "name": "False Appearance (Ambush)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "While the creature remains motionless, it is indistinguishable from an ordinary object; a creature must succeed on an Intelligence (Investigation) check to tell it isn't real, and the creature has advantage on initiative rolls when it goes undetected.",
   "mechanics": {

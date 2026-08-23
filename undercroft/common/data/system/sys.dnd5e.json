@@ -1,5 +1,5 @@
 {
-  "title": "D&D 5E",
+  "title": "D&D 5.5E (2024)",
   "version": "0.2",
   "fields": [
     {
@@ -36,7 +36,8 @@
             "status",
             "combat",
             "ritual"
-          ]
+          ],
+          "entityId": "bard"
         },
         {
           "name": "Cleric",
@@ -50,7 +51,8 @@
             "light",
             "protection",
             "ritual"
-          ]
+          ],
+          "entityId": "cleric"
         },
         {
           "name": "Druid",
@@ -65,13 +67,16 @@
             "movement",
             "poisoned",
             "ritual"
-          ]
+          ],
+          "entityId": "druid"
         },
         {
-          "name": "Fighter"
+          "name": "Fighter",
+          "entityId": "fighter"
         },
         {
-          "name": "Monk"
+          "name": "Monk",
+          "entityId": "monk"
         },
         {
           "name": "Paladin",
@@ -85,7 +90,8 @@
             "protection",
             "aura",
             "ritual"
-          ]
+          ],
+          "entityId": "paladin"
         },
         {
           "name": "Ranger",
@@ -99,10 +105,12 @@
             "control",
             "combat",
             "ritual"
-          ]
+          ],
+          "entityId": "ranger"
         },
         {
-          "name": "Rogue"
+          "name": "Rogue",
+          "entityId": "rogue"
         },
         {
           "name": "Sorcerer",
@@ -118,7 +126,8 @@
             "utility",
             "illusion",
             "ritual"
-          ]
+          ],
+          "entityId": "sorcerer"
         },
         {
           "name": "Warlock",
@@ -133,7 +142,8 @@
             "persistent",
             "duration",
             "ritual"
-          ]
+          ],
+          "entityId": "warlock"
         },
         {
           "name": "Wizard",
@@ -150,7 +160,8 @@
             "duration",
             "disruption",
             "ritual"
-          ]
+          ],
+          "entityId": "wizard"
         },
         {
           "name": "Artificer",
@@ -167,7 +178,8 @@
             "warding",
             "elemental",
             "ritual"
-          ]
+          ],
+          "entityId": "artificer"
         }
       ]
     },
@@ -429,22 +441,10 @@
       "label": "Currency",
       "values": [
         {
-          "name": "Copper",
-          "shortName": "cp",
-          "cost": 1,
+          "name": "Platinum",
+          "shortName": "pp",
+          "cost": 1000,
           "weight": 0.001
-        },
-        {
-          "name": "Silver",
-          "shortName": "sp",
-          "cost": 10,
-          "weight": 0.01
-        },
-        {
-          "name": "Electrum",
-          "shortName": "ep",
-          "cost": 50,
-          "weight": 0.05
         },
         {
           "name": "Gold",
@@ -453,10 +453,22 @@
           "weight": 0.1
         },
         {
-          "name": "Platinum",
-          "shortName": "pp",
-          "cost": 1000,
+          "name": "Silver",
+          "shortName": "sp",
+          "cost": 10,
+          "weight": 0.01
+        },
+        {
+          "name": "Copper",
+          "shortName": "cp",
+          "cost": 1,
           "weight": 0.001
+        },
+        {
+          "name": "Electrum",
+          "shortName": "ep",
+          "cost": 50,
+          "weight": 0.05
         }
       ]
     },

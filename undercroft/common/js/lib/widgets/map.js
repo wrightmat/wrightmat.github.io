@@ -73,6 +73,7 @@ import {
   persistPlayerDrawing,
   removeElement,
 } from "../map-live-sync.js";
+import { claimMarkerContentEntry, describeMarkerContentEntry, resolveGiveToOptions } from "../marker-contents.js";
 
 // 10s (was 30s) — same reasoning as combat-tracker.js's own
 // POLL_INTERVAL_MS, kept a bit more conservative here since a map's own
@@ -1337,9 +1338,24 @@ export function initMapWidget(
   // record actually lives (Vault, Forge, Repository, ...), reusing the same
   // markerEditorPopover/closeMarkerEditor/onOutsidePointerDown lifecycle
   // (only one floating panel open at a time either way).
-  function openMarkerLinkPopover(markerElement, dotEl) {
+  // One shared roster fetch for the lifetime of this widget instance (not
+  // one per popover/entry) — see resolveGiveToOptions' own header comment.
+  let giveToRosterPromise = null;
+  function loadGiveToRoster() {
+    if (!giveToRosterPromise) {
+      giveToRosterPromise = groupId ? resolveGiveToOptions(dataManager, groupId, shareToken).catch(() => []) : Promise.resolve([]);
+    }
+    return giveToRosterPromise;
+  }
+
+  function openMarkerLinkPopover(layer, markerElement, dotEl) {
     const target = resolveMarkerLinkTarget(markerElement);
-    if (!target) return;
+    const contents = markerElement.contents || [];
+    // Opens for a real reference (the pre-existing "Open in <Tool>" case) OR
+    // a marker carrying unclaimed Contents — see marker-contents.js's own
+    // header comment for the full claim mechanism, shared as-is with
+    // Orrery's own identical addition to openRestrictedMarkerLinkPopover.
+    if (!target && !contents.length) return;
     closeMarkerEditor();
     const popover = el("div", "orrery-floating-panel d-flex flex-column gap-1 p-2");
     popover.style.position = "fixed";
@@ -1356,11 +1372,117 @@ export function initMapWidget(
       const title = el("div", "small fw-semibold text-truncate", markerElement.label);
       popover.appendChild(title);
     }
-    const link = document.createElement("a");
-    link.className = "btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1";
-    link.href = target.url;
-    link.innerHTML = `<span class="iconify" data-icon="tabler:external-link" aria-hidden="true"></span> Open in ${target.toolLabel}`;
-    popover.appendChild(link);
+    if (target) {
+      const link = document.createElement("a");
+      link.className = "btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1";
+      link.href = target.url;
+      link.innerHTML = `<span class="iconify" data-icon="tabler:external-link" aria-hidden="true"></span> Open in ${target.toolLabel}`;
+      popover.appendChild(link);
+    }
+
+    contents.forEach((entry) => {
+      const row = el("div", "d-flex align-items-center justify-content-between gap-2");
+      const label = el("span", "small text-truncate", describeMarkerContentEntry(entry));
+      const claimButton = document.createElement("button");
+      claimButton.type = "button";
+      claimButton.className = "btn btn-outline-primary btn-sm flex-shrink-0";
+      claimButton.textContent = "Claim";
+      claimButton.addEventListener("click", async () => {
+        claimButton.disabled = true;
+        try {
+          const result = await claimMarkerContentEntry({
+            dataManager,
+            groupId,
+            shareToken,
+            mapId,
+            layerId: layer.id,
+            elementId: markerElement.id,
+            contentId: entry.id,
+          });
+          closeMarkerEditor();
+          if (!result) {
+            status?.show("That's already been claimed.", { type: "info", timeout: 2500 });
+            return;
+          }
+          map = result.map;
+          watcher?.noteLocalWrite();
+          renderLayers();
+          status?.show(`Claimed ${result.label} for ${result.destinationLabel}.`, { type: "success", timeout: 2500 });
+        } catch (error) {
+          claimButton.disabled = false;
+          status?.show(error?.message || "Unable to claim that item.", { type: "error", timeout: 4000 });
+        }
+      });
+      row.append(label, claimButton);
+      popover.appendChild(row);
+
+      // GM-only "Give to" — delivers this entry to a specific player's
+      // Character (or the Party) instead of "Claim" always taking it for
+      // the GM's own account. Not every player has this widget open, and
+      // the GM should always be able to complete the delivery regardless.
+      // Same claimMarkerContentEntry, just with an explicit recipient
+      // override — see marker-contents.js's own resolveGiveToOptions
+      // header comment. This popover (unlike Orrery's own split
+      // restricted/full-access views) is shown to every viewer, so the
+      // tier check genuinely gates this, not just hides it.
+      if (dataManager?.meetsTier?.("gm")) {
+        const giveToSelect = document.createElement("select");
+        giveToSelect.className = "form-select form-select-sm";
+        giveToSelect.setAttribute("aria-label", `Give ${describeMarkerContentEntry(entry) || "item"} to`);
+        const placeholderOption = document.createElement("option");
+        placeholderOption.value = "";
+        placeholderOption.textContent = "Give to…";
+        giveToSelect.appendChild(placeholderOption);
+        const partyOption = document.createElement("option");
+        partyOption.value = "party";
+        partyOption.textContent = "The Party";
+        giveToSelect.appendChild(partyOption);
+        loadGiveToRoster().then((roster) => {
+          roster.forEach((option) => {
+            const opt = document.createElement("option");
+            opt.value = option.characterId;
+            opt.textContent = option.label;
+            giveToSelect.appendChild(opt);
+          });
+        });
+        giveToSelect.addEventListener("change", async () => {
+          const value = giveToSelect.value;
+          if (!value) return;
+          giveToSelect.disabled = true;
+          try {
+            const roster = await loadGiveToRoster();
+            const recipient =
+              value === "party"
+                ? { type: "party" }
+                : { type: "character", characterId: value, label: roster.find((option) => option.characterId === value)?.label || value };
+            const result = await claimMarkerContentEntry({
+              dataManager,
+              groupId,
+              shareToken,
+              mapId,
+              layerId: layer.id,
+              elementId: markerElement.id,
+              contentId: entry.id,
+              recipient,
+            });
+            closeMarkerEditor();
+            if (!result) {
+              status?.show("That's already been claimed.", { type: "info", timeout: 2500 });
+              return;
+            }
+            map = result.map;
+            watcher?.noteLocalWrite();
+            renderLayers();
+            status?.show(`Gave ${result.label} to ${result.destinationLabel}.`, { type: "success", timeout: 2500 });
+          } catch (error) {
+            status?.show(error?.message || "Unable to give that item.", { type: "error", timeout: 4000 });
+            giveToSelect.disabled = false;
+            giveToSelect.value = "";
+          }
+        });
+        popover.appendChild(giveToSelect);
+      }
+    });
 
     viewerHost.appendChild(popover);
     markerEditorPopover = popover;
@@ -1450,7 +1572,7 @@ export function initMapWidget(
           if (draggable) {
             openMarkerEditor(layer, markerElement, dotEl);
           } else {
-            openMarkerLinkPopover(markerElement, dotEl);
+            openMarkerLinkPopover(layer, markerElement, dotEl);
           }
         },
         onDragStateChange: (dragging) => {

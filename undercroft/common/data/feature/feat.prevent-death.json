@@ -1,7 +1,8 @@
 {
   "name": "Prevent Death",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Negates the next fatal blow or instant-kill effect against the target, then ends.",
   "mechanics": {

@@ -35,11 +35,14 @@ import {
   listArrayFieldOptions,
   loadArchetypeTable,
   loadNpcAttitudes,
+  listFeaturesForSystem,
   GENDER_FACES,
   AGE_FACES,
   RELATIONSHIP_STATUS_FACES,
   ORIENTATION_FACES,
 } from "./lib/tables.js";
+import { createFeatureParamsEditor } from "../../common/js/lib/feature-params-editor.js";
+import { createReferenceChip } from "../../common/js/lib/library-reference.js";
 import { generateNpc, rerollAttribute } from "./lib/generator.js";
 import { createNpcRecord, toPressExportShape } from "./lib/npc-schema.js";
 import { generateCharacterNote } from "./lib/llm-note.js";
@@ -278,6 +281,20 @@ document.querySelector("[data-stats-mount]")?.appendChild(
   }).section
 );
 
+// Manual Feature Add/Remove — Crucible/Vault's own "just like monsters and
+// other resources" parity (see content-feature-matching.js's own header
+// comment for the fuller reasoning). Collapsed by default, unlike Identity/
+// 4D/Stats above — an NPC without any Features attached is the common case,
+// so this shouldn't compete for attention until the GM actually wants it.
+document.querySelector("[data-features-mount]")?.appendChild(
+  createCollapsibleSection({
+    label: "Features",
+    helpTopic: "forge.features",
+    collapsed: true,
+    content: document.querySelector("[data-features-panel]"),
+  }).section
+);
+
 {
   const noteToggle = createIconButton({
     icon: "tabler:chevron-right",
@@ -300,6 +317,11 @@ const inspectorRoll = document.querySelector("[data-inspector-roll]");
 const inspectorRollTitle = document.querySelector("[data-inspector-roll-title]");
 const inspectorRollCurrent = document.querySelector("[data-inspector-roll-current]");
 const inspectorRollJson = document.querySelector("[data-inspector-roll-json]");
+
+const featureList = document.querySelector("[data-feature-list]");
+const addFeatureSelect = document.querySelector("[data-add-feature-select]");
+const addFeatureButton = document.querySelector("[data-add-feature-button]");
+const featureParamsEditorMount = document.querySelector("[data-feature-params-editor]");
 
 const exportLocationTemplateButton = document.querySelector("[data-export-location-template]");
 const locationNameInput = document.querySelector("[data-location-name]");
@@ -336,6 +358,14 @@ let currentSetting = null;
 // (renderNpc's identityFields loop) can source its options without a
 // second fetch.
 let locationsInSetting = [];
+// The active System's own eligible Feature pool — same "just like monsters
+// and other resources" parity Crucible's own `features` module var already
+// has, refreshed alongside every other System-scoped vocabulary
+// (refreshSystemVocabulary). Manual Add/Remove only here — no auto-matching
+// module the way Character/Species/Variant/Class get, since Forge NPCs are
+// procedurally generated from the 4D tables, not imported from prose with
+// anything to convert.
+let features = [];
 let currentRecord = null;
 // Gates Save (dirty relative to the last save) and Delete (only a record
 // that's actually been saved, not just generated/rerolled locally, can be
@@ -614,13 +644,16 @@ function resolveArchetypeStats(statsByName, systemId) {
 async function refreshSystemVocabulary(systemId) {
   const archetypeField = getArchetypeFieldPreference(systemId);
   const attitudeField = getAttitudeFieldPreference(systemId);
-  const [alignmentFaces, abilityFieldDefs, fieldOptions, archetypeTable, npcAttitudes] = await Promise.all([
+  const [alignmentFaces, abilityFieldDefs, fieldOptions, archetypeTable, npcAttitudes, systemFeatures] = await Promise.all([
     loadAlignmentFaces(dataManager, systemId),
     loadAbilityFieldDefs(dataManager, systemId),
     listArrayFieldOptions(dataManager, systemId),
     loadArchetypeTable(dataManager, systemId, archetypeField || undefined),
     loadNpcAttitudes(dataManager, systemId, attitudeField || undefined),
+    listFeaturesForSystem(dataManager, systemId),
   ]);
+  features = systemFeatures;
+  populateAddFeatureSelect();
   arrayFieldOptions = fieldOptions;
   ABILITY_FIELD_DEFS = abilityFieldDefs;
   ABILITY_KEYS = new Set(abilityFieldDefs.map((entry) => entry.key));
@@ -998,6 +1031,8 @@ function renderNpc(record) {
   });
 
   renderStats(record.stats);
+  renderFeatureList(record);
+  populateAddFeatureSelect();
 
   noteText.value = record.note || "";
   if (noteMode === "view") renderNotePreview();
@@ -1012,6 +1047,158 @@ function renderNpc(record) {
   }
   if (mode === "relationships") void refreshRelationshipsSection();
 }
+
+// --- Features ---------------------------------------------------------
+// Manual Add/Remove parity with Crucible/Vault's own Feature list — same
+// interaction pattern (a plain select + Add button, a row per attached
+// Feature with a Remove button, feature-params-editor.js for anything with
+// real mechanics), deliberately without Crucible's own budget/signature/
+// action-cost machinery — Forge NPCs aren't budget-costed combat stat
+// blocks, so none of that has an equivalent here. No mechanics.type-
+// specific description renderer either (Crucible's own weapon-attack/save-
+// effect/multiattack text builders are monster-combat-specific) — a
+// Feature's own plain `description` is shown as-is; the params editor below
+// covers anything that needs its own per-NPC numbers filled in.
+function createPlaceholderFeatureOption(label = "Select…") {
+  const option = document.createElement("option");
+  option.value = "";
+  option.textContent = label;
+  return option;
+}
+
+function findFeatureById(id) {
+  return features.find((feature) => feature.id === id) || null;
+}
+
+function renderFeatureList(record) {
+  if (!featureList) return;
+  featureList.innerHTML = "";
+  (record.featureIds || []).forEach((featureId) => {
+    const feature = findFeatureById(featureId);
+    const row = document.createElement("div");
+    row.className = "border rounded-3 p-2 d-flex align-items-start justify-content-between gap-2";
+    row.dataset.featureRow = featureId;
+
+    const info = document.createElement("div");
+    info.className = "flex-grow-1";
+    // Hover-preview chip (library-reference.js), same suite-wide "displayed
+    // inline wherever needed" primitive Crucible/Vault/Sanctum's own
+    // Feature lists use.
+    const name = document.createElement("div");
+    name.className = "fw-semibold";
+    name.appendChild(createReferenceChip({ kind: "feature", id: featureId, name: feature?.name || featureId, dataManager }));
+    const description = document.createElement("div");
+    description.className = "small text-body-secondary";
+    description.textContent = feature?.description || "";
+    info.append(name, description);
+
+    const removeButton = document.createElement("button");
+    removeButton.type = "button";
+    removeButton.className = "btn btn-outline-danger btn-sm flex-shrink-0";
+    removeButton.setAttribute("aria-label", "Remove feature");
+    removeButton.innerHTML = '<span class="iconify" data-icon="tabler:trash" aria-hidden="true"></span>';
+    removeButton.addEventListener("click", (event) => {
+      event.stopPropagation();
+      removeFeature(featureId);
+    });
+
+    row.append(info, removeButton);
+    row.addEventListener("click", () => selectFeatureRow(featureId));
+    featureList.appendChild(row);
+  });
+  if (!featureList.children.length) {
+    const empty = document.createElement("p");
+    empty.className = "small text-body-secondary mb-0";
+    empty.textContent = "No Features attached.";
+    featureList.appendChild(empty);
+  }
+}
+
+function populateAddFeatureSelect() {
+  if (!addFeatureSelect) return;
+  if (!currentRecord) {
+    addFeatureSelect.innerHTML = "";
+    return;
+  }
+  const selectedIds = new Set(currentRecord.featureIds || []);
+  addFeatureSelect.innerHTML = "";
+  addFeatureSelect.appendChild(createPlaceholderFeatureOption());
+  features
+    .filter((feature) => !selectedIds.has(feature.id))
+    .forEach((feature) => {
+      const option = document.createElement("option");
+      option.value = feature.id;
+      option.textContent = feature.name || feature.id;
+      addFeatureSelect.appendChild(option);
+    });
+}
+
+function addFeature(featureId) {
+  if (!currentRecord || !featureId) return;
+  const featureIds = Array.isArray(currentRecord.featureIds) ? currentRecord.featureIds : [];
+  if (featureIds.includes(featureId)) return;
+  recordHistory("add feature", () => {
+    currentRecord.featureIds = [...featureIds, featureId];
+  });
+  dirtyGate.markDirty();
+  renderFeatureList(currentRecord);
+  populateAddFeatureSelect();
+  refreshActionButtons();
+  jsonDataPanel.render();
+}
+
+function removeFeature(featureId) {
+  if (!currentRecord) return;
+  recordHistory("remove feature", () => {
+    currentRecord.featureIds = (currentRecord.featureIds || []).filter((id) => id !== featureId);
+    if (currentRecord.featureParams) delete currentRecord.featureParams[featureId];
+    if (currentRecord.featureTiers) delete currentRecord.featureTiers[featureId];
+  });
+  dirtyGate.markDirty();
+  if (selectedFeatureId === featureId) selectFeatureRow(null);
+  renderFeatureList(currentRecord);
+  populateAddFeatureSelect();
+  refreshActionButtons();
+  jsonDataPanel.render();
+}
+
+// Which feature row (by id) is currently selected — drives the params
+// editor below it, same "click a row to edit its own mechanics" pattern
+// Crucible/Vault's own Feature list already uses.
+let selectedFeatureId = null;
+function selectFeatureRow(featureId) {
+  selectedFeatureId = featureId;
+  featureList?.querySelectorAll("[data-feature-row]").forEach((row) => {
+    row.classList.toggle("border-primary", row.dataset.featureRow === featureId);
+  });
+  // renderFeatureParamsEditor owns showing/hiding its own container
+  // (setElementVisible, not classList — see that function's own comment) —
+  // always called, a feature/type with nothing to edit just hides itself.
+  const feature = featureId ? findFeatureById(featureId) : null;
+  featureParamsEditor.renderFeatureParamsEditor(feature, featureParamsEditorMount);
+}
+
+const featureParamsEditor = createFeatureParamsEditor({
+  getRecord: () => currentRecord,
+  onParamsChanged: () => {
+    dirtyGate.markDirty();
+    refreshActionButtons();
+    jsonDataPanel.render();
+  },
+  saveFeature: (feature) => dataManager.save("feature", feature.id, feature),
+  onFeatureSaved: () => {
+    renderFeatureList(currentRecord);
+    if (selectedFeatureId) selectFeatureRow(selectedFeatureId);
+  },
+  getAbilityFieldDefs: () => ABILITY_FIELD_DEFS,
+  onParamSelectionChanged: () => {},
+});
+
+addFeatureButton?.addEventListener("click", () => {
+  const featureId = addFeatureSelect?.value;
+  if (featureId) addFeature(featureId);
+  if (addFeatureSelect) addFeatureSelect.value = "";
+});
 
 // --- Relationships ---------------------------------------------------------
 //

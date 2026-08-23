@@ -1,7 +1,8 @@
 {
   "name": "Distance Distortion Aura",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The presence of a creature distorts the vision of creatures within 60 feet of it. Each creature that starts its turn in that area must succeed on a DC 15 Wisdom saving throw or be unable to correctly judge the istance between itself and its surroundings until the start of its next turn. An affected creature has disadvantage on attack rolls and on Wisdom (Perception) checks that rely on sight, and it can’t move more than half its speed on its turn. On a successful saving throw, the creature is immune to the creature’s Distance Distortion Aura for the next 24 hours. Creatures with blindsight, tremorsense, or truesight are unaffected by this trait.",
   "mechanics": {

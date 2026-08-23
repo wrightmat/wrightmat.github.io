@@ -1,7 +1,8 @@
 {
   "name": "Tendril",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Melee Weapon Attack. +8 to hit, reach 10 ft., one target. Hit: 8 (1d6 + 5) slashing damage. If both tendril attacks hit the same target in a single turn, that target is grappled (escape DC 15). The creature can grapple one creature at a time, and it can’t use its tendril or devour attacks against a different target while it has a creature grappled.",
   "mechanics": {

@@ -1,0 +1,26 @@
+{
+  "id": "feat.artificer-armorer-spells",
+  "name": "Armorer Spells",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "When you reach an Artificer level specified in the Armorer Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Magic Missile, Thunderwave\n\nLevel 5: Mirror Image, Shatter\n\nLevel 9: Hypnotic Pattern, Lightning Bolt\n\nLevel 13: Fire Shield, Greater Invisibility\n\nLevel 17: Passwall, Wall of Force",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "When you reach an Artificer level specified in the Armorer Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Magic Missile, Thunderwave\n\nLevel 5: Mirror Image, Shatter\n\nLevel 9: Hypnotic Pattern, Lightning Bolt\n\nLevel 13: Fire Shield, Greater Invisibility\n\nLevel 17: Passwall, Wall of Force"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

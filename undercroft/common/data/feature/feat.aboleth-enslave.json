@@ -1,7 +1,8 @@
 {
   "name": "Enslave",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The aberration targets one creature it can see within 30 ft. of it. The target must succeed on a DC 14 Wisdom saving throw or be magically charmed by the aberration until the aberration dies or until it is on a different plane of existence from the target. The charmed target is under the aberration's control and can't take reactions, and the aberration and the target can communicate telepathically with each other over any distance.\nWhenever the charmed target takes damage, the target can repeat the saving throw. On a success, the effect ends. No more than once every 24 hours, the target can also repeat the saving throw when it is at least 1 mile away from the aberration.",
   "mechanics": {

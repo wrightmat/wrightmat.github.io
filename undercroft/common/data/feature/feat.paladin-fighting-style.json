@@ -1,0 +1,26 @@
+{
+  "id": "feat.paladin-fighting-style",
+  "name": "Fighting Style (Paladin)",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You gain a Fighting Style feat of your choice. Instead of choosing one of those feats, you can choose the option below.\n\nBlessed Warrior\n\nYou learn two Cleric cantrips of your choice. The chosen cantrips count as Paladin spells for you, and Charisma is your spellcasting ability for them. Whenever you gain a Paladin level, you can replace one of these cantrips with another Cleric cantrip.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You gain a Fighting Style feat of your choice. Instead of choosing one of those feats, you can choose the option below.\n\nBlessed Warrior\n\nYou learn two Cleric cantrips of your choice. The chosen cantrips count as Paladin spells for you, and Charisma is your spellcasting ability for them. Whenever you gain a Paladin level, you can replace one of these cantrips with another Cleric cantrip.",
+    "scope": "unique"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

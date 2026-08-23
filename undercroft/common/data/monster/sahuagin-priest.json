@@ -59,7 +59,8 @@
   },
   "mapping": "fantasy-statblocks-monster",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "featureIds": [
     "feat.blood-frenzy",

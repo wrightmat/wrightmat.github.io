@@ -1,7 +1,8 @@
 {
   "name": "Armor Plating",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature's AC increases by 2 and it is immune to critical hits.",
   "mechanics": {

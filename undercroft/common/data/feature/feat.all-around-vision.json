@@ -1,7 +1,8 @@
 {
   "name": "All-Around Vision",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Attackers never gain advantage on attacks or bonus damage against a creature from the presence of nearby allies.",
   "mechanics": {

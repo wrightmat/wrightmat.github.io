@@ -1,7 +1,8 @@
 {
   "name": "Mirage",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "As a bonus action, the creature can create a mirage around itself to lure victims toward it while disguising its true nature. This functions as the mirage arcane spell (save DC 16) but is nonmagical, and therefore can’t be detected using detect magic or similar magic, and can’t be dispelled.",
   "mechanics": {

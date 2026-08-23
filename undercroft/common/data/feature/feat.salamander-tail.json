@@ -1,7 +1,8 @@
 {
   "name": "Tail",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Melee Weapon Attack: +7 to hit, reach 10 ft., one target. Hit: 11 (2d6 + 4) bludgeoning damage plus 7 (2d6) fire damage, and the target is grappled (escape DC 14). Until this grapple ends, the target is restrained, the creature can automatically hit the target with its tail, and the creature can't make tail attacks against other targets.",
   "mechanics": {

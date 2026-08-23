@@ -15,6 +15,7 @@ import {
 } from "../../common/js/lib/ui-components.js";
 import { bindCollapsibleToggle } from "../../common/js/lib/collapsible.js";
 import { renderRelationshipEditor } from "../../common/js/lib/relationship-editor.js";
+import { createReferenceChip } from "../../common/js/lib/library-reference.js";
 import { buildRelationshipGraph } from "../../common/js/lib/relationship-graph.js";
 import { createForceGraph } from "../../common/js/lib/graph-view.js";
 import { listFeaturesForSystem, listWondersForSystem, getSystemPropertyTypes, getSystemClasses } from "./lib/tables.js";
@@ -1294,10 +1295,9 @@ function renderFeatureList(record) {
 
     const header = document.createElement("div");
     header.className = "d-flex align-items-center gap-2 flex-wrap";
-    const name = document.createElement("span");
-    name.className = "fw-semibold";
-    name.textContent = feature?.name || featureId;
-    header.appendChild(name);
+    // Hover-preview chip (library-reference.js), same suite-wide "displayed
+    // inline wherever needed" primitive Character's own Features tab uses.
+    header.appendChild(createReferenceChip({ kind: "feature", id: featureId, name: feature?.name || featureId, dataManager }));
     if (isSignature) {
       const badge = document.createElement("span");
       badge.className = "badge text-bg-primary";

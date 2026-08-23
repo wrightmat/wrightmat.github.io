@@ -1,7 +1,8 @@
 {
   "name": "Cures Condition",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Ends a disease, condition, curse, or dying state afflicting the target.",
   "mechanics": {

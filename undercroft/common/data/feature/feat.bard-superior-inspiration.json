@@ -1,0 +1,26 @@
+{
+  "id": "feat.bard-superior-inspiration",
+  "name": "Superior Inspiration",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "When you roll Initiative, you regain expended uses of Bardic Inspiration until you have two if you have fewer than that.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "When you roll Initiative, you regain expended uses of Bardic Inspiration until you have two if you have fewer than that."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

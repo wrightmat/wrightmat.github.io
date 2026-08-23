@@ -1,0 +1,48 @@
+{
+  "name": "Test Shop",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "settingIds": [
+    "eberron"
+  ],
+  "typeId": "region",
+  "purposeId": "protection",
+  "environment": "coast",
+  "featureIds": [
+    "feat.shop-general-goods",
+    "feat.under-siege",
+    "feat.fortified-walls"
+  ],
+  "assets": [
+    {
+      "kind": "resource",
+      "refId": "res.dragonshard-khyber-medium",
+      "label": "Khyber Dragonshard, Medium",
+      "quantity": 5
+    },
+    {
+      "kind": "resource",
+      "refId": "res.mending-cannith",
+      "label": "Mending (House Cannith)"
+    }
+  ],
+  "needs": [
+    {
+      "kind": "resource",
+      "refId": "res.grain-surplus",
+      "label": "Grain Surplus"
+    },
+    {
+      "kind": "resource",
+      "refId": "res.everbright-lantern",
+      "label": "Everbright Lantern"
+    }
+  ],
+  "notes": "",
+  "id": "test-shop",
+  "mixingCoefficient": 0.2,
+  "speciesWeights": [],
+  "archetypeOverrides": {},
+  "genericNameFallback": []
+}

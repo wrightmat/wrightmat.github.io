@@ -1,7 +1,8 @@
 {
   "name": "Isolated",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Far from any well-traveled road, this place sees few visitors and relies almost entirely on itself.",
   "mechanics": {

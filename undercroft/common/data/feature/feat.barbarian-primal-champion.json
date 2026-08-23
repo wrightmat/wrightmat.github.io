@@ -1,0 +1,26 @@
+{
+  "id": "feat.barbarian-primal-champion",
+  "name": "Primal Champion",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You embody primal power. Your Strength and Constitution scores increase by 4, and their maximum is now 25.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "You embody primal power. Your Strength and Constitution scores increase by 4, and their maximum is now 25."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

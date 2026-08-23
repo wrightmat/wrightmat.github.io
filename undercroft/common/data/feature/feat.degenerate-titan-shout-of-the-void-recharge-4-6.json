@@ -1,7 +1,8 @@
 {
   "name": "Shout of the Void (Recharge 4–6)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature utters a scream that rends reality in a 30-foot cone. Any ongoing spell or magical effect of 3rd level or lower in the area ends. For every spell or effect of 4th level or higher in the area, the creature makes a Constitution check against DC (10 + the level of the spell or effect). On a success, the spell or effect ends.",
   "mechanics": {

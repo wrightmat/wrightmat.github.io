@@ -1,0 +1,26 @@
+{
+  "id": "feat.artificer-battle-smith-tools-of-the-trade",
+  "name": "Tools of the Trade",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You gain the following benefits.\n\nTool Proficiency. You gain proficiency with Smith’s Tools. If you already have this proficiency, you gain proficiency with one other type of Artisan’s Tools of your choice.\n\nWeapon Crafting. When you craft a nonmagical or magic weapon, the amount of time required to craft it is halved.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "You gain the following benefits.\n\nTool Proficiency. You gain proficiency with Smith’s Tools. If you already have this proficiency, you gain proficiency with one other type of Artisan’s Tools of your choice.\n\nWeapon Crafting. When you craft a nonmagical or magic weapon, the amount of time required to craft it is halved."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

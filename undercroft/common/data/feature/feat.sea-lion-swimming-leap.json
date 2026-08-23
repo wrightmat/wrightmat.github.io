@@ -1,7 +1,8 @@
 {
   "name": "Swimming Leap",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "With a 10-foot swimming start, the creature can long jump out of or across the water up to 25 feet.",
   "mechanics": {

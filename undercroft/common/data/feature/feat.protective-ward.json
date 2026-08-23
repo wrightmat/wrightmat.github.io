@@ -1,7 +1,8 @@
 {
   "name": "Protective Ward",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "As a reaction, the creature can grant an ally within 30 feet resistance to the damage of an incoming attack.",
   "mechanics": {

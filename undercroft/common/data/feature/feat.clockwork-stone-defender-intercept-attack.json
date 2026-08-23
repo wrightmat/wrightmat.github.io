@@ -1,7 +1,8 @@
 {
   "name": "Intercept Attack",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "In response to another creature within 5 feet of it being hit by an attack roll, the construct gives that creature a (+5) bonus to its AC against that attack, potentially causing a miss. To use this ability, the construct must be able to see the creature and the attacker.",
   "mechanics": {

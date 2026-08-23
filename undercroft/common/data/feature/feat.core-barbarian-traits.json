@@ -1,0 +1,24 @@
+{
+  "id": "feat.core-barbarian-traits",
+  "name": "Core Barbarian Traits",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "As a Level 1 Character:\n\n- Gain all the traits in the Core Barbarian Traits table.\n\n- Gain the Barbarian’s level 1 features.\n\nPrimary Ability: Strength\n\nHit Point Die: D12 per Barbarian level\n\nSaving Throw Proficiencies: Strength and Constitution\n\nSkill Proficiencies: *Choose 2:* Animal Handling, Athletics, Intimidation, Nature, Perception, or Survival\n\nWeapon Proficiencies: Simple and Martial weapons\n\nArmor Training: Light and Medium armor and Shields\n\nStarting Equipment: *Choose A or B:* (A) Greataxe, 4 Handaxes, Explorer’s Pack, and 15 GP; or (B) 75 GP",
+  "mechanics": {
+    "type": "passive",
+    "text": "As a Level 1 Character:\n\n- Gain all the traits in the Core Barbarian Traits table.\n\n- Gain the Barbarian’s level 1 features.\n\nPrimary Ability: Strength\n\nHit Point Die: D12 per Barbarian level\n\nSaving Throw Proficiencies: Strength and Constitution\n\nSkill Proficiencies: *Choose 2:* Animal Handling, Athletics, Intimidation, Nature, Perception, or Survival\n\nWeapon Proficiencies: Simple and Martial weapons\n\nArmor Training: Light and Medium armor and Shields\n\nStarting Equipment: *Choose A or B:* (A) Greataxe, 4 Handaxes, Explorer’s Pack, and 15 GP; or (B) 75 GP"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

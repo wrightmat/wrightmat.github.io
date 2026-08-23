@@ -13,7 +13,11 @@
     "userId": 100499308,
     "username": "wrighmat",
     "name": "Octavian Hoff",
-    "race": "Human",
+    "race": {
+      "refKind": "species",
+      "refId": "human",
+      "name": "Human"
+    },
     "class": "Ranger",
     "level": 7,
     "levels": {
@@ -25,7 +29,13 @@
       {
         "name": "Ranger",
         "level": 7,
-        "subclass": "Gloom Stalker"
+        "subclass": {
+          "refKind": "variant",
+          "refId": "ranger-gloom-stalker",
+          "name": "Gloom Stalker"
+        },
+        "refKind": "class",
+        "refId": "ranger"
       }
     ]
   },

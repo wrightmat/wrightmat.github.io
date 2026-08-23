@@ -1,7 +1,8 @@
 {
   "name": "Zone Control",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Whenever a creature ends its turn within 10 feet of the monster, the monster can make one attack against it as a reaction.",
   "mechanics": {

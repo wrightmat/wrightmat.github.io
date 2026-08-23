@@ -18,7 +18,8 @@
     }
   ],
   "feat": {
-    "index": "musician",
+    "refKind": "feature",
+    "refId": "musician",
     "name": "Musician"
   },
   "proficiencies": [
@@ -117,6 +118,7 @@
   },
   "updated_at": "2026-07-19T14:51:26.749Z",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ]
 }

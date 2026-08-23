@@ -1,7 +1,8 @@
 {
   "name": "Crystal Dart",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Ranged Spell Attack: +5 to hit, range 30 ft., one target. Hit: 7 (1d10 + 2) force damage, and one of the following effects occurs, determined by the kind of dragon that created the creature:",
   "mechanics": {

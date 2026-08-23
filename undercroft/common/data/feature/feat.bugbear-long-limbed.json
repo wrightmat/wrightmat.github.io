@@ -1,0 +1,26 @@
+{
+  "id": "feat.bugbear-long-limbed",
+  "name": "Long-Limbed",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "When you make a melee attack on your turn, your reach for it is 5 feet greater than normal.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "When you make a melee attack on your turn, your reach for it is 5 feet greater than normal."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,6 +1,9 @@
 {
   "id": "governance",
   "name": "Governance",
-  "systemIds": ["sys.dnd5e"],
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
   "description": "Exists to make and enforce decisions — courts, councils, and seats of authority."
 }

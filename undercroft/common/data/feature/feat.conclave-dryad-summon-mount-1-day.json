@@ -1,7 +1,8 @@
 {
   "name": "Summon Mount (1/Day)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature magically summons a mount, which appears in an unoccupied space within 60 feet of the creature. The mount remains for 8 hours, until it or the creature dies, or until the creature dismisses it as an action. The mount uses the stat block of an elk (see the Monster Manual) with these changes: it is a plant instead of a beast, it has an Intelligence of 6, and it understands Sylvan but can’t speak. While within 1 mile of the mount, the creature can communicate with it telepathically.",
   "mechanics": {

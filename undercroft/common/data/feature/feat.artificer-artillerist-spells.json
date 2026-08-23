@@ -1,0 +1,26 @@
+{
+  "id": "feat.artificer-artillerist-spells",
+  "name": "Artillerist Spells",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "When you reach an Artificer level specified in the Artillerist Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Shield, Thunderwave\n\nLevel 5: Scorching Ray, Shatter\n\nLevel 9: Fireball, Wind Wall\n\nLevel 13: Ice Storm, Wall of Fire\n\nLevel 17: Cone of Cold, Wall of Force",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "When you reach an Artificer level specified in the Artillerist Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Shield, Thunderwave\n\nLevel 5: Scorching Ray, Shatter\n\nLevel 9: Fireball, Wind Wall\n\nLevel 13: Ice Storm, Wall of Fire\n\nLevel 17: Cone of Cold, Wall of Force"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

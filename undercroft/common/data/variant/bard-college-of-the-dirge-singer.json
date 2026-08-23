@@ -1,0 +1,64 @@
+{
+  "index": "bard-college-of-the-dirge-singer",
+  "url": "https://www.dndbeyond.com/classes/2190876-bard",
+  "name": "College of the Dirge Singer",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "parentKind": "class",
+  "parentId": "bard",
+  "summary": "Students of both history and war, Dirge Singer Bards use tales of past glory to inspire their allies and provide keen strategic insight, directing their comrades to strike when enemies are weak. This college was born in the Empire of Dhakaan, but over the course of the Last War, Cyre developed its own version of these techniques, and now Bards that follow this path keep the memory of their fallen nation alive through song.",
+  "description": "",
+  "features": [
+    {
+      "name": "Broad Inspiration",
+      "level": 3,
+      "description": "You know how to strengthen the hearts of your troops and stir them to greatness. You learn the Guidance cantrip, which counts as a Bard spell for you. The cantrip doesn’t count against your number of cantrips known. Additionally, when you confer a Bardic Inspiration die to a creature, you can also confer that Bardic Inspiration die to a second creature within range."
+    },
+    {
+      "name": "Keeper of History",
+      "level": 3,
+      "description": "You gain proficiency in the History and Performance skills. If you already have these proficiencies, you instead gain Expertise."
+    },
+    {
+      "name": "Commanding Voice",
+      "level": 6,
+      "description": "You excel at inspiring and directing soldiers in battle. When you take the Attack action or the Magic action on your turn, two creatures of your choice who possess one of your Bardic Inspiration die can expend it to use their Reaction to immediately make one attack with a weapon or an Unarmed Strike, adding the Bardic Inspiration die to the attack’s damage roll on a hit."
+    },
+    {
+      "name": "Battle Hymn",
+      "level": 14,
+      "description": "You unflaggingly maintain the spirits and discipline of your unit. As a Bonus Action, you can start a Battle Hymn which can be heard by all creatures within 60 feet. The hymn lasts until the start of your next turn. While the hymn is active, whenever an ally within 30 feet who can hear you makes an ability check or a saving throw, they can add 1d4 to the ability check or save."
+    }
+  ],
+  "mapping": "ddb-subclass",
+  "featureIds": [
+    "feat.bard-broad-inspiration",
+    "feat.bard-keeper-of-history",
+    "feat.bard-commanding-voice",
+    "feat.bard-battle-hymn"
+  ],
+  "featureParams": {
+    "feat.bard-broad-inspiration": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.bard-keeper-of-history": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.bard-commanding-voice": {
+      "grantedAtLevel": [
+        6
+      ]
+    },
+    "feat.bard-battle-hymn": {
+      "grantedAtLevel": [
+        14
+      ]
+    }
+  }
+}

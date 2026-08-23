@@ -1,7 +1,8 @@
 {
   "name": "Charges",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Powers its own other properties from a limited, regenerating pool of charges.",
   "mechanics": {

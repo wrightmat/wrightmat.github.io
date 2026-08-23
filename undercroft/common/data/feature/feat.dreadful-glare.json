@@ -1,7 +1,8 @@
 {
   "name": "Dreadful Glare",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The undead targets one creature it can see within 60 ft. of it. If the target can see the undead, it must succeed on a DC 11 Wisdom saving throw against this magic or become frightened until the end of the undead's next turn. If the target fails the saving throw by 5 or more, it is also paralyzed for the same duration. A target that succeeds on the saving throw is immune to the Dreadful Glare of all mummies (but not mummy lords) for the next 24 hours.",
   "mechanics": {

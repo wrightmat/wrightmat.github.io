@@ -1,0 +1,75 @@
+{
+  "index": "sorcerer-spellfire-sorcery",
+  "url": "https://www.dndbeyond.com/classes/2190884-sorcerer",
+  "name": "Spellfire Sorcery",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "parentKind": "class",
+  "parentId": "sorcerer",
+  "summary": "Wield Raw Magic",
+  "description": "Your innate power stems from the source of magic itself: the Weave. This connection manifests as a rare ability known as spellfire, and you surge with radiant bursts of this raw magic. Your talent with spellfire allows you to heal allies, sear enemies, and absorb powerful spells.\n\nWielders of spellfire tend to have a penchant for wandering. Many travel between cosmopolitan settlements, such as those along the Sword Coast, and wield their magic in service of the common good. Others realize their own strange powers by roaming equally strange lands, from the magic-blasted wastes of the desert of Anauroch to the godtouched wilds of the Old Empires.\n\nWherever they go in the Realms, spellfire Sorcerers are courted by factions with interests in the arcane arts, such as the Harpers, Cult of the Dragon, and Red Wizards.",
+  "features": [
+    {
+      "name": "Spellfire Burst",
+      "level": 3,
+      "description": "When you spend at least 1 Sorcery Point as part of a Magic action or a Bonus Action on your turn, you can unleash one of the following magical effects of your choice. You can do so only once per turn.\n\nBolstering Flames. You or one creature you can see within 30 feet of yourself gains Temporary Hit Points equal to 1d4 plus your Charisma modifier.\n\nRadiant Fire. One creature you can see within 30 feet of yourself takes 1d4 Fire or Radiant damage (your choice)."
+    },
+    {
+      "name": "Spellfire Spells",
+      "level": 3,
+      "description": "When you reach a Sorcerer level specified in the Spellfire Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Cure Wounds, Guiding Bolt, Lesser Restoration, Scorching Ray\n\nLevel 5: Aura of Vitality, Dispel Magic\n\nLevel 7: Fire Shield, Wall of Fire\n\nLevel 9: Greater Restoration, Flame Strike"
+    },
+    {
+      "name": "Absorb Spells",
+      "level": 6,
+      "description": "You always have the Counterspell spell prepared.\n\nAdditionally, whenever a target fails the saving throw against a Counterspell you cast, you regain 1d4 Sorcery Points."
+    },
+    {
+      "name": "Honed Spellfire",
+      "level": 14,
+      "description": "Your Spellfire Burst improves. You add your Sorcerer level to the Temporary Hit Points gained from Bolstering Flames, and the damage of your Radiant Fire increases to 1d8."
+    },
+    {
+      "name": "Crown of Spellfire",
+      "level": 18,
+      "description": "When you use Innate Sorcery, you can alter it and infuse yourself with the essence of spellfire, gaining the following benefits while this use of Innate Sorcery is active. Once you use this feature to alter Innate Sorcery, you can’t use it again until you finish a Long Rest unless you spend 5 Sorcery Points (no action required) to restore your use of it.\n\nBurning Life Force. Once per turn when you are hit by an attack roll, you can expend a number of Hit Point Dice, up to a maximum equal to your Charisma modifier (minimum of one). Roll the expended dice, and reduce the amount of damage from that attack equal to the total rolled.\n\nFlight. You gain a Fly Speed of 60 feet and can hover.\n\nSpell Avoidance. When you’re subjected to a spell or magical effect that allows you to make a saving throw to take only half damage, you instead take no damage if you succeed on the save and only half damage if you fail. You can’t use this benefit if you have the Incapacitated condition."
+    }
+  ],
+  "mapping": "ddb-subclass",
+  "featureIds": [
+    "feat.sorcerer-spellfire-burst",
+    "feat.sorcerer-spellfire-spells",
+    "feat.sorcerer-absorb-spells",
+    "feat.sorcerer-honed-spellfire",
+    "feat.sorcerer-crown-of-spellfire"
+  ],
+  "featureParams": {
+    "feat.sorcerer-spellfire-burst": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.sorcerer-spellfire-spells": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.sorcerer-absorb-spells": {
+      "grantedAtLevel": [
+        6
+      ]
+    },
+    "feat.sorcerer-honed-spellfire": {
+      "grantedAtLevel": [
+        14
+      ]
+    },
+    "feat.sorcerer-crown-of-spellfire": {
+      "grantedAtLevel": [
+        18
+      ]
+    }
+  }
+}

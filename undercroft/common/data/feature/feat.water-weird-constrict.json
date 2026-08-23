@@ -1,7 +1,8 @@
 {
   "name": "Constrict",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Melee Weapon Attack: +5 to hit, reach 10 ft., one creature. Hit: 13 (3d6 + 3) bludgeoning damage. If the target is Medium or smaller, it is grappled (escape DC 13) and pulled 5 feet toward the creature. Until this grapple ends, the target is restrained, the creature tries to drown it, and the creature can’t constrict another target.",
   "mechanics": {

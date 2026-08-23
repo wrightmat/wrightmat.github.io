@@ -1,7 +1,8 @@
 {
   "name": "Poisoned Gifts",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "a creature can contaminate wells, potions, meals, or unattended beverages with poisons that induce sleep, nausea, or paralysis. Someone who drinks or eats the contaminated liquid or food must make a successful DC 11 Constitution saving throw to avoid its effect, which can be unconsciousness, poisoning, or paralysis lasting 1 hour. The effect is chosen by the creature at the time the poison is introduced.",
   "mechanics": {

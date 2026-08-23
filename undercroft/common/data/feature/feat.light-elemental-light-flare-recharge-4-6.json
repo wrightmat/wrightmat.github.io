@@ -1,7 +1,8 @@
 {
   "name": "Light Flare (Recharge 4-6)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Each creature within the bright light shed by the creature must succeed on a DC 14 Constitution saving throw or be blinded until the end of its next turn.",
   "mechanics": {

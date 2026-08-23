@@ -1,0 +1,26 @@
+{
+  "id": "feat.harengon-leporine-senses",
+  "name": "Leporine Senses",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You have proficiency in the Perception skill.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "You have proficiency in the Perception skill."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -3,7 +3,8 @@
   "name": "Inflict Wounds",
   "notes": "Make a melee spell attack against a creature you can reach. On a hit, the target takes 3d10 necrotic damage.",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "url": "https://www.dnd5eapi.co/api/2014/spells/inflict-wounds",
   "mapping": "5e-api-spell",

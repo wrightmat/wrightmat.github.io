@@ -1,7 +1,8 @@
 {
   "name": "Shutdown",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "If targeted by dispel magic, the creature must succeed on a Constitution saving throw against the caster’s spell save DC or fall unconscious for 1 minute or until it takes any damage.",
   "mechanics": {

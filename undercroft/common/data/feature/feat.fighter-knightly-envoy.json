@@ -1,0 +1,26 @@
+{
+  "id": "feat.fighter-knightly-envoy",
+  "name": "Knightly Envoy",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You know how to conduct yourself with grace as a noble ambassador. You gain the following benefits.\n\nComprehension. You can cast the Comprehend Languages spell but only as a Ritual. Charisma is your spellcasting ability for it.\n\nPolyglot. You learn one language from the language tables in the Player’s Handbook or chapter 2 of Forgotten Realms: Heroes of Faerûn. When you finish a Long Rest, you can replace a language learned from this benefit with another language you have heard, seen signed, or read in the past 24 hours.\n\nWell Spoken. You gain proficiency in one of the following skills of your choice: Insight, Intimidation, Persuasion, or Performance.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "You know how to conduct yourself with grace as a noble ambassador. You gain the following benefits.\n\nComprehension. You can cast the Comprehend Languages spell but only as a Ritual. Charisma is your spellcasting ability for it.\n\nPolyglot. You learn one language from the language tables in the Player’s Handbook or chapter 2 of Forgotten Realms: Heroes of Faerûn. When you finish a Long Rest, you can replace a language learned from this benefit with another language you have heard, seen signed, or read in the past 24 hours.\n\nWell Spoken. You gain proficiency in one of the following skills of your choice: Insight, Intimidation, Persuasion, or Performance."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

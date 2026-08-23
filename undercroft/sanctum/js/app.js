@@ -13,7 +13,9 @@ import {
   createFieldBox,
   createSearchableCheckList,
   createModeToggleGroup,
+  createListRow,
 } from "../../common/js/lib/ui-components.js";
+import { createReferenceChip } from "../../common/js/lib/library-reference.js";
 import {
   listLocationTypesForSystem,
   listLocationPurposesForSystem,
@@ -46,6 +48,7 @@ import {
 } from "../../common/js/lib/generator-kit.js";
 import { markRequiredControl } from "../../common/js/lib/dom.js";
 import { resolveGroupContext, pickGroupDefaultId } from "../../common/js/lib/widgets/group-context.js";
+import { openShop, closeShop, locationIsShop } from "../../common/js/lib/shop-transactions.js";
 // Repository's own markdown renderer (dice/task-list/callout/wiki-link
 // awareness, degrading gracefully without any of that for a plain note) —
 // reused as-is for the Notes field's View mode, same as Crucible/Forge/
@@ -286,6 +289,10 @@ const elements = {
   addAssetKindSelect: document.querySelector("[data-add-asset-kind-select]"),
   addAssetEntitySelect: document.querySelector("[data-add-asset-entity-select]"),
   addAssetButton: document.querySelector("[data-add-asset-button]"),
+  shopControls: document.querySelector("[data-shop-controls]"),
+  shopStatus: document.querySelector("[data-shop-status]"),
+  openShopButton: document.querySelector("[data-open-shop-button]"),
+  closeShopButton: document.querySelector("[data-close-shop-button]"),
   needList: document.querySelector("[data-need-list]"),
   addNeedKindSelect: document.querySelector("[data-add-need-kind-select]"),
   addNeedEntitySelect: document.querySelector("[data-add-need-entity-select]"),
@@ -1009,43 +1016,14 @@ function hasCalendarContent(calendar) {
   );
 }
 
-// --- Shared row renderer (Features/Assets/Needs all look and function the ---
-// --- same, per explicit design feedback — including select-to-inspect) ------
-function createListRow({ title, description, onRemove, removeLabel = "Remove", onSelect }) {
-  const row = document.createElement("div");
-  row.className = "border rounded-3 p-2 d-flex align-items-start justify-content-between gap-2";
-
-  const info = document.createElement("div");
-  info.className = "flex-grow-1";
-  const titleEl = document.createElement("div");
-  titleEl.className = "fw-semibold";
-  titleEl.textContent = title;
-  info.appendChild(titleEl);
-  if (description) {
-    const descriptionEl = document.createElement("div");
-    descriptionEl.className = "small text-body-secondary";
-    descriptionEl.textContent = description;
-    info.appendChild(descriptionEl);
-  }
-
-  const removeButton = document.createElement("button");
-  removeButton.type = "button";
-  removeButton.className = "btn btn-outline-danger btn-sm flex-shrink-0";
-  removeButton.setAttribute("aria-label", removeLabel);
-  removeButton.innerHTML = '<span class="iconify" data-icon="tabler:trash" aria-hidden="true"></span>';
-  removeButton.addEventListener("click", (event) => {
-    event.stopPropagation();
-    onRemove();
-  });
-
-  row.append(info, removeButton);
-  if (onSelect) {
-    row.classList.add("sanctum-clickable-row");
-    row.addEventListener("click", () => onSelect(row));
-  }
-  return row;
-}
-
+// Features/Assets/Needs all look and function the same, per explicit design
+// feedback (including select-to-inspect) — via ui-components.js's own
+// shared createListRow (imported above), not a local duplicate; that
+// shared version is also what correctly renders a Node title (a Feature's
+// own hover-preview reference chip, see renderFeatureList below) instead of
+// stringifying it — a local copy without that check is exactly how a
+// Feature's own title once rendered as "[object HTMLButtonElement]".
+//
 // Clears the selected-row highlight across every selectable list (Features,
 // Assets, Needs — only one thing is ever inspected at a time) and shows the
 // given entity's full JSON in the right pane, or the empty state if there's
@@ -1121,8 +1099,10 @@ function renderFeatureList(record) {
   elements.featureList.innerHTML = "";
   record.featureIds.forEach((featureId) => {
     const feature = findById(features, featureId);
+    // Hover-preview chip (library-reference.js), same suite-wide "displayed
+    // inline wherever needed" primitive Character's own Features tab uses.
     const row = createListRow({
-      title: feature?.name || featureId,
+      title: createReferenceChip({ kind: "feature", id: featureId, name: feature?.name || featureId, dataManager }),
       description: feature?.description || "",
       onRemove: () => removeFeature(featureId),
       removeLabel: "Remove feature",
@@ -1158,7 +1138,17 @@ function referenceDescription(kind, refId) {
   return findById(entityListForKind(kind), refId)?.description || "";
 }
 
-function renderReferenceList(container, entries, onRemove) {
+// `listKey` ("assets"|"needs") is which array on currentRecord the optional
+// quantity input (below) actually mutates — both lists can carry one now
+// (a GM might just as well want to know how much of a lacking Resource a
+// place is short by, not only how much of a held one it has), left
+// undefined/blank on every entry a GM doesn't touch either way. Sanctum's
+// own stated "broad strokes, not a ledger" design (this tool's own
+// CLAUDE.md) stays the default for every entry except the ones a GM
+// explicitly quantifies (shop stock, mainly — see shop-transactions.js's
+// own openShop, which only ever materializes quantified Assets into a
+// shop's live inventory).
+function renderReferenceList(container, entries, onRemove, { listKey } = {}) {
   if (!container) return;
   container.innerHTML = "";
   entries.forEach((entry, index) => {
@@ -1180,19 +1170,54 @@ function renderReferenceList(container, entries, onRemove) {
       removeLabel: "Remove",
       onSelect: (row) => selectInspectorEntry(row, entity || entry),
     });
+    if (listKey) {
+      const quantityInput = document.createElement("input");
+      quantityInput.type = "number";
+      quantityInput.min = "0";
+      quantityInput.className = "form-control form-control-sm";
+      quantityInput.style.width = "4.5rem";
+      quantityInput.placeholder = "Qty";
+      quantityInput.setAttribute("aria-label", `${entry.label || referenceLabel(entry.kind, entry.refId)} quantity`);
+      if (Number.isFinite(entry.quantity)) quantityInput.value = String(entry.quantity);
+      quantityInput.addEventListener("click", (event) => event.stopPropagation());
+      quantityInput.addEventListener("change", () => {
+        const raw = quantityInput.value.trim();
+        recordHistory("set quantity", () => {
+          if (raw === "") {
+            delete currentRecord[listKey][index].quantity;
+          } else {
+            currentRecord[listKey][index].quantity = Math.max(0, Math.round(Number(raw)) || 0);
+          }
+        });
+      });
+      // Inserted before the row's own last child (createListRow's own
+      // button group, holding Remove) rather than appended — so Remove
+      // stays the rightmost control instead of getting pushed past it.
+      row.insertBefore(quantityInput, row.lastChild);
+    }
     container.appendChild(row);
   });
 }
 
 function renderAssetsAndNeeds(record) {
-  renderReferenceList(elements.assetList, record.assets || [], (index) => {
-    recordHistory("remove asset", () => currentRecord.assets.splice(index, 1));
-    refreshEditableLists();
-  });
-  renderReferenceList(elements.needList, record.needs || [], (index) => {
-    recordHistory("remove need", () => currentRecord.needs.splice(index, 1));
-    refreshEditableLists();
-  });
+  renderReferenceList(
+    elements.assetList,
+    record.assets || [],
+    (index) => {
+      recordHistory("remove asset", () => currentRecord.assets.splice(index, 1));
+      refreshEditableLists();
+    },
+    { listKey: "assets" }
+  );
+  renderReferenceList(
+    elements.needList,
+    record.needs || [],
+    (index) => {
+      recordHistory("remove need", () => currentRecord.needs.splice(index, 1));
+      refreshEditableLists();
+    },
+    { listKey: "needs" }
+  );
 }
 
 function addAssetOrNeed(listKey, kind, refId) {
@@ -1208,6 +1233,94 @@ function addAssetOrNeed(listKey, kind, refId) {
   });
   refreshEditableLists();
 }
+
+// --- Shop (Open/Close, GM-only) ---------------------------------------------
+//
+// A shop's live inventory lives on the campaign Group as a Group Property
+// (shop-transactions.js's own openShop/closeShop), not on the Location
+// record — so these controls just need to know which group is "active" for
+// this Sanctum session. There's no dedicated per-tool concept for that here
+// (unlike Orrery's getActiveCampaignGroupId) — resolveGroupContext is
+// Sanctum's own existing mechanism (used above for default System/Setting
+// picks), reused as-is and cached, since it resolves to the same one group
+// for the whole session.
+let shopGroupIdPromise = null;
+function loadShopGroupId() {
+  if (!shopGroupIdPromise) {
+    shopGroupIdPromise = resolveGroupContext(dataManager)
+      .then((context) => context?.groupId || null)
+      .catch(() => null);
+  }
+  return shopGroupIdPromise;
+}
+
+// Shown only when the selected Location carries feat.shop AND the viewer is
+// a GM — a player (or a non-shop Location) never sees this row at all,
+// matching every other GM-only control in the suite (dataManager.meetsTier
+// convention). Sub-type Features (feat.shop-weapons, etc.) narrow what a
+// shop sells, they don't gate whether Open/Close appears — only feat.shop
+// itself does, per the plan's own "tagged alongside, not instead of".
+async function renderShopControls(record) {
+  const controls = elements.shopControls;
+  if (!controls) return;
+  const isShop = locationIsShop(record?.featureIds);
+  const isGm = dataManager?.meetsTier?.("gm");
+  if (!isShop || !isGm) {
+    controls.classList.add("d-none");
+    return;
+  }
+  controls.classList.remove("d-none");
+  const locationId = record.id;
+  const groupId = await loadShopGroupId();
+  if (currentRecord?.id !== locationId) return; // selection changed while awaiting
+  if (!groupId) {
+    if (elements.shopStatus) elements.shopStatus.textContent = "No active campaign group — select one to manage this shop.";
+    elements.openShopButton?.classList.add("d-none");
+    elements.closeShopButton?.classList.add("d-none");
+    return;
+  }
+  const { propertyValues } = await dataManager.getGroupProperties(groupId).catch(() => ({ propertyValues: {} }));
+  if (currentRecord?.id !== locationId) return; // selection changed while awaiting
+  const shop = propertyValues?.[`shop:${locationId}`];
+  const isOpen = !!(shop && Array.isArray(shop.items));
+  if (elements.shopStatus) {
+    elements.shopStatus.textContent = isOpen
+      ? `Shop open — ${shop.items.length} item${shop.items.length === 1 ? "" : "s"} in stock.`
+      : "Shop closed.";
+  }
+  elements.openShopButton?.classList.toggle("d-none", isOpen);
+  elements.closeShopButton?.classList.toggle("d-none", !isOpen);
+}
+
+elements.openShopButton?.addEventListener("click", async () => {
+  if (!currentRecord?.id) return;
+  const groupId = await loadShopGroupId();
+  if (!groupId) {
+    status?.show("No active campaign group to open this shop in.", { type: "warning", timeout: 3000 });
+    return;
+  }
+  try {
+    await openShop({ dataManager, groupId, locationId: currentRecord.id });
+    status?.show("Shop opened.", { type: "success", timeout: 1500 });
+    await renderShopControls(currentRecord);
+  } catch (error) {
+    status?.show(`Unable to open shop: ${error.message}`, { type: "error", timeout: 4000 });
+  }
+});
+
+elements.closeShopButton?.addEventListener("click", async () => {
+  if (!currentRecord?.id) return;
+  const groupId = await loadShopGroupId();
+  if (!groupId) return;
+  const persistToLocation = window.confirm("Write the shop's final stock back onto this Location's Assets?");
+  try {
+    await closeShop({ dataManager, groupId, locationId: currentRecord.id, persistToLocation });
+    status?.show("Shop closed.", { type: "success", timeout: 1500 });
+    await renderShopControls(currentRecord);
+  } catch (error) {
+    status?.show(`Unable to close shop: ${error.message}`, { type: "error", timeout: 4000 });
+  }
+});
 
 // --- Relationships (Parent / Connected To / Children) -----------------------
 
@@ -1471,6 +1584,7 @@ function refreshEditableLists() {
   populateAddFeatureSelect();
   jsonDataPanel.render();
   updateActionButtons();
+  void renderShopControls(currentRecord);
 }
 
 function renderLocation(record) {
@@ -1480,6 +1594,7 @@ function renderLocation(record) {
     locationCleanSnapshot = null;
     elements.emptyState?.classList.remove("d-none");
     elements.display?.classList.add("d-none");
+    elements.shopControls?.classList.add("d-none");
     updateActionButtons();
     jsonDataPanel.render();
     if (mode === "relationships") void refreshRelationshipsSection();
@@ -1492,6 +1607,7 @@ function renderLocation(record) {
   renderFeatureList(record);
   renderAssetsAndNeeds(record);
   populateAddFeatureSelect();
+  void renderShopControls(record);
   populateNpcConfigForm(record);
   if (elements.notesText) elements.notesText.value = record.notes || "";
   if (notesMode === "view") renderNotesPreview();

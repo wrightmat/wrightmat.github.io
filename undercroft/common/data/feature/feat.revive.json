@@ -1,7 +1,8 @@
 {
   "name": "Revives from Death",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The effect can restore a recently deceased creature to life.",
   "mechanics": {

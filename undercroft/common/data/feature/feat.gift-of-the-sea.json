@@ -1,0 +1,24 @@
+{
+  "id": "feat.gift-of-the-sea",
+  "name": "Gift of the Sea",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "3rd-level Fathomless feature\n\nYou gain a swimming speed of 40 feet, and you can breathe underwater.",
+  "mechanics": {
+    "type": "passive",
+    "text": "3rd-level Fathomless feature\n\nYou gain a swimming speed of 40 feet, and you can breathe underwater."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

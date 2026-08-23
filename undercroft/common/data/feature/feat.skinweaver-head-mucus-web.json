@@ -1,7 +1,8 @@
 {
   "name": "Mucus Web",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Each creature in a 15-foot cone originating from the creature must make a DC 16 Dexterity saving throw. On a failed save, a creature falls prone and is grappled. On a successful save, a creature is neither prone nor grappled. The area becomes difficult terrain for the duration of the encounter.",
   "mechanics": {

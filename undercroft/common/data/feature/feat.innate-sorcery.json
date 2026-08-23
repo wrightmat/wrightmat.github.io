@@ -1,0 +1,24 @@
+{
+  "id": "feat.innate-sorcery",
+  "name": "Innate Sorcery",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "<p>An event in your past left an indelible mark on you, infusing you with simmering magic. As a Bonus Action, you can unleash that magic for 1 minute, during which you gain the following benefits:</p>\r\n<div class=\"effect-info\">\r\n<ul>\r\n<li>The spell save DC of your Sorcerer spells increases by 1.</li>\r\n<li>You have Advantage on the attack rolls of Sorcerer spells you cast.</li>\r\n</ul>\r\n<p>You can use this feature twice, and you regain all expended uses of it when you finish a Long Rest.</p>\r\n</div>",
+  "mechanics": {
+    "type": "passive",
+    "text": "<p>An event in your past left an indelible mark on you, infusing you with simmering magic. As a Bonus Action, you can unleash that magic for 1 minute, during which you gain the following benefits:</p>\r\n<div class=\"effect-info\">\r\n<ul>\r\n<li>The spell save DC of your Sorcerer spells increases by 1.</li>\r\n<li>You have Advantage on the attack rolls of Sorcerer spells you cast.</li>\r\n</ul>\r\n<p>You can use this feature twice, and you regain all expended uses of it when you finish a Long Rest.</p>\r\n</div>"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

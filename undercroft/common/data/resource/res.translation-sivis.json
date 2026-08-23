@@ -1,15 +1,22 @@
 {
   "id": "res.translation-sivis",
   "name": "Translation (House Sivis)",
-  "systemIds": ["sys.dnd5e"],
-  "settingIds": ["eberron"],
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "settingIds": [
+    "eberron"
+  ],
   "description": "A House Sivis translator renders a document or spoken passage into another language, priced per word.",
   "category": "service",
   "house": "sivis",
   "price": "2 cp per word",
   "tags": {
     "locationTypes": [],
-    "locationPurposes": ["commerce"],
+    "locationPurposes": [
+      "commerce"
+    ],
     "environments": []
   }
 }

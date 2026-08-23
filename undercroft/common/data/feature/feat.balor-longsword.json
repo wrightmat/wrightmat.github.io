@@ -1,7 +1,8 @@
 {
   "name": "Longsword",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Melee Weapon Attack: +14 to hit, reach 10 ft., one target. Hit: 21 (3d8 + 8) slashing damage plus 13 (3d8) lightning damage. If the creature scores a critical hit, it rolls damage dice three times, instead of twice.",
   "mechanics": {

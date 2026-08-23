@@ -1,7 +1,8 @@
 {
   "name": "Attach to Hull",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature attaches itself to a ship’s hull in its space, dealing 2 (1d4) piercing damage to the ship (ignoring the ship’s damage threshold). This damage can’t be repaired until the creature is scraped off the hull. While the creature is attached, its speed is 0, and it can detach itself as a bonus action. As an action, a creature within reach of the creature can to try to scrape it off the hull, doing so with a successful DC 18 Strength check. On a failed check, the action is wasted as the creature remains attached to the hull. Removing the creature in this way deals no damage to the creature or the ship.",
   "mechanics": {

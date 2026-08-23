@@ -1,7 +1,8 @@
 {
   "name": "Burning Fury",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "When the creature takes fire damage, its Freezing Breath automatically recharges.",
   "mechanics": {

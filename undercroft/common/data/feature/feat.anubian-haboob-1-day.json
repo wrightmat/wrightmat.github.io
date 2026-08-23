@@ -1,7 +1,8 @@
 {
   "name": "Haboob (1/Day)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature creates a sandstorm that fills a 5-foot-radius, 30-foot-tall cylinder centered on itself. The area is heavily obscured, and each creature other than a creature that enters the sandstorm or ends its turn there must make a successful DC 13 Strength saving throw or be restrained by it. Also, each creature other than a creature that ends its turn inside the sandstorm takes 3 (1d6) slashing damage. The creature can maintain the haboob for up to 10 minutes as if concentrating on a spell. While maintaining the haboob, the creature’s speed is reduced to 5 feet and it can’t sand step. Creatures restrained by the sandstorm move with the creature. A creature can free itself or an adjacent creature from the sandstorm by using its action and making a DC 13 Strength check. A successful check ends the restraint on the target creature.",
   "mechanics": {

@@ -1,7 +1,8 @@
 {
   "name": "Unstoppable Advance",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature has advantage on saves against being knocked prone or having its speed reduced.",
   "mechanics": {

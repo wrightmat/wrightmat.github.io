@@ -14,6 +14,22 @@ import { abilityModifier } from "../../../common/js/lib/dnd-rules.js";
 // Setting, both need the same pre-migration scalar-settingId fallback).
 export { listLocationsForSetting };
 
+// Same filtering shape as Crucible's own listFeaturesForSystem (crucible/
+// js/lib/tables.js) — every Feature that's either untagged for a System at
+// all (universally compatible) or explicitly tagged for the active one.
+// Kept as Forge's own small copy rather than a cross-tool import: Crucible's
+// own version lives in a tool-local file, not common/js/lib, and this is a
+// handful of lines, not a module worth centralizing on its own.
+export async function listFeaturesForSystem(dataManager, systemId) {
+  const entries = await fetchKindEntriesWithIds(dataManager, "feature");
+  return entries
+    .map((entry) => ({ id: entry.id, ...entry.entity }))
+    .filter((entry) => {
+      const ids = Array.isArray(entry.systemIds) ? entry.systemIds : [];
+      return !systemId || !ids.length || ids.includes(systemId);
+    });
+}
+
 // Gender (d8, Male x3 / Female x3 / Androgynous x1 / Non-Binary x1) is a
 // genuinely uniform die roll with a fixed face->outcome mapping — CLAUDE.md
 // gives the full face list, so it's a plain constant here rather than JSON

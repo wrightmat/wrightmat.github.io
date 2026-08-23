@@ -1,7 +1,8 @@
 {
   "name": "Thunderous Touch",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Melee Spell Attack against one target.",
   "mechanics": {

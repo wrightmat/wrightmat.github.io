@@ -1,7 +1,8 @@
 {
   "name": "Backpack",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "signatureFeatureId": null,
   "featureIds": [],

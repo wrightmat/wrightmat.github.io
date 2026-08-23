@@ -1,0 +1,26 @@
+{
+  "id": "feat.artificer-work-in-progress",
+  "name": "Work In Progress",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "Whenever you finish a Short Rest, you can replace one of your prepared spells with a new spell from the Artificer, Cleric, or Wizard spell list. This spell counts as an Artificer spell for you.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "Whenever you finish a Short Rest, you can replace one of your prepared spells with a new spell from the Artificer, Cleric, or Wizard spell list. This spell counts as an Artificer spell for you."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

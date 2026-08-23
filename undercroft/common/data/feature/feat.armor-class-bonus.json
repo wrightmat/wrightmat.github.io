@@ -1,7 +1,8 @@
 {
   "name": "Armor Class Bonus",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Grants a bonus to Armor Class.",
   "mechanics": {

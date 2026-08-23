@@ -1,7 +1,8 @@
 {
   "name": "Healing Touch",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "As an action, the creature can restore a moderate number of hit points to one creature it touches.",
   "mechanics": {

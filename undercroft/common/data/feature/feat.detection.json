@@ -1,7 +1,8 @@
 {
   "name": "Detection",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Reveals the presence or direction of something otherwise hidden.",
   "mechanics": {

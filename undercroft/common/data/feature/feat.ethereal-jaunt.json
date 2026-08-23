@@ -1,7 +1,8 @@
 {
   "name": "Ethereal Jaunt",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "As a bonus action, the creature can magically shift from the Material Plane to the Ethereal Plane, or vice versa.",
   "mechanics": {

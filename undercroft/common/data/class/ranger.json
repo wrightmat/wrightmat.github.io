@@ -1,0 +1,458 @@
+{
+  "index": "ranger",
+  "name": "Ranger",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "primary_ability": {
+    "desc": "Dexterity and Wisdom",
+    "ability_scores": [
+      {
+        "index": "dex",
+        "name": "DEX"
+      },
+      {
+        "index": "wis",
+        "name": "WIS"
+      }
+    ]
+  },
+  "hit_die": 10,
+  "proficiency_choices": [
+    {
+      "desc": "Choose 3: Animal Handling, Athletics, Insight, Investigation, Nature, Perception, Stealth, or Survival",
+      "choose": 3,
+      "type": "proficiencies",
+      "from": {
+        "option_set_type": "options_array",
+        "options": [
+          {
+            "option_type": "reference",
+            "item": {
+              "index": "skill-animal-handling",
+              "name": "Skill: Animal Handling"
+            }
+          },
+          {
+            "option_type": "reference",
+            "item": {
+              "index": "skill-athletics",
+              "name": "Skill: Athletics"
+            }
+          },
+          {
+            "option_type": "reference",
+            "item": {
+              "index": "skill-insight",
+              "name": "Skill: Insight"
+            }
+          },
+          {
+            "option_type": "reference",
+            "item": {
+              "index": "skill-investigation",
+              "name": "Skill: Investigation"
+            }
+          },
+          {
+            "option_type": "reference",
+            "item": {
+              "index": "skill-nature",
+              "name": "Skill: Nature"
+            }
+          },
+          {
+            "option_type": "reference",
+            "item": {
+              "index": "skill-perception",
+              "name": "Skill: Perception"
+            }
+          },
+          {
+            "option_type": "reference",
+            "item": {
+              "index": "skill-stealth",
+              "name": "Skill: Stealth"
+            }
+          },
+          {
+            "option_type": "reference",
+            "item": {
+              "index": "skill-survival",
+              "name": "Skill: Survival"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "proficiencies": [
+    {
+      "index": "light-armor",
+      "name": "Light Armor"
+    },
+    {
+      "index": "medium-armor",
+      "name": "Medium Armor"
+    },
+    {
+      "index": "shields",
+      "name": "Shields"
+    },
+    {
+      "index": "simple-weapons",
+      "name": "Simple Weapons"
+    },
+    {
+      "index": "martial-weapons",
+      "name": "Martial Weapons"
+    },
+    {
+      "index": "saving-throw-str",
+      "name": "Saving Throw: STR"
+    },
+    {
+      "index": "saving-throw-dex",
+      "name": "Saving Throw: DEX"
+    }
+  ],
+  "saving_throws": [
+    {
+      "index": "str",
+      "name": "STR"
+    },
+    {
+      "index": "dex",
+      "name": "DEX"
+    }
+  ],
+  "starting_equipment_options": [
+    {
+      "desc": "(A) Studded Leather Armor, Scimitar, Shortsword, Longbow, 20 Arrows, Quiver, Druidic Focus (sprig of mistletoe), Explorer’s Pack, and 7 GP or (B) 150 GP",
+      "choose": 1,
+      "type": "equipment",
+      "from": {
+        "option_set_type": "options_array",
+        "options": [
+          {
+            "option_type": "multiple",
+            "items": [
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "studded-leather-armor",
+                  "name": "Studded Leather Armor"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "scimitar",
+                  "name": "Scimitar"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "shortsword",
+                  "name": "Shortsword"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "longbow",
+                  "name": "Longbow"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 20,
+                "of": {
+                  "index": "arrow",
+                  "name": "Arrow"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "quiver",
+                  "name": "Quiver"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "druidic-focus",
+                  "name": "Druidic Focus",
+                  "note": "Sprig of mistletoe"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "explorer-s-pack",
+                  "name": "Explorer’s Pack"
+                }
+              },
+              {
+                "option_type": "money",
+                "count": 7,
+                "unit": "gp"
+              }
+            ]
+          },
+          {
+            "option_type": "money",
+            "count": 150,
+            "unit": "gp"
+          }
+        ]
+      }
+    }
+  ],
+  "subclasses": [
+    {
+      "index": "beast-master",
+      "name": "Beast Master",
+      "url": "https://www.dndbeyond.com/classes/2190882-ranger"
+    },
+    {
+      "index": "fey-wanderer",
+      "name": "Fey Wanderer",
+      "url": "https://www.dndbeyond.com/classes/2190882-ranger"
+    },
+    {
+      "index": "gloom-stalker",
+      "name": "Gloom Stalker",
+      "url": "https://www.dndbeyond.com/classes/2190882-ranger"
+    },
+    {
+      "index": "hunter",
+      "name": "Hunter",
+      "url": "https://www.dndbeyond.com/classes/2190882-ranger"
+    },
+    {
+      "index": "winter-walker",
+      "name": "Winter Walker",
+      "url": "https://www.dndbeyond.com/classes/2190882-ranger"
+    }
+  ],
+  "url": "https://www.dndbeyond.com/classes/2190882-ranger",
+  "description": "Far from bustling cities, amid the trees of trackless forests and across wide plains, Rangers keep their unending watch in the wilderness. Rangers learn to track their quarry as a predator does, moving stealthily through the wilds and hiding themselves in brush and rubble.\n\nThanks to their connection with nature, Rangers can also cast spells that harness primal powers of the wilderness. A Ranger’s talents and magic are honed with deadly focus to protect the world from the ravages of monsters and tyrants.",
+  "coreTraits": {
+    "primaryAbility": "Dexterity and Wisdom",
+    "hitPointDie": "D10 per Ranger level",
+    "savingThrowProficiencies": "Strength and Dexterity",
+    "skillProficiencies": "Choose 3: Animal Handling, Athletics, Insight, Investigation, Nature, Perception, Stealth, or Survival",
+    "weaponProficiencies": "Simple and Martial weapons",
+    "armorTraining": "Light and Medium armor and Shields",
+    "startingEquipment": "Choose A or B: (A) Studded Leather Armor, Scimitar, Shortsword, Longbow, 20 Arrows, Quiver, Druidic Focus (sprig of mistletoe), Explorer’s Pack, and 7 GP; or (B) 150 GP"
+  },
+  "features": [
+    {
+      "name": "Spellcasting",
+      "level": 1,
+      "description": "You have learned to channel the magical essence of nature to cast spells.\n\nSpell Slots. The Ranger Features table shows how many spell slots you have to cast your level 1+ spells. You regain all expended slots when you finish a Long Rest.\n\nPrepared Spells of Level 1+. You prepare the list of level 1+ spells that are available for you to cast with this feature. To start, choose two level 1 Ranger spells.\n\nThe number of spells on your list increases as you gain Ranger levels, as shown in the Prepared Spells column of the Ranger Features table. Whenever that number increases, choose additional Ranger spells until the number of spells on your list matches the number in the Ranger Features table. The chosen spells must be of a level for which you have spell slots. For example, if you’re a level 5 Ranger, your list of prepared spells can include six Ranger spells of level 1 or 2 in any combination.\n\nIf another Ranger feature gives you spells that you always have prepared, those spells don’t count against the number of spells you can prepare with this feature, but those spells otherwise count as Ranger spells for you.\n\nChanging Your Prepared Spells. Whenever you finish a Long Rest, you can replace one spell on your list with another Ranger spell for which you have spell slots.\n\nSpellcasting Ability. Wisdom is your spellcasting ability for your Ranger spells.\n\nSpellcasting Focus. You can use a Druidic Focus as a Spellcasting Focus for your Ranger spells."
+    },
+    {
+      "name": "Favored Enemy",
+      "level": 1,
+      "description": "You always have the Hunter’s Mark spell prepared. You can cast it twice without expending a spell slot, and you regain all expended uses of this ability when you finish a Long Rest.\n\nThe number of times you can cast the spell without a spell slot increases when you reach certain Ranger levels."
+    },
+    {
+      "name": "Weapon Mastery",
+      "level": 1,
+      "description": "Your training with weapons allows you to use the mastery properties of two kinds of weapons of your choice with which you have proficiency, such as Longbows and Shortswords.\n\nWhenever you finish a Long Rest, you can change the kinds of weapons you chose. For example, you could switch to using the mastery properties of Scimitars and Longswords."
+    },
+    {
+      "name": "Deft Explorer",
+      "level": 2,
+      "description": "Thanks to your travels, you gain the following benefits.\n\nExpertise. Choose one of your skill proficiencies with which you lack Expertise. You gain Expertise in that skill.\n\nLanguages. You know two languages of your choice."
+    },
+    {
+      "name": "Fighting Style",
+      "level": 2,
+      "description": "You gain a Fighting Style feat of your choice. Instead of choosing one of those feats, you can choose the option below.\n\nDruidic Warrior\n\nYou learn two Druid cantrips of your choice. The chosen cantrips count as Ranger spells for you, and Wisdom is your spellcasting ability for them. Whenever you gain a Ranger level, you can replace one of these cantrips with another Druid cantrip."
+    },
+    {
+      "name": "Ranger Subclass",
+      "level": 3,
+      "description": "You gain a Ranger subclass of your choice. A subclass is a specialization that grants you features at certain Ranger levels. For the rest of your career, you gain each of your subclass’s features that are of your Ranger level or lower."
+    },
+    {
+      "name": "Ability Score Improvement",
+      "level": 4,
+      "description": "You gain the Ability Score Improvement feat or another feat of your choice for which you qualify. You gain this feature again at Ranger levels 8, 12, and 16."
+    },
+    {
+      "name": "Extra Attack",
+      "level": 5,
+      "description": "You can attack twice instead of once whenever you take the Attack action on your turn."
+    },
+    {
+      "name": "Roving",
+      "level": 6,
+      "description": "Your Speed increases by 10 feet while you aren’t wearing Heavy armor. You also have a Climb Speed and a Swim Speed equal to your Speed."
+    },
+    {
+      "name": "Expertise",
+      "level": 9,
+      "description": "Choose two of your skill proficiencies with which you lack Expertise. You gain Expertise in those skills."
+    },
+    {
+      "name": "Tireless",
+      "level": 10,
+      "description": "Primal forces now help fuel you on your journeys, granting you the following benefits.\n\nTemporary Hit Points. As a Magic action, you can give yourself a number of Temporary Hit Points equal to 1d8 plus your Wisdom modifier (minimum of 1). You can use this action a number of times equal to your Wisdom modifier (minimum of once), and you regain all expended uses when you finish a Long Rest.\n\nDecrease Exhaustion. Whenever you finish a Short Rest, your Exhaustion level, if any, decreases by 1."
+    },
+    {
+      "name": "Relentless Hunter",
+      "level": 13,
+      "description": "Taking damage can’t break your Concentration on Hunter’s Mark."
+    },
+    {
+      "name": "Nature’s Veil",
+      "level": 14,
+      "description": "You invoke spirits of nature to magically hide yourself. As a Bonus Action, you can give yourself the Invisible condition until the end of your next turn.\n\nYou can use this feature a number of times equal to your Wisdom modifier (minimum of once), and you regain all expended uses when you finish a Long Rest."
+    },
+    {
+      "name": "Precise Hunter",
+      "level": 17,
+      "description": "You have Advantage on attack rolls against the creature currently marked by your Hunter’s Mark."
+    },
+    {
+      "name": "Feral Senses",
+      "level": 18,
+      "description": "Your connection to the forces of nature grants you Blindsight with a range of 30 feet."
+    },
+    {
+      "name": "Epic Boon",
+      "level": 19,
+      "description": "You gain an Epic Boon feat or another feat of your choice for which you qualify."
+    },
+    {
+      "name": "Foe Slayer",
+      "level": 20,
+      "description": "The damage die of your Hunter’s Mark is a d10 rather than a d6."
+    }
+  ],
+  "mapping": "ddb-class",
+  "featureIds": [
+    "feat.ranger-spellcasting",
+    "feat.ranger-favored-enemy",
+    "feat.ranger-weapon-mastery",
+    "feat.ranger-deft-explorer",
+    "feat.ranger-fighting-style",
+    "feat.ranger-ranger-subclass",
+    "feat.ability-score-improvement",
+    "feat.extra-attack",
+    "feat.ranger-roving",
+    "feat.skill-expertise",
+    "feat.ranger-tireless",
+    "feat.ranger-relentless-hunter",
+    "feat.ranger-nature-s-veil",
+    "feat.ranger-precise-hunter",
+    "feat.ranger-feral-senses",
+    "feat.epic-boon",
+    "feat.ranger-foe-slayer",
+    "feat.skill-expertise"
+  ],
+  "featureParams": {
+    "feat.ranger-spellcasting": {
+      "grantedAtLevel": [
+        1
+      ]
+    },
+    "feat.ranger-favored-enemy": {
+      "grantedAtLevel": [
+        1
+      ]
+    },
+    "feat.ranger-weapon-mastery": {
+      "grantedAtLevel": [
+        1
+      ]
+    },
+    "feat.ranger-deft-explorer": {
+      "grantedAtLevel": [
+        2
+      ]
+    },
+    "feat.ranger-fighting-style": {
+      "grantedAtLevel": [
+        2
+      ]
+    },
+    "feat.ranger-ranger-subclass": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.extra-attack": {
+      "grantedAtLevel": [
+        5
+      ]
+    },
+    "feat.ranger-roving": {
+      "grantedAtLevel": [
+        6
+      ]
+    },
+    "feat.ranger-tireless": {
+      "grantedAtLevel": [
+        10
+      ]
+    },
+    "feat.ranger-relentless-hunter": {
+      "grantedAtLevel": [
+        13
+      ]
+    },
+    "feat.ranger-nature-s-veil": {
+      "grantedAtLevel": [
+        14
+      ]
+    },
+    "feat.ranger-precise-hunter": {
+      "grantedAtLevel": [
+        17
+      ]
+    },
+    "feat.ranger-feral-senses": {
+      "grantedAtLevel": [
+        18
+      ]
+    },
+    "feat.epic-boon": {
+      "grantedAtLevel": [
+        19
+      ]
+    },
+    "feat.ranger-foe-slayer": {
+      "grantedAtLevel": [
+        20
+      ]
+    },
+    "feat.ability-score-improvement": {
+      "grantedAtLevel": [
+        4,
+        8,
+        12,
+        16
+      ]
+    },
+    "feat.skill-expertise": {
+      "grantedAtLevel": [
+        9
+      ]
+    }
+  }
+}

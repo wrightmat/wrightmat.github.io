@@ -1,7 +1,8 @@
 {
   "name": "Hellish Weapons",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature's weapon attacks are magical and deal an extra 13 (3d8) poison damage on a hit (included in the attacks).",
   "mechanics": {

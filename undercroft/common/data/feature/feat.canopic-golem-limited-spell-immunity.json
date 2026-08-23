@@ -1,7 +1,8 @@
 {
   "name": "Limited Spell Immunity",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature automatically succeeds on saving throws against spells of 7th level or lower, and the attack rolls of such spells always miss it.",
   "mechanics": {

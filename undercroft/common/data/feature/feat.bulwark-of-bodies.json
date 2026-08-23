@@ -1,7 +1,8 @@
 {
   "name": "Bulwark of Bodies",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "As a reaction, the creature can intercept an attack targeting an ally within 5 feet, redirecting it to itself instead.",
   "mechanics": {

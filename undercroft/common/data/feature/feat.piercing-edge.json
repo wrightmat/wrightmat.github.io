@@ -1,7 +1,8 @@
 {
   "name": "Piercing Edge",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The paired damaging effect ignores resistance to its damage type.",
   "mechanics": {

@@ -1,7 +1,8 @@
 {
   "name": "Arcane Consumption",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "When a creature within 120 feet casts a spell, the creature can use its reaction to force the caster to make a DC 19 Constitution saving throw. On a failure, the spell fails and is consumed, and the creature regains hit points equal to twice the spell’s level.",
   "mechanics": {

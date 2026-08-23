@@ -1,7 +1,8 @@
 {
   "name": "Claw",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Melee Weapon Attack: +9 to hit, reach 5 ft., one target. Hit: 10 (1d10 + 5) slashing damage plus 7 (2d6) necrotic damage. The target must succeed a DC 17 Constitution saving throw or suffer the stunned condition for 1d6 rounds.",
   "mechanics": {

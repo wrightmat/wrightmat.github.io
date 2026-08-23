@@ -1,7 +1,8 @@
 {
   "name": "Divine Consultation",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Puts the user in contact with a higher power for guidance — an omen, a truthful answer, or a reply to a direct question.",
   "mechanics": {

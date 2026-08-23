@@ -1,7 +1,8 @@
 {
   "name": "Arcane Stasis (2/Day)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "When a creature the creature can see within 60 feet of it casts a spell, the creature can magically lock the casting in the moment before completion. The spellcaster must succeed on a DC 15 saving throw using the spell’s spellcasting ability, or the spell fails and is wasted.",
   "mechanics": {

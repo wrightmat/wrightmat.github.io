@@ -1,7 +1,8 @@
 {
   "name": "Flurry of Claws (Recharge 5–6)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature makes six Claw attacks. Either before or after these attacks, it can move up to its speed without provoking opportunity attacks.",
   "mechanics": {

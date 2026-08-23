@@ -1,0 +1,25 @@
+{
+  "id": "feat.locathah-age",
+  "name": "Age",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "Locathah mature to adulthood by the age of 10 but have been known to live up to 80 years.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Locathah mature to adulthood by the age of 10 but have been known to live up to 80 years."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

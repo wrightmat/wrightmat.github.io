@@ -1,11 +1,20 @@
 {
   "id": "res.rare-gemstones",
   "name": "Rare Gemstones",
-  "systemIds": ["sys.dnd5e"],
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
   "description": "Uncut gems pulled from deep veins — small, valuable, and easy to smuggle.",
   "tags": {
     "locationTypes": [],
-    "locationPurposes": ["resource", "commerce"],
-    "environments": ["mountain", "underdark"]
+    "locationPurposes": [
+      "resource",
+      "commerce"
+    ],
+    "environments": [
+      "mountain",
+      "underdark"
+    ]
   }
 }

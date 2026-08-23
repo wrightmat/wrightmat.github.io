@@ -1,7 +1,8 @@
 {
   "name": "Confounding Trick",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature attack can force the target to make its next attack against a random creature within its reach, including itself.",
   "mechanics": {

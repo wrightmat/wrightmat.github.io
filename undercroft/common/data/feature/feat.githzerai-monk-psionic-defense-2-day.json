@@ -1,7 +1,8 @@
 {
   "name": "Psionic Defense (2/Day)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature casts Feather Fall or Shield in response to the spell’s trigger, requiring no spell components and using the same spellcasting ability as Spellcasting.",
   "mechanics": {

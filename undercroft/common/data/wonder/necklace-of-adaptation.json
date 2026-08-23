@@ -3,7 +3,8 @@
   "name": "Necklace of Adaptation",
   "notes": "Wondrous item, uncommon (requires attunement)\n\nWhile wearing this necklace, you can breathe normally in any environment, and you have advantage on saving throws made against harmful gases and vapors (such as cloudkill and stinking cloud effects, inhaled poisons, and the breath weapons of some dragons).",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "url": "https://www.dnd5eapi.co/api/2014/magic-items/necklace-of-adaptation",
   "mapping": "5e-api-magic-item",

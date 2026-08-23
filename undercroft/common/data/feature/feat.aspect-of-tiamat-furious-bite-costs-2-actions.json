@@ -1,7 +1,8 @@
 {
   "name": "Furious Bite (Costs 2 Actions)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature makes one Bite attack. If the attack hits a creature, the target must succeed on a DC 27 Wisdom saving throw or become frightened of the creature until the end of its next turn.",
   "mechanics": {

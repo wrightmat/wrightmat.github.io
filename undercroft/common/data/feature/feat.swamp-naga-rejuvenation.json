@@ -1,7 +1,8 @@
 {
   "name": "Rejuvenation",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "If it dies, the creature returns to life in 1d6 days and regains all its hp. Only a wish spell or removing the creature from its swamp for 1 year can prevent this trait from functioning.",
   "mechanics": {

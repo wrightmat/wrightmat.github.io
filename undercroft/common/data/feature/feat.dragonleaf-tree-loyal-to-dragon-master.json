@@ -1,7 +1,8 @@
 {
   "name": "Loyal to Dragon Master",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "a creature only follows commands from its designated master (or from any creatures to whom the master grants control). It has advantage on saving throws against any charm or compulsion spell or effect. Additionally, the creature has advantage on any saving throw to resist Bluff, Diplomacy, or Intimidate checks made to influence it to act against its masters.",
   "mechanics": {

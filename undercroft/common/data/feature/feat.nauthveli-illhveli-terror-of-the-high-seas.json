@@ -1,7 +1,8 @@
 {
   "name": "Terror of the High Seas",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature is surrounded by a supernatural aura of dread. Each creature that starts its turn within 60 feet of the creature must succeed on a DC 18 Wisdom saving throw or become frightened for 1 minute. A creature immersed in water has disadvantage on this saving throw. A frightened creature can repeat this saving throw at the end of each of its turns, ending the effect on itself on a success. If a creature’s saving throw is successful or the effect ends for it, the creature is immune to the creature’s Terror of the High Seas for the next 24 hours.",
   "mechanics": {

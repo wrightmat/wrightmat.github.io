@@ -1,7 +1,8 @@
 {
   "name": "Leaf Blade",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Melee Spell Attack. +7 to hit, reach 5 ft., one target. Hit: 8 (2d4 + 3) slashing damage. This attack scores a critical hit on a roll of 18-20. This attack has advantage against any creature currently under the influence of the creature's Spores ability.",
   "mechanics": {

@@ -1,7 +1,8 @@
 {
   "name": "Cast a Spell (Costs 3 Actions)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The sphinx casts a spell from its list of prepared spells, using a spell slot as normal.",
   "mechanics": {

@@ -1,7 +1,8 @@
 {
   "name": "Icy Transformation",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "A humanoid slain by the creature rises 1 week later as a glacial corrupter (see page 176), unless the humanoid is restored to life or its body is destroyed.",
   "mechanics": {

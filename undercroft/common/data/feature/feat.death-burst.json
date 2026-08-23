@@ -1,7 +1,8 @@
 {
   "name": "Death Burst",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "When the creature dies, it explodes, and each creature nearby must make a saving throw or take damage.",
   "mechanics": {

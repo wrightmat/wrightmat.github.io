@@ -3,7 +3,8 @@
   "name": "Potion of Animal Friendship",
   "notes": "Potion, uncommon\n\nWhen you drink this potion, you can cast the animal friendship spell (save DC 13) for 1 hour at will. Agitating this muddy liquid brings little bits into view: a fish scale, a hummingbird tongue, a cat claw, or a squirrel hair.",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "url": "https://www.dnd5eapi.co/api/2014/magic-items/potion-of-animal-friendship",
   "mapping": "5e-api-magic-item",

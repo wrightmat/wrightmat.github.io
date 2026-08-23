@@ -1,7 +1,8 @@
 {
   "name": "Tentacle Attack (Costs 2 Actions)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature makes one tentacle attack.",
   "mechanics": {

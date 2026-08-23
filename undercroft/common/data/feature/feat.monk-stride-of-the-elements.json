@@ -1,0 +1,26 @@
+{
+  "id": "feat.monk-stride-of-the-elements",
+  "name": "Stride of the Elements",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "While your Elemental Attunement is active, you also have a Fly Speed and a Swim Speed equal to your Speed.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "While your Elemental Attunement is active, you also have a Fly Speed and a Swim Speed equal to your Speed."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

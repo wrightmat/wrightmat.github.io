@@ -1,0 +1,25 @@
+{
+  "id": "feat.locathah-ability-score-increase",
+  "name": "Ability Score Increase",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "Your Strength score increases by 2 and your Dexterity score increases by 1.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Your Strength score increases by 2 and your Dexterity score increases by 1."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

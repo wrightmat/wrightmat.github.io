@@ -1,7 +1,8 @@
 {
   "name": "Crush",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Each creature Orlassk is currently grappling must make a DC 22 Constitution saving throw, taking 18 (3d12) bludgeoning damage on a failed save, or half as much on a successful one. If this damage reduces a creature to 0 hit points, it is obliterated into dust.",
   "mechanics": {

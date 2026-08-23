@@ -1,7 +1,8 @@
 {
   "name": "Darkness Embrace",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Melee Weapon Attack. +7 to hit, reach 5 ft., all creatures in reach. Hit: 6 (1d12) necrotic damage and each target must make a successful DC 17 Constitution saving throw or gain 1 level of exhaustion.",
   "mechanics": {

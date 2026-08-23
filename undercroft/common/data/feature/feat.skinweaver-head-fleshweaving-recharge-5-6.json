@@ -1,7 +1,8 @@
 {
   "name": "Fleshweaving (Recharge 5-6)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Any skinweavers within a 10-foot cone regain 10 hit points.",
   "mechanics": {

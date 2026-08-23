@@ -1,7 +1,8 @@
 {
   "name": "Movable with Action",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Once created, the effect can be relocated by spending an action to redirect it.",
   "mechanics": {

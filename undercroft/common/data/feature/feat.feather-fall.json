@@ -1,7 +1,8 @@
 {
   "name": "Feather Fall",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Slows the wearer's own falls, so they take no damage from falling.",
   "mechanics": {

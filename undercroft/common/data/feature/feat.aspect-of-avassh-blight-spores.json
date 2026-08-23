@@ -1,7 +1,8 @@
 {
   "name": "Blight Spores",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "When Avassh uses its Ligneous Claw or Infectious Growth, it has a chance of infecting creatures with a blight disease carried by its corrupted spores. A diseased creature suffers the following cumulative effects for each blight spore infecting it: 1) Its hit point maximum is reduced by 10. 2) When it makes a saving throw against any of Avassh’s effects, it must roll a d4 and subtract the number rolled from the saving throw. Blight spore disease can be cured by the lesser restoration spell or similar magic; when cured, all blight spores currently infecting the creature are destroyed. If blight spores reduce a creature’s hit point maximum to 0, it dies, then rises at the start of its next turn as a dolgaunt under Avassh’s control; this dolgaunt is both a Plant and an Aberration. This transformation can be undone only by a wish spell.",
   "mechanics": {

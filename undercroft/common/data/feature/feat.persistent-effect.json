@@ -1,7 +1,8 @@
 {
   "name": "Effect Lasts Full Duration",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The effect persists for its entire stated duration regardless of ordinary save-ends conditions.",
   "mechanics": {

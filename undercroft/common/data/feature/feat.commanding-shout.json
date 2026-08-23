@@ -1,7 +1,8 @@
 {
   "name": "Commanding Shout",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "As a bonus action, the creature grants all allies within 30 feet advantage on their next attack roll before the start of its next turn.",
   "mechanics": {

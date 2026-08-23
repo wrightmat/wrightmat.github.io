@@ -1,0 +1,26 @@
+{
+  "id": "feat.artificer-guided-precision",
+  "name": "Guided Precision",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "Once per turn, whenever you cast a spell from your Cartographer Spells list or hit a creature affected by your Faerie Fire with an attack roll, you can add your Intelligence modifier to one damage roll of the spell or attack.\n\nIn addition, taking damage can’t cause you to lose Concentration on Faerie Fire.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "Once per turn, whenever you cast a spell from your Cartographer Spells list or hit a creature affected by your Faerie Fire with an attack roll, you can add your Intelligence modifier to one damage roll of the spell or attack.\n\nIn addition, taking damage can’t cause you to lose Concentration on Faerie Fire."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

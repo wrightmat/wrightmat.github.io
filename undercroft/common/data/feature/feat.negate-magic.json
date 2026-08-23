@@ -1,7 +1,8 @@
 {
   "name": "Negate Magic",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Ends or prevents another spell/magical effect outright, rather than resisting or countering its damage.",
   "mechanics": {

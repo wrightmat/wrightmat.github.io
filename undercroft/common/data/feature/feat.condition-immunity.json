@@ -1,7 +1,8 @@
 {
   "name": "Condition Immunity",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Wards the body against a single debilitating condition.",
   "mechanics": {

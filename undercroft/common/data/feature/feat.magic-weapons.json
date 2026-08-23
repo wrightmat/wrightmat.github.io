@@ -1,7 +1,8 @@
 {
   "name": "Magic Weapons",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature's weapon attacks count as magical for the purpose of overcoming resistance and immunity to nonmagical attacks and damage.",
   "mechanics": {

@@ -1,7 +1,8 @@
 {
   "name": "Wakeful",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "When one of the creature's heads is asleep, its other head is awake.",
   "mechanics": {

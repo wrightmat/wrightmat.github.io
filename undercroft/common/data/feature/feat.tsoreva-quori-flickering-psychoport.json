@@ -1,7 +1,8 @@
 {
   "name": "Flickering Psychoport",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature teleports up to 30 ft. to an unoccupied space within 5 ft. of a creature. Until the end of its turn, attacks against the creature are made with disadvantage.",
   "mechanics": {

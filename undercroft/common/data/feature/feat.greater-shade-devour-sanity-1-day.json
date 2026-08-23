@@ -1,7 +1,8 @@
 {
   "name": "Devour Sanity (1/Day)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature whispers dissonantly at a target humanoid that is within 20 feet of it that can hear it. A protection from evil and good spell cast on the target protects it, as does a magic circle. The target has dreadful thoughts as long as it is not deafened. If these thoughts last for at least 8 hours, the target gains a flaw from the indefinite madness table (see pg. 258 of the DMG). Only a greater restoration spell or more powerful magic can rid a character of indefinite madness.",
   "mechanics": {

@@ -3,7 +3,8 @@
   "name": "Ring of Psychic Resistance",
   "notes": "Ring, rare (requires attunement)\n\nYou have resistance to psychic damage while wearing this jade ring.",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "url": "https://www.dnd5eapi.co/api/2014/magic-items/ring-of-resistance-psychic",
   "mapping": "5e-api-magic-item",

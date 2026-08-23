@@ -1,7 +1,8 @@
 {
   "name": "Bursting Pod",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Melee Ranged Attack: +8 to hit, range 30/120 ft., one target. Hit: 8 (1d6 + 5) bludgeoning damage, and the target and all creatures within 5 feet of it also take 5 (2d4) piercing damage, or half as much piercing damage with a successful DC 15 Dexterity saving throw.",
   "mechanics": {

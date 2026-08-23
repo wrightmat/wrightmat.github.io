@@ -1,7 +1,8 @@
 {
   "name": "Soul Sap",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature slides down the throat of a sleeping, helpless, or grappled living creature of Medium size or smaller. Once inside, the creature takes control of its host, as per the dominate monster spell (Wisdom DC 12 negates). While dominated, the host gains blindsight 90 feet. The host drips blood from its ears, nose, eyes, or from a wound that resembles the injury done to the creature’s tree (1 damage/hour). Damage inflicted on the host has no effect on the creature. If the host dies or is reduced to 0 hit points, the creature must leave the body within one hour.",
   "mechanics": {

@@ -1,7 +1,8 @@
 {
   "name": "Springspike Shield (5/rest)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "When the creature is hit by a melee attack within 5 feet, the creature can fire one of its shield spikes at the attacker. The attacker takes 3 (1d6) piercing damage plus 3 (1d6) poison damage.",
   "mechanics": {

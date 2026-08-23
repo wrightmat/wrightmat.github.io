@@ -1,7 +1,8 @@
 {
   "name": "Seat of Power",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "A real seat of formal authority sits here — a court, council, or magistrate's bench whose rulings carry actual weight.",
   "mechanics": {

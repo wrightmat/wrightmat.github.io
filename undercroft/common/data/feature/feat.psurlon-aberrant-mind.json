@@ -1,7 +1,8 @@
 {
   "name": "Aberrant Mind",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Magic can’t read the creature’s thoughts or put the creature to sleep.",
   "mechanics": {

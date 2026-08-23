@@ -1,0 +1,86 @@
+{
+  "index": "ranger-gloom-stalker",
+  "url": "https://www.dndbeyond.com/classes/2190882-ranger",
+  "name": "Gloom Stalker",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "parentKind": "class",
+  "parentId": "ranger",
+  "summary": "Draw on Shadow Magic to Fight Your Foes",
+  "description": "Gloom Stalkers are at home in the darkest places, wielding magic drawn from the Shadowfell to combat enemies that lurk in darkness.",
+  "features": [
+    {
+      "name": "Dread Ambusher",
+      "level": 3,
+      "description": "You have mastered the art of creating fearsome ambushes, granting you the following benefits.\n\nAmbusher’s Leap. At the start of your first turn of each combat, your Speed increases by 10 feet until the end of that turn.\n\nDreadful Strike. When you attack a creature and hit it with a weapon, you can deal an extra 2d6 Psychic damage. You can use this benefit only once per turn, you can use it a number of times equal to your Wisdom modifier (minimum of once), and you regain all expended uses when you finish a Long Rest.\n\nInitiative Bonus. When you roll Initiative, you can add your Wisdom modifier to the roll."
+    },
+    {
+      "name": "Gloom Stalker Spells",
+      "level": 3,
+      "description": "When you reach a Ranger level specified in the Gloom Stalker Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Disguise Self\n\nLevel 5: Rope Trick\n\nLevel 9: Fear\n\nLevel 13: Greater Invisibility\n\nLevel 17: Seeming"
+    },
+    {
+      "name": "Umbral Sight",
+      "level": 3,
+      "description": "You gain Darkvision with a range of 60 feet. If you already have Darkvision when you gain this feature, its range increases by 60 feet.\n\nYou are also adept at evading creatures that rely on Darkvision. While entirely in Darkness, you have the Invisible condition to any creature that relies on Darkvision to see you in that Darkness."
+    },
+    {
+      "name": "Iron Mind",
+      "level": 7,
+      "description": "You have honed your ability to resist mind-altering powers. You gain proficiency in Wisdom saving throws. If you already have this proficiency, you instead gain proficiency in Intelligence or Charisma saving throws (your choice)."
+    },
+    {
+      "name": "Stalker’s Flurry",
+      "level": 11,
+      "description": "The Psychic damage of your Dreadful Strike becomes 2d8. In addition, when you use the Dreadful Strike effect of your Dread Ambusher feature, you can cause one of the following additional effects.\n\nSudden Strike. You can make another attack with the same weapon against a different creature that is within 5 feet of the original target and that is within the weapon’s range.\n\nMass Fear. The target and each creature within 10 feet of it must make a Wisdom saving throw against your spell save DC. On a failed save, a creature has the Frightened condition until the start of your next turn."
+    },
+    {
+      "name": "Shadowy Dodge",
+      "level": 15,
+      "description": "When a creature makes an attack roll against you, you can take a Reaction to impose Disadvantage on that roll. Whether the attack hits or misses, you can then teleport up to 30 feet to an unoccupied space you can see."
+    }
+  ],
+  "mapping": "ddb-subclass",
+  "featureIds": [
+    "feat.ranger-dread-ambusher",
+    "feat.ranger-gloom-stalker-spells",
+    "feat.ranger-umbral-sight",
+    "feat.ranger-iron-mind",
+    "feat.ranger-stalker-s-flurry",
+    "feat.ranger-shadowy-dodge"
+  ],
+  "featureParams": {
+    "feat.ranger-dread-ambusher": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.ranger-gloom-stalker-spells": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.ranger-umbral-sight": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.ranger-iron-mind": {
+      "grantedAtLevel": [
+        7
+      ]
+    },
+    "feat.ranger-stalker-s-flurry": {
+      "grantedAtLevel": [
+        11
+      ]
+    },
+    "feat.ranger-shadowy-dodge": {
+      "grantedAtLevel": [
+        15
+      ]
+    }
+  }
+}

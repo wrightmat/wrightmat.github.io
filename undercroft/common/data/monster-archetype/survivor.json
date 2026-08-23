@@ -2,7 +2,8 @@
   "id": "survivor",
   "name": "Survivor",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Wins by refusing to die and adapting to whatever threat it's facing.",
   "recipe": {

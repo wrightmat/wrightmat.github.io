@@ -1,0 +1,26 @@
+{
+  "id": "feat.ranger-feral-senses",
+  "name": "Feral Senses",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "Your connection to the forces of nature grants you Blindsight with a range of 30 feet.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "Your connection to the forces of nature grants you Blindsight with a range of 30 feet."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

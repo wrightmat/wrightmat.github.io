@@ -1,0 +1,332 @@
+{
+  "index": "warlock",
+  "name": "Warlock",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "primary_ability": {
+    "desc": "Charisma",
+    "ability_scores": [
+      {
+        "index": "cha",
+        "name": "CHA"
+      }
+    ]
+  },
+  "hit_die": 8,
+  "proficiency_choices": [
+    {
+      "desc": "Choose 2: Arcana, Deception, History, Intimidation, Investigation, Nature, or Religion",
+      "choose": 2,
+      "type": "proficiencies",
+      "from": {
+        "option_set_type": "options_array",
+        "options": [
+          {
+            "option_type": "reference",
+            "item": {
+              "index": "skill-arcana",
+              "name": "Skill: Arcana"
+            }
+          },
+          {
+            "option_type": "reference",
+            "item": {
+              "index": "skill-deception",
+              "name": "Skill: Deception"
+            }
+          },
+          {
+            "option_type": "reference",
+            "item": {
+              "index": "skill-history",
+              "name": "Skill: History"
+            }
+          },
+          {
+            "option_type": "reference",
+            "item": {
+              "index": "skill-intimidation",
+              "name": "Skill: Intimidation"
+            }
+          },
+          {
+            "option_type": "reference",
+            "item": {
+              "index": "skill-investigation",
+              "name": "Skill: Investigation"
+            }
+          },
+          {
+            "option_type": "reference",
+            "item": {
+              "index": "skill-nature",
+              "name": "Skill: Nature"
+            }
+          },
+          {
+            "option_type": "reference",
+            "item": {
+              "index": "skill-religion",
+              "name": "Skill: Religion"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "proficiencies": [
+    {
+      "index": "light-armor",
+      "name": "Light Armor"
+    },
+    {
+      "index": "simple-weapons",
+      "name": "Simple Weapons"
+    },
+    {
+      "index": "saving-throw-wis",
+      "name": "Saving Throw: WIS"
+    },
+    {
+      "index": "saving-throw-cha",
+      "name": "Saving Throw: CHA"
+    }
+  ],
+  "saving_throws": [
+    {
+      "index": "wis",
+      "name": "WIS"
+    },
+    {
+      "index": "cha",
+      "name": "CHA"
+    }
+  ],
+  "starting_equipment_options": [
+    {
+      "desc": "(A) Leather Armor, Sickle, 2 Daggers, Arcane Focus (orb), Book (occult lore), Scholar’s Pack, and 15 GP or (B) 100 GP",
+      "choose": 1,
+      "type": "equipment",
+      "from": {
+        "option_set_type": "options_array",
+        "options": [
+          {
+            "option_type": "multiple",
+            "items": [
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "leather-armor",
+                  "name": "Leather Armor"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "sickle",
+                  "name": "Sickle"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 2,
+                "of": {
+                  "index": "dagger",
+                  "name": "Dagger"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "arcane-focus",
+                  "name": "Arcane Focus",
+                  "note": "Orb"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "book",
+                  "name": "Book",
+                  "note": "Occult lore"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "scholar-s-pack",
+                  "name": "Scholar’s Pack"
+                }
+              },
+              {
+                "option_type": "money",
+                "count": 15,
+                "unit": "gp"
+              }
+            ]
+          },
+          {
+            "option_type": "money",
+            "count": 100,
+            "unit": "gp"
+          }
+        ]
+      }
+    }
+  ],
+  "subclasses": [
+    {
+      "index": "archfey-patron",
+      "name": "Archfey Patron",
+      "url": "https://www.dndbeyond.com/classes/2190885-warlock"
+    },
+    {
+      "index": "celestial-patron",
+      "name": "Celestial Patron",
+      "url": "https://www.dndbeyond.com/classes/2190885-warlock"
+    },
+    {
+      "index": "fiend-patron",
+      "name": "Fiend Patron",
+      "url": "https://www.dndbeyond.com/classes/2190885-warlock"
+    },
+    {
+      "index": "great-old-one-patron",
+      "name": "Great Old One Patron",
+      "url": "https://www.dndbeyond.com/classes/2190885-warlock"
+    }
+  ],
+  "url": "https://www.dndbeyond.com/classes/2190885-warlock",
+  "description": "Warlocks quest for knowledge that lies hidden in the fabric of the multiverse. They often begin their search for magical power by delving into tomes of forbidden lore, dabbling in invocations meant to attract the power of extraplanar beings, or seeking places of power where the influence of these beings can be felt. In no time, each Warlock is drawn into a binding pact with a powerful patron. Drawing on the ancient knowledge of beings such as angels, archfey, demons, devils, hags, and alien entities of the Far Realm, Warlocks piece together arcane secrets to bolster their own power.\n\nWarlocks view their patrons as resources, as means to the end of achieving magical power. Some Warlocks respect, revere, or even love their patrons; some serve their patrons grudgingly; and some seek to undermine their patrons even as they wield the power their patrons have given them.\n\nOnce a pact is made, a Warlock’s thirst for knowledge and power can’t be slaked with mere study. Most Warlocks spend their days pursuing greater power and deeper knowledge, which typically means some kind of adventure.",
+  "coreTraits": {
+    "primaryAbility": "Charisma",
+    "hitPointDie": "D8 per Warlock level",
+    "savingThrowProficiencies": "Wisdom and Charisma",
+    "skillProficiencies": "Choose 2: Arcana, Deception, History, Intimidation, Investigation, Nature, or Religion",
+    "weaponProficiencies": "Simple weapons",
+    "armorTraining": "Light armor",
+    "startingEquipment": "Choose A or B: (A) Leather Armor, Sickle, 2 Daggers, Arcane Focus (orb), Book (occult lore), Scholar’s Pack, and 15 GP; or (B) 100 GP"
+  },
+  "features": [
+    {
+      "name": "Eldritch Invocations",
+      "level": 1,
+      "description": "You have unearthed Eldritch Invocations, pieces of forbidden knowledge that imbue you with an abiding magical ability or other lessons. You gain one invocation of your choice, such as Pact of the Tome. Invocations are described in the “Eldritch Invocation Options” section.\n\nPrerequisites. If an invocation has a prerequisite, you must meet it to learn that invocation. For example, if an invocation requires you to be a level 5+ Warlock, you can select the invocation once you reach Warlock level 5.\n\nReplacing and Gaining Invocations. Whenever you gain a Warlock level, you can replace one of your invocations with another one for which you qualify. You can’t replace an invocation if it’s a prerequisite for another invocation that you have.\n\nWhen you gain certain Warlock levels, you gain more invocations of your choice, as shown in the Invocations column of the Warlock Features table.\n\nYou can’t pick the same invocation more than once unless its description says otherwise."
+    },
+    {
+      "name": "Pact Magic",
+      "level": 1,
+      "description": "Through occult ceremony, you have formed a pact with a mysterious entity to gain magical powers. The entity is a voice in the shadows—its identity unclear—but its boon to you is concrete: the ability to cast spells.\n\nCantrips. You know two Warlock cantrips of your choice. Whenever you gain a Warlock level, you can replace one of your cantrips from this feature with another Warlock cantrip of your choice.\n\nWhen you reach Warlock levels 4 and 10, you learn another Warlock cantrip of your choice, as shown in the Cantrips column of the Warlock Features table.\n\nSpell Slots. The Warlock Features table shows how many spell slots you have to cast your Warlock spells of levels 1–5. The table also shows the level of those slots, all of which are the same level. You regain all expended Pact Magic spell slots when you finish a Short or Long Rest.\n\nFor example, when you’re a level 5 Warlock, you have two level 3 spell slots. To cast the level 1 spell Witch Bolt, you must spend one of those slots, and you cast it as a level 3 spell.\n\nPrepared Spells of Level 1+. You prepare the list of level 1+ spells that are available for you to cast with this feature. To start, choose two level 1 Warlock spells.\n\nThe number of spells on your list increases as you gain Warlock levels, as shown in the Prepared Spells column of the Warlock Features table. Whenever that number increases, choose additional Warlock spells until the number of spells on your list matches the number in the table. The chosen spells must be of a level no higher than what’s shown in the table’s Slot Level column for your level. When you reach level 6, for example, you learn a new Warlock spell, which can be of levels 1–3.\n\nIf another Warlock feature gives you spells that you always have prepared, those spells don’t count against the number of spells you can prepare with this feature, but those spells otherwise count as Warlock spells for you.\n\nChanging Your Prepared Spells. Whenever you gain a Warlock level, you can replace one spell on your list with another Warlock spell of an eligible level.\n\nSpellcasting Ability. Charisma is the spellcasting ability for your Warlock spells.\n\nSpellcasting Focus. You can use an Arcane Focus as a Spellcasting Focus for your Warlock spells."
+    },
+    {
+      "name": "Magical Cunning",
+      "level": 2,
+      "description": "You can perform an esoteric rite for 1 minute. At the end of it, you regain expended Pact Magic spell slots but no more than a number equal to half your maximum (round up). Once you use this feature, you can’t do so again until you finish a Long Rest."
+    },
+    {
+      "name": "Warlock Subclass",
+      "level": 3,
+      "description": "You gain a Warlock subclass of your choice. A subclass is a specialization that grants you features at certain Warlock levels. For the rest of your career, you gain each of your subclass’s features that are of your Warlock level or lower."
+    },
+    {
+      "name": "Ability Score Improvement",
+      "level": 4,
+      "description": "You gain the Ability Score Improvement feat or another feat of your choice for which you qualify. You gain this feature again at Warlock levels 8, 12, and 16."
+    },
+    {
+      "name": "Contact Patron",
+      "level": 9,
+      "description": "In the past, you usually contacted your patron through intermediaries. Now you can communicate directly; you always have the Contact Other Plane spell prepared. With this feature, you can cast the spell without expending a spell slot to contact your patron, and you automatically succeed on the spell’s saving throw.\n\nOnce you cast the spell with this feature, you can’t do so in this way again until you finish a Long Rest."
+    },
+    {
+      "name": "Mystic Arcanum",
+      "level": 11,
+      "description": "Your patron grants you a magical secret called an arcanum. Choose one level 6 Warlock spell as this arcanum.\n\nYou can cast your arcanum spell once without expending a spell slot, and you must finish a Long Rest before you can cast it in this way again.\n\nAs shown in the Warlock Features table, you gain another Warlock spell of your choice that can be cast in this way when you reach Warlock levels 13 (level 7 spell), 15 (level 8 spell), and 17 (level 9 spell). You regain all uses of your Mystic Arcanum when you finish a Long Rest.\n\nWhenever you gain a Warlock level, you can replace one of your arcanum spells with another Warlock spell of the same level."
+    },
+    {
+      "name": "Epic Boon",
+      "level": 19,
+      "description": "You gain an Epic Boon feat or another feat of your choice for which you qualify."
+    },
+    {
+      "name": "Eldritch Master",
+      "level": 20,
+      "description": "When you use your Magical Cunning feature, you regain all your expended Pact Magic spell slots."
+    },
+    {
+      "name": "Eldritch Invocation Options",
+      "level": null,
+      "description": "Eldritch Invocation options appear in alphabetical order.\n\nAgonizing Blast\n\nPrerequisite: Level 2+ Warlock, a Warlock Cantrip That Deals Damage\n\nChoose one of your known Warlock cantrips that deals damage. You can add your Charisma modifier to that spell’s damage rolls.\n\nRepeatable. You can gain this invocation more than once. Each time you do so, choose a different eligible cantrip.\n\nArmor of Shadows\n\nYou can cast Mage Armor on yourself without expending a spell slot.\n\nAscendant Step\n\nPrerequisite: Level 5+ Warlock\n\nYou can cast Levitate on yourself without expending a spell slot.\n\nDevil’s Sight\n\nPrerequisite: Level 2+ Warlock\n\nYou can see normally in Dim Light and Darkness—both magical and nonmagical—within 120 feet of yourself.\n\nDevouring Blade\n\nPrerequisite: Level 12+ Warlock, Thirsting Blade Invocation\n\nThe Extra Attack of your Thirsting Blade invocation confers two extra attacks rather than one.\n\nEldritch Mind\n\nYou have Advantage on Constitution saving throws that you make to maintain Concentration.\n\nEldritch Smite\n\nPrerequisite: Level 5+ Warlock, Pact of the Blade Invocation\n\nOnce per turn when you hit a creature with your pact weapon, you can expend a Pact Magic spell slot to deal an extra 1d8 Force damage to the target, plus another 1d8 per level of the spell slot, and you can give the target the Prone condition if it is Huge or smaller.\n\nEldritch Spear\n\nPrerequisite: Level 2+ Warlock, a Warlock Cantrip That Deals Damage\n\nChoose one of your known Warlock cantrips that deals damage and has a range of 10+ feet. When you cast that spell, its range increases by a number of feet equal to 30 times your Warlock level.\n\nRepeatable. You can gain this invocation more than once. Each time you do so, choose a different eligible cantrip.\n\nFiendish Vigor\n\nPrerequisite: Level 2+ Warlock\n\nYou can cast False Life on yourself without expending a spell slot. When you cast the spell with this feature, you don’t roll the die for the Temporary Hit Points; you automatically get the highest number on the die.\n\nGaze of Two Minds\n\nPrerequisite: Level 5+ Warlock\n\nYou can use a Bonus Action to touch a willing creature and perceive through its senses until the end of your next turn. As long as the creature is on the same plane of existence as you, you can take a Bonus Action on subsequent turns to maintain this connection, extending the duration until the end of your next turn. The connection ends if you don’t maintain it in this way.\n\nWhile perceiving through the other creature’s senses, you benefit from any special senses possessed by that creature, and you can cast spells as if you were in your space or the other creature’s space if the two of you are within 60 feet of each other.\n\nGift of the Depths\n\nPrerequisite: Level 5+ Warlock\n\nYou can breathe underwater, and you gain a Swim Speed equal to your Speed.\n\nYou can also cast Water Breathing once without expending a spell slot. You regain the ability to cast it in this way again when you finish a Long Rest.\n\nGift of the Protectors\n\nPrerequisite: Level 9+ Warlock, Pact of the Tome Invocation\n\nA new page appears in your Book of Shadows when you conjure it. With your permission, a creature can take an action to write its name on that page, which can contain a number of names equal to your Charisma modifier (minimum of one name).\n\nWhen any creature whose name is on the page is reduced to 0 Hit Points but not killed outright, the creature magically drops to 1 Hit Point instead. Once this magic is triggered, no creature can benefit from it until you finish a Long Rest.\n\nAs a Magic action, you can erase a name on the page by touching it.\n\nInvestment of the Chain Master\n\nPrerequisite: Level 5+ Warlock, Pact of the Chain Invocation\n\nWhen you cast Find Familiar, you infuse the summoned familiar with a measure of your eldritch power, granting the creature the following benefits.\n\nAerial or Aquatic. The familiar gains either a Fly Speed or a Swim Speed (your choice) of 40 feet.\n\nQuick Attack. As a Bonus Action, you can command the familiar to take the Attack action.\n\nNecrotic or Radiant Damage. Whenever the familiar deals Bludgeoning, Piercing, or Slashing damage, you can make it deal Necrotic or Radiant damage instead.\n\nYour Save DC. If the familiar forces a creature to make a saving throw, it uses your spell save DC.\n\nResistance. When the familiar takes damage, you can take a Reaction to grant it Resistance against that damage.\n\nLessons of the First Ones\n\nPrerequisite: Level 2+ Warlock\n\nYou have received knowledge from an elder entity of the multiverse, allowing you to gain one Origin feat of your choice.\n\nRepeatable. You can gain this invocation more than once. Each time you do so, choose a different Origin feat.\n\nLifedrinker\n\nPrerequisite: Level 9+ Warlock, Pact of the Blade Invocation\n\nOnce per turn when you hit a creature with your pact weapon, you can deal an extra 1d6 Necrotic, Psychic, or Radiant damage (your choice) to the creature, and you can expend one of your Hit Point Dice to roll it and regain a number of Hit Points equal to the roll plus your Constitution modifier (minimum of 1 Hit Point).\n\nMask of Many Faces\n\nPrerequisite: Level 2+ Warlock\n\nYou can cast Disguise Self without expending a spell slot.\n\nMaster of Myriad Forms\n\nPrerequisite: Level 5+ Warlock\n\nYou can cast Alter Self without expending a spell slot.\n\nMisty Visions\n\nPrerequisite: Level 2+ Warlock\n\nYou can cast Silent Image without expending a spell slot.\n\nOne with Shadows\n\nPrerequisite: Level 5+ Warlock\n\nWhile you’re in an area of Dim Light or Darkness, you can cast Invisibility on yourself without expending a spell slot.\n\nOtherworldly Leap\n\nPrerequisite: Level 2+ Warlock\n\nYou can cast Jump on yourself without expending a spell slot.\n\nPact of the Blade\n\nAs a Bonus Action, you can conjure a pact weapon in your hand—a Simple or Martial Melee weapon of your choice with which you bond—or create a bond with a magic weapon you touch; you can’t bond with a magic weapon if someone else is attuned to it or another Warlock is bonded with it. Until the bond ends, you have proficiency with the weapon, and you can use it as a Spellcasting Focus.\n\nWhenever you attack with the bonded weapon, you can use your Charisma modifier for the attack and damage rolls instead of using Strength or Dexterity; and you can cause the weapon to deal Necrotic, Psychic, or Radiant damage or its normal damage type.\n\nYour bond with the weapon ends if you use this feature’s Bonus Action again, if the weapon is more than 5 feet away from you for 1 minute or more, or if you die. A conjured weapon disappears when the bond ends.\n\nPact of the Chain\n\nYou learn the Find Familiar spell and can cast it as a Magic action without expending a spell slot.\n\nWhen you cast the spell, you choose one of the normal forms for your familiar or one of the following special forms: Imp, Pseudodragon, Quasit, Skeleton, Slaad Tadpole, Sphinx of Wonder, Sprite, or Venomous Snake.\n\nAdditionally, when you take the Attack action, you can forgo one of your own attacks to allow your familiar to make one attack of its own with its Reaction.\n\nPact of the Tome\n\nStitching together strands of shadow, you conjure forth a book in your hand at the end of a Short or Long Rest. This Book of Shadows (you determine its appearance) contains eldritch magic that only you can access, granting you the benefits below. The book disappears if you conjure another book with this feature or if you die.\n\nCantrips and Rituals. When the book appears, choose three cantrips, and choose two level 1 spells that have the Ritual tag. The spells can be from any class’s spell list, and they must be spells you don’t already have prepared. While the book is on your person, you have the chosen spells prepared, and they function as Warlock spells for you.\n\nSpellcasting Focus. You can use the book as a Spellcasting Focus.\n\nRepelling Blast\n\nPrerequisite: Level 2+ Warlock, a Warlock Cantrip That Deals Damage via an Attack Roll\n\nChoose one of your known Warlock cantrips that requires an attack roll. When you hit a Large or smaller creature with that cantrip, you can push the creature up to 10 feet straight away from you.\n\nRepeatable. You can gain this invocation more than once. Each time you do so, choose a different eligible cantrip.\n\nThirsting Blade\n\nPrerequisite: Level 5+ Warlock, Pact of the Blade Invocation\n\nYou gain the Extra Attack feature for your pact weapon only. With that feature, you can attack twice with the weapon instead of once when you take the Attack action on your turn.\n\nVisions of Distant Realms\n\nPrerequisite: Level 9+ Warlock\n\nYou can cast Arcane Eye without expending a spell slot.\n\nWhispers of the Grave\n\nPrerequisite: Level 7+ Warlock\n\nYou can cast Speak with Dead without expending a spell slot.\n\nWitch Sight\n\nPrerequisite: Level 15+ Warlock\n\nYou have Truesight with a range of 30 feet."
+    }
+  ],
+  "mapping": "ddb-class",
+  "featureIds": [
+    "feat.warlock-eldritch-invocations",
+    "feat.warlock-pact-magic",
+    "feat.warlock-magical-cunning",
+    "feat.warlock-warlock-subclass",
+    "feat.ability-score-improvement",
+    "feat.warlock-contact-patron",
+    "feat.warlock-mystic-arcanum",
+    "feat.epic-boon",
+    "feat.warlock-eldritch-master",
+    "feat.warlock-eldritch-invocation-options"
+  ],
+  "featureParams": {
+    "feat.warlock-eldritch-invocations": {
+      "grantedAtLevel": [
+        1
+      ]
+    },
+    "feat.warlock-pact-magic": {
+      "grantedAtLevel": [
+        1
+      ]
+    },
+    "feat.warlock-magical-cunning": {
+      "grantedAtLevel": [
+        2
+      ]
+    },
+    "feat.warlock-warlock-subclass": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.warlock-contact-patron": {
+      "grantedAtLevel": [
+        9
+      ]
+    },
+    "feat.warlock-mystic-arcanum": {
+      "grantedAtLevel": [
+        11
+      ]
+    },
+    "feat.epic-boon": {
+      "grantedAtLevel": [
+        19
+      ]
+    },
+    "feat.warlock-eldritch-master": {
+      "grantedAtLevel": [
+        20
+      ]
+    },
+    "feat.ability-score-improvement": {
+      "grantedAtLevel": [
+        4,
+        8,
+        12,
+        16
+      ]
+    }
+  }
+}

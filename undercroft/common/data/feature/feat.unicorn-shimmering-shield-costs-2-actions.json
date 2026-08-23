@@ -1,7 +1,8 @@
 {
   "name": "Shimmering Shield (Costs 2 Actions)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The celestial creates a shimmering, magical field around itself or another creature it can see within 60 ft. of it. The target gains a +2 bonus to AC until the end of the celestial's next turn.",
   "mechanics": {

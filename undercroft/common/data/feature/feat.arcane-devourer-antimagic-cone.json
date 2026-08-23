@@ -1,7 +1,8 @@
 {
   "name": "Antimagic Cone",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature emits an antimagic wave in a 150-foot Cone. Until the start of the creature’s next turn, that area acts as an Antimagic Field spell but does not suppress the creature’s own abilities.",
   "mechanics": {

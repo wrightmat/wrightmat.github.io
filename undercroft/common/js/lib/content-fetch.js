@@ -483,6 +483,8 @@ export const DDB_CONTENT_TYPES = [
   { type: "class", pattern: /\/classes\/[\w-]+/ },
   { type: "background", pattern: /\/backgrounds\/[\w-]+/ },
   { type: "species", pattern: /\/species\/[\w-]+/ },
+  { type: "equipment", pattern: /\/equipment\/[\w-]+/ },
+  { type: "magic-item", pattern: /\/magic-items\/[\w-]+/ },
 ];
 
 export function detectDdbContentType(value) {
@@ -525,6 +527,8 @@ export const DDB_CONTENT_PARSERS = {
   class: "ddbParseClassPage",
   background: "ddbParseBackgroundPage",
   species: "ddbParseSpeciesPage",
+  equipment: "ddbParseEquipmentPage",
+  "magic-item": "ddbParseMagicItemPage",
 };
 
 export async function loadDdbContentData(value, contentType) {
@@ -547,7 +551,7 @@ export async function loadDdbRawData(value) {
   }
   const id = extractDdbId(value);
   if (!id) {
-    throw new Error("Enter a valid D&D Beyond character ID/URL, or a classes/backgrounds/species page URL.");
+    throw new Error("Enter a valid D&D Beyond character ID/URL, or a classes/backgrounds/species/equipment/magic-items page URL.");
   }
   return fetchDdbCharacter(id);
 }
@@ -835,7 +839,6 @@ export async function loadSrdData(value, onProgress) {
 // resolve for its picker to appear, same as before.
 export const LIBRARY_KINDS = [
   "class",
-  "subclass",
   "background",
   "species",
   "variant",
@@ -1087,12 +1090,18 @@ async function fetchKindEntriesForSystemUncached(dataManager, kind, systemId) {
 // hover preview, its click-to-navigate, a wiki-link-to-reference
 // conversion — cost that many individual HTTP round trips just to check
 // one name.
+// `properties` (only ever populated for a kind whose own kind.json declares
+// it in metadataFields — today just "wonder", see that file's own comment)
+// rides along for free (list_bucket's own _flatten_metadata_rows already
+// puts it on every row server-side) — findKindReferenceRecord's own
+// optional `filter` is what actually uses it, to tell a same-named spell
+// and piece of equipment apart.
 export async function fetchKindEntrySummaries(dataManager, kind) {
   if (!dataManager) return [];
   const { remote } = await dataManager.list(kind, { refresh: true, includeLocal: false });
   return dataManager
     .collectListEntries(remote, ["owned", "shared", "public", "items"])
-    .map((entry) => ({ id: entry.id, name: entry.title || entry.id }));
+    .map((entry) => ({ id: entry.id, name: entry.title || entry.id, properties: entry.properties }));
 }
 
 // Every Location belonging to `settingId` — shared by Sanctum (its own

@@ -1,7 +1,8 @@
 {
   "name": "Corrupt Scroll",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "a creature can corrupt the magic within any scroll by touch. Any such corrupted scroll requires a DC 13 Intelligence saving throw to use successfully. If the check fails, the scroll’s spell affects the caster if it is an offensive spell, or it affects the nearest devil if it is a beneficial spell.",
   "mechanics": {

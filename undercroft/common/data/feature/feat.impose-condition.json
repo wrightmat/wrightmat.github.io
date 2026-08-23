@@ -1,7 +1,8 @@
 {
   "name": "Condition Imposed",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Forces a target to make a saving throw or suffer a condition, with no damage attached.",
   "mechanics": {

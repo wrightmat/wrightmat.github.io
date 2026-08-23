@@ -1,0 +1,26 @@
+{
+  "id": "feat.artificer-magic-item-adept",
+  "name": "Magic Item Adept",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You can now attune to up to four magic items at once.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "You can now attune to up to four magic items at once."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

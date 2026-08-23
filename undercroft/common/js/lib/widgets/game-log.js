@@ -120,6 +120,7 @@ export const SPOTLIGHT_KIND_LABELS = {
   browser: "a link",
   calendar: "a calendar",
   soundboard: "a soundboard",
+  shop: "a Shop",
 };
 
 // One icon per spotlight kind — mirrors dashboard.js's own WIDGET_CATALOG
@@ -143,14 +144,23 @@ export const SPOTLIGHT_KIND_ICONS = {
   browser: "tabler:world",
   calendar: "tabler:calendar-time",
   soundboard: "tabler:music",
+  shop: "tabler:building-store",
 };
 
-// The four kinds with no Library record to fetch a title from at all — they
-// spotlight by widget instanceId, not a `kind/id` Library path (see
-// dashboard.js's own INLINE_FOLLOW_KINDS, a Dashboard-specific superset
-// concept this happens to share every member with). Guards a title-cache
-// fetch attempt that would otherwise 404 forever, once per poll.
-export const SPOTLIGHT_INLINE_KINDS = new Set(["clock", "browser", "calendar", "soundboard"]);
+// The kinds with no Library record to fetch a title from at all — they
+// spotlight by an id that isn't a `kind/id` Library path (see dashboard.js's
+// own INLINE_FOLLOW_KINDS, a Dashboard-specific superset concept this
+// happens to share every member with). Guards a title-cache fetch attempt
+// that would otherwise 404 forever, once per poll. `shop` isn't ephemeral
+// widget-instance data the way clock/browser/calendar/soundboard are — its
+// own id is a real, permanent Location id, and its actual state lives on
+// the campaign Group (shop-transactions.js), not on any one GM's widget
+// instance — but there's still no separate "shop" Library kind/record to
+// fetch a title from either, so it shares this same guard; a Shop widget
+// reads that id straight off contentRef.followId (see this list's own
+// dashboard.js/game-log.js consumers) rather than treating it as "the
+// instance to follow."
+export const SPOTLIGHT_INLINE_KINDS = new Set(["clock", "browser", "calendar", "soundboard", "shop"]);
 
 // Leading icon + whether it should be a clickable on/off toggle for every
 // entry type — `resolveKindIcon(kind)` (dashboard.js's own, threaded
@@ -218,11 +228,11 @@ function resolveSpotlightLink(kind, id, shareToken) {
 // same shape as the character-payload caches elsewhere in this suite).
 // Spotlight log entries never carry a title themselves (server/groups.py's
 // own payload validation only ever requires kind+id) — a real name for a
-// Library-backed kind needs that separate fetch. The four inline kinds
-// (clock/browser/calendar/soundboard) have no Library record to fetch at
-// all; clock/browser are the only two whose own spotlight `data` payload
+// Library-backed kind needs that separate fetch. SPOTLIGHT_INLINE_KINDS
+// (clock/browser/calendar/soundboard/shop) have no Library record to fetch
+// at all; clock/browser are the only two whose own spotlight `data` payload
 // happens to carry something nameable (a GM-set clock name, a raw URL) —
-// calendar/soundboard fall back to the generic label like before.
+// calendar/soundboard/shop fall back to the generic label like before.
 function describeEntry(entry, { getCachedTitle, ensureTitleCached, onTitleLoaded, shareToken } = {}) {
   if (entry?.type === "spotlight") {
     const kind = String(entry.payload?.kind || "").trim();

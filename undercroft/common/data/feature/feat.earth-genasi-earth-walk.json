@@ -1,0 +1,26 @@
+{
+  "id": "feat.earth-genasi-earth-walk",
+  "name": "Earth Walk",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You can move across difficult terrain without expending extra movement if you are using your walking speed on the ground or a floor.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "You can move across difficult terrain without expending extra movement if you are using your walking speed on the ground or a floor."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,7 +1,8 @@
 {
   "name": "Slam",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Melee Weapon Attack: +4 to hit, reach 5 ft., one target. Hit: 11 (2d8 + 2) bludgeoning damage. If both attacks hit a Medium or smaller target, the target is grappled (escape DC 12), and the creature uses Soul Sap on it as a bonus action.",
   "mechanics": {

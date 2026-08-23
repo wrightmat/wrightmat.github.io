@@ -13,7 +13,11 @@
     "userId": 113371594,
     "username": "kheathcomo",
     "name": "Cordelia",
-    "race": "Sea Elf",
+    "race": {
+      "refKind": "species",
+      "refId": "sea-elf",
+      "name": "Sea Elf"
+    },
     "class": "Druid",
     "level": 6,
     "levels": {
@@ -25,7 +29,13 @@
       {
         "name": "Druid",
         "level": 6,
-        "subclass": "Circle of the Sea"
+        "refKind": "class",
+        "refId": "druid",
+        "subclass": {
+          "refKind": "variant",
+          "refId": "druid-circle-of-the-sea",
+          "name": "Circle of the Sea"
+        }
       }
     ]
   },
@@ -584,25 +594,25 @@
   "feats": [
     {
       "name": "Ability Score Improvement",
-      "description": "<p><em>General Feat (Prerequisite: Level 4+)</em></p>\r\n<p>Increase one ability score of your choice by 2, or increase two ability scores of your choice by 1. This feat can’t increase an ability score above 20.</p>\r\n<p><em><strong>Repeatable.</strong></em> You can take this feat more than once.</p>",
+      "description": "*General Feat (Prerequisite: Level 4+)*\n\nIncrease one ability score of your choice by 2, or increase two ability scores of your choice by 1. This feat can’t increase an ability score above 20.\n\n***Repeatable.*** You can take this feat more than once.",
       "level": null,
       "limitedUse": null
     },
     {
       "name": "Guide Ability Score Improvements",
-      "description": "<p>The Guide Background allows you to choose between Dexterity, Constitution, and Wisdom. Increase one of these scores by 2 and another one by 1, or increase all three by 1. None of these increases can raise a score above 20.</p>",
+      "description": "The Guide Background allows you to choose between Dexterity, Constitution, and Wisdom. Increase one of these scores by 2 and another one by 1, or increase all three by 1. None of these increases can raise a score above 20.",
       "level": null,
       "limitedUse": null
     },
     {
       "name": "Magic Initiate (Druid)",
-      "description": "<p><em>Origin Feat</em></p>\r\n<p>You gain the following benefits.</p>\r\n<p><em><strong>Two Cantrips.</strong></em> You learn two cantrips of your choice from the Druid spell list. Intelligence, Wisdom, or Charisma is your spellcasting ability for this feat’s spells (choose when you select this feat).</p>\r\n<p><em><strong>Level 1 Spell.</strong> </em>Choose a level 1 spell from the same list you selected for this feat’s cantrips. You always have that spell prepared. You can cast it once without a spell slot, and you regain the ability to cast it in that way when you finish a Long Rest. You can also cast the spell using any spell slots you have.</p>\r\n<p><em><strong>Spell Change.</strong></em> Whenever you gain a new level, you can replace one of the spells you chose for this feat with a different spell of the same level from the chosen spell list.</p>\r\n<p><em><strong>Repeatable.</strong></em> You can take this feat more than once, but you must choose a different spell list each time.</p>",
+      "description": "*Origin Feat*\n\nYou gain the following benefits.\n\n***Two Cantrips.*** You learn two cantrips of your choice from the Druid spell list. Intelligence, Wisdom, or Charisma is your spellcasting ability for this feat’s spells (choose when you select this feat).\n\n***Level 1 Spell.** *Choose a level 1 spell from the same list you selected for this feat’s cantrips. You always have that spell prepared. You can cast it once without a spell slot, and you regain the ability to cast it in that way when you finish a Long Rest. You can also cast the spell using any spell slots you have.\n\n***Spell Change.*** Whenever you gain a new level, you can replace one of the spells you chose for this feat with a different spell of the same level from the chosen spell list.\n\n***Repeatable.*** You can take this feat more than once, but you must choose a different spell list each time.",
       "level": null,
       "limitedUse": null
     },
     {
       "name": "Dark Bargain",
-      "description": "<p>At your GM's discretion, you can take a Dark Bargain.</p>",
+      "description": "At your GM's discretion, you can take a Dark Bargain.",
       "level": null,
       "limitedUse": null
     }
@@ -610,147 +620,133 @@
   "features": [
     {
       "name": "Circle of the Sea Spells",
-      "description": "<p>When you reach a Druid level specified in the Circle of the Sea Spells table, you thereafter always have the listed spells prepared.</p>\r\n<table class=\"table-compendium table--sub-features\" style=\"--sb-table-row-bg-hover: #b3d3df; --sb-table-row-bg-dark: #d7e8ee; --sb-table-row-bg-light: #f1f7f9; --dark-sb-table-row-bg-light: #5e7982; --dark-sb-table-row-bg-dark: #5c7f8c; --dark-sb-table-row-bg-hover: #78a2b0;\"><caption>\r\n<h5 id=\"CircleoftheSeaSpells\" class=\"compendium-hr quick-menu-exclude\">Circle of the Sea Spells</h5>\r\n</caption>\r\n<thead>\r\n<tr>\r\n<th>Druid Level</th>\r\n<th>Prepared Spells</th>\r\n</tr>\r\n</thead>\r\n<tbody>\r\n<tr>\r\n<td>3</td>\r\n<td>Fog Cloud, Gust of Wind, Ray of Frost, Shatter, Thunderwave</td>\r\n</tr>\r\n<tr>\r\n<td>5</td>\r\n<td>Lightning Bolt, Water Breathing</td>\r\n</tr>\r\n<tr>\r\n<td>7</td>\r\n<td>Control Water, Ice Storm</td>\r\n</tr>\r\n<tr>\r\n<td>9</td>\r\n<td>Conjure Elemental, Hold Monster</td>\r\n</tr>\r\n</tbody>\r\n</table>"
+      "description": "When you reach a Druid level specified in the Circle of the Sea Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Fog Cloud, Gust of Wind, Ray of Frost, Shatter, Thunderwave\n\nLevel 5: Lightning Bolt, Water Breathing\n\nLevel 7: Control Water, Ice Storm\n\nLevel 9: Conjure Elemental, Hold Monster",
+      "level": 3
     },
     {
       "name": "Wrath of the Sea",
-      "description": "<p>As a Bonus Action, you can expend a use of your Wild Shape to manifest a 5-foot Emanation that takes the form of ocean spray that surrounds you for 10 minutes. It ends early if you dismiss it (no action required), manifest it again, or have the Incapacitated condition.</p>\r\n<p>When you manifest the Emanation and as a Bonus Action on your subsequent turns, you can choose another creature you can see in the Emanation. The target must succeed on a Constitution saving throw against your spell save DC or take Cold damage and, if the creature is Large or smaller, be pushed up to 15 feet away from you. To determine this damage, roll a number of d6s equal to your Wisdom modifier (minimum of one die).</p>"
+      "description": "As a Bonus Action, you can expend a use of your Wild Shape to manifest a 5-foot Emanation that takes the form of ocean spray that surrounds you for 10 minutes. It ends early if you dismiss it (no action required), manifest it again, or have the Incapacitated condition.\n\nWhen you manifest the Emanation and as a Bonus Action on your subsequent turns, you can choose another creature you can see in the Emanation. The target must succeed on a Constitution saving throw against your spell save DC or take Cold damage and, if the creature is Large or smaller, be pushed up to 15 feet away from you. To determine this damage, roll a number of d6s equal to your Wisdom modifier (minimum of one die).",
+      "level": 3
     },
     {
       "name": "Aquatic Affinity",
-      "description": "<p>The size of the Emanation created by your Wrath of the Sea increases to 10 feet.</p>\r\n<p>In addition, you gain a Swim Speed equal to your Speed.</p>"
-    },
-    {
-      "name": "Stormborn",
-      "description": "<p>Your Wrath of the Sea confers two more benefits while active, as detailed below.</p>\r\n<div class=\"effect-info\">\r\n<p><strong><em>Flight.</em></strong> You gain a Fly Speed equal to your Speed.</p>\r\n<p><strong><em>Resistance.</em></strong> You have Resistance to Cold, Lightning, and Thunder damage.</p>\r\n</div>"
-    },
-    {
-      "name": "Oceanic Gift",
-      "description": "<p>Instead of manifesting the Emanation of Wrath of the Sea around yourself, you can manifest it around one willing creature within 60 feet of yourself. That creature gains all the benefits of the Emanation and uses your spell save DC and Wisdom modifier for it.</p>\r\n<p>In addition, you can manifest the Emanation around both the other creature and yourself if you expend two uses of your Wild Shape instead of one when manifesting it.</p>"
+      "description": "The size of the Emanation created by your Wrath of the Sea increases to 10 feet.\n\nIn addition, you gain a Swim Speed equal to your Speed.",
+      "level": 6
     },
     {
       "name": "Core Druid Traits",
-      "description": "<p>As a Level 1 Character:</p>\r\n<ul>\r\n<li>Gain all the traits in the Core Druid Traits table.</li>\r\n<li>Gain the Druid’s level 1 features, which are listed in the Druid Features table.</li>\r\n</ul>\r\n<table class=\"table-compendium table--left-all\" style=\"--sb-table-row-bg-hover: #b3d3df; --sb-table-row-bg-dark: #d7e8ee; --sb-table-row-bg-light: #f1f7f9; --dark-sb-table-row-bg-light: #5e7982; --dark-sb-table-row-bg-dark: #5c7f8c; --dark-sb-table-row-bg-hover: #78a2b0;\"><caption>Core Druid Traits</caption>\r\n<tbody>\r\n<tr>\r\n<th>Primary Ability</th>\r\n<td>Wisdom</td>\r\n</tr>\r\n<tr>\r\n<th>Hit Point Die</th>\r\n<td>D8 per Druid level</td>\r\n</tr>\r\n<tr>\r\n<th>Saving Throw Proficiencies</th>\r\n<td>Intelligence and Wisdom</td>\r\n</tr>\r\n<tr>\r\n<th>Skill Proficiencies</th>\r\n<td><em>Choose 2:</em> Animal Handling, Arcana, Insight, Medicine, Nature, Perception, Religion, or Survival</td>\r\n</tr>\r\n<tr>\r\n<th>Weapon Proficiencies</th>\r\n<td>Simple weapons</td>\r\n</tr>\r\n<tr>\r\n<th>Tool Proficiencies</th>\r\n<td>Herbalism Kit</td>\r\n</tr>\r\n<tr>\r\n<th>Armor Training</th>\r\n<td>Light armor and Shields</td>\r\n</tr>\r\n<tr>\r\n<th>Starting Equipment</th>\r\n<td><em>Choose A or B:</em> (A) Leather Armor, Shield, Sickle, Druidic Focus (Quarterstaff), Explorer’s Pack, Herbalism Kit, and 9 GP; or (B) 50 GP</td>\r\n</tr>\r\n</tbody>\r\n</table>"
+      "description": "As a Level 1 Character:\n\n- Gain all the traits in the Core Druid Traits table.\n\n- Gain the Druid’s level 1 features, which are listed in the Druid Features table.\n\nPrimary Ability: Wisdom\n\nHit Point Die: D8 per Druid level\n\nSaving Throw Proficiencies: Intelligence and Wisdom\n\nSkill Proficiencies: *Choose 2:* Animal Handling, Arcana, Insight, Medicine, Nature, Perception, Religion, or Survival\n\nWeapon Proficiencies: Simple weapons\n\nTool Proficiencies: Herbalism Kit\n\nArmor Training: Light armor and Shields\n\nStarting Equipment: *Choose A or B:* (A) Leather Armor, Shield, Sickle, Druidic Focus (Quarterstaff), Explorer’s Pack, Herbalism Kit, and 9 GP; or (B) 50 GP",
+      "level": 1
     },
     {
       "name": "Spellcasting",
-      "description": "<p>You have learned to cast spells through studying the mystical forces of nature. See chapter 7 for the rules on spellcasting. The information below details how you use those rules with Druid spells, which appear on the Druid spell list later in the class’s description.</p>\r\n<p><strong><em>Cantrips.</em></strong> You know two cantrips of your choice from the Druid spell list.</p>\r\n<p>Whenever you gain a Druid level, you can replace one of your cantrips with another cantrip of your choice from the Druid spell list.</p>\r\n<p>When you reach Druid levels 4 and 10, you learn another cantrip of your choice from the Druid spell list, as shown in the Cantrips column of the Druid Features table.</p>\r\n<p><strong><em>Spell Slots.</em></strong> The Druid Features table shows how many spell slots you have to cast your level 1+ spells. You regain all expended slots when you finish a Long Rest.</p>\r\n<p><strong><em>Prepared Spells of Level 1+.</em></strong> You prepare the list of level 1+ spells that are available for you to cast with this feature. To start, choose four level 1 spells from the Druid spell list.</p>\r\n<p>The number of spells on your list increases as you gain Druid levels, as shown in the Prepared Spells column of the Druid Features table. Whenever that number increases, choose additional spells from the Druid spell list until the number of spells on your list matches the number on the table. The chosen spells must be of a level for which you have spell slots. For example, if you’re a level 3 Druid, your list of prepared spells can include six spells of levels 1 and 2 in any combination.</p>\r\n<p>If another Druid feature gives you spells that you always have prepared, those spells don’t count against the number of spells you can prepare with this feature, but those spells otherwise count as Druid spells for you.</p>\r\n<p><strong><em>Changing Your Prepared Spells.</em></strong> Whenever you finish a Long Rest, you can change your list of prepared spells, replacing any of the spells with other Druid spells for which you have spell slots.</p>\r\n<p><strong><em>Spellcasting Ability.</em></strong> Wisdom is your spellcasting ability for your Druid spells.</p>\r\n<p><strong><em>Spellcasting Focus.</em></strong> You can use a Druidic Focus as a Spellcasting Focus for your Druid spells.</p>"
+      "description": "You have learned to cast spells through studying the mystical forces of nature. See chapter 7 for the rules on spellcasting. The information below details how you use those rules with Druid spells, which appear on the Druid spell list later in the class’s description.\n\n**Cantrips.** You know two cantrips of your choice from the Druid spell list.\n\nWhenever you gain a Druid level, you can replace one of your cantrips with another cantrip of your choice from the Druid spell list.\n\nWhen you reach Druid levels 4 and 10, you learn another cantrip of your choice from the Druid spell list, as shown in the Cantrips column of the Druid Features table.\n\n**Spell Slots.** The Druid Features table shows how many spell slots you have to cast your level 1+ spells. You regain all expended slots when you finish a Long Rest.\n\n**Prepared Spells of Level 1+.** You prepare the list of level 1+ spells that are available for you to cast with this feature. To start, choose four level 1 spells from the Druid spell list.\n\nThe number of spells on your list increases as you gain Druid levels, as shown in the Prepared Spells column of the Druid Features table. Whenever that number increases, choose additional spells from the Druid spell list until the number of spells on your list matches the number on the table. The chosen spells must be of a level for which you have spell slots. For example, if you’re a level 3 Druid, your list of prepared spells can include six spells of levels 1 and 2 in any combination.\n\nIf another Druid feature gives you spells that you always have prepared, those spells don’t count against the number of spells you can prepare with this feature, but those spells otherwise count as Druid spells for you.\n\n**Changing Your Prepared Spells.** Whenever you finish a Long Rest, you can change your list of prepared spells, replacing any of the spells with other Druid spells for which you have spell slots.\n\n**Spellcasting Ability.** Wisdom is your spellcasting ability for your Druid spells.\n\n**Spellcasting Focus.** You can use a Druidic Focus as a Spellcasting Focus for your Druid spells.",
+      "level": 1
     },
     {
       "name": "Druidic",
-      "description": "<p>You know Druidic, the secret language of Druids. While learning this ancient tongue, you also unlocked the magic of communicating with animals; you always have the Speak with Animals spell prepared.</p>\r\n<p>You can use Druidic to leave hidden messages. You and others who know Druidic automatically spot such a message. Others spot the message’s presence with a successful DC 15 Intelligence (Investigation) check but can’t decipher it without magic.</p>"
+      "description": "You know Druidic, the secret language of Druids. While learning this ancient tongue, you also unlocked the magic of communicating with animals; you always have the Speak with Animals spell prepared.\n\nYou can use Druidic to leave hidden messages. You and others who know Druidic automatically spot such a message. Others spot the message’s presence with a successful DC 15 Intelligence (Investigation) check but can’t decipher it without magic.",
+      "level": 1
     },
     {
       "name": "Primal Order",
-      "description": "<p>You have dedicated yourself to one of the following sacred roles of your choice.</p>"
+      "description": "You have dedicated yourself to one of the following sacred roles of your choice.",
+      "level": 1
     },
     {
       "name": "Wild Shape",
-      "description": "<p>The power of nature allows you to assume the form of an animal. As a Bonus Action, you shape-shift into a Beast form that you have learned for this feature (see &ldquo;Known Forms&rdquo; below). You stay in that form for a number of hours equal to half your Druid level or until you use Wild Shape again, have the Incapacitated condition, or die. You can also leave the form early as a Bonus Action.</p>\r\n<p><strong><em>Number of Uses.</em></strong> You can use Wild Shape twice. You regain one expended use when you finish a Short Rest, and you regain all expended uses when you finish a Long Rest.</p>\r\n<p>You gain additional uses when you reach certain Druid levels, as shown in the Wild Shape column of the Druid Features table.</p>\r\n<p><strong><em>Known Forms.</em></strong> You know four Beast forms for this feature, chosen from among Beast stat blocks that have a maximum Challenge Rating of 1/4 and that lack a Fly Speed. Whenever you finish a Long Rest, you can replace one of your known forms with another eligible form.</p>\r\n<p>When you reach certain Druid levels, your number of known forms and the maximum Challenge Rating for those forms increases, as shown in the Beast Shapes table. In addition, starting at level 8, you can adopt a form that has a Fly Speed.</p>\r\n<p>When choosing known forms, you may look in the <em><a href=\"https://www.dndbeyond.com/sources/dnd/mm-2024\">Monster Manual</a></em> or elsewhere for eligible Beasts if the Dungeon Master permits you to do so.</p>\r\n<table class=\"table-compendium\" style=\"--sb-table-row-bg-hover: #b3d3df; --sb-table-row-bg-dark: #d7e8ee; --sb-table-row-bg-light: #f1f7f9; --dark-sb-table-row-bg-light: #5e7982; --dark-sb-table-row-bg-dark: #5c7f8c; --dark-sb-table-row-bg-hover: #78a2b0;\"><caption>Beast Shapes</caption>\r\n<thead>\r\n<tr>\r\n<th>Druid Level</th>\r\n<th>Known Forms</th>\r\n<th>Max CR</th>\r\n<th>Fly Speed</th>\r\n</tr>\r\n</thead>\r\n<tbody>\r\n<tr>\r\n<td>2</td>\r\n<td>4</td>\r\n<td>1/4</td>\r\n<td>No</td>\r\n</tr>\r\n<tr>\r\n<td>4</td>\r\n<td>6</td>\r\n<td>1/2</td>\r\n<td>No</td>\r\n</tr>\r\n<tr>\r\n<td>8</td>\r\n<td>8</td>\r\n<td>1</td>\r\n<td>Yes</td>\r\n</tr>\r\n</tbody>\r\n</table>\r\n<p><strong><em>Rules While Shape-Shifted.</em></strong> While in a form, you retain your personality, memories, and ability to speak, and the following rules apply:</p>\r\n<p><strong><em>Temporary Hit Points.</em></strong> When you assume a Wild Shape form, you gain a number of Temporary Hit Points equal to your Druid level.</p>\r\n<p><strong><em>Game Statistics.</em></strong> Your game statistics are replaced by the Beast’s stat block, but you retain your creature type; Hit Points; Hit Point Dice; Intelligence, Wisdom, and Charisma scores; class features; languages; and feats. You also retain your skill and saving throw proficiencies and use your Proficiency Bonus for them, in addition to gaining the proficiencies of the creature. If a skill or saving throw modifier in the Beast’s stat block is higher than yours, use the one in the stat block.</p>\r\n<p><strong><em>No Spellcasting.</em></strong> You can’t cast spells, but shape-shifting doesn’t break your Concentration or otherwise interfere with a spell you’ve already cast.</p>\r\n<p><strong><em>Objects.</em></strong> Your ability to handle objects is determined by the form’s limbs rather than your own. In addition, you choose whether your equipment falls in your space, merges into your new form, or is worn by it. Worn equipment functions as normal, but the DM decides whether it’s practical for the new form to wear a piece of equipment based on the creature’s size and shape. Your equipment doesn’t change size or shape to match the new form, and any equipment that the new form can’t wear must either fall to the ground or merge with the form. Equipment that merges with the form has no effect while you’re in that form.</p>"
+      "description": "The power of nature allows you to assume the form of an animal. As a Bonus Action, you shape-shift into a Beast form that you have learned for this feature (see “Known Forms” below). You stay in that form for a number of hours equal to half your Druid level or until you use Wild Shape again, have the Incapacitated condition, or die. You can also leave the form early as a Bonus Action.\n\n**Number of Uses.** You can use Wild Shape twice. You regain one expended use when you finish a Short Rest, and you regain all expended uses when you finish a Long Rest.\n\nYou gain additional uses when you reach certain Druid levels, as shown in the Wild Shape column of the Druid Features table.\n\n**Known Forms.** You know four Beast forms for this feature, chosen from among Beast stat blocks that have a maximum Challenge Rating of 1/4 and that lack a Fly Speed. Whenever you finish a Long Rest, you can replace one of your known forms with another eligible form.\n\nWhen you reach certain Druid levels, your number of known forms and the maximum Challenge Rating for those forms increases, as shown in the Beast Shapes table. In addition, starting at level 8, you can adopt a form that has a Fly Speed.\n\nWhen choosing known forms, you may look in the *Monster Manual* or elsewhere for eligible Beasts if the Dungeon Master permits you to do so.\n\n| Druid Level | Known Forms | Max CR | Fly Speed |\n| --- | --- | --- | --- |\n| 2 | 4 | 1/4 | No |\n| 4 | 6 | 1/2 | No |\n| 8 | 8 | 1 | Yes |\n\n**Rules While Shape-Shifted.** While in a form, you retain your personality, memories, and ability to speak, and the following rules apply:\n\n**Temporary Hit Points.** When you assume a Wild Shape form, you gain a number of Temporary Hit Points equal to your Druid level.\n\n**Game Statistics.** Your game statistics are replaced by the Beast’s stat block, but you retain your creature type; Hit Points; Hit Point Dice; Intelligence, Wisdom, and Charisma scores; class features; languages; and feats. You also retain your skill and saving throw proficiencies and use your Proficiency Bonus for them, in addition to gaining the proficiencies of the creature. If a skill or saving throw modifier in the Beast’s stat block is higher than yours, use the one in the stat block.\n\n**No Spellcasting.** You can’t cast spells, but shape-shifting doesn’t break your Concentration or otherwise interfere with a spell you’ve already cast.\n\n**Objects.** Your ability to handle objects is determined by the form’s limbs rather than your own. In addition, you choose whether your equipment falls in your space, merges into your new form, or is worn by it. Worn equipment functions as normal, but the DM decides whether it’s practical for the new form to wear a piece of equipment based on the creature’s size and shape. Your equipment doesn’t change size or shape to match the new form, and any equipment that the new form can’t wear must either fall to the ground or merge with the form. Equipment that merges with the form has no effect while you’re in that form.",
+      "level": 2
     },
     {
       "name": "Wild Companion",
-      "description": "<p>You can summon a nature spirit that assumes an animal form to aid you. As a Magic action, you can expend a spell slot or a use of Wild Shape to cast the Find Familiar spell without Material components.</p>\r\n<p>When you cast the spell in this way, the familiar is Fey and disappears when you finish a Long Rest.</p>"
+      "description": "You can summon a nature spirit that assumes an animal form to aid you. As a Magic action, you can expend a spell slot or a use of Wild Shape to cast the Find Familiar spell without Material components.\n\nWhen you cast the spell in this way, the familiar is Fey and disappears when you finish a Long Rest.",
+      "level": 2
     },
     {
       "name": "Druid Subclass",
-      "description": "<p>You gain a Druid subclass of your choice. A subclass is a specialization that grants you features at certain Druid levels. For the rest of your career, you gain each of your subclass’s features that are of your Druid level or lower.</p>"
+      "description": "You gain a Druid subclass of your choice. A subclass is a specialization that grants you features at certain Druid levels. For the rest of your career, you gain each of your subclass’s features that are of your Druid level or lower.",
+      "level": 3
     },
     {
       "name": "Ability Score Improvement",
-      "description": "<p>You gain the Ability Score Improvement feat or another feat of your choice for which you qualify. You gain this feature again at Druid levels 8, 12, and 16.</p>"
+      "description": "You gain the Ability Score Improvement feat or another feat of your choice for which you qualify. You gain this feature again at Druid levels 8, 12, and 16.",
+      "level": 4
     },
     {
       "name": "Wild Resurgence",
-      "description": "<p>Once on each of your turns, if you have no uses of Wild Shape left, you can give yourself one use by expending a spell slot (no action required).</p>\r\n<p>In addition, you can expend one use of Wild Shape (no action required) to give yourself a level 1 spell slot, but you can’t do so again until you finish a Long Rest.</p>"
-    },
-    {
-      "name": "Elemental Fury",
-      "description": "<p>The might of the elements flows through you. You gain one of the following options of your choice.</p>"
-    },
-    {
-      "name": "8: Ability Score Improvement",
-      "description": "<p>You gain the Ability Score Improvement feat or another feat of your choice for which you qualify. You gain this feature again at Druid levels 12 and 16.</p>"
-    },
-    {
-      "name": "12: Ability Score Improvement",
-      "description": "<p>You gain the Ability Score Improvement feat or another feat of your choice for which you qualify. You gain this feature again at Druid level 16.</p>"
-    },
-    {
-      "name": "Improved Elemental Fury",
-      "description": "<p>The option you chose for Elemental Fury grows more powerful, as detailed below.</p>\r\n<p><strong><em>Potent Spellcasting.</em></strong> When you cast a Druid cantrip with a range of 10 feet or greater, the spell’s range increases by 300 feet.</p>\r\n<p><strong><em>Primal Strike.</em></strong> The extra damage of your Primal Strike increases to 2d8.</p>"
-    },
-    {
-      "name": "16: Ability Score Improvement",
-      "description": "<p>You gain the Ability Score Improvement feat or another feat of your choice for which you qualify.</p>"
-    },
-    {
-      "name": "Beast Spells",
-      "description": "<p>While using Wild Shape, you can cast spells in Beast form, except for any spell that has a Material component with a cost specified or that consumes its Material component.</p>"
-    },
-    {
-      "name": "Epic Boon",
-      "description": "<p>You gain an Epic Boon feat or another feat of your choice for which you qualify.</p>"
-    },
-    {
-      "name": "Archdruid",
-      "description": "<p>The vitality of nature constantly blooms within you, granting you the following benefits.</p>\r\n<p><strong><em>Evergreen Wild Shape.</em></strong> Whenever you roll Initiative and have no uses of Wild Shape left, you regain one expended use of it.</p>\r\n<p><strong><em>Nature Magician.</em></strong> You can convert uses of Wild Shape into a spell slot (no action required). Choose a number of your unexpended uses of Wild Shape and convert them into a single spell slot, with each use contributing 2 spell levels. For example, if you convert two uses of Wild Shape, you produce a level 4 spell slot. Once you use this benefit, you can’t do so again until you finish a Long Rest.</p>\r\n<p><strong><em>Longevity.</em></strong> The primal magic that you wield causes you to age more slowly. For every ten years that pass, your body ages only one year.</p>"
+      "description": "Once on each of your turns, if you have no uses of Wild Shape left, you can give yourself one use by expending a spell slot (no action required).\n\nIn addition, you can expend one use of Wild Shape (no action required) to give yourself a level 1 spell slot, but you can’t do so again until you finish a Long Rest.",
+      "level": 5
     },
     {
       "name": "Ability Score Increases",
-      "description": "<p>When determining your character’s ability scores, increase one score by 2 and increase a different score by 1, or increase three different scores by 1. Follow this rule regardless of the method you use to determine the scores, such as rolling or point buy. The &ldquo;Quick Build&rdquo; section for your character’s class offers suggestions on which scores to increase. You can follow those suggestions or ignore them, but you can’t raise any of your scores above 20.</p>"
+      "description": "When determining your character’s ability scores, increase one score by 2 and increase a different score by 1, or increase three different scores by 1. Follow this rule regardless of the method you use to determine the scores, such as rolling or point buy. The “Quick Build” section for your character’s class offers suggestions on which scores to increase. You can follow those suggestions or ignore them, but you can’t raise any of your scores above 20.",
+      "level": null
     },
     {
       "name": "Languages",
-      "description": "<p>Your character can speak, read, and write Common and one other language that you and your DM agree is appropriate for the character. The <em><a title=\"Player’s Handbook\" href=\"https://www.dndbeyond.com/sources/phb\">Player’s Handbook</a></em> offers a list of languages to choose from. The DM is free to modify that list for a campaign.</p>"
+      "description": "Your character can speak, read, and write Common and one other language that you and your DM agree is appropriate for the character. The *Player’s Handbook* offers a list of languages to choose from. The DM is free to modify that list for a campaign.",
+      "level": null
     },
     {
       "name": "Creature Type",
-      "description": "<p>You are a Humanoid. You are also considered an elf for any prerequisite or effect that requires you to be an elf.</p>"
+      "description": "You are a Humanoid. You are also considered an elf for any prerequisite or effect that requires you to be an elf.",
+      "level": null
     },
     {
       "name": "Size",
-      "description": "<p>You are Medium.</p>"
+      "description": "You are Medium.",
+      "level": null
     },
     {
       "name": "Speed",
-      "description": "<p>Your walking speed is 30 feet, and you have a swimming speed equal to your walking speed.</p>"
+      "description": "Your walking speed is 30 feet, and you have a swimming speed equal to your walking speed.",
+      "level": null
     },
     {
       "name": "Child of the Sea",
-      "description": "<p>You can breathe air and water, and you have resistance to cold damage.</p>"
+      "description": "You can breathe air and water, and you have resistance to cold damage.",
+      "level": null
     },
     {
       "name": "Darkvision",
-      "description": "<p>You can see in dim light within 60 feet of you as if it were bright light and in darkness as if it were dim light. You discern colors in that darkness only as shades of gray.</p>"
+      "description": "You can see in dim light within 60 feet of you as if it were bright light and in darkness as if it were dim light. You discern colors in that darkness only as shades of gray.",
+      "level": null
     },
     {
       "name": "Fey Ancestry",
-      "description": "<p>You have advantage on saving throws you make to avoid or end the charmed condition on yourself.</p>"
+      "description": "You have advantage on saving throws you make to avoid or end the charmed condition on yourself.",
+      "level": null
     },
     {
       "name": "Friend of the Sea",
-      "description": "<p>Aquatic animals have an extraordinary affinity with your people. You can communicate simple ideas to any Beast that has a swimming speed. It can understand your words, though you have no special ability to understand it in return.</p>"
+      "description": "Aquatic animals have an extraordinary affinity with your people. You can communicate simple ideas to any Beast that has a swimming speed. It can understand your words, though you have no special ability to understand it in return.",
+      "level": null
     },
     {
       "name": "Keen Senses",
-      "description": "<p>You have proficiency in the Perception skill.</p>"
+      "description": "You have proficiency in the Perception skill.",
+      "level": null
     },
     {
       "name": "Trance",
-      "description": "<p>You don’t need to sleep, and magic can’t put you to sleep. You can finish a long rest in 4 hours if you spend those hours in a trancelike meditation, during which you retain consciousness.</p>\r\n<p>Whenever you finish this trance, you can gain two proficiencies that you don’t have, each one with a weapon or a tool of your choice selected from the <em><a title=\"Player’s Handbook\" href=\"https://www.dndbeyond.com/sources/phb\">Player’s Handbook</a></em>. You mystically acquire these proficiencies by drawing them from shared elven memory, and you retain them until you finish your next long rest.</p>"
+      "description": "You don’t need to sleep, and magic can’t put you to sleep. You can finish a long rest in 4 hours if you spend those hours in a trancelike meditation, during which you retain consciousness.\n\nWhenever you finish this trance, you can gain two proficiencies that you don’t have, each one with a weapon or a tool of your choice selected from the *Player’s Handbook*. You mystically acquire these proficiencies by drawing them from shared elven memory, and you retain them until you finish your next long rest.",
+      "level": null
     },
     {
       "name": "Guide Ability Score Improvements",
-      "description": "<p>The Guide Background allows you to choose between Dexterity, Constitution, and Wisdom. Increase one of these scores by 2 and another one by 1, or increase all three by 1. None of these increases can raise a score above 20.</p>"
+      "description": "The Guide Background allows you to choose between Dexterity, Constitution, and Wisdom. Increase one of these scores by 2 and another one by 1, or increase all three by 1. None of these increases can raise a score above 20.",
+      "level": null
     },
     {
       "name": "Magic Initiate (Druid)",
-      "description": "<p><em>Origin Feat</em></p>\r\n<p>You gain the following benefits.</p>\r\n<p><em><strong>Two Cantrips.</strong></em> You learn two cantrips of your choice from the Druid spell list. Intelligence, Wisdom, or Charisma is your spellcasting ability for this feat’s spells (choose when you select this feat).</p>\r\n<p><em><strong>Level 1 Spell.</strong> </em>Choose a level 1 spell from the same list you selected for this feat’s cantrips. You always have that spell prepared. You can cast it once without a spell slot, and you regain the ability to cast it in that way when you finish a Long Rest. You can also cast the spell using any spell slots you have.</p>\r\n<p><em><strong>Spell Change.</strong></em> Whenever you gain a new level, you can replace one of the spells you chose for this feat with a different spell of the same level from the chosen spell list.</p>\r\n<p><em><strong>Repeatable.</strong></em> You can take this feat more than once, but you must choose a different spell list each time.</p>"
+      "description": "*Origin Feat*\n\nYou gain the following benefits.\n\n***Two Cantrips.*** You learn two cantrips of your choice from the Druid spell list. Intelligence, Wisdom, or Charisma is your spellcasting ability for this feat’s spells (choose when you select this feat).\n\n***Level 1 Spell.** *Choose a level 1 spell from the same list you selected for this feat’s cantrips. You always have that spell prepared. You can cast it once without a spell slot, and you regain the ability to cast it in that way when you finish a Long Rest. You can also cast the spell using any spell slots you have.\n\n***Spell Change.*** Whenever you gain a new level, you can replace one of the spells you chose for this feat with a different spell of the same level from the chosen spell list.\n\n***Repeatable.*** You can take this feat more than once, but you must choose a different spell list each time.",
+      "level": null
     },
     {
       "name": "Dark Bargain",
-      "description": "<p>At your GM's discretion, you can take a Dark Bargain.</p>"
+      "description": "At your GM's discretion, you can take a Dark Bargain.",
+      "level": null
     }
   ],
   "proficiencies": {
@@ -935,7 +931,9 @@
           "toHit": null,
           "dc": null,
           "effect": "Communication",
-          "duration": "1 Round (Time)"
+          "duration": "1 Round (Time)",
+          "refKind": "wonder",
+          "refId": "message"
         },
         {
           "name": "Shillelagh",
@@ -960,7 +958,9 @@
           "toHit": 7,
           "dc": null,
           "effect": "Damage",
-          "duration": "1 Minute (Time)"
+          "duration": "1 Minute (Time)",
+          "refKind": "wonder",
+          "refId": "shillelagh"
         },
         {
           "name": "Starry Wisp",
@@ -984,7 +984,9 @@
           "toHit": 7,
           "dc": null,
           "effect": null,
-          "duration": " (Instantaneous)"
+          "duration": " (Instantaneous)",
+          "refKind": "wonder",
+          "refId": "starry-wisp"
         },
         {
           "name": "Water Whip",
@@ -1008,7 +1010,9 @@
           "toHit": 7,
           "dc": 15,
           "effect": null,
-          "duration": " (Instantaneous)"
+          "duration": " (Instantaneous)",
+          "refKind": "wonder",
+          "refId": "water-whip"
         },
         {
           "name": "Shape Water",
@@ -1031,7 +1035,9 @@
           "toHit": null,
           "dc": null,
           "effect": "Control",
-          "duration": " (Instantaneous)"
+          "duration": " (Instantaneous)",
+          "refKind": "wonder",
+          "refId": "shape-water"
         }
       ]
     },
@@ -1060,7 +1066,9 @@
           "toHit": null,
           "dc": null,
           "effect": "Communication",
-          "duration": "10 Minute (Time)"
+          "duration": "10 Minute (Time)",
+          "refKind": "wonder",
+          "refId": "speak-with-animals"
         },
         {
           "name": "Find Familiar",
@@ -1085,7 +1093,9 @@
           "toHit": null,
           "dc": null,
           "effect": "Summoning",
-          "duration": " (Instantaneous)"
+          "duration": " (Instantaneous)",
+          "refKind": "wonder",
+          "refId": "find-familiar"
         },
         {
           "name": "Healing Word",
@@ -1108,7 +1118,9 @@
           "toHit": null,
           "dc": null,
           "effect": "Healing",
-          "duration": " (Instantaneous)"
+          "duration": " (Instantaneous)",
+          "refKind": "wonder",
+          "refId": "healing-word"
         },
         {
           "name": "Ice Knife",
@@ -1132,7 +1144,9 @@
           "toHit": 7,
           "dc": 15,
           "effect": "Damage",
-          "duration": " (Instantaneous)"
+          "duration": " (Instantaneous)",
+          "refKind": "wonder",
+          "refId": "ice-knife"
         },
         {
           "name": "Entangle",
@@ -1156,7 +1170,9 @@
           "toHit": null,
           "dc": 15,
           "effect": "Control",
-          "duration": "1 Minute (Concentration)"
+          "duration": "1 Minute (Concentration)",
+          "refKind": "wonder",
+          "refId": "entangle"
         },
         {
           "name": "Charm Person",
@@ -1180,7 +1196,9 @@
           "toHit": null,
           "dc": 15,
           "effect": "Control",
-          "duration": "1 Hour (Time)"
+          "duration": "1 Hour (Time)",
+          "refKind": "wonder",
+          "refId": "charm-person"
         },
         {
           "name": "Cure Wounds",
@@ -1204,7 +1222,9 @@
           "toHit": null,
           "dc": null,
           "effect": "Healing",
-          "duration": " (Instantaneous)"
+          "duration": " (Instantaneous)",
+          "refKind": "wonder",
+          "refId": "cure-wounds"
         },
         {
           "name": "Absorb Elements",
@@ -1227,7 +1247,9 @@
           "toHit": null,
           "dc": null,
           "effect": "Damage",
-          "duration": "1 Round (Time)"
+          "duration": "1 Round (Time)",
+          "refKind": "wonder",
+          "refId": "absorb-elements"
         }
       ]
     },
@@ -1257,7 +1279,9 @@
           "toHit": null,
           "dc": null,
           "effect": "Buff",
-          "duration": "1 Hour (Time)"
+          "duration": "1 Hour (Time)",
+          "refKind": "wonder",
+          "refId": "barkskin"
         },
         {
           "name": "Wither and Bloom",
@@ -1282,7 +1306,9 @@
           "toHit": null,
           "dc": 15,
           "effect": null,
-          "duration": " (Instantaneous)"
+          "duration": " (Instantaneous)",
+          "refKind": "wonder",
+          "refId": "wither-and-bloom"
         },
         {
           "name": "Moonbeam",
@@ -1307,7 +1333,9 @@
           "toHit": null,
           "dc": 15,
           "effect": "Damage",
-          "duration": "1 Minute (Concentration)"
+          "duration": "1 Minute (Concentration)",
+          "refKind": "wonder",
+          "refId": "moonbeam"
         }
       ]
     },
@@ -1336,9 +1364,99 @@
           "toHit": null,
           "dc": 15,
           "effect": "Damage",
-          "duration": "10 Minute (Concentration)"
+          "duration": "10 Minute (Concentration)",
+          "refKind": "wonder",
+          "refId": "call-lightning"
         }
       ]
     }
-  ]
+  ],
+  "featureIds": [
+    "feat.ability-score-improvement",
+    "feat.guide-ability-score-improvements",
+    "feat.magic-initiate-druid",
+    "feat.dark-bargain",
+    "feat.druid-circle-of-the-sea-spells",
+    "feat.druid-wrath-of-the-sea",
+    "feat.druid-aquatic-affinity",
+    "feat.core-druid-traits",
+    "feat.spellcasting",
+    "feat.druid-druidic",
+    "feat.primal-order",
+    "feat.wild-shape",
+    "feat.druid-wild-companion",
+    "feat.druid-druid-subclass",
+    "feat.druid-wild-resurgence",
+    "feat.sea-elf-child-of-the-sea",
+    "feat.darkvision.60",
+    "feat.bugbear-fey-ancestry",
+    "feat.sea-elf-friend-of-the-sea",
+    "feat.eladrin-keen-senses",
+    "feat.trance"
+  ],
+  "featureParams": {
+    "feat.druid-circle-of-the-sea-spells": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.druid-wrath-of-the-sea": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.druid-aquatic-affinity": {
+      "grantedAtLevel": [
+        6
+      ]
+    },
+    "feat.core-druid-traits": {
+      "grantedAtLevel": [
+        1
+      ]
+    },
+    "feat.spellcasting": {
+      "grantedAtLevel": [
+        1
+      ]
+    },
+    "feat.druid-druidic": {
+      "grantedAtLevel": [
+        1
+      ]
+    },
+    "feat.primal-order": {
+      "grantedAtLevel": [
+        1
+      ]
+    },
+    "feat.wild-shape": {
+      "grantedAtLevel": [
+        2
+      ]
+    },
+    "feat.druid-wild-companion": {
+      "grantedAtLevel": [
+        2
+      ]
+    },
+    "feat.druid-druid-subclass": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.ability-score-improvement": {
+      "grantedAtLevel": [
+        4,
+        8,
+        12,
+        16
+      ]
+    },
+    "feat.druid-wild-resurgence": {
+      "grantedAtLevel": [
+        5
+      ]
+    }
+  }
 }

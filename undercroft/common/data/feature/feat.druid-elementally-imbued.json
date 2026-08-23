@@ -1,0 +1,26 @@
+{
+  "id": "feat.druid-elementally-imbued",
+  "name": "Elementally Imbued",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "While in a Wild Shape form, you gain the following benefits.\n\nElemental Strikes. Each of your attacks in a Wild Shape form can deal its normal damage type, Acid damage, Cold damage, Fire damage, or Lightning damage. You make this choice each time you hit with those attacks.\n\nElemental Cascade. Choose one of the following damage types: Acid, Cold, Fire, or Lightning. Once per turn when you hit with a Wild Shape form’s attack, you can expend a spell slot (no action required) to deal extra damage of the chosen type equal to 1d6 per level of the spell slot, to a maximum of 5d6. The target must make a Constitution saving throw against your spell save DC. On a failed save, the target suffers an effect based on the chosen damage type for 1 minute. The target repeats the save at the end of each of its turns, ending the effect on itself on a success.\n\nAcid. The target suffers a penalty to AC equal to half your Wisdom modifier (minimum 1).\n\nCold. The target’s Speed is 0 and they have Disadvantage on Strength and Dexterity checks.\n\nFire. At the start of each of its turns, the target takes Fire damage equal to your Wisdom modifier.\n\nLightning. The target can’t make Opportunity Attacks, and the first attack it makes on each of its turns has Disadvantage.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "While in a Wild Shape form, you gain the following benefits.\n\nElemental Strikes. Each of your attacks in a Wild Shape form can deal its normal damage type, Acid damage, Cold damage, Fire damage, or Lightning damage. You make this choice each time you hit with those attacks.\n\nElemental Cascade. Choose one of the following damage types: Acid, Cold, Fire, or Lightning. Once per turn when you hit with a Wild Shape form’s attack, you can expend a spell slot (no action required) to deal extra damage of the chosen type equal to 1d6 per level of the spell slot, to a maximum of 5d6. The target must make a Constitution saving throw against your spell save DC. On a failed save, the target suffers an effect based on the chosen damage type for 1 minute. The target repeats the save at the end of each of its turns, ending the effect on itself on a success.\n\nAcid. The target suffers a penalty to AC equal to half your Wisdom modifier (minimum 1).\n\nCold. The target’s Speed is 0 and they have Disadvantage on Strength and Dexterity checks.\n\nFire. At the start of each of its turns, the target takes Fire damage equal to your Wisdom modifier.\n\nLightning. The target can’t make Opportunity Attacks, and the first attack it makes on each of its turns has Disadvantage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

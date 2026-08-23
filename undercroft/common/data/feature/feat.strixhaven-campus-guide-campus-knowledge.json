@@ -1,7 +1,8 @@
 {
   "name": "Campus Knowledge",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "While at Strixhaven, the creature can’t become lost by magical or nonmagical means. The creature also has advantage on ability checks made to locate creatures or objects at Strixhaven.",
   "mechanics": {

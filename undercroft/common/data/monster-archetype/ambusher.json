@@ -2,7 +2,8 @@
   "id": "ambusher",
   "name": "Ambusher",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Relies on surprise and an explosive opening to win before the fight settles in.",
   "recipe": {

@@ -1,0 +1,26 @@
+{
+  "id": "feat.artificer-steel-defender",
+  "name": "Steel Defender",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "Your tinkering has borne you a companion, a Steel Defender (see the stat block below). You determine the defender’s appearance and whether it has two legs or four; your choices don’t affect the defender’s game statistics.\n\nThe defender is Friendly to you and your allies and obeys you. It vanishes if you die.\n\nThe Defender in Combat. In combat, the defender acts during your turn. It can move and take its Reaction on its own, but the only action it takes is the Dodge action unless you take a Bonus Action to command it to take an action. If you have the Incapacitated condition, the defender acts on its own and isn’t limited to the Dodge action.\n\nRestoring or Replacing the Defender. If the defender has died within the last hour, you can take a Magic action to touch it and expend a spell slot. The defender returns to life after 1 minute with all its Hit Points restored.\n\nWhenever you finish a Long Rest, you can create a new defender if you have Smith’s Tools in hand. If you already have a defender from this feature, the first one vanishes.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "Your tinkering has borne you a companion, a Steel Defender (see the stat block below). You determine the defender’s appearance and whether it has two legs or four; your choices don’t affect the defender’s game statistics.\n\nThe defender is Friendly to you and your allies and obeys you. It vanishes if you die.\n\nThe Defender in Combat. In combat, the defender acts during your turn. It can move and take its Reaction on its own, but the only action it takes is the Dodge action unless you take a Bonus Action to command it to take an action. If you have the Incapacitated condition, the defender acts on its own and isn’t limited to the Dodge action.\n\nRestoring or Replacing the Defender. If the defender has died within the last hour, you can take a Magic action to touch it and expend a spell slot. The defender returns to life after 1 minute with all its Hit Points restored.\n\nWhenever you finish a Long Rest, you can create a new defender if you have Smith’s Tools in hand. If you already have a defender from this feature, the first one vanishes."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

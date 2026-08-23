@@ -1,7 +1,8 @@
 {
   "name": "Relentless",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "If the creature takes 7 damage or less that would reduce it to 0 hit points, it is reduced to 1 hit point instead.",
   "mechanics": {

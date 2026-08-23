@@ -1,0 +1,26 @@
+{
+  "id": "feat.paladin-genie-spells",
+  "name": "Genie Spells",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "When you reach a Paladin level specified in the Genie Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Chromatic Orb, Elementalism, Thunderous Smite\n\nLevel 5: Mirror Image, Phantasmal Force\n\nLevel 9: Fly, Gaseous Form\n\nLevel 13: Conjure Minor Elementals, Summon Elemental\n\nLevel 17: Banishing Smite, Contact Other Plane",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "When you reach a Paladin level specified in the Genie Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Chromatic Orb, Elementalism, Thunderous Smite\n\nLevel 5: Mirror Image, Phantasmal Force\n\nLevel 9: Fly, Gaseous Form\n\nLevel 13: Conjure Minor Elementals, Summon Elemental\n\nLevel 17: Banishing Smite, Contact Other Plane"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

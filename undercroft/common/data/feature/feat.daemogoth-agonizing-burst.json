@@ -1,7 +1,8 @@
 {
   "name": "Agonizing Burst",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Melee or Ranged Spell Attack: +9 to hit, reach 10 ft. or range 120 ft., one target. Hit: 11 (2d10) force damage. If the target is a creature, the creature regains 5 hit points.",
   "mechanics": {

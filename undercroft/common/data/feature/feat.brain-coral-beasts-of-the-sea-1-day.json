@@ -1,7 +1,8 @@
 {
   "name": "Beasts of the Sea (1/Day)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature magically calls 2d4 giant crabs, 2 giant sea horses or reef sharks, or 1 swarm of quippers, provided the creature is underwater. The called creatures arrive in 1d4 rounds, acting as allies of the creature and obeying its telepathic commands. The Beasts remain for 1 hour, until the creature dies, or until the creature dismisses them as a bonus action.",
   "mechanics": {

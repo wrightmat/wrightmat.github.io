@@ -1,7 +1,8 @@
 {
   "name": "AC Minimum",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Sets a floor under the wearer's own AC, without replacing the normal calculation the way a fixed AC would.",
   "mechanics": {

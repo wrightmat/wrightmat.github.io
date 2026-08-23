@@ -1,7 +1,8 @@
 {
   "name": "Spectral Armor and Shield",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature’s AC accounts for its spectral armor and shield.",
   "mechanics": {

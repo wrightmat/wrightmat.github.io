@@ -2,14 +2,22 @@
   "id": "res.dragonshard-siberys-medium",
   "name": "Siberys Dragonshard, Medium",
   "family": "dragonshard",
-  "systemIds": ["sys.dnd5e"],
-  "settingIds": ["eberron"],
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "settingIds": [
+    "eberron"
+  ],
   "description": "An amber crystal with swirling golden veins, fallen from the Ring of Siberys — rare in Khorvaire but found in significant fields on Xen'drik. Siberys shards have a close affinity to dragonmarks and are a vital part of any dragonmark focus item.",
   "category": "wondrous-item",
   "price": "4d8x100 gp",
   "tags": {
     "locationTypes": [],
-    "locationPurposes": ["commerce", "resource"],
+    "locationPurposes": [
+      "commerce",
+      "resource"
+    ],
     "environments": []
   }
 }

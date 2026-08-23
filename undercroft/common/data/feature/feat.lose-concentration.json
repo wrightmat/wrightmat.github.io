@@ -1,7 +1,8 @@
 {
   "name": "Lose Concentration",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "A failed save forces the target to lose concentration on whatever it's concentrating on.",
   "mechanics": {

@@ -3,7 +3,8 @@
   "name": "Lesser Restoration",
   "notes": "You touch a creature and can end either one disease or one condition afflicting it. The condition can be blinded, deafened, paralyzed, or poisoned.",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "url": "https://www.dnd5eapi.co/api/2014/spells/lesser-restoration",
   "mapping": "5e-api-spell",

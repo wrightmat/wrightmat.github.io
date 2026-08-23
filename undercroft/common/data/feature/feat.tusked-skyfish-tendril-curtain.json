@@ -1,7 +1,8 @@
 {
   "name": "Tendril Curtain",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "When the creature is flying, its wispy, electrified tendrils dangle beneath it and touch all creatures within 20 feet directly below its space as it moves. Any creatures in the path of its movement take 10 (3d6) lightning damage, or half damage with a successful DC 13 Dexterity saving throw.",
   "mechanics": {

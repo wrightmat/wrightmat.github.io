@@ -1,7 +1,8 @@
 {
   "name": "Reef Stealth",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "If the creature is within 10 feet of a coral reef, it can take the Hide action.",
   "mechanics": {

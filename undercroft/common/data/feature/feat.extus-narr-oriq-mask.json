@@ -1,7 +1,8 @@
 {
   "name": "Oriq Mask",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Extus wears an Oriq mask. While wearing the mask, he can't be targeted by any divination magic or perceived through magical scrying sensors and he adds double his proficiency bonus to Charisma (Deception) checks (included above).",
   "mechanics": {

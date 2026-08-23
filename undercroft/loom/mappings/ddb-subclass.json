@@ -11,11 +11,11 @@
         "fields": {
           "kind": {
             "type": "field",
-            "bind": "='subclass'"
+            "bind": "='variant'"
           },
           "index": {
             "type": "custom",
-            "fn": "slug"
+            "fn": "compoundSlug"
           },
           "url": {
             "type": "field",
@@ -25,24 +25,19 @@
             "type": "field",
             "bind": "@name"
           },
-          "class": {
-            "type": "object",
-            "fields": {
-              "index": {
-                "type": "custom",
-                "fn": "slug",
-                "args": {
-                  "path": "root.name"
-                }
-              },
-              "url": {
-                "type": "field",
-                "bind": "@root.url"
-              },
-              "name": {
-                "type": "field",
-                "bind": "@root.name"
-              }
+          "systemIds": {
+            "type": "custom",
+            "fn": "ddbSubclassSystemIds"
+          },
+          "parentKind": {
+            "type": "field",
+            "bind": "='class'"
+          },
+          "parentId": {
+            "type": "custom",
+            "fn": "slug",
+            "args": {
+              "path": "root.name"
             }
           },
           "summary": {

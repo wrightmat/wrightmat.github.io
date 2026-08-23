@@ -1,0 +1,26 @@
+{
+  "id": "feat.cleric-gestalt-anchor",
+  "name": "Gestalt Anchor",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "Your mental power increases, allowing you to project a sense of calm in a 10-foot Emanation that originates from you. The projection is inactive if you have the Incapacitated condition.\n\nYou and your allies in the projection gain a +2 bonus to Intelligence, Wisdom, and Charisma saving throws.\n\nIf another Mind Domain Cleric is present, a creature can only benefit from one Gestalt Anchor at a time.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "Your mental power increases, allowing you to project a sense of calm in a 10-foot Emanation that originates from you. The projection is inactive if you have the Incapacitated condition.\n\nYou and your allies in the projection gain a +2 bonus to Intelligence, Wisdom, and Charisma saving throws.\n\nIf another Mind Domain Cleric is present, a creature can only benefit from one Gestalt Anchor at a time."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

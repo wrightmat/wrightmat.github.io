@@ -1,7 +1,8 @@
 {
   "name": "Lock Control",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Locks, unlocks, opens, or closes a door, latch, or similar object from a distance.",
   "mechanics": {

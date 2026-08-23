@@ -1,7 +1,8 @@
 {
   "name": "Rousing Verse",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "When a creature the creature can see within 30 feet of it fails a saving throw, the creature magically weaves together stirring prose, allowing the creature to reroll the saving throw and use the higher result.",
   "mechanics": {

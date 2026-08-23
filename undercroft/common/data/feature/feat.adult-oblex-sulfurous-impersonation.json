@@ -1,7 +1,8 @@
 {
   "name": "Sulfurous Impersonation",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature extrudes a piece of itself that assumes the appearance of one Medium or smaller creature whose memories it has stolen. This simulacrum appears, feels, and sounds exactly like the creature it impersonates, though it smells faintly of sulfur. The creature can impersonate 1d4 + 1 different creatures, each one tethered to its body by a strand of slime that can extend up to 120 feet away. The simulacrum is an extension of the creature, meaning that the creature occupies its space and the simulacrum’s space simultaneously. The tether is immune to damage, but it is severed if there is no opening at least 1 inch wide between the creature and the simulacrum. The simulacrum disappears if the tether is severed.",
   "mechanics": {

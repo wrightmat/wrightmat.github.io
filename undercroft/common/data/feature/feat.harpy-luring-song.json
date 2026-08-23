@@ -1,7 +1,8 @@
 {
   "name": "Luring Song",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The monstrosity sings a magical melody. Every humanoid and giant within 300 ft. of the monstrosity that can hear the song must succeed on a DC 11 Wisdom saving throw or be charmed until the song ends. The monstrosity must take a bonus action on its subsequent turns to continue singing. It can stop singing at any time. The song ends if the monstrosity is incapacitated.\nWhile charmed by the monstrosity, a target is incapacitated and ignores the songs of other harpies. If the charmed target is more than 5 ft. away from the monstrosity, the must move on its turn toward the monstrosity by the most direct route. It doesn't avoid opportunity attacks, but before moving into damaging terrain, such as lava or a pit, and whenever it takes damage from a source other than the monstrosity, a target can repeat the saving throw. A creature can also repeat the saving throw at the end of each of its turns. If a creature's saving throw is successful, the effect ends on it.\nA target that successfully saves is immune to this harpy's song for the next 24 hours.",
   "mechanics": {

@@ -1,7 +1,8 @@
 {
   "name": "Amorphous",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature can move through a space as narrow as 1 inch wide without squeezing.",
   "mechanics": {

@@ -1,0 +1,25 @@
+{
+  "id": "feat.eladrin-keen-senses",
+  "name": "Keen Senses",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You have proficiency in the Perception skill.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You have proficiency in the Perception skill."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

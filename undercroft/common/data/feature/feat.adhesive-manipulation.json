@@ -1,7 +1,8 @@
 {
   "name": "Adhesive Manipulation",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Either creates a near-permanent magical bond between two objects, or instantly dissolves one.",
   "mechanics": {

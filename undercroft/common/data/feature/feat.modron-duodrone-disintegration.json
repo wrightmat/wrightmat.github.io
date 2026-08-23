@@ -1,7 +1,8 @@
 {
   "name": "Disintegration",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "If the creature dies, its body disintegrates into dust, leaving behind its weapons and anything else it was carrying.",
   "mechanics": {

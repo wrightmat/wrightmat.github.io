@@ -1,7 +1,8 @@
 {
   "name": "Spell Storing",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "A spellcaster who wears the creature's amulet can cause the creature to store one spell of 4th level or lower. To do so, the wearer must cast the spell on the creature. The spell has no effect but is stored within the creature. When commanded to do so by the wearer or when a situation arises that was predefined by the spellcaster, the creature casts the stored spell with any parameters set by the original caster, requiring no components. When the spell is cast or a new spell is stored, any previously stored spell is lost.",
   "mechanics": {

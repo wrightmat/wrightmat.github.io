@@ -3,7 +3,8 @@
   "name": "Fire Elemental Gem",
   "notes": "Wondrous item, uncommon\n\nThis red corundum contains a mote of elemental energy. When you use an action to break the gem, a fire elemental is summoned as if you had cast the conjure elemental spell, and the gem's magic is lost.",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "url": "https://www.dnd5eapi.co/api/2014/magic-items/elemental-gem-fire",
   "mapping": "5e-api-magic-item",

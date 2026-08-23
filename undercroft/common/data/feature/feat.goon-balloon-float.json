@@ -1,7 +1,8 @@
 {
   "name": "Float",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature moves up to 20 feet vertically in one direction without provoking opportunity attacks. If it ends this movement suspended in the air, it hovers in place. It can’t be knocked prone while airborne.",
   "mechanics": {

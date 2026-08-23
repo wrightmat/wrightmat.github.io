@@ -3,7 +3,8 @@
   "name": "Weapon, +3",
   "notes": "Weapon (any), very rare\n\nYou have a +3 bonus to attack and damage rolls made with this magic weapon.",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "url": "https://www.dnd5eapi.co/api/2014/magic-items/weapon-3",
   "mapping": "5e-api-magic-item",

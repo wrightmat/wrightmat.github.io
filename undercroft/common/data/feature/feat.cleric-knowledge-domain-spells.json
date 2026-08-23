@@ -1,0 +1,26 @@
+{
+  "id": "feat.cleric-knowledge-domain-spells",
+  "name": "Knowledge Domain Spells",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "When you reach a Cleric level specified in the Knowledge Domain Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Command, Comprehend Languages*, Detect Magic*, Detect Thoughts*, Identify*, Mind Spike*\n\nLevel 5: Dispel Magic, Nondetection, Tongues*\n\nLevel 7: Arcane Eye*, Banishment, Confusion\n\nLevel 9: Legend Lore*, Scrying*, Synaptic Static\n\n*Spell of the Divination school",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "When you reach a Cleric level specified in the Knowledge Domain Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Command, Comprehend Languages*, Detect Magic*, Detect Thoughts*, Identify*, Mind Spike*\n\nLevel 5: Dispel Magic, Nondetection, Tongues*\n\nLevel 7: Arcane Eye*, Banishment, Confusion\n\nLevel 9: Legend Lore*, Scrying*, Synaptic Static\n\n*Spell of the Divination school"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

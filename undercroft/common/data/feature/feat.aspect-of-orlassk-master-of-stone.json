@@ -1,7 +1,8 @@
 {
   "name": "Master of Stone",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Orlassk is immune to any effect that would petrify it, unless it wishes to be affected. While petrified, Orlassk is aware of its surroundings and may still use its Teleport ability. If it does so, it appears at its destination no longer petrified, and leaves behind a statue of itself in its former location.",
   "mechanics": {

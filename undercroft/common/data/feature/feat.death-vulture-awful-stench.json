@@ -1,7 +1,8 @@
 {
   "name": "Awful Stench",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature has a disgusting body odor. Any creature that starts its turn within 5 feet of the creature must succeed on a DC 14 Constitution saving throw or be poisoned until the start of its next turn.",
   "mechanics": {

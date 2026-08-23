@@ -1,7 +1,8 @@
 {
   "name": "Major Crossroads",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Several significant routes converge here — roads, rivers, or trade lanes all meet at this one point.",
   "mechanics": {

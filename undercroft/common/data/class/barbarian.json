@@ -1,6 +1,10 @@
 {
   "index": "barbarian",
   "name": "Barbarian",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
   "primary_ability": {
     "desc": "Strength",
     "ability_scores": [
@@ -179,6 +183,7 @@
     }
   ],
   "url": "https://www.dndbeyond.com/classes/2190875-barbarian",
+  "description": "Barbarians are mighty warriors who are powered by primal forces of the multiverse that manifest as a Rage. More than a mere emotion—and not limited to anger—this Rage is an incarnation of a predator’s ferocity, a storm’s fury, and a sea’s turmoil.\n\nSome Barbarians personify their Rage as a fierce spirit or revered forebear. Others see it as a connection to the pain and anguish of the world, as an impersonal tangle of wild magic, or as an expression of their own deepest self. For every Barbarian, their Rage is a power that fuels not just battle prowess, but also uncanny reflexes and heightened senses.\n\nBarbarians often serve as protectors and leaders in their communities. They charge headlong into danger so those under their protection don’t have to. Their courage in the face of danger makes Barbarians perfectly suited for adventure.",
   "coreTraits": {
     "primaryAbility": "Strength",
     "hitPointDie": "D12 per Barbarian level",
@@ -188,8 +193,229 @@
     "armorTraining": "Light and Medium armor and Shields",
     "startingEquipment": "Choose A or B: (A) Greataxe, 4 Handaxes, Explorer’s Pack, and 15 GP; or (B) 75 GP"
   },
-  "updated_at": "2026-07-17T22:31:34.692Z",
-  "systemIds": [
-    "sys.dnd5e"
-  ]
+  "features": [
+    {
+      "name": "Rage",
+      "level": 1,
+      "description": "You can imbue yourself with a primal power called Rage, a force that grants you extraordinary might and resilience. You can enter it as a Bonus Action if you aren’t wearing Heavy armor.\n\nYou can enter your Rage the number of times shown for your Barbarian level in the Rages column of the Barbarian Features table. You regain one expended use when you finish a Short Rest, and you regain all expended uses when you finish a Long Rest.\n\nWhile active, your Rage follows the rules below.\n\nDamage Resistance. You have Resistance to Bludgeoning, Piercing, and Slashing damage.\n\nRage Damage. When you make an attack using Strength—with either a weapon or an Unarmed Strike—and deal damage to the target, you gain a bonus to the damage that increases as you gain levels as a Barbarian, as shown in the Rage Damage column of the Barbarian Features table.\n\nStrength Advantage. You have Advantage on Strength checks and Strength saving throws.\n\nNo Concentration or Spells. You can’t maintain Concentration, and you can’t cast spells.\n\nDuration. The Rage lasts until the end of your next turn, and it ends early if you don Heavy armor or have the Incapacitated condition. If your Rage is still active on your next turn, you can extend the Rage for another round by doing one of the following:\n\nEach time the Rage is extended, it lasts until the end of your next turn. You can maintain a Rage for up to 10 minutes."
+    },
+    {
+      "name": "Unarmored Defense",
+      "level": 1,
+      "description": "While you aren’t wearing any armor, your base Armor Class equals 10 plus your Dexterity and Constitution modifiers. You can use a Shield and still gain this benefit."
+    },
+    {
+      "name": "Weapon Mastery",
+      "level": 1,
+      "description": "Your training with weapons allows you to use the mastery properties of two kinds of Simple or Martial Melee weapons of your choice. Whenever you finish a Long Rest, you can practice weapon drills and change one of those weapon choices.\n\nWhen you reach certain Barbarian levels, you gain the ability to use the mastery properties of more kinds of weapons, as shown in the Weapon Mastery column of the Barbarian Features table."
+    },
+    {
+      "name": "Danger Sense",
+      "level": 2,
+      "description": "You gain an uncanny sense of when things aren’t as they should be, giving you an edge when you dodge perils. You have Advantage on Dexterity saving throws unless you have the Incapacitated condition."
+    },
+    {
+      "name": "Reckless Attack",
+      "level": 2,
+      "description": "You can throw aside all concern for defense to attack with increased ferocity. When you make your first attack roll on your turn, you can decide to attack recklessly. Doing so gives you Advantage on attack rolls using Strength until the start of your next turn, but attack rolls against you have Advantage during that time."
+    },
+    {
+      "name": "Barbarian Subclass",
+      "level": 3,
+      "description": "You gain a Barbarian subclass of your choice. A subclass is a specialization that grants you features at certain Barbarian levels. For the rest of your career, you gain each of your subclass’s features that are of your Barbarian level or lower."
+    },
+    {
+      "name": "Primal Knowledge",
+      "level": 3,
+      "description": "You gain proficiency in another skill of your choice from the skill list available to Barbarians at level 1.\n\nIn addition, while your Rage is active, you can channel primal power when you attempt certain tasks; whenever you make an ability check using one of the following skills, you can make it as a Strength check even if it normally uses a different ability: Acrobatics, Intimidation, Perception, Stealth, or Survival. When you use this ability, your Strength represents primal power coursing through you, honing your agility, bearing, and senses."
+    },
+    {
+      "name": "Ability Score Improvement",
+      "level": 4,
+      "description": "You gain the Ability Score Improvement feat or another feat of your choice for which you qualify. You gain this feature again at Barbarian levels 8, 12, and 16."
+    },
+    {
+      "name": "Extra Attack",
+      "level": 5,
+      "description": "You can attack twice instead of once whenever you take the Attack action on your turn."
+    },
+    {
+      "name": "Fast Movement",
+      "level": 5,
+      "description": "Your speed increases by 10 feet while you aren’t wearing Heavy armor."
+    },
+    {
+      "name": "Feral Instinct",
+      "level": 7,
+      "description": "Your instincts are so honed that you have Advantage on Initiative rolls."
+    },
+    {
+      "name": "Instinctive Pounce",
+      "level": 7,
+      "description": "As part of the Bonus Action you take to enter your Rage, you can move up to half your Speed."
+    },
+    {
+      "name": "Brutal Strike",
+      "level": 9,
+      "description": "If you use Reckless Attack, you can forgo any Advantage on one Strength-based attack roll of your choice on your turn. The chosen attack roll mustn’t have Disadvantage. If the chosen attack roll hits, the target takes an extra 1d10 damage of the same type dealt by the weapon or Unarmed Strike, and you can cause one Brutal Strike effect of your choice. You have the following effect options.\n\nForceful Blow. The target is pushed 15 feet straight away from you. You can then move up to half your Speed straight toward the target without provoking Opportunity Attacks.\n\nHamstring Blow. The target’s Speed is reduced by 15 feet until the start of your next turn. A target can be affected by only one Hamstring Blow at a time—the most recent one."
+    },
+    {
+      "name": "Relentless Rage",
+      "level": 11,
+      "description": "Your Rage can keep you fighting despite grievous wounds. If you drop to 0 Hit Points while your Rage is active and don’t die outright, you can make a DC 10 Constitution saving throw. If you succeed, your Hit Points instead change to a number equal to twice your Barbarian level.\n\nEach time you use this feature after the first, the DC increases by 5. When you finish a Short or Long Rest, the DC resets to 10."
+    },
+    {
+      "name": "Improved Brutal Strike",
+      "level": 13,
+      "description": "You have honed new ways to attack furiously. The following effects are now among your Brutal Strike options.\n\nStaggering Blow. The target has Disadvantage on the next saving throw it makes, and it can’t make Opportunity Attacks until the start of your next turn.\n\nSundering Blow. Before the start of your next turn, the next attack roll made by another creature against the target gains a +5 bonus to the roll. An attack roll can gain only one Sundering Blow bonus."
+    },
+    {
+      "name": "Persistent Rage",
+      "level": 15,
+      "description": "When you roll Initiative, you can regain all expended uses of Rage. After you regain uses of Rage in this way, you can’t do so again until you finish a Long Rest.\n\nIn addition, your Rage is so fierce that it now lasts for 10 minutes without you needing to do anything to extend it from round to round. Your Rage ends early if you have the Unconscious condition (not just the Incapacitated condition) or don Heavy armor."
+    },
+    {
+      "name": "Improved Brutal Strike",
+      "level": 17,
+      "description": "The extra damage of your Brutal Strike increases to 2d10. In addition, you can use two different Brutal Strike effects whenever you use your Brutal Strike feature."
+    },
+    {
+      "name": "Indomitable Might",
+      "level": 18,
+      "description": "If your total for a Strength check or Strength saving throw is less than your Strength score, you can use that score in place of the total."
+    },
+    {
+      "name": "Epic Boon",
+      "level": 19,
+      "description": "You gain an Epic Boon feat or another feat of your choice for which you qualify."
+    },
+    {
+      "name": "Primal Champion",
+      "level": 20,
+      "description": "You embody primal power. Your Strength and Constitution scores increase by 4, and their maximum is now 25."
+    }
+  ],
+  "mapping": "ddb-class",
+  "featureIds": [
+    "feat.barbarian-rage",
+    "feat.barbarian-unarmored-defense",
+    "feat.barbarian-weapon-mastery",
+    "feat.barbarian-danger-sense",
+    "feat.barbarian-reckless-attack",
+    "feat.barbarian-barbarian-subclass",
+    "feat.barbarian-primal-knowledge",
+    "feat.ability-score-improvement",
+    "feat.extra-attack",
+    "feat.barbarian-fast-movement",
+    "feat.barbarian-feral-instinct",
+    "feat.barbarian-instinctive-pounce",
+    "feat.barbarian-brutal-strike",
+    "feat.barbarian-relentless-rage",
+    "feat.barbarian-improved-brutal-strike",
+    "feat.barbarian-persistent-rage",
+    "feat.barbarian-indomitable-might",
+    "feat.epic-boon",
+    "feat.barbarian-primal-champion"
+  ],
+  "featureParams": {
+    "feat.barbarian-rage": {
+      "grantedAtLevel": [
+        1
+      ]
+    },
+    "feat.barbarian-unarmored-defense": {
+      "grantedAtLevel": [
+        1
+      ]
+    },
+    "feat.barbarian-weapon-mastery": {
+      "grantedAtLevel": [
+        1
+      ]
+    },
+    "feat.barbarian-danger-sense": {
+      "grantedAtLevel": [
+        2
+      ]
+    },
+    "feat.barbarian-reckless-attack": {
+      "grantedAtLevel": [
+        2
+      ]
+    },
+    "feat.barbarian-barbarian-subclass": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.barbarian-primal-knowledge": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.barbarian-fast-movement": {
+      "grantedAtLevel": [
+        5
+      ]
+    },
+    "feat.barbarian-feral-instinct": {
+      "grantedAtLevel": [
+        7
+      ]
+    },
+    "feat.barbarian-instinctive-pounce": {
+      "grantedAtLevel": [
+        7
+      ]
+    },
+    "feat.barbarian-brutal-strike": {
+      "grantedAtLevel": [
+        9
+      ]
+    },
+    "feat.barbarian-relentless-rage": {
+      "grantedAtLevel": [
+        11
+      ]
+    },
+    "feat.barbarian-improved-brutal-strike": {
+      "grantedAtLevel": [
+        13,
+        17
+      ]
+    },
+    "feat.barbarian-persistent-rage": {
+      "grantedAtLevel": [
+        15
+      ]
+    },
+    "feat.barbarian-indomitable-might": {
+      "grantedAtLevel": [
+        18
+      ]
+    },
+    "feat.barbarian-primal-champion": {
+      "grantedAtLevel": [
+        20
+      ]
+    },
+    "feat.epic-boon": {
+      "grantedAtLevel": [
+        19
+      ]
+    },
+    "feat.extra-attack": {
+      "grantedAtLevel": [
+        5
+      ]
+    },
+    "feat.ability-score-improvement": {
+      "grantedAtLevel": [
+        4,
+        8,
+        12,
+        16
+      ]
+    }
+  }
 }

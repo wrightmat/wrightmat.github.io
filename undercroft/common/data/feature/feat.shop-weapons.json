@@ -1,0 +1,30 @@
+{
+  "id": "feat.shop-weapons",
+  "name": "Shop: Weapons",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "A weaponsmith or armory — this shop's own trade is arms, not general goods. Tagged alongside Shop (not instead of it) to narrow what kind of point of sale this is.",
+  "mechanics": {
+    "type": "passive",
+    "text": "This shop's own Assets should mostly be weapon-kind Wonders — the GM's own stock, priced and quantified like any other Shop's."
+  },
+  "tags": {
+    "categories": [
+      "location"
+    ],
+    "locationTypes": [],
+    "locationPurposes": [
+      "commerce"
+    ],
+    "environments": []
+  },
+  "synergizesWith": [
+    "feat.shop"
+  ],
+  "dependsOn": [
+    "feat.shop"
+  ],
+  "conflictsWith": []
+}

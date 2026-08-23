@@ -1,7 +1,8 @@
 {
   "name": "Dread Howl",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Once per short rest, the creature can force all creatures within 20 feet to make a fear save.",
   "mechanics": {

@@ -1,0 +1,26 @@
+{
+  "id": "feat.druid-elemental-fury",
+  "name": "Elemental Fury",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "The might of the elements flows through you. You gain one of the following options of your choice.\n\nPotent Spellcasting\n\nAdd your Wisdom modifier to the damage you deal with any Druid cantrip.\n\nPrimal Strike\n\nOnce on each of your turns when you hit a creature with an attack roll using a weapon or a Beast form’s attack in Wild Shape, you can cause the target to take an extra 1d8 Cold, Fire, Lightning, or Thunder damage (choose when you hit).",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "The might of the elements flows through you. You gain one of the following options of your choice.\n\nPotent Spellcasting\n\nAdd your Wisdom modifier to the damage you deal with any Druid cantrip.\n\nPrimal Strike\n\nOnce on each of your turns when you hit a creature with an attack roll using a weapon or a Beast form’s attack in Wild Shape, you can cause the target to take an extra 1d8 Cold, Fire, Lightning, or Thunder damage (choose when you hit)."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

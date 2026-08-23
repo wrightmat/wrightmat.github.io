@@ -1,7 +1,8 @@
 {
   "name": "Personal Teleportation",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Instantly relocates the user (and whatever they're wearing/carrying) to a familiar nearby spot on the same plane, on command.",
   "mechanics": {

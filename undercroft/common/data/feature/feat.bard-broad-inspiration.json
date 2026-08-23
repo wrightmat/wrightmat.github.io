@@ -1,0 +1,26 @@
+{
+  "id": "feat.bard-broad-inspiration",
+  "name": "Broad Inspiration",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You know how to strengthen the hearts of your troops and stir them to greatness. You learn the Guidance cantrip, which counts as a Bard spell for you. The cantrip doesn’t count against your number of cantrips known. Additionally, when you confer a Bardic Inspiration die to a creature, you can also confer that Bardic Inspiration die to a second creature within range.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "You know how to strengthen the hearts of your troops and stir them to greatness. You learn the Guidance cantrip, which counts as a Bard spell for you. The cantrip doesn’t count against your number of cantrips known. Additionally, when you confer a Bardic Inspiration die to a creature, you can also confer that Bardic Inspiration die to a second creature within range."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

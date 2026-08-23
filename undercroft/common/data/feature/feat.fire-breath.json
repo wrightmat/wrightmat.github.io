@@ -1,7 +1,8 @@
 {
   "name": "Fire Breath",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Lets the creature exhale a gout of searing flame.",
   "mechanics": {

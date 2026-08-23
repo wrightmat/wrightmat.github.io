@@ -1,7 +1,8 @@
 {
   "name": "Obscurement",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Fills an area with fog, smoke, or darkness that blocks vision.",
   "mechanics": {

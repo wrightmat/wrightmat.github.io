@@ -1,7 +1,8 @@
 {
   "name": "Frenzied Rage",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "On its next turn after a creature takes 10 or more damage from a single attack, it has advantage on its melee attacks and adds +4 to spell and attack damage.",
   "mechanics": {

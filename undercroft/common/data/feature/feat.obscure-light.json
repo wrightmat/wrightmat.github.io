@@ -1,7 +1,8 @@
 {
   "name": "Lightly Obscures Area",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "A haze, mist, or dim light fills the area, granting it the lightly obscured condition.",
   "mechanics": {

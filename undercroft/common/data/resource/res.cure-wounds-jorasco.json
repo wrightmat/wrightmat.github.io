@@ -1,15 +1,22 @@
 {
   "id": "res.cure-wounds-jorasco",
   "name": "Cure Wounds (House Jorasco)",
-  "systemIds": ["sys.dnd5e"],
-  "settingIds": ["eberron"],
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "settingIds": [
+    "eberron"
+  ],
   "description": "A House Jorasco healer casts cure wounds for hire, priced per spell level cast.",
   "category": "service",
   "house": "jorasco",
   "price": "25 gp per spell level",
   "tags": {
     "locationTypes": [],
-    "locationPurposes": ["commerce"],
+    "locationPurposes": [
+      "commerce"
+    ],
     "environments": []
   }
 }

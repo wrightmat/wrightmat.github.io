@@ -1,7 +1,8 @@
 {
   "name": "Darkvision",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Grants or extends the ability to see in the dark.",
   "mechanics": {

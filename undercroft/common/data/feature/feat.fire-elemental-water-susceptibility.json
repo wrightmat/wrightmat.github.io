@@ -1,7 +1,8 @@
 {
   "name": "Water Susceptibility",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "For every 5 ft. the creature moves in water, or for every gallon of water splashed on it, it takes 1 cold damage.",
   "mechanics": {

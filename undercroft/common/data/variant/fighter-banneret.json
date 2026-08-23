@@ -1,0 +1,86 @@
+{
+  "index": "fighter-banneret",
+  "url": "https://www.dndbeyond.com/classes/2190879-fighter",
+  "name": "Banneret",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "parentKind": "class",
+  "parentId": "fighter",
+  "summary": "Rally Fellow Heroes with Inspiring Leadership",
+  "description": "Bannerets are paragons of valor and leadership who protect the innocent and rally fellow adventurers to the causes of justice and freedom. Many are knights serving in Cormyr, the Silver Marches, Damara, Chessenta, or other lands across Faerûn. They wander the realms as knights errant, taking the fight against evil beyond their kingdom’s borders.\n\nA Banneret relies on judgment, bravery, and fidelity to the code of chivalry to guide them in defeating evildoers. A lone Banneret is a skilled warrior, but when leading a band of allies one of these warriors can transform even a poorly equipped militia into a ferocious war band.",
+  "features": [
+    {
+      "name": "Knightly Envoy",
+      "level": 3,
+      "description": "You know how to conduct yourself with grace as a noble ambassador. You gain the following benefits.\n\nComprehension. You can cast the Comprehend Languages spell but only as a Ritual. Charisma is your spellcasting ability for it.\n\nPolyglot. You learn one language from the language tables in the Player’s Handbook or chapter 2 of Forgotten Realms: Heroes of Faerûn. When you finish a Long Rest, you can replace a language learned from this benefit with another language you have heard, seen signed, or read in the past 24 hours.\n\nWell Spoken. You gain proficiency in one of the following skills of your choice: Insight, Intimidation, Persuasion, or Performance."
+    },
+    {
+      "name": "Group Recovery",
+      "level": 3,
+      "description": "When you use your Second Wind to regain Hit Points, you can choose a number of allies within a 30-foot Emanation originating from yourself, up to a number of allies equal to your Charisma modifier (minimum of one). Each of those allies regains Hit Points equal to 1d4 plus your Fighter level. Once you use this ability, you can’t use it again until you finish a Short or Long Rest."
+    },
+    {
+      "name": "Team Tactics",
+      "level": 7,
+      "description": "When you use Group Recovery, each chosen ally has Advantage on D20 Tests until the start of your next turn."
+    },
+    {
+      "name": "Rallying Surge",
+      "level": 10,
+      "description": "When you use your Action Surge, you can choose allies within a 30-foot Emanation originating from yourself, up to a number of allies equal to your Charisma modifier (minimum of one). Each of those allies can immediately take a Reaction to use one of the following options.\n\nAttack. The ally makes one attack with a weapon or an Unarmed Strike.\n\nMove. The ally moves up to half its Speed without provoking Opportunity Attacks."
+    },
+    {
+      "name": "Shared Resilience",
+      "level": 15,
+      "description": "When an ally you can see within 60 feet of yourself fails a saving throw, you can take a Reaction to expend a use of your Indomitable feature. The ally can immediately reroll the saving throw with a bonus equal to your Fighter level; the ally must use the new roll."
+    },
+    {
+      "name": "Inspiring Commander",
+      "level": 18,
+      "description": "You gain the following benefits.\n\nBolstered Rally. The area of effect for both Group Recovery and Rallying Surge is now a 60-foot Emanation.\n\nUnshakable Bravery. You have Immunity to the Charmed and Frightened conditions."
+    }
+  ],
+  "mapping": "ddb-subclass",
+  "featureIds": [
+    "feat.fighter-knightly-envoy",
+    "feat.fighter-group-recovery",
+    "feat.fighter-team-tactics",
+    "feat.fighter-rallying-surge",
+    "feat.fighter-shared-resilience",
+    "feat.fighter-inspiring-commander"
+  ],
+  "featureParams": {
+    "feat.fighter-knightly-envoy": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.fighter-group-recovery": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.fighter-team-tactics": {
+      "grantedAtLevel": [
+        7
+      ]
+    },
+    "feat.fighter-rallying-surge": {
+      "grantedAtLevel": [
+        10
+      ]
+    },
+    "feat.fighter-shared-resilience": {
+      "grantedAtLevel": [
+        15
+      ]
+    },
+    "feat.fighter-inspiring-commander": {
+      "grantedAtLevel": [
+        18
+      ]
+    }
+  }
+}

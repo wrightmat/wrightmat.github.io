@@ -1,7 +1,8 @@
 {
   "name": "Absorption",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "When the creature does damage to a rat or rat swarm, it can absorb the rat, or part of the swarm, into its own mass. The creature regains hit points equal to the damage it did to the rat or swarm.",
   "mechanics": {

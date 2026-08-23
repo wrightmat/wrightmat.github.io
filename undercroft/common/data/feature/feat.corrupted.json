@@ -1,7 +1,8 @@
 {
   "name": "Corrupted",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Something has tainted this place at a fundamental level — blighted growth, warped wildlife, or a lingering malevolent influence.",
   "mechanics": {

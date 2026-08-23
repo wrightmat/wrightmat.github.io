@@ -1,7 +1,8 @@
 {
   "name": "Kelp Tendril",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Melee Weapon Attack: +8 to hit, reach 50 ft., one creature. Hit: The target is grappled (escape DC 16). Until this grapple ends, the target is restrained, and the creature can’t use the same kelp tendril on another target. In addition, at the start of the target’s next turn, it begins to suffocate as the eel’s grip crushes the breath out of it.",
   "mechanics": {

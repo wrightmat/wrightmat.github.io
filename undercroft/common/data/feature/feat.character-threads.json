@@ -1,0 +1,24 @@
+{
+  "id": "feat.character-threads",
+  "name": "Character Threads",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "<p>Threads are aspects added to characters at any time during their career that have a specific short or long-term goal.</p>",
+  "mechanics": {
+    "type": "passive",
+    "text": "<p>Threads are aspects added to characters at any time during their career that have a specific short or long-term goal.</p>"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

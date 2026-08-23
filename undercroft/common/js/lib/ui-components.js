@@ -1133,7 +1133,12 @@ export function createListRow({ title, description, onRemove, removeLabel = "Rem
   info.className = "flex-grow-1";
   const titleEl = document.createElement("div");
   titleEl.className = "fw-semibold";
-  titleEl.textContent = title;
+  // `title` is usually a plain string, but a caller with something inline-
+  // referenceable to show (a Feature/Wonder/NPC hover chip, e.g. — see
+  // library-reference.js's own createReferenceChip) can pass a real DOM
+  // node instead — appended as-is rather than stringified.
+  if (title instanceof Node) titleEl.appendChild(title);
+  else titleEl.textContent = title;
   info.appendChild(titleEl);
   if (description) {
     const descriptionEl = document.createElement("div");

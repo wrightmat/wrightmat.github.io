@@ -1,7 +1,8 @@
 {
   "name": "False Appearance",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "While the creature remains motionless, it is indistinguishable from an ordinary fungus.",
   "mechanics": {

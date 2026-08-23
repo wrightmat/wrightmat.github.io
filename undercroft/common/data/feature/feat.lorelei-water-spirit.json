@@ -1,7 +1,8 @@
 {
   "name": "Water Spirit",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature is under the effect of freedom of movement whenever she is in contact with a body of water.",
   "mechanics": {

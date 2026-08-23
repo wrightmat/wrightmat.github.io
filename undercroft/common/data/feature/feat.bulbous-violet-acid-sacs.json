@@ -1,7 +1,8 @@
 {
   "name": "Acid Sacs",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "When the creature takes bludgeoning, piercing, or slashing damage, each creature within 5 feet of the creature must succeed on a DC 12 Dexterity saving throw or take 2 (1d4) acid damage.",
   "mechanics": {

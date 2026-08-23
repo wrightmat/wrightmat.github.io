@@ -1,7 +1,8 @@
 {
   "name": "Disperse",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "When the creature is reduced to 0 hp, it disperses into its component kelp in a 30-foot cube. The area is difficult terrain for 1 hour. At the end of that hour, the creature reforms, regaining half its hp and becoming active again. If more than half the creature that comprises the dispersed kelp eel is removed from the water and dried, it can’t reform and the creature is destroyed.",
   "mechanics": {

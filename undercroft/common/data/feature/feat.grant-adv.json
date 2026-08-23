@@ -1,7 +1,8 @@
 {
   "name": "Grants Advantage on Next Attack",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "A target affected by this effect grants advantage to the next attack roll made against it.",
   "mechanics": {

@@ -1,7 +1,8 @@
 {
   "name": "Ink Cloud (Costs 3 Actions)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature exhales a 60-foot cone of inky blackness. Underwater it is as black ink, while above water it manifests as a thick cloud, and the area counts as heavily obscured. It remains until dispersed by a strong current or wind (at least 20 miles per hour). The creature can end this effect on its turn as a bonus action. Creatures who enter or begin their turn in the area must make a successful DC 22 Constitution saving throw or take 18 (4d8) poison damage.",
   "mechanics": {

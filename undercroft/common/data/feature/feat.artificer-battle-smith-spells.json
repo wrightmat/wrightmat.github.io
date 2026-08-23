@@ -1,0 +1,26 @@
+{
+  "id": "feat.artificer-battle-smith-spells",
+  "name": "Battle Smith Spells",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "When you reach an Artificer level specified in the Battle Smith Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Heroism, Shield\n\nLevel 5: Shining Smite, Warding Bond\n\nLevel 9: Aura of Vitality, Conjure Barrage\n\nLevel 13: Aura of Purity, Fire Shield\n\nLevel 17: Banishing Smite, Mass Cure Wounds",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "When you reach an Artificer level specified in the Battle Smith Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Heroism, Shield\n\nLevel 5: Shining Smite, Warding Bond\n\nLevel 9: Aura of Vitality, Conjure Barrage\n\nLevel 13: Aura of Purity, Fire Shield\n\nLevel 17: Banishing Smite, Mass Cure Wounds"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

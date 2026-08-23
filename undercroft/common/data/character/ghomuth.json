@@ -13,7 +13,11 @@
     "userId": 110628680,
     "username": "Percellophane",
     "name": "Ghomuth",
-    "race": "Locathah",
+    "race": {
+      "name": "Locathah",
+      "refKind": "species",
+      "refId": "locathah"
+    },
     "class": "Barbarian",
     "level": 7,
     "levels": {
@@ -25,7 +29,13 @@
       {
         "name": "Barbarian",
         "level": 7,
-        "subclass": "Path of the Zealot"
+        "subclass": {
+          "name": "Path of the Zealot",
+          "refKind": "variant",
+          "refId": "barbarian-path-of-the-zealot"
+        },
+        "refKind": "class",
+        "refId": "barbarian"
       }
     ]
   },
@@ -367,7 +377,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": false,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "potion-of-giant-strength-fire"
     },
     {
       "name": "Shield",
@@ -377,7 +389,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": true,
-      "isEquipped": true
+      "isEquipped": true,
+      "refKind": "wonder",
+      "refId": "shield"
     },
     {
       "name": "Handaxe",
@@ -387,7 +401,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": true,
-      "isEquipped": true
+      "isEquipped": true,
+      "refKind": "wonder",
+      "refId": "eff.handaxe"
     },
     {
       "name": "Handaxe",
@@ -397,7 +413,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": true,
-      "isEquipped": true
+      "isEquipped": true,
+      "refKind": "wonder",
+      "refId": "eff.handaxe"
     },
     {
       "name": "Javelin",
@@ -417,7 +435,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": true,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "eff.quarterstaff"
     },
     {
       "name": "Greataxe",
@@ -427,7 +447,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": true,
-      "isEquipped": true
+      "isEquipped": true,
+      "refKind": "wonder",
+      "refId": "greataxe"
     },
     {
       "name": "Maul",
@@ -457,7 +479,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": true,
-      "isEquipped": true
+      "isEquipped": true,
+      "refKind": "wonder",
+      "refId": "eff.backpack"
     },
     {
       "name": "Clothes, Traveler's",
@@ -497,7 +521,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": false,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "eff.bedroll"
     },
     {
       "name": "Mess Kit",
@@ -517,7 +543,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": false,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "eff.rations-1-day"
     },
     {
       "name": "Rope, Hempen (50 feet)",
@@ -527,7 +555,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": false,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "eff.rope-hempen-50-feet"
     },
     {
       "name": "Tinderbox",
@@ -537,7 +567,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": false,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "eff.tinderbox"
     },
     {
       "name": "Torch",
@@ -547,7 +579,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": false,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "eff.torch"
     },
     {
       "name": "Waterskin",
@@ -557,7 +591,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": false,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "eff.waterskin"
     }
   ],
   "background": {
@@ -568,37 +604,37 @@
   "feats": [
     {
       "name": "Weapon Mastery",
-      "description": "<p>Your training with weapons allows you to use the mastery properties of two kinds of Simple or Martial Melee weapons of your choice, such as Greataxes and Handaxes. Whenever you finish a Long Rest, you can practice weapon drills and change one of those weapon choices.</p>\r\n<p>When you reach certain Barbarian levels, you gain the ability to use the mastery properties of more kinds of weapons, as shown in the Weapon Mastery column of the Barbarian Features table.</p>",
+      "description": "Your training with weapons allows you to use the mastery properties of two kinds of Simple or Martial Melee weapons of your choice, such as Greataxes and Handaxes. Whenever you finish a Long Rest, you can practice weapon drills and change one of those weapon choices.\n\nWhen you reach certain Barbarian levels, you gain the ability to use the mastery properties of more kinds of weapons, as shown in the Weapon Mastery column of the Barbarian Features table.",
       "level": null,
       "limitedUse": null
     },
     {
       "name": "4: Weapon Mastery",
-      "description": "<p>Your training with weapons allows you to use the mastery properties of another kind of Simple or Martial Melee weapons of your choice, such as Greataxes and Handaxes. Whenever you finish a Long Rest, you can practice weapon drills and change one of your chosen weapon choices.</p>\r\n<p>When you reach certain Barbarian levels, you gain the ability to use the mastery properties of more kinds of weapons, as shown in the Weapon Mastery column of the Barbarian Features table.</p>",
+      "description": "Your training with weapons allows you to use the mastery properties of another kind of Simple or Martial Melee weapons of your choice, such as Greataxes and Handaxes. Whenever you finish a Long Rest, you can practice weapon drills and change one of your chosen weapon choices.\n\nWhen you reach certain Barbarian levels, you gain the ability to use the mastery properties of more kinds of weapons, as shown in the Weapon Mastery column of the Barbarian Features table.",
       "level": null,
       "limitedUse": null
     },
     {
       "name": "Savage Attacker",
-      "description": "<p><em>Origin Feat</em></p>\r\n<p>You’ve trained to deal particularly damaging strikes. Once per turn when you hit a target with a weapon, you can roll the weapon’s damage dice twice and use either roll against the target.</p>",
+      "description": "*Origin Feat*\n\nYou’ve trained to deal particularly damaging strikes. Once per turn when you hit a target with a weapon, you can roll the weapon’s damage dice twice and use either roll against the target.",
       "level": null,
       "limitedUse": null
     },
     {
       "name": "Sentinel",
-      "description": "<p><em>General Feat (Prerequisite: Level 4+, Strength or Dexterity 13+)</em></p>\r\n<p>You gain the following benefits.</p>\r\n<p><em><strong>Ability Score Increase.</strong></em> Increase your Strength or Dexterity score by 1, to a maximum of 20.</p>\r\n<p><em><strong> Guardian.</strong></em> Immediately after a creature within 5 feet of you takes the Disengage action or hits a target other than you with an attack, you can make an Opportunity Attack against that creature.</p>\r\n<p><em><strong> Halt.</strong></em> When you hit a creature with an Opportunity Attack, the creature’s Speed becomes 0 for the rest of the current turn.</p>",
+      "description": "*General Feat (Prerequisite: Level 4+, Strength or Dexterity 13+)*\n\nYou gain the following benefits.\n\n***Ability Score Increase.*** Increase your Strength or Dexterity score by 1, to a maximum of 20.\n\n*** Guardian.*** Immediately after a creature within 5 feet of you takes the Disengage action or hits a target other than you with an attack, you can make an Opportunity Attack against that creature.\n\n*** Halt.*** When you hit a creature with an Opportunity Attack, the creature’s Speed becomes 0 for the rest of the current turn.",
       "level": null,
       "limitedUse": null
     },
     {
       "name": "Soldier Ability Score Improvements",
-      "description": "<p>The Soldier Background allows you to choose between Strength, Dexterity, and Constitution. Increase one of these scores by 2 and another one by 1, or increase all three by 1. None of these increases can raise a score above 20.</p>",
+      "description": "The Soldier Background allows you to choose between Strength, Dexterity, and Constitution. Increase one of these scores by 2 and another one by 1, or increase all three by 1. None of these increases can raise a score above 20.",
       "level": null,
       "limitedUse": null
     },
     {
       "name": "Dark Bargain",
-      "description": "<p>At your GM's discretion, you can take a Dark Bargain.</p>",
+      "description": "At your GM's discretion, you can take a Dark Bargain.",
       "level": null,
       "limitedUse": null
     }
@@ -606,179 +642,158 @@
   "features": [
     {
       "name": "Divine Fury",
-      "description": "<p>You can channel divine power into your strikes. On each of your turns while your Rage is active, the first creature you hit with a weapon or an Unarmed Strike takes extra damage equal to 1d6 plus half your Barbarian level (round down). The extra damage is Necrotic or Radiant; you choose the type each time you deal the damage.</p>"
+      "description": "You can channel divine power into your strikes. On each of your turns while your Rage is active, the first creature you hit with a weapon or an Unarmed Strike takes extra damage equal to 1d6 plus half your Barbarian level (round down). The extra damage is Necrotic or Radiant; you choose the type each time you deal the damage.",
+      "level": 3
     },
     {
       "name": "Warrior of the Gods",
-      "description": "<p>A divine entity helps ensure you can continue the fight. You have a pool of four d12s that you can spend to heal yourself. As a Bonus Action, you can expend dice from the pool, roll them, and regain a number of Hit Points equal to the roll’s total.</p>\r\n<p>Your pool regains all expended dice when you finish a Long Rest.</p>\r\n<p>The pool’s maximum number of dice increases by one when you reach Barbarian levels 6 (5 dice), 12 (6 dice), and 17 (7 dice).</p>"
+      "description": "A divine entity helps ensure you can continue the fight. You have a pool of four d12s that you can spend to heal yourself. As a Bonus Action, you can expend dice from the pool, roll them, and regain a number of Hit Points equal to the roll’s total.\n\nYour pool regains all expended dice when you finish a Long Rest.\n\nThe pool’s maximum number of dice increases by one when you reach Barbarian levels 6 (5 dice), 12 (6 dice), and 17 (7 dice).",
+      "level": 3
     },
     {
       "name": "Fanatical Focus",
-      "description": "<p>Once per active Rage, if you fail a saving throw, you can reroll it with a bonus equal to your Rage Damage bonus, and you must use the new roll.</p>"
-    },
-    {
-      "name": "Zealous Presence",
-      "description": "<p>As a Bonus Action, you unleash a battle cry infused with divine energy. Up to ten other creatures of your choice within 60 feet of you gain Advantage on attack rolls and saving throws until the start of your next turn.</p>\r\n<p>Once you use this feature, you can’t use it again until you finish a Long Rest unless you expend a use of your Rage (no action required) to restore your use of it.</p>"
-    },
-    {
-      "name": "Rage of the Gods",
-      "description": "<p>When you activate your Rage, you can assume the form of a divine warrior. This form lasts for 1 minute or until you drop to 0 Hit Points. Once you use this feature, you can’t do so again until you finish a Long Rest.</p>\r\n<p>While in this form, you gain the benefits below.</p>\r\n<p><strong><em>Flight.</em></strong> You have a Fly Speed equal to your Speed and can hover.</p>\r\n<p><strong><em>Resistance.</em></strong> You have Resistance to Necrotic, Psychic, and Radiant damage.</p>\r\n<p><strong><em>Revivification.</em></strong> When a creature within 30 feet of you would drop to 0 Hit Points, you can take a Reaction to expend a use of your Rage to instead change the target’s Hit Points to a number equal to your Barbarian level.</p>"
+      "description": "Once per active Rage, if you fail a saving throw, you can reroll it with a bonus equal to your Rage Damage bonus, and you must use the new roll.",
+      "level": 6
     },
     {
       "name": "Rage",
-      "description": "<p>You can imbue yourself with a primal power called Rage, a force that grants you extraordinary might and resilience. You can enter it as a Bonus Action if you aren’t wearing Heavy armor.</p>\r\n<p>You can enter your Rage the number of times shown for your Barbarian level in the Rages column of the Barbarian Features table. You regain one expended use when you finish a Short Rest, and you regain all expended uses when you finish a Long Rest.</p>\r\n<p>While active, your Rage follows the rules below.</p>\r\n<p><strong><em>Damage Resistance.</em></strong> You have Resistance to Bludgeoning, Piercing, and Slashing damage.</p>\r\n<p><strong><em>Rage Damage.</em></strong> When you make an attack using Strength&mdash;with either a weapon or an Unarmed Strike&mdash;and deal damage to the target, you gain a bonus to the damage that increases as you gain levels as a Barbarian, as shown in the Rage Damage column of the Barbarian Features table.</p>\r\n<p><strong><em>Strength Advantage.</em></strong> You have Advantage on Strength checks and Strength saving throws.</p>\r\n<p><strong><em>No Concentration or Spells.</em></strong> You can’t maintain Concentration, and you can’t cast spells.</p>\r\n<p><strong><em>Duration.</em></strong> The Rage lasts until the end of your next turn, and it ends early if you don Heavy armor or have the Incapacitated condition. If your Rage is still active on your next turn, you can extend the Rage for another round by doing one of the following:</p>\r\n<ul>\r\n<li>Make an attack roll against an enemy.</li>\r\n<li>Force an enemy to make a saving throw.</li>\r\n<li>Take a Bonus Action to extend your Rage.</li>\r\n</ul>\r\n<p>Each time the Rage is extended, it lasts until the end of your next turn. You can maintain a Rage for up to 10 minutes.</p>"
+      "description": "You can imbue yourself with a primal power called Rage, a force that grants you extraordinary might and resilience. You can enter it as a Bonus Action if you aren’t wearing Heavy armor.\n\nYou can enter your Rage the number of times shown for your Barbarian level in the Rages column of the Barbarian Features table. You regain one expended use when you finish a Short Rest, and you regain all expended uses when you finish a Long Rest.\n\nWhile active, your Rage follows the rules below.\n\n**Damage Resistance.** You have Resistance to Bludgeoning, Piercing, and Slashing damage.\n\n**Rage Damage.** When you make an attack using Strength—with either a weapon or an Unarmed Strike—and deal damage to the target, you gain a bonus to the damage that increases as you gain levels as a Barbarian, as shown in the Rage Damage column of the Barbarian Features table.\n\n**Strength Advantage.** You have Advantage on Strength checks and Strength saving throws.\n\n**No Concentration or Spells.** You can’t maintain Concentration, and you can’t cast spells.\n\n**Duration.** The Rage lasts until the end of your next turn, and it ends early if you don Heavy armor or have the Incapacitated condition. If your Rage is still active on your next turn, you can extend the Rage for another round by doing one of the following:\n\n- Make an attack roll against an enemy.\n\n- Force an enemy to make a saving throw.\n\n- Take a Bonus Action to extend your Rage.\n\nEach time the Rage is extended, it lasts until the end of your next turn. You can maintain a Rage for up to 10 minutes.",
+      "level": 1
     },
     {
       "name": "Unarmored Defense",
-      "description": "<p>While you aren’t wearing any armor, your base Armor Class equals 10 plus your Dexterity and Constitution modifiers. You can use a Shield and still gain this benefit.</p>"
+      "description": "While you aren’t wearing any armor, your base Armor Class equals 10 plus your Dexterity and Constitution modifiers. You can use a Shield and still gain this benefit.",
+      "level": 1
     },
     {
       "name": "Weapon Mastery",
-      "description": "<p>Your training with weapons allows you to use the mastery properties of two kinds of Simple or Martial Melee weapons of your choice. Whenever you finish a Long Rest, you can practice weapon drills and change one of those weapon choices.</p>\r\n<p>When you reach certain Barbarian levels, you gain the ability to use the mastery properties of more kinds of weapons, as shown in the Weapon Mastery column of the Barbarian Features table.</p>"
+      "description": "Your training with weapons allows you to use the mastery properties of two kinds of Simple or Martial Melee weapons of your choice. Whenever you finish a Long Rest, you can practice weapon drills and change one of those weapon choices.\n\nWhen you reach certain Barbarian levels, you gain the ability to use the mastery properties of more kinds of weapons, as shown in the Weapon Mastery column of the Barbarian Features table.",
+      "level": 1
     },
     {
       "name": "Danger Sense",
-      "description": "<p>You gain an uncanny sense of when things aren’t as they should be, giving you an edge when you dodge perils. You have Advantage on Dexterity saving throws unless you have the Incapacitated condition.</p>"
+      "description": "You gain an uncanny sense of when things aren’t as they should be, giving you an edge when you dodge perils. You have Advantage on Dexterity saving throws unless you have the Incapacitated condition.",
+      "level": 2
     },
     {
       "name": "Reckless Attack",
-      "description": "<p>You can throw aside all concern for defense to attack with increased ferocity. When you make your first attack roll on your turn, you can decide to attack recklessly. Doing so gives you Advantage on attack rolls using Strength until the start of your next turn, but attack rolls against you have Advantage during that time.</p>"
+      "description": "You can throw aside all concern for defense to attack with increased ferocity. When you make your first attack roll on your turn, you can decide to attack recklessly. Doing so gives you Advantage on attack rolls using Strength until the start of your next turn, but attack rolls against you have Advantage during that time.",
+      "level": 2
     },
     {
       "name": "Barbarian Subclass",
-      "description": "<p>You gain a Barbarian subclass of your choice. A subclass is a specialization that grants you features at certain Barbarian levels. For the rest of your career, you gain each of your subclass’s features that are of your Barbarian level or lower.</p>"
+      "description": "You gain a Barbarian subclass of your choice. A subclass is a specialization that grants you features at certain Barbarian levels. For the rest of your career, you gain each of your subclass’s features that are of your Barbarian level or lower.",
+      "level": 3
     },
     {
       "name": "Primal Knowledge",
-      "description": "<p>You gain proficiency in another skill of your choice from the skill list available to Barbarians at level 1.</p>\r\n<p>In addition, while your Rage is active, you can channel primal power when you attempt certain tasks; whenever you make an ability check using one of the following skills, you can make it as a Strength check even if it normally uses a different ability: Acrobatics, Intimidation, Perception, Stealth, or Survival. When you use this ability, your Strength represents primal power coursing through you, honing your agility, bearing, and senses.</p>"
+      "description": "You gain proficiency in another skill of your choice from the skill list available to Barbarians at level 1.\n\nIn addition, while your Rage is active, you can channel primal power when you attempt certain tasks; whenever you make an ability check using one of the following skills, you can make it as a Strength check even if it normally uses a different ability: Acrobatics, Intimidation, Perception, Stealth, or Survival. When you use this ability, your Strength represents primal power coursing through you, honing your agility, bearing, and senses.",
+      "level": 3
     },
     {
       "name": "Ability Score Improvement",
-      "description": "<p>You gain the Ability Score Improvement feat or another feat of your choice for which you qualify. You gain this feature again at Barbarian levels 8, 12, and 16.</p>"
+      "description": "You gain the Ability Score Improvement feat or another feat of your choice for which you qualify. You gain this feature again at Barbarian levels 8, 12, and 16.",
+      "level": 4
     },
     {
       "name": "Extra Attack",
-      "description": "<p>You can attack twice instead of once whenever you take the Attack action on your turn.</p>"
+      "description": "You can attack twice instead of once whenever you take the Attack action on your turn.",
+      "level": 5
     },
     {
       "name": "Fast Movement",
-      "description": "<p>Your speed increases by 10 feet while you aren’t wearing Heavy armor.</p>"
+      "description": "Your speed increases by 10 feet while you aren’t wearing Heavy armor.",
+      "level": 5
     },
     {
       "name": "Feral Instinct",
-      "description": "<p>Your instincts are so honed that you have Advantage on Initiative rolls.</p>"
+      "description": "Your instincts are so honed that you have Advantage on Initiative rolls.",
+      "level": 7
     },
     {
       "name": "Instinctive Pounce",
-      "description": "<p>As part of the Bonus Action you take to enter your Rage, you can move up to half your Speed.</p>"
-    },
-    {
-      "name": "8: Ability Score Improvement",
-      "description": "<p>You gain the Ability Score Improvement feat or another feat of your choice for which you qualify. You gain this feature again at Barbarian levels 12 and 16.</p>"
-    },
-    {
-      "name": "Brutal Strike",
-      "description": "<p>If you use Reckless Attack, you can forgo any Advantage on one Strength-based attack roll of your choice on your turn. The chosen attack roll mustn’t have Disadvantage. If the chosen attack roll hits, the target takes an extra 1d10 damage of the same type dealt by the weapon or Unarmed Strike, and you can cause one Brutal Strike effect of your choice. You have the following effect options.</p>\r\n<p><strong><em>Forceful Blow.</em></strong> The target is pushed 15 feet straight away from you. You can then move up to half your Speed straight toward the target without provoking Opportunity Attacks.</p>\r\n<p><strong><em>Hamstring Blow.</em></strong> The target’s Speed is reduced by 15 feet until the start of your next turn. A target can be affected by only one Hamstring Blow at a time&mdash;the most recent one.</p>"
-    },
-    {
-      "name": "Relentless Rage",
-      "description": "<p>Your Rage can keep you fighting despite grievous wounds. If you drop to 0 Hit Points while your Rage is active and don’t die outright, you can make a DC 10 Constitution saving throw. If you succeed, your Hit Points instead change to a number equal to twice your Barbarian level.</p>\r\n<p>Each time you use this feature after the first, the DC increases by 5. When you finish a Short or Long Rest, the DC resets to 10.</p>"
-    },
-    {
-      "name": "12: Ability Score Improvement",
-      "description": "<p>You gain the Ability Score Improvement feat or another feat of your choice for which you qualify. You gain this feature again at Barbarian level 16.</p>"
-    },
-    {
-      "name": "Improved Brutal Strike",
-      "description": "<p>You have honed new ways to attack furiously. The following effects are now among your Brutal Strike options.</p>\r\n<p><strong><em>Staggering Blow.</em></strong> The target has Disadvantage on the next saving throw it makes, and it can’t make Opportunity Attacks until the start of your next turn.</p>\r\n<p><strong><em>Sundering Blow.</em></strong> Before the start of your next turn, the next attack roll made by another creature against the target gains a +5 bonus to the roll. An attack roll can gain only one Sundering Blow bonus.</p>"
-    },
-    {
-      "name": "Persistent Rage",
-      "description": "<p>When you roll Initiative, you can regain all expended uses of Rage. After you regain uses of Rage in this way, you can’t do so again until you finish a Long Rest.</p>\r\n<p>In addition, your Rage is so fierce that it now lasts for 10 minutes without you needing to do anything to extend it from round to round. Your Rage ends early if you have the Unconscious condition (not just the Incapacitated condition) or don Heavy armor.</p>"
-    },
-    {
-      "name": "16: Ability Score Improvement",
-      "description": "<p>You gain the Ability Score Improvement feat or another feat of your choice for which you qualify.</p>"
-    },
-    {
-      "name": "Indomitable Might",
-      "description": "<p>If your total for a Strength check or Strength saving throw is less than your Strength score, you can use that score in place of the total.</p>"
-    },
-    {
-      "name": "Epic Boon",
-      "description": "<p>You gain an Epic Boon feat or another feat of your choice for which you qualify.</p>"
-    },
-    {
-      "name": "Primal Champion",
-      "description": "<p>You embody primal power. Your Strength and Constitution scores increase by 4, and their maximum is now 25.</p>"
+      "description": "As part of the Bonus Action you take to enter your Rage, you can move up to half your Speed.",
+      "level": 7
     },
     {
       "name": "Core Barbarian Traits",
-      "description": "<p>As a Level 1 Character:</p>\r\n<ul>\r\n<li>Gain all the traits in the Core Barbarian Traits table.</li>\r\n<li>Gain the Barbarian’s level 1 features.</li>\r\n</ul>\r\n<table class=\"table-compendium table--left-all\" style=\"--sb-table-row-bg-hover: #b3d3df; --sb-table-row-bg-dark: #d7e8ee; --sb-table-row-bg-light: #f1f7f9; --dark-sb-table-row-bg-light: #5e7982; --dark-sb-table-row-bg-dark: #5c7f8c; --dark-sb-table-row-bg-hover: #78a2b0;\"><caption>Core Barbarian Traits</caption>\r\n<tbody>\r\n<tr>\r\n<th>Primary Ability</th>\r\n<td>Strength</td>\r\n</tr>\r\n<tr>\r\n<th>Hit Point Die</th>\r\n<td>D12 per Barbarian level</td>\r\n</tr>\r\n<tr>\r\n<th>Saving Throw Proficiencies</th>\r\n<td>Strength and Constitution</td>\r\n</tr>\r\n<tr>\r\n<th>Skill Proficiencies</th>\r\n<td><em>Choose 2:</em> Animal Handling, Athletics, Intimidation, Nature, Perception, or Survival</td>\r\n</tr>\r\n<tr>\r\n<th>Weapon Proficiencies</th>\r\n<td>Simple and Martial weapons</td>\r\n</tr>\r\n<tr>\r\n<th>Armor Training</th>\r\n<td>Light and Medium armor and Shields</td>\r\n</tr>\r\n<tr>\r\n<th>Starting Equipment</th>\r\n<td><em>Choose A or B:</em> (A) Greataxe, 4 Handaxes, Explorer’s Pack, and 15 GP; or (B) 75 GP</td>\r\n</tr>\r\n</tbody>\r\n</table>"
+      "description": "As a Level 1 Character:\n\n- Gain all the traits in the Core Barbarian Traits table.\n\n- Gain the Barbarian’s level 1 features.\n\nPrimary Ability: Strength\n\nHit Point Die: D12 per Barbarian level\n\nSaving Throw Proficiencies: Strength and Constitution\n\nSkill Proficiencies: *Choose 2:* Animal Handling, Athletics, Intimidation, Nature, Perception, or Survival\n\nWeapon Proficiencies: Simple and Martial weapons\n\nArmor Training: Light and Medium armor and Shields\n\nStarting Equipment: *Choose A or B:* (A) Greataxe, 4 Handaxes, Explorer’s Pack, and 15 GP; or (B) 75 GP",
+      "level": 1
     },
     {
       "name": "4: Weapon Mastery",
-      "description": "<p>Your training with weapons allows you to use the mastery properties of two kinds of Simple or Martial Melee weapons of your choice, such as Greataxes and Handaxes. Whenever you finish a Long Rest, you can practice weapon drills and change one of those weapon choices.</p>\r\n<p>When you reach certain Barbarian levels, you gain the ability to use the mastery properties of more kinds of weapons, as shown in the Weapon Mastery column of the Barbarian Features table.</p>"
-    },
-    {
-      "name": "10: Weapon Mastery",
-      "description": "<p>Your training with weapons allows you to use the mastery properties of another kind of Simple or Martial Melee weapons of your choice. Whenever you finish a Long Rest, you can practice weapon drills and change one of your chosen weapon choices.</p>"
+      "description": "Your training with weapons allows you to use the mastery properties of two kinds of Simple or Martial Melee weapons of your choice, such as Greataxes and Handaxes. Whenever you finish a Long Rest, you can practice weapon drills and change one of those weapon choices.\n\nWhen you reach certain Barbarian levels, you gain the ability to use the mastery properties of more kinds of weapons, as shown in the Weapon Mastery column of the Barbarian Features table.",
+      "level": 4
     },
     {
       "name": "Ability Score Increase",
-      "description": "<p>Your Strength score increases by 2 and your Dexterity score increases by 1.</p>"
+      "description": "Your Strength score increases by 2 and your Dexterity score increases by 1.",
+      "level": null
     },
     {
       "name": "Age",
-      "description": "<p>Locathah mature to adulthood by the age of 10 but have been known to live up to 80 years.</p>"
+      "description": "Locathah mature to adulthood by the age of 10 but have been known to live up to 80 years.",
+      "level": null
     },
     {
       "name": "Alignment",
-      "description": "<p>Most locathah are true neutral or have some aspect of neutrality in their alignment. They tend toward good, coming from a culture where compassion for the downtrodden is a commonality.</p>"
+      "description": "Most locathah are true neutral or have some aspect of neutrality in their alignment. They tend toward good, coming from a culture where compassion for the downtrodden is a commonality.",
+      "level": null
     },
     {
       "name": "Natural Armor",
-      "description": "<p>You have tough, scaly skin. When you aren’t wearing armor, your AC is 12 + your Dexterity modifier. You can use your natural armor to determine your AC if the armor you wear would leave you with a lower AC. A shield’s benefits apply as normal while you use your natural armor.</p>"
+      "description": "You have tough, scaly skin. When you aren’t wearing armor, your AC is 12 + your Dexterity modifier. You can use your natural armor to determine your AC if the armor you wear would leave you with a lower AC. A shield’s benefits apply as normal while you use your natural armor.",
+      "level": null
     },
     {
       "name": "Observant and Athletic",
-      "description": "<p>You have proficiency in the Athletics and Perception skills.</p>"
+      "description": "You have proficiency in the Athletics and Perception skills.",
+      "level": null
     },
     {
       "name": "Leviathan Will",
-      "description": "<p>You have advantage on saving throws against being charmed, frightened, paralyzed, poisoned, stunned, or put to sleep.</p>"
+      "description": "You have advantage on saving throws against being charmed, frightened, paralyzed, poisoned, stunned, or put to sleep.",
+      "level": null
     },
     {
       "name": "Limited Amphibiousness",
-      "description": "<p>You can breathe air and water, but you need to be submerged at least once every 4 hours to avoid suffocating.</p>"
+      "description": "You can breathe air and water, but you need to be submerged at least once every 4 hours to avoid suffocating.",
+      "level": null
     },
     {
       "name": "Size",
-      "description": "<p>Locathah stand between 5 and 6 feet tall and average about 150 pounds. Your size is Medium.</p>"
+      "description": "Locathah stand between 5 and 6 feet tall and average about 150 pounds. Your size is Medium.",
+      "level": null
     },
     {
       "name": "Speed",
-      "description": "<p>Your base walking speed is 30 feet, and you have a swim speed of 30 feet.</p>"
+      "description": "Your base walking speed is 30 feet, and you have a swim speed of 30 feet.",
+      "level": null
     },
     {
       "name": "Languages",
-      "description": "<p>You can speak, read, and write Aquan and Common.</p>"
+      "description": "You can speak, read, and write Aquan and Common.",
+      "level": null
     },
     {
       "name": "Savage Attacker",
-      "description": "<p><em>Origin Feat</em></p>\r\n<p>You’ve trained to deal particularly damaging strikes. Once per turn when you hit a target with a weapon, you can roll the weapon’s damage dice twice and use either roll against the target.</p>"
+      "description": "*Origin Feat*\n\nYou’ve trained to deal particularly damaging strikes. Once per turn when you hit a target with a weapon, you can roll the weapon’s damage dice twice and use either roll against the target.",
+      "level": null
     },
     {
       "name": "Sentinel",
-      "description": "<p><em>General Feat (Prerequisite: Level 4+, Strength or Dexterity 13+)</em></p>\r\n<p>You gain the following benefits.</p>\r\n<p><em><strong>Ability Score Increase.</strong></em> Increase your Strength or Dexterity score by 1, to a maximum of 20.</p>\r\n<p><em><strong> Guardian.</strong></em> Immediately after a creature within 5 feet of you takes the Disengage action or hits a target other than you with an attack, you can make an Opportunity Attack against that creature.</p>\r\n<p><em><strong> Halt.</strong></em> When you hit a creature with an Opportunity Attack, the creature’s Speed becomes 0 for the rest of the current turn.</p>"
+      "description": "*General Feat (Prerequisite: Level 4+, Strength or Dexterity 13+)*\n\nYou gain the following benefits.\n\n***Ability Score Increase.*** Increase your Strength or Dexterity score by 1, to a maximum of 20.\n\n*** Guardian.*** Immediately after a creature within 5 feet of you takes the Disengage action or hits a target other than you with an attack, you can make an Opportunity Attack against that creature.\n\n*** Halt.*** When you hit a creature with an Opportunity Attack, the creature’s Speed becomes 0 for the rest of the current turn.",
+      "level": null
     },
     {
       "name": "Soldier Ability Score Improvements",
-      "description": "<p>The Soldier Background allows you to choose between Strength, Dexterity, and Constitution. Increase one of these scores by 2 and another one by 1, or increase all three by 1. None of these increases can raise a score above 20.</p>"
+      "description": "The Soldier Background allows you to choose between Strength, Dexterity, and Constitution. Increase one of these scores by 2 and another one by 1, or increase all three by 1. None of these increases can raise a score above 20.",
+      "level": null
     },
     {
       "name": "Dark Bargain",
-      "description": "<p>At your GM's discretion, you can take a Dark Bargain.</p>"
+      "description": "At your GM's discretion, you can take a Dark Bargain.",
+      "level": null
     }
   ],
   "proficiencies": {
@@ -988,5 +1003,120 @@
     "personalityTraits": "I once ran twenty-five miles without stopping to warn to my clan of an approaching orc horde. I’d do it again if I had to.\nI have a lesson for every situation, drawn from observing nature.",
     "size": "Medium"
   },
-  "spells": []
+  "spells": [],
+  "featureIds": [
+    "feat.weapon-mastery",
+    "feat.savage-attacker",
+    "feat.sentinel",
+    "feat.soldier-ability-score-improvements",
+    "feat.dark-bargain",
+    "feat.barbarian-divine-fury",
+    "feat.barbarian-warrior-of-the-gods",
+    "feat.barbarian-fanatical-focus",
+    "feat.rage",
+    "feat.barbarian-unarmored-defense",
+    "feat.barbarian-danger-sense",
+    "feat.barbarian-reckless-attack",
+    "feat.barbarian-barbarian-subclass",
+    "feat.barbarian-primal-knowledge",
+    "feat.ability-score-improvement",
+    "feat.extra-attack",
+    "feat.barbarian-fast-movement",
+    "feat.barbarian-feral-instinct",
+    "feat.barbarian-instinctive-pounce",
+    "feat.core-barbarian-traits",
+    "feat.locathah-ability-score-increase",
+    "feat.locathah-age",
+    "feat.locathah-alignment",
+    "feat.locathah-natural-armor",
+    "feat.locathah-observant-and-athletic",
+    "feat.locathah-leviathan-will",
+    "feat.locathah-limited-amphibiousness"
+  ],
+  "featureParams": {
+    "feat.weapon-mastery": {
+      "grantedAtLevel": [
+        1,
+        4
+      ]
+    },
+    "feat.barbarian-divine-fury": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.barbarian-warrior-of-the-gods": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.barbarian-fanatical-focus": {
+      "grantedAtLevel": [
+        6
+      ]
+    },
+    "feat.rage": {
+      "grantedAtLevel": [
+        1
+      ]
+    },
+    "feat.barbarian-unarmored-defense": {
+      "grantedAtLevel": [
+        1
+      ]
+    },
+    "feat.barbarian-danger-sense": {
+      "grantedAtLevel": [
+        2
+      ]
+    },
+    "feat.barbarian-reckless-attack": {
+      "grantedAtLevel": [
+        2
+      ]
+    },
+    "feat.barbarian-barbarian-subclass": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.barbarian-primal-knowledge": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.ability-score-improvement": {
+      "grantedAtLevel": [
+        4,
+        8,
+        12,
+        16
+      ]
+    },
+    "feat.extra-attack": {
+      "grantedAtLevel": [
+        5
+      ]
+    },
+    "feat.barbarian-fast-movement": {
+      "grantedAtLevel": [
+        5
+      ]
+    },
+    "feat.barbarian-feral-instinct": {
+      "grantedAtLevel": [
+        7
+      ]
+    },
+    "feat.barbarian-instinctive-pounce": {
+      "grantedAtLevel": [
+        7
+      ]
+    },
+    "feat.core-barbarian-traits": {
+      "grantedAtLevel": [
+        1
+      ]
+    }
+  }
 }

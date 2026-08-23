@@ -1,7 +1,8 @@
 {
   "name": "Shapechanger",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature can polymorph into a specific alternate form (and back), its statistics the same in each form except for size — nothing it's wearing or carrying transforms with it, and it reverts to its true form if it dies.",
   "mechanics": {

@@ -1,7 +1,8 @@
 {
   "name": "Reflective Crystal",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Any time the creature is targeted by a magic missile spell, a line spell, or a spell that requires a ranged attack roll, rolla d6. On a 1 to 4, the creature is affected as normal. On a 5 to 6, the creature is unaffected, and the effect is reflected back at the caster as though it originated from the creature, turning the caster into the target.",
   "mechanics": {

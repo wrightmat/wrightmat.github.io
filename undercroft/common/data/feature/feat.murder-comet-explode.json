@@ -1,7 +1,8 @@
 {
   "name": "Explode",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "When the creature drops to 0 hit points, it explodes in a 20-foot-radius sphere centered on itself. Each creature in the sphere must make a DC 16 Dexterity saving throw, taking 28 (8d6) fire damage on a failed save, or half as much damage on a successful one.",
   "mechanics": {

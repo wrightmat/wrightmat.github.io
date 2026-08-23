@@ -1,7 +1,8 @@
 {
   "name": "Ignited Illumination",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "As a bonus action, the creature can set itself ablaze or extinguish its flames. While ablaze, the creature sheds bright light in a 10-foot radius and dim light for an additional 10 ft.",
   "mechanics": {

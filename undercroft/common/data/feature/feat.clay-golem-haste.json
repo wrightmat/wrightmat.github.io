@@ -1,7 +1,8 @@
 {
   "name": "Haste",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Until the end of its next turn, the creature magically gains a +2 bonus to its AC, has advantage on Dexterity saving throws, and can use its slam attack as a bonus action.",
   "mechanics": {

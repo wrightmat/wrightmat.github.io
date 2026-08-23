@@ -1,0 +1,24 @@
+{
+  "id": "feat.core-warlock-traits",
+  "name": "Core Warlock Traits",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "As a Level 1 Character:\n\n- Gain all the traits in the Core Warlock Traits table.\n\n- Gain the Warlock’s level 1 features.\n\nPrimary Ability: Charisma\n\nHit Point Die: D8 per Warlock level\n\nSaving Throw Proficiencies: Wisdom and Charisma\n\nSkill Proficiencies: Choose 2: Arcana, Deception, History, Intimidation, Investigation, Nature, or Religion\n\nWeapon Proficiencies: Simple weapons\n\nArmor Training: Light armor\n\nStarting Equipment: Choose A or B: (A) Leather Armor, Sickle, 2 Daggers, Arcane Focus (orb), Book (occult lore), Scholar’s Pack, and 15 GP; or (B) 100 GP",
+  "mechanics": {
+    "type": "passive",
+    "text": "As a Level 1 Character:\n\n- Gain all the traits in the Core Warlock Traits table.\n\n- Gain the Warlock’s level 1 features.\n\nPrimary Ability: Charisma\n\nHit Point Die: D8 per Warlock level\n\nSaving Throw Proficiencies: Wisdom and Charisma\n\nSkill Proficiencies: Choose 2: Arcana, Deception, History, Intimidation, Investigation, Nature, or Religion\n\nWeapon Proficiencies: Simple weapons\n\nArmor Training: Light armor\n\nStarting Equipment: Choose A or B: (A) Leather Armor, Sickle, 2 Daggers, Arcane Focus (orb), Book (occult lore), Scholar’s Pack, and 15 GP; or (B) 100 GP"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

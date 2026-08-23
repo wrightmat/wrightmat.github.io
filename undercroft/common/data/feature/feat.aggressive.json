@@ -1,7 +1,8 @@
 {
   "name": "Aggressive",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "As a bonus action, the creature can move up to its speed toward a hostile creature it can see.",
   "mechanics": {

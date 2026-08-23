@@ -1,0 +1,86 @@
+{
+  "index": "artificer-maverick",
+  "url": "https://www.dndbeyond.com/classes/2656866-artificer",
+  "name": "Maverick",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "parentKind": "class",
+  "parentId": "artificer",
+  "summary": "A Maverick Artificer is always tinkering, forever chasing a new idea. Where other Artificers focus on a single path of arcane science, the strength of the Maverick is flexibility. They may lack the discipline or credentials of their scholarly colleagues, but Mavericks have a talent for cobbling together exactly what's needed to solve any problem.",
+  "description": "",
+  "features": [
+    {
+      "name": "Tools Proficiency",
+      "level": 3,
+      "description": "You gain proficiency with Tinker's Tools. If you already have this proficiency, you gain proficiency with one other type of Artisan’s Tools of your choice. In addition, when you craft a magic item, the amount of time required to craft it is halved."
+    },
+    {
+      "name": "Maverick Spells",
+      "level": 3,
+      "description": "You learn one cantrip of your choice from the Artificer, Cleric, or Wizard spell list. The chosen cantrip counts as an Artificer spell for you, and Intelligence is your spellcasting ability for it.In addition, any time you prepare Artificer spells, you can prepare an additional number of spells equal to your Proficiency Bonus. These additional spells can be chosen from the Artificer, Cleric, and Wizard spells lists, and the chosen spells count as Artificer spells for you."
+    },
+    {
+      "name": "Arcane Prototype",
+      "level": 3,
+      "description": "You're always working on new projects, crafting Arcane Prototypes. You determine a prototype's appearance, but its functionality is always similar to that of a Spell Scroll—it holds the effect of a spell that can be unleashed at a later time. Only you can use a prototype to cast a spell; they're experimental creations that no one else can truly understand.\n\nYour ability to constantly come up with new ideas is represented by Arcane Charges. You have 1 Arcane Charge, and you gain more as you reach higher levels, as shown in the Arcane Charges level of the Arcane Prototypes table. You can't have more Arcane Charges than the number shown in the table for your level. You regain all expended Arcane Charges when you finish a Long Rest.\n\nYou can use your Arcane Charges to imbue spells into your prototypes, up to the level shown in the Max Spell Level of the Arcane Prototypes table. While a prototype is in your possession, you can cast the imbued spell without expending a spell slot, without preparing the spell, and without Material components. Casting the spell in this way requires the spell's normal casting time. Once the spell is cast, the prototype crumbles to dust, unless you choose to preserve it by expending a spell slot equal to the level of the spell.\n\nImbuing Spells into your Prototypes. When you finish a Long Rest, you can create a prototype if you have Tinker's Tools in hand. When you reach certain Artificer levels specified in the Artificer Level column of the Arcane Prototypes table, the number of prototypes you can create at the end of a Long Rest increases.\n\nWhen you create a prototype, choose a spell from the Artificer, Cleric, or Wizard spell list. This expends a number of Arcane Charges equal to the level of the spell, up to the maximum spell level allowed. For example, if you're a level 9 Artificer, you can create up to 3 prototypes, each with a maximum spell level of 3, expending a total of 5 Arcane Charges to do so; you could create two level 1 prototypes and one level 3 prototype; one level 2 prototype and one level 3 prototype, or one level 1 prototype and two level 2 prototypes.\n\n3 | 1 | 1 | 1\n\n5 | 2 | 2 | 3\n\n9 | 3 | 3 | 5\n\n13 | 3 | 4 | 7\n\n15 | 4 | 5 | 9\n\n17 | 4 | 6 | 11\n\n20 | 5 | 6 | 13"
+    },
+    {
+      "name": "Fine Tuning",
+      "level": 5,
+      "description": "Whenever you cast an Artificer spell while you have Tinker’s Tools in your possession, you can add your Intelligence modifier to one damage roll of the spell."
+    },
+    {
+      "name": "Work In Progress",
+      "level": 9,
+      "description": "Whenever you finish a Short Rest, you can replace one of your prepared spells with a new spell from the Artificer, Cleric, or Wizard spell list. This spell counts as an Artificer spell for you."
+    },
+    {
+      "name": "Final Breakthrough",
+      "level": 15,
+      "description": "Whenever you finish a Short Rest, you can swap a spell contained in your Prototype for another spell of the same level, chosen from the Artificer, Cleric, or Wizard spell list. In addition, you ignore all class, species, spell, and level requirements on attuning to or using a magic item."
+    }
+  ],
+  "mapping": "ddb-subclass",
+  "featureIds": [
+    "feat.artificer-tools-proficiency",
+    "feat.artificer-maverick-spells",
+    "feat.artificer-arcane-prototype",
+    "feat.artificer-fine-tuning",
+    "feat.artificer-work-in-progress",
+    "feat.artificer-final-breakthrough"
+  ],
+  "featureParams": {
+    "feat.artificer-tools-proficiency": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.artificer-maverick-spells": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.artificer-arcane-prototype": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.artificer-fine-tuning": {
+      "grantedAtLevel": [
+        5
+      ]
+    },
+    "feat.artificer-work-in-progress": {
+      "grantedAtLevel": [
+        9
+      ]
+    },
+    "feat.artificer-final-breakthrough": {
+      "grantedAtLevel": [
+        15
+      ]
+    }
+  }
+}

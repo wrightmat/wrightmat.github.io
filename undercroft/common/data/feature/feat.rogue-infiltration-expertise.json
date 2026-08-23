@@ -1,0 +1,26 @@
+{
+  "id": "feat.rogue-infiltration-expertise",
+  "name": "Infiltration Expertise",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You are expert at the following techniques that aid your infiltrations.\n\nMasterful Mimicry. You can unerringly mimic another person’s speech, handwriting, or both if you have spent at least 1 hour studying them.\n\nRoving Aim. Your Speed isn’t reduced to 0 by using Steady Aim.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "You are expert at the following techniques that aid your infiltrations.\n\nMasterful Mimicry. You can unerringly mimic another person’s speech, handwriting, or both if you have spent at least 1 hour studying them.\n\nRoving Aim. Your Speed isn’t reduced to 0 by using Steady Aim."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

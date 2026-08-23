@@ -10,7 +10,7 @@
 import { measureCaretPosition } from "./wiki-link-autocomplete.js";
 import { fetchKindEntrySummaries, loadLibraryKinds } from "../../../common/js/lib/content-fetch.js";
 import { QUICK_DICE } from "../../../common/js/lib/widgets/dice-roll.js";
-import { EXCLUDED_KINDS, iconFor } from "./journal-kind-reference.js";
+import { EXCLUDED_KINDS, iconFor } from "../../../common/js/lib/library-reference.js";
 
 // macro/encounter/dice/date are always recognized, even before the full
 // kind list below has loaded — the special-cased prefixes this dropdown
@@ -149,7 +149,7 @@ async function genericCandidates(dataManager, kindId, query) {
 
 // macro/monster/npc/dice keep their own specific icons (a bolt, paws, a
 // person, dice pips) even though monster/npc/macro also have a shared
-// journal-kind-reference.js entry — iconFor's own fallback covers every
+// library-reference.js entry — iconFor's own fallback covers every
 // other kind so this map doesn't need one entry per Library kind.
 const KIND_ICON = {
   macro: "tabler:bolt",

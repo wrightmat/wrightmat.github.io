@@ -1,7 +1,8 @@
 {
   "name": "Action Restricted",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Prevents the target from taking a specific kind of action-economy action for a duration — a pure action-economy restriction, no damage or named condition involved.",
   "mechanics": {

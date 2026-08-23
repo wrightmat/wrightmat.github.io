@@ -1,7 +1,8 @@
 {
   "name": "Skill Bonus",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Sharpens the creature's aptitude at one specific skill or check.",
   "mechanics": {

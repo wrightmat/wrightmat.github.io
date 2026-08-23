@@ -1,7 +1,8 @@
 {
   "name": "Boscage Brachiation",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature doesn’t provoke opportunity attacks when it moves out of an enemy’s reach by climbing.",
   "mechanics": {

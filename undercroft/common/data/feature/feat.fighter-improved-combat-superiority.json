@@ -1,0 +1,26 @@
+{
+  "id": "feat.fighter-improved-combat-superiority",
+  "name": "Improved Combat Superiority",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "Your Superiority Die becomes a d10.",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "Your Superiority Die becomes a d10."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

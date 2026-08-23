@@ -22,12 +22,21 @@ import {
   verifyBuiltinAsset,
 } from "../lib/content-registry.js";
 import { applyComponentStyles, applyTextFormatting } from "../lib/component-styles.js";
-import { renderTextContent, renderImageContent, renderIconContent, renderContainerContent, renderInputContent, renderLinearTrackContent, renderCircularTrackContent, renderSelectGroupContent, renderToggleContent, toggleStateEntryFromRaw, excludeToggleWrapperColors } from "../lib/component-renderers.js";
+import { renderTextContent, renderImageContent, renderIconContent, renderContainerContent, renderInputContent, renderLinearTrackContent, renderCircularTrackContent, renderSelectGroupContent, renderToggleContent, toggleStateEntryFromRaw, excludeToggleWrapperColors, isReferenceValue } from "../lib/component-renderers.js";
 import { loadCustomFonts, DEFAULT_FONT_FAMILY } from "../../../common/js/lib/font-library.js";
 import { evaluateFormula } from "../../../common/js/lib/formula-engine.js";
 import { resolveBinding, createLookupFn } from "../../../common/js/lib/bindings.js";
 import { rollDiceExpression } from "../lib/dice.js";
 import { rollExpression, resolveQuickDice, parseQuickDiceCounts, incrementDieInExpression, extractSystemRolls, rollSystemMove, extractSystemSymbolDice, rollSymbolPoolExpression } from "../../../common/js/lib/widgets/dice-roll.js";
+import { fetchKindEntriesWithIds } from "../../../common/js/lib/content-fetch.js";
+import {
+  promoteEmbeddedFeatures,
+  hasEmbeddedFeatures,
+  linkCharacterSpellReferences,
+  linkCharacterInventoryReferences,
+  linkCharacterSpeciesClassReferences,
+} from "../../../common/js/lib/content-feature-matching.js";
+import { resolveNotes } from "../../../common/js/lib/library-reference.js";
 import { formatSymbolPoolResult } from "../lib/symbol-dice.js";
 import { preloadDiceOverlay } from "../../../common/js/lib/widgets/dice-overlay.js";
 import { setElementVisible } from "../../../common/js/lib/dom.js";
@@ -2406,6 +2415,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       dataManager,
       groupId,
       shareToken: gameLogContext.shareToken,
+      isOwner: gameLogContext.access === "owner",
       onChange: (payload) => {
         // The active campaign may have already moved on by the time this
         // resolves (a poll/live-stream tick landing after the GM/player
@@ -3078,7 +3088,27 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       return;
     }
     try {
-      const metadata = templateCatalog.get(id);
+      let metadata = templateCatalog.get(id);
+      if (!metadata) {
+        // Not in the locally-registered catalog — that catalog is built
+        // from a LIST call (loadTemplateRecords), which only ever returns
+        // templates this user owns, has an explicit share for, or that are
+        // public. Confirmed real bug this fixes: a genuine campaign MEMBER
+        // opening "Party Data" for the first time never had this campaign's
+        // own Party Template in their catalog at all — it typically
+        // belongs to the GM and was never separately shared, even though
+        // the whole Party Data feature exists only to show players the
+        // Group-bound fields authored on that exact template. Falls back
+        // to a direct single-record fetch, which server/storage.py's own
+        // _template_visible_via_group now grants for any member of a
+        // group that actually uses this template — then registers it so
+        // every later load (this session) hits the catalog like normal.
+        const fallback = await dataManager.get("templates", id, { preferLocal: false }).catch(() => null);
+        if (fallback?.payload) {
+          registerTemplateRecord({ id, title: fallback.payload.title || fallback.payload.name || id, source: "remote" });
+          metadata = templateCatalog.get(id);
+        }
+      }
       if (!metadata) {
         throw new Error("Template metadata unavailable");
       }
@@ -3158,11 +3188,28 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     syncNotesEditor();
     let templateId = "";
     try {
-      // preferLocal: false — same "this is the authoritative editor, never
-      // trust a stale local cache" reasoning as loadCharacter/loadTemplateById
-      // below use for their own fetches.
-      const result = await dataManager.get("group", groupId, { preferLocal: false });
-      templateId = result?.payload?.templateId || "";
+      // The generic /content/group/{id} route only grants a non-owner
+      // reader via a share token — a genuine campaign MEMBER picking their
+      // own campaign from this very dropdown has neither, and always
+      // 401'd here (confirmed real bug: a legitimate member could SEE
+      // their own campaign listed but got "Unable to load this campaign"
+      // trying to open it). gameLogContext.access/shareToken were just
+      // resolved for this exact groupId by syncGameLogContext above, so
+      // which route to use is already known — no optimistic attempt-then-
+      // catch against a route that was never going to succeed for this
+      // viewer. preferLocal: false on the owner path — same "this is the
+      // authoritative editor, never trust a stale local cache" reasoning
+      // as loadCharacter/loadTemplateById below use for their own fetches.
+      if (gameLogContext.access === "owner" || gameLogContext.shareToken) {
+        const result = await dataManager.get("group", groupId, {
+          shareToken: gameLogContext.shareToken,
+          preferLocal: false,
+        });
+        templateId = result?.payload?.templateId || "";
+      } else {
+        const result = await dataManager.getGroupProperties(groupId);
+        templateId = result?.templateId || "";
+      }
     } catch (error) {
       console.error("Character editor: failed to load campaign", error);
       status.show("Unable to load this campaign", { type: "error", timeout: 2500 });
@@ -3184,6 +3231,15 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       return;
     }
     await loadTemplateById(templateId);
+    // Re-sync now that state.template is (hopefully) populated — the
+    // earlier syncCharacterActions() call above ran before this fetch even
+    // started, so it always saw partyMode with no template yet and left
+    // the Mode/View header's empty-state message and hidden Sheet card in
+    // place regardless of how this ultimately resolved. hasActiveCharacter
+    // (this file's own export) is what workbench.js's renderEmptyState
+    // actually reads, and it now recognizes state.partyMode + state.template
+    // too, not just a character draft — see that export's own comment.
+    syncCharacterActions();
   }
 
   async function fetchTemplatePayload(metadata) {
@@ -3812,6 +3868,35 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   // real editing (Toggle, Select Group, Track) follows this same pattern,
   // so Repeater items get the exact same interactive control as everywhere
   // else instead of a separate, narrower hand-written copy.
+  // Shared by renderTextComponent/renderInputComponent's own ctx objects —
+  // the sibling-reference lookup Text/Input's automatic chip detection
+  // needs (see component-renderers.js's own renderTextContent/
+  // renderInputContent comments): resolves this component's own bound
+  // path's PARENT (binding minus a trailing `.name`, or — a bare top-level
+  // "@name" inside a Repeater item, e.g. a Spells-row name cell — the whole
+  // item itself, same "@value" convention resolveRepeaterItemValue already
+  // uses for "no sub-path, this IS the item") and checks whether THAT
+  // resolves to a {refKind, refId, name} object. A plain path getter,
+  // deliberately not resolveComponentValue (formula/roller-aware, meant for
+  // the component's own real bound leaf, not a synthetic parent lookup).
+  function resolveComponentReference(comp, itemContext) {
+    const binding = typeof comp.binding === "string" ? comp.binding : "";
+    if (binding === "@name") {
+      if (!itemContext) return null;
+      const parentValue = resolveItemContextValue(itemContext, "@value");
+      return isReferenceValue(parentValue) ? parentValue : null;
+    }
+    if (!binding.endsWith(".name")) return null;
+    const parentBinding = binding.slice(0, -".name".length);
+    const parentValue = itemContext
+      ? resolveItemContextValue(itemContext, parentBinding)
+      : (() => {
+          const path = resolveBindingPath(parentBinding);
+          return path ? getValueAtContext(getBindingContext(), path) : undefined;
+        })();
+    return isReferenceValue(parentValue) ? parentValue : null;
+  }
+
   function renderInputComponent(component, itemContext = null) {
     const writeValue = (comp, value) => {
       if (itemContext) {
@@ -3821,12 +3906,16 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       }
     };
     return renderInputContent(component, {
+      dataManager,
       resolveValue(comp, fallback) {
         if (itemContext) {
           const resolved = resolveItemContextValue(itemContext, comp.binding);
           return resolved != null ? resolved : fallback;
         }
         return resolveComponentValue(comp, fallback);
+      },
+      resolveReference(comp) {
+        return resolveComponentReference(comp, itemContext);
       },
       editable(comp) {
         return isRepeaterCellEditable(comp, itemContext);
@@ -4697,6 +4786,97 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   // one row hands its own item down to renderRepeaterItemNode, which
   // dispatches type "repeater" straight back into this function with ITS
   // OWN itemContext, so arbitrarily deep nesting falls out for free.
+  // A Repeater's own binding sometimes points at a System field authored as
+  // a fixed-keys OBJECT (sys.dnd5e.json's own "abilities" field —
+  // {strength, dexterity, ...}), not an array — Ability Scores is the
+  // motivating case, but this applies to ANY object-shaped binding, not
+  // something hardcoded to "abilities" specifically. Confirmed real bug
+  // this fixes: such a Repeater always showed "No items." —
+  // Array.isArray(value) is false for a plain object, so `items` came back
+  // empty regardless of how much real data the object held. Converts it
+  // into the same per-entry shape a genuinely array-authored field (Saving
+  // Throws, Skills) already stores directly on each of ITS OWN items:
+  // {key, label, shortName, value}. shortName/label come from the matching
+  // System field's own per-child metadata (e.g. abilities.children[]
+  // .shortName) when the active System declares one — an item template
+  // referencing @shortName (Ability Scores' own label + its
+  // lookup("abilities", @shortName) border color) has nothing else to
+  // resolve that from. `score` duplicates `value` under the specific name
+  // Ability Scores' own item template already binds to (@score), authored
+  // before this conversion existed — kept as an alias rather than forcing
+  // a template edit for an already-correct binding.
+  function expandObjectBindingToRepeaterItems(value, component) {
+    const path = resolveBindingPath(component?.binding);
+    const fieldKey = path && path.length ? path[path.length - 1] : "";
+    const systemFields = Array.isArray(state.systemDefinition?.fields) ? state.systemDefinition.fields : [];
+    const systemField = fieldKey ? systemFields.find((field) => field?.key === fieldKey) : null;
+    const metaByKey = new Map();
+    (Array.isArray(systemField?.children) ? systemField.children : []).forEach((child) => {
+      const childKey = typeof child?.key === "string" ? child.key.split(".").pop() : "";
+      if (childKey) metaByKey.set(childKey, child);
+    });
+    return Object.entries(value).map(([key, val]) => {
+      const meta = metaByKey.get(key) || {};
+      return {
+        key,
+        label: meta.label || key,
+        shortName: meta.shortName || key.slice(0, 3).toUpperCase(),
+        value: val,
+        score: val,
+      };
+    });
+  }
+
+  // `@featureIds` is a suite-wide convention field name (Monster/NPC/
+  // Class/Species/Variant/Character all use this exact literal — see
+  // content-feature-matching.js's own header comment), not System-specific
+  // — recognized here the same deliberate way `component.binding === "@value"`
+  // already is, not a generic "any bare-string array" heuristic (which would
+  // wrongly turn an unrelated string list, e.g. Languages, into feature
+  // chips). `featureIds` itself is a bare id array (Monster's own shape,
+  // not {refKind,refId,name} objects — see content-feature-matching.js's
+  // own reasoning for why), so each entry needs its own display name (and,
+  // as of this fix, description — see the Features Repeater's own second
+  // item-row field in tpl.5e.flex-basic.json, added so a player can read
+  // what a feature actually does without hovering/clicking every pill)
+  // looked up before a Text/reference-chip cell has anything to show. Uses
+  // fetchKindEntriesWithIds (full bodies), not fetchKindEntrySummaries
+  // (list-endpoint metadata only, no description field at all) — still one
+  // bulk, cached call per character-sheet load (cachedBulkFetch's own
+  // cross-visit cache), never one fetch per row.
+  let featureSummaryCache = null;
+  let featureSummaryFetchInFlight = false;
+  function ensureFeatureSummaryCache() {
+    if (featureSummaryCache || featureSummaryFetchInFlight || !dataManager) return;
+    featureSummaryFetchInFlight = true;
+    fetchKindEntriesWithIds(dataManager, "feature")
+      .then((entries) => {
+        featureSummaryCache = new Map(
+          entries.map((entry) => [
+            entry.id,
+            { name: entry.entity?.name || entry.id, description: resolveNotes(entry.entity) },
+          ])
+        );
+        renderCanvas();
+      })
+      .catch(() => {
+        featureSummaryCache = new Map();
+      })
+      .finally(() => {
+        featureSummaryFetchInFlight = false;
+      });
+  }
+
+  function expandFeatureIdsToRepeaterItems(ids) {
+    ensureFeatureSummaryCache();
+    return ids
+      .filter((id) => typeof id === "string" && id)
+      .map((id) => {
+        const summary = featureSummaryCache?.get(id);
+        return { refKind: "feature", refId: id, name: summary?.name || id, description: summary?.description || "" };
+      });
+  }
+
   function renderRepeaterComponent(component, itemContext = null) {
     const wrapper = document.createElement("div");
     wrapper.className = "d-flex flex-column gap-2";
@@ -4726,7 +4906,14 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     const value = itemContext
       ? resolveItemContextValue(itemContext, component.binding)
       : resolveComponentValue(component);
-    const items = Array.isArray(value) ? value : [];
+    const items =
+      Array.isArray(value) && component.binding === "@featureIds"
+        ? expandFeatureIdsToRepeaterItems(value)
+        : Array.isArray(value)
+          ? value
+          : value && typeof value === "object"
+            ? expandObjectBindingToRepeaterItems(value, component)
+            : [];
     // Add/Remove-row controls — first gated by component.allowAddRemove
     // (createRepeaterAllowAddRemoveToggle, workbench-template-view.js): an
     // explicit per-Repeater authoring choice, off by default, since most
@@ -5043,6 +5230,13 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
 
   function renderTextComponent(component, itemContext = null) {
     return renderTextContent(component, {
+      // Live dataManager, for renderTextContent's own automatic reference-
+      // chip detection (component-renderers.js) — this is the ONLY page
+      // that ever has one, so this is also the only place a reference chip
+      // actually hovers/previews; the Template editor's own preview
+      // (workbench-template-view.js) has no live record to look anything
+      // up against and falls back to plain text.
+      dataManager,
       resolveValue(comp, fallback) {
         if (itemContext) {
           // Formula first, same precedence as the non-item branch below
@@ -5059,6 +5253,9 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
           return resolved != null ? resolved : fallback;
         }
         return resolveComponentValue(comp, fallback);
+      },
+      resolveReference(comp) {
+        return resolveComponentReference(comp, itemContext);
       },
     });
   }
@@ -5100,6 +5297,26 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
         cell.className = "d-flex flex-column";
         if (alignItems) cell.style.alignItems = alignItems;
         if (textAlign) cell.style.textAlign = textAlign;
+        // This cell is a CSS Grid item (.template-container-grid, shared
+        // component-renderers.js) — with no explicit align-self, Grid's own
+        // default (stretch) forces it to fill the row's full height, and
+        // `alignItems` just above only ever governs its OWN children's
+        // cross axis (horizontal, since this cell is flex-direction:column),
+        // not where the cell itself sits within that stretched height.
+        // Confirmed real bug this fixes: a Repeater row mixing component
+        // types of very different natural heights (a Toggle/checkbox, a
+        // bare Text line, an Input with Bootstrap's own padding+border) all
+        // got stretched to the row's tallest cell and then top-packed
+        // within it, so each one's own visual center landed at a different
+        // height even though every cell's own top edge lined up. Scoped to
+        // itemContext (a Repeater's own item template) specifically, NOT a
+        // blanket change to every Container — a standalone, non-repeater
+        // Container elsewhere on the sheet may have real reasons to want
+        // its own cells stretched (e.g. a tall image next to body text).
+        // Character View's own inline cell — NOT the shared
+        // .template-container-zone CSS class, which is workbench-template-
+        // view.js's own Template Editor preview and must NOT change here.
+        if (itemContext) cell.style.alignSelf = "center";
         // A container whose tabs are Source-generated (tabLabelsSourceBinding
         // resolved — see normalizeZones, which builds the same tab list)
         // gives each tab's own children an item-relative context rooted at
@@ -5936,6 +6153,18 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     let overridden = null;
     Object.entries(COLOR_BINDING_KEYS).forEach(([colorProp, keys]) => {
       const formula = typeof node[keys.formula] === "string" ? node[keys.formula].trim() : "";
+      // A formula calling lookup("someSystemField", ...) has nothing to
+      // find until state.systemDefinition itself finishes its own async
+      // fetch — the character canvas's own first render pass always runs
+      // before that resolves (confirmed real, self-correcting race: the
+      // System arrives moments later, triggers a second render, and this
+      // SAME formula then evaluates correctly with no error at all). Not a
+      // genuine failure, so skipped rather than attempted-and-warned —
+      // same "don't log a request/lookup that was never going to succeed
+      // yet" reasoning this session's own group-access fixes already used.
+      if (formula && formula.includes("lookup(") && !Array.isArray(state.systemDefinition?.fields)) {
+        return;
+      }
       if (formula) {
         try {
           const result = evaluateFormulaWithLookup(formula, item && typeof item === "object" ? item : {}, {});
@@ -6986,7 +7215,14 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     if (elements.characterSelect) {
       elements.characterSelect.value = trimmedId;
     }
-    await persistDraft({ silent: true });
+    // silent: false — this IS one of persistDraft's own documented
+    // "genuinely deliberate saves" (character creation, per its own
+    // comment), not an autosave; confirmed real, separate bug this fixes:
+    // silent: true here meant a BRAND NEW imported character's own feats/
+    // features never got promoted to real Library Features on its very
+    // first save either, not just on Re-import (see
+    // reimportCurrentCharacter's own identical fix above).
+    await persistDraft({ silent: false });
     syncNotesEditor();
     renderCanvas();
     renderPreview();
@@ -7230,6 +7466,43 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
         resetButton();
         return;
       }
+      // Same automatic Feature promotion persistDraft's own explicit-Save
+      // path already does — confirmed real, separate bug this fixes: Re-
+      // import saves via dataManager.save directly, never going through
+      // persistDraft at all, so a re-imported character's feats/features
+      // never became real Library references no matter how many times Re-
+      // import was clicked. Always runs here (no `!silent` gate) — unlike
+      // persistDraft's own autosave-vs-explicit-Save distinction, Re-import
+      // IS always an explicit, deliberate action.
+      await linkCharacterSpeciesClassReferences(dataManager, merged);
+      await linkCharacterSpellReferences(dataManager, merged);
+      // Confirmed real gap this fixes: Re-import never called this at all,
+      // so a re-imported character's inventory items never got a
+      // refKind/refId stamp, no matter how many times Re-import was clicked.
+      await linkCharacterInventoryReferences(dataManager, merged);
+      if (hasEmbeddedFeatures(merged, "feats") || hasEmbeddedFeatures(merged, "features")) {
+        try {
+          const existingFeatures = await fetchKindEntriesWithIds(dataManager, "feature").then(
+            (entries) => entries.map((entry) => ({ id: entry.id, ...entry.entity })),
+            () => []
+          );
+          for (const sourceField of ["feats", "features"]) {
+            // See loom/js/app.js's own identical fix for why this is
+            // needed here too — a Character's own "features" list merges
+            // in racial traits (Size, Speed, Creature Type, ...), the same
+            // property-shaped entries Species promotion already excludes.
+            await promoteEmbeddedFeatures(merged, {
+              sourceField,
+              category: "character",
+              dataManager,
+              existingFeatures,
+              excludeSpeciesPropertyTraits: true,
+            });
+          }
+        } catch (error) {
+          console.warn("Character editor: unable to promote feats/features to Library Features", error);
+        }
+      }
       await dataManager.save("character", id, merged);
       status.show(`Re-imported ${merged.name || label}.`, { type: "success", timeout: 2200 });
       // loadCharacter's own syncCharacterActions call recomputes this
@@ -7278,6 +7551,52 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     // from this CLONE only — state.draft.id itself stays populated for
     // every other in-memory read in this module.
     delete payload.id;
+    // Same automatic-on-save Feature promotion Loom's own saveEntity already
+    // does for a character imported/edited through Loom — this is
+    // Workbench's own equivalent call site, since persistDraft bypasses
+    // saveEntity entirely (same "Crucible's own handleSave is a second call
+    // site" shape monster-feature-matching.js's own module comment
+    // describes). Gated on `!silent` — persistDraft fires on nearly every
+    // field edit (autosave), and a real Library fetch on every keystroke
+    // would be wasteful; `!silent` is specifically the explicit Save-button
+    // click (and the few other genuinely deliberate saves — template
+    // assignment, character creation), matching Crucible's own handleSave's
+    // own "an explicit save action, not autosave" scoping. Reference
+    // linking (species/class/subclass/spells/inventory —
+    // content-feature-matching.js's own "Character reference linking"
+    // section) now does a real fetch too (a verified name-match, not a
+    // synchronous slug guess), so it moved into this same explicit-save-only
+    // gate rather than running unconditionally on every autosave the way it
+    // used to when it was free. Idempotent regardless — a later autosave
+    // with nothing new to promote/link is always a safe no-op.
+    if (!silent) {
+      await linkCharacterSpeciesClassReferences(dataManager, payload);
+      await linkCharacterSpellReferences(dataManager, payload);
+      await linkCharacterInventoryReferences(dataManager, payload);
+    }
+    if (!silent && (hasEmbeddedFeatures(payload, "feats") || hasEmbeddedFeatures(payload, "features"))) {
+      try {
+        const existingFeatures = await fetchKindEntriesWithIds(dataManager, "feature").then(
+          (entries) => entries.map((entry) => ({ id: entry.id, ...entry.entity })),
+          () => []
+        );
+        for (const sourceField of ["feats", "features"]) {
+          // See loom/js/app.js's own identical fix — a Character's own
+          // "features" list merges in racial traits (Size, Speed, Creature
+          // Type, ...), the same property-shaped entries Species
+          // promotion already excludes.
+          await promoteEmbeddedFeatures(payload, {
+            sourceField,
+            category: "character",
+            dataManager,
+            existingFeatures,
+            excludeSpeciesPropertyTraits: true,
+          });
+        }
+      } catch (error) {
+        console.warn("Character editor: unable to promote feats/features to Library Features", error);
+      }
+    }
     const label = payload?.data?.name || payload?.title || id;
     const metadata = characterCatalog.get(id) || {};
     const session = sessionUser();
@@ -7615,8 +7934,13 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     // Read by workbench.js's own renderEmptyState — the Mode/View header's
     // inline empty-state message shows only while Mode=Character AND no
     // character is loaded yet, same draftHasId check syncCharacterActions
-    // itself already uses.
-    hasActiveCharacter: () => Boolean(state.draft?.id),
+    // itself already uses. Party Data (loadGroupPartyView) is the OTHER
+    // way this "Sheet" side can be legitimately active — state.draft stays
+    // {} throughout that mode by design (there's no character), so
+    // draftHasId alone would (and, confirmed real bug, did) leave the
+    // empty-state message and hidden Sheet card stuck in place even after
+    // a campaign's own Party Template finished loading successfully.
+    hasActiveCharacter: () => Boolean(state.draft?.id) || (state.partyMode && Boolean(state.template)),
     // Read by workbench.js's setMode when switching from Character to
     // Template mode, to auto-load whichever template this character is
     // actually built on (state.draft.template — the same field

@@ -5,5 +5,5 @@
   "icon": "tabler:wand",
   "readTier": "free",
   "writeTier": "free",
-  "metadataFields": ["systemIds"]
+  "metadataFields": ["systemIds", "properties"]
 }

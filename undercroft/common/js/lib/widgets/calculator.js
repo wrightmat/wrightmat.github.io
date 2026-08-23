@@ -880,7 +880,7 @@ export function initCalculatorWidget(
   });
 
   autoFillButton.addEventListener("click", async () => {
-    const { roster, skipped } = await autoFillRosterFromGroup(dataManager, groupContext?.groupId);
+    const { roster, skipped } = await autoFillRosterFromGroup(dataManager, groupContext?.groupId, groupContext?.access === "owner");
     encounterRoster = roster;
     renderRosterRows();
     if (skipped > 0) {
@@ -1062,11 +1062,20 @@ export function initCalculatorWidget(
         return;
       }
       inventoryResultBox.appendChild(el("div", "text-body-secondary", "Loading campaign roster…"));
+      // Owner-only fetch — the generic full-document route only ever
+      // grants a non-owner reader via a share token or Character-linked
+      // share, which a plain member using this widget from their own
+      // Dashboard has neither of; skipped entirely for a non-owner rather
+      // than attempted-then-caught, so a real player never logs a 401 for
+      // a request that was always going to fail (same reasoning as
+      // group-live-sync.js's own watchGroupForChanges).
       let group = null;
-      try {
-        group = await dataManager.get("group", groupContext.groupId, { preferLocal: false });
-      } catch (error) {
-        group = null;
+      if (groupContext.access === "owner") {
+        try {
+          group = await dataManager.get("group", groupContext.groupId, { preferLocal: false });
+        } catch (error) {
+          group = null;
+        }
       }
       const memberIds = Array.isArray(group?.payload?.members)
         ? group.payload.members.filter((member) => member.content_type === "character").map((member) => member.content_id)

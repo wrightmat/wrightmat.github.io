@@ -1,7 +1,8 @@
 {
   "name": "Thunder Pulse",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature chooses a direction, then pushes unsecured objects inside its space that aren't being worn or carried 30 feet away in that direction. Each creature in the creature's space must make a DC 16 Constitution saving throw. On a failed save, a creature takes 14 (2d8 + 5) bludgeoning damage plus 13 (3d8) thunder damage, is knocked prone, and is pushed 30 feet in the same direction.",
   "mechanics": {

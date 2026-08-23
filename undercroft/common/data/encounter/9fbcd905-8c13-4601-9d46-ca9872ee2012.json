@@ -53,7 +53,7 @@
       "name": "Maris Wavedeep",
       "refKind": "character",
       "refId": "maris-wavedeep",
-      "initiative": 8,
+      "initiative": 16,
       "hp": 56,
       "maxHp": 56,
       "tempHp": 0,

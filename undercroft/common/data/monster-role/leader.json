@@ -2,7 +2,8 @@
   "id": "leader",
   "name": "Leader",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Monsters that buff their allies, heal, or provide tactical advantages to the rest of the enemy group.",
   "mechanicalTendencies": {

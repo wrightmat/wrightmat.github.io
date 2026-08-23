@@ -3,6 +3,7 @@ import { initAuthControls, escapeHtml } from "../../common/js/lib/auth-ui.js";
 import { initTierGate } from "../../common/js/lib/access.js";
 import { updateJsonPreview } from "../../common/js/lib/json-preview.js";
 import { bindCollapsibleToggle } from "../../common/js/lib/collapsible.js";
+import { showConfirmModal } from "../../common/js/lib/confirm-modal.js";
 import {
   createJsonDataPanel,
   createIconButton,
@@ -32,7 +33,16 @@ import {
 } from "../../common/js/lib/content-fetch.js";
 import { convertStatBlockToFeatures, hasConvertibleStatBlock } from "../../common/js/lib/monster-feature-matching.js";
 import { convertSpellOrItemToFeatures, hasConvertibleSpellItemStats } from "../../common/js/lib/vault-feature-matching.js";
+import {
+  promoteEmbeddedFeatures,
+  hasEmbeddedFeatures,
+  linkCharacterSpellReferences,
+  linkCharacterInventoryReferences,
+  linkCharacterSpeciesClassReferences,
+  describeFeaturePromotionOutcome,
+} from "../../common/js/lib/content-feature-matching.js";
 import { initShareModal } from "../../common/js/lib/share-modal.js";
+import { renderRelationshipEditor } from "../../common/js/lib/relationship-editor.js";
 import { allowsDelete, confirmDelete } from "../../common/js/lib/ownership.js";
 import { roleRank } from "../../common/js/lib/data-manager.js";
 import { createSortable } from "../../common/js/lib/dnd.js";
@@ -436,6 +446,8 @@ const bulkImportSelectedButton = document.querySelector("[data-bulk-import-selec
 const bulkProgress = document.querySelector("[data-bulk-progress]");
 const entitiesSummary = document.querySelector("[data-entities-summary]");
 const entitiesList = document.querySelector("[data-entities-list]");
+const entitiesSaveAllButton = document.querySelector("[data-entities-save-all]");
+const entitiesSaveAllProgress = document.querySelector("[data-entities-save-all-progress]");
 // Entities and Data (io) both need programmatic re-collapse later
 // (enterMappingMode's workflow-mode logic below) — their setCollapsed
 // return values are captured for that, same as treeSetCollapsed below.
@@ -1880,7 +1892,15 @@ function deriveEntities(mappedResult) {
 // Every existing single-import call site (the Entities panel's own per-row
 // Save button) passes none of these and keeps today's exact behavior.
 async function saveEntity(entity, { autoId, url: urlOverride, quiet = false } = {}) {
-  const id = autoId || promptKey(`Save "${entity.name}" as (id):`, slugify(entity.name));
+  // Same preference order as the bulk-import loop above (`rawItem.index ||
+  // slugify(entity.name)`) — a mapping's own `index` field (e.g.
+  // ddb-subclass.json's `compoundSlug`, producing "barbarian-path-of-the-
+  // berserker" rather than just "path-of-the-berserker") already encodes
+  // exactly the disambiguating context a bare name-slug can't. Confirmed
+  // real gap this fixes: bulk import already got this right, but a single
+  // manual Save (this prompt) recomputed a bare slug from the name alone,
+  // silently discarding index whenever one existed.
+  const id = autoId || promptKey(`Save "${entity.name}" as (id):`, entity.data?.index || slugify(entity.name));
   if (!id) return;
   if (!dataManager) return;
   try {
@@ -1935,6 +1955,74 @@ async function saveEntity(entity, { autoId, url: urlOverride, quiet = false } = 
       // one) or a prior save's own preserved value always wins over this.
       if ((!Array.isArray(data.systemIds) || !data.systemIds.length) && mappingDefinition?.$source === "ddb") {
         data = { ...data, systemIds: ["sys.dnd5e"] };
+      }
+      // A real, verified name-match against the Species/Class/Variant/Wonder
+      // libraries (content-feature-matching.js's own "Character reference
+      // linking" section) — unconditional here (unlike Workbench's own
+      // persistDraft, this Loom save is always an explicit, deliberate
+      // action, never autosave, so there's no keystroke-spam concern to
+      // gate against).
+      await linkCharacterSpeciesClassReferences(dataManager, data);
+      await linkCharacterSpellReferences(dataManager, data);
+      await linkCharacterInventoryReferences(dataManager, data);
+      // Same automatic-on-save promotion as Monster/Wonder/Species/Class/
+      // Variant above — a Character's own imported `feats[]`/`features[]`
+      // prose (raw text duplicated verbatim into every character file, with
+      // no connection to any Library record) becomes real `featureIds`
+      // references, mirroring Monster/NPC's own shape exactly. Both passes
+      // tag `category:"character"` — every Feature this suite creates gets
+      // SOME category (never left untagged, since an untagged Feature can't
+      // be found via Loom's own Type filter), and Undercroft doesn't model
+      // race/class/background/feat as separate concepts, so a single broad
+      // "character" bucket (sibling to monster/item/spell/location) is
+      // deliberate, not a placeholder — see content-feature-matching.js's
+      // own header comment for why this module accumulates rather than
+      // replacing on each call, unlike monster-feature-matching.js's
+      // single-pass design.
+      if (hasEmbeddedFeatures(data, "feats") || hasEmbeddedFeatures(data, "features")) {
+        const existingFeatures = await fetchKindEntriesWithIds(dataManager, "feature").then(
+          (entries) => entries.map((entry) => ({ id: entry.id, ...entry.entity })),
+          () => []
+        );
+        let matchedCount = 0;
+        let createdCount = 0;
+        let updatedCount = 0;
+        let errors = [];
+        for (const sourceField of ["feats", "features"]) {
+          // `excludeSpeciesPropertyTraits` — a Character's own "features"
+          // list merges in racial traits too (ddb-character.json's own
+          // featuresTable, via rawCharacter.race.racialTraits), which
+          // carries the exact same universal-shape PROPERTIES (Size,
+          // Speed, Creature Type, ...) a Species' own traits[] does —
+          // confirmed real, user-flagged: Maris Wavedeep's own promoted
+          // features included "Size"/"Speed" despite Species promotion
+          // already excluding them, because Character promotion never
+          // passed this flag at all. Harmless for "feats" (a feat is never
+          // named "Size"/"Speed") — passed for both loop iterations rather
+          // than branching on sourceField, since the filter only ever
+          // matches these specific names regardless of which list they
+          // came from.
+          const outcome = await promoteEmbeddedFeatures(data, {
+            sourceField,
+            category: "character",
+            dataManager,
+            existingFeatures,
+            excludeSpeciesPropertyTraits: true,
+          });
+          matchedCount += outcome.matchedCount;
+          createdCount += outcome.createdCount;
+          updatedCount += outcome.updatedCount;
+          errors = errors.concat(outcome.errors);
+        }
+        if (!quiet && (matchedCount || createdCount || updatedCount)) {
+          status?.show(describeFeaturePromotionOutcome({ matchedCount, createdCount, updatedCount }), { type: "info", timeout: 4000 });
+        }
+        if (errors.length) {
+          status?.show(
+            `${entity.name || id}: ${errors.length} feature${errors.length === 1 ? "" : "s"} couldn't be converted (see console) — the rest of the character saved fine.`,
+            { type: "warning", timeout: 6000 }
+          );
+        }
       }
     } else if (entity.kind === "monster") {
       // Same "every imported record needs at least one Assigned System"
@@ -2025,6 +2113,134 @@ async function saveEntity(entity, { autoId, url: urlOverride, quiet = false } = 
           );
         }
       }
+    } else if (entity.kind === "species" || entity.kind === "variant" || entity.kind === "class") {
+      // Same automatic-on-save promotion as Monster/Wonder above, via the
+      // simpler generic engine (content-feature-matching.js) — a Species'
+      // own `traits[]` (racial traits), a Class's own `features[]`
+      // (class-level features like Rage/Extra Attack — currently populated
+      // only by ddb-class.json's own import; the free 5e-api SRD source has
+      // no viable single-fetch path to this content, so 5e-api-class.json
+      // is unchanged), or a Variant's own `features[]` (subclass features)
+      // become real `feature` Library references instead of staying
+      // embedded flavor text with nothing else able to reference them.
+      // Species/Class/Variant have no dedicated authoring tool of their own
+      // (unlike Monster/Crucible or Wonder/Vault) — Loom's own saveEntity is
+      // their only save path, so there's no second call site to wire the
+      // way Crucible/Vault each get their own.
+      // Unlike Character above (mergeImportedCharacterData, explicitly
+      // preserving featureIds/featureParams from whatever's already saved
+      // at this id), a fresh Species/Variant/Class scrape never carried
+      // that forward — confirmed real bug this fixes: re-importing an
+      // ALREADY-imported class always saw an empty ownFeatureIds (`data.
+      // featureIds` was simply undefined on every fresh mapped result),
+      // which wrongly excludes every one of that class's own already-
+      // created "unique"-scoped Features from candidatePool
+      // (promoteEmbeddedFeatures's own matchesScope check), forcing EVERY
+      // entry through the create/overwrite path on every single re-import
+      // — harmless-looking for byte-identical text (same deterministic
+      // recordSlug-based id, silent overwrite), but a genuine duplicate
+      // for anything whose current live text no longer matches a Feature
+      // that's since been hand-edited (Ability Score Improvement's own
+      // generic consolidation being the confirmed real case: the live
+      // scrape still includes the "again at Cleric levels..." clause my
+      // manual cleanup stripped from feat.ability-score-improvement's own
+      // stored text, so a Cleric re-import never matched it and spawned a
+      // fresh feat.cleric-ability-score-improvement instead).
+      try {
+        const existingRecord = await dataManager.get(entity.kind, id, { preferLocal: false });
+        if (existingRecord?.payload?.featureIds) data.featureIds = existingRecord.payload.featureIds;
+        if (existingRecord?.payload?.featureParams) data.featureParams = existingRecord.payload.featureParams;
+        // dataManager.save is a full file overwrite, not a merge (see
+        // storage.py's own write_json) — a field neither current mapping
+        // (ddb-species.json, 5e-api-species.json) ever produces would
+        // otherwise be silently WIPED the next time this same species gets
+        // re-imported. Confirmed real, none of these five are derivable
+        // from either source today: `names` (Forge's own NPC name-
+        // generator tables read this — a real functional dependency, not
+        // just cosmetic), `icon`/`image`/`tagline` (display metadata,
+        // hand-curated or from a since-removed import path), `updated_at`
+        // (DDB's own species page carries no such timestamp; the 5e API
+        // source now supplies its own real one directly via its mapping,
+        // so this fallback only ever matters for the DDB path).
+        if (entity.kind === "species") {
+          for (const field of ["names", "icon", "image", "tagline", "updated_at"]) {
+            if (data[field] == null && existingRecord?.payload?.[field] != null) {
+              data[field] = existingRecord.payload[field];
+            }
+          }
+        }
+      } catch (error) {
+        // No existing record at this id — nothing to preserve, first import.
+      }
+      const sourceField = entity.kind === "species" ? "traits" : "features";
+      if (hasEmbeddedFeatures(data, sourceField)) {
+        const existingFeatures = await fetchKindEntriesWithIds(dataManager, "feature").then(
+          (entries) => entries.map((entry) => ({ id: entry.id, ...entry.entity })),
+          () => []
+        );
+        // Variant's own `parentId` (e.g. "barbarian") scopes a newly-created
+        // one-off's id by CLASS, same as it always has — every other class's
+        // own subclasses (67 of 68) never actually collide on a feature name
+        // with genuinely different per-subclass content, so keeping this
+        // class-level default is what keeps every one of THEIR already-
+        // saved ids stable across a re-import; escalating everything to a
+        // subclass-scoped id here instead (tried first, reverted) would
+        // have silently changed the id of every already-imported subclass
+        // feature in the whole library on its next re-import, not just
+        // Artificer's own genuinely-colliding ones.
+        // `disambiguationSlug` — the variant's own compound id (e.g.
+        // "artificer-cartographer") — is passed alongside as a FALLBACK
+        // only, used by promoteEmbeddedFeatures purely to escalate a
+        // detected same-class-different-content collision (confirmed real:
+        // every Artificer subclass has its own "Tools of the Trade"; Battle
+        // Smith and Forge Adept both have their own "Battle Ready") to a
+        // more specific id, instead of silently overwriting whichever
+        // subclass's text got there first.
+        // Species/Class scope by their own name instead (no parent, no
+        // finer-grained fallback below the Species/Class level itself).
+        const parentPath = entity.kind === "variant" ? data.parentId || data.name : data.name;
+        const disambiguationSlug = entity.kind === "variant" ? id : undefined;
+        const isSpeciesDomain = entity.kind === "species" || (entity.kind === "variant" && data.parentKind === "species");
+        // Cross-scope healing (Epic Boon/Extra Attack's own "genuinely
+        // identical across records" reuse) is allowed for BOTH domains this
+        // block ever handles — Class-feature (always vetted case by case)
+        // and, as of this fix, Species/racial-variant too: a real, distinct
+        // FEATURE (Darkvision, Flight, ...) that happens to be worded
+        // identically across two species is fine to share the same way
+        // Epic Boon is. What actually caused Owlin's own "Speed" to wrongly
+        // absorb Yuan-ti's content wasn't cross-scope sharing being
+        // possible in principle — it's that Speed/Size/Height and Weight/
+        // etc. aren't features at all (see excludeSpeciesPropertyTraits
+        // below); once those never reach promotion, sharing an ACTUAL
+        // feature's exact text across species is legitimate the same way
+        // it is across classes.
+        const allowCrossScopeMatch = true;
+        // Species' own scraped traits mix universal-shape PROPERTIES
+        // (Height and Weight, Size, Speed, Creature Type, Ability Score
+        // Increases, Languages, Life Span — fill-in-the-blank facts, not a
+        // distinctive mechanic, most already covered by dedicated fields
+        // elsewhere) in with actual FEATURES — confirmed real, user-
+        // flagged: none of the former belong in the Feature library.
+        const { matchedCount, createdCount, updatedCount, errors } = await promoteEmbeddedFeatures(data, {
+          sourceField,
+          parentPath,
+          disambiguationSlug,
+          allowCrossScopeMatch,
+          excludeSpeciesPropertyTraits: isSpeciesDomain,
+          category: "character",
+          dataManager,
+          existingFeatures,
+        });
+        if (!quiet && (matchedCount || createdCount || updatedCount)) {
+          status?.show(describeFeaturePromotionOutcome({ matchedCount, createdCount, updatedCount }), { type: "info", timeout: 4000 });
+        }
+        if (errors?.length) {
+          status?.show(
+            `${entity.name || id}: ${errors.length} feature${errors.length === 1 ? "" : "s"} couldn't be converted (see console) — the rest of the ${entity.kind} saved fine.`,
+            { type: "warning", timeout: 6000 }
+          );
+        }
+      }
     }
     await dataManager.save(entity.kind, id, data);
     if (!quiet) {
@@ -2044,6 +2260,7 @@ function renderEntities() {
   if (!entities.length) {
     entitiesSummary.textContent =
       "No save-able entities in this mapping's output (expects a top-level {kind, name}, plus optionally top-level arrays of named items).";
+    entitiesSaveAllButton?.classList.add("d-none");
     return;
   }
   const counts = {};
@@ -2053,6 +2270,9 @@ function renderEntities() {
   entitiesSummary.textContent = `This produced: ${Object.entries(counts)
     .map(([kind, count]) => `${count} ${kind}${count === 1 ? "" : "s"}`)
     .join(" + ")}`;
+  // Only worth its own button when there's more than one Save to loop —
+  // a single entity already has its own row's own Save button right there.
+  entitiesSaveAllButton?.classList.toggle("d-none", entities.length <= 1);
 
   entities.forEach((entity) => {
     const row = document.createElement("div");
@@ -2069,6 +2289,39 @@ function renderEntities() {
     entitiesList.appendChild(row);
   });
 }
+
+// Loops the same one-at-a-time saveEntity() a manual per-row Save click
+// already uses, just without its own window.prompt — same `autoId`
+// fallback the bulk-import loop above already relies on (a mapping's own
+// `index`, e.g. compoundSlug's "barbarian-path-of-the-berserker", ahead of
+// a bare name-slug), so "Save All" never pops up N prompts in a row.
+// Sequential, not Promise.all, for the same reason the bulk-import loop is:
+// each save's own Feature-matching benefits from running in order (a later
+// entity in this same batch — e.g. a Variant's own features — reuses a
+// Feature an earlier one in the batch just created/healed to Generic scope,
+// rather than each running against a stale, pre-batch snapshot).
+// Deliberately NOT passing `quiet` (defaults false, same as a manual Save
+// click) — confirmed real ask: Save All should behave exactly like clicking
+// every row's own Save button in sequence, including each entity's own
+// "Saved x/y.json" toast AND its own Feature-promotion detail toast
+// (matched/created/updated counts), not a single silent batch with one
+// summary at the end. Each entity's own non-quiet save already calls
+// loadRecentSaves() itself, so this doesn't need to again.
+async function saveAllEntities() {
+  if (!entitiesSaveAllButton) return;
+  const entities = deriveEntities(lastMappedResult);
+  if (!entities.length) return;
+  entitiesSaveAllButton.disabled = true;
+  for (let i = 0; i < entities.length; i += 1) {
+    const entity = entities[i];
+    if (entitiesSaveAllProgress) entitiesSaveAllProgress.textContent = `Saving ${i + 1} of ${entities.length} (${entity.name})…`;
+    const autoId = entity.data?.index || slugify(entity.name);
+    await saveEntity(entity, { autoId });
+  }
+  entitiesSaveAllButton.disabled = false;
+  if (entitiesSaveAllProgress) entitiesSaveAllProgress.textContent = "";
+}
+entitiesSaveAllButton?.addEventListener("click", saveAllEntities);
 
 // --- Recent saves ------------------------------------------------------
 
@@ -2131,7 +2384,7 @@ if (recentSavesToggle && recentSavesPanel) {
 // on the right are Import-only; Library/Systems carry their own
 // pickers/toolbars inline, so they don't need anything extra from either
 // side pane).
-const LOOM_VIEWS = ["import", "library", "systems", "macros", "features", "users", "groups"];
+const LOOM_VIEWS = ["import", "library", "systems", "macros", "features", "users", "groups", "auth"];
 const loomViewTabsContainer = document.querySelector("[data-loom-view-tabs]");
 
 function setLoomView(view) {
@@ -2159,6 +2412,8 @@ function setLoomView(view) {
     void populateMacroSelect();
   } else if (view === "features") {
     void populateFeatureSelect();
+  } else if (view === "auth") {
+    void loomRenderAuthStatus();
   }
 }
 
@@ -2198,6 +2453,14 @@ mountField(
       { value: "0", label: "Inactive" },
     ],
   })
+);
+mountField(
+  "auth-ddb-cookie",
+  createCompactField({ type: "password", id: "loomAuthDdbCookie", label: "New session cookie", labelClass: "form-label fw-semibold mb-0", dataAttr: "data-loom-auth-ddb-cookie", autocomplete: "off" })
+);
+mountField(
+  "auth-anthropic-key",
+  createCompactField({ type: "password", id: "loomAuthAnthropicKey", label: "New API key", labelClass: "form-label fw-semibold mb-0", dataAttr: "data-loom-auth-anthropic-key", autocomplete: "off" })
 );
 
 const loomGroupsMessage = document.querySelector("[data-loom-groups-message]");
@@ -3453,6 +3716,130 @@ if (loomGroupShareDisableButton) {
   });
 }
 
+// --- Auth tab ------------------------------------------------------------
+// Deployment-wide credentials (D&D Beyond session cookie, Anthropic API
+// key) — admin-only, see server/integrations.py's deployment_secrets store
+// and server/ddb_auth_status.py for the validity-check story. No left-pane
+// picker: always the same two fixed credentials, nothing to filter/select.
+// Expanded by default only when the cookie looks expired (an admin who
+// needs the steps sees them right away; one who doesn't isn't forced past
+// them) — collapsed state is re-derived every time fresh status comes in
+// (loomRenderAuthDdbStatus below), not just set once at mount time.
+const loomAuthDdbInstructionsSection = createCollapsibleSection({
+  label: "How to get a new session cookie",
+  collapsed: true,
+  content: document.querySelector("[data-loom-auth-ddb-instructions-panel]"),
+});
+document.querySelector("[data-loom-auth-ddb-instructions-mount]")?.appendChild(loomAuthDdbInstructionsSection.section);
+const loomAuthDdbStatus = document.querySelector("[data-loom-auth-ddb-status]");
+const loomAuthDdbDetail = document.querySelector("[data-loom-auth-ddb-detail]");
+const loomAuthDdbCheckButton = document.querySelector("[data-loom-auth-ddb-check]");
+const loomAuthDdbSaveButton = document.querySelector("[data-loom-auth-ddb-save]");
+const loomAuthDdbCookieInput = document.querySelector("[data-loom-auth-ddb-cookie]");
+const loomAuthAnthropicStatus = document.querySelector("[data-loom-auth-anthropic-status]");
+const loomAuthAnthropicSaveButton = document.querySelector("[data-loom-auth-anthropic-save]");
+const loomAuthAnthropicKeyInput = document.querySelector("[data-loom-auth-anthropic-key]");
+
+function loomFormatAuthCheckedAt(checkedAt) {
+  if (!checkedAt) return "never checked";
+  const date = new Date(`${checkedAt.replace(" ", "T")}Z`);
+  if (Number.isNaN(date.getTime())) return "checked at an unknown time";
+  return `checked ${date.toLocaleString()}`;
+}
+
+function loomRenderAuthDdbStatus(ddb) {
+  loomAuthDdbInstructionsSection.setCollapsed(ddb?.valid !== false);
+  // The server distinguishes "the cookie is genuinely rejected as
+  // logged-out" from "the probe itself failed" from "not configured at
+  // all" in this same text rather than collapsing every failure into one
+  // generic "looks expired" — see ddb_auth_status.py's _describe_outcome.
+  if (loomAuthDdbDetail) {
+    loomAuthDdbDetail.textContent = ddb?.detail || "";
+    loomAuthDdbDetail.hidden = !ddb?.detail;
+  }
+  if (!loomAuthDdbStatus) return;
+  if (!ddb?.configured) {
+    loomAuthDdbStatus.textContent = "Not configured";
+    return;
+  }
+  if (ddb.valid === true) {
+    loomAuthDdbStatus.textContent = `Configured — looks valid (${loomFormatAuthCheckedAt(ddb.checkedAt)})`;
+  } else if (ddb.valid === false) {
+    loomAuthDdbStatus.textContent = `Configured — looks expired (${loomFormatAuthCheckedAt(ddb.checkedAt)})`;
+  } else {
+    loomAuthDdbStatus.textContent = "Configured — not yet checked";
+  }
+}
+
+function loomRenderAuthAnthropicStatus(anthropic) {
+  if (!loomAuthAnthropicStatus) return;
+  loomAuthAnthropicStatus.textContent = anthropic?.configured ? "Configured" : "Not configured";
+}
+
+async function loomRenderAuthStatus() {
+  if (!isLoomAdminSession()) return;
+  if (loomAuthDdbStatus) loomAuthDdbStatus.textContent = "Checking…";
+  if (loomAuthAnthropicStatus) loomAuthAnthropicStatus.textContent = "Checking…";
+  try {
+    const payload = await dataManager.getAuthCredentialsStatus();
+    loomRenderAuthDdbStatus(payload?.ddb);
+    loomRenderAuthAnthropicStatus(payload?.anthropic);
+  } catch (error) {
+    if (status) status.show(error.message || "Unable to load auth status", { type: "danger" });
+  }
+}
+
+if (loomAuthDdbCheckButton) {
+  loomAuthDdbCheckButton.addEventListener("click", async () => {
+    loomAuthDdbCheckButton.disabled = true;
+    try {
+      const payload = await dataManager.checkDdbAuthStatus();
+      loomRenderAuthDdbStatus(payload?.ddb);
+    } catch (error) {
+      if (status) status.show(error.message || "Unable to check D&D Beyond session", { type: "danger" });
+    } finally {
+      loomAuthDdbCheckButton.disabled = false;
+    }
+  });
+}
+
+if (loomAuthDdbSaveButton) {
+  loomAuthDdbSaveButton.addEventListener("click", async () => {
+    const cookie = loomAuthDdbCookieInput?.value.trim() || "";
+    if (!cookie) return;
+    loomAuthDdbSaveButton.disabled = true;
+    try {
+      await dataManager.saveDdbSessionCookie(cookie);
+      if (loomAuthDdbCookieInput) loomAuthDdbCookieInput.value = "";
+      if (status) status.show("D&D Beyond session saved.", { type: "success", timeout: 1600 });
+      const payload = await dataManager.checkDdbAuthStatus();
+      loomRenderAuthDdbStatus(payload?.ddb);
+    } catch (error) {
+      if (status) status.show(error.message || "Unable to save D&D Beyond session", { type: "danger" });
+    } finally {
+      loomAuthDdbSaveButton.disabled = false;
+    }
+  });
+}
+
+if (loomAuthAnthropicSaveButton) {
+  loomAuthAnthropicSaveButton.addEventListener("click", async () => {
+    const apiKey = loomAuthAnthropicKeyInput?.value.trim() || "";
+    if (!apiKey) return;
+    loomAuthAnthropicSaveButton.disabled = true;
+    try {
+      await dataManager.saveAnthropicApiKey(apiKey);
+      if (loomAuthAnthropicKeyInput) loomAuthAnthropicKeyInput.value = "";
+      if (status) status.show("Anthropic API key saved.", { type: "success", timeout: 1600 });
+      await loomRenderAuthStatus();
+    } catch (error) {
+      if (status) status.show(error.message || "Unable to save Anthropic API key", { type: "danger" });
+    } finally {
+      loomAuthAnthropicSaveButton.disabled = false;
+    }
+  });
+}
+
 // --- Tab-level tier gating ----------------------------------------------------
 // The whole tool is gated at GM tier and above (see init()'s initTierGate
 // call), but not every tab makes sense at every tier above that floor: GM
@@ -3469,7 +3856,7 @@ function loomAvailableViews() {
   const isAdmin = isLoomAdminSession();
   return LOOM_VIEWS.filter((view) => {
     if (LOOM_CREATOR_TABS.includes(view)) return meetsCreator;
-    if (view === "users") return isAdmin;
+    if (view === "users" || view === "auth") return isAdmin;
     return true; // groups/macros: available to every tier the whole tool already requires (gm+)
   });
 }
@@ -3550,6 +3937,69 @@ const loomLibraryItemSection = createCollapsibleSection({
   content: document.querySelector("[data-loom-library-item-list]"),
 });
 document.querySelector("[data-loom-library-item-mount]")?.appendChild(loomLibraryItemSection.section);
+
+// Relationships for whichever item is selected via the Type/Item pickers
+// above — mirrors Workbench's own left-pane Relationships section
+// (data-relationships-mount/-panel), list editor only (no force graph).
+// Re-rendered from loomRenderLibraryInspector(), the same choke point the
+// right-pane Library Item card already refreshes from on every selection
+// change.
+const LOOM_RELATIONSHIP_TYPE_SUGGESTIONS = [
+  "Related to",
+  "Part of",
+  "Variant of",
+  "Requires",
+  "Grants",
+  "Derived from",
+  "Alternate of",
+  "Associated with",
+];
+const loomRelationshipsListMount = document.querySelector("[data-loom-relationships-list-mount]");
+const loomRelationshipsSection = createCollapsibleSection({
+  label: "Relationships",
+  helpTopic: "loom.relationships",
+  collapsed: true,
+  content: document.querySelector("[data-loom-relationships-panel]"),
+});
+document.querySelector("[data-loom-relationships-mount]")?.appendChild(loomRelationshipsSection.section);
+
+// Every Library kind except relationship itself — cached since it only
+// ever changes when a Kind entity is added/removed, not on every selection.
+let loomRelationshipTargetKindsCache = null;
+async function loomRelationshipTargetKinds() {
+  if (loomRelationshipTargetKindsCache) return loomRelationshipTargetKindsCache;
+  const kinds = await loadLibraryKinds();
+  loomRelationshipTargetKindsCache = kinds
+    .filter((kind) => kind.id !== "relationship")
+    .map((kind) => ({ id: kind.id, label: kind.label || kind.id }));
+  return loomRelationshipTargetKindsCache;
+}
+
+// Guards against a slow targetKinds fetch resolving after a newer selection
+// has already moved on (e.g. rapid clicking through the Item picker).
+let loomRelationshipsRequestToken = 0;
+async function loomRefreshLibraryRelationships(item) {
+  if (!loomRelationshipsListMount) return;
+  const requestToken = ++loomRelationshipsRequestToken;
+  if (!item || !item.bucket || !item.id) {
+    loomRelationshipsListMount.innerHTML =
+      '<p class="small text-body-secondary mb-0">Select a Library item to see its relationships.</p>';
+    return;
+  }
+  const targetKinds = await loomRelationshipTargetKinds();
+  if (requestToken !== loomRelationshipsRequestToken) return;
+  await renderRelationshipEditor({
+    container: loomRelationshipsListMount,
+    sourceKind: item.bucket,
+    sourceId: item.id,
+    targetKinds,
+    typeSuggestions: LOOM_RELATIONSHIP_TYPE_SUGGESTIONS,
+    dataManager,
+    status,
+    onChange: () => void loomLoadLibraryTable({ refresh: true }),
+  });
+}
+const loomLibraryInspectorId = document.querySelector("[data-loom-library-table-id]");
 const loomLibraryInspectorCreated = document.querySelector("[data-loom-library-table-created]");
 const loomLibraryInspectorAccessed = document.querySelector("[data-loom-library-table-accessed]");
 const loomLibraryInspectorItemCount = document.querySelector("[data-loom-library-table-item-count]");
@@ -3559,6 +4009,7 @@ const loomLibraryInspectorOwner = document.querySelector("[data-loom-library-tab
 const loomLibraryInspectorPublic = document.querySelector("[data-loom-library-table-public]");
 const loomLibraryInspectorShareSummary = document.querySelector("[data-loom-library-table-share-summary]");
 const loomLibraryInspectorShareButton = document.querySelector("[data-loom-library-table-share]");
+const loomLibraryInspectorRenameButton = document.querySelector("[data-loom-library-table-rename]");
 let loomLibraryShareSummaryRequestToken = 0;
 
 const loomLibraryTableState = {
@@ -3758,6 +4209,7 @@ function loomRenderLibraryInspector() {
   loomRenderLibraryTypeInspector();
   const item = loomFindLibraryItem(loomLibraryTableState.selectedKey);
   const hasItem = Boolean(item);
+  void loomRefreshLibraryRelationships(item);
   if (loomLibraryInspectorEmpty) loomLibraryInspectorEmpty.hidden = hasItem;
   if (loomLibraryInspectorDetails) loomLibraryInspectorDetails.classList.toggle("d-none", !hasItem);
   if (hasItem && !loomLibraryItemWasSelected) loomLibraryItemSection.setCollapsed(false);
@@ -3766,6 +4218,7 @@ function loomRenderLibraryInspector() {
     void loomRenderLibraryShareSummary(null);
     return;
   }
+  if (loomLibraryInspectorId) loomLibraryInspectorId.textContent = `${item.bucket}/${item.id}.json`;
   if (loomLibraryInspectorCreated) loomLibraryInspectorCreated.textContent = loomFormatTimestamp(item.created_at, "Unknown");
   if (loomLibraryInspectorAccessed) loomLibraryInspectorAccessed.textContent = loomFormatTimestamp(item.last_accessed_at, "Never");
   if (loomLibraryInspectorOwner) {
@@ -3800,6 +4253,9 @@ function loomRenderLibraryInspector() {
     // inventing a parallel permission rule here.
     loomLibraryInspectorPublic.disabled = !libraryEntryAllowsDelete(item.bucket, item.id);
   }
+  // Admin-only (server/storage.py's own rename_item hard-enforces this too)
+  // — same gate as the Owner select above, not a separate/looser rule.
+  if (loomLibraryInspectorRenameButton) loomLibraryInspectorRenameButton.classList.toggle("d-none", !isLoomAdminSession());
   void loomRenderLibraryShareSummary(item);
 }
 
@@ -3872,6 +4328,57 @@ if (loomLibraryInspectorPublic) {
   });
 }
 
+// Two-step: a dry-run scan builds a confirmation prompt listing exactly
+// what will change (renameContent/rename_item's own {touched} summary),
+// then — only once the admin explicitly confirms — the real rename runs.
+// Everything a rename can touch (any other record's own reference) is
+// server-side/global, not scoped to this browser's own local caches, so
+// there's nothing client-side to pre-check beyond "is something selected."
+if (loomLibraryInspectorRenameButton) {
+  loomLibraryInspectorRenameButton.addEventListener("click", async () => {
+    const item = loomFindLibraryItem(loomLibraryTableState.selectedKey);
+    if (!item || !dataManager) return;
+    const newId = promptKey(`Rename "${item.id}" (${item.bucket}) to:`, item.id);
+    if (!newId || newId === item.id) return;
+    loomLibraryInspectorRenameButton.disabled = true;
+    try {
+      const preview = await dataManager.renameContent(item.bucket, item.id, newId, { dryRun: true });
+      const touchedLines = preview.touched
+        .map((entry) => `<li>${escapeHtml(entry.kind)}/${escapeHtml(entry.id)} — ${entry.count} reference${entry.count === 1 ? "" : "s"}</li>`)
+        .join("");
+      const bodyHtml = `
+        <p>Renames <code>${escapeHtml(item.bucket)}/${escapeHtml(item.id)}</code> to <code>${escapeHtml(newId)}</code>.</p>
+        ${
+          preview.referenceCount
+            ? `<p>${preview.referenceCount} reference${preview.referenceCount === 1 ? "" : "s"} across ${preview.touched.length} record${preview.touched.length === 1 ? "" : "s"} will be updated to match:</p><ul>${touchedLines}</ul>`
+            : "<p>No other saved record currently references this one.</p>"
+        }
+      `;
+      const confirmed = await showConfirmModal({
+        title: "Rename this record?",
+        bodyHtml,
+        confirmLabel: "Rename",
+        cancelLabel: "Cancel",
+      });
+      if (!confirmed) return;
+      const result = await dataManager.renameContent(item.bucket, item.id, newId, { dryRun: false });
+      // Every touched kind's own bulk-fetch cache (content-fetch.js) needs
+      // invalidating — not just this one bucket's — since a rename's own
+      // reference repair can rewrite records of ANY kind, not only the
+      // renamed one's own.
+      const affectedKinds = new Set([item.bucket, ...result.touched.map((entry) => entry.kind)]);
+      affectedKinds.forEach((kind) => window.dispatchEvent(new CustomEvent("workbench:content-saved", { detail: { bucket: kind } })));
+      status?.show(`Renamed to "${newId}".`, { type: "success", timeout: 2500 });
+      loomLibraryTableState.selectedKey = loomLibraryItemKey({ bucket: item.bucket, id: newId });
+      await loomLoadLibraryTable({ refresh: true });
+    } catch (error) {
+      status?.show(error.message || "Unable to rename this record.", { type: "danger" });
+    } finally {
+      loomLibraryInspectorRenameButton.disabled = false;
+    }
+  });
+}
+
 function loomRenderLibraryTableSelect() {
   if (!loomLibraryTableSelect) return;
   const selectedType = loomLibraryTableState.selectedType;
@@ -3932,7 +4439,16 @@ async function loomLoadLibraryTable({ refresh = false } = {}) {
     }
     const payload = await dataManager.listOwnedContent({ scope: "all", refresh: shouldRefresh });
     const items = Array.isArray(payload?.items) ? payload.items : [];
-    loomLibraryTableState.items = items;
+    // Relationship records are no longer directly browsable/editable as raw
+    // JSON here — they're managed entirely through the left pane's own
+    // Relationships section (loomRefreshLibraryRelationships) now, the same
+    // way Workbench already keeps them off its own Library-style editing
+    // surfaces. Filtered at the single source both the type-filter dropdown
+    // (loomPopulateLibraryTableTypeFilter) and the item picker
+    // (loomRenderLibraryTableSelect) read from, so neither has to remember
+    // to exclude it separately — including the "All types" case, which
+    // reads loomLibraryTableState.items unfiltered otherwise.
+    loomLibraryTableState.items = items.filter((item) => item.bucket !== "relationship");
     loomLibraryTableState.stale = false;
     loomPopulateLibraryTableTypeFilter();
     loomRenderLibraryTableSelect();
@@ -7015,6 +7531,23 @@ async function init() {
   // tab (Import) isn't available at this session's tier — see its own
   // comment for the GM/Creator/Admin breakdown.
   updateLoomTabAvailability();
+
+  // Proactive notice, not just an on-request status pill — this is what
+  // actually would have caught the DDB session cookie going stale for over
+  // a month unnoticed (see the Auth tab's own comment). type: "error" is
+  // the only StatusManager variant that persists with a manual close
+  // button (see status.js) rather than auto-dismissing — appropriate here
+  // since this genuinely needs an admin's attention, not a quick FYI.
+  if (isLoomAdminSession()) {
+    dataManager
+      .getAuthCredentialsStatus()
+      .then((payload) => {
+        if (payload?.ddb?.configured && payload.ddb.valid === false) {
+          status.show("D&D Beyond session looks expired — see the Auth tab.", { type: "error" });
+        }
+      })
+      .catch(() => {});
+  }
 
   if (undoButton) undoButton.addEventListener("click", () => shell.undo());
   if (redoButton) redoButton.addEventListener("click", () => shell.redo());

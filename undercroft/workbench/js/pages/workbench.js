@@ -215,6 +215,13 @@ async function init() {
     const hasCharacter = Boolean(characterView?.hasActiveCharacter?.());
     canvasCard?.classList.toggle("d-none", !hasTemplate);
     sheetCard?.classList.toggle("d-none", !hasCharacter);
+    // The View/Edit toggle depends on this exact same hasCharacter signal
+    // (see renderViewToggle's own gate) — both templateView and
+    // characterView already funnel every state change through this one
+    // function, so re-running it here (a no-op while mode !== "character")
+    // is the cheapest way to keep the toggle correct on load/unload without
+    // a second onStateChange wire-up.
+    renderViewToggle();
     if (!emptyStateMount) return;
     const hasRecord = mode === "template" ? hasTemplate : hasCharacter;
     emptyStateMount.innerHTML = "";
@@ -272,7 +279,12 @@ async function init() {
 
   function renderViewToggle() {
     if (!viewToggleMount) return;
-    if (mode !== "character") {
+    // Meaningless with no character loaded yet (there's nothing to view or
+    // edit) — confirmed real: it stayed visible the instant Character mode
+    // was entered, before ever selecting/creating a character, same gap
+    // renderEmptyState's own Sheet-card visibility already accounts for via
+    // this exact hasActiveCharacter() check.
+    if (mode !== "character" || !characterView?.hasActiveCharacter?.()) {
       disposeTooltips(viewToggleMount);
       viewToggleMount.innerHTML = "";
       return;

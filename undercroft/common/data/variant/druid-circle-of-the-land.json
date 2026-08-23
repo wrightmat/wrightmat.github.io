@@ -1,0 +1,75 @@
+{
+  "index": "druid-circle-of-the-land",
+  "url": "https://www.dndbeyond.com/classes/2190878-druid",
+  "name": "Circle of the Land",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "parentKind": "class",
+  "parentId": "druid",
+  "summary": "Celebrate Connection to the Natural World",
+  "description": "The Circle of the Land comprises mystics and sages who safeguard ancient knowledge and rites. These Druids meet within sacred circles of trees or standing stones to whisper primal secrets in Druidic. The circle’s wisest members preside as the chief priests of their communities.",
+  "features": [
+    {
+      "name": "Circle of the Land Spells",
+      "level": 3,
+      "description": "Whenever you finish a Long Rest, choose one type of land: arid, polar, temperate, or tropical. Consult the table below that corresponds to the chosen type; you have the spells listed for your Druid level and lower prepared.\n\nArid Land\n\nLevel 3: Blur, Burning Hands, Fire Bolt\n\nLevel 5: Fireball\n\nLevel 7: Blight\n\nLevel 9: Wall of Stone\n\nPolar Land\n\nLevel 3: Fog Cloud, Hold Person, Ray of Frost\n\nLevel 5: Sleet Storm\n\nLevel 7: Ice Storm\n\nLevel 9: Cone of Cold\n\nTemperate Land\n\nLevel 3: Misty Step, Shocking Grasp, Sleep\n\nLevel 5: Lightning Bolt\n\nLevel 7: Freedom of Movement\n\nLevel 9: Tree Stride\n\nTropical Land\n\nLevel 3: Acid Splash, Ray of Sickness, Web\n\nLevel 5: Stinking Cloud\n\nLevel 7: Polymorph\n\nLevel 9: Insect Plague"
+    },
+    {
+      "name": "Land’s Aid",
+      "level": 3,
+      "description": "As a Magic action, you can expend a use of your Wild Shape and choose a point within 60 feet of yourself. Vitality-giving flowers and life-draining thorns appear for a moment in a 10-foot-radius Sphere centered on that point. Each creature of your choice in the Sphere must make a Constitution saving throw against your spell save DC, taking 2d6 Necrotic damage on a failed save or half as much damage on a successful one. One creature of your choice in that area regains 2d6 Hit Points.\n\nThe damage and healing increase by 1d6 when you reach Druid levels 10 (3d6) and 14 (4d6)."
+    },
+    {
+      "name": "Natural Recovery",
+      "level": 6,
+      "description": "You can cast one of the level 1+ spells that you have prepared from your Circle Spells feature without expending a spell slot, and you must finish a Long Rest before you do so again.\n\nIn addition, when you finish a Short Rest, you can choose expended spell slots to recover. The spell slots can have a combined level that is equal to or less than half your Druid level (round up), and none of them can be level 6+. For example, if you’re a level 6 Druid, you can recover up to three levels’ worth of spell slots. You can recover a level 3 spell slot, a level 2 and a level 1 spell slot, or three level 1 spell slots. Once you recover spell slots with this feature, you can’t do so again until you finish a Long Rest."
+    },
+    {
+      "name": "Nature’s Ward",
+      "level": 10,
+      "description": "You are immune to the Poisoned condition, and you have Resistance to a damage type associated with your current land choice in the Circle Spells feature, as shown in the Nature’s Ward table.\n\nArid: Fire\n\nPolar: Cold\n\nTemperate: Lightning\n\nTropical: Poison"
+    },
+    {
+      "name": "Nature’s Sanctuary",
+      "level": 14,
+      "description": "As a Magic action, you can expend a use of your Wild Shape and cause spectral trees and vines to appear in a 15-foot Cube on the ground within 120 feet of yourself. They last there for 1 minute or until you have the Incapacitated condition or die. You and your allies have Half Cover while in that area, and your allies gain the current Resistance of your Nature’s Ward while there.\n\nAs a Bonus Action, you can move the Cube up to 60 feet to ground within 120 feet of yourself."
+    }
+  ],
+  "mapping": "ddb-subclass",
+  "featureIds": [
+    "feat.druid-circle-of-the-land-spells",
+    "feat.druid-land-s-aid",
+    "feat.druid-natural-recovery",
+    "feat.druid-nature-s-sanctuary",
+    "feat.druid-nature-s-ward"
+  ],
+  "featureParams": {
+    "feat.druid-circle-of-the-land-spells": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.druid-land-s-aid": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.druid-natural-recovery": {
+      "grantedAtLevel": [
+        6
+      ]
+    },
+    "feat.druid-nature-s-sanctuary": {
+      "grantedAtLevel": [
+        14
+      ]
+    },
+    "feat.druid-nature-s-ward": {
+      "grantedAtLevel": [
+        10
+      ]
+    }
+  }
+}

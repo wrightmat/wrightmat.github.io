@@ -1,7 +1,8 @@
 {
   "name": "Descendant of The Moon",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Magical light created by the creature can’t be extinguished.",
   "mechanics": {

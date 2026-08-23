@@ -23,6 +23,14 @@
         "type": "field",
         "bind": "@itemStats.description"
       },
+      "price": {
+        "type": "field",
+        "bind": "@itemStats.price"
+      },
+      "weight": {
+        "type": "field",
+        "bind": "@itemStats.weight"
+      },
       "systemIds": {
         "type": "custom",
         "fn": "srdVaultSystemIds"

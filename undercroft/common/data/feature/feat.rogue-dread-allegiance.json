@@ -1,0 +1,26 @@
+{
+  "id": "feat.rogue-dread-allegiance",
+  "name": "Dread Allegiance",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "Choose one of the Dead Three: Bane, Bhaal, or Myrkul. You gain Resistance to one type of damage and the ability to cast a cantrip, as detailed in the table below; Intelligence is your spellcasting ability for this cantrip. When you finish a Long Rest, you can change your choice.\n\nBane | Psychic | Minor Illusion\n\nBhaal | Poison | Blade Ward\n\nMyrkul | Necrotic | Chill Touch",
+  "mechanics": {
+    "type": "passive",
+    "scope": "unique",
+    "text": "Choose one of the Dead Three: Bane, Bhaal, or Myrkul. You gain Resistance to one type of damage and the ability to cast a cantrip, as detailed in the table below; Intelligence is your spellcasting ability for this cantrip. When you finish a Long Rest, you can change your choice.\n\nBane | Psychic | Minor Illusion\n\nBhaal | Poison | Blade Ward\n\nMyrkul | Necrotic | Chill Touch"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,24 @@
+{
+  "id": "feat.savage-attacker",
+  "name": "Savage Attacker",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "*Origin Feat*\n\nYou’ve trained to deal particularly damaging strikes. Once per turn when you hit a target with a weapon, you can roll the weapon’s damage dice twice and use either roll against the target.",
+  "mechanics": {
+    "type": "passive",
+    "text": "*Origin Feat*\n\nYou’ve trained to deal particularly damaging strikes. Once per turn when you hit a target with a weapon, you can roll the weapon’s damage dice twice and use either roll against the target."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

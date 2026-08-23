@@ -1,0 +1,24 @@
+{
+  "id": "feat.warlock-subclass",
+  "name": "Warlock Subclass",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "<p>You gain a Warlock subclass of your choice. A subclass is a specialization that grants you features at certain Warlock levels. For the rest of your career, you gain each of your subclass’s features that are of your Warlock level or lower.</p>",
+  "mechanics": {
+    "type": "passive",
+    "text": "<p>You gain a Warlock subclass of your choice. A subclass is a specialization that grants you features at certain Warlock levels. For the rest of your career, you gain each of your subclass’s features that are of your Warlock level or lower.</p>"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

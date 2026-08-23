@@ -122,6 +122,29 @@ export function getActiveDeckInstances(groupPayload) {
   return Array.isArray(values) ? values.filter((entry) => entry && typeof entry === "object") : [];
 }
 
+// A fresh Group read for whichever of properties/propertyValues drawing or
+// shuffling actually needs (getActiveDeckInstances above only ever reads
+// propertyValues[ACTIVE_DECKS_PROPERTY_KEY]) — but drawing/shuffling a card
+// is a completely normal PLAYER action, not owner-only, and the generic
+// full-document route (dataManager.get("group", ...)) only ever grants a
+// non-owner reader via a share token or Character-linked share, which a
+// player just using this widget from their own Dashboard has neither of.
+// Confirmed real bug this fixes: every draw/shuffle by a real player 401'd
+// here, caught (so it didn't visibly break anything) but still logging a
+// red network-error line on every single click. isOwner is decided by the
+// caller up front (groupContext.access, already resolved without ever
+// touching this route) rather than attempting the doomed route and
+// catching its failure — same reasoning as workbench-character-view.js's
+// own identical fix.
+async function fetchGroupPayloadForDeck(dataManager, groupId, isOwner) {
+  if (isOwner) {
+    const result = await dataManager.get("group", groupId, { preferLocal: false });
+    return result?.payload || null;
+  }
+  const result = await dataManager.getGroupProperties(groupId);
+  return { properties: result.properties, propertyValues: result.propertyValues };
+}
+
 function shuffledCardIds(deck) {
   const ids = deck.cards.map((card) => card.id);
   for (let i = ids.length - 1; i > 0; i--) {
@@ -329,6 +352,7 @@ export function initDeckWidget(container, { status, dataManager, groupContext = 
       dataManager,
       groupId: groupContext.groupId,
       shareToken: groupContext.shareToken || "",
+      isOwner: isGm,
       onChange: (payload) => {
         groupPayload = payload;
         renderCounts();
@@ -369,8 +393,8 @@ export function initDeckWidget(container, { status, dataManager, groupContext = 
     const deck = currentDeck();
     if (!deck || !dataManager || !groupContext?.groupId) return;
     const count = Math.max(1, Math.floor(Number(countInput.value)) || 1);
-    const fresh = await dataManager.get("group", groupContext.groupId, { preferLocal: false }).catch(() => null);
-    if (fresh?.payload) groupPayload = fresh.payload;
+    const fresh = await fetchGroupPayloadForDeck(dataManager, groupContext.groupId, isGm).catch(() => null);
+    if (fresh) groupPayload = fresh;
     let drawn;
     try {
       drawn = await drawCards({ dataManager, groupId: groupContext.groupId, groupPayload, deck, count, watcher });
@@ -445,8 +469,8 @@ export function initDeckWidget(container, { status, dataManager, groupContext = 
   async function handleShuffle() {
     const deck = currentDeck();
     if (!deck || !dataManager || !groupContext?.groupId) return;
-    const fresh = await dataManager.get("group", groupContext.groupId, { preferLocal: false }).catch(() => null);
-    if (fresh?.payload) groupPayload = fresh.payload;
+    const fresh = await fetchGroupPayloadForDeck(dataManager, groupContext.groupId, isGm).catch(() => null);
+    if (fresh) groupPayload = fresh;
     try {
       const instances = await shuffleDeck({ dataManager, groupId: groupContext.groupId, groupPayload, deck, watcher });
       groupPayload = { ...groupPayload, propertyValues: { ...groupPayload.propertyValues, [ACTIVE_DECKS_PROPERTY_KEY]: instances } };
@@ -502,8 +526,8 @@ export async function runDeckMacroAction(action, { dataManager, groupContext, st
     throw new Error(`Unknown deck "${deckId}".`);
   }
   const count = Math.max(1, Math.floor(Number(params.count)) || 1);
-  const fresh = await dataManager.get("group", groupContext.groupId, { preferLocal: false });
-  const drawn = await drawCards({ dataManager, groupId: groupContext.groupId, groupPayload: fresh?.payload || {}, deck, count });
+  const fresh = await fetchGroupPayloadForDeck(dataManager, groupContext.groupId, groupContext.access === "owner");
+  const drawn = await drawCards({ dataManager, groupId: groupContext.groupId, groupPayload: fresh || {}, deck, count });
   if (!drawn) {
     throw new Error(`${deck.label} is empty.`);
   }

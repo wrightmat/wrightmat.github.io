@@ -1,7 +1,8 @@
 {
   "name": "Linked Up",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "When the creature is within 60 feet of the creature golem, the creature golem can act as if it was casting a spell, or using its prismatic spray ability from the creature's location - in addition to being able to see through the creature as if the creature golem was in its location.",
   "mechanics": {

@@ -1,7 +1,8 @@
 {
   "name": "Scintillating Strobe",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature emits a blinding array of colors. Any creature  within 5 ft of the creature must succeed on a DC 12 Wisdom saving throw or become stunned until the end of the victim's next turn.",
   "mechanics": {

@@ -1,7 +1,8 @@
 {
   "name": "Grants Disadvantage on Next Attack",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "A target affected by this effect has disadvantage on its next attack roll.",
   "mechanics": {

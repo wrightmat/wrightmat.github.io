@@ -1,7 +1,8 @@
 {
   "name": "Celestial Inspiration",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature inspires one creature it can see within 60 feet of it. Whenever the target makes an attack roll or a saving throw before the start of the creature’s next turn, the target can roll a d4 and add the number rolled to the attack roll or saving throw.",
   "mechanics": {

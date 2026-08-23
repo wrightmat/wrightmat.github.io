@@ -17,7 +17,8 @@ import { buildGroupTree, getDisplayPills, parseTag } from "./lib/journal-tags.js
 import { extractOutline, findHeadingByText } from "./lib/journal-outline.js";
 import { toggleTaskLine, taskLineText, updateCheckboxLineText } from "./lib/journal-tasks.js";
 import { startEncounter, deterministicEncounterId } from "./lib/journal-encounter.js";
-import { extractContentReferences, findKindReferenceRecord, EXCLUDED_KINDS, iconFor } from "./lib/journal-kind-reference.js";
+import { extractContentReferences } from "./lib/journal-kind-reference.js";
+import { findKindReferenceRecord, EXCLUDED_KINDS, iconFor } from "../../common/js/lib/library-reference.js";
 import { wikiLinkPattern } from "./lib/wiki-link-syntax.js";
 import { createForceGraph } from "../../common/js/lib/graph-view.js";
 import { buildRelationshipsGraph } from "./lib/relationships-graph.js";
@@ -957,7 +958,7 @@ function destroyMountedStoryBoards() {
 
 // A node's own Ref cell only needs an ICON here (which depends solely on
 // its kind, not the specific record) — no fetch needed, so this stays
-// synchronous. iconFor (journal-kind-reference.js) is the exact same
+// synchronous. iconFor (library-reference.js) is the exact same
 // lookup an inline `` `kindId:Name` `` chip already uses.
 function resolveStoryBoardRefIcon(ref) {
   const raw = String(ref || "").trim();
@@ -1669,7 +1670,7 @@ function renderEditor() {
 // Journal/quest icons chosen to match their own callout/reference-chip
 // look elsewhere (journal-quests.js's status badge, journal-callouts.js's
 // own CALLOUT_TYPES.quest entry); every other kind reuses iconFor
-// (journal-kind-reference.js) — the same lookup its own inline `` `kindId:
+// (library-reference.js) — the same lookup its own inline `` `kindId:
 // Name` `` chips already use — rather than a second hardcoded table.
 function relationshipsNodeIcon(node) {
   if (node.kind === "journal") return "tabler:notebook";

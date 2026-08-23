@@ -769,6 +769,9 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
       defaults: {
         name: "Text",
         text: "Text",
+        // Off by default — see createRichTextControl's own comment for why
+        // this is opt-in, not automatic, for every Text component.
+        richText: false,
       },
       supportsBinding: false,
       supportsFormula: false,
@@ -4980,7 +4983,7 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
   // radius/sides) is its own separate "Border" section, exactly mirroring
   // Press's own Colors-group-has-the-border-swatch / Borders-group-has-the-
   // geometry split.
-  const TEXT_KEYS = ["labelPosition", "fontFamily", "textSize", "fontSizeCustom", "lineHeight", "textStyles", "align"];
+  const TEXT_KEYS = ["labelPosition", "fontFamily", "textSize", "fontSizeCustom", "lineHeight", "textStyles", "align", "richText"];
   const COLOR_KEYS = ["textColor", "foregroundColor", "backgroundColor", "borderColor"];
   const BORDER_KEYS = ["borderWidth", "borderStyle", "borderRadius", "borderSides"];
   const BEHAVIOR_KEYS = [
@@ -5142,6 +5145,12 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
     if (componentHasTextControls(component)) {
       textControls.push(...createTextFormattingControls(component));
       textControls.push(createTextStyleControls(component));
+      // Text-type only — markdown rendering is renderTextContent's own
+      // concern (component-renderers.js), not shared by Input/Toggle/other
+      // text-having component types this same section also covers.
+      if (component.type === "text") {
+        textControls.push(createRichTextControl(component));
+      }
     }
     if (definition.supportsAlignment !== false && componentHasTextControls(component)) {
       textControls.push(createAlignmentControls(component));
@@ -6000,6 +6009,27 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
       updateComponent(component.uid, (draft) => {
         draft.textStyles = { ...(draft.textStyles || {}) };
         draft.textStyles[key] = checked;
+      }, { rerenderCanvas: true });
+    });
+  }
+
+  // Off by default — a plain-text field authored before this existed (or
+  // any field whose own bound value legitimately contains a literal "*"/"_"
+  // never meant as emphasis) keeps rendering exactly as it always has;
+  // markdown parsing only ever runs where a template author explicitly
+  // opts a Text component in. Confirmed real need: a promoted Feature's own
+  // description (Loom/Character-import's own HTML→text cleanup already
+  // converts <strong>/<em>/tables to **bold**/*italic*/markdown-table
+  // syntax rather than throwing that formatting away) has nowhere to
+  // actually render as bold/italic/a real table without this — see
+  // renderTextContent's own richText branch (component-renderers.js),
+  // which reuses Repository's own renderMarkdown exactly the way Crucible's
+  // Notes preview already does (see crucible/index.html's own comment).
+  function createRichTextControl(component) {
+    const options = [{ value: "richText", icon: "tabler:markdown", label: "Markdown" }];
+    return createInspectorToggleGroup(component, "Rich text", options, { richText: !!component.richText }, (key, checked) => {
+      updateComponent(component.uid, (draft) => {
+        draft.richText = checked;
       }, { rerenderCanvas: true });
     });
   }

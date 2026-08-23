@@ -1,7 +1,8 @@
 {
   "name": "Animal Charm",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Wins over a nearby creature via a contested check, turning it friendly.",
   "mechanics": {

@@ -3,7 +3,8 @@
   "name": "Ring of Warmth",
   "notes": "Ring, uncommon (requires attunement)\n\nWhile wearing this ring, you have resistance to cold damage. In addition, you and everything you wear and carry are unharmed by temperatures as low as -50 degrees Fahrenheit.",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "url": "https://www.dnd5eapi.co/api/2014/magic-items/ring-of-warmth",
   "mapping": "5e-api-magic-item",

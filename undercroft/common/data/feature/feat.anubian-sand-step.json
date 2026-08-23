@@ -1,7 +1,8 @@
 {
   "name": "Sand Step",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Instead of moving, the creature’s humanoid form collapses into loose sand and immediately reforms at another unoccupied space within 10 feet. This movement doesn’t provoke opportunity attacks. After using this trait in sand terrain, the creature can take a Hide action even if under direct observation. Anubians can sand step under doors or through similar obstacles, provided there’s a gap large enough for sand to sift through.",
   "mechanics": {

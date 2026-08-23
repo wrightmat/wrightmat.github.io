@@ -1,7 +1,8 @@
 {
   "name": "Pinion",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Melee Weapon Attack: +9 to hit, reach 5 ft., one target. Hit: 12 (2d6 + 5) piercing damage. If the target is a Medium or smaller creature, it is pinned beneath the bony pinion and restrained. The creature has two pinions, each of which can restrain one target. If a creature is restrained by one of the pinions, the creature can’t attack with it. Any creature restrained by a pinion can free itself at the start of its turn with a successful DC 17 Strength (Athletics) check.",
   "mechanics": {

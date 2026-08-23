@@ -3,7 +3,8 @@
   "name": "Cure Wounds",
   "notes": "A creature you touch regains a number of hit points equal to 1d8 + your spellcasting ability modifier. This spell has no effect on undead or constructs.",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "url": "https://www.dnd5eapi.co/api/2014/spells/cure-wounds",
   "mapping": "5e-api-spell",

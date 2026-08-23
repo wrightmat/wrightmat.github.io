@@ -1,7 +1,8 @@
 {
   "name": "Etherflesh",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The eternal guardian's body has been transformed to be partly ethereal. The creature is immune to the ravages of time and cannot become physically younger or older, is immune to any diseases that would physically afflict it. It is immune to any spell or effect that would alter its form. It cannot be affected by the abilities of parasites that inhabit corporeal bodies such as intellect devourers, bore worms, or tsochar.",
   "mechanics": {

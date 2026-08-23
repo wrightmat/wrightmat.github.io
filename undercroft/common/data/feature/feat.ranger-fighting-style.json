@@ -1,0 +1,26 @@
+{
+  "id": "feat.ranger-fighting-style",
+  "name": "Fighting Style (Ranger)",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "description": "You gain a Fighting Style feat of your choice. Instead of choosing one of those feats, you can choose the option below.\n\nDruidic Warrior\n\nYou learn two Druid cantrips of your choice. The chosen cantrips count as Ranger spells for you, and Wisdom is your spellcasting ability for them. Whenever you gain a Ranger level, you can replace one of these cantrips with another Druid cantrip.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You gain a Fighting Style feat of your choice. Instead of choosing one of those feats, you can choose the option below.\n\nDruidic Warrior\n\nYou learn two Druid cantrips of your choice. The chosen cantrips count as Ranger spells for you, and Wisdom is your spellcasting ability for them. Whenever you gain a Ranger level, you can replace one of these cantrips with another Druid cantrip.",
+    "scope": "unique"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

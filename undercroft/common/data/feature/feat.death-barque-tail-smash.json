@@ -1,7 +1,8 @@
 {
   "name": "Tail Smash",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "Melee Weapon Attack: +9 to hit, reach 15 ft., one target. Hit: 15 (3d6 + 5) bludgeoning damage and must succeed on a DC 17 Strength saving throw or be knocked prone.",
   "mechanics": {

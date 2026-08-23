@@ -1,7 +1,8 @@
 {
   "name": "Relentless Pursuit",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature's speed increases by 10 feet against a target that damaged it since the end of its last turn.",
   "mechanics": {

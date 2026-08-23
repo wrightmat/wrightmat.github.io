@@ -1,7 +1,8 @@
 {
   "name": "+1d4 to Attacks and Saves",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "An affected creature adds 1d4 to its attack rolls and saving throws.",
   "mechanics": {

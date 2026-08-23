@@ -1,0 +1,97 @@
+{
+  "index": "artificer-forge-adept",
+  "url": "https://www.dndbeyond.com/classes/2656866-artificer",
+  "name": "Forge Adept",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "parentKind": "class",
+  "parentId": "artificer",
+  "summary": "The daashor artificers of the Dhakaani Empire were the finest weaponsmiths in Khorvaire’s history, as discussed in chapter 4 of this book. As a Forge Adept, you carry on these ancient traditions, creating mystical weapons and armor, strengthening allies on the battlefield, and bringing down enemies with weapons imbued with your own soul energy. If you’re dar, you learned these techniques from the masters of your clan. Are you content to follow ancient traditions, or do you want to add your own innovations? If you’re not Dhakaani, did you learn these techniques from a daashor mentor? Did you steal this knowledge? Or are you replicating these traditions on your own?",
+  "description": "",
+  "features": [
+    {
+      "name": "Tool Proficiency",
+      "level": 3,
+      "description": "You gain proficiency with Smith’s Tools. If you already have this proficiency, you gain proficiency with one other type of Artisan’s Tools of your choice. In addition, when you craft an ordinary or magic weapon, the amount of time required to craft it is halved."
+    },
+    {
+      "name": "Forge Adept Spells",
+      "level": 3,
+      "description": "When you reach an Artificer level specified in the Forge Adept Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Armor of Agathys, Shield of Faith\n\nLevel 5: Spiritual Weapon, Warding Bond\n\nLevel 9: Beacon of Hope, Remove Curse\n\nLevel 13: Death Ward, Fire Shield\n\nLevel 17: Banishing Smite, Wall of Force"
+    },
+    {
+      "name": "Battle Ready",
+      "level": 3,
+      "description": "Arcane Empowerment. When you attack with a magic weapon, you can use your Intelligence modifier, instead of Strength or Dexterity, for the attack and damage rolls\n\nWeapon Knowledge. You gain proficiency with Martial weapons. You can use a weapon with which you have proficiency as a Spellcasting Focus for your Artificer spells."
+    },
+    {
+      "name": "Ghaal'Shaarat",
+      "level": 3,
+      "description": "You can imbue a weapon with a fraction of your spirit, creating what the Dhakaani daashors call a ghaal’shaarat, Goblin for &“mighty blade.” As a Magic action while you have Smith’s Tools in hand, you can turn a Simple or Martial Melee weapon into a Ghaal’Shaarat. The weapon continues to be a Ghaal’Shaarat until you imbue a different weapon or you die. The weapon gains the following benefits while you wield it.\n\nMighty Blade. A nonmagical weapon becomes a magic weapon. You gain a +1 bonus to attack and damage rolls made with the weapon, unless it already had this bonus or a better one.\n\nReturning Weapon. The weapon has the Thrown property with a normal range of 30 feet and a long range of 120 feet. It returns to your hand immediately after it is used to make a ranged attack roll."
+    },
+    {
+      "name": "Extra Attack",
+      "level": 5,
+      "description": "You can attack twice instead of once whenever you take the Attack action on your turn."
+    },
+    {
+      "name": "Runes of War",
+      "level": 9,
+      "description": "You gain the following benefits while wielding your Ghaal’Shaarat.\n\nImproved Mighty Blade. You gain a +2 bonus to attack and damage rolls made with the weapon, unless it already had this bonus or a better one.\n\nAura of War. As a Magic action, you begin radiating a bolstering aura in a 30-foot Emanation that originates from you. Choose one of the following damage types: Acid, Cold, Fire, Lightning, or Thunder. While in the aura, you and your allies each deal an extra 1d4 damage of the chosen type when hitting with a weapon attack or Unarmed Strike. The aura lasts for 1 minute, until you use this feature again, or until you end it (no action required). You can use this feature a number of times equal to your Intelligence modifier (minimum of once). You regain all expended uses when you finish a Long Rest."
+    },
+    {
+      "name": "Perfect Weapon",
+      "level": 15,
+      "description": "The connection of your spirit to your weapon has been perfected. You gain the following benefits while wielding your Ghaal’Shaarat.Perfect Mighty Blade. You gain a +3 bonus to attack and damage rolls made with the weapon, unless it already had this bonus or a better one. Additionally, the first time you attack with your Ghaal’Shaarat on your turn, you can transfer some or all of the weapon’s bonus to your Armor Class. The bonus remains until the start of your next turn.\n\nElemental Strike. When you hit a creature with an attack roll using your Ghaal’Shaarat, choose one of the following damage types: Acid, Cold, Fire, Lightning, or Thunder. Your Ghaal’Shaarat deals an extra 1d6 damage of the chosen type; and you can cause the weapon to deal the chosen type of damage or its normal damage type.\n\nSoul Bound. You have Resistance to Psychic damage, and you have Immunity to the Charmed and Frightened conditions."
+    }
+  ],
+  "mapping": "ddb-subclass",
+  "featureIds": [
+    "feat.artificer-tool-proficiency",
+    "feat.artificer-forge-adept-spells",
+    "feat.artificer-ghaal-shaarat",
+    "feat.extra-attack",
+    "feat.artificer-runes-of-war",
+    "feat.artificer-perfect-weapon",
+    "feat.artificer-forge-adept-battle-ready"
+  ],
+  "featureParams": {
+    "feat.artificer-tool-proficiency": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.artificer-forge-adept-spells": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.artificer-ghaal-shaarat": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.extra-attack": {
+      "grantedAtLevel": [
+        5
+      ]
+    },
+    "feat.artificer-runes-of-war": {
+      "grantedAtLevel": [
+        9
+      ]
+    },
+    "feat.artificer-perfect-weapon": {
+      "grantedAtLevel": [
+        15
+      ]
+    },
+    "feat.artificer-forge-adept-battle-ready": {
+      "grantedAtLevel": [
+        3
+      ]
+    }
+  }
+}

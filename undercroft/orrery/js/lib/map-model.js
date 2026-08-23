@@ -216,8 +216,9 @@ export function createGridCell({ key, coord, gridType = "square" } = {}) {
 // error/hidden state for an inapplicable field" precedent a wall's own
 // doorState follows on a plain (non-door) wall.
 export function createMarkerElement({
-  refKind = "", refId = "", refAnchor = null, label = "", image = "", outlineColor = "", position, sizeCells = 1, heightCells = 0, opacity = 1,
+  refKind = "", refId = "", refAnchor = null, label = "", image = "", outlineColor = "", showOutline = true, shape = "circle", position, sizeCells = 1, heightCells = 0, opacity = 1,
   visionRangeBinding = "", visionRangeFormula = "", visionRangeText = "0", linkedCombatantId = "",
+  contents = [], claimTarget = "character",
 } = {}) {
   return {
     id: randomId(),
@@ -236,6 +237,24 @@ export function createMarkerElement({
     label,
     image,
     outlineColor,
+    // Whether the marker's own outline ring (createMarkerDot's border +
+    // its always-on box-shadow ring) renders at all — a per-marker override
+    // like outlineColor itself, but a bool rather than a color, so it needs
+    // its own explicit, concrete default rather than an empty-string
+    // "unset" sentinel: `true` (outline shown) so every marker created
+    // before this field existed keeps rendering exactly as it always has.
+    // An object token that needs a clean, borderless edge-to-edge fill
+    // (a chest, say) is the one case a GM turns this off.
+    showOutline: showOutline !== false,
+    // "circle" (the real, concrete default) keeps every marker placed
+    // before this field existed rendering exactly as it always has —
+    // "square" fills the marker's own cell edge-to-edge with sharp
+    // corners instead, for tokens (a chest, a crate) whose art shouldn't
+    // get clipped into a circle. Independent of showOutline: a square
+    // token can still have a border, and a circular one can still go
+    // borderless — the two answer different questions (what shape the
+    // clip is vs. whether a ring draws around it).
+    shape: shape === "square" ? "square" : "circle",
     position: position || { x: 0, y: 0 },
     sizeCells: Number.isFinite(sizeCells) && sizeCells > 0 ? sizeCells : 1,
     // Off-the-ground offset, same grid-cell unit convention as sizeCells (so
@@ -280,6 +299,56 @@ export function createMarkerElement({
     // (last fight's id — self-heals automatically, no manual cleanup
     // needed), falls back to "exactly one refId match, if there is one."
     linkedCombatantId,
+    // Any marker can carry loot — a plain token, an NPC, a Monster, a
+    // Wonder-referencing marker — same "layer a capability onto any marker"
+    // relationship Light/Shape's own attachedMarkerId already has, rather
+    // than a separate "Container" marker type. Each entry is its own
+    // createMarkerContentEntry record (same small-sub-record-with-its-own-id
+    // shape overlayIcons already establishes) so one can be removed/claimed
+    // independently of the others. `contents.length === 0` IS "this
+    // container is empty" — no separate boolean, same "no redundant fields"
+    // convention a wall's own doorState already follows.
+    contents,
+    // Which pool a player claiming FROM THIS container's contents lands
+    // in — "character" (the clicking player's own Character inventory) or
+    // "party" (the campaign Group's own shared Party Inventory property).
+    // A per-container GM choice, not a suite-wide setting — a chest a GM
+    // wants split among whoever gets there first vs. a supply crate meant
+    // for the whole party's shared pool are both real, different cases.
+    claimTarget: claimTarget === "party" ? "party" : "character",
+  };
+}
+
+// One item, currency amount, or a reference to a Vault Wonder record
+// sitting inside a marker's own `contents` — createMarkerElement's own
+// header comment has the full reasoning. An "item"/"wonder" entry is
+// deliberately shaped to match a Character's own `inventory` entry
+// ({name, quantity, notes, weight?}) almost exactly, since claiming one is
+// close to a direct copy into that array; `refId` (only meaningful for
+// kind: "wonder") is what lets a claimed entry also stamp refKind/refId
+// onto the new inventory row, the same "reference back to source"
+// convention markers already use.
+//
+// A "currency" entry instead claims into a Character's own `currencies`
+// object (never the shared Party Inventory — see marker-contents.js's own
+// claimMarkerContentEntry for why currency has no "party pool" concept in
+// this suite), keyed by `denomination` — the active campaign's own System
+// `currency` field's `shortName` (e.g. "gp"), resolved and picked at
+// authoring time (orrery/js/app.js's own Contents editor) against real
+// System data, never a hardcoded denomination vocabulary; `name` for a
+// currency entry is that denomination's own display name ("Gold"), not a
+// GM-typed item name.
+export function createMarkerContentEntry({ kind = "item", name = "", quantity = 1, notes = "", weight, refId = "", denomination = "" } = {}) {
+  const safeKind = kind === "wonder" ? "wonder" : kind === "currency" ? "currency" : "item";
+  return {
+    id: randomId(),
+    kind: safeKind,
+    name,
+    quantity: Number.isFinite(quantity) && quantity > 0 ? quantity : 1,
+    notes,
+    weight: Number.isFinite(weight) ? weight : undefined,
+    refId: safeKind === "wonder" ? refId : "",
+    denomination: safeKind === "currency" ? denomination : "",
   };
 }
 

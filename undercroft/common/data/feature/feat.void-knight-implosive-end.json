@@ -1,7 +1,8 @@
 {
   "name": "Implosive End",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "When the creature dies, it collapses in on itself, releasing a wave of Void energy. Creature within 5 feet of it must make a DC 16 Dexterity saving throw, taking 18 (4d8) force damage on a failed save, or half as much damage on a successful one.",
   "mechanics": {

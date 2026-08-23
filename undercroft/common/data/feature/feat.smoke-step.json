@@ -1,7 +1,8 @@
 {
   "name": "Smoke Step",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "As a bonus action, the creature can teleport up to 30 feet to an unoccupied space it can see.",
   "mechanics": {

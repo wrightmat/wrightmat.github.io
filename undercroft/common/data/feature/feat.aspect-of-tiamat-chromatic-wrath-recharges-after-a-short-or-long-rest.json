@@ -1,7 +1,8 @@
 {
   "name": "Chromatic Wrath (Recharges after a Short or Long Rest)",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "If the creature would be reduced to 0 hit points, her current hit point total instead resets to 500 hit points, she recharges her Chromatic Flames, and she regains any expended uses of Legendary Resistance. Additionally, the creature can now use the options in the 'Mythic Actions' section for 1 hour. Award a party an additional 155,000 XP (310,000 XP total) for defeating the creature after her Chromatic Wrath activates.",
   "mechanics": {

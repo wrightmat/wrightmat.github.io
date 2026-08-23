@@ -1,7 +1,8 @@
 {
   "name": "Sure-Footed",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "The creature has advantage on Strength and Dexterity saving throws made against effects that would knock it prone.",
   "mechanics": {

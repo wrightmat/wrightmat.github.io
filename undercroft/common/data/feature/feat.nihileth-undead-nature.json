@@ -1,7 +1,8 @@
 {
   "name": "Undead Nature",
   "systemIds": [
-    "sys.dnd5e"
+    "sys.dnd5e",
+    "sys.dnd5e2014"
   ],
   "description": "a creature does not require air, food, drink, or sleep.",
   "mechanics": {
