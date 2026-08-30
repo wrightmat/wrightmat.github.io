@@ -1,0 +1,30 @@
+{
+  "name": "Kasatha",
+  "tagline": "Four-armed and wind-touched",
+  "description": [
+    "Originally from the desert world of Akiton, kasatha are natural void-sailors whose four arms and nomadic culture make them well suited to life among the stars."
+  ],
+  "systemIds": [
+    "sys.sf1e",
+    "sys.sf2e"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "none",
+    "firstNames": [
+      "Ohalak",
+      "Nasoj",
+      "Ekiri",
+      "Vashai",
+      "Torkeen",
+      "Silmoth",
+      "Adralon",
+      "Kesrai",
+      "Thessik",
+      "Novara",
+      "Brelka",
+      "Ysandra"
+    ],
+    "lastNames": []
+  }
+}

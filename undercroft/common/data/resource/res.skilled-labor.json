@@ -1,10 +1,6 @@
 {
   "id": "res.skilled-labor",
   "name": "Skilled Labor",
-  "systemIds": [
-    "sys.dnd5e",
-    "sys.dnd5e2014"
-  ],
   "description": "Trained hands — artisans, engineers, and specialists willing to work for the right price.",
   "tags": {
     "locationTypes": [

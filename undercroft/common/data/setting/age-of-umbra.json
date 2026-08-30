@@ -1,0 +1,53 @@
+{
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "name": "Age of Umbra",
+  "description": "The Halcyon Domain, a century into its own ruin. God-King Othedias — chosen bridge between the Veiled Gods and mortals — conspired with the Grand Ordinants and the Aetherlords to change the nature of divine power itself; the gods answered with the Apostasy, shattering much of the Old World and abandoning it outright. What's left is the Age of Umbra: an amorphous, unknowably intelligent dark cloud that sweeps the land like a storm, reaping the souls of the dead and twisting them into nightmarish, risen things. Scattered enclaves survive only by tending their own Sacred Pyres, whose light wards off the Umbra's corruption — among them Desperloch, defended by five individuals who rose to protect it. Factions fill the space the gods left behind: the hedonistic, ruthless raiders of the Damask Queens, the Celsians, the Enduring, and Zealot cults still fervently seeking a way to commune with the absent gods. This is a deadly, grimdark, Soulsborne-inflected campaign frame — there is no resurrection here.",
+  "speciesWeights": [
+    {
+      "entityId": "human-daggerheart",
+      "weight": 40
+    },
+    {
+      "entityId": "dwarf-daggerheart",
+      "weight": 12
+    },
+    {
+      "entityId": "orc-daggerheart",
+      "weight": 12
+    },
+    {
+      "entityId": "infernis-daggerheart",
+      "weight": 10
+    },
+    {
+      "entityId": "elf-daggerheart",
+      "weight": 8
+    },
+    {
+      "entityId": "halfling-daggerheart",
+      "weight": 6
+    },
+    {
+      "entityId": "drakona-daggerheart",
+      "weight": 4
+    },
+    {
+      "entityId": "goblin-daggerheart",
+      "weight": 3
+    },
+    {
+      "entityId": "giant-daggerheart",
+      "weight": 3
+    },
+    {
+      "entityId": "faun-daggerheart",
+      "weight": 1
+    },
+    {
+      "entityId": "faerie-daggerheart",
+      "weight": 1
+    }
+  ]
+}

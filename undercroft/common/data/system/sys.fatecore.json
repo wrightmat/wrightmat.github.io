@@ -1,0 +1,527 @@
+{
+  "title": "Fate Core",
+  "version": "0.1",
+  "fields": [
+    {
+      "type": "string",
+      "key": "name",
+      "label": "Character Name",
+      "required": true
+    },
+    {
+      "type": "string",
+      "key": "player",
+      "label": "Player Name"
+    },
+    {
+      "type": "string",
+      "key": "highConcept",
+      "label": "High Concept Aspect"
+    },
+    {
+      "type": "string",
+      "key": "trouble",
+      "label": "Trouble Aspect"
+    },
+    {
+      "type": "array",
+      "key": "aspects",
+      "label": "Other Aspects",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Aspect"
+        }
+      ]
+    },
+    {
+      "type": "number",
+      "key": "refresh",
+      "label": "Refresh",
+      "minimum": 0,
+      "maximum": 10,
+      "default": 3
+    },
+    {
+      "type": "number",
+      "key": "fatePoints",
+      "label": "Fate Points (Current)",
+      "minimum": 0
+    },
+    {
+      "type": "array",
+      "key": "fateLadder",
+      "label": "Fate Ladder",
+      "values": [
+        {
+          "name": "Legendary",
+          "value": 8
+        },
+        {
+          "name": "Epic",
+          "value": 7
+        },
+        {
+          "name": "Fantastic",
+          "value": 6
+        },
+        {
+          "name": "Superb",
+          "value": 5
+        },
+        {
+          "name": "Great",
+          "value": 4
+        },
+        {
+          "name": "Good",
+          "value": 3
+        },
+        {
+          "name": "Fair",
+          "value": 2
+        },
+        {
+          "name": "Average",
+          "value": 1
+        },
+        {
+          "name": "Mediocre",
+          "value": 0
+        },
+        {
+          "name": "Poor",
+          "value": -1
+        },
+        {
+          "name": "Terrible",
+          "value": -2
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "skills",
+      "label": "Skills",
+      "children": [
+        {
+          "type": "number",
+          "key": "skills.athletics",
+          "label": "Athletics",
+          "minimum": -2,
+          "maximum": 8
+        },
+        {
+          "type": "number",
+          "key": "skills.burglary",
+          "label": "Burglary",
+          "minimum": -2,
+          "maximum": 8
+        },
+        {
+          "type": "number",
+          "key": "skills.contacts",
+          "label": "Contacts",
+          "minimum": -2,
+          "maximum": 8
+        },
+        {
+          "type": "number",
+          "key": "skills.crafts",
+          "label": "Crafts",
+          "minimum": -2,
+          "maximum": 8
+        },
+        {
+          "type": "number",
+          "key": "skills.deceive",
+          "label": "Deceive",
+          "minimum": -2,
+          "maximum": 8
+        },
+        {
+          "type": "number",
+          "key": "skills.drive",
+          "label": "Drive",
+          "minimum": -2,
+          "maximum": 8
+        },
+        {
+          "type": "number",
+          "key": "skills.empathy",
+          "label": "Empathy",
+          "minimum": -2,
+          "maximum": 8
+        },
+        {
+          "type": "number",
+          "key": "skills.fight",
+          "label": "Fight",
+          "minimum": -2,
+          "maximum": 8
+        },
+        {
+          "type": "number",
+          "key": "skills.investigate",
+          "label": "Investigate",
+          "minimum": -2,
+          "maximum": 8
+        },
+        {
+          "type": "number",
+          "key": "skills.lore",
+          "label": "Lore",
+          "minimum": -2,
+          "maximum": 8
+        },
+        {
+          "type": "number",
+          "key": "skills.notice",
+          "label": "Notice",
+          "minimum": -2,
+          "maximum": 8
+        },
+        {
+          "type": "number",
+          "key": "skills.physique",
+          "label": "Physique",
+          "minimum": -2,
+          "maximum": 8
+        },
+        {
+          "type": "number",
+          "key": "skills.provoke",
+          "label": "Provoke",
+          "minimum": -2,
+          "maximum": 8
+        },
+        {
+          "type": "number",
+          "key": "skills.rapport",
+          "label": "Rapport",
+          "minimum": -2,
+          "maximum": 8
+        },
+        {
+          "type": "number",
+          "key": "skills.resources",
+          "label": "Resources",
+          "minimum": -2,
+          "maximum": 8
+        },
+        {
+          "type": "number",
+          "key": "skills.shoot",
+          "label": "Shoot",
+          "minimum": -2,
+          "maximum": 8
+        },
+        {
+          "type": "number",
+          "key": "skills.stealth",
+          "label": "Stealth",
+          "minimum": -2,
+          "maximum": 8
+        },
+        {
+          "type": "number",
+          "key": "skills.will",
+          "label": "Will",
+          "minimum": -2,
+          "maximum": 8
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "stunts",
+      "label": "Stunts",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Stunt"
+        },
+        {
+          "type": "string",
+          "key": "skill",
+          "label": "Linked Skill"
+        },
+        {
+          "type": "string",
+          "key": "description",
+          "label": "Description"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "actions",
+      "label": "Action",
+      "values": [
+        {
+          "name": "Overcome",
+          "description": "Get past an obstacle standing between you and a goal."
+        },
+        {
+          "name": "Create an Advantage",
+          "description": "Discover, create, or highlight an Aspect for you or someone else to use."
+        },
+        {
+          "name": "Attack",
+          "description": "Inflict harm on another character, in a fight or otherwise."
+        },
+        {
+          "name": "Defend",
+          "description": "Directly oppose someone else's action to stop them from succeeding."
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "stress",
+      "label": "Stress",
+      "children": [
+        {
+          "type": "number",
+          "key": "stress.physicalBoxes",
+          "label": "Physical Stress Boxes",
+          "minimum": 2,
+          "maximum": 4,
+          "default": 2
+        },
+        {
+          "type": "number",
+          "key": "stress.physicalMarked",
+          "label": "Physical Stress Marked",
+          "minimum": 0
+        },
+        {
+          "type": "number",
+          "key": "stress.mentalBoxes",
+          "label": "Mental Stress Boxes",
+          "minimum": 2,
+          "maximum": 4,
+          "default": 2
+        },
+        {
+          "type": "number",
+          "key": "stress.mentalMarked",
+          "label": "Mental Stress Marked",
+          "minimum": 0
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "consequenceTiers",
+      "label": "Consequence Tier",
+      "values": [
+        {
+          "name": "Mild",
+          "value": -2,
+          "description": "A minor, quickly-healing setback — clears after one scene once the situation calms."
+        },
+        {
+          "name": "Moderate",
+          "value": -4,
+          "description": "A serious setback that takes a full session (or more) of recovery to clear."
+        },
+        {
+          "name": "Severe",
+          "value": -6,
+          "description": "A dire setback that takes an extended, story-significant amount of time to heal."
+        }
+      ]
+    },
+    {
+      "type": "string",
+      "key": "consequenceMild",
+      "label": "Mild Consequence"
+    },
+    {
+      "type": "string",
+      "key": "consequenceModerate",
+      "label": "Moderate Consequence"
+    },
+    {
+      "type": "string",
+      "key": "consequenceSevere",
+      "label": "Severe Consequence"
+    },
+    {
+      "type": "array",
+      "key": "inventory",
+      "label": "Inventory",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Item Name",
+          "required": true
+        },
+        {
+          "type": "number",
+          "key": "quantity",
+          "label": "Quantity",
+          "minimum": 0
+        },
+        {
+          "type": "string",
+          "key": "notes",
+          "label": "Notes"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "currency",
+      "label": "Currency",
+      "values": [
+        {
+          "name": "Coin",
+          "shortName": "gc",
+          "cost": 1
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "equipmentCategories",
+      "label": "Equipment Categories",
+      "values": [
+        {
+          "name": "Weapon"
+        },
+        {
+          "name": "Armor"
+        },
+        {
+          "name": "Tool"
+        },
+        {
+          "name": "Vehicle"
+        },
+        {
+          "name": "Valuable"
+        },
+        {
+          "name": "Documents"
+        },
+        {
+          "name": "Consumable"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "rarity",
+      "label": "Rarity",
+      "values": [
+        {
+          "name": "Common",
+          "targetBudget": 2,
+          "description": "Any competent character could plausibly own this."
+        },
+        {
+          "name": "Uncommon",
+          "targetBudget": 4,
+          "description": "Notable enough to be worth mentioning or Aspect-worthy."
+        },
+        {
+          "name": "Rare",
+          "targetBudget": 6,
+          "description": "A significant, story-relevant possession."
+        },
+        {
+          "name": "Unique",
+          "targetBudget": 8,
+          "description": "One of a kind, likely an Aspect of its own."
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "environment",
+      "label": "Environment",
+      "values": [
+        {
+          "name": "Urban"
+        },
+        {
+          "name": "Wilderness"
+        },
+        {
+          "name": "Frontier"
+        },
+        {
+          "name": "Court"
+        },
+        {
+          "name": "Sea"
+        },
+        {
+          "name": "Underground"
+        },
+        {
+          "name": "Battlefield"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "combatBindings",
+      "label": "Combat Bindings",
+      "values": [
+        {
+          "name": "Physical Stress",
+          "maxPath": "@stress.physicalBoxes",
+          "binding": "@stress.physicalMarked",
+          "role": "resource"
+        },
+        {
+          "name": "Mental Stress",
+          "maxPath": "@stress.mentalBoxes",
+          "binding": "@stress.mentalMarked",
+          "role": "resource"
+        },
+        {
+          "name": "Fate Points",
+          "maxPath": "@refresh",
+          "binding": "@fatePoints",
+          "role": "resource"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "dice",
+      "label": "Dice",
+      "values": [
+        {
+          "name": "d3",
+          "sides": 3,
+          "description": "The building block of 4dF — see the Rolls field's own note."
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "rolls",
+      "label": "Rolls",
+      "values": [
+        {
+          "name": "4dF (Fate Roll)",
+          "expression": "4d3-8",
+          "resultMode": "band",
+          "description": "Roll 4dF (here: 4d3-8, mathematically identical to four Fate dice — see the Dice field's own note) and add the result to the relevant skill's Ladder rating. Compare the total to the GM-set Difficulty (or an opponent's own roll): beating it by 3 or more is a Success with Style, meeting or beating it is a Success, falling short is a Failure. Unlike CoC/GURPS's roll-under Systems, Fate has no fixed band here — the target is an external, scene-specific Difficulty, not a value stored on the character — so no bands are declared below; this Move exists purely to make 4dF itself one click away from the Moves panel.",
+          "bands": []
+        }
+      ]
+    }
+  ]
+}

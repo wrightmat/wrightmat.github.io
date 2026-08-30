@@ -1,0 +1,18 @@
+{
+  "index": "ring-mail",
+  "name": "Ring Mail",
+  "notes": "Armor Class: 14\n\nStealth: Disadvantage",
+  "price": "30 gp",
+  "weight": 40,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2024/equipment/ring-mail",
+  "mapping": "5e-api-equipment",
+  "properties": {
+    "form": "armor",
+    "armorCategory": "heavy"
+  },
+  "featureIds": []
+}

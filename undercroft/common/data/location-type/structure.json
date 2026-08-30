@@ -2,9 +2,5 @@
   "id": "structure",
   "name": "Structure",
   "scale": 1,
-  "systemIds": [
-    "sys.dnd5e",
-    "sys.dnd5e2014"
-  ],
   "description": "A single built or carved edifice — a keep, tower, temple, mine shaft, or any one construction, regardless of what it's for."
 }

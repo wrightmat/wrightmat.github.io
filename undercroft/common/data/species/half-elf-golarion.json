@@ -1,0 +1,38 @@
+{
+  "name": "Half-Elf",
+  "tagline": "Between two worlds",
+  "description": [
+    "Neither fully accepted by human nor elven society, Golarion's half-elves forge their own place — often quicker to adapt and quicker to move on than either of their parent peoples."
+  ],
+  "systemIds": [
+    "sys.pf1e"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "family",
+    "firstNames": [
+      "Rowan",
+      "Elenwe",
+      "Cassian",
+      "Faelynn",
+      "Doran",
+      "Sylara",
+      "Terrin",
+      "Ariel",
+      "Wesric",
+      "Lorindel",
+      "Bram",
+      "Nimriel"
+    ],
+    "lastNames": [
+      "Halfmoon",
+      "Duskwalker",
+      "Farbridge",
+      "Windrest",
+      "Twoheart",
+      "Silvergale",
+      "Brightward",
+      "Wanderleaf"
+    ]
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "index": "pouch",
+  "name": "Pouch",
+  "notes": "A Pouch holds up to 6 pounds within one-fifth of a cubic foot.",
+  "price": "5 sp",
+  "weight": 1,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2024/equipment/pouch",
+  "mapping": "5e-api-equipment",
+  "properties": {
+    "form": "equipment",
+    "equipmentCategory": "adventuring-gear"
+  },
+  "featureIds": []
+}

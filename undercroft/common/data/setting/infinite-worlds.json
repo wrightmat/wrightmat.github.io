@@ -1,0 +1,13 @@
+{
+  "systemIds": [
+    "sys.gurps"
+  ],
+  "name": "Infinite Worlds",
+  "description": "GURPS 4th Edition's own default campaign setting, loosely inspired by H. Beam Piper's Paratime stories. Homeline — a parallel Earth that cracked the technology of parachronic travel — quietly polices and explores an infinity of alternate timelines through Infinity Unlimited and the UN-backed I-Cops, while its rival power Centrum runs its own competing parachronics program. Player characters are typically Homeline agents: explorers, scouts, and troubleshooters stepping sideways into worlds where history went differently — a Rome that never fell, an America that stayed colonial, or somewhere stranger still.",
+  "speciesWeights": [
+    {
+      "entityId": "human-gurps",
+      "weight": 100
+    }
+  ]
+}

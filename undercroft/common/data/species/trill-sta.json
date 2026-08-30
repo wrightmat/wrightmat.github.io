@@ -1,0 +1,29 @@
+{
+  "name": "Trill",
+  "tagline": "One life, many lifetimes",
+  "description": [
+    "A humanoid people, some of whom carry a symbiont — joining a single lifetime to a continuous chain of memory spanning many past hosts."
+  ],
+  "systemIds": [
+    "sys.sta"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "family",
+    "firstNames": [
+      "Jadzia",
+      "Curzon",
+      "Ezri",
+      "Tobin",
+      "Audrid",
+      "Torias",
+      "Joran",
+      "Lela"
+    ],
+    "lastNames": [
+      "Dax",
+      "Idrin",
+      "Yanas"
+    ]
+  }
+}

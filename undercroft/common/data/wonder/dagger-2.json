@@ -1,0 +1,17 @@
+{
+  "name": "Dagger, +2",
+  "notes": "You have a +2 bonus to attack and damage rolls made with this magic weapon. Damage: 1d4+4 Piercing\n\nRange: 5 ft.\n\nProperties: Finesse, Light, Thrown\n\nMastery: Nick",
+  "weight": 1,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2024/equipment/dagger",
+  "mapping": "5e-api-equipment",
+  "properties": {
+    "form": "weapon",
+    "weaponCategory": "simple-melee",
+    "rarity": "rare"
+  },
+  "featureIds": []
+}

@@ -1,0 +1,27 @@
+{
+  "index": "candle",
+  "name": "Candle",
+  "notes": "For 1 hour, a lit Candle sheds Bright Light in a 5-foot radius and Dim Light for an additional 5 feet.",
+  "price": "1 cp",
+  "weight": 0,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2024/equipment/candle",
+  "mapping": "5e-api-equipment",
+  "properties": {
+    "form": "equipment",
+    "equipmentCategory": "adventuring-gear"
+  },
+  "featureIds": [
+    "feat.create-light-darkness"
+  ],
+  "featureParams": {
+    "feat.create-light-darkness": {
+      "mode": "light",
+      "brightRadius": 5,
+      "dimRadius": 10
+    }
+  }
+}

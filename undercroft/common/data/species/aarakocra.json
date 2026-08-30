@@ -37,5 +37,15 @@
   "systemIds": [
     "sys.dnd5e",
     "sys.dnd5e2014"
-  ]
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "none",
+    "firstNames": [
+      "Kaaw", "Skrivek", "Tollo", "Vreep", "Chask", "Iolar", "Kreel", "Peshka",
+      "Rikta", "Sowen", "Tarrik", "Vashti", "Ashkel", "Corvo", "Drask", "Ferrin",
+      "Halek", "Jissa", "Kestrel", "Nira"
+    ],
+    "lastNames": []
+  }
 }

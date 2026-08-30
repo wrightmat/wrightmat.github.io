@@ -1,0 +1,38 @@
+{
+  "name": "Pahtra",
+  "tagline": "Clan-bound feline warriors",
+  "description": [
+    "Feline humanoids with a strong warrior-clan tradition and keen senses, pahtra carry their clan's honor with them wherever they travel."
+  ],
+  "systemIds": [
+    "sys.sf2e"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "clan",
+    "firstNames": [
+      "Rasha",
+      "Kito",
+      "Sevi",
+      "Anara",
+      "Voss",
+      "Mirri",
+      "Talon",
+      "Ishka",
+      "Corr",
+      "Yuki",
+      "Brama",
+      "Sela"
+    ],
+    "lastNames": [
+      "Ashclaw",
+      "Duskpelt",
+      "Stormeye",
+      "Nightpad",
+      "Sunwhisker",
+      "Ironclaw",
+      "Windrunner",
+      "Emberpaw"
+    ]
+  }
+}

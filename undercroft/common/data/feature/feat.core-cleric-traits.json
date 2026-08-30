@@ -1,0 +1,24 @@
+{
+  "id": "feat.core-cleric-traits",
+  "name": "Core Cleric Traits",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "As a Level 1 Character:\n\n- Gain all the traits in the Core Cleric Traits table.\n\n- Gain the Cleric’s level 1 features, which are listed in the Cleric Features table.\n\nPrimary Ability: Wisdom\n\nHit Point Die: D8 per Cleric level\n\nSaving Throw Proficiencies: Wisdom and Charisma\n\nSkill Proficiencies: *Choose 2:* History, Insight, Medicine, Persuasion, or Religion\n\nWeapon Proficiencies: Simple weapons\n\nArmor Training: Light and Medium armor and Shields\n\nStarting Equipment: *Choose A or B:* (A) Chain Shirt, Shield, Mace, Holy Symbol, Priest’s Pack, and 7 GP; or (B) 110 GP",
+  "mechanics": {
+    "type": "passive",
+    "text": "As a Level 1 Character:\n\n- Gain all the traits in the Core Cleric Traits table.\n\n- Gain the Cleric’s level 1 features, which are listed in the Cleric Features table.\n\nPrimary Ability: Wisdom\n\nHit Point Die: D8 per Cleric level\n\nSaving Throw Proficiencies: Wisdom and Charisma\n\nSkill Proficiencies: *Choose 2:* History, Insight, Medicine, Persuasion, or Religion\n\nWeapon Proficiencies: Simple weapons\n\nArmor Training: Light and Medium armor and Shields\n\nStarting Equipment: *Choose A or B:* (A) Chain Shirt, Shield, Mace, Holy Symbol, Priest’s Pack, and 7 GP; or (B) 110 GP"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

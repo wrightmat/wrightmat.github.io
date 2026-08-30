@@ -1,0 +1,18 @@
+{
+  "index": "chain-mail",
+  "name": "Chain Mail",
+  "notes": "Armor Class: 16\n\nStrength: 13\n\nStealth: Disadvantage",
+  "price": "75 gp",
+  "weight": 55,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2024/equipment/chain-mail",
+  "mapping": "5e-api-equipment",
+  "properties": {
+    "form": "armor",
+    "armorCategory": "heavy"
+  },
+  "featureIds": []
+}

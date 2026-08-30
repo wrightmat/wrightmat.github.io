@@ -1,0 +1,18 @@
+{
+  "index": "jug",
+  "name": "Jug",
+  "notes": "A Jug holds up to 1 gallon.",
+  "price": "2 cp",
+  "weight": 4,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2024/equipment/jug",
+  "mapping": "5e-api-equipment",
+  "properties": {
+    "form": "equipment",
+    "equipmentCategory": "adventuring-gear"
+  },
+  "featureIds": []
+}

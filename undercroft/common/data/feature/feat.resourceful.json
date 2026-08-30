@@ -1,0 +1,24 @@
+{
+  "id": "feat.resourceful",
+  "name": "Resourceful",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "You gain Heroic Inspiration whenever you finish a Long Rest.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You gain Heroic Inspiration whenever you finish a Long Rest."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

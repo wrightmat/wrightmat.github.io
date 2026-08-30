@@ -1,0 +1,481 @@
+{
+  "title": "Apocalypse World",
+  "version": "0.1",
+  "fields": [
+    {
+      "type": "string",
+      "key": "name",
+      "label": "Character Name",
+      "required": true
+    },
+    {
+      "type": "string",
+      "key": "player",
+      "label": "Player Name"
+    },
+    {
+      "type": "array",
+      "key": "playbooks",
+      "label": "Playbook",
+      "values": [
+        {
+          "name": "Angel",
+          "description": "A field medic with a piece of scavenged pre-apocalypse medical tech, holding life and death in their hands."
+        },
+        {
+          "name": "Battlebabe",
+          "description": "Impossibly dangerous and impossibly stylish, armed and armored beyond all reasonable sense."
+        },
+        {
+          "name": "Brainer",
+          "description": "A psychic who can open minds, plant thoughts, and take what isn't offered."
+        },
+        {
+          "name": "Chopper",
+          "description": "The chief of a biker gang, riding hard with a crew that lives and dies by their word."
+        },
+        {
+          "name": "Driver",
+          "description": "The keeper of a garage full of vehicles, and the best driver anyone around has ever seen."
+        },
+        {
+          "name": "Gunlugger",
+          "description": "A walking arsenal — when the fighting starts, this is who you want on your side."
+        },
+        {
+          "name": "Hardholder",
+          "description": "The boss of a hardhold, ruling over gangers and a population that depends on them for survival."
+        },
+        {
+          "name": "Hocus",
+          "description": "The leader of a following, part cult leader and part shepherd, wielding belief as a weapon."
+        },
+        {
+          "name": "Maestro D'",
+          "description": "The keeper of the world's fanciest surviving establishment, offering luxury in the wasteland."
+        },
+        {
+          "name": "Savvyhead",
+          "description": "A tinkerer and inventor, keeper of a workspace full of half-understood pre-apocalypse tech."
+        },
+        {
+          "name": "Skinner",
+          "description": "Devastatingly attractive and devastatingly aware of it, trading beauty for leverage."
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "stats",
+      "label": "Stats",
+      "children": [
+        {
+          "type": "number",
+          "key": "stats.cool",
+          "label": "Cool",
+          "color": "#3498db",
+          "minimum": -2,
+          "maximum": 3
+        },
+        {
+          "type": "number",
+          "key": "stats.hard",
+          "label": "Hard",
+          "color": "#e74c3c",
+          "minimum": -2,
+          "maximum": 3
+        },
+        {
+          "type": "number",
+          "key": "stats.hot",
+          "label": "Hot",
+          "color": "#e67e22",
+          "minimum": -2,
+          "maximum": 3
+        },
+        {
+          "type": "number",
+          "key": "stats.sharp",
+          "label": "Sharp",
+          "color": "#2ecc71",
+          "minimum": -2,
+          "maximum": 3
+        },
+        {
+          "type": "number",
+          "key": "stats.weird",
+          "label": "Weird",
+          "color": "#9b59b6",
+          "minimum": -2,
+          "maximum": 3
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "harm",
+      "label": "Harm",
+      "children": [
+        {
+          "type": "number",
+          "key": "harm.current",
+          "label": "Harm Clock",
+          "minimum": 0,
+          "maximum": 6
+        },
+        {
+          "type": "boolean",
+          "key": "harm.stabilized",
+          "label": "Stabilized"
+        }
+      ]
+    },
+    {
+      "type": "number",
+      "key": "barter",
+      "label": "Barter",
+      "minimum": 0
+    },
+    {
+      "type": "array",
+      "key": "hx",
+      "label": "History (Hx)",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Character"
+        },
+        {
+          "type": "number",
+          "key": "value",
+          "label": "Hx",
+          "minimum": -3,
+          "maximum": 3
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "moves",
+      "label": "Playbook & Advanced Moves",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Move"
+        },
+        {
+          "type": "string",
+          "key": "description",
+          "label": "Description"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "gear",
+      "label": "Gear",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Item"
+        },
+        {
+          "type": "number",
+          "key": "quantity",
+          "label": "Quantity",
+          "minimum": 0
+        },
+        {
+          "type": "string",
+          "key": "notes",
+          "label": "Notes"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "equipmentCategories",
+      "label": "Equipment Categories",
+      "values": [
+        {
+          "name": "Weapon"
+        },
+        {
+          "name": "Armor"
+        },
+        {
+          "name": "Vehicle"
+        },
+        {
+          "name": "Salvage"
+        },
+        {
+          "name": "Chemical"
+        },
+        {
+          "name": "Cybernetic"
+        },
+        {
+          "name": "Comm/Tech"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "rarity",
+      "label": "Rarity",
+      "values": [
+        {
+          "name": "Common",
+          "targetBudget": 2,
+          "description": "Ordinary scavenge, easy to barter for."
+        },
+        {
+          "name": "Uncommon",
+          "targetBudget": 4,
+          "description": "Worth a real trade, not just found lying around."
+        },
+        {
+          "name": "Rare",
+          "targetBudget": 7,
+          "description": "The kind of find worth risking a run for."
+        },
+        {
+          "name": "Legendary",
+          "targetBudget": 12,
+          "description": "Pre-apocalypse tech nobody left alive can even fully explain."
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "environment",
+      "label": "Environment",
+      "values": [
+        {
+          "name": "Hardhold"
+        },
+        {
+          "name": "Wasteland"
+        },
+        {
+          "name": "Maelstrom"
+        },
+        {
+          "name": "Road"
+        },
+        {
+          "name": "Ruins"
+        },
+        {
+          "name": "Barrens"
+        },
+        {
+          "name": "Water"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "combatScaling",
+      "label": "Combat Scaling",
+      "values": [
+        {
+          "name": "Standard",
+          "shortName": "Standard",
+          "sourceId": 1,
+          "targetBudget": 5
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "combatBindings",
+      "label": "Combat Bindings",
+      "values": [
+        {
+          "name": "Harm",
+          "binding": "@harm.current",
+          "max": 6,
+          "role": "resource"
+        },
+        {
+          "name": "Barter",
+          "binding": "@barter",
+          "role": "value"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "dice",
+      "label": "Dice",
+      "values": [
+        {
+          "name": "d6",
+          "sides": 6
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "rolls",
+      "label": "Rolls",
+      "values": [
+        {
+          "name": "Act Under Fire",
+          "expression": "2d6+@stats.cool",
+          "resultMode": "band",
+          "description": "Roll+Cool. 10+ is a Strong Hit — it works, full stop. 7-9 is a Weak Hit — it works, but with a cost, a complication, or a hard choice attached. 6 or under is a Miss — the MC makes a move, as hard as they like.",
+          "bands": [
+            {
+              "min": 10,
+              "label": "Strong Hit"
+            },
+            {
+              "min": 7,
+              "max": 9,
+              "label": "Weak Hit"
+            },
+            {
+              "max": 6,
+              "label": "Miss"
+            }
+          ]
+        },
+        {
+          "name": "Go Aggro",
+          "expression": "2d6+@stats.hard",
+          "resultMode": "band",
+          "description": "Roll+Hard. 10+ is a Strong Hit — it works, full stop. 7-9 is a Weak Hit — it works, but with a cost, a complication, or a hard choice attached. 6 or under is a Miss — the MC makes a move, as hard as they like.",
+          "bands": [
+            {
+              "min": 10,
+              "label": "Strong Hit"
+            },
+            {
+              "min": 7,
+              "max": 9,
+              "label": "Weak Hit"
+            },
+            {
+              "max": 6,
+              "label": "Miss"
+            }
+          ]
+        },
+        {
+          "name": "Seduce or Manipulate",
+          "expression": "2d6+@stats.hot",
+          "resultMode": "band",
+          "description": "Roll+Hot. 10+ is a Strong Hit — it works, full stop. 7-9 is a Weak Hit — it works, but with a cost, a complication, or a hard choice attached. 6 or under is a Miss — the MC makes a move, as hard as they like.",
+          "bands": [
+            {
+              "min": 10,
+              "label": "Strong Hit"
+            },
+            {
+              "min": 7,
+              "max": 9,
+              "label": "Weak Hit"
+            },
+            {
+              "max": 6,
+              "label": "Miss"
+            }
+          ]
+        },
+        {
+          "name": "Read a Charged Situation",
+          "expression": "2d6+@stats.sharp",
+          "resultMode": "band",
+          "description": "Roll+Sharp. 10+ is a Strong Hit — it works, full stop. 7-9 is a Weak Hit — it works, but with a cost, a complication, or a hard choice attached. 6 or under is a Miss — the MC makes a move, as hard as they like.",
+          "bands": [
+            {
+              "min": 10,
+              "label": "Strong Hit"
+            },
+            {
+              "min": 7,
+              "max": 9,
+              "label": "Weak Hit"
+            },
+            {
+              "max": 6,
+              "label": "Miss"
+            }
+          ]
+        },
+        {
+          "name": "Read a Person",
+          "expression": "2d6+@stats.sharp",
+          "resultMode": "band",
+          "description": "Roll+Sharp. 10+ is a Strong Hit — it works, full stop. 7-9 is a Weak Hit — it works, but with a cost, a complication, or a hard choice attached. 6 or under is a Miss — the MC makes a move, as hard as they like.",
+          "bands": [
+            {
+              "min": 10,
+              "label": "Strong Hit"
+            },
+            {
+              "min": 7,
+              "max": 9,
+              "label": "Weak Hit"
+            },
+            {
+              "max": 6,
+              "label": "Miss"
+            }
+          ]
+        },
+        {
+          "name": "Open Your Brain",
+          "expression": "2d6+@stats.weird",
+          "resultMode": "band",
+          "description": "Roll+Weird. 10+ is a Strong Hit — it works, full stop. 7-9 is a Weak Hit — it works, but with a cost, a complication, or a hard choice attached. 6 or under is a Miss — the MC makes a move, as hard as they like.",
+          "bands": [
+            {
+              "min": 10,
+              "label": "Strong Hit"
+            },
+            {
+              "min": 7,
+              "max": 9,
+              "label": "Weak Hit"
+            },
+            {
+              "max": 6,
+              "label": "Miss"
+            }
+          ]
+        },
+        {
+          "name": "Seize by Force",
+          "expression": "2d6+@stats.hard",
+          "resultMode": "band",
+          "description": "Roll+Hard. 10+ is a Strong Hit — it works, full stop. 7-9 is a Weak Hit — it works, but with a cost, a complication, or a hard choice attached. 6 or under is a Miss — the MC makes a move, as hard as they like.",
+          "bands": [
+            {
+              "min": 10,
+              "label": "Strong Hit"
+            },
+            {
+              "min": 7,
+              "max": 9,
+              "label": "Weak Hit"
+            },
+            {
+              "max": 6,
+              "label": "Miss"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

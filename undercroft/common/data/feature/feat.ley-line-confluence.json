@@ -1,9 +1,5 @@
 {
   "name": "Ley Line Confluence",
-  "systemIds": [
-    "sys.dnd5e",
-    "sys.dnd5e2014"
-  ],
   "description": "Currents of raw magical energy converge here, subtly warping the way spells and rituals behave.",
   "mechanics": {
     "type": "passive",

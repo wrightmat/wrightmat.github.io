@@ -1,0 +1,1176 @@
+{
+  "title": "GURPS",
+  "version": "0.1",
+  "fields": [
+    {
+      "type": "string",
+      "key": "name",
+      "label": "Character Name",
+      "required": true
+    },
+    {
+      "type": "string",
+      "key": "player",
+      "label": "Player Name"
+    },
+    {
+      "type": "number",
+      "key": "characterPoints",
+      "label": "Character Points",
+      "minimum": 0,
+      "default": 100
+    },
+    {
+      "type": "number",
+      "key": "pointsSpent",
+      "label": "Points Spent",
+      "minimum": 0
+    },
+    {
+      "type": "object",
+      "key": "attributes",
+      "label": "Primary Attributes",
+      "children": [
+        {
+          "type": "number",
+          "key": "attributes.strength",
+          "label": "Strength",
+          "shortName": "ST",
+          "color": "#e74c3c",
+          "minimum": 1,
+          "maximum": 30,
+          "default": 10
+        },
+        {
+          "type": "number",
+          "key": "attributes.dexterity",
+          "label": "Dexterity",
+          "shortName": "DX",
+          "color": "#f1c40f",
+          "minimum": 1,
+          "maximum": 30,
+          "default": 10
+        },
+        {
+          "type": "number",
+          "key": "attributes.intelligence",
+          "label": "Intelligence",
+          "shortName": "IQ",
+          "color": "#3498db",
+          "minimum": 1,
+          "maximum": 30,
+          "default": 10
+        },
+        {
+          "type": "number",
+          "key": "attributes.health",
+          "label": "Health",
+          "shortName": "HT",
+          "color": "#2ecc71",
+          "minimum": 1,
+          "maximum": 30,
+          "default": 10
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "secondary",
+      "label": "Secondary Characteristics",
+      "children": [
+        {
+          "type": "number",
+          "key": "secondary.will",
+          "label": "Will",
+          "minimum": 1
+        },
+        {
+          "type": "number",
+          "key": "secondary.perception",
+          "label": "Perception",
+          "minimum": 1
+        },
+        {
+          "type": "number",
+          "key": "secondary.basicSpeed",
+          "label": "Basic Speed"
+        },
+        {
+          "type": "number",
+          "key": "secondary.basicMove",
+          "label": "Basic Move",
+          "minimum": 0
+        },
+        {
+          "type": "number",
+          "key": "secondary.dodge",
+          "label": "Dodge",
+          "minimum": 0
+        },
+        {
+          "type": "number",
+          "key": "secondary.parry",
+          "label": "Parry",
+          "minimum": 0
+        },
+        {
+          "type": "number",
+          "key": "secondary.block",
+          "label": "Block",
+          "minimum": 0
+        },
+        {
+          "type": "number",
+          "key": "secondary.damageResistance",
+          "label": "Damage Resistance (DR)",
+          "minimum": 0
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "hitPoints",
+      "label": "Hit Points",
+      "children": [
+        {
+          "type": "number",
+          "key": "hitPoints.current",
+          "label": "Current",
+          "minimum": -10
+        },
+        {
+          "type": "number",
+          "key": "hitPoints.max",
+          "label": "Max",
+          "minimum": 1
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "fatiguePoints",
+      "label": "Fatigue Points",
+      "children": [
+        {
+          "type": "number",
+          "key": "fatiguePoints.current",
+          "label": "Current",
+          "minimum": 0
+        },
+        {
+          "type": "number",
+          "key": "fatiguePoints.max",
+          "label": "Max",
+          "minimum": 1
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "skillDifficulty",
+      "label": "Skill Difficulty",
+      "values": [
+        {
+          "name": "Easy",
+          "pointsPerLevel": 1
+        },
+        {
+          "name": "Average",
+          "pointsPerLevel": 2
+        },
+        {
+          "name": "Hard",
+          "pointsPerLevel": 4
+        },
+        {
+          "name": "Very Hard",
+          "pointsPerLevel": 8
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "skills",
+      "label": "Skills",
+      "children": [
+        {
+          "type": "number",
+          "key": "skills.acrobatics",
+          "label": "Acrobatics",
+          "governingAttribute": "DX",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.administration",
+          "label": "Administration",
+          "governingAttribute": "IQ",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.animalhandling",
+          "label": "Animal Handling",
+          "governingAttribute": "IQ",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.areaknowledge",
+          "label": "Area Knowledge",
+          "governingAttribute": "IQ",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.armoury",
+          "label": "Armoury",
+          "governingAttribute": "IQ",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.boating",
+          "label": "Boating",
+          "governingAttribute": "DX",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.brawling",
+          "label": "Brawling",
+          "governingAttribute": "DX",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.camouflage",
+          "label": "Camouflage",
+          "governingAttribute": "IQ",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.climbing",
+          "label": "Climbing",
+          "governingAttribute": "DX",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.computeroperation",
+          "label": "Computer Operation",
+          "governingAttribute": "IQ",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.cooking",
+          "label": "Cooking",
+          "governingAttribute": "IQ",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.diagnosis",
+          "label": "Diagnosis",
+          "governingAttribute": "IQ",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.diplomacy",
+          "label": "Diplomacy",
+          "governingAttribute": "IQ",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.disguise",
+          "label": "Disguise",
+          "governingAttribute": "IQ",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.driving",
+          "label": "Driving",
+          "governingAttribute": "DX",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.electronicsoperation",
+          "label": "Electronics Operation",
+          "governingAttribute": "IQ",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.engineer",
+          "label": "Engineer",
+          "governingAttribute": "IQ",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.explosives",
+          "label": "Explosives",
+          "governingAttribute": "IQ",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.fastdraw",
+          "label": "Fast-Draw",
+          "governingAttribute": "DX",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.fasttalk",
+          "label": "Fast-Talk",
+          "governingAttribute": "IQ",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.firstaid",
+          "label": "First Aid",
+          "governingAttribute": "IQ",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.forgery",
+          "label": "Forgery",
+          "governingAttribute": "IQ",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.gambling",
+          "label": "Gambling",
+          "governingAttribute": "IQ",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.gesture",
+          "label": "Gesture",
+          "governingAttribute": "IQ",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.guns",
+          "label": "Guns",
+          "governingAttribute": "DX",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.hiking",
+          "label": "Hiking",
+          "governingAttribute": "HT",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.holdout",
+          "label": "Holdout",
+          "governingAttribute": "IQ",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.interrogation",
+          "label": "Interrogation",
+          "governingAttribute": "IQ",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.intimidation",
+          "label": "Intimidation",
+          "governingAttribute": "Will",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.jumping",
+          "label": "Jumping",
+          "governingAttribute": "DX",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.knife",
+          "label": "Knife",
+          "governingAttribute": "DX",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.lockpicking",
+          "label": "Lockpicking",
+          "governingAttribute": "IQ",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.mechanic",
+          "label": "Mechanic",
+          "governingAttribute": "IQ",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.merchant",
+          "label": "Merchant",
+          "governingAttribute": "IQ",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.naturalist",
+          "label": "Naturalist",
+          "governingAttribute": "IQ",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.navigation",
+          "label": "Navigation",
+          "governingAttribute": "IQ",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.observation",
+          "label": "Observation",
+          "governingAttribute": "Per",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.pharmacy",
+          "label": "Pharmacy",
+          "governingAttribute": "IQ",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.piloting",
+          "label": "Piloting",
+          "governingAttribute": "DX",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.riding",
+          "label": "Riding",
+          "governingAttribute": "DX",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.search",
+          "label": "Search",
+          "governingAttribute": "Per",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.seamanship",
+          "label": "Seamanship",
+          "governingAttribute": "IQ",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.shadowing",
+          "label": "Shadowing",
+          "governingAttribute": "IQ",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.sleightofhand",
+          "label": "Sleight of Hand",
+          "governingAttribute": "DX",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.stealth",
+          "label": "Stealth",
+          "governingAttribute": "DX",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.streetwise",
+          "label": "Streetwise",
+          "governingAttribute": "IQ",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.survival",
+          "label": "Survival",
+          "governingAttribute": "Per",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.swimming",
+          "label": "Swimming",
+          "governingAttribute": "HT",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.tactics",
+          "label": "Tactics",
+          "governingAttribute": "IQ",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.throwing",
+          "label": "Throwing",
+          "governingAttribute": "DX",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.traps",
+          "label": "Traps",
+          "governingAttribute": "IQ",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.wrestling",
+          "label": "Wrestling",
+          "governingAttribute": "DX",
+          "minimum": 0,
+          "maximum": 30
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "advantages",
+      "label": "Advantages",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Advantage"
+        },
+        {
+          "type": "number",
+          "key": "points",
+          "label": "Points"
+        },
+        {
+          "type": "string",
+          "key": "notes",
+          "label": "Notes"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "disadvantages",
+      "label": "Disadvantages",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Disadvantage"
+        },
+        {
+          "type": "number",
+          "key": "points",
+          "label": "Points"
+        },
+        {
+          "type": "string",
+          "key": "notes",
+          "label": "Notes"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "perks",
+      "label": "Perks",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Perk"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "quirks",
+      "label": "Quirks",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Quirk"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "wealthLevels",
+      "label": "Wealth",
+      "values": [
+        {
+          "name": "Dead Broke",
+          "points": -25
+        },
+        {
+          "name": "Poor",
+          "points": -15
+        },
+        {
+          "name": "Struggling",
+          "points": -10
+        },
+        {
+          "name": "Average",
+          "points": 0
+        },
+        {
+          "name": "Comfortable",
+          "points": 10
+        },
+        {
+          "name": "Wealthy",
+          "points": 20
+        },
+        {
+          "name": "Very Wealthy",
+          "points": 30
+        },
+        {
+          "name": "Filthy Rich",
+          "points": 50
+        },
+        {
+          "name": "Multimillionaire",
+          "points": 75
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "statusLevels",
+      "label": "Status",
+      "values": [
+        {
+          "name": "Status -2",
+          "points": -10
+        },
+        {
+          "name": "Status -1",
+          "points": -5
+        },
+        {
+          "name": "Status 0",
+          "points": 0
+        },
+        {
+          "name": "Status 1",
+          "points": 5
+        },
+        {
+          "name": "Status 2",
+          "points": 10
+        },
+        {
+          "name": "Status 3",
+          "points": 15
+        },
+        {
+          "name": "Status 4",
+          "points": 20
+        },
+        {
+          "name": "Status 5",
+          "points": 25
+        },
+        {
+          "name": "Status 6",
+          "points": 30
+        },
+        {
+          "name": "Status 7",
+          "points": 35
+        },
+        {
+          "name": "Status 8",
+          "points": 40
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "techLevels",
+      "label": "Tech Level",
+      "values": [
+        {
+          "name": "TL0 — Stone Age"
+        },
+        {
+          "name": "TL1 — Ancient/Classical"
+        },
+        {
+          "name": "TL2 — Medieval"
+        },
+        {
+          "name": "TL3 — Age of Sail"
+        },
+        {
+          "name": "TL4 — Age of Reason"
+        },
+        {
+          "name": "TL5 — Industrial Revolution"
+        },
+        {
+          "name": "TL6 — Mechanized Age"
+        },
+        {
+          "name": "TL7 — Nuclear Age"
+        },
+        {
+          "name": "TL8 — Digital Age"
+        },
+        {
+          "name": "TL9 — Microtech Age"
+        },
+        {
+          "name": "TL10 — Robotic Age"
+        },
+        {
+          "name": "TL11 — Age of Exotic Matter"
+        },
+        {
+          "name": "TL12 — Godlike"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "inventory",
+      "label": "Inventory",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Item Name",
+          "required": true
+        },
+        {
+          "type": "number",
+          "key": "quantity",
+          "label": "Quantity",
+          "minimum": 0
+        },
+        {
+          "type": "number",
+          "key": "weight",
+          "label": "Weight (lb)",
+          "minimum": 0
+        },
+        {
+          "type": "string",
+          "key": "notes",
+          "label": "Notes"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "currency",
+      "label": "Currency",
+      "values": [
+        {
+          "name": "Dollar",
+          "shortName": "$",
+          "cost": 1
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "equipmentCategories",
+      "label": "Equipment Categories",
+      "values": [
+        {
+          "name": "Melee Weapon"
+        },
+        {
+          "name": "Ranged Weapon"
+        },
+        {
+          "name": "Armor"
+        },
+        {
+          "name": "Ammunition"
+        },
+        {
+          "name": "Tool"
+        },
+        {
+          "name": "Vehicle"
+        },
+        {
+          "name": "Electronics"
+        },
+        {
+          "name": "Medical"
+        },
+        {
+          "name": "Survival Gear"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "rarity",
+      "label": "Rarity",
+      "values": [
+        {
+          "name": "Common",
+          "targetBudget": 3,
+          "description": "Ordinary Tech-Level-appropriate gear, freely available."
+        },
+        {
+          "name": "Uncommon",
+          "targetBudget": 7,
+          "description": "Specialist or restricted equipment."
+        },
+        {
+          "name": "Rare",
+          "targetBudget": 12,
+          "description": "Exotic, prototype, or otherwise hard to obtain."
+        },
+        {
+          "name": "Unique",
+          "targetBudget": 20,
+          "description": "A singular, one-of-a-kind item or artifact."
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "damageTypes",
+      "label": "Damage Types",
+      "values": [
+        {
+          "name": "Crushing"
+        },
+        {
+          "name": "Cutting"
+        },
+        {
+          "name": "Impaling"
+        },
+        {
+          "name": "Piercing"
+        },
+        {
+          "name": "Small Piercing"
+        },
+        {
+          "name": "Large Piercing"
+        },
+        {
+          "name": "Huge Piercing"
+        },
+        {
+          "name": "Burning"
+        },
+        {
+          "name": "Corrosion"
+        },
+        {
+          "name": "Toxic"
+        },
+        {
+          "name": "Fatigue"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "strengthDamageTable",
+      "label": "ST Thrust/Swing Damage",
+      "values": [
+        {
+          "name": "ST 8",
+          "thrust": "1d-3",
+          "swing": "1d-2"
+        },
+        {
+          "name": "ST 9",
+          "thrust": "1d-2",
+          "swing": "1d-1"
+        },
+        {
+          "name": "ST 10",
+          "thrust": "1d-2",
+          "swing": "1d"
+        },
+        {
+          "name": "ST 11",
+          "thrust": "1d-1",
+          "swing": "1d+1"
+        },
+        {
+          "name": "ST 12",
+          "thrust": "1d-1",
+          "swing": "1d+2"
+        },
+        {
+          "name": "ST 13",
+          "thrust": "1d",
+          "swing": "2d-1"
+        },
+        {
+          "name": "ST 14",
+          "thrust": "1d",
+          "swing": "2d"
+        },
+        {
+          "name": "ST 15",
+          "thrust": "1d+1",
+          "swing": "2d+1"
+        },
+        {
+          "name": "ST 16",
+          "thrust": "1d+1",
+          "swing": "2d+2"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "environment",
+      "label": "Environment",
+      "values": [
+        {
+          "name": "Urban"
+        },
+        {
+          "name": "Wilderness"
+        },
+        {
+          "name": "Frontier"
+        },
+        {
+          "name": "Space"
+        },
+        {
+          "name": "Alternate Timeline"
+        },
+        {
+          "name": "Underground"
+        },
+        {
+          "name": "Battlefield"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "combatScaling",
+      "label": "Power Level",
+      "values": [
+        {
+          "name": "Unusual (25-50 pts)",
+          "shortName": "Unusual",
+          "sourceId": 1,
+          "targetBudget": 3
+        },
+        {
+          "name": "Competent (100-150 pts)",
+          "shortName": "Competent",
+          "sourceId": 2,
+          "targetBudget": 5
+        },
+        {
+          "name": "Exceptional (200-250 pts)",
+          "shortName": "Exceptional",
+          "sourceId": 3,
+          "targetBudget": 8
+        },
+        {
+          "name": "Larger Than Life (300+ pts)",
+          "shortName": "Larger Than Life",
+          "sourceId": 4,
+          "targetBudget": 12
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "combatBindings",
+      "label": "Combat Bindings",
+      "values": [
+        {
+          "name": "Hit Points",
+          "maxPath": "@hitPoints.max",
+          "binding": "@hitPoints.current",
+          "role": "resource"
+        },
+        {
+          "name": "Fatigue Points",
+          "maxPath": "@fatiguePoints.max",
+          "binding": "@fatiguePoints.current",
+          "role": "resource"
+        },
+        {
+          "name": "Dodge",
+          "binding": "@secondary.dodge",
+          "role": "value"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "dice",
+      "label": "Dice",
+      "values": [
+        {
+          "name": "d6",
+          "sides": 6
+        },
+        {
+          "name": "d3",
+          "sides": 3
+        },
+        {
+          "name": "d10",
+          "sides": 10
+        },
+        {
+          "name": "d20",
+          "sides": 20
+        },
+        {
+          "name": "d100",
+          "sides": 100
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "rolls",
+      "label": "Rolls",
+      "values": [
+        {
+          "name": "3d6 Roll-Under Check",
+          "expression": "3d6",
+          "resultMode": "band",
+          "description": "Roll 3d6 against a skill or attribute — success on a result at or under it. Fired from a field's own roll button, which passes that field's current value as the target. A natural 3 or 4 is always a Critical Success; a natural 18 is always a Critical Failure; a natural 17 is a Critical Failure unless the skill/attribute is 16 or higher (in which case it's still a plain Failure — a 17 never succeeds outright). Two real GURPS refinements aren't modeled here: a natural 5 or 6 is ALSO a Critical Success if the skill is 15+/16+ respectively, and failing by 10 or more is ALSO a Critical Failure regardless of the roll — both require comparing against the skill by a margin the current band engine doesn't express (targetMaxFraction compares to a FRACTION of the target, not a fixed offset from it), so they're flagged here rather than silently misrepresented.",
+          "bands": [
+            {
+              "max": 4,
+              "label": "Critical Success"
+            },
+            {
+              "min": 18,
+              "label": "Critical Failure"
+            },
+            {
+              "min": 17,
+              "max": 17,
+              "targetBelow": 16,
+              "label": "Critical Failure"
+            },
+            {
+              "min": 17,
+              "max": 17,
+              "targetAtLeast": 16,
+              "label": "Failure"
+            },
+            {
+              "targetMaxFraction": 1.0,
+              "label": "Success"
+            },
+            {
+              "targetMinFraction": 0,
+              "label": "Failure"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

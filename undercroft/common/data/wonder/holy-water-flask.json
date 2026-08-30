@@ -1,0 +1,17 @@
+{
+  "index": "holy-water-flask",
+  "name": "Holy water (flask)",
+  "notes": "As an action, you can splash the contents of this flask onto a creature within 5 feet of you or throw it up to 20 feet, shattering it on impact. In either case, make a ranged attack against a target creature, treating the holy water as an improvised weapon.\n\nIf the target is a fiend or undead, it takes 2d6 radiant damage.\n\nA cleric or paladin may create holy water by performing a special ritual.\n\nThe ritual takes 1 hour to perform, uses 25 gp worth of powdered silver, and requires the caster to expend a 1st-level spell slot.",
+  "price": "25 gp",
+  "weight": 1,
+  "systemIds": [
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/equipment/holy-water-flask",
+  "mapping": "5e-api-equipment",
+  "properties": {
+    "form": "equipment",
+    "equipmentCategory": "adventuring-gear"
+  },
+  "featureIds": []
+}

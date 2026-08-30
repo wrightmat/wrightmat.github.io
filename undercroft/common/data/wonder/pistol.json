@@ -1,0 +1,18 @@
+{
+  "index": "pistol",
+  "name": "Pistol",
+  "notes": "Damage: 1d10 Piercing\n\nRange: 30/90 ft.\n\nProperties: Ammunition, Loading\n\nMastery: Vex",
+  "price": "250 gp",
+  "weight": 3,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2024/equipment/pistol",
+  "mapping": "5e-api-equipment",
+  "properties": {
+    "form": "weapon",
+    "weaponCategory": "martial-ranged"
+  },
+  "featureIds": []
+}

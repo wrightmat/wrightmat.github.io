@@ -12,7 +12,7 @@ import {
 } from "../lib/canvas-card.js";
 import { createRootInsertionHandler } from "../lib/root-inserter.js";
 import { expandPane } from "../../../common/js/lib/panes.js";
-import { refreshTooltips } from "../../../common/js/lib/tooltips.js";
+import { disposeTooltips, refreshTooltips, refreshTooltip } from "../../../common/js/lib/tooltips.js";
 import { bindCollapsibleToggle } from "../../../common/js/lib/collapsible.js";
 import {
   createJsonDataPanel,
@@ -678,6 +678,17 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
         gap: 16,
         // Horizontal-only — see createRepeaterFillToggle's own comment.
         fill: false,
+        // Vertical list mode (columns===1, non-Horizontal) only — see
+        // createRepeaterItemDividerToggle's own comment. Off by default:
+        // a hidden row (an item template node's own Visibility formula
+        // evaluating false — e.g. a Speed of 0) still occupies a row slot,
+        // and a forced divider on every row turned that into a visible
+        // blank line with nothing above/below it. Confirmed real, reported
+        // regression: a Speeds Repeater hiding 0-value rows left a stack
+        // of empty divider lines where those rows used to be. An author
+        // who genuinely wants a visual separator between rows (a longer,
+        // denser list) can still turn it back on per-Repeater.
+        itemDivider: false,
       },
       supportsBinding: true,
       supportsFormula: false,
@@ -1638,6 +1649,11 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
       margin: "",
       className: "",
     });
+    // Dispose every tooltip under the canvas BEFORE wiping it — same fix,
+    // same reasoning, as the character view's own renderCanvas (see its
+    // comment): the second of two independent occurrences of this bug found
+    // in the suite-wide tooltip audit.
+    disposeTooltips(elements.canvasRoot);
     elements.canvasRoot.innerHTML = "";
     elements.canvasRoot.dataset.dropzone = "root";
     elements.canvasRoot.dataset.dropzoneParent = "";
@@ -3144,10 +3160,7 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
       } else {
         actions.appendChild(visibilityPill);
       }
-      if (window.bootstrap && typeof window.bootstrap.Tooltip === "function") {
-        // eslint-disable-next-line no-new
-        new window.bootstrap.Tooltip(visibilityPill);
-      }
+      refreshTooltip(visibilityPill);
     }
 
     if (iconElement) {
@@ -6803,6 +6816,24 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
     });
   }
 
+  // Vertical list mode only (columns===1, non-Horizontal — see
+  // renderRepeaterInspector's own gating below) — whether each row gets a
+  // border-bottom separator (renderRepeaterItemRow, workbench-character-
+  // view.js). Off by default: a row hidden by its own item template
+  // node's Visibility formula still occupies a row slot, and forcing a
+  // divider on every row unconditionally turned that into a bare visible
+  // line with nothing else in it — confirmed real, reported regression on
+  // a Speeds Repeater hiding its own 0-value rows. An author who wants a
+  // visual separator for a denser/longer list can still turn this back on
+  // per-Repeater; it was never meant to be forced formatting.
+  function createRepeaterItemDividerToggle(component) {
+    return createSwitchField("Divider between rows", !!component.itemDivider, (checked) => {
+      updateComponent(component.uid, (draft) => {
+        draft.itemDivider = checked;
+      }, { rerenderCanvas: true });
+    });
+  }
+
   // Off by default — most Repeaters (ability scores, skills, a fixed
   // defenses/senses list, ...) have a fixed, System-defined cardinality
   // where an Add/Remove control would be actively wrong to offer. Turned on
@@ -6879,6 +6910,13 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
     }
     controls.push(createRepeaterHeaderToggle(component, { isHorizontal }));
     controls.push(createRepeaterAllowAddRemoveToggle(component));
+    // Only meaningful for Vertical list mode — the divider it toggles
+    // (renderRepeaterItemRow) only ever renders there; Table mode
+    // (columns>1) has its own real <table> row borders instead, and
+    // Horizontal has no per-row divider concept at all.
+    if (columns === 1 && !isHorizontal) {
+      controls.push(createRepeaterItemDividerToggle(component));
+    }
     // Spacing between repeated items — only meaningful for Horizontal (the
     // items sit side-by-side; Vertical already stacks them with each
     // component's own Margin, same as everywhere else). Same field/control

@@ -1,9 +1,5 @@
 {
   "id": "transportation",
   "name": "Transportation",
-  "systemIds": [
-    "sys.dnd5e",
-    "sys.dnd5e2014"
-  ],
   "description": "Exists to move people or goods through or between other places — roads, bridges, ports, and waystations."
 }

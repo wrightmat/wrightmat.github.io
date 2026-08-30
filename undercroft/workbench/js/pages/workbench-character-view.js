@@ -8,7 +8,7 @@ import {
 import { setElementCollapsed, bindCollapsibleToggle } from "../../../common/js/lib/collapsible.js";
 import { createJsonDataPanel, createCollapsibleSection, createIconButton, createCompactField } from "../../../common/js/lib/ui-components.js";
 import { escapeHtml } from "../../../common/js/lib/auth-ui.js";
-import { refreshTooltips } from "../../../common/js/lib/tooltips.js";
+import { disposeTooltips, refreshTooltips, setDisabledTooltip, initTooltip } from "../../../common/js/lib/tooltips.js";
 import { confirmDelete } from "../../../common/js/lib/ownership.js";
 import { expandPane } from "../../../common/js/lib/panes.js";
 import {
@@ -1373,20 +1373,18 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       if (!button.dataset.defaultTitle && defaultTitle) {
         button.dataset.defaultTitle = defaultTitle;
       }
-      const title = nextDisabled
-        ? disabledTitle || button.dataset.disabledTitle || ""
-        : enabledTitle || button.dataset.defaultTitle || defaultTitle || "";
-      button.disabled = nextDisabled;
-      button.classList.toggle("disabled", nextDisabled);
       button.setAttribute("aria-disabled", nextDisabled ? "true" : "false");
-      if (title) {
-        button.setAttribute("title", title);
-        button.setAttribute("data-bs-title", title);
-      } else {
-        button.removeAttribute("title");
-        button.removeAttribute("data-bs-title");
-      }
-      refreshTooltips(button.parentElement || button);
+      // setDisabledTooltip owns the real `disabled` attribute AND the
+      // disabled-state explanation (shown on a separate wrapper, since a
+      // real `disabled` attribute blocks hover on the button itself — see
+      // tooltips.js's own header for why the previous same-element version
+      // of this never actually showed a tooltip while disabled). initTooltip
+      // separately owns the button's own ready-state tooltip, which only
+      // ever needs to be live while the button ISN'T disabled.
+      setDisabledTooltip(button, nextDisabled ? disabledTitle || button.dataset.disabledTitle || "" : "");
+      initTooltip(button, {
+        title: nextDisabled ? "" : enabledTitle || button.dataset.defaultTitle || defaultTitle || "",
+      });
     };
 
     const shareViewActive = Boolean(groupShareState.token)
@@ -1570,7 +1568,23 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   // the overlay. `context` still threads through to rollDiceExpression's own
   // `@path` substitution for formula-driven buttons — see rollExpression's
   // own comment for why that's safe with the overlay path.
-  async function executeDiceRoll(expression, { label = "", updateInput = true } = {}) {
+  // `targetValue` (optional) is a number the caller already read off a
+  // bound field (a component's own current value — see
+  // createRollOverlayButton below) — when the rolled expression happens to
+  // match a System-defined Move by its own `expression` string (CoC's d100
+  // roll-under Move, "d100"), the roll is evaluated through rollSystemMove
+  // instead of a plain rollExpression so that Move's `target*` bands (see
+  // dice-roll.js's matchesRangeBand) get a real value to compare against —
+  // e.g. a Skill's roll button passes that skill's own percentage, and the
+  // roll comes back labeled Regular/Hard/Extreme Success or Fumble instead
+  // of just a bare total. `label` overrides the Move's own generic name for
+  // both the roll and verdict toasts (see rollSystemMove's own comment) so
+  // a Dexterity roll reads "Dexterity: 45" / "Dexterity: Regular Success",
+  // not the Move's own "Skill / Characteristic Check" name repeated on
+  // every field. No matching Move (most expressions, most Systems) or no
+  // targetValue (the standalone Dice Roller widget has no field to read)
+  // falls straight back through to the existing plain-roll path unchanged.
+  async function executeDiceRoll(expression, { label = "", updateInput = true, targetValue = undefined } = {}) {
     const trimmed = typeof expression === "string" ? expression.trim() : "";
     if (!trimmed) {
       status.show("Enter a dice expression like 2d6 + 3.", { type: "info", timeout: 2000 });
@@ -1581,17 +1595,28 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       syncQuickDiceButtons();
     }
     openToolsPane();
-    const rolled = await rollExpression(trimmed, {
-      status,
-      label,
-      dataManager,
-      dice: activeQuickDice,
-      context: getBindingContext(),
-    });
+    const move =
+      typeof targetValue === "number" ? activeSystemRolls.find((entry) => entry.expression === trimmed) : null;
+    const rolled = move
+      ? await rollSystemMove(move, {
+          status,
+          dataManager,
+          dice: activeQuickDice,
+          context: getBindingContext(),
+          targetValue,
+          label: label || move.label,
+        })
+      : await rollExpression(trimmed, {
+          status,
+          label,
+          dataManager,
+          dice: activeQuickDice,
+          context: getBindingContext(),
+        });
     if (!rolled || rolled.isTable) {
       return rolled;
     }
-    recordGameLogRoll(rolled.result, { expression: trimmed, label });
+    recordGameLogRoll(rolled.result, { expression: trimmed, label, verdict: rolled.verdict?.label || undefined });
     return rolled.result;
   }
 
@@ -1645,18 +1670,24 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     }
   }
 
-  async function handleComponentRoll(expression, label, component) {
+  async function handleComponentRoll(expression, label, component, targetValue) {
     if (!expression) {
       return;
     }
     const text = typeof label === "string" && label.trim() ? label.trim() : "";
-    const result = await executeDiceRoll(expression, { label: text, updateInput: true });
+    const result = await executeDiceRoll(expression, { label: text, updateInput: true, targetValue });
     if (result && component?.id === "initiative") {
       void pushInitiativeToActiveEncounter(result.total);
     }
   }
 
-  function createRollOverlayButton(component, expressions) {
+  // `input` (optional) is the actual DOM control this roll button sits next
+  // to — read live at click time, not cached, so an edit made just before
+  // rolling (typing in a new skill value, then immediately rolling it) is
+  // what gets tested, not whatever was last saved. Only a finite number is
+  // ever passed on as targetValue; a select/text/checkbox variant, or a
+  // number field that's genuinely empty, rolls exactly as it always has.
+  function createRollOverlayButton(component, expressions, input) {
     const container = document.createElement("div");
     container.className = "character-roll-overlay";
     const button = document.createElement("button");
@@ -1679,7 +1710,9 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       }
       const expression = expressions[index] || expressions[0];
       index = (index + 1) % expressions.length;
-      void handleComponentRoll(expression, label, component);
+      const rawValue = input ? Number(input.value) : NaN;
+      const targetValue = Number.isFinite(rawValue) ? rawValue : undefined;
+      void handleComponentRoll(expression, label, component, targetValue);
     });
     container.appendChild(button);
     return container;
@@ -3400,6 +3433,15 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       syncNotesEditor();
       renderCanvas();
       renderPreview();
+      // Pre-warms the Features tab's own reference-chip name/description
+      // cache (ensureFeatureSummaryCache) as soon as the character loads,
+      // not lazily on that tab's own first render — confirmed real,
+      // reported UX gap: switching to Features triggered this bulk fetch
+      // for the first time right then, showing every chip as its own raw
+      // "feat.xyz" id until it resolved. Fire-and-forget — its own .then
+      // already calls renderCanvas() once populated, and every OTHER tab
+      // (already rendered above) doesn't wait on this at all.
+      void ensureFeatureSummaryCache();
       void refreshRelationshipsSection();
       syncCharacterOptions();
       syncCharacterActions();
@@ -3573,6 +3615,13 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       margin: "",
       className: "",
     });
+    // Dispose every tooltip under the canvas BEFORE wiping it — this is the
+    // single most-hit "lingering tooltip" bug site in the suite (renderCanvas
+    // runs on every component add/remove/reorder/property edit), confirmed
+    // real: refreshTooltips() further down only re-arms whatever's freshly
+    // rebuilt, it does nothing for a popup a just-destroyed component's own
+    // tooltip left behind on <body>.
+    disposeTooltips(elements.canvasRoot);
     elements.canvasRoot.innerHTML = "";
     if (!state.draft?.id && !state.template?.id) {
       // state.partyMode (NOT the mere presence of state.groupContext, which
@@ -4001,7 +4050,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
         }
         inputContainer.appendChild(input);
         if (showRollOverlay) {
-          inputContainer.appendChild(createRollOverlayButton(comp, rollExpressions));
+          inputContainer.appendChild(createRollOverlayButton(comp, rollExpressions, input));
         }
         return inputContainer;
       },
@@ -4418,8 +4467,22 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   }
 
   function renderRepeaterItemRow(component, templateNodes, item, index, onRemoveItem = null) {
+    // A row every one of whose own template nodes is hidden (e.g. every
+    // Speed of 0) renders NOTHING at all, not an empty shell — the
+    // wrapper's own flex `gap` (renderRepeaterComponent) applies BETWEEN
+    // every child regardless of that child's own content, so an empty row
+    // still ate a full gap on each side of it. Confirmed real, reported
+    // regression: hiding 3 of 5 Speed rows still left the visible gap of
+    // all 3, as blank space between Walk and Swim. `onRemoveItem` isn't a
+    // reason to keep an otherwise-empty row either — a row with nothing
+    // but a Remove button showing is not a real case any authored Speeds/
+    // Ability-Scores-style Repeater (fixed cardinality, no Add/Remove) hits.
+    const visibleNodes = templateNodes.filter((node) => isRepeaterItemNodeVisible(node, item));
+    if (!visibleNodes.length) return null;
     const row = document.createElement("div");
-    row.className = "d-flex align-items-start gap-2 border-bottom pb-2";
+    // Divider is opt-in (component.itemDivider — see createRepeaterItemDivider
+    // Toggle, workbench-template-view.js), never forced.
+    row.className = component.itemDivider ? "d-flex align-items-start gap-2 border-bottom pb-2" : "d-flex align-items-start gap-2";
     row.dataset.repeaterIndex = String(index);
     const decoratorText = resolveRepeaterDecorator(component, item, index);
     if (decoratorText) {
@@ -4430,10 +4493,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     }
     const body = document.createElement("div");
     body.className = "d-flex flex-column gap-1 flex-grow-1";
-    templateNodes.forEach((node) => {
-      if (!isRepeaterItemNodeVisible(node, item)) {
-        return;
-      }
+    visibleNodes.forEach((node) => {
       body.appendChild(renderRepeaterItemNode(node, item, component, index));
     });
     row.appendChild(body);
@@ -4545,6 +4605,12 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   // (decorator above its own content, not beside it) meant to sit in a
   // flex ROW of siblings rather than a flex COLUMN of stacked rows.
   function renderRepeaterHorizontalItemCell(component, templateNodes, item, index, onRemoveItem = null) {
+    // Same "nothing visible, render nothing" reasoning as
+    // renderRepeaterItemRow's own identical check — the row's own flex
+    // `gap` (renderRepeaterHorizontalList) applies BETWEEN every cell
+    // regardless of that cell's own content.
+    const visibleNodes = templateNodes.filter((node) => isRepeaterItemNodeVisible(node, item));
+    if (!visibleNodes.length) return null;
     const cell = document.createElement("div");
     cell.className = "d-flex flex-column gap-1";
     cell.dataset.repeaterIndex = String(index);
@@ -4565,8 +4631,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       marker.textContent = decoratorText;
       cell.appendChild(marker);
     }
-    templateNodes.forEach((node) => {
-      if (!isRepeaterItemNodeVisible(node, item)) return;
+    visibleNodes.forEach((node) => {
       cell.appendChild(renderRepeaterItemNode(node, item, component, index));
     });
     if (onRemoveItem) {
@@ -4604,7 +4669,8 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       }
     }
     items.forEach((item, index) => {
-      row.appendChild(renderRepeaterHorizontalItemCell(component, templateNodes, item, index, onRemoveItem));
+      const cell = renderRepeaterHorizontalItemCell(component, templateNodes, item, index, onRemoveItem);
+      if (cell) row.appendChild(cell);
     });
     return row;
   }
@@ -4976,7 +5042,8 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       }
     }
     items.forEach((item, index) => {
-      wrapper.appendChild(renderRepeaterItemRow(component, itemColumns[0], item, index, onRemoveItem));
+      const row = renderRepeaterItemRow(component, itemColumns[0], item, index, onRemoveItem);
+      if (row) wrapper.appendChild(row);
     });
     if (canManage) {
       wrapper.appendChild(createRepeaterAddButton(handleAddItem));

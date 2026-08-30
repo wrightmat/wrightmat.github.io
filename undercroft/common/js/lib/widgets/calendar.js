@@ -91,6 +91,25 @@ function formatMoonPhase(cycle, dayIndex) {
   return "Waning";
 }
 
+// Which season `dayIndex` currently falls in — walked cumulatively the
+// same way formatCalendarDate walks Months, just simpler (no year/weekday
+// concept, only "which one"). The season cycle's own total length is all
+// Seasons' own `days` summed, deliberately NOT required to equal the
+// Months-based year length — a Setting author may describe seasons on a
+// different cadence entirely (see sanctum/js/app.js's own renderSeasonRow).
+function formatSeason(seasons, dayIndex) {
+  const list = Array.isArray(seasons) ? seasons : [];
+  const totalDays = list.reduce((sum, season) => sum + (Number(season.days) || 0), 0);
+  if (totalDays <= 0) return "";
+  let remaining = ((dayIndex % totalDays) + totalDays) % totalDays;
+  for (const season of list) {
+    const days = Number(season.days) || 0;
+    if (remaining < days) return season.name || "";
+    remaining -= days;
+  }
+  return list[list.length - 1]?.name || "";
+}
+
 // Exported for the same reason formatCalendarDate is — journal-date.js's
 // own `date:` chip reuses this directly.
 export function describeDate(calendar, dayIndex) {
@@ -209,6 +228,11 @@ function renderCalendarView(container, calendar, dayIndex, { headingExtra, headi
   if (calendar.moonCycles?.length) {
     const moonLine = calendar.moonCycles.map((cycle) => `${cycle.name}: ${formatMoonPhase(cycle, dayIndex)}`).join(" · ");
     wrap.appendChild(el("div", "small text-body-secondary", moonLine));
+  }
+
+  if (calendar.seasons?.length) {
+    const seasonName = formatSeason(calendar.seasons, dayIndex);
+    if (seasonName) wrap.appendChild(el("div", "small text-body-secondary", seasonName));
   }
 
   if (time?.enabled) {

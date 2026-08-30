@@ -8,10 +8,6 @@
       "type": "field",
       "bind": "='class'"
     },
-    "index": {
-      "type": "field",
-      "bind": "@index"
-    },
     "name": {
       "type": "field",
       "bind": "@name"

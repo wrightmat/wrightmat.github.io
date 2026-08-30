@@ -1,0 +1,42 @@
+{
+  "name": "Human",
+  "tagline": "Earth's own, and Starfleet's backbone",
+  "description": [
+    "Adaptable and endlessly curious, humans make up the largest single population within Starfleet, drawn from every nation and culture of a reunified Earth."
+  ],
+  "systemIds": [
+    "sys.sta"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "family",
+    "firstNames": [
+      "James",
+      "Nyota",
+      "Hikaru",
+      "Beverly",
+      "Miles",
+      "Kathryn",
+      "Benjamin",
+      "Jadzia",
+      "William",
+      "Deanna",
+      "Geordi",
+      "Christine"
+    ],
+    "lastNames": [
+      "Kirk",
+      "Uhura",
+      "Sulu",
+      "Crusher",
+      "O'Brien",
+      "Janeway",
+      "Sisko",
+      "Riker",
+      "Chakotay",
+      "Paris",
+      "Tucker",
+      "Archer"
+    ]
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "index": "greatclub",
+  "name": "Greatclub",
+  "notes": "Damage: 1d8 Bludgeoning\n\nRange: 5 ft.\n\nProperties: Two-Handed\n\nMastery: Push",
+  "price": "2 sp",
+  "weight": 10,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2024/equipment/greatclub",
+  "mapping": "5e-api-equipment",
+  "properties": {
+    "form": "weapon",
+    "weaponCategory": "simple-melee"
+  },
+  "featureIds": []
+}

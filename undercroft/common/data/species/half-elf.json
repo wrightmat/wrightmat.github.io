@@ -2,7 +2,9 @@
   "name": "Half-Elf",
   "systemIds": [
     "sys.dnd5e",
-    "sys.dnd5e2014"
+    "sys.dnd5e2014",
+    "sys.dnd35e",
+    "sys.dnd4e"
   ],
   "names": {
     "nameMode": "blend",

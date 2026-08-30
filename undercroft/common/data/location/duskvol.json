@@ -9,12 +9,32 @@
   "mixingCoefficient": 0.6,
   "speciesWeights": [
     {
-      "entityId": "human",
-      "weight": 95
+      "entityId": "akorosian",
+      "weight": 30
+    },
+    {
+      "entityId": "skovlander",
+      "weight": 16
+    },
+    {
+      "entityId": "severosi",
+      "weight": 16
+    },
+    {
+      "entityId": "iruvian",
+      "weight": 16
+    },
+    {
+      "entityId": "tycherosi",
+      "weight": 12
+    },
+    {
+      "entityId": "dagger-islander",
+      "weight": 8
     },
     {
       "entityId": "other",
-      "weight": 5
+      "weight": 2
     }
   ],
   "archetypeOverrides": {

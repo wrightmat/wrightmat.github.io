@@ -1,0 +1,18 @@
+{
+  "index": "barrel",
+  "name": "Barrel",
+  "notes": "A Barrel holds up to 40 gallons of liquid or up to 4 cubic feet of dry goods.",
+  "price": "2 gp",
+  "weight": 70,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2024/equipment/barrel",
+  "mapping": "5e-api-equipment",
+  "properties": {
+    "form": "equipment",
+    "equipmentCategory": "adventuring-gear"
+  },
+  "featureIds": []
+}

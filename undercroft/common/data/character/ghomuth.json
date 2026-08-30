@@ -403,7 +403,7 @@
       "canEquip": true,
       "isEquipped": true,
       "refKind": "wonder",
-      "refId": "eff.handaxe"
+      "refId": "handaxe"
     },
     {
       "name": "Handaxe",
@@ -415,7 +415,7 @@
       "canEquip": true,
       "isEquipped": true,
       "refKind": "wonder",
-      "refId": "eff.handaxe"
+      "refId": "handaxe"
     },
     {
       "name": "Javelin",
@@ -425,7 +425,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": true,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "javelin"
     },
     {
       "name": "Quarterstaff",
@@ -437,7 +439,7 @@
       "canEquip": true,
       "isEquipped": false,
       "refKind": "wonder",
-      "refId": "eff.quarterstaff"
+      "refId": "quarterstaff"
     },
     {
       "name": "Greataxe",
@@ -459,7 +461,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": true,
-      "isEquipped": true
+      "isEquipped": true,
+      "refKind": "wonder",
+      "refId": "maul"
     },
     {
       "name": "Trident",
@@ -469,7 +473,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": true,
-      "isEquipped": true
+      "isEquipped": true,
+      "refKind": "wonder",
+      "refId": "trident"
     },
     {
       "name": "Backpack",
@@ -481,7 +487,7 @@
       "canEquip": true,
       "isEquipped": true,
       "refKind": "wonder",
-      "refId": "eff.backpack"
+      "refId": "backpack"
     },
     {
       "name": "Clothes, Traveler's",
@@ -491,7 +497,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": false,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "clothes-travelers"
     },
     {
       "name": "Hunting Trap",
@@ -501,7 +509,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": false,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "hunting-trap"
     },
     {
       "name": "Pouch",
@@ -511,7 +521,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": true,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "pouch"
     },
     {
       "name": "Bedroll",
@@ -523,7 +535,7 @@
       "canEquip": false,
       "isEquipped": false,
       "refKind": "wonder",
-      "refId": "eff.bedroll"
+      "refId": "bedroll"
     },
     {
       "name": "Mess Kit",
@@ -533,7 +545,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": false,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "mess-kit"
     },
     {
       "name": "Rations (1 day)",
@@ -545,7 +559,7 @@
       "canEquip": false,
       "isEquipped": false,
       "refKind": "wonder",
-      "refId": "eff.rations-1-day"
+      "refId": "rations-1-day"
     },
     {
       "name": "Rope, Hempen (50 feet)",
@@ -557,7 +571,7 @@
       "canEquip": false,
       "isEquipped": false,
       "refKind": "wonder",
-      "refId": "eff.rope-hempen-50-feet"
+      "refId": "rope-hempen-50-feet"
     },
     {
       "name": "Tinderbox",
@@ -569,7 +583,7 @@
       "canEquip": false,
       "isEquipped": false,
       "refKind": "wonder",
-      "refId": "eff.tinderbox"
+      "refId": "tinderbox"
     },
     {
       "name": "Torch",
@@ -581,7 +595,7 @@
       "canEquip": false,
       "isEquipped": false,
       "refKind": "wonder",
-      "refId": "eff.torch"
+      "refId": "torch"
     },
     {
       "name": "Waterskin",
@@ -593,7 +607,7 @@
       "canEquip": false,
       "isEquipped": false,
       "refKind": "wonder",
-      "refId": "eff.waterskin"
+      "refId": "waterskin"
     }
   ],
   "background": {
@@ -629,12 +643,6 @@
     {
       "name": "Soldier Ability Score Improvements",
       "description": "The Soldier Background allows you to choose between Strength, Dexterity, and Constitution. Increase one of these scores by 2 and another one by 1, or increase all three by 1. None of these increases can raise a score above 20.",
-      "level": null,
-      "limitedUse": null
-    },
-    {
-      "name": "Dark Bargain",
-      "description": "At your GM's discretion, you can take a Dark Bargain.",
       "level": null,
       "limitedUse": null
     }
@@ -788,11 +796,6 @@
     {
       "name": "Soldier Ability Score Improvements",
       "description": "The Soldier Background allows you to choose between Strength, Dexterity, and Constitution. Increase one of these scores by 2 and another one by 1, or increase all three by 1. None of these increases can raise a score above 20.",
-      "level": null
-    },
-    {
-      "name": "Dark Bargain",
-      "description": "At your GM's discretion, you can take a Dark Bargain.",
       "level": null
     }
   ],
@@ -1009,7 +1012,6 @@
     "feat.savage-attacker",
     "feat.sentinel",
     "feat.soldier-ability-score-improvements",
-    "feat.dark-bargain",
     "feat.barbarian-divine-fury",
     "feat.barbarian-warrior-of-the-gods",
     "feat.barbarian-fanatical-focus",

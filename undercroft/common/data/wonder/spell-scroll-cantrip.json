@@ -1,24 +1,18 @@
 {
   "index": "spell-scroll-cantrip",
-  "name": "Spell Scroll (Cantrip)",
-  "notes": "Scroll, common\n\nA spell scroll bears the words of a single spell, written in a mystical cipher. If the spell is on your class's spell list, you can read the scroll and cast its spell without providing any material components. Otherwise, the scroll is unintelligible. Casting the spell by reading the scroll requires the spell's normal casting time. Once the spell is cast, the words on the scroll fade, and it crumbles to dust. If the casting is uninterrupted, the scroll is not lost.\n\nIf the spell is on your class's spell list but of a higher level than you can normally cast, you must make an ability check using your spellcasting ability to determine whether you cast it successfully. The DC equals 10 + the spell's level. On a failed check, the spell disappears from the scroll with no other effect.\n\nThis scroll contains a cantrip. The spell's saving throw is 13 and the attack bonus is +5.",
+  "name": "Spell Scroll, Cantrip",
+  "notes": "A *Spell Scroll* (Cantrip) or *Spell Scroll* (Level 1) is a magic item that bears the words of a cantrip or level 1 spell, respectively, determined by the scroll's creator. If the spell is on your class's spell list, you can read the scroll and cast the spell using its normal casting time and without providing any Material components.\nIf the spell requires a saving throw or an attack roll, the spell save DC is 13, and the attack bonus is +5. The scroll disintegrates when the casting is completed.",
+  "price": "30 gp",
+  "weight": 0,
   "systemIds": [
     "sys.dnd5e",
     "sys.dnd5e2014"
   ],
-  "url": "https://www.dnd5eapi.co/api/2014/magic-items/spell-scroll-cantrip",
-  "mapping": "5e-api-magic-item",
+  "url": "https://www.dnd5eapi.co/api/2024/equipment/spell-scroll-cantrip",
+  "mapping": "5e-api-equipment",
   "properties": {
-    "rarity": "common",
-    "form": "scroll"
+    "form": "equipment",
+    "equipmentCategory": "adventuring-gear"
   },
-  "featureIds": [
-    "feat.cast-a-spell"
-  ],
-  "featureParams": {
-    "feat.cast-a-spell": {
-      "spellName": "the spell inscribed on it",
-      "spellLevel": 0
-    }
-  }
+  "featureIds": []
 }

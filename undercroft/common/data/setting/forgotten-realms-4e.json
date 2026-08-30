@@ -1,0 +1,149 @@
+{
+  "systemIds": [
+    "sys.dnd4e"
+  ],
+  "name": "Forgotten Realms (1479 DR, Post-Spellplague)",
+  "description": "The Forgotten Realms after 4th Edition's own great timeline jump — 1479 DR, a century after the Spellplague tore the Weave apart, drowned whole nations beneath the Sea of Fallen Stars, and remade Faerun's geography and pantheon alike. Netheril has risen from its own ancient ruin as Thay's rival, the goddess Mystra is dead and the Weave rebuilt in her absence, and the Sundering has not yet come to set things right — this is the Realms at their most transformed and unstable.",
+  "speciesWeights": [
+    {
+      "entityId": "human",
+      "weight": 40
+    },
+    {
+      "entityId": "dwarf",
+      "weight": 10
+    },
+    {
+      "entityId": "eladrin",
+      "weight": 9
+    },
+    {
+      "entityId": "elf",
+      "weight": 10
+    },
+    {
+      "entityId": "half-elf",
+      "weight": 8
+    },
+    {
+      "entityId": "halfling",
+      "weight": 7
+    },
+    {
+      "entityId": "dragonborn",
+      "weight": 8
+    },
+    {
+      "entityId": "tiefling",
+      "weight": 7
+    },
+    {
+      "entityId": "other",
+      "weight": 1
+    }
+  ],
+  "calendar": {
+    "daysPerWeek": 10,
+    "weekdayNames": [],
+    "months": [
+      {
+        "name": "Hammer",
+        "days": 30
+      },
+      {
+        "name": "Midwinter",
+        "days": 1
+      },
+      {
+        "name": "Alturiak",
+        "days": 30
+      },
+      {
+        "name": "Ches",
+        "days": 30
+      },
+      {
+        "name": "Tarsakh",
+        "days": 30
+      },
+      {
+        "name": "Greengrass",
+        "days": 1
+      },
+      {
+        "name": "Mirtul",
+        "days": 30
+      },
+      {
+        "name": "Kythorn",
+        "days": 30
+      },
+      {
+        "name": "Flamerule",
+        "days": 30
+      },
+      {
+        "name": "Midsummer",
+        "days": 1
+      },
+      {
+        "name": "Eleasis",
+        "days": 30
+      },
+      {
+        "name": "Eleint",
+        "days": 30
+      },
+      {
+        "name": "Highharvestide",
+        "days": 1
+      },
+      {
+        "name": "Marpenoth",
+        "days": 30
+      },
+      {
+        "name": "Uktar",
+        "days": 30
+      },
+      {
+        "name": "The Feast of the Moon",
+        "days": 1
+      },
+      {
+        "name": "Nightal",
+        "days": 30
+      }
+    ],
+    "moonCycles": [
+      {
+        "name": "Selune",
+        "days": 30
+      }
+    ],
+    "seasons": [
+      {
+        "name": "Winter",
+        "days": 78
+      },
+      {
+        "name": "Spring",
+        "days": 93
+      },
+      {
+        "name": "Summer",
+        "days": 93
+      },
+      {
+        "name": "Autumn",
+        "days": 90
+      },
+      {
+        "name": "Winter",
+        "days": 11
+      }
+    ],
+    "epochLabel": "DR",
+    "startingYear": 1479
+  }
+}

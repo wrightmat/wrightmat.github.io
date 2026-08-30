@@ -9,6 +9,8 @@
   "properties": {
     "form": "equipment"
   },
+  "price": "50 gp",
+  "weight": 1,
   "featureIds": [
     "feat.damage-over-time"
   ],

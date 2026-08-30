@@ -1,0 +1,30 @@
+{
+  "name": "Android",
+  "tagline": "Synthetic and searching for selfhood",
+  "description": [
+    "Built to mimic organic life and often unaware of their own manufactured origins until adulthood, androids throughout the Pact Worlds grapple openly with what it means to be more than their making."
+  ],
+  "systemIds": [
+    "sys.sf1e",
+    "sys.sf2e"
+  ],
+  "names": {
+    "nameMode": "synonym",
+    "lastNameForm": "none",
+    "firstNames": [
+      "Cipher",
+      "Vector",
+      "Ada-7",
+      "Query",
+      "Nexus",
+      "Iris-9",
+      "Relay",
+      "Cognate",
+      "Delta",
+      "Echo-3",
+      "Foxglove",
+      "Halcyon"
+    ],
+    "lastNames": []
+  }
+}

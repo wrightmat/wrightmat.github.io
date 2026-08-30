@@ -1,0 +1,17 @@
+{
+  "index": "ladder",
+  "name": "Ladder",
+  "notes": "A Ladder is 10 feet tall. You must climb to move up or down it. Lamp (5 SP)",
+  "price": "1 sp",
+  "weight": 25,
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2024/equipment/ladder",
+  "mapping": "5e-api-equipment",
+  "properties": {
+    "form": "equipment",
+    "equipmentCategory": "adventuring-gear"
+  },
+  "featureIds": []
+}

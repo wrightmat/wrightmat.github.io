@@ -1,0 +1,24 @@
+{
+  "id": "feat.versatile",
+  "name": "Versatile",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "You gain an Origin feat of your choice.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You gain an Origin feat of your choice."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

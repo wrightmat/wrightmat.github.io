@@ -1,0 +1,18 @@
+{
+  "index": "trident",
+  "name": "Trident",
+  "notes": "Damage: 1d6 Piercing\n\nRange: 5 ft.\n\nProperties: Thrown, Versatile\n\nMastery: Topple",
+  "price": "5 gp",
+  "weight": 4,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2024/equipment/trident",
+  "mapping": "5e-api-equipment",
+  "properties": {
+    "form": "weapon",
+    "weaponCategory": "martial-melee"
+  },
+  "featureIds": []
+}

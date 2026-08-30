@@ -1,0 +1,18 @@
+{
+  "index": "ink-pen",
+  "name": "Ink Pen",
+  "notes": "Using Ink, an Ink Pen is used to write or draw.",
+  "price": "2 cp",
+  "weight": 0,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2024/equipment/ink-pen",
+  "mapping": "5e-api-equipment",
+  "properties": {
+    "form": "equipment",
+    "equipmentCategory": "adventuring-gear"
+  },
+  "featureIds": []
+}

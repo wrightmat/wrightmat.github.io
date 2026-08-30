@@ -1,0 +1,33 @@
+{
+  "name": "Simiah",
+  "tagline": "Nimble, grippy, and quick to climb",
+  "description": [
+    "Ape-like beings with prehensile feet and tails, skilled at climbing, Simiah names are light and quick, suited to folk always on the move."
+  ],
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "none",
+    "firstNames": [
+      "Coko",
+      "Zia",
+      "Branno",
+      "Melu",
+      "Tikka",
+      "Wren",
+      "Kavi",
+      "Ossi",
+      "Faro",
+      "Nimba",
+      "Ruko",
+      "Sela",
+      "Vela",
+      "Yumi",
+      "Doba",
+      "Illi"
+    ],
+    "lastNames": []
+  }
+}

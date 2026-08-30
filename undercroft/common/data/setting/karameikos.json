@@ -1,0 +1,117 @@
+{
+  "systemIds": [
+    "sys.bxdnd"
+  ],
+  "name": "Grand Duchy of Karameikos",
+  "description": "The setting of the Basic Set itself — a young, formally-a-Duchy-but-effectively-a-kingdom nation on Mystara's Known World, carved out of the 'uncivilized' wilds of Traladara some thirty years ago by the Thyatian noble Stefan Karameikos. A divided land: a Traladaran majority, free-spirited and superstitious, ruled by a pragmatic, conquest-minded Thyatian nobility who never fully trust each other. The coastal capital of Specularum is civilized; the deep, wild interior very much is not — exactly the kind of frontier the Basic and Expert rules were written to send low-level adventurers into.",
+  "speciesWeights": [
+    {
+      "entityId": "human",
+      "weight": 85
+    },
+    {
+      "entityId": "dwarf",
+      "weight": 6
+    },
+    {
+      "entityId": "elf",
+      "weight": 5
+    },
+    {
+      "entityId": "halfling",
+      "weight": 3
+    },
+    {
+      "entityId": "other",
+      "weight": 1
+    }
+  ],
+  "calendar": {
+    "daysPerWeek": 7,
+    "weekdayNames": [
+      "Lunadain",
+      "Gromdain",
+      "Tserdain",
+      "Moldain",
+      "Nytdain",
+      "Loshdain",
+      "Soladain"
+    ],
+    "months": [
+      {
+        "name": "Nuwmont",
+        "days": 28
+      },
+      {
+        "name": "Vatermont",
+        "days": 28
+      },
+      {
+        "name": "Thaumont",
+        "days": 28
+      },
+      {
+        "name": "Flaurmont",
+        "days": 28
+      },
+      {
+        "name": "Yarthmont",
+        "days": 28
+      },
+      {
+        "name": "Klarmont",
+        "days": 28
+      },
+      {
+        "name": "Felmont",
+        "days": 28
+      },
+      {
+        "name": "Fyrmont",
+        "days": 28
+      },
+      {
+        "name": "Ambyrmont",
+        "days": 28
+      },
+      {
+        "name": "Sviftmont",
+        "days": 28
+      },
+      {
+        "name": "Eirmont",
+        "days": 28
+      },
+      {
+        "name": "Kaldmont",
+        "days": 28
+      }
+    ],
+    "moonCycles": [
+      {
+        "name": "Matera",
+        "days": 28
+      }
+    ],
+    "seasons": [
+      {
+        "name": "Winter",
+        "days": 84
+      },
+      {
+        "name": "Spring",
+        "days": 84
+      },
+      {
+        "name": "Summer",
+        "days": 84
+      },
+      {
+        "name": "Autumn",
+        "days": 84
+      }
+    ],
+    "epochLabel": "AC",
+    "startingYear": 1000
+  }
+}

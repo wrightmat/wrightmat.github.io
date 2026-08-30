@@ -1,0 +1,18 @@
+{
+  "index": "sprig-of-mistletoe",
+  "name": "Sprig of Mistletoe",
+  "notes": "",
+  "price": "1 gp",
+  "weight": 0,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2024/equipment/sprig-of-mistletoe",
+  "mapping": "5e-api-equipment",
+  "properties": {
+    "form": "equipment",
+    "equipmentCategory": "druidic-foci"
+  },
+  "featureIds": []
+}

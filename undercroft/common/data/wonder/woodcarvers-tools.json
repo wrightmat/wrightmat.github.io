@@ -1,0 +1,18 @@
+{
+  "index": "woodcarvers-tools",
+  "name": "Woodcarver's Tools",
+  "notes": "",
+  "price": "1 gp",
+  "weight": 5,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2024/equipment/woodcarvers-tools",
+  "mapping": "5e-api-equipment",
+  "featureIds": [],
+  "properties": {
+    "form": "equipment",
+    "equipmentCategory": "artisan-s-tools"
+  }
+}

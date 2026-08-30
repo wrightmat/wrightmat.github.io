@@ -1,0 +1,29 @@
+{
+  "index": "ball-bearings-bag-of-1000",
+  "name": "Ball bearings (bag of 1,000)",
+  "notes": "As an action, you can spill these tiny metal balls from their pouch to cover a level, square area that is 10 feet on a side.\n\nA creature moving across the covered area must succeed on a DC 10 Dexterity saving throw or fall prone.\n\nA creature moving through the area at half speed doesn't need to make the save.",
+  "price": "1 gp",
+  "weight": 2,
+  "systemIds": [
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/equipment/ball-bearings-bag-of-1000",
+  "mapping": "5e-api-equipment",
+  "properties": {
+    "form": "equipment",
+    "equipmentCategory": "adventuring-gear"
+  },
+  "featureIds": [
+    "feat.impose-condition"
+  ],
+  "featureTiers": {
+    "feat.impose-condition": "minor"
+  },
+  "featureParams": {
+    "feat.impose-condition": {
+      "condition": "prone",
+      "saveAbility": "dexterity",
+      "saveDC": 10
+    }
+  }
+}

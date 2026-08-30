@@ -1,0 +1,29 @@
+{
+  "name": "Skittermander",
+  "tagline": "Six-limbed and endlessly cheerful",
+  "description": [
+    "Small, six-limbed, and irrepressibly cooperative, skittermander throw themselves into whatever task (or friendship) is in front of them with total enthusiasm."
+  ],
+  "systemIds": [
+    "sys.sf2e"
+  ],
+  "names": {
+    "nameMode": "synonym",
+    "lastNameForm": "none",
+    "firstNames": [
+      "Scamper",
+      "Bounce",
+      "Wiggle",
+      "Chirp",
+      "Flutter",
+      "Giggle",
+      "Skitter",
+      "Tumble",
+      "Bubble",
+      "Zoom",
+      "Patter",
+      "Twirl"
+    ],
+    "lastNames": []
+  }
+}

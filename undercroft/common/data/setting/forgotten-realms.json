@@ -54,5 +54,40 @@
       "entityId": "other",
       "weight": 1
     }
-  ]
+  ],
+  "calendar": {
+    "daysPerWeek": 10,
+    "weekdayNames": [],
+    "months": [
+      { "name": "Hammer", "days": 30 },
+      { "name": "Midwinter", "days": 1 },
+      { "name": "Alturiak", "days": 30 },
+      { "name": "Ches", "days": 30 },
+      { "name": "Tarsakh", "days": 30 },
+      { "name": "Greengrass", "days": 1 },
+      { "name": "Mirtul", "days": 30 },
+      { "name": "Kythorn", "days": 30 },
+      { "name": "Flamerule", "days": 30 },
+      { "name": "Midsummer", "days": 1 },
+      { "name": "Eleasis", "days": 30 },
+      { "name": "Eleint", "days": 30 },
+      { "name": "Highharvestide", "days": 1 },
+      { "name": "Marpenoth", "days": 30 },
+      { "name": "Uktar", "days": 30 },
+      { "name": "The Feast of the Moon", "days": 1 },
+      { "name": "Nightal", "days": 30 }
+    ],
+    "moonCycles": [
+      { "name": "Selûne", "days": 30 }
+    ],
+    "seasons": [
+      { "name": "Winter", "days": 61 },
+      { "name": "Spring", "days": 91 },
+      { "name": "Summer", "days": 91 },
+      { "name": "Autumn", "days": 92 },
+      { "name": "Winter", "days": 30 }
+    ],
+    "epochLabel": "DR",
+    "startingYear": 1489
+  }
 }

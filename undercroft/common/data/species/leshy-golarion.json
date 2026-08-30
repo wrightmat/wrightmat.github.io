@@ -1,0 +1,29 @@
+{
+  "name": "Leshy",
+  "tagline": "Grown, not born",
+  "description": [
+    "Small plant creatures given life by primal magic, each leshy grows from a different seed — a fruit, a fungus, a vine, a gourd — and takes their name from the same green, growing world they sprang from."
+  ],
+  "systemIds": [
+    "sys.pf2e"
+  ],
+  "names": {
+    "nameMode": "synonym",
+    "lastNameForm": "none",
+    "firstNames": [
+      "Bramble",
+      "Petal",
+      "Sprout",
+      "Fern",
+      "Thistle",
+      "Gourd",
+      "Moss",
+      "Bloom",
+      "Vinewhisper",
+      "Sapling",
+      "Rootling",
+      "Pollen"
+    ],
+    "lastNames": []
+  }
+}

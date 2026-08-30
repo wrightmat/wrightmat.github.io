@@ -923,7 +923,9 @@
           "toHit": null,
           "dc": 12,
           "effect": "Damage",
-          "duration": " (Instantaneous)"
+          "duration": " (Instantaneous)",
+          "refKind": "wonder",
+          "refId": "burning-hands"
         }
       ]
     }

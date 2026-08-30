@@ -1,0 +1,13 @@
+{
+  "systemIds": [
+    "sys.savageworlds"
+  ],
+  "name": "Deadlands: The Weird West",
+  "description": "Savage Worlds' own original flagship setting — the game the whole system was built to run before it was ever spun off as a generic engine. An alternate 1800s American frontier where the Reckoners, a collection of evil spirits trapped in the otherdimensional Hunting Grounds, have begun turning Earth into a nightmare-fueled hellscape. Ghost rock, a mysterious super-fuel unique to this timeline, has spawned as much steampunk ingenuity as war and strife. Player characters are steely-eyed gunfighters, card-slinging sorcerers called Hucksters, mad scientists, shamans, and savage braves, all fighting to hold back the Reckoning one haunted town at a time.",
+  "speciesWeights": [
+    {
+      "entityId": "human-deadlands",
+      "weight": 100
+    }
+  ]
+}

@@ -99,6 +99,20 @@ function resolveSlot(features, slot, roleId, creatureTypeId, avoidTags, selected
   return pickRandom(best, random);
 }
 
+// Proactive readiness check for the Generate button — mirrors generateMonster's
+// own eligibility filtering exactly (same matchesSystem-filtered Archetype/
+// Role pools) so the button's disabled state and generateMonster's own actual
+// throw condition can never drift apart. Creature Type is deliberately not
+// checked here, matching generateMonster's own optionality for it.
+export function getMonsterGenerationBlockReason(allCreatureTypes, allArchetypes, allRoles, options = {}) {
+  const { systemId = null } = options;
+  const missing = [];
+  if (!allArchetypes.some((entry) => matchesSystem(entry, systemId))) missing.push("Archetype");
+  if (!allRoles.some((entry) => matchesSystem(entry, systemId))) missing.push("Role");
+  if (!missing.length) return null;
+  return `Not enough ${missing.join("/")} reference data to generate a monster.`;
+}
+
 /**
  * generateMonster(allCreatureTypes, allArchetypes, allRoles, allFeatures, options)
  *
@@ -128,8 +142,15 @@ export function generateMonster(allCreatureTypes, allArchetypes, allRoles, allFe
     || pickRandom(eligibleArchetypes, random);
   const role = (roleId && eligibleRoles.find((entry) => entry.id === roleId)) || pickRandom(eligibleRoles, random);
 
-  if (!creatureType || !archetype || !role) {
-    throw new Error("Not enough Creature Type/Archetype/Role reference data to generate a monster.");
+  // Creature Type is optional — a System that doesn't define one (e.g.
+  // Daggerheart) still generates fine without it, same as an Archetype/Role
+  // override left blank; `creatureType` just stays null throughout and
+  // `type` comes out null in the output (already rendered as "Random"/
+  // "— Unset —" by the Identity panel, same as any other unresolved axis).
+  // Archetype and Role are the only hard requirements — without them
+  // there's no recipe to traverse at all.
+  if (!archetype || !role) {
+    throw new Error("Not enough Archetype/Role reference data to generate a monster.");
   }
 
   const recipe = archetype.recipe || {};
@@ -145,7 +166,7 @@ export function generateMonster(allCreatureTypes, allArchetypes, allRoles, allFe
     : null;
   if (!signatureFeature && recipe.signatureSlot) {
     const excludeIds = new Set(lockedFeatures.map((entry) => entry.id));
-    const candidates = candidatesForSlot(features, recipe.signatureSlot, role.id, creatureType.id, avoidTags, excludeIds);
+    const candidates = candidatesForSlot(features, recipe.signatureSlot, role.id, creatureType?.id, avoidTags, excludeIds);
     signatureFeature = pickRandom(candidates, random);
   }
 
@@ -166,7 +187,7 @@ export function generateMonster(allCreatureTypes, allArchetypes, allRoles, allFe
       recipeFulfillment.requiredSlots[slot] = already.id;
       return;
     }
-    const picked = resolveSlot(features, slot, role.id, creatureType.id, avoidTags, selected, random);
+    const picked = resolveSlot(features, slot, role.id, creatureType?.id, avoidTags, selected, random);
     if (picked) {
       selected.push(picked);
       recipeFulfillment.requiredSlots[slot] = picked.id;
@@ -181,7 +202,7 @@ export function generateMonster(allCreatureTypes, allArchetypes, allRoles, allFe
       recipeFulfillment.optionalSlots[slot] = already.id;
       return;
     }
-    const picked = resolveSlot(features, slot, role.id, creatureType.id, avoidTags, selected, random);
+    const picked = resolveSlot(features, slot, role.id, creatureType?.id, avoidTags, selected, random);
     recipeFulfillment.optionalSlots[slot] = picked ? picked.id : null;
     if (picked) selected.push(picked);
   });
@@ -197,7 +218,7 @@ export function generateMonster(allCreatureTypes, allArchetypes, allRoles, allFe
     // "produced fresh at generation time" category as archetypeId/roleId
     // right below it — only its NAME changed, matching the user's own
     // explicit ask, not its place in the schema.
-    type: creatureType.id,
+    type: creatureType?.id ?? null,
     archetypeId: archetype.id,
     roleId: role.id,
     signatureFeatureId: signatureFeature ? signatureFeature.id : null,

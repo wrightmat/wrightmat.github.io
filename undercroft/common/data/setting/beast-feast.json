@@ -1,0 +1,57 @@
+{
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "name": "Beast Feast",
+  "description": "The Plover Caves — a warren of tunnels and caverns where most residents live in camps and small, permanent cabins carved straight out of the rock, and daily life runs on a communal culture of bartering and trade. Every major cavern hosts a Berry's, the ubiquitous chain of small restaurants serving the catch of the day — part meal, part social hub, part early-warning system for whatever dangerous beast is prowling the tunnels this week. The Investigators are everyday heroes from the village: hunters, cooks, and haulers who venture out on long, risky expeditions to put food on the table, building a shared cookbook of what they've caught (and survived) along the way.",
+  "speciesWeights": [
+    {
+      "entityId": "human-daggerheart",
+      "weight": 18
+    },
+    {
+      "entityId": "dwarf-daggerheart",
+      "weight": 16
+    },
+    {
+      "entityId": "goblin-daggerheart",
+      "weight": 12
+    },
+    {
+      "entityId": "galapa-daggerheart",
+      "weight": 10
+    },
+    {
+      "entityId": "fungril-daggerheart",
+      "weight": 10
+    },
+    {
+      "entityId": "firbolg-daggerheart",
+      "weight": 8
+    },
+    {
+      "entityId": "halfling-daggerheart",
+      "weight": 7
+    },
+    {
+      "entityId": "orc-daggerheart",
+      "weight": 6
+    },
+    {
+      "entityId": "ribbet-daggerheart",
+      "weight": 5
+    },
+    {
+      "entityId": "giant-daggerheart",
+      "weight": 3
+    },
+    {
+      "entityId": "katari-daggerheart",
+      "weight": 3
+    },
+    {
+      "entityId": "simiah-daggerheart",
+      "weight": 2
+    }
+  ]
+}

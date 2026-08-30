@@ -14,9 +14,9 @@
     "username": "cardinal460",
     "name": "Maris Wavedeep",
     "race": {
+      "name": "Triton",
       "refKind": "species",
-      "refId": "triton",
-      "name": "Triton"
+      "refId": "triton"
     },
     "class": "Warlock",
     "level": 6,
@@ -29,23 +29,20 @@
       {
         "name": "Warlock",
         "level": 5,
-        "refKind": "class",
-        "refId": "warlock",
         "subclass": {
+          "name": "The Fathomless (TCoE)",
           "refKind": "variant",
-          "refId": "warlock-the-fathomless",
-          "name": "The Fathomless (TCoE)"
-        }
+          "refId": "warlock-the-fathomless"
+        },
+        "refKind": "class",
+        "refId": "warlock"
       },
       {
         "name": "Sorcerer",
         "level": 1,
+        "subclass": {},
         "refKind": "class",
-        "refId": "sorcerer",
-        "subclass": {
-          "refKind": "variant",
-          "refId": ""
-        }
+        "refId": "sorcerer"
       }
     ]
   },
@@ -377,7 +374,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": true,
-      "isEquipped": true
+      "isEquipped": true,
+      "refKind": "wonder",
+      "refId": "uncommon-glamerweave"
     },
     {
       "name": "Leather",
@@ -387,7 +386,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": true,
-      "isEquipped": true
+      "isEquipped": true,
+      "refKind": "wonder",
+      "refId": "leather-armor"
     },
     {
       "name": "Dagger",
@@ -397,7 +398,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": true,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "dagger"
     },
     {
       "name": "Dagger",
@@ -407,7 +410,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": true,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "dagger"
     },
     {
       "name": "Sickle",
@@ -417,7 +422,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": true,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "sickle"
     },
     {
       "name": "Trident",
@@ -427,7 +434,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": true,
-      "isEquipped": true
+      "isEquipped": true,
+      "refKind": "wonder",
+      "refId": "trident"
     },
     {
       "name": "Parchment",
@@ -437,7 +446,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": false,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "parchment"
     },
     {
       "name": "Backpack",
@@ -447,7 +458,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": true,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "backpack"
     },
     {
       "name": "Calligrapher's Supplies",
@@ -457,7 +470,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": false,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "calligraphers-supplies"
     },
     {
       "name": "Robe",
@@ -467,7 +482,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": false,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "robe"
     },
     {
       "name": "Book",
@@ -477,7 +494,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": false,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "book"
     },
     {
       "name": "Book",
@@ -487,7 +506,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": false,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "book"
     },
     {
       "name": "Holy Symbol",
@@ -497,7 +518,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": false,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "holy-symbol"
     },
     {
       "name": "Orb",
@@ -507,7 +530,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": false,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "orb"
     },
     {
       "name": "Bedroll",
@@ -517,7 +542,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": false,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "bedroll"
     },
     {
       "name": "Mess Kit",
@@ -527,7 +554,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": false,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "mess-kit"
     },
     {
       "name": "Rations (1 day)",
@@ -537,7 +566,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": false,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "rations-1-day"
     },
     {
       "name": "Rope, Hempen (50 feet)",
@@ -547,7 +578,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": false,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "rope-hempen-50-feet"
     },
     {
       "name": "Tinderbox",
@@ -557,7 +590,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": false,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "tinderbox"
     },
     {
       "name": "Torch",
@@ -567,7 +602,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": false,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "torch"
     },
     {
       "name": "Waterskin",
@@ -577,7 +614,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": false,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "waterskin"
     },
     {
       "name": "Oil",
@@ -587,7 +626,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": false,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "oil"
     },
     {
       "name": "Parchment",
@@ -597,7 +638,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": false,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "parchment"
     },
     {
       "name": "Tinderbox",
@@ -607,7 +650,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": false,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "tinderbox"
     },
     {
       "name": "Book",
@@ -617,7 +662,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": false,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "book"
     },
     {
       "name": "Lamp",
@@ -627,7 +674,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": false,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "lamp"
     },
     {
       "name": "Ink Pen",
@@ -637,7 +686,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": false,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "ink-pen"
     },
     {
       "name": "Ink",
@@ -647,7 +698,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": false,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "ink"
     }
   ],
   "background": {
@@ -683,24 +736,6 @@
     {
       "name": "Tough",
       "description": "*Origin Feat*\n\nYour Hit Point maximum increases by an amount equal to twice your character level when you gain this feat. Whenever you gain a character level thereafter, your Hit Point maximum increases by an additional 2 Hit Points.",
-      "level": null,
-      "limitedUse": null
-    },
-    {
-      "name": "Dark Bargain",
-      "description": "At your GM's discretion, you can take a Dark Bargain.",
-      "level": null,
-      "limitedUse": null
-    },
-    {
-      "name": "Character Threads",
-      "description": "Threads are aspects added to characters at any time during their career that have a specific short or long-term goal.",
-      "level": null,
-      "limitedUse": null
-    },
-    {
-      "name": "Runestones",
-      "description": "At the beginning of the *Northlands Sagas* adventure path, each player should draw one Runestone randomly.",
       "level": null,
       "limitedUse": null
     }
@@ -834,21 +869,6 @@
     {
       "name": "Tough",
       "description": "*Origin Feat*\n\nYour Hit Point maximum increases by an amount equal to twice your character level when you gain this feat. Whenever you gain a character level thereafter, your Hit Point maximum increases by an additional 2 Hit Points.",
-      "level": null
-    },
-    {
-      "name": "Dark Bargain",
-      "description": "At your GM's discretion, you can take a Dark Bargain.",
-      "level": null
-    },
-    {
-      "name": "Character Threads",
-      "description": "Threads are aspects added to characters at any time during their career that have a specific short or long-term goal.",
-      "level": null
-    },
-    {
-      "name": "Runestones",
-      "description": "At the beginning of the *Northlands Sagas* adventure path, each player should draw one Runestone randomly.",
       "level": null
     }
   ],
@@ -1117,9 +1137,7 @@
           "toHit": null,
           "dc": 15,
           "effect": "Damage",
-          "duration": " (Instantaneous)",
-          "refKind": "wonder",
-          "refId": "lightning-lure"
+          "duration": " (Instantaneous)"
         },
         {
           "name": "Prestidigitation",
@@ -1169,9 +1187,7 @@
           "toHit": 7,
           "dc": null,
           "effect": null,
-          "duration": " (Instantaneous)",
-          "refKind": "wonder",
-          "refId": "sorcerous-burst"
+          "duration": " (Instantaneous)"
         }
       ]
     },
@@ -1307,9 +1323,7 @@
           "toHit": null,
           "dc": null,
           "effect": "Damage",
-          "duration": "1 Hour (Time)",
-          "refKind": "wonder",
-          "refId": "armor-of-agathys"
+          "duration": "1 Hour (Time)"
         },
         {
           "name": "Hellish Rebuke",
@@ -1387,9 +1401,7 @@
           "toHit": 7,
           "dc": null,
           "effect": "Damage",
-          "duration": " (Instantaneous)",
-          "refKind": "wonder",
-          "refId": "chromatic-orb"
+          "duration": " (Instantaneous)"
         }
       ]
     },
@@ -1515,9 +1527,6 @@
     "feat.noble-ability-score-improvements",
     "feat.skilled",
     "feat.tough",
-    "feat.dark-bargain",
-    "feat.character-threads",
-    "feat.runestones",
     "feat.expanded-spell-list",
     "feat.tentacle-of-the-deeps",
     "feat.gift-of-the-sea",

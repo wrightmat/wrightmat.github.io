@@ -308,6 +308,12 @@ export function initCharacterVitals(container, { dataManager, status, characterI
         row.appendChild(
           numberInput(typeof max === "number" ? max : undefined, (next) => persistBinding(resource.maxPath, next))
         );
+      } else if (typeof resource.max === "number") {
+        // A literal ceiling (e.g. Daggerheart's Hope: max 6) is fixed System
+        // data, not a per-character field — nowhere to persist an edit, so
+        // it's shown as plain text instead of an editable input.
+        row.appendChild(el("span", "text-body-secondary", "/"));
+        row.appendChild(el("span", "small", String(resource.max)));
       }
       row.appendChild(el("span", "small text-body-secondary ms-2", "Temp"));
       const tempCurrent = resource.tempPath ? resolveBinding(resource.tempPath, character) : tempHpFallback;

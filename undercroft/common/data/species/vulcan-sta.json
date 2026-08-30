@@ -1,0 +1,29 @@
+{
+  "name": "Vulcan",
+  "tagline": "Logic above all",
+  "description": [
+    "Devoted to logic and the suppression of emotion, Vulcans descend from a people who nearly destroyed themselves through passion before Surak's teachings brought them back from the brink."
+  ],
+  "systemIds": [
+    "sys.sta"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "none",
+    "firstNames": [
+      "Spock",
+      "T'Pol",
+      "Tuvok",
+      "Sarek",
+      "T'Pring",
+      "Stonn",
+      "Saavik",
+      "T'Lar",
+      "Solok",
+      "T'Rul",
+      "Sevrin",
+      "T'Vis"
+    ],
+    "lastNames": []
+  }
+}

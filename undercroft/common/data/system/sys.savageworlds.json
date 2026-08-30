@@ -1,0 +1,870 @@
+{
+  "title": "Savage Worlds",
+  "version": "0.1",
+  "fields": [
+    {
+      "type": "string",
+      "key": "name",
+      "label": "Character Name",
+      "required": true
+    },
+    {
+      "type": "string",
+      "key": "player",
+      "label": "Player Name"
+    },
+    {
+      "type": "boolean",
+      "key": "wildCard",
+      "label": "Wild Card",
+      "default": true
+    },
+    {
+      "type": "array",
+      "key": "traitDie",
+      "label": "Trait Die",
+      "values": [
+        {
+          "name": "d4",
+          "sides": 4
+        },
+        {
+          "name": "d6",
+          "sides": 6
+        },
+        {
+          "name": "d8",
+          "sides": 8
+        },
+        {
+          "name": "d10",
+          "sides": 10
+        },
+        {
+          "name": "d12",
+          "sides": 12
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "attributes",
+      "label": "Attributes",
+      "children": [
+        {
+          "type": "string",
+          "key": "attributes.agility",
+          "label": "Agility",
+          "variant": "select",
+          "sourceBinding": "@traitDie",
+          "default": "d4"
+        },
+        {
+          "type": "string",
+          "key": "attributes.smarts",
+          "label": "Smarts",
+          "variant": "select",
+          "sourceBinding": "@traitDie",
+          "default": "d4"
+        },
+        {
+          "type": "string",
+          "key": "attributes.spirit",
+          "label": "Spirit",
+          "variant": "select",
+          "sourceBinding": "@traitDie",
+          "default": "d4"
+        },
+        {
+          "type": "string",
+          "key": "attributes.strength",
+          "label": "Strength",
+          "variant": "select",
+          "sourceBinding": "@traitDie",
+          "default": "d4"
+        },
+        {
+          "type": "string",
+          "key": "attributes.vigor",
+          "label": "Vigor",
+          "variant": "select",
+          "sourceBinding": "@traitDie",
+          "default": "d4"
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "skills",
+      "label": "Skills",
+      "children": [
+        {
+          "type": "string",
+          "key": "skills.athletics",
+          "label": "Athletics",
+          "governingAttribute": "Agility",
+          "variant": "select",
+          "sourceBinding": "@traitDie",
+          "default": "d4"
+        },
+        {
+          "type": "string",
+          "key": "skills.battle",
+          "label": "Battle",
+          "governingAttribute": "Smarts",
+          "variant": "select",
+          "sourceBinding": "@traitDie",
+          "default": "d4"
+        },
+        {
+          "type": "string",
+          "key": "skills.boating",
+          "label": "Boating",
+          "governingAttribute": "Agility",
+          "variant": "select",
+          "sourceBinding": "@traitDie",
+          "default": "d4"
+        },
+        {
+          "type": "string",
+          "key": "skills.commonknowledge",
+          "label": "Common Knowledge",
+          "governingAttribute": "Smarts",
+          "variant": "select",
+          "sourceBinding": "@traitDie",
+          "default": "d4"
+        },
+        {
+          "type": "string",
+          "key": "skills.driving",
+          "label": "Driving",
+          "governingAttribute": "Agility",
+          "variant": "select",
+          "sourceBinding": "@traitDie",
+          "default": "d4"
+        },
+        {
+          "type": "string",
+          "key": "skills.fighting",
+          "label": "Fighting",
+          "governingAttribute": "Agility",
+          "variant": "select",
+          "sourceBinding": "@traitDie",
+          "default": "d4"
+        },
+        {
+          "type": "string",
+          "key": "skills.gambling",
+          "label": "Gambling",
+          "governingAttribute": "Smarts",
+          "variant": "select",
+          "sourceBinding": "@traitDie",
+          "default": "d4"
+        },
+        {
+          "type": "string",
+          "key": "skills.hacking",
+          "label": "Hacking",
+          "governingAttribute": "Smarts",
+          "variant": "select",
+          "sourceBinding": "@traitDie",
+          "default": "d4"
+        },
+        {
+          "type": "string",
+          "key": "skills.healing",
+          "label": "Healing",
+          "governingAttribute": "Smarts",
+          "variant": "select",
+          "sourceBinding": "@traitDie",
+          "default": "d4"
+        },
+        {
+          "type": "string",
+          "key": "skills.intimidation",
+          "label": "Intimidation",
+          "governingAttribute": "Spirit",
+          "variant": "select",
+          "sourceBinding": "@traitDie",
+          "default": "d4"
+        },
+        {
+          "type": "string",
+          "key": "skills.investigation",
+          "label": "Investigation",
+          "governingAttribute": "Smarts",
+          "variant": "select",
+          "sourceBinding": "@traitDie",
+          "default": "d4"
+        },
+        {
+          "type": "string",
+          "key": "skills.notice",
+          "label": "Notice",
+          "governingAttribute": "Smarts",
+          "variant": "select",
+          "sourceBinding": "@traitDie",
+          "default": "d4"
+        },
+        {
+          "type": "string",
+          "key": "skills.occult",
+          "label": "Occult",
+          "governingAttribute": "Smarts",
+          "variant": "select",
+          "sourceBinding": "@traitDie",
+          "default": "d4"
+        },
+        {
+          "type": "string",
+          "key": "skills.performance",
+          "label": "Performance",
+          "governingAttribute": "Spirit",
+          "variant": "select",
+          "sourceBinding": "@traitDie",
+          "default": "d4"
+        },
+        {
+          "type": "string",
+          "key": "skills.persuasion",
+          "label": "Persuasion",
+          "governingAttribute": "Spirit",
+          "variant": "select",
+          "sourceBinding": "@traitDie",
+          "default": "d4"
+        },
+        {
+          "type": "string",
+          "key": "skills.piloting",
+          "label": "Piloting",
+          "governingAttribute": "Agility",
+          "variant": "select",
+          "sourceBinding": "@traitDie",
+          "default": "d4"
+        },
+        {
+          "type": "string",
+          "key": "skills.repair",
+          "label": "Repair",
+          "governingAttribute": "Smarts",
+          "variant": "select",
+          "sourceBinding": "@traitDie",
+          "default": "d4"
+        },
+        {
+          "type": "string",
+          "key": "skills.research",
+          "label": "Research",
+          "governingAttribute": "Smarts",
+          "variant": "select",
+          "sourceBinding": "@traitDie",
+          "default": "d4"
+        },
+        {
+          "type": "string",
+          "key": "skills.riding",
+          "label": "Riding",
+          "governingAttribute": "Agility",
+          "variant": "select",
+          "sourceBinding": "@traitDie",
+          "default": "d4"
+        },
+        {
+          "type": "string",
+          "key": "skills.science",
+          "label": "Science",
+          "governingAttribute": "Smarts",
+          "variant": "select",
+          "sourceBinding": "@traitDie",
+          "default": "d4"
+        },
+        {
+          "type": "string",
+          "key": "skills.shooting",
+          "label": "Shooting",
+          "governingAttribute": "Agility",
+          "variant": "select",
+          "sourceBinding": "@traitDie",
+          "default": "d4"
+        },
+        {
+          "type": "string",
+          "key": "skills.spellcasting",
+          "label": "Spellcasting",
+          "governingAttribute": "Smarts",
+          "variant": "select",
+          "sourceBinding": "@traitDie",
+          "default": "d4"
+        },
+        {
+          "type": "string",
+          "key": "skills.stealth",
+          "label": "Stealth",
+          "governingAttribute": "Agility",
+          "variant": "select",
+          "sourceBinding": "@traitDie",
+          "default": "d4"
+        },
+        {
+          "type": "string",
+          "key": "skills.survival",
+          "label": "Survival",
+          "governingAttribute": "Smarts",
+          "variant": "select",
+          "sourceBinding": "@traitDie",
+          "default": "d4"
+        },
+        {
+          "type": "string",
+          "key": "skills.taunt",
+          "label": "Taunt",
+          "governingAttribute": "Smarts",
+          "variant": "select",
+          "sourceBinding": "@traitDie",
+          "default": "d4"
+        },
+        {
+          "type": "string",
+          "key": "skills.thievery",
+          "label": "Thievery",
+          "governingAttribute": "Agility",
+          "variant": "select",
+          "sourceBinding": "@traitDie",
+          "default": "d4"
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "combatStats",
+      "label": "Combat Stats",
+      "children": [
+        {
+          "type": "number",
+          "key": "combatStats.pace",
+          "label": "Pace",
+          "minimum": 0,
+          "default": 6
+        },
+        {
+          "type": "number",
+          "key": "combatStats.parry",
+          "label": "Parry",
+          "minimum": 0
+        },
+        {
+          "type": "number",
+          "key": "combatStats.toughness",
+          "label": "Toughness",
+          "minimum": 0
+        },
+        {
+          "type": "number",
+          "key": "combatStats.armor",
+          "label": "Armor",
+          "minimum": 0
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "wounds",
+      "label": "Wounds",
+      "children": [
+        {
+          "type": "number",
+          "key": "wounds.current",
+          "label": "Current",
+          "minimum": 0,
+          "maximum": 3
+        },
+        {
+          "type": "boolean",
+          "key": "wounds.incapacitated",
+          "label": "Incapacitated"
+        },
+        {
+          "type": "boolean",
+          "key": "wounds.shaken",
+          "label": "Shaken"
+        }
+      ]
+    },
+    {
+      "type": "number",
+      "key": "bennies",
+      "label": "Bennies",
+      "minimum": 0,
+      "default": 3
+    },
+    {
+      "type": "number",
+      "key": "experience",
+      "label": "Experience",
+      "minimum": 0
+    },
+    {
+      "type": "string",
+      "key": "rank",
+      "label": "Rank"
+    },
+    {
+      "type": "array",
+      "key": "edges",
+      "label": "Edges",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Edge"
+        },
+        {
+          "type": "string",
+          "key": "notes",
+          "label": "Notes"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "hindrances",
+      "label": "Hindrances",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Hindrance"
+        },
+        {
+          "type": "string",
+          "key": "severity",
+          "label": "Severity"
+        },
+        {
+          "type": "string",
+          "key": "notes",
+          "label": "Notes"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "inventory",
+      "label": "Gear",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Item Name",
+          "required": true
+        },
+        {
+          "type": "number",
+          "key": "quantity",
+          "label": "Quantity",
+          "minimum": 0
+        },
+        {
+          "type": "number",
+          "key": "weight",
+          "label": "Weight",
+          "minimum": 0
+        },
+        {
+          "type": "string",
+          "key": "notes",
+          "label": "Notes"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "currency",
+      "label": "Currency",
+      "values": [
+        {
+          "name": "Dollar",
+          "shortName": "$",
+          "cost": 1
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "equipmentCategories",
+      "label": "Equipment Categories",
+      "values": [
+        {
+          "name": "Melee Weapon"
+        },
+        {
+          "name": "Ranged Weapon"
+        },
+        {
+          "name": "Armor"
+        },
+        {
+          "name": "Ammunition"
+        },
+        {
+          "name": "Gear"
+        },
+        {
+          "name": "Vehicle"
+        },
+        {
+          "name": "Power/Arcane Item"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "rarity",
+      "label": "Rarity",
+      "values": [
+        {
+          "name": "Common",
+          "targetBudget": 3,
+          "description": "Ordinary gear, freely available."
+        },
+        {
+          "name": "Uncommon",
+          "targetBudget": 6,
+          "description": "Specialist or restricted equipment."
+        },
+        {
+          "name": "Rare",
+          "targetBudget": 10,
+          "description": "Hard to find, expensive, or setting-specific."
+        },
+        {
+          "name": "Legendary",
+          "targetBudget": 16,
+          "description": "A singular, one-of-a-kind item."
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "damageTypes",
+      "label": "Damage Types",
+      "values": [
+        {
+          "name": "Physical"
+        },
+        {
+          "name": "Fire"
+        },
+        {
+          "name": "Cold"
+        },
+        {
+          "name": "Electricity"
+        },
+        {
+          "name": "Poison"
+        },
+        {
+          "name": "Arcane"
+        },
+        {
+          "name": "Fear"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "environment",
+      "label": "Environment",
+      "values": [
+        {
+          "name": "Frontier"
+        },
+        {
+          "name": "Wilderness"
+        },
+        {
+          "name": "Urban"
+        },
+        {
+          "name": "Ghost Town"
+        },
+        {
+          "name": "Battlefield"
+        },
+        {
+          "name": "Supernatural"
+        },
+        {
+          "name": "High Seas"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "combatScaling",
+      "label": "Rank",
+      "values": [
+        {
+          "name": "Novice",
+          "shortName": "Novice",
+          "sourceId": 1,
+          "xp": 0,
+          "targetBudget": 3
+        },
+        {
+          "name": "Seasoned",
+          "shortName": "Seasoned",
+          "sourceId": 2,
+          "xp": 20,
+          "targetBudget": 5
+        },
+        {
+          "name": "Veteran",
+          "shortName": "Veteran",
+          "sourceId": 3,
+          "xp": 40,
+          "targetBudget": 8
+        },
+        {
+          "name": "Heroic",
+          "shortName": "Heroic",
+          "sourceId": 4,
+          "xp": 80,
+          "targetBudget": 11
+        },
+        {
+          "name": "Legendary",
+          "shortName": "Legendary",
+          "sourceId": 5,
+          "xp": 120,
+          "targetBudget": 14
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "combatBindings",
+      "label": "Combat Bindings",
+      "values": [
+        {
+          "name": "Bennies",
+          "binding": "@bennies",
+          "role": "resource"
+        },
+        {
+          "name": "Wounds",
+          "binding": "@wounds.current",
+          "max": 3,
+          "role": "resource"
+        },
+        {
+          "name": "Toughness",
+          "binding": "@combatStats.toughness",
+          "role": "value"
+        },
+        {
+          "name": "Parry",
+          "binding": "@combatStats.parry",
+          "role": "value"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "dice",
+      "label": "Dice",
+      "values": [
+        {
+          "name": "d4",
+          "sides": 4
+        },
+        {
+          "name": "d6",
+          "sides": 6
+        },
+        {
+          "name": "d8",
+          "sides": 8
+        },
+        {
+          "name": "d10",
+          "sides": 10
+        },
+        {
+          "name": "d12",
+          "sides": 12
+        },
+        {
+          "name": "d20",
+          "sides": 20
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "rolls",
+      "label": "Rolls",
+      "values": [
+        {
+          "name": "Trait Roll (d4, Wild Die)",
+          "expression": "max(d4!,d6!)",
+          "resultMode": "band",
+          "description": "Roll a d4 (the trait's own die) and a d6 (the Wild Die) together, both Acing (exploding on their own max face), and take the higher single result — this is exactly what happens at the table, not an approximation. 4+ is a Success; every 4 over that is a Raise. A non-Wild-Card (an Extra) skips the Wild Die entirely and just rolls the plain d4 — use the standalone d4 quick-dice button for that instead of this Move.",
+          "bands": [
+            {
+              "min": 16,
+              "label": "Success with 3 Raises"
+            },
+            {
+              "min": 12,
+              "max": 15,
+              "label": "Success with 2 Raises"
+            },
+            {
+              "min": 8,
+              "max": 11,
+              "label": "Success with 1 Raise"
+            },
+            {
+              "min": 4,
+              "max": 7,
+              "label": "Success"
+            },
+            {
+              "max": 3,
+              "label": "Failure"
+            }
+          ]
+        },
+        {
+          "name": "Trait Roll (d6, Wild Die)",
+          "expression": "max(d6!,d6!)",
+          "resultMode": "band",
+          "description": "Roll a d6 (the trait's own die) and a d6 (the Wild Die) together, both Acing (exploding on their own max face), and take the higher single result — this is exactly what happens at the table, not an approximation. 4+ is a Success; every 4 over that is a Raise. A non-Wild-Card (an Extra) skips the Wild Die entirely and just rolls the plain d6 — use the standalone d6 quick-dice button for that instead of this Move.",
+          "bands": [
+            {
+              "min": 16,
+              "label": "Success with 3 Raises"
+            },
+            {
+              "min": 12,
+              "max": 15,
+              "label": "Success with 2 Raises"
+            },
+            {
+              "min": 8,
+              "max": 11,
+              "label": "Success with 1 Raise"
+            },
+            {
+              "min": 4,
+              "max": 7,
+              "label": "Success"
+            },
+            {
+              "max": 3,
+              "label": "Failure"
+            }
+          ]
+        },
+        {
+          "name": "Trait Roll (d8, Wild Die)",
+          "expression": "max(d8!,d6!)",
+          "resultMode": "band",
+          "description": "Roll a d8 (the trait's own die) and a d6 (the Wild Die) together, both Acing (exploding on their own max face), and take the higher single result — this is exactly what happens at the table, not an approximation. 4+ is a Success; every 4 over that is a Raise. A non-Wild-Card (an Extra) skips the Wild Die entirely and just rolls the plain d8 — use the standalone d8 quick-dice button for that instead of this Move.",
+          "bands": [
+            {
+              "min": 16,
+              "label": "Success with 3 Raises"
+            },
+            {
+              "min": 12,
+              "max": 15,
+              "label": "Success with 2 Raises"
+            },
+            {
+              "min": 8,
+              "max": 11,
+              "label": "Success with 1 Raise"
+            },
+            {
+              "min": 4,
+              "max": 7,
+              "label": "Success"
+            },
+            {
+              "max": 3,
+              "label": "Failure"
+            }
+          ]
+        },
+        {
+          "name": "Trait Roll (d10, Wild Die)",
+          "expression": "max(d10!,d6!)",
+          "resultMode": "band",
+          "description": "Roll a d10 (the trait's own die) and a d6 (the Wild Die) together, both Acing (exploding on their own max face), and take the higher single result — this is exactly what happens at the table, not an approximation. 4+ is a Success; every 4 over that is a Raise. A non-Wild-Card (an Extra) skips the Wild Die entirely and just rolls the plain d10 — use the standalone d10 quick-dice button for that instead of this Move.",
+          "bands": [
+            {
+              "min": 16,
+              "label": "Success with 3 Raises"
+            },
+            {
+              "min": 12,
+              "max": 15,
+              "label": "Success with 2 Raises"
+            },
+            {
+              "min": 8,
+              "max": 11,
+              "label": "Success with 1 Raise"
+            },
+            {
+              "min": 4,
+              "max": 7,
+              "label": "Success"
+            },
+            {
+              "max": 3,
+              "label": "Failure"
+            }
+          ]
+        },
+        {
+          "name": "Trait Roll (d12, Wild Die)",
+          "expression": "max(d12!,d6!)",
+          "resultMode": "band",
+          "description": "Roll a d12 (the trait's own die) and a d6 (the Wild Die) together, both Acing (exploding on their own max face), and take the higher single result — this is exactly what happens at the table, not an approximation. 4+ is a Success; every 4 over that is a Raise. A non-Wild-Card (an Extra) skips the Wild Die entirely and just rolls the plain d12 — use the standalone d12 quick-dice button for that instead of this Move.",
+          "bands": [
+            {
+              "min": 16,
+              "label": "Success with 3 Raises"
+            },
+            {
+              "min": 12,
+              "max": 15,
+              "label": "Success with 2 Raises"
+            },
+            {
+              "min": 8,
+              "max": 11,
+              "label": "Success with 1 Raise"
+            },
+            {
+              "min": 4,
+              "max": 7,
+              "label": "Success"
+            },
+            {
+              "max": 3,
+              "label": "Failure"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

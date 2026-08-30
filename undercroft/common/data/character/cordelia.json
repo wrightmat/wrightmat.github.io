@@ -14,9 +14,9 @@
     "username": "kheathcomo",
     "name": "Cordelia",
     "race": {
+      "name": "Sea Elf",
       "refKind": "species",
-      "refId": "sea-elf",
-      "name": "Sea Elf"
+      "refId": "sea-elf"
     },
     "class": "Druid",
     "level": 6,
@@ -29,13 +29,13 @@
       {
         "name": "Druid",
         "level": 6,
-        "refKind": "class",
-        "refId": "druid",
         "subclass": {
+          "name": "Circle of the Sea",
           "refKind": "variant",
-          "refId": "druid-circle-of-the-sea",
-          "name": "Circle of the Sea"
-        }
+          "refId": "druid-circle-of-the-sea"
+        },
+        "refKind": "class",
+        "refId": "druid"
       }
     ]
   },
@@ -373,7 +373,10 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": true,
-      "isEquipped": true
+      "isEquipped": true,
+      "customName": "Coral Dagger",
+      "refKind": "wonder",
+      "refId": "dagger-2"
     },
     {
       "name": "Scale Mail",
@@ -383,7 +386,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": true,
-      "isEquipped": true
+      "isEquipped": true,
+      "refKind": "wonder",
+      "refId": "scale-mail"
     },
     {
       "name": "Shield",
@@ -393,7 +398,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": true,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "shield"
     },
     {
       "name": "Leather",
@@ -403,7 +410,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": true,
-      "isEquipped": true
+      "isEquipped": true,
+      "refKind": "wonder",
+      "refId": "leather-armor"
     },
     {
       "name": "Quarterstaff",
@@ -413,7 +422,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": true,
-      "isEquipped": true
+      "isEquipped": true,
+      "refKind": "wonder",
+      "refId": "quarterstaff"
     },
     {
       "name": "Shortbow",
@@ -423,7 +434,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": true,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "shortbow"
     },
     {
       "name": "Backpack",
@@ -433,7 +446,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": true,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "backpack"
     },
     {
       "name": "Cartographer's Tools",
@@ -443,7 +458,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": false,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "cartographer-tools"
     },
     {
       "name": "Bedroll",
@@ -453,7 +470,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": false,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "bedroll"
     },
     {
       "name": "Tent",
@@ -463,7 +482,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": false,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "tent"
     },
     {
       "name": "Herbalism Kit",
@@ -473,7 +494,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": false,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "herbalism-kit"
     },
     {
       "name": "Arrows",
@@ -483,7 +506,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": true,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "arrows"
     },
     {
       "name": "Staff",
@@ -493,7 +518,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": true,
-      "isEquipped": true
+      "isEquipped": true,
+      "refKind": "wonder",
+      "refId": "staff"
     },
     {
       "name": "Traveler's Clothes",
@@ -513,7 +540,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": true,
-      "isEquipped": true
+      "isEquipped": true,
+      "refKind": "wonder",
+      "refId": "sickle"
     },
     {
       "name": "Oil",
@@ -523,7 +552,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": false,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "oil"
     },
     {
       "name": "Rations",
@@ -533,7 +564,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": false,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "rations"
     },
     {
       "name": "Rope",
@@ -543,7 +576,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": false,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "rope"
     },
     {
       "name": "Bedroll",
@@ -553,7 +588,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": false,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "bedroll"
     },
     {
       "name": "Tinderbox",
@@ -563,7 +600,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": false,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "tinderbox"
     },
     {
       "name": "Torch",
@@ -573,7 +612,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": false,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "torch"
     },
     {
       "name": "Waterskin",
@@ -583,7 +624,9 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": false,
-      "isEquipped": false
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "waterskin"
     }
   ],
   "background": {
@@ -607,12 +650,6 @@
     {
       "name": "Magic Initiate (Druid)",
       "description": "*Origin Feat*\n\nYou gain the following benefits.\n\n***Two Cantrips.*** You learn two cantrips of your choice from the Druid spell list. Intelligence, Wisdom, or Charisma is your spellcasting ability for this feat’s spells (choose when you select this feat).\n\n***Level 1 Spell.** *Choose a level 1 spell from the same list you selected for this feat’s cantrips. You always have that spell prepared. You can cast it once without a spell slot, and you regain the ability to cast it in that way when you finish a Long Rest. You can also cast the spell using any spell slots you have.\n\n***Spell Change.*** Whenever you gain a new level, you can replace one of the spells you chose for this feat with a different spell of the same level from the chosen spell list.\n\n***Repeatable.*** You can take this feat more than once, but you must choose a different spell list each time.",
-      "level": null,
-      "limitedUse": null
-    },
-    {
-      "name": "Dark Bargain",
-      "description": "At your GM's discretion, you can take a Dark Bargain.",
       "level": null,
       "limitedUse": null
     }
@@ -741,11 +778,6 @@
     {
       "name": "Magic Initiate (Druid)",
       "description": "*Origin Feat*\n\nYou gain the following benefits.\n\n***Two Cantrips.*** You learn two cantrips of your choice from the Druid spell list. Intelligence, Wisdom, or Charisma is your spellcasting ability for this feat’s spells (choose when you select this feat).\n\n***Level 1 Spell.** *Choose a level 1 spell from the same list you selected for this feat’s cantrips. You always have that spell prepared. You can cast it once without a spell slot, and you regain the ability to cast it in that way when you finish a Long Rest. You can also cast the spell using any spell slots you have.\n\n***Spell Change.*** Whenever you gain a new level, you can replace one of the spells you chose for this feat with a different spell of the same level from the chosen spell list.\n\n***Repeatable.*** You can take this feat more than once, but you must choose a different spell list each time.",
-      "level": null
-    },
-    {
-      "name": "Dark Bargain",
-      "description": "At your GM's discretion, you can take a Dark Bargain.",
       "level": null
     }
   ],
@@ -984,9 +1016,7 @@
           "toHit": 7,
           "dc": null,
           "effect": null,
-          "duration": " (Instantaneous)",
-          "refKind": "wonder",
-          "refId": "starry-wisp"
+          "duration": " (Instantaneous)"
         },
         {
           "name": "Water Whip",
@@ -1010,9 +1040,7 @@
           "toHit": 7,
           "dc": 15,
           "effect": null,
-          "duration": " (Instantaneous)",
-          "refKind": "wonder",
-          "refId": "water-whip"
+          "duration": " (Instantaneous)"
         },
         {
           "name": "Shape Water",
@@ -1035,9 +1063,7 @@
           "toHit": null,
           "dc": null,
           "effect": "Control",
-          "duration": " (Instantaneous)",
-          "refKind": "wonder",
-          "refId": "shape-water"
+          "duration": " (Instantaneous)"
         }
       ]
     },
@@ -1144,9 +1170,7 @@
           "toHit": 7,
           "dc": 15,
           "effect": "Damage",
-          "duration": " (Instantaneous)",
-          "refKind": "wonder",
-          "refId": "ice-knife"
+          "duration": " (Instantaneous)"
         },
         {
           "name": "Entangle",
@@ -1247,9 +1271,7 @@
           "toHit": null,
           "dc": null,
           "effect": "Damage",
-          "duration": "1 Round (Time)",
-          "refKind": "wonder",
-          "refId": "absorb-elements"
+          "duration": "1 Round (Time)"
         }
       ]
     },
@@ -1306,9 +1328,7 @@
           "toHit": null,
           "dc": 15,
           "effect": null,
-          "duration": " (Instantaneous)",
-          "refKind": "wonder",
-          "refId": "wither-and-bloom"
+          "duration": " (Instantaneous)"
         },
         {
           "name": "Moonbeam",
@@ -1375,7 +1395,6 @@
     "feat.ability-score-improvement",
     "feat.guide-ability-score-improvements",
     "feat.magic-initiate-druid",
-    "feat.dark-bargain",
     "feat.druid-circle-of-the-sea-spells",
     "feat.druid-wrath-of-the-sea",
     "feat.druid-aquatic-affinity",

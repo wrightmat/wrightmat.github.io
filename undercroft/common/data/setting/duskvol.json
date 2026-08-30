@@ -6,12 +6,32 @@
   "description": "The industrial-occult heart of the Blades in the Dark setting — a lightning-powered city built on reclaimed sea floor, walled off from the ghost-haunted Deathlands by electroplasm barriers, and packed with refugees from all six Isles since the Shattering.",
   "speciesWeights": [
     {
-      "entityId": "human",
-      "weight": 95
+      "entityId": "akorosian",
+      "weight": 30
+    },
+    {
+      "entityId": "skovlander",
+      "weight": 16
+    },
+    {
+      "entityId": "severosi",
+      "weight": 16
+    },
+    {
+      "entityId": "iruvian",
+      "weight": 16
+    },
+    {
+      "entityId": "tycherosi",
+      "weight": 12
+    },
+    {
+      "entityId": "dagger-islander",
+      "weight": 8
     },
     {
       "entityId": "other",
-      "weight": 5
+      "weight": 2
     }
   ]
 }

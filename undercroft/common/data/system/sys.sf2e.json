@@ -1,0 +1,1479 @@
+{
+  "title": "Starfinder 2E",
+  "version": "0.1",
+  "fields": [
+    {
+      "type": "string",
+      "key": "name",
+      "label": "Character Name",
+      "required": true
+    },
+    {
+      "type": "string",
+      "key": "player",
+      "label": "Player Name"
+    },
+    {
+      "type": "array",
+      "key": "ancestries",
+      "label": "Ancestry",
+      "values": [
+        {
+          "name": "Android",
+          "description": "Synthetic humanoids built to mimic organic life, navigating what it means to be more than their making."
+        },
+        {
+          "name": "Barathu",
+          "description": "Amphibious, telepathic crustacean-like folk from a hive-based aquatic society."
+        },
+        {
+          "name": "Human",
+          "description": "Adaptable and widespread throughout the Pact Worlds, from Absalom Station to the frontier."
+        },
+        {
+          "name": "Kasatha",
+          "description": "Four-armed, wind-touched nomads originally from Akiton, natural void-sailors."
+        },
+        {
+          "name": "Lashunta",
+          "description": "A telepathic, matriarchal humanoid species from the jungle world of Castrovel."
+        },
+        {
+          "name": "Pahtra",
+          "description": "Feline humanoids with a strong warrior-clan tradition and keen senses."
+        },
+        {
+          "name": "Shirren",
+          "description": "Insectoid folk freed from a hive-mind, treasuring the individuality they fought to gain."
+        },
+        {
+          "name": "Skittermander",
+          "description": "Small, six-limbed, endlessly cheerful and cooperative humanoids."
+        },
+        {
+          "name": "Vesk",
+          "description": "A militaristic, reptilian warrior species whose empire rivals the Pact Worlds."
+        },
+        {
+          "name": "Ysoki",
+          "description": "Small, ratlike folk known for their curiosity, quick hands, and knack for tinkering."
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "backgrounds",
+      "label": "Background",
+      "values": [
+        {
+          "name": "Ace Pilot"
+        },
+        {
+          "name": "Bounty Hunter"
+        },
+        {
+          "name": "Colonist"
+        },
+        {
+          "name": "Corporate Agent"
+        },
+        {
+          "name": "Courier"
+        },
+        {
+          "name": "Diplomat"
+        },
+        {
+          "name": "Explorer"
+        },
+        {
+          "name": "Field Medic"
+        },
+        {
+          "name": "Gang Member"
+        },
+        {
+          "name": "Icon"
+        },
+        {
+          "name": "Mercenary"
+        },
+        {
+          "name": "Outlaw"
+        },
+        {
+          "name": "Prospector"
+        },
+        {
+          "name": "Scavenger"
+        },
+        {
+          "name": "Scholar"
+        },
+        {
+          "name": "Spacer"
+        },
+        {
+          "name": "Technician"
+        },
+        {
+          "name": "Xenobiologist"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "classes",
+      "label": "Class",
+      "values": [
+        {
+          "name": "Envoy",
+          "description": "A social specialist who inspires allies and manipulates the battlefield with words."
+        },
+        {
+          "name": "Mystic",
+          "description": "A spellcaster who draws on a mystical connection rather than technology or study."
+        },
+        {
+          "name": "Operative",
+          "description": "A precise specialist who relies on skill, stealth, and a lethal trick attack."
+        },
+        {
+          "name": "Solarian",
+          "description": "A warrior attuned to stellar forces, channeling the power of stars and gravity."
+        },
+        {
+          "name": "Soldier",
+          "description": "A frontline combatant trained in a wide range of weapons and combat styles."
+        },
+        {
+          "name": "Witchwarper",
+          "description": "A reality-bending spellcaster who warps probability and alternate possibilities."
+        }
+      ]
+    },
+    {
+      "type": "number",
+      "key": "level",
+      "label": "Level",
+      "minimum": 1,
+      "maximum": 20
+    },
+    {
+      "type": "array",
+      "key": "alignments",
+      "label": "Alignment",
+      "values": [
+        {
+          "name": "Lawful Good",
+          "shortName": "LG"
+        },
+        {
+          "name": "Neutral Good",
+          "shortName": "NG"
+        },
+        {
+          "name": "Chaotic Good",
+          "shortName": "CG"
+        },
+        {
+          "name": "Lawful Neutral",
+          "shortName": "LN"
+        },
+        {
+          "name": "True Neutral",
+          "shortName": "N"
+        },
+        {
+          "name": "Chaotic Neutral",
+          "shortName": "CN"
+        },
+        {
+          "name": "Lawful Evil",
+          "shortName": "LE"
+        },
+        {
+          "name": "Neutral Evil",
+          "shortName": "NE"
+        },
+        {
+          "name": "Chaotic Evil",
+          "shortName": "CE"
+        }
+      ]
+    },
+    {
+      "type": "string",
+      "key": "heritage",
+      "label": "Heritage"
+    },
+    {
+      "type": "string",
+      "key": "homeworld",
+      "label": "Homeworld"
+    },
+    {
+      "type": "object",
+      "key": "abilities",
+      "label": "Ability Modifiers",
+      "children": [
+        {
+          "type": "number",
+          "key": "abilities.strength",
+          "label": "Strength",
+          "shortName": "STR",
+          "color": "#e74c3c",
+          "minimum": -5,
+          "maximum": 10
+        },
+        {
+          "type": "number",
+          "key": "abilities.dexterity",
+          "label": "Dexterity",
+          "shortName": "DEX",
+          "color": "#f1c40f",
+          "minimum": -5,
+          "maximum": 10
+        },
+        {
+          "type": "number",
+          "key": "abilities.constitution",
+          "label": "Constitution",
+          "shortName": "CON",
+          "color": "#e67e22",
+          "minimum": -5,
+          "maximum": 10
+        },
+        {
+          "type": "number",
+          "key": "abilities.intelligence",
+          "label": "Intelligence",
+          "shortName": "INT",
+          "color": "#3498db",
+          "minimum": -5,
+          "maximum": 10
+        },
+        {
+          "type": "number",
+          "key": "abilities.wisdom",
+          "label": "Wisdom",
+          "shortName": "WIS",
+          "color": "#2ecc71",
+          "minimum": -5,
+          "maximum": 10
+        },
+        {
+          "type": "number",
+          "key": "abilities.charisma",
+          "label": "Charisma",
+          "shortName": "CHA",
+          "color": "#9b59b6",
+          "minimum": -5,
+          "maximum": 10
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "proficiencyRanks",
+      "label": "Proficiency Rank",
+      "values": [
+        {
+          "name": "Untrained",
+          "bonus": 0
+        },
+        {
+          "name": "Trained",
+          "bonus": 2
+        },
+        {
+          "name": "Expert",
+          "bonus": 4
+        },
+        {
+          "name": "Master",
+          "bonus": 6
+        },
+        {
+          "name": "Legendary",
+          "bonus": 8
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "skills",
+      "label": "Skills",
+      "children": [
+        {
+          "type": "number",
+          "key": "skills.acrobatics",
+          "label": "Acrobatics",
+          "minimum": 0,
+          "maximum": 60
+        },
+        {
+          "type": "number",
+          "key": "skills.arcana",
+          "label": "Arcana",
+          "minimum": 0,
+          "maximum": 60
+        },
+        {
+          "type": "number",
+          "key": "skills.athletics",
+          "label": "Athletics",
+          "minimum": 0,
+          "maximum": 60
+        },
+        {
+          "type": "number",
+          "key": "skills.computers",
+          "label": "Computers",
+          "minimum": 0,
+          "maximum": 60
+        },
+        {
+          "type": "number",
+          "key": "skills.crafting",
+          "label": "Crafting",
+          "minimum": 0,
+          "maximum": 60
+        },
+        {
+          "type": "number",
+          "key": "skills.deception",
+          "label": "Deception",
+          "minimum": 0,
+          "maximum": 60
+        },
+        {
+          "type": "number",
+          "key": "skills.diplomacy",
+          "label": "Diplomacy",
+          "minimum": 0,
+          "maximum": 60
+        },
+        {
+          "type": "number",
+          "key": "skills.intimidation",
+          "label": "Intimidation",
+          "minimum": 0,
+          "maximum": 60
+        },
+        {
+          "type": "number",
+          "key": "skills.lore",
+          "label": "Lore",
+          "minimum": 0,
+          "maximum": 60
+        },
+        {
+          "type": "number",
+          "key": "skills.medicine",
+          "label": "Medicine",
+          "minimum": 0,
+          "maximum": 60
+        },
+        {
+          "type": "number",
+          "key": "skills.nature",
+          "label": "Nature",
+          "minimum": 0,
+          "maximum": 60
+        },
+        {
+          "type": "number",
+          "key": "skills.occultism",
+          "label": "Occultism",
+          "minimum": 0,
+          "maximum": 60
+        },
+        {
+          "type": "number",
+          "key": "skills.performance",
+          "label": "Performance",
+          "minimum": 0,
+          "maximum": 60
+        },
+        {
+          "type": "number",
+          "key": "skills.piloting",
+          "label": "Piloting",
+          "minimum": 0,
+          "maximum": 60
+        },
+        {
+          "type": "number",
+          "key": "skills.religion",
+          "label": "Religion",
+          "minimum": 0,
+          "maximum": 60
+        },
+        {
+          "type": "number",
+          "key": "skills.society",
+          "label": "Society",
+          "minimum": 0,
+          "maximum": 60
+        },
+        {
+          "type": "number",
+          "key": "skills.stealth",
+          "label": "Stealth",
+          "minimum": 0,
+          "maximum": 60
+        },
+        {
+          "type": "number",
+          "key": "skills.survival",
+          "label": "Survival",
+          "minimum": 0,
+          "maximum": 60
+        },
+        {
+          "type": "number",
+          "key": "skills.thievery",
+          "label": "Thievery",
+          "minimum": 0,
+          "maximum": 60
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "stamina",
+      "label": "Stamina Points",
+      "children": [
+        {
+          "type": "number",
+          "key": "stamina.current",
+          "label": "Current",
+          "minimum": 0
+        },
+        {
+          "type": "number",
+          "key": "stamina.max",
+          "label": "Max",
+          "minimum": 1
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "hitPoints",
+      "label": "Hit Points",
+      "children": [
+        {
+          "type": "number",
+          "key": "hitPoints.current",
+          "label": "Current",
+          "minimum": 0
+        },
+        {
+          "type": "number",
+          "key": "hitPoints.max",
+          "label": "Max",
+          "minimum": 1
+        }
+      ]
+    },
+    {
+      "type": "number",
+      "key": "resolve",
+      "label": "Resolve Points",
+      "minimum": 0
+    },
+    {
+      "type": "number",
+      "key": "armorClass",
+      "label": "Armor Class",
+      "minimum": 0
+    },
+    {
+      "type": "number",
+      "key": "classDC",
+      "label": "Class DC",
+      "minimum": 0
+    },
+    {
+      "type": "number",
+      "key": "perception",
+      "label": "Perception"
+    },
+    {
+      "type": "number",
+      "key": "speed",
+      "label": "Speed (ft.)",
+      "minimum": 0
+    },
+    {
+      "type": "number",
+      "key": "heroPoints",
+      "label": "Hero Points",
+      "minimum": 0,
+      "maximum": 3,
+      "default": 1
+    },
+    {
+      "type": "number",
+      "key": "bulk",
+      "label": "Bulk Carried",
+      "minimum": 0
+    },
+    {
+      "type": "object",
+      "key": "saves",
+      "label": "Saving Throws",
+      "children": [
+        {
+          "type": "number",
+          "key": "saves.fortitude",
+          "label": "Fortitude",
+          "shortName": "Fort"
+        },
+        {
+          "type": "number",
+          "key": "saves.reflex",
+          "label": "Reflex",
+          "shortName": "Ref"
+        },
+        {
+          "type": "number",
+          "key": "saves.will",
+          "label": "Will",
+          "shortName": "Will"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "sizes",
+      "label": "Size",
+      "values": [
+        {
+          "name": "Tiny"
+        },
+        {
+          "name": "Small"
+        },
+        {
+          "name": "Medium"
+        },
+        {
+          "name": "Large"
+        },
+        {
+          "name": "Huge"
+        },
+        {
+          "name": "Gargantuan"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "languages",
+      "label": "Languages",
+      "values": [
+        {
+          "name": "Common"
+        },
+        {
+          "name": "Akitonian"
+        },
+        {
+          "name": "Aquan"
+        },
+        {
+          "name": "Brethedan"
+        },
+        {
+          "name": "Castrovelian"
+        },
+        {
+          "name": "Draconic"
+        },
+        {
+          "name": "Dwarven"
+        },
+        {
+          "name": "Eoxian"
+        },
+        {
+          "name": "Kalo"
+        },
+        {
+          "name": "Kasatha"
+        },
+        {
+          "name": "Nchaki"
+        },
+        {
+          "name": "Shirren"
+        },
+        {
+          "name": "Sivvan"
+        },
+        {
+          "name": "Triaxian"
+        },
+        {
+          "name": "Vercite"
+        },
+        {
+          "name": "Vesk"
+        },
+        {
+          "name": "Ysoki"
+        },
+        {
+          "name": "Abyssal"
+        },
+        {
+          "name": "Aklo"
+        },
+        {
+          "name": "Celestial"
+        },
+        {
+          "name": "Infernal"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "inventory",
+      "label": "Inventory",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Item Name",
+          "required": true
+        },
+        {
+          "type": "number",
+          "key": "quantity",
+          "label": "Quantity",
+          "minimum": 0
+        },
+        {
+          "type": "number",
+          "key": "bulk",
+          "label": "Bulk",
+          "minimum": 0
+        },
+        {
+          "type": "string",
+          "key": "notes",
+          "label": "Notes"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "currency",
+      "label": "Currency",
+      "values": [
+        {
+          "name": "Credits",
+          "shortName": "cr",
+          "cost": 1
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "weaponCategories",
+      "label": "Weapon Categories",
+      "values": [
+        {
+          "name": "Basic Melee"
+        },
+        {
+          "name": "Advanced Melee"
+        },
+        {
+          "name": "Small Arms"
+        },
+        {
+          "name": "Longarms"
+        },
+        {
+          "name": "Heavy Weapons"
+        },
+        {
+          "name": "Sniper Weapons"
+        },
+        {
+          "name": "Special"
+        },
+        {
+          "name": "Grenades"
+        },
+        {
+          "name": "Unarmed"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "armorCategories",
+      "label": "Armor Categories",
+      "values": [
+        {
+          "name": "Unarmored"
+        },
+        {
+          "name": "Light Armor"
+        },
+        {
+          "name": "Heavy Armor"
+        },
+        {
+          "name": "Powered Armor"
+        },
+        {
+          "name": "Shields"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "equipmentCategories",
+      "label": "Equipment Categories",
+      "values": [
+        {
+          "name": "Weapon Fusions"
+        },
+        {
+          "name": "Weapon Accessories"
+        },
+        {
+          "name": "Ammunition"
+        },
+        {
+          "name": "Technological Items"
+        },
+        {
+          "name": "Magic Items"
+        },
+        {
+          "name": "Hybrid Items"
+        },
+        {
+          "name": "Augmentations"
+        },
+        {
+          "name": "Consumables"
+        },
+        {
+          "name": "Vehicles and Starship Components"
+        },
+        {
+          "name": "General Gear"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "rarity",
+      "label": "Rarity",
+      "values": [
+        {
+          "name": "Common",
+          "targetBudget": 4,
+          "description": "Available to any character without restriction."
+        },
+        {
+          "name": "Uncommon",
+          "targetBudget": 8,
+          "description": "Requires a special source (feat, ancestry, faction) to access freely."
+        },
+        {
+          "name": "Rare",
+          "targetBudget": 14,
+          "description": "Known to very few; usually found only through play, not purchase."
+        },
+        {
+          "name": "Unique",
+          "targetBudget": 24,
+          "description": "A singular, one-of-a-kind piece of tech or artifact."
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "activation",
+      "label": "Actions",
+      "values": [
+        {
+          "name": "Single Action",
+          "shortName": "1",
+          "cost": 1
+        },
+        {
+          "name": "Two Actions",
+          "shortName": "2",
+          "cost": 2
+        },
+        {
+          "name": "Three Actions",
+          "shortName": "3",
+          "cost": 3
+        },
+        {
+          "name": "Free Action",
+          "shortName": "Free",
+          "cost": 0
+        },
+        {
+          "name": "Reaction",
+          "shortName": "Reaction",
+          "cost": 1
+        },
+        {
+          "name": "1 Minute",
+          "shortName": "1 min"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "form",
+      "label": "Item Form",
+      "values": [
+        {
+          "name": "Weapon"
+        },
+        {
+          "name": "Armor"
+        },
+        {
+          "name": "Shield"
+        },
+        {
+          "name": "Technological Item"
+        },
+        {
+          "name": "Magic Item"
+        },
+        {
+          "name": "Hybrid Item"
+        },
+        {
+          "name": "Augmentation"
+        },
+        {
+          "name": "Fusion"
+        },
+        {
+          "name": "Consumable"
+        },
+        {
+          "name": "Spell"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "spellTraditions",
+      "label": "Magical Tradition",
+      "values": [
+        {
+          "name": "Arcane",
+          "description": "Structured, studied magic, often fused with technology."
+        },
+        {
+          "name": "Divine",
+          "description": "Magic granted by a deity or cosmic force."
+        },
+        {
+          "name": "Occult",
+          "description": "Magic drawn from the mind, psychic potential, and the unseen."
+        },
+        {
+          "name": "Primal",
+          "description": "Magic of the natural and elemental world."
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "spellRanks",
+      "label": "Spell Rank",
+      "values": [
+        {
+          "name": "Rank 0"
+        },
+        {
+          "name": "Rank 1"
+        },
+        {
+          "name": "Rank 2"
+        },
+        {
+          "name": "Rank 3"
+        },
+        {
+          "name": "Rank 4"
+        },
+        {
+          "name": "Rank 5"
+        },
+        {
+          "name": "Rank 6"
+        },
+        {
+          "name": "Rank 7"
+        },
+        {
+          "name": "Rank 8"
+        },
+        {
+          "name": "Rank 9"
+        },
+        {
+          "name": "Rank 10"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "environment",
+      "label": "Environment",
+      "values": [
+        {
+          "name": "Vacuum"
+        },
+        {
+          "name": "Zero-G"
+        },
+        {
+          "name": "Desert"
+        },
+        {
+          "name": "Forest"
+        },
+        {
+          "name": "Urban"
+        },
+        {
+          "name": "Underground"
+        },
+        {
+          "name": "Aquatic"
+        },
+        {
+          "name": "Arctic"
+        },
+        {
+          "name": "Volcanic"
+        },
+        {
+          "name": "Toxic"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "conditions",
+      "label": "Conditions",
+      "values": [
+        {
+          "name": "Blinded",
+          "description": "Can't see; automatically fail sight-based checks; all terrain is difficult terrain."
+        },
+        {
+          "name": "Broken",
+          "description": "An item still functions but at a penalty, one step from destroyed."
+        },
+        {
+          "name": "Clumsy",
+          "description": "A status penalty (by value) to Dexterity-based rolls and DCs."
+        },
+        {
+          "name": "Concealed",
+          "description": "Hard to perceive; attacks against you have a 20% miss chance."
+        },
+        {
+          "name": "Confused",
+          "description": "Attack randomly, unable to distinguish friend from foe."
+        },
+        {
+          "name": "Dazzled",
+          "description": "Concealment applies to everything due to impaired vision."
+        },
+        {
+          "name": "Deafened",
+          "description": "Can't hear; status penalty to Perception and auditory checks."
+        },
+        {
+          "name": "Doomed",
+          "description": "A value tracking how close to death you are; reduces max Dying value."
+        },
+        {
+          "name": "Drained",
+          "description": "A value representing vitality loss; status penalty to Constitution-based rolls."
+        },
+        {
+          "name": "Dying",
+          "description": "At 0 Hit Points and unconscious, at risk of death."
+        },
+        {
+          "name": "Encumbered",
+          "description": "Carrying more Bulk than you can manage; clumsy and slowed."
+        },
+        {
+          "name": "Enfeebled",
+          "description": "A status penalty (by value) to Strength-based rolls and DCs."
+        },
+        {
+          "name": "Fascinated",
+          "description": "Fixated on something, -2 to skill checks, oblivious to danger."
+        },
+        {
+          "name": "Fatigued",
+          "description": "Can't spend Hero Points to reroll; status penalty to AC and saves."
+        },
+        {
+          "name": "Fleeing",
+          "description": "Must spend actions to move away from a source of fear."
+        },
+        {
+          "name": "Frightened",
+          "description": "A value applying a status penalty to all checks and DCs, fading over time."
+        },
+        {
+          "name": "Grabbed",
+          "description": "Immobilized and flat-footed, held by another creature or effect."
+        },
+        {
+          "name": "Immobilized",
+          "description": "Cannot use any action with the move trait."
+        },
+        {
+          "name": "Invisible",
+          "description": "Cannot be seen; treated as concealed even by creatures that could otherwise see you."
+        },
+        {
+          "name": "Off-Kilter",
+          "description": "Off-balance; flat-footed and unable to take reactions."
+        },
+        {
+          "name": "Paralyzed",
+          "description": "Stuck in place, flat-footed, unable to act except to Recall Knowledge."
+        },
+        {
+          "name": "Persistent Damage",
+          "description": "Ongoing damage taken at the end of each turn until it ends."
+        },
+        {
+          "name": "Prone",
+          "description": "Lying on the ground; flat-footed and a penalty on attack rolls."
+        },
+        {
+          "name": "Restrained",
+          "description": "Tied up or trapped; flat-footed and unable to use move actions."
+        },
+        {
+          "name": "Sickened",
+          "description": "A value; status penalty to all checks and DCs, can't willingly ingest anything."
+        },
+        {
+          "name": "Slowed",
+          "description": "Lose a number of actions each turn equal to the condition's value."
+        },
+        {
+          "name": "Stunned",
+          "description": "Lose a number of actions, possibly all, unable to act until it fades."
+        },
+        {
+          "name": "Stupefied",
+          "description": "A status penalty (by value) to concentrate actions and mental checks/DCs."
+        },
+        {
+          "name": "Unconscious",
+          "description": "Knocked out or asleep; flat-footed, blinded, and can't act."
+        },
+        {
+          "name": "Wounded",
+          "description": "A value tracking near-death recoveries, worsening the Dying condition if it recurs."
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "damageTypes",
+      "label": "Damage Types",
+      "values": [
+        {
+          "name": "Bludgeoning"
+        },
+        {
+          "name": "Piercing"
+        },
+        {
+          "name": "Slashing"
+        },
+        {
+          "name": "Acid"
+        },
+        {
+          "name": "Cold"
+        },
+        {
+          "name": "Electricity"
+        },
+        {
+          "name": "Fire"
+        },
+        {
+          "name": "Sonic"
+        },
+        {
+          "name": "Force"
+        },
+        {
+          "name": "Void"
+        },
+        {
+          "name": "Nanite"
+        },
+        {
+          "name": "Radiation"
+        },
+        {
+          "name": "Mental"
+        },
+        {
+          "name": "Poison"
+        },
+        {
+          "name": "Bleed"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "combatScaling",
+      "label": "Monster Level",
+      "values": [
+        {
+          "name": "Level -1",
+          "shortName": "-1",
+          "xpBudgetModerate": 80
+        },
+        {
+          "name": "Level 0",
+          "shortName": "0",
+          "xpBudgetModerate": 100
+        },
+        {
+          "name": "Level 1",
+          "shortName": "1",
+          "xpBudgetModerate": 120
+        },
+        {
+          "name": "Level 2",
+          "shortName": "2",
+          "xpBudgetModerate": 140
+        },
+        {
+          "name": "Level 3",
+          "shortName": "3",
+          "xpBudgetModerate": 160
+        },
+        {
+          "name": "Level 4",
+          "shortName": "4",
+          "xpBudgetModerate": 180
+        },
+        {
+          "name": "Level 5",
+          "shortName": "5",
+          "xpBudgetModerate": 200
+        },
+        {
+          "name": "Level 6",
+          "shortName": "6",
+          "xpBudgetModerate": 220
+        },
+        {
+          "name": "Level 7",
+          "shortName": "7",
+          "xpBudgetModerate": 240
+        },
+        {
+          "name": "Level 8",
+          "shortName": "8",
+          "xpBudgetModerate": 260
+        },
+        {
+          "name": "Level 9",
+          "shortName": "9",
+          "xpBudgetModerate": 280
+        },
+        {
+          "name": "Level 10",
+          "shortName": "10",
+          "xpBudgetModerate": 300
+        },
+        {
+          "name": "Level 11",
+          "shortName": "11",
+          "xpBudgetModerate": 320
+        },
+        {
+          "name": "Level 12",
+          "shortName": "12",
+          "xpBudgetModerate": 340
+        },
+        {
+          "name": "Level 13",
+          "shortName": "13",
+          "xpBudgetModerate": 360
+        },
+        {
+          "name": "Level 14",
+          "shortName": "14",
+          "xpBudgetModerate": 380
+        },
+        {
+          "name": "Level 15",
+          "shortName": "15",
+          "xpBudgetModerate": 400
+        },
+        {
+          "name": "Level 16",
+          "shortName": "16",
+          "xpBudgetModerate": 420
+        },
+        {
+          "name": "Level 17",
+          "shortName": "17",
+          "xpBudgetModerate": 440
+        },
+        {
+          "name": "Level 18",
+          "shortName": "18",
+          "xpBudgetModerate": 460
+        },
+        {
+          "name": "Level 19",
+          "shortName": "19",
+          "xpBudgetModerate": 480
+        },
+        {
+          "name": "Level 20",
+          "shortName": "20",
+          "xpBudgetModerate": 500
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "creatureTypes",
+      "label": "Creature Types",
+      "values": [
+        {
+          "id": "aberration",
+          "name": "Aberration",
+          "description": "A creature with an alien mind or form."
+        },
+        {
+          "id": "animal",
+          "name": "Animal",
+          "description": "A creature with no innate magic, driven by instinct."
+        },
+        {
+          "id": "beast",
+          "name": "Beast",
+          "description": "A non-magical creature more intelligent than a typical animal."
+        },
+        {
+          "id": "celestial",
+          "name": "Celestial",
+          "description": "A good-aligned creature native to the upper planes."
+        },
+        {
+          "id": "construct",
+          "name": "Construct",
+          "description": "An artificial creature, often mindless, built or animated."
+        },
+        {
+          "id": "dragon",
+          "name": "Dragon",
+          "description": "A reptilian creature, often winged, with an innate elemental power."
+        },
+        {
+          "id": "elemental",
+          "name": "Elemental",
+          "description": "A creature native to one of the elemental planes."
+        },
+        {
+          "id": "fey",
+          "name": "Fey",
+          "description": "A creature tied to primal or otherworldly nature magic."
+        },
+        {
+          "id": "fiend",
+          "name": "Fiend",
+          "description": "An evil-aligned creature native to the lower planes."
+        },
+        {
+          "id": "fungus",
+          "name": "Fungus",
+          "description": "A creature more closely related to fungi than plants or animals."
+        },
+        {
+          "id": "humanoid",
+          "name": "Humanoid",
+          "description": "A bipedal creature with a society and culture."
+        },
+        {
+          "id": "ooze",
+          "name": "Ooze",
+          "description": "A mindless, amorphous creature."
+        },
+        {
+          "id": "plant",
+          "name": "Plant",
+          "description": "A vegetable creature, usually rooted or slow-moving."
+        },
+        {
+          "id": "undead",
+          "name": "Undead",
+          "description": "A once-living creature animated by negative energy."
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "combatBindings",
+      "label": "Combat Bindings",
+      "values": [
+        {
+          "name": "Stamina Points",
+          "maxPath": "@stamina.max",
+          "binding": "@stamina.current",
+          "role": "resource"
+        },
+        {
+          "name": "Hit Points",
+          "maxPath": "@hitPoints.max",
+          "binding": "@hitPoints.current",
+          "role": "resource"
+        },
+        {
+          "name": "Armor Class",
+          "binding": "@armorClass",
+          "role": "value"
+        },
+        {
+          "name": "Hero Points",
+          "binding": "@heroPoints",
+          "max": 3,
+          "role": "resource"
+        },
+        {
+          "name": "Conditions",
+          "binding": "@conditions",
+          "sourceField": "conditions",
+          "role": "tags"
+        },
+        {
+          "name": "Perception",
+          "die": "d20",
+          "binding": "@perception",
+          "role": "modifier"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "dice",
+      "label": "Dice",
+      "values": [
+        {
+          "name": "d4",
+          "sides": 4
+        },
+        {
+          "name": "d6",
+          "sides": 6
+        },
+        {
+          "name": "d8",
+          "sides": 8
+        },
+        {
+          "name": "d10",
+          "sides": 10
+        },
+        {
+          "name": "d12",
+          "sides": 12
+        },
+        {
+          "name": "d20",
+          "sides": 20
+        },
+        {
+          "name": "d100",
+          "sides": 100
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "feats",
+      "label": "Feats",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Feat"
+        },
+        {
+          "type": "string",
+          "key": "type",
+          "label": "Type"
+        },
+        {
+          "type": "string",
+          "key": "notes",
+          "label": "Notes"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "spells",
+      "label": "Spells",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Spell"
+        },
+        {
+          "type": "number",
+          "key": "rank",
+          "label": "Rank",
+          "minimum": 0,
+          "maximum": 10
+        },
+        {
+          "type": "boolean",
+          "key": "prepared",
+          "label": "Prepared"
+        }
+      ]
+    }
+  ]
+}

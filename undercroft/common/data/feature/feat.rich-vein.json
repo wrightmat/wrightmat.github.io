@@ -1,9 +1,5 @@
 {
   "name": "Rich Vein",
-  "systemIds": [
-    "sys.dnd5e",
-    "sys.dnd5e2014"
-  ],
   "description": "A genuinely valuable deposit — ore, timber, or some rarer material — is actively worked here.",
   "mechanics": {
     "type": "passive",

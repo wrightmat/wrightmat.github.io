@@ -1,0 +1,18 @@
+{
+  "index": "bullets-firearm",
+  "name": "Bullets, Firearm",
+  "notes": "",
+  "price": "3 gp",
+  "weight": 2,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2024/equipment/bullets-firearm",
+  "mapping": "5e-api-equipment",
+  "featureIds": [],
+  "properties": {
+    "form": "equipment",
+    "equipmentCategory": "ammunition"
+  }
+}

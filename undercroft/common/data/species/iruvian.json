@@ -1,0 +1,42 @@
+{
+  "name": "Iruvian",
+  "tagline": "Desert empire, poetry and daggers alike",
+  "description": [
+    "From Iruvia, a distant desert empire renowned for its art, poetry, and courtly intrigue as much as its steel — Iruvians in Duskvol are often merchants, scholars, or exiles from palace politics gone wrong, and are stereotyped (not always fairly) as duelists and spies."
+  ],
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "family",
+    "firstNames": [
+      "Kadir",
+      "Nasrin",
+      "Farid",
+      "Soraya",
+      "Tariq",
+      "Leyla",
+      "Rashid",
+      "Yasmin",
+      "Idris",
+      "Parisa",
+      "Zahir",
+      "Nadia",
+      "Bashir",
+      "Roshanak",
+      "Amir",
+      "Farah"
+    ],
+    "lastNames": [
+      "al-Sahra",
+      "Khoury",
+      "Farsi",
+      "Nazari",
+      "Qadir",
+      "Hakimi",
+      "Behrouz",
+      "Isfahani"
+    ]
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "name": "Lizardfolk",
+  "tagline": "Pragmatic and communal",
+  "description": [
+    "Reptilian humanoids of Golarion's swamps and jungles, lizardfolk favor a practical, communal culture built around the survival of the whole clutch."
+  ],
+  "systemIds": [
+    "sys.pf2e"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "none",
+    "firstNames": [
+      "Sslar",
+      "Vekka",
+      "Throk",
+      "Ishara",
+      "Grissk",
+      "Nalla",
+      "Ossik",
+      "Terra",
+      "Vashti",
+      "Korrin",
+      "Dessik",
+      "Wrenna"
+    ],
+    "lastNames": []
+  }
+}

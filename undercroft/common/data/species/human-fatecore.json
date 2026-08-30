@@ -1,0 +1,38 @@
+{
+  "name": "Human",
+  "tagline": "Troubleshooter for hire",
+  "description": [
+    "Every soul wandering the low-fantasy countryside of Hearts of Steel and the wider Fate Core toolkit's default assumption — sellswords, wizards, petty lords, and everyone caught between them."
+  ],
+  "systemIds": [
+    "sys.fatecore"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "family",
+    "firstNames": [
+      "Landon",
+      "Cynere",
+      "Zird",
+      "Merek",
+      "Ysolde",
+      "Corwin",
+      "Alaric",
+      "Brenna",
+      "Torvin",
+      "Sabine",
+      "Declan",
+      "Marielle"
+    ],
+    "lastNames": [
+      "Ashford",
+      "Blackthorn",
+      "Draycott",
+      "Hollowell",
+      "Kestrel",
+      "Ravensmoor",
+      "Thornbury",
+      "Wolfrick"
+    ]
+  }
+}

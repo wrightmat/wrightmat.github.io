@@ -1,0 +1,61 @@
+{
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "name": "Sablewood Messengers",
+  "description": "The ancient, perpetually dim Sablewood — a forest so dense with canopy that travelers can barely tell day from night — and the King's Road that cuts through it, from the court of King Emeris out to Hush, a quiet, hospitable village nestled deep in the trees. Marlowe Fairwind, the King's own elf sorcerer, sends her most trusted allies on missions of the gravest importance along this road — carriages sealed with magic, packages nobody in the capital dares open themselves. Notable landmarks include the Open Vale, a perfect clearing ringed by standing stones where trees refuse to grow, and the strange, shadowed ecosystems the Sablewood's own gloom has bred.",
+  "speciesWeights": [
+    {
+      "entityId": "human-daggerheart",
+      "weight": 20
+    },
+    {
+      "entityId": "elf-daggerheart",
+      "weight": 16
+    },
+    {
+      "entityId": "faerie-daggerheart",
+      "weight": 10
+    },
+    {
+      "entityId": "faun-daggerheart",
+      "weight": 10
+    },
+    {
+      "entityId": "firbolg-daggerheart",
+      "weight": 8
+    },
+    {
+      "entityId": "halfling-daggerheart",
+      "weight": 7
+    },
+    {
+      "entityId": "dwarf-daggerheart",
+      "weight": 6
+    },
+    {
+      "entityId": "goblin-daggerheart",
+      "weight": 5
+    },
+    {
+      "entityId": "katari-daggerheart",
+      "weight": 5
+    },
+    {
+      "entityId": "orc-daggerheart",
+      "weight": 4
+    },
+    {
+      "entityId": "drakona-daggerheart",
+      "weight": 3
+    },
+    {
+      "entityId": "simiah-daggerheart",
+      "weight": 3
+    },
+    {
+      "entityId": "galapa-daggerheart",
+      "weight": 3
+    }
+  ]
+}

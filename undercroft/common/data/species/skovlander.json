@@ -1,0 +1,42 @@
+{
+  "name": "Skovlander",
+  "tagline": "Clan-born of a conquered northern isle",
+  "description": [
+    "Skovlan's warrior clans were conquered and occupied by the Empire within living memory — Skovlanders in Duskvol carry that grudge close, and cluster in tight-knit clan-based communities that look after their own first and everyone else second."
+  ],
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "clan",
+    "firstNames": [
+      "Sigrun",
+      "Halvard",
+      "Ingrid",
+      "Brannigan",
+      "Torvald",
+      "Freya",
+      "Ossian",
+      "Maren",
+      "Bryndis",
+      "Cedric",
+      "Astrid",
+      "Duncan",
+      "Ronan",
+      "Signe",
+      "Fenwick",
+      "Una"
+    ],
+    "lastNames": [
+      "Stormrede",
+      "Ashgrove",
+      "Blackmoor",
+      "Frosthollow",
+      "Greywake",
+      "Hearthstone",
+      "Ironmoot",
+      "Stagshead"
+    ]
+  }
+}

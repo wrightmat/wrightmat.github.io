@@ -1,0 +1,32 @@
+{
+  "name": "Andorian",
+  "tagline": "Fierce and frozen-born",
+  "description": [
+    "A fierce, blue-skinned, antennaed people from the frozen moon of Andoria, quick to anger and fiercely loyal to clan and Empire alike."
+  ],
+  "systemIds": [
+    "sys.sta"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "clan",
+    "firstNames": [
+      "Shran",
+      "Talas",
+      "Tarah",
+      "Thelin",
+      "Jhamel",
+      "Keval",
+      "Charivretha",
+      "Anlenthoris"
+    ],
+    "lastNames": [
+      "Zh'Vantressa",
+      "Ch'Thane",
+      "Th'Shellik",
+      "Sh'Verrin",
+      "Zh'Alassa",
+      "Ch'Nerrik"
+    ]
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "index": "hide-armor",
+  "name": "Hide Armor",
+  "notes": "Armor Class: 12 + Dex modifier (max 2)",
+  "price": "10 gp",
+  "weight": 12,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2024/equipment/hide-armor",
+  "mapping": "5e-api-equipment",
+  "properties": {
+    "form": "armor",
+    "armorCategory": "light"
+  },
+  "featureIds": []
+}

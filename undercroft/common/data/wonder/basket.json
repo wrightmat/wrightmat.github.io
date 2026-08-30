@@ -1,0 +1,18 @@
+{
+  "index": "basket",
+  "name": "Basket",
+  "notes": "A Basket holds up to 40 pounds within 2 cubic feet.",
+  "price": "2 gp",
+  "weight": 2,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2024/equipment/basket",
+  "mapping": "5e-api-equipment",
+  "properties": {
+    "form": "equipment",
+    "equipmentCategory": "adventuring-gear"
+  },
+  "featureIds": []
+}

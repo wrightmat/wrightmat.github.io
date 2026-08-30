@@ -12,7 +12,13 @@
 // renderRequiredSelectOptions/renderOptionalSelectOptions below are the one
 // exception — Forge uses those two too, since they're about rendering a
 // <select>'s options a specific, now suite-wide way, not about how the
-// underlying list gets fetched.
+// underlying list gets fetched. setGenerateButtonReadiness further below is
+// the same kind of exception — Forge's Generate NPC button needs the exact
+// same disabled-but-hoverable mechanism as Crucible/Sanctum/Vault's own
+// Generate buttons, even though Forge doesn't share the rest of this file's
+// generate/save/export/note flow.
+
+import { setDisabledTooltip } from "./tooltips.js";
 
 export async function listAllSystems(dataManager) {
   if (!dataManager) return [];
@@ -54,6 +60,17 @@ export function renderRequiredSelectOptions(select, entries, { placeholder = "Se
   });
   if (entries.some((entry) => entry.id === previous)) {
     select.value = previous;
+  } else if (entries.length === 1) {
+    // The placeholder is disabled — never a valid resting state for a
+    // required field — so when there's exactly one real choice, there's
+    // nothing left to decide; land on it directly instead of making the
+    // user click the one option that was always going to be picked anyway.
+    // Always on (no opt-in) since this holds for every current caller
+    // (System everywhere, Setting in Forge) and any future required
+    // picker built on this same primitive — unlike
+    // renderOptionalSelectOptions's own equivalent below, a required
+    // field's blank state was never a legitimate choice to preserve.
+    select.value = entries[0].id;
   } else {
     placeholderOption.selected = true;
   }
@@ -65,7 +82,20 @@ export function renderRequiredSelectOptions(select, entries, { placeholder = "Se
 // above, the leading option here is a real, always-selectable choice ("New /
 // unsaved"), not a disabled placeholder: starting a brand new record is a
 // perfectly valid thing to want, not a state to force the user out of.
-export function renderOptionalSelectOptions(select, entries, { blankLabel = "New / unsaved", previousValue } = {}) {
+// `autoSelectSingle` (opt-in, default off) — unlike renderRequiredSelectOptions
+// above, blank is a genuinely valid resting state at every existing call site
+// of this function (Sanctum's Setting/Location, Crucible's Monster picker,
+// Vault's Wonder picker, Forge's own NPC picker all mean "start fresh" when
+// blank, not "nothing chosen yet"), so auto-landing on a sole option isn't
+// safe as a blanket default the way it is for the required picker — it would
+// silently reopen a saved record instead of the fresh one a tool opens on by
+// default. Forge's Location picker is the one caller that opts in: its own
+// blank state ("No Location") is a real fallback-to-Setting-level-weights
+// choice, but landing on the only real Location when one exists gives a more
+// specific NPC (its own narrower species mix) with nothing lost, so this
+// caller wants the same "nothing left to decide" behavior a required field
+// gets automatically.
+export function renderOptionalSelectOptions(select, entries, { blankLabel = "New / unsaved", previousValue, autoSelectSingle = false } = {}) {
   if (!select) return;
   const previous = previousValue !== undefined ? previousValue : select.value;
   select.innerHTML = "";
@@ -81,6 +111,8 @@ export function renderOptionalSelectOptions(select, entries, { blankLabel = "New
   });
   if (entries.some((entry) => entry.id === previous)) {
     select.value = previous;
+  } else if (autoSelectSingle && entries.length === 1) {
+    select.value = entries[0].id;
   }
 }
 
@@ -262,7 +294,25 @@ export async function generateNoteForRecord({ record, elements, status, generate
   }
 }
 
-// The active System's own "abilities" object field's children (key +
+// Proactive "insufficient reference data" state for a Generate button
+// (Forge/Sanctum/Crucible/Vault all have one). Previously each tool started
+// its Generate button real-`disabled` and only found out reference data was
+// insufficient reactively, inside the click handler, throwing a toast after
+// the click. This makes that check run wherever the button's enabled state
+// already gets recomputed (System/Setting/Location change, reference-data
+// load) and disables it proactively instead, with a tooltip explaining why.
+//
+// Thin, Generate-specific name over tooltips.js's own canonical
+// setDisabledTooltip (the disabled-but-hoverable wrapper mechanism itself
+// lives there now, alongside every other tooltip primitive in the suite —
+// see that module's header for the full system). Kept as its own export
+// rather than inlining the call at every one of the four Generate buttons'
+// own call sites purely for the more legible name at each of those sites.
+export function setGenerateButtonReadiness(button, reason) {
+  setDisabledTooltip(button, reason);
+}
+
+// The active System's own ability/stat-block object field's children (key +
 // shortName) — read here instead of every caller carrying its own copy.
 // Previously duplicated verbatim between Crucible's and Forge's own
 // lib/tables.js (both re-export from here now, unchanged call sites);
@@ -272,7 +322,7 @@ export async function generateNoteForRecord({ record, elements, status, generate
 // it's a narrower, independently reusable helper any tool reading System
 // ability data needs, which is why Forge already had its own copy too.
 // Falls back to the standard six-ability D&D set if the System defines no
-// "abilities" field, so a System with none authored yet still works.
+// matching field, so a System with none authored yet still works.
 const DEFAULT_ABILITY_FIELD_DEFS = [
   { key: "strength", label: "STR" },
   { key: "dexterity", label: "DEX" },
@@ -282,17 +332,86 @@ const DEFAULT_ABILITY_FIELD_DEFS = [
   { key: "charisma", label: "CHA" },
 ];
 
-export async function loadAbilityFieldDefs(dataManager, systemId) {
+// Best-effort guess for which object field IS the ability/stat block, used
+// only to pre-fill the abilityField settings preference below when a GM
+// hasn't explicitly chosen one yet for this System — never the sole source
+// of truth (see feedback_settings_preference_with_guessed_default). Shape-
+// detects an object field whose children are uniformly number-typed (the
+// actual stat-block shape — a field like "hitPoints" with {current, max}
+// children wouldn't qualify), preferring one of the conventional names below
+// when more than one candidate happens to qualify.
+const ABILITY_FIELD_NAME_PREFERENCE = ["abilities", "characteristics", "attributes", "stats"];
+
+function isStatBlockShaped(field) {
+  return (
+    field?.type === "object" &&
+    Array.isArray(field.children) &&
+    field.children.length > 0 &&
+    field.children.every((child) => child.type === "number")
+  );
+}
+
+export function guessAbilityFieldKey(fields) {
+  const candidates = (Array.isArray(fields) ? fields : []).filter(isStatBlockShaped);
+  if (!candidates.length) return "";
+  const preferred = ABILITY_FIELD_NAME_PREFERENCE.map((name) => candidates.find((field) => field.key === name)).find(Boolean);
+  return (preferred || candidates[0]).key;
+}
+
+// Every top-level object-type field the active System defines — the
+// candidate list for the abilityField settings preference below. An
+// ability/stat block is always authored as an object field (e.g.
+// sys.dnd5e's "abilities" — {strength, dexterity, ...}, sys.coc7e's
+// "characteristics"), unlike Combat Scaling/Archetype/Budget Ceiling, which
+// are always array fields (see listArrayFieldOptions in Forge's/Crucible's
+// own lib/tables.js) — a separate list, not a shared one. `guessedKey`
+// (guessAbilityFieldKey's own result, computed here in the same fetch
+// rather than a second round trip) rides along so the settings dropdown can
+// pre-select it and label it as auto-detected, instead of the field list
+// alone.
+export async function listObjectFieldOptions(dataManager, systemId) {
+  if (!dataManager || !systemId) return { options: [], guessedKey: "" };
+  try {
+    const result = await dataManager.get("systems", systemId, { preferLocal: false });
+    const fields = Array.isArray(result?.payload?.fields) ? result.payload.fields : [];
+    const options = fields.filter((entry) => entry.type === "object").map((entry) => ({ key: entry.key, label: entry.label || entry.key }));
+    return { options, guessedKey: guessAbilityFieldKey(fields) };
+  } catch (error) {
+    return { options: [], guessedKey: "" };
+  }
+}
+
+// `preferredKey` — the GM's own configured ability-field preference (each
+// tool's own per-System settings bucket, mirroring archetypeField/
+// combatScalingField/budgetCeilingField exactly). Falls back to
+// guessAbilityFieldKey's own shape-based guess, then the literal
+// "abilities" key (the pre-existing hardcoded assumption, kept as the very
+// last resort for a System with no better candidate at all) — never
+// hardcoded as the only option, since a System like CoC authors its stat
+// block under a completely different key ("characteristics").
+export async function loadAbilityFieldDefs(dataManager, systemId, preferredKey = "") {
   if (!dataManager || !systemId) return DEFAULT_ABILITY_FIELD_DEFS;
   try {
     const result = await dataManager.get("systems", systemId, { preferLocal: false });
     const fields = Array.isArray(result?.payload?.fields) ? result.payload.fields : [];
-    const field = fields.find((entry) => entry.type === "object" && entry.key === "abilities");
+    const key = preferredKey || guessAbilityFieldKey(fields) || "abilities";
+    const field = fields.find((entry) => entry.type === "object" && entry.key === key);
     const defs = (field?.children || [])
-      .map((child) => ({
-        key: String(child.key || "").replace(/^abilities\./, ""),
-        label: child.shortName || child.label || "",
-      }))
+      .map((child) => {
+        const raw = String(child.key || "");
+        return {
+          key: raw.startsWith(`${key}.`) ? raw.slice(key.length + 1) : raw,
+          label: child.shortName || child.label || "",
+          // Carried through (when authored) for Forge's own independent-roll
+          // fallback (loadIndependentStatRanges in forge/js/lib/tables.js) —
+          // a System whose ability children define a real range (e.g.
+          // sys.coc7e.json's characteristics, 15-90) can have them rolled
+          // directly instead of only ever coming from an Archetype entry.
+          ...(typeof child.minimum === "number" && typeof child.maximum === "number"
+            ? { minimum: child.minimum, maximum: child.maximum }
+            : {}),
+        };
+      })
       .filter((entry) => entry.key && entry.label);
     return defs.length ? defs : DEFAULT_ABILITY_FIELD_DEFS;
   } catch (error) {

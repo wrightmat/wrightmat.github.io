@@ -1,0 +1,17 @@
+{
+  "index": "chain-10-feet",
+  "name": "Chain (10 feet)",
+  "notes": "A chain has 10 hit points. It can be burst with a successful DC 20 Strength check.",
+  "price": "5 gp",
+  "weight": 10,
+  "systemIds": [
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/equipment/chain-10-feet",
+  "mapping": "5e-api-equipment",
+  "properties": {
+    "form": "equipment",
+    "equipmentCategory": "adventuring-gear"
+  },
+  "featureIds": []
+}

@@ -1,0 +1,39 @@
+{
+  "name": "Dwarf",
+  "tagline": "Stone-born and long-memoried",
+  "description": [
+    "Stout folk of the Five Kings Mountains, Golarion's dwarves carry ancient grudges and older oaths — the Quest, the Grudge, and the Oath still shape a dwarf's life from the day they leave the mountain halls."
+  ],
+  "systemIds": [
+    "sys.pf1e",
+    "sys.pf2e"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "clan",
+    "firstNames": [
+      "Grimtor",
+      "Volka",
+      "Ordrek",
+      "Sarna",
+      "Baldwin",
+      "Ellka",
+      "Torgrim",
+      "Wynna",
+      "Durkon",
+      "Alfreth",
+      "Kelda",
+      "Modrik"
+    ],
+    "lastNames": [
+      "Ironshield",
+      "Stonehammer",
+      "Deepdelver",
+      "Goldveil",
+      "Frostbeard",
+      "Grudgekeeper",
+      "Emberforge",
+      "Hallowmar"
+    ]
+  }
+}

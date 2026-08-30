@@ -1,0 +1,39 @@
+{
+  "name": "Elf",
+  "tagline": "Returned and remembering",
+  "description": [
+    "Golarion's elves are the descendants of those who fled to Sovyrian during the Age of Darkness and returned centuries later — long-lived, keenly perceptive, and still finding their place in a world that moved on without them."
+  ],
+  "systemIds": [
+    "sys.pf1e",
+    "sys.pf2e"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "family",
+    "firstNames": [
+      "Sevanthiel",
+      "Ailyn",
+      "Corandel",
+      "Miralynn",
+      "Theriel",
+      "Ysolwyn",
+      "Fandriel",
+      "Selwyn",
+      "Orindiel",
+      "Caelynna",
+      "Thessarien",
+      "Velandriel"
+    ],
+    "lastNames": [
+      "Moonwhisper",
+      "Starholt",
+      "Duskmere",
+      "Silverbrook",
+      "Farwatch",
+      "Windmere",
+      "Nightgale",
+      "Dawnbriar"
+    ]
+  }
+}

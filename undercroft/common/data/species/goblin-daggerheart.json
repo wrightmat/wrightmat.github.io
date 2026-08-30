@@ -1,0 +1,33 @@
+{
+  "name": "Goblin",
+  "tagline": "Sharp-eared and quick in the dark",
+  "description": [
+    "Small folk with large ears and keen senses suited to navigating in darkness, Goblin names are short and quick, same as the folk themselves."
+  ],
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "none",
+    "firstNames": [
+      "Nix",
+      "Vekka",
+      "Grot",
+      "Skibble",
+      "Podge",
+      "Zil",
+      "Fennik",
+      "Wisk",
+      "Grix",
+      "Nettle",
+      "Squib",
+      "Yark",
+      "Bramble",
+      "Snick",
+      "Puck",
+      "Tovin"
+    ],
+    "lastNames": []
+  }
+}

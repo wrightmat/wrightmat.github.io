@@ -1,0 +1,18 @@
+{
+  "index": "bagpipes",
+  "name": "Bagpipes",
+  "notes": "",
+  "price": "30 gp",
+  "weight": 6,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2024/equipment/bagpipes",
+  "mapping": "5e-api-equipment",
+  "featureIds": [],
+  "properties": {
+    "form": "equipment",
+    "equipmentCategory": "musical-instruments"
+  }
+}

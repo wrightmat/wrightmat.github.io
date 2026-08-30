@@ -1,9 +1,5 @@
 {
   "name": "Hazardous Passage",
-  "systemIds": [
-    "sys.dnd5e",
-    "sys.dnd5e2014"
-  ],
   "description": "Getting through or past this place is genuinely dangerous — treacherous terrain, foul weather, or worse waits along the way.",
   "mechanics": {
     "type": "passive",

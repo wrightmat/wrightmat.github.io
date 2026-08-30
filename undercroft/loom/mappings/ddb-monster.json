@@ -7,10 +7,6 @@
       "type": "field",
       "bind": "='monster'"
     },
-    "index": {
-      "type": "custom",
-      "fn": "slug"
-    },
     "name": {
       "type": "field",
       "bind": "@name"

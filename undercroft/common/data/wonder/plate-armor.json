@@ -1,0 +1,18 @@
+{
+  "index": "plate-armor",
+  "name": "Plate Armor",
+  "notes": "Armor Class: 18\n\nStrength: 15\n\nStealth: Disadvantage",
+  "price": "1500 gp",
+  "weight": 65,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2024/equipment/plate-armor",
+  "mapping": "5e-api-equipment",
+  "properties": {
+    "form": "armor",
+    "armorCategory": "heavy"
+  },
+  "featureIds": []
+}

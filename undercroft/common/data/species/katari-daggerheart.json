@@ -1,0 +1,33 @@
+{
+  "name": "Katari",
+  "tagline": "Sleek, sharp, and quiet on their feet",
+  "description": [
+    "Feline humanoids with retractable claws, slit pupils, and heightened senses, Katari names are sleek and quick on the tongue."
+  ],
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "none",
+    "firstNames": [
+      "Mishka",
+      "Ryu",
+      "Sable",
+      "Vesh",
+      "Kessa",
+      "Ozan",
+      "Tamsin",
+      "Vellik",
+      "Ashka",
+      "Corin",
+      "Nyxa",
+      "Sorrel",
+      "Zephri",
+      "Ilvan",
+      "Quessa",
+      "Brix"
+    ],
+    "lastNames": []
+  }
+}

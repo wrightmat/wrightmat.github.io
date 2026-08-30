@@ -1,0 +1,30 @@
+{
+  "name": "Lashunta",
+  "tagline": "Telepathic and matriarchal",
+  "description": [
+    "A telepathic, matriarchal humanoid species from the jungle world of Castrovel, lashunta value knowledge and connection above nearly all else."
+  ],
+  "systemIds": [
+    "sys.sf1e",
+    "sys.sf2e"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "none",
+    "firstNames": [
+      "Ilvash",
+      "Meliae",
+      "Corvash",
+      "Sunniva",
+      "Delrash",
+      "Ysolde",
+      "Andrash",
+      "Ferrali",
+      "Torvash",
+      "Nimira",
+      "Ozash",
+      "Salvia"
+    ],
+    "lastNames": []
+  }
+}

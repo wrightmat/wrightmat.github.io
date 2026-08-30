@@ -1,0 +1,39 @@
+{
+  "name": "Human",
+  "tagline": "Widespread since the Gap",
+  "description": [
+    "Humanity resettled the Pact Worlds after the mysterious Gap erased centuries of memory — found from Absalom Station's crowded decks to the mining colonies of the outer system."
+  ],
+  "systemIds": [
+    "sys.sf1e",
+    "sys.sf2e"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "family",
+    "firstNames": [
+      "Kael",
+      "Rhiannon",
+      "Desmond",
+      "Nadia",
+      "Foster",
+      "Yumiko",
+      "Bastian",
+      "Selene",
+      "Marcus",
+      "Priya",
+      "Otto",
+      "Zara"
+    ],
+    "lastNames": [
+      "Vance",
+      "Okafor",
+      "Reyes",
+      "Winters",
+      "Blackwood",
+      "Halloway",
+      "Petrova",
+      "Kessler"
+    ]
+  }
+}

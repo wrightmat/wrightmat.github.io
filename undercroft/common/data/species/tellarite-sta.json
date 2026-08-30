@@ -1,0 +1,29 @@
+{
+  "name": "Tellarite",
+  "tagline": "Argument as affection",
+  "description": [
+    "A blunt, argumentative people who consider vigorous debate a sign of respect, not hostility — the louder the disagreement, the warmer the regard."
+  ],
+  "systemIds": [
+    "sys.sta"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "family",
+    "firstNames": [
+      "Gral",
+      "Bulok",
+      "Anlok",
+      "Trelan",
+      "Vorik",
+      "Glav",
+      "Norlan",
+      "Threlkin"
+    ],
+    "lastNames": [
+      "Grath",
+      "Molak",
+      "Threlvan"
+    ]
+  }
+}

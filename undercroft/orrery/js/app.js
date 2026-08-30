@@ -32,7 +32,7 @@ import {
   removeElement,
 } from "../../common/js/lib/map-live-sync.js";
 import { initAuthControls } from "../../common/js/lib/auth-ui.js";
-import { refreshTooltips, disposeTooltips } from "../../common/js/lib/tooltips.js";
+import { refreshTooltips, disposeTooltips, initTooltip } from "../../common/js/lib/tooltips.js";
 import { createColorPickerField } from "../../common/js/lib/color-picker.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
 import { fetchKindEntriesWithIds } from "../../common/js/lib/content-fetch.js";
@@ -7435,9 +7435,10 @@ function getSelectedVectorLayer() {
 function updateDrawAvailability() {
   if (!elements.drawToggle) return;
   elements.drawToggle.disabled = false;
-  const tooltipTarget = elements.drawToggleWrap || elements.drawToggle;
-  tooltipTarget.setAttribute("data-bs-title", "Draw on the map");
-  refreshTooltips(tooltipTarget.parentElement || document);
+  // Single-element, not a broad refreshTooltips(document/toolbar) sweep —
+  // this only ever needs to touch its own tooltip trigger, never any
+  // other tooltip that happens to be open elsewhere at that moment.
+  initTooltip(elements.drawToggleWrap || elements.drawToggle, { title: "Draw on the map" });
 }
 
 // Returns the currently-selected vector layer, auto-creating (and

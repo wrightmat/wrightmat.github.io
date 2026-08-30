@@ -1,9 +1,5 @@
 {
   "id": "industry",
   "name": "Industry",
-  "systemIds": [
-    "sys.dnd5e",
-    "sys.dnd5e2014"
-  ],
   "description": "Exists to make things — forges, workshops, mills, and other places raw material becomes finished goods."
 }

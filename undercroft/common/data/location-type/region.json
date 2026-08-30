@@ -2,9 +2,5 @@
   "id": "region",
   "name": "Region",
   "scale": 2,
-  "systemIds": [
-    "sys.dnd5e",
-    "sys.dnd5e2014"
-  ],
   "description": "A broad area spanning many smaller places — a coastline, a mountain range, a kingdom's borderlands — usually the parent of several settlements/structures/complexes."
 }

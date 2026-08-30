@@ -12,7 +12,7 @@ import {
   createModeToggleGroup,
 } from "../../common/js/lib/ui-components.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
-import { refreshTooltips } from "../../common/js/lib/tooltips.js";
+import { refreshTooltips, updateTooltipContent } from "../../common/js/lib/tooltips.js";
 import { renderRelationshipEditor } from "../../common/js/lib/relationship-editor.js";
 import { buildRelationshipGraph } from "../../common/js/lib/relationship-graph.js";
 import { createForceGraph } from "../../common/js/lib/graph-view.js";
@@ -36,6 +36,8 @@ import {
   loadArchetypeTable,
   loadNpcAttitudes,
   listFeaturesForSystem,
+  loadIndependentStatRanges,
+  loadSkillGenerationConfig,
   GENDER_FACES,
   AGE_FACES,
   RELATIONSHIP_STATUS_FACES,
@@ -51,7 +53,12 @@ import { createDirtyGate } from "../../common/js/lib/dirty-gate.js";
 import { abilityModifier } from "../../common/js/lib/dnd-rules.js";
 import { allowsDelete, refreshOwnershipCatalog, confirmDelete } from "../../common/js/lib/ownership.js";
 import { createTokenImageField } from "../../common/js/lib/token-picker.js";
-import { renderRequiredSelectOptions, renderOptionalSelectOptions } from "../../common/js/lib/generator-kit.js";
+import {
+  renderRequiredSelectOptions,
+  renderOptionalSelectOptions,
+  setGenerateButtonReadiness,
+  listObjectFieldOptions,
+} from "../../common/js/lib/generator-kit.js";
 import { markRequiredControl } from "../../common/js/lib/dom.js";
 import { resolveGroupContext, pickGroupDefaultId } from "../../common/js/lib/widgets/group-context.js";
 // Repository's own markdown renderer (dice/task-list/callout/wiki-link
@@ -200,6 +207,11 @@ const statsFields = document.querySelector("[data-stats-fields]");
 // card too) — hidden entirely rather than shown with an explanatory
 // message when there's nothing to display, see renderStats below.
 const statsCard = statsFields?.closest(".card") || null;
+// Present only for a System with a skillGeneration config authored (Call of
+// Cthulhu today) — hidden entirely for every other System, same convention
+// as statsCard above, see renderSkills below.
+const skillsFields = document.querySelector("[data-skills-fields]");
+const skillsCard = skillsFields?.closest(".card") || null;
 const generateNoteButton = document.querySelector("[data-generate-note]");
 const noteText = document.querySelector("[data-note-text]");
 const notePreview = document.querySelector("[data-note-preview]");
@@ -278,6 +290,15 @@ document.querySelector("[data-stats-mount]")?.appendChild(
     helpTopic: "forge.stats",
     collapsed: false,
     content: document.querySelector("[data-stats-panel]"),
+  }).section
+);
+
+document.querySelector("[data-skills-mount]")?.appendChild(
+  createCollapsibleSection({
+    label: "Skills",
+    helpTopic: "forge.skills",
+    collapsed: false,
+    content: document.querySelector("[data-skills-panel]"),
   }).section
 );
 
@@ -476,6 +497,17 @@ let ABILITY_KEYS = new Set();
 // the Settings modal's Archetype field picker below.
 let arrayFieldOptions = [];
 
+// Every top-level object field the active System defines — refreshed
+// alongside everything else in refreshSystemVocabulary, used to populate
+// the Settings modal's Ability field picker below. A separate list from
+// arrayFieldOptions above since an ability/stat block is always authored as
+// an object field (e.g. {strength, dexterity, ...}), never an array one.
+// abilityFieldGuess is which one guessAbilityFieldKey would auto-pick, so
+// the dropdown can pre-select and label it instead of offering a separate
+// "Auto-detect" placeholder option.
+let objectFieldOptions = [];
+let abilityFieldGuess = "";
+
 // Every key (besides `name`) present on any entry of the currently-resolved
 // Archetype table — refreshed alongside arrayFieldOptions, used to populate
 // the Settings modal's Stats picker (which of those keys should actually be
@@ -507,7 +539,7 @@ function setForgeSystemSetting(systemId, key, value) {
   // An empty statsKeys carries no information (see getStatsKeysPreference
   // below — it's treated the same as never having set it), so it doesn't
   // keep this record alive on its own.
-  if (!next.archetypeField && !next.attitudeField && !(next.statsKeys && next.statsKeys.length)) {
+  if (!next.archetypeField && !next.attitudeField && !next.abilityField && !(next.statsKeys && next.statsKeys.length)) {
     dataManager.removeLocal(FORGE_SETTINGS_BUCKET, systemId);
   } else {
     dataManager.saveLocal(FORGE_SETTINGS_BUCKET, systemId, next);
@@ -531,6 +563,20 @@ function getAttitudeFieldPreference(systemId) {
 
 function setAttitudeFieldPreference(systemId, fieldKey) {
   setForgeSystemSetting(systemId, "attitudeField", fieldKey || "");
+}
+
+// Which object field is this System's ability/stat block — same per-System,
+// per-browser tool preference shape as archetypeField/attitudeField above,
+// feeding loadAbilityFieldDefs' own preferredKey param instead of it always
+// assuming a field literally named "abilities" (see
+// feedback_settings_preference_with_guessed_default). Empty/unset falls
+// through to loadAbilityFieldDefs' own shape-based guess.
+function getAbilityFieldPreference(systemId) {
+  return getForgeSystemSettings(systemId).abilityField || "";
+}
+
+function setAbilityFieldPreference(systemId, fieldKey) {
+  setForgeSystemSetting(systemId, "abilityField", fieldKey || "");
 }
 
 // An empty selection is treated exactly like "never configured" — both
@@ -644,17 +690,26 @@ function resolveArchetypeStats(statsByName, systemId) {
 async function refreshSystemVocabulary(systemId) {
   const archetypeField = getArchetypeFieldPreference(systemId);
   const attitudeField = getAttitudeFieldPreference(systemId);
-  const [alignmentFaces, abilityFieldDefs, fieldOptions, archetypeTable, npcAttitudes, systemFeatures] = await Promise.all([
-    loadAlignmentFaces(dataManager, systemId),
-    loadAbilityFieldDefs(dataManager, systemId),
-    listArrayFieldOptions(dataManager, systemId),
-    loadArchetypeTable(dataManager, systemId, archetypeField || undefined),
-    loadNpcAttitudes(dataManager, systemId, attitudeField || undefined),
-    listFeaturesForSystem(dataManager, systemId),
-  ]);
+  // abilityFieldDefs resolved first, on its own — loadIndependentStatRanges
+  // below needs its already-resolved minimum/maximum data, so it can't join
+  // the same Promise.all as everything else that doesn't depend on it.
+  const abilityFieldDefs = await loadAbilityFieldDefs(dataManager, systemId, getAbilityFieldPreference(systemId));
+  const [alignmentFaces, fieldOptions, objFieldOptions, archetypeTable, npcAttitudes, systemFeatures, independentStatRanges, skillGenerationConfig] =
+    await Promise.all([
+      loadAlignmentFaces(dataManager, systemId),
+      listArrayFieldOptions(dataManager, systemId),
+      listObjectFieldOptions(dataManager, systemId),
+      loadArchetypeTable(dataManager, systemId, archetypeField || undefined),
+      loadNpcAttitudes(dataManager, systemId, attitudeField || undefined),
+      listFeaturesForSystem(dataManager, systemId),
+      loadIndependentStatRanges(dataManager, systemId, abilityFieldDefs),
+      loadSkillGenerationConfig(dataManager, systemId),
+    ]);
   features = systemFeatures;
   populateAddFeatureSelect();
   arrayFieldOptions = fieldOptions;
+  objectFieldOptions = objFieldOptions.options;
+  abilityFieldGuess = objFieldOptions.guessedKey;
   ABILITY_FIELD_DEFS = abilityFieldDefs;
   ABILITY_KEYS = new Set(abilityFieldDefs.map((entry) => entry.key));
   archetypeStatKeyOptions = statsKeyOptionsFrom(archetypeTable.statsByName);
@@ -668,6 +723,13 @@ async function refreshSystemVocabulary(systemId) {
     // apart from any other kind of stat and bundle it into stats.abilities
     // — the shape Crucible's monsters/Characters both already use.
     tables.abilityKeys = ABILITY_KEYS;
+    // Both optional, System-defined fallbacks resolveStats/generateNpc
+    // (lib/generator.js) use for a System whose stats/skills genuinely
+    // don't come from the Archetype table entry (see each helper's own
+    // comment in lib/tables.js) — empty/null for every System that doesn't
+    // define them, which is every System except Call of Cthulhu today.
+    tables.independentStatRanges = independentStatRanges;
+    tables.skillGeneration = skillGenerationConfig;
   }
   populateSelectOptions(alignmentOverrideSelect, alignmentFaces);
 }
@@ -906,6 +968,39 @@ function renderStats(stats) {
   });
 }
 
+// Only ever non-empty for a System with a skillGeneration config authored
+// (see rollSkills in lib/generator.js, tables.skillGeneration in
+// refreshSystemVocabulary) — hidden entirely otherwise, same "d-none when
+// nothing to show" convention as renderStats above. Real labels come from
+// tables.skillGeneration.skillKeys (the System's own skill vocabulary, not
+// a Forge-side guess); Key Expertise Skills get a "Key" suffix so they read
+// as distinct from the rest at a glance.
+function renderSkills(skills) {
+  skillsFields.innerHTML = "";
+  const values = skills?.values;
+  if (!values || !Object.keys(values).length) {
+    skillsCard?.classList.add("d-none");
+    return;
+  }
+  skillsCard?.classList.remove("d-none");
+  const keySkills = new Set(skills.keySkills || []);
+  const labelByKey = new Map((tables?.skillGeneration?.skillKeys || []).map((entry) => [entry.key, entry.label]));
+  Object.entries(values).forEach(([key, value]) => {
+    skillsFields.appendChild(
+      buildFieldCard({
+        key: `skills.${key}`,
+        label: labelByKey.get(key) || titleCaseKey(key),
+        value: value ?? "",
+        suffix: keySkills.has(key) ? "Key" : "",
+        rerollable: false,
+        colClass: "col-4 col-md-3 col-lg-2",
+        compact: true,
+        editable: true,
+      })
+    );
+  });
+}
+
 // Save (dirty-gated) and Delete (saved-gated) button state, shared by
 // renderNpc's full re-render and the in-place field-edit handlers below
 // (which patch currentRecord directly and skip a full renderNpc to avoid
@@ -1031,6 +1126,7 @@ function renderNpc(record) {
   });
 
   renderStats(record.stats);
+  renderSkills(record.skills);
   renderFeatureList(record);
   populateAddFeatureSelect();
 
@@ -1507,7 +1603,15 @@ async function populateSettingSelect(systemId) {
 async function populateLocationSelectOptions(settingId) {
   const locations = await listLocationsForSetting(dataManager, settingId);
   locationsInSetting = locations;
-  renderOptionalSelectOptions(locationSelect, locations, { blankLabel: locations.length ? "No Location" : "No Locations yet" });
+  // autoSelectSingle: true — a single available Location gives a more
+  // specific NPC (its own narrower species mix) than falling back to the
+  // whole Setting's, with nothing lost by landing on it automatically. See
+  // renderOptionalSelectOptions's own comment for why this is opt-in rather
+  // than the default for every "optional" picker built on it.
+  renderOptionalSelectOptions(locationSelect, locations, {
+    blankLabel: locations.length ? "No Location" : "No Locations yet",
+    autoSelectSingle: true,
+  });
   return locations;
 }
 
@@ -1803,10 +1907,10 @@ function getFieldTableData(key) {
 // --- Event wiring ------------------------------------------------------
 
 generateButton.addEventListener("click", () => {
-  if (!settingSelect.value) {
-    status?.show("Select a Setting first.", { type: "warning", timeout: 2500 });
-    return;
-  }
+  // No Setting-selected guard needed here — setGenerateButtonReadiness
+  // gives the button a real `disabled` attribute whenever none is picked,
+  // and a disabled button's click listener never fires at all (mouse or
+  // keyboard), so this handler only ever runs once a Setting is chosen.
   if (!tables) return;
   try {
     const overrides = readOverrides();
@@ -1934,6 +2038,27 @@ statsFields.addEventListener("input", (event) => {
 statsFields.addEventListener("keydown", flushFieldCommitOnUndoRedo);
 statsFields.addEventListener("change", () => commitFieldEdit());
 
+// Same live-edit shape as statsFields' own listener above, scoped to the
+// separate skillsFields container (Skills isn't nested inside stats — see
+// rollSkills' own `{keySkills, values}` shape) — every skill field is a
+// flat, always-numeric write into skills.values[key].
+skillsFields.addEventListener("input", (event) => {
+  const input = event.target.closest("[data-editable-field]");
+  if (!input || !currentRecord?.skills?.values) return;
+  const field = input.dataset.editableField;
+  scheduleFieldCommit(`edit ${field}`);
+  const skillKey = field.startsWith("skills.") ? field.slice("skills.".length) : field;
+  const numericValue = Number(input.value) || 0;
+  currentRecord = {
+    ...currentRecord,
+    skills: { ...currentRecord.skills, values: { ...currentRecord.skills.values, [skillKey]: numericValue } },
+  };
+  jsonDataPanel.render();
+  refreshActionButtons();
+});
+skillsFields.addEventListener("keydown", flushFieldCommitOnUndoRedo);
+skillsFields.addEventListener("change", () => commitFieldEdit());
+
 generateNoteButton.addEventListener("click", async () => {
   if (!currentRecord) return;
   generateNoteButton.disabled = true;
@@ -1995,8 +2120,7 @@ function applyNoteMode(mode) {
   noteModeEyeIcon?.classList.toggle("d-none", isView);
   noteModePencilIcon?.classList.toggle("d-none", !isView);
   if (noteModeLabel) noteModeLabel.textContent = isView ? "Edit" : "View";
-  noteModeToggle?.setAttribute("data-bs-title", isView ? "Edit" : "View");
-  refreshTooltips();
+  if (noteModeToggle) updateTooltipContent(noteModeToggle, isView ? "Edit" : "View");
   if (isView) renderNotePreview();
 }
 
@@ -2095,6 +2219,19 @@ duplicateButton.addEventListener("click", () => {
 undoButton.addEventListener("click", () => performUndo());
 redoButton.addEventListener("click", () => performRedo());
 
+// Proactive "insufficient reference data" state for Generate NPC — a
+// Setting is the one hard requirement (generateNpc degrades gracefully to
+// "Other"/generic fallbacks for everything else, per this System's own
+// documented minimum-requirements convention). Previously the button stayed
+// enabled with no Setting picked and only warned reactively, inside the
+// click handler, after the click — same class of bug as Crucible/Sanctum/
+// Vault's own Generate buttons, fixed the same way via the shared
+// setGenerateButtonReadiness helper.
+function updateGenerateButtonReadiness() {
+  const reason = settingSelect.value ? "" : "Select a Setting first.";
+  setGenerateButtonReadiness(generateButton, reason);
+}
+
 // Named (not an inline listener) so the init flow below can also call this
 // directly when auto-selecting the active campaign group's own System.
 async function handleSystemSelectChange() {
@@ -2107,6 +2244,15 @@ async function handleSystemSelectChange() {
   // auto-default can check the Setting it wants against what actually loaded
   // for this System, without a second, redundant fetch.
   const [, settings] = await Promise.all([refreshSystemVocabulary(systemId), populateSettingSelect(systemId)]);
+  updateGenerateButtonReadiness();
+  if (settingSelect.value) {
+    // A single Setting for this System just auto-selected itself (see
+    // renderRequiredSelectOptions) — continue the cascade exactly as if the
+    // GM had picked it by hand, instead of leaving Location/NPC/Archetype
+    // stuck on "nothing chosen" underneath an already-resolved Setting.
+    await handleSettingSelectChange();
+    return settings;
+  }
   await populateLocationSelectOptions("");
   await populateNpcSelect();
   // Archetype's own table is System-wide, not Location-dependent (only its
@@ -2128,6 +2274,7 @@ systemSelect.addEventListener("change", handleSystemSelectChange);
 async function handleSettingSelectChange() {
   const settingId = settingSelect.value;
   markRequiredControl(settingSelect, Boolean(settingId));
+  updateGenerateButtonReadiness();
   currentLocation = null;
   currentNpcId = null;
   try {
@@ -2135,11 +2282,18 @@ async function handleSettingSelectChange() {
   } catch (error) {
     currentSetting = null;
   }
-  // No auto-selecting the first Location anymore — matches Sanctum's own
-  // Setting/Location pickers, which always land on an explicit "nothing
-  // chosen yet" state and let the GM pick deliberately, rather than
-  // silently defaulting to whichever Location happens to sort first.
   await populateLocationSelectOptions(settingId);
+  if (locationSelect.value) {
+    // A single Location for this Setting just auto-selected itself (see
+    // populateLocationSelectOptions's own autoSelectSingle) — selectLocation
+    // continues the cascade (NPC list, Species context) exactly as if the
+    // GM had picked it by hand, same reasoning as the Setting auto-select
+    // in handleSystemSelectChange above. Otherwise (no Location, or more
+    // than one to choose from) land on the explicit "nothing chosen yet"
+    // state and let the GM pick deliberately, same as ever.
+    await selectLocation(locationSelect.value);
+    return;
+  }
   await populateNpcSelect();
   // The Setting's own Species Weights become the fallback the moment it's
   // picked (effectiveSpeciesLocation) — refresh here too, not just on
@@ -2324,6 +2478,29 @@ async function init() {
           },
         },
         {
+          key: "abilityField",
+          type: "select",
+          label: "Ability field",
+          // No separate "Auto-detect" option — the guessed field (whichever
+          // Object property guessAbilityFieldKey picked) IS the selected
+          // value until the GM actually picks a different one, with " (auto-
+          // detected)" on its own option label as the only indicator. Once a
+          // real preference is stored (even re-picking the same field
+          // explicitly), that suffix drops — see getValue below.
+          options: objectFieldOptions.map((field) => ({
+            value: field.key,
+            label:
+              field.key === abilityFieldGuess && !getAbilityFieldPreference(systemId)
+                ? `${field.label || field.key} (auto-detected)`
+                : field.label || field.key,
+          })),
+          getValue: () => getAbilityFieldPreference(systemId) || abilityFieldGuess,
+          setValue: (value) => {
+            setAbilityFieldPreference(systemId, value);
+            refreshSystemVocabulary(systemId);
+          },
+        },
+        {
           key: "statsKeys",
           type: "multiselect",
           label: "Stats",
@@ -2354,11 +2531,12 @@ async function init() {
 
   tables = await loadForgeTables();
   populateFixedOverrides();
-  // Only real dependency Generate's own click handler has (see its own
-  // `if (!tables) return;` guard) — already resolved for every path below,
-  // including a deep link's own Phase 1 (applyDeepLinkParams runs after
-  // this line), so one unconditional enable here covers every case.
-  generateButton.disabled = false;
+  // tables loading is resolved for every path below, including a deep
+  // link's own Phase 1 (applyDeepLinkParams runs after this line) — but a
+  // Setting still needs to be picked before Generate can actually produce
+  // anything (see updateGenerateButtonReadiness), so this only makes the
+  // button clickable, not necessarily ready.
+  updateGenerateButtonReadiness();
 
   // No blanket auto-selected defaults (previously always sys.dnd5e /
   // forgotten-realms / sword-coast, regardless of who was signed in) — the

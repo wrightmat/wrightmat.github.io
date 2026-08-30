@@ -1,0 +1,18 @@
+{
+  "index": "masons-tools",
+  "name": "Mason's Tools",
+  "notes": "",
+  "price": "10 gp",
+  "weight": 8,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2024/equipment/masons-tools",
+  "mapping": "5e-api-equipment",
+  "featureIds": [],
+  "properties": {
+    "form": "equipment",
+    "equipmentCategory": "artisan-s-tools"
+  }
+}

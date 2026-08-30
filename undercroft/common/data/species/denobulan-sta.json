@@ -1,0 +1,29 @@
+{
+  "name": "Denobulan",
+  "tagline": "One big, happy family",
+  "description": [
+    "A gregarious, extroverted people from a world of unusual, harmonious social and family structures — a Denobulan's household can run to three spouses and a dozen children."
+  ],
+  "systemIds": [
+    "sys.sta"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "family",
+    "firstNames": [
+      "Phlox",
+      "Feezal",
+      "Mettus",
+      "Vaneel",
+      "Yolan",
+      "Groznik",
+      "Ipeta",
+      "Chellik"
+    ],
+    "lastNames": [
+      "Denar",
+      "Mestal",
+      "Yeska"
+    ]
+  }
+}

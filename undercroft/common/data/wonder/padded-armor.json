@@ -1,0 +1,18 @@
+{
+  "index": "padded-armor",
+  "name": "Padded Armor",
+  "notes": "Armor Class: 11 + Dex modifier\n\nStealth: Disadvantage",
+  "price": "5 gp",
+  "weight": 8,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2024/equipment/padded-armor",
+  "mapping": "5e-api-equipment",
+  "properties": {
+    "form": "armor",
+    "armorCategory": "light"
+  },
+  "featureIds": []
+}

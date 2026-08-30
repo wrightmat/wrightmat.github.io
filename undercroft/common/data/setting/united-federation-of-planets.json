@@ -1,0 +1,45 @@
+{
+  "systemIds": [
+    "sys.sta"
+  ],
+  "name": "United Federation of Planets",
+  "description": "The default assumed era of the Star Trek Adventures core rulebook: 2371, the years of The Next Generation's final seasons and Deep Space Nine and Voyager's early ones. A optimistic, post-scarcity interstellar government of over a hundred and fifty member worlds, explored and defended by Starfleet — an explicitly multi-species institution where a human helm officer, a Vulcan science officer, and a Bajoran first officer serve on the same bridge as a matter of course.",
+  "speciesWeights": [
+    {
+      "entityId": "human-sta",
+      "weight": 45
+    },
+    {
+      "entityId": "vulcan-sta",
+      "weight": 10
+    },
+    {
+      "entityId": "andorian-sta",
+      "weight": 8
+    },
+    {
+      "entityId": "betazoid-sta",
+      "weight": 7
+    },
+    {
+      "entityId": "bajoran-sta",
+      "weight": 6
+    },
+    {
+      "entityId": "trill-sta",
+      "weight": 6
+    },
+    {
+      "entityId": "tellarite-sta",
+      "weight": 6
+    },
+    {
+      "entityId": "denobulan-sta",
+      "weight": 6
+    },
+    {
+      "entityId": "bolian-sta",
+      "weight": 6
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "name": "Catfolk",
+  "tagline": "Curious, quick, and quick to wander",
+  "description": [
+    "Feline humanoids found throughout the Mwangi Expanse and beyond, catfolk are driven by curiosity and a restless wanderlust."
+  ],
+  "systemIds": [
+    "sys.pf2e"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "none",
+    "firstNames": [
+      "Mishka",
+      "Ryu",
+      "Sable",
+      "Vesh",
+      "Kessa",
+      "Ozan",
+      "Tamsin",
+      "Vellik",
+      "Ashka",
+      "Corin",
+      "Nyxa",
+      "Sorrel"
+    ],
+    "lastNames": []
+  }
+}

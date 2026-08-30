@@ -1,0 +1,13 @@
+{
+  "systemIds": [
+    "sys.apocalypseworld"
+  ],
+  "name": "The Broken World",
+  "description": "Apocalypse World's own core rulebook deliberately ships with NO canonical setting at all — the game's entire first-session structure exists to have the MC and players build their specific apocalypse together at the table (near or far past the apocalypse, what broke, what a hardhold looks like, what the psychic maelstrom does). This Setting is a single, honestly-labeled EXAMPLE built in that same spirit — a hardhold clinging to a water source, gangs trading barter and favors across a cratered, maelstrom-touched wasteland — not official canon, because there isn't any. Reskin freely; that's the point of the game.",
+  "speciesWeights": [
+    {
+      "entityId": "human-apocalypseworld",
+      "weight": 100
+    }
+  ]
+}

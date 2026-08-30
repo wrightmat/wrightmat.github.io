@@ -1,0 +1,18 @@
+{
+  "index": "greatsword",
+  "name": "Greatsword",
+  "notes": "Damage: 2d6 Slashing\n\nRange: 5 ft.\n\nProperties: Heavy, Two-Handed\n\nMastery: Graze",
+  "price": "50 gp",
+  "weight": 6,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2024/equipment/greatsword",
+  "mapping": "5e-api-equipment",
+  "properties": {
+    "form": "weapon",
+    "weaponCategory": "martial-melee"
+  },
+  "featureIds": []
+}

@@ -1,0 +1,28 @@
+{
+  "index": "crowbar",
+  "name": "Crowbar",
+  "notes": "Using a Crowbar gives you Advantage on Strength checks where the Crowbar's leverage can be applied.",
+  "price": "2 gp",
+  "weight": 5,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2024/equipment/crowbar",
+  "mapping": "5e-api-equipment",
+  "properties": {
+    "form": "equipment",
+    "equipmentCategory": "adventuring-gear"
+  },
+  "featureIds": [
+    "feat.skill-bonus"
+  ],
+  "featureTiers": {
+    "feat.skill-bonus": "advantage"
+  },
+  "featureParams": {
+    "feat.skill-bonus": {
+      "skill": "strength"
+    }
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "name": "Dagger Islander",
+  "tagline": "Far-flung and self-reliant",
+  "description": [
+    "The Dagger Isles are the most distant and least understood of the Shattered Isles — Dagger Islanders are a small but distinctive presence in Duskvol, close-mouthed about home and fiercely self-reliant, often ending up as sailors, leviathan-hunters, or independent operators with no particular loyalty to any of the city's established factions."
+  ],
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "family",
+    "firstNames": [
+      "Kaia",
+      "Toven",
+      "Maree",
+      "Ruko",
+      "Sennet",
+      "Vale",
+      "Ilo",
+      "Nerys",
+      "Pemo",
+      "Tamsin",
+      "Coro",
+      "Wynne",
+      "Alik",
+      "Farro",
+      "Isla",
+      "Sorren"
+    ],
+    "lastNames": [
+      "Tidecarver",
+      "Saltmoor",
+      "Windrunner",
+      "Deepwake",
+      "Farshore",
+      "Stormcaller",
+      "Longtide",
+      "Reefborn"
+    ]
+  }
+}

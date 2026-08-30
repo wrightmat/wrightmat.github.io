@@ -1,0 +1,834 @@
+{
+  "title": "D&D Basic/Expert (B/X)",
+  "version": "0.1",
+  "fields": [
+    {
+      "type": "string",
+      "key": "name",
+      "label": "Character Name",
+      "required": true
+    },
+    {
+      "type": "string",
+      "key": "player",
+      "label": "Player Name"
+    },
+    {
+      "type": "array",
+      "key": "classes",
+      "label": "Class",
+      "values": [
+        {
+          "name": "Cleric",
+          "description": "A pious warrior-priest who turns undead and channels divine spells at 2nd level."
+        },
+        {
+          "name": "Fighter",
+          "description": "A straightforward warrior, the best at hitting things with weapons and taking a beating."
+        },
+        {
+          "name": "Magic-User",
+          "description": "A scholarly spellcaster who begins with a single spell and a fragile constitution."
+        },
+        {
+          "name": "Thief",
+          "description": "A stealthy specialist skilled at locks, traps, shadows, and other people's pockets."
+        },
+        {
+          "name": "Dwarf",
+          "description": "A demihuman race-as-class: a stout, infravision-sighted fighter, tough against magic and giants."
+        },
+        {
+          "name": "Elf",
+          "description": "A demihuman race-as-class: fighter and magic-user in one, immune to ghoul paralysis, infravision-sighted."
+        },
+        {
+          "name": "Halfling",
+          "description": "A demihuman race-as-class: a small, stealthy fighter with a knack for missile weapons."
+        }
+      ]
+    },
+    {
+      "type": "number",
+      "key": "level",
+      "label": "Level",
+      "minimum": 1,
+      "maximum": 14
+    },
+    {
+      "type": "string",
+      "key": "alignment",
+      "label": "Alignment"
+    },
+    {
+      "type": "array",
+      "key": "alignments",
+      "label": "Alignment Options",
+      "values": [
+        {
+          "name": "Lawful"
+        },
+        {
+          "name": "Neutral"
+        },
+        {
+          "name": "Chaotic"
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "abilities",
+      "label": "Ability Scores",
+      "children": [
+        {
+          "type": "number",
+          "key": "abilities.strength",
+          "label": "Strength",
+          "shortName": "STR",
+          "color": "#e74c3c",
+          "minimum": 3,
+          "maximum": 18
+        },
+        {
+          "type": "number",
+          "key": "abilities.intelligence",
+          "label": "Intelligence",
+          "shortName": "INT",
+          "color": "#3498db",
+          "minimum": 3,
+          "maximum": 18
+        },
+        {
+          "type": "number",
+          "key": "abilities.wisdom",
+          "label": "Wisdom",
+          "shortName": "WIS",
+          "color": "#2ecc71",
+          "minimum": 3,
+          "maximum": 18
+        },
+        {
+          "type": "number",
+          "key": "abilities.dexterity",
+          "label": "Dexterity",
+          "shortName": "DEX",
+          "color": "#f1c40f",
+          "minimum": 3,
+          "maximum": 18
+        },
+        {
+          "type": "number",
+          "key": "abilities.constitution",
+          "label": "Constitution",
+          "shortName": "CON",
+          "color": "#e67e22",
+          "minimum": 3,
+          "maximum": 18
+        },
+        {
+          "type": "number",
+          "key": "abilities.charisma",
+          "label": "Charisma",
+          "shortName": "CHA",
+          "color": "#9b59b6",
+          "minimum": 3,
+          "maximum": 18
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "saves",
+      "label": "Saving Throws",
+      "children": [
+        {
+          "type": "number",
+          "key": "saves.deathRayOrPoison",
+          "label": "Death Ray or Poison",
+          "minimum": 2,
+          "maximum": 20
+        },
+        {
+          "type": "number",
+          "key": "saves.magicWands",
+          "label": "Magic Wands",
+          "minimum": 2,
+          "maximum": 20
+        },
+        {
+          "type": "number",
+          "key": "saves.paralysisOrTurnToStone",
+          "label": "Paralysis or Turn to Stone",
+          "minimum": 2,
+          "maximum": 20
+        },
+        {
+          "type": "number",
+          "key": "saves.dragonBreath",
+          "label": "Dragon Breath",
+          "minimum": 2,
+          "maximum": 20
+        },
+        {
+          "type": "number",
+          "key": "saves.rodsStavesOrSpells",
+          "label": "Rods, Staves, or Spells",
+          "minimum": 2,
+          "maximum": 20
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "hitPoints",
+      "label": "Hit Points",
+      "children": [
+        {
+          "type": "number",
+          "key": "hitPoints.current",
+          "label": "Current"
+        },
+        {
+          "type": "number",
+          "key": "hitPoints.max",
+          "label": "Max",
+          "minimum": 1
+        }
+      ]
+    },
+    {
+      "type": "number",
+      "key": "armorClass",
+      "label": "Armor Class (Descending)",
+      "default": 9
+    },
+    {
+      "type": "number",
+      "key": "thac0",
+      "label": "THAC0",
+      "minimum": 0,
+      "maximum": 20,
+      "default": 19
+    },
+    {
+      "type": "number",
+      "key": "initiative",
+      "label": "Initiative"
+    },
+    {
+      "type": "number",
+      "key": "speed",
+      "label": "Movement (ft./turn)",
+      "minimum": 0,
+      "default": 120
+    },
+    {
+      "type": "object",
+      "key": "thiefSkills",
+      "label": "Thief Skills",
+      "children": [
+        {
+          "type": "number",
+          "key": "thiefSkills.openlocks",
+          "label": "Open Locks",
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "thiefSkills.removetraps",
+          "label": "Remove Traps",
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "thiefSkills.pickpockets",
+          "label": "Pick Pockets",
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "thiefSkills.movesilently",
+          "label": "Move Silently",
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "thiefSkills.hideinshadows",
+          "label": "Hide in Shadows",
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "thiefSkills.hearnoise",
+          "label": "Hear Noise",
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "thiefSkills.climbsheersurfaces",
+          "label": "Climb Sheer Surfaces",
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "thiefSkills.readlanguages",
+          "label": "Read Languages",
+          "minimum": 0,
+          "maximum": 99
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "spells",
+      "label": "Spells",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Spell"
+        },
+        {
+          "type": "number",
+          "key": "level",
+          "label": "Level",
+          "minimum": 1,
+          "maximum": 6
+        },
+        {
+          "type": "boolean",
+          "key": "memorized",
+          "label": "Memorized"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "retainers",
+      "label": "Retainers & Henchmen",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Name"
+        },
+        {
+          "type": "string",
+          "key": "role",
+          "label": "Role"
+        },
+        {
+          "type": "number",
+          "key": "morale",
+          "label": "Morale",
+          "minimum": 2,
+          "maximum": 12
+        },
+        {
+          "type": "string",
+          "key": "notes",
+          "label": "Notes"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "inventory",
+      "label": "Inventory",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Item Name",
+          "required": true
+        },
+        {
+          "type": "number",
+          "key": "quantity",
+          "label": "Quantity",
+          "minimum": 0
+        },
+        {
+          "type": "number",
+          "key": "weightInCoins",
+          "label": "Weight (coins)",
+          "minimum": 0
+        },
+        {
+          "type": "string",
+          "key": "notes",
+          "label": "Notes"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "currency",
+      "label": "Currency",
+      "values": [
+        {
+          "name": "Platinum",
+          "shortName": "pp",
+          "cost": 500
+        },
+        {
+          "name": "Gold",
+          "shortName": "gp",
+          "cost": 100
+        },
+        {
+          "name": "Electrum",
+          "shortName": "ep",
+          "cost": 50
+        },
+        {
+          "name": "Silver",
+          "shortName": "sp",
+          "cost": 10
+        },
+        {
+          "name": "Copper",
+          "shortName": "cp",
+          "cost": 1
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "weaponCategories",
+      "label": "Weapon Categories",
+      "values": [
+        {
+          "name": "Melee"
+        },
+        {
+          "name": "Missile"
+        },
+        {
+          "name": "Natural"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "armorCategories",
+      "label": "Armor Categories",
+      "values": [
+        {
+          "name": "Leather"
+        },
+        {
+          "name": "Chain Mail"
+        },
+        {
+          "name": "Plate Mail"
+        },
+        {
+          "name": "Shield"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "equipmentCategories",
+      "label": "Equipment Categories",
+      "values": [
+        {
+          "name": "Adventuring Gear"
+        },
+        {
+          "name": "Tools"
+        },
+        {
+          "name": "Provisions"
+        },
+        {
+          "name": "Containers"
+        },
+        {
+          "name": "Light Sources"
+        },
+        {
+          "name": "Mounts and Vehicles"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "rarity",
+      "label": "Rarity",
+      "values": [
+        {
+          "name": "Ordinary",
+          "targetBudget": 2,
+          "description": "Available at any market town."
+        },
+        {
+          "name": "Uncommon",
+          "targetBudget": 5,
+          "description": "Found in a larger city or from a specialist."
+        },
+        {
+          "name": "Magical",
+          "targetBudget": 10,
+          "description": "A genuine magic item, found only through adventure."
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "form",
+      "label": "Item Form",
+      "values": [
+        {
+          "name": "Weapon"
+        },
+        {
+          "name": "Armor"
+        },
+        {
+          "name": "Shield"
+        },
+        {
+          "name": "Potion"
+        },
+        {
+          "name": "Scroll"
+        },
+        {
+          "name": "Ring"
+        },
+        {
+          "name": "Wand"
+        },
+        {
+          "name": "Miscellaneous Magic"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "environment",
+      "label": "Environment",
+      "values": [
+        {
+          "name": "Dungeon"
+        },
+        {
+          "name": "Wilderness"
+        },
+        {
+          "name": "Ruins"
+        },
+        {
+          "name": "Village"
+        },
+        {
+          "name": "Underground"
+        },
+        {
+          "name": "Caves"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "conditions",
+      "label": "Conditions",
+      "values": [
+        {
+          "name": "Paralyzed",
+          "description": "Cannot move or act; helpless to attacks."
+        },
+        {
+          "name": "Turned to Stone",
+          "description": "Petrified; treated as an inanimate statue."
+        },
+        {
+          "name": "Poisoned",
+          "description": "Suffering an ongoing or immediate poison effect — see the specific poison for details."
+        },
+        {
+          "name": "Unconscious",
+          "description": "Knocked out at 0 hit points or by magical effect; helpless."
+        },
+        {
+          "name": "Charmed",
+          "description": "Under a Charm Person or Charm Monster effect, treating the caster as a trusted friend."
+        },
+        {
+          "name": "Held",
+          "description": "Frozen in place by a Hold Person or Hold Monster spell."
+        },
+        {
+          "name": "Feared",
+          "description": "Fleeing from the source of the fear effect."
+        },
+        {
+          "name": "Diseased",
+          "description": "Afflicted by a disease, per its own specific effects and duration."
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "damageTypes",
+      "label": "Damage Types",
+      "values": [
+        {
+          "name": "Physical"
+        },
+        {
+          "name": "Fire"
+        },
+        {
+          "name": "Poison"
+        },
+        {
+          "name": "Acid"
+        },
+        {
+          "name": "Cold"
+        },
+        {
+          "name": "Lightning"
+        },
+        {
+          "name": "Magic"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "combatScaling",
+      "label": "Monster Hit Dice",
+      "values": [
+        {
+          "name": "1 HD",
+          "shortName": "1",
+          "xpValue": 25
+        },
+        {
+          "name": "2 HD",
+          "shortName": "2",
+          "xpValue": 40
+        },
+        {
+          "name": "3 HD",
+          "shortName": "3",
+          "xpValue": 55
+        },
+        {
+          "name": "4 HD",
+          "shortName": "4",
+          "xpValue": 70
+        },
+        {
+          "name": "5 HD",
+          "shortName": "5",
+          "xpValue": 85
+        },
+        {
+          "name": "6 HD",
+          "shortName": "6",
+          "xpValue": 100
+        },
+        {
+          "name": "7 HD",
+          "shortName": "7",
+          "xpValue": 115
+        },
+        {
+          "name": "8 HD",
+          "shortName": "8",
+          "xpValue": 130
+        },
+        {
+          "name": "9 HD",
+          "shortName": "9",
+          "xpValue": 145
+        },
+        {
+          "name": "10 HD",
+          "shortName": "10",
+          "xpValue": 160
+        },
+        {
+          "name": "11 HD",
+          "shortName": "11",
+          "xpValue": 175
+        },
+        {
+          "name": "12 HD",
+          "shortName": "12",
+          "xpValue": 190
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "creatureTypes",
+      "label": "Creature Types",
+      "values": [
+        {
+          "id": "humanoid",
+          "name": "Humanoid"
+        },
+        {
+          "id": "animal",
+          "name": "Animal"
+        },
+        {
+          "id": "dragon",
+          "name": "Dragon"
+        },
+        {
+          "id": "undead",
+          "name": "Undead"
+        },
+        {
+          "id": "giant",
+          "name": "Giant"
+        },
+        {
+          "id": "demonspirit",
+          "name": "Demon/Spirit"
+        },
+        {
+          "id": "enchanted",
+          "name": "Enchanted"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "combatBindings",
+      "label": "Combat Bindings",
+      "values": [
+        {
+          "name": "Hit Points",
+          "maxPath": "@hitPoints.max",
+          "binding": "@hitPoints.current",
+          "role": "resource"
+        },
+        {
+          "name": "Armor Class",
+          "binding": "@armorClass",
+          "role": "value"
+        },
+        {
+          "name": "Conditions",
+          "binding": "@conditions",
+          "sourceField": "conditions",
+          "role": "tags"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "dice",
+      "label": "Dice",
+      "values": [
+        {
+          "name": "d4",
+          "sides": 4
+        },
+        {
+          "name": "d6",
+          "sides": 6
+        },
+        {
+          "name": "d8",
+          "sides": 8
+        },
+        {
+          "name": "d10",
+          "sides": 10
+        },
+        {
+          "name": "d12",
+          "sides": 12
+        },
+        {
+          "name": "d20",
+          "sides": 20
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "turnUndeadTable",
+      "label": "Turn Undead (1st-Level Cleric)",
+      "values": [
+        {
+          "name": "Skeleton (1 HD)",
+          "target": 7
+        },
+        {
+          "name": "Zombie (2 HD)",
+          "target": 9
+        },
+        {
+          "name": "Ghoul (3 HD)",
+          "target": 11
+        },
+        {
+          "name": "Wight (4 HD)",
+          "target": null,
+          "note": "Cannot be turned by a 1st-level Cleric."
+        },
+        {
+          "name": "Wraith (5 HD)",
+          "target": null,
+          "note": "Cannot be turned by a 1st-level Cleric."
+        },
+        {
+          "name": "Mummy (6+ HD)",
+          "target": null,
+          "note": "Cannot be turned by a 1st-level Cleric."
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "rolls",
+      "label": "Rolls",
+      "values": [
+        {
+          "name": "Attack Roll (d20 vs Armor Class)",
+          "expression": "d20",
+          "resultMode": "band",
+          "description": "Roll d20. Compare to your THAC0 minus the target's Armor Class (remember: AC is DESCENDING here — a lower or negative AC is harder to hit, and effectively adds to the number needed rather than subtracting) — meeting or beating that number hits. This isn't a fixed target the roller's own targetValue mechanism can read off one field (it depends on BOTH your THAC0 and the target's own AC, worked out at the table each time), so no bands are declared below — this Move exists purely to make a d20 attack roll one click away from the Moves panel.",
+          "bands": []
+        },
+        {
+          "name": "Saving Throw (d20 Roll Under)",
+          "expression": "d20",
+          "resultMode": "band",
+          "description": "Roll d20 against the relevant saving throw category (Death Ray or Poison, Magic Wands, Paralysis or Turn to Stone, Dragon Breath, or Rods/Staves/Spells) — meeting or beating the listed number succeeds. Fired from a save field's own roll button, which passes that save's current value as the target.",
+          "bands": [
+            {
+              "targetMinFraction": 1.0,
+              "label": "Save Succeeds"
+            },
+            {
+              "targetMinFraction": 0,
+              "label": "Save Fails"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

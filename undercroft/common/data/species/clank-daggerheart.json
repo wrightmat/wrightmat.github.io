@@ -1,0 +1,33 @@
+{
+  "name": "Clank",
+  "tagline": "Sentient and self-made",
+  "description": [
+    "Clanks are sentient mechanical beings, built from metal, wood, and stone rather than born — most choose their own name once they're switched on, favoring the plain, functional words that make up their own bodies."
+  ],
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "names": {
+    "nameMode": "synonym",
+    "lastNameForm": "none",
+    "firstNames": [
+      "Cog",
+      "Ratchet",
+      "Bolt",
+      "Piston",
+      "Gauge",
+      "Socket",
+      "Anvil",
+      "Sprocket",
+      "Wrench",
+      "Ember",
+      "Coil",
+      "Rivet",
+      "Gear",
+      "Lever",
+      "Spindle",
+      "Forge"
+    ],
+    "lastNames": []
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "index": "quarterstaff",
+  "name": "Quarterstaff",
+  "notes": "Damage: 1d6 Bludgeoning\n\nRange: 5 ft.\n\nProperties: Versatile\n\nMastery: Topple",
+  "price": "2 sp",
+  "weight": 4,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2024/equipment/quarterstaff",
+  "mapping": "5e-api-equipment",
+  "properties": {
+    "form": "weapon",
+    "weaponCategory": "simple-melee",
+    "equipmentCategory": "arcane-foci"
+  },
+  "featureIds": []
+}

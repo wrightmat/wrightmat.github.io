@@ -1,10 +1,6 @@
 {
   "id": "res.arcane-reagents",
   "name": "Arcane Reagents",
-  "systemIds": [
-    "sys.dnd5e",
-    "sys.dnd5e2014"
-  ],
   "description": "Components for spellcasting and ritual work — rare, perishable, and always in demand.",
   "tags": {
     "locationTypes": [],

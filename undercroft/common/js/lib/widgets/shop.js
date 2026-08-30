@@ -33,7 +33,7 @@ import {
   formatPriceTotal,
 } from "../currency.js";
 import { resolveIsSpotlighted } from "../spotlight.js";
-import { refreshTooltips, disposeTooltips } from "../tooltips.js";
+import { refreshTooltips, disposeTooltips, setDisabledTooltip } from "../tooltips.js";
 
 function formatPrice(price) {
   if (!price) return "—";
@@ -522,7 +522,6 @@ export function initShopWidget(
       const ownedBaseUnits = buyerCurrency ? currencyToBaseUnits(buyerCurrency, priceDenoms) : null;
       const canAfford = ownedBaseUnits == null || ownedBaseUnits >= priceBaseUnits;
       const noRecipientPicked = isGm && !resolveRecipient(buyForSelect);
-      buyButton.disabled = outOfStock || !canAfford || noRecipientPicked;
       const disabledReason = outOfStock
         ? "Out of stock."
         : noRecipientPicked
@@ -552,23 +551,10 @@ export function initShopWidget(
           buyButton.disabled = false;
         }
       });
-      // A native `disabled` button never fires the hover/focus events a
-      // tooltip (native title OR Bootstrap's own) needs to trigger at all
-      // — confirmed real, not a guess: Bootstrap's own docs call this out
-      // explicitly and recommend exactly this fix. Wrapping it in a plain
-      // (NOT disabled) span that carries the tooltip trigger instead — the
-      // wrapper still receives hover normally even though the button
-      // inside it doesn't, so the reason actually shows.
-      if (disabledReason) {
-        const wrap = el("span", "d-inline-block");
-        wrap.tabIndex = 0;
-        wrap.dataset.bsToggle = "tooltip";
-        wrap.dataset.bsTitle = disabledReason;
-        wrap.appendChild(buyButton);
-        row.appendChild(wrap);
-      } else {
-        row.appendChild(buyButton);
-      }
+      // buyButton needs a real parent before setDisabledTooltip can
+      // correctly insert its wrapper — append to `row` first.
+      row.appendChild(buyButton);
+      setDisabledTooltip(buyButton, disabledReason);
       buyItemsWrap.appendChild(row);
     });
     refreshTooltips(buyItemsWrap);
@@ -595,34 +581,23 @@ export function initShopWidget(
   // again when one of those actually changes. Called once per row at
   // build time for an auto-priceable item, and again from the manual
   // rarity picker's own change handler for one that isn't. `wrap` is the
-  // Sell button's own tooltip-trigger wrapper (see the Buy panel's
-  // identical disabled-button-tooltip pattern and its own comment on why a
-  // wrapper, not the button itself, has to carry it) — priceDisplay stays
-  // short (just the price, or a bare "—") with the actual REASON living in
-  // that tooltip instead, not as a long, ever-present sentence that only
-  // shrinks once a price finally appears.
+  // Sell button's own persistent tooltip-trigger wrapper (see its own
+  // creation comment below), passed through to setDisabledTooltip's
+  // `wrapper` option so a later re-resolve can freely toggle the tooltip
+  // on/off without re-parenting the button in and out of it — priceDisplay
+  // stays short (just the price, or a bare "—") with the actual REASON
+  // living in that tooltip instead, not as a long, ever-present sentence
+  // that only shrinks once a price finally appears.
   // Sets the Sell button's own disabled/tooltip state directly, no quote
   // involved — for the two cases known up front with no point attempting
   // one (nothing sellable in this System at all, or a non-GM viewer who
   // can't pick a rarity anyway).
-  function setSellUnresolved(priceDisplay, sellButton, wrap, row, reason) {
+  function setSellUnresolved(priceDisplay, sellButton, wrap, reason) {
     priceDisplay.textContent = "—";
-    sellButton.disabled = true;
-    // disposeTooltips/refreshTooltips both search DESCENDANTS of whatever
-    // root they're given, never the root element itself — `row` (wrap's
-    // own parent) is what makes them actually find `wrap`.
-    disposeTooltips(row);
-    if (reason) {
-      wrap.dataset.bsToggle = "tooltip";
-      wrap.dataset.bsTitle = reason;
-      refreshTooltips(row);
-    } else {
-      delete wrap.dataset.bsToggle;
-      delete wrap.dataset.bsTitle;
-    }
+    setDisabledTooltip(sellButton, reason, { wrapper: wrap });
   }
 
-  async function resolveAndShowSellQuote(index, item, manualRarityId, priceDisplay, sellButton, wrap, row) {
+  async function resolveAndShowSellQuote(index, item, manualRarityId, priceDisplay, sellButton, wrap) {
     const cacheKey = sellQuoteCacheKey(item, manualRarityId);
     let quote = sellQuoteCache.get(cacheKey);
     if (!quote) {
@@ -633,15 +608,23 @@ export function initShopWidget(
         });
         sellQuoteCache.set(cacheKey, quote);
       } catch (error) {
-        setSellUnresolved(priceDisplay, sellButton, wrap, row, manualRarityId ? error.message : "Pick a rarity to price this.");
+        // Always the real thrown reason, never a generic placeholder — this
+        // function is only ever called with a genuine resolution attempt
+        // already underway (a stamped reference, or a GM's own picked
+        // rarity — the caller's own "nothing picked yet" case bypasses this
+        // function entirely, going straight to setSellUnresolved itself).
+        // Confirmed real, reported bug this fixes: a REFERENCED item whose
+        // own rarity data failed to resolve (a hand-authored Wonder record
+        // with rarity misplaced outside `properties`) showed the same
+        // generic "Pick a rarity to price this." a referenced item has no
+        // picker to act on at all, with no way to tell what actually went
+        // wrong short of digging through the data by hand.
+        setSellUnresolved(priceDisplay, sellButton, wrap, error.message);
         return;
       }
     }
     priceDisplay.textContent = formatPriceAmount(quote.price, quote.denomination, currencyDenominations);
-    sellButton.disabled = false;
-    disposeTooltips(row);
-    delete wrap.dataset.bsToggle;
-    delete wrap.dataset.bsTitle;
+    setDisabledTooltip(sellButton, "", { wrapper: wrap });
   }
 
   // Same "skip the rebuild if nothing actually changed" reasoning as
@@ -730,11 +713,11 @@ export function initShopWidget(
       const sellButton = el("button", "btn btn-outline-secondary btn-sm", "Sell");
       sellButton.type = "button";
       sellButton.disabled = true;
-      // Same disabled-button-tooltip wrapper the Buy panel's own buttons
-      // use (a native `disabled` button never fires the hover/focus events
-      // a tooltip needs at all) — always present, not just when disabled,
-      // so a later re-resolve can freely toggle the tooltip on/off without
-      // having to re-parent the button in and out of it.
+      // setDisabledTooltip's `wrapper` option (see resolveAndShowSellQuote/
+      // setSellUnresolved above) takes this wrapper as-is instead of
+      // auto-creating/removing its own — kept always present, not just
+      // while disabled, so a later re-resolve can freely toggle the
+      // tooltip on/off without re-parenting the button in and out of it.
       const sellButtonWrap = el("span", "d-inline-block");
       sellButtonWrap.tabIndex = 0;
       sellButtonWrap.appendChild(sellButton);
@@ -745,18 +728,18 @@ export function initShopWidget(
         const picked = rarityFallback.value || "";
         if (picked) manualRaritySelections.set(manualRarityKey, picked);
         else manualRaritySelections.delete(manualRarityKey);
-        void resolveAndShowSellQuote(index, item, picked || null, priceDisplay, sellButton, sellButtonWrap, row);
+        void resolveAndShowSellQuote(index, item, picked || null, priceDisplay, sellButton, sellButtonWrap);
       });
       if (isReferenced) {
-        void resolveAndShowSellQuote(index, item, null, priceDisplay, sellButton, sellButtonWrap, row);
+        void resolveAndShowSellQuote(index, item, null, priceDisplay, sellButton, sellButtonWrap);
       } else if (!rarityRanges.length) {
-        setSellUnresolved(priceDisplay, sellButton, sellButtonWrap, row, "Not sellable — this System has no rarity data.");
+        setSellUnresolved(priceDisplay, sellButton, sellButtonWrap, "Not sellable — this System has no rarity data.");
       } else if (!isGm) {
-        setSellUnresolved(priceDisplay, sellButton, sellButtonWrap, row, "Ask your GM to price this by rarity.");
+        setSellUnresolved(priceDisplay, sellButton, sellButtonWrap, "Ask your GM to price this by rarity.");
       } else if (restoredRarityId) {
-        void resolveAndShowSellQuote(index, item, restoredRarityId, priceDisplay, sellButton, sellButtonWrap, row);
+        void resolveAndShowSellQuote(index, item, restoredRarityId, priceDisplay, sellButton, sellButtonWrap);
       } else {
-        setSellUnresolved(priceDisplay, sellButton, sellButtonWrap, row, "Pick a rarity to price this.");
+        setSellUnresolved(priceDisplay, sellButton, sellButtonWrap, "Pick a rarity to price this.");
       }
 
       sellButton.addEventListener("click", async () => {

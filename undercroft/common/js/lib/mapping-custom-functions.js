@@ -237,7 +237,10 @@ function srdDetectActivationConcept(text) {
 // established for monster import) — never a hardcoded copy of what values
 // exist. Only ever sets a key once its own source value is confidently
 // resolved against that live list — never a partial/guessed entry.
-function srdItemProperties({ rarityName, categoryName, activationText }, lookupTables) {
+function srdItemProperties(
+  { rarityName, categoryName, activationText, weaponCategoryName, armorCategoryName, equipmentCategoryName },
+  lookupTables
+) {
   const properties = {};
   const rarityMatch = resolveLivePropertyValue(rarityName, lookupTables?.rarities);
   if (rarityMatch) properties.rarity = slugifyPropertyValueName(rarityMatch);
@@ -246,6 +249,22 @@ function srdItemProperties({ rarityName, categoryName, activationText }, lookupT
   const activationConcept = activationText ? srdDetectActivationConcept(activationText) : null;
   const activationMatch = activationConcept ? resolveLivePropertyValue(activationConcept, lookupTables?.activationTypes) : null;
   if (activationMatch) properties.activation = slugifyPropertyValueName(activationMatch);
+  // The sub-classification BENEATH one Item Form value — a Weapon's own
+  // Simple/Martial+Melee/Ranged split (sys.dnd5e.json's own
+  // "weaponCategories" field), an Armor's own Light/Medium/Heavy/Shield
+  // split ("armorCategories"), and an ordinary Equipment item's own Tools/
+  // Musical Instrument/Gaming Set/Mounts-and-Vehicles/Ammunition split
+  // ("equipmentCategories") — only srdEquipmentStats (5e-api-equipment.json)
+  // ever passes these three; every other caller (spells, magic items)
+  // leaves them undefined, so this is purely additive.
+  const weaponCategoryMatch = weaponCategoryName ? resolveLivePropertyValue(weaponCategoryName, lookupTables?.weaponCategories) : null;
+  if (weaponCategoryMatch) properties.weaponCategory = slugifyPropertyValueName(weaponCategoryMatch);
+  const armorCategoryMatch = armorCategoryName ? resolveLivePropertyValue(armorCategoryName, lookupTables?.armorCategories) : null;
+  if (armorCategoryMatch) properties.armorCategory = slugifyPropertyValueName(armorCategoryMatch);
+  const equipmentCategoryMatch = equipmentCategoryName
+    ? resolveLivePropertyValue(equipmentCategoryName, lookupTables?.equipmentCategories)
+    : null;
+  if (equipmentCategoryMatch) properties.equipmentCategory = slugifyPropertyValueName(equipmentCategoryMatch);
   return properties;
 }
 
@@ -1209,7 +1228,23 @@ function splitFantasyStatblockNotes(raw) {
 // THIS markdown vault's own vocabulary, the same "SRD-specific mapping
 // layer is the sanctioned place for source vocabulary" reasoning
 // resolveCreatureType/srdItemProperties above already follow.
-const MARKDOWN_ITEM_FORM_ALIASES = { "adventuring gear": "Equipment" };
+// Also feeds 5e-api-equipment.json's own srdEquipmentStats — every one of
+// these (Tools and its own 2024-only sub-categories, Ammunition, Mounts
+// and Vehicles) is broad, mundane "Equipment" at the Item Form level, same
+// as "Adventuring gear" above; the actual specific sub-category (which of
+// these it is) is captured separately as its own `properties
+// .equipmentCategory` (see srdItemProperties/srdEquipmentStats), not lost
+// by folding everything into one bucket here.
+const MARKDOWN_ITEM_FORM_ALIASES = {
+  "adventuring gear": "Equipment",
+  tools: "Equipment",
+  "artisan's tools": "Equipment",
+  "musical instruments": "Equipment",
+  "gaming sets": "Equipment",
+  "other tools": "Equipment",
+  "mounts and vehicles": "Equipment",
+  ammunition: "Equipment",
+};
 
 // The bare form-matching hint for an item's own category — strips a
 // trailing parenthetical SUBTYPE qualifier ("Weapon (claws)" -> "Weapon",
@@ -1407,6 +1442,21 @@ function parseMarkdownSpellMechanic(description, higherLevel, level) {
     areaSize: areaMatch ? Number(areaMatch[1]) : undefined,
     scaling: { by: cantripValues ? "character-level" : "slot", values },
   };
+}
+
+// DDB's own `.feats` array carries more than real, player-chosen feats —
+// it's also a generic carrier slot for a class feature's own sub-choice
+// (Weapon Mastery's "which weapons" selection) and GM-narrative hooks from
+// a specific sourcebook/adventure (confirmed live against a real
+// character: "Dark Bargain", "Character Threads", "Runestones" — the last
+// one's own description literally names the "Northlands Sagas" adventure
+// path). DDB's own definition tags every one of these `__DISGUISE_FEAT` —
+// the exact same tag DDB's own web UI uses to hide them from a character's
+// visible Feats list — while a real chosen feat (e.g. "Dual Wielder") is
+// tagged "General" instead. Shared by featsTable AND featuresTable below,
+// which both read this same raw array independently.
+function isRealDdbFeat(feat) {
+  return !(feat.definition?.categories || []).some((category) => category?.tagName === "__DISGUISE_FEAT");
 }
 
 // --- Registered custom functions (referenced by name from mapping JSON) ---
@@ -1760,6 +1810,161 @@ return {
   },
   srdItemNameFromStats(context) {
     return context.itemStats?.name;
+  },
+
+  // 5e-api-equipment.json's own stats builder — a raw 5e API /equipment
+  // row, NOT /magic-items (srdItemStats above), a genuinely different
+  // shape with no rarity/attunement concept at all but real cost/weight/
+  // mechanical stats magic items never carry. Handles BOTH the 2014 shape
+  // (`desc`, singular `equipment_category`) and the 2024 shape
+  // (`description`, plural `equipment_categories`) — confirmed live
+  // against real fetches of both years for a weapon (Greataxe), armor
+  // (Breastplate/Shield), and adventuring gear (Backpack) — since the
+  // "srd" source itself is year-agnostic (any /api/2014/... or
+  // /api/2024/... URL), one mapping needs to work with whichever the user
+  // points it at.
+  srdEquipmentStats(context, args, env) {
+    const s = context.root || context;
+    const descArr = Array.isArray(s.desc) ? s.desc : Array.isArray(s.description) ? s.description : [];
+
+    // Category name CANDIDATES, in the order to try them — 2014 gives
+    // exactly one (`equipment_category.name`); 2024's own
+    // `equipment_categories` array lists several, in NO consistent
+    // generic-first/specific-first order between weapons (specific-first:
+    // "Martial Melee Weapons", ..., "Weapons" LAST) and armor
+    // (generic-first: "Armor", "Medium Armor") — confirmed live against
+    // real Greataxe vs Breastplate fetches. Trying each against the
+    // System's own live Item Form vocabulary and keeping the first that
+    // actually resolves sidesteps needing to know which position is "the
+    // generic one" for either shape — resolveLivePropertyValue's own
+    // trailing-s fold is what makes plural entries like "Weapons" resolve
+    // against the System's own singular "Weapon" value with zero extra
+    // handling here.
+    const categoryCandidates = s.equipment_category?.name
+      ? [s.equipment_category.name]
+      : (Array.isArray(s.equipment_categories) ? s.equipment_categories : []).map((c) => c?.name).filter(Boolean);
+    let categoryName = categoryCandidates[0] || "";
+    for (const candidate of categoryCandidates) {
+      if (resolveLivePropertyValue(resolveMarkdownItemFormHint(candidate), env?.lookupTables?.itemForms)) {
+        categoryName = candidate;
+        break;
+      }
+    }
+    // The SAME candidate list, tried against the System's own
+    // "equipmentCategories" sub-classification instead (Tools/Musical
+    // Instrument/Gaming Set/Other Tools/Mounts and Vehicles/Ammunition —
+    // sys.dnd5e.json's own new field, added specifically for this: none of
+    // this vocabulary existed in the System before, only Weapon/Armor's own
+    // sibling sub-fields did) — first candidate that resolves wins, same
+    // "more specific beats the generic parent" reasoning as categoryName
+    // above (e.g. Carpenter's Tools' own ["Artisan's Tools", "Tools"]
+    // resolves to the more specific "Artisan's Tools", not the generic
+    // "Tools" every tool-type item also lists).
+    let equipmentCategoryName = "";
+    for (const candidate of categoryCandidates) {
+      if (resolveLivePropertyValue(candidate, env?.lookupTables?.equipmentCategories)) {
+        equipmentCategoryName = candidate;
+        break;
+      }
+    }
+    // A weapon's own Simple/Martial + Melee/Ranged split — the 2014 shape
+    // gives it pre-combined as `category_range` ("Martial Ranged" —
+    // confirmed live against Greataxe, a byte-exact match against
+    // weaponCategories' own vocabulary already). 2024 has no such field at
+    // all — it only shows up folded into one of `equipment_categories`'
+    // own entries instead ("Martial Ranged Weapons" — confirmed live
+    // against Longbow, alongside several others), so every candidate is
+    // tried both as-is and with a trailing "Weapon(s)" suffix stripped.
+    const weaponCategoryCandidates = s.category_range
+      ? [s.category_range]
+      : categoryCandidates.flatMap((c) => [c, c.replace(/\s+weapons?$/i, "")]);
+    let weaponCategoryName = "";
+    for (const candidate of weaponCategoryCandidates) {
+      if (resolveLivePropertyValue(candidate, env?.lookupTables?.weaponCategories)) {
+        weaponCategoryName = candidate;
+        break;
+      }
+    }
+    // An armor's own Light/Medium/Heavy/Shield split — the 2014 shape
+    // gives it directly as `armor_category` ("Shield"/"Medium" — confirmed
+    // live). 2024 folds it into `equipment_categories` instead ("Medium
+    // Armor" — confirmed live against Breastplate — but Shield's own 2024
+    // entry is bare "Shields" with no trailing "Armor" word at all, so
+    // both the as-is and suffix-stripped forms are tried here too).
+    const armorCategoryCandidates = s.armor_category
+      ? [s.armor_category]
+      : categoryCandidates.flatMap((c) => [c, c.replace(/\s+armor$/i, "")]);
+    let armorCategoryName = "";
+    for (const candidate of armorCategoryCandidates) {
+      if (resolveLivePropertyValue(candidate, env?.lookupTables?.armorCategories)) {
+        armorCategoryName = candidate;
+        break;
+      }
+    }
+
+    const price = s.cost?.quantity != null && s.cost?.unit ? `${s.cost.quantity} ${s.cost.unit}` : "";
+    const weight = Number.isFinite(s.weight) ? s.weight : undefined;
+
+    // Weapon/armor mechanical stats (damage, range, weapon properties/
+    // 2024 mastery, AC, Strength requirement, Stealth) have no dedicated
+    // Wonder field of their own — matches this suite's own existing
+    // curated equipment (eff.handaxe.json etc.), which never tracks these
+    // as structured data either — folded into the description as plain
+    // "Label: value" lines instead of silently dropped, the same
+    // "no established stats shape for these" reasoning markdownItemStats'
+    // own mundane-equipment fields already follow.
+    const extraLines = [];
+    if (s.damage?.damage_dice) {
+      extraLines.push(`Damage: ${s.damage.damage_dice}${s.damage.damage_type?.name ? ` ${s.damage.damage_type.name}` : ""}`);
+    }
+    if (s.range?.normal) {
+      extraLines.push(`Range: ${s.range.normal}${s.range.long ? `/${s.range.long}` : ""} ft.`);
+    }
+    if (Array.isArray(s.properties) && s.properties.length) {
+      extraLines.push(`Properties: ${s.properties.map((p) => p?.name).filter(Boolean).join(", ")}`);
+    }
+    if (s.mastery?.name) extraLines.push(`Mastery: ${s.mastery.name}`);
+    if (s.armor_class?.base != null) {
+      const dexNote = s.armor_class.dex_bonus
+        ? s.armor_class.max_bonus != null
+          ? ` + Dex modifier (max ${s.armor_class.max_bonus})`
+          : " + Dex modifier"
+        : "";
+      extraLines.push(`Armor Class: ${s.armor_class.base}${dexNote}`);
+    }
+    if (s.str_minimum) extraLines.push(`Strength: ${s.str_minimum}`);
+    if (s.stealth_disadvantage) extraLines.push("Stealth: Disadvantage");
+
+    const { charges, remaining } = srdExtractCharges(descArr);
+    const candidateUnits = remaining.flatMap((p) => srdSplitBullets(p));
+    const properties = srdItemProperties(
+      {
+        rarityName: "",
+        categoryName: resolveMarkdownItemFormHint(categoryName),
+        activationText: descArr.join("\n\n"),
+        weaponCategoryName,
+        armorCategoryName,
+        equipmentCategoryName,
+      },
+      env?.lookupTables
+    );
+
+    return {
+      name: s.name,
+      category: categoryName,
+      rarity: "",
+      requiresAttunement: false,
+      description: [...descArr, ...extraLines].join("\n\n"),
+      price,
+      weight,
+      tags: [],
+      charges,
+      properties,
+      variantGroup: null,
+      variantTier: null,
+      mechanic: null,
+      candidateUnits,
+    };
   },
 
   // Builds the SAME `stats` shape srdItemStats builds above, from
@@ -2423,13 +2628,60 @@ return {
     return { level_monk: monkLevels, level_multiclass: Math.max(totalLevel - primaryLevels, 0) };
   },
 
+  // Replaces the old plain "pipeline"/"map" inventory field — needs a real
+  // custom function, not a per-item formula bind, to cross-reference each
+  // item against `characterValues` (see below), a completely separate
+  // TOP-LEVEL array a per-item pipeline step has no way to reach.
+  //
+  // DDB's own item-customization (right-click an inventory row -> Customize
+  // -> rename) is NOT stored on the inventory item itself — it lives in
+  // `characterValues`, one entry per customized FIELD, keyed by `valueId`
+  // (the target item's own `id`, as a STRING — coerced below to compare
+  // against the item's own numeric `id`) and `typeId` (8 = a custom NAME
+  // override — confirmed live against a real customized "Grappling Hook"
+  // renamed to "Hookshot"; a different typeId, 9, showed up on a different
+  // item as what looks like a custom note/description override instead —
+  // not handled here, only the name override is surfaced today).
+  inventoryTable(context) {
+    const rawCharacter = context.root;
+    const items = Array.isArray(rawCharacter?.inventory) ? rawCharacter.inventory : [];
+    const customValues = Array.isArray(rawCharacter?.characterValues) ? rawCharacter.characterValues : [];
+    const customNameById = new Map();
+    customValues.forEach((entry) => {
+      if (entry?.typeId === 8 && entry?.valueId != null && typeof entry.value === "string" && entry.value.trim()) {
+        customNameById.set(String(entry.valueId), entry.value.trim());
+      }
+    });
+    return items.map((item) => {
+      const row = {
+        name: item.definition?.name || "",
+        quantity: item.quantity || 1,
+        weight: (item.definition?.weight || 0) * (item.definition?.weightMultiplier || 1) * (item.quantity || 1),
+        notes: item.definition?.snippet || item.definition?.description || "",
+        canAttune: Boolean(item.definition?.canAttune),
+        isAttuned: Boolean(item.isAttuned),
+        canEquip: Boolean(item.definition?.canEquip),
+        isEquipped: Boolean(item.equipped),
+      };
+      // `name` stays the real catalog name — reference-matching
+      // (linkCharacterInventoryReferences) and this item's own real
+      // mechanical identity both depend on it — `customName` is a pure
+      // DISPLAY override laid on top (component-renderers.js's own
+      // renderTextContent/renderInputContent), never a substitute for it.
+      const customName = customNameById.get(String(item?.id));
+      if (customName) row.customName = customName;
+      return row;
+    });
+  },
+
   // Ported from ddb-parser.js's buildFeats — a straight list, no
   // classification needed (feat-granted proficiencies/bonuses already flow
   // through proficienciesTable/the relevant ability-score paths via their
-  // own modifiers).
+  // own modifiers). isRealDdbFeat (above) drops DDB's own disguise-feat
+  // carrier entries — see that function's own comment for why.
   featsTable(context) {
     const feats = Array.isArray(context.root?.feats) ? context.root.feats : [];
-    return feats.map((feat) => ({
+    return feats.filter(isRealDdbFeat).map((feat) => ({
       name: feat.definition?.name || "Unknown Feat",
       description: htmlBlocksToText(feat.definition?.description || ""),
       level: feat.requiredLevel || null,
@@ -2462,10 +2714,10 @@ return {
     // (not total character level — real for a multiclass character, and
     // exactly why the filter has to happen per-class, before the
     // cross-class flatMap merges everything together) — feats
-    // (`rawCharacter.feats` below) need no equivalent filter, since that
+    // (`rawCharacter.feats` below) need no equivalent LEVEL filter (that
     // list is only ever what the player has actually chosen, never a
-    // catalog of not-yet-available options the way class/subclass features
-    // apparently are.
+    // catalog of not-yet-available options), but DOES need isRealDdbFeat's
+    // own disguise-feat filter — see that function's own comment.
     const classFeatures = classes
       .flatMap((cls) => {
         const classLevel = cls.level || 0;
@@ -2479,6 +2731,7 @@ return {
       .map((trait) => (trait.definition ? { ...trait.definition, level: null } : null))
       .filter(Boolean);
     const featFeatures = (rawCharacter?.feats || [])
+      .filter(isRealDdbFeat)
       .map((feat) => (feat.definition ? { ...feat.definition, level: feat.requiredLevel ?? null } : null))
       .filter(Boolean);
     const combined = [...classFeatures, ...racialTraits, ...featFeatures];

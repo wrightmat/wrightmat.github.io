@@ -1,0 +1,18 @@
+{
+  "index": "crossbow-light",
+  "name": "Crossbow, light",
+  "notes": "Damage: 1d8 Piercing\n\nRange: 80/320 ft.\n\nProperties: Ammunition, Loading, Two-Handed",
+  "price": "25 gp",
+  "weight": 5,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/equipment/crossbow-light",
+  "mapping": "5e-api-equipment",
+  "properties": {
+    "form": "weapon",
+    "weaponCategory": "simple-ranged"
+  },
+  "featureIds": []
+}

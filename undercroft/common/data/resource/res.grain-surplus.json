@@ -1,10 +1,6 @@
 {
   "id": "res.grain-surplus",
   "name": "Grain Surplus",
-  "systemIds": [
-    "sys.dnd5e",
-    "sys.dnd5e2014"
-  ],
   "description": "More harvest than the local population can use — a lever for trade or a target for raiders.",
   "tags": {
     "locationTypes": [],

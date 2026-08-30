@@ -817,6 +817,19 @@
     },
     {
       "type": "array",
+      "key": "combatScaling",
+      "label": "Combat Scaling",
+      "values": [
+        {
+          "name": "Standard",
+          "shortName": "Standard",
+          "sourceId": 1,
+          "targetBudget": 5
+        }
+      ]
+    },
+    {
+      "type": "array",
       "key": "npcTypes",
       "label": "NPC Types",
       "values": [

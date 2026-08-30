@@ -1,0 +1,24 @@
+{
+  "id": "feat.changeling-instincts",
+  "name": "Changeling Instincts",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Thanks to your connection to the fey realm, you gain proficiency in two of the following skills of your choice: Deception, Insight, Intimidation, Performance, or Persuasion.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Thanks to your connection to the fey realm, you gain proficiency in two of the following skills of your choice: Deception, Insight, Intimidation, Performance, or Persuasion."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}
