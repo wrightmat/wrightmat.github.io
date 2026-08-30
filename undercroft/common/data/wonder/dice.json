@@ -1,0 +1,17 @@
+{
+  "index": "dice",
+  "name": "Dice",
+  "notes": "",
+  "price": "1 sp",
+  "weight": 0,
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2024/equipment/dice",
+  "mapping": "5e-api-equipment",
+  "featureIds": [],
+  "properties": {
+    "form": "equipment",
+    "equipmentCategory": "gaming-sets"
+  }
+}

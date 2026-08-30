@@ -57,14 +57,22 @@ export function iconFor(kindId) {
 // chip and journal-macro.js's buildMacroChip — this can render inside
 // handout.js's Dashboard widget, or Workbench's own character sheet, pages
 // that never load Repository's own stylesheet.
+//
+// Deliberately understated — no fill, no icon (see createReferenceChip
+// below), a light dashed outline instead of a solid one — a reference
+// chip is meant to read as "this word links to something," close to plain
+// inline text, not a filled badge competing for attention against actual
+// content. What KIND of thing it links to, and its own Form/sub-category,
+// live in the hover/focus preview instead (buildPreviewHeader below), not
+// repeated inline on every single chip.
 function styleAsChip(button, interactive) {
   button.style.display = "inline-flex";
   button.style.alignItems = "center";
   button.style.gap = "0.25rem";
   button.style.padding = "0.05rem 0.4rem";
-  button.style.border = "1px solid var(--bs-border-color, #dee2e6)";
+  button.style.border = "1px dashed var(--bs-border-color-translucent, rgba(0, 0, 0, 0.175))";
   button.style.borderRadius = "0.375rem";
-  button.style.background = "var(--bs-tertiary-bg, #f8f9fa)";
+  button.style.background = "transparent";
   button.style.color = "inherit";
   button.style.font = "inherit";
   button.style.lineHeight = "1.4";
@@ -83,15 +91,11 @@ export function createReferenceChip({ kind, id, name, dataManager, interactive, 
   const button = el("button", "library-reference-chip");
   button.type = "button";
   styleAsChip(button, interactive);
-  const icon = el("span", "iconify");
-  icon.dataset.icon = iconFor(kind);
-  icon.setAttribute("aria-hidden", "true");
-  // Icon + name only — the kind itself is already conveyed by the icon; the
-  // label lives in the hover preview instead (see attachReferencePreview
-  // below), not duplicated inline text, same "icon carries the category,
-  // text carries the specific thing" split the outline/heading list already
-  // uses.
-  button.append(icon, el("span", null, name || id));
+  // Name only, no icon — deliberately understated (see styleAsChip's own
+  // comment); what kind of thing this is, and its own Form/sub-category,
+  // show on hover/focus instead (buildPreviewHeader below), not repeated
+  // inline on every chip.
+  button.append(el("span", null, name || id));
   button.setAttribute("aria-label", `${name || id} (${kindLabel || kind})`);
   if (interactive) {
     button.style.cursor = "pointer";
@@ -111,88 +115,113 @@ export function createReferenceChip({ kind, id, name, dataManager, interactive, 
 
 // --- Hover preview popover ---------------------------------------------
 // A single shared floating panel (not one per chip — this suite's own
-// createTablePickerPopover precedent), showing "what IS this" on hover: the
-// record's own Notes plus whichever fields that kind's own tool shows in
-// its Identity box (Forge's Species/Archetype/Alignment/..., Crucible's
-// Creature Type/Archetype/Role, Sanctum's Type/Purpose/Environment, Vault's
-// own System-defined Properties). Inline-styled throughout, same
-// cross-tool-reuse reasoning styleAsChip already documents.
+// createTablePickerPopover precedent), showing "what IS this" on hover:
+// the record's own icon/Form summary up top, and its Notes text below.
+// Deliberately NOT a per-kind grab-bag of identity fields anymore (Forge's
+// own Species/Archetype/Alignment, Crucible's own Creature Type/Archetype/
+// Role, ...) — those already read as part of each kind's own Notes/prose
+// in practice (a magic item's own rarity is always restated in its own
+// description, same reasoning the Rarity line itself was dropped for),
+// so this popover stays to two things: what kind of thing this is (icon)
+// and, for a Wonder specifically, what Form/sub-category it is — its own
+// System-defined generator-property data, nothing else duplicated.
+// Inline-styled throughout, same cross-tool-reuse reasoning styleAsChip
+// already documents.
 
-// kindId -> ordered {label, path} fields to pull from the record, mirroring
-// each kind's own tool's Identity box — not exhaustive of every field that
-// tool shows, just the same "who/what is this at a glance" summary. `path`
-// is a dotted lookup; a missing value is skipped, never shown blank.
-const IDENTITY_FIELDS = {
-  npc: [
-    { label: "Species", path: "identity.species" },
-    { label: "Archetype", path: "identity.archetype" },
-    { label: "Alignment", path: "identity.alignment" },
-    { label: "Gender", path: "identity.gender" },
-    { label: "Age", path: "identity.age" },
-  ],
-  monster: [
-    { label: "Type", path: "creatureType" },
-    { label: "Archetype", path: "archetype" },
-    { label: "Role", path: "role" },
-  ],
-  location: [
-    { label: "Type", path: "typeId" },
-    { label: "Purpose", path: "purposeId" },
-    { label: "Environment", path: "environment" },
-  ],
-  // class's own Primary Ability/Hit Die are handled directly in
-  // buildIdentityLines below, not a fixed path list — DDB's own
-  // `primary_ability` is `{desc, ability_scores}`, not a plain string.
-  // wonder's own Identity fields are a dynamic {propertyKey: value} bag
-  // (System-defined — Rarity/Activation/Item Form for sys.dnd5e, something
-  // else entirely for another System) — handled directly in
-  // buildIdentityLines below via `entity.properties`, not a fixed path list.
+// One cached {systemId -> fields[]} lookup for the lifetime of the page —
+// same reasoning previewRecordCache below has, and the same System record
+// a hovered chip's own kind Repository page would otherwise re-fetch on
+// every single hover.
+const systemFieldsCache = new Map();
+function loadSystemFields(dataManager, systemId) {
+  if (!systemId) return Promise.resolve([]);
+  if (!systemFieldsCache.has(systemId)) {
+    const promise = dataManager
+      .get("systems", systemId, { preferLocal: true })
+      .then((result) => (Array.isArray(result?.payload?.fields) ? result.payload.fields : []))
+      .catch(() => []);
+    systemFieldsCache.set(systemId, promise);
+  }
+  return systemFieldsCache.get(systemId);
+}
+
+function findFieldValues(fields, key) {
+  const field = fields.find((entry) => entry?.type === "array" && entry.key === key);
+  return Array.isArray(field?.values) ? field.values : [];
+}
+
+function slugifyPropertyValueName(name) {
+  return String(name || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
+// A property's own STORED value is always a slug (mapping-custom-
+// functions.js's own slugifyPropertyValueName, matched here byte-for-
+// byte) — resolved back to its real display name either via the value's
+// own `shortName` (a System author can add one explicitly, e.g.
+// sys.dnd5e.json's own "form" field values) or, failing that, by
+// re-slugifying `name` the same way it was stored in the first place.
+function resolvePropertyDisplayName(values, storedId) {
+  if (!storedId) return "";
+  const match = values.find((value) => {
+    const shortName = String(value?.shortName || "").toLowerCase();
+    if (shortName && shortName === storedId) return true;
+    return slugifyPropertyValueName(value?.name) === storedId;
+  });
+  return match?.name || "";
+}
+
+// Which sub-category property (if any) accompanies a Wonder's own Form —
+// sys.dnd5e.json's own weaponCategories/armorCategories/equipmentCategories
+// fields, one per Form (a Weapon's own Simple/Martial+Melee/Ranged split,
+// an Armor's own Light/Medium/Heavy/Shield split, an ordinary Equipment
+// item's own Tools/Instrument/Gaming-Set/Mounts-and-Vehicles/Ammunition
+// split — see mapping-custom-functions.js's own srdItemProperties). At
+// most one is ever set on a real record, so the first present wins.
+const SUB_CATEGORY_PROPERTY_FIELDS = {
+  weaponCategory: "weaponCategories",
+  armorCategory: "armorCategories",
+  equipmentCategory: "equipmentCategories",
 };
 
-function getPath(record, path) {
-  return path.split(".").reduce((value, key) => (value == null ? undefined : value[key]), record);
-}
-
-function formatFieldValue(value) {
-  if (value === undefined || value === null || value === "") return "";
-  if (Array.isArray(value)) return value.length ? value.join(", ") : "";
-  return String(value);
-}
-
-function buildIdentityLines(kindId, record) {
-  const lines = [];
-  (IDENTITY_FIELDS[kindId] || []).forEach(({ label, path }) => {
-    const value = formatFieldValue(getPath(record, path));
-    if (value) lines.push(`${label}: ${value}`);
-  });
-  if (kindId === "wonder" && record?.properties && typeof record.properties === "object") {
-    Object.entries(record.properties).forEach(([key, value]) => {
-      const formatted = formatFieldValue(value);
-      if (formatted) lines.push(`${key.charAt(0).toUpperCase()}${key.slice(1)}: ${formatted}`);
-    });
-  }
-  if (kindId === "class") {
-    // DDB's own `primary_ability` is `{desc, ability_scores}`; the 5e API's
-    // own shape (5e-api-class.json, unused by any import so far) is an
-    // array of `{name}` objects instead — handled defensively rather than
-    // assuming one specific shape, since both mappings feed this same kind.
-    const primaryAbility = record?.primary_ability;
-    const abilityText =
-      typeof primaryAbility === "string"
-        ? primaryAbility
-        : primaryAbility?.desc ||
-          (Array.isArray(primaryAbility) ? primaryAbility.map((a) => a?.name || a?.desc || a).filter(Boolean).join(", ") : "");
-    if (abilityText) lines.push(`Primary Ability: ${abilityText}`);
-    if (record?.hit_die) lines.push(`Hit Die: d${record.hit_die}`);
-  }
-  return lines;
+// "Weapon (Martial Melee)" — the record's own Form, with its sub-category
+// (if any) in parentheses beside it. Empty for anything without a `form`
+// property at all (every non-Wonder kind, and a Wonder whose own
+// import/authoring never resolved one) — the header just shows the icon
+// alone in that case, nothing invented.
+async function resolveFormSummary(dataManager, record) {
+  const properties = record?.properties;
+  if (!properties?.form) return "";
+  const systemId = Array.isArray(record?.systemIds) ? record.systemIds[0] : null;
+  const fields = await loadSystemFields(dataManager, systemId);
+  const formName = resolvePropertyDisplayName(findFieldValues(fields, "form"), properties.form);
+  if (!formName) return "";
+  const subCategoryKey = Object.keys(SUB_CATEGORY_PROPERTY_FIELDS).find((key) => properties[key]);
+  if (!subCategoryKey) return formName;
+  const subCategoryName = resolvePropertyDisplayName(
+    findFieldValues(fields, SUB_CATEGORY_PROPERTY_FIELDS[subCategoryKey]),
+    properties[subCategoryKey]
+  );
+  return subCategoryName ? `${formName} (${subCategoryName})` : formName;
 }
 
 // Every kind's own "notes/description" field, under whichever name that
 // kind actually uses (npc's own LLM-generated character note is `note`,
-// singular; everything else observed is `notes` or `description`).
+// singular; everything else observed is `notes` or `description`). Species
+// is the one kind whose own "description" is an ARRAY of paragraphs, not a
+// plain string (ddb-species.json's own shape, matching ddb-content-parser
+// .js's own descLines convention) — joined into real markdown paragraph
+// text here rather than handed to renderNotesPreview's own marked.parse
+// as-is, which expects a string and silently produces nothing usable from
+// an array. Confirmed real, reported bug this fixes: every Species
+// reference chip's hover/click preview showed just the name/kind header
+// with no content at all, for every species record, not a data problem
+// specific to any one of them.
 export function resolveNotes(record) {
-  return record?.notes || record?.note || record?.description || record?.summary || "";
+  const raw = record?.notes || record?.note || record?.description || record?.summary || "";
+  return Array.isArray(raw) ? raw.filter(Boolean).join("\n\n") : raw;
 }
 
 let previewPopoverEl = null;
@@ -254,23 +283,30 @@ function positionPopover(popover, anchorRect) {
   popover.style.top = `${top}px`;
 }
 
-function renderPreviewLoading(popover, { name, kindLabel }) {
+function renderPreviewLoading(popover, { name, kind, kindLabel }) {
   popover.innerHTML = "";
-  popover.appendChild(buildPreviewHeader(name, kindLabel));
+  popover.appendChild(buildPreviewHeader(name, kind, kindLabel));
   const loading = el("div", null, "Loading…");
   loading.style.color = "var(--bs-secondary-color, #6c757d)";
   popover.appendChild(loading);
 }
 
-function renderPreviewMissing(popover, { name, kindLabel }) {
+function renderPreviewMissing(popover, { name, kind, kindLabel }) {
   popover.innerHTML = "";
-  popover.appendChild(buildPreviewHeader(name, kindLabel));
+  popover.appendChild(buildPreviewHeader(name, kind, kindLabel));
   const missing = el("div", null, "No saved record found.");
   missing.style.color = "var(--bs-secondary-color, #6c757d)";
   popover.appendChild(missing);
 }
 
-function buildPreviewHeader(name, kindLabel) {
+// Name on the left; the record's own Form/sub-category (a Wonder only —
+// see resolveFormSummary above, empty string for everything else) and the
+// kind icon on the right, form text immediately left of the icon. The
+// icon carries the kind itself now (aria-label, not visible text) — the
+// chip that opened this popover no longer shows one at all (see
+// styleAsChip's own comment), so this is the one place "what kind of
+// thing is this" is actually conveyed.
+function buildPreviewHeader(name, kind, kindLabel, formSummary = "") {
   const row = el("div", null);
   row.style.display = "flex";
   row.style.alignItems = "flex-start";
@@ -280,13 +316,26 @@ function buildPreviewHeader(name, kindLabel) {
   const title = el("div", null, name);
   title.style.fontWeight = "600";
   row.appendChild(title);
-  const badge = el("div", null, kindLabel);
-  badge.style.flexShrink = "0";
-  badge.style.fontSize = "0.7rem";
-  badge.style.textTransform = "uppercase";
-  badge.style.letterSpacing = "0.03em";
-  badge.style.color = "var(--bs-secondary-color, #6c757d)";
-  row.appendChild(badge);
+  const meta = el("div", null);
+  meta.style.display = "inline-flex";
+  meta.style.alignItems = "center";
+  meta.style.gap = "0.3rem";
+  meta.style.flexShrink = "0";
+  if (formSummary) {
+    const form = el("span", null, formSummary);
+    form.style.fontSize = "0.7rem";
+    form.style.textTransform = "uppercase";
+    form.style.letterSpacing = "0.03em";
+    form.style.color = "var(--bs-secondary-color, #6c757d)";
+    meta.appendChild(form);
+  }
+  const icon = el("span", "iconify");
+  icon.dataset.icon = iconFor(kind);
+  icon.setAttribute("aria-label", kindLabel || kind);
+  icon.style.color = "var(--bs-secondary-color, #6c757d)";
+  icon.style.fontSize = "0.9rem";
+  meta.appendChild(icon);
+  row.appendChild(meta);
   return row;
 }
 
@@ -327,24 +376,14 @@ function renderNotesPreview(text) {
   return container;
 }
 
-function renderPreviewContent(popover, { name, kindLabel, lines, notes }) {
+function renderPreviewContent(popover, { name, kind, kindLabel, formSummary, notes }) {
   popover.innerHTML = "";
-  popover.appendChild(buildPreviewHeader(name, kindLabel));
-  if (lines.length) {
-    const list = el("div", null);
-    list.style.display = "flex";
-    list.style.flexDirection = "column";
-    list.style.gap = "0.05rem";
-    list.style.marginBottom = notes ? "0.4rem" : "0";
-    lines.forEach((line) => list.appendChild(el("div", null, line)));
-    popover.appendChild(list);
-  }
+  popover.appendChild(buildPreviewHeader(name, kind, kindLabel, formSummary));
   if (notes) {
     const notesEl = renderNotesPreview(notes.length > NOTES_PREVIEW_MAX_CHARS ? `${notes.slice(0, NOTES_PREVIEW_MAX_CHARS).trim()}…` : notes);
     notesEl.style.color = "var(--bs-secondary-color, #6c757d)";
     popover.appendChild(notesEl);
-  }
-  if (!lines.length && !notes) {
+  } else {
     const empty = el("div", null, "No additional details.");
     empty.style.color = "var(--bs-secondary-color, #6c757d)";
     popover.appendChild(empty);
@@ -365,25 +404,45 @@ function renderPreviewContent(popover, { name, kindLabel, lines, notes }) {
 export async function findKindReferenceRecord(dataManager, kindId, name, { filter } = {}) {
   if (!dataManager) return null;
   // fetchKindEntrySummaries — NOT the bulk per-record fetch — the /list
-  // response's own `title` field is enough to find WHICH record matches by
-  // name; the full payload only needs fetching for the ONE match actually
-  // found, not every entry of that kind. Confirmed real fix: a kind with
+  // response's own `title` field is enough to find WHICH record(s) match by
+  // name; the full payload only needs fetching for those actual name
+  // match(es), not every entry of that kind. Confirmed real fix: a kind with
   // hundreds/thousands of saved entries (wonder, feature) made every
   // reference chip's click/hover cost that many individual record fetches
   // just to resolve one name.
+  //
+  // `filter` runs AFTER the name match, against each candidate's own FULL
+  // fetched payload — never against the summary list's own `properties`
+  // field. That field is a database-level cache (server/storage.py's own
+  // metadataFields), refreshed only when a record is re-saved through the
+  // normal save path — a record whose `properties` was set or changed any
+  // OTHER way (a direct file edit, a bulk data patch, content seeded
+  // outside Loom) can carry a stale or missing cached value indefinitely
+  // with no resave to trigger a refresh. Confirmed real, reported bug this
+  // fixes: EVERY character's spell references failed to link — isSpellForm's
+  // own filter always saw an empty `properties` on the summary, the real
+  // Wonder record's own correctly-set `properties.form: "spell"`
+  // notwithstanding. Usually exactly one full fetch (a genuine name
+  // collision — e.g. the "Shield" spell vs a piece of Shield armor — is
+  // rare), never worse than the old design's own single always-fetched
+  // match.
   const summaries = await fetchKindEntrySummaries(dataManager, kindId).catch(() => []);
-  const candidates = typeof filter === "function" ? summaries.filter(filter) : summaries;
   const normalized = String(name || "").trim().toLowerCase();
-  const match = candidates.find(
+  const nameMatches = summaries.filter(
     (entry) => String(entry.id).toLowerCase() === normalized || entry.name.trim().toLowerCase() === normalized
   );
-  if (!match) return null;
-  try {
-    const result = await dataManager.get(kindId, match.id, { preferLocal: false });
-    return { kind: kindId, id: match.id, name: match.name, payload: result?.payload || {} };
-  } catch (error) {
-    return null;
+  for (const candidate of nameMatches) {
+    let payload;
+    try {
+      const result = await dataManager.get(kindId, candidate.id, { preferLocal: false });
+      payload = result?.payload || {};
+    } catch (error) {
+      continue; // try the next name-match candidate, if any
+    }
+    if (typeof filter === "function" && !filter(payload)) continue;
+    return { kind: kindId, id: candidate.id, name: candidate.name, payload };
   }
+  return null;
 }
 
 // The id-based counterpart to findKindReferenceRecord — every new
@@ -431,20 +490,29 @@ export function attachReferencePreview(button, { kind, id, name, dataManager, ki
   async function show() {
     const token = (requestToken += 1);
     const popover = ensurePreviewPopover();
-    renderPreviewLoading(popover, { name: name || id, kindLabel });
+    renderPreviewLoading(popover, { name: name || id, kind, kindLabel });
     positionPopover(popover, button.getBoundingClientRect());
     const record = await loadPreviewRecord(dataManager, kind, id, name);
     if (token !== requestToken || popover.style.display === "none") return; // superseded or already dismissed
     if (!record) {
-      renderPreviewMissing(popover, { name: name || id, kindLabel });
-    } else {
-      renderPreviewContent(popover, {
-        name: record.name || name || id,
-        kindLabel,
-        lines: buildIdentityLines(kind, record.payload),
-        notes: resolveNotes(record.payload),
-      });
+      renderPreviewMissing(popover, { name: name || id, kind, kindLabel });
+      positionPopover(popover, button.getBoundingClientRect());
+      return;
     }
+    // Needs the record's own systemIds first (resolveFormSummary reads the
+    // Wonder's own Form/sub-category off the ACTUAL System it's assigned
+    // to, never a hardcoded one) — a second await, only ever incurred for
+    // a Wonder with a `properties.form` at all (empty string, no fetch,
+    // for every other kind).
+    const formSummary = await resolveFormSummary(dataManager, record.payload);
+    if (token !== requestToken || popover.style.display === "none") return; // superseded or dismissed mid-fetch
+    renderPreviewContent(popover, {
+      name: record.name || name || id,
+      kind,
+      kindLabel,
+      formSummary,
+      notes: resolveNotes(record.payload),
+    });
     positionPopover(popover, button.getBoundingClientRect());
   }
 

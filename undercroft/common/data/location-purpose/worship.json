@@ -1,9 +1,5 @@
 {
   "id": "worship",
   "name": "Worship",
-  "systemIds": [
-    "sys.dnd5e",
-    "sys.dnd5e2014"
-  ],
   "description": "Exists for devotion and ritual — temples, shrines, sacred groves, and other consecrated places."
 }

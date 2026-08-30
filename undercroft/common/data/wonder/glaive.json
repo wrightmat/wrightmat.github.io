@@ -1,0 +1,18 @@
+{
+  "index": "glaive",
+  "name": "Glaive",
+  "notes": "Damage: 1d10 Slashing\n\nRange: 5 ft.\n\nProperties: Heavy, Reach, Two-Handed\n\nMastery: Graze",
+  "price": "20 gp",
+  "weight": 6,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2024/equipment/glaive",
+  "mapping": "5e-api-equipment",
+  "properties": {
+    "form": "weapon",
+    "weaponCategory": "martial-melee"
+  },
+  "featureIds": []
+}

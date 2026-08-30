@@ -1,0 +1,18 @@
+{
+  "index": "orb",
+  "name": "Orb",
+  "notes": "",
+  "price": "20 gp",
+  "weight": 3,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2024/equipment/orb",
+  "mapping": "5e-api-equipment",
+  "properties": {
+    "form": "equipment",
+    "equipmentCategory": "arcane-foci"
+  },
+  "featureIds": []
+}

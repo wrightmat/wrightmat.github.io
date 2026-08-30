@@ -34,5 +34,18 @@
   "systemIds": [
     "sys.dnd5e",
     "sys.dnd5e2014"
-  ]
+  ],
+  "names": {
+    "nameMode": "synonym",
+    "lastNameForm": "none",
+    "firstNames": [
+      "Bright Litter Falling Wind", "Cloud on the Mountaintop", "Rain Chaser",
+      "Seven Leaps Left", "Half-Tail Steals the Moon", "Seventeen Wildfires",
+      "Fast Runner Drops the Prey", "Twenty-Sixth Cloud Formation",
+      "Stalking Cat Under the Full Moon", "Ninth Life", "Distant Thunder",
+      "Quiet Paws at Dawn", "Restless Whisker", "Curious Shadow",
+      "Small Talker Big Ideas", "Bold Leaper Chasing Stars"
+    ],
+    "lastNames": []
+  }
 }

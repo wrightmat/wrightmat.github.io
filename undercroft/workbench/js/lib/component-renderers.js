@@ -365,6 +365,14 @@ export function renderTextContent(component, ctx) {
       : null;
   if (reference) {
     applyTextFormatting(text, component);
+    // Deliberately always `reference.name` (the real catalog name), never
+    // an optional `customName` override — a Text cell showing one thing in
+    // View mode and a DIFFERENT thing in Edit mode (Edit's own plain-input
+    // branch below has no equivalent override at all) was confirmed real,
+    // reported confusing UX. A custom nickname (e.g. DDB's own item-
+    // customization "Hookshot" for a Grappling Hook) gets its own
+    // dedicated field/column instead (see tpl.5e.flex-basic.json's own
+    // Inventory Repeater), shown consistently either way.
     if (ctx.dataManager) {
       text.appendChild(
         createReferenceChip({ kind: reference.refKind, id: reference.refId, name: reference.name, dataManager: ctx.dataManager })
@@ -588,6 +596,9 @@ export function renderInputContent(component, ctx) {
     const reference = ctx.resolveReference(component);
     if (reference && ctx.dataManager) {
       const wrapper = document.createElement("div");
+      // Always reference.name (never a customName override) — same
+      // "consistent between View and Edit" reasoning as renderTextContent's
+      // own identical reference-chip branch.
       wrapper.appendChild(
         createReferenceChip({ kind: reference.refKind, id: reference.refId, name: reference.name, dataManager: ctx.dataManager })
       );

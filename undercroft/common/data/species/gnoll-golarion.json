@@ -1,0 +1,29 @@
+{
+  "name": "Gnoll",
+  "tagline": "Exiled and forging a new pack",
+  "description": [
+    "Hyena-like humanoids exiled from the Mwangi Expanse for their perceived savagery, gnolls in Golarion's other lands are working to build new lives — and new packs — among other folk."
+  ],
+  "systemIds": [
+    "sys.pf2e"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "none",
+    "firstNames": [
+      "Kesh",
+      "Vahra",
+      "Roggu",
+      "Sennah",
+      "Brakka",
+      "Nyeli",
+      "Tokka",
+      "Uzuri",
+      "Fessa",
+      "Grahn",
+      "Whiska",
+      "Yovann"
+    ],
+    "lastNames": []
+  }
+}

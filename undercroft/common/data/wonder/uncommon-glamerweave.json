@@ -1,0 +1,26 @@
+{
+  "name": "Uncommon Glamerweave",
+  "notes": "Glamerweave is clothing imbued with harmless illusory magic. While wearing the common version of these clothes, you can use a bonus action to create a moving illusory pattern within the cloth.\n\nUncommon glamerweave can have the pattern rise from the cloth. For example, a glamerweave gown might be wreathed in harmless, illusory flames, while a glamerweave hat might have illusory butterflies fluttering around it.\n\nWhen you make a Charisma (Performance) or Charisma (Persuasion) check while wearing the uncommon version of glamerweave, you can roll a d4 and add the number rolled to the check. Once you use this property, it can’t be used again until the next dawn.\n\nSource: Wayfinder's Guide to Eberron",
+  "price": "",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dndbeyond.com/magic-items/1093036-uncommon-glamerweave",
+  "mapping": "ddb-item",
+  "properties": {
+    "rarity": "uncommon",
+    "form": "wondrous-item"
+  },
+  "featureIds": [
+    "feat.modifies-roll"
+  ],
+  "featureParams": {
+    "feat.modifies-roll": {
+      "rollType": "check",
+      "mode": "bonus-die",
+      "die": "d4",
+      "sign": "add"
+    }
+  }
+}

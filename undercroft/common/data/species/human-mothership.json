@@ -1,0 +1,38 @@
+{
+  "name": "Human",
+  "tagline": "Underpaid and underinsured",
+  "description": [
+    "The crew of nearly every Mothership contract — marines, androids' human coworkers, scientists, and teamsters alike, all working off a bad contract for a company that stopped answering the radio six minutes ago."
+  ],
+  "systemIds": [
+    "sys.mothership"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "family",
+    "firstNames": [
+      "Reyes",
+      "Kowalski",
+      "Adebayo",
+      "Mendez",
+      "Okafor",
+      "Petrov",
+      "Nakamura",
+      "Solano",
+      "Whitfield",
+      "Bragg",
+      "Dalisay",
+      "Voss"
+    ],
+    "lastNames": [
+      "Voss",
+      "Kessler",
+      "Amadi",
+      "Torres",
+      "Lindqvist",
+      "Osei",
+      "Marchetti",
+      "Delgado"
+    ]
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "name": "Bajoran",
+  "tagline": "Faith, forged in occupation",
+  "description": [
+    "A deeply spiritual people who endured decades of Cardassian Occupation before joining the wider galactic community, their faith in the Prophets unshaken."
+  ],
+  "systemIds": [
+    "sys.sta"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "family",
+    "firstNames": [
+      "Kira",
+      "Bareil",
+      "Shakaar",
+      "Winn",
+      "Opaka",
+      "Furel",
+      "Lupaza",
+      "Li"
+    ],
+    "lastNames": [
+      "Nerys",
+      "Antos",
+      "Edon",
+      "Adami",
+      "Sirsy"
+    ]
+  }
+}

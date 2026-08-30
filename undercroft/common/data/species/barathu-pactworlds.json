@@ -1,0 +1,29 @@
+{
+  "name": "Barathu",
+  "tagline": "Amphibious and hive-minded",
+  "description": [
+    "Amphibious, telepathic crustacean-like folk from an aquatic hive society, barathu bring a communal, patient perspective to the Pact Worlds' bustle."
+  ],
+  "systemIds": [
+    "sys.sf2e"
+  ],
+  "names": {
+    "nameMode": "synonym",
+    "lastNameForm": "none",
+    "firstNames": [
+      "Tide",
+      "Coral",
+      "Brine",
+      "Kelp",
+      "Pearl",
+      "Drift",
+      "Shoal",
+      "Silt",
+      "Reef",
+      "Foam",
+      "Undertow",
+      "Anemone"
+    ],
+    "lastNames": []
+  }
+}

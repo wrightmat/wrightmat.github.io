@@ -654,6 +654,26 @@ export function createCheckField({
 // the limit means designing an alternative WITH the user (a secondary
 // toolbar, moving the action to a more relevant location, a dropdown of
 // less-common actions) — never just letting the cluster keep growing.
+// `disabled: true` here only ever sets the initial state — a REAL
+// `disabled` attribute, which (per tooltips.js's own header) blocks hover
+// entirely, so `label`'s own tooltip (set on this same button by
+// createIconButton above) cannot show while disabled. Harmless as long as
+// nothing actually depends on it — a disabled element's inert
+// data-bs-toggle/data-bs-title just never fires, same as having none at
+// all — but a caller that DOES need a working explanatory tooltip on a
+// currently-disabled toolbar button (Forge/Sanctum/Crucible/Vault's own
+// Generate buttons are the concrete example) must call
+// setDisabledTooltip(button, reason) itself once the button is actually in
+// the DOM (this function can't do it here: setDisabledTooltip's wrapper
+// needs a real parent to insert into, and these buttons haven't been
+// appended anywhere yet — that's the caller's job, right after this
+// returns). setDisabledTooltip only ever manages ITS OWN wrapper's
+// tooltip, never touching this button's own native one — so `label`'s
+// attributes are deliberately left in place here (not stripped) rather
+// than removed and never restored: once setDisabledTooltip's wrapper is
+// gone again (generation ready), this button's own original tooltip is
+// still exactly where createIconButton left it, immediately usable again
+// with zero extra work from the caller.
 export function createToolbarButtonGroup(items = []) {
   return items.map(
     ({ action, label, icon, variant: variantOverride, onClick, visible = true, disabled = false, primary = false, attrs = {} }) => {

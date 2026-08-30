@@ -1,0 +1,29 @@
+{
+  "name": "Tengu",
+  "tagline": "Sharp-witted wanderers",
+  "description": [
+    "Bird-like humanoids descended from tengu spirits, Golarion's tengu are quick-witted wanderers and skilled duelists rarely tied down to one place for long."
+  ],
+  "systemIds": [
+    "sys.pf2e"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "none",
+    "firstNames": [
+      "Kojin",
+      "Sura",
+      "Taketo",
+      "Nari",
+      "Yashiro",
+      "Kiku",
+      "Doji",
+      "Ren",
+      "Sozo",
+      "Aiko",
+      "Kuro",
+      "Emi"
+    ],
+    "lastNames": []
+  }
+}

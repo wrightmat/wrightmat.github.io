@@ -1,0 +1,24 @@
+{
+  "id": "feat.skillful",
+  "name": "Skillful",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "You gain proficiency in one skill of your choice.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You gain proficiency in one skill of your choice."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

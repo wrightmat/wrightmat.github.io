@@ -1,0 +1,29 @@
+{
+  "name": "Ratfolk",
+  "tagline": "Resourceful and quick",
+  "description": [
+    "Small rodent-folk known throughout Golarion for tinkering, trade, and an uncanny knack for surviving where others wouldn't."
+  ],
+  "systemIds": [
+    "sys.pf2e"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "none",
+    "firstNames": [
+      "Squibb",
+      "Nettle",
+      "Ferrick",
+      "Bristle",
+      "Twitch",
+      "Sable",
+      "Grix",
+      "Pip",
+      "Yark",
+      "Snick",
+      "Bramble",
+      "Wren"
+    ],
+    "lastNames": []
+  }
+}

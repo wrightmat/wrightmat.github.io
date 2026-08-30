@@ -1,0 +1,18 @@
+{
+  "index": "cart",
+  "name": "Cart",
+  "notes": "",
+  "price": "15 gp",
+  "weight": 200,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/equipment/cart",
+  "mapping": "5e-api-equipment",
+  "featureIds": [],
+  "properties": {
+    "form": "equipment",
+    "equipmentCategory": "mounts-and-vehicles"
+  }
+}

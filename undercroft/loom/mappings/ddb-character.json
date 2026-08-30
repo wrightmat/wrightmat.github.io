@@ -88,28 +88,7 @@
         "pp": { "type": "field", "bind": "@currencies.pp" }
       }
     },
-    "inventory": {
-      "type": "pipeline",
-      "source": "@inventory",
-      "steps": [
-        {
-          "step": "map",
-          "item": {
-            "type": "object",
-            "fields": {
-              "name": { "type": "field", "bind": "@definition.name" },
-              "quantity": { "type": "field", "bind": "=@quantity || 1" },
-              "weight": { "type": "field", "bind": "=(@definition.weight || 0) * (@definition.weightMultiplier || 1) * (@quantity || 1)" },
-              "notes": { "type": "field", "bind": "=@definition.snippet || @definition.description || ''" },
-              "canAttune": { "type": "field", "bind": "=@definition.canAttune ? true : false" },
-              "isAttuned": { "type": "field", "bind": "=@isAttuned ? true : false" },
-              "canEquip": { "type": "field", "bind": "=@definition.canEquip ? true : false" },
-              "isEquipped": { "type": "field", "bind": "=@equipped ? true : false" }
-            }
-          }
-        }
-      ]
-    },
+    "inventory": { "type": "custom", "fn": "inventoryTable" },
     "background": {
       "type": "object",
       "fields": {

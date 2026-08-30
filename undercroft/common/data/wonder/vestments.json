@@ -1,0 +1,18 @@
+{
+  "index": "vestments",
+  "name": "Vestments",
+  "notes": "Religious clothing, typically found in a priest's pack.",
+  "price": "0 cp",
+  "weight": 0,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/equipment/vestments",
+  "mapping": "5e-api-equipment",
+  "properties": {
+    "form": "equipment",
+    "equipmentCategory": "adventuring-gear"
+  },
+  "featureIds": []
+}

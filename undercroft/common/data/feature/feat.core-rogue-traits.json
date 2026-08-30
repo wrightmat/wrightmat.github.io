@@ -1,0 +1,24 @@
+{
+  "id": "feat.core-rogue-traits",
+  "name": "Core Rogue Traits",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "As a Level 1 Character:\n\n- Gain all the traits in the Core Rogue Traits table.\n\n- Gain the Rogue’s level 1 features.\n\nPrimary Ability: Dexterity\n\nHit Point Die: D8 per Rogue level\n\nSaving Throw Proficiencies: Dexterity and Intelligence\n\nSkill Proficiencies: *Choose 4:* Acrobatics, Athletics, Deception, Insight, Intimidation, Investigation, Perception, Persuasion, Sleight of Hand, or Stealth\n\nWeapon Proficiencies: Simple weapons and Martial weapons that have the Finesse or Light property\n\nTool Proficiencies: Thieves’ Tools\n\nArmor Training: Light armor\n\nStarting Equipment: *Choose A or B:* (A) Leather Armor, 2 Daggers, Shortsword, Shortbow, 20 Arrows, Quiver, Thieves’ Tools, Burglar’s Pack, and 8 GP; or (B) 100 GP",
+  "mechanics": {
+    "type": "passive",
+    "text": "As a Level 1 Character:\n\n- Gain all the traits in the Core Rogue Traits table.\n\n- Gain the Rogue’s level 1 features.\n\nPrimary Ability: Dexterity\n\nHit Point Die: D8 per Rogue level\n\nSaving Throw Proficiencies: Dexterity and Intelligence\n\nSkill Proficiencies: *Choose 4:* Acrobatics, Athletics, Deception, Insight, Intimidation, Investigation, Perception, Persuasion, Sleight of Hand, or Stealth\n\nWeapon Proficiencies: Simple weapons and Martial weapons that have the Finesse or Light property\n\nTool Proficiencies: Thieves’ Tools\n\nArmor Training: Light armor\n\nStarting Equipment: *Choose A or B:* (A) Leather Armor, 2 Daggers, Shortsword, Shortbow, 20 Arrows, Quiver, Thieves’ Tools, Burglar’s Pack, and 8 GP; or (B) 100 GP"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

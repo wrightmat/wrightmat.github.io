@@ -1,0 +1,30 @@
+{
+  "name": "Klingon",
+  "tagline": "Honor in blood and battle",
+  "description": [
+    "A proud warrior culture bound by the Klingon Empire's own code of honor, glory in battle, and a good death — allies of the Federation, but never quite Federation citizens themselves."
+  ],
+  "systemIds": [
+    "sys.sta"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "clan",
+    "firstNames": [
+      "Worf",
+      "Gowron",
+      "Martok",
+      "K'Ehleyr",
+      "Duras",
+      "Kurn",
+      "B'Elanna",
+      "Kor"
+    ],
+    "lastNames": [
+      "Mogh",
+      "Duras",
+      "Torghn",
+      "Kanjis"
+    ]
+  }
+}

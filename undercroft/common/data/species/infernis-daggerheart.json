@@ -1,0 +1,33 @@
+{
+  "name": "Infernis",
+  "tagline": "Horned, marked, and striking",
+  "description": [
+    "Demon-descended humanoids with horns, canine teeth, and colorful skin, Infernis names carry a dramatic, old-world weight."
+  ],
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "none",
+    "firstNames": [
+      "Malachai",
+      "Seraphine",
+      "Vantho",
+      "Ashariel",
+      "Corvex",
+      "Delirea",
+      "Ignathis",
+      "Morrigant",
+      "Ravanth",
+      "Sybelle",
+      "Thanaros",
+      "Vexara",
+      "Onyxel",
+      "Pyrrhine",
+      "Kaldreth",
+      "Solvane"
+    ],
+    "lastNames": []
+  }
+}

@@ -8,7 +8,6 @@
   "description": "When an attacker that you can see hits you with an attack roll, you can take a Reaction to halve the attack’s damage against you (round down).",
   "mechanics": {
     "type": "passive",
-    "scope": "unique",
     "text": "When an attacker that you can see hits you with an attack roll, you can take a Reaction to halve the attack’s damage against you (round down)."
   },
   "budgetCost": 0,

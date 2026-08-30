@@ -1,0 +1,18 @@
+{
+  "index": "pot-iron",
+  "name": "Pot, Iron",
+  "notes": "An Iron Pot holds up to 1 gallon.",
+  "price": "2 gp",
+  "weight": 10,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2024/equipment/pot-iron",
+  "mapping": "5e-api-equipment",
+  "properties": {
+    "form": "equipment",
+    "equipmentCategory": "adventuring-gear"
+  },
+  "featureIds": []
+}

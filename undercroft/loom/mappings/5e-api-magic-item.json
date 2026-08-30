@@ -16,10 +16,6 @@
         "type": "custom",
         "fn": "srdItemKindFromStats"
       },
-      "index": {
-        "type": "field",
-        "bind": "@index"
-      },
       "name": {
         "type": "custom",
         "fn": "srdItemNameFromStats"

@@ -1,0 +1,24 @@
+{
+  "id": "feat.ability-score-increase-feature",
+  "name": "Ability Score Increase",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "When determining your character’s ability scores, increase one score by 2 and a different one by 1, or increase three scores by 1. None of these increases can raise a score above 20.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When determining your character’s ability scores, increase one score by 2 and a different one by 1, or increase three scores by 1. None of these increases can raise a score above 20."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

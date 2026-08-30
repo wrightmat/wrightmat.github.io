@@ -4,10 +4,10 @@
   "systemIds": [
     "sys.dnd5e"
   ],
-  "description": "You gain the Ability Score Improvement feat or another feat of your choice for which you qualify.",
+  "description": "*General Feat (Prerequisite: Level 4+)*\n\nIncrease one ability score of your choice by 2, or increase two ability scores of your choice by 1. This feat can’t increase an ability score above 20.\n\n***Repeatable.*** You can take this feat more than once.",
   "mechanics": {
     "type": "passive",
-    "text": "You gain the Ability Score Improvement feat or another feat of your choice for which you qualify."
+    "text": "*General Feat (Prerequisite: Level 4+)*\n\nIncrease one ability score of your choice by 2, or increase two ability scores of your choice by 1. This feat can’t increase an ability score above 20.\n\n***Repeatable.*** You can take this feat more than once."
   },
   "budgetCost": 0,
   "tags": {

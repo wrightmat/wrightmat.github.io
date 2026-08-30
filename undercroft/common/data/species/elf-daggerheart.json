@@ -1,0 +1,42 @@
+{
+  "name": "Elf",
+  "tagline": "Keen-eyed and dream-touched",
+  "description": [
+    "Tall, pointed-eared humanoids with heightened senses who enter a celestial trance instead of sleeping, elven names flow easily between generations."
+  ],
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "family",
+    "firstNames": [
+      "Lorendil",
+      "Sylvaneth",
+      "Aerindra",
+      "Thelorien",
+      "Vaelira",
+      "Ithrandil",
+      "Miriseth",
+      "Caelenor",
+      "Yvandriel",
+      "Serathiel",
+      "Faelwyn",
+      "Orindel",
+      "Selunara",
+      "Thandriel",
+      "Ilvaeris",
+      "Rendaviel"
+    ],
+    "lastNames": [
+      "Moonwhisper",
+      "Starfallow",
+      "Duskbriar",
+      "Silverleaf",
+      "Dawnstrider",
+      "Emberveil",
+      "Wintersong",
+      "Farwatcher"
+    ]
+  }
+}

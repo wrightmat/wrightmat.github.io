@@ -11,19 +11,70 @@ import {
 } from "./tables.js";
 import { generateSpeciesName } from "./name-generator.js";
 
+// A key this archetype's own entry doesn't already carry gets independently
+// rolled within the System's own authored range (tables.independentStatRanges
+// — see loadIndependentStatRanges's own comment in lib/tables.js) instead of
+// being left out — CoC's real case: Occupation entries only ever carry
+// creditRatingMin/Max, so every ability key (Characteristics) and any other
+// ranged field (Hit Points, Move) rolls independently every time. A System
+// whose Archetype entries already carry everything (D&D's own Monster
+// Manual copy) never has anything left for this to fill in, since
+// existingKeys already covers it — inert there, not a second source.
+function rollIndependentStats(ranges, existingKeys, random) {
+  const result = {};
+  (ranges || []).forEach(({ key, min, max }) => {
+    if (existingKeys.has(key)) return;
+    result[key] = Math.round(min + random() * (max - min));
+  });
+  return result;
+}
+
 // Distinguishes "this System has no Stats concept bound at all" (Blades in
 // the Dark: no archetypeStats field, tables.stats resolves to an empty
-// map — Stats is genuinely omitted from the record, not just null) from
-// "this System has Stats, but not for this particular archetype" (D&D's
-// Wildcard/setting-specific rolls — tables.stats is non-empty, but this one
-// name isn't in it — stays a real `stats: null`, rendered as "No stat block
-// available for this archetype" rather than silently disappearing).
-// undefined (not null) is a deliberate choice for the first case:
-// JSON.stringify already drops undefined-valued keys on its own, so a
-// saved/exported record for an unbound System has no `stats` key at all.
-function resolveStats(tables, archetypeName) {
+// map, and no independentStatRanges either — Stats is genuinely omitted
+// from the record, not just null) from "this System has Stats, but not for
+// this particular archetype, and nothing to independently roll either"
+// (stays a real `stats: null`, rendered as "No stat block available for
+// this archetype" rather than silently disappearing). undefined (not null)
+// is a deliberate choice for the first case: JSON.stringify already drops
+// undefined-valued keys on its own, so a saved/exported record for an
+// unbound System has no `stats` key at all.
+function resolveStats(tables, archetypeName, random) {
   const hasStatsTable = tables.stats && Object.keys(tables.stats).length > 0;
-  return hasStatsTable ? getStatsForArchetype(tables.stats, archetypeName, tables.abilityKeys) : undefined;
+  const independentRanges = tables.independentStatRanges || [];
+  if (!hasStatsTable && !independentRanges.length) return undefined;
+  const archetypeEntry = hasStatsTable ? tables.stats[archetypeName] : null;
+  if (!archetypeEntry && !independentRanges.length) return null;
+  const existingKeys = new Set(Object.keys(archetypeEntry || {}));
+  const rolled = rollIndependentStats(independentRanges, existingKeys, random);
+  const merged = { ...(archetypeEntry || {}), ...rolled };
+  return getStatsForArchetype({ [archetypeName]: merged }, archetypeName, tables.abilityKeys);
+}
+
+// A System-defined "Key Expertise Skills roll higher, everything else rolls
+// lower" NPC skill generation (see loadSkillGenerationConfig's own comment
+// in lib/tables.js) — a real, common piece of CoC-style NPC generation
+// advice, but genuinely data-driven: the ranges and which System field
+// supplies the skill vocabulary all come from the System's own
+// skillGeneration field, never hardcoded here. undefined for a System with
+// no skillGeneration config authored (every System except CoC today), same
+// "key genuinely absent, not present-but-empty" convention as resolveStats'
+// own undefined case above.
+function rollSkills(skillGeneration, random) {
+  if (!skillGeneration) return undefined;
+  const { skillKeys, keyCount, keyMin, keyMax, otherMin, otherMax } = skillGeneration;
+  const pool = [...skillKeys];
+  const keySkills = new Set();
+  for (let i = 0; i < keyCount && pool.length; i += 1) {
+    const index = Math.floor(random() * pool.length);
+    keySkills.add(pool.splice(index, 1)[0].key);
+  }
+  const result = {};
+  skillKeys.forEach(({ key }) => {
+    const [min, max] = keySkills.has(key) ? [keyMin, keyMax] : [otherMin, otherMax];
+    result[key] = Math.round(min + random() * (max - min));
+  });
+  return { keySkills: Array.from(keySkills), values: result };
 }
 
 // Composes one full NPC roll (Identity + 4D) from a Location config and the
@@ -76,7 +127,11 @@ export function generateNpc(location, tables, { overrides = {}, random = Math.ra
       drive: fourD.drive.label,
       direction: fourD.direction.label,
     },
-    stats: resolveStats(tables, archetype.name),
+    stats: resolveStats(tables, archetype.name, random),
+    // Present only for a System with a skillGeneration config authored
+    // (see rollSkills' own comment) — omitted (undefined) entirely for
+    // every other System, same convention as `stats` above.
+    skills: rollSkills(tables.skillGeneration, random),
     note: null,
     rolls: {
       species,
@@ -126,7 +181,8 @@ export function rerollAttribute(record, tables, location, attribute, { random = 
       const archetype = rollArchetype(tables.archetype, location, { random });
       next.identity.archetype = archetype.name;
       next.rolls.archetype = archetype;
-      next.stats = resolveStats(tables, archetype.name);
+      next.stats = resolveStats(tables, archetype.name, random);
+      next.skills = rollSkills(tables.skillGeneration, random);
       break;
     }
     case "alignment": {

@@ -1,0 +1,18 @@
+{
+  "index": "splint-armor",
+  "name": "Splint",
+  "notes": "Armor Class: 17\n\nStrength: 15\n\nStealth: Disadvantage",
+  "price": "200 gp",
+  "weight": 60,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2024/equipment/splint-armor",
+  "mapping": "5e-api-equipment",
+  "properties": {
+    "form": "armor",
+    "armorCategory": "heavy"
+  },
+  "featureIds": []
+}

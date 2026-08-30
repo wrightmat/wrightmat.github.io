@@ -1,0 +1,30 @@
+{
+  "name": "Vesk",
+  "tagline": "Militaristic and proud",
+  "description": [
+    "A militaristic, reptilian warrior species whose empire rivals the Pact Worlds themselves, vesk value honor, strength, and a well-fought battle."
+  ],
+  "systemIds": [
+    "sys.sf1e",
+    "sys.sf2e"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "none",
+    "firstNames": [
+      "Grask",
+      "Vorrik",
+      "Thessk",
+      "Yarrix",
+      "Krenn",
+      "Sallis",
+      "Drovek",
+      "Ishka",
+      "Marrok",
+      "Vekta",
+      "Ossian",
+      "Rashka"
+    ],
+    "lastNames": []
+  }
+}

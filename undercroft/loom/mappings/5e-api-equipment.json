@@ -1,0 +1,52 @@
+{
+  "type": "with",
+  "$source": "srd",
+  "$description": "5e API — Equipment",
+  "$defaultSourceValue": "https://www.dnd5eapi.co/api/2014/equipment",
+  "bindings": {
+    "itemStats": {
+      "type": "custom",
+      "fn": "srdEquipmentStats"
+    }
+  },
+  "body": {
+    "type": "object",
+    "fields": {
+      "kind": {
+        "type": "custom",
+        "fn": "srdItemKindFromStats"
+      },
+      "name": {
+        "type": "custom",
+        "fn": "srdItemNameFromStats"
+      },
+      "notes": {
+        "type": "field",
+        "bind": "@itemStats.description"
+      },
+      "price": {
+        "type": "field",
+        "bind": "@itemStats.price"
+      },
+      "weight": {
+        "type": "field",
+        "bind": "@itemStats.weight"
+      },
+      "systemIds": {
+        "type": "custom",
+        "fn": "srdVaultSystemIds"
+      },
+      "url": {
+        "type": "custom",
+        "fn": "srdAbsoluteUrl",
+        "args": {
+          "path": "url"
+        }
+      },
+      "stats": {
+        "type": "field",
+        "bind": "@itemStats"
+      }
+    }
+  }
+}

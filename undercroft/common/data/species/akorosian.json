@@ -1,0 +1,46 @@
+{
+  "name": "Akorosian",
+  "tagline": "Duskvol-born, industrial and unsentimental",
+  "description": [
+    "Native to Akoros — the region Duskvol itself was built in — Akorosians are the closest thing the city has to an established, old-money population, from soot-stained dockhands to Bluecoat sergeants to the Lampblacks' own leadership. Practical, unsentimental, and thoroughly used to the electroplasm-lit dark."
+  ],
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "family",
+    "firstNames": [
+      "Roric",
+      "Ilsa",
+      "Barbary",
+      "Nyryx",
+      "Corinna",
+      "Anther",
+      "Lyssa",
+      "Wrenna",
+      "Declan",
+      "Marlow",
+      "Odessa",
+      "Thackeray",
+      "Vesper",
+      "Gideon",
+      "Perpetua",
+      "Ambrose"
+    ],
+    "lastNames": [
+      "Coldstream",
+      "Ashford",
+      "Blackwell",
+      "Fenmoor",
+      "Graves",
+      "Hollowell",
+      "Kestrel",
+      "Marrow",
+      "Pryce",
+      "Ravensworth",
+      "Stanhope",
+      "Thistlewood"
+    ]
+  }
+}

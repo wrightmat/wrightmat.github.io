@@ -1,0 +1,29 @@
+{
+  "name": "Orc",
+  "tagline": "Hardened by Belkzen",
+  "description": [
+    "Descended from the orc clans of the Hold of Belkzen, Golarion's orcs are resilient survivors of a harsh land — increasingly finding acceptance beyond the Hold's borders as a playable people in their own right."
+  ],
+  "systemIds": [
+    "sys.pf2e"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "none",
+    "firstNames": [
+      "Grukk",
+      "Vharra",
+      "Dunmog",
+      "Kessik",
+      "Borrga",
+      "Nashka",
+      "Thurrog",
+      "Uxxa",
+      "Vrakka",
+      "Gormesh",
+      "Yolgra",
+      "Zennok"
+    ],
+    "lastNames": []
+  }
+}

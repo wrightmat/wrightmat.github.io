@@ -1,9 +1,5 @@
 {
   "id": "exploration",
   "name": "Exploration",
-  "systemIds": [
-    "sys.dnd5e",
-    "sys.dnd5e2014"
-  ],
   "description": "Exists to be discovered — ruins, uncharted reaches, and places whose value is finding them at all."
 }

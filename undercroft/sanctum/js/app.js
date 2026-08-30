@@ -1,7 +1,7 @@
 import { initAppShell } from "../../common/js/lib/app-shell.js";
 import { initAuthControls, escapeHtml } from "../../common/js/lib/auth-ui.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
-import { refreshTooltips } from "../../common/js/lib/tooltips.js";
+import { refreshTooltips, updateTooltipContent } from "../../common/js/lib/tooltips.js";
 import { bindCollapsibleToggle } from "../../common/js/lib/collapsible.js";
 import {
   createJsonDataPanel,
@@ -45,6 +45,7 @@ import {
   generateNoteForRecord,
   renderRequiredSelectOptions,
   renderOptionalSelectOptions,
+  setGenerateButtonReadiness,
 } from "../../common/js/lib/generator-kit.js";
 import { markRequiredControl } from "../../common/js/lib/dom.js";
 import { resolveGroupContext, pickGroupDefaultId } from "../../common/js/lib/widgets/group-context.js";
@@ -316,6 +317,8 @@ const elements = {
   addMonthButton: document.querySelector("[data-add-month]"),
   moonCycleRows: document.querySelector("[data-moon-cycle-rows]"),
   addMoonCycleButton: document.querySelector("[data-add-moon-cycle]"),
+  seasonRows: document.querySelector("[data-season-rows]"),
+  addSeasonButton: document.querySelector("[data-add-season]"),
   epochLabelInput: document.querySelector("[data-calendar-epoch-label]"),
   startingYearInput: document.querySelector("[data-calendar-starting-year]"),
   notesText: document.querySelector("[data-notes-text]"),
@@ -382,7 +385,12 @@ async function populateSettingSelect(systemId) {
   // result already is — listSettingsForSystem itself returns server order,
   // not name order.
   const sortedSettings = [...settings].sort((a, b) => (a.name || a.id).localeCompare(b.name || b.id));
-  renderOptionalSelectOptions(elements.settingSelect, sortedSettings);
+  // autoSelectSingle: true — same reasoning as Forge's Location picker
+  // (generator-kit.js's renderOptionalSelectOptions): a single available
+  // Setting for this System gives a more specific generation context with
+  // nothing lost by landing on it automatically, so there's no reason to
+  // make the GM pick it by hand.
+  renderOptionalSelectOptions(elements.settingSelect, sortedSettings, { autoSelectSingle: true });
   markRequiredControl(elements.settingSelect, Boolean(elements.settingSelect.value));
   await refreshSettingCatalog(settings.map((setting) => setting.id));
   // Returned (not just awaited) so the init flow's own active-group
@@ -596,6 +604,13 @@ function updateGenerationFieldsVisibility() {
 }
 
 function populateLocationSelect() {
+  // Deliberately NOT autoSelectSingle, unlike populateSettingSelect above
+  // and Forge's own Location picker — Location is what Sanctum GENERATES,
+  // not just a scoping/context picker. Auto-loading the sole existing
+  // Location the moment its Setting resolves broke the "pick your System/
+  // Setting, hit Generate" flow: the center pane silently pre-filled with
+  // an existing saved Location (e.g. Duskvol) instead of staying blank and
+  // ready for a fresh Generate. Confirmed real, reported regression.
   renderOptionalSelectOptions(elements.locationSelect, locationsInSetting);
   updateGenerationFieldsVisibility();
 }
@@ -960,6 +975,28 @@ function renderMoonCycleRow(entry = { name: "", days: 29 }) {
   elements.moonCycleRows.appendChild(row);
 }
 
+// Same shape/reasoning as renderMonthRow/renderMoonCycleRow just above —
+// a season is purely descriptive, the same "day-index-based cyclical
+// concept" every other Calendar row already is: a name plus a length in
+// days, cycling through the YEAR total (all Seasons' own `days` summed)
+// rather than any one Month's or Moon's own cycle. Default length (91)
+// is a plain quarter-of-a-360-day-year guess, same spirit as Month's own
+// 30-day/Moon's own 29-day defaults — just a reasonable starting number
+// for a new row, never enforced.
+function renderSeasonRow(entry = { name: "", days: 91 }) {
+  if (!elements.seasonRows) return;
+  const row = document.createElement("div");
+  row.className = "d-flex align-items-center gap-2";
+  row.innerHTML = `
+    <input class="form-control" type="text" placeholder="Season name" value="${escapeHtml(entry.name || "")}" data-season-name />
+    <input class="form-control" type="number" min="1" step="1" style="max-width: 6rem" placeholder="Days" value="${Number(entry.days) || 91}" data-season-days />
+    <button class="btn btn-outline-danger btn-sm flex-shrink-0" type="button" data-remove-season aria-label="Remove season">
+      <span class="iconify" data-icon="tabler:trash" aria-hidden="true"></span>
+    </button>
+  `;
+  elements.seasonRows.appendChild(row);
+}
+
 function populateCalendarForm(calendar) {
   if (elements.daysPerWeekInput) elements.daysPerWeekInput.value = calendar?.daysPerWeek ?? "";
   if (elements.epochLabelInput) elements.epochLabelInput.value = calendar?.epochLabel || "";
@@ -975,6 +1012,10 @@ function populateCalendarForm(calendar) {
   if (elements.moonCycleRows) {
     elements.moonCycleRows.innerHTML = "";
     (calendar?.moonCycles || []).forEach((entry) => renderMoonCycleRow(entry));
+  }
+  if (elements.seasonRows) {
+    elements.seasonRows.innerHTML = "";
+    (calendar?.seasons || []).forEach((entry) => renderSeasonRow(entry));
   }
 }
 
@@ -1000,6 +1041,12 @@ function collectCalendarFromForm() {
         days: Number(row.querySelector("[data-moon-cycle-days]").value) || 0,
       }))
       .filter((entry) => entry.name && entry.days > 0),
+    seasons: Array.from(elements.seasonRows?.children || [])
+      .map((row) => ({
+        name: row.querySelector("[data-season-name]").value.trim(),
+        days: Number(row.querySelector("[data-season-days]").value) || 0,
+      }))
+      .filter((entry) => entry.name && entry.days > 0),
     epochLabel: elements.epochLabelInput?.value.trim() || "",
     startingYear: Number(elements.startingYearInput?.value) || 0,
   };
@@ -1011,6 +1058,7 @@ function hasCalendarContent(calendar) {
       calendar.weekdayNames.length ||
       calendar.months.length ||
       calendar.moonCycles.length ||
+      calendar.seasons.length ||
       calendar.epochLabel ||
       calendar.startingYear
   );
@@ -1565,8 +1613,7 @@ function applyNotesMode(mode) {
   elements.notesModeEyeIcon?.classList.toggle("d-none", isView);
   elements.notesModePencilIcon?.classList.toggle("d-none", !isView);
   if (elements.notesModeLabel) elements.notesModeLabel.textContent = isView ? "Edit" : "View";
-  elements.notesModeToggle?.setAttribute("data-bs-title", isView ? "Edit" : "View");
-  refreshTooltips();
+  if (elements.notesModeToggle) updateTooltipContent(elements.notesModeToggle, isView ? "Edit" : "View");
   if (isView) renderNotesPreview();
 }
 
@@ -1652,11 +1699,12 @@ function handleGenerateAction() {
 }
 
 function handleGenerate() {
+  // No Setting-selected guard needed here — setGenerateButtonReadiness
+  // gives the button a real `disabled` attribute whenever none is picked
+  // (or saved), and a disabled button's click listener never fires at all
+  // (mouse or keyboard), so this handler only ever runs once a Setting is
+  // in effect.
   const settingId = currentSettingId || elements.settingSelect?.value;
-  if (!settingId) {
-    status?.show("Select or save a Setting first.", { type: "warning", timeout: 2500 });
-    return;
-  }
   try {
     const generated = generateLocation(locationTypes, locationPurposes, features, resources, {
       systemId: currentSystemId() || null,
@@ -1821,7 +1869,11 @@ async function handleGenerateMultiRoom(roomCount) {
   } catch (error) {
     status?.show(`Unable to generate: ${error.message}`, { type: "error", timeout: 4000 });
   } finally {
-    if (elements.generateButton) elements.generateButton.disabled = false;
+    // Not a plain `disabled = false` — restores the button through the same
+    // readiness check every other path uses, so the `.disabled` class/
+    // tooltip state stays correct even in the (unlikely) case a Setting
+    // stopped being valid mid-operation.
+    updateGenerateButtonReadiness();
   }
 }
 
@@ -2103,11 +2155,20 @@ async function init() {
   initCollapsibles();
 
   // Generate starts disabled (see its own toolbar definition above) —
-  // called once the reference-data load has actually resolved, from every
-  // path that can reach "loading is done" below (the plain init cascade, or
-  // applyDeepLinkParams' own background Phase 2).
-  function enableGenerateButton() {
-    if (elements.generateButton) elements.generateButton.disabled = false;
+  // recomputed once the reference-data load has actually resolved, from
+  // every path that can reach "loading is done" below (the plain init
+  // cascade, handleSystemSelectChange/handleSettingSelectChange, or
+  // applyDeepLinkParams' own background Phase 2). A Setting is the one hard
+  // requirement (generateLocation degrades gracefully otherwise — a zero-
+  // synergy Feature/Resource pick is never forced, per this tool's own
+  // design). Previously the button stayed enabled with no Setting picked and
+  // only warned reactively, inside handleGenerate, after the click — same
+  // class of bug as Crucible/Vault/Forge's own Generate buttons, fixed the
+  // same way via the shared setGenerateButtonReadiness helper.
+  function updateGenerateButtonReadiness() {
+    const settingId = currentSettingId || elements.settingSelect?.value;
+    const reason = settingId ? "" : "Select or save a Setting first.";
+    setGenerateButtonReadiness(elements.generateButton, reason);
   }
 
   elements.generateButton?.addEventListener("click", handleGenerateAction);
@@ -2262,6 +2323,18 @@ async function init() {
   });
   elements.moonCycleRows?.addEventListener("input", updateSettingToolbarState);
 
+  elements.addSeasonButton?.addEventListener("click", () => {
+    renderSeasonRow();
+    updateSettingToolbarState();
+  });
+  elements.seasonRows?.addEventListener("click", (event) => {
+    if (event.target.closest("[data-remove-season]")) {
+      event.target.closest(".d-flex").remove();
+      updateSettingToolbarState();
+    }
+  });
+  elements.seasonRows?.addEventListener("input", updateSettingToolbarState);
+
   // Delegated live-dirty-check: any text/number/range/select edit anywhere
   // in the Location display (Name, Notes, Identity selects,
   // NPC Generation Config fields) re-evaluates whether Save should light
@@ -2281,7 +2354,6 @@ async function init() {
   // System.
   async function handleSystemSelectChange() {
     markRequiredControl(elements.systemSelect, Boolean(elements.systemSelect.value));
-    currentSettingId = null;
     currentLocationId = null;
     // Independent fetches, run concurrently — reloadReferenceData's 8-kind
     // Promise.all (including the two largest kinds in the whole suite,
@@ -2291,9 +2363,32 @@ async function init() {
     // slowness: the Setting dropdown sat empty for the full reference-data
     // fetch's duration even though its own fetch is comparatively tiny.
     const [, settings] = await Promise.all([reloadReferenceData(), populateSettingSelect(currentSystemId())]);
-    populateSettingForm(null);
-    await reloadLocationsForSetting(null);
-    renderLocation(null);
+    // populateSettingSelect (via renderOptionalSelectOptions) keeps the
+    // picker's own value selected whenever the previously-loaded Setting is
+    // still in the new System's list (e.g. a multi-System Setting like
+    // Forgotten Realms) — mirror that here instead of unconditionally
+    // clearing, so the picker and the right-pane content never disagree.
+    // Confirmed real bug this fixes: switching System left the Setting
+    // picker still showing the Setting selected while Setting Properties
+    // silently blanked out.
+    const settingId = elements.settingSelect?.value || "";
+    currentSettingId = settingId || null;
+    updateGenerateButtonReadiness();
+    await loadSettingIntoForm(settingId);
+    await reloadLocationsForSetting(currentSettingId);
+    // reloadLocationsForSetting -> populateLocationSelect never auto-selects
+    // a Location (unlike Setting above) — Location is what Sanctum
+    // GENERATES, not a scoping/context picker, so the center pane should
+    // stay blank and ready for Generate rather than silently pre-filling
+    // with an existing saved Location. This only re-selects when
+    // renderOptionalSelectOptions' own "keep the previous value if it's
+    // still valid" behavior left the picker non-blank (e.g. switching
+    // System while the same Location stays valid under it).
+    if (elements.locationSelect?.value) {
+      await selectLocation(elements.locationSelect.value);
+    } else {
+      renderLocation(null);
+    }
     return settings;
   }
   elements.systemSelect?.addEventListener("change", handleSystemSelectChange);
@@ -2303,10 +2398,16 @@ async function init() {
     const settingId = elements.settingSelect.value;
     markRequiredControl(elements.settingSelect, Boolean(settingId));
     currentSettingId = settingId || null;
+    updateGenerateButtonReadiness();
     currentLocationId = null;
     await loadSettingIntoForm(settingId);
     await reloadLocationsForSetting(settingId);
-    renderLocation(null);
+    // Same cascade-completion as handleSystemSelectChange above.
+    if (elements.locationSelect?.value) {
+      await selectLocation(elements.locationSelect.value);
+    } else {
+      renderLocation(null);
+    }
   }
   elements.settingSelect?.addEventListener("change", handleSettingSelectChange);
 
@@ -2521,7 +2622,7 @@ async function init() {
           // Setting by hand would do) — this restores the deep-linked
           // Location, now with every name/list Phase 1 didn't have yet.
           if (locationId) await selectLocation(locationId);
-          enableGenerateButton();
+          updateGenerateButtonReadiness();
         } catch (error) {
           // Phase 1 already succeeded — a background failure here just
           // leaves the pickers under-populated, not worth surfacing as an
@@ -2569,11 +2670,13 @@ async function init() {
     }
     // Both branches above resolve reference data for whatever System ended
     // up selected (defaultSystemId's own handleSystemSelectChange, or the
-    // parallel fetch just above) — safe to enable here regardless of which
-    // one ran. The deepLinked === true case enables from inside its own
-    // Phase 2 background IIFE instead (applyDeepLinkParams above), once
-    // ITS reference-data load actually finishes.
-    enableGenerateButton();
+    // parallel fetch just above) — safe to recompute readiness here
+    // regardless of which one ran (idempotent with the calls already inside
+    // handleSystemSelectChange/handleSettingSelectChange). The deepLinked
+    // === true case updates from inside its own Phase 2 background IIFE
+    // instead (applyDeepLinkParams above), once ITS reference-data load
+    // actually finishes.
+    updateGenerateButtonReadiness();
   }
 
   initHelpSystem();

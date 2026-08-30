@@ -1,0 +1,18 @@
+{
+  "index": "scale-mail",
+  "name": "Scale Mail",
+  "notes": "Armor Class: 14 + Dex modifier (max 2)\n\nStealth: Disadvantage",
+  "price": "50 gp",
+  "weight": 45,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2024/equipment/scale-mail",
+  "mapping": "5e-api-equipment",
+  "properties": {
+    "form": "armor",
+    "armorCategory": "medium"
+  },
+  "featureIds": []
+}

@@ -1,0 +1,29 @@
+{
+  "name": "Human",
+  "tagline": "What's left of us",
+  "description": [
+    "Everyone left alive in the wake of the apocalypse, scraping by on barter, grudges, and whatever the psychic maelstrom hasn't taken from them yet — hardholders, gunluggers, drivers, and everyone caught between."
+  ],
+  "systemIds": [
+    "sys.apocalypseworld"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "none",
+    "firstNames": [
+      "Dremmer",
+      "Kestrel",
+      "Marrow",
+      "Sable",
+      "Vex",
+      "Ossa",
+      "Grit",
+      "Wren",
+      "Talon",
+      "Ruck",
+      "Sever",
+      "Nyx"
+    ],
+    "lastNames": []
+  }
+}

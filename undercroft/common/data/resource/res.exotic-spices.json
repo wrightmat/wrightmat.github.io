@@ -1,10 +1,6 @@
 {
   "id": "res.exotic-spices",
   "name": "Exotic Spices",
-  "systemIds": [
-    "sys.dnd5e",
-    "sys.dnd5e2014"
-  ],
   "description": "Rare spices from distant lands — worth their weight in trade goodwill.",
   "tags": {
     "locationTypes": [],

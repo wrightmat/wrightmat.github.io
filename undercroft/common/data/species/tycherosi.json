@@ -1,0 +1,42 @@
+{
+  "name": "Tycherosi",
+  "tagline": "Sun-warmed trader out of the southern isles",
+  "description": [
+    "Tycheros is a warm, seafaring stretch of the Shattered Isles known for trade, music, and a lucrative, well-organized smuggling trade — Tycherosi in Duskvol are disproportionately found on the docks, in dockside taverns, and (whispered) in the Hawkers' own ranks."
+  ],
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "family",
+    "firstNames": [
+      "Dante",
+      "Serafina",
+      "Marchetti",
+      "Alessandra",
+      "Renzo",
+      "Bianca",
+      "Fiorello",
+      "Carmine",
+      "Isolde",
+      "Lucrezia",
+      "Salvo",
+      "Vittoria",
+      "Enzo",
+      "Ginevra",
+      "Tomaso",
+      "Adriana"
+    ],
+    "lastNames": [
+      "Marchetti",
+      "Fontaine",
+      "Vasari",
+      "Corvetti",
+      "Salvatore",
+      "Marino",
+      "Delacroix",
+      "Bellandi"
+    ]
+  }
+}

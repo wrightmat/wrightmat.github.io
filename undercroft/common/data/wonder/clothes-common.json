@@ -1,0 +1,18 @@
+{
+  "index": "clothes-common",
+  "name": "Clothes, common",
+  "notes": "",
+  "price": "5 sp",
+  "weight": 3,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/equipment/clothes-common",
+  "mapping": "5e-api-equipment",
+  "properties": {
+    "form": "equipment",
+    "equipmentCategory": "adventuring-gear"
+  },
+  "featureIds": []
+}

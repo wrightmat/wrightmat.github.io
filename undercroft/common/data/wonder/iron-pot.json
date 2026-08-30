@@ -1,0 +1,16 @@
+{
+  "name": "Iron Pot",
+  "notes": "An Iron Pot holds up to 1 gallon.\n\nSource: Player’s Handbook",
+  "price": "2 GP",
+  "weight": 10,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dndbeyond.com/equipment/401-iron-pot",
+  "mapping": "ddb-item",
+  "properties": {
+    "form": "equipment"
+  },
+  "featureIds": []
+}

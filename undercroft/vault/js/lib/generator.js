@@ -249,6 +249,23 @@ function traverse(eligibleFeatures, selected, properties, propertyTypes, random)
   return selected;
 }
 
+// Proactive readiness check for the Generate button — mirrors generateWonder's
+// own `eligibleFeatures` computation exactly (same matchesSystem/
+// matchesCategory/matchesClass filters), so the button's disabled state and
+// generateWonder's own actual throw condition (`!selected.length`, once
+// locked/signature features are also empty) can never drift apart. Doesn't
+// account for an impossibly tight budget leaving nothing affordable — that
+// remains a rare, reactive edge case the click handler's own guard still
+// catches.
+export function getWonderGenerationBlockReason(allFeatures, options = {}) {
+  const { systemId = null, allowedFeatureTags = null } = options;
+  const eligibleFeatures = allFeatures.filter(
+    (feature) => matchesSystem(feature, systemId) && matchesCategory(feature) && matchesClass(feature, allowedFeatureTags)
+  );
+  if (eligibleFeatures.length) return null;
+  return "Not enough Feature reference data to generate a wonder.";
+}
+
 /**
  * generateWonder(allFeatures, propertyTypes, options)
  *

@@ -1,0 +1,145 @@
+{
+  "systemIds": [
+    "sys.dnd35e"
+  ],
+  "name": "Forgotten Realms (1372 DR)",
+  "description": "The Forgotten Realms as presented in the 3.5 edition Forgotten Realms Campaign Setting (2001) — the Year of Wild Magic, 1372 DR, a decade after the Time of Troubles. High fantasy across Faerun's Inner Sea: devil-bound Cormyr's neighbors watch the Zhentarim's schemes, the Harpers work in the shadows, and the Weave itself still bears scars from the gods having walked the earth as mortals.",
+  "speciesWeights": [
+    {
+      "entityId": "human",
+      "weight": 45
+    },
+    {
+      "entityId": "elf",
+      "weight": 12
+    },
+    {
+      "entityId": "half-elf",
+      "weight": 11
+    },
+    {
+      "entityId": "dwarf",
+      "weight": 12
+    },
+    {
+      "entityId": "halfling",
+      "weight": 9
+    },
+    {
+      "entityId": "gnome",
+      "weight": 7
+    },
+    {
+      "entityId": "half-orc",
+      "weight": 3
+    },
+    {
+      "entityId": "other",
+      "weight": 1
+    }
+  ],
+  "calendar": {
+    "daysPerWeek": 10,
+    "weekdayNames": [],
+    "months": [
+      {
+        "name": "Hammer",
+        "days": 30
+      },
+      {
+        "name": "Midwinter",
+        "days": 1
+      },
+      {
+        "name": "Alturiak",
+        "days": 30
+      },
+      {
+        "name": "Ches",
+        "days": 30
+      },
+      {
+        "name": "Tarsakh",
+        "days": 30
+      },
+      {
+        "name": "Greengrass",
+        "days": 1
+      },
+      {
+        "name": "Mirtul",
+        "days": 30
+      },
+      {
+        "name": "Kythorn",
+        "days": 30
+      },
+      {
+        "name": "Flamerule",
+        "days": 30
+      },
+      {
+        "name": "Midsummer",
+        "days": 1
+      },
+      {
+        "name": "Eleasis",
+        "days": 30
+      },
+      {
+        "name": "Eleint",
+        "days": 30
+      },
+      {
+        "name": "Highharvestide",
+        "days": 1
+      },
+      {
+        "name": "Marpenoth",
+        "days": 30
+      },
+      {
+        "name": "Uktar",
+        "days": 30
+      },
+      {
+        "name": "The Feast of the Moon",
+        "days": 1
+      },
+      {
+        "name": "Nightal",
+        "days": 30
+      }
+    ],
+    "moonCycles": [
+      {
+        "name": "Selune",
+        "days": 30
+      }
+    ],
+    "seasons": [
+      {
+        "name": "Winter",
+        "days": 78
+      },
+      {
+        "name": "Spring",
+        "days": 93
+      },
+      {
+        "name": "Summer",
+        "days": 93
+      },
+      {
+        "name": "Autumn",
+        "days": 90
+      },
+      {
+        "name": "Winter",
+        "days": 11
+      }
+    ],
+    "epochLabel": "DR",
+    "startingYear": 1372
+  }
+}

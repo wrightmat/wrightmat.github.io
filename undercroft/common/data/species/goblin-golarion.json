@@ -1,0 +1,29 @@
+{
+  "name": "Goblin",
+  "tagline": "Small, feared, and having a wonderful time",
+  "description": [
+    "Golarion's goblins are chaotic, fire-obsessed, and utterly delighted by nearly everything — long feared as savage pests, but increasingly finding a place among other folk since the goblin hero Reta Bruzegug's rise."
+  ],
+  "systemIds": [
+    "sys.pf2e"
+  ],
+  "names": {
+    "nameMode": "synonym",
+    "lastNameForm": "none",
+    "firstNames": [
+      "Chuffy",
+      "Poog",
+      "Squigish",
+      "Bugbait",
+      "Reta",
+      "Yeek",
+      "Skritch",
+      "Molgar",
+      "Fizwig",
+      "Nabber",
+      "Grubb",
+      "Snagglepop"
+    ],
+    "lastNames": []
+  }
+}

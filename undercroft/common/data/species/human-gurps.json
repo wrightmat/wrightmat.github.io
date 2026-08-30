@@ -1,0 +1,38 @@
+{
+  "name": "Human (Homeline)",
+  "tagline": "Baseline, and proud of it",
+  "description": [
+    "The default population of Homeline — the Prime timeline of GURPS: Infinite Worlds — ordinary Tech-Level-8 humans who happen to work for (or run afoul of) Infinity Unlimited's parachronic exploration of the endless parallel Earths."
+  ],
+  "systemIds": [
+    "sys.gurps"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "family",
+    "firstNames": [
+      "Marcus",
+      "Elena",
+      "Trent",
+      "Naomi",
+      "Desmond",
+      "Priya",
+      "Jack",
+      "Sofia",
+      "Aiden",
+      "Renata",
+      "Oliver",
+      "Yasmin"
+    ],
+    "lastNames": [
+      "Sinclair",
+      "Marchetti",
+      "Osei",
+      "Voss",
+      "Delacroix",
+      "Winthrop",
+      "Nakamura",
+      "Reyes"
+    ]
+  }
+}

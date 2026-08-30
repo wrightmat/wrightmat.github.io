@@ -1003,14 +1003,26 @@
     {
       "id": "forge.stats",
       "title": "Stats",
-      "summary": "Ability scores, AC, and HP come straight from the D&D5e Monster Manual NPC stat block matching this NPC's Archetype — nothing here is rolled.",
+      "summary": "Whatever this System's Archetype table bakes in per entry (D&D5e's ability scores/AC/HP straight from the Monster Manual, for example), plus anything it doesn't independently rolled instead.",
       "details": [
-        "These aren't independent rolls: they're looked up by Archetype, so they update automatically whenever Archetype is generated or rerolled.",
-        "Setting-specific archetypes (rolls 22-23) and Wildcard (roll 24) have no fixed identity, so no stat block exists for them — you'll see a note instead of numbers.",
-        "Only D&D5e is supported right now, matching the rest of Forge's Archetype table."
+        "A key already present on the Archetype entry is looked up, not rolled — it updates automatically whenever Archetype is generated or rerolled.",
+        "A key the Archetype entry doesn't carry, but the System's own field defines a Min/Max range for (Call of Cthulhu's Characteristics/Hit Points/Move, for example — none of these vary by Occupation in real play), is rolled independently instead of left blank.",
+        "Setting-specific archetypes (rolls 22-23) and Wildcard (roll 24) have no fixed identity — if the System also has nothing to independently roll, you'll see a note instead of numbers."
       ],
       "category": "Forge",
       "href": "../forge/index.html#forge-stats"
+    },
+    {
+      "id": "forge.skills",
+      "title": "Skills",
+      "summary": "Only shown for a System that defines a Skill Generation config (Call of Cthulhu today) — a few Key Expertise Skills roll higher, everything else rolls lower.",
+      "details": [
+        "Which skills count as Key Expertise for this NPC is picked randomly each generation, not tied to Occupation — real per-Occupation key skills would need authoring 20+ separate lists for very little practical benefit over just letting a few stand out.",
+        "The actual ranges (which skills, how many are Key, and both ranges' Min/Max) are System data, not hardcoded here — a different System could define its own Skill Generation config with entirely different numbers.",
+        "Hidden entirely for a System with no Skill Generation config authored."
+      ],
+      "category": "Forge",
+      "href": "../forge/index.html#forge-skills"
     },
     {
       "id": "forge.features",
@@ -1233,6 +1245,18 @@
       "href": "../crucible/index.html#crucible-overrides"
     },
     {
+      "id": "crucible.abilityField",
+      "title": "Ability field",
+      "summary": "Which of this System's Object properties Crucible reads as its ability/stat-block scores.",
+      "details": [
+        "This is a personal preference for this browser, not something saved into the System itself — setting it here won't affect anyone else, or show up when editing the System in Loom.",
+        "Whichever Object property looks like a stat block (its children are all number-valued) is already selected for you, marked \"(auto-detected)\" — preferring one literally named Abilities/Characteristics/Attributes/Stats if more than one qualifies — so most Systems need nothing picked here at all.",
+        "Pick a different field yourself if a System's stat block lives under a different name (Call of Cthulhu's own Characteristics field, for example) or the auto-detected one is wrong — your own pick sticks and the \"(auto-detected)\" label goes away."
+      ],
+      "category": "Crucible",
+      "href": "../crucible/index.html#crucible-overrides"
+    },
+    {
       "id": "crucible.lockedFeatures",
       "title": "Locked Features",
       "summary": "Pin one or more Features to guarantee they're included, instead of leaving traversal to pick everything on its own.",
@@ -1357,6 +1381,18 @@
         "This is a personal preference for this browser — setting it here won't affect anyone else, or show up when editing the System in Loom. A different System can have a completely different field (or none) picked here with zero effect on any other System.",
         "A Property can carry Target budget values without being the ceiling-setter (e.g. Combat Scaling tracks its own per-CR budget, unrelated to this economy) — this setting is what tells Vault which one actually counts.",
         "Leave at None to fall back to Vault's built-in default target budget with no field-driven ceiling."
+      ],
+      "category": "Vault",
+      "href": "../vault/index.html#vault-generate"
+    },
+    {
+      "id": "vault.abilityField",
+      "title": "Ability field",
+      "summary": "Which of this System's Object properties Vault reads as its ability/stat-block scores.",
+      "details": [
+        "This is a personal preference for this browser, not something saved into the System itself — setting it here won't affect anyone else, or show up when editing the System in Loom.",
+        "Whichever Object property looks like a stat block (its children are all number-valued) is already selected for you, marked \"(auto-detected)\" — preferring one literally named Abilities/Characteristics/Attributes/Stats if more than one qualifies — so most Systems need nothing picked here at all.",
+        "Pick a different field yourself if a System's stat block lives under a different name or the auto-detected one is wrong — your own pick sticks and the \"(auto-detected)\" label goes away. This feeds the same ability list an Ability-Score-Increase-style Feature's own \"which ability\" choice reads."
       ],
       "category": "Vault",
       "href": "../vault/index.html#vault-generate"

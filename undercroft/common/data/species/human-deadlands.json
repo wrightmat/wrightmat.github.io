@@ -1,0 +1,38 @@
+{
+  "name": "Human",
+  "tagline": "Steely-eyed and haunted",
+  "description": [
+    "Gunfighters, card-slinging hucksters, mad scientists, and shamans alike — every soul caught in the Weird West's alternate 1800s, trying to survive ghost rock fever, the Reckoners' plague of horrors, and each other."
+  ],
+  "systemIds": [
+    "sys.savageworlds"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "family",
+    "firstNames": [
+      "Silas",
+      "Josephine",
+      "Amos",
+      "Clementine",
+      "Ezra",
+      "Delilah",
+      "Jedediah",
+      "Adelaide",
+      "Cornelius",
+      "Prudence",
+      "Elias",
+      "Charlotte"
+    ],
+    "lastNames": [
+      "McCready",
+      "Slate",
+      "Boone",
+      "Harrow",
+      "Calloway",
+      "Dunmore",
+      "Ravensworth",
+      "Colt"
+    ]
+  }
+}

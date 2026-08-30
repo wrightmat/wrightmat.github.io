@@ -1,0 +1,42 @@
+{
+  "name": "Halfling",
+  "tagline": "Big feet, big ears, and a compass in the bones",
+  "description": [
+    "Small humanoids with oversized feet and ears, naturally attuned to magnetic fields, Halfling names are warm and close to home."
+  ],
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "family",
+    "firstNames": [
+      "Perrin",
+      "Tilly",
+      "Boden",
+      "Marigold",
+      "Fennimore",
+      "Rosalind",
+      "Tobble",
+      "Wendolyn",
+      "Hobb",
+      "Primrose",
+      "Cade",
+      "Bryony",
+      "Wick",
+      "Linnet",
+      "Dobbin",
+      "Saffra"
+    ],
+    "lastNames": [
+      "Underbrook",
+      "Goodmeadow",
+      "Thistlewick",
+      "Applecross",
+      "Fairfoot",
+      "Hollyhock",
+      "Brambleton",
+      "Meadowsweet"
+    ]
+  }
+}

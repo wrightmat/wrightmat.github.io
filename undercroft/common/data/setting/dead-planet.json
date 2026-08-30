@@ -1,0 +1,13 @@
+{
+  "systemIds": [
+    "sys.mothership"
+  ],
+  "name": "Dead Planet",
+  "description": "The implied setting behind Mothership itself — a working-class future where fragile people sign bad contracts in quiet halls, get sent out on desperate EVA repairs, and receive corporate memos that arrive six minutes too late. Anchored to Tuesday Knight Games' own flagship module of the same name: a derelict wreck, a slow dread that settles in the throat, and remains left over from whoever was here first, misunderstood at exactly the wrong moment.",
+  "speciesWeights": [
+    {
+      "entityId": "human-mothership",
+      "weight": 100
+    }
+  ]
+}

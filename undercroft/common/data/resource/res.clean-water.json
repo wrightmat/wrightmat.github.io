@@ -1,10 +1,6 @@
 {
   "id": "res.clean-water",
   "name": "Clean Water",
-  "systemIds": [
-    "sys.dnd5e",
-    "sys.dnd5e2014"
-  ],
   "description": "A reliable source of potable water — easy to take for granted until it's gone.",
   "tags": {
     "locationTypes": [],

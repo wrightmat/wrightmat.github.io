@@ -1,9 +1,5 @@
 {
   "id": "commerce",
   "name": "Commerce",
-  "systemIds": [
-    "sys.dnd5e",
-    "sys.dnd5e2014"
-  ],
   "description": "Exists for trade — buying, selling, and the movement of goods and coin."
 }

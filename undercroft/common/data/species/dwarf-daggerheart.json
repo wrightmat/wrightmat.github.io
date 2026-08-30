@@ -1,0 +1,42 @@
+{
+  "name": "Dwarf",
+  "tagline": "Sturdy, dense, and inked",
+  "description": [
+    "Short, sturdy folk with dense musculature and skin well suited to tattoos and gemstone embedding, Dwarven clans in Daggerheart's world are close-knit and long-memoried."
+  ],
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "clan",
+    "firstNames": [
+      "Borgrim",
+      "Kethra",
+      "Dornal",
+      "Ulfrid",
+      "Brannis",
+      "Sturga",
+      "Oddrik",
+      "Helka",
+      "Gormund",
+      "Thrissa",
+      "Baldrek",
+      "Yrsina",
+      "Kordan",
+      "Fenneth",
+      "Aldrik",
+      "Wyrna"
+    ],
+    "lastNames": [
+      "Stonehammer",
+      "Deephollow",
+      "Ironvein",
+      "Grimforge",
+      "Coalbeard",
+      "Ridgestone",
+      "Anvilheart",
+      "Emberhold"
+    ]
+  }
+}

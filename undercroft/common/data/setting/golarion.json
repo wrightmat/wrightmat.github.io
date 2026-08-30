@@ -1,0 +1,174 @@
+{
+  "systemIds": [
+    "sys.pf1e",
+    "sys.pf2e"
+  ],
+  "name": "Golarion",
+  "description": "The Age of Lost Omens on the world of Golarion, its default present day since the death of the god Aroden shattered every reliable prophecy. Home to the Inner Sea region's clashing nations — devil-bound Cheliax, the River Kingdoms' lawless freeholds, Absalom's cosmopolitan sprawl at the City at the Center of the World, the Hold of Belkzen's orc clans, and dozens more — where humans share the world openly with dwarves, elves, gnomes, halflings, goblins, and a host of other peoples all carving out their own destinies in an era where the future is genuinely unwritten.",
+  "speciesWeights": [
+    {
+      "entityId": "human-golarion",
+      "weight": 35
+    },
+    {
+      "entityId": "dwarf-golarion",
+      "weight": 9
+    },
+    {
+      "entityId": "elf-golarion",
+      "weight": 8
+    },
+    {
+      "entityId": "halfling-golarion",
+      "weight": 8
+    },
+    {
+      "entityId": "gnome-golarion",
+      "weight": 6
+    },
+    {
+      "entityId": "half-elf-golarion",
+      "weight": 6
+    },
+    {
+      "entityId": "half-orc-golarion",
+      "weight": 5
+    },
+    {
+      "entityId": "goblin-golarion",
+      "weight": 4
+    },
+    {
+      "entityId": "orc-golarion",
+      "weight": 3
+    },
+    {
+      "entityId": "hobgoblin-golarion",
+      "weight": 3
+    },
+    {
+      "entityId": "kobold-golarion",
+      "weight": 2
+    },
+    {
+      "entityId": "ratfolk-golarion",
+      "weight": 2
+    },
+    {
+      "entityId": "catfolk-golarion",
+      "weight": 2
+    },
+    {
+      "entityId": "tengu-golarion",
+      "weight": 2
+    },
+    {
+      "entityId": "lizardfolk-golarion",
+      "weight": 2
+    },
+    {
+      "entityId": "gnoll-golarion",
+      "weight": 1
+    },
+    {
+      "entityId": "leshy-golarion",
+      "weight": 1
+    },
+    {
+      "entityId": "other",
+      "weight": 1
+    }
+  ],
+  "calendar": {
+    "daysPerWeek": 7,
+    "weekdayNames": [
+      "Moonday",
+      "Toilday",
+      "Wealday",
+      "Oathday",
+      "Fireday",
+      "Starday",
+      "Sunday"
+    ],
+    "months": [
+      {
+        "name": "Abadius",
+        "days": 31
+      },
+      {
+        "name": "Calistril",
+        "days": 28
+      },
+      {
+        "name": "Pharast",
+        "days": 31
+      },
+      {
+        "name": "Gozran",
+        "days": 30
+      },
+      {
+        "name": "Desnus",
+        "days": 31
+      },
+      {
+        "name": "Sarenith",
+        "days": 30
+      },
+      {
+        "name": "Erastus",
+        "days": 31
+      },
+      {
+        "name": "Arodus",
+        "days": 31
+      },
+      {
+        "name": "Rova",
+        "days": 30
+      },
+      {
+        "name": "Lamashan",
+        "days": 31
+      },
+      {
+        "name": "Neth",
+        "days": 30
+      },
+      {
+        "name": "Kuthona",
+        "days": 31
+      }
+    ],
+    "moonCycles": [
+      {
+        "name": "The Moon",
+        "days": 30
+      }
+    ],
+    "seasons": [
+      {
+        "name": "Winter",
+        "days": 78
+      },
+      {
+        "name": "Spring",
+        "days": 93
+      },
+      {
+        "name": "Summer",
+        "days": 93
+      },
+      {
+        "name": "Autumn",
+        "days": 90
+      },
+      {
+        "name": "Winter",
+        "days": 11
+      }
+    ],
+    "epochLabel": "AR",
+    "startingYear": 4725
+  }
+}

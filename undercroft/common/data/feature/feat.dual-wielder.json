@@ -1,0 +1,24 @@
+{
+  "id": "feat.dual-wielder",
+  "name": "Dual Wielder",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "*General Feat (Prerequisite: Level 4+, Strength or Dexterity 13+)*\n\nYou gain the following benefits.\n\n***Ability Score Increase.*** Increase your Strength or Dexterity score by 1, to a maximum of 20.\n\n***Enhanced Dual Wielding.*** When you take the Attack action on your turn and attack with a weapon that has the Light property, you can make one extra attack as a Bonus Action later on the same turn with a different weapon, which must be a Melee weapon that lacks the Two-Handed property. You don’t add your ability modifier to the extra attack’s damage unless that modifier is negative.\n\n***Quick Draw.*** You can draw or stow two weapons that lack the Two-Handed property when you would normally be able to draw or stow only one.",
+  "mechanics": {
+    "type": "passive",
+    "text": "*General Feat (Prerequisite: Level 4+, Strength or Dexterity 13+)*\n\nYou gain the following benefits.\n\n***Ability Score Increase.*** Increase your Strength or Dexterity score by 1, to a maximum of 20.\n\n***Enhanced Dual Wielding.*** When you take the Attack action on your turn and attack with a weapon that has the Light property, you can make one extra attack as a Bonus Action later on the same turn with a different weapon, which must be a Melee weapon that lacks the Two-Handed property. You don’t add your ability modifier to the extra attack’s damage unless that modifier is negative.\n\n***Quick Draw.*** You can draw or stow two weapons that lack the Two-Handed property when you would normally be able to draw or stow only one."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

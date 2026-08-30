@@ -1,0 +1,29 @@
+{
+  "name": "Kobold",
+  "tagline": "Small, clever, and dragon-descended",
+  "description": [
+    "Small, scaly folk with an ancestral connection to dragons, Golarion's kobolds are clever trap-builders and fiercely loyal to their warrens."
+  ],
+  "systemIds": [
+    "sys.pf2e"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "none",
+    "firstNames": [
+      "Skitter",
+      "Vex",
+      "Ratch",
+      "Nix",
+      "Grubbin",
+      "Sass",
+      "Tikk",
+      "Wisk",
+      "Zorik",
+      "Pella",
+      "Kree",
+      "Dabb"
+    ],
+    "lastNames": []
+  }
+}

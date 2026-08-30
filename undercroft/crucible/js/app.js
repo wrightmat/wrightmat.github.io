@@ -1,7 +1,7 @@
 import { initAppShell } from "../../common/js/lib/app-shell.js";
 import { initAuthControls } from "../../common/js/lib/auth-ui.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
-import { refreshTooltips } from "../../common/js/lib/tooltips.js";
+import { refreshTooltips, disposeTooltips, updateTooltipContent } from "../../common/js/lib/tooltips.js";
 import {
   createJsonDataPanel,
   createToolbarButtonGroup,
@@ -24,7 +24,7 @@ import {
   listArrayFieldOptions,
   loadAbilityFieldDefs,
 } from "./lib/tables.js";
-import { generateMonster, matchesCategory, rerollAttribute } from "./lib/generator.js";
+import { generateMonster, getMonsterGenerationBlockReason, matchesCategory, rerollAttribute } from "./lib/generator.js";
 import { deriveStats } from "./lib/stats.js";
 import { createMonsterRecord, toPressExportShape } from "./lib/monster-schema.js";
 import { hasConvertibleStatBlock, convertStatBlockToFeatures } from "../../common/js/lib/monster-feature-matching.js";
@@ -57,6 +57,8 @@ import {
   generateNoteForRecord,
   renderRequiredSelectOptions,
   renderOptionalSelectOptions,
+  setGenerateButtonReadiness,
+  listObjectFieldOptions,
 } from "../../common/js/lib/generator-kit.js";
 import { markRequiredControl, setElementVisible } from "../../common/js/lib/dom.js";
 import { resolveGroupContext, pickGroupDefaultId } from "../../common/js/lib/widgets/group-context.js";
@@ -79,6 +81,14 @@ let roles = [];
 let features = [];
 let combatScalingLevels = [];
 let arrayFieldOptions = [];
+// Candidate list for the abilityField settings preference below — every
+// object-type field the active System defines, since an ability/stat block
+// is always authored as one (unlike arrayFieldOptions' array fields) — plus
+// which one guessAbilityFieldKey would auto-pick, so the dropdown can
+// pre-select and label it instead of offering a separate "Auto-detect"
+// placeholder option.
+let objectFieldOptions = [];
+let abilityFieldGuess = "";
 // The active System's own ability key/label list (see stats.js#deriveStats,
 // which reads this same data independently for generation) — kept here too
 // so renderStats' display rows use the System's real ability vocabulary
@@ -454,7 +464,7 @@ function getCrucibleSystemSettings(systemId) {
 function setCrucibleSystemSetting(systemId, key, value) {
   if (!dataManager || !systemId) return;
   const next = { ...getCrucibleSystemSettings(systemId), [key]: value };
-  if (!next.combatScalingField && !next.creatureTypeField) {
+  if (!next.combatScalingField && !next.creatureTypeField && !next.abilityField) {
     dataManager.removeLocal(CRUCIBLE_SETTINGS_BUCKET, systemId);
   } else {
     dataManager.saveLocal(CRUCIBLE_SETTINGS_BUCKET, systemId, next);
@@ -481,6 +491,22 @@ function getCreatureTypeFieldPreference(systemId) {
 
 function setCreatureTypeFieldPreference(systemId, fieldKey) {
   setCrucibleSystemSetting(systemId, "creatureTypeField", fieldKey || "");
+}
+
+// Which object field is this System's ability/stat block — same per-System,
+// per-browser tool preference shape as combatScalingField/creatureTypeField
+// above, feeding loadAbilityFieldDefs' own preferredKey param instead of it
+// always assuming a field literally named "abilities" (see
+// feedback_settings_preference_with_guessed_default). Empty/unset falls
+// through to loadAbilityFieldDefs' own shape-based guess, not a fixed
+// conventional default — unlike combatScalingField/creatureTypeField, there
+// isn't one single "usual" key name here worth hardcoding as a fallback.
+function getAbilityFieldPreference(systemId) {
+  return getCrucibleSystemSettings(systemId).abilityField || "";
+}
+
+function setAbilityFieldPreference(systemId, fieldKey) {
+  setCrucibleSystemSetting(systemId, "abilityField", fieldKey || "");
 }
 
 // Both settings share the same option list (every top-level array field the
@@ -592,15 +618,20 @@ async function reloadReferenceData() {
   const combatScalingField = getCombatScalingFieldPreference(systemId);
   const creatureTypeField = getCreatureTypeFieldPreference(systemId);
   let fetchedFeatures;
-  [creatureTypes, archetypes, roles, fetchedFeatures, combatScalingLevels, arrayFieldOptions, abilityFieldDefs] = await Promise.all([
-    listCreatureTypesForSystem(dataManager, systemId, creatureTypeField || undefined),
-    listArchetypesForSystem(dataManager, systemId),
-    listRolesForSystem(dataManager, systemId),
-    listFeaturesForSystem(dataManager, systemId),
-    loadCombatScalingLevels(dataManager, systemId, combatScalingField || undefined),
-    listArrayFieldOptions(dataManager, systemId),
-    loadAbilityFieldDefs(dataManager, systemId),
-  ]);
+  let objectFieldResult;
+  [creatureTypes, archetypes, roles, fetchedFeatures, combatScalingLevels, arrayFieldOptions, objectFieldResult, abilityFieldDefs] =
+    await Promise.all([
+      listCreatureTypesForSystem(dataManager, systemId, creatureTypeField || undefined),
+      listArchetypesForSystem(dataManager, systemId),
+      listRolesForSystem(dataManager, systemId),
+      listFeaturesForSystem(dataManager, systemId),
+      loadCombatScalingLevels(dataManager, systemId, combatScalingField || undefined),
+      listArrayFieldOptions(dataManager, systemId),
+      listObjectFieldOptions(dataManager, systemId),
+      loadAbilityFieldDefs(dataManager, systemId, getAbilityFieldPreference(systemId)),
+    ]);
+  objectFieldOptions = objectFieldResult.options;
+  abilityFieldGuess = objectFieldResult.guessedKey;
   // The shared `feature` kind also holds Sanctum's location features and
   // Vault's spell/item features (tagged accordingly) — filtered here, once,
   // right after fetching, so every consumer of the module-level `features`
@@ -834,6 +865,12 @@ function renderMultiattackEditor(feature) {
   if (elements.multiattackEmptyNote) setElementVisible(elements.multiattackEmptyNote, totalAttackCount === 0);
 
   if (!elements.multiattackOptions) return;
+  // Dispose every tooltip under this container BEFORE wiping it — the
+  // "lingering tooltip" bug class (see tooltips.js's own header): a
+  // trailing refreshTooltips() only re-arms freshly-rebuilt content, it
+  // does nothing for a popup a just-destroyed option's own tooltip left
+  // behind on <body>.
+  disposeTooltips(elements.multiattackOptions);
   elements.multiattackOptions.innerHTML = "";
   displayGroups.forEach((group, groupIndex) => {
     elements.multiattackOptions.appendChild(renderMultiattackOptionGroup(feature, displayGroups, group, groupIndex));
@@ -2180,8 +2217,7 @@ function applyNotesMode(mode) {
   elements.notesModeEyeIcon?.classList.toggle("d-none", isView);
   elements.notesModePencilIcon?.classList.toggle("d-none", !isView);
   if (elements.notesModeLabel) elements.notesModeLabel.textContent = isView ? "Edit" : "View";
-  elements.notesModeToggle?.setAttribute("data-bs-title", isView ? "Edit" : "View");
-  refreshTooltips();
+  if (elements.notesModeToggle) updateTooltipContent(elements.notesModeToggle, isView ? "Edit" : "View");
   if (isView) renderNotesPreview();
 }
 
@@ -2379,8 +2415,13 @@ function readLockedFeatureIds() {
 }
 
 async function handleGenerate() {
+  // No readiness guard needed here — setGenerateButtonReadiness gives the
+  // button a real `disabled` attribute whenever this would fail, and a
+  // disabled button's click listener never fires at all (mouse or
+  // keyboard), so this handler only ever runs when generation is genuinely
+  // ready.
+  const systemId = currentSystemId() || null;
   try {
-    const systemId = currentSystemId() || null;
     const generated = generateMonster(creatureTypes, archetypes, roles, features, {
       systemId,
       creatureTypeId: elements.creatureTypeOverride?.value || "",
@@ -2583,11 +2624,17 @@ async function init() {
   dataManager = auth.dataManager;
 
   // Generate starts disabled (see its own toolbar definition above) —
-  // called once reloadReferenceData has actually resolved, from every path
-  // that can reach "loading is done" below (the plain init cascade, or
-  // applyDeepLinkParams' own background Phase 2).
-  function enableGenerateButton() {
-    if (elements.generateButton) elements.generateButton.disabled = false;
+  // recomputed once reloadReferenceData has actually resolved, from every
+  // path that can reach "loading is done" below (the plain init cascade,
+  // handleSystemSelectChange, or applyDeepLinkParams' own background Phase
+  // 2). Proactively disables (with an explanatory tooltip, via the shared
+  // setGenerateButtonReadiness helper) instead of unconditionally enabling —
+  // getMonsterGenerationBlockReason mirrors generateMonster's own
+  // Archetype/Role eligibility check exactly, so this can never drift out of
+  // sync with what actually happens on click.
+  function updateGenerateButtonReadiness() {
+    const reason = getMonsterGenerationBlockReason(creatureTypes, archetypes, roles, { systemId: currentSystemId() });
+    setGenerateButtonReadiness(elements.generateButton, reason);
   }
 
   // Same dirty check updateActionButtons already uses for the Save button —
@@ -2623,6 +2670,7 @@ async function init() {
     currentMonsterId = null;
     renderMonster(null);
     await reloadReferenceData();
+    updateGenerateButtonReadiness();
   }
   elements.systemSelect?.addEventListener("change", handleSystemSelectChange);
 
@@ -2697,6 +2745,30 @@ async function init() {
           getValue: () => resolveEffectiveFieldPreference("creatureTypeField", getCreatureTypeFieldPreference(systemId)),
           setValue: (value) => {
             setCreatureTypeFieldPreference(systemId, value);
+            reloadReferenceData();
+          },
+        },
+        {
+          key: "abilityField",
+          type: "select",
+          label: "Ability field",
+          helpTopic: "crucible.abilityField",
+          // No separate "Auto-detect" option — the guessed field (whichever
+          // Object property guessAbilityFieldKey picked) IS the selected
+          // value until the GM actually picks a different one, with " (auto-
+          // detected)" on its own option label as the only indicator. Once a
+          // real preference is stored (even re-picking the same field
+          // explicitly), that suffix drops — see getValue below.
+          options: objectFieldOptions.map((field) => ({
+            value: field.key,
+            label:
+              field.key === abilityFieldGuess && !getAbilityFieldPreference(systemId)
+                ? `${field.label || field.key} (auto-detected)`
+                : field.label || field.key,
+          })),
+          getValue: () => getAbilityFieldPreference(systemId) || abilityFieldGuess,
+          setValue: (value) => {
+            setAbilityFieldPreference(systemId, value);
             reloadReferenceData();
           },
         },
@@ -2892,7 +2964,7 @@ async function init() {
           }
           await reloadReferenceData();
           if (elements.monsterSelect) elements.monsterSelect.value = monsterId;
-          enableGenerateButton();
+          updateGenerateButtonReadiness();
         } catch (error) {
           // Phase 1 already succeeded — a background failure here just
           // leaves the picker under-populated, not worth an error toast on
@@ -2928,11 +3000,13 @@ async function init() {
     }
     renderMonster(null);
     // Both branches above resolve reference data for whatever System ended
-    // up selected — safe to enable here regardless of which one ran. The
-    // deepLinked === true case enables from inside its own Phase 2
+    // up selected — safe to recompute readiness here regardless of which one
+    // ran. The deepLinked === true case updates from inside its own Phase 2
     // background IIFE instead (applyDeepLinkParams above), once ITS
-    // reference-data load actually finishes.
-    enableGenerateButton();
+    // reference-data load actually finishes. (handleSystemSelectChange's own
+    // branch already called this itself, but a second, idempotent call here
+    // costs nothing and keeps this block correct even if that changes.)
+    updateGenerateButtonReadiness();
   }
 
   initHelpSystem();

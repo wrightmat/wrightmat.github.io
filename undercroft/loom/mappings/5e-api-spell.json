@@ -16,10 +16,6 @@
         "type": "field",
         "bind": "='wonder'"
       },
-      "index": {
-        "type": "field",
-        "bind": "@index"
-      },
       "name": {
         "type": "field",
         "bind": "@name"

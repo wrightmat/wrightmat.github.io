@@ -1,0 +1,18 @@
+{
+  "index": "whip",
+  "name": "Whip",
+  "notes": "Damage: 1d4 Slashing\n\nRange: 5 ft.\n\nProperties: Finesse, Reach\n\nMastery: Slow",
+  "price": "2 gp",
+  "weight": 3,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2024/equipment/whip",
+  "mapping": "5e-api-equipment",
+  "properties": {
+    "form": "weapon",
+    "weaponCategory": "martial-melee"
+  },
+  "featureIds": []
+}

@@ -1,0 +1,33 @@
+{
+  "name": "Giant",
+  "tagline": "Towering, broad, and once many-eyed",
+  "description": [
+    "Towering humanoids with broad frames and, in early life, additional eyes, Giant names are as large and simple as everything else about them."
+  ],
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "none",
+    "firstNames": [
+      "Vardo",
+      "Threska",
+      "Golum",
+      "Barra",
+      "Mondrak",
+      "Ussa",
+      "Grethel",
+      "Karrok",
+      "Ombra",
+      "Fennrik",
+      "Dossa",
+      "Vellum",
+      "Thurrock",
+      "Brenna",
+      "Kessik",
+      "Almora"
+    ],
+    "lastNames": []
+  }
+}

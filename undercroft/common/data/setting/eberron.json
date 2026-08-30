@@ -120,7 +120,74 @@
         "days": 28
       }
     ],
-    "moonCycles": [],
+    "moonCycles": [
+      {
+        "name": "Zarantyr",
+        "days": 77
+      },
+      {
+        "name": "Olarune",
+        "days": 56
+      },
+      {
+        "name": "Therendor",
+        "days": 42
+      },
+      {
+        "name": "Eyre",
+        "days": 63
+      },
+      {
+        "name": "Dravago",
+        "days": 91
+      },
+      {
+        "name": "Nymm",
+        "days": 28
+      },
+      {
+        "name": "Lharvion",
+        "days": 98
+      },
+      {
+        "name": "Barrakas",
+        "days": 105
+      },
+      {
+        "name": "Rhaan",
+        "days": 49
+      },
+      {
+        "name": "Sypheros",
+        "days": 35
+      },
+      {
+        "name": "Aryth",
+        "days": 84
+      },
+      {
+        "name": "Vult",
+        "days": 70
+      }
+    ],
+    "seasons": [
+      {
+        "name": "Spring",
+        "days": 84
+      },
+      {
+        "name": "Summer",
+        "days": 84
+      },
+      {
+        "name": "Autumn",
+        "days": 84
+      },
+      {
+        "name": "Winter",
+        "days": 84
+      }
+    ],
     "epochLabel": "YK",
     "startingYear": 998
   }

@@ -236,3 +236,15 @@ export function findRoleBoundField(fields) {
 export function findBindingByRole(bindings, role) {
   return (bindings || []).find((entry) => entry && entry.role === role) || null;
 }
+
+// Plural sibling — several Systems define more than one binding sharing a
+// role (Daggerheart's Hope/Stress/HP all tagged "resource"; GURPS' HP/FP;
+// CoC's HP/Magic Points/Sanity), which findBindingByRole above always
+// silently reduced to just the first. Existing single-resource consumers
+// (Combat Tracker, character-sheet.js) are a genuinely one-slot UI today —
+// migrating them to render every resource/value binding is a separate,
+// larger UI change, not a data-lookup fix — so this exists for a caller
+// that already knows how to handle more than one.
+export function findBindingsByRole(bindings, role) {
+  return (bindings || []).filter((entry) => entry && entry.role === role);
+}

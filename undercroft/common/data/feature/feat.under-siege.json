@@ -1,9 +1,5 @@
 {
   "name": "Under Siege",
-  "systemIds": [
-    "sys.dnd5e",
-    "sys.dnd5e2014"
-  ],
   "description": "A hostile force currently surrounds or threatens this place, cutting off easy movement in or out.",
   "mechanics": {
     "type": "passive",

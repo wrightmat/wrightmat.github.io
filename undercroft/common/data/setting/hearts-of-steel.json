@@ -1,0 +1,13 @@
+{
+  "systemIds": [
+    "sys.fatecore"
+  ],
+  "name": "Hearts of Steel",
+  "description": "The tongue-in-cheek low-fantasy swords-and-sorcery world used as the example setting throughout the Fate Core rulebook itself — a countryside of petty kings and fief lords who hire troubleshooters for hire to handle whatever local trouble they can't (or won't) handle themselves. Its own iconic trio, Landon (a thuggish swordsman), Cynere (nimble, dashing, and dangerous — and fond of swords), and Zird the Arcane (a wizard with no love for swords at all), wander town to town getting into exactly that kind of trouble.",
+  "speciesWeights": [
+    {
+      "entityId": "human-fatecore",
+      "weight": 100
+    }
+  ]
+}

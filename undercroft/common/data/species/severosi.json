@@ -1,0 +1,42 @@
+{
+  "name": "Severosi",
+  "tagline": "Forged in Severos's smoke and cold",
+  "description": [
+    "Severos is a bleak, industrial land of foundries and freezing wind — Severosi immigrants in Duskvol gravitate to the same furnace-work and factory labor they knew at home, and have a hard-bitten reputation for outworking (and outdrinking) everyone else on the shift."
+  ],
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "patronymic",
+    "firstNames": [
+      "Yevgeni",
+      "Katarin",
+      "Bosch",
+      "Ilyana",
+      "Drassen",
+      "Marek",
+      "Oksana",
+      "Tomasz",
+      "Zoya",
+      "Radoslav",
+      "Nadya",
+      "Vasily",
+      "Irenka",
+      "Bohdan",
+      "Lidiya",
+      "Stanek"
+    ],
+    "lastNames": [
+      "Volkov",
+      "Petrenko",
+      "Marchenko",
+      "Sokolov",
+      "Drozdova",
+      "Kalinin",
+      "Barinova",
+      "Yeltsov"
+    ]
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "name": "Drakona",
+  "tagline": "Wingless dragon-kin, breath and scale",
+  "description": [
+    "Wingless dragon-humanoids with elemental breath and natural scaled armor, Drakona names carry the hard, resonant consonants of the old draconic tongue."
+  ],
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "none",
+    "firstNames": [
+      "Vaeloreth",
+      "Kryndar",
+      "Ashvaal",
+      "Ignareth",
+      "Zorrakai",
+      "Meridrax",
+      "Cindrelle",
+      "Pyrrhastes",
+      "Draveth",
+      "Thalvorn",
+      "Skarrenth",
+      "Orvyndal",
+      "Kelthirax",
+      "Ashkarion",
+      "Vraskyra",
+      "Zenndrel"
+    ],
+    "lastNames": []
+  }
+}

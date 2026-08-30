@@ -1,9 +1,5 @@
 {
   "name": "Shop",
-  "systemIds": [
-    "sys.dnd5e",
-    "sys.dnd5e2014"
-  ],
   "description": "A specific point of sale — a single storefront, stall, or trading post where goods change hands, distinct from a settlement's general commerce.",
   "mechanics": {
     "type": "passive",

@@ -1,0 +1,509 @@
+{
+  "title": "Star Trek Adventures",
+  "version": "0.1",
+  "fields": [
+    {
+      "type": "string",
+      "key": "name",
+      "label": "Character Name",
+      "required": true
+    },
+    {
+      "type": "string",
+      "key": "player",
+      "label": "Player Name"
+    },
+    {
+      "type": "string",
+      "key": "pronouns",
+      "label": "Pronouns"
+    },
+    {
+      "type": "string",
+      "key": "rank",
+      "label": "Rank"
+    },
+    {
+      "type": "string",
+      "key": "assignment",
+      "label": "Assignment / Ship"
+    },
+    {
+      "type": "array",
+      "key": "species",
+      "label": "Species",
+      "values": [
+        {
+          "name": "Human",
+          "description": "Adaptable and endlessly curious, humans make up the largest single population within Starfleet."
+        },
+        {
+          "name": "Vulcan",
+          "description": "Devoted to logic and the suppression of emotion, descended from a people who nearly destroyed themselves through passion."
+        },
+        {
+          "name": "Andorian",
+          "description": "A fierce, blue-skinned, antennaed people from a frozen moon, quick to anger and fiercely loyal."
+        },
+        {
+          "name": "Betazoid",
+          "description": "A telepathic people from Betazed, able to sense (and sometimes read) the thoughts and feelings of others."
+        },
+        {
+          "name": "Bajoran",
+          "description": "A deeply spiritual people who endured decades of Cardassian Occupation before joining the Federation."
+        },
+        {
+          "name": "Trill",
+          "description": "A humanoid people, some of whom carry a symbiont — a joined lifetime of memory spanning many past hosts."
+        },
+        {
+          "name": "Tellarite",
+          "description": "A blunt, argumentative people who consider vigorous debate a sign of respect, not hostility."
+        },
+        {
+          "name": "Klingon",
+          "description": "A proud warrior culture bound by honor and the Klingon Empire's own code of glory in battle and death."
+        },
+        {
+          "name": "Denobulan",
+          "description": "A gregarious, extroverted people from a world of unusual, harmonious social and family structures."
+        },
+        {
+          "name": "Bolian",
+          "description": "A cheerful, blue-skinned people known throughout the Federation for sociability and administrative skill."
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "attributes",
+      "label": "Attributes",
+      "children": [
+        {
+          "type": "number",
+          "key": "attributes.control",
+          "label": "Control",
+          "color": "#3498db",
+          "minimum": 7,
+          "maximum": 12
+        },
+        {
+          "type": "number",
+          "key": "attributes.daring",
+          "label": "Daring",
+          "color": "#e74c3c",
+          "minimum": 7,
+          "maximum": 12
+        },
+        {
+          "type": "number",
+          "key": "attributes.fitness",
+          "label": "Fitness",
+          "color": "#2ecc71",
+          "minimum": 7,
+          "maximum": 12
+        },
+        {
+          "type": "number",
+          "key": "attributes.insight",
+          "label": "Insight",
+          "color": "#9b59b6",
+          "minimum": 7,
+          "maximum": 12
+        },
+        {
+          "type": "number",
+          "key": "attributes.presence",
+          "label": "Presence",
+          "color": "#f1c40f",
+          "minimum": 7,
+          "maximum": 12
+        },
+        {
+          "type": "number",
+          "key": "attributes.reason",
+          "label": "Reason",
+          "color": "#1abc9c",
+          "minimum": 7,
+          "maximum": 12
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "disciplines",
+      "label": "Disciplines",
+      "children": [
+        {
+          "type": "number",
+          "key": "disciplines.command",
+          "label": "Command",
+          "minimum": 0,
+          "maximum": 5
+        },
+        {
+          "type": "number",
+          "key": "disciplines.conn",
+          "label": "Conn",
+          "minimum": 0,
+          "maximum": 5
+        },
+        {
+          "type": "number",
+          "key": "disciplines.security",
+          "label": "Security",
+          "minimum": 0,
+          "maximum": 5
+        },
+        {
+          "type": "number",
+          "key": "disciplines.engineering",
+          "label": "Engineering",
+          "minimum": 0,
+          "maximum": 5
+        },
+        {
+          "type": "number",
+          "key": "disciplines.science",
+          "label": "Science",
+          "minimum": 0,
+          "maximum": 5
+        },
+        {
+          "type": "number",
+          "key": "disciplines.medicine",
+          "label": "Medicine",
+          "minimum": 0,
+          "maximum": 5
+        }
+      ]
+    },
+    {
+      "type": "number",
+      "key": "targetNumber",
+      "label": "Current Task's Target Number",
+      "minimum": 0,
+      "maximum": 20
+    },
+    {
+      "type": "array",
+      "key": "values",
+      "label": "Values",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Value"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "focuses",
+      "label": "Focuses",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Focus"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "talents",
+      "label": "Talents",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Talent"
+        },
+        {
+          "type": "string",
+          "key": "description",
+          "label": "Description"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "traits",
+      "label": "Traits",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Trait"
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "stress",
+      "label": "Stress",
+      "children": [
+        {
+          "type": "number",
+          "key": "stress.current",
+          "label": "Current",
+          "minimum": 0
+        },
+        {
+          "type": "number",
+          "key": "stress.max",
+          "label": "Max",
+          "minimum": 1
+        }
+      ]
+    },
+    {
+      "type": "number",
+      "key": "resistance",
+      "label": "Resistance",
+      "minimum": 0
+    },
+    {
+      "type": "number",
+      "key": "determination",
+      "label": "Determination",
+      "minimum": 0,
+      "maximum": 3,
+      "default": 1
+    },
+    {
+      "type": "number",
+      "key": "momentum",
+      "label": "Momentum (party pool — see field comment)",
+      "minimum": 0
+    },
+    {
+      "type": "number",
+      "key": "threat",
+      "label": "Threat (GM pool — see field comment)",
+      "minimum": 0
+    },
+    {
+      "type": "array",
+      "key": "inventory",
+      "label": "Inventory",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Item Name",
+          "required": true
+        },
+        {
+          "type": "number",
+          "key": "quantity",
+          "label": "Quantity",
+          "minimum": 0
+        },
+        {
+          "type": "string",
+          "key": "notes",
+          "label": "Notes"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "currency",
+      "label": "Currency",
+      "values": [
+        {
+          "name": "Gold-Pressed Latinum",
+          "shortName": "GPL",
+          "cost": 1
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "equipmentCategories",
+      "label": "Equipment Categories",
+      "values": [
+        {
+          "name": "Tricorders"
+        },
+        {
+          "name": "Phasers"
+        },
+        {
+          "name": "Communicators"
+        },
+        {
+          "name": "Medical Equipment"
+        },
+        {
+          "name": "Engineering Tools"
+        },
+        {
+          "name": "Away Team Gear"
+        },
+        {
+          "name": "Ship Systems"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "rarity",
+      "label": "Rarity",
+      "values": [
+        {
+          "name": "Common",
+          "targetBudget": 3,
+          "description": "Standard Starfleet-issue equipment."
+        },
+        {
+          "name": "Uncommon",
+          "targetBudget": 6,
+          "description": "Specialist or mission-specific gear."
+        },
+        {
+          "name": "Rare",
+          "targetBudget": 10,
+          "description": "Restricted, alien, or otherwise hard to obtain technology."
+        },
+        {
+          "name": "Prototype",
+          "targetBudget": 16,
+          "description": "Experimental or one-of-a-kind technology."
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "environment",
+      "label": "Environment",
+      "values": [
+        {
+          "name": "Starship Interior"
+        },
+        {
+          "name": "Away Mission"
+        },
+        {
+          "name": "Planetside"
+        },
+        {
+          "name": "Deep Space"
+        },
+        {
+          "name": "Space Station"
+        },
+        {
+          "name": "Diplomatic"
+        },
+        {
+          "name": "Anomaly"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "combatScaling",
+      "label": "NPC Scale",
+      "values": [
+        {
+          "name": "Minor NPC",
+          "shortName": "Minor",
+          "sourceId": 1,
+          "targetBudget": 2
+        },
+        {
+          "name": "Notable NPC",
+          "shortName": "Notable",
+          "sourceId": 2,
+          "targetBudget": 5
+        },
+        {
+          "name": "Major NPC",
+          "shortName": "Major",
+          "sourceId": 3,
+          "targetBudget": 9
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "combatBindings",
+      "label": "Combat Bindings",
+      "values": [
+        {
+          "name": "Stress",
+          "maxPath": "@stress.max",
+          "binding": "@stress.current",
+          "role": "resource"
+        },
+        {
+          "name": "Determination",
+          "binding": "@determination",
+          "max": 3,
+          "role": "resource"
+        },
+        {
+          "name": "Resistance",
+          "binding": "@resistance",
+          "role": "value"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "dice",
+      "label": "Dice",
+      "values": [
+        {
+          "name": "d6",
+          "sides": 6
+        },
+        {
+          "name": "d20",
+          "sides": 20
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "rolls",
+      "label": "Rolls",
+      "values": [
+        {
+          "name": "Task Roll (2d20)",
+          "expression": "2d20t<=@targetNumber",
+          "resultMode": "band",
+          "description": "Roll 2d20 and tally how many come in at or under this task's Target Number (an Attribute + a Discipline, e.g. Security + Control to fire a phaser — filled into the Current Task's Target Number field above before rolling, since which pair applies changes with every task, unlike CoC/GURPS's fixed per-field targets). Compare the tally below to the Difficulty (1-5 successes) the GM called for the task — that comparison isn't automated here since Difficulty is scene-specific, not character data, the same limitation Fate Core's own Move flags. Two further real rules aren't modeled: a natural 1 counts as 2 successes rather than 1 (the tally engine counts hits, not weighted hits), and a natural 20 triggers a Complication (the tally engine reports successes against ONE threshold per roll, not a second, independent natural-20 check) — read the individual die results in the roll's own breakdown and apply both by hand.",
+          "bands": [
+            {
+              "tally": {
+                "gte": 2
+              },
+              "label": "2 Successes — bonus Momentum generated"
+            },
+            {
+              "tally": {
+                "eq": 1
+              },
+              "label": "1 Success"
+            },
+            {
+              "tally": {
+                "eq": 0
+              },
+              "label": "0 Successes — Failure"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

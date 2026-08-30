@@ -32,5 +32,20 @@
   "systemIds": [
     "sys.dnd5e",
     "sys.dnd5e2014"
-  ]
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "family",
+    "firstNames": [
+      "Gae", "Kuori", "Lo-Kag", "Manneo", "Naran", "Orilo", "Payo", "Silael",
+      "Thalai", "Vaunea", "Dorbo", "Eglath", "Gathu", "Hjolen", "Imenon",
+      "Keothi", "Mothki", "Nalla", "Sertha", "Uvenn"
+    ],
+    "lastNames": [
+      "Rockseeker", "Dawncaller", "Fearless", "Steadyhand", "Stormwatcher",
+      "Longstride", "Ashclimber", "Frostbeard", "Stonefist", "Cloudchaser",
+      "Thunderborn", "Highreacher", "Sure-Foot", "Iron-Grip", "Wind-Scarred",
+      "Deepwalker"
+    ]
+  }
 }

@@ -1,0 +1,1356 @@
+{
+  "template": "tpl.5e.flex-basic",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "data": {},
+  "url": "https://www.dndbeyond.com/characters/159803326",
+  "mapping": "ddb-character",
+  "name": "Lotor Sphinx, Cast-iron Chef",
+  "image": "https://www.dndbeyond.com/avatars/54251/380/1581111423-159803326.jpeg?width=150&height=150&fit=crop&quality=95&auto=webp",
+  "identity": {
+    "id": 159803326,
+    "userId": 105833984,
+    "username": "DredDrain09",
+    "name": "Lotor Sphinx, Cast-iron Chef",
+    "race": {
+      "name": "Human",
+      "refKind": "species",
+      "refId": "human"
+    },
+    "class": "Cleric",
+    "level": 7,
+    "levels": {
+      "level_monk": 0,
+      "level_multiclass": 0
+    },
+    "inspiration": true,
+    "classes": [
+      {
+        "name": "Cleric",
+        "level": 7,
+        "subclass": {
+          "name": "Life Domain",
+          "refKind": "variant",
+          "refId": "cleric-life-domain"
+        },
+        "refKind": "class",
+        "refId": "cleric"
+      }
+    ]
+  },
+  "proficiency": 3,
+  "conditions": [],
+  "stats": {
+    "hitPoints": {
+      "max": 88,
+      "current": 88,
+      "temp": 9
+    },
+    "armorClass": 19,
+    "senses": {
+      "passives": {
+        "perception": 17,
+        "investigation": 9,
+        "insight": 14
+      }
+    },
+    "speed": {
+      "walk": 30,
+      "burrow": 0,
+      "climb": 0,
+      "fly": 0,
+      "swim": 0
+    },
+    "abilities": {
+      "strength": 15,
+      "dexterity": 12,
+      "constitution": 18,
+      "intelligence": 8,
+      "wisdom": 19,
+      "charisma": 15
+    },
+    "alignment": null,
+    "initiative": {
+      "bonus": 1
+    },
+    "savingThrows": [
+      {
+        "id": 1,
+        "name": "strength",
+        "friendlyName": "Strength",
+        "shortName": "STR",
+        "value": 2,
+        "proficiency": 0,
+        "advantage": false,
+        "disadvantage": false
+      },
+      {
+        "id": 2,
+        "name": "dexterity",
+        "friendlyName": "Dexterity",
+        "shortName": "DEX",
+        "value": 1,
+        "proficiency": 0,
+        "advantage": false,
+        "disadvantage": false
+      },
+      {
+        "id": 3,
+        "name": "constitution",
+        "friendlyName": "Constitution",
+        "shortName": "CON",
+        "value": 4,
+        "proficiency": 0,
+        "advantage": false,
+        "disadvantage": false
+      },
+      {
+        "id": 4,
+        "name": "intelligence",
+        "friendlyName": "Intelligence",
+        "shortName": "INT",
+        "value": -1,
+        "proficiency": 0,
+        "advantage": false,
+        "disadvantage": false
+      },
+      {
+        "id": 5,
+        "name": "wisdom",
+        "friendlyName": "Wisdom",
+        "shortName": "WIS",
+        "value": 7,
+        "proficiency": 3,
+        "advantage": false,
+        "disadvantage": false
+      },
+      {
+        "id": 6,
+        "name": "charisma",
+        "friendlyName": "Charisma",
+        "shortName": "CHA",
+        "value": 5,
+        "proficiency": 3,
+        "advantage": false,
+        "disadvantage": false
+      }
+    ],
+    "skills": [
+      {
+        "id": 3,
+        "name": "acrobatics",
+        "friendlyName": "Acrobatics",
+        "stat": 1,
+        "ability": "DEX",
+        "value": 1,
+        "proficiency": 0,
+        "advantage": false,
+        "disadvantage": false
+      },
+      {
+        "id": 11,
+        "name": "animal-handling",
+        "friendlyName": "Animal Handling",
+        "stat": 4,
+        "ability": "WIS",
+        "value": 4,
+        "proficiency": 0,
+        "advantage": false,
+        "disadvantage": false
+      },
+      {
+        "id": 6,
+        "name": "arcana",
+        "friendlyName": "Arcana",
+        "stat": 3,
+        "ability": "INT",
+        "value": -1,
+        "proficiency": 0,
+        "advantage": false,
+        "disadvantage": false
+      },
+      {
+        "id": 2,
+        "name": "athletics",
+        "friendlyName": "Athletics",
+        "stat": 0,
+        "ability": "STR",
+        "value": 2,
+        "proficiency": 0,
+        "advantage": false,
+        "disadvantage": false
+      },
+      {
+        "id": 16,
+        "name": "deception",
+        "friendlyName": "Deception",
+        "stat": 5,
+        "ability": "CHA",
+        "value": 2,
+        "proficiency": 0,
+        "advantage": false,
+        "disadvantage": false
+      },
+      {
+        "id": 7,
+        "name": "history",
+        "friendlyName": "History",
+        "stat": 3,
+        "ability": "INT",
+        "value": 2,
+        "proficiency": 3,
+        "advantage": false,
+        "disadvantage": false
+      },
+      {
+        "id": 12,
+        "name": "insight",
+        "friendlyName": "Insight",
+        "stat": 4,
+        "ability": "WIS",
+        "value": 4,
+        "proficiency": 0,
+        "advantage": false,
+        "disadvantage": false
+      },
+      {
+        "id": 17,
+        "name": "intimidation",
+        "friendlyName": "Intimidation",
+        "stat": 5,
+        "ability": "CHA",
+        "value": 2,
+        "proficiency": 0,
+        "advantage": false,
+        "disadvantage": false
+      },
+      {
+        "id": 8,
+        "name": "investigation",
+        "friendlyName": "Investigation",
+        "stat": 3,
+        "ability": "INT",
+        "value": -1,
+        "proficiency": 0,
+        "advantage": false,
+        "disadvantage": false
+      },
+      {
+        "id": 13,
+        "name": "medicine",
+        "friendlyName": "Medicine",
+        "stat": 4,
+        "ability": "WIS",
+        "value": 7,
+        "proficiency": 3,
+        "advantage": false,
+        "disadvantage": false
+      },
+      {
+        "id": 9,
+        "name": "nature",
+        "friendlyName": "Nature",
+        "stat": 3,
+        "ability": "INT",
+        "value": -1,
+        "proficiency": 0,
+        "advantage": false,
+        "disadvantage": false
+      },
+      {
+        "id": 14,
+        "name": "perception",
+        "friendlyName": "Perception",
+        "stat": 4,
+        "ability": "WIS",
+        "value": 7,
+        "proficiency": 3,
+        "advantage": false,
+        "disadvantage": false
+      },
+      {
+        "id": 18,
+        "name": "performance",
+        "friendlyName": "Performance",
+        "stat": 5,
+        "ability": "CHA",
+        "value": 2,
+        "proficiency": 0,
+        "advantage": false,
+        "disadvantage": false
+      },
+      {
+        "id": 19,
+        "name": "persuasion",
+        "friendlyName": "Persuasion",
+        "stat": 5,
+        "ability": "CHA",
+        "value": 2,
+        "proficiency": 0,
+        "advantage": false,
+        "disadvantage": false
+      },
+      {
+        "id": 10,
+        "name": "religion",
+        "friendlyName": "Religion",
+        "stat": 3,
+        "ability": "INT",
+        "value": 2,
+        "proficiency": 3,
+        "advantage": false,
+        "disadvantage": false
+      },
+      {
+        "id": 4,
+        "name": "sleight-of-hand",
+        "friendlyName": "Sleight of Hand",
+        "stat": 1,
+        "ability": "DEX",
+        "value": 1,
+        "proficiency": 0,
+        "advantage": false,
+        "disadvantage": false
+      },
+      {
+        "id": 5,
+        "name": "stealth",
+        "friendlyName": "Stealth",
+        "stat": 1,
+        "ability": "DEX",
+        "value": 1,
+        "proficiency": 0,
+        "advantage": false,
+        "disadvantage": false
+      },
+      {
+        "id": 15,
+        "name": "survival",
+        "friendlyName": "Survival",
+        "stat": 4,
+        "ability": "WIS",
+        "value": 7,
+        "proficiency": 3,
+        "advantage": false,
+        "disadvantage": false
+      }
+    ],
+    "proficiencies": {
+      "defenses": [],
+      "languages": [
+        "Common",
+        "Elvish",
+        "Draconic"
+      ]
+    }
+  },
+  "currencies": {
+    "cp": 0,
+    "sp": 0,
+    "ep": 0,
+    "gp": 390,
+    "pp": 0
+  },
+  "inventory": [
+    {
+      "name": "Ring of Free Action",
+      "quantity": 1,
+      "weight": 0,
+      "notes": "<p>While you wear this ring, Difficult Terrain doesn’t cost you extra movement. In addition, magic can neither reduce any of your Speeds nor cause you to have the Paralyzed or Restrained condition.</p>",
+      "canAttune": true,
+      "isAttuned": true,
+      "canEquip": true,
+      "isEquipped": true,
+      "refKind": "wonder",
+      "refId": "ring-of-free-action"
+    },
+    {
+      "name": "Potion of Water Breathing",
+      "quantity": 1,
+      "weight": 0,
+      "notes": "<p>You can breathe underwater for 24 hours after drinking this potion.</p>\r\n<p>This potion’s cloudy green fluid smells of the sea and has a jellyfish-like bubble floating in it.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "potion-of-water-breathing"
+    },
+    {
+      "name": "Shield",
+      "quantity": 1,
+      "weight": 6,
+      "notes": "<p>Shields require the Utilize action to Don or Doff. You gain the Armor Class benefit of a Shield only if you have training with it.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": true,
+      "isEquipped": true,
+      "refKind": "wonder",
+      "refId": "shield"
+    },
+    {
+      "name": "Splint",
+      "quantity": 1,
+      "weight": 60,
+      "notes": "<p>This armor is made of narrow vertical strips of metal riveted to a backing of leather that is worn over cloth padding. Flexible chain mail protects the joints.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": true,
+      "isEquipped": true,
+      "refKind": "wonder",
+      "refId": "splint-armor"
+    },
+    {
+      "name": "Trident",
+      "quantity": 1,
+      "weight": 4,
+      "notes": "<p>Proficiency with a Trident allows you to add your proficiency bonus to the attack roll for any attack you make with it.</p>\r\n<div class=\"mastery-container\"><hr />\r\n<p>This weapon has the following mastery property. To use this property, you must have a feature that lets you use it.</p>\r\n<p><strong><em>Topple.</em></strong> If you hit a creature with this weapon, you can force the creature to make a Constitution saving throw (DC 8 plus the ability modifier used to make the attack roll and your Proficiency Bonus). On a failed save, the creature has the Prone condition.</p>\r\n</div>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": true,
+      "isEquipped": true,
+      "refKind": "wonder",
+      "refId": "trident"
+    },
+    {
+      "name": "Oil",
+      "quantity": 3,
+      "weight": 3,
+      "notes": "<p>You can douse a creature, object, or space with Oil or use it as fuel, as detailed below.</p>\r\n<p><strong><em>Dousing a Creature or an Object.</em></strong> When you take the Attack action, you can replace one of your attacks with throwing an Oil flask. Target one creature or object within 20 feet of yourself. The target must succeed on a Dexterity saving throw (DC 8 plus your Dexterity modifier and Proficiency Bonus) or be covered in oil. If the target takes Fire damage before the oil dries (after 1 minute), the target takes an extra 5 Fire damage from burning oil.</p>\r\n<p><strong><em>Dousing a Space.</em></strong> You can take the Utilize action to pour an Oil flask on level ground to cover a 5-foot-square area within 5 feet of yourself. If lit, the oil burns until the end of the turn 2 rounds from when the oil was lit (or 12 seconds) and deals 5 Fire damage to any creature that enters the area or ends its turn there. A creature can take this damage only once per turn.</p>\r\n<p><strong><em>Fuel.</em></strong> Oil serves as fuel for Lamps and Lanterns. Once lit, a flask of Oil burns for 6 hours in a Lamp or Lantern. That duration doesn’t need to be consecutive; you can extinguish the burning Oil (as a Utilize action) and rekindle it again until it has burned for a total of 6 hours.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "oil"
+    },
+    {
+      "name": "Lamp",
+      "quantity": 1,
+      "weight": 1,
+      "notes": "<p>A Lamp burns Oil as fuel to cast Bright Light in a 15-foot radius and Dim Light for an additional 30 feet.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "lamp"
+    },
+    {
+      "name": "Chest",
+      "quantity": 1,
+      "weight": 25,
+      "notes": "<p>A Chest holds up to 12 cubic feet of contents.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": true,
+      "isEquipped": true,
+      "refKind": "wonder",
+      "refId": "chest"
+    },
+    {
+      "name": "Potion of Healing",
+      "quantity": 1,
+      "weight": 0.5,
+      "notes": "<p>This potion is a magic item. As a Bonus Action, you can drink it or administer it to another creature within 5 feet of yourself. The creature that drinks the magical red fluid in this vial regains 2d4 + 2 Hit Points.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "potion-of-healing-common"
+    },
+    {
+      "name": "Iron Pot",
+      "quantity": 1,
+      "weight": 10,
+      "notes": "<p>An Iron Pot holds up to 1 gallon.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "iron-pot"
+    },
+    {
+      "name": "Cook's Utensils",
+      "quantity": 1,
+      "weight": 8,
+      "notes": "<p><strong>Ability:</strong> Wisdom <br /><strong>Utilize:</strong> Improve food’s flavor (DC 10), or detect spoiled or poisoned food (DC 15) <br /><strong>Craft:</strong> Rations</p>\r\n<hr />\r\n<p>If you have proficiency with a tool, add your Proficiency Bonus to any ability check you make that uses the tool. If you have proficiency in a skill that’s used with that check, you have Advantage on the check too.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "cooks-utensils"
+    },
+    {
+      "name": "Bedroll",
+      "quantity": 1,
+      "weight": 7,
+      "notes": "<p>A Bedroll sleeps one Small or Medium creature. While in a Bedroll, you automatically succeed on saving throws against extreme cold (see the <em>Dungeon Master’s Guide</em>).</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "bedroll"
+    },
+    {
+      "name": "Tinker's Tools",
+      "quantity": 1,
+      "weight": 10,
+      "notes": "<p><strong>Ability:</strong> Dexterity <br /><strong>Utilize:</strong> Assemble a Tiny item composed of scrap, which falls apart in 1 minute (DC 20) <br /><strong>Craft:</strong> Musket, Pistol, Bell, Bullseye Lantern, Flask, Hooded Lantern, Hunting Trap, Lock, Manacles, Mirror, Shovel, Signal Whistle, Tinderbox</p>\r\n<hr />\r\n<p>If you have proficiency with a tool, add your Proficiency Bonus to any ability check you make that uses the tool. If you have proficiency in a skill that’s used with that check, you have Advantage on the check too.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "tinkers-tools"
+    },
+    {
+      "name": "Herbalism Kit",
+      "quantity": 1,
+      "weight": 3,
+      "notes": "<p><strong>Ability:</strong> Intelligence <br /><strong>Utilize:</strong> Identify a plant (DC 10) <br /><strong>Craft:</strong> Antitoxin, Candle, Healer’s Kit, Potion of Healing</p>\r\n<p>A character who has proficiency with the Herbalism Kit can create a <em>Potion of Healing</em>. Doing so requires using this kit and 25 GP of raw material over the course of 1 day (8 hours of work).</p>\r\n<hr />\r\n<p>If you have proficiency with a tool, add your Proficiency Bonus to any ability check you make that uses the tool. If you have proficiency in a skill that’s used with that check, you have Advantage on the check too.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "herbalism-kit"
+    },
+    {
+      "name": "Navigator's Tools",
+      "quantity": 1,
+      "weight": 2,
+      "notes": "<p><strong>Ability:</strong> Wisdom <br /><strong>Utilize:</strong> Plot a course (DC 10), or determine position by stargazing (DC 15)</p>\r\n<hr />\r\n<p>If you have proficiency with a tool, add your Proficiency Bonus to any ability check you make that uses the tool. If you have proficiency in a skill that’s used with that check, you have Advantage on the check too.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "navigators-tools"
+    }
+  ],
+  "background": {
+    "name": "Hermit",
+    "description": "<p><strong>Ability Scores:</strong>&nbsp;Constitution, Wisdom, Charisma<br /><strong>Feat:</strong>&nbsp;Healer<br /><strong>Skill Proficiencies:</strong> Medicine and Religion<br /><strong>Tool Proficiency:</strong>&nbsp;Herbalism Kit<br /><strong>Equipment:</strong> <em>Choose A or B:</em> (A) Quarterstaff, Herbalism Kit, Bedroll, Book (philosophy), Lamp, Oil (3 flasks), Traveler's Clothes, 16 GP; or (B) 50 GP</p>\r\n<p>You spent your early years secluded in a hut or monastery located well beyond the outskirts of the nearest settlement. In those days, your only companions were the creatures of the forest and those who would occasionally visit to bring news of the outside world and supplies. The solitude allowed you to spend many hours pondering the mysteries of creation.</p>",
+    "feature": "Healer"
+  },
+  "feats": [
+    {
+      "name": "Chef",
+      "description": "Time spent mastering the culinary arts has paid off , granting you the following benefits:\n\n- Increase your Constitution or Wisdom score by 1, to a maximum of 20.\n\n- You gain proficiency with cook’s utensils if you don’t already have it.\n\n- As part of a short rest, you can cook special food, provided you have ingredients and cook’s utensils on hand. You can prepare enough of this food for a number of creatures equal to 4 + your proficiency bonus. At the end of the short rest, any creature who eats the food and spends one or more Hit Dice to regain hit points regains an extra 1d8 hit points.\n\n- With one hour of work or when you finish a long rest, you can cook a number of treats equal to your proficiency bonus. These special treats last 8 hours after being made. A creature can use a bonus action to eat one of those treats to gain temporary hit points equal to your proficiency bonus.",
+      "level": null,
+      "limitedUse": null
+    },
+    {
+      "name": "Healer",
+      "description": "*Origin Feat*\n\nYou gain the following benefits.\n\n**Battle Medic.** If you have a Healer’s Kit, you can expend one use of it and tend to a creature within 5 feet of yourself as a Utilize action. That creature can expend one of its Hit Point Dice, and you then roll that die. The creature regains a number of Hit Points equal to the roll plus your Proficiency Bonus.\n\n***Healing Rerolls.*** Whenever you roll a die to determine the number of Hit Points you restore with a spell or with this feat’s Battle Medic benefit, you can reroll the die if it rolls a 1, and you must use the new roll.",
+      "level": null,
+      "limitedUse": null
+    },
+    {
+      "name": "Hermit Ability Score Improvements",
+      "description": "The Hermit Background allows you to choose between Constitution, Wisdom, and Charisma. Increase one of these scores by 2 and another one by 1, or increase all three by 1. None of these increases can raise a score above 20.",
+      "level": null,
+      "limitedUse": null
+    },
+    {
+      "name": "Lucky",
+      "description": "*Origin Feat*\n\nYou gain the following benefits.\n\n***Luck Points.*** You have a number of Luck Points equal to your Proficiency Bonus and can spend the points on the benefits below. You regain your expended Luck Points when you finish a Long Rest.\n\n***Advantage.*** When you roll a d20 for a D20 Test, you can spend 1 Luck Point to give yourself Advantage on the roll.\n\n***Disadvantage.*** When a creature rolls a d20 for an attack roll against you, you can spend 1 Luck Point to impose Disadvantage on that roll.",
+      "level": null,
+      "limitedUse": null
+    },
+    {
+      "name": "Tough",
+      "description": "*Origin Feat*\n\nYour Hit Point maximum increases by an amount equal to twice your character level when you gain this feat. Whenever you gain a character level thereafter, your Hit Point maximum increases by an additional 2 Hit Points.",
+      "level": null,
+      "limitedUse": null
+    }
+  ],
+  "features": [
+    {
+      "name": "Disciple of Life",
+      "description": "When a spell you cast with a spell slot restores Hit Points to a creature, that creature regains additional Hit Points on the turn you cast the spell. The additional Hit Points equal 2 plus the spell slot’s level.",
+      "level": 3
+    },
+    {
+      "name": "Life Domain Spells",
+      "description": "Your connection to this divine domain ensures you always have certain spells ready. When you reach a Cleric level specified in the Life Domain Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Aid, Bless, Cure Wounds, Lesser Restoration\n\nLevel 5: Mass Healing Word, Revivify\n\nLevel 7: Aura of Life, Death Ward\n\nLevel 9: Greater Restoration, Mass Cure Wounds",
+      "level": 3
+    },
+    {
+      "name": "Preserve Life",
+      "description": "As a Magic action, you present your Holy Symbol and expend a use of your Channel Divinity to evoke healing energy that can restore a number of Hit Points equal to five times your Cleric level. Choose Bloodied creatures within 30 feet of yourself (which can include you), and divide those Hit Points among them. This feature can restore a creature to no more than half its Hit Point maximum.",
+      "level": 3
+    },
+    {
+      "name": "Blessed Healer",
+      "description": "The healing spells you cast on others heal you as well. Immediately after you cast a spell with a spell slot that restores Hit Points to one or more creatures other than yourself, you regain Hit Points equal to 2 plus the spell slot’s level.",
+      "level": 6
+    },
+    {
+      "name": "Core Cleric Traits",
+      "description": "As a Level 1 Character:\n\n- Gain all the traits in the Core Cleric Traits table.\n\n- Gain the Cleric’s level 1 features, which are listed in the Cleric Features table.\n\nPrimary Ability: Wisdom\n\nHit Point Die: D8 per Cleric level\n\nSaving Throw Proficiencies: Wisdom and Charisma\n\nSkill Proficiencies: *Choose 2:* History, Insight, Medicine, Persuasion, or Religion\n\nWeapon Proficiencies: Simple weapons\n\nArmor Training: Light and Medium armor and Shields\n\nStarting Equipment: *Choose A or B:* (A) Chain Shirt, Shield, Mace, Holy Symbol, Priest’s Pack, and 7 GP; or (B) 110 GP",
+      "level": 1
+    },
+    {
+      "name": "Spellcasting",
+      "description": "You have learned to cast spells through prayer and meditation. The information below details how you use those rules with Cleric spells, which appear on the Cleric spell list.\n\n**Cantrips.** You know three cantrips of your choice from the Cleric spell list.\n\nWhenever you gain a Cleric level, you can replace one of your cantrips with another cantrip of your choice from the Cleric spell list.\n\nWhen you reach Cleric levels 4 and 10, you learn another cantrip of your choice from the Cleric spell list, as shown in the Cantrips column of the Cleric Features table.\n\n**Spell Slots.** The Cleric Features table shows how many spell slots you have to cast your level 1+ spells. You regain all expended slots when you finish a Long Rest.\n\n**Prepared Spells of Level 1+.** You prepare the list of level 1+ spells that are available for you to cast with this feature. To start, choose four level 1 spells from the Cleric spell list.\n\nThe number of spells on your list increases as you gain Cleric levels, as shown in the Prepared Spells column of the Cleric Features table. Whenever that number increases, choose additional spells from the Cleric spell list until the number of spells on your list matches the number on the table. The chosen spells must be of a level for which you have spell slots. For example, if you’re a level 3 Cleric, your list of prepared spells can include six spells of levels 1 and 2 in any combination.\n\nIf another Cleric feature gives you spells that you always have prepared, those spells don’t count against the number of spells you can prepare with this feature, but those spells otherwise count as Cleric spells for you.\n\n**Changing Your Prepared Spells.** Whenever you finish a Long Rest, you can change your list of prepared spells, replacing any of the spells there with other Cleric spells for which you have spell slots.\n\n**Spellcasting Ability.** Wisdom is your spellcasting ability for your Cleric spells.\n\n**Spellcasting Focus.** You can use a Holy Symbol as a Spellcasting Focus for your Cleric spells.",
+      "level": 1
+    },
+    {
+      "name": "Divine Order",
+      "description": "You have dedicated yourself to one of the following sacred roles of your choice.",
+      "level": 1
+    },
+    {
+      "name": "Channel Divinity",
+      "description": "You can channel divine energy directly from the Outer Planes to fuel magical effects. You start with two such effects: Divine Spark and Turn Undead, each of which is described below. Each time you use this class’s Channel Divinity, choose which Channel Divinity effect from this class to create. You gain additional effect options at higher Cleric levels.\n\nYou can use this class’s Channel Divinity twice. You regain one of its expended uses when you finish a Short Rest, and you regain all expended uses when you finish a Long Rest. You gain additional uses when you reach certain Cleric levels, as shown in the Channel Divinity column of the Cleric Features table.\n\nIf a Channel Divinity effect requires a saving throw, the DC equals the spell save DC from this class’s Spellcasting feature.\n\n**Divine Spark.** As a Magic action, you point your Holy Symbol at another creature you can see within 30 feet of yourself and focus divine energy at it. Roll 1d8 and add your Wisdom modifier. You either restore Hit Points to the creature equal to that total or force the creature to make a Constitution saving throw. On a failed save, the creature takes Necrotic or Radiant damage (your choice) equal to that total. On a successful save, the creature takes half as much damage (round down).\n\nYou roll an additional d8 when you reach Cleric levels 7 (2d8), 13 (3d8), and 18 (4d8).\n\n**Turn Undead.** As a Magic action, you present your Holy Symbol and censure Undead creatures. Each Undead of your choice within 30 feet of you must make a Wisdom saving throw. If the creature fails its save, it has the Frightened and Incapacitated conditions for 1 minute. For that duration, it tries to move as far from you as it can on its turns. This effect ends early on the creature if it takes any damage, if you have the Incapacitated condition, or if you die.",
+      "level": 2
+    },
+    {
+      "name": "Cleric Subclass",
+      "description": "You gain a Cleric subclass of your choice. A subclass is a specialization that grants you features at certain Cleric levels. For the rest of your career, you gain each of your subclass’s features that are of your Cleric level or lower.",
+      "level": 3
+    },
+    {
+      "name": "Ability Score Improvement",
+      "description": "You gain the Ability Score Improvement feat or another feat of your choice for which you qualify. You gain this feature again at Cleric levels 8, 12, and 16.",
+      "level": 4
+    },
+    {
+      "name": "Sear Undead",
+      "description": "Whenever you use Turn Undead, you can roll a number of d8s equal to your Wisdom modifier (minimum of 1d8) and add the rolls together. Each Undead that fails its saving throw against that use of Turn Undead takes Radiant damage equal to the roll’s total. This damage doesn’t end the turn effect.",
+      "level": 5
+    },
+    {
+      "name": "Blessed Strikes",
+      "description": "Divine power infuses you in battle. You gain one of the following options of your choice (if you get either option from a Cleric subclass in an older book, use only the option you choose for this feature).\n\n**Divine Strike.** Once on each of your turns when you hit a creature with an attack roll using a weapon, you can cause the target to take an extra 1d8 Necrotic or Radiant damage (your choice).\n\n**Potent Spellcasting.** Add your Wisdom modifier to the damage you deal with any Cleric cantrip.",
+      "level": 7
+    },
+    {
+      "name": "Resourceful",
+      "description": "You gain Heroic Inspiration whenever you finish a Long Rest.",
+      "level": null
+    },
+    {
+      "name": "Skillful",
+      "description": "You gain proficiency in one skill of your choice.",
+      "level": null
+    },
+    {
+      "name": "Versatile",
+      "description": "You gain an Origin feat of your choice.",
+      "level": null
+    },
+    {
+      "name": "Creature Type",
+      "description": "You are a Humanoid.",
+      "level": null
+    },
+    {
+      "name": "Size",
+      "description": "Your Size is Medium (about 4–7 feet tall) or Small (about 2–4 feet tall), chosen when you select this species.",
+      "level": null
+    },
+    {
+      "name": "Speed",
+      "description": "Your Speed is 30 feet.",
+      "level": null
+    },
+    {
+      "name": "Ability Score Increases",
+      "description": "When determining your character’s ability scores, increase one score by 2 and a different one by 1, or increase three scores by 1. None of these increases can raise a score above 20.",
+      "level": null
+    },
+    {
+      "name": "Languages",
+      "description": "Your character knows at least three languages: Common plus two languages you roll or choose from the Standard Languages table. Knowledge of a language means your character can communicate in it, read it, and write it. Your class and other features might also give you languages.\n\nThe Standard Languages table lists languages that are widespread on D&amp;D worlds. Every player character knows Common, which originated in the planar metropolis of Sigil, the hub of the multiverse. The other standard languages originated with the first members of the most prominent species in the worlds of D&amp;D and have since spread widely.\n\n| 1d12 | Language | Origin |\n| --- | --- | --- |\n| — | Common | Sigil |\n| 1 | Common Sign Language | Sigil |\n| 2 | Draconic | Dragons |\n| 3-4 | Dwarvish | Dwarves |\n| 5-6 | Elvish | Elves |\n| 7 | Giant | Giants |\n| 8 | Gnomish | Gnomes |\n| 9 | Goblin | Goblinoids |\n| 10-11 | Halfling | Halflings |\n| 12 | Orc | Orcs |",
+      "level": null
+    },
+    {
+      "name": "Chef",
+      "description": "Time spent mastering the culinary arts has paid off , granting you the following benefits:\n\n- Increase your Constitution or Wisdom score by 1, to a maximum of 20.\n\n- You gain proficiency with cook’s utensils if you don’t already have it.\n\n- As part of a short rest, you can cook special food, provided you have ingredients and cook’s utensils on hand. You can prepare enough of this food for a number of creatures equal to 4 + your proficiency bonus. At the end of the short rest, any creature who eats the food and spends one or more Hit Dice to regain hit points regains an extra 1d8 hit points.\n\n- With one hour of work or when you finish a long rest, you can cook a number of treats equal to your proficiency bonus. These special treats last 8 hours after being made. A creature can use a bonus action to eat one of those treats to gain temporary hit points equal to your proficiency bonus.",
+      "level": null
+    },
+    {
+      "name": "Healer",
+      "description": "*Origin Feat*\n\nYou gain the following benefits.\n\n**Battle Medic.** If you have a Healer’s Kit, you can expend one use of it and tend to a creature within 5 feet of yourself as a Utilize action. That creature can expend one of its Hit Point Dice, and you then roll that die. The creature regains a number of Hit Points equal to the roll plus your Proficiency Bonus.\n\n***Healing Rerolls.*** Whenever you roll a die to determine the number of Hit Points you restore with a spell or with this feat’s Battle Medic benefit, you can reroll the die if it rolls a 1, and you must use the new roll.",
+      "level": null
+    },
+    {
+      "name": "Hermit Ability Score Improvements",
+      "description": "The Hermit Background allows you to choose between Constitution, Wisdom, and Charisma. Increase one of these scores by 2 and another one by 1, or increase all three by 1. None of these increases can raise a score above 20.",
+      "level": null
+    },
+    {
+      "name": "Lucky",
+      "description": "*Origin Feat*\n\nYou gain the following benefits.\n\n***Luck Points.*** You have a number of Luck Points equal to your Proficiency Bonus and can spend the points on the benefits below. You regain your expended Luck Points when you finish a Long Rest.\n\n***Advantage.*** When you roll a d20 for a D20 Test, you can spend 1 Luck Point to give yourself Advantage on the roll.\n\n***Disadvantage.*** When a creature rolls a d20 for an attack roll against you, you can spend 1 Luck Point to impose Disadvantage on that roll.",
+      "level": null
+    },
+    {
+      "name": "Tough",
+      "description": "*Origin Feat*\n\nYour Hit Point maximum increases by an amount equal to twice your character level when you gain this feat. Whenever you gain a character level thereafter, your Hit Point maximum increases by an additional 2 Hit Points.",
+      "level": null
+    }
+  ],
+  "proficiencies": {
+    "armor": [
+      "Light Armor",
+      "Medium Armor",
+      "Shields",
+      "Heavy Armor"
+    ],
+    "weapons": [
+      "Simple Weapons",
+      "Martial Weapons"
+    ],
+    "tools": [
+      "Herbalism Kit",
+      "Cook's Utensils"
+    ],
+    "senses": [],
+    "other": [
+      "Hit Points",
+      "Subclass",
+      "Spell Group - Healing",
+      "Choose Constitution or Wisdom",
+      "Hit Points per Level"
+    ]
+  },
+  "attacks": [
+    {
+      "name": "Unarmed Strike",
+      "range": null,
+      "longRange": null,
+      "attackBonus": 5,
+      "damage": "1+2",
+      "damageType": "Bludgeoning",
+      "notes": "",
+      "description": ""
+    },
+    {
+      "name": "Channel Divinity: Sear Undead",
+      "range": {
+        "range": null,
+        "longRange": null,
+        "aoeType": null,
+        "aoeSize": null,
+        "hasAoeSpecialDescription": false,
+        "minimumRange": null
+      },
+      "longRange": null,
+      "attackBonus": 0,
+      "damage": "1d8",
+      "damageType": "Thunder",
+      "notes": "",
+      "description": "<p>Whenever you use Turn Undead, you can roll a number of d8s equal to your Wisdom modifier (minimum of 1d8) and add the rolls together. Each Undead that fails its saving throw against that use of Turn Undead takes Radiant damage equal to the roll&rsquo;s total. This damage doesn&rsquo;t end the turn effect.</p>"
+    },
+    {
+      "name": "Divine Strike",
+      "range": {
+        "range": null,
+        "longRange": null,
+        "aoeType": null,
+        "aoeSize": null,
+        "hasAoeSpecialDescription": false,
+        "minimumRange": null
+      },
+      "longRange": null,
+      "attackBonus": 0,
+      "damage": "1d8",
+      "damageType": null,
+      "notes": "",
+      "description": "<p>Once on each of your turns when you hit a creature with an attack roll using a weapon, you can cause the target to take an extra 1d8 Necrotic or Radiant damage (your choice).</p>"
+    },
+    {
+      "name": "Trident",
+      "range": "20 ft.",
+      "longRange": "60 ft.",
+      "attackBonus": 5,
+      "damage": "1d8+2",
+      "damageType": "Piercing",
+      "notes": "Thrown, Versatile, Topple",
+      "description": "<p>Proficiency with a Trident allows you to add your proficiency bonus to the attack roll for any attack you make with it.</p>\r\n<div class=\"mastery-container\"><hr />\r\n<p>This weapon has the following mastery property. To use this property, you must have a feature that lets you use it.</p>\r\n<p><strong><em>Topple.</em></strong> If you hit a creature with this weapon, you can force the creature to make a Constitution saving throw (DC 8 plus the ability modifier used to make the attack roll and your Proficiency Bonus). On a failed save, the creature has the Prone condition.</p>\r\n</div>"
+    }
+  ],
+  "attacking": {
+    "attacksPerAction": 1,
+    "fightingStyle": null
+  },
+  "spellcasting": {
+    "abilityId": 5,
+    "ability": "WIS",
+    "mod": "+4",
+    "attack": "+7",
+    "save": 15
+  },
+  "limitedUses": [],
+  "campaign": {
+    "id": 2994388,
+    "name": "A Merry Band of Gaymers",
+    "dm": "wrighmat"
+  },
+  "decorations": {
+    "avatarUrl": "https://www.dndbeyond.com/avatars/54251/380/1581111423-159803326.jpeg?width=150&height=150&fit=crop&quality=95&auto=webp",
+    "frameAvatarUrl": null,
+    "backdropAvatarUrl": null,
+    "smallBackdropAvatarUrl": null,
+    "largeBackdropAvatarUrl": null,
+    "thumbnailBackdropAvatarUrl": null,
+    "defaultBackdrop": {
+      "backdropAvatarUrl": "https://www.dndbeyond.com/avatars/43993/191/638609649336541397.jpeg",
+      "smallBackdropAvatarUrl": "https://www.dndbeyond.com/avatars/43993/192/638609649338631395.jpeg",
+      "largeBackdropAvatarUrl": "https://www.dndbeyond.com/avatars/43993/193/638609649340861388.jpeg",
+      "thumbnailBackdropAvatarUrl": "https://www.dndbeyond.com/avatars/43993/194/638609649341871379.jpeg"
+    },
+    "avatarId": 54251380,
+    "portraitDecorationKey": null,
+    "frameAvatarDecorationKey": null,
+    "frameAvatarId": null,
+    "backdropAvatarDecorationKey": null,
+    "backdropAvatarId": null,
+    "smallBackdropAvatarDecorationKey": "",
+    "smallBackdropAvatarId": null,
+    "largeBackdropAvatarDecorationKey": "",
+    "largeBackdropAvatarId": null,
+    "thumbnailBackdropAvatarDecorationKey": "",
+    "thumbnailBackdropAvatarId": null,
+    "themeColor": null
+  },
+  "deathSaves": {
+    "successes": 0,
+    "failures": 0,
+    "stabilized": false
+  },
+  "notes": {
+    "allies": "-\n(Radiant one)\nA Merchant Head, Ermias.\nTasira Vaine-Advratiser\nBoss Voss\nSaza, Tiefling Wizard(su chef in training)\nKeltar, Dragonborn Bard (Head chef in training)\n(Son) Vernon Sphinx",
+    "backstory": "Trying to kill many monsters of the ocean (○Adult Kraken)\nTrying to find Son/Help him\nDestroy Temple of the Aboleth",
+    "enemies": "The Law enforcement",
+    "organizations": "Merchant guild\nSome Pirates\nP.A.C.T",
+    "personalPossessions": "Garlic String Of Hope (Made of Wife's Hair)",
+    "otherHoldings": null,
+    "otherNotes": "46yo"
+  },
+  "traits": {
+    "age": null,
+    "eyes": null,
+    "hair": null,
+    "skin": null,
+    "height": null,
+    "weight": null,
+    "faith": null,
+    "appearance": null,
+    "bonds": null,
+    "flaws": null,
+    "ideals": null,
+    "personalityTraits": null,
+    "size": "Medium"
+  },
+  "spells": [
+    {
+      "level": 0,
+      "spells": [
+        {
+          "name": "Thaumaturgy",
+          "level": 0,
+          "prepared": false,
+          "castingTime": "A",
+          "range": {
+            "origin": "Ranged",
+            "rangeValue": 30,
+            "aoeType": null,
+            "aoeValue": null
+          },
+          "school": "Transmutation",
+          "source": "class",
+          "concentration": false,
+          "ritual": false,
+          "components": [
+            "V"
+          ],
+          "toHit": null,
+          "dc": null,
+          "effect": "Control",
+          "duration": "1 Minute (Time)",
+          "refKind": "wonder",
+          "refId": "thaumaturgy"
+        },
+        {
+          "name": "Mending",
+          "level": 0,
+          "prepared": false,
+          "castingTime": "m",
+          "range": {
+            "origin": "Touch",
+            "rangeValue": 0,
+            "aoeType": null,
+            "aoeValue": null
+          },
+          "school": "Transmutation",
+          "source": "class",
+          "concentration": false,
+          "ritual": false,
+          "components": [
+            "V",
+            "S",
+            "M"
+          ],
+          "toHit": null,
+          "dc": null,
+          "effect": "Utility",
+          "duration": " (Instantaneous)",
+          "refKind": "wonder",
+          "refId": "mending"
+        },
+        {
+          "name": "Guidance",
+          "level": 0,
+          "prepared": false,
+          "castingTime": "A",
+          "range": {
+            "origin": "Touch",
+            "rangeValue": 0,
+            "aoeType": null,
+            "aoeValue": null
+          },
+          "school": "Divination",
+          "source": "class",
+          "concentration": true,
+          "ritual": false,
+          "components": [
+            "V",
+            "S"
+          ],
+          "toHit": null,
+          "dc": null,
+          "effect": "Buff",
+          "duration": "1 Minute (Concentration)",
+          "refKind": "wonder",
+          "refId": "guidance"
+        },
+        {
+          "name": "Light",
+          "level": 0,
+          "prepared": false,
+          "castingTime": "A",
+          "range": {
+            "origin": "Touch",
+            "rangeValue": 0,
+            "aoeType": null,
+            "aoeValue": null
+          },
+          "school": "Evocation",
+          "source": "class",
+          "concentration": false,
+          "ritual": false,
+          "components": [
+            "V",
+            "M"
+          ],
+          "toHit": null,
+          "dc": null,
+          "effect": "Creation",
+          "duration": "1 Hour (Time)",
+          "refKind": "wonder",
+          "refId": "light"
+        }
+      ]
+    },
+    {
+      "level": 1,
+      "spells": [
+        {
+          "name": "Healing Word",
+          "level": 1,
+          "prepared": true,
+          "castingTime": "BA",
+          "range": {
+            "origin": "Ranged",
+            "rangeValue": 60,
+            "aoeType": null,
+            "aoeValue": null
+          },
+          "school": "Abjuration",
+          "source": "class",
+          "concentration": false,
+          "ritual": false,
+          "components": [
+            "V"
+          ],
+          "toHit": null,
+          "dc": null,
+          "effect": "Healing",
+          "duration": " (Instantaneous)",
+          "refKind": "wonder",
+          "refId": "healing-word"
+        },
+        {
+          "name": "Guiding Bolt",
+          "level": 1,
+          "prepared": true,
+          "castingTime": "A",
+          "range": {
+            "origin": "Ranged",
+            "rangeValue": 120,
+            "aoeType": null,
+            "aoeValue": null
+          },
+          "school": "Evocation",
+          "source": "class",
+          "concentration": false,
+          "ritual": false,
+          "components": [
+            "V",
+            "S"
+          ],
+          "toHit": 7,
+          "dc": null,
+          "effect": "Damage",
+          "duration": "1 Round (Time)",
+          "refKind": "wonder",
+          "refId": "guiding-bolt"
+        },
+        {
+          "name": "Purify Food and Drink",
+          "level": 1,
+          "prepared": true,
+          "castingTime": "A",
+          "range": {
+            "origin": "Ranged",
+            "rangeValue": 10,
+            "aoeType": "Sphere",
+            "aoeValue": 5
+          },
+          "school": "Transmutation",
+          "source": "class",
+          "concentration": false,
+          "ritual": true,
+          "components": [
+            "V",
+            "S"
+          ],
+          "toHit": null,
+          "dc": null,
+          "effect": "Utility",
+          "duration": " (Instantaneous)",
+          "refKind": "wonder",
+          "refId": "purify-food-and-drink"
+        },
+        {
+          "name": "Inflict Wounds",
+          "level": 1,
+          "prepared": true,
+          "castingTime": "A",
+          "range": {
+            "origin": "Touch",
+            "rangeValue": 0,
+            "aoeType": null,
+            "aoeValue": null
+          },
+          "school": "Necromancy",
+          "source": "class",
+          "concentration": false,
+          "ritual": false,
+          "components": [
+            "V",
+            "S"
+          ],
+          "toHit": null,
+          "dc": 15,
+          "effect": "Damage",
+          "duration": " (Instantaneous)",
+          "refKind": "wonder",
+          "refId": "inflict-wounds"
+        }
+      ]
+    },
+    {
+      "level": 2,
+      "spells": [
+        {
+          "name": "Silence",
+          "level": 2,
+          "prepared": true,
+          "castingTime": "A",
+          "range": {
+            "origin": "Ranged",
+            "rangeValue": 120,
+            "aoeType": "Sphere",
+            "aoeValue": 20
+          },
+          "school": "Illusion",
+          "source": "class",
+          "concentration": true,
+          "ritual": true,
+          "components": [
+            "V",
+            "S"
+          ],
+          "toHit": null,
+          "dc": null,
+          "effect": "Control",
+          "duration": "10 Minute (Concentration)",
+          "refKind": "wonder",
+          "refId": "silence"
+        },
+        {
+          "name": "Hold Person",
+          "level": 2,
+          "prepared": true,
+          "castingTime": "A",
+          "range": {
+            "origin": "Ranged",
+            "rangeValue": 60,
+            "aoeType": null,
+            "aoeValue": null
+          },
+          "school": "Enchantment",
+          "source": "class",
+          "concentration": true,
+          "ritual": false,
+          "components": [
+            "V",
+            "S",
+            "M"
+          ],
+          "toHit": null,
+          "dc": 15,
+          "effect": "Control",
+          "duration": "1 Minute (Concentration)",
+          "refKind": "wonder",
+          "refId": "hold-person"
+        },
+        {
+          "name": "Calm Emotions",
+          "level": 2,
+          "prepared": true,
+          "castingTime": "A",
+          "range": {
+            "origin": "Ranged",
+            "rangeValue": 60,
+            "aoeType": "Sphere",
+            "aoeValue": 20
+          },
+          "school": "Enchantment",
+          "source": "class",
+          "concentration": true,
+          "ritual": false,
+          "components": [
+            "V",
+            "S"
+          ],
+          "toHit": null,
+          "dc": 15,
+          "effect": "Social",
+          "duration": "1 Minute (Concentration)",
+          "refKind": "wonder",
+          "refId": "calm-emotions"
+        }
+      ]
+    },
+    {
+      "level": 3,
+      "spells": [
+        {
+          "name": "Spirit Guardians",
+          "level": 3,
+          "prepared": true,
+          "castingTime": "A",
+          "range": {
+            "origin": "Self",
+            "rangeValue": 0,
+            "aoeType": "Emanation",
+            "aoeValue": 15
+          },
+          "school": "Conjuration",
+          "source": "class",
+          "concentration": true,
+          "ritual": false,
+          "components": [
+            "V",
+            "S",
+            "M"
+          ],
+          "toHit": null,
+          "dc": 15,
+          "effect": "Damage",
+          "duration": "10 Minute (Concentration)",
+          "refKind": "wonder",
+          "refId": "spirit-guardians"
+        },
+        {
+          "name": "Aura of Vitality",
+          "level": 3,
+          "prepared": true,
+          "castingTime": "A",
+          "range": {
+            "origin": "Self",
+            "rangeValue": null,
+            "aoeType": "Emanation",
+            "aoeValue": 30
+          },
+          "school": "Abjuration",
+          "source": "class",
+          "concentration": true,
+          "ritual": false,
+          "components": [
+            "V"
+          ],
+          "toHit": null,
+          "dc": null,
+          "effect": "Healing",
+          "duration": "1 Minute (Concentration)"
+        },
+        {
+          "name": "Laeral's Silver Lance",
+          "level": 3,
+          "prepared": true,
+          "castingTime": "A",
+          "range": {
+            "origin": "Self",
+            "rangeValue": null,
+            "aoeType": "Line",
+            "aoeValue": 120
+          },
+          "school": "Evocation",
+          "source": "class",
+          "concentration": false,
+          "ritual": false,
+          "components": [
+            "V",
+            "S",
+            "M"
+          ],
+          "toHit": null,
+          "dc": 15,
+          "effect": null,
+          "duration": " (Instantaneous)"
+        }
+      ]
+    },
+    {
+      "level": 4,
+      "spells": [
+        {
+          "name": "Locate Creature",
+          "level": 4,
+          "prepared": true,
+          "castingTime": "A",
+          "range": {
+            "origin": "Self",
+            "rangeValue": 0,
+            "aoeType": null,
+            "aoeValue": null
+          },
+          "school": "Divination",
+          "source": "class",
+          "concentration": true,
+          "ritual": false,
+          "components": [
+            "V",
+            "S",
+            "M"
+          ],
+          "toHit": null,
+          "dc": null,
+          "effect": "Detection",
+          "duration": "1 Hour (Concentration)",
+          "refKind": "wonder",
+          "refId": "locate-creature"
+        }
+      ]
+    }
+  ],
+  "featureIds": [
+    "feat.chef",
+    "feat.healer",
+    "feat.hermit-ability-score-improvements",
+    "feat.lucky",
+    "feat.tough",
+    "feat.cleric-disciple-of-life",
+    "feat.cleric-life-domain-spells",
+    "feat.cleric-preserve-life",
+    "feat.cleric-blessed-healer",
+    "feat.core-cleric-traits",
+    "feat.cleric-spellcasting",
+    "feat.divine-order",
+    "feat.cleric-channel-divinity",
+    "feat.cleric-cleric-subclass",
+    "feat.ability-score-improvement",
+    "feat.cleric-sear-undead",
+    "feat.cleric-blessed-strikes",
+    "feat.resourceful",
+    "feat.skillful",
+    "feat.versatile"
+  ],
+  "featureParams": {
+    "feat.cleric-disciple-of-life": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.cleric-life-domain-spells": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.cleric-preserve-life": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.cleric-blessed-healer": {
+      "grantedAtLevel": [
+        6
+      ]
+    },
+    "feat.core-cleric-traits": {
+      "grantedAtLevel": [
+        1
+      ]
+    },
+    "feat.cleric-spellcasting": {
+      "grantedAtLevel": [
+        1
+      ]
+    },
+    "feat.divine-order": {
+      "grantedAtLevel": [
+        1
+      ]
+    },
+    "feat.cleric-channel-divinity": {
+      "grantedAtLevel": [
+        2
+      ]
+    },
+    "feat.cleric-cleric-subclass": {
+      "grantedAtLevel": [
+        3
+      ]
+    },
+    "feat.ability-score-improvement": {
+      "grantedAtLevel": [
+        4,
+        8,
+        12,
+        16
+      ]
+    },
+    "feat.cleric-sear-undead": {
+      "grantedAtLevel": [
+        5
+      ]
+    },
+    "feat.cleric-blessed-strikes": {
+      "grantedAtLevel": [
+        7
+      ]
+    }
+  }
+}

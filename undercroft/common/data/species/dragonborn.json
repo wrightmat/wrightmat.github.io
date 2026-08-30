@@ -39,7 +39,8 @@
   "updated_at": "2026-07-19T16:28:54.865Z",
   "systemIds": [
     "sys.dnd5e",
-    "sys.dnd5e2014"
+    "sys.dnd5e2014",
+    "sys.dnd4e"
   ],
   "names": {
     "nameMode": "blend",

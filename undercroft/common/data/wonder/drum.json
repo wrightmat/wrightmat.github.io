@@ -1,0 +1,18 @@
+{
+  "index": "drum",
+  "name": "Drum",
+  "notes": "",
+  "price": "6 gp",
+  "weight": 3,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2024/equipment/drum",
+  "mapping": "5e-api-equipment",
+  "featureIds": [],
+  "properties": {
+    "form": "equipment",
+    "equipmentCategory": "musical-instruments"
+  }
+}

@@ -583,38 +583,81 @@
     },
     {
       "type": "array",
+      "key": "equipmentCategories",
+      "label": "Equipment Categories",
+      "values": [
+        {
+          "name": "Adventuring Gear"
+        },
+        {
+          "name": "Equipment Packs"
+        },
+        {
+          "name": "Arcane Foci"
+        },
+        {
+          "name": "Druidic Foci"
+        },
+        {
+          "name": "Holy Symbols"
+        },
+        {
+          "name": "Artisan's Tools"
+        },
+        {
+          "name": "Musical Instruments"
+        },
+        {
+          "name": "Gaming Sets"
+        },
+        {
+          "name": "Other Tools"
+        },
+        {
+          "name": "Mounts and Vehicles"
+        },
+        {
+          "name": "Ammunition"
+        },
+        {
+          "name": "Tools"
+        }
+      ]
+    },
+    {
+      "type": "array",
       "key": "rarity",
       "label": "Rarity",
       "values": [
         {
           "name": "Common",
-          "targetBudget": 4,
           "priceMin": 50,
-          "priceMax": 100
+          "priceMax": 100,
+          "targetBudget": 4
         },
         {
           "name": "Uncommon",
-          "targetBudget": 8,
           "priceMin": 101,
-          "priceMax": 500
+          "priceMax": 500,
+          "targetBudget": 8
         },
         {
           "name": "Rare",
-          "targetBudget": 12,
           "priceMin": 501,
-          "priceMax": 5000
+          "priceMax": 5000,
+          "targetBudget": 12
         },
         {
           "name": "Very Rare",
-          "targetBudget": 18,
           "priceMin": 5001,
-          "priceMax": 50000
+          "priceMax": 50000,
+          "targetBudget": 18
         },
         {
           "name": "Legendary",
-          "targetBudget": 26,
           "priceMin": 50001,
-          "priceMax": 200000
+          "priceMax": 200000,
+          "targetBudget": 26
         }
       ]
     },
@@ -674,46 +717,57 @@
       "values": [
         {
           "name": "Spell",
+          "shortName": "spell",
           "cost": 0
         },
         {
           "name": "Armor",
+          "shortName": "armor",
           "cost": 1
         },
         {
           "name": "Equipment",
+          "shortName": "equipment",
           "cost": 0
         },
         {
           "name": "Potion",
+          "shortName": "potion",
           "cost": -1
         },
         {
           "name": "Ring",
+          "shortName": "ring",
           "cost": 1
         },
         {
           "name": "Rod",
+          "shortName": "rod",
           "cost": 2
         },
         {
           "name": "Scroll",
+          "shortName": "scroll",
           "cost": -2
         },
         {
           "name": "Staff",
+          "shortName": "staff",
           "cost": 2
         },
         {
           "name": "Wand",
+          "shortName": "wand",
           "cost": 1
         },
         {
           "name": "Weapon",
+          "shortName": "weapon",
           "cost": 2
         },
         {
           "name": "Wondrous Item",
+          "shortName": "wondrous-item",
           "cost": 1
         }
       ]
@@ -776,93 +830,93 @@
       "values": [
         {
           "name": "Blinded",
-          "sourceId": 1,
           "icon": "ddb-blinded",
-          "color": "#ffffff"
+          "color": "#ffffff",
+          "sourceId": 1
         },
         {
           "name": "Charmed",
-          "sourceId": 2,
           "icon": "ddb-charmed",
-          "color": "#ffffff"
+          "color": "#ffffff",
+          "sourceId": 2
         },
         {
           "name": "Deafened",
-          "sourceId": 3,
           "icon": "ddb-deafened",
-          "color": "#ffffff"
+          "color": "#ffffff",
+          "sourceId": 3
         },
         {
           "name": "Exhaustion",
-          "sourceId": 4,
           "icon": "ddb-exhaustion",
-          "color": "#ffffff"
+          "color": "#ffffff",
+          "sourceId": 4
         },
         {
           "name": "Frightened",
-          "sourceId": 5,
           "icon": "ddb-frightened",
-          "color": "#ffffff"
+          "color": "#ffffff",
+          "sourceId": 5
         },
         {
           "name": "Grappled",
-          "sourceId": 6,
           "icon": "ddb-grappled",
-          "color": "#ffffff"
+          "color": "#ffffff",
+          "sourceId": 6
         },
         {
           "name": "Incapacitated",
-          "sourceId": 7,
           "icon": "ddb-incapacitated",
-          "color": "#ffffff"
+          "color": "#ffffff",
+          "sourceId": 7
         },
         {
           "name": "Invisible",
-          "sourceId": 8,
           "icon": "ddb-invisible",
-          "color": "#ffffff"
+          "color": "#ffffff",
+          "sourceId": 8
         },
         {
           "name": "Paralyzed",
-          "sourceId": 9,
           "icon": "ddb-paralyzed",
-          "color": "#ffffff"
+          "color": "#ffffff",
+          "sourceId": 9
         },
         {
           "name": "Petrified",
-          "sourceId": 10,
           "icon": "ddb-petrified",
-          "color": "#ffffff"
+          "color": "#ffffff",
+          "sourceId": 10
         },
         {
           "name": "Poisoned",
-          "sourceId": 11,
           "icon": "ddb-poisoned",
-          "color": "#ffffff"
+          "color": "#ffffff",
+          "sourceId": 11
         },
         {
           "name": "Prone",
-          "sourceId": 12,
           "icon": "ddb-prone",
-          "color": "#ffffff"
+          "color": "#ffffff",
+          "sourceId": 12
         },
         {
           "name": "Restrained",
-          "sourceId": 13,
           "icon": "ddb-restrained",
-          "color": "#ffffff"
+          "color": "#ffffff",
+          "sourceId": 13
         },
         {
           "name": "Stunned",
-          "sourceId": 14,
           "icon": "ddb-stunned",
-          "color": "#ffffff"
+          "color": "#ffffff",
+          "sourceId": 14
         },
         {
           "name": "Unconscious",
-          "sourceId": 15,
           "icon": "ddb-unconscious",
-          "color": "#ffffff"
+          "color": "#ffffff",
+          "sourceId": 15
         }
       ]
     },
@@ -910,10 +964,10 @@
           "attackBonus": 3,
           "saveDC": 13,
           "xp": 10,
+          "proficiencyBonus": 2,
           "shortName": "0",
           "sourceId": 1,
-          "targetBudget": 3,
-          "proficiencyBonus": 2
+          "targetBudget": 3
         },
         {
           "name": "CR 1/8",
@@ -923,10 +977,10 @@
           "attackBonus": 3,
           "saveDC": 13,
           "xp": 25,
+          "proficiencyBonus": 2,
           "shortName": "1/8",
           "sourceId": 2,
-          "targetBudget": 4,
-          "proficiencyBonus": 2
+          "targetBudget": 4
         },
         {
           "name": "CR 1/4",
@@ -936,10 +990,10 @@
           "attackBonus": 3,
           "saveDC": 13,
           "xp": 50,
+          "proficiencyBonus": 2,
           "shortName": "1/4",
           "sourceId": 3,
-          "targetBudget": 4,
-          "proficiencyBonus": 2
+          "targetBudget": 4
         },
         {
           "name": "CR 1/2",
@@ -949,10 +1003,10 @@
           "attackBonus": 3,
           "saveDC": 13,
           "xp": 100,
+          "proficiencyBonus": 2,
           "shortName": "1/2",
           "sourceId": 4,
-          "targetBudget": 5,
-          "proficiencyBonus": 2
+          "targetBudget": 5
         },
         {
           "name": "CR 1",
@@ -962,10 +1016,10 @@
           "attackBonus": 3,
           "saveDC": 13,
           "xp": 200,
+          "proficiencyBonus": 2,
           "shortName": "1",
           "sourceId": 5,
-          "targetBudget": 6,
-          "proficiencyBonus": 2
+          "targetBudget": 6
         },
         {
           "name": "CR 2",
@@ -975,10 +1029,10 @@
           "attackBonus": 3,
           "saveDC": 13,
           "xp": 450,
+          "proficiencyBonus": 2,
           "shortName": "2",
           "sourceId": 6,
-          "targetBudget": 8,
-          "proficiencyBonus": 2
+          "targetBudget": 8
         },
         {
           "name": "CR 3",
@@ -988,10 +1042,10 @@
           "attackBonus": 4,
           "saveDC": 14,
           "xp": 700,
+          "proficiencyBonus": 2,
           "shortName": "3",
           "sourceId": 7,
-          "targetBudget": 10,
-          "proficiencyBonus": 2
+          "targetBudget": 10
         },
         {
           "name": "CR 4",
@@ -1001,10 +1055,10 @@
           "attackBonus": 5,
           "saveDC": 14,
           "xp": 1100,
+          "proficiencyBonus": 2,
           "shortName": "4",
           "sourceId": 8,
-          "targetBudget": 12,
-          "proficiencyBonus": 2
+          "targetBudget": 12
         },
         {
           "name": "CR 5",
@@ -1014,10 +1068,10 @@
           "attackBonus": 6,
           "saveDC": 15,
           "xp": 1800,
+          "proficiencyBonus": 3,
           "shortName": "5",
           "sourceId": 9,
-          "targetBudget": 14,
-          "proficiencyBonus": 3
+          "targetBudget": 14
         },
         {
           "name": "CR 6",
@@ -1027,10 +1081,10 @@
           "attackBonus": 6,
           "saveDC": 15,
           "xp": 2300,
+          "proficiencyBonus": 3,
           "shortName": "6",
           "sourceId": 10,
-          "targetBudget": 16,
-          "proficiencyBonus": 3
+          "targetBudget": 16
         },
         {
           "name": "CR 7",
@@ -1040,10 +1094,10 @@
           "attackBonus": 6,
           "saveDC": 15,
           "xp": 2900,
+          "proficiencyBonus": 3,
           "shortName": "7",
           "sourceId": 11,
-          "targetBudget": 18,
-          "proficiencyBonus": 3
+          "targetBudget": 18
         },
         {
           "name": "CR 8",
@@ -1053,10 +1107,10 @@
           "attackBonus": 7,
           "saveDC": 16,
           "xp": 3900,
+          "proficiencyBonus": 3,
           "shortName": "8",
           "sourceId": 12,
-          "targetBudget": 20,
-          "proficiencyBonus": 3
+          "targetBudget": 20
         },
         {
           "name": "CR 9",
@@ -1066,10 +1120,10 @@
           "attackBonus": 7,
           "saveDC": 16,
           "xp": 5000,
+          "proficiencyBonus": 4,
           "shortName": "9",
           "sourceId": 13,
-          "targetBudget": 22,
-          "proficiencyBonus": 4
+          "targetBudget": 22
         },
         {
           "name": "CR 10",
@@ -1079,10 +1133,10 @@
           "attackBonus": 7,
           "saveDC": 16,
           "xp": 5900,
+          "proficiencyBonus": 4,
           "shortName": "10",
           "sourceId": 14,
-          "targetBudget": 24,
-          "proficiencyBonus": 4
+          "targetBudget": 24
         },
         {
           "name": "CR 11",
@@ -1092,10 +1146,10 @@
           "attackBonus": 8,
           "saveDC": 17,
           "xp": 7200,
+          "proficiencyBonus": 4,
           "shortName": "11",
           "sourceId": 15,
-          "targetBudget": 26,
-          "proficiencyBonus": 4
+          "targetBudget": 26
         },
         {
           "name": "CR 12",
@@ -1105,10 +1159,10 @@
           "attackBonus": 8,
           "saveDC": 17,
           "xp": 8400,
+          "proficiencyBonus": 4,
           "shortName": "12",
           "sourceId": 16,
-          "targetBudget": 28,
-          "proficiencyBonus": 4
+          "targetBudget": 28
         },
         {
           "name": "CR 13",
@@ -1118,10 +1172,10 @@
           "attackBonus": 8,
           "saveDC": 18,
           "xp": 10000,
+          "proficiencyBonus": 5,
           "shortName": "13",
           "sourceId": 17,
-          "targetBudget": 30,
-          "proficiencyBonus": 5
+          "targetBudget": 30
         },
         {
           "name": "CR 14",
@@ -1131,10 +1185,10 @@
           "attackBonus": 8,
           "saveDC": 18,
           "xp": 11500,
+          "proficiencyBonus": 5,
           "shortName": "14",
           "sourceId": 18,
-          "targetBudget": 32,
-          "proficiencyBonus": 5
+          "targetBudget": 32
         },
         {
           "name": "CR 15",
@@ -1144,10 +1198,10 @@
           "attackBonus": 8,
           "saveDC": 18,
           "xp": 13000,
+          "proficiencyBonus": 5,
           "shortName": "15",
           "sourceId": 19,
-          "targetBudget": 34,
-          "proficiencyBonus": 5
+          "targetBudget": 34
         },
         {
           "name": "CR 16",
@@ -1157,10 +1211,10 @@
           "attackBonus": 9,
           "saveDC": 18,
           "xp": 15000,
+          "proficiencyBonus": 5,
           "shortName": "16",
           "sourceId": 20,
-          "targetBudget": 36,
-          "proficiencyBonus": 5
+          "targetBudget": 36
         },
         {
           "name": "CR 17",
@@ -1170,10 +1224,10 @@
           "attackBonus": 10,
           "saveDC": 19,
           "xp": 18000,
+          "proficiencyBonus": 6,
           "shortName": "17",
           "sourceId": 21,
-          "targetBudget": 38,
-          "proficiencyBonus": 6
+          "targetBudget": 38
         },
         {
           "name": "CR 18",
@@ -1183,10 +1237,10 @@
           "attackBonus": 10,
           "saveDC": 19,
           "xp": 20000,
+          "proficiencyBonus": 6,
           "shortName": "18",
           "sourceId": 22,
-          "targetBudget": 40,
-          "proficiencyBonus": 6
+          "targetBudget": 40
         },
         {
           "name": "CR 19",
@@ -1196,10 +1250,10 @@
           "attackBonus": 10,
           "saveDC": 19,
           "xp": 22000,
+          "proficiencyBonus": 6,
           "shortName": "19",
           "sourceId": 23,
-          "targetBudget": 42,
-          "proficiencyBonus": 6
+          "targetBudget": 42
         },
         {
           "name": "CR 20",
@@ -1209,10 +1263,10 @@
           "attackBonus": 10,
           "saveDC": 19,
           "xp": 25000,
+          "proficiencyBonus": 6,
           "shortName": "20",
           "sourceId": 24,
-          "targetBudget": 44,
-          "proficiencyBonus": 6
+          "targetBudget": 44
         },
         {
           "name": "CR 21",
@@ -1222,10 +1276,10 @@
           "attackBonus": 11,
           "saveDC": 20,
           "xp": 33000,
+          "proficiencyBonus": 7,
           "shortName": "21",
           "sourceId": 25,
-          "targetBudget": 46,
-          "proficiencyBonus": 7
+          "targetBudget": 46
         },
         {
           "name": "CR 22",
@@ -1235,10 +1289,10 @@
           "attackBonus": 11,
           "saveDC": 20,
           "xp": 41000,
+          "proficiencyBonus": 7,
           "shortName": "22",
           "sourceId": 26,
-          "targetBudget": 48,
-          "proficiencyBonus": 7
+          "targetBudget": 48
         },
         {
           "name": "CR 23",
@@ -1248,10 +1302,10 @@
           "attackBonus": 11,
           "saveDC": 20,
           "xp": 50000,
+          "proficiencyBonus": 7,
           "shortName": "23",
           "sourceId": 27,
-          "targetBudget": 50,
-          "proficiencyBonus": 7
+          "targetBudget": 50
         },
         {
           "name": "CR 24",
@@ -1261,10 +1315,10 @@
           "attackBonus": 12,
           "saveDC": 21,
           "xp": 62000,
+          "proficiencyBonus": 7,
           "shortName": "24",
           "sourceId": 28,
-          "targetBudget": 52,
-          "proficiencyBonus": 7
+          "targetBudget": 52
         },
         {
           "name": "CR 25",
@@ -1274,10 +1328,10 @@
           "attackBonus": 12,
           "saveDC": 21,
           "xp": 75000,
+          "proficiencyBonus": 8,
           "shortName": "25",
           "sourceId": 29,
-          "targetBudget": 54,
-          "proficiencyBonus": 8
+          "targetBudget": 54
         },
         {
           "name": "CR 26",
@@ -1287,10 +1341,10 @@
           "attackBonus": 12,
           "saveDC": 21,
           "xp": 90000,
+          "proficiencyBonus": 8,
           "shortName": "26",
           "sourceId": 30,
-          "targetBudget": 56,
-          "proficiencyBonus": 8
+          "targetBudget": 56
         },
         {
           "name": "CR 27",
@@ -1300,10 +1354,10 @@
           "attackBonus": 13,
           "saveDC": 22,
           "xp": 105000,
+          "proficiencyBonus": 8,
           "shortName": "27",
           "sourceId": 31,
-          "targetBudget": 58,
-          "proficiencyBonus": 8
+          "targetBudget": 58
         },
         {
           "name": "CR 28",
@@ -1313,10 +1367,10 @@
           "attackBonus": 13,
           "saveDC": 22,
           "xp": 120000,
+          "proficiencyBonus": 8,
           "shortName": "28",
           "sourceId": 32,
-          "targetBudget": 60,
-          "proficiencyBonus": 8
+          "targetBudget": 60
         },
         {
           "name": "CR 29",
@@ -1326,10 +1380,10 @@
           "attackBonus": 13,
           "saveDC": 22,
           "xp": 135000,
+          "proficiencyBonus": 9,
           "shortName": "29",
           "sourceId": 33,
-          "targetBudget": 62,
-          "proficiencyBonus": 9
+          "targetBudget": 62
         },
         {
           "name": "CR 30",
@@ -1339,10 +1393,10 @@
           "attackBonus": 14,
           "saveDC": 23,
           "xp": 155000,
+          "proficiencyBonus": 9,
           "shortName": "30",
           "sourceId": 34,
-          "targetBudget": 64,
-          "proficiencyBonus": 9
+          "targetBudget": 64
         }
       ]
     },
@@ -2046,39 +2100,39 @@
       "values": [
         {
           "name": "Tiny",
+          "sizeValue": 0.5,
           "shortName": "tiny",
-          "sourceId": 2,
-          "sizeValue": 0.5
+          "sourceId": 2
         },
         {
           "name": "Small",
+          "sizeValue": 1,
           "shortName": "sm",
-          "sourceId": 3,
-          "sizeValue": 1
+          "sourceId": 3
         },
         {
           "name": "Medium",
+          "sizeValue": 1,
           "shortName": "med",
-          "sourceId": 4,
-          "sizeValue": 1
+          "sourceId": 4
         },
         {
           "name": "Large",
+          "sizeValue": 2,
           "shortName": "lg",
-          "sourceId": 5,
-          "sizeValue": 2
+          "sourceId": 5
         },
         {
           "name": "Huge",
+          "sizeValue": 3,
           "shortName": "huge",
-          "sourceId": 6,
-          "sizeValue": 3
+          "sourceId": 6
         },
         {
           "name": "Gargantuan",
+          "sizeValue": 4,
           "shortName": "grg",
-          "sourceId": 7,
-          "sizeValue": 4
+          "sourceId": 7
         }
       ]
     },
@@ -2102,6 +2156,38 @@
         {
           "name": "Truesight",
           "sourceId": 4
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "speed",
+      "label": "Speed",
+      "children": [
+        {
+          "type": "number",
+          "key": "speed.walk",
+          "label": "Walk"
+        },
+        {
+          "type": "number",
+          "key": "speed.burrow",
+          "label": "Burrow"
+        },
+        {
+          "type": "number",
+          "key": "speed.climb",
+          "label": "Climb"
+        },
+        {
+          "type": "number",
+          "key": "speed.fly",
+          "label": "Fly"
+        },
+        {
+          "type": "number",
+          "key": "speed.swim",
+          "label": "Swim"
         }
       ]
     },

@@ -1,0 +1,33 @@
+{
+  "name": "Faun",
+  "tagline": "Horned and light on their feet",
+  "description": [
+    "Goat-like humanoids with horns, cloven hooves, and long limbs, Faun names lean pastoral and old-fashioned."
+  ],
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "none",
+    "firstNames": [
+      "Bramwell",
+      "Ferrick",
+      "Hollis",
+      "Marigold",
+      "Osric",
+      "Thistle",
+      "Wrenlow",
+      "Alder",
+      "Coppice",
+      "Fennick",
+      "Larkspur",
+      "Rowley",
+      "Sorrel",
+      "Yarrow",
+      "Bracken",
+      "Heather"
+    ],
+    "lastNames": []
+  }
+}

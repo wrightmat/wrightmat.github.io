@@ -1,0 +1,1242 @@
+{
+  "title": "D&D 4E",
+  "version": "0.1",
+  "fields": [
+    {
+      "type": "string",
+      "key": "name",
+      "label": "Character Name",
+      "required": true
+    },
+    {
+      "type": "string",
+      "key": "player",
+      "label": "Player Name"
+    },
+    {
+      "type": "array",
+      "key": "races",
+      "label": "Race",
+      "values": [
+        {
+          "name": "Human",
+          "description": "Adaptable, ambitious, and everywhere — humans found the greatest of the world's empires."
+        },
+        {
+          "name": "Dwarf",
+          "description": "Stout, stubborn folk of stone and stronghold, famed for resilience and grudge-keeping."
+        },
+        {
+          "name": "Eladrin",
+          "description": "Elves of the Feywild, graceful and quick to teleport short distances in the blink of an eye."
+        },
+        {
+          "name": "Elf",
+          "description": "Swift, keen-sighted wild folk of the deep forest, unmatched with a bow."
+        },
+        {
+          "name": "Half-Elf",
+          "description": "Born between two worlds, diplomatic and adaptable, at home in either."
+        },
+        {
+          "name": "Halfling",
+          "description": "Small, lucky, riverfaring folk, bold well beyond their size."
+        },
+        {
+          "name": "Dragonborn",
+          "description": "Proud, honorable dragon-descended humanoids, breathing elemental fury."
+        },
+        {
+          "name": "Tiefling",
+          "description": "Infernally-touched humanoids, self-reliant survivors of a long history of mistrust."
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "classes",
+      "label": "Class",
+      "values": [
+        {
+          "name": "Cleric",
+          "role": "Leader",
+          "powerSource": "Divine",
+          "description": "A holy warrior-priest who channels divine power to heal allies and smite foes."
+        },
+        {
+          "name": "Fighter",
+          "role": "Defender",
+          "powerSource": "Martial",
+          "description": "A weapon master who locks down the battlefield and punishes anyone who looks away."
+        },
+        {
+          "name": "Paladin",
+          "role": "Defender",
+          "powerSource": "Divine",
+          "description": "A holy champion who marks foes and shields allies with divine power."
+        },
+        {
+          "name": "Ranger",
+          "role": "Striker",
+          "powerSource": "Martial",
+          "description": "A precise hunter fighting with two weapons or a bow to devastating effect."
+        },
+        {
+          "name": "Rogue",
+          "role": "Striker",
+          "powerSource": "Martial",
+          "description": "A cunning skirmisher who strikes hardest against an unaware or flanked foe."
+        },
+        {
+          "name": "Warlock",
+          "role": "Striker",
+          "powerSource": "Arcane",
+          "description": "A spellcaster bound in a pact, cursing and afflicting foes from a distance."
+        },
+        {
+          "name": "Warlord",
+          "role": "Leader",
+          "powerSource": "Martial",
+          "description": "A tactical commander who directs allies' actions as surely as their own."
+        },
+        {
+          "name": "Wizard",
+          "role": "Controller",
+          "powerSource": "Arcane",
+          "description": "A scholarly spellcaster who controls the battlefield with area magic."
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "roles",
+      "label": "Role",
+      "values": [
+        {
+          "name": "Controller",
+          "description": "Dominates the battlefield with area effects and debuffs."
+        },
+        {
+          "name": "Defender",
+          "description": "Locks down enemies and punishes them for attacking anyone else."
+        },
+        {
+          "name": "Leader",
+          "description": "Heals and buffs allies, directing the party's actions."
+        },
+        {
+          "name": "Striker",
+          "description": "Deals the most single-target damage in the party."
+        }
+      ]
+    },
+    {
+      "type": "number",
+      "key": "level",
+      "label": "Level",
+      "minimum": 1,
+      "maximum": 30
+    },
+    {
+      "type": "array",
+      "key": "tiers",
+      "label": "Tier",
+      "values": [
+        {
+          "name": "Heroic",
+          "minLevel": 1,
+          "maxLevel": 10
+        },
+        {
+          "name": "Paragon",
+          "minLevel": 11,
+          "maxLevel": 20
+        },
+        {
+          "name": "Epic",
+          "minLevel": 21,
+          "maxLevel": 30
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "alignments",
+      "label": "Alignment",
+      "values": [
+        {
+          "name": "Lawful Good"
+        },
+        {
+          "name": "Good"
+        },
+        {
+          "name": "Unaligned"
+        },
+        {
+          "name": "Evil"
+        },
+        {
+          "name": "Chaotic Evil"
+        }
+      ]
+    },
+    {
+      "type": "string",
+      "key": "deity",
+      "label": "Deity"
+    },
+    {
+      "type": "object",
+      "key": "abilities",
+      "label": "Ability Scores",
+      "children": [
+        {
+          "type": "number",
+          "key": "abilities.strength",
+          "label": "Strength",
+          "shortName": "STR",
+          "color": "#e74c3c",
+          "minimum": 1,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "abilities.dexterity",
+          "label": "Dexterity",
+          "shortName": "DEX",
+          "color": "#f1c40f",
+          "minimum": 1,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "abilities.constitution",
+          "label": "Constitution",
+          "shortName": "CON",
+          "color": "#e67e22",
+          "minimum": 1,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "abilities.intelligence",
+          "label": "Intelligence",
+          "shortName": "INT",
+          "color": "#3498db",
+          "minimum": 1,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "abilities.wisdom",
+          "label": "Wisdom",
+          "shortName": "WIS",
+          "color": "#2ecc71",
+          "minimum": 1,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "abilities.charisma",
+          "label": "Charisma",
+          "shortName": "CHA",
+          "color": "#9b59b6",
+          "minimum": 1,
+          "maximum": 30
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "defenses",
+      "label": "Defenses",
+      "children": [
+        {
+          "type": "number",
+          "key": "defenses.ac",
+          "label": "Armor Class",
+          "minimum": 0
+        },
+        {
+          "type": "number",
+          "key": "defenses.fortitude",
+          "label": "Fortitude",
+          "minimum": 0
+        },
+        {
+          "type": "number",
+          "key": "defenses.reflex",
+          "label": "Reflex",
+          "minimum": 0
+        },
+        {
+          "type": "number",
+          "key": "defenses.will",
+          "label": "Will",
+          "minimum": 0
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "hitPoints",
+      "label": "Hit Points",
+      "children": [
+        {
+          "type": "number",
+          "key": "hitPoints.current",
+          "label": "Current",
+          "minimum": 0
+        },
+        {
+          "type": "number",
+          "key": "hitPoints.max",
+          "label": "Max",
+          "minimum": 1
+        },
+        {
+          "type": "number",
+          "key": "hitPoints.temp",
+          "label": "Temporary",
+          "minimum": 0
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "healingSurges",
+      "label": "Healing Surges",
+      "children": [
+        {
+          "type": "number",
+          "key": "healingSurges.value",
+          "label": "Surge Value",
+          "minimum": 1
+        },
+        {
+          "type": "number",
+          "key": "healingSurges.current",
+          "label": "Surges Remaining",
+          "minimum": 0
+        },
+        {
+          "type": "number",
+          "key": "healingSurges.max",
+          "label": "Surges Per Day",
+          "minimum": 1
+        }
+      ]
+    },
+    {
+      "type": "number",
+      "key": "actionPoints",
+      "label": "Action Points",
+      "minimum": 0,
+      "default": 1
+    },
+    {
+      "type": "number",
+      "key": "initiative",
+      "label": "Initiative"
+    },
+    {
+      "type": "number",
+      "key": "speed",
+      "label": "Speed",
+      "minimum": 0
+    },
+    {
+      "type": "object",
+      "key": "skills",
+      "label": "Skills",
+      "children": [
+        {
+          "type": "number",
+          "key": "skills.acrobatics",
+          "label": "Acrobatics",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.arcana",
+          "label": "Arcana",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.athletics",
+          "label": "Athletics",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.bluff",
+          "label": "Bluff",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.diplomacy",
+          "label": "Diplomacy",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.dungeoneering",
+          "label": "Dungeoneering",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.endurance",
+          "label": "Endurance",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.heal",
+          "label": "Heal",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.history",
+          "label": "History",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.insight",
+          "label": "Insight",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.intimidate",
+          "label": "Intimidate",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.nature",
+          "label": "Nature",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.perception",
+          "label": "Perception",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.religion",
+          "label": "Religion",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.stealth",
+          "label": "Stealth",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.streetwise",
+          "label": "Streetwise",
+          "minimum": 0,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "skills.thievery",
+          "label": "Thievery",
+          "minimum": 0,
+          "maximum": 30
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "powerUsage",
+      "label": "Power Usage",
+      "values": [
+        {
+          "name": "At-Will",
+          "description": "Usable every turn, no limit."
+        },
+        {
+          "name": "Encounter",
+          "description": "Usable once per encounter, recharges on a short rest."
+        },
+        {
+          "name": "Daily",
+          "description": "Usable once per day, recharges on an extended rest."
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "powers",
+      "label": "Powers",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Power"
+        },
+        {
+          "type": "string",
+          "key": "usage",
+          "label": "Usage"
+        },
+        {
+          "type": "string",
+          "key": "description",
+          "label": "Description"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "rituals",
+      "label": "Rituals",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Ritual"
+        },
+        {
+          "type": "number",
+          "key": "level",
+          "label": "Level"
+        },
+        {
+          "type": "string",
+          "key": "description",
+          "label": "Description"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "feats",
+      "label": "Feats",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Feat"
+        },
+        {
+          "type": "string",
+          "key": "notes",
+          "label": "Notes"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "inventory",
+      "label": "Inventory",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Item Name",
+          "required": true
+        },
+        {
+          "type": "number",
+          "key": "quantity",
+          "label": "Quantity",
+          "minimum": 0
+        },
+        {
+          "type": "number",
+          "key": "weight",
+          "label": "Weight (lb)",
+          "minimum": 0
+        },
+        {
+          "type": "string",
+          "key": "notes",
+          "label": "Notes"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "currency",
+      "label": "Currency",
+      "values": [
+        {
+          "name": "Platinum",
+          "shortName": "pp",
+          "cost": 1000
+        },
+        {
+          "name": "Gold",
+          "shortName": "gp",
+          "cost": 100
+        },
+        {
+          "name": "Silver",
+          "shortName": "sp",
+          "cost": 10
+        },
+        {
+          "name": "Copper",
+          "shortName": "cp",
+          "cost": 1
+        },
+        {
+          "name": "Astral Diamond",
+          "shortName": "ad",
+          "cost": 100000
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "weaponCategories",
+      "label": "Weapon Categories",
+      "values": [
+        {
+          "name": "Simple Melee"
+        },
+        {
+          "name": "Simple Ranged"
+        },
+        {
+          "name": "Military Melee"
+        },
+        {
+          "name": "Military Ranged"
+        },
+        {
+          "name": "Superior Melee"
+        },
+        {
+          "name": "Superior Ranged"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "armorCategories",
+      "label": "Armor Categories",
+      "values": [
+        {
+          "name": "Cloth"
+        },
+        {
+          "name": "Leather"
+        },
+        {
+          "name": "Hide"
+        },
+        {
+          "name": "Chainmail"
+        },
+        {
+          "name": "Scale"
+        },
+        {
+          "name": "Plate"
+        },
+        {
+          "name": "Light Shield"
+        },
+        {
+          "name": "Heavy Shield"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "equipmentCategories",
+      "label": "Equipment Categories",
+      "values": [
+        {
+          "name": "Adventuring Gear"
+        },
+        {
+          "name": "Alchemical Items"
+        },
+        {
+          "name": "Ritual Components"
+        },
+        {
+          "name": "Wands, Rods & Staffs"
+        },
+        {
+          "name": "Wondrous Items"
+        },
+        {
+          "name": "Potions"
+        },
+        {
+          "name": "Mounts and Vehicles"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "rarity",
+      "label": "Rarity",
+      "values": [
+        {
+          "name": "Common",
+          "targetBudget": 4,
+          "description": "Available for purchase in most settlements."
+        },
+        {
+          "name": "Uncommon",
+          "targetBudget": 9,
+          "description": "Requires a quest, favor, or rare find to acquire."
+        },
+        {
+          "name": "Rare",
+          "targetBudget": 16,
+          "description": "Unique or nearly unique, always campaign-significant."
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "activation",
+      "label": "Action Type",
+      "values": [
+        {
+          "name": "Standard Action",
+          "shortName": "Std"
+        },
+        {
+          "name": "Move Action",
+          "shortName": "Move"
+        },
+        {
+          "name": "Minor Action",
+          "shortName": "Minor"
+        },
+        {
+          "name": "Free Action",
+          "shortName": "Free"
+        },
+        {
+          "name": "Immediate Reaction",
+          "shortName": "Reaction"
+        },
+        {
+          "name": "Immediate Interrupt",
+          "shortName": "Interrupt"
+        },
+        {
+          "name": "Opportunity Action",
+          "shortName": "Opp"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "form",
+      "label": "Item Form",
+      "values": [
+        {
+          "name": "Weapon"
+        },
+        {
+          "name": "Armor"
+        },
+        {
+          "name": "Shield"
+        },
+        {
+          "name": "Wondrous Item"
+        },
+        {
+          "name": "Wand"
+        },
+        {
+          "name": "Rod"
+        },
+        {
+          "name": "Staff"
+        },
+        {
+          "name": "Potion"
+        },
+        {
+          "name": "Ritual"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "environment",
+      "label": "Environment",
+      "values": [
+        {
+          "name": "Astral Sea"
+        },
+        {
+          "name": "Elemental Chaos"
+        },
+        {
+          "name": "Feywild"
+        },
+        {
+          "name": "Shadowfell"
+        },
+        {
+          "name": "Underdark"
+        },
+        {
+          "name": "Wilderness"
+        },
+        {
+          "name": "Urban"
+        },
+        {
+          "name": "Ruins"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "conditions",
+      "label": "Conditions",
+      "values": [
+        {
+          "name": "Blinded",
+          "description": "Can't see; grants combat advantage, automatically misses sight-based attacks."
+        },
+        {
+          "name": "Dazed",
+          "description": "Can take only one action per turn, grants combat advantage."
+        },
+        {
+          "name": "Deafened",
+          "description": "Can't hear; automatic failure on hearing-based checks."
+        },
+        {
+          "name": "Dominated",
+          "description": "An enemy chooses your actions for you."
+        },
+        {
+          "name": "Dying",
+          "description": "At 0 or fewer hit points; must make death saving throws."
+        },
+        {
+          "name": "Grabbed",
+          "description": "Immobilized while held by the grabber."
+        },
+        {
+          "name": "Helpless",
+          "description": "Grants combat advantage, and attacks against you score automatic critical hits."
+        },
+        {
+          "name": "Immobilized",
+          "description": "Can't move from current space."
+        },
+        {
+          "name": "Marked",
+          "description": "Takes a penalty attacking anyone but the marking creature."
+        },
+        {
+          "name": "Petrified",
+          "description": "Turned to stone; treated as an unconscious, unaware creature."
+        },
+        {
+          "name": "Prone",
+          "description": "Melee attacks against you gain combat advantage; ranged attacks against you have a penalty."
+        },
+        {
+          "name": "Restrained",
+          "description": "Can't move, grants combat advantage, and takes a penalty to attack rolls."
+        },
+        {
+          "name": "Slowed",
+          "description": "Speed reduced to 2 squares."
+        },
+        {
+          "name": "Stunned",
+          "description": "Can't take actions, grants combat advantage."
+        },
+        {
+          "name": "Surprised",
+          "description": "Can't act during the surprise round and grants combat advantage."
+        },
+        {
+          "name": "Unconscious",
+          "description": "Helpless, unaware of surroundings, and dying if below 0 hit points."
+        },
+        {
+          "name": "Weakened",
+          "description": "Deals half damage with attacks."
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "damageTypes",
+      "label": "Damage Types",
+      "values": [
+        {
+          "name": "Acid"
+        },
+        {
+          "name": "Cold"
+        },
+        {
+          "name": "Fire"
+        },
+        {
+          "name": "Force"
+        },
+        {
+          "name": "Lightning"
+        },
+        {
+          "name": "Necrotic"
+        },
+        {
+          "name": "Poison"
+        },
+        {
+          "name": "Psychic"
+        },
+        {
+          "name": "Radiant"
+        },
+        {
+          "name": "Thunder"
+        },
+        {
+          "name": "Physical"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "combatScaling",
+      "label": "Monster Level",
+      "values": [
+        {
+          "name": "Level 1",
+          "shortName": "1",
+          "xpValue": 120
+        },
+        {
+          "name": "Level 2",
+          "shortName": "2",
+          "xpValue": 140
+        },
+        {
+          "name": "Level 3",
+          "shortName": "3",
+          "xpValue": 160
+        },
+        {
+          "name": "Level 4",
+          "shortName": "4",
+          "xpValue": 180
+        },
+        {
+          "name": "Level 5",
+          "shortName": "5",
+          "xpValue": 200
+        },
+        {
+          "name": "Level 6",
+          "shortName": "6",
+          "xpValue": 220
+        },
+        {
+          "name": "Level 7",
+          "shortName": "7",
+          "xpValue": 240
+        },
+        {
+          "name": "Level 8",
+          "shortName": "8",
+          "xpValue": 260
+        },
+        {
+          "name": "Level 9",
+          "shortName": "9",
+          "xpValue": 280
+        },
+        {
+          "name": "Level 10",
+          "shortName": "10",
+          "xpValue": 300
+        },
+        {
+          "name": "Level 11",
+          "shortName": "11",
+          "xpValue": 320
+        },
+        {
+          "name": "Level 12",
+          "shortName": "12",
+          "xpValue": 340
+        },
+        {
+          "name": "Level 13",
+          "shortName": "13",
+          "xpValue": 360
+        },
+        {
+          "name": "Level 14",
+          "shortName": "14",
+          "xpValue": 380
+        },
+        {
+          "name": "Level 15",
+          "shortName": "15",
+          "xpValue": 400
+        },
+        {
+          "name": "Level 16",
+          "shortName": "16",
+          "xpValue": 420
+        },
+        {
+          "name": "Level 17",
+          "shortName": "17",
+          "xpValue": 440
+        },
+        {
+          "name": "Level 18",
+          "shortName": "18",
+          "xpValue": 460
+        },
+        {
+          "name": "Level 19",
+          "shortName": "19",
+          "xpValue": 480
+        },
+        {
+          "name": "Level 20",
+          "shortName": "20",
+          "xpValue": 500
+        },
+        {
+          "name": "Level 21",
+          "shortName": "21",
+          "xpValue": 520
+        },
+        {
+          "name": "Level 22",
+          "shortName": "22",
+          "xpValue": 540
+        },
+        {
+          "name": "Level 23",
+          "shortName": "23",
+          "xpValue": 560
+        },
+        {
+          "name": "Level 24",
+          "shortName": "24",
+          "xpValue": 580
+        },
+        {
+          "name": "Level 25",
+          "shortName": "25",
+          "xpValue": 600
+        },
+        {
+          "name": "Level 26",
+          "shortName": "26",
+          "xpValue": 620
+        },
+        {
+          "name": "Level 27",
+          "shortName": "27",
+          "xpValue": 640
+        },
+        {
+          "name": "Level 28",
+          "shortName": "28",
+          "xpValue": 660
+        },
+        {
+          "name": "Level 29",
+          "shortName": "29",
+          "xpValue": 680
+        },
+        {
+          "name": "Level 30",
+          "shortName": "30",
+          "xpValue": 700
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "creatureTypes",
+      "label": "Creature Origin",
+      "values": [
+        {
+          "id": "natural",
+          "name": "Natural",
+          "description": "An ordinary creature of the world, mundane in origin."
+        },
+        {
+          "id": "magical",
+          "name": "Magical",
+          "description": "A creature shaped or animated by magic rather than nature."
+        },
+        {
+          "id": "fey",
+          "name": "Fey",
+          "description": "A creature of the Feywild, bound by old, strange rules."
+        },
+        {
+          "id": "shadow",
+          "name": "Shadow",
+          "description": "A creature of the Shadowfell, touched by death and decay."
+        },
+        {
+          "id": "elemental",
+          "name": "Elemental",
+          "description": "A creature native to the Elemental Chaos."
+        },
+        {
+          "id": "immortal",
+          "name": "Immortal",
+          "description": "A creature of the Astral Sea, an agent of the gods or primordials."
+        },
+        {
+          "id": "aberrant",
+          "name": "Aberrant",
+          "description": "A creature from the Far Realm, alien beyond understanding."
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "combatBindings",
+      "label": "Combat Bindings",
+      "values": [
+        {
+          "name": "Hit Points",
+          "maxPath": "@hitPoints.max",
+          "binding": "@hitPoints.current",
+          "role": "resource"
+        },
+        {
+          "name": "Healing Surges",
+          "maxPath": "@healingSurges.max",
+          "binding": "@healingSurges.current",
+          "role": "resource"
+        },
+        {
+          "name": "Armor Class",
+          "binding": "@defenses.ac",
+          "role": "value"
+        },
+        {
+          "name": "Conditions",
+          "binding": "@conditions",
+          "sourceField": "conditions",
+          "role": "tags"
+        },
+        {
+          "name": "Initiative",
+          "die": "d20",
+          "binding": "@initiative",
+          "role": "modifier"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "dice",
+      "label": "Dice",
+      "values": [
+        {
+          "name": "d4",
+          "sides": 4
+        },
+        {
+          "name": "d6",
+          "sides": 6
+        },
+        {
+          "name": "d8",
+          "sides": 8
+        },
+        {
+          "name": "d10",
+          "sides": 10
+        },
+        {
+          "name": "d12",
+          "sides": 12
+        },
+        {
+          "name": "d20",
+          "sides": 20
+        },
+        {
+          "name": "d100",
+          "sides": 100
+        }
+      ]
+    },
+    {
+      "type": "number",
+      "key": "currentAttackBonus",
+      "label": "Current Power's Attack Bonus",
+      "minimum": 0
+    },
+    {
+      "type": "array",
+      "key": "rolls",
+      "label": "Rolls",
+      "values": [
+        {
+          "name": "Attack Roll (d20 vs Defense)",
+          "expression": "d20+@currentAttackBonus",
+          "resultMode": "band",
+          "description": "Roll d20, add the current Power's Attack Bonus (filled in above — which Defense it targets and what bonus applies varies per Power, so this is a scratch field rather than a fixed per-field target, same reasoning as Star Trek Adventures' own Target Number). Fired from a Defense field's own roll button, which passes that Defense's current value as the target. A natural 20 is always a critical hit and a natural 1 always misses in the real rules — not modeled below, since the attack bonus is already added into the total before the band engine ever sees it, so it can't isolate the natural d20 result on its own; read it off the roll's own breakdown instead.",
+          "bands": [
+            {
+              "targetMinFraction": 1.0,
+              "label": "Hit"
+            },
+            {
+              "targetMinFraction": 0,
+              "label": "Miss"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,759 @@
+{
+  "title": "Mothership",
+  "version": "0.1",
+  "fields": [
+    {
+      "type": "string",
+      "key": "name",
+      "label": "Character Name",
+      "required": true
+    },
+    {
+      "type": "string",
+      "key": "player",
+      "label": "Player Name"
+    },
+    {
+      "type": "string",
+      "key": "pronouns",
+      "label": "Pronouns"
+    },
+    {
+      "type": "array",
+      "key": "classes",
+      "label": "Class",
+      "values": [
+        {
+          "name": "Marine",
+          "description": "A front-line combat specialist, trained to handle any threat with lethal efficiency — and to keep everyone else alive long enough to regret it."
+        },
+        {
+          "name": "Android",
+          "description": "A synthetic crew member, stronger and more durable than any human, and just unnerving enough that nobody ever quite forgets it."
+        },
+        {
+          "name": "Scientist",
+          "description": "A trained researcher and problem-solver, at home with data, chemistry, and the things that shouldn't exist."
+        },
+        {
+          "name": "Teamster",
+          "description": "A blue-collar spacer — pilots, mechanics, and haulers who keep the ship running, and who somehow always end up in the worst rooms."
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "stats",
+      "label": "Stats",
+      "children": [
+        {
+          "type": "number",
+          "key": "stats.strength",
+          "label": "Strength",
+          "shortName": "STR",
+          "color": "#e74c3c",
+          "minimum": 15,
+          "maximum": 65
+        },
+        {
+          "type": "number",
+          "key": "stats.speed",
+          "label": "Speed",
+          "shortName": "SPD",
+          "color": "#f1c40f",
+          "minimum": 15,
+          "maximum": 65
+        },
+        {
+          "type": "number",
+          "key": "stats.intellect",
+          "label": "Intellect",
+          "shortName": "INT",
+          "color": "#3498db",
+          "minimum": 15,
+          "maximum": 65
+        },
+        {
+          "type": "number",
+          "key": "stats.combat",
+          "label": "Combat",
+          "shortName": "CBT",
+          "color": "#2ecc71",
+          "minimum": 15,
+          "maximum": 65
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "saves",
+      "label": "Saves",
+      "children": [
+        {
+          "type": "number",
+          "key": "saves.sanity",
+          "label": "Sanity",
+          "color": "#9b59b6",
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "saves.fear",
+          "label": "Fear",
+          "color": "#e67e22",
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "saves.body",
+          "label": "Body",
+          "color": "#16a085",
+          "minimum": 0,
+          "maximum": 99
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "health",
+      "label": "Health",
+      "children": [
+        {
+          "type": "number",
+          "key": "health.current",
+          "label": "Current",
+          "minimum": 0
+        },
+        {
+          "type": "number",
+          "key": "health.max",
+          "label": "Max",
+          "minimum": 1
+        },
+        {
+          "type": "number",
+          "key": "health.woundLimit",
+          "label": "Wound Limit",
+          "minimum": 1
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "stress",
+      "label": "Stress",
+      "children": [
+        {
+          "type": "number",
+          "key": "stress.current",
+          "label": "Current",
+          "minimum": 2
+        },
+        {
+          "type": "number",
+          "key": "stress.minimum",
+          "label": "Minimum Stress",
+          "minimum": 2,
+          "default": 2
+        }
+      ]
+    },
+    {
+      "type": "number",
+      "key": "armorPoint",
+      "label": "Armor Point",
+      "minimum": 0
+    },
+    {
+      "type": "array",
+      "key": "skillTiers",
+      "label": "Skill Tier",
+      "values": [
+        {
+          "name": "Trained",
+          "bonus": 10
+        },
+        {
+          "name": "Expert",
+          "bonus": 15
+        },
+        {
+          "name": "Master",
+          "bonus": 20
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "skills",
+      "label": "Skills",
+      "children": [
+        {
+          "type": "number",
+          "key": "skills.handtohand",
+          "label": "Hand-to-Hand",
+          "tier": "Trained",
+          "minimum": 0,
+          "maximum": 20
+        },
+        {
+          "type": "number",
+          "key": "skills.ballisticweapons",
+          "label": "Ballistic Weapons",
+          "tier": "Trained",
+          "minimum": 0,
+          "maximum": 20
+        },
+        {
+          "type": "number",
+          "key": "skills.energyweapons",
+          "label": "Energy Weapons",
+          "tier": "Trained",
+          "minimum": 0,
+          "maximum": 20
+        },
+        {
+          "type": "number",
+          "key": "skills.heavymachinery",
+          "label": "Heavy Machinery",
+          "tier": "Trained",
+          "minimum": 0,
+          "maximum": 20
+        },
+        {
+          "type": "number",
+          "key": "skills.zerog",
+          "label": "Zero-G",
+          "tier": "Trained",
+          "minimum": 0,
+          "maximum": 20
+        },
+        {
+          "type": "number",
+          "key": "skills.fasttalk",
+          "label": "Fast Talk",
+          "tier": "Trained",
+          "minimum": 0,
+          "maximum": 20
+        },
+        {
+          "type": "number",
+          "key": "skills.intimidation",
+          "label": "Intimidation",
+          "tier": "Trained",
+          "minimum": 0,
+          "maximum": 20
+        },
+        {
+          "type": "number",
+          "key": "skills.leadership",
+          "label": "Leadership",
+          "tier": "Trained",
+          "minimum": 0,
+          "maximum": 20
+        },
+        {
+          "type": "number",
+          "key": "skills.art",
+          "label": "Art",
+          "tier": "Trained",
+          "minimum": 0,
+          "maximum": 20
+        },
+        {
+          "type": "number",
+          "key": "skills.computers",
+          "label": "Computers",
+          "tier": "Trained",
+          "minimum": 0,
+          "maximum": 20
+        },
+        {
+          "type": "number",
+          "key": "skills.piloting",
+          "label": "Piloting",
+          "tier": "Trained",
+          "minimum": 0,
+          "maximum": 20
+        },
+        {
+          "type": "number",
+          "key": "skills.linguistics",
+          "label": "Linguistics",
+          "tier": "Trained",
+          "minimum": 0,
+          "maximum": 20
+        },
+        {
+          "type": "number",
+          "key": "skills.mathematics",
+          "label": "Mathematics",
+          "tier": "Trained",
+          "minimum": 0,
+          "maximum": 20
+        },
+        {
+          "type": "number",
+          "key": "skills.mechanicalrepair",
+          "label": "Mechanical Repair",
+          "tier": "Trained",
+          "minimum": 0,
+          "maximum": 20
+        },
+        {
+          "type": "number",
+          "key": "skills.rimwise",
+          "label": "Rimwise",
+          "tier": "Trained",
+          "minimum": 0,
+          "maximum": 20
+        },
+        {
+          "type": "number",
+          "key": "skills.zoology",
+          "label": "Zoology",
+          "tier": "Trained",
+          "minimum": 0,
+          "maximum": 20
+        },
+        {
+          "type": "number",
+          "key": "skills.botany",
+          "label": "Botany",
+          "tier": "Trained",
+          "minimum": 0,
+          "maximum": 20
+        },
+        {
+          "type": "number",
+          "key": "skills.geology",
+          "label": "Geology",
+          "tier": "Trained",
+          "minimum": 0,
+          "maximum": 20
+        },
+        {
+          "type": "number",
+          "key": "skills.chemistry",
+          "label": "Chemistry",
+          "tier": "Trained",
+          "minimum": 0,
+          "maximum": 20
+        },
+        {
+          "type": "number",
+          "key": "skills.astrogation",
+          "label": "Astrogation",
+          "tier": "Expert",
+          "minimum": 0,
+          "maximum": 20
+        },
+        {
+          "type": "number",
+          "key": "skills.battlemedicine",
+          "label": "Battle Medicine",
+          "tier": "Expert",
+          "minimum": 0,
+          "maximum": 20
+        },
+        {
+          "type": "number",
+          "key": "skills.command",
+          "label": "Command",
+          "tier": "Expert",
+          "minimum": 0,
+          "maximum": 20
+        },
+        {
+          "type": "number",
+          "key": "skills.dataanalysis",
+          "label": "Data Analysis",
+          "tier": "Expert",
+          "minimum": 0,
+          "maximum": 20
+        },
+        {
+          "type": "number",
+          "key": "skills.explosives",
+          "label": "Explosives",
+          "tier": "Expert",
+          "minimum": 0,
+          "maximum": 20
+        },
+        {
+          "type": "number",
+          "key": "skills.interrogation",
+          "label": "Interrogation",
+          "tier": "Expert",
+          "minimum": 0,
+          "maximum": 20
+        },
+        {
+          "type": "number",
+          "key": "skills.hyperspace",
+          "label": "Hyperspace",
+          "tier": "Master",
+          "minimum": 0,
+          "maximum": 20
+        },
+        {
+          "type": "number",
+          "key": "skills.surgery",
+          "label": "Surgery",
+          "tier": "Master",
+          "minimum": 0,
+          "maximum": 20
+        },
+        {
+          "type": "number",
+          "key": "skills.xenolinguistics",
+          "label": "Xenolinguistics",
+          "tier": "Master",
+          "minimum": 0,
+          "maximum": 20
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "wounds",
+      "label": "Wounds",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Wound"
+        },
+        {
+          "type": "string",
+          "key": "notes",
+          "label": "Notes"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "inventory",
+      "label": "Inventory",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Item Name",
+          "required": true
+        },
+        {
+          "type": "number",
+          "key": "quantity",
+          "label": "Quantity",
+          "minimum": 0
+        },
+        {
+          "type": "string",
+          "key": "notes",
+          "label": "Notes"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "currency",
+      "label": "Currency",
+      "values": [
+        {
+          "name": "Credits",
+          "shortName": "cr",
+          "cost": 1
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "equipmentCategories",
+      "label": "Equipment Categories",
+      "values": [
+        {
+          "name": "Weapons"
+        },
+        {
+          "name": "Armor"
+        },
+        {
+          "name": "Tools"
+        },
+        {
+          "name": "Medical"
+        },
+        {
+          "name": "Consumables"
+        },
+        {
+          "name": "Cybernetics"
+        },
+        {
+          "name": "Ship Systems"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "rarity",
+      "label": "Rarity",
+      "values": [
+        {
+          "name": "Common",
+          "targetBudget": 3,
+          "description": "Standard-issue, available at any company store."
+        },
+        {
+          "name": "Uncommon",
+          "targetBudget": 6,
+          "description": "Specialist gear, not always in stock."
+        },
+        {
+          "name": "Military-Grade",
+          "targetBudget": 10,
+          "description": "Restricted to armed forces or black-market buyers."
+        },
+        {
+          "name": "Prototype",
+          "targetBudget": 16,
+          "description": "Experimental, one-of-a-kind, or stolen tech."
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "damageTypes",
+      "label": "Damage Types",
+      "values": [
+        {
+          "name": "Ballistic"
+        },
+        {
+          "name": "Energy"
+        },
+        {
+          "name": "Explosive"
+        },
+        {
+          "name": "Melee"
+        },
+        {
+          "name": "Environmental"
+        },
+        {
+          "name": "Radiation"
+        },
+        {
+          "name": "Vacuum"
+        },
+        {
+          "name": "Toxic"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "conditions",
+      "label": "Conditions",
+      "values": [
+        {
+          "name": "Wounded",
+          "description": "Suffering a specific, described physical injury — see the character's own Wounds list."
+        },
+        {
+          "name": "Dying",
+          "description": "At 0 Health, bleeding out; will die without immediate treatment."
+        },
+        {
+          "name": "Panicking",
+          "description": "Currently suffering an active Panic Table effect."
+        },
+        {
+          "name": "Unconscious",
+          "description": "Knocked out; unaware and unable to act."
+        },
+        {
+          "name": "Stressed Out",
+          "description": "At maximum Stress, one bad roll from a Panic Check."
+        },
+        {
+          "name": "Broken",
+          "description": "Morale has collapsed; unwilling or unable to continue the mission."
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "environment",
+      "label": "Environment",
+      "values": [
+        {
+          "name": "Derelict Ship"
+        },
+        {
+          "name": "Space Station"
+        },
+        {
+          "name": "Colony"
+        },
+        {
+          "name": "Deep Space"
+        },
+        {
+          "name": "Planetside"
+        },
+        {
+          "name": "Vacuum"
+        },
+        {
+          "name": "Corporate Facility"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "combatScaling",
+      "label": "Combat Scaling",
+      "values": [
+        {
+          "name": "Standard",
+          "shortName": "Standard",
+          "sourceId": 1,
+          "targetBudget": 5
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "combatBindings",
+      "label": "Combat Bindings",
+      "values": [
+        {
+          "name": "Health",
+          "maxPath": "@health.max",
+          "binding": "@health.current",
+          "role": "resource"
+        },
+        {
+          "name": "Stress",
+          "binding": "@stress.current",
+          "role": "resource"
+        },
+        {
+          "name": "Armor Point",
+          "binding": "@armorPoint",
+          "role": "value"
+        },
+        {
+          "name": "Conditions",
+          "binding": "@conditions",
+          "sourceField": "conditions",
+          "role": "tags"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "dice",
+      "label": "Dice",
+      "values": [
+        {
+          "name": "d5",
+          "sides": 5
+        },
+        {
+          "name": "d10",
+          "sides": 10
+        },
+        {
+          "name": "d20",
+          "sides": 20
+        },
+        {
+          "name": "d100",
+          "sides": 100
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "rolls",
+      "label": "Rolls",
+      "values": [
+        {
+          "name": "Stat/Save Check (d100 Roll Under)",
+          "expression": "d100",
+          "resultMode": "band",
+          "description": "Roll d100 against the relevant Stat or Save (plus any Skill tier bonus already added into it) — success on a result at or under it. Fired from a field's own roll button, which passes that field's current value as the target. Mothership's real critical rule (rolling DOUBLES — 11, 22, 33... — that also beats the target is a Critical Success; doubles that also fail is a Critical Failure requiring a Panic Check) isn't modeled below: it needs the roll's own two percentile digits compared to each other, which the band engine can't inspect (it only sees the final 1-100 total) — recognize doubles yourself from the rolled number.",
+          "bands": [
+            {
+              "targetMaxFraction": 1.0,
+              "label": "Success"
+            },
+            {
+              "targetMinFraction": 0,
+              "label": "Failure"
+            }
+          ]
+        },
+        {
+          "name": "Panic Check (2d10 + Stress)",
+          "expression": "2d10+@stress.current",
+          "resultMode": "band",
+          "description": "Roll 2d10, add current Stress, and consult the Panic Table below. Mothership has gone through multiple printings with different exact Panic Check procedures (an earlier version used a d20 'Panic Die' roll-under-Stress instead) — this uses the 2d10+Stress version documented on the Warden's screen. The specific band thresholds below are a good-faith reconstruction from the confirmed low end (Adrenaline Rush/Nervous/Jumpy/Overwhelmed/Coward) and confirmed high end (Catatonic/Berserk/Fire) of the real table — the exact cutoffs for the middle tiers aren't sourced from the book directly, so treat them as a reasonable placeholder, not a verbatim transcription.",
+          "bands": [
+            {
+              "max": 8,
+              "label": "Adrenaline Rush — advantage on rolls, reduce Stress"
+            },
+            {
+              "min": 9,
+              "max": 10,
+              "label": "Nervous — gain 1 Stress"
+            },
+            {
+              "min": 11,
+              "max": 12,
+              "label": "Jumpy — gain Stress, nearby crew gain Stress too"
+            },
+            {
+              "min": 13,
+              "max": 14,
+              "label": "Overwhelmed — disadvantage on rolls, Minimum Stress rises"
+            },
+            {
+              "min": 15,
+              "max": 16,
+              "label": "Coward — must Fear Save to act, or flee"
+            },
+            {
+              "min": 17,
+              "max": 18,
+              "label": "Spiraling Out — losing control, acting irrationally"
+            },
+            {
+              "min": 19,
+              "max": 19,
+              "label": "Berserk — violent, uncontrolled outburst"
+            },
+            {
+              "min": 20,
+              "max": 21,
+              "label": "Catatonic — frozen, unresponsive to everything"
+            },
+            {
+              "min": 22,
+              "label": "Total Collapse — the worst outcome; GM's call, likely permanent"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "index": "studded-leather-armor",
+  "name": "Studded Leather Armor",
+  "notes": "Armor Class: 12 + Dex modifier",
+  "price": "45 gp",
+  "weight": 13,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2024/equipment/studded-leather-armor",
+  "mapping": "5e-api-equipment",
+  "properties": {
+    "form": "armor",
+    "armorCategory": "light"
+  },
+  "featureIds": []
+}

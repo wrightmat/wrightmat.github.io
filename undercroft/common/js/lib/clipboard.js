@@ -2,6 +2,7 @@
 // every tool's JSON Preview panel and Press's own Sample Data panel, all of
 // which otherwise duplicated the same navigator.clipboard.writeText + brief
 // "Copied" icon-swap feedback pattern.
+import { flashTooltipMessage } from "./tooltips.js";
 
 const COPIED_RESET_MS = 1500;
 
@@ -27,33 +28,19 @@ export function bindCopyButton(button, source, { onCopied } = {}) {
   const originalIcon = icon?.dataset.icon || "tabler:copy";
   let resetTimer = null;
 
-  // Read fresh on every call (not captured once at bind time) — the title
-  // carries a live byte count (see json-preview.js's updateCopyButtonSize),
-  // which changes as the underlying data changes. Capturing it once here
-  // would mean the "Copied!" flash always reverted to whatever size was
-  // current the moment the page loaded, not the size that was actually
-  // just copied.
+  // The tooltip/title/aria-label flash-then-revert is flashTooltipMessage's
+  // own job (tooltips.js) — it already reads the resting title fresh at
+  // call time (not a value cached once at bind time), which is what makes
+  // the revert land on whatever the title actually is right now, not a
+  // stale copy — e.g. json-preview.js's own live byte count, which changes
+  // as the underlying data changes. Only the icon swap is left here, since
+  // that's not a tooltip concern.
   const showCopied = () => {
-    const restoreTitle = button.getAttribute("data-bs-title") || button.getAttribute("title") || "Copy to clipboard";
     if (icon) icon.dataset.icon = "tabler:check";
-    button.setAttribute("data-bs-title", "Copied!");
-    button.setAttribute("title", "Copied!");
-    button.setAttribute("aria-label", "Copied!");
-    if (window.bootstrap?.Tooltip) {
-      const instance = window.bootstrap.Tooltip.getInstance(button) || new window.bootstrap.Tooltip(button);
-      instance.setContent?.({ ".tooltip-inner": "Copied!" });
-      instance.show?.();
-    }
+    flashTooltipMessage(button, "Copied!", { duration: COPIED_RESET_MS });
     if (resetTimer) window.clearTimeout(resetTimer);
     resetTimer = window.setTimeout(() => {
       if (icon) icon.dataset.icon = originalIcon;
-      button.setAttribute("data-bs-title", restoreTitle);
-      button.setAttribute("title", restoreTitle);
-      button.setAttribute("aria-label", restoreTitle);
-      if (window.bootstrap?.Tooltip) {
-        const instance = window.bootstrap.Tooltip.getInstance(button);
-        instance?.setContent?.({ ".tooltip-inner": restoreTitle });
-      }
     }, COPIED_RESET_MS);
   };
 

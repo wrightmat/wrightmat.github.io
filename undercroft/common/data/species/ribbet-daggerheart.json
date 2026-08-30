@@ -1,0 +1,33 @@
+{
+  "name": "Ribbet",
+  "tagline": "Webbed, wet, and quick to leap",
+  "description": [
+    "Amphibious frog-humanoids with webbed appendages and a hopping gait, Ribbet names are short, bouncy, and a little wet-sounding."
+  ],
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "none",
+    "firstNames": [
+      "Plip",
+      "Kolo",
+      "Wibb",
+      "Marsh",
+      "Toade",
+      "Ribbin",
+      "Gully",
+      "Bogg",
+      "Fenna",
+      "Willow",
+      "Croak",
+      "Puddle",
+      "Reedy",
+      "Splosh",
+      "Nolli",
+      "Tarn"
+    ],
+    "lastNames": []
+  }
+}

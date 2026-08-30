@@ -1,0 +1,28 @@
+{
+  "index": "map",
+  "name": "Map",
+  "notes": "If you consult an accurate Map, you gain a +5 bonus to Wisdom (Survival) checks you make to find your way in the place represented on it.",
+  "price": "1 gp",
+  "weight": 0,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2024/equipment/map",
+  "mapping": "5e-api-equipment",
+  "properties": {
+    "form": "equipment",
+    "equipmentCategory": "adventuring-gear"
+  },
+  "featureIds": [
+    "feat.skill-bonus"
+  ],
+  "featureTiers": {
+    "feat.skill-bonus": "plus-5"
+  },
+  "featureParams": {
+    "feat.skill-bonus": {
+      "skill": "survival"
+    }
+  }
+}

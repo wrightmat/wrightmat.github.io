@@ -622,12 +622,55 @@ function matchesTallyBand(count, tallySpec) {
   return true;
 }
 
-function matchesRangeBand(total, band) {
+// `target*` keys let a band compare the roll against a value the CALLER
+// passes in at roll time (a character's own skill/characteristic score —
+// see workbench-character-view.js's per-component roller, which reads the
+// bound input's current value and threads it through as `targetValue`),
+// rather than only ever a fixed number baked into the System's own Move
+// definition. This is what makes a percentile roll-under System (Call of
+// Cthulhu's d100 — Regular/Hard/Extreme success as fractions of whatever
+// skill is being tested) representable at all: those thresholds move with
+// the field being rolled, so a plain `{min,max}` band can't express them.
+// A band mixing `min`/`max` with `target*` keys requires BOTH to hold — the
+// fixed-total conditions gate special cases (a natural 1 or 100) that apply
+// regardless of the target, the target conditions gate the success tiers
+// that don't.
+//
+// - `targetBelow`/`targetAtLeast`: a condition on the target value itself
+//   (not the roll) — e.g. CoC's "96-99 is a Fumble only if the skill being
+//   tested is under 50" needs the fixed range AND this target condition
+//   both to hold.
+// - `targetMaxFraction`/`targetMinFraction`: bounds on the roll total
+//   expressed as a fraction of the target (rounded down, matching the 7E
+//   rulebook's own rounding), e.g. `targetMaxFraction: 0.5` for a Hard
+//   success (roll <= half the skill).
+// Any band using a `target*` key simply doesn't match when no `targetValue`
+// was passed (a context-free roll — the standalone Dice Roller widget, or
+// a Move fired from the Moves panel with no associated field) — the same
+// "unmatched roll, no verdict" fallback bands without any conditions at all
+// already have, not an error.
+function matchesRangeBand(total, band, targetValue) {
   if (typeof total !== "number") {
     return false;
   }
   if (typeof band.min === "number" && !(total >= band.min)) return false;
   if (typeof band.max === "number" && !(total <= band.max)) return false;
+  const usesTarget =
+    typeof band.targetBelow === "number" ||
+    typeof band.targetAtLeast === "number" ||
+    typeof band.targetMaxFraction === "number" ||
+    typeof band.targetMinFraction === "number";
+  if (usesTarget) {
+    if (typeof targetValue !== "number") return false;
+    if (typeof band.targetBelow === "number" && !(targetValue < band.targetBelow)) return false;
+    if (typeof band.targetAtLeast === "number" && !(targetValue >= band.targetAtLeast)) return false;
+    if (typeof band.targetMaxFraction === "number" && !(total <= Math.floor(targetValue * band.targetMaxFraction))) {
+      return false;
+    }
+    if (typeof band.targetMinFraction === "number" && !(total >= Math.floor(targetValue * band.targetMinFraction))) {
+      return false;
+    }
+  }
   return true;
 }
 
@@ -636,8 +679,9 @@ function matchesRangeBand(total, band) {
 // match the same total. Returns the matched band's label, or `null` if
 // nothing matched (a Move's bands don't have to exhaustively cover every
 // possible total — an unmatched roll still has a real total, just no named
-// verdict for it).
-function evaluateBands(bands, result) {
+// verdict for it). `targetValue` (optional) is threaded into every band
+// check — see matchesRangeBand's own comment for what it enables.
+function evaluateBands(bands, result, targetValue) {
   if (!Array.isArray(bands) || !bands.length) {
     return null;
   }
@@ -650,7 +694,7 @@ function evaluateBands(bands, result) {
       }
       continue;
     }
-    if (matchesRangeBand(result?.total, band)) {
+    if (matchesRangeBand(result?.total, band, targetValue)) {
       return band.label || null;
     }
   }
@@ -681,19 +725,27 @@ function evaluateCompare(compareSpec, result) {
   return { winner: "tie", label: compareSpec.tieLabel || "" };
 }
 
-function evaluateMoveVerdict(move, result) {
+function evaluateMoveVerdict(move, result, targetValue) {
   if (move?.resultMode === "compare") {
     const outcome = evaluateCompare(move.compare, result);
     return outcome && outcome.label ? { mode: "compare", label: outcome.label, winner: outcome.winner } : null;
   }
-  const label = evaluateBands(move?.bands, result);
+  const label = evaluateBands(move?.bands, result, targetValue);
   return label ? { mode: "band", label } : null;
 }
 
 // Rolls a System-defined Move (Section 1.3/4) — the exact same
 // rollExpression every other roll goes through (3D overlay, `@path`
 // context substitution, and named dice all just work unmodified), plus
-// this Move's own band/compare interpretation layered on top. `label` is
+// this Move's own band/compare interpretation layered on top. `targetValue`
+// (optional) is a number the CALLER already resolved from the character
+// sheet — e.g. workbench-character-view.js's per-component roller reads
+// the bound input's own current value — and is passed straight through to
+// evaluateMoveVerdict for the Move's `target*` bands (see
+// matchesRangeBand's own comment). Left unset from a context-free caller
+// (the standalone Dice Roller widget has no field to read a value from) —
+// any band relying on it simply won't match, same as an unmatched roll
+// with no verdict at all today. `label` is
 // always overridden to this Move's own label, so the roll's own toast
 // reads "Action Roll: 2d6+3 → 8" consistently regardless of what the
 // caller passed. A matched verdict fires its own follow-up toast (this
@@ -719,21 +771,36 @@ function evaluateMoveVerdict(move, result) {
 // evaluate.
 export async function rollSystemMove(
   move,
-  { broadcast = false, recipientIds = undefined, groupContext = null, dataManager, ...rollOptions } = {}
+  {
+    broadcast = false,
+    recipientIds = undefined,
+    groupContext = null,
+    dataManager,
+    targetValue = undefined,
+    label = move.label,
+    ...rollOptions
+  } = {}
 ) {
-  // recipientIds destructured out here (same as broadcast/groupContext
-  // already were) so it never leaks into the inner rollExpression call via
-  // ...rollOptions below — that call has its own independent
-  // broadcast/recipientIds handling, and passing it through unintentionally
-  // would double-post: once from the inner call's own logging, once from
-  // this function's own Move-shaped one further down.
-  const rolled = await rollExpression(move.expression, { ...rollOptions, dataManager, label: move.label });
+  // recipientIds/targetValue destructured out here (same as
+  // broadcast/groupContext already were) so neither leaks into the inner
+  // rollExpression call via ...rollOptions below — that call has no concept
+  // of either, and passing recipientIds through unintentionally would
+  // double-post: once from the inner call's own logging, once from this
+  // function's own Move-shaped one further down. `label` defaults to the
+  // Move's own name (today's behavior, unchanged for the Moves-panel
+  // caller) but a caller rolling this Move FOR a specific field — the
+  // per-component roller, whose expression happens to match a System Move
+  // by coincidence of both being "d100" — overrides it with that field's
+  // own label ("Dexterity"), so both toasts read "Dexterity: 45" /
+  // "Dexterity: Regular Success" instead of repeating the Move's generic
+  // name on every single roll.
+  const rolled = await rollExpression(move.expression, { ...rollOptions, dataManager, label });
   if (!rolled || rolled.isTable) {
     return rolled;
   }
-  const verdict = evaluateMoveVerdict(move, rolled.result);
+  const verdict = evaluateMoveVerdict(move, rolled.result, targetValue);
   if (verdict?.label) {
-    rollOptions.status?.show(`${move.label}: ${verdict.label}`, { type: "info", timeout: 2600 });
+    rollOptions.status?.show(`${label}: ${verdict.label}`, { type: "info", timeout: 2600 });
   }
   const hasRecipients = Array.isArray(recipientIds) && recipientIds.length > 0;
   if ((broadcast || hasRecipients) && dataManager && groupContext?.groupId) {
@@ -750,8 +817,9 @@ export async function rollSystemMove(
           detailHtml: rolled.result?.detailHtml || undefined,
           detailText: rolled.result?.detailText || undefined,
           dice: Array.isArray(rolled.result?.dice) && rolled.result.dice.length ? rolled.result.dice : undefined,
-          label: move.label || undefined,
+          label: label || undefined,
           verdict: verdict?.label || undefined,
+          target: typeof targetValue === "number" ? targetValue : undefined,
         },
       })
       .catch(() => {

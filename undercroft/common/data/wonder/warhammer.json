@@ -1,0 +1,18 @@
+{
+  "index": "warhammer",
+  "name": "Warhammer",
+  "notes": "Damage: 1d8 Bludgeoning\n\nRange: 5 ft.\n\nProperties: Versatile\n\nMastery: Push",
+  "price": "15 gp",
+  "weight": 5,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2024/equipment/warhammer",
+  "mapping": "5e-api-equipment",
+  "properties": {
+    "form": "weapon",
+    "weaponCategory": "martial-melee"
+  },
+  "featureIds": []
+}

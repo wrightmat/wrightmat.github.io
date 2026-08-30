@@ -1,0 +1,42 @@
+{
+  "name": "Human",
+  "tagline": "Adaptable and stubbornly enduring",
+  "description": [
+    "Adaptable, dexterous beings known for their endurance, Human names in Daggerheart's world span every register from courtly to common."
+  ],
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "family",
+    "firstNames": [
+      "Corwin",
+      "Isolde",
+      "Bastian",
+      "Elowen",
+      "Garrick",
+      "Maribel",
+      "Percival",
+      "Thessaly",
+      "Aldric",
+      "Rosalind",
+      "Cassian",
+      "Wynifred",
+      "Dorian",
+      "Fenella",
+      "Osmund",
+      "Verity"
+    ],
+    "lastNames": [
+      "Ashworth",
+      "Blackwood",
+      "Coldharbor",
+      "Duskmere",
+      "Everfield",
+      "Foxglove",
+      "Greywatch",
+      "Hallowell"
+    ]
+  }
+}

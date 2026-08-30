@@ -1,14 +1,18 @@
 {
+  "index": "greataxe",
   "name": "Greataxe",
-  "notes": "Proficiency with a Greataxe allows you to add your proficiency bonus to the attack roll for any attack you make with it.\n\nThis weapon has the following mastery property. To use this property, you must have a feature that lets you use it.\n\n***Cleave.*** If you hit a creature with a melee attack roll using this weapon, you can make a melee attack roll with the weapon against a second creature within 5 feet of the first that is also within your reach. On a hit, the second creature takes the weapon’s damage, but don’t add your ability modifier to that damage unless that modifier is negative. You can make this extra attack only once per turn.\n\n| Name | Cost | Damage | Weight | Properties |\n| --- | --- | --- | --- | --- |\n| Greataxe | 30 GP | 1d12 Slashing | 7 lbs | Heavy, Two-Handed, Cleave |\n\nCost: 30 GP\n\nWeight: 7 lbs\n\nSource: D&D Beyond Basic Rules",
+  "notes": "Damage: 1d12 Slashing\n\nRange: 5 ft.\n\nProperties: Heavy, Two-Handed\n\nMastery: Cleave",
+  "price": "30 gp",
+  "weight": 7,
   "systemIds": [
     "sys.dnd5e",
     "sys.dnd5e2014"
   ],
-  "url": "https://www.dndbeyond.com/equipment/21-greataxe",
-  "mapping": "ddb-item",
+  "url": "https://www.dnd5eapi.co/api/2024/equipment/greataxe",
+  "mapping": "5e-api-equipment",
   "properties": {
-    "form": "weapon"
+    "form": "weapon",
+    "weaponCategory": "martial-melee"
   },
   "featureIds": []
 }

@@ -6,7 +6,7 @@
 // Workbench's view-switcher, and doesn't belong to any one existing tool —
 // see the Dashboard plan this widget was built for.
 import { resolveActiveSpotlightId, resolveSpotlightData } from "../spotlight.js";
-import { disposeTooltips, refreshTooltips } from "../tooltips.js";
+import { disposeTooltips, refreshTooltips, setDisabledTooltip, initTooltip } from "../tooltips.js";
 import { resolveBinding, setAtBinding, findBindingByRole } from "../bindings.js";
 import {
   deriveConditionsVocabulary,
@@ -1065,6 +1065,12 @@ export function initCombatTrackerWidget(
         if (resource.maxPath) {
           const max = resolveBinding(resource.maxPath, payload);
           if (typeof max === "number") combatant.maxHp = max;
+        } else if (typeof resource.max === "number") {
+          // A literal ceiling (e.g. Daggerheart's Hope: max 6) isn't stored
+          // anywhere on the character record to resolve — it's just always
+          // this fixed value, the same way maxPath's resolved value would be
+          // if it were bound.
+          combatant.maxHp = resource.max;
         }
         if (resource.tempPath) {
           const temp = resolveBinding(resource.tempPath, payload);
@@ -1667,25 +1673,25 @@ export function initCombatTrackerWidget(
     const hiddenFromPlayers = isCombatantHiddenFromPlayers(combatant);
     const visibleIcon = refs.visibleButton.querySelector(".iconify");
     if (visibleIcon) visibleIcon.dataset.icon = hiddenFromPlayers ? "tabler:eye-off" : "tabler:eye";
-    // refreshTooltips (below) disposes and reconstructs the Tooltip
-    // instance, which re-reads `title` at construction time — same
-    // convention iconButton itself relies on — so updating the plain
-    // attribute here is enough, no data-bs-title needed.
-    const visibleTitle = !hasActiveMap
-      ? "No map is shown to the table or open on your dashboard — nothing to show/hide yet"
-      : !linkedMarkerCount
-        ? "Not placed on the active map — nothing to show/hide"
-        : hiddenFromPlayers
-          ? "Hidden from players — click to reveal"
-          : "Visible to players — click to hide";
-    refs.visibleButton.title = visibleTitle;
-    refs.visibleButton.setAttribute("aria-label", visibleTitle);
     // Disabled (not hidden entirely) when this combatant has no linked
     // marker on the active map right now — same "absent/inert rather than
     // a fake no-op control" treatment the Linked Combatant picker already
     // gives an inapplicable state, just disabled instead of absent since
     // this button's OWN row (Name/Visible/Delete) always needs to exist.
-    refs.visibleButton.disabled = !linkedMarkerCount;
+    // A real `disabled` attribute blocks hover entirely, so the
+    // explanation for WHY has to live on setDisabledTooltip's own wrapper,
+    // not on this button directly — see tooltips.js's own header for why
+    // the previous same-element version of this never actually showed a
+    // tooltip while disabled.
+    const blockedTitle = !hasActiveMap
+      ? "No map is shown to the table or open on your dashboard — nothing to show/hide yet"
+      : !linkedMarkerCount
+        ? "Not placed on the active map — nothing to show/hide"
+        : "";
+    const readyTitle = hiddenFromPlayers ? "Hidden from players — click to reveal" : "Visible to players — click to hide";
+    refs.visibleButton.setAttribute("aria-label", blockedTitle || readyTitle);
+    setDisabledTooltip(refs.visibleButton, blockedTitle);
+    if (!blockedTitle) initTooltip(refs.visibleButton, { title: readyTitle });
 
     // Badges have no value a GM sits typing into (buttons + static labels),
     // so it's safe (and simplest) to rebuild this fresh every sync rather

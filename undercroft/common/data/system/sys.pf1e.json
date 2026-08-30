@@ -1,0 +1,1453 @@
+{
+  "title": "Pathfinder 1E",
+  "version": "0.1",
+  "fields": [
+    {
+      "type": "string",
+      "key": "name",
+      "label": "Character Name",
+      "required": true
+    },
+    {
+      "type": "string",
+      "key": "player",
+      "label": "Player Name"
+    },
+    {
+      "type": "array",
+      "key": "races",
+      "label": "Race",
+      "values": [
+        {
+          "name": "Human",
+          "description": "Adaptable and widespread, humans settled nearly every corner of Golarion."
+        },
+        {
+          "name": "Dwarf",
+          "description": "Stout, stubborn folk of stone and stronghold, famed for resilience and grudge-keeping."
+        },
+        {
+          "name": "Elf",
+          "description": "Long-lived, otherworldly folk with keen senses and a deep well of patience."
+        },
+        {
+          "name": "Gnome",
+          "description": "Small, whimsical fey-touched people driven by an insatiable curiosity."
+        },
+        {
+          "name": "Half-Elf",
+          "description": "Born between two worlds, adaptable but rarely fully accepted by either."
+        },
+        {
+          "name": "Half-Orc",
+          "description": "Born of two worlds that rarely accept them fully, hardy and often hard-bitten."
+        },
+        {
+          "name": "Halfling",
+          "description": "Small, practical, lucky folk who value community, comfort, and a good meal."
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "classes",
+      "label": "Class",
+      "values": [
+        {
+          "name": "Barbarian",
+          "description": "A savage warrior who rages in battle, trading defense for raw destructive power."
+        },
+        {
+          "name": "Bard",
+          "description": "A jack-of-all-trades performer who weaves magic through music, lore, and inspiration."
+        },
+        {
+          "name": "Cleric",
+          "description": "A divine spellcaster empowered by a deity, channeling energy to heal or harm."
+        },
+        {
+          "name": "Druid",
+          "description": "A guardian of the natural world who commands elemental and animal magic, and can wild shape."
+        },
+        {
+          "name": "Fighter",
+          "description": "A master of weapons and armor, relying on training and raw combat prowess."
+        },
+        {
+          "name": "Monk",
+          "description": "A disciplined martial artist who channels inner power (ki) through unarmed combat and mobility."
+        },
+        {
+          "name": "Paladin",
+          "description": "A holy warrior bound by a sacred code, wielding divine magic in service of justice."
+        },
+        {
+          "name": "Ranger",
+          "description": "A skilled hunter and wilderness expert with a favored enemy and terrain, aided by nature magic."
+        },
+        {
+          "name": "Rogue",
+          "description": "A cunning opportunist who strikes from the shadows and relies on skill over brute force."
+        },
+        {
+          "name": "Sorcerer",
+          "description": "An innate spellcaster whose magic flows from bloodline rather than study."
+        },
+        {
+          "name": "Wizard",
+          "description": "A scholarly spellcaster who prepares spells from a memorized spellbook."
+        }
+      ]
+    },
+    {
+      "type": "number",
+      "key": "level",
+      "label": "Level",
+      "minimum": 1,
+      "maximum": 20
+    },
+    {
+      "type": "array",
+      "key": "alignments",
+      "label": "Alignment",
+      "values": [
+        {
+          "name": "Lawful Good",
+          "shortName": "LG"
+        },
+        {
+          "name": "Neutral Good",
+          "shortName": "NG"
+        },
+        {
+          "name": "Chaotic Good",
+          "shortName": "CG"
+        },
+        {
+          "name": "Lawful Neutral",
+          "shortName": "LN"
+        },
+        {
+          "name": "True Neutral",
+          "shortName": "N"
+        },
+        {
+          "name": "Chaotic Neutral",
+          "shortName": "CN"
+        },
+        {
+          "name": "Lawful Evil",
+          "shortName": "LE"
+        },
+        {
+          "name": "Neutral Evil",
+          "shortName": "NE"
+        },
+        {
+          "name": "Chaotic Evil",
+          "shortName": "CE"
+        }
+      ]
+    },
+    {
+      "type": "string",
+      "key": "deity",
+      "label": "Deity"
+    },
+    {
+      "type": "string",
+      "key": "homeland",
+      "label": "Homeland"
+    },
+    {
+      "type": "object",
+      "key": "abilities",
+      "label": "Ability Scores",
+      "children": [
+        {
+          "type": "number",
+          "key": "abilities.strength",
+          "label": "Strength",
+          "shortName": "STR",
+          "color": "#e74c3c",
+          "minimum": 1,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "abilities.dexterity",
+          "label": "Dexterity",
+          "shortName": "DEX",
+          "color": "#f1c40f",
+          "minimum": 1,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "abilities.constitution",
+          "label": "Constitution",
+          "shortName": "CON",
+          "color": "#e67e22",
+          "minimum": 1,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "abilities.intelligence",
+          "label": "Intelligence",
+          "shortName": "INT",
+          "color": "#3498db",
+          "minimum": 1,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "abilities.wisdom",
+          "label": "Wisdom",
+          "shortName": "WIS",
+          "color": "#2ecc71",
+          "minimum": 1,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "abilities.charisma",
+          "label": "Charisma",
+          "shortName": "CHA",
+          "color": "#9b59b6",
+          "minimum": 1,
+          "maximum": 30
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "saves",
+      "label": "Saving Throws",
+      "children": [
+        {
+          "type": "number",
+          "key": "saves.fortitude",
+          "label": "Fortitude",
+          "shortName": "Fort"
+        },
+        {
+          "type": "number",
+          "key": "saves.reflex",
+          "label": "Reflex",
+          "shortName": "Ref"
+        },
+        {
+          "type": "number",
+          "key": "saves.will",
+          "label": "Will",
+          "shortName": "Will"
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "skills",
+      "label": "Skills",
+      "children": [
+        {
+          "type": "number",
+          "key": "skills.acrobatics",
+          "label": "Acrobatics",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.appraise",
+          "label": "Appraise",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.bluff",
+          "label": "Bluff",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.climb",
+          "label": "Climb",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.craft",
+          "label": "Craft",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.diplomacy",
+          "label": "Diplomacy",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.disabledevice",
+          "label": "Disable Device",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.disguise",
+          "label": "Disguise",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.escapeartist",
+          "label": "Escape Artist",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.fly",
+          "label": "Fly",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.handleanimal",
+          "label": "Handle Animal",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.heal",
+          "label": "Heal",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.intimidate",
+          "label": "Intimidate",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.knowledgearcana",
+          "label": "Knowledge (arcana)",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.knowledgedungeoneering",
+          "label": "Knowledge (dungeoneering)",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.knowledgeengineering",
+          "label": "Knowledge (engineering)",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.knowledgegeography",
+          "label": "Knowledge (geography)",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.knowledgehistory",
+          "label": "Knowledge (history)",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.knowledgelocal",
+          "label": "Knowledge (local)",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.knowledgenature",
+          "label": "Knowledge (nature)",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.knowledgenobility",
+          "label": "Knowledge (nobility)",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.knowledgeplanes",
+          "label": "Knowledge (planes)",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.knowledgereligion",
+          "label": "Knowledge (religion)",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.linguistics",
+          "label": "Linguistics",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.perception",
+          "label": "Perception",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.perform",
+          "label": "Perform",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.profession",
+          "label": "Profession",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.ride",
+          "label": "Ride",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.sensemotive",
+          "label": "Sense Motive",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.sleightofhand",
+          "label": "Sleight of Hand",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.spellcraft",
+          "label": "Spellcraft",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.stealth",
+          "label": "Stealth",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.survival",
+          "label": "Survival",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.swim",
+          "label": "Swim",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.usemagicdevice",
+          "label": "Use Magic Device",
+          "minimum": 0,
+          "maximum": 40
+        }
+      ]
+    },
+    {
+      "type": "number",
+      "key": "baseAttackBonus",
+      "label": "Base Attack Bonus",
+      "minimum": 0,
+      "maximum": 20
+    },
+    {
+      "type": "number",
+      "key": "cmb",
+      "label": "Combat Maneuver Bonus"
+    },
+    {
+      "type": "number",
+      "key": "cmd",
+      "label": "Combat Maneuver Defense",
+      "minimum": 0
+    },
+    {
+      "type": "object",
+      "key": "hitPoints",
+      "label": "Hit Points",
+      "children": [
+        {
+          "type": "number",
+          "key": "hitPoints.current",
+          "label": "Current",
+          "minimum": 0
+        },
+        {
+          "type": "number",
+          "key": "hitPoints.max",
+          "label": "Max",
+          "minimum": 1
+        },
+        {
+          "type": "number",
+          "key": "hitPoints.nonlethal",
+          "label": "Nonlethal Damage",
+          "minimum": 0
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "armorClass",
+      "label": "Armor Class",
+      "children": [
+        {
+          "type": "number",
+          "key": "armorClass.normal",
+          "label": "AC",
+          "minimum": 0
+        },
+        {
+          "type": "number",
+          "key": "armorClass.touch",
+          "label": "Touch",
+          "minimum": 0
+        },
+        {
+          "type": "number",
+          "key": "armorClass.flatFooted",
+          "label": "Flat-Footed",
+          "minimum": 0
+        }
+      ]
+    },
+    {
+      "type": "number",
+      "key": "initiative",
+      "label": "Initiative"
+    },
+    {
+      "type": "number",
+      "key": "speed",
+      "label": "Speed (ft.)",
+      "minimum": 0
+    },
+    {
+      "type": "array",
+      "key": "sizes",
+      "label": "Size",
+      "values": [
+        {
+          "name": "Fine",
+          "modifier": 8
+        },
+        {
+          "name": "Diminutive",
+          "modifier": 4
+        },
+        {
+          "name": "Tiny",
+          "modifier": 2
+        },
+        {
+          "name": "Small",
+          "modifier": 1
+        },
+        {
+          "name": "Medium",
+          "modifier": 0
+        },
+        {
+          "name": "Large",
+          "modifier": -1
+        },
+        {
+          "name": "Huge",
+          "modifier": -2
+        },
+        {
+          "name": "Gargantuan",
+          "modifier": -4
+        },
+        {
+          "name": "Colossal",
+          "modifier": -8
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "languages",
+      "label": "Languages",
+      "values": [
+        {
+          "name": "Common"
+        },
+        {
+          "name": "Abyssal"
+        },
+        {
+          "name": "Aklo"
+        },
+        {
+          "name": "Aquan"
+        },
+        {
+          "name": "Auran"
+        },
+        {
+          "name": "Celestial"
+        },
+        {
+          "name": "Draconic"
+        },
+        {
+          "name": "Druidic"
+        },
+        {
+          "name": "Dwarven"
+        },
+        {
+          "name": "Elven"
+        },
+        {
+          "name": "Giant"
+        },
+        {
+          "name": "Gnome"
+        },
+        {
+          "name": "Goblin"
+        },
+        {
+          "name": "Gnoll"
+        },
+        {
+          "name": "Halfling"
+        },
+        {
+          "name": "Ignan"
+        },
+        {
+          "name": "Infernal"
+        },
+        {
+          "name": "Orc"
+        },
+        {
+          "name": "Sylvan"
+        },
+        {
+          "name": "Terran"
+        },
+        {
+          "name": "Undercommon"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "inventory",
+      "label": "Inventory",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Item Name",
+          "required": true
+        },
+        {
+          "type": "number",
+          "key": "quantity",
+          "label": "Quantity",
+          "minimum": 0
+        },
+        {
+          "type": "number",
+          "key": "weight",
+          "label": "Weight (lb)",
+          "minimum": 0
+        },
+        {
+          "type": "string",
+          "key": "notes",
+          "label": "Notes"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "currency",
+      "label": "Currency",
+      "values": [
+        {
+          "name": "Platinum",
+          "shortName": "pp",
+          "cost": 1000,
+          "weight": 0.02
+        },
+        {
+          "name": "Gold",
+          "shortName": "gp",
+          "cost": 100,
+          "weight": 0.02
+        },
+        {
+          "name": "Silver",
+          "shortName": "sp",
+          "cost": 10,
+          "weight": 0.02
+        },
+        {
+          "name": "Copper",
+          "shortName": "cp",
+          "cost": 1,
+          "weight": 0.02
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "weaponCategories",
+      "label": "Weapon Categories",
+      "values": [
+        {
+          "name": "Simple Light Melee"
+        },
+        {
+          "name": "Simple One-Handed Melee"
+        },
+        {
+          "name": "Simple Two-Handed Melee"
+        },
+        {
+          "name": "Simple Ranged"
+        },
+        {
+          "name": "Martial Light Melee"
+        },
+        {
+          "name": "Martial One-Handed Melee"
+        },
+        {
+          "name": "Martial Two-Handed Melee"
+        },
+        {
+          "name": "Martial Ranged"
+        },
+        {
+          "name": "Exotic Melee"
+        },
+        {
+          "name": "Exotic Ranged"
+        },
+        {
+          "name": "Natural"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "armorCategories",
+      "label": "Armor Categories",
+      "values": [
+        {
+          "name": "Light"
+        },
+        {
+          "name": "Medium"
+        },
+        {
+          "name": "Heavy"
+        },
+        {
+          "name": "Shield"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "equipmentCategories",
+      "label": "Equipment Categories",
+      "values": [
+        {
+          "name": "Adventuring Gear"
+        },
+        {
+          "name": "Alchemical Items"
+        },
+        {
+          "name": "Tools and Skill Kits"
+        },
+        {
+          "name": "Spellcasting Materials"
+        },
+        {
+          "name": "Wands and Scrolls"
+        },
+        {
+          "name": "Wondrous Items"
+        },
+        {
+          "name": "Rings"
+        },
+        {
+          "name": "Rods"
+        },
+        {
+          "name": "Staves"
+        },
+        {
+          "name": "Mounts and Vehicles"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "rarity",
+      "label": "Rarity",
+      "values": [
+        {
+          "name": "Common",
+          "targetBudget": 3,
+          "description": "Freely bought and sold in most settlements."
+        },
+        {
+          "name": "Uncommon",
+          "targetBudget": 7,
+          "description": "Available from specialist merchants or larger cities."
+        },
+        {
+          "name": "Rare",
+          "targetBudget": 12,
+          "description": "Not normally available for purchase at any price."
+        },
+        {
+          "name": "Very Rare",
+          "targetBudget": 18,
+          "description": "Found only through adventure, never for sale."
+        },
+        {
+          "name": "Unique",
+          "targetBudget": 26,
+          "description": "A singular artifact with no duplicate."
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "activation",
+      "label": "Activation",
+      "values": [
+        {
+          "name": "Standard Action",
+          "shortName": "Std"
+        },
+        {
+          "name": "Move Action",
+          "shortName": "Move"
+        },
+        {
+          "name": "Swift Action",
+          "shortName": "Swift"
+        },
+        {
+          "name": "Free Action",
+          "shortName": "Free"
+        },
+        {
+          "name": "Full-Round Action",
+          "shortName": "Full"
+        },
+        {
+          "name": "Immediate Action",
+          "shortName": "Imm"
+        },
+        {
+          "name": "1 Round",
+          "shortName": "1 rd"
+        },
+        {
+          "name": "1 Minute",
+          "shortName": "1 min"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "form",
+      "label": "Item Form",
+      "values": [
+        {
+          "name": "Weapon"
+        },
+        {
+          "name": "Armor"
+        },
+        {
+          "name": "Shield"
+        },
+        {
+          "name": "Ring"
+        },
+        {
+          "name": "Rod"
+        },
+        {
+          "name": "Staff"
+        },
+        {
+          "name": "Wand"
+        },
+        {
+          "name": "Wondrous Item"
+        },
+        {
+          "name": "Potion"
+        },
+        {
+          "name": "Scroll"
+        },
+        {
+          "name": "Spell"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "environment",
+      "label": "Environment",
+      "values": [
+        {
+          "name": "Cold"
+        },
+        {
+          "name": "Desert"
+        },
+        {
+          "name": "Forest"
+        },
+        {
+          "name": "Hills"
+        },
+        {
+          "name": "Marsh"
+        },
+        {
+          "name": "Mountains"
+        },
+        {
+          "name": "Plains"
+        },
+        {
+          "name": "Underground"
+        },
+        {
+          "name": "Urban"
+        },
+        {
+          "name": "Water"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "conditions",
+      "label": "Conditions",
+      "values": [
+        {
+          "name": "Blinded",
+          "description": "Cannot see; -2 AC, loses Dex bonus to AC, -4 to most Str/Dex-based checks."
+        },
+        {
+          "name": "Confused",
+          "description": "Acts randomly, determined by die roll each round."
+        },
+        {
+          "name": "Cowering",
+          "description": "Frozen in fear; loses Dex bonus to AC, can take no actions."
+        },
+        {
+          "name": "Dazed",
+          "description": "Can take no actions, but has no penalty to AC."
+        },
+        {
+          "name": "Dazzled",
+          "description": "-1 on attack rolls; cannot precisely make out details."
+        },
+        {
+          "name": "Deafened",
+          "description": "-4 on initiative, automatic failure on hearing-based checks."
+        },
+        {
+          "name": "Dying",
+          "description": "At negative hit points and unstable, losing 1 hp per round."
+        },
+        {
+          "name": "Entangled",
+          "description": "-2 on attack rolls, -4 Dexterity, can only move at half speed."
+        },
+        {
+          "name": "Exhausted",
+          "description": "Move at half speed, -6 penalty to Str and Dex."
+        },
+        {
+          "name": "Fascinated",
+          "description": "Fixated on a source, -4 to skill checks, oblivious to danger."
+        },
+        {
+          "name": "Fatigued",
+          "description": "Cannot run or charge, -2 penalty to Str and Dex."
+        },
+        {
+          "name": "Flat-Footed",
+          "description": "Loses Dex bonus to AC, cannot make attacks of opportunity."
+        },
+        {
+          "name": "Frightened",
+          "description": "Must flee; -2 on attack rolls, saves, skills, and ability checks."
+        },
+        {
+          "name": "Grappled",
+          "description": "Restrained by another; limited actions, no free movement."
+        },
+        {
+          "name": "Helpless",
+          "description": "Effectively has a Dexterity of 0; treated as Paralyzed."
+        },
+        {
+          "name": "Nauseated",
+          "description": "Can take no actions other than a single move action."
+        },
+        {
+          "name": "Panicked",
+          "description": "Must drop items and flee; -2 on attack rolls, saves, skills."
+        },
+        {
+          "name": "Paralyzed",
+          "description": "Frozen in place, cannot act, loses Dex bonus to AC."
+        },
+        {
+          "name": "Pinned",
+          "description": "Grappled and held immobile; further AC penalties."
+        },
+        {
+          "name": "Prone",
+          "description": "Lying on the ground; -4 on melee attacks, +4 AC vs ranged."
+        },
+        {
+          "name": "Shaken",
+          "description": "-2 penalty on attack rolls, saves, skills, and ability checks."
+        },
+        {
+          "name": "Sickened",
+          "description": "-2 penalty on attack rolls, damage, saves, skills, ability checks."
+        },
+        {
+          "name": "Staggered",
+          "description": "May take only a single move or standard action each round."
+        },
+        {
+          "name": "Stunned",
+          "description": "Drops everything held, can't act, loses Dex bonus to AC."
+        },
+        {
+          "name": "Unconscious",
+          "description": "Knocked out or asleep; helpless."
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "damageTypes",
+      "label": "Damage Types",
+      "values": [
+        {
+          "name": "Bludgeoning"
+        },
+        {
+          "name": "Piercing"
+        },
+        {
+          "name": "Slashing"
+        },
+        {
+          "name": "Fire"
+        },
+        {
+          "name": "Cold"
+        },
+        {
+          "name": "Acid"
+        },
+        {
+          "name": "Electricity"
+        },
+        {
+          "name": "Sonic"
+        },
+        {
+          "name": "Force"
+        },
+        {
+          "name": "Negative Energy"
+        },
+        {
+          "name": "Positive Energy"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "challengeRating",
+      "label": "Challenge Rating",
+      "values": [
+        {
+          "name": "CR 1/8",
+          "shortName": "1/8",
+          "armorClass": 15,
+          "hitPoints": 12,
+          "attackBonus": 0,
+          "saveDC": 4
+        },
+        {
+          "name": "CR 1/6",
+          "shortName": "1/6",
+          "armorClass": 15,
+          "hitPoints": 15,
+          "attackBonus": 1,
+          "saveDC": 5
+        },
+        {
+          "name": "CR 1/4",
+          "shortName": "1/4",
+          "armorClass": 15,
+          "hitPoints": 20,
+          "attackBonus": 2,
+          "saveDC": 5
+        },
+        {
+          "name": "CR 1/3",
+          "shortName": "1/3",
+          "armorClass": 15,
+          "hitPoints": 25,
+          "attackBonus": 3,
+          "saveDC": 6
+        },
+        {
+          "name": "CR 1/2",
+          "shortName": "1/2",
+          "armorClass": 15,
+          "hitPoints": 30,
+          "attackBonus": 4,
+          "saveDC": 6
+        },
+        {
+          "name": "CR 1",
+          "shortName": "1",
+          "armorClass": 15,
+          "hitPoints": 40,
+          "attackBonus": 5,
+          "saveDC": 7
+        },
+        {
+          "name": "CR 2",
+          "shortName": "2",
+          "armorClass": 16,
+          "hitPoints": 55,
+          "attackBonus": 6,
+          "saveDC": 8
+        },
+        {
+          "name": "CR 3",
+          "shortName": "3",
+          "armorClass": 17,
+          "hitPoints": 70,
+          "attackBonus": 8,
+          "saveDC": 9
+        },
+        {
+          "name": "CR 4",
+          "shortName": "4",
+          "armorClass": 18,
+          "hitPoints": 85,
+          "attackBonus": 10,
+          "saveDC": 10
+        },
+        {
+          "name": "CR 5",
+          "shortName": "5",
+          "armorClass": 19,
+          "hitPoints": 100,
+          "attackBonus": 12,
+          "saveDC": 11
+        },
+        {
+          "name": "CR 6",
+          "shortName": "6",
+          "armorClass": 20,
+          "hitPoints": 115,
+          "attackBonus": 14,
+          "saveDC": 12
+        },
+        {
+          "name": "CR 7",
+          "shortName": "7",
+          "armorClass": 21,
+          "hitPoints": 130,
+          "attackBonus": 16,
+          "saveDC": 13
+        },
+        {
+          "name": "CR 8",
+          "shortName": "8",
+          "armorClass": 22,
+          "hitPoints": 145,
+          "attackBonus": 18,
+          "saveDC": 14
+        },
+        {
+          "name": "CR 9",
+          "shortName": "9",
+          "armorClass": 23,
+          "hitPoints": 165,
+          "attackBonus": 20,
+          "saveDC": 15
+        },
+        {
+          "name": "CR 10",
+          "shortName": "10",
+          "armorClass": 24,
+          "hitPoints": 185,
+          "attackBonus": 22,
+          "saveDC": 16
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "creatureTypes",
+      "label": "Creature Types",
+      "values": [
+        {
+          "id": "aberration",
+          "name": "Aberration",
+          "description": "A creature with an alien mindset or bizarre anatomy."
+        },
+        {
+          "id": "animal",
+          "name": "Animal",
+          "description": "A living, non-humanoid creature, usually a natural beast."
+        },
+        {
+          "id": "construct",
+          "name": "Construct",
+          "description": "An animated, typically mindless, object or artificial creature."
+        },
+        {
+          "id": "dragon",
+          "name": "Dragon",
+          "description": "A reptilian creature, often winged, with magical abilities."
+        },
+        {
+          "id": "fey",
+          "name": "Fey",
+          "description": "A creature with supernatural abilities tied to nature or magic."
+        },
+        {
+          "id": "humanoid",
+          "name": "Humanoid",
+          "description": "A bipedal creature with two arms and two legs, usually mortal."
+        },
+        {
+          "id": "magical-beast",
+          "name": "Magical Beast",
+          "description": "A creature similar to an animal but with supernatural powers."
+        },
+        {
+          "id": "monstrous-humanoid",
+          "name": "Monstrous Humanoid",
+          "description": "A humanoid-shaped creature with monstrous traits."
+        },
+        {
+          "id": "ooze",
+          "name": "Ooze",
+          "description": "A mindless, amorphous creature."
+        },
+        {
+          "id": "outsider",
+          "name": "Outsider",
+          "description": "A creature native to another plane of existence."
+        },
+        {
+          "id": "plant",
+          "name": "Plant",
+          "description": "A vegetable creature, usually mindless."
+        },
+        {
+          "id": "undead",
+          "name": "Undead",
+          "description": "Once-living creatures animated by negative energy."
+        },
+        {
+          "id": "vermin",
+          "name": "Vermin",
+          "description": "A mindless invertebrate creature."
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "combatBindings",
+      "label": "Combat Bindings",
+      "values": [
+        {
+          "name": "Hit Points",
+          "maxPath": "@hitPoints.max",
+          "binding": "@hitPoints.current",
+          "role": "resource"
+        },
+        {
+          "name": "Armor Class",
+          "binding": "@armorClass.normal",
+          "role": "value"
+        },
+        {
+          "name": "Conditions",
+          "binding": "@conditions",
+          "sourceField": "conditions",
+          "role": "tags"
+        },
+        {
+          "name": "Initiative",
+          "die": "d20",
+          "binding": "@initiative",
+          "role": "modifier"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "dice",
+      "label": "Dice",
+      "values": [
+        {
+          "name": "d4",
+          "sides": 4
+        },
+        {
+          "name": "d6",
+          "sides": 6
+        },
+        {
+          "name": "d8",
+          "sides": 8
+        },
+        {
+          "name": "d10",
+          "sides": 10
+        },
+        {
+          "name": "d12",
+          "sides": 12
+        },
+        {
+          "name": "d20",
+          "sides": 20
+        },
+        {
+          "name": "d100",
+          "sides": 100
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "feats",
+      "label": "Feats",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Feat"
+        },
+        {
+          "type": "string",
+          "key": "notes",
+          "label": "Notes"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "spells",
+      "label": "Spells Known/Prepared",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Spell"
+        },
+        {
+          "type": "number",
+          "key": "level",
+          "label": "Level",
+          "minimum": 0,
+          "maximum": 9
+        },
+        {
+          "type": "boolean",
+          "key": "prepared",
+          "label": "Prepared"
+        }
+      ]
+    }
+  ]
+}

@@ -7,6 +7,15 @@
 import { rollDiceExpression } from "../../../workbench/js/lib/dice.js";
 import { fetchLibraryEntry, fetchKindEntriesWithIds, listLocationsForSetting } from "../../../common/js/lib/content-fetch.js";
 import { abilityModifier } from "../../../common/js/lib/dnd-rules.js";
+// loadAbilityFieldDefs moved to common/js/lib/generator-kit.js — this file
+// used to carry its own byte-identical copy (hardcoding a fixed "abilities"
+// key, with no preferredKey param), confirmed as a real, still-live
+// duplication bug: Crucible's own copy was already consolidated onto the
+// shared version, but this one never was, so Forge's own abilityField
+// settings preference (forge/js/app.js) was silently ignored on every call
+// until this re-export replaced the stale local copy.
+import { loadAbilityFieldDefs } from "../../../common/js/lib/generator-kit.js";
+export { loadAbilityFieldDefs };
 
 // Re-exported so undercroft/forge/js/app.js's own import (from this file)
 // keeps working unchanged — the implementation moved to content-fetch.js
@@ -52,19 +61,6 @@ const DEFAULT_ALIGNMENT_FACES = [
   "Neutral Evil",
   "Chaotic Evil",
   "Unaligned",
-];
-
-// Same reasoning as DEFAULT_ALIGNMENT_FACES above — the six ability score
-// keys/short labels are read from the active System's own "abilities" field
-// (see loadAbilityFieldDefs below), falling back to this default only if the
-// System defines none.
-const DEFAULT_ABILITY_FIELD_DEFS = [
-  { key: "strength", label: "STR" },
-  { key: "dexterity", label: "DEX" },
-  { key: "constitution", label: "CON" },
-  { key: "intelligence", label: "INT" },
-  { key: "wisdom", label: "WIS" },
-  { key: "charisma", label: "CHA" },
 ];
 
 export const GENDER_FACES = [
@@ -192,24 +188,6 @@ export async function loadNpcAttitudes(dataManager, systemId, attitudeField = "n
   return attitudes.length ? attitudes : DEFAULT_ATTITUDES;
 }
 
-// The active System's own "abilities" object field's children (key +
-// shortName) — same fallback reasoning as loadAlignmentFaces above. Strips
-// the "abilities." key prefix so callers get bare keys (e.g. "strength")
-// matching the flat keys a System's own npcTypes entries use for their own
-// Stats (see loadArchetypeTable below).
-export async function loadAbilityFieldDefs(dataManager, systemId) {
-  const system = await fetchSystemRecord(dataManager, systemId);
-  const fields = Array.isArray(system?.fields) ? system.fields : [];
-  const field = fields.find((entry) => entry.type === "object" && entry.key === "abilities");
-  const defs = (field?.children || [])
-    .map((child) => ({
-      key: String(child.key || "").replace(/^abilities\./, ""),
-      label: child.shortName || child.label || "",
-    }))
-    .filter((entry) => entry.key && entry.label);
-  return defs.length ? defs : DEFAULT_ABILITY_FIELD_DEFS;
-}
-
 // Every top-level array field on the active System, so Forge's Settings
 // modal (Archetype field picker) can list all real candidates —
 // deliberately unfiltered (unlike Vault's own cost/targetBudget-shaped
@@ -227,6 +205,87 @@ export async function listArrayFieldOptions(dataManager, systemId) {
       .map((entry) => ({ key: entry.key, label: entry.label || entry.key }));
   } catch (error) {
     return [];
+  }
+}
+
+// {key, min, max} for every stat Forge can roll WITHOUT it needing to come
+// from the active Archetype table entry — used as a fallback (see
+// generator.js's own resolveStats) for a System whose stats genuinely don't
+// vary by Archetype (Call of Cthulhu: every Occupation rolls the same
+// Characteristics/HP/Move independently; only skill points/Credit Rating
+// actually depend on Occupation). Two sources, both plain System data, never
+// hardcoded to a specific System:
+//   - abilityFieldDefs' own children, when authored with a minimum/maximum
+//     (e.g. sys.coc7e.json's Characteristics, 15-90 each).
+//   - any other top-level `type: "number"` field with both a minimum and a
+//     maximum (e.g. a System's own Hit Points/Move fields) — deliberately
+//     NOT limited to fields living inside the ability object, since HP/Move
+//     aren't ability scores but roll the exact same way.
+// A System whose Archetype table already supplies every one of these keys
+// (D&D's own Monster Manual-style copy) simply never needs this — see
+// resolveStats' own "skip anything the Archetype entry already provides"
+// check, so this is inert there, not a second, conflicting source.
+export async function loadIndependentStatRanges(dataManager, systemId, abilityFieldDefs) {
+  if (!dataManager || !systemId) return [];
+  try {
+    const result = await dataManager.get("systems", systemId, { preferLocal: false });
+    const fields = Array.isArray(result?.payload?.fields) ? result.payload.fields : [];
+    const ranges = [];
+    (abilityFieldDefs || []).forEach((def) => {
+      if (typeof def.minimum === "number" && typeof def.maximum === "number") {
+        ranges.push({ key: def.key, min: def.minimum, max: def.maximum });
+      }
+    });
+    fields
+      .filter((entry) => entry.type === "number" && typeof entry.minimum === "number" && typeof entry.maximum === "number")
+      .forEach((entry) => ranges.push({ key: entry.key, min: entry.minimum, max: entry.maximum }));
+    return ranges;
+  } catch (error) {
+    return [];
+  }
+}
+
+// The active System's own skillGeneration config field (if it defines one)
+// plus the skill vocabulary it points at — the System-defined shape backing
+// the "Key Expertise Skills roll higher, everything else rolls lower" NPC
+// generation feature (see generator.js's own rollSkills). A System with no
+// skillGeneration field defined at all (everything but Call of Cthulhu,
+// today) simply never generates a `skills` block this way — nothing here is
+// hardcoded to CoC specifically, any System can opt in with the same shape.
+export async function loadSkillGenerationConfig(dataManager, systemId) {
+  if (!dataManager || !systemId) return null;
+  try {
+    const result = await dataManager.get("systems", systemId, { preferLocal: false });
+    const fields = Array.isArray(result?.payload?.fields) ? result.payload.fields : [];
+    const configField = fields.find((entry) => entry.type === "object" && entry.key === "skillGeneration");
+    if (!configField) return null;
+    const numOf = (suffix, fallback) => {
+      const child = (configField.children || []).find((entry) => String(entry.key || "").endsWith(`.${suffix}`));
+      return typeof child?.value === "number" ? child.value : fallback;
+    };
+    const skillsFieldKey = (configField.children || []).find((entry) => String(entry.key || "").endsWith(".skillsField"))?.value || "skills";
+    const skillsField = fields.find((entry) => entry.type === "object" && entry.key === skillsFieldKey);
+    const skillKeys = (skillsField?.children || [])
+      .map((child) => {
+        const raw = String(child.key || "");
+        return {
+          key: raw.startsWith(`${skillsFieldKey}.`) ? raw.slice(skillsFieldKey.length + 1) : raw,
+          label: child.shortName || child.label || "",
+        };
+      })
+      .filter((entry) => entry.key && entry.label);
+    if (!skillKeys.length) return null;
+    return {
+      skillsFieldKey,
+      skillKeys,
+      keyCount: numOf("keyCount", 4),
+      keyMin: numOf("keyMin", 50),
+      keyMax: numOf("keyMax", 70),
+      otherMin: numOf("otherMin", 20),
+      otherMax: numOf("otherMax", 30),
+    };
+  } catch (error) {
+    return null;
   }
 }
 
@@ -460,7 +519,15 @@ function rollUniformD(sides, notation, { random = Math.random } = {}) {
 // always goes through `speciesProfiles` so it can never disagree with the
 // name generator about which profile a given roll actually means.
 export function rollWeightedSpecies(location, speciesProfiles, { random = Math.random, override = "" } = {}) {
-  const labelFor = (entityId) => speciesProfiles?.get(entityId)?.label || entityId;
+  // "other" is never in speciesProfiles (loadSpeciesProfilesForLocation
+  // deliberately skips fetching it — see its own comment), so falling
+  // through to the bare entityId below produced the literal lowercase
+  // string "other" for any Location that includes it as a REAL weighted
+  // row (Duskvol/Forgotten Realms/Spelljammer all do, alongside their real
+  // species) — confirmed real bug, distinct from the zero-weights fallback
+  // a few lines down, which already produces the correctly-capitalized
+  // "Other" label. Special-cased here so both paths agree.
+  const labelFor = (entityId) => (entityId === "other" ? "Other" : speciesProfiles?.get(entityId)?.label || entityId);
   if (override) {
     return { label: labelFor(override), speciesId: override, roll: null, total: null, manual: true };
   }

@@ -1,0 +1,118 @@
+{
+  "systemIds": [
+    "sys.sf1e",
+    "sys.sf2e"
+  ],
+  "name": "Pact Worlds",
+  "description": "The solar system centuries After the Gap — the mysterious event that erased a hundred years of galactic memory. United by the Pact Council, the surviving worlds banded together around Absalom Station, the artificial ring-world hub of trade, diplomacy, and starfaring life, where humans, androids, kasathas, lashuntas, shirrens, vesk, ysoki, and dozens of stranger folk share the same bustling decks. No single species holds a majority here — the Pact Worlds are cosmopolitan by necessity, built from whoever survived the Gap and everyone who's arrived since.",
+  "speciesWeights": [
+    {
+      "entityId": "human-pactworlds",
+      "weight": 20
+    },
+    {
+      "entityId": "android-pactworlds",
+      "weight": 12
+    },
+    {
+      "entityId": "kasatha-pactworlds",
+      "weight": 11
+    },
+    {
+      "entityId": "lashunta-pactworlds",
+      "weight": 11
+    },
+    {
+      "entityId": "shirren-pactworlds",
+      "weight": 11
+    },
+    {
+      "entityId": "ysoki-pactworlds",
+      "weight": 11
+    },
+    {
+      "entityId": "vesk-pactworlds",
+      "weight": 9
+    },
+    {
+      "entityId": "barathu-pactworlds",
+      "weight": 5
+    },
+    {
+      "entityId": "pahtra-pactworlds",
+      "weight": 5
+    },
+    {
+      "entityId": "skittermander-pactworlds",
+      "weight": 4
+    },
+    {
+      "entityId": "other",
+      "weight": 1
+    }
+  ],
+  "calendar": {
+    "daysPerWeek": 7,
+    "weekdayNames": [
+      "Moonday",
+      "Toilday",
+      "Wealday",
+      "Oathday",
+      "Fireday",
+      "Starday",
+      "Sunday"
+    ],
+    "months": [
+      {
+        "name": "Abadius",
+        "days": 31
+      },
+      {
+        "name": "Calistril",
+        "days": 28
+      },
+      {
+        "name": "Pharast",
+        "days": 31
+      },
+      {
+        "name": "Gozran",
+        "days": 30
+      },
+      {
+        "name": "Desnus",
+        "days": 31
+      },
+      {
+        "name": "Sarenith",
+        "days": 30
+      },
+      {
+        "name": "Erastus",
+        "days": 31
+      },
+      {
+        "name": "Arodus",
+        "days": 31
+      },
+      {
+        "name": "Rova",
+        "days": 30
+      },
+      {
+        "name": "Lamashan",
+        "days": 31
+      },
+      {
+        "name": "Neth",
+        "days": 30
+      },
+      {
+        "name": "Kuthona",
+        "days": 31
+      }
+    ],
+    "epochLabel": "AG",
+    "startingYear": 325
+  }
+}

@@ -1,0 +1,1280 @@
+{
+  "title": "Call of Cthulhu 7E",
+  "version": "0.1",
+  "fields": [
+    {
+      "type": "string",
+      "key": "name",
+      "label": "Investigator Name",
+      "required": true
+    },
+    {
+      "type": "string",
+      "key": "player",
+      "label": "Player Name"
+    },
+    {
+      "type": "array",
+      "key": "occupations",
+      "label": "Occupation",
+      "values": [
+        {
+          "name": "Antiquarian",
+          "creditRatingMin": 30,
+          "creditRatingMax": 70,
+          "description": "Deals in rare books, art, and artifacts of historical value."
+        },
+        {
+          "name": "Author",
+          "creditRatingMin": 9,
+          "creditRatingMax": 20,
+          "description": "Writes fiction or nonfiction for a living, or tries to."
+        },
+        {
+          "name": "Dilettante",
+          "creditRatingMin": 60,
+          "creditRatingMax": 99,
+          "description": "Independently wealthy, free to pursue any interest that catches their eye."
+        },
+        {
+          "name": "Doctor of Medicine",
+          "creditRatingMin": 30,
+          "creditRatingMax": 80,
+          "description": "A licensed physician, surgeon, or specialist."
+        },
+        {
+          "name": "Engineer",
+          "creditRatingMin": 30,
+          "creditRatingMax": 70,
+          "description": "Designs and builds machines, structures, or systems."
+        },
+        {
+          "name": "Journalist",
+          "creditRatingMin": 9,
+          "creditRatingMax": 30,
+          "description": "Investigates and reports the news, often courting danger to get the story."
+        },
+        {
+          "name": "Lawyer",
+          "creditRatingMin": 30,
+          "creditRatingMax": 80,
+          "description": "Practices law, whether in a courtroom or a back-room negotiation."
+        },
+        {
+          "name": "Librarian",
+          "creditRatingMin": 9,
+          "creditRatingMax": 35,
+          "description": "Catalogs, maintains, and has unusually complete access to a collection."
+        },
+        {
+          "name": "Military Officer",
+          "creditRatingMin": 20,
+          "creditRatingMax": 70,
+          "description": "Commands or serves within a military organization."
+        },
+        {
+          "name": "Musician / Entertainer",
+          "creditRatingMin": 9,
+          "creditRatingMax": 60,
+          "description": "Performs for a living, on stage or in more disreputable venues."
+        },
+        {
+          "name": "Parapsychologist",
+          "creditRatingMin": 10,
+          "creditRatingMax": 50,
+          "description": "Studies psychic phenomena with (dubious) scientific rigor."
+        },
+        {
+          "name": "Police Detective",
+          "creditRatingMin": 20,
+          "creditRatingMax": 50,
+          "description": "Investigates crime as a sworn officer of the law."
+        },
+        {
+          "name": "Private Investigator",
+          "creditRatingMin": 9,
+          "creditRatingMax": 30,
+          "description": "Investigates for hire, outside official channels."
+        },
+        {
+          "name": "Professor",
+          "creditRatingMin": 20,
+          "creditRatingMax": 70,
+          "description": "Teaches and researches at a college or university."
+        },
+        {
+          "name": "Clergy",
+          "creditRatingMin": 9,
+          "creditRatingMax": 60,
+          "description": "Serves a religious congregation and its spiritual needs."
+        },
+        {
+          "name": "Soldier",
+          "creditRatingMin": 9,
+          "creditRatingMax": 30,
+          "description": "Trained and equipped for combat, active duty or veteran."
+        },
+        {
+          "name": "Student",
+          "creditRatingMin": 9,
+          "creditRatingMax": 20,
+          "description": "Enrolled at a school, college, or university, still finding their path."
+        },
+        {
+          "name": "Zealot",
+          "creditRatingMin": 5,
+          "creditRatingMax": 65,
+          "description": "Devoted, sometimes dangerously so, to a cause, faith, or secret society."
+        },
+        {
+          "name": "Drifter",
+          "creditRatingMin": 0,
+          "creditRatingMax": 5,
+          "description": "Has no fixed home or steady trade, surviving hand to mouth."
+        },
+        {
+          "name": "Criminal",
+          "creditRatingMin": 5,
+          "creditRatingMax": 65,
+          "description": "Makes a living on the wrong side of the law."
+        }
+      ]
+    },
+    {
+      "type": "number",
+      "key": "age",
+      "label": "Age",
+      "minimum": 15,
+      "maximum": 90
+    },
+    {
+      "type": "string",
+      "key": "sex",
+      "label": "Sex"
+    },
+    {
+      "type": "string",
+      "key": "residence",
+      "label": "Residence"
+    },
+    {
+      "type": "string",
+      "key": "birthplace",
+      "label": "Birthplace"
+    },
+    {
+      "type": "object",
+      "key": "characteristics",
+      "label": "Characteristics",
+      "children": [
+        {
+          "type": "number",
+          "key": "characteristics.strength",
+          "label": "Strength",
+          "shortName": "STR",
+          "color": "#e74c3c",
+          "minimum": 15,
+          "maximum": 90
+        },
+        {
+          "type": "number",
+          "key": "characteristics.constitution",
+          "label": "Constitution",
+          "shortName": "CON",
+          "color": "#e67e22",
+          "minimum": 15,
+          "maximum": 90
+        },
+        {
+          "type": "number",
+          "key": "characteristics.size",
+          "label": "Size",
+          "shortName": "SIZ",
+          "color": "#95a5a6",
+          "minimum": 15,
+          "maximum": 90
+        },
+        {
+          "type": "number",
+          "key": "characteristics.dexterity",
+          "label": "Dexterity",
+          "shortName": "DEX",
+          "color": "#f1c40f",
+          "minimum": 15,
+          "maximum": 90
+        },
+        {
+          "type": "number",
+          "key": "characteristics.appearance",
+          "label": "Appearance",
+          "shortName": "APP",
+          "color": "#9b59b6",
+          "minimum": 15,
+          "maximum": 90
+        },
+        {
+          "type": "number",
+          "key": "characteristics.intelligence",
+          "label": "Intelligence",
+          "shortName": "INT",
+          "color": "#3498db",
+          "minimum": 15,
+          "maximum": 90
+        },
+        {
+          "type": "number",
+          "key": "characteristics.power",
+          "label": "Power",
+          "shortName": "POW",
+          "color": "#8e44ad",
+          "minimum": 15,
+          "maximum": 90
+        },
+        {
+          "type": "number",
+          "key": "characteristics.education",
+          "label": "Education",
+          "shortName": "EDU",
+          "color": "#2ecc71",
+          "minimum": 15,
+          "maximum": 90
+        }
+      ]
+    },
+    {
+      "type": "number",
+      "key": "luck",
+      "label": "Luck",
+      "minimum": 15,
+      "maximum": 90
+    },
+    {
+      "type": "number",
+      "key": "hitPoints",
+      "label": "Hit Points",
+      "minimum": 8,
+      "maximum": 16
+    },
+    {
+      "type": "number",
+      "key": "move",
+      "label": "Move",
+      "minimum": 7,
+      "maximum": 9
+    },
+    {
+      "type": "object",
+      "key": "skills",
+      "label": "Skills",
+      "children": [
+        {
+          "type": "number",
+          "key": "skills.accounting",
+          "label": "Accounting",
+          "basePercentage": 5,
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "skills.anthropology",
+          "label": "Anthropology",
+          "basePercentage": 1,
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "skills.appraise",
+          "label": "Appraise",
+          "basePercentage": 5,
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "skills.archaeology",
+          "label": "Archaeology",
+          "basePercentage": 1,
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "skills.artCraft",
+          "label": "Art/Craft",
+          "basePercentage": 5,
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "skills.charm",
+          "label": "Charm",
+          "basePercentage": 15,
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "skills.climb",
+          "label": "Climb",
+          "basePercentage": 20,
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "skills.creditRating",
+          "label": "Credit Rating",
+          "basePercentage": 0,
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "skills.cthulhuMythos",
+          "label": "Cthulhu Mythos",
+          "basePercentage": 0,
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "skills.disguise",
+          "label": "Disguise",
+          "basePercentage": 5,
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "skills.dodge",
+          "label": "Dodge",
+          "baseNote": "Half DEX",
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "skills.driveAuto",
+          "label": "Drive Auto",
+          "basePercentage": 20,
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "skills.elecRepair",
+          "label": "Elec Repair",
+          "basePercentage": 10,
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "skills.fastTalk",
+          "label": "Fast Talk",
+          "basePercentage": 5,
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "skills.fightingBrawl",
+          "label": "Fighting (Brawl)",
+          "basePercentage": 25,
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "skills.firearmsHandgun",
+          "label": "Firearms (Handgun)",
+          "basePercentage": 20,
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "skills.firearmsRifleShotgun",
+          "label": "Firearms (Rifle/Shotgun)",
+          "basePercentage": 25,
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "skills.firstAid",
+          "label": "First Aid",
+          "basePercentage": 30,
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "skills.history",
+          "label": "History",
+          "basePercentage": 5,
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "skills.intimidate",
+          "label": "Intimidate",
+          "basePercentage": 15,
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "skills.jump",
+          "label": "Jump",
+          "basePercentage": 20,
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "skills.languageOther",
+          "label": "Language (Other)",
+          "basePercentage": 1,
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "skills.languageOwn",
+          "label": "Language (Own)",
+          "baseNote": "EDU",
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "skills.law",
+          "label": "Law",
+          "basePercentage": 5,
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "skills.libraryUse",
+          "label": "Library Use",
+          "basePercentage": 20,
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "skills.listen",
+          "label": "Listen",
+          "basePercentage": 20,
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "skills.locksmith",
+          "label": "Locksmith",
+          "basePercentage": 1,
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "skills.mechanicalRepair",
+          "label": "Mechanical Repair",
+          "basePercentage": 10,
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "skills.medicine",
+          "label": "Medicine",
+          "basePercentage": 1,
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "skills.naturalWorld",
+          "label": "Natural World",
+          "basePercentage": 10,
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "skills.navigate",
+          "label": "Navigate",
+          "basePercentage": 10,
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "skills.occult",
+          "label": "Occult",
+          "basePercentage": 5,
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "skills.operateHeavyMachinery",
+          "label": "Operate Heavy Machinery",
+          "basePercentage": 1,
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "skills.persuade",
+          "label": "Persuade",
+          "basePercentage": 10,
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "skills.pilot",
+          "label": "Pilot",
+          "basePercentage": 1,
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "skills.psychology",
+          "label": "Psychology",
+          "basePercentage": 10,
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "skills.psychoanalysis",
+          "label": "Psychoanalysis",
+          "basePercentage": 1,
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "skills.ride",
+          "label": "Ride",
+          "basePercentage": 5,
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "skills.science",
+          "label": "Science",
+          "basePercentage": 1,
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "skills.sleightOfHand",
+          "label": "Sleight of Hand",
+          "basePercentage": 10,
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "skills.spotHidden",
+          "label": "Spot Hidden",
+          "basePercentage": 25,
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "skills.stealth",
+          "label": "Stealth",
+          "basePercentage": 20,
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "skills.survival",
+          "label": "Survival",
+          "basePercentage": 10,
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "skills.swim",
+          "label": "Swim",
+          "basePercentage": 20,
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "skills.throw",
+          "label": "Throw",
+          "basePercentage": 20,
+          "minimum": 0,
+          "maximum": 99
+        },
+        {
+          "type": "number",
+          "key": "skills.track",
+          "label": "Track",
+          "basePercentage": 10,
+          "minimum": 0,
+          "maximum": 99
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "weapons",
+      "label": "Weapons & Combat",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Weapon"
+        },
+        {
+          "type": "string",
+          "key": "skill",
+          "label": "Skill"
+        },
+        {
+          "type": "string",
+          "key": "damage",
+          "label": "Damage"
+        },
+        {
+          "type": "string",
+          "key": "range",
+          "label": "Range"
+        },
+        {
+          "type": "number",
+          "key": "attacksPerRound",
+          "label": "Attacks/Round"
+        },
+        {
+          "type": "number",
+          "key": "ammo",
+          "label": "Ammo"
+        },
+        {
+          "type": "string",
+          "key": "malfunction",
+          "label": "Malfunction"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "inventory",
+      "label": "Inventory",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Item Name",
+          "required": true
+        },
+        {
+          "type": "number",
+          "key": "quantity",
+          "label": "Quantity",
+          "minimum": 0
+        },
+        {
+          "type": "string",
+          "key": "notes",
+          "label": "Notes"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "currency",
+      "label": "Currency",
+      "values": [
+        {
+          "name": "Dollar",
+          "shortName": "$",
+          "cost": 100
+        },
+        {
+          "name": "Cent",
+          "shortName": "¢",
+          "cost": 1
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "weaponCategories",
+      "label": "Weapon Categories",
+      "values": [
+        {
+          "name": "Melee"
+        },
+        {
+          "name": "Handgun"
+        },
+        {
+          "name": "Rifle/Shotgun"
+        },
+        {
+          "name": "Submachine Gun"
+        },
+        {
+          "name": "Explosive"
+        },
+        {
+          "name": "Improvised"
+        },
+        {
+          "name": "Natural"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "equipmentCategories",
+      "label": "Equipment Categories",
+      "values": [
+        {
+          "name": "General Equipment"
+        },
+        {
+          "name": "Firearms"
+        },
+        {
+          "name": "Melee Weapons"
+        },
+        {
+          "name": "Ammunition"
+        },
+        {
+          "name": "Medical"
+        },
+        {
+          "name": "Tools"
+        },
+        {
+          "name": "Documents"
+        },
+        {
+          "name": "Occult Item"
+        },
+        {
+          "name": "Mythos Tome"
+        },
+        {
+          "name": "Vehicle"
+        },
+        {
+          "name": "Clothing"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "rarity",
+      "label": "Rarity",
+      "values": [
+        {
+          "name": "Common",
+          "targetBudget": 3,
+          "description": "Everyday equipment or a widely printed book."
+        },
+        {
+          "name": "Uncommon",
+          "targetBudget": 7,
+          "description": "Specialized or hard-to-source gear, or an out-of-print work."
+        },
+        {
+          "name": "Rare",
+          "targetBudget": 12,
+          "description": "Restricted, expensive, or privately held."
+        },
+        {
+          "name": "Unique",
+          "targetBudget": 20,
+          "description": "One of a kind — a singular artifact or manuscript."
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "damageBonusBuildTable",
+      "label": "Damage Bonus / Build",
+      "values": [
+        {
+          "name": "STR+SIZ 2-64",
+          "min": 2,
+          "max": 64,
+          "damageBonus": "-2",
+          "build": -2
+        },
+        {
+          "name": "STR+SIZ 65-84",
+          "min": 65,
+          "max": 84,
+          "damageBonus": "-1",
+          "build": -1
+        },
+        {
+          "name": "STR+SIZ 85-124",
+          "min": 85,
+          "max": 124,
+          "damageBonus": "0",
+          "build": 0
+        },
+        {
+          "name": "STR+SIZ 125-164",
+          "min": 125,
+          "max": 164,
+          "damageBonus": "+1D4",
+          "build": 1
+        },
+        {
+          "name": "STR+SIZ 165-204",
+          "min": 165,
+          "max": 204,
+          "damageBonus": "+1D6",
+          "build": 2
+        },
+        {
+          "name": "STR+SIZ 205-284",
+          "min": 205,
+          "max": 284,
+          "damageBonus": "+2D6",
+          "build": 3
+        },
+        {
+          "name": "STR+SIZ 285-364",
+          "min": 285,
+          "max": 364,
+          "damageBonus": "+3D6",
+          "build": 4
+        },
+        {
+          "name": "STR+SIZ 365-444",
+          "min": 365,
+          "max": 444,
+          "damageBonus": "+4D6",
+          "build": 5
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "combatScaling",
+      "label": "Combat Scaling",
+      "values": [
+        {
+          "name": "Standard",
+          "shortName": "Standard",
+          "sourceId": 1,
+          "targetBudget": 5
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "skillGeneration",
+      "label": "Skill Generation",
+      "children": [
+        {
+          "type": "string",
+          "key": "skillGeneration.skillsField",
+          "label": "Skills Field",
+          "value": "skills"
+        },
+        {
+          "type": "number",
+          "key": "skillGeneration.keyCount",
+          "label": "Key Expertise Skill Count",
+          "value": 4
+        },
+        {
+          "type": "number",
+          "key": "skillGeneration.keyMin",
+          "label": "Key Expertise Skill Min",
+          "value": 50
+        },
+        {
+          "type": "number",
+          "key": "skillGeneration.keyMax",
+          "label": "Key Expertise Skill Max",
+          "value": 70
+        },
+        {
+          "type": "number",
+          "key": "skillGeneration.otherMin",
+          "label": "Other Skill Min",
+          "value": 20
+        },
+        {
+          "type": "number",
+          "key": "skillGeneration.otherMax",
+          "label": "Other Skill Max",
+          "value": 30
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "dice",
+      "label": "Dice",
+      "values": [
+        {
+          "name": "d100",
+          "sides": 100,
+          "description": "The Investigator's core resolution die — percentile, roll-under."
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "rolls",
+      "label": "Rolls",
+      "values": [
+        {
+          "name": "Skill / Characteristic Check (d100, Roll Under)",
+          "expression": "d100",
+          "resultMode": "band",
+          "description": "Roll d100 against the skill or characteristic being tested. Fired from a field's own roll button (a Skill's % input, a Characteristic score), which passes that field's current value through as the target — Regular/Hard/Extreme success, and the conditional 96-99 Fumble, are evaluated live against it. Fired from the Moves panel with no associated field, only the two fixed thresholds (Critical Success on a 1, Fumble on 100) can match.",
+          "bands": [
+            {
+              "max": 1,
+              "label": "Critical Success"
+            },
+            {
+              "min": 100,
+              "max": 100,
+              "label": "Fumble"
+            },
+            {
+              "min": 96,
+              "max": 99,
+              "targetBelow": 50,
+              "label": "Fumble"
+            },
+            {
+              "targetMaxFraction": 0.2,
+              "label": "Extreme Success"
+            },
+            {
+              "targetMaxFraction": 0.5,
+              "label": "Hard Success"
+            },
+            {
+              "targetMaxFraction": 1.0,
+              "label": "Regular Success"
+            },
+            {
+              "targetMinFraction": 0,
+              "label": "Failure"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "combatBindings",
+      "label": "Combat Bindings",
+      "values": [
+        {
+          "name": "Hit Points",
+          "maxPath": "@stats.hitPoints.max",
+          "binding": "@stats.hitPoints.current",
+          "role": "resource"
+        },
+        {
+          "name": "Magic Points",
+          "maxPath": "@stats.magicPoints.max",
+          "binding": "@stats.magicPoints.current",
+          "role": "resource"
+        },
+        {
+          "name": "Sanity",
+          "maxPath": "@stats.sanity.max",
+          "binding": "@stats.sanity.current",
+          "role": "resource"
+        },
+        {
+          "name": "Luck",
+          "binding": "@luck",
+          "role": "resource"
+        },
+        {
+          "name": "Conditions",
+          "binding": "@conditions",
+          "sourceField": "conditions",
+          "role": "tags"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "conditions",
+      "label": "Conditions",
+      "values": [
+        {
+          "name": "Temporary Insanity",
+          "description": "A sudden, bounded bout of madness triggered by a Sanity loss of 5 or more in a single round."
+        },
+        {
+          "name": "Indefinite Insanity",
+          "description": "A longer psychological break triggered by losing 1/5 or more of current Sanity in a single check."
+        },
+        {
+          "name": "Major Wound",
+          "description": "A single injury dealing damage equal to or exceeding half of the investigator's maximum Hit Points."
+        },
+        {
+          "name": "Unconscious",
+          "description": "Unable to act; falls when Hit Points reach 0, or by other incapacitating effects."
+        },
+        {
+          "name": "Dying",
+          "description": "Hit Points at 0 or below without immediate first aid or medical treatment."
+        },
+        {
+          "name": "Bleeding Out",
+          "description": "Losing Hit Points each round until stabilized."
+        },
+        {
+          "name": "Prone",
+          "description": "Knocked down; at a disadvantage until standing back up."
+        },
+        {
+          "name": "Grappled",
+          "description": "Held and restrained by an opponent or creature."
+        },
+        {
+          "name": "Blinded",
+          "description": "Unable to see; automatic failure on sight-based checks."
+        },
+        {
+          "name": "Deafened",
+          "description": "Unable to hear; automatic failure on hearing-based checks."
+        },
+        {
+          "name": "Poisoned",
+          "description": "Suffering the ongoing effects of a toxin."
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "madnessSymptoms",
+      "label": "Bouts of Madness",
+      "values": [
+        {
+          "name": "Amnesia",
+          "description": "The investigator loses all memory of events since the trauma, sometimes longer."
+        },
+        {
+          "name": "Paranoia",
+          "description": "Overwhelming, irrational mistrust of others, even close allies."
+        },
+        {
+          "name": "Phobia",
+          "description": "A specific, intense, irrational fear takes hold."
+        },
+        {
+          "name": "Mania",
+          "description": "An intense, irrational compulsion or obsession takes hold."
+        },
+        {
+          "name": "Violence",
+          "description": "The investigator lashes out physically at the nearest target."
+        },
+        {
+          "name": "Fugue",
+          "description": "The investigator wanders off, missing hours or days with no memory of it."
+        },
+        {
+          "name": "Hallucinations",
+          "description": "The investigator sees, hears, or feels things that are not there."
+        },
+        {
+          "name": "Delusion",
+          "description": "The investigator becomes convinced of something demonstrably untrue."
+        },
+        {
+          "name": "Catatonia",
+          "description": "The investigator becomes rigid and unresponsive to their surroundings."
+        },
+        {
+          "name": "Total Personality Change",
+          "description": "The investigator's demeanor and outlook shift dramatically and durably."
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "damageTypes",
+      "label": "Damage Types",
+      "values": [
+        {
+          "name": "Physical"
+        },
+        {
+          "name": "Fire"
+        },
+        {
+          "name": "Poison/Toxin"
+        },
+        {
+          "name": "Electricity"
+        },
+        {
+          "name": "Drowning/Suffocation"
+        },
+        {
+          "name": "Sanity/Psychic"
+        },
+        {
+          "name": "Radiation"
+        },
+        {
+          "name": "Cold"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "environment",
+      "label": "Environment",
+      "values": [
+        {
+          "name": "Urban"
+        },
+        {
+          "name": "Rural"
+        },
+        {
+          "name": "Coastal"
+        },
+        {
+          "name": "Wilderness"
+        },
+        {
+          "name": "Academic"
+        },
+        {
+          "name": "Industrial"
+        },
+        {
+          "name": "Antarctic/Polar"
+        },
+        {
+          "name": "Desert"
+        },
+        {
+          "name": "Underground"
+        },
+        {
+          "name": "Institutional"
+        },
+        {
+          "name": "Maritime"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "creatureTypes",
+      "label": "Creature Types",
+      "values": [
+        {
+          "id": "great-old-one",
+          "name": "Great Old One",
+          "description": "A vast, sleeping or imprisoned cosmic entity worshipped by cults across the world."
+        },
+        {
+          "id": "outer-god",
+          "name": "Outer God",
+          "description": "A being of near-limitless, alien power dwelling beyond ordinary reality, indifferent to mortal concerns."
+        },
+        {
+          "id": "elder-god",
+          "name": "Elder God",
+          "description": "A rare, comparatively benign cosmic power, sometimes opposed to the Outer Gods and Great Old Ones."
+        },
+        {
+          "id": "deep-one",
+          "name": "Deep One",
+          "description": "An amphibious, fish-like humanoid dwelling in undersea cities and interbreeding with coastal humans."
+        },
+        {
+          "id": "ghoul",
+          "name": "Ghoul",
+          "description": "A degenerate, subterranean carrion-eater, once human, dwelling in graveyards and tunnels."
+        },
+        {
+          "id": "mi-go",
+          "name": "Mi-Go",
+          "description": "A fungoid, crustacean-like being from beyond the stars, harvesting minds and specimens."
+        },
+        {
+          "id": "byakhee",
+          "name": "Byakhee",
+          "description": "A winged, star-faring horror summoned to carry a cultist across the void."
+        },
+        {
+          "id": "servitor",
+          "name": "Servitor",
+          "description": "A monstrous agent bound or summoned to carry out a greater power's will."
+        },
+        {
+          "id": "star-vampire",
+          "name": "Star Vampire",
+          "description": "An invisible, blood-draining horror from beyond the visible spectrum."
+        },
+        {
+          "id": "hound-of-tindalos",
+          "name": "Hound of Tindalos",
+          "description": "A lean, angular predator that hunts time travelers through the angles of reality."
+        },
+        {
+          "id": "elder-thing",
+          "name": "Elder Thing",
+          "description": "An ancient, star-headed being, among the first intelligent life on Earth."
+        },
+        {
+          "id": "shoggoth",
+          "name": "Shoggoth",
+          "description": "A vast, shapeless mass of protoplasm and eyes, bred as a slave by the Elder Things."
+        },
+        {
+          "id": "nightgaunt",
+          "name": "Nightgaunt",
+          "description": "A faceless, black-winged creature that carries off wanderers in the Dreamlands."
+        },
+        {
+          "id": "independent-race",
+          "name": "Independent Race",
+          "description": "A Mythos-adjacent race with its own agenda, not bound in service to a greater power."
+        }
+      ]
+    }
+  ]
+}

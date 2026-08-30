@@ -1,0 +1,29 @@
+{
+  "name": "Hobgoblin",
+  "tagline": "Disciplined and martial",
+  "description": [
+    "Organized into tight-knit legions, Golarion's hobgoblins value discipline, order, and hard-won loyalty above nearly everything else."
+  ],
+  "systemIds": [
+    "sys.pf2e"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "none",
+    "firstNames": [
+      "Korveth",
+      "Ashna",
+      "Dregmar",
+      "Yulen",
+      "Brakthar",
+      "Serrin",
+      "Voltag",
+      "Ilmara",
+      "Karrun",
+      "Dessa",
+      "Norgath",
+      "Vellan"
+    ],
+    "lastNames": []
+  }
+}

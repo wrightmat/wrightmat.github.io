@@ -1,0 +1,18 @@
+{
+  "index": "bottle-glass",
+  "name": "Bottle, Glass",
+  "notes": "A Glass Bottle holds up to 11/2 pints.",
+  "price": "2 gp",
+  "weight": 2,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2024/equipment/bottle-glass",
+  "mapping": "5e-api-equipment",
+  "properties": {
+    "form": "equipment",
+    "equipmentCategory": "adventuring-gear"
+  },
+  "featureIds": []
+}

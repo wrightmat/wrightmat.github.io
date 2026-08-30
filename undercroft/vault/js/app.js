@@ -1,7 +1,7 @@
 import { initAppShell } from "../../common/js/lib/app-shell.js";
 import { initAuthControls } from "../../common/js/lib/auth-ui.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
-import { refreshTooltips } from "../../common/js/lib/tooltips.js";
+import { refreshTooltips, updateTooltipContent } from "../../common/js/lib/tooltips.js";
 import {
   createJsonDataPanel,
   createToolbarButtonGroup,
@@ -19,7 +19,7 @@ import { createReferenceChip } from "../../common/js/lib/library-reference.js";
 import { buildRelationshipGraph } from "../../common/js/lib/relationship-graph.js";
 import { createForceGraph } from "../../common/js/lib/graph-view.js";
 import { listFeaturesForSystem, listWondersForSystem, getSystemPropertyTypes, getSystemClasses } from "./lib/tables.js";
-import { generateWonder, computeBudget, matchesCategory, rerollPropertyValue, resolveFeatureBudgetCost } from "./lib/generator.js";
+import { generateWonder, getWonderGenerationBlockReason, computeBudget, matchesCategory, rerollPropertyValue, resolveFeatureBudgetCost } from "./lib/generator.js";
 import { createWonderRecord, toPressExportShape } from "./lib/wonder-schema.js";
 import { convertSpellOrItemToFeatures, hasConvertibleSpellItemStats } from "../../common/js/lib/vault-feature-matching.js";
 // Same shared weapon-attack/rider/save-effect/options editor Crucible's own
@@ -47,6 +47,8 @@ import {
   renderRequiredSelectOptions,
   renderOptionalSelectOptions,
   loadAbilityFieldDefs,
+  setGenerateButtonReadiness,
+  listObjectFieldOptions,
 } from "../../common/js/lib/generator-kit.js";
 import { allowsDelete, refreshOwnershipCatalog, confirmDelete } from "../../common/js/lib/ownership.js";
 import { initToolSettings } from "../../common/js/lib/tool-settings.js";
@@ -82,6 +84,12 @@ let selectedFeatureId = null;
 // real select instead of free text (see feature-params-editor.js's own
 // ABILITY_LIKE_PARAM_KEYS).
 let abilityFieldDefs = [];
+// Candidate list for the abilityField settings preference below — every
+// object-type field the active System defines — plus which one
+// guessAbilityFieldKey would auto-pick, so the dropdown can pre-select and
+// label it instead of offering a separate "Auto-detect" placeholder option.
+let objectFieldOptions = [];
+let abilityFieldGuess = "";
 const featureParamsEditor = createFeatureParamsEditor({
   getRecord: () => currentRecord,
   // A tier change (renderFeatureTierEditor) is now reached through this
@@ -425,18 +433,48 @@ function currentSystemId() {
 // earlier attempt that stored it on the System itself before being corrected.
 const BUDGET_CEILING_BUCKET = "vault-settings";
 
+// Both budgetCeilingField and abilityField below share this one merged
+// per-System record (dataManager.getLocal/saveLocal replaces the whole
+// record for a given (bucket, id) — writing one setting straight through
+// saveLocal, as this used to, would silently wipe out the other one's
+// already-saved value for that same System). Mirrors Forge's/Crucible's own
+// getForgeSystemSettings+setForgeSystemSetting /
+// getCrucibleSystemSettings+setCrucibleSystemSetting pattern exactly.
+function getVaultSystemSettings(systemId) {
+  if (!dataManager || !systemId) return {};
+  return dataManager.getLocal(BUDGET_CEILING_BUCKET, systemId) || {};
+}
+
+function setVaultSystemSetting(systemId, key, value) {
+  if (!dataManager || !systemId) return;
+  const next = { ...getVaultSystemSettings(systemId), [key]: value };
+  if (!next.budgetCeilingField && !next.abilityField) {
+    dataManager.removeLocal(BUDGET_CEILING_BUCKET, systemId);
+  } else {
+    dataManager.saveLocal(BUDGET_CEILING_BUCKET, systemId, next);
+  }
+}
+
 function getBudgetCeilingFieldPreference(systemId) {
-  if (!dataManager || !systemId) return "";
-  return dataManager.getLocal(BUDGET_CEILING_BUCKET, systemId)?.budgetCeilingField || "";
+  return getVaultSystemSettings(systemId).budgetCeilingField || "";
 }
 
 function setBudgetCeilingFieldPreference(systemId, fieldKey) {
-  if (!dataManager || !systemId) return;
-  if (fieldKey) {
-    dataManager.saveLocal(BUDGET_CEILING_BUCKET, systemId, { budgetCeilingField: fieldKey });
-  } else {
-    dataManager.removeLocal(BUDGET_CEILING_BUCKET, systemId);
-  }
+  setVaultSystemSetting(systemId, "budgetCeilingField", fieldKey || "");
+}
+
+// Which object field is this System's ability/stat block — same per-System,
+// per-browser tool preference shape as budgetCeilingField above, feeding
+// loadAbilityFieldDefs' own preferredKey param instead of it always
+// assuming a field literally named "abilities" (see
+// feedback_settings_preference_with_guessed_default). Empty/unset falls
+// through to loadAbilityFieldDefs' own shape-based guess.
+function getAbilityFieldPreference(systemId) {
+  return getVaultSystemSettings(systemId).abilityField || "";
+}
+
+function setAbilityFieldPreference(systemId, fieldKey) {
+  setVaultSystemSetting(systemId, "abilityField", fieldKey || "");
 }
 
 // The conventional field-name fallback getSystemPropertyTypes applies on its
@@ -609,7 +647,8 @@ async function reloadReferenceData() {
   const systemId = currentSystemId();
   const budgetCeilingField = getBudgetCeilingFieldPreference(systemId);
   let fetchedFeatures;
-  [fetchedFeatures, propertyTypes, classes, abilityFieldDefs] = await Promise.all([
+  let objectFieldResult;
+  [fetchedFeatures, propertyTypes, classes, objectFieldResult, abilityFieldDefs] = await Promise.all([
     listFeaturesForSystem(dataManager, systemId),
     // `|| undefined` (not the stored "" directly) so an unconfigured System
     // falls through to getSystemPropertyTypes's own "rarity" default instead
@@ -617,8 +656,11 @@ async function reloadReferenceData() {
     // combatScalingField/creatureTypeField `|| undefined` call pattern.
     getSystemPropertyTypes(dataManager, systemId, budgetCeilingField || undefined),
     getSystemClasses(dataManager, systemId),
-    loadAbilityFieldDefs(dataManager, systemId),
+    listObjectFieldOptions(dataManager, systemId),
+    loadAbilityFieldDefs(dataManager, systemId, getAbilityFieldPreference(systemId)),
   ]);
+  objectFieldOptions = objectFieldResult.options;
+  abilityFieldGuess = objectFieldResult.guessedKey;
   // The shared `feature` kind also holds Sanctum's location features and
   // Crucible's monster features (tagged accordingly) — filtered here, once,
   // so every consumer of the module-level `features` array (generateWonder,
@@ -1403,8 +1445,7 @@ function applyNotesMode(mode) {
   elements.notesModeEyeIcon?.classList.toggle("d-none", isView);
   elements.notesModePencilIcon?.classList.toggle("d-none", !isView);
   if (elements.notesModeLabel) elements.notesModeLabel.textContent = isView ? "Edit" : "View";
-  elements.notesModeToggle?.setAttribute("data-bs-title", isView ? "Edit" : "View");
-  refreshTooltips();
+  if (elements.notesModeToggle) updateTooltipContent(elements.notesModeToggle, isView ? "Edit" : "View");
   if (isView) renderNotesPreview();
 }
 
@@ -1581,6 +1622,11 @@ async function refreshRelationshipsSection() {
 renderModeToggle();
 
 function handleGenerate() {
+  // No readiness guard needed here — setGenerateButtonReadiness gives the
+  // button a real `disabled` attribute whenever this would fail, and a
+  // disabled button's click listener never fires at all (mouse or
+  // keyboard), so this handler only ever runs when generation is genuinely
+  // ready.
   try {
     const selectedClass = classes.find((entry) => entry.id === elements.castingClassSelect?.value);
     const generated = generateWonder(features, propertyTypes, {
@@ -1757,11 +1803,17 @@ async function init() {
   dataManager = auth.dataManager;
 
   // Generate starts disabled (see its own toolbar definition above) —
-  // called once reloadReferenceData has actually resolved, from every path
-  // that can reach "loading is done" below (the plain init cascade, or
-  // applyDeepLinkParams' own background Phase 2).
-  function enableGenerateButton() {
-    if (elements.generateButton) elements.generateButton.disabled = false;
+  // recomputed once reloadReferenceData has actually resolved, from every
+  // path that can reach "loading is done" below (the plain init cascade,
+  // handleSystemSelectChange, or applyDeepLinkParams' own background Phase
+  // 2). Proactively disables (with an explanatory tooltip, via the shared
+  // setGenerateButtonReadiness helper) instead of unconditionally enabling —
+  // getWonderGenerationBlockReason mirrors generateWonder's own eligible-
+  // Features check, so this can never drift out of sync with what actually
+  // happens on click.
+  function updateGenerateButtonReadiness() {
+    const reason = getWonderGenerationBlockReason(features, { systemId: currentSystemId() });
+    setGenerateButtonReadiness(elements.generateButton, reason);
   }
 
   // Same dirty check updateActionButtons already uses for the Save button —
@@ -1831,6 +1883,7 @@ async function init() {
     currentWonderId = null;
     renderWonder(null);
     await reloadReferenceData();
+    updateGenerateButtonReadiness();
   }
   elements.systemSelect?.addEventListener("change", handleSystemSelectChange);
 
@@ -1902,6 +1955,30 @@ async function init() {
             recomputeBudget(currentRecord);
             refreshWonderView();
           }
+        },
+      },
+      {
+        key: "abilityField",
+        type: "select",
+        label: "Ability field",
+        helpTopic: "vault.abilityField",
+        // No separate "Auto-detect" option — the guessed field (whichever
+        // Object property guessAbilityFieldKey picked) IS the selected
+        // value until the GM actually picks a different one, with " (auto-
+        // detected)" on its own option label as the only indicator. Once a
+        // real preference is stored (even re-picking the same field
+        // explicitly), that suffix drops — see getValue below.
+        options: objectFieldOptions.map((field) => ({
+          value: field.key,
+          label:
+            field.key === abilityFieldGuess && !getAbilityFieldPreference(currentSystemId())
+              ? `${field.label || field.key} (auto-detected)`
+              : field.label || field.key,
+        })),
+        getValue: () => getAbilityFieldPreference(currentSystemId()) || abilityFieldGuess,
+        setValue: async (fieldKey) => {
+          setAbilityFieldPreference(currentSystemId(), fieldKey);
+          await reloadReferenceData();
         },
       },
     ],
@@ -1992,7 +2069,7 @@ async function init() {
           }
           await reloadReferenceData();
           if (elements.wonderSelect) elements.wonderSelect.value = wonderId;
-          enableGenerateButton();
+          updateGenerateButtonReadiness();
         } catch (error) {
           // Phase 1 already succeeded — a background failure here just
           // leaves the picker under-populated, not worth an error toast on
@@ -2028,11 +2105,11 @@ async function init() {
     }
     renderWonder(null);
     // Both branches above resolve reference data for whatever System ended
-    // up selected — safe to enable here regardless of which one ran. The
-    // deepLinked === true case enables from inside its own Phase 2
+    // up selected — safe to recompute readiness here regardless of which one
+    // ran. The deepLinked === true case updates from inside its own Phase 2
     // background IIFE instead (applyDeepLinkParams above), once ITS
     // reference-data load actually finishes.
-    enableGenerateButton();
+    updateGenerateButtonReadiness();
   }
 
   initHelpSystem();

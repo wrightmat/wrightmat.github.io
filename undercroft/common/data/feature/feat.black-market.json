@@ -1,9 +1,5 @@
 {
   "name": "Black Market",
-  "systemIds": [
-    "sys.dnd5e",
-    "sys.dnd5e2014"
-  ],
   "description": "An illicit trade network operates here, openly or otherwise, dealing in goods no legitimate merchant would touch.",
   "mechanics": {
     "type": "passive",

@@ -1,0 +1,18 @@
+{
+  "index": "heavy-crossbow",
+  "name": "Heavy Crossbow",
+  "notes": "Damage: 1d10 Piercing\n\nRange: 100/400 ft.\n\nProperties: Ammunition, Heavy, Loading, Two-Handed\n\nMastery: Push",
+  "price": "50 gp",
+  "weight": 18,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2024/equipment/heavy-crossbow",
+  "mapping": "5e-api-equipment",
+  "properties": {
+    "form": "weapon",
+    "weaponCategory": "martial-ranged"
+  },
+  "featureIds": []
+}

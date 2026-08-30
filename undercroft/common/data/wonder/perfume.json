@@ -1,0 +1,28 @@
+{
+  "index": "perfume",
+  "name": "Perfume",
+  "notes": "Perfume comes in a 4-ounce vial. For 1 hour after applying Perfume to yourself, you have Advantage on Charisma (Persuasion) checks made to influence an Indifferent Humanoid within 5 feet of yourself.",
+  "price": "5 gp",
+  "weight": 0,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2024/equipment/perfume",
+  "mapping": "5e-api-equipment",
+  "properties": {
+    "form": "equipment",
+    "equipmentCategory": "adventuring-gear"
+  },
+  "featureIds": [
+    "feat.skill-bonus"
+  ],
+  "featureTiers": {
+    "feat.skill-bonus": "advantage"
+  },
+  "featureParams": {
+    "feat.skill-bonus": {
+      "skill": "persuasion"
+    }
+  }
+}

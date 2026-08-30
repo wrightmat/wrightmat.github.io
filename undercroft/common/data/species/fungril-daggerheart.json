@@ -1,0 +1,33 @@
+{
+  "name": "Fungril",
+  "tagline": "Grown, not born, and network-minded",
+  "description": [
+    "Mushroom-like beings of extreme variety in appearance, communicating through mycelial networks, Fungril names are drawn straight from the fungal and forest-floor world they grew from."
+  ],
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "names": {
+    "nameMode": "synonym",
+    "lastNameForm": "none",
+    "firstNames": [
+      "Spore",
+      "Bloom",
+      "Cap",
+      "Mycel",
+      "Truffle",
+      "Umber",
+      "Moss",
+      "Fenn",
+      "Loam",
+      "Puff",
+      "Gill",
+      "Rootcap",
+      "Amanita",
+      "Chanterelle",
+      "Portobell",
+      "Reishi"
+    ],
+    "lastNames": []
+  }
+}

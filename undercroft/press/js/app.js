@@ -63,7 +63,7 @@ import { loadSourceData, LIBRARY_KINDS } from "./source-data.js";
 import { loadSampleData, setSampleDataText, getSampleDataText, getSampleData, subscribeSampleData } from "./sample-data.js";
 import { resolveBinding, createLookupFn } from "../../common/js/lib/bindings.js";
 import { createColorPickerField } from "../../common/js/lib/color-picker.js";
-import { refreshTooltips } from "../../common/js/lib/tooltips.js";
+import { refreshTooltips, updateTooltipContent, setDisabledTooltip } from "../../common/js/lib/tooltips.js";
 import { attachFormulaAutocomplete } from "../../common/js/lib/formula-autocomplete.js";
 import { listFormulaFunctionMetadata } from "../../common/js/lib/formula-metadata.js";
 import { collectDataFields } from "../../common/js/lib/data-fields.js";
@@ -3741,10 +3741,7 @@ function updateIconTooltip(resolvedValue, hasIcon) {
   } else {
     title = `Result: ${resolvedValue} (no icon found)`;
   }
-  iconPreview.setAttribute("data-bs-title", title);
-  if (window.bootstrap?.Tooltip) {
-    window.bootstrap.Tooltip.getOrCreateInstance(iconPreview).setContent({ ".tooltip-inner": title });
-  }
+  updateTooltipContent(iconPreview, title);
 }
 
 function resolveIconPreviewValue(value, context) {
@@ -4180,7 +4177,6 @@ function updateInspector() {
     // Unique also needs the Grid View tab active (its only unambiguous
     // "which card" context), so it can be re-disabled even with a
     // component selected.
-    makeUniqueButton.disabled = !uniqueAvailable;
     const overrideEntry = uniqueAvailable ? getCardOverrideEntry(currentSide, gridViewIndex, selectedNodeId) : null;
     const isActive = Boolean(overrideEntry);
     makeUniqueButton.classList.toggle("active", isActive);
@@ -4189,15 +4185,22 @@ function updateInspector() {
     const isStale = Boolean(overrideEntry) && overrideEntry.dataFingerprint !== currentFingerprint;
     makeUniqueButton.classList.toggle("btn-outline-warning", isStale);
     makeUniqueButton.classList.toggle("btn-outline-secondary", !isStale);
-    if (window.bootstrap?.Tooltip) {
-      const tooltip = window.bootstrap.Tooltip.getOrCreateInstance(makeUniqueButton);
+    // Disabled state and its explanation both go through setDisabledTooltip
+    // — a real `disabled` attribute blocks hover, so the "only available
+    // from Grid View" explanation has to live on its own wrapper, not this
+    // button directly (see tooltips.js's own header). While available, the
+    // button stays real-enabled and its own tooltip live-updates in place.
+    if (uniqueAvailable) {
+      setDisabledTooltip(makeUniqueButton, "");
       const title = isStale
         ? "Make Unique — the data at this card/chip looks different than when this override was set"
-        : !activeViewTab || activeViewTab !== "grid"
-          ? "Make Unique — only available from the Grid View tab, where a component selection maps to one specific card/chip"
-          : "Make Unique — while on, edits to this component apply only to the card/chip shown in Grid View, not the shared template";
-      makeUniqueButton.setAttribute("data-bs-title", title);
-      tooltip.setContent({ ".tooltip-inner": title });
+        : "Make Unique — while on, edits to this component apply only to the card/chip shown in Grid View, not the shared template";
+      updateTooltipContent(makeUniqueButton, title);
+    } else {
+      setDisabledTooltip(
+        makeUniqueButton,
+        "Make Unique — only available from the Grid View tab, where a component selection maps to one specific card/chip"
+      );
     }
   }
 
@@ -4256,10 +4259,7 @@ function updateInspector() {
     const deleteLabel = isRoot ? "Clear Layout" : "Delete Component";
     if (deleteButtonLabel) deleteButtonLabel.textContent = deleteLabel;
     deleteButton.setAttribute("aria-label", deleteLabel);
-    deleteButton.setAttribute("data-bs-title", deleteLabel);
-    if (window.bootstrap?.Tooltip) {
-      window.bootstrap.Tooltip.getOrCreateInstance(deleteButton).setContent({ ".tooltip-inner": deleteLabel });
-    }
+    updateTooltipContent(deleteButton, deleteLabel);
   }
   if (duplicateButton) {
     // Unlike delete, duplicating the root doesn't have a sensible meaning

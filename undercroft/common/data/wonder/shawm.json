@@ -1,0 +1,18 @@
+{
+  "index": "shawm",
+  "name": "Shawm",
+  "notes": "",
+  "price": "2 gp",
+  "weight": 1,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2024/equipment/shawm",
+  "mapping": "5e-api-equipment",
+  "featureIds": [],
+  "properties": {
+    "form": "equipment",
+    "equipmentCategory": "musical-instruments"
+  }
+}

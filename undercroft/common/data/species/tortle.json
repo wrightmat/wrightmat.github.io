@@ -38,5 +38,15 @@
   "systemIds": [
     "sys.dnd5e",
     "sys.dnd5e2014"
-  ]
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "none",
+    "firstNames": [
+      "Aldo", "Bantu", "Corrin", "Dellow", "Emrik", "Foss", "Grael", "Harko",
+      "Innu", "Jorrel", "Kembo", "Lorric", "Merrow", "Nask", "Orrin", "Pell",
+      "Quor", "Rassa", "Sedge", "Torv"
+    ],
+    "lastNames": []
+  }
 }

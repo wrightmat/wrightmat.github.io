@@ -1,10 +1,6 @@
 {
   "id": "res.livestock",
   "name": "Livestock",
-  "systemIds": [
-    "sys.dnd5e",
-    "sys.dnd5e2014"
-  ],
   "description": "Herds and flocks — a steady source of food, labor, and trade goods.",
   "tags": {
     "locationTypes": [],

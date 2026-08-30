@@ -1,0 +1,18 @@
+{
+  "index": "chain-shirt",
+  "name": "Chain Shirt",
+  "notes": "Armor Class: 13 + Dex modifier (max 2)",
+  "price": "50 gp",
+  "weight": 14,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2024/equipment/chain-shirt",
+  "mapping": "5e-api-equipment",
+  "properties": {
+    "form": "armor",
+    "armorCategory": "medium"
+  },
+  "featureIds": []
+}

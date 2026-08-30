@@ -1,0 +1,33 @@
+{
+  "name": "Firbolg",
+  "tagline": "Broad, strong, and steady",
+  "description": [
+    "Bovine humanoids with broad noses, long tails, and remarkable strength, Firbolg names are plain and grounded."
+  ],
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "none",
+    "firstNames": [
+      "Brenno",
+      "Ossa",
+      "Dundro",
+      "Wyllo",
+      "Karsa",
+      "Bellow",
+      "Torvo",
+      "Ambra",
+      "Grunna",
+      "Hesk",
+      "Mordo",
+      "Talla",
+      "Yorrik",
+      "Pella",
+      "Basco",
+      "Nurra"
+    ],
+    "lastNames": []
+  }
+}

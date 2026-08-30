@@ -1,0 +1,18 @@
+{
+  "index": "musket",
+  "name": "Musket",
+  "notes": "Damage: 1d12 Piercing\n\nRange: 40/120 ft.\n\nProperties: Ammunition, Loading, Two-Handed\n\nMastery: Slow",
+  "price": "500 gp",
+  "weight": 10,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2024/equipment/musket",
+  "mapping": "5e-api-equipment",
+  "properties": {
+    "form": "weapon",
+    "weaponCategory": "martial-ranged"
+  },
+  "featureIds": []
+}

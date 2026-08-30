@@ -1,0 +1,18 @@
+{
+  "index": "club",
+  "name": "Club",
+  "notes": "Damage: 1d4 Bludgeoning\n\nRange: 5 ft.\n\nProperties: Light\n\nMastery: Slow",
+  "price": "1 sp",
+  "weight": 2,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2024/equipment/club",
+  "mapping": "5e-api-equipment",
+  "properties": {
+    "form": "weapon",
+    "weaponCategory": "simple-melee"
+  },
+  "featureIds": []
+}

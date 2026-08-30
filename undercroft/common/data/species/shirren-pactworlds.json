@@ -1,0 +1,30 @@
+{
+  "name": "Shirren",
+  "tagline": "Freed from the hive",
+  "description": [
+    "Once bound to a hive-mind, shirren are insectoid folk who fought for and now treasure their individuality above nearly everything else."
+  ],
+  "systemIds": [
+    "sys.sf1e",
+    "sys.sf2e"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "none",
+    "firstNames": [
+      "Chitt",
+      "Vessa",
+      "Skree",
+      "Amri",
+      "Zeela",
+      "Thax",
+      "Ossa",
+      "Kellik",
+      "Nyra",
+      "Sedge",
+      "Vril",
+      "Ianthe"
+    ],
+    "lastNames": []
+  }
+}

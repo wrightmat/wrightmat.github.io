@@ -1,9 +1,5 @@
 {
   "name": "Bustling Market",
-  "systemIds": [
-    "sys.dnd5e",
-    "sys.dnd5e2014"
-  ],
   "description": "Crowded stalls, hawking merchants, and a steady flow of buyers and sellers fill this place at all hours.",
   "mechanics": {
     "type": "passive",

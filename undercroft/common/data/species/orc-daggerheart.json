@@ -1,0 +1,33 @@
+{
+  "name": "Orc",
+  "tagline": "Tusked, proud, and blunt-spoken",
+  "description": [
+    "Square-featured folk with decorative tusks and pointed ears, Orc names are blunt, strong, and to the point."
+  ],
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "none",
+    "firstNames": [
+      "Grosh",
+      "Vharra",
+      "Dunmog",
+      "Kessik",
+      "Borrga",
+      "Nashka",
+      "Thurrog",
+      "Uxxa",
+      "Vrakka",
+      "Gormesh",
+      "Yolgra",
+      "Zennok",
+      "Brakka",
+      "Torgash",
+      "Mursha",
+      "Kroll"
+    ],
+    "lastNames": []
+  }
+}

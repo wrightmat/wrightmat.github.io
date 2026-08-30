@@ -1,0 +1,31 @@
+{
+  "name": "Betazoid",
+  "tagline": "Reading the room, literally",
+  "description": [
+    "A telepathic people from Betazed, able to sense — and sometimes read outright — the thoughts and feelings of nearly everyone around them."
+  ],
+  "systemIds": [
+    "sys.sta"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "family",
+    "firstNames": [
+      "Deanna",
+      "Lwaxana",
+      "Tam",
+      "Danilo",
+      "Suna",
+      "Alexandra",
+      "Devinoni",
+      "Kestra"
+    ],
+    "lastNames": [
+      "Troi",
+      "Odan",
+      "Bripal",
+      "Icheb",
+      "Selar"
+    ]
+  }
+}

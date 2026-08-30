@@ -1,0 +1,17 @@
+{
+  "index": "pole-10-foot",
+  "name": "Pole (10-foot)",
+  "notes": "",
+  "price": "5 cp",
+  "weight": 7,
+  "systemIds": [
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/equipment/pole-10-foot",
+  "mapping": "5e-api-equipment",
+  "properties": {
+    "form": "equipment",
+    "equipmentCategory": "adventuring-gear"
+  },
+  "featureIds": []
+}

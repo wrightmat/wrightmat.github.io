@@ -148,6 +148,17 @@ export function deriveLookupTables(systemPayload) {
     rarities: valuesOf(fields, "rarity").map((entry) => entry.name),
     itemForms: valuesOf(fields, "form").map((entry) => entry.name),
     activationTypes: valuesOf(fields, "activation").map((entry) => entry.name),
+    // Same reasoning, for the sub-classification fields that sit BENEATH
+    // one Item Form value each — a Weapon's own Simple/Martial+Melee/Ranged
+    // split, an Armor's own Light/Medium/Heavy/Shield split, and (once a
+    // System author adds it — see sys.dnd5e.json's own "equipmentCategories"
+    // field) an ordinary Equipment item's own Tools/Instrument/Gaming-Set/
+    // Mounts-and-Vehicles/Ammunition split — srdEquipmentStats
+    // (mapping-custom-functions.js) reads all three the same way
+    // srdItemProperties already reads itemForms/rarities/activationTypes.
+    weaponCategories: valuesOf(fields, "weaponCategories").map((entry) => entry.name),
+    armorCategories: valuesOf(fields, "armorCategories").map((entry) => entry.name),
+    equipmentCategories: valuesOf(fields, "equipmentCategories").map((entry) => entry.name),
     // Legacy SIZES exposed the short DDB size code ("tiny"/"sm"/"med"/...) as
     // `value` (matched directly against DDB's own raw size strings in
     // mapping-custom-functions.js's determineSize) — the System's own field

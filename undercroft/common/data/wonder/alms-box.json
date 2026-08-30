@@ -1,0 +1,18 @@
+{
+  "index": "alms-box",
+  "name": "Alms box",
+  "notes": "A small box for alms, typically found in a priest's pack.",
+  "price": "0 cp",
+  "weight": 0,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/equipment/alms-box",
+  "mapping": "5e-api-equipment",
+  "properties": {
+    "form": "equipment",
+    "equipmentCategory": "adventuring-gear"
+  },
+  "featureIds": []
+}

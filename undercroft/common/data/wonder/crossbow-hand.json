@@ -1,0 +1,18 @@
+{
+  "index": "crossbow-hand",
+  "name": "Crossbow, hand",
+  "notes": "Damage: 1d6 Piercing\n\nRange: 30/120 ft.\n\nProperties: Ammunition, Light, Loading",
+  "price": "75 gp",
+  "weight": 3,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/equipment/crossbow-hand",
+  "mapping": "5e-api-equipment",
+  "properties": {
+    "form": "weapon",
+    "weaponCategory": "martial-ranged"
+  },
+  "featureIds": []
+}

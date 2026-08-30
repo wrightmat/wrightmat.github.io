@@ -1,9 +1,5 @@
 {
   "name": "Sacred Ground",
-  "systemIds": [
-    "sys.dnd5e",
-    "sys.dnd5e2014"
-  ],
   "description": "This place is consecrated or otherwise held holy, respected (or feared) by those who know what it is.",
   "mechanics": {
     "type": "passive",

@@ -1,0 +1,39 @@
+{
+  "name": "Halfling",
+  "tagline": "Small, steady, and everywhere",
+  "description": [
+    "Once enslaved throughout Cheliax before the Everwar's end, Golarion's halflings are now found in nearly every human settlement — practical, adaptable, and famously hard to keep down."
+  ],
+  "systemIds": [
+    "sys.pf1e",
+    "sys.pf2e"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "family",
+    "firstNames": [
+      "Pip",
+      "Marabelle",
+      "Toby",
+      "Rosamund",
+      "Fenwick",
+      "Lilly",
+      "Corbin",
+      "Poppy",
+      "Wendel",
+      "Briar",
+      "Sable",
+      "Tansy"
+    ],
+    "lastNames": [
+      "Underbough",
+      "Goodbarrel",
+      "Tealeaf",
+      "Longwalker",
+      "Fairfoot",
+      "Brambleworth",
+      "Applecart",
+      "Thistlewick"
+    ]
+  }
+}

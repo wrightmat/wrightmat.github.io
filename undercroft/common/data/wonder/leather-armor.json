@@ -1,0 +1,18 @@
+{
+  "index": "leather-armor",
+  "name": "Leather",
+  "notes": "Armor Class: 11 + Dex modifier",
+  "price": "10 gp",
+  "weight": 10,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2024/equipment/leather-armor",
+  "mapping": "5e-api-equipment",
+  "properties": {
+    "form": "armor",
+    "armorCategory": "light"
+  },
+  "featureIds": []
+}

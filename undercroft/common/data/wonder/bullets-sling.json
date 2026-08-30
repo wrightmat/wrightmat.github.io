@@ -1,0 +1,18 @@
+{
+  "index": "bullets-sling",
+  "name": "Bullets, Sling",
+  "notes": "",
+  "price": "4 cp",
+  "weight": 1.5,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2024/equipment/bullets-sling",
+  "mapping": "5e-api-equipment",
+  "featureIds": [],
+  "properties": {
+    "form": "equipment",
+    "equipmentCategory": "ammunition"
+  }
+}

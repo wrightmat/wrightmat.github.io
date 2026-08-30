@@ -1,0 +1,18 @@
+{
+  "index": "breastplate",
+  "name": "Breastplate",
+  "notes": "Armor Class: 14 + Dex modifier (max 2)",
+  "price": "400 gp",
+  "weight": 20,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2024/equipment/breastplate",
+  "mapping": "5e-api-equipment",
+  "properties": {
+    "form": "armor",
+    "armorCategory": "medium"
+  },
+  "featureIds": []
+}

@@ -1,0 +1,17 @@
+{
+  "index": "rope-hempen-50-feet",
+  "name": "Rope, hempen (50 feet)",
+  "notes": "Rope, whether made of hemp or silk, has 2 hit points and can be burst with a DC 17 Strength check.",
+  "price": "1 gp",
+  "weight": 10,
+  "systemIds": [
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/equipment/rope-hempen-50-feet",
+  "mapping": "5e-api-equipment",
+  "properties": {
+    "form": "equipment",
+    "equipmentCategory": "adventuring-gear"
+  },
+  "featureIds": []
+}

@@ -1,0 +1,63 @@
+{
+  "name": "Human",
+  "tagline": "An ordinary person in an uncaring cosmos",
+  "description": [
+    "The only Investigator species in Call of Cthulhu — every player character and nearly every NPC in 1920s Lovecraft Country is an ordinary human being, with no innate supernatural traits or abilities. Whatever an Investigator becomes capable of comes entirely from their Characteristics, Skills, and the terrible things they choose to learn.",
+    "What varies is background, not biology: New England old-money stock, immigrant families newly arrived through Boston and Providence, and the increasingly insular bloodlines of towns like Innsmouth and Dunwich — all drawing from the same pool of period-appropriate names below."
+  ],
+  "systemIds": [
+    "sys.coc7e"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "family",
+    "firstNames": [
+      "Herbert",
+      "Henry",
+      "Charles",
+      "Robert",
+      "Edward",
+      "Francis",
+      "Walter",
+      "Nathaniel",
+      "Ambrose",
+      "Wilbur",
+      "Randolph",
+      "Silas",
+      "Ezra",
+      "Theodore",
+      "Mary",
+      "Dorothy",
+      "Helen",
+      "Margaret",
+      "Ruth",
+      "Elizabeth",
+      "Marion",
+      "Alice",
+      "Agatha",
+      "Constance"
+    ],
+    "lastNames": [
+      "Whateley",
+      "Marsh",
+      "Gilman",
+      "Waite",
+      "Armitage",
+      "Pickman",
+      "Curwen",
+      "Danforth",
+      "Peaslee",
+      "Akeley",
+      "Carter",
+      "Ward",
+      "Blackwood",
+      "Winslow",
+      "Chandler",
+      "Endicott",
+      "Hartwell",
+      "Corey",
+      "Bishop",
+      "Sawyer"
+    ]
+  }
+}

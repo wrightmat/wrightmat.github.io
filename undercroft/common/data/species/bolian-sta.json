@@ -1,0 +1,29 @@
+{
+  "name": "Bolian",
+  "tagline": "Blue, cheerful, and everywhere",
+  "description": [
+    "A cheerful, blue-skinned people known throughout the Federation for sociability and administrative skill — Bolians seem to turn up in every Starfleet office and starbase concourse."
+  ],
+  "systemIds": [
+    "sys.sta"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "family",
+    "firstNames": [
+      "Mot",
+      "Rixx",
+      "Chell",
+      "Vekma",
+      "Boq'ta",
+      "Nara",
+      "Jelene",
+      "Torvin"
+    ],
+    "lastNames": [
+      "Betrell",
+      "Nadar",
+      "Chelik"
+    ]
+  }
+}

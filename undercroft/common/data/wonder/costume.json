@@ -1,0 +1,18 @@
+{
+  "index": "costume",
+  "name": "Costume",
+  "notes": "While wearing a Costume, you have Advantage on any ability check you make to impersonate the person or type of person it represents.",
+  "price": "5 gp",
+  "weight": 4,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2024/equipment/costume",
+  "mapping": "5e-api-equipment",
+  "properties": {
+    "form": "equipment",
+    "equipmentCategory": "adventuring-gear"
+  },
+  "featureIds": []
+}

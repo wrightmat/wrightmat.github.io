@@ -1,0 +1,18 @@
+{
+  "index": "dart",
+  "name": "Dart",
+  "notes": "Damage: 1d4 Piercing\n\nRange: 20/60 ft.\n\nProperties: Finesse, Thrown\n\nMastery: Vex",
+  "price": "5 gp",
+  "weight": 0.25,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2024/equipment/dart",
+  "mapping": "5e-api-equipment",
+  "properties": {
+    "form": "weapon",
+    "weaponCategory": "simple-ranged"
+  },
+  "featureIds": []
+}

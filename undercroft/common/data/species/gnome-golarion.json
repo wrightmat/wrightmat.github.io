@@ -1,0 +1,39 @@
+{
+  "name": "Gnome",
+  "tagline": "Fey-touched and forever curious",
+  "description": [
+    "Refugees from the First World, Golarion's gnomes are driven by an insatiable need for novelty — a gnome who goes too long without something new risks the Bleaching, a fading of color and vitality that can prove fatal."
+  ],
+  "systemIds": [
+    "sys.pf1e",
+    "sys.pf2e"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "family",
+    "firstNames": [
+      "Fennik",
+      "Zabbie",
+      "Ollo",
+      "Twillow",
+      "Bramblet",
+      "Pippa",
+      "Corrick",
+      "Nettle",
+      "Wrenlow",
+      "Sibby",
+      "Dandel",
+      "Yorrik"
+    ],
+    "lastNames": [
+      "Twinkletoes",
+      "Puddlejump",
+      "Brightwhistle",
+      "Mossygrove",
+      "Sparkbramble",
+      "Dewfeather",
+      "Quicksilver",
+      "Firewhistle"
+    ]
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "index": "war-pick",
+  "name": "War Pick",
+  "notes": "Damage: 1d8 Piercing\n\nRange: 5 ft.\n\nProperties: Versatile\n\nMastery: Sap",
+  "price": "5 gp",
+  "weight": 2,
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2024/equipment/war-pick",
+  "mapping": "5e-api-equipment",
+  "properties": {
+    "form": "weapon",
+    "weaponCategory": "martial-melee"
+  },
+  "featureIds": []
+}

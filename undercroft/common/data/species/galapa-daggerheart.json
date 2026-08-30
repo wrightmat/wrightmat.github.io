@@ -1,0 +1,33 @@
+{
+  "name": "Galapa",
+  "tagline": "Shelled and unhurried",
+  "description": [
+    "Turtle-like humanoids with retractable shells for protection, Galapa names are unhurried and calm, like the folk who carry them."
+  ],
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "none",
+    "firstNames": [
+      "Tolben",
+      "Marrow",
+      "Ossic",
+      "Delpha",
+      "Groundon",
+      "Nessia",
+      "Umbric",
+      "Palla",
+      "Vosk",
+      "Ambrelle",
+      "Corrin",
+      "Shellin",
+      "Torque",
+      "Wenna",
+      "Berrin",
+      "Doldra"
+    ],
+    "lastNames": []
+  }
+}

@@ -8,7 +8,6 @@
   "description": "Your connection to this divine domain ensures you always have certain spells ready. When you reach a Cleric level specified in the Life Domain Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Aid, Bless, Cure Wounds, Lesser Restoration\n\nLevel 5: Mass Healing Word, Revivify\n\nLevel 7: Aura of Life, Death Ward\n\nLevel 9: Greater Restoration, Mass Cure Wounds",
   "mechanics": {
     "type": "passive",
-    "scope": "unique",
     "text": "Your connection to this divine domain ensures you always have certain spells ready. When you reach a Cleric level specified in the Life Domain Spells table, you thereafter always have the listed spells prepared.\n\nLevel 3: Aid, Bless, Cure Wounds, Lesser Restoration\n\nLevel 5: Mass Healing Word, Revivify\n\nLevel 7: Aura of Life, Death Ward\n\nLevel 9: Greater Restoration, Mass Cure Wounds"
   },
   "budgetCost": 0,

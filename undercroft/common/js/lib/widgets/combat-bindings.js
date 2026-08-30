@@ -45,7 +45,15 @@ export function resolveCombatantStats(combatBindings, payload) {
   const value = findBindingByRole(combatBindings, "value");
   if (resource?.binding) {
     const current = resolveBinding(resource.binding, payload);
-    const max = resource.maxPath ? resolveBinding(resource.maxPath, payload) : undefined;
+    // maxPath (bound to another field, e.g. D&D's Hit Points) and a literal
+    // `max` (a fixed ceiling, e.g. Daggerheart's Hope: max 6) are both real,
+    // valid conventions — maxPath wins when both are somehow present, since
+    // it points at the record's own live value.
+    const max = resource.maxPath
+      ? resolveBinding(resource.maxPath, payload)
+      : typeof resource.max === "number"
+        ? resource.max
+        : undefined;
     if (typeof max === "number") {
       maxHp = max;
       hp = typeof current === "number" ? current : maxHp;

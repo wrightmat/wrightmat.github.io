@@ -1,0 +1,39 @@
+{
+  "name": "Human",
+  "tagline": "Everywhere, and endlessly varied",
+  "description": [
+    "Golarion's humans span dozens of distinct cultures — Taldan, Chelaxian, Varisian, Kellid, Ulfen, Garundi, Mwangi, Vudrani, Tian, and more — sharing little but their sheer adaptability and reach."
+  ],
+  "systemIds": [
+    "sys.pf1e",
+    "sys.pf2e"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "family",
+    "firstNames": [
+      "Aldric",
+      "Ilsa",
+      "Corvin",
+      "Marisol",
+      "Dario",
+      "Ysabel",
+      "Renn",
+      "Talitha",
+      "Osric",
+      "Vesna",
+      "Callan",
+      "Petra"
+    ],
+    "lastNames": [
+      "Aldori",
+      "Vancaskerkin",
+      "Rovagug",
+      "Kellandros",
+      "Vishnami",
+      "Wintermill",
+      "Stormhollow",
+      "Blackriver"
+    ]
+  }
+}

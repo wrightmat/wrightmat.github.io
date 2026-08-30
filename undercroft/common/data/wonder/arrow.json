@@ -1,0 +1,17 @@
+{
+  "index": "arrow",
+  "name": "Arrow",
+  "notes": "",
+  "price": "1 gp",
+  "weight": 1,
+  "systemIds": [
+    "sys.dnd5e2014"
+  ],
+  "url": "https://www.dnd5eapi.co/api/2014/equipment/arrow",
+  "mapping": "5e-api-equipment",
+  "properties": {
+    "form": "equipment",
+    "equipmentCategory": "adventuring-gear"
+  },
+  "featureIds": []
+}

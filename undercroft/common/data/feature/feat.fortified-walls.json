@@ -1,9 +1,5 @@
 {
   "name": "Fortified Walls",
-  "systemIds": [
-    "sys.dnd5e",
-    "sys.dnd5e2014"
-  ],
   "description": "Thick walls, gatehouses, and watch-points ring this place, built to withstand a real assault.",
   "mechanics": {
     "type": "passive",

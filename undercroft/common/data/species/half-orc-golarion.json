@@ -1,0 +1,29 @@
+{
+  "name": "Half-Orc",
+  "tagline": "Hard-won and unyielding",
+  "description": [
+    "Born of two worlds that rarely accept them fully, Golarion's half-orcs — especially those from the Hold of Belkzen or Chelish frontier towns — carry both human ingenuity and orcish endurance."
+  ],
+  "systemIds": [
+    "sys.pf1e"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "none",
+    "firstNames": [
+      "Grosh",
+      "Kessa",
+      "Uldar",
+      "Vrenna",
+      "Borrak",
+      "Talyssa",
+      "Morg",
+      "Yenna",
+      "Draven",
+      "Skarra",
+      "Halvard",
+      "Orinna"
+    ],
+    "lastNames": []
+  }
+}

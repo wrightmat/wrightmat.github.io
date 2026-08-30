@@ -2,7 +2,8 @@
   "name": "Eladrin",
   "systemIds": [
     "sys.dnd5e",
-    "sys.dnd5e2014"
+    "sys.dnd5e2014",
+    "sys.dnd4e"
   ],
   "url": "https://www.dndbeyond.com/species/1026386-eladrin",
   "description": [
@@ -86,5 +87,18 @@
     "feat.eladrin-fey-step",
     "feat.eladrin-keen-senses",
     "feat.eladrin-trance"
-  ]
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "family",
+    "firstNames": [
+      "Ariandriel", "Belanor", "Caelestria", "Doriath", "Eiravel", "Faelynn", "Glorindel", "Hallandriel",
+      "Ilyndrel", "Jhaelas", "Kaelthir", "Lorendra", "Myrrandiel", "Nyssariel", "Orindiel", "Pyraveth",
+      "Quel'aria", "Riverae", "Sylvaneth", "Thaelindra", "Umbriel", "Vaelenar", "Wintheris", "Ysmarel"
+    ],
+    "lastNames": [
+      "Feytouched", "Duskwhisper", "Moonshadow", "Thornweave", "Starbrook", "Silverglade",
+      "Wintermantle", "Summerspire", "Autumnveil", "Springwarden", "Glimmerbough", "Frostbloom"
+    ]
+  }
 }

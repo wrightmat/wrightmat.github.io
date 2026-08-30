@@ -1,9 +1,5 @@
 {
   "name": "Polluted Waters",
-  "systemIds": [
-    "sys.dnd5e",
-    "sys.dnd5e2014"
-  ],
   "description": "Runoff, waste, or something worse has fouled the local water — dangerous to drink and worse to bathe in.",
   "mechanics": {
     "type": "passive",

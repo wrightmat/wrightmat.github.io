@@ -1,0 +1,33 @@
+{
+  "name": "Faerie",
+  "tagline": "Winged, changed, and light",
+  "description": [
+    "Winged, insectile creatures who undergo a metamorphosis during their lifetime, Faerie names are short and bright, chosen anew sometimes after their change."
+  ],
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "none",
+    "firstNames": [
+      "Pip",
+      "Zinnia",
+      "Fluvette",
+      "Wisk",
+      "Thistledown",
+      "Bree",
+      "Glimmer",
+      "Nectis",
+      "Quill",
+      "Sable",
+      "Vesper",
+      "Wynn",
+      "Lumi",
+      "Faelet",
+      "Tansy",
+      "Brindle"
+    ],
+    "lastNames": []
+  }
+}

@@ -14,6 +14,7 @@
 // another tool's layout might want a different spot entirely).
 import { el } from "./dom.js";
 import { initHelpSystem } from "./help.js";
+import { initTooltip } from "./tooltips.js";
 
 const LOCAL_PREFIX = "undercroft.toolSettings.";
 const MODAL_ID = "undercroft-tool-settings-modal";
@@ -284,15 +285,17 @@ export function initToolSettings({
     const button = el("button", "btn btn-outline-secondary d-flex align-items-center justify-content-center");
     button.type = "button";
     button.setAttribute("aria-label", title);
-    button.dataset.bsToggle = "tooltip";
-    button.dataset.bsPlacement = "bottom";
-    button.dataset.bsTitle = title;
     const icon = el("span", "iconify fs-5");
     icon.dataset.icon = "tabler:settings";
     icon.setAttribute("aria-hidden", "true");
     button.appendChild(icon);
     button.addEventListener("click", () => openModal());
     mountButton(button);
+    // Instantiated directly here (not left for the caller's own later
+    // boot-time refreshTooltips() sweep to pick up) — self-contained
+    // regardless of whether this module's own init happens to run before
+    // or after that sweep in a given tool's own init() ordering.
+    initTooltip(button, { title, placement: "bottom" });
   }
 
   // Fire-and-forget reconciliation against server-synced values (a

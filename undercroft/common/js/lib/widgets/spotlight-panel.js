@@ -21,7 +21,7 @@
 // callback, this module just renders" split orrery/js/lib/map-viewer.js
 // already establishes for its own shared rendering.
 import { el } from "../dom.js";
-import { refreshTooltips, disposeTooltips } from "../tooltips.js";
+import { refreshTooltips, disposeTooltips, setDisabledTooltip } from "../tooltips.js";
 
 // `container` is required when `floating` is false — the panel mounts
 // itself there instead of document.body, and is laid out by the caller's own
@@ -62,6 +62,14 @@ export function createSpotlightPanel({ container = null, floating = true } = {})
 
       const button = el("button", "spotlight-panel-icon");
       button.type = "button";
+      // Non-interactive icons are genuinely disabled (no click handler makes
+      // sense for them) — their explanatory tooltip has to go on a separate
+      // wrapper via setDisabledTooltip below (called once button is in its
+      // final DOM position, after wrap.appendChild(button) further down),
+      // since a real `disabled` attribute blocks hover on the button itself.
+      // See tooltips.js's own header for why the previous same-element
+      // version of this never actually showed a tooltip.
+      let disabledReason = "";
       if (interactive) {
         button.classList.add(item.isOnDashboard ? "spotlight-panel-icon--mine" : "spotlight-panel-icon--available");
         button.dataset.bsToggle = "tooltip";
@@ -72,10 +80,7 @@ export function createSpotlightPanel({ container = null, floating = true } = {})
         button.addEventListener("click", () => onToggle?.({ kind: item.kind, id: item.id, templateId: item.templateId }));
       } else {
         button.classList.add("spotlight-panel-icon--shown");
-        button.disabled = true;
-        button.dataset.bsToggle = "tooltip";
-        button.dataset.bsPlacement = "top";
-        button.dataset.bsTitle = `${item.title} — shown to the table`;
+        disabledReason = `${item.title} — shown to the table`;
       }
       const icon = el("span", "iconify");
       icon.dataset.icon = item.icon || "tabler:sparkles";
@@ -96,6 +101,11 @@ export function createSpotlightPanel({ container = null, floating = true } = {})
         );
       }
       wrap.appendChild(button);
+      // Must run AFTER button is in its final DOM position — setDisabledTooltip
+      // inserts its wrapper span as a sibling right before `button` in
+      // whatever button.parentElement currently is, which is only correct
+      // once that parent is this item's own wrap, not still null/detached.
+      if (disabledReason) setDisabledTooltip(button, disabledReason);
 
       if (interactive && editing) {
         const clearButton = el("button", "spotlight-panel-clear");

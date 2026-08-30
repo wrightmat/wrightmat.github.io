@@ -2955,7 +2955,12 @@ window.addEventListener("popstate", (event) => {
 });
 
 updateToolbarState();
-refreshTooltips();
+// initHelpSystem's own refreshTooltips(root) call (root: document here)
+// already activates every tooltip in the document, help-topic triggers and
+// everything else alike — a separate refreshTooltips() call before this one
+// used to run (reversed order vs. every other tool's own init sequence)
+// only ever swept whatever existed BEFORE initHelpSystem built its own
+// trigger elements, making it fully redundant with this call's own sweep.
 void initHelpSystem({ root: document });
 initRelationshipsGraph();
 // Fetched once, up front — validKindIds/kindLabelsMap need to be populated

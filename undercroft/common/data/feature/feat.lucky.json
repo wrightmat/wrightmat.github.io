@@ -1,0 +1,24 @@
+{
+  "id": "feat.lucky",
+  "name": "Lucky",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "*Origin Feat*\n\nYou gain the following benefits.\n\n***Luck Points.*** You have a number of Luck Points equal to your Proficiency Bonus and can spend the points on the benefits below. You regain your expended Luck Points when you finish a Long Rest.\n\n***Advantage.*** When you roll a d20 for a D20 Test, you can spend 1 Luck Point to give yourself Advantage on the roll.\n\n***Disadvantage.*** When a creature rolls a d20 for an attack roll against you, you can spend 1 Luck Point to impose Disadvantage on that roll.",
+  "mechanics": {
+    "type": "passive",
+    "text": "*Origin Feat*\n\nYou gain the following benefits.\n\n***Luck Points.*** You have a number of Luck Points equal to your Proficiency Bonus and can spend the points on the benefits below. You regain your expended Luck Points when you finish a Long Rest.\n\n***Advantage.*** When you roll a d20 for a D20 Test, you can spend 1 Luck Point to give yourself Advantage on the roll.\n\n***Disadvantage.*** When a creature rolls a d20 for an attack roll against you, you can spend 1 Luck Point to impose Disadvantage on that roll."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}
